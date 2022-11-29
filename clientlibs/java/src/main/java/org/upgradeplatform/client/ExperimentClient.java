@@ -27,7 +27,7 @@ import org.upgradeplatform.requestbeans.MetricUnitBody;
 import org.upgradeplatform.requestbeans.SingleMetric;
 import org.upgradeplatform.requestbeans.UserAlias;
 import org.upgradeplatform.responsebeans.UserAliasResponse;
-import org.upgradeplatform.responsebeans.AssignedCondition;
+import org.upgradeplatform.responsebeans.Condition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUser;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
@@ -247,22 +247,20 @@ public class ExperimentClient implements AutoCloseable {
 	private ExperimentsResponse findExperimentResponse(String site, String target,
 			List<ExperimentsResponse> experiments) {
 		return experiments.stream()
-				.filter(t -> t.getExpPoint().equalsIgnoreCase(site) &&
-						(isStringNull(target) ? isStringNull(t.getExpId().toString())
-								: t.getExpId().toString().equalsIgnoreCase(target)))
+				.filter(t -> t.getSite().equalsIgnoreCase(site) &&
+						(isStringNull(target) ? isStringNull(t.getTarget().toString())
+								: t.getTarget().toString().equalsIgnoreCase(target)))
 				.findFirst()
 				.map(ExperimentClient::copyExperimentResponse)
 				.orElse(new ExperimentsResponse());
 	}
 
 	private static ExperimentsResponse copyExperimentResponse(ExperimentsResponse experimentsResponse) {
-		AssignedCondition assignedCondition = new AssignedCondition(
-				experimentsResponse.getAssignedCondition().getTwoCharacterId(),
-				experimentsResponse.getAssignedCondition().getConditionCode(),
-				experimentsResponse.getAssignedCondition().getDescription());
+		Condition assignedCondition = new Condition(
+				experimentsResponse.getAssignedCondition().getCondition());
 
-		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getExpId().toString(),
-				experimentsResponse.getExpPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
+		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getTarget().toString(),
+				experimentsResponse.getSite(), assignedCondition);
 		return resultCondition;
 	}
 
@@ -287,7 +285,7 @@ public class ExperimentClient implements AutoCloseable {
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 
-				    readResponseToCallback(response, callbacks, MarkExperimentPoint.class, mep -> new MarkExperimentPoint(mep.getUserId(), status, site, target));
+				    readResponseToCallback(response, callbacks, MarkExperimentPoint.class);
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );

@@ -48,6 +48,16 @@ public class MarkExperimentPoint {
 		this.target = target;
 	}
 
+	public MarkExperimentPoint(String userId, String site, String target, String condition, String experimentId, String id) {
+		super();
+		this.userId = userId;
+		this.site = site;
+		this.target = target;
+		this.condition = condition;
+		this.experimentId = experimentId;
+		this.id = id;
+	}
+
 
 	public String getUserId() {
 		return userId;

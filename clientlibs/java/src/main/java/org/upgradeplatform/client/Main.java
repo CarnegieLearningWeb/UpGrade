@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutionException;
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
 import org.upgradeplatform.responsebeans.UserAliasResponse;
-import org.upgradeplatform.responsebeans.AssignedCondition;
+import org.upgradeplatform.responsebeans.Condition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUser;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
@@ -25,9 +25,9 @@ public class Main {
 	{
 		final String baseUrl = "http://localhost:3030";
 		final String userId = UUID.randomUUID().toString();
-		final String experimentPoint = "SelectSection";
+		final String site = "add-point1";
 
-		String sectionId = args.length > 0 ? args[0] : "absolute_value_plot_equality";
+		String target = args.length > 0 ? args[0] : "add-id1";
 
 		try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl, Collections.emptyMap())){
 		    CompletableFuture<String> result = new CompletableFuture<>();
@@ -86,12 +86,12 @@ public class Main {
                     });
 
                     System.out.println(prefix() + "getting conditions");
-                    experimentClient.getExperimentCondition("assign-prog", experimentPoint, sectionId, new ResponseCallback<ExperimentsResponse>(){
+                    experimentClient.getExperimentCondition("add", site, target, new ResponseCallback<ExperimentsResponse>(){
                         @Override
                         public void onSuccess(@NonNull ExperimentsResponse expResult){
-                            AssignedCondition condition = expResult.getAssignedCondition();
-                            String code = condition == null ? null : condition.getConditionCode();
-                            experimentClient.markExperimentPoint(experimentPoint, sectionId, code, MarkedDecisionPointStatus.CONDITION_APPLIED, new ResponseCallback<MarkExperimentPoint>(){
+                            Condition condition = expResult.getAssignedCondition();
+                            String code = condition == null ? null : condition.getCondition();
+                            experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED, new ResponseCallback<MarkExperimentPoint>(){
                                 @Override
                                 public void onSuccess(@NonNull MarkExperimentPoint markResult){
                                     result.complete("marked " + code + ": " + markResult.toString());
