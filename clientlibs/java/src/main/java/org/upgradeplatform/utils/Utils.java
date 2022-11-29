@@ -31,6 +31,8 @@ public class Utils
 	public static final String LOG_EVENT= "api/log";
 	public static final String SET_ALT_USER_IDS= "api/useraliases";
 	public static final String ADD_MATRIC= "api/metric";
+
+	public static final String PATCH = "PATCH";
 	
 	public static final int MAX_RETRIES = 3;
 

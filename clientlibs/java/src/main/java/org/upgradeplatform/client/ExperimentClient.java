@@ -27,6 +27,7 @@ import org.upgradeplatform.requestbeans.MarkExperimentRequest;
 import org.upgradeplatform.requestbeans.MetricUnitBody;
 import org.upgradeplatform.requestbeans.SingleMetric;
 import org.upgradeplatform.requestbeans.UserAlias;
+import org.upgradeplatform.responsebeans.AliasUser;
 import org.upgradeplatform.responsebeans.AssignedCondition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUser;
@@ -128,7 +129,7 @@ public class ExperimentClient implements AutoCloseable {
 		Entity<ExperimentUser> requestContent = Entity.json(experimentUser);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES,RequestType.POST, 
+		invocation.method(PATCH, requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.PATCH, 
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -155,7 +156,7 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP);
 		Entity<ExperimentUser> requestContent = Entity.json(experimentUser);
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+		invocation.method(PATCH, requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.PATCH,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -423,20 +424,20 @@ public class ExperimentClient implements AutoCloseable {
 		return resultFeatureFlag;
 	}
 
-	public void setAltUserIds(final List<String> altUserIds, final ResponseCallback<List<ExperimentUser>> callbacks) {
+	public void setAltUserIds(final List<String> altUserIds, final ResponseCallback<AliasUser> callbacks) {
 
 		UserAlias userAlias = new UserAlias(this.userId, altUserIds );
 
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_ALT_USER_IDS);
 		Entity<UserAlias> requestContent = Entity.json(userAlias);
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+		invocation.method(PATCH, requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.PATCH,
 				new InvocationCallback<Response>() {
 
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-				    readResponseToCallback(response, callbacks, new GenericType<List<ExperimentUser>>() {});
+				    readResponseToCallback(response, callbacks, new GenericType<AliasUser>() {});
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
