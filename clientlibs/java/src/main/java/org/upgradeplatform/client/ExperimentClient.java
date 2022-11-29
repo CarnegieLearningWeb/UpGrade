@@ -19,7 +19,6 @@ import javax.ws.rs.core.Response;
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
 import org.upgradeplatform.requestbeans.ExperimentRequest;
-import org.upgradeplatform.requestbeans.FailedExperimentPointRequest;
 import org.upgradeplatform.requestbeans.GroupMetric;
 import org.upgradeplatform.requestbeans.LogInput;
 import org.upgradeplatform.requestbeans.LogRequest;
@@ -32,7 +31,6 @@ import org.upgradeplatform.responsebeans.AssignedCondition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUser;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
-import org.upgradeplatform.responsebeans.FailedExperiment;
 import org.upgradeplatform.responsebeans.FeatureFlag;
 import org.upgradeplatform.responsebeans.InitializeUser;
 import org.upgradeplatform.responsebeans.LogEventResponse;
@@ -208,18 +206,18 @@ public class ExperimentClient implements AutoCloseable {
 		}));
 	}
 
-    /**@param experimentPoint This is matched case-insensitively*/
-	public void getExperimentCondition(String context, String experimentPoint, final ResponseCallback<ExperimentsResponse> callbacks) {
-		getExperimentCondition(context, experimentPoint, null, callbacks);
+    /**@param site This is matched case-insensitively*/
+	public void getExperimentCondition(String context, String site, final ResponseCallback<ExperimentsResponse> callbacks) {
+		getExperimentCondition(context, site, null, callbacks);
 	}
 
-    /**@param experimentPoint This is matched case-insensitively
-     * @param experimentId This is matched case-insensitively*/
-	public void getExperimentCondition(String context, String experimentPoint, String experimentId,
+    /**@param site This is matched case-insensitively
+     * @param target This is matched case-insensitively*/
+	public void getExperimentCondition(String context, String site, String target,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
 		if (this.allExperiments != null) {
 
-			ExperimentsResponse resultCondition = findExperimentResponse(experimentPoint, experimentId, allExperiments);
+			ExperimentsResponse resultCondition = findExperimentResponse(site, target, allExperiments);
 
 			if (callbacks != null) {
 				callbacks.onSuccess(resultCondition);
@@ -229,7 +227,7 @@ public class ExperimentClient implements AutoCloseable {
 				@Override
 				public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
-					ExperimentsResponse resultCondition = findExperimentResponse(experimentPoint, experimentId, experiments);
+					ExperimentsResponse resultCondition = findExperimentResponse(site, target, experiments);
 
 					if (callbacks != null) {
 						callbacks.onSuccess(resultCondition);
@@ -246,12 +244,12 @@ public class ExperimentClient implements AutoCloseable {
 		}
 	}
 
-	private ExperimentsResponse findExperimentResponse(String experimentPoint, String experimentId,
+	private ExperimentsResponse findExperimentResponse(String site, String target,
 			List<ExperimentsResponse> experiments) {
 		return experiments.stream()
-				.filter(t -> t.getExpPoint().equalsIgnoreCase(experimentPoint) &&
-						(isStringNull(experimentId) ? isStringNull(t.getExpId().toString())
-								: t.getExpId().toString().equalsIgnoreCase(experimentId)))
+				.filter(t -> t.getExpPoint().equalsIgnoreCase(site) &&
+						(isStringNull(target) ? isStringNull(t.getExpId().toString())
+								: t.getExpId().toString().equalsIgnoreCase(target)))
 				.findFirst()
 				.map(ExperimentClient::copyExperimentResponse)
 				.orElse(new ExperimentsResponse());
@@ -290,48 +288,6 @@ public class ExperimentClient implements AutoCloseable {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 
 				    readResponseToCallback(response, callbacks, MarkExperimentPoint.class, mep -> new MarkExperimentPoint(mep.getUserId(), status, site, target));
-				} else {
-					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
-					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
-					if (callbacks != null)
-						callbacks.onError(error);
-				}
-			}
-
-			@Override
-			public void failed(Throwable throwable) {
-				callbacks.onError(new ErrorResponse(throwable.getMessage()));
-			}
-		}));
-
-	}
-
-	public void failedExperimentPoint(final String experimentPoint,
-			final ResponseCallback<FailedExperiment> callbacks) {
-		failedExperimentPoint(experimentPoint, "", "", callbacks);
-	}
-
-	public void failedExperimentPoint(final String experimentPoint, final String experimentId,
-			final ResponseCallback<FailedExperiment> callbacks) {
-		failedExperimentPoint(experimentPoint, experimentId, "", callbacks);
-	}
-
-	public void failedExperimentPoint(final String experimentPoint, final String experimentId, final String reason,
-			final ResponseCallback<FailedExperiment> callbacks) {
-		FailedExperimentPointRequest failedExperimentPointRequest = new FailedExperimentPointRequest(this.userId,
-				experimentPoint, experimentId, reason);
-		AsyncInvoker invocation = this.apiService.prepareRequest(FAILED_EXPERIMENT_POINT);
-
-		Entity<FailedExperimentPointRequest> requestContent = Entity.json(failedExperimentPointRequest);
-
-		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
-				new InvocationCallback<Response>() {
-
-			@Override
-			public void completed(Response response) {
-				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-				    readResponseToCallback(response, callbacks, FailedExperiment.class);
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
