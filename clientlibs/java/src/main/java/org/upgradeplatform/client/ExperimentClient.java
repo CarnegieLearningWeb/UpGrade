@@ -26,7 +26,7 @@ import org.upgradeplatform.requestbeans.MarkExperimentRequest;
 import org.upgradeplatform.requestbeans.MetricUnitBody;
 import org.upgradeplatform.requestbeans.SingleMetric;
 import org.upgradeplatform.requestbeans.UserAlias;
-import org.upgradeplatform.responsebeans.AliasUser;
+import org.upgradeplatform.responsebeans.UserAliasResponse;
 import org.upgradeplatform.responsebeans.AssignedCondition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUser;
@@ -380,7 +380,7 @@ public class ExperimentClient implements AutoCloseable {
 		return resultFeatureFlag;
 	}
 
-	public void setAltUserIds(final List<String> altUserIds, final ResponseCallback<AliasUser> callbacks) {
+	public void setAltUserIds(final List<String> altUserIds, final ResponseCallback<UserAliasResponse> callbacks) {
 
 		UserAlias userAlias = new UserAlias(this.userId, altUserIds );
 
@@ -393,7 +393,7 @@ public class ExperimentClient implements AutoCloseable {
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-				    readResponseToCallback(response, callbacks, new GenericType<AliasUser>() {});
+				    readResponseToCallback(response, callbacks, new GenericType<UserAliasResponse>() {});
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );

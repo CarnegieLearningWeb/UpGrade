@@ -2,14 +2,14 @@ package org.upgradeplatform.responsebeans;
 
 import java.util.List;
 
-public class AliasUser
+public class UserAliasResponse
 {
 	
 	private String userId;
 	private List<String> aliases;
-	public AliasUser() {}
+	public UserAliasResponse() {}
 	
-	public AliasUser(String userId, List<String> aliases) {
+	public UserAliasResponse(String userId, List<String> aliases) {
 		super();
 		this.userId = userId;
 		this.aliases = aliases;

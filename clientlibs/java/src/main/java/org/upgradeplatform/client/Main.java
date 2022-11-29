@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
-import org.upgradeplatform.responsebeans.AliasUser;
+import org.upgradeplatform.responsebeans.UserAliasResponse;
 import org.upgradeplatform.responsebeans.AssignedCondition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUser;
@@ -73,9 +73,9 @@ public class Main {
                     System.out.println(prefix() + "setting user aliases");
                     List<String> altIds = new ArrayList<String>();
                     altIds.add(UUID.randomUUID().toString());
-                    experimentClient.setAltUserIds(altIds, new ResponseCallback<AliasUser>(){
+                    experimentClient.setAltUserIds(altIds, new ResponseCallback<UserAliasResponse>(){
                         @Override
-                        public void onSuccess(@NonNull AliasUser t) {
+                        public void onSuccess(@NonNull UserAliasResponse t) {
                             System.out.println("success updating user aliases");
                         }
                         @Override
