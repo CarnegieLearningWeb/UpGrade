@@ -48,12 +48,6 @@
       }
     }
 
-    .table-container {
-      &-partition {
-        box-shadow: 0 8px 8px -8px mat.get-color-from-palette($background, shadow-color);
-      }
-    }
-
     .box-shadow {
       box-shadow: 0 8px 8px -8px mat.get-color-from-palette($background, shadow-color);
     }
