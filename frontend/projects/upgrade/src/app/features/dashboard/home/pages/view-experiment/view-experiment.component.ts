@@ -169,7 +169,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
           this.excludeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
         });
-      } else {
+      } else if(this.experiment.experimentSegmentExclusion?.segment){
         this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
           this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
         });
@@ -186,7 +186,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   loadMetrics() {
     if (this.experiment) {
       this.displayMetrics = [];
-      this.experiment.queries.forEach((query) => {
+      this.experiment.queries?.forEach((query) => {
         let key;
         if (query.metric.key) {
           key = query.metric.key;
