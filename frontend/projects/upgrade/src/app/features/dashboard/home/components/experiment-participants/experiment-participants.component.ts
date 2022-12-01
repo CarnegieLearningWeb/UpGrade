@@ -56,6 +56,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   subSegmentIds = [];
   segmentNameId = new Map();
   subSegmentTypes: any[];
+  allSubSegmentTypes: any[];
   subSegmentIdsToSend = [];
   userIdsToSend = [];
   groupsToSend = [];
@@ -156,6 +157,19 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.updateView2();
   }
 
+  selectedOption(event = null, index = null) {
+    if (event) {
+      if (index === 0 && event.value === 'All') {
+        this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
+        for (let i = 1; i < this.members1.length; i++) {
+          this.removeMember1(i);
+        }
+      } else {
+        this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
+      }
+    }
+  }
+
   addMembers1(type = null, id = null) {
     return this._formBuilder.group({
       type: [type, Validators.required],
@@ -221,6 +235,12 @@ export class ExperimentParticipantsComponent implements OnInit {
         this.subSegmentTypes.push({ name: type + this.groupString, value: type });
       });
     }
+    // options for Include All:
+    this.allSubSegmentTypes = [];
+    this.allSubSegmentTypes.push({ name: 'ALL', value: 'All' });
+    this.subSegmentTypes.map((option) => {
+      this.allSubSegmentTypes.push(option);
+    });
   }
 
   gettingMembersValueToSend(members: any) {
@@ -339,7 +359,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     return this.subSegmentTypes;
   }
 
-  get inclusionCriterisAsIncludeSpecific() {
+  get inclusionCriteriaAsIncludeSpecific() {
     return this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC;
   }
 
