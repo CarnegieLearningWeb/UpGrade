@@ -638,7 +638,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         return this.experimentInfo
           ? { ...this.experimentInfo.partitions[index], ...partition, order: order++ }
           : partition.target
-          ? { ...partition, order: order++ }
+          ? { ...partition, order: order++, id: uuidv4() }
           : { ...this.removePartitionName(partition), order: order++ };
       });
       experimentDesignFormData.conditionAliases = this.createExperimentConditionAliasRequestObject(
@@ -674,6 +674,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       const decisionPoint = decisionPoints.find(
         (decisionPoint) => decisionPoint.target === aliasRowData.target && decisionPoint.site === aliasRowData.site
       );
+
+      console.log({ decisionPoint });
 
       // need some error-handling in UI to prevent creation if aliases can't be created...
       if (!parentCondition || !decisionPoint) {
