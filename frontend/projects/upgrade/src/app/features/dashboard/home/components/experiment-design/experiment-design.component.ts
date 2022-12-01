@@ -675,8 +675,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         (decisionPoint) => decisionPoint.target === aliasRowData.target && decisionPoint.site === aliasRowData.site
       );
 
-      console.log({ decisionPoint });
-
       // need some error-handling in UI to prevent creation if aliases can't be created...
       if (!parentCondition || !decisionPoint) {
         console.log('cannot create alias data, cannot find id of parent condition/decisionpoint');
