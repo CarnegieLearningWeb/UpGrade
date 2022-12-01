@@ -638,7 +638,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         return this.experimentInfo
           ? { ...this.experimentInfo.partitions[index], ...partition, order: order++ }
           : partition.target
-          ? { ...partition, order: order++ }
+          ? { ...partition, order: order++, id: uuidv4() }
           : { ...this.removePartitionName(partition), order: order++ };
       });
       experimentDesignFormData.conditionAliases = this.createExperimentConditionAliasRequestObject(
