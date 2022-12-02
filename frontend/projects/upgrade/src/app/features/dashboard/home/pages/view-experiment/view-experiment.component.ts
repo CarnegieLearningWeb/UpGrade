@@ -8,6 +8,8 @@ import {
   EXPERIMENT_STATE,
   ExperimentVM,
   EXPERIMENT_SEARCH_KEY,
+  ExperimentConditionAlias,
+  ExperimentAliasTableRow,
 } from '../../../../../core/experiments/store/experiments.model';
 import { Observable, Subscription } from 'rxjs';
 import { filter, withLatestFrom } from 'rxjs/operators';
@@ -55,12 +57,14 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   displayedConditionColumns: string[] = ['conditionCode', 'assignmentWeight', 'description'];
   displayedPartitionColumns: string[] = ['partitionPoint', 'partitionId', 'excludeIfReached'];
+  displayedAliasConditionColumns: string[] = ['site', 'target', 'condition', 'alias'];
   displayedParticipantsColumns: string[] = ['participantsType', 'participantsId'];
   displayedMetricsColumns: string[] = ['metricsKey', 'metricsOperation', 'metricsName'];
 
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
   displayMetrics: Metrics[] = [];
+  aliasTableData: ExperimentAliasTableRow[] = [];
 
   constructor(
     private experimentService: ExperimentService,
@@ -110,12 +114,19 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
           this.isPollingExperimentDetailStats$,
           (experiment, isLoadingDetails, isPolling) => ({ experiment, isLoadingDetails, isPolling })
         ),
-        filter(({ isLoadingDetails }) => !isLoadingDetails)
+        filter(
+          ({ isLoadingDetails, experiment }) =>
+            !isLoadingDetails &&
+            !!experiment?.partitions?.length &&
+            !!experiment?.conditions?.length &&
+            !!experiment?.conditionAliases?.length
+        )
       )
       .subscribe(({ experiment, isPolling }) => {
         this.onExperimentChange(experiment, isPolling);
         this.loadParticipants();
         this.loadMetrics();
+        this.loadAliasTableData(experiment);
       });
 
     if (this.experiment) {
@@ -198,6 +209,37 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         });
       });
     }
+  }
+
+  loadAliasTableData(experiment: ExperimentVM) {
+    const newAliasTableData: ExperimentAliasTableRow[] = [];
+    const decisionPoints = experiment.partitions;
+    const conditions = experiment.conditions;
+    const conditionAliases = experiment.conditionAliases;
+
+    let existingAlias: ExperimentConditionAlias;
+
+    decisionPoints.forEach((decisionPoint) => {
+      conditions.forEach((condition) => {
+        existingAlias = conditionAliases.find(
+          (alias) =>
+            alias.decisionPoint.target === decisionPoint.target &&
+            alias.decisionPoint.site === decisionPoint.site &&
+            alias.parentCondition.conditionCode === condition.conditionCode
+        );
+
+        newAliasTableData.push({
+          id: existingAlias?.id,
+          site: decisionPoint.site,
+          target: decisionPoint.target,
+          condition: condition.conditionCode,
+          alias: existingAlias?.aliasName || condition.conditionCode,
+          isEditing: false,
+        });
+      });
+    });
+
+    this.aliasTableData = newAliasTableData;
   }
 
   openDialog(dialogType: DialogType) {
