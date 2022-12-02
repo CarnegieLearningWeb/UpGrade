@@ -28,6 +28,7 @@ import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-ti
 import { FILTER_MODE } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
+import { ExperimentUtilityService } from '../../../../../core/experiments/experiment-utility.service';
 // Used in view-experiment component only
 enum DialogType {
   CHANGE_STATUS = 'Change status',
@@ -68,6 +69,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   constructor(
     private experimentService: ExperimentService,
+    private experimentUtilityService: ExperimentUtilityService,
     private dialog: MatDialog,
     private authService: AuthService,
     private router: Router,
@@ -126,7 +128,12 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.onExperimentChange(experiment, isPolling);
         this.loadParticipants();
         this.loadMetrics();
-        this.loadAliasTableData(experiment);
+        this.aliasTableData = this.experimentUtilityService.createAliasTableData(
+          experiment.partitions,
+          experiment.conditions,
+          experiment.conditionAliases,
+          true
+        );
       });
 
     if (this.experiment) {
@@ -209,38 +216,6 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         });
       });
     }
-  }
-
-  loadAliasTableData(experiment: ExperimentVM) {
-    const newAliasTableData: ExperimentAliasTableRow[] = [];
-    const decisionPoints = experiment.partitions;
-    const conditions = experiment.conditions;
-    const conditionAliases = experiment.conditionAliases;
-
-    let existingAlias: ExperimentConditionAlias;
-
-    decisionPoints.forEach((decisionPoint, index) => {
-      conditions.forEach((condition) => {
-        existingAlias = conditionAliases.find(
-          (alias) =>
-            alias.decisionPoint.target === decisionPoint.target &&
-            alias.decisionPoint.site === decisionPoint.site &&
-            alias.parentCondition.conditionCode === condition.conditionCode
-        );
-
-        newAliasTableData.push({
-          id: existingAlias?.id,
-          site: decisionPoint.site,
-          target: decisionPoint.target,
-          condition: condition.conditionCode,
-          alias: existingAlias?.aliasName || condition.conditionCode,
-          isEditing: false,
-          rowStyle: index % 2 === 0 ? 'even' : 'odd',
-        });
-      });
-    });
-
-    this.aliasTableData = newAliasTableData;
   }
 
   openDialog(dialogType: DialogType) {
