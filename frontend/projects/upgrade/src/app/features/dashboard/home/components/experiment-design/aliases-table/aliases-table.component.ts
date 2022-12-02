@@ -102,7 +102,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
     const aliasTableData: ExperimentAliasTableRow[] = [];
     const useExistingAliasData = !!(conditionAliases && this.initialLoad);
 
-    decisionPoints.forEach((decisionPoint) => {
+    decisionPoints.forEach((decisionPoint, index) => {
       conditions.forEach((condition) => {
         // check the list of condtionAliases, if exist, to see if this parentCondition has an alias match
         let existingAlias: ExperimentConditionAlias = null;
@@ -123,6 +123,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
           condition: condition.conditionCode,
           alias: existingAlias?.aliasName || condition.conditionCode,
           isEditing: false,
+          rowStyle: index % 2 === 0 ? 'even' : 'odd',
         });
       });
     });

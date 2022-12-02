@@ -169,7 +169,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
           this.excludeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
         });
-      } else if(this.experiment.experimentSegmentExclusion?.segment){
+      } else if (this.experiment.experimentSegmentExclusion?.segment) {
         this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
           this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
         });
@@ -219,7 +219,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
     let existingAlias: ExperimentConditionAlias;
 
-    decisionPoints.forEach((decisionPoint) => {
+    decisionPoints.forEach((decisionPoint, index) => {
       conditions.forEach((condition) => {
         existingAlias = conditionAliases.find(
           (alias) =>
@@ -235,6 +235,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
           condition: condition.conditionCode,
           alias: existingAlias?.aliasName || condition.conditionCode,
           isEditing: false,
+          rowStyle: index % 2 === 0 ? 'even' : 'odd',
         });
       });
     });
