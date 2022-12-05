@@ -23,15 +23,15 @@ let connection;
 let manager;
 let createQueryBuilderStub;
 let updateMock, deleteMock, selectMock;
-let updateQueryBuilder = new UpdateQueryBuilder<LogRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<LogRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<LogRepository>(null);
-let repo = new LogRepository();
+const updateQueryBuilder = new UpdateQueryBuilder<LogRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<LogRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<LogRepository>(null);
+const repo = new LogRepository();
 const err = new Error('test error');
 
-let log = new Log();
+const log = new Log();
 log.id = 'id1';
-let user = new ExperimentUser();
+const user = new ExperimentUser();
 user.id = 'user1';
 log.user = user;
 
@@ -71,7 +71,7 @@ describe('LogRepository Testing', () => {
     deleteMock.expects('where').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteExceptByIds([log.id], manager);
+    const res = await repo.deleteExceptByIds([log.id], manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -91,7 +91,7 @@ describe('LogRepository Testing', () => {
     deleteMock.expects('from').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteExceptByIds([], manager);
+    const res = await repo.deleteExceptByIds([], manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -143,7 +143,7 @@ describe('LogRepository Testing', () => {
     updateMock.expects('returning').once().returns(updateQueryBuilder);
     updateMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.updateLog(log.id, {}, new Date('2019-01-16'));
+    const res = await repo.updateLog(log.id, {}, new Date('2019-01-16'));
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     updateMock.verify();
@@ -170,7 +170,7 @@ describe('LogRepository Testing', () => {
 
   it('should delete by metric id', async () => {
     createQueryBuilderStub = sandbox.stub(LogRepository.prototype, 'createQueryBuilder').returns(deleteQueryBuilder);
-    let queryStub = sandbox.stub(QueryRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const queryStub = sandbox.stub(QueryRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
     const result = {
       identifiers: [{ id: log.id }],
       generatedMaps: [log],
@@ -187,7 +187,7 @@ describe('LogRepository Testing', () => {
     deleteMock.expects('where').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteByMetricId('metrickey');
+    const res = await repo.deleteByMetricId('metrickey');
 
     sinon.assert.calledOnce(queryStub);
     sinon.assert.calledOnce(createQueryBuilderStub);
@@ -199,7 +199,7 @@ describe('LogRepository Testing', () => {
 
   it('should delete all logs when no metrics found', async () => {
     createQueryBuilderStub = sandbox.stub(LogRepository.prototype, 'createQueryBuilder').returns(deleteQueryBuilder);
-    let queryStub = sandbox.stub(QueryRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const queryStub = sandbox.stub(QueryRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
     const result = {
       identifiers: [{ id: log.id }],
       generatedMaps: [log],
@@ -212,7 +212,7 @@ describe('LogRepository Testing', () => {
     deleteMock.expects('from').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteByMetricId('metrickey');
+    const res = await repo.deleteByMetricId('metrickey');
 
     sinon.assert.calledOnce(queryStub);
     sinon.assert.calledOnce(createQueryBuilderStub);
@@ -223,7 +223,7 @@ describe('LogRepository Testing', () => {
   });
 
   it('should throw an error when the metric query fails', async () => {
-    let queryStub = sandbox.stub(QueryRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const queryStub = sandbox.stub(QueryRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
     selectMock.expects('select').once().returns(selectQueryBuilder);
     selectMock.expects('innerJoin').twice().returns(selectQueryBuilder);
@@ -239,7 +239,7 @@ describe('LogRepository Testing', () => {
 
   it('should throw an error when delete by metric id fails', async () => {
     createQueryBuilderStub = sandbox.stub(LogRepository.prototype, 'createQueryBuilder').returns(deleteQueryBuilder);
-    let queryStub = sandbox.stub(QueryRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const queryStub = sandbox.stub(QueryRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
     selectMock.expects('select').once().returns(selectQueryBuilder);
     selectMock.expects('innerJoin').twice().returns(selectQueryBuilder);
@@ -262,7 +262,7 @@ describe('LogRepository Testing', () => {
 
   it('should throw an error when delete all fails', async () => {
     createQueryBuilderStub = sandbox.stub(LogRepository.prototype, 'createQueryBuilder').returns(deleteQueryBuilder);
-    let queryStub = sandbox.stub(QueryRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const queryStub = sandbox.stub(QueryRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
     selectMock.expects('select').once().returns(selectQueryBuilder);
     selectMock.expects('innerJoin').twice().returns(selectQueryBuilder);
@@ -281,7 +281,7 @@ describe('LogRepository Testing', () => {
   });
 
   it('should get metric uniquifier data', async () => {
-    let metricStub = sandbox.stub(MetricRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const metricStub = sandbox.stub(MetricRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
     const result = {
       identifiers: [{ id: log.id }],
       generatedMaps: [log],
@@ -296,7 +296,7 @@ describe('LogRepository Testing', () => {
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
     selectMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.getMetricUniquifierData(['metrickey'], ['uniquifierkey'], 'uid');
+    const res = await repo.getMetricUniquifierData(['metrickey'], ['uniquifierkey'], 'uid');
 
     sinon.assert.calledOnce(metricStub);
     selectMock.verify();
@@ -305,7 +305,7 @@ describe('LogRepository Testing', () => {
   });
 
   it('should throw an error when get metric uniquifier data fails', async () => {
-    let metricStub = sandbox.stub(MetricRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const metricStub = sandbox.stub(MetricRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
     selectMock.expects('select').once().returns(selectQueryBuilder);
     selectMock.expects('innerJoin').once().returns(selectQueryBuilder);
@@ -325,20 +325,22 @@ describe('LogRepository Testing', () => {
   });
 
   it('should analyse a continuous simple metric sum', async () => {
-    let experimentStub = sandbox.stub(ExperimentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const experimentStub = sandbox
+      .stub(ExperimentRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
     const result = {
       identifiers: [{ id: log.id }],
       generatedMaps: [log],
       raw: [log],
     };
 
-    let q = new Query();
+    const q = new Query();
     q.id = 'id1';
     q.name = 'Average Time';
-    let exp = new Experiment();
+    const exp = new Experiment();
     exp.id = 'exp1';
     q.experiment = exp;
-    let m = new Metric();
+    const m = new Metric();
     m.key = 'totalTimeSeconds';
     m.type = IMetricMetaData.CONTINUOUS;
     q.metric = m;
@@ -353,7 +355,7 @@ describe('LogRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('andWhere').exactly(5).returns(selectQueryBuilder);
     selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
-    let res = await repo.analysis(q);
+    const res = await repo.analysis(q);
 
     sinon.assert.calledOnce(experimentStub);
     selectMock.verify();
@@ -362,20 +364,22 @@ describe('LogRepository Testing', () => {
   });
 
   it('should analyse a continuous simple metric median', async () => {
-    let experimentStub = sandbox.stub(ExperimentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const experimentStub = sandbox
+      .stub(ExperimentRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
     const result = {
       identifiers: [{ id: log.id }],
       generatedMaps: [log],
       raw: [log],
     };
 
-    let q = new Query();
+    const q = new Query();
     q.id = 'id1';
     q.name = 'Average Time';
-    let exp = new Experiment();
+    const exp = new Experiment();
     exp.id = 'exp1';
     q.experiment = exp;
-    let m = new Metric();
+    const m = new Metric();
     m.key = 'totalTimeSeconds';
     m.type = IMetricMetaData.CONTINUOUS;
     q.metric = m;
@@ -390,7 +394,7 @@ describe('LogRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('andWhere').exactly(5).returns(selectQueryBuilder);
     selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
-    let res = await repo.analysis(q);
+    const res = await repo.analysis(q);
 
     sinon.assert.calledOnce(experimentStub);
     selectMock.verify();
@@ -399,20 +403,22 @@ describe('LogRepository Testing', () => {
   });
 
   it('should analyse a continuous simple metric mode', async () => {
-    let experimentStub = sandbox.stub(ExperimentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const experimentStub = sandbox
+      .stub(ExperimentRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
     const result = {
       identifiers: [{ id: log.id }],
       generatedMaps: [log],
       raw: [log],
     };
 
-    let q = new Query();
+    const q = new Query();
     q.id = 'id1';
     q.name = 'Average Time';
-    let exp = new Experiment();
+    const exp = new Experiment();
     exp.id = 'exp1';
     q.experiment = exp;
-    let m = new Metric();
+    const m = new Metric();
     m.key = 'totalTimeSeconds';
     m.type = IMetricMetaData.CONTINUOUS;
     q.metric = m;
@@ -427,7 +433,7 @@ describe('LogRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('andWhere').exactly(5).returns(selectQueryBuilder);
     selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
-    let res = await repo.analysis(q);
+    const res = await repo.analysis(q);
 
     sinon.assert.calledOnce(experimentStub);
     selectMock.verify();
@@ -436,20 +442,22 @@ describe('LogRepository Testing', () => {
   });
 
   it('should analyse a continuous simple metric count', async () => {
-    let experimentStub = sandbox.stub(ExperimentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const experimentStub = sandbox
+      .stub(ExperimentRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
     const result = {
       identifiers: [{ id: log.id }],
       generatedMaps: [log],
       raw: [log],
     };
 
-    let q = new Query();
+    const q = new Query();
     q.id = 'id1';
     q.name = 'Average Time';
-    let exp = new Experiment();
+    const exp = new Experiment();
     exp.id = 'exp1';
     q.experiment = exp;
-    let m = new Metric();
+    const m = new Metric();
     m.key = 'totalTimeSeconds';
     m.type = IMetricMetaData.CONTINUOUS;
     q.metric = m;
@@ -464,7 +472,7 @@ describe('LogRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('andWhere').exactly(5).returns(selectQueryBuilder);
     selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
-    let res = await repo.analysis(q);
+    const res = await repo.analysis(q);
 
     sinon.assert.calledOnce(experimentStub);
     selectMock.verify();
@@ -473,20 +481,22 @@ describe('LogRepository Testing', () => {
   });
 
   it('should analyse a continuous repeated metric most recent avg', async () => {
-    let experimentStub = sandbox.stub(ExperimentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const experimentStub = sandbox
+      .stub(ExperimentRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
     const result = {
       identifiers: [{ id: log.id }],
       generatedMaps: [log],
       raw: [log],
     };
 
-    let q = new Query();
+    const q = new Query();
     q.id = 'id1';
     q.name = 'Average Time';
-    let exp = new Experiment();
+    const exp = new Experiment();
     exp.id = 'exp1';
     q.experiment = exp;
-    let m = new Metric();
+    const m = new Metric();
     m.key = 'masteryWorkspace@__@calculating_area_various_figures@__@timeSeconds';
     m.type = IMetricMetaData.CONTINUOUS;
     q.metric = m;
@@ -502,7 +512,7 @@ describe('LogRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('andWhere').exactly(5).returns(selectQueryBuilder);
     selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
-    let res = await repo.analysis(q);
+    const res = await repo.analysis(q);
 
     sinon.assert.calledOnce(experimentStub);
     selectMock.verify();
@@ -511,7 +521,9 @@ describe('LogRepository Testing', () => {
   });
 
   it('should analyse a categorical repeated metric earliest percentage', async () => {
-    let experimentStub = sandbox.stub(ExperimentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const experimentStub = sandbox
+      .stub(ExperimentRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
     const data1 = {
       conditionId: 1,
       result: 10,
@@ -521,13 +533,13 @@ describe('LogRepository Testing', () => {
       result: 10,
     };
 
-    let q = new Query();
+    const q = new Query();
     q.id = 'id1';
     q.name = 'Average Time';
-    let exp = new Experiment();
+    const exp = new Experiment();
     exp.id = 'exp1';
     q.experiment = exp;
-    let m = new Metric();
+    const m = new Metric();
     m.key = 'masteryWorkspace@__@calculating_area_various_figures@__@timeSeconds';
     m.type = IMetricMetaData.CATEGORICAL;
     q.metric = m;
@@ -547,7 +559,7 @@ describe('LogRepository Testing', () => {
       .expects('getRawMany')
       .twice()
       .returns(Promise.resolve([data1, data2]));
-    let res = await repo.analysis(q);
+    const res = await repo.analysis(q);
 
     sinon.assert.calledTwice(experimentStub);
     selectMock.verify();

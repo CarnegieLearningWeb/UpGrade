@@ -7,13 +7,13 @@ import { Experiment } from '../../../src/api/models/Experiment';
 let sandbox;
 let createQueryBuilderStub;
 let selectMock;
-let selectQueryBuilder = new SelectQueryBuilder<GroupEnrollmentRepository>(null);
-let repo = new GroupEnrollmentRepository();
+const selectQueryBuilder = new SelectQueryBuilder<GroupEnrollmentRepository>(null);
+const repo = new GroupEnrollmentRepository();
 const err = new Error('test error');
 
-let group = new GroupEnrollment();
+const group = new GroupEnrollment();
 group.id = 'id1';
-let exp = new Experiment();
+const exp = new Experiment();
 exp.id = 'exp1';
 group.experiment = exp;
 
@@ -36,7 +36,7 @@ describe('GroupEnrollmentRepository Testing', () => {
     };
     createQueryBuilderStub = sandbox.stub(GroupEnrollmentRepository.prototype, 'find').returns(Promise.resolve(result));
 
-    let res = await repo.findEnrollments([group.id], [exp.id]);
+    const res = await repo.findEnrollments([group.id], [exp.id]);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
 
@@ -70,7 +70,7 @@ describe('GroupEnrollmentRepository Testing', () => {
     selectMock.expects('groupBy').once().returns(selectQueryBuilder);
     selectMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.getEnrollmentCountByCondition(exp.id);
+    const res = await repo.getEnrollmentCountByCondition(exp.id);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();

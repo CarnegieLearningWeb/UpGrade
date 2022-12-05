@@ -13,17 +13,17 @@ import { ExperimentCondition } from '../../../src/api/models/ExperimentCondition
 import { PreviewUser } from '../../../src/api/models/PreviewUser';
 import { isUUID } from 'class-validator';
 
-let logger = new UpgradeLogger();
+const logger = new UpgradeLogger();
 
 describe('Preview User Service Testing', () => {
   let service: PreviewUserService;
   let userRepo: Repository<PreviewUserRepository>;
   let module: TestingModule;
 
-  let assign1 = new ExplicitIndividualAssignment();
-  let exp1 = new Experiment();
-  let cond1 = new ExperimentCondition();
-  let mockUser1 = new PreviewUser();
+  const assign1 = new ExplicitIndividualAssignment();
+  const exp1 = new Experiment();
+  const cond1 = new ExperimentCondition();
+  const mockUser1 = new PreviewUser();
   mockUser1.id = 'user1';
   exp1.id = 'exp1';
   cond1.id = 'cond1';
@@ -32,10 +32,10 @@ describe('Preview User Service Testing', () => {
   assign1.experimentCondition = cond1;
   mockUser1.assignments = [assign1];
 
-  let assign2 = new ExplicitIndividualAssignment();
-  let exp2 = new Experiment();
-  let cond2 = new ExperimentCondition();
-  let mockUser2 = new PreviewUser();
+  const assign2 = new ExplicitIndividualAssignment();
+  const exp2 = new Experiment();
+  const cond2 = new ExperimentCondition();
+  const mockUser2 = new PreviewUser();
   mockUser2.id = 'user2';
   exp2.id = 'exp2';
   cond2.id = 'cond2';
@@ -44,7 +44,7 @@ describe('Preview User Service Testing', () => {
   assign2.experimentCondition = cond2;
   mockUser2.assignments = [assign1, assign2];
 
-  let mockUserArr = [mockUser1, mockUser2];
+  const mockUserArr = [mockUser1, mockUser2];
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
