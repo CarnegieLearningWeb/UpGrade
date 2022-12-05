@@ -71,6 +71,7 @@ mat.$red-palette: (
 $background-color: #111111;
 $card-dialog-color: #1d1d1d;
 $shadow-color: #000000;
+$table-shading: #333;
 $chart-border: rgba(255, 255, 255, 0.12);
 
 $primary: mat.define-palette(mat.$blue-palette);
@@ -89,6 +90,7 @@ $background: map_merge(
     card: $card-dialog-color,
     dialog: $card-dialog-color,
     shadow-color: $shadow-color,
+    table-shading: $table-shading
   )
 );
 $foreground: map_merge(

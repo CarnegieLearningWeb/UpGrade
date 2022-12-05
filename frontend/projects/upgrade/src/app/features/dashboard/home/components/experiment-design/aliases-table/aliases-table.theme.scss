@@ -1,0 +1,9 @@
+@use '@angular/material' as mat;
+
+@mixin aliases-table-component-theme($theme) {
+  $background: map-get($theme, background);
+
+  .alias-table-design-stepper .mat-row.even {
+    background-color: mat.get-color-from-palette($background, table-shading);
+  }
+}

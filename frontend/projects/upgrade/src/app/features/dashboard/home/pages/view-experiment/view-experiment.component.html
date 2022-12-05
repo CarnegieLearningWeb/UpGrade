@@ -493,7 +493,7 @@
           <div class="table-container table-container-aliases">
             <span class="ft-24-700">{{ 'home.view-experiment.experiment-aliases-title.text' | translate }}</span>
             <ng-container *ngIf="aliasTableData.length">
-              <mat-table [dataSource]="aliasTableData" class="table alias-table">
+              <mat-table [dataSource]="aliasTableData" class="table alias-table-overview">
                 <ng-container matColumnDef="site">
                   <mat-header-cell class="ft-12-700" *matHeaderCellDef>
                     {{ 'home.view-experiment.experiment-aliases.column-label.site' | translate }}
@@ -539,7 +539,7 @@
                 </ng-container>
 
                 <mat-header-row *matHeaderRowDef="displayedAliasConditionColumns"></mat-header-row>
-                <mat-row *matRowDef="let row; columns: displayedAliasConditionColumns"></mat-row>
+                <mat-row *matRowDef="let row; columns: displayedAliasConditionColumns" [ngClass]="row?.rowStyle"></mat-row>
               </mat-table>
             </ng-container>
           </div>
