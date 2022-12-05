@@ -7,15 +7,15 @@ import { Experiment } from '../../../src/api/models/Experiment';
 let sandbox;
 let createQueryBuilderStub;
 let insertMock, deleteMock, selectMock;
-let insertQueryBuilder = new InsertQueryBuilder<GroupExclusionRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<GroupExclusionRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<GroupExclusionRepository>(null);
-let repo = new GroupExclusionRepository();
+const insertQueryBuilder = new InsertQueryBuilder<GroupExclusionRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<GroupExclusionRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<GroupExclusionRepository>(null);
+const repo = new GroupExclusionRepository();
 const err = new Error('test error');
 
-let group = new GroupExclusion();
+const group = new GroupExclusion();
 group.id = 'id1';
-let exp = new Experiment();
+const exp = new Experiment();
 exp.id = 'exp1';
 group.experiment = exp;
 
@@ -49,7 +49,7 @@ describe('GroupExclusionRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.saveRawJson([group]);
+    const res = await repo.saveRawJson([group]);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -93,7 +93,7 @@ describe('GroupExclusionRepository Testing', () => {
     deleteMock.expects('returning').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteByExperimentIds([exp.id]);
+    const res = await repo.deleteByExperimentIds([exp.id]);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -123,7 +123,7 @@ describe('GroupExclusionRepository Testing', () => {
   it('should determine if user is excluded from experiment', async () => {
     createQueryBuilderStub = sandbox.stub(GroupExclusionRepository.prototype, 'count').returns(Promise.resolve(1));
 
-    let res = await repo.isGroupExcludedFromExperiment(group.id, exp.id);
+    const res = await repo.isGroupExcludedFromExperiment(group.id, exp.id);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
 
@@ -155,7 +155,7 @@ describe('GroupExclusionRepository Testing', () => {
     selectMock.expects('whereInIds').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.findExcluded([group.id], [exp.id]);
+    const res = await repo.findExcluded([group.id], [exp.id]);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -194,7 +194,7 @@ describe('GroupExclusionRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.findExcludedByExperimentId(exp.id);
+    const res = await repo.findExcludedByExperimentId(exp.id);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();

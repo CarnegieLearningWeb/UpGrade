@@ -6,9 +6,9 @@ import { SettingRepository } from '../../../src/api/repositories/SettingReposito
 import { Setting } from '../../../src/api/models/Setting';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
-let setting = new Setting();
-let settingArr = [setting];
-let logger = new UpgradeLogger();
+const setting = new Setting();
+const settingArr = [setting];
+const logger = new UpgradeLogger();
 
 describe('Setting Service Testing', () => {
   let service: SettingService;
