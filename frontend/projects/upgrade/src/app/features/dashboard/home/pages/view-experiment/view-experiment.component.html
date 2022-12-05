@@ -488,6 +488,61 @@
               <mat-row *matRowDef="let row; columns: displayedConditionColumns"></mat-row>
             </mat-table>
           </div>
+
+          <!-- Aliases Table -->
+          <div class="table-container table-container-aliases">
+            <span class="ft-24-700">{{ 'home.view-experiment.experiment-aliases-title.text' | translate }}</span>
+            <ng-container *ngIf="aliasTableData.length">
+              <mat-table [dataSource]="aliasTableData" class="table alias-table-overview">
+                <ng-container matColumnDef="site">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'home.view-experiment.experiment-aliases.column-label.site' | translate }}
+                  </mat-header-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let rowData">
+                    <span [matTooltip]="rowData.site" matTooltipPosition="above">
+                      {{ rowData.site | truncate: 50 }}
+                    </span>
+                  </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="target">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'home.view-experiment.experiment-aliases.column-label.target' | translate }}
+                  </mat-header-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let rowData">
+                    <span [matTooltip]="rowData.target" matTooltipPosition="above">
+                      {{ rowData.target | truncate: 50 }}
+                    </span>
+                  </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="condition">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'home.view-experiment.experiment-aliases.column-label.condition' | translate }}
+                  </mat-header-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let rowData">
+                    <span [matTooltip]="rowData.condition" matTooltipPosition="above">
+                      {{ rowData.condition | truncate: 50 }}
+                    </span>
+                  </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="alias">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'home.view-experiment.experiment-aliases.column-label.alias' | translate }}
+                  </mat-header-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let rowData">
+                    <span [matTooltip]="rowData.alias" matTooltipPosition="above">
+                      {{ rowData.alias | truncate: 50 }}
+                    </span>
+                  </mat-cell>
+                </ng-container>
+
+                <mat-header-row *matHeaderRowDef="displayedAliasConditionColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedAliasConditionColumns" [ngClass]="row?.rowStyle"></mat-row>
+              </mat-table>
+            </ng-container>
+          </div>
         </div>
       </mat-tab>
 

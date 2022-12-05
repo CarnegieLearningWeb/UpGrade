@@ -324,6 +324,18 @@ $font-size-small: 15px;
       }
     }
 
+    &-aliases .alias-table-overview {
+      justify-content: space-between;
+
+      .mat-header-cell {
+        justify-content: left;
+      }
+
+      .mat-cell {
+        justify-content: left;
+      }
+    }
+
     &-metrics {
       mat-row {
         align-items: flex-start;
