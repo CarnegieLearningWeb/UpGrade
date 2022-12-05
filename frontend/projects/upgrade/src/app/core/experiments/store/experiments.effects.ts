@@ -45,6 +45,7 @@ import { interval } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ENV, Environment } from '../../../../environments/environment-types';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 import JSZip from 'jszip';
 
 @Injectable()
@@ -486,6 +487,7 @@ export class ExperimentEffects {
                 this.download('Experiments.zip', content, true);
               });
             } else {
+              data[0].state = EXPERIMENT_STATE.INACTIVE;
               this.download(data[0].name + '.json', data[0], false);
             }
             return experimentAction.actionExportExperimentDesignSuccess();
