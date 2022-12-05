@@ -16,14 +16,14 @@ let connection;
 let manager;
 let createQueryBuilderStub;
 let insertMock, deleteMock, selectMock;
-let insertQueryBuilder = new InsertQueryBuilder<IndividualForSegmentRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<IndividualForSegmentRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<IndividualForSegmentRepository>(null);
-let repo = new IndividualForSegmentRepository();
+const insertQueryBuilder = new InsertQueryBuilder<IndividualForSegmentRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<IndividualForSegmentRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<IndividualForSegmentRepository>(null);
+const repo = new IndividualForSegmentRepository();
 const err = new Error('test error');
-let logger = new UpgradeLogger();
+const logger = new UpgradeLogger();
 
-let segment = new IndividualForSegment();
+const segment = new IndividualForSegment();
 segment.userId = 'id1';
 
 const result = {
@@ -65,7 +65,7 @@ describe('IndividualForSegmentRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.insertIndividualForSegment([segment], manager, logger);
+    const res = await repo.insertIndividualForSegment([segment], manager, logger);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -102,7 +102,7 @@ describe('IndividualForSegmentRepository Testing', () => {
     deleteMock.expects('returning').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteIndividualForSegment('segment1', segment.userId, logger);
+    const res = await repo.deleteIndividualForSegment('segment1', segment.userId, logger);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -140,7 +140,7 @@ describe('IndividualForSegmentRepository Testing', () => {
     deleteMock.expects('returning').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteIndividualForSegmentById(segment.userId, logger);
+    const res = await repo.deleteIndividualForSegmentById(segment.userId, logger);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -179,7 +179,7 @@ describe('IndividualForSegmentRepository Testing', () => {
       .once()
       .returns(Promise.resolve([segment, segment]));
 
-    let res = await repo.getIndividualForSegmentById(segment.userId, logger);
+    const res = await repo.getIndividualForSegmentById(segment.userId, logger);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();

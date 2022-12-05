@@ -17,13 +17,13 @@ let connection;
 let manager;
 let createQueryBuilderStub;
 let insertMock, deleteMock, selectMock;
-let insertQueryBuilder = new InsertQueryBuilder<ExperimentAuditLogRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<ExperimentAuditLogRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<ExperimentAuditLogRepository>(null);
-let repo = new ExperimentAuditLogRepository();
+const insertQueryBuilder = new InsertQueryBuilder<ExperimentAuditLogRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<ExperimentAuditLogRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<ExperimentAuditLogRepository>(null);
+const repo = new ExperimentAuditLogRepository();
 const err = new Error('test error');
 
-let experiment = new ExperimentAuditLog();
+const experiment = new ExperimentAuditLog();
 experiment.id = 'id1';
 
 const result = {
@@ -64,7 +64,7 @@ describe('ExperimentAuditLogRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, experiment, new User(), manager);
+    const res = await repo.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, experiment, new User(), manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -83,7 +83,7 @@ describe('ExperimentAuditLogRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, experiment, new User(), null);
+    const res = await repo.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, experiment, new User(), null);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -122,7 +122,7 @@ describe('ExperimentAuditLogRepository Testing', () => {
     deleteMock.expects('where').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.clearLogs(4);
+    const res = await repo.clearLogs(4);
 
     sinon.assert.calledTwice(stub);
 
@@ -162,7 +162,7 @@ describe('ExperimentAuditLogRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getCount').once().returns(Promise.resolve(5));
 
-    let res = await repo.getTotalLogs(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+    const res = await repo.getTotalLogs(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -198,7 +198,7 @@ describe('ExperimentAuditLogRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.paginatedFind(3, 0, EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+    const res = await repo.paginatedFind(3, 0, EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -218,7 +218,7 @@ describe('ExperimentAuditLogRepository Testing', () => {
     selectMock.expects('where').never().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.paginatedFind(3, 0, null);
+    const res = await repo.paginatedFind(3, 0, null);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
