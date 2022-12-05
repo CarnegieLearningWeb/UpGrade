@@ -6,12 +6,12 @@ import { ExperimentUser } from '../../../src/api/models/ExperimentUser';
 let sandbox;
 let createQueryBuilderStub;
 let insertMock, updateMock;
-let insertQueryBuilder = new InsertQueryBuilder<ExperimentUserRepository>(null);
-let updateQueryBuilder = new UpdateQueryBuilder<ExperimentUserRepository>(null);
-let repo = new ExperimentUserRepository();
+const insertQueryBuilder = new InsertQueryBuilder<ExperimentUserRepository>(null);
+const updateQueryBuilder = new UpdateQueryBuilder<ExperimentUserRepository>(null);
+const repo = new ExperimentUserRepository();
 const err = new Error('test error');
 
-let user = new ExperimentUser();
+const user = new ExperimentUser();
 user.id = 'user1';
 
 beforeEach(() => {
@@ -44,7 +44,7 @@ describe('ExperimentUserRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.saveRawJson(user);
+    const res = await repo.saveRawJson(user);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -89,7 +89,7 @@ describe('ExperimentUserRepository Testing', () => {
     updateMock.expects('returning').once().returns(updateQueryBuilder);
     updateMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.updateWorkingGroup(user.id, 'group1');
+    const res = await repo.updateWorkingGroup(user.id, 'group1');
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     updateMock.verify();

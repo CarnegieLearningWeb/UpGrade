@@ -5,7 +5,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
 import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
 
-let auditArr = [1, 2, 3];
+const auditArr = [1, 2, 3];
 
 describe('Audit Service Testing', () => {
   let service: AuditService;

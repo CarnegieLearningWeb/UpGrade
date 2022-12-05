@@ -6,13 +6,13 @@ import { PreviewUser } from '../../../src/api/models/PreviewUser';
 let sandbox;
 let createQueryBuilderStub;
 let insertMock, deleteMock, selectMock;
-let insertQueryBuilder = new InsertQueryBuilder<PreviewUserRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<PreviewUserRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<PreviewUserRepository>(null);
-let repo = new PreviewUserRepository();
+const insertQueryBuilder = new InsertQueryBuilder<PreviewUserRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<PreviewUserRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<PreviewUserRepository>(null);
+const repo = new PreviewUserRepository();
 const err = new Error('test error');
 
-let user = new PreviewUser();
+const user = new PreviewUser();
 user.id = 'id1';
 
 beforeEach(() => {
@@ -44,7 +44,7 @@ describe('PreviewUserRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.saveRawJson(user);
+    const res = await repo.saveRawJson(user);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -87,7 +87,7 @@ describe('PreviewUserRepository Testing', () => {
     deleteMock.expects('returning').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteById(user.id);
+    const res = await repo.deleteById(user.id);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -130,7 +130,7 @@ describe('PreviewUserRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getOne').once().returns(Promise.resolve(result));
 
-    let res = await repo.findOneById(user.id);
+    const res = await repo.findOneById(user.id);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -174,7 +174,7 @@ describe('PreviewUserRepository Testing', () => {
     selectMock.expects('addSelect').twice().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.findWithNames();
+    const res = await repo.findWithNames();
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -217,7 +217,7 @@ describe('PreviewUserRepository Testing', () => {
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.findPaginated(1, 1);
+    const res = await repo.findPaginated(1, 1);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();

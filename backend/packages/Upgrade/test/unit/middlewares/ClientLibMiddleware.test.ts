@@ -19,7 +19,7 @@ class SettingServiceAuthCheck {
 describe('ClientLib Middleware tests', () => {
   let mockRequest: any;
   let mockResponse: any;
-  let nextFunction: NextFunction = jest.fn();
+  const nextFunction: NextFunction = jest.fn();
   let clientlib: ClientLibMiddleware;
   // let error = SERVER_ERROR;
   let mockjson: any;
@@ -45,7 +45,7 @@ describe('ClientLib Middleware tests', () => {
   });
 
   test('JWT Expired error test', async () => {
-    let error = new Error();
+    const error = new Error();
     error.message = 'jwt expired';
     mockRequest.header = jest.fn(() => {
       throw error;
@@ -54,7 +54,7 @@ describe('ClientLib Middleware tests', () => {
   });
 
   test('Invalid token error test', async () => {
-    let error = new Error();
+    const error = new Error();
     error.message = 'invalid token';
     mockRequest.header = jest.fn(() => {
       throw error;
@@ -79,11 +79,11 @@ describe('ClientLib Middleware tests', () => {
   test('Auth Check no token test', async () => {
     Container.set(SettingService, new SettingServiceAuthCheck());
     clientlib = new ClientLibMiddleware(Container.get(SettingService));
-    let headerAuth = (x) => {
+    const headerAuth = (x) => {
       return x + ' Bearer abd';
     };
     mockRequest.header = headerAuth;
-    let getSessionId = (x) => {
+    const getSessionId = (x) => {
       return x + ' 123';
     };
     mockRequest.get = getSessionId;
