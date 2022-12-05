@@ -9,15 +9,15 @@ let connection;
 let manager;
 let createQueryBuilderStub;
 let insertMock, deleteMock, selectMock;
-let insertQueryBuilder = new InsertQueryBuilder<MonitoredDecisionPointRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<MonitoredDecisionPointRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<MonitoredDecisionPointRepository>(null);
-let repo = new MonitoredDecisionPointRepository();
+const insertQueryBuilder = new InsertQueryBuilder<MonitoredDecisionPointRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<MonitoredDecisionPointRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<MonitoredDecisionPointRepository>(null);
+const repo = new MonitoredDecisionPointRepository();
 const err = new Error('test error');
 
-let point = new MonitoredDecisionPoint();
+const point = new MonitoredDecisionPoint();
 point.id = 'id1';
-let user = new ExperimentUser();
+const user = new ExperimentUser();
 user.id = 'user1';
 point.user = user;
 
@@ -54,7 +54,7 @@ describe('MonitoredDecisionPointRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.saveRawJson(point);
+    const res = await repo.saveRawJson(point);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -80,7 +80,7 @@ describe('MonitoredDecisionPointRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.saveRawJson(point);
+    const res = await repo.saveRawJson(point);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -122,7 +122,7 @@ describe('MonitoredDecisionPointRepository Testing', () => {
     deleteMock.expects('where').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteByExperimentId([point.id], manager);
+    const res = await repo.deleteByExperimentId([point.id], manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -159,7 +159,7 @@ describe('MonitoredDecisionPointRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getCount').once().returns(Promise.resolve(result));
 
-    let res = await repo.getMonitoredExperimentPointCount([point.id]);
+    const res = await repo.getMonitoredExperimentPointCount([point.id]);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -198,7 +198,7 @@ describe('MonitoredDecisionPointRepository Testing', () => {
     selectMock.expects('andWhere').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.getByDateRange([point.id], new Date('2019-01-16'), new Date('2019-01-20'));
+    const res = await repo.getByDateRange([point.id], new Date('2019-01-16'), new Date('2019-01-20'));
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -221,7 +221,7 @@ describe('MonitoredDecisionPointRepository Testing', () => {
     selectMock.expects('andWhere').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.getByDateRange([point.id], undefined, new Date('2019-01-20'));
+    const res = await repo.getByDateRange([point.id], undefined, new Date('2019-01-20'));
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -244,7 +244,7 @@ describe('MonitoredDecisionPointRepository Testing', () => {
     selectMock.expects('andWhere').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.getByDateRange([point.id], new Date('2019-01-20'), undefined);
+    const res = await repo.getByDateRange([point.id], new Date('2019-01-20'), undefined);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();

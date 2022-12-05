@@ -8,17 +8,17 @@ import { ExperimentUser } from '../../../src/api/models/ExperimentUser';
 let sandbox;
 let createQueryBuilderStub;
 let insertMock, deleteMock, selectMock;
-let insertQueryBuilder = new InsertQueryBuilder<IndividualExclusionRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<IndividualExclusionRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<IndividualExclusionRepository>(null);
-let repo = new IndividualExclusionRepository();
+const insertQueryBuilder = new InsertQueryBuilder<IndividualExclusionRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<IndividualExclusionRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<IndividualExclusionRepository>(null);
+const repo = new IndividualExclusionRepository();
 const err = new Error('test error');
 
-let individual = new IndividualExclusion();
+const individual = new IndividualExclusion();
 individual.id = 'id1';
-let user = new ExperimentUser();
+const user = new ExperimentUser();
 user.id = 'uid1';
-let exp = new Experiment();
+const exp = new Experiment();
 exp.id = 'exp1';
 individual.experiment = exp;
 individual.user = user;
@@ -53,7 +53,7 @@ describe('IndividualExclusionRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.saveRawJson([individual]);
+    const res = await repo.saveRawJson([individual]);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -97,7 +97,7 @@ describe('IndividualExclusionRepository Testing', () => {
     deleteMock.expects('returning').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteExperimentsForUserId(individual.id, [exp.id]);
+    const res = await repo.deleteExperimentsForUserId(individual.id, [exp.id]);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -127,7 +127,7 @@ describe('IndividualExclusionRepository Testing', () => {
   it('should determine if user is excluded from experiment', async () => {
     createQueryBuilderStub = sandbox.stub(IndividualExclusionRepository.prototype, 'count').returns(Promise.resolve(1));
 
-    let res = await repo.isUserExcludedFromExperiment(individual.id, exp.id);
+    const res = await repo.isUserExcludedFromExperiment(individual.id, exp.id);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
 
@@ -161,7 +161,7 @@ describe('IndividualExclusionRepository Testing', () => {
     selectMock.expects('whereInIds').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.findExcluded(individual.id, [exp.id]);
+    const res = await repo.findExcluded(individual.id, [exp.id]);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -200,7 +200,7 @@ describe('IndividualExclusionRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.findExcludedByExperimentId(exp.id);
+    const res = await repo.findExcludedByExperimentId(exp.id);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
