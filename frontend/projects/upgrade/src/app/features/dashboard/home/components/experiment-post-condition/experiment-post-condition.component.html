@@ -23,7 +23,12 @@
 
   <section class="shared-modal--buttons-container">
     <span class="shared-modal--buttons-left">
-      <button matStepperPrevious mat-raised-button class="shared-modal--modal-btn btn-back default-button">
+      <button
+        matStepperPrevious
+        mat-raised-button
+        class="shared-modal--modal-btn btn-back default-button"
+        (click)="postExperimentRuleForm.dirty ? experimentDesignStepperService.experimentStepperDataChanged() : ''"
+      >
         {{ 'global.back.text' | translate }}
       </button>
     </span>

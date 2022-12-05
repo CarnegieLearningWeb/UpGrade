@@ -583,7 +583,7 @@ export default async function LogOperations(): Promise<void> {
         : query.query.operationType + ' deep';
 
     switch (query.query.operationType) {
-      case OPERATION_TYPES.SUM:
+      case OPERATION_TYPES.SUM: {
         const sum = res.reduce((accu, data) => {
           return accu + data;
         }, 0);
@@ -593,7 +593,8 @@ export default async function LogOperations(): Promise<void> {
         }
         expect(sum).toEqual(expectedValue);
         break;
-      case OPERATION_TYPES.MIN:
+      }
+      case OPERATION_TYPES.MIN: {
         const minValue = Math.min(...res);
         expectedValue = 20;
         if (query.metric.key !== 'totalProblemsCompleted') {
@@ -601,7 +602,8 @@ export default async function LogOperations(): Promise<void> {
         }
         expect(minValue).toEqual(expectedValue);
         break;
-      case OPERATION_TYPES.MAX:
+      }
+      case OPERATION_TYPES.MAX: {
         const maxValue = Math.max(...res);
         expectedValue = 200;
         if (query.metric.key !== 'totalProblemsCompleted') {
@@ -609,6 +611,7 @@ export default async function LogOperations(): Promise<void> {
         }
         expect(maxValue).toEqual(expectedValue);
         break;
+      }
       // Can not check exact values for below operations
       case OPERATION_TYPES.COUNT:
         console.log(consoleString, queryResult);

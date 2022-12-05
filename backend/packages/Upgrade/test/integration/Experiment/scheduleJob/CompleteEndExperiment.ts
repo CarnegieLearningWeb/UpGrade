@@ -34,7 +34,7 @@ export default async function CompleteEndExperiment(): Promise<void> {
     ])
   );
 
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1000));
   let endExperiment = await scheduledJobService.getAllEndExperiment(new UpgradeLogger());
 
   expect(endExperiment).toEqual(
@@ -66,7 +66,7 @@ export default async function CompleteEndExperiment(): Promise<void> {
     ])
   );
 
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1000));
   endExperiment = await scheduledJobService.getAllEndExperiment(new UpgradeLogger());
   expect(endExperiment.length).toEqual(0);
 }

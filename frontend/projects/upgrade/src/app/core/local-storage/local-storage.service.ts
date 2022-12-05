@@ -47,6 +47,7 @@ export class LocalStorageService {
       isAliasTableEditMode: false,
       conditionsTableEditIndex: null,
       aliasTableEditIndex: null,
+      hasExperimentStepperDataChanged: false,
     };
 
     const state = {

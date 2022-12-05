@@ -20,7 +20,7 @@ export default async function DeleteEndExperiment(): Promise<void> {
 
   // create experiment
   await experimentService.create(scheduleJobEndExperiment as any, user, new UpgradeLogger());
-  let experiments = await experimentService.find(new UpgradeLogger());
+  const experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -33,7 +33,7 @@ export default async function DeleteEndExperiment(): Promise<void> {
     ])
   );
 
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1000));
   let endExperiment = await scheduledJobService.getAllEndExperiment(new UpgradeLogger());
 
   expect(endExperiment).toEqual(

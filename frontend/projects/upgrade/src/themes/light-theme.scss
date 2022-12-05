@@ -70,6 +70,7 @@ mat.$red-palette: (
 // Background colors for light themes.
 $background-color: #f0f2f9;
 $shadow-color: rgba(0, 0, 0, 0.12);
+$table-shading: #f5f5f5;
 $chart-border: #ddd;
 
 // Foreground colors for light themes.
@@ -90,6 +91,7 @@ $background: map_merge(
   (
     background: $background-color,
     shadow-color: $shadow-color,
+    table-shading: $table-shading
   )
 );
 $foreground: map_merge(

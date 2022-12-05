@@ -1,7 +1,14 @@
-import { Connection, ConnectionManager, DeleteQueryBuilder, EntityManager, InsertQueryBuilder, SelectQueryBuilder } from "typeorm";
+import {
+  Connection,
+  ConnectionManager,
+  DeleteQueryBuilder,
+  EntityManager,
+  InsertQueryBuilder,
+  SelectQueryBuilder,
+} from 'typeorm';
 import * as sinon from 'sinon';
-import { DecisionPointRepository } from "../../../src/api/repositories/DecisionPointRepository";
-import { DecisionPoint } from "../../../src/api/models/DecisionPoint";
+import { DecisionPointRepository } from '../../../src/api/repositories/DecisionPointRepository';
+import { DecisionPoint } from '../../../src/api/models/DecisionPoint';
 
 let sandbox;
 let connection;
@@ -12,242 +19,242 @@ let insertQueryBuilder = new InsertQueryBuilder<DecisionPointRepository>(null);
 let deleteQueryBuilder = new DeleteQueryBuilder<DecisionPointRepository>(null);
 let selectQueryBuilder = new SelectQueryBuilder<DecisionPointRepository>(null);
 let repo = new DecisionPointRepository();
-const err =  new Error("test error")
+const err = new Error('test error');
 
 let decisionPoint = new DecisionPoint();
 decisionPoint.id = 'id1';
 decisionPoint.excludeIfReached = true;
 
-const result =  {
-    identifiers: [ { id: decisionPoint.id } ],
-    generatedMaps: [
-        decisionPoint
-    ],
-    raw: [
-        decisionPoint
-    ]
-  }
+const result = {
+  identifiers: [{ id: decisionPoint.id }],
+  generatedMaps: [decisionPoint],
+  raw: [decisionPoint],
+};
 
 beforeEach(() => {
-    sandbox = sinon.createSandbox();
-    
-    const repocallback = sinon.stub()
-    repocallback.returns(DecisionPointRepository.prototype)
+  sandbox = sinon.createSandbox();
 
-    sandbox.stub(ConnectionManager.prototype, 'get').returns({
-        getRepository: repocallback
-    } as unknown as Connection)
+  const repocallback = sinon.stub();
+  repocallback.returns(DecisionPointRepository.prototype);
 
-    connection = sinon.createStubInstance(Connection)
-    manager = new EntityManager(connection);
+  sandbox.stub(ConnectionManager.prototype, 'get').returns({
+    getRepository: repocallback,
+  } as unknown as Connection);
 
-    insertMock = sandbox.mock(insertQueryBuilder);
-    deleteMock = sandbox.mock(deleteQueryBuilder);
-    selectMock = sandbox.mock(selectQueryBuilder);
+  connection = sinon.createStubInstance(Connection);
+  manager = new EntityManager(connection);
+
+  insertMock = sandbox.mock(insertQueryBuilder);
+  deleteMock = sandbox.mock(deleteQueryBuilder);
+  selectMock = sandbox.mock(selectQueryBuilder);
 });
 
 afterEach(() => {
-    sandbox.restore();
+  sandbox.restore();
 });
 
 describe('DecisionPointRepository Testing', () => {
+  it('should upsert a new decision point', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
 
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('setParameter').exactly(4).returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    it('should upsert a new decision point', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(insertQueryBuilder);
-        
+    let res = await repo.upsertDecisionPoint(decisionPoint, manager);
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('setParameter').exactly(4).returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.resolve(result));
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
 
-        let res = await repo.upsertDecisionPoint(decisionPoint, manager);
+    expect(res).toEqual(decisionPoint);
+  });
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
+  it('should throw an error when upsert fails', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
 
-        expect(res).toEqual(decisionPoint)
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('setParameter').exactly(4).returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.reject(err));
 
-    });
+    expect(async () => {
+      await repo.upsertDecisionPoint(decisionPoint, manager);
+    }).rejects.toThrow(err);
 
-    it('should throw an error when upsert fails', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(insertQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
+  });
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('setParameter').exactly(4).returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.reject(err));
+  it('should insert new decision points', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
 
-        expect(async() => {await repo.upsertDecisionPoint(decisionPoint, manager)}).rejects.toThrow(err);
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
-    });
+    let res = await repo.insertDecisionPoint([decisionPoint], manager);
 
-    it('should insert new decision points', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(insertQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.resolve(result));
+    expect(res).toEqual([decisionPoint]);
+  });
 
-        let res = await repo.insertDecisionPoint([decisionPoint], manager);
+  it('should throw an error when insert fails', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.reject(err));
 
-        expect(res).toEqual([decisionPoint])
+    expect(async () => {
+      await repo.insertDecisionPoint([decisionPoint], manager);
+    }).rejects.toThrow(err);
 
-    });
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
+  });
 
-    it('should throw an error when insert fails', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(insertQueryBuilder);
+  it('should delete decision points', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.reject(err));
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-        expect(async() => {await repo.insertDecisionPoint([decisionPoint], manager)}).rejects.toThrow(err);
+    let res = await repo.deleteByIds([decisionPoint.id], manager);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
-    });
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
 
-    it('should delete decision points', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
+    expect(res).toEqual([decisionPoint]);
+  });
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.resolve(result));
+  it('should throw an error when delete fails', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
 
-        let res = await repo.deleteByIds([decisionPoint.id], manager);
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.reject(err));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+    expect(async () => {
+      await repo.deleteByIds([decisionPoint.id], manager);
+    }).rejects.toThrow(err);
 
-        expect(res).toEqual([decisionPoint])
-    });
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
+  });
 
-    it('should throw an error when delete fails', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
+  it('should delete an decision point', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.reject(err));
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-        expect(async() => {await repo.deleteByIds([decisionPoint.id], manager)}).rejects.toThrow(err);
+    await repo.deleteDecisionPoint(decisionPoint.id, manager);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
+  });
 
-    });
+  it('should throw an error when delete fails', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
 
-    it('should delete an decision point', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.reject(err));
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.resolve(result));
+    expect(async () => {
+      await repo.deleteDecisionPoint(decisionPoint.id, manager);
+    }).rejects.toThrow(err);
 
-        await repo.deleteDecisionPoint(decisionPoint.id, manager);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
+  });
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
-    });
+  it('should get all unique decision points', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(DecisionPointRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-    it('should throw an error when delete fails', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
+    selectMock.expects('select').once().returns(selectQueryBuilder);
+    selectMock
+      .expects('getMany')
+      .once()
+      .returns(Promise.resolve([decisionPoint, decisionPoint]));
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.reject(err));
+    let res = await repo.getAllUniqueIdentifier();
 
-        expect(async() => {await repo.deleteDecisionPoint(decisionPoint.id, manager)}).rejects.toThrow(err);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+    expect(res).toEqual([decisionPoint.twoCharacterId, decisionPoint.twoCharacterId]);
+  });
 
-    });
+  it('should throw an error when get unique decision points fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(DecisionPointRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-    it('should get all unique decision points', async () => {
-        createQueryBuilderStub = sandbox.stub(DecisionPointRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
+    selectMock.expects('select').once().returns(selectQueryBuilder);
+    selectMock.expects('getMany').once().returns(Promise.reject(err));
 
-        selectMock.expects('select').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.resolve([decisionPoint, decisionPoint]));
+    expect(async () => {
+      await repo.getAllUniqueIdentifier();
+    }).rejects.toThrow(err);
 
-        let res = await repo.getAllUniqueIdentifier();
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
+  });
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
+  it('should get decision point and name', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(DecisionPointRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-        expect(res).toEqual([decisionPoint.twoCharacterId, decisionPoint.twoCharacterId])
-    });
+    selectMock.expects('select').once().returns(selectQueryBuilder);
+    selectMock
+      .expects('getMany')
+      .once()
+      .returns(Promise.resolve([decisionPoint, decisionPoint]));
 
-    it('should throw an error when get unique decision points fails', async () => {
-        createQueryBuilderStub = sandbox.stub(DecisionPointRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
+    let res = await repo.partitionPointAndName();
 
-        selectMock.expects('select').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.reject(err));
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
 
-        expect(async() => {await repo.getAllUniqueIdentifier()}).rejects.toThrow(err);
+    expect(res).toEqual([decisionPoint, decisionPoint]);
+  });
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
+  it('should throw an error when get decision point and name fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(DecisionPointRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-    });
+    selectMock.expects('select').once().returns(selectQueryBuilder);
+    selectMock.expects('getMany').once().returns(Promise.reject(err));
 
-    it('should get decision point and name', async () => {
-        createQueryBuilderStub = sandbox.stub(DecisionPointRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
+    expect(async () => {
+      await repo.partitionPointAndName();
+    }).rejects.toThrow(err);
 
-        selectMock.expects('select').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.resolve([decisionPoint, decisionPoint]));
-
-        let res = await repo.partitionPointAndName();
-
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
-
-        expect(res).toEqual([decisionPoint, decisionPoint])
-    });
-
-    it('should throw an error when get decision point and name fails', async () => {
-        createQueryBuilderStub = sandbox.stub(DecisionPointRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
-
-        selectMock.expects('select').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.reject(err));
-
-        expect(async() => {await repo.partitionPointAndName()}).rejects.toThrow(err);
-
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
-
-    });
-
-})
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
+  });
+});

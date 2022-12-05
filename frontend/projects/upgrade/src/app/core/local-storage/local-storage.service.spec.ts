@@ -47,6 +47,7 @@ describe('LocalStorageService', () => {
       isAliasTableEditMode: false,
       conditionsTableEditIndex: null,
       aliasTableEditIndex: null,
+      hasExperimentStepperDataChanged: false,
     };
     const expectedStateWithDefaults: ExperimentState = {
       ids: [],
@@ -75,6 +76,7 @@ describe('LocalStorageService', () => {
       isAliasTableEditMode: false,
       conditionsTableEditIndex: null,
       aliasTableEditIndex: null,
+      hasExperimentStepperDataChanged: false,
     };
 
     const testCases = [

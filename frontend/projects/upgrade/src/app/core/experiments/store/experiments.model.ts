@@ -215,6 +215,7 @@ export interface ExperimentAliasTableRow {
   condition: string;
   alias: string;
   isEditing: boolean;
+  rowStyle?: 'odd' | 'even';
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;
@@ -271,6 +272,7 @@ export interface ExperimentState extends EntityState<Experiment> {
   isAliasTableEditMode: boolean;
   conditionsTableEditIndex: number | null;
   aliasTableEditIndex: number | null;
+  hasExperimentStepperDataChanged: boolean;
 }
 
 export interface State extends AppState {

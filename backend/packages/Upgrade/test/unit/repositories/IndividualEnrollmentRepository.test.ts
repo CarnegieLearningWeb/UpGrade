@@ -1,16 +1,16 @@
-import { SelectQueryBuilder } from "typeorm";
+import { SelectQueryBuilder } from 'typeorm';
 import * as sinon from 'sinon';
-import { IndividualEnrollmentRepository } from "../../../src/api/repositories/IndividualEnrollmentRepository";
-import { IndividualEnrollment } from "../../../src/api/models/IndividualEnrollment";
-import { Experiment } from "../../../src/api/models/Experiment";
-import { ExperimentUser } from "../../../src/api/models/ExperimentUser";
+import { IndividualEnrollmentRepository } from '../../../src/api/repositories/IndividualEnrollmentRepository';
+import { IndividualEnrollment } from '../../../src/api/models/IndividualEnrollment';
+import { Experiment } from '../../../src/api/models/Experiment';
+import { ExperimentUser } from '../../../src/api/models/ExperimentUser';
 
 let sandbox;
 let createQueryBuilderStub;
 let selectMock;
 let selectQueryBuilder = new SelectQueryBuilder<IndividualEnrollmentRepository>(null);
 let repo = new IndividualEnrollmentRepository();
-const err =  new Error("test error")
+const err = new Error('test error');
 
 let individual = new IndividualEnrollment();
 individual.id = 'id1';
@@ -22,158 +22,155 @@ individual.experiment = exp;
 individual.user = user;
 
 beforeEach(() => {
-    sandbox = sinon.createSandbox();
+  sandbox = sinon.createSandbox();
 
-    selectMock = sandbox.mock(selectQueryBuilder)
+  selectMock = sandbox.mock(selectQueryBuilder);
 });
 
 afterEach(() => {
-    sandbox.restore();
+  sandbox.restore();
 });
 
 describe('IndividualEnrollmentRepository Testing', () => {
+  it('should delete a individual experiment enrollment', async () => {
+    const result = {
+      identifiers: [{ id: individual.id }],
+      generatedMaps: [individual],
+      raw: [individual],
+    };
+    createQueryBuilderStub = sandbox
+      .stub(IndividualEnrollmentRepository.prototype, 'delete')
+      .returns(Promise.resolve(result));
 
-    it('should delete a individual experiment enrollment', async () => {
-        const result =  {
-                identifiers: [ { id: individual.id } ],
-                generatedMaps: [
-                    individual
-                ],
-                raw: [
-                    individual
-                ]
-              }
-        createQueryBuilderStub = sandbox.stub(IndividualEnrollmentRepository.prototype, 
-                'delete').returns(Promise.resolve(result));
+    let res = await repo.deleteEnrollmentsOfUserInExperiments(individual.id, [exp.id]);
 
-        let res = await repo.deleteEnrollmentsOfUserInExperiments(individual.id, [exp.id]);
+    sinon.assert.calledOnce(createQueryBuilderStub);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
+    expect(res).toEqual(result);
+  });
 
-        expect(res).toEqual(result)
+  it('should throw an error when delete fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualEnrollmentRepository.prototype, 'delete')
+      .returns(Promise.reject(err));
 
-    });
+    expect(async () => {
+      await repo.deleteEnrollmentsOfUserInExperiments(individual.id, [exp.id]);
+    }).rejects.toThrow(err);
 
-    it('should throw an error when delete fails', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualEnrollmentRepository.prototype, 
-            'delete').returns(Promise.reject(err));
+    sinon.assert.calledOnce(createQueryBuilderStub);
+  });
 
-        expect(async() => {await repo.deleteEnrollmentsOfUserInExperiments(individual.id, [exp.id])}).rejects.toThrow(err);
+  it('should find enrollments', async () => {
+    const result = {
+      identifiers: [{ id: individual.id }],
+      generatedMaps: [individual],
+      raw: [individual],
+    };
+    createQueryBuilderStub = sandbox
+      .stub(IndividualEnrollmentRepository.prototype, 'find')
+      .returns(Promise.resolve(result));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-    });
+    let res = await repo.findEnrollments(individual.id, [exp.id]);
 
-    it('should find enrollments', async () => {
-        const result =  {
-            identifiers: [ { id: individual.id } ],
-            generatedMaps: [
-                individual
-            ],
-            raw: [
-                individual
-            ]
-          }
-        createQueryBuilderStub = sandbox.stub(IndividualEnrollmentRepository.prototype, 
-            'find').returns(Promise.resolve(result));
+    sinon.assert.calledOnce(createQueryBuilderStub);
 
-        let res = await repo.findEnrollments(individual.id, [exp.id]);
+    expect(res).toEqual(result);
+  });
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
+  it('should throw an error when find enrollments fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualEnrollmentRepository.prototype, 'find')
+      .returns(Promise.reject(err));
 
-        expect(res).toEqual(result)
+    expect(async () => {
+      await repo.findEnrollments(individual.id, [exp.id]);
+    }).rejects.toThrow(err);
 
-    });
+    sinon.assert.calledOnce(createQueryBuilderStub);
+  });
 
-    it('should throw an error when find enrollments fails', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualEnrollmentRepository.prototype, 
-            'find').returns(Promise.reject(err));
+  it('should get enrollment count for experiment', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-        expect(async() => {await repo.findEnrollments(individual.id, [exp.id])}).rejects.toThrow(err);
+    const result = [
+      {
+        id: exp.id,
+        count: 40,
+      },
+    ];
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.expects('select').once().returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('execute').once().returns(Promise.resolve(result));
 
-    });
+    let res = await repo.getEnrollmentCountForExperiment(exp.id);
 
-    it('should get enrollment count for experiment', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualEnrollmentRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
 
-        const result =  [
-            {
-                id: exp.id,
-                count: 40
-            }
-        ]
+    expect(res).toEqual(result[0].count);
+  });
 
-        selectMock.expects('select').once().returns(selectQueryBuilder);
-        selectMock.expects('where').once().returns(selectQueryBuilder);
-        selectMock.expects('execute').once().returns(Promise.resolve(result));
+  it('should throw an error when get enrollment count for experiment fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-        let res = await repo.getEnrollmentCountForExperiment(exp.id);
+    selectMock.expects('select').once().returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('execute').once().returns(Promise.reject(err));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
+    expect(async () => {
+      await repo.getEnrollmentCountForExperiment(exp.id);
+    }).rejects.toThrow(err);
 
-        expect(res).toEqual(result[0].count)
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
+  });
 
-    });
+  it('should get enrollment count by condition', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-    it('should throw an error when get enrollment count for experiment fails', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualEnrollmentRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
+    const result = [
+      {
+        id: exp.id,
+        count: 40,
+      },
+    ];
 
-        selectMock.expects('select').once().returns(selectQueryBuilder);
-        selectMock.expects('where').once().returns(selectQueryBuilder);
-        selectMock.expects('execute').once().returns(Promise.reject(err));
+    selectMock.expects('select').once().returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('groupBy').once().returns(selectQueryBuilder);
+    selectMock.expects('execute').once().returns(Promise.resolve(result));
 
-        expect(async() => {await repo.getEnrollmentCountForExperiment(exp.id)}).rejects.toThrow(err);
+    let res = await repo.getEnrollmentCountByCondition(exp.id);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
 
-    });
+    expect(res).toEqual(result);
+  });
 
-    it('should get enrollment count by condition', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualEnrollmentRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
+  it('should throw an error when get enrollment count by condition fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-        const result =  [
-            {
-                id: exp.id,
-                count: 40
-            }
-        ]
+    selectMock.expects('select').once().returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('groupBy').once().returns(selectQueryBuilder);
+    selectMock.expects('execute').once().returns(Promise.reject(err));
 
-        selectMock.expects('select').once().returns(selectQueryBuilder);
-        selectMock.expects('where').once().returns(selectQueryBuilder);
-        selectMock.expects('groupBy').once().returns(selectQueryBuilder);
-        selectMock.expects('execute').once().returns(Promise.resolve(result));
+    expect(async () => {
+      await repo.getEnrollmentCountByCondition(exp.id);
+    }).rejects.toThrow(err);
 
-        let res = await repo.getEnrollmentCountByCondition(exp.id);
-
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
-
-        expect(res).toEqual(result)
-
-    });
-
-    it('should throw an error when get enrollment count by condition fails', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualEnrollmentRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
-
-        selectMock.expects('select').once().returns(selectQueryBuilder);
-        selectMock.expects('where').once().returns(selectQueryBuilder);
-        selectMock.expects('groupBy').once().returns(selectQueryBuilder);
-        selectMock.expects('execute').once().returns(Promise.reject(err));
-
-        expect(async() => {await repo.getEnrollmentCountByCondition(exp.id)}).rejects.toThrow(err);
-
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
-
-    });
-
-
-
-})
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
+  });
+});

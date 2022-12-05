@@ -1,7 +1,7 @@
-import { Connection, DeleteQueryBuilder, EntityManager, InsertQueryBuilder } from "typeorm";
+import { Connection, DeleteQueryBuilder, EntityManager, InsertQueryBuilder } from 'typeorm';
 import * as sinon from 'sinon';
-import { ScheduledJobRepository } from "../../../src/api/repositories/ScheduledJobRepository";
-import { ScheduledJob } from "../../../src/api/models/ScheduledJob";
+import { ScheduledJobRepository } from '../../../src/api/repositories/ScheduledJobRepository';
+import { ScheduledJob } from '../../../src/api/models/ScheduledJob';
 
 let sandbox;
 let connection;
@@ -10,147 +10,132 @@ let insertMock, deleteMock;
 let insertQueryBuilder = new InsertQueryBuilder<ScheduledJobRepository>(null);
 let deleteQueryBuilder = new DeleteQueryBuilder<ScheduledJobRepository>(null);
 let repo = new ScheduledJobRepository();
-const err =  new Error("test error")
+const err = new Error('test error');
 
 let job = new ScheduledJob();
 job.id = 'id1';
 
 beforeEach(() => {
-    sandbox = sinon.createSandbox();
-    connection = sinon.createStubInstance(Connection)
+  sandbox = sinon.createSandbox();
+  connection = sinon.createStubInstance(Connection);
 
-    insertMock = sandbox.mock(insertQueryBuilder);
-    deleteMock = sandbox.mock(deleteQueryBuilder);
+  insertMock = sandbox.mock(insertQueryBuilder);
+  deleteMock = sandbox.mock(deleteQueryBuilder);
 });
 
 afterEach(() => {
-    sandbox.restore();
+  sandbox.restore();
 });
 
 describe('ScheduledJobRepository Testing', () => {
+  it('should upsert a new scheduled job', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(ScheduledJobRepository.prototype, 'createQueryBuilder')
+      .returns(insertQueryBuilder);
+    const result = {
+      identifiers: [{ id: job.id }],
+      generatedMaps: [job],
+      raw: [job],
+    };
 
-    it('should upsert a new scheduled job', async () => {
-        createQueryBuilderStub = sandbox.stub(ScheduledJobRepository.prototype, 
-            'createQueryBuilder').returns(insertQueryBuilder);
-        const result =  {
-            identifiers: [ { id: job.id } ],
-            generatedMaps: [
-                job
-            ],
-            raw: [
-                job
-            ]
-          }
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('setParameter').twice().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('setParameter').twice().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.resolve(result));
+    let res = await repo.upsertScheduledJob(job);
 
-        let res = await repo.upsertScheduledJob(job);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
+    expect(res).toEqual(job);
+  });
 
-        expect(res).toEqual(job)
+  it('should upsert a new scheduled job when an EntityManager is provided', async () => {
+    let manager = new EntityManager(connection);
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
+    const result = {
+      identifiers: [{ id: job.id }],
+      generatedMaps: [job],
+      raw: [job],
+    };
 
-    });
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('setParameter').twice().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    it('should upsert a new scheduled job when an EntityManager is provided', async () => {
-        let manager = new EntityManager(connection);
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(insertQueryBuilder);
-        const result =  {
-            identifiers: [ { id: job.id } ],
-            generatedMaps: [
-                job
-            ],
-            raw: [
-                job
-            ]
-          }
+    let res = await repo.upsertScheduledJob(job, manager);
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('setParameter').twice().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.resolve(result));
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
 
-        let res = await repo.upsertScheduledJob(job, manager);
+    expect(res).toEqual(job);
+  });
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
+  it('should throw an error when insert fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(ScheduledJobRepository.prototype, 'createQueryBuilder')
+      .returns(insertQueryBuilder);
 
-        expect(res).toEqual(job)
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('setParameter').twice().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.reject(err));
 
-    });
+    expect(async () => {
+      await repo.upsertScheduledJob(job);
+    }).rejects.toThrow(err);
 
-    it('should throw an error when insert fails', async () => {
-        createQueryBuilderStub = sandbox.stub(ScheduledJobRepository.prototype, 
-            'createQueryBuilder').returns(insertQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
+  });
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('setParameter').twice().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.reject(err));
+  it('should delete a group experiment exclusion', async () => {
+    let manager = new EntityManager(connection);
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
+    const result = {
+      identifiers: [{ id: job.id }],
+      generatedMaps: [job],
+      raw: [job],
+    };
 
-        expect(async() => {await repo.upsertScheduledJob(job)}).rejects.toThrow(err);
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
-    });
+    let res = await repo.deleteByExperimentId(job.id, manager);
 
-    it('should delete a group experiment exclusion', async () => {
-        let manager = new EntityManager(connection);
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
-        const result =  {
-                identifiers: [ { id: job.id } ],
-                generatedMaps: [
-                    job
-                ],
-                raw: [
-                    job
-                ]
-              }
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.resolve(result));
+    expect(res).toEqual([job]);
+  });
 
-        let res = await repo.deleteByExperimentId(job.id, manager);
+  it('should throw an error when delete fails', async () => {
+    let manager = new EntityManager(connection);
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.reject(err));
 
-        expect(res).toEqual([job])
+    expect(async () => {
+      await repo.deleteByExperimentId(job.id, manager);
+    }).rejects.toThrow(err);
 
-    });
-
-    it('should throw an error when delete fails', async () => {
-        let manager = new EntityManager(connection);
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
-
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.reject(err));
-
-        expect(async() => {await repo.deleteByExperimentId(job.id, manager)}).rejects.toThrow(err);
-
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
-
-    });
-
-})
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
+  });
+});

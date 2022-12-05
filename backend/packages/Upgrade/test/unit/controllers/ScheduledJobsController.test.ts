@@ -7,7 +7,7 @@ import uuid from 'uuid/v4';
 import { ScheduledJobService } from '../../../src/api/services/ScheduledJobService';
 import ScheduledJobServiceMock from './mocks/ScheduledJobServiceMock';
 import { ScheduleJobMiddleware } from '../../../src/api/middlewares/ScheduleJobMiddleware';
-import ScheduleJobMiddlewareMock from './mocks/ScheduleJobMiddlewareMock'
+import ScheduleJobMiddlewareMock from './mocks/ScheduleJobMiddlewareMock';
 
 describe('Scheduled Job Controller Testing', () => {
   beforeAll(() => {
@@ -23,7 +23,7 @@ describe('Scheduled Job Controller Testing', () => {
     Container.reset();
   });
 
-  test('Post request for /api/scheduledJobs/start', async done => {
+  test('Post request for /api/scheduledJobs/start', async (done) => {
     // creating express app here
     await request(app)
       .post('/api/scheduledJobs/start')
@@ -35,7 +35,7 @@ describe('Scheduled Job Controller Testing', () => {
     done();
   });
 
-  test('Post request for /api/scheduledJobs/end', async done => {
+  test('Post request for /api/scheduledJobs/end', async (done) => {
     await request(app)
       .post('/api/scheduledJobs/end')
       .send({ id: uuid() })
@@ -46,7 +46,7 @@ describe('Scheduled Job Controller Testing', () => {
     done();
   });
 
-  test('Post request for /api/scheduledJobs/clearLogs', async done => {
+  test('Post request for /api/scheduledJobs/clearLogs', async (done) => {
     await request(app)
       .post('/api/scheduledJobs/clearLogs')
       .set('Accept', 'application/json')

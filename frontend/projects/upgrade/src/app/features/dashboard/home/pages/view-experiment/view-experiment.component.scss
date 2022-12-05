@@ -3,6 +3,7 @@ $font-size-small: 15px;
 
 .experiment-container {
   padding: 0 2.75rem 2.75rem;
+  box-shadow: 0px 0px #888888 !important;
 
   .experiment-link {
     text-decoration: none;
@@ -11,7 +12,7 @@ $font-size-small: 15px;
   .experiment {
     margin-top: 25px;
     border-radius: 10px;
-    padding: 0;
+    padding: 0 0 20px 0;
 
     &-info {
       padding: 34px 34px 0;
@@ -36,11 +37,14 @@ $font-size-small: 15px;
           margin-top: 0.5rem;
 
           .button {
+            background-color: #efeff0;
+            border-radius: 4px;
+            box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.26);
+            color: black;
+            height: 39px;
             margin-left: 24px !important;
-            border: 1px solid var(--blue);
-            width: 85px;
-            height: 40px;
-            color: var(--blue);
+            mix-blend-mode: normal;
+            width: 105px;
 
             &--query {
               width: auto;
@@ -56,8 +60,9 @@ $font-size-small: 15px;
             margin-left: 24px !important;
             border: 1px solid var(--blue);
             width: 140px;
-            height: 40px;
-            color: var(--blue);
+            height: 39px;
+            background-color: var(--blue);
+            color: var(--white);
 
             &--query {
               width: auto;
@@ -65,9 +70,22 @@ $font-size-small: 15px;
 
             .icon {
               margin-right: 3px;
-              vertical-align: unset;
+              vertical-align: center;
             }
           }
+        }
+        &-dates {
+          display: inline-block;
+          padding: 10px 0px 20px;
+          color: var(--grey-5);
+        }
+
+        &-create-date {
+          display: block;
+        }
+
+        &-last-update-date {
+          display: block;
         }
       }
     }
@@ -83,14 +101,8 @@ $font-size-small: 15px;
       color: var(--grey-3);
     }
 
-    &-create-date {
-      display: block;
-      padding-bottom: 23px;
-      color: var(--grey-5);
-    }
-
     &-secondary-info {
-      padding: 34px 34px 24px;
+      padding: 34px 34px 24px !important;
 
       &-container {
         display: flex;
@@ -254,11 +266,84 @@ $font-size-small: 15px;
     }
   }
 
+  .enrollment-text {
+    padding: 0px 34px 5px 34px;
+  }
+
+  .enrollment-details-text {
+    color: var(--grey-3);
+    margin-bottom: 10px;
+    padding: 0px 34px;
+  }
+
+  .mat-tab-label {
+    background-color: transparent;
+    color: #8992a3;
+    font-family: Open Sans;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 48px;
+    margin: 28px 0px 21px 0px;
+    padding: 0px;
+
+    &:first-of-type {
+      margin-left: 34px;
+    }
+  }
+
+  .mat-tab-label-active {
+    color: #3366ff;
+    opacity: 1;
+  }
+
+  .tab-body-container {
+    padding: 24px 0px;
+  }
+
+  .tab-table-body-container {
+    padding: 0px !important;
+  }
+
   .table-container {
     padding: 24px 34px;
 
     &-partition {
       margin-bottom: 24px;
+    }
+
+    &-participants,
+    &-metrics {
+      margin-bottom: 24px;
+
+      .table {
+        mat-cell,
+        mat-header-cell {
+          justify-content: flex-start !important;
+          padding-left: 10.5% !important;
+        }
+      }
+    }
+
+    &-aliases .alias-table-overview {
+      justify-content: space-between;
+
+      .mat-header-cell {
+        justify-content: left;
+      }
+
+      .mat-cell {
+        justify-content: left;
+      }
+    }
+
+    &-metrics {
+      mat-row {
+        align-items: flex-start;
+      }
+      mat-cell {
+        align-items: flex-start;
+        flex-direction: column !important;
+      }
     }
 
     .table {
@@ -275,6 +360,11 @@ $font-size-small: 15px;
         color: var(--grey-2);
       }
     }
+  }
+
+  .metric-key,
+  .metric-Operation {
+    padding-bottom: 5px;
   }
 
   .box-shadow {

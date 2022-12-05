@@ -17,19 +17,18 @@ describe('Preview User Controller Testing', () => {
     classValidatorUseContainer(Container);
 
     Container.set(PreviewUserService, new PreviewUserServiceMock());
-
   });
-  
+
   afterAll(() => {
     Container.reset();
   });
 
-  test('Post request for /api/previewusers/paginated', async done => {
+  test('Post request for /api/previewusers/paginated', async (done) => {
     await request(app)
       .post('/api/previewusers/paginated')
       .send({
         skip: 0,
-        take: 0
+        take: 0,
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -37,7 +36,7 @@ describe('Preview User Controller Testing', () => {
     done();
   });
 
-  test('Get request for /api/previewusers/:id', async done => {
+  test('Get request for /api/previewusers/:id', async (done) => {
     await request(app)
       .get(`/api/previewusers/${uuid()}`)
       .set('Accept', 'application/json')
@@ -46,30 +45,30 @@ describe('Preview User Controller Testing', () => {
     done();
   });
 
-  test('Get request for /api/previewusers/:id user not found', async done => {
+  test('Get request for /api/previewusers/:id user not found', async (done) => {
     await request(app)
       .get(`/api/previewusers/`)
       .set('Accept', 'application/json')
-      .expect('Content-Type', "text/html; charset=utf-8")
+      .expect('Content-Type', 'text/html; charset=utf-8')
       .expect(404);
     done();
   });
 
-  test('Post request for /api/previewusers', async done => {
+  test('Post request for /api/previewusers', async (done) => {
     await request(app)
       .post(`/api/previewusers`)
       .send({
-        id: "string",
+        id: 'string',
         assignments: [
           {
             experiment: {
-              id: "string"
+              id: 'string',
             },
             experimentCondition: {
-              id: "string"
-            }
-          }
-        ]
+              id: 'string',
+            },
+          },
+        ],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -77,21 +76,21 @@ describe('Preview User Controller Testing', () => {
     done();
   });
 
-  test('Put request for /api/previewusers/:id', async done => {
+  test('Put request for /api/previewusers/:id', async (done) => {
     await request(app)
       .put(`/api/previewusers/${uuid()}`)
       .send({
-        id: "string",
+        id: 'string',
         assignments: [
           {
             experiment: {
-              id: "string"
+              id: 'string',
             },
             experimentCondition: {
-              id: "string"
-            }
-          }
-        ]
+              id: 'string',
+            },
+          },
+        ],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -99,7 +98,7 @@ describe('Preview User Controller Testing', () => {
     done();
   });
 
-  test('Delete request for /api/previewusers/:id', async done => {
+  test('Delete request for /api/previewusers/:id', async (done) => {
     await request(app)
       .delete(`/api/previewusers/${uuid()}`)
       .set('Accept', 'application/json')
@@ -108,26 +107,25 @@ describe('Preview User Controller Testing', () => {
     done();
   });
 
-  test('Post request for /api/previewusers/assign', async done => {
+  test('Post request for /api/previewusers/assign', async (done) => {
     await request(app)
       .post(`/api/previewusers/assign`)
       .send({
-        id: "string",
+        id: 'string',
         assignments: [
           {
             experiment: {
-              id: "string"
+              id: 'string',
             },
             experimentCondition: {
-              id: "string"
-            }
-          }
-        ]
+              id: 'string',
+            },
+          },
+        ],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
     done();
   });
-
 });

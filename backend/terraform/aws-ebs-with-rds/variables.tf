@@ -134,13 +134,4 @@ variable "TYPEORM_MIGRATIONS_DIR" { default = "src/database/migrations" }
 variable "TYPEORM_SEED" { default = "src/database/seeds/**/*.seed.ts" }
 variable "TYPEORM_SYNCHRONIZE" {}
 variable "TYPEORM_MAX_QUERY_EXECUTION_TIME" { default = 2000 }
-
-
-
-
-
-
-
-
-
-
+variable "NODE_OPTIONS" { default = "--max_old_space_size=6144"}
