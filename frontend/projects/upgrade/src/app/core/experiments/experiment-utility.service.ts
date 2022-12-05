@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { ExperimentPartition, ExperimentCondition } from './store/experiments.model';
+import {
+  ExperimentPartition,
+  ExperimentCondition,
+  ExperimentAliasTableRow,
+  ExperimentConditionAlias,
+} from './store/experiments.model';
 
 @Injectable({
   providedIn: 'root',
@@ -35,5 +40,42 @@ export class ExperimentUtilityService {
     );
     const hasValidConditionStrings = conditions.every(({ conditionCode }) => this.isValidString(conditionCode));
     return hasValidDecisionPointStrings && hasValidConditionStrings;
+  }
+
+  createAliasTableData(
+    decisionPoints: ExperimentPartition[],
+    conditions: ExperimentCondition[],
+    conditionAliases: ExperimentConditionAlias[],
+    useExistingAliasData: boolean
+  ): ExperimentAliasTableRow[] {
+    const aliasTableData: ExperimentAliasTableRow[] = [];
+
+    decisionPoints.forEach((decisionPoint, index) => {
+      conditions.forEach((condition) => {
+        // check the list of condtionAliases, if exist, to see if this parentCondition has an alias match
+        let existingAlias: ExperimentConditionAlias = null;
+
+        if (useExistingAliasData) {
+          existingAlias = conditionAliases.find(
+            (alias) =>
+              alias.decisionPoint.target === decisionPoint.target &&
+              alias.decisionPoint.site === decisionPoint.site &&
+              alias.parentCondition.conditionCode === condition.conditionCode
+          );
+        }
+
+        aliasTableData.push({
+          id: existingAlias?.id,
+          site: decisionPoint.site,
+          target: decisionPoint.target,
+          condition: condition.conditionCode,
+          alias: existingAlias?.aliasName || condition.conditionCode,
+          isEditing: false,
+          rowStyle: index % 2 === 0 ? 'even' : 'odd',
+        });
+      });
+    });
+
+    return aliasTableData;
   }
 }

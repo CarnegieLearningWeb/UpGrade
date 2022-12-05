@@ -48,7 +48,17 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   ngAfterViewInit(): void {
     // must sub after view init to ensure table reference is loaded before emitting table data
     this.subscriptions = this.designData$.subscribe((designData: [ExperimentPartition[], ExperimentCondition[]]) => {
-      this.aliasTableData = this.createAliasTableData(designData, this.experimentInfo?.conditionAliases);
+      const [decisionPoints, conditions] = designData;
+      const conditionAliases = this.experimentInfo?.conditionAliases;
+      const useExistingAliasData = !!(conditionAliases && this.initialLoad);
+
+      this.aliasTableData = this.experimentUtilityService.createAliasTableData(
+        decisionPoints,
+        conditions,
+        conditionAliases,
+        useExistingAliasData
+      );
+      this.initialLoad = false;
       this.aliasTableData$.emit(this.aliasTableData);
     });
 
@@ -92,43 +102,5 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
 
   handleFilterContextMetaDataConditions(value: string) {
     this.currentAliasInput$.next(value);
-  }
-
-  createAliasTableData(
-    designData: [ExperimentPartition[], ExperimentCondition[]],
-    conditionAliases: ExperimentConditionAlias[]
-  ): ExperimentAliasTableRow[] {
-    const [decisionPoints, conditions] = designData;
-    const aliasTableData: ExperimentAliasTableRow[] = [];
-    const useExistingAliasData = !!(conditionAliases && this.initialLoad);
-
-    decisionPoints.forEach((decisionPoint) => {
-      conditions.forEach((condition) => {
-        // check the list of condtionAliases, if exist, to see if this parentCondition has an alias match
-        let existingAlias: ExperimentConditionAlias = null;
-
-        if (useExistingAliasData) {
-          existingAlias = conditionAliases.find(
-            (alias) =>
-              alias.decisionPoint.target === decisionPoint.target &&
-              alias.decisionPoint.site === decisionPoint.site &&
-              alias.parentCondition.conditionCode === condition.conditionCode
-          );
-        }
-
-        aliasTableData.push({
-          id: existingAlias?.id,
-          site: decisionPoint.site,
-          target: decisionPoint.target,
-          condition: condition.conditionCode,
-          alias: existingAlias?.aliasName || condition.conditionCode,
-          isEditing: false,
-        });
-      });
-    });
-
-    this.initialLoad = false;
-
-    return aliasTableData;
   }
 }
