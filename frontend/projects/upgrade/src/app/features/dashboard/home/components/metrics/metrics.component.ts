@@ -22,7 +22,7 @@ import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { startWith, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
+import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 @Component({
   selector: 'home-monitored-metrics',
   templateUrl: './metrics.component.html',
@@ -76,7 +76,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     private _formBuilder: FormBuilder,
     private translate: TranslateService,
     private dialogService: DialogService,
-    public experimentDesignStepperService: ExperimentDesignStepperService
+    private experimentDesignStepperService: ExperimentDesignStepperService
   ) {}
 
   optionsSub() {
@@ -447,6 +447,10 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       // if its already repeat metric earlier just prepare filtered list of metrics for leaf node
       this.ManageKeysControl(queryIndex, keyIndex + 1);
     }
+  }
+
+  handleCloseClick() {
+    return this.queryForm.dirty && this.experimentDesignStepperService.experimentStepperDataChanged();
   }
 
   selectRepeatMetricNode(event = null, queryIndex: number, keyIndex: number) {

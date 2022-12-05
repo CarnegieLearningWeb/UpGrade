@@ -57,11 +57,6 @@ export const selectIsGraphLoading = createSelector(selectExperimentState, (state
 
 export const selectExperimentGraphRange = createSelector(selectExperimentState, (state) => state.graphRange);
 
-export const selecthasExperimentStepperDataChanged = createSelector(
-  selectExperimentState,
-  (state) => state.hasExperimentStepperDataChanged
-);
-
 export const selectExperimentGraphInfo = createSelector(
   selectExperimentState,
   selectExperimentGraphRange,
@@ -105,7 +100,3 @@ export const selectIsPollingExperimentDetailStats = createSelector(
   selectExperimentState,
   (state) => state.isPollingExperimentDetailStats
 );
-
-export const selectIsAliasTableEditMode = createSelector(selectExperimentState, (state) => state.isAliasTableEditMode);
-
-export const selectAliasTableEditIndex = createSelector(selectExperimentState, (state) => state.aliasTableEditIndex);
