@@ -16,24 +16,24 @@ describe('User Service Testing', () => {
   let serviceMock: UserServiceMock;
   let repo: Repository<UserRepository>;
   let module: TestingModule;
-  let logger = new UpgradeLogger();
+  const logger = new UpgradeLogger();
 
-  let mockUser1 = new User();
+  const mockUser1 = new User();
   mockUser1.firstName = 'Bruce';
   mockUser1.lastName = 'Banner';
   mockUser1.email = 'bb@email.com';
 
-  let mockUser2 = new User();
+  const mockUser2 = new User();
   mockUser2.firstName = 'Peter';
   mockUser2.lastName = 'Parker';
   mockUser2.email = 'pp@email.com';
 
-  let mockUser3 = new User();
+  const mockUser3 = new User();
   mockUser3.firstName = 'Scott';
   mockUser3.lastName = 'Summers';
   mockUser3.email = 'ss@email.com';
 
-  let userArr = [mockUser1, mockUser2, mockUser3];
+  const userArr = [mockUser1, mockUser2, mockUser3];
 
   const takeSpy = jest.fn().mockReturnThis();
   const skipSpy = jest.fn().mockReturnThis();

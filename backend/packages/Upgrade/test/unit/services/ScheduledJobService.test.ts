@@ -17,20 +17,20 @@ describe('Scheduled Job Service Testing', () => {
   let scheduledJobRepo: Repository<ScheduledJobRepository>;
   let awsService: AWSService;
   let module: TestingModule;
-  let logger = new UpgradeLogger();
+  const logger = new UpgradeLogger();
 
-  let mockjob1 = new ScheduledJob();
+  const mockjob1 = new ScheduledJob();
   mockjob1.id = 'id1';
   mockjob1.type = SCHEDULE_TYPE.START_EXPERIMENT;
   mockjob1.executionArn = 'arn1';
   mockjob1.timeStamp = new Date('2019-01-16');
 
-  let mockjob2 = new ScheduledJob();
+  const mockjob2 = new ScheduledJob();
   mockjob2.id = 'id2';
   mockjob2.type = SCHEDULE_TYPE.END_EXPERIMENT;
   mockjob2.timeStamp = new Date('2019-01-16');
 
-  let scheduledJobArr = [mockjob1, mockjob2];
+  const scheduledJobArr = [mockjob1, mockjob2];
 
   const errorSpy = jest.fn();
   let clearLogsSpy = jest.fn().mockImplementation(() => {
