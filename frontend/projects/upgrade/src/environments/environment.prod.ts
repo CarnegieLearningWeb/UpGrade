@@ -4,7 +4,7 @@ export const environment = {
   apiBaseUrl: '',
   production: true,
   test: false,
-  i18nPrefix: '',
+  baseHrefPrefix: '',
   gapiClientId: '',
   domainName: '',
   pollingEnabled: true,
