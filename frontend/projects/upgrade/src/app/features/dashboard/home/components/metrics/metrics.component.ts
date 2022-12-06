@@ -519,6 +519,9 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       // handling leaf node of repeated metrics
       const metric = this.allMetrics.find((metric) => metric.key === event.option.value.key);
       this.selectedNode[queryIndex] = metric;
+      if (!this.selectedNode[queryIndex]) {
+        this.selectedNode[queryIndex] = event.option.value;
+      }
       // reset options for metric keys:
       this.optionsSub();
     }
