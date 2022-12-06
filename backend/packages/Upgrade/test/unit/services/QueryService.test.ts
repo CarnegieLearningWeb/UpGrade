@@ -10,34 +10,34 @@ import { Experiment } from '../../../src/api/models/Experiment';
 import { ErrorService } from '../../../src/api/services/ErrorService';
 import { ErrorRepository } from '../../../src/api/repositories/ErrorRepository';
 
-let logger = new UpgradeLogger();
+const logger = new UpgradeLogger();
 
 describe('Query Service Testing', () => {
   let service: QueryService;
   let queryRepo: Repository<QueryRepository>;
   let module: TestingModule;
 
-  let exp1 = new Experiment();
+  const exp1 = new Experiment();
   exp1.id = 'exp1';
   exp1.name = 'experiment1';
 
-  let mockquery1 = new Query();
+  const mockquery1 = new Query();
   mockquery1.id = 'id1';
   mockquery1.name = 'query1';
   mockquery1.experiment = exp1;
 
-  let exp2 = new Experiment();
+  const exp2 = new Experiment();
   exp2.id = 'exp2';
   exp2.name = 'experiment2';
 
-  let mockquery2 = new Query();
+  const mockquery2 = new Query();
   mockquery2.id = 'id2';
   mockquery2.name = 'query2';
   mockquery2.experiment = exp2;
 
-  let queryArr = [mockquery1, mockquery2];
+  const queryArr = [mockquery1, mockquery2];
 
-  let logResult = {
+  const logResult = {
     conditionId: 'cond1',
     result: 22,
   };

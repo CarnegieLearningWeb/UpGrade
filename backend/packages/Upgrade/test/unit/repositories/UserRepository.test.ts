@@ -7,14 +7,14 @@ import { UserRole } from 'upgrade_types';
 let sandbox;
 let createQueryBuilderStub;
 let insertMock, deleteMock, updateMock;
-let insertQueryBuilder = new InsertQueryBuilder<UserRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<UserRepository>(null);
-let updateQueryBuilder = new UpdateQueryBuilder<UserRepository>(null);
+const insertQueryBuilder = new InsertQueryBuilder<UserRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<UserRepository>(null);
+const updateQueryBuilder = new UpdateQueryBuilder<UserRepository>(null);
 
-let repo = new UserRepository();
+const repo = new UserRepository();
 const err = new Error('test error');
 
-let individual = new User();
+const individual = new User();
 individual.email = 'email@test.com';
 individual.firstName = 'first';
 individual.lastName = 'last';
@@ -49,7 +49,7 @@ describe('UserRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.upsertUser(individual);
+    const res = await repo.upsertUser(individual);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -92,7 +92,7 @@ describe('UserRepository Testing', () => {
     updateMock.expects('returning').once().returns(updateQueryBuilder);
     updateMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.updateUserDetails(
+    const res = await repo.updateUserDetails(
       individual.firstName,
       individual.lastName,
       individual.email,
@@ -139,7 +139,7 @@ describe('UserRepository Testing', () => {
     deleteMock.expects('returning').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteUserByEmail(individual.email);
+    const res = await repo.deleteUserByEmail(individual.email);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();

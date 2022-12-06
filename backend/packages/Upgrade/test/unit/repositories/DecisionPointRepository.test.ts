@@ -15,13 +15,13 @@ let connection;
 let manager;
 let createQueryBuilderStub;
 let insertMock, deleteMock, selectMock;
-let insertQueryBuilder = new InsertQueryBuilder<DecisionPointRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<DecisionPointRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<DecisionPointRepository>(null);
-let repo = new DecisionPointRepository();
+const insertQueryBuilder = new InsertQueryBuilder<DecisionPointRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<DecisionPointRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<DecisionPointRepository>(null);
+const repo = new DecisionPointRepository();
 const err = new Error('test error');
 
-let decisionPoint = new DecisionPoint();
+const decisionPoint = new DecisionPoint();
 decisionPoint.id = 'id1';
 decisionPoint.excludeIfReached = true;
 
@@ -65,7 +65,7 @@ describe('DecisionPointRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.upsertDecisionPoint(decisionPoint, manager);
+    const res = await repo.upsertDecisionPoint(decisionPoint, manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -101,7 +101,7 @@ describe('DecisionPointRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.insertDecisionPoint([decisionPoint], manager);
+    const res = await repo.insertDecisionPoint([decisionPoint], manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -134,7 +134,7 @@ describe('DecisionPointRepository Testing', () => {
     deleteMock.expects('where').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteByIds([decisionPoint.id], manager);
+    const res = await repo.deleteByIds([decisionPoint.id], manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -199,7 +199,7 @@ describe('DecisionPointRepository Testing', () => {
       .once()
       .returns(Promise.resolve([decisionPoint, decisionPoint]));
 
-    let res = await repo.getAllUniqueIdentifier();
+    const res = await repo.getAllUniqueIdentifier();
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -234,7 +234,7 @@ describe('DecisionPointRepository Testing', () => {
       .once()
       .returns(Promise.resolve([decisionPoint, decisionPoint]));
 
-    let res = await repo.partitionPointAndName();
+    const res = await repo.partitionPointAndName();
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
