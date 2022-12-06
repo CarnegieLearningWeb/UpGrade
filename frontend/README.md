@@ -2,7 +2,7 @@ A/B Testing Tool
 
 ---
 
-Frontend Unit Test Coverage
+Frontend Unit Test Coverage!
 
 ![](https://img.shields.io/badge/Coverage-87%25-83A603.svg?style=flat&logo=jest&label=Statements&prefix=$statements$)
 ![](https://img.shields.io/badge/Coverage-75%25-5A7302.svg?style=flat&logo=jest&label=Branches&prefix=$branches$)

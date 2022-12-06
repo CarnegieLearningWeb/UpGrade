@@ -52,6 +52,16 @@ if (window.self !== window.top) {
         return document.querySelectorAll('div.button-container button.mat-raised-button')[0];
       case 'experiment-detail-status-save-button':
         return document.querySelectorAll('div.button-container button.mat-raised-button')[1];
+      case 'experiment-detail-overview-tab':
+        return document.querySelectorAll('div.mat-tab-list div.mat-tab-label')[0];
+      case 'experiment-detail-design-tab':
+        return document.querySelectorAll('div.mat-tab-list div.mat-tab-label')[1];
+      case 'experiment-detail-participants-tab':
+        return document.querySelectorAll('div.mat-tab-list div.mat-tab-label')[2];
+      case 'experiment-detail-metrics-tab':
+        return document.querySelectorAll('div.mat-tab-list div.mat-tab-label')[3];
+      case 'experiment-detail-data-tab':
+        return document.querySelectorAll('div.mat-tab-list div.mat-tab-label')[4];
       case 'experiment-detail-post-experiment-rule':
         return document.querySelectorAll('div.section-data span.section-data-value--editable')[1];
       case 'experiment-detail-enrollment-time-logs':

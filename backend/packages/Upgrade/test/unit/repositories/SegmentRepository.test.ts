@@ -7,14 +7,14 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 let sandbox;
 let createQueryBuilderStub;
 let insertMock, deleteMock, selectMock;
-let insertQueryBuilder = new InsertQueryBuilder<SegmentRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<SegmentRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<SegmentRepository>(null);
-let repo = new SegmentRepository();
+const insertQueryBuilder = new InsertQueryBuilder<SegmentRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<SegmentRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<SegmentRepository>(null);
+const repo = new SegmentRepository();
 const err = new Error('test error');
-let logger = new UpgradeLogger();
+const logger = new UpgradeLogger();
 
-let segment = new Segment();
+const segment = new Segment();
 segment.id = 'id1';
 
 const result = {
@@ -56,7 +56,7 @@ describe('SegmentRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.upsertSegment(segment, logger);
+    const res = await repo.upsertSegment(segment, logger);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -97,7 +97,7 @@ describe('SegmentRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.insertSegment(segment, logger);
+    const res = await repo.insertSegment(segment, logger);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -136,7 +136,7 @@ describe('SegmentRepository Testing', () => {
     deleteMock.expects('returning').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteSegment(segment.id, logger);
+    const res = await repo.deleteSegment(segment.id, logger);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -174,7 +174,7 @@ describe('SegmentRepository Testing', () => {
       .once()
       .returns(Promise.resolve([segment, segment]));
 
-    let res = await repo.getAllSegments(logger);
+    const res = await repo.getAllSegments(logger);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -209,7 +209,7 @@ describe('SegmentRepository Testing', () => {
       .once()
       .returns(Promise.resolve([segment, segment]));
 
-    let res = await repo.getSegmentById(segment.id, logger);
+    const res = await repo.getSegmentById(segment.id, logger);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();

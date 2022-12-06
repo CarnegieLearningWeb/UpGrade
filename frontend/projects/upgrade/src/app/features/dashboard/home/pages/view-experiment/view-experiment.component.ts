@@ -8,6 +8,8 @@ import {
   EXPERIMENT_STATE,
   ExperimentVM,
   EXPERIMENT_SEARCH_KEY,
+  ExperimentConditionAlias,
+  ExperimentAliasTableRow,
 } from '../../../../../core/experiments/store/experiments.model';
 import { Observable, Subscription } from 'rxjs';
 import { filter, withLatestFrom } from 'rxjs/operators';
@@ -26,6 +28,7 @@ import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-ti
 import { FILTER_MODE } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
+import { ExperimentUtilityService } from '../../../../../core/experiments/experiment-utility.service';
 // Used in view-experiment component only
 enum DialogType {
   CHANGE_STATUS = 'Change status',
@@ -55,15 +58,18 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   displayedConditionColumns: string[] = ['conditionCode', 'assignmentWeight', 'description'];
   displayedPartitionColumns: string[] = ['partitionPoint', 'partitionId', 'excludeIfReached'];
+  displayedAliasConditionColumns: string[] = ['site', 'target', 'condition', 'alias'];
   displayedParticipantsColumns: string[] = ['participantsType', 'participantsId'];
   displayedMetricsColumns: string[] = ['metricsKey', 'metricsOperation', 'metricsName'];
 
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
   displayMetrics: Metrics[] = [];
+  aliasTableData: ExperimentAliasTableRow[] = [];
 
   constructor(
     private experimentService: ExperimentService,
+    private experimentUtilityService: ExperimentUtilityService,
     private dialog: MatDialog,
     private authService: AuthService,
     private router: Router,
@@ -110,12 +116,24 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
           this.isPollingExperimentDetailStats$,
           (experiment, isLoadingDetails, isPolling) => ({ experiment, isLoadingDetails, isPolling })
         ),
-        filter(({ isLoadingDetails }) => !isLoadingDetails)
+        filter(
+          ({ isLoadingDetails, experiment }) =>
+            !isLoadingDetails &&
+            !!experiment?.partitions?.length &&
+            !!experiment?.conditions?.length &&
+            !!experiment?.conditionAliases?.length
+        )
       )
       .subscribe(({ experiment, isPolling }) => {
         this.onExperimentChange(experiment, isPolling);
         this.loadParticipants();
         this.loadMetrics();
+        this.aliasTableData = this.experimentUtilityService.createAliasTableData(
+          experiment.partitions,
+          experiment.conditions,
+          experiment.conditionAliases,
+          true
+        );
       });
 
     if (this.experiment) {
@@ -158,7 +176,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
           this.excludeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
         });
-      } else {
+      } else if (this.experiment.experimentSegmentExclusion?.segment) {
         this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
           this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
         });
@@ -175,7 +193,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   loadMetrics() {
     if (this.experiment) {
       this.displayMetrics = [];
-      this.experiment.queries.forEach((query) => {
+      this.experiment.queries?.forEach((query) => {
         let key;
         if (query.metric.key) {
           key = query.metric.key;

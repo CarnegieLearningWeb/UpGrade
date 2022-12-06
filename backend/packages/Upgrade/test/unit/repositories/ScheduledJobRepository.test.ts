@@ -7,12 +7,12 @@ let sandbox;
 let connection;
 let createQueryBuilderStub;
 let insertMock, deleteMock;
-let insertQueryBuilder = new InsertQueryBuilder<ScheduledJobRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<ScheduledJobRepository>(null);
-let repo = new ScheduledJobRepository();
+const insertQueryBuilder = new InsertQueryBuilder<ScheduledJobRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<ScheduledJobRepository>(null);
+const repo = new ScheduledJobRepository();
 const err = new Error('test error');
 
-let job = new ScheduledJob();
+const job = new ScheduledJob();
 job.id = 'id1';
 
 beforeEach(() => {
@@ -46,7 +46,7 @@ describe('ScheduledJobRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.upsertScheduledJob(job);
+    const res = await repo.upsertScheduledJob(job);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -55,7 +55,7 @@ describe('ScheduledJobRepository Testing', () => {
   });
 
   it('should upsert a new scheduled job when an EntityManager is provided', async () => {
-    let manager = new EntityManager(connection);
+    const manager = new EntityManager(connection);
     createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
     const result = {
       identifiers: [{ id: job.id }],
@@ -71,7 +71,7 @@ describe('ScheduledJobRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.upsertScheduledJob(job, manager);
+    const res = await repo.upsertScheduledJob(job, manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -101,7 +101,7 @@ describe('ScheduledJobRepository Testing', () => {
   });
 
   it('should delete a group experiment exclusion', async () => {
-    let manager = new EntityManager(connection);
+    const manager = new EntityManager(connection);
     createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
     const result = {
       identifiers: [{ id: job.id }],
@@ -114,7 +114,7 @@ describe('ScheduledJobRepository Testing', () => {
     deleteMock.expects('where').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteByExperimentId(job.id, manager);
+    const res = await repo.deleteByExperimentId(job.id, manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -123,7 +123,7 @@ describe('ScheduledJobRepository Testing', () => {
   });
 
   it('should throw an error when delete fails', async () => {
-    let manager = new EntityManager(connection);
+    const manager = new EntityManager(connection);
     createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
 
     deleteMock.expects('delete').once().returns(deleteQueryBuilder);

@@ -14,7 +14,7 @@
     </button>
   </div>
 
-  <mat-table [dataSource]="aliasTableData$" class="alias-table">
+  <mat-table [dataSource]="aliasTableData$" class="alias-table-design-stepper">
     <!-- Site Column -->
     <ng-container matColumnDef="site">
       <mat-header-cell *matHeaderCellDef class="ft-14-700">
@@ -111,6 +111,6 @@
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="aliasesDisplayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: aliasesDisplayedColumns"></mat-row>
+    <mat-row *matRowDef="let row; columns: aliasesDisplayedColumns" [ngClass]="row?.rowStyle"></mat-row>
   </mat-table>
 </section>

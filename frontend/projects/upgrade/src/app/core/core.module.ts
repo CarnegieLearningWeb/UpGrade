@@ -33,7 +33,7 @@ import { environment } from '../../environments/environment';
 export { TitleService, AppState, LocalStorageService, selectRouterState, NotificationService };
 
 export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
-  return new TranslateHttpLoader(http, `${environment.i18nPrefix}/assets/i18n/`, '.json');
+  return new TranslateHttpLoader(http, `${environment.baseHrefPrefix}/assets/i18n/`, '.json');
 }
 
 @NgModule({
