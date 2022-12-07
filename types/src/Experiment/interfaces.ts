@@ -161,18 +161,29 @@ export interface ISingleMetric {
   allowedValues?: Array<string | number>;
 }
 
-export interface AssessmentObject{
+export interface ScoreObject{
   id: string;
   type: string;
-  name: string;
+  attempt: Attempt;
   extensions?: object;
 }
 
-export interface Assessment{
+export interface Attempt{
+  id: string;
   type: string;
-  profile: string;
-  actor: object;
-  action: string;
-  object: AssessmentObject;
-  extensions?: object;
+  assignee: string;
+  assignable: string;
+  duration: string;
+  scoreGiven: number;
+  extensions?: ILogInput;
+}
+
+export interface CaliperGradingProfile{
+  id: string,
+  type: string,
+  profile: string,
+  actor: object,
+  action: string,
+  object: Attempt,
+  generated: ScoreObject
 }

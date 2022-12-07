@@ -32,6 +32,7 @@ import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
 import { CaliperLogValidator } from './validators/CaliperLogValidator';
+import { parse, toSeconds } from 'iso8601-duration';
 
 /**
  * @swagger
@@ -679,22 +680,19 @@ export class ExperimentClientController {
        request.logger.child({ userDoc: experimentUserDoc });
        request.logger.info({ message: 'Got the original user doc' });
      }
-     let attributes = logData.assessment.extensions || {}
-     let groupedMetrics = [
-      {
-        groupClass: logData.assessment.object.id,
-        groupKey: logData.assessment.object.name,
-        groupUniquifier: '',
-        attributes: logData.assessment.object.extensions
-      }
-     ]
-     const logs: ILogInput[] = [{
-       "metrics": {
-         "attributes": attributes,
-         "groupedMetrics": groupedMetrics
-       },
-       timestamp: '2021-01-12T06:59:00.000Z'
-     }];
+     const baseMetric: ILogInput[] = [{
+      "metrics": {
+        "attributes": logData.generated.attempt.extensions.metrics.attributes || {},
+        "groupedMetrics": logData.generated.attempt.extensions.metrics.groupedMetrics || [],
+      },
+      timestamp: '2021-01-12T06:59:00.000Z'
+    }];
+
+     let logs = [logData.generated.attempt.extensions] || baseMetric;
+
+
+     logs[0].metrics.attributes['duration'] = toSeconds(parse(logData.generated.attempt.duration));
+     logs[0].metrics.attributes['scoreGiven'] = logData.generated.attempt.scoreGiven;
 
      return this.experimentAssignmentService.dataLog(userId, logs, {
        logger: request.logger,

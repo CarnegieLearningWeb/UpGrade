@@ -1,13 +1,13 @@
 import { Types, Interfaces } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
-import { Assessment } from '../../../../types/src/Experiment/interfaces';
+import { CaliperGradingProfile } from '../../../../types/src/Experiment/interfaces';
 
 export default async function logCaliper(
   url: string,
   userId: string,
   token: string,
   clientSessionId: string,
-  value: Assessment,
+  value: CaliperGradingProfile,
   sendAsAnalytics = false
 ): Promise<Interfaces.ILog[]> {
   try {

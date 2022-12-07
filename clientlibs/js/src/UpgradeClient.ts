@@ -13,7 +13,7 @@ import addMetrics from './functions/addMetrics';
 import getFeatureFlag from './functions/getFeatureFlag';
 import init from './functions/init';
 import * as uuid from 'uuid';
-import { Assessment } from '../../../types/src/Experiment/interfaces';
+import { CaliperGradingProfile } from '../../../types/src/Experiment/interfaces';
 import logCaliper from './functions/logCaliper';
 
 export default class UpgradeClient {
@@ -182,7 +182,7 @@ export default class UpgradeClient {
     return await log(this.api.log, this.userId, this.token, this.clientSessionId, value, sendAsAnalytics);
   }
 
-  async logCaliper(value: Assessment, sendAsAnalytics = false): Promise<Interfaces.ILog[]> {
+  async logCaliper(value: CaliperGradingProfile, sendAsAnalytics = false): Promise<Interfaces.ILog[]> {
     this.validateClient();
     return await logCaliper(this.api.logCaliper, this.userId, this.token, this.clientSessionId, value, sendAsAnalytics);
   }
