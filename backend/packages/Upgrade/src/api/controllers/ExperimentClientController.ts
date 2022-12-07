@@ -35,6 +35,7 @@ import { CaliperLogValidator } from './validators/CaliperLogValidator';
 import { parse, toSeconds } from 'iso8601-duration';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
+import { User } from '../models/User';
 
 /**
  * @swagger
@@ -684,29 +685,26 @@ export class ExperimentClientController {
        request.logger.child({ userDoc: experimentUserDoc });
        request.logger.info({ message: 'Got the original user doc' });
      }
-     const baseMetric: ILogInput[] = [{
+     const logs: ILogInput = {
       "metrics": {
         "attributes": logData.generated.attempt.extensions.metrics.attributes || {},
         "groupedMetrics": logData.generated.attempt.extensions.metrics.groupedMetrics || [],
       },
-      timestamp: '2021-01-12T06:59:00.000Z'
-    }];
+      timestamp: (new Date()).toISOString()
+    };
 
-     let logs = [logData.generated.attempt.extensions] || baseMetric;
+     logs.metrics.attributes['duration'] = toSeconds(parse(logData.generated.attempt.duration));
+     logs.metrics.attributes['scoreGiven'] = logData.generated.attempt.scoreGiven;
 
-
-     logs[0].metrics.attributes['duration'] = toSeconds(parse(logData.generated.attempt.duration));
-     logs[0].metrics.attributes['scoreGiven'] = logData.generated.attempt.scoreGiven;
-
-     const logResponse = await this.experimentAssignmentService.dataLog(userId, logs, {
+     const logResponse = await this.experimentAssignmentService.dataLog(userId, [logs], {
        logger: request.logger,
        userDoc: experimentUserDoc,
      });
 
      await this.experimentAuditLogRepository.saveRawJson(
       EXPERIMENT_LOG_TYPE.CALIPER_LOG,
-      logResponse,
-      null
+      {experimentName: "Caliper Logs"},
+      new User()
     );
 
     return logResponse;

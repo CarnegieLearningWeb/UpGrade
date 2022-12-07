@@ -67,7 +67,7 @@ export class baseSchema1656134880479 implements MigrationInterface {
       `CREATE TABLE "user" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "email" character varying NOT NULL, "firstName" character varying, "lastName" character varying, "role" "user_role_enum" DEFAULT 'creator', "imageUrl" character varying, CONSTRAINT "PK_e12875dfb3b1d92d7d7c5377e22" PRIMARY KEY ("email"))`
     );
     await queryRunner.query(
-      `CREATE TYPE "experiment_audit_log_type_enum" AS ENUM('experimentCreated', 'experimentUpdated', 'experimentStateChanged', 'experimentDeleted', 'experimentDataExported', 'experimentDataRequested', 'experimentDesignExported')`
+      `CREATE TYPE "experiment_audit_log_type_enum" AS ENUM('experimentCreated', 'experimentUpdated', 'experimentStateChanged', 'experimentDeleted', 'experimentDataExported', 'experimentDataRequested', 'experimentDesignExported', 'caliperLog')`
     );
     await queryRunner.query(
       `CREATE TABLE "experiment_audit_log" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "type" "experiment_audit_log_type_enum" NOT NULL, "data" json NOT NULL, "userEmail" character varying, CONSTRAINT "PK_6d096ff1d454e4d5718e7eceb8e" PRIMARY KEY ("id"))`
