@@ -79,4 +79,8 @@
   .owl-dt-calendar-table .owl-dt-calendar-header .owl-dt-calendar-table-divider:after {
     border-bottom: 1px solid mat.get-color-from-palette($background, shadow-color);
   }
+
+  .alias-table-overview .mat-row.even {
+    background-color: mat.get-color-from-palette($background, table-shading);
+  }
 }

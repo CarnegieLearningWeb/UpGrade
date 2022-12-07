@@ -10,7 +10,7 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 describe('ErrorHandler Middleware tests', () => {
   let mockRequest: any;
   let mockResponse: any;
-  let nextFunction: NextFunction = jest.fn();
+  const nextFunction: NextFunction = jest.fn();
   let errorhandler: ErrorHandlerMiddleware;
 
   let mockjson: any;
@@ -37,7 +37,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('Incorrect param error test', async () => {
-    let error = {
+    const error = {
       type: SERVER_ERROR.INCORRECT_PARAM_FORMAT,
       message: 'Incorrect Parameters',
       httpCode: 500,
@@ -49,7 +49,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('Missing param error test', async () => {
-    let error = {
+    const error = {
       type: SERVER_ERROR.MISSING_PARAMS,
       message: 'Missing Parameters',
       httpCode: 500,
@@ -61,7 +61,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('Query failed error test', async () => {
-    let error = {
+    const error = {
       type: SERVER_ERROR.QUERY_FAILED,
       message: 'Query failed',
       httpCode: 500,
@@ -73,7 +73,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('Experiment user not defined error test', async () => {
-    let error = {
+    const error = {
       type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
       message: 'Experiment user not defined',
       httpCode: 404,
@@ -85,7 +85,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('Experiment user group not defined error test', async () => {
-    let error = {
+    const error = {
       type: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
       message: 'Experiment user group not defined',
       httpCode: 404,
@@ -97,7 +97,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('Assignment error test', async () => {
-    let error = {
+    const error = {
       type: SERVER_ERROR.ASSIGNMENT_ERROR,
       message: 'Assignment error',
       httpCode: 500,
@@ -109,7 +109,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('Working group not subset of group error test', async () => {
-    let error = {
+    const error = {
       type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
       message: 'Working group not subset of group error',
       httpCode: 500,
@@ -121,7 +121,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('Invalid token error test', async () => {
-    let error = {
+    const error = {
       type: SERVER_ERROR.INVALID_TOKEN,
       message: 'Invalid token error',
       httpCode: 500,
@@ -133,7 +133,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('Token not present error test', async () => {
-    let error = {
+    const error = {
       type: SERVER_ERROR.TOKEN_NOT_PRESENT,
       message: 'Token not present error',
       httpCode: 500,
@@ -145,7 +145,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('Condition not found error test', async () => {
-    let error = {
+    const error = {
       type: SERVER_ERROR.CONDITION_NOT_FOUND,
       message: 'Condition not found error',
       httpCode: 500,
@@ -157,7 +157,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('Email send error test', async () => {
-    let error = {
+    const error = {
       type: SERVER_ERROR.EMAIL_SEND_ERROR,
       message: 'Email send error',
       httpCode: 500,
@@ -169,7 +169,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('Incorrect param format error test', async () => {
-    let error = {
+    const error = {
       message: 'Incorrect param format error',
       httpCode: 400,
     };
@@ -179,7 +179,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('User not found error test', async () => {
-    let error = {
+    const error = {
       message: 'User not found errors',
       httpCode: 401,
     };
@@ -190,7 +190,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('Query failed error test', async () => {
-    let error = {
+    const error = {
       message: 'Query failed error',
       httpCode: 404,
     };
@@ -201,7 +201,7 @@ describe('ErrorHandler Middleware tests', () => {
   });
 
   test('Default error test', async () => {
-    let error = {};
+    const error = {};
 
     await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(500);

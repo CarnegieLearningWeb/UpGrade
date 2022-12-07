@@ -6,12 +6,12 @@ import { Metric } from '../../../src/api/models/Metric';
 let sandbox;
 let createQueryBuilderStub;
 let deleteMock, selectMock;
-let deleteQueryBuilder = new DeleteQueryBuilder<MetricRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<MetricRepository>(null);
-let repo = new MetricRepository();
+const deleteQueryBuilder = new DeleteQueryBuilder<MetricRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<MetricRepository>(null);
+const repo = new MetricRepository();
 const err = new Error('test error');
 
-let metric = new Metric();
+const metric = new Metric();
 metric.key = 'key1';
 
 beforeEach(() => {
@@ -40,7 +40,7 @@ describe('MetricRepository Testing', () => {
     deleteMock.expects('returning').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteMetricsByKeys(metric.key, 'jointext');
+    const res = await repo.deleteMetricsByKeys(metric.key, 'jointext');
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -76,7 +76,7 @@ describe('MetricRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.getMetricsByKeys(metric.key, 'jointext');
+    const res = await repo.getMetricsByKeys(metric.key, 'jointext');
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -110,7 +110,7 @@ describe('MetricRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.findMetricsWithQueries([metric.key]);
+    const res = await repo.findMetricsWithQueries([metric.key]);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();

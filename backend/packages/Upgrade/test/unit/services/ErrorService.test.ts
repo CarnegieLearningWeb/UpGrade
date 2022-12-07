@@ -7,9 +7,9 @@ import { ExperimentError } from '../../../src/api/models/ExperimentError';
 import { SERVER_ERROR } from 'upgrade_types';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
-let errorArr = [1, 2, 3];
-let error = new ExperimentError();
-let logger = new UpgradeLogger();
+const errorArr = [1, 2, 3];
+const error = new ExperimentError();
+const logger = new UpgradeLogger();
 
 describe('Error Service Testing', () => {
   let service: ErrorService;

@@ -3,5 +3,5 @@ export const environment = {
   envName: 'TEST',
   production: false,
   test: true,
-  i18nPrefix: '',
+  baseHrefPrefix: ''
 };

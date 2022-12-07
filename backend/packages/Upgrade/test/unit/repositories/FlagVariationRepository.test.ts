@@ -8,12 +8,12 @@ let connection;
 let manager;
 let createQueryBuilderStub;
 let insertMock, deleteMock;
-let insertQueryBuilder = new InsertQueryBuilder<FlagVariationRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<FlagVariationRepository>(null);
-let repo = new FlagVariationRepository();
+const insertQueryBuilder = new InsertQueryBuilder<FlagVariationRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<FlagVariationRepository>(null);
+const repo = new FlagVariationRepository();
 const err = new Error('test error');
 
-let flag = new FlagVariation();
+const flag = new FlagVariation();
 flag.id = 'id1';
 
 beforeEach(() => {
@@ -44,7 +44,7 @@ describe('FlagVariationRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.insertVariations([flag], manager);
+    const res = await repo.insertVariations([flag], manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -120,7 +120,7 @@ describe('FlagVariationRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.upsertFlagVariation(flag, manager);
+    const res = await repo.upsertFlagVariation(flag, manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();

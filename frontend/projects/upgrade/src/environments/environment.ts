@@ -9,7 +9,7 @@ export const environment = {
   apiBaseUrl: 'http://localhost:3030/api',
   production: false,
   test: false,
-  i18nPrefix: '',
+  baseHrefPrefix: '',
   gapiClientId: '135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com',
   domainName: '',
   pollingEnabled: true,

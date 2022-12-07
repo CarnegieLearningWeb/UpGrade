@@ -13,21 +13,21 @@ import { DecisionPoint } from '../../../src/api/models/DecisionPoint';
 import { GroupEnrollmentRepository } from '../../../src/api/repositories/GroupEnrollmentRepository';
 
 let sandbox;
-let connection = sinon.createStubInstance(Connection);
-let manager = new EntityManager(connection);
-let repo = new AnalyticsRepository(manager);
+const connection = sinon.createStubInstance(Connection);
+const manager = new EntityManager(connection);
+const repo = new AnalyticsRepository(manager);
 let createQueryBuilderStub;
 let selectMock;
-let selectQueryBuilder = new SelectQueryBuilder<AnalyticsRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<AnalyticsRepository>(null);
 const err = new Error('test error');
 
-let user = new User();
+const user = new User();
 user.email = 'user@test.com';
-let cond = new ExperimentCondition();
+const cond = new ExperimentCondition();
 cond.id = 'cond1';
-let point = new DecisionPoint();
+const point = new DecisionPoint();
 point.id = 'point1';
-let experiment = new Experiment();
+const experiment = new Experiment();
 experiment.id = 'id1';
 experiment.assignmentUnit = ASSIGNMENT_UNIT.INDIVIDUAL;
 experiment.conditions = [cond];
@@ -75,7 +75,7 @@ afterEach(() => {
 
 describe('AnalyticsRepository Testing', () => {
   it('should get enrollment count per group', async () => {
-    let individualEnrollmentRepoStub = sandbox
+    const individualEnrollmentRepoStub = sandbox
       .stub(manager, 'getCustomRepository')
       .withArgs(IndividualEnrollmentRepository)
       .returns(IndividualEnrollmentRepository.prototype);
@@ -89,7 +89,7 @@ describe('AnalyticsRepository Testing', () => {
     selectMock.expects('groupBy').once().returns(selectQueryBuilder);
     selectMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.getEnrollmentCountPerGroup(experiment.id);
+    const res = await repo.getEnrollmentCountPerGroup(experiment.id);
 
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(createQueryBuilderStub);
@@ -99,7 +99,7 @@ describe('AnalyticsRepository Testing', () => {
   });
 
   it('should throw an error when get enrollment count per group fails', async () => {
-    let individualEnrollmentRepoStub = sandbox
+    const individualEnrollmentRepoStub = sandbox
       .stub(manager, 'getCustomRepository')
       .withArgs(IndividualEnrollmentRepository)
       .returns(IndividualEnrollmentRepository.prototype);
@@ -123,23 +123,23 @@ describe('AnalyticsRepository Testing', () => {
   });
 
   it('should get enrollment count per decision point for individual assignment', async () => {
-    let getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    let individualEnrollmentRepoStub = getCustomRepositoryStub
+    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
+    const individualEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(IndividualEnrollmentRepository)
       .returns(IndividualEnrollmentRepository.prototype);
-    let individualExclusionRepoStub = getCustomRepositoryStub
+    const individualExclusionRepoStub = getCustomRepositoryStub
       .withArgs(IndividualExclusionRepository)
       .returns(IndividualExclusionRepository.prototype);
-    let experimentRepoStub = getCustomRepositoryStub
+    const experimentRepoStub = getCustomRepositoryStub
       .withArgs(ExperimentRepository)
       .returns(ExperimentRepository.prototype);
-    let groupExclusionRepoStub = getCustomRepositoryStub
+    const groupExclusionRepoStub = getCustomRepositoryStub
       .withArgs(GroupExclusionRepository)
       .returns(GroupExclusionRepository.prototype);
     createQueryBuilderStub = sandbox
       .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
-    let findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
+    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
     sandbox.stub(IndividualExclusionRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
     const decisionPointResult = {
@@ -170,7 +170,7 @@ describe('AnalyticsRepository Testing', () => {
     selectMock.expects('addGroupBy').exactly(3).returns(selectQueryBuilder);
     selectMock.expects('execute').exactly(4).returns(Promise.resolve(userResult));
 
-    let res = await repo.getEnrollmentPerPartitionCondition(experiment.id);
+    const res = await repo.getEnrollmentPerPartitionCondition(experiment.id);
 
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(individualExclusionRepoStub);
@@ -184,23 +184,23 @@ describe('AnalyticsRepository Testing', () => {
   });
 
   it('should get enrollment count per decision point for individual assignment with none enrolled', async () => {
-    let getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    let individualEnrollmentRepoStub = getCustomRepositoryStub
+    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
+    const individualEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(IndividualEnrollmentRepository)
       .returns(IndividualEnrollmentRepository.prototype);
-    let individualExclusionRepoStub = getCustomRepositoryStub
+    const individualExclusionRepoStub = getCustomRepositoryStub
       .withArgs(IndividualExclusionRepository)
       .returns(IndividualExclusionRepository.prototype);
-    let experimentRepoStub = getCustomRepositoryStub
+    const experimentRepoStub = getCustomRepositoryStub
       .withArgs(ExperimentRepository)
       .returns(ExperimentRepository.prototype);
-    let groupExclusionRepoStub = getCustomRepositoryStub
+    const groupExclusionRepoStub = getCustomRepositoryStub
       .withArgs(GroupExclusionRepository)
       .returns(GroupExclusionRepository.prototype);
     createQueryBuilderStub = sandbox
       .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
-    let findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
+    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
     sandbox.stub(IndividualExclusionRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
     const decisionPointResult = {
@@ -235,7 +235,7 @@ describe('AnalyticsRepository Testing', () => {
       .exactly(3)
       .returns(Promise.resolve([{ count: 0 }]));
 
-    let res = await repo.getEnrollmentPerPartitionCondition(experiment.id);
+    const res = await repo.getEnrollmentPerPartitionCondition(experiment.id);
 
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(individualExclusionRepoStub);
@@ -250,23 +250,23 @@ describe('AnalyticsRepository Testing', () => {
 
   it('should get enrollment count per decision point for group assignment', async () => {
     experiment.assignmentUnit = ASSIGNMENT_UNIT.GROUP;
-    let getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    let individualEnrollmentRepoStub = getCustomRepositoryStub
+    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
+    const individualEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(IndividualEnrollmentRepository)
       .returns(IndividualEnrollmentRepository.prototype);
-    let individualExclusionRepoStub = getCustomRepositoryStub
+    const individualExclusionRepoStub = getCustomRepositoryStub
       .withArgs(IndividualExclusionRepository)
       .returns(IndividualExclusionRepository.prototype);
-    let experimentRepoStub = getCustomRepositoryStub
+    const experimentRepoStub = getCustomRepositoryStub
       .withArgs(ExperimentRepository)
       .returns(ExperimentRepository.prototype);
-    let groupExclusionRepoStub = getCustomRepositoryStub
+    const groupExclusionRepoStub = getCustomRepositoryStub
       .withArgs(GroupExclusionRepository)
       .returns(GroupExclusionRepository.prototype);
     createQueryBuilderStub = sandbox
       .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
-    let findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
+    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
     sandbox.stub(IndividualExclusionRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
     sandbox.stub(GroupExclusionRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
@@ -299,7 +299,7 @@ describe('AnalyticsRepository Testing', () => {
     selectMock.expects('addGroupBy').exactly(3).returns(selectQueryBuilder);
     selectMock.expects('execute').exactly(5).returns(Promise.resolve(userResult));
 
-    let res = await repo.getEnrollmentPerPartitionCondition(experiment.id);
+    const res = await repo.getEnrollmentPerPartitionCondition(experiment.id);
 
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(individualExclusionRepoStub);
@@ -314,23 +314,23 @@ describe('AnalyticsRepository Testing', () => {
 
   it('should get enrollment count per decision point for group assignment with none enrolled', async () => {
     experiment.assignmentUnit = ASSIGNMENT_UNIT.GROUP;
-    let getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    let individualEnrollmentRepoStub = getCustomRepositoryStub
+    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
+    const individualEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(IndividualEnrollmentRepository)
       .returns(IndividualEnrollmentRepository.prototype);
-    let individualExclusionRepoStub = getCustomRepositoryStub
+    const individualExclusionRepoStub = getCustomRepositoryStub
       .withArgs(IndividualExclusionRepository)
       .returns(IndividualExclusionRepository.prototype);
-    let experimentRepoStub = getCustomRepositoryStub
+    const experimentRepoStub = getCustomRepositoryStub
       .withArgs(ExperimentRepository)
       .returns(ExperimentRepository.prototype);
-    let groupExclusionRepoStub = getCustomRepositoryStub
+    const groupExclusionRepoStub = getCustomRepositoryStub
       .withArgs(GroupExclusionRepository)
       .returns(GroupExclusionRepository.prototype);
     createQueryBuilderStub = sandbox
       .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
-    let findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
+    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
     sandbox.stub(IndividualExclusionRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
     sandbox.stub(GroupExclusionRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
@@ -367,7 +367,7 @@ describe('AnalyticsRepository Testing', () => {
       .exactly(4)
       .returns(Promise.resolve([{ count: 0 }]));
 
-    let res = await repo.getEnrollmentPerPartitionCondition(experiment.id);
+    const res = await repo.getEnrollmentPerPartitionCondition(experiment.id);
 
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(individualExclusionRepoStub);
@@ -381,17 +381,17 @@ describe('AnalyticsRepository Testing', () => {
   });
 
   it('should get empty enrollments for empty experiments', async () => {
-    let res = await repo.getEnrollments([]);
+    const res = await repo.getEnrollments([]);
 
     expect(res).toEqual([]);
   });
 
   it('should get enrollments for experiments', async () => {
-    let getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    let individualEnrollmentRepoStub = getCustomRepositoryStub
+    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
+    const individualEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(IndividualEnrollmentRepository)
       .returns(IndividualEnrollmentRepository.prototype);
-    let groupEnrollmentRepoStub = getCustomRepositoryStub
+    const groupEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(GroupEnrollmentRepository)
       .returns(GroupEnrollmentRepository.prototype);
 
@@ -400,7 +400,7 @@ describe('AnalyticsRepository Testing', () => {
       .returns(selectQueryBuilder);
     sandbox.stub(GroupEnrollmentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
-    let result = {
+    const result = {
       groups: 3,
       id: experiment.id,
       users: 4,
@@ -415,7 +415,7 @@ describe('AnalyticsRepository Testing', () => {
       .twice()
       .returns(Promise.resolve([{ id: experiment.id, users: 4, groups: 3 }]));
 
-    let res = await repo.getEnrollments([experiment.id]);
+    const res = await repo.getEnrollments([experiment.id]);
 
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(groupEnrollmentRepoStub);
@@ -424,11 +424,11 @@ describe('AnalyticsRepository Testing', () => {
   });
 
   it('should get enrollments for experiments with none enrolled', async () => {
-    let getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    let individualEnrollmentRepoStub = getCustomRepositoryStub
+    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
+    const individualEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(IndividualEnrollmentRepository)
       .returns(IndividualEnrollmentRepository.prototype);
-    let groupEnrollmentRepoStub = getCustomRepositoryStub
+    const groupEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(GroupEnrollmentRepository)
       .returns(GroupEnrollmentRepository.prototype);
 
@@ -437,7 +437,7 @@ describe('AnalyticsRepository Testing', () => {
       .returns(selectQueryBuilder);
     sandbox.stub(GroupEnrollmentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
-    let result = {
+    const result = {
       groups: 0,
       id: experiment.id,
       users: 0,
@@ -452,7 +452,7 @@ describe('AnalyticsRepository Testing', () => {
       .twice()
       .returns(Promise.resolve([{}]));
 
-    let res = await repo.getEnrollments([experiment.id]);
+    const res = await repo.getEnrollments([experiment.id]);
 
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(groupEnrollmentRepoStub);
@@ -461,11 +461,11 @@ describe('AnalyticsRepository Testing', () => {
   });
 
   it('should get enrollments by date range last seven days', async () => {
-    let getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    let individualEnrollmentRepoStub = getCustomRepositoryStub
+    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
+    const individualEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(IndividualEnrollmentRepository)
       .returns(IndividualEnrollmentRepository.prototype);
-    let groupEnrollmentRepoStub = getCustomRepositoryStub
+    const groupEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(GroupEnrollmentRepository)
       .returns(GroupEnrollmentRepository.prototype);
 
@@ -474,7 +474,7 @@ describe('AnalyticsRepository Testing', () => {
       .returns(selectQueryBuilder);
     sandbox.stub(GroupEnrollmentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
-    let result = {
+    const result = {
       count: 1,
       conditionId: cond.id,
       partitionId: point.id,
@@ -491,7 +491,7 @@ describe('AnalyticsRepository Testing', () => {
       .twice()
       .returns(Promise.resolve([result]));
 
-    let res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_SEVEN_DAYS, 3);
+    const res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_SEVEN_DAYS, 3);
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(groupEnrollmentRepoStub);
 
@@ -499,11 +499,11 @@ describe('AnalyticsRepository Testing', () => {
   });
 
   it('should get enrollments by date range last six months', async () => {
-    let getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    let individualEnrollmentRepoStub = getCustomRepositoryStub
+    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
+    const individualEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(IndividualEnrollmentRepository)
       .returns(IndividualEnrollmentRepository.prototype);
-    let groupEnrollmentRepoStub = getCustomRepositoryStub
+    const groupEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(GroupEnrollmentRepository)
       .returns(GroupEnrollmentRepository.prototype);
 
@@ -512,7 +512,7 @@ describe('AnalyticsRepository Testing', () => {
       .returns(selectQueryBuilder);
     sandbox.stub(GroupEnrollmentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
-    let result = {
+    const result = {
       count: 1,
       conditionId: cond.id,
       partitionId: point.id,
@@ -529,7 +529,7 @@ describe('AnalyticsRepository Testing', () => {
       .twice()
       .returns(Promise.resolve([result]));
 
-    let res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_SIX_MONTHS, 3);
+    const res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_SIX_MONTHS, 3);
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(groupEnrollmentRepoStub);
 
@@ -537,11 +537,11 @@ describe('AnalyticsRepository Testing', () => {
   });
 
   it('should get enrollments by date range last three months', async () => {
-    let getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    let individualEnrollmentRepoStub = getCustomRepositoryStub
+    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
+    const individualEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(IndividualEnrollmentRepository)
       .returns(IndividualEnrollmentRepository.prototype);
-    let groupEnrollmentRepoStub = getCustomRepositoryStub
+    const groupEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(GroupEnrollmentRepository)
       .returns(GroupEnrollmentRepository.prototype);
 
@@ -550,7 +550,7 @@ describe('AnalyticsRepository Testing', () => {
       .returns(selectQueryBuilder);
     sandbox.stub(GroupEnrollmentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
-    let result = {
+    const result = {
       count: 1,
       conditionId: cond.id,
       partitionId: point.id,
@@ -567,7 +567,7 @@ describe('AnalyticsRepository Testing', () => {
       .twice()
       .returns(Promise.resolve([result]));
 
-    let res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_THREE_MONTHS, 3);
+    const res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_THREE_MONTHS, 3);
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(groupEnrollmentRepoStub);
 
@@ -575,11 +575,11 @@ describe('AnalyticsRepository Testing', () => {
   });
 
   it('should get enrollments by date range last twelve months', async () => {
-    let getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    let individualEnrollmentRepoStub = getCustomRepositoryStub
+    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
+    const individualEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(IndividualEnrollmentRepository)
       .returns(IndividualEnrollmentRepository.prototype);
-    let groupEnrollmentRepoStub = getCustomRepositoryStub
+    const groupEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(GroupEnrollmentRepository)
       .returns(GroupEnrollmentRepository.prototype);
 
@@ -588,7 +588,7 @@ describe('AnalyticsRepository Testing', () => {
       .returns(selectQueryBuilder);
     sandbox.stub(GroupEnrollmentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
-    let result = {
+    const result = {
       count: 1,
       conditionId: cond.id,
       partitionId: point.id,
@@ -605,7 +605,7 @@ describe('AnalyticsRepository Testing', () => {
       .twice()
       .returns(Promise.resolve([result]));
 
-    let res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_TWELVE_MONTHS, 3);
+    const res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_TWELVE_MONTHS, 3);
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(groupEnrollmentRepoStub);
 

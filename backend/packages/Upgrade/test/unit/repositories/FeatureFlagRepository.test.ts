@@ -8,13 +8,13 @@ let connection;
 let manager;
 let createQueryBuilderStub;
 let insertMock, deleteMock, updateMock;
-let insertQueryBuilder = new InsertQueryBuilder<FeatureFlagRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<FeatureFlagRepository>(null);
-let updateQueryBuilder = new UpdateQueryBuilder<FeatureFlagRepository>(null);
-let repo = new FeatureFlagRepository();
+const insertQueryBuilder = new InsertQueryBuilder<FeatureFlagRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<FeatureFlagRepository>(null);
+const updateQueryBuilder = new UpdateQueryBuilder<FeatureFlagRepository>(null);
+const repo = new FeatureFlagRepository();
 const err = new Error('test error');
 
-let flag = new FeatureFlag();
+const flag = new FeatureFlag();
 flag.id = 'id1';
 
 beforeEach(() => {
@@ -46,7 +46,7 @@ describe('FeatureFlagRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.insertFeatureFlag(flag, manager);
+    const res = await repo.insertFeatureFlag(flag, manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -126,7 +126,7 @@ describe('FeatureFlagRepository Testing', () => {
     updateMock.expects('returning').once().returns(updateQueryBuilder);
     updateMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.updateFeatureFlag(flag, manager);
+    const res = await repo.updateFeatureFlag(flag, manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     updateMock.verify();
@@ -167,7 +167,7 @@ describe('FeatureFlagRepository Testing', () => {
     updateMock.expects('returning').once().returns(updateQueryBuilder);
     updateMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.updateState(flag.id, true);
+    const res = await repo.updateState(flag.id, true);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     updateMock.verify();
