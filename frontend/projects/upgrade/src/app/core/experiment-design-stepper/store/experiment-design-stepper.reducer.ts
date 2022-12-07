@@ -4,7 +4,9 @@ import * as experimentDesignStepperAction from './experiment-design-stepper.acti
 
 const initialState: ExperimentDesignStepperState = {
   isAliasTableEditMode: false,
+  isConditionsTableEditMode: false,
   aliasTableEditIndex: null,
+  conditionsTableEditIndex: null,
   hasExperimentStepperDataChanged: false,
 };
 
@@ -25,7 +27,17 @@ const reducer = createReducer(
   on(experimentDesignStepperAction.experimentStepperDataReset, (state) => ({
     ...state,
     hasExperimentStepperDataChanged: false,
-  }))
+  })),
+  on(
+    experimentDesignStepperAction.actionUpdateConditionsTableEditMode,
+    (state, { isConditionsTableEditMode, conditionsTableEditIndex }) => {
+      return {
+        ...state,
+        isConditionsTableEditMode,
+        conditionsTableEditIndex,
+      };
+    }
+  )
 );
 
 export function experimentDesignStepperReducer(state: ExperimentDesignStepperState | undefined, action: Action) {

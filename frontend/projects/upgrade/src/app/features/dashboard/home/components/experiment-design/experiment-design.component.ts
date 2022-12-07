@@ -11,7 +11,7 @@ import {
   SimpleChanges,
   OnDestroy,
 } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl, FormControl } from '@angular/forms';
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
@@ -22,6 +22,7 @@ import {
   ExperimentPartition,
   IContextMetaData,
   EXPERIMENT_STATE,
+  TableEditModeDetails,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
@@ -33,7 +34,9 @@ import { ExperimentDesignStepperService } from '../../../../../core/experiment-d
 import {
   ExperimentAliasTableRow,
   ExperimentConditionAliasRequestObject,
+  ExperimentConditionsTableRow,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+
 @Component({
   selector: 'home-experiment-design',
   templateUrl: './experiment-design.component.html',
@@ -69,7 +72,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   previousAssignmentWeightValues = [];
 
-  conditionDisplayedColumns = ['conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
+  conditionDisplayedColumns = ['conditionCode', 'assignmentWeight', 'description', 'actions', 'removeCondition'];
   partitionDisplayedColumns = ['site', 'target', 'excludeIfReached', 'removePartition'];
 
   // Used for condition code, experiment point and ids auto complete dropdown
@@ -90,6 +93,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   aliasTableData: ExperimentAliasTableRow[] = [];
   isAliasTableEditMode$: Observable<boolean>;
   isExperimentEditable = true;
+
+  isConditionsTableEditMode$: Observable<boolean>;
+  conditionsTableEditIndex$: Observable<number>;
+  conditionsTableData: ExperimentConditionsTableRow[] = [];
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -158,6 +165,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       { validators: ExperimentFormValidators.validateExperimentDesignForm }
     );
     this.createDesignDataSubject();
+    this.isConditionsTableEditMode$ = this.experimentDesignStepperService.isConditionsTableEditMode$;
+    this.conditionsTableEditIndex$ = this.experimentDesignStepperService.conditionsTableEditIndex$;
     this.isAliasTableEditMode$ = this.experimentDesignStepperService.isAliasTableEditMode$;
 
     // populate values in form to update experiment if experiment data is available
@@ -301,12 +310,26 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return [];
   }
 
+  handleEditClick(formArrayRow: FormArray, rowIndex: number, tableName: string) {
+    const isEditingFormControl = formArrayRow.get('isEditing');
+    const isEditing = !isEditingFormControl.value;
+    isEditingFormControl.setValue(isEditing);
+
+    const editModeDetails: TableEditModeDetails = {
+      isEditMode: isEditing,
+      rowIndex: isEditing ? rowIndex : null,
+    };
+
+    this.experimentDesignStepperService.setUpdateTableEditModeDetails(editModeDetails, tableName);
+  }
+
   addConditions(conditionCode = null, assignmentWeight = null, description = null, order = null) {
     return this._formBuilder.group({
       conditionCode: [conditionCode, Validators.required],
       assignmentWeight: [assignmentWeight, Validators.required],
       description: [description],
       order: [order],
+      isEditing: [false],
     });
   }
 
@@ -332,6 +355,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     } else {
       const conditionFormControl = this.experimentDesignForm.get('conditions') as FormArray;
       this.manageConditionCodeControl(conditionFormControl.controls.length - 1);
+
+      // when adding new condition row, automatically set table edit details to true for new row
+      this.experimentDesignStepperService.setUpdateTableEditModeDetails(
+        {
+          isEditMode: true,
+          rowIndex: conditionFormControl.controls.length - 1,
+        },
+        'conditions'
+      );
     }
   }
 

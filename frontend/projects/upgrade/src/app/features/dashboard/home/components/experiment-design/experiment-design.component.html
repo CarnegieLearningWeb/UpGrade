@@ -104,6 +104,7 @@
                     mat-icon-button
                     type="button"
                     [disabled]="!isExperimentEditable"
+                    [disableRipple]="true"
                     (click)="removeConditionOrPartition('partition', groupIndex)"
                   >
                     <mat-icon class="remove-icon"> delete_outline </mat-icon>
@@ -207,6 +208,7 @@
                 <mat-cell
                   *matCellDef="let element; let groupIndex = index"
                   [formGroupName]="groupIndex"
+                  [disabled]="(isConditionsTableEditMode$ | async) && (conditionsTableEditIndex$ | async) != groupIndex"
                   style="justify-content: center"
                 >
                   <mat-form-field floatLabel="never" style="text-align: right">
@@ -226,15 +228,47 @@
                 <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                   {{ 'home.new-experiment.design.description.text' | translate }}
                 </mat-header-cell>
-                <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                  <mat-form-field floatLabel="never">
-                    <input
-                      matInput
-                      [placeholder]="'home.new-experiment.design.description.placeholder.text' | translate"
-                      formControlName="description"
-                      autocomplete="off"
-                    />
-                  </mat-form-field>
+                <mat-cell
+                  *matCellDef="let rowData; let groupIndex = index"
+                  [formGroupName]="groupIndex"
+                >
+                  <ng-container *ngIf="!rowData.isEditing">
+                    <span [matTooltip]="rowData.description" matTooltipPosition="above">
+                      {{ rowData.description | truncate: 35 }}
+                    </span>
+                  </ng-container>
+                  <ng-container *ngIf="rowData.isEditing">
+                    <mat-form-field floatLabel="never">
+                      <input
+                        matInput
+                        [placeholder]="
+                          'home.new-experiment.design.description.placeholder.text'
+                            | translate
+                        "
+                        formControlName="description"
+                        autocomplete="off"
+                      />
+                    </mat-form-field>
+                  </ng-container>
+                </mat-cell>
+              </ng-container>
+
+              <!-- Actions Column -->
+              <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
+                <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell" style="justify-content: flex-start;">
+                    <button
+                      type="button"
+                      class="row-action-btn"
+                      (click)="handleEditClick(rowData, rowIndex, 'conditions')"
+                    >
+                      <ng-container *ngIf="(conditionsTableEditIndex$ | async) !== rowIndex">
+                        <mat-icon class="icon">create</mat-icon>
+                      </ng-container>
+                      <ng-container *ngIf="(conditionsTableEditIndex$ | async) === rowIndex">
+                        <mat-icon class="icon">done</mat-icon>
+                      </ng-container>
+                    </button>
                 </mat-cell>
               </ng-container>
 
@@ -249,6 +283,7 @@
                     mat-icon-button
                     type="button"
                     [disabled]="!isExperimentEditable"
+                    [disableRipple]="true"
                     (click)="removeConditionOrPartition('condition', groupIndex)"
                   >
                     <mat-icon class="remove-icon"> delete_outline </mat-icon>
@@ -262,6 +297,7 @@
               type="button"
               class="ft-12-700 add-condition"
               *ngIf="!experimentInfo"
+              [disabled]="(isConditionsTableEditMode$ | async)"
               (click)="addConditionOrPartition('condition')"
             >
               + {{ 'home.new-experiment.design.add-condition.text' | translate }}
@@ -271,7 +307,7 @@
               class="ft-12-700 add-condition"
               *ngIf="experimentInfo"
               [ngClass]="{ 'add-condition--disabled': !isExperimentEditable }"
-              [disabled]="!isExperimentEditable"
+              [disabled]="!isExperimentEditable || (isConditionsTableEditMode$ | async)"
               (click)="addConditionOrPartition('condition')"
             >
               + {{ 'home.new-experiment.design.add-condition.text' | translate }}

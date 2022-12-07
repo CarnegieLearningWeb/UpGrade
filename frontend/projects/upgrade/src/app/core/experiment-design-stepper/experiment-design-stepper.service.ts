@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Store, select } from '@ngrx/store';
+import { Store, select, Action } from '@ngrx/store';
 import { AppState } from '../core.state';
 import { Observable } from 'rxjs';
 import {
@@ -11,8 +11,10 @@ import {
 import * as experimentDesignStepperAction from './store/experiment-design-stepper.actions';
 import {
   selectAliasTableEditIndex,
+  selectConditionsTableEditIndex,
   selecthasExperimentStepperDataChanged,
   selectIsAliasTableEditMode,
+  selectIsConditionsTableEditMode,
 } from './store/experiment-design-stepper.selectors';
 import { ExperimentAliasTableRow } from './store/experiment-design-stepper.model';
 
@@ -25,6 +27,8 @@ export class ExperimentDesignStepperService {
 
   isAliasTableEditMode$ = this.store$.pipe(select(selectIsAliasTableEditMode));
   aliasTableEditIndex$ = this.store$.pipe(select(selectAliasTableEditIndex));
+  isConditionsTableEditMode$ = this.store$.pipe(select(selectIsConditionsTableEditMode));
+  conditionsTableEditIndex$ = this.store$.pipe(select(selectConditionsTableEditIndex));
 
   constructor(private store$: Store<AppState>) {
     this.hasExperimentStepperDataChanged$ = this.store$.pipe(select(selecthasExperimentStepperDataChanged));
@@ -121,5 +125,25 @@ export class ExperimentDesignStepperService {
         aliasTableEditIndex: details.rowIndex,
       })
     );
+  }
+
+  setUpdateTableEditModeDetails(details: TableEditModeDetails, tableName: string): void {
+    let action: Action;
+
+    if (tableName === 'conditions') {
+      action = experimentDesignStepperAction.actionUpdateConditionsTableEditMode({
+        isConditionsTableEditMode: details.isEditMode,
+        conditionsTableEditIndex: details.rowIndex,
+      });
+    } else if (tableName === 'partitions') {
+      action = experimentDesignStepperAction.actionUpdateConditionsTableEditMode({
+        isConditionsTableEditMode: details.isEditMode,
+        conditionsTableEditIndex: details.rowIndex,
+      });
+    }
+
+    if (action) {
+      this.store$.dispatch(action);
+    }
   }
 }

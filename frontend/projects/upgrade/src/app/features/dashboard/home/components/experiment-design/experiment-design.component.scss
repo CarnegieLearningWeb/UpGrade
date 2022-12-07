@@ -52,15 +52,56 @@
         margin-bottom: -5px;
       }
 
+      .cdk-column-actions {
+        margin-left: 30px;
+        flex: 0 0 30px;
+        width: 30px;
+
+        .row-action-btn {
+          border: none;
+          background-color: transparent;
+
+          .icon {
+            margin-top: -5px;
+            margin-left: -3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--text-size-x-large);
+            color: gray;
+          }
+        }
+      }
+
       .cdk-column-removeCondition,
       .cdk-column-removePartition {
-        flex: 0 0 60px;
-        width: 60px;
+        margin-left: 8px;
+        margin-right: 15px;
+        flex: 0 0 30px;
+        width: 30px;
+
+        .mat-icon-button {
+          background-color: transparent;
+          border-radius: 0px;
+          margin-top: -5px;
+          margin-left: -5px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
+          .remove-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--text-size-x-large);
+            color: gray;
+          }
+        }
       }
 
       .cdk-column-site {
-        flex: 0 0 220px;
-        width: 220px;
+        flex: 0 0 250px;
+        width: 250px;
       }
 
       .cdk-column-target {
@@ -78,11 +119,12 @@
       }
 
       .cdk-column-conditionCode {
-        flex: 0 0 220px;
-        width: 220px;
+        flex: 0 0 250px;
+        width: 250px;
       }
 
       .cdk-column-assignmentWeight {
+        margin-left: 30px;
         flex: 0 0 82px;
         width: 82px;
       }
@@ -90,22 +132,6 @@
       .cdk-column-description {
         margin-left: 30px;
         width: 100%;
-        max-width: 350px;
-      }
-
-      .remove-icon {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: -3px;
-        min-width: 60px;
-        height: 16px;
-        font-size: var(--text-size-x-large);
-        color: gray;
-
-        &:hover {
-          cursor: pointer;
-        }
       }
 
       mat-form-field {

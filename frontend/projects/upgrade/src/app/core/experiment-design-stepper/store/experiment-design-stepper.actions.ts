@@ -5,6 +5,11 @@ export const actionUpdateAliasTableEditMode = createAction(
   props<{ isAliasTableEditMode: boolean; aliasTableEditIndex: number | null }>()
 );
 
+export const actionUpdateConditionsTableEditMode = createAction(
+  '[Experiment] Update Conditions Table Edit Mode Details',
+  props<{ isConditionsTableEditMode: boolean; conditionsTableEditIndex: number | null }>()
+);
+
 export const experimentStepperDataChanged = createAction('[Experiment] turn isExperimentStepperDataChanged true');
 
 export const experimentStepperDataReset = createAction('[Experiment] turn isExperimentStepperDataChanged false');
