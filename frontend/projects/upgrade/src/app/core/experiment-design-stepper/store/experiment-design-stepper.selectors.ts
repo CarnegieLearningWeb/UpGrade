@@ -19,3 +19,13 @@ export const selecthasExperimentStepperDataChanged = createSelector(
   selectExperimentDesignStepperState,
   (state) => state.hasExperimentStepperDataChanged
 );
+
+export const selectIsConditionsTableEditMode = createSelector(
+  selectExperimentDesignStepperState,
+  (state) => state.isConditionsTableEditMode
+);
+
+export const selectConditionsTableEditIndex = createSelector(
+  selectExperimentDesignStepperState,
+  (state) => state.conditionsTableEditIndex
+);
