@@ -249,6 +249,7 @@
   "logs.audit-log-experiment-data-requested.text": "successfully requested mail for experiment data of ",
   "logs.audit-log-experiment-design-exported.text": "successfully exported design of ",
   "logs.audit-log-experiment-state-changed.text": "successfully changed status from {{ previousState }} to {{ newState }} in ",
+  "logs.audit-log-caliper.text": "logged Caliper metrics for ",
   "users-global.text": "Participant",
   "users.main-heading.text": "Participants",
   "users.sub-heading.text": "Track experiment participants and preview participants",

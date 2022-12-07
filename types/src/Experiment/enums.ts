@@ -77,6 +77,7 @@ export enum EXPERIMENT_LOG_TYPE {
   EXPERIMENT_DATA_EXPORTED = 'experimentDataExported',
   EXPERIMENT_DATA_REQUESTED = 'experimentDataRequested',
   EXPERIMENT_DESIGN_EXPORTED = 'experimentDesignExported',
+  CALIPER_LOG = 'caliperLog'
 }
 
 export enum EXPERIMENT_SEARCH_KEY {

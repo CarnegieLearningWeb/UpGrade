@@ -17,7 +17,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
-import { IExperimentAssignment, ISingleMetric, IGroupMetric, SERVER_ERROR, ILogInput } from 'upgrade_types';
+import { IExperimentAssignment, ISingleMetric, IGroupMetric, SERVER_ERROR, ILogInput, EXPERIMENT_LOG_TYPE } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -33,6 +33,8 @@ import { AppRequest } from '../../types';
 import { env } from '../../env';
 import { CaliperLogValidator } from './validators/CaliperLogValidator';
 import { parse, toSeconds } from 'iso8601-duration';
+import { OrmRepository } from 'typeorm-typedi-extensions';
+import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 
 /**
  * @swagger
@@ -101,7 +103,9 @@ export class ExperimentClientController {
     public experimentAssignmentService: ExperimentAssignmentService,
     public experimentUserService: ExperimentUserService,
     public featureFlagService: FeatureFlagService,
-    public metricService: MetricService
+    public metricService: MetricService,
+    @OrmRepository()
+    private experimentAuditLogRepository: ExperimentAuditLogRepository,
   ) {}
 
   /**
@@ -694,10 +698,18 @@ export class ExperimentClientController {
      logs[0].metrics.attributes['duration'] = toSeconds(parse(logData.generated.attempt.duration));
      logs[0].metrics.attributes['scoreGiven'] = logData.generated.attempt.scoreGiven;
 
-     return this.experimentAssignmentService.dataLog(userId, logs, {
+     const logResponse = await this.experimentAssignmentService.dataLog(userId, logs, {
        logger: request.logger,
        userDoc: experimentUserDoc,
      });
+
+     await this.experimentAuditLogRepository.saveRawJson(
+      EXPERIMENT_LOG_TYPE.CALIPER_LOG,
+      logResponse,
+      null
+    );
+
+    return logResponse;
 
    }
 

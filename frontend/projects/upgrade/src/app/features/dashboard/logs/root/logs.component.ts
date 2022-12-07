@@ -18,6 +18,7 @@ export class LogsComponent implements OnInit, OnDestroy {
     { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED, viewValue: 'Experiment Data Exported' },
     { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_REQUESTED, viewValue: 'Experiment Data Requested' },
     { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED, viewValue: 'Experiment Design Exported' },
+    { value: EXPERIMENT_LOG_TYPE.CALIPER_LOG, viewValue: 'Logged Metrics in Caliper' },
   ];
 
   // Error log tab filter options

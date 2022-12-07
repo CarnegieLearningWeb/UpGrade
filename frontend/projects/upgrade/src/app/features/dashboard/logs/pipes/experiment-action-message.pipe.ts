@@ -21,6 +21,8 @@ export class ExperimentActionMessage implements PipeTransform {
         return 'logs.audit-log-experiment-data-requested.text';
       case EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED:
         return 'logs.audit-log-experiment-design-exported.text';
+      case EXPERIMENT_LOG_TYPE.CALIPER_LOG:
+        return 'logs.audit-log-caliper.text';
     }
   }
 }
