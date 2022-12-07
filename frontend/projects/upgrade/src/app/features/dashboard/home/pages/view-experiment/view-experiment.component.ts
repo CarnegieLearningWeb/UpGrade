@@ -118,10 +118,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         ),
         filter(
           ({ isLoadingDetails, experiment }) =>
-            !isLoadingDetails &&
-            !!experiment?.partitions?.length &&
-            !!experiment?.conditions?.length &&
-            !!experiment?.conditionAliases?.length
+            !isLoadingDetails && !!experiment?.partitions?.length && !!experiment?.conditions?.length
         )
       )
       .subscribe(({ experiment, isPolling }) => {
