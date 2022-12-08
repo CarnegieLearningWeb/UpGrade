@@ -25,7 +25,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { Observable, Subscription } from 'rxjs';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
+import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 @Component({
   selector: 'home-experiment-overview',
   templateUrl: './experiment-overview.component.html',
