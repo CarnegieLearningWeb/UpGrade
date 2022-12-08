@@ -218,7 +218,6 @@
   "home.view-experiment.mattab.design.text": "Design",
   "home.view-experiment.mattab.participants.text": "Participants",
   "home.view-experiment.mattab.metrics.text": "Metrics",
-  "home.view-experiment.mattab.metrics.tabletitle.text": "Defined Metrics",
   "home.import-experiment.message.text": "Select the JSON to import experiment:",
   "home.import-experiment.error.message.text": "Invalid Experiment JSON data",
   "home.import-experiment.old-version-error.message.text": "Imported experiment version is older than the current Upgrade Version. Some parts may not function as intended. (Still you can import it)",
