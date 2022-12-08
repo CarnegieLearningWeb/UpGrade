@@ -30,7 +30,7 @@ interface ImportExperimentJSON {
 export class ImportExperimentComponent implements OnInit {
   experimentInfo: Experiment;
   isExperimentJSONValid = true;
-  isExperimentJSONVersionValid = true;
+  experimentJSONVersionStatus = 0;
   missingAllProperties: string;
   allPartitions = [];
   allPartitionsSub: Subscription;
@@ -79,21 +79,28 @@ export class ImportExperimentComponent implements OnInit {
     this.openSnackBar();
   }
 
-  compareVersion(ver1, ver2) {
-    ver1 = ver1
+  compareVersion(currentBackendVersion, uploadedExperimentBackendVersion) {
+    currentBackendVersion = currentBackendVersion
       .split('.')
       .map((s) => s.padStart(10))
       .join('.');
-    ver2 = ver2
+    uploadedExperimentBackendVersion = uploadedExperimentBackendVersion
       .split('.')
       .map((s) => s.padStart(10))
       .join('.');
-    return ver1 >= ver2;
+
+    if (currentBackendVersion === uploadedExperimentBackendVersion) {
+      return 0;
+    } else if (currentBackendVersion > uploadedExperimentBackendVersion) {
+      return 1;
+    } else {
+      return 2;
+    }
   }
 
   async validateExperimentJSONVersion(experimentInfo: any): Promise<any> {
-    const version = await this.versionService.getVersion();
-    const versionStatus = this.compareVersion(experimentInfo.backendVersion, version);
+    const currentBackendVersion = await this.versionService.getVersion();
+    const versionStatus = this.compareVersion(currentBackendVersion, experimentInfo.backendVersion);
     return versionStatus;
   }
 
@@ -236,9 +243,9 @@ export class ImportExperimentComponent implements OnInit {
       async function () {
         const result = JSON.parse(reader.result as any);
         this.experimentInfo = result;
-        this.isExperimentJSONVersionValid = await this.validateExperimentJSONVersion(this.experimentInfo);
+        this.experimentJSONVersionStatus = await this.validateExperimentJSONVersion(this.experimentInfo);
         this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
-        if (this.isExperimentJSONVersionValid && this.isExperimentJSONValid) {
+        if (this.experimentJSONVersionStatus === 0 && this.isExperimentJSONValid) {
           this.allExperiments.push(this.experimentInfo);
         } else if (!this.isExperimentJSONValid) {
           this.importFileErrors.push({
@@ -247,10 +254,17 @@ export class ImportExperimentComponent implements OnInit {
               this.translate.instant('home.import-experiment.error.message.text') + ' ' + this.missingAllProperties,
           });
         } else {
-          this.importFileErrors.push({
-            fileName: fileName,
-            error: this.translate.instant('home.import-experiment.version-error.message.text'),
-          });
+          if (this.experimentJSONVersionStatus === 1) {
+            this.importFileErrors.push({
+              fileName: fileName,
+              error: this.translate.instant('home.import-experiment.old-version-error.message.text'),
+            });
+          } else {
+            this.importFileErrors.push({
+              fileName: fileName,
+              error: this.translate.instant('home.import-experiment.new-version-error.message.text'),
+            });
+          }
           this.allExperiments.push(this.experimentInfo);
         }
 
