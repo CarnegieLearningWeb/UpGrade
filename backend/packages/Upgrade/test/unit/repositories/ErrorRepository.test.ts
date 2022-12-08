@@ -7,13 +7,13 @@ import { SERVER_ERROR } from 'upgrade_types';
 let sandbox;
 let createQueryBuilderStub;
 let insertMock, deleteMock, selectMock;
-let insertQueryBuilder = new InsertQueryBuilder<ErrorRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<ErrorRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<ErrorRepository>(null);
-let repo = new ErrorRepository();
+const insertQueryBuilder = new InsertQueryBuilder<ErrorRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<ErrorRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<ErrorRepository>(null);
+const repo = new ErrorRepository();
 const err = new Error('test error');
 
-let experiment = new ExperimentError();
+const experiment = new ExperimentError();
 experiment.id = 'id1';
 
 const result = {
@@ -50,7 +50,7 @@ describe('ErrorRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.saveRawJson(experiment);
+    const res = await repo.saveRawJson(experiment);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -88,7 +88,7 @@ describe('ErrorRepository Testing', () => {
     deleteMock.expects('where').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.clearLogs(4);
+    const res = await repo.clearLogs(4);
 
     sinon.assert.calledTwice(stub);
 
@@ -126,7 +126,7 @@ describe('ErrorRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getCount').once().returns(Promise.resolve(5));
 
-    let res = await repo.getTotalLogs(SERVER_ERROR.CONDITION_NOT_FOUND);
+    const res = await repo.getTotalLogs(SERVER_ERROR.CONDITION_NOT_FOUND);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -157,7 +157,7 @@ describe('ErrorRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.paginatedFind(3, 0, SERVER_ERROR.ASSIGNMENT_ERROR);
+    const res = await repo.paginatedFind(3, 0, SERVER_ERROR.ASSIGNMENT_ERROR);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -174,7 +174,7 @@ describe('ErrorRepository Testing', () => {
     selectMock.expects('where').never().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.paginatedFind(3, 0, null);
+    const res = await repo.paginatedFind(3, 0, null);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();

@@ -7,8 +7,8 @@ import jwt from 'jsonwebtoken';
 describe('ScheduleJob Middleware tests', () => {
   let mockRequest: any;
   let mockResponse: any;
-  let nextFunction: NextFunction = jest.fn();
-  let schedulelib = new ScheduleJobMiddleware();
+  const nextFunction: NextFunction = jest.fn();
+  const schedulelib = new ScheduleJobMiddleware();
 
   let mockjson: any;
 
@@ -31,7 +31,7 @@ describe('ScheduleJob Middleware tests', () => {
   });
 
   test('JWT Expired error test', async () => {
-    let error = new Error();
+    const error = new Error();
     error.message = 'jwt expired';
     mockRequest.header = jest.fn(() => {
       throw error;
@@ -42,7 +42,7 @@ describe('ScheduleJob Middleware tests', () => {
   });
 
   test('Invalid token error test', async () => {
-    let error = new Error();
+    const error = new Error();
     error.message = 'invalid token';
     mockRequest.header = jest.fn(() => {
       throw error;
@@ -61,11 +61,11 @@ describe('ScheduleJob Middleware tests', () => {
   });
 
   test('Auth Check no token test', async () => {
-    let headerAuth = (x) => {
+    const headerAuth = (x) => {
       return x + ' Bearer abd';
     };
     mockRequest.header = headerAuth;
-    let getSessionId = (x) => {
+    const getSessionId = (x) => {
       return x + ' 123';
     };
     mockRequest.get = getSessionId;
