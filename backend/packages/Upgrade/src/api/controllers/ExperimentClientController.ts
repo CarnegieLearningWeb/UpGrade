@@ -694,7 +694,7 @@ export class ExperimentClientController {
     };
 
      logs.metrics.attributes['duration'] = toSeconds(parse(logData.generated.attempt.duration));
-     logs.metrics.attributes['scoreGiven'] = logData.generated.attempt.scoreGiven;
+     logs.metrics.attributes['scoreGiven'] = logData.generated.scoreGiven;
 
      const logResponse = await this.experimentAssignmentService.dataLog(userId, [logs], {
        logger: request.logger,

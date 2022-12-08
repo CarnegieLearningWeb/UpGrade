@@ -166,6 +166,7 @@ export interface ScoreObject{
   type: string;
   attempt: Attempt;
   extensions?: object;
+  scoreGiven?: number;
 }
 
 export interface Attempt{
@@ -174,7 +175,7 @@ export interface Attempt{
   assignee?: string;
   assignable?: string;
   duration?: string;
-  scoreGiven?: number;
+
   extensions?: ILogInput;
 }
 
