@@ -4,7 +4,7 @@ export const environment = {
   apiBaseUrl: 'http://new-bsnl-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com/api',
   production: true,
   test: false,
-  i18nPrefix: '',
+  baseHrefPrefix: '',
   gapiClientId: '135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com',
   domainName: '',
   pollingEnabled: false,
