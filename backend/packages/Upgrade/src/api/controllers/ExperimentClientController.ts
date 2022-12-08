@@ -702,9 +702,9 @@ export class ExperimentClientController {
      });
 
      await this.experimentAuditLogRepository.saveRawJson(
-      EXPERIMENT_LOG_TYPE.CALIPER_LOG,
+      EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
       {experimentName: "Caliper Logs"},
-      new User()
+      null
     );
 
     return logResponse;

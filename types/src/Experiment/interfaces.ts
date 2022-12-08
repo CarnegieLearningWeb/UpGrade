@@ -169,12 +169,12 @@ export interface ScoreObject{
 }
 
 export interface Attempt{
-  id: string;
+  id?: string;
   type: string;
-  assignee: string;
-  assignable: string;
-  duration: string;
-  scoreGiven: number;
+  assignee?: string;
+  assignable?: string;
+  duration?: string;
+  scoreGiven?: number;
   extensions?: ILogInput;
 }
 
