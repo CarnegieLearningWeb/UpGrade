@@ -203,11 +203,7 @@
         matStepperPrevious
         mat-raised-button
         class="shared-modal--modal-btn btn-back default-button"
-        (click)="
-          participantsForm.dirty || participantsForm2.dirty
-            ? experimentDesignStepperService.experimentStepperDataChanged()
-            : ''
-        "
+        (click)="handleCloseClick()"
       >
         {{ 'global.back.text' | translate }}
       </button>
