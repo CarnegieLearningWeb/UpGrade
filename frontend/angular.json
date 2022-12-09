@@ -80,6 +80,47 @@
                 }
               ]
             },
+            "demo": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/upgrade/src/environments/environment.ts",
+                  "with": "projects/upgrade/src/environments/environment.demo.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "budgets": [
+                {
+                  "type": "bundle",
+                  "name": "polyfills",
+                  "baseline": "150kb",
+                  "maximumWarning": "50kb",
+                  "maximumError": "100kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "styles",
+                  "baseline": "1mb",
+                  "maximumWarning": "2mb",
+                  "maximumError": "100kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "main",
+                  "baseline": "2mb",
+                  "maximumWarning": "3mb",
+                  "maximumError": "200kb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
+            },
             "develop": {
               "fileReplacements": [
                 {

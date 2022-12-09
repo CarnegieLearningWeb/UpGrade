@@ -15,13 +15,13 @@ let connection;
 let manager;
 let createQueryBuilderStub;
 let insertMock, deleteMock, selectMock;
-let insertQueryBuilder = new InsertQueryBuilder<ExperimentConditionRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<ExperimentConditionRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<ExperimentConditionRepository>(null);
-let repo = new ExperimentConditionRepository();
+const insertQueryBuilder = new InsertQueryBuilder<ExperimentConditionRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<ExperimentConditionRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<ExperimentConditionRepository>(null);
+const repo = new ExperimentConditionRepository();
 const err = new Error('test error');
 
-let experimentCond = new ExperimentCondition();
+const experimentCond = new ExperimentCondition();
 experimentCond.id = 'id1';
 experimentCond.twoCharacterId = 'ab';
 
@@ -65,7 +65,7 @@ describe('ExperimentConditionRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.upsertExperimentCondition(experimentCond, manager);
+    const res = await repo.upsertExperimentCondition(experimentCond, manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -101,7 +101,7 @@ describe('ExperimentConditionRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.insertConditions([experimentCond], manager);
+    const res = await repo.insertConditions([experimentCond], manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -134,7 +134,7 @@ describe('ExperimentConditionRepository Testing', () => {
     deleteMock.expects('where').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteByIds([experimentCond.id], manager);
+    const res = await repo.deleteByIds([experimentCond.id], manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -199,7 +199,7 @@ describe('ExperimentConditionRepository Testing', () => {
       .once()
       .returns(Promise.resolve([experimentCond, experimentCond]));
 
-    let res = await repo.getAllUniqueIdentifier();
+    const res = await repo.getAllUniqueIdentifier();
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();

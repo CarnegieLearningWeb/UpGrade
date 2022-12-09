@@ -13,6 +13,7 @@
     "build": "ng build",
     "prebuild:prod": "npm run test",
     "build:prod": "ng build --configuration production",
+    "build:demo": "ng build --configuration demo --base-href /upgrade/",
     "build:dev": "ng build -c=development",
     "clean": "rimraf node_modules && rm package-lock.json && npm update && npm i",
     "lint": "eslint -c ../.eslintrc.js --ext .ts './projects/upgrade/src' && npm run prettier:check",
@@ -28,6 +29,7 @@
     "release": "standard-version && git push --follow-tags origin master",
     "analyze": "npm run build:prod -- --stats-json && webpack-bundle-analyzer ./dist/upgrade/stats.json",
     "server": "node ./projects/server/server.js",
+    "server:demo": "node ./projects/server/demo-server.js",
     "build:development": "npm run build:dev",
     "build:production": "npm run build:prod"
   },

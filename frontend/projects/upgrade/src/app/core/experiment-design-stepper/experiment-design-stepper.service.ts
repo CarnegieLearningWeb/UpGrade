@@ -1,15 +1,50 @@
 import { Injectable } from '@angular/core';
+import { Store, select } from '@ngrx/store';
+import { AppState } from '../core.state';
+import { Observable } from 'rxjs';
 import {
   ExperimentPartition,
   ExperimentCondition,
-  ExperimentAliasTableRow,
   ExperimentConditionAlias,
-} from './store/experiments.model';
+  TableEditModeDetails,
+} from '../experiments/store/experiments.model';
+import * as experimentDesignStepperAction from './store/experiment-design-stepper.actions';
+import {
+  selectAliasTableEditIndex,
+  selecthasExperimentStepperDataChanged,
+  selectIsAliasTableEditMode,
+} from './store/experiment-design-stepper.selectors';
+import { ExperimentAliasTableRow } from './store/experiment-design-stepper.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ExperimentUtilityService {
+export class ExperimentDesignStepperService {
+  expStepperDataChangedFlag = false;
+  hasExperimentStepperDataChanged$: Observable<boolean>;
+
+  isAliasTableEditMode$ = this.store$.pipe(select(selectIsAliasTableEditMode));
+  aliasTableEditIndex$ = this.store$.pipe(select(selectAliasTableEditIndex));
+
+  constructor(private store$: Store<AppState>) {
+    this.hasExperimentStepperDataChanged$ = this.store$.pipe(select(selecthasExperimentStepperDataChanged));
+    this.hasExperimentStepperDataChanged$.subscribe(
+      (isDataChanged) => (this.expStepperDataChangedFlag = isDataChanged)
+    );
+  }
+
+  getHasExperimentDesignStepperDataChanged() {
+    return this.expStepperDataChangedFlag;
+  }
+
+  experimentStepperDataChanged() {
+    this.store$.dispatch(experimentDesignStepperAction.experimentStepperDataChanged());
+  }
+
+  experimentStepperDataReset() {
+    this.store$.dispatch(experimentDesignStepperAction.experimentStepperDataReset());
+  }
+
   isValidString(value: any) {
     return typeof value === 'string' && value.trim();
   }
@@ -77,5 +112,14 @@ export class ExperimentUtilityService {
     });
 
     return aliasTableData;
+  }
+
+  setUpdateAliasTableEditMode(details: TableEditModeDetails): void {
+    this.store$.dispatch(
+      experimentDesignStepperAction.actionUpdateAliasTableEditMode({
+        isAliasTableEditMode: details.isEditMode,
+        aliasTableEditIndex: details.rowIndex,
+      })
+    );
   }
 }

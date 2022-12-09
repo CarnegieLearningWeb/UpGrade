@@ -8,8 +8,6 @@ import {
   EXPERIMENT_STATE,
   ExperimentVM,
   EXPERIMENT_SEARCH_KEY,
-  ExperimentConditionAlias,
-  ExperimentAliasTableRow,
 } from '../../../../../core/experiments/store/experiments.model';
 import { Observable, Subscription } from 'rxjs';
 import { filter, withLatestFrom } from 'rxjs/operators';
@@ -28,7 +26,8 @@ import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-ti
 import { FILTER_MODE } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
-import { ExperimentUtilityService } from '../../../../../core/experiments/experiment-utility.service';
+import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
+import { ExperimentAliasTableRow } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 // Used in view-experiment component only
 enum DialogType {
   CHANGE_STATUS = 'Change status',
@@ -69,7 +68,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   constructor(
     private experimentService: ExperimentService,
-    private experimentUtilityService: ExperimentUtilityService,
+    private experimentDesignStepperService: ExperimentDesignStepperService,
     private dialog: MatDialog,
     private authService: AuthService,
     private router: Router,
@@ -118,17 +117,14 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         ),
         filter(
           ({ isLoadingDetails, experiment }) =>
-            !isLoadingDetails &&
-            !!experiment?.partitions?.length &&
-            !!experiment?.conditions?.length &&
-            !!experiment?.conditionAliases?.length
+            !isLoadingDetails && !!experiment?.partitions?.length && !!experiment?.conditions?.length
         )
       )
       .subscribe(({ experiment, isPolling }) => {
         this.onExperimentChange(experiment, isPolling);
         this.loadParticipants();
         this.loadMetrics();
-        this.aliasTableData = this.experimentUtilityService.createAliasTableData(
+        this.aliasTableData = this.experimentDesignStepperService.createAliasTableData(
           experiment.partitions,
           experiment.conditions,
           experiment.conditionAliases,

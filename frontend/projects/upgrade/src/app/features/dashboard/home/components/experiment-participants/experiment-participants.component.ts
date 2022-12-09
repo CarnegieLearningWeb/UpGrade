@@ -23,7 +23,7 @@ import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from 'upgrade_types';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
+import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 
 @Component({
   selector: 'home-experiment-participants',
@@ -67,7 +67,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     private segmentsService: SegmentsService,
     private experimentService: ExperimentService,
     private dialogService: DialogService,
-    public experimentDesignStepperService: ExperimentDesignStepperService
+    private experimentDesignStepperService: ExperimentDesignStepperService
   ) {}
 
   ngOnChanges() {
@@ -221,6 +221,13 @@ export class ExperimentParticipantsComponent implements OnInit {
         this.subSegmentTypes.push({ name: type + this.groupString, value: type });
       });
     }
+  }
+
+  handleCloseClick() {
+    return (
+      (this.participantsForm.dirty || this.participantsForm2.dirty) &&
+      this.experimentDesignStepperService.experimentStepperDataChanged()
+    );
   }
 
   gettingMembersValueToSend(members: any) {

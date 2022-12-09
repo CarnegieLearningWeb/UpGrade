@@ -422,6 +422,9 @@ export class ExperimentService {
         uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
         return decisionPoint;
       });
+
+      // Always set the imported experiment to "inactive".
+      experiment.state = EXPERIMENT_STATE.INACTIVE;
     }
     return this.addBulkExperiments(experiments, user, logger);
   }

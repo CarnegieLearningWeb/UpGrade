@@ -8,15 +8,15 @@ import { ExperimentUser } from '../../../src/api/models/ExperimentUser';
 let sandbox;
 let createQueryBuilderStub;
 let selectMock;
-let selectQueryBuilder = new SelectQueryBuilder<IndividualEnrollmentRepository>(null);
-let repo = new IndividualEnrollmentRepository();
+const selectQueryBuilder = new SelectQueryBuilder<IndividualEnrollmentRepository>(null);
+const repo = new IndividualEnrollmentRepository();
 const err = new Error('test error');
 
-let individual = new IndividualEnrollment();
+const individual = new IndividualEnrollment();
 individual.id = 'id1';
-let user = new ExperimentUser();
+const user = new ExperimentUser();
 user.id = 'uid1';
-let exp = new Experiment();
+const exp = new Experiment();
 exp.id = 'exp1';
 individual.experiment = exp;
 individual.user = user;
@@ -42,7 +42,7 @@ describe('IndividualEnrollmentRepository Testing', () => {
       .stub(IndividualEnrollmentRepository.prototype, 'delete')
       .returns(Promise.resolve(result));
 
-    let res = await repo.deleteEnrollmentsOfUserInExperiments(individual.id, [exp.id]);
+    const res = await repo.deleteEnrollmentsOfUserInExperiments(individual.id, [exp.id]);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
 
@@ -71,7 +71,7 @@ describe('IndividualEnrollmentRepository Testing', () => {
       .stub(IndividualEnrollmentRepository.prototype, 'find')
       .returns(Promise.resolve(result));
 
-    let res = await repo.findEnrollments(individual.id, [exp.id]);
+    const res = await repo.findEnrollments(individual.id, [exp.id]);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
 
@@ -106,7 +106,7 @@ describe('IndividualEnrollmentRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.getEnrollmentCountForExperiment(exp.id);
+    const res = await repo.getEnrollmentCountForExperiment(exp.id);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -148,7 +148,7 @@ describe('IndividualEnrollmentRepository Testing', () => {
     selectMock.expects('groupBy').once().returns(selectQueryBuilder);
     selectMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.getEnrollmentCountByCondition(exp.id);
+    const res = await repo.getEnrollmentCountByCondition(exp.id);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
