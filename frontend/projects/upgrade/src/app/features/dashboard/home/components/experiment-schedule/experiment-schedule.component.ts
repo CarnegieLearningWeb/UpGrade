@@ -9,7 +9,7 @@ import {
   EXPERIMENT_STATE,
 } from '../../../../../core/experiments/store/experiments.model';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
+import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 @Component({
   selector: 'home-experiment-schedule',
   templateUrl: './experiment-schedule.component.html',
@@ -26,7 +26,7 @@ export class ExperimentScheduleComponent implements OnInit {
   constructor(
     private _formBuilder: FormBuilder,
     private dialogService: DialogService,
-    public experimentDesignStepperService: ExperimentDesignStepperService
+    private experimentDesignStepperService: ExperimentDesignStepperService
   ) {}
 
   get NewExperimentDialogEvents() {
@@ -195,6 +195,10 @@ export class ExperimentScheduleComponent implements OnInit {
         this.experimentScheduleForm.markAsPristine();
         break;
     }
+  }
+
+  handleCloseClick() {
+    return this.experimentScheduleForm.dirty && this.experimentDesignStepperService.experimentStepperDataChanged();
   }
 
   saveData(eventType) {

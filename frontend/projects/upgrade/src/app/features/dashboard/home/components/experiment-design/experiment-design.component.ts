@@ -22,17 +22,18 @@ import {
   ExperimentPartition,
   IContextMetaData,
   EXPERIMENT_STATE,
-  ExperimentAliasTableRow,
-  ExperimentConditionAliasRequestObject,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
 import { filter, map, pairwise, startWith } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
-import { ExperimentUtilityService } from '../../../../../core/experiments/experiment-utility.service';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
+import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
+import {
+  ExperimentAliasTableRow,
+  ExperimentConditionAliasRequestObject,
+} from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 @Component({
   selector: 'home-experiment-design',
   templateUrl: './experiment-design.component.html',
@@ -93,10 +94,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
-    private experimentUtilityService: ExperimentUtilityService,
     private translate: TranslateService,
     private dialogService: DialogService,
-    public experimentDesignStepperService: ExperimentDesignStepperService
+    private experimentDesignStepperService: ExperimentDesignStepperService
   ) {
     this.partitionErrorMessagesSub = this.translate
       .get([
@@ -158,7 +158,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       { validators: ExperimentFormValidators.validateExperimentDesignForm }
     );
     this.createDesignDataSubject();
-    this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
+    this.isAliasTableEditMode$ = this.experimentDesignStepperService.isAliasTableEditMode$;
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
@@ -255,15 +255,19 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     ])
       .pipe(
         pairwise(),
-        filter((designData) => this.experimentUtilityService.filterForUnchangedDesignData(designData)),
+        filter((designData) => this.experimentDesignStepperService.filterForUnchangedDesignData(designData)),
         map(([_, current]) => current),
-        filter((designData) => this.experimentUtilityService.validDesignDataFilter(designData))
+        filter((designData) => this.experimentDesignStepperService.validDesignDataFilter(designData))
       )
       .subscribe(this.designData$);
   }
 
   handleAliasTableDataChange(aliasTableData: ExperimentAliasTableRow[]) {
     this.aliasTableData = [...aliasTableData];
+  }
+
+  handleCloseClick() {
+    return this.experimentDesignForm.dirty && this.experimentDesignStepperService.experimentStepperDataChanged();
   }
 
   private filterConditionCodes(value: string): string[] {

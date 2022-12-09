@@ -1,11 +1,10 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { BehaviorSubject, combineLatest, filter, map, Observable, Subscription } from 'rxjs';
-import { ExperimentUtilityService } from '../../../../../../core/experiments/experiment-utility.service';
+import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
+import { ExperimentAliasTableRow } from '../../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import {
-  ExperimentAliasTableRow,
   ExperimentCondition,
-  ExperimentConditionAlias,
   ExperimentPartition,
   ExperimentVM,
   TableEditModeDetails,
@@ -36,12 +35,12 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
 
   constructor(
     private experimentService: ExperimentService,
-    private experimentUtilityService: ExperimentUtilityService
+    private experimentDesignStepperService: ExperimentDesignStepperService
   ) {}
 
   ngOnInit(): void {
-    this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
-    this.aliasTableEditIndex$ = this.experimentService.aliasTableEditIndex$;
+    this.isAliasTableEditMode$ = this.experimentDesignStepperService.isAliasTableEditMode$;
+    this.aliasTableEditIndex$ = this.experimentDesignStepperService.aliasTableEditIndex$;
     this.currentContextMetaDataConditions$ = this.experimentService.currentContextMetaDataConditions$;
   }
 
@@ -52,7 +51,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
       const conditionAliases = this.experimentInfo?.conditionAliases;
       const useExistingAliasData = !!(conditionAliases && this.initialLoad);
 
-      this.aliasTableData = this.experimentUtilityService.createAliasTableData(
+      this.aliasTableData = this.experimentDesignStepperService.createAliasTableData(
         decisionPoints,
         conditions,
         conditionAliases,
@@ -64,7 +63,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
 
     this.subscriptions = combineLatest([this.currentContextMetaDataConditions$, this.currentAliasInput$])
       .pipe(
-        filter(([conditions, input]) => !!conditions && !!this.experimentUtilityService.isValidString(input)),
+        filter(([conditions, input]) => !!conditions && !!this.experimentDesignStepperService.isValidString(input)),
         map(([conditions, input]) =>
           conditions.filter((condition: string) => condition.toLowerCase().includes(input.toLowerCase()))
         )
@@ -73,7 +72,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.experimentService.setUpdateAliasTableEditMode({
+    this.experimentDesignStepperService.setUpdateAliasTableEditMode({
       isEditMode: false,
       rowIndex: null,
     });
@@ -85,7 +84,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   }
 
   handleEditClick(rowData: ExperimentAliasTableRow, rowIndex: number) {
-    if (rowData.isEditing && !this.experimentUtilityService.isValidString(rowData.alias)) {
+    if (rowData.isEditing && !this.experimentDesignStepperService.isValidString(rowData.alias)) {
       rowData.alias = rowData.condition;
     }
 
@@ -96,7 +95,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
       isEditMode,
       rowIndex: isEditMode ? rowIndex : null,
     };
-    this.experimentService.setUpdateAliasTableEditMode(editModeDetails);
+    this.experimentDesignStepperService.setUpdateAliasTableEditMode(editModeDetails);
     this.currentAliasInput$.next(rowData.alias);
   }
 

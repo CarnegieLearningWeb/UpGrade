@@ -16,7 +16,7 @@ import { ENV, Environment } from '../environments/environment-types';
 export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
   // in non-prod build, all env vars can be provided on .environment.ts,
   // so skip fetch
-  if (!environment.production) {
+  if (!environment.production || (environment.apiBaseUrl && environment.gapiClientId)) {
     return () => Promise.resolve();
   }
 
