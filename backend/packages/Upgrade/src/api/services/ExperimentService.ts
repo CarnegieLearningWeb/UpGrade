@@ -645,79 +645,22 @@ export class ExperimentService {
         }
 
         experimentDoc.experimentSegmentInclusion = oldExperiment.experimentSegmentInclusion;
+        const segmentIncludeData = this.includeExcludeSegmentCreation(
+          experimentSegmentInclusion,
+          experimentDoc.experimentSegmentInclusion,
+          experiment.id,
+          experiment.context,
+          true
+        );
+
         experimentDoc.experimentSegmentExclusion = oldExperiment.experimentSegmentExclusion;
-
-        const currentIncludeData = experimentSegmentInclusion.segment
-          ? {
-              ...experimentSegmentInclusion.segment,
-              userIds: experimentSegmentInclusion.segment.individualForSegment.map((x) => x.userId),
-              groups: experimentSegmentInclusion.segment.groupForSegment.map((x) => {
-                return { groupId: x.groupId, type: x.type };
-              }),
-              subSegmentIds: experimentSegmentInclusion.segment.subSegments.map((x) => x.id),
-            }
-          : experimentSegmentInclusion;
-
-        const currentExcludeData = experimentSegmentExclusion.segment
-          ? {
-              ...experimentSegmentExclusion.segment,
-              userIds: experimentSegmentExclusion.segment.individualForSegment.map((x) => x.userId),
-              groups: experimentSegmentExclusion.segment.groupForSegment.map((x) => {
-                return { groupId: x.groupId, type: x.type };
-              }),
-              subSegmentIds: experimentSegmentExclusion.segment.subSegments.map((x) => x.id),
-            }
-          : experimentSegmentExclusion;
-
-        let segmentInclude;
-        let segmentIncludeData;
-        if (experimentDoc.experimentSegmentInclusion.segment) {
-          segmentIncludeData = {
-            ...currentIncludeData,
-            id: experimentDoc.experimentSegmentInclusion.segment.id,
-            name: experimentDoc.experimentSegmentInclusion.segment.name,
-            description: experimentDoc.experimentSegmentInclusion.segment.description,
-            context: experiment.context[0],
-            type: SEGMENT_TYPE.PRIVATE,
-          };
-        } else {
-          segmentInclude = experimentDoc.experimentSegmentInclusion;
-          segmentIncludeData = {
-            ...segmentInclude,
-            id: uuid(),
-            name: experiment.id + ' Inclusion Segment',
-            description: experiment.id + ' Inclusion Segment',
-            context: experiment.context[0],
-          };
-        }
-
-        let segmentExclude;
-        let segmentExcludeData;
-        if (experimentDoc.experimentSegmentExclusion.segment) {
-          segmentExcludeData = {
-            ...currentExcludeData,
-            id: experimentDoc.experimentSegmentExclusion.segment.id,
-            name: experimentDoc.experimentSegmentExclusion.segment.name,
-            description: experimentDoc.experimentSegmentExclusion.segment.description,
-            context: experiment.context[0],
-            type: SEGMENT_TYPE.PRIVATE,
-          };
-        } else {
-          segmentExclude = experimentDoc.experimentSegmentExclusion;
-          segmentExcludeData = {
-            ...segmentExclude,
-            id: uuid(),
-            name: experiment.id + ' Exclusion Segment',
-            description: experiment.id + ' Exclusion Segment',
-            context: experiment.context[0],
-          };
-        }
-        // for test cases:
-        if (segmentIncludeData['subSegmentIds'] === undefined) {
-          segmentIncludeData.subSegmentIds = [];
-          segmentIncludeData.userIds = [];
-          segmentIncludeData.groups = [];
-        }
+        const segmentExcludeData = this.includeExcludeSegmentCreation(
+          experimentSegmentExclusion,
+          experimentDoc.experimentSegmentExclusion,
+          experiment.id,
+          experiment.context,
+          false
+        );
 
         let segmentIncludeDoc: Segment;
         try {
@@ -728,12 +671,6 @@ export class ExperimentService {
           error.type = SERVER_ERROR.QUERY_FAILED;
           logger.error(error);
           throw error;
-        }
-        // for test cases:
-        if (segmentExcludeData['subSegmentIds'] === undefined) {
-          segmentExcludeData.subSegmentIds = [];
-          segmentExcludeData.userIds = [];
-          segmentExcludeData.groups = [];
         }
 
         let segmentExcludeDoc: Segment;
@@ -1382,6 +1319,56 @@ export class ExperimentService {
       });
     });
     return { ...experiment, conditionAliases: conditionAlias };
+  }
+
+  private includeExcludeSegmentCreation(
+    experimentSegment: ExperimentSegmentInclusion | ExperimentSegmentExclusion,
+    experimentDocSegmentData: ExperimentSegmentInclusion | ExperimentSegmentExclusion,
+    experimentId: string,
+    context: string[],
+    isIncludeMode: boolean
+  ) {
+    const currentData = experimentSegment.segment
+      ? {
+          ...experimentSegment.segment,
+          userIds: experimentSegment.segment.individualForSegment.map((user) => user.userId),
+          groups: experimentSegment.segment.groupForSegment.map((group) => {
+            return { groupId: group.groupId, type: group.type };
+          }),
+          subSegmentIds: experimentSegment.segment.subSegments.map((segment) => segment.id),
+        }
+      : experimentSegment;
+
+    let segment;
+    let segmentDataToReturn;
+    if (experimentDocSegmentData.segment) {
+      segmentDataToReturn = {
+        ...currentData,
+        id: experimentDocSegmentData.segment.id,
+        name: experimentDocSegmentData.segment.name,
+        description: experimentDocSegmentData.segment.description,
+        context: context[0],
+        type: SEGMENT_TYPE.PRIVATE,
+      };
+    } else {
+      segment = experimentDocSegmentData;
+      segmentDataToReturn = {
+        ...segment,
+        id: uuid(),
+        name: isIncludeMode ? experimentId + ' Inclusion Segment' : experimentId + ' Exclusion Segment',
+        description: isIncludeMode ? experimentId + ' Inclusion Segment' : experimentId + ' Exclusion Segment',
+        context: context[0],
+      };
+    }
+
+    // for test cases:
+    if (segmentDataToReturn['subSegmentIds'] === undefined) {
+      segmentDataToReturn.subSegmentIds = [];
+      segmentDataToReturn.userIds = [];
+      segmentDataToReturn.groups = [];
+    }
+
+    return segmentDataToReturn;
   }
 
   private getSegmentDoc(doc: ExperimentSegmentExclusion | ExperimentSegmentInclusion) {
