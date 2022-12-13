@@ -28,16 +28,23 @@ const reducer = createReducer(
     ...state,
     hasExperimentStepperDataChanged: false,
   })),
-  on(
-    experimentDesignStepperAction.actionUpdateConditionsTableEditMode,
-    (state, { isConditionsTableEditMode, conditionsTableEditIndex }) => {
-      return {
-        ...state,
-        isConditionsTableEditMode,
-        conditionsTableEditIndex,
-      };
-    }
-  )
+  on(experimentDesignStepperAction.actionUpdateConditionsTableEditMode, (state, { conditionsTableEditIndex }) => {
+    // toggle previous value
+    const editMode = !state.isConditionsTableEditMode;
+
+    // if not in edit mode, use null for row-index
+    const editIndex = editMode ? conditionsTableEditIndex : null;
+    return {
+      ...state,
+      isConditionsTableEditMode: editMode,
+      conditionsTableEditIndex: editIndex,
+    };
+  }),
+  on(experimentDesignStepperAction.actionClearConditionTableEditDetails, (state) => ({
+    ...state,
+    isConditionsTableEditMode: false,
+    conditionsTableEditIndex: null,
+  }))
 );
 
 export function experimentDesignStepperReducer(state: ExperimentDesignStepperState | undefined, action: Action) {
