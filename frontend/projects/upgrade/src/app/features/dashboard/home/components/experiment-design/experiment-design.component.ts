@@ -11,7 +11,7 @@ import {
   SimpleChanges,
   OnDestroy,
 } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
@@ -22,7 +22,6 @@ import {
   ExperimentPartition,
   IContextMetaData,
   EXPERIMENT_STATE,
-  TableEditModeDetails,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
@@ -55,11 +54,12 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild('partitionTable', { read: ElementRef }) partitionTable: ElementRef;
   @ViewChild('conditionCode') conditionCode: ElementRef;
 
+  subscriptionHandler: Subscription;
+
   experimentDesignForm: FormGroup;
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   partitionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   allPartitions = [];
-  allPartitionsSub: Subscription;
 
   // Condition Errors
   conditionCountError: string;
@@ -67,7 +67,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   // Partition Errors
   partitionPointErrors = [];
   partitionErrorMessages = [];
-  partitionErrorMessagesSub: Subscription;
   partitionCountError: string;
 
   previousAssignmentWeightValues = [];
@@ -82,21 +81,20 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   contextMetaData: IContextMetaData = {
     contextMetadata: {},
   };
-  contextMetaDataSub: Subscription;
   expPointAndIdErrors: string[] = [];
   conditionCodeErrors: string[] = [];
   equalWeightFlag = true;
 
   // Alias Table details
   designData$ = new BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]>([[], []]);
-  designDataSub: Subscription;
   aliasTableData: ExperimentAliasTableRow[] = [];
   isAliasTableEditMode$: Observable<boolean>;
   isExperimentEditable = true;
 
   isConditionsTableEditMode$: Observable<boolean>;
-  conditionsTableEditIndex$: Observable<number>;
+  conditionsTableEditIndex$: Observable<number | null>;
   conditionsTableData: ExperimentConditionsTableRow[] = [];
+  isFormLockedForEdit$: Observable<boolean>;
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -105,7 +103,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     private dialogService: DialogService,
     private experimentDesignStepperService: ExperimentDesignStepperService
   ) {
-    this.partitionErrorMessagesSub = this.translate
+    this.subscriptionHandler = this.translate
       .get([
         'home.new-experiment.design.assignment-partition-error-1.text',
         'home.new-experiment.design.assignment-partition-error-2.text',
@@ -147,10 +145,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit() {
-    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
+    this.subscriptionHandler = this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
       this.contextMetaData = contextMetaData;
     });
-    this.allPartitionsSub = this.experimentService.allPartitions$
+    this.subscriptionHandler = this.experimentService.allPartitions$
       .pipe(filter((partitions) => !!partitions))
       .subscribe((partitions: any) => {
         this.allPartitions = partitions.map((partition) =>
@@ -165,9 +163,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       { validators: ExperimentFormValidators.validateExperimentDesignForm }
     );
     this.createDesignDataSubject();
+    this.isAliasTableEditMode$ = this.experimentDesignStepperService.isAliasTableEditMode$;
     this.isConditionsTableEditMode$ = this.experimentDesignStepperService.isConditionsTableEditMode$;
     this.conditionsTableEditIndex$ = this.experimentDesignStepperService.conditionsTableEditIndex$;
-    this.isAliasTableEditMode$ = this.experimentDesignStepperService.isAliasTableEditMode$;
+    this.isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
@@ -258,7 +257,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   createDesignDataSubject(): void {
-    this.designDataSub = combineLatest([
+    this.subscriptionHandler = combineLatest([
       this.experimentDesignForm.get('partitions').valueChanges,
       this.experimentDesignForm.get('conditions').valueChanges,
     ])
@@ -275,7 +274,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.aliasTableData = [...aliasTableData];
   }
 
-  handleCloseClick() {
+  handleBackBtnClick() {
     return this.experimentDesignForm.dirty && this.experimentDesignStepperService.experimentStepperDataChanged();
   }
 
@@ -310,17 +309,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return [];
   }
 
-  handleEditClick(formArrayRow: FormArray, rowIndex: number, tableName: string) {
-    const isEditingFormControl = formArrayRow.get('isEditing');
-    const isEditing = !isEditingFormControl.value;
-    isEditingFormControl.setValue(isEditing);
-
-    const editModeDetails: TableEditModeDetails = {
-      isEditMode: isEditing,
-      rowIndex: isEditing ? rowIndex : null,
-    };
-
-    this.experimentDesignStepperService.setUpdateTableEditModeDetails(editModeDetails, tableName);
+  handleConditionTableEditClick(rowIndex: number) {
+    if (this.isConditionTableRowValid()) {
+      this.experimentDesignStepperService.setConditionTableEditModeDetails(rowIndex);
+    }
   }
 
   addConditions(conditionCode = null, assignmentWeight = null, description = null, order = null) {
@@ -329,7 +321,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       assignmentWeight: [assignmentWeight, Validators.required],
       description: [description],
       order: [order],
-      isEditing: [false],
     });
   }
 
@@ -356,14 +347,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       const conditionFormControl = this.experimentDesignForm.get('conditions') as FormArray;
       this.manageConditionCodeControl(conditionFormControl.controls.length - 1);
 
-      // when adding new condition row, automatically set table edit details to true for new row
-      this.experimentDesignStepperService.setUpdateTableEditModeDetails(
-        {
-          isEditMode: true,
-          rowIndex: conditionFormControl.controls.length - 1,
-        },
-        'conditions'
-      );
+      this.experimentDesignStepperService.setConditionTableEditModeDetails(conditionFormControl.controls.length - 1);
     }
   }
 
@@ -385,6 +369,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.applyEqualWeight();
     }
     this.experimentDesignStepperService.experimentStepperDataChanged();
+    this.experimentDesignStepperService.clearConditionTableEditModeDetails();
     this.updateView();
   }
 
@@ -437,6 +422,16 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     } else if (duplicatePartitions.length > 1) {
       this.partitionPointErrors.push(duplicatePartitions.join(', ') + this.partitionErrorMessages[3]);
     }
+  }
+
+  isConditionTableRowValid(): boolean {
+    const conditions = this.experimentDesignForm.get('conditions').value;
+
+    this.validateConditionCount(conditions);
+    this.validateHasConditionCodeDefault(conditions);
+    this.validateConditionCodes(conditions);
+
+    return !this.conditionCodeErrors.length && !this.conditionCountError;
   }
 
   validateConditionCodes(conditions: ExperimentCondition[]) {
@@ -796,9 +791,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.allPartitionsSub.unsubscribe();
-    this.partitionErrorMessagesSub.unsubscribe();
-    this.contextMetaDataSub.unsubscribe();
-    this.designDataSub.unsubscribe();
+    this.subscriptionHandler.unsubscribe();
+    this.experimentDesignStepperService.clearConditionTableEditModeDetails();
   }
 }

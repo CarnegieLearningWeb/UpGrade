@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Store, select, Action } from '@ngrx/store';
+import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
-import { Observable } from 'rxjs';
 import {
   ExperimentPartition,
   ExperimentCondition,
@@ -15,6 +14,7 @@ import {
   selecthasExperimentStepperDataChanged,
   selectIsAliasTableEditMode,
   selectIsConditionsTableEditMode,
+  selectIsFormLockedForEdit,
 } from './store/experiment-design-stepper.selectors';
 import { ExperimentAliasTableRow } from './store/experiment-design-stepper.model';
 
@@ -23,15 +23,14 @@ import { ExperimentAliasTableRow } from './store/experiment-design-stepper.model
 })
 export class ExperimentDesignStepperService {
   expStepperDataChangedFlag = false;
-  hasExperimentStepperDataChanged$: Observable<boolean>;
-
+  isFormLockedForEdit$ = this.store$.pipe(select(selectIsFormLockedForEdit));
+  hasExperimentStepperDataChanged$ = this.store$.pipe(select(selecthasExperimentStepperDataChanged));
   isAliasTableEditMode$ = this.store$.pipe(select(selectIsAliasTableEditMode));
   aliasTableEditIndex$ = this.store$.pipe(select(selectAliasTableEditIndex));
   isConditionsTableEditMode$ = this.store$.pipe(select(selectIsConditionsTableEditMode));
   conditionsTableEditIndex$ = this.store$.pipe(select(selectConditionsTableEditIndex));
 
   constructor(private store$: Store<AppState>) {
-    this.hasExperimentStepperDataChanged$ = this.store$.pipe(select(selecthasExperimentStepperDataChanged));
     this.hasExperimentStepperDataChanged$.subscribe(
       (isDataChanged) => (this.expStepperDataChangedFlag = isDataChanged)
     );
@@ -127,23 +126,15 @@ export class ExperimentDesignStepperService {
     );
   }
 
-  setUpdateTableEditModeDetails(details: TableEditModeDetails, tableName: string): void {
-    let action: Action;
+  setConditionTableEditModeDetails(rowIndex: number): void {
+    this.store$.dispatch(
+      experimentDesignStepperAction.actionUpdateConditionsTableEditMode({
+        conditionsTableEditIndex: rowIndex,
+      })
+    );
+  }
 
-    if (tableName === 'conditions') {
-      action = experimentDesignStepperAction.actionUpdateConditionsTableEditMode({
-        isConditionsTableEditMode: details.isEditMode,
-        conditionsTableEditIndex: details.rowIndex,
-      });
-    } else if (tableName === 'partitions') {
-      action = experimentDesignStepperAction.actionUpdateConditionsTableEditMode({
-        isConditionsTableEditMode: details.isEditMode,
-        conditionsTableEditIndex: details.rowIndex,
-      });
-    }
-
-    if (action) {
-      this.store$.dispatch(action);
-    }
+  clearConditionTableEditModeDetails(): void {
+    this.store$.dispatch(experimentDesignStepperAction.actionClearConditionTableEditDetails());
   }
 }

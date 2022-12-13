@@ -149,7 +149,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
     });
   }
 
-  handleCloseClick() {
+  handleBackBtnClick() {
     return this.postExperimentRuleForm.dirty && this.experimentDesignStepperService.experimentStepperDataChanged();
   }
 

@@ -1,15 +1,23 @@
 import { createAction, props } from '@ngrx/store';
 
 export const actionUpdateAliasTableEditMode = createAction(
-  '[Experiment] Update Alias Table Edit Mode Details',
+  '[Experiment-Design-Stepper] Update Alias Table Edit Mode Details',
   props<{ isAliasTableEditMode: boolean; aliasTableEditIndex: number | null }>()
 );
 
 export const actionUpdateConditionsTableEditMode = createAction(
-  '[Experiment] Update Conditions Table Edit Mode Details',
-  props<{ isConditionsTableEditMode: boolean; conditionsTableEditIndex: number | null }>()
+  '[Experiment-Design-Stepper] Update Conditions Table Edit Mode Details',
+  props<{ conditionsTableEditIndex: number | null }>()
 );
 
-export const experimentStepperDataChanged = createAction('[Experiment] turn isExperimentStepperDataChanged true');
+export const actionClearConditionTableEditDetails = createAction(
+  `[Experiment-Design-Stepper] Clear Condition Table Edit Details`
+);
 
-export const experimentStepperDataReset = createAction('[Experiment] turn isExperimentStepperDataChanged false');
+export const experimentStepperDataChanged = createAction(
+  '[Experiment-Design-Stepper] turn isExperimentStepperDataChanged true'
+);
+
+export const experimentStepperDataReset = createAction(
+  '[Experiment-Design-Stepper] turn isExperimentStepperDataChanged false'
+);

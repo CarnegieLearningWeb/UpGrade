@@ -29,3 +29,8 @@ export const selectConditionsTableEditIndex = createSelector(
   selectExperimentDesignStepperState,
   (state) => state.conditionsTableEditIndex
 );
+
+export const selectIsFormLockedForEdit = createSelector(selectExperimentDesignStepperState, (state) => {
+  const lockSources = [state.isAliasTableEditMode, state.isConditionsTableEditMode];
+  return lockSources.some(Boolean);
+});
