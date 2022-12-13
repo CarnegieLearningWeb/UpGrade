@@ -18,14 +18,6 @@ export interface ExperimentAliasTableRow {
   rowStyle?: 'odd' | 'even';
 }
 
-export interface ExperimentConditionsTableRow {
-  id?: string;
-  condition: string;
-  weight: number;
-  description?: string;
-  isEditing: boolean;
-}
-
 export interface ExperimentDesignStepperState {
   isAliasTableEditMode: boolean;
   isConditionsTableEditMode: boolean;

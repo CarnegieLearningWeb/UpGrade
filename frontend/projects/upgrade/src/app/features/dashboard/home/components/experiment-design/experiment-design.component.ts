@@ -33,7 +33,6 @@ import { ExperimentDesignStepperService } from '../../../../../core/experiment-d
 import {
   ExperimentAliasTableRow,
   ExperimentConditionAliasRequestObject,
-  ExperimentConditionsTableRow,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 
 @Component({
@@ -93,7 +92,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   isConditionsTableEditMode$: Observable<boolean>;
   conditionsTableEditIndex$: Observable<number | null>;
-  conditionsTableData: ExperimentConditionsTableRow[] = [];
   isFormLockedForEdit$: Observable<boolean>;
 
   constructor(
