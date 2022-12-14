@@ -5,7 +5,7 @@ export const actionUpdateAliasTableEditMode = createAction(
   props<{ isAliasTableEditMode: boolean; aliasTableEditIndex: number | null }>()
 );
 
-export const actionUpdateConditionsTableEditMode = createAction(
+export const actionToggleConditionsTableEditMode = createAction(
   '[Experiment-Design-Stepper] Update Conditions Table Edit Mode Details',
   props<{ conditionsTableEditIndex: number | null; conditionsRowData: any }>()
 );

@@ -30,9 +30,9 @@ const reducer = createReducer(
     hasExperimentStepperDataChanged: false,
   })),
   on(
-    experimentDesignStepperAction.actionUpdateConditionsTableEditMode,
+    experimentDesignStepperAction.actionToggleConditionsTableEditMode,
     (state, { conditionsTableEditIndex, conditionsRowData }) => {
-      // toggle previous value
+      // toggle edit mode
       const editMode = !state.isConditionsTableEditMode;
 
       // if not in edit mode, use null for row-index
