@@ -165,12 +165,11 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     //         : (partition.target ? partition.site + partition.target : partition.site)
     //     );
     //   });
-    this.factorialExperimentDesignForm = this._formBuilder.group(
-      {
+    this.factorialExperimentDesignForm = this._formBuilder.group({
         // conditions: this._formBuilder.array([this.addConditions()]),
         // partitions: this._formBuilder.array([this.addPartitions()]),
         factors: this._formBuilder.array([this.addFactors()]), 
-      },
+      }
       // { validators: ExperimentFormValidators.validateExperimentDesignForm }
       // to do: create new form validator 
     );
@@ -386,7 +385,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       factor: [factor],
       site: [site],
       target: [target],
-      // levels: this._formBuilder.array([this.addLevels(level,alias)])
+      levels: this._formBuilder.array([this.addLevels(level,alias)])
     });
   }
 
@@ -898,26 +897,26 @@ export interface LevelElement {
 }
 
 const ELEMENT_DATA: FactorElement[] = [
-  {
-    factor: "F1",
-    site: "Point-1",
-    target: "Id-1",
-    levels: [{
-      level: "F1L01",
-      alias: "F1A01"
-    },
-    {
-      level: "F1L02",
-      alias: "F1A02"
-    }]
-  },
-  {
-    factor: "F2",
-    site: "Point-2",
-    target: "Id-2",
-    levels: [{
-      level: "F2L01",
-      alias: "F2A01"
-    }]
-  }
+  // {
+  //   factor: "F1",
+  //   site: "Point-1",
+  //   target: "Id-1",
+  //   levels: [{
+  //     level: "F1L01",
+  //     alias: "F1A01"
+  //   },
+  //   {
+  //     level: "F1L02",
+  //     alias: "F1A02"
+  //   }]
+  // },
+  // {
+  //   factor: "F2",
+  //   site: "Point-2",
+  //   target: "Id-2",
+  //   levels: [{
+  //     level: "F2L01",
+  //     alias: "F2A01"
+  //   }]
+  // }
 ];

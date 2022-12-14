@@ -50,7 +50,7 @@
                   </mat-header-cell>
                   <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
                     <code>{{groupIndex}}</code>
-                    <!-- <mat-form-field floatLabel="never">
+                    <mat-form-field floatLabel="never">
                       <span
                         [matTooltip]="factorialExperimentDesignForm.getRawValue('factor')?.factors[groupIndex]?.factor"
                         matTooltipPosition="above"
@@ -67,8 +67,8 @@
                           </mat-option>
                         </mat-autocomplete> 
                       </span>
-                    </mat-form-field> -->
-                    <span>{{element.factor}}</span>
+                    </mat-form-field>
+                    <!-- <span>{{element.factor}}</span> -->
                   </mat-cell>
                 </ng-container>
     
@@ -77,8 +77,8 @@
                   <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                     {{ 'home.new-experiment.design.partition-point.text' | translate }}
                   </mat-header-cell>
-                  <mat-cell *matCellDef="let element; let index">
-                    <!-- <mat-form-field floatLabel="never">
+                  <mat-cell *matCellDef="let element; let groupIndex = index;" [formGroupName]="groupIndex">
+                    <mat-form-field floatLabel="never">
                       <span
                         [matTooltip]="factorialExperimentDesignForm.getRawValue('site')?.factors[groupIndex]?.site"
                         matTooltipPosition="above"
@@ -95,8 +95,8 @@
                           </mat-option>
                         </mat-autocomplete>
                       </span>
-                    </mat-form-field> -->
-                    <span>{{element.site}}</span>
+                    </mat-form-field>
+                    <!-- <span>{{element.site}}</span> -->
                   </mat-cell>
                 </ng-container>
     
@@ -105,8 +105,8 @@
                   <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                     {{ 'home.new-experiment.design.partition-id.text' | translate }}
                   </mat-header-cell>
-                  <mat-cell *matCellDef="let element; let index">
-                    <!-- <mat-form-field floatLabel="never">
+                  <mat-cell *matCellDef="let element; let groupIndex = index;" [formGroupName]="groupIndex">
+                    <mat-form-field floatLabel="never">
                       <span
                         [matTooltip]="factorialExperimentDesignForm.getRawValue('target')?.factors[groupIndex]?.target"
                         matTooltipPosition="above"
@@ -123,8 +123,8 @@
                           </mat-option>
                         </mat-autocomplete>
                       </span>
-                    </mat-form-field> -->
-                    <span>{{element.target}}</span>
+                    </mat-form-field>
+                    <!-- <span>{{element.target}}</span> -->
                   </mat-cell>
                 </ng-container>
     
