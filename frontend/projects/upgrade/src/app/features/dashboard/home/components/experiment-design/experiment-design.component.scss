@@ -116,14 +116,12 @@
 
       .cdk-column-description {
         margin-left: 30px;
-        flex: 0 0 82px;
-        width: 82px;
+        flex: 0 0 220px;
+        width: 220px;
       }
 
       .cdk-column-actions {
-        margin-left: 30px;
-        // flex: 0 0 30px;
-        width: 100%;
+        justify-content: flex-end;
 
         .row-action-btn {
           border: none;
