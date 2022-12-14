@@ -18,12 +18,20 @@ export interface ExperimentAliasTableRow {
   rowStyle?: 'odd' | 'even';
 }
 
+export interface ConditionsTableRowData {
+  conditionCode: string;
+  assignmentWeight: string;
+  description: string;
+  order: number;
+}
+
 export interface ExperimentDesignStepperState {
   isAliasTableEditMode: boolean;
   isConditionsTableEditMode: boolean;
   aliasTableEditIndex: number | null;
   conditionsTableEditIndex: number | null;
   hasExperimentStepperDataChanged: boolean;
+  conditionsEditModePreviousRowData: any;
 }
 export interface State extends AppState {
   experimentDesignStepper: ExperimentDesignStepperState;
