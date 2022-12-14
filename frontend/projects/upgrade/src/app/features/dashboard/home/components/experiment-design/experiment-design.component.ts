@@ -160,8 +160,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       {
         conditions: this._formBuilder.array([this.addConditions()]),
         partitions: this._formBuilder.array([this.addPartitions()]),
-      },
-      { validators: ExperimentFormValidators.validateExperimentDesignForm }
+      }
+      // { validators: ExperimentFormValidators.validateExperimentDesignForm }
     );
     this.createDesignDataSubject();
     this.experimentDesignStepperService.conditionsEditModePreviousRowData$.subscribe(
@@ -607,6 +607,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   validateForm() {
+    this.experimentDesignForm.setValidators(ExperimentFormValidators.validateExperimentDesignForm);
+    this.experimentDesignForm.updateValueAndValidity();
     this.validateConditionCodes(this.experimentDesignForm.get('conditions').value);
     this.validateConditionCount((this.experimentDesignForm.get('conditions') as FormArray).getRawValue());
     this.validatePartitionCount(this.experimentDesignForm.get('partitions').value);
