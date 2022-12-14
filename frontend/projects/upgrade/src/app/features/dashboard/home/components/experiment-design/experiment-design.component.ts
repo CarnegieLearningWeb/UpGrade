@@ -156,13 +156,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           partition.target ? partition.site + partition.target : partition.site
         );
       });
-    this.experimentDesignForm = this._formBuilder.group(
-      {
-        conditions: this._formBuilder.array([this.addConditions()]),
-        partitions: this._formBuilder.array([this.addPartitions()]),
-      }
-      // { validators: ExperimentFormValidators.validateExperimentDesignForm }
-    );
+    this.experimentDesignForm = this._formBuilder.group({
+      conditions: this._formBuilder.array([this.addConditions()]),
+      partitions: this._formBuilder.array([this.addPartitions()]),
+    });
     this.createDesignDataSubject();
     this.experimentDesignStepperService.conditionsEditModePreviousRowData$.subscribe(
       this.previousRowDataBehaviorSubject$
