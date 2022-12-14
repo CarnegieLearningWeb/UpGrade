@@ -4,6 +4,8 @@ import {
   Experiment,
   ExperimentCondition,
   ExperimentPartition,
+  ExperimentFactor,
+  ExperimentLevel
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { VersionService } from '../../../../../../core/version/version.service';
@@ -18,8 +20,10 @@ interface ImportExperimentJSON {
   schema:
     | Record<keyof Experiment, string>
     | Record<keyof ExperimentCondition, string>
-    | Record<keyof ExperimentPartition, string>;
-  data: Experiment | ExperimentCondition | ExperimentPartition;
+    | Record<keyof ExperimentPartition, string>
+    |  Record<keyof ExperimentFactor, string>
+    |  Record<keyof ExperimentLevel, string>;
+  data: Experiment | ExperimentCondition | ExperimentPartition | ExperimentFactor | ExperimentLevel;
 }
 
 @Component({
@@ -195,6 +199,7 @@ export class ImportExperimentComponent implements OnInit {
       id: 'string',
       site: 'string',
       target: 'string',
+      factors: 'interface',
       description: 'string',
       twoCharacterId: 'string',
       order: 'number',
@@ -204,12 +209,26 @@ export class ImportExperimentComponent implements OnInit {
       excludeIfReached: 'boolean',
     };
 
+    const factorSchema: Record<keyof ExperimentFactor, string> = {
+      name:'string',
+      order: 'number',
+      levels: 'interface'
+    };
+
+    const levelSchema: Record<keyof ExperimentLevel, string> = {
+      id: 'string',
+      name:'string',
+      order: 'number',
+    };
+
     const missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
     let missingPropertiesFlag = true;
     this.missingAllProperties =
       this.translate.instant('home.import-experiment.missing-properties.message.text') + missingProperties;
     let missingConditionProperties;
     let missingPartitionProperties;
+    let missingFactorProperties;
+    let missingLevelProperties;
     missingPropertiesFlag = missingPropertiesFlag && missingProperties.length === 0;
     experiment.conditions.map((condition) => {
       missingConditionProperties = this.checkForMissingProperties({ schema: conditionSchema, data: condition });
@@ -225,6 +244,31 @@ export class ImportExperimentComponent implements OnInit {
     missingPropertiesFlag = missingPropertiesFlag && missingConditionProperties.length === 0;
     experiment.partitions.map((partition) => {
       missingPartitionProperties = this.checkForMissingProperties({ schema: partitionSchema, data: partition });
+      partition.factors.map((factor) => {
+        missingFactorProperties = this.checkForMissingProperties({ schema: factorSchema, data: factor });
+        factor.levels.map((level) => {
+          missingLevelProperties = this.checkForMissingProperties({ schema: levelSchema, data: level });
+  
+        });
+        if (missingLevelProperties.length > 0) {
+          this.missingAllProperties =
+            this.missingAllProperties +
+            ', ' +
+            this.translate.instant('global.level.text') +
+            ': ' +
+            missingLevelProperties;
+        }
+        missingPropertiesFlag = missingPropertiesFlag && missingLevelProperties.length === 0;
+      });
+      if (missingFactorProperties.length > 0) {
+        this.missingAllProperties =
+          this.missingAllProperties +
+          ', ' +
+          this.translate.instant('global.factor.text') +
+          ': ' +
+          missingFactorProperties;
+      }
+      missingPropertiesFlag = missingPropertiesFlag && missingFactorProperties.length === 0;
     });
     if (missingPartitionProperties.length > 0) {
       this.missingAllProperties =
@@ -242,7 +286,7 @@ export class ImportExperimentComponent implements OnInit {
     const { schema, data } = experimentJson;
     const missingProperty = Object.keys(schema)
       .filter((key) => data[key] === undefined)
-      .map((key) => key as keyof (Experiment | ExperimentPartition | ExperimentCondition))
+      .map((key) => key as keyof (Experiment | ExperimentPartition | ExperimentCondition | ExperimentFactor | ExperimentLevel ))
       .map((key) => `${key}`);
     return missingProperty.join(', ');
   }

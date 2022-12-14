@@ -12,9 +12,7 @@
               color="primary"
               class="ft-14-600 toggle-button"
               (click)="scrollToAliasesTable()"
-              [disabled]="
-                aliasTableData.length === 0 || partition.length === 0 || condition.length === 0 || !isExperimentEditable
-              "
+              [disabled]="aliasTableData.length === 0 || partition.length === 0 || condition.length === 0 || !isExperimentEditable"
             >
               <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
               <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.aliases' | translate }}</span>

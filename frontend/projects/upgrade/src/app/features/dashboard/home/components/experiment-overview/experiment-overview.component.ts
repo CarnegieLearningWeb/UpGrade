@@ -44,11 +44,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   allContexts = [];
   currentContext = null;
   consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
-  designTypes = [
-    {
-      value: ExperimentDesignTypes.SIMPLE,
-    },
-  ];
+  designTypes = [{ value: ExperimentDesignTypes.SIMPLE},{ value: ExperimentDesignTypes.FACTORIAL }];
 
   // Used to control chips
   isChipSelectable = true;
@@ -252,7 +248,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       });
     }
     if (this.overviewForm.valid) {
-      const { experimentName, description, unitOfAssignment, groupType, consistencyRule, context, tags, logging } =
+      const { experimentName, description, unitOfAssignment, groupType, consistencyRule, context, designType, tags, logging } =
         this.overviewForm.value;
       const overviewFormData = {
         name: experimentName,
@@ -260,6 +256,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         consistencyRule: consistencyRule,
         assignmentUnit: unitOfAssignment,
         group: groupType,
+        type: designType,
         context: [context],
         tags,
         logging,

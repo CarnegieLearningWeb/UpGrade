@@ -9,6 +9,7 @@ import {
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
+import { EXPERIMENT_TYPE } from 'upgrade_types'
 
 @Component({
   selector: 'home-new-experiment',

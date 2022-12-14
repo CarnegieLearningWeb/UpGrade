@@ -26,14 +26,36 @@
         {{ 'home.new-experiment.experiment-design.text' | translate }}
       </span>
     </ng-template>
-    <home-experiment-design
+    <home-experiment-design *ngIf="newExperimentData?.type=='Simple'"
       [experimentInfo]="experimentInfo"
       [currentContext]="currentContext"
       [isContextChanged]="isContextChanged"
       [animationCompleteStepperIndex]="animationCompletedIndex"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-design>
+    <home-factorial-experiment-design *ngIf="newExperimentData?.type=='Factorial'"
+      [experimentInfo]="experimentInfo"
+      [currentContext]="currentContext"
+      [isContextChanged]="isContextChanged"
+      [animationCompleteStepperIndex]="animationCompletedIndex"
+      (emitExperimentDialogEvent)="getExperimentData($event)"
+    ></home-factorial-experiment-design>
   </mat-step>
+
+  <!-- <mat-step>
+    <ng-template matStepLabel>
+      <span class="step-label ft-18-400">
+        {{ 'home.new-experiment.experiment-design.text' | translate }}
+      </span>
+    </ng-template>
+    <home-factorial-experiment-design
+      [experimentInfo]="experimentInfo"
+      [currentContext]="currentContext"
+      [isContextChanged]="isContextChanged"
+      [animationCompleteStepperIndex]="animationCompletedIndex"
+      (emitExperimentDialogEvent)="getExperimentData($event)"
+    ></home-factorial-experiment-design>
+  </mat-step> -->
 
   <mat-step>
     <ng-template matStepLabel>
