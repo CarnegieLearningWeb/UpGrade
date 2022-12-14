@@ -130,7 +130,7 @@ export class ExperimentDesignStepperService {
 
   setConditionTableEditModeDetails(rowIndex: number, rowData: any): void {
     this.store$.dispatch(
-      experimentDesignStepperAction.actionUpdateConditionsTableEditMode({
+      experimentDesignStepperAction.actionToggleConditionsTableEditMode({
         conditionsTableEditIndex: rowIndex,
         conditionsRowData: rowData,
       })
