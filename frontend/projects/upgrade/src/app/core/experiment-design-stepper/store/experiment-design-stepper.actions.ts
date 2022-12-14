@@ -1,4 +1,5 @@
 import { createAction, props } from '@ngrx/store';
+import { ConditionsTableRowData } from './experiment-design-stepper.model';
 
 export const actionUpdateAliasTableEditMode = createAction(
   '[Experiment-Design-Stepper] Update Alias Table Edit Mode Details',
@@ -7,7 +8,7 @@ export const actionUpdateAliasTableEditMode = createAction(
 
 export const actionToggleConditionsTableEditMode = createAction(
   '[Experiment-Design-Stepper] Update Conditions Table Edit Mode Details',
-  props<{ conditionsTableEditIndex: number | null; conditionsRowData: any }>()
+  props<{ conditionsTableEditIndex: number | null; conditionsRowData: ConditionsTableRowData }>()
 );
 
 export const actionClearConditionTableEditDetails = createAction(
