@@ -84,17 +84,18 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   expPointAndIdErrors: string[] = [];
   conditionCodeErrors: string[] = [];
   equalWeightFlag = true;
+  isExperimentEditable = true;
+  isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
 
   // Alias Table details
   designData$ = new BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]>([[], []]);
   aliasTableData: ExperimentAliasTableRow[] = [];
-  isAliasTableEditMode$: Observable<boolean>;
-  isExperimentEditable = true;
+  isAliasTableEditMode$ = this.experimentDesignStepperService.isAliasTableEditMode$;
 
-  isConditionsTableEditMode$: Observable<boolean>;
-  conditionsTableEditIndex$: Observable<number | null>;
-  isFormLockedForEdit$: Observable<boolean>;
+  // Condition table store references
   previousRowDataBehaviorSubject$ = new BehaviorSubject<ConditionsTableRowData>(null);
+  isConditionsTableEditMode$ = this.experimentDesignStepperService.isConditionsTableEditMode$;
+  conditionsTableEditIndex$ = this.experimentDesignStepperService.conditionsTableEditIndex$;
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -163,10 +164,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       { validators: ExperimentFormValidators.validateExperimentDesignForm }
     );
     this.createDesignDataSubject();
-    this.isAliasTableEditMode$ = this.experimentDesignStepperService.isAliasTableEditMode$;
-    this.isConditionsTableEditMode$ = this.experimentDesignStepperService.isConditionsTableEditMode$;
-    this.conditionsTableEditIndex$ = this.experimentDesignStepperService.conditionsTableEditIndex$;
-    this.isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
     this.experimentDesignStepperService.conditionsEditModePreviousRowData$.subscribe(
       this.previousRowDataBehaviorSubject$
     );

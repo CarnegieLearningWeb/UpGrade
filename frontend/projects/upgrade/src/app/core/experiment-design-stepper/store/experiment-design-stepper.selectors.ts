@@ -32,7 +32,7 @@ export const selectConditionsTableEditIndex = createSelector(
 
 export const selectIsFormLockedForEdit = createSelector(selectExperimentDesignStepperState, (state) => {
   const lockSources = [state.isAliasTableEditMode, state.isConditionsTableEditMode];
-  return lockSources.some(Boolean);
+  return lockSources.some((lockSource) => !!lockSource);
 });
 
 export const selectConditionsEditModePreviousRowData = createSelector(

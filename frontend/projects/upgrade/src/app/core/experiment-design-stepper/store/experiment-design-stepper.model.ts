@@ -31,8 +31,9 @@ export interface ExperimentDesignStepperState {
   aliasTableEditIndex: number | null;
   conditionsTableEditIndex: number | null;
   hasExperimentStepperDataChanged: boolean;
-  conditionsEditModePreviousRowData: any;
+  conditionsEditModePreviousRowData: ConditionsTableRowData;
 }
+
 export interface State extends AppState {
   experimentDesignStepper: ExperimentDesignStepperState;
 }

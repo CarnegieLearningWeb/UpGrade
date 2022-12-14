@@ -17,7 +17,7 @@ import {
   selectIsConditionsTableEditMode,
   selectIsFormLockedForEdit,
 } from './store/experiment-design-stepper.selectors';
-import { ExperimentAliasTableRow } from './store/experiment-design-stepper.model';
+import { ConditionsTableRowData, ExperimentAliasTableRow } from './store/experiment-design-stepper.model';
 
 @Injectable({
   providedIn: 'root',
@@ -128,7 +128,7 @@ export class ExperimentDesignStepperService {
     );
   }
 
-  setConditionTableEditModeDetails(rowIndex: number, rowData: any): void {
+  setConditionTableEditModeDetails(rowIndex: number, rowData: ConditionsTableRowData): void {
     this.store$.dispatch(
       experimentDesignStepperAction.actionToggleConditionsTableEditMode({
         conditionsTableEditIndex: rowIndex,
