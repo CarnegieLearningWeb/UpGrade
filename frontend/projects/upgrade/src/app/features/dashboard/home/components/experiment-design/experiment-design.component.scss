@@ -52,28 +52,7 @@
         margin-bottom: -5px;
       }
 
-      .cdk-column-actions {
-        margin-left: 30px;
-        flex: 0 0 30px;
-        width: 30px;
-
-        .row-action-btn {
-          border: none;
-          background-color: transparent;
-
-          .icon {
-            margin-top: -5px;
-            margin-left: -3px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: var(--text-size-x-large);
-            color: gray;
-          }
-        }
-      }
-
-      .cdk-column-removeCondition,
+      // .cdk-column-removeCondition,
       .cdk-column-removePartition {
         margin-left: 8px;
         margin-right: 15px;
@@ -118,6 +97,8 @@
         }
       }
 
+      // condition table styles
+
       .cdk-column-conditionCode {
         flex: 0 0 250px;
         width: 250px;
@@ -129,9 +110,35 @@
         width: 82px;
       }
 
+      .assignment-weight-readonly {
+        width: 82px;
+      }
+
       .cdk-column-description {
         margin-left: 30px;
+        flex: 0 0 82px;
+        width: 82px;
+      }
+
+      .cdk-column-actions {
+        margin-left: 30px;
+        // flex: 0 0 30px;
         width: 100%;
+
+        .row-action-btn {
+          border: none;
+          background-color: transparent;
+
+          .icon {
+            margin-top: -5px;
+            margin-left: -3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--text-size-x-large);
+            color: gray;
+          }
+        }
       }
 
       mat-form-field {
@@ -139,12 +146,12 @@
         text-align: left;
       }
 
-      .assignment-weight-readonly {
-        width: 82px;
-      }
-
       .align-right {
         text-align: right;
+      }
+
+      .row-is-locked {
+        opacity: 0.4;
       }
     }
 

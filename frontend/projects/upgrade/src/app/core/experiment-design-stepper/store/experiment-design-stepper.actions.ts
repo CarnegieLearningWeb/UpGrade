@@ -7,7 +7,7 @@ export const actionUpdateAliasTableEditMode = createAction(
 
 export const actionUpdateConditionsTableEditMode = createAction(
   '[Experiment-Design-Stepper] Update Conditions Table Edit Mode Details',
-  props<{ conditionsTableEditIndex: number | null }>()
+  props<{ conditionsTableEditIndex: number | null; conditionsRowData: any }>()
 );
 
 export const actionClearConditionTableEditDetails = createAction(

@@ -34,3 +34,8 @@ export const selectIsFormLockedForEdit = createSelector(selectExperimentDesignSt
   const lockSources = [state.isAliasTableEditMode, state.isConditionsTableEditMode];
   return lockSources.some(Boolean);
 });
+
+export const selectConditionsEditModePreviousRowData = createSelector(
+  selectExperimentDesignStepperState,
+  (state) => state.conditionsEditModePreviousRowData
+);

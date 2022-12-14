@@ -7,6 +7,7 @@ const initialState: ExperimentDesignStepperState = {
   isConditionsTableEditMode: false,
   aliasTableEditIndex: null,
   conditionsTableEditIndex: null,
+  conditionsEditModePreviousRowData: null,
   hasExperimentStepperDataChanged: false,
 };
 
@@ -28,22 +29,29 @@ const reducer = createReducer(
     ...state,
     hasExperimentStepperDataChanged: false,
   })),
-  on(experimentDesignStepperAction.actionUpdateConditionsTableEditMode, (state, { conditionsTableEditIndex }) => {
-    // toggle previous value
-    const editMode = !state.isConditionsTableEditMode;
+  on(
+    experimentDesignStepperAction.actionUpdateConditionsTableEditMode,
+    (state, { conditionsTableEditIndex, conditionsRowData }) => {
+      // toggle previous value
+      const editMode = !state.isConditionsTableEditMode;
 
-    // if not in edit mode, use null for row-index
-    const editIndex = editMode ? conditionsTableEditIndex : null;
-    return {
-      ...state,
-      isConditionsTableEditMode: editMode,
-      conditionsTableEditIndex: editIndex,
-    };
-  }),
+      // if not in edit mode, use null for row-index
+      const editIndex = editMode ? conditionsTableEditIndex : null;
+      const previousRowData = editMode ? conditionsRowData : null;
+
+      return {
+        ...state,
+        isConditionsTableEditMode: editMode,
+        conditionsTableEditIndex: editIndex,
+        conditionsEditModePreviousRowData: previousRowData,
+      };
+    }
+  ),
   on(experimentDesignStepperAction.actionClearConditionTableEditDetails, (state) => ({
     ...state,
     isConditionsTableEditMode: false,
     conditionsTableEditIndex: null,
+    conditionsEditModePreviousRowData: null,
   }))
 );
 

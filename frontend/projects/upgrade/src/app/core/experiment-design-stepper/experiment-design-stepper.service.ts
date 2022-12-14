@@ -10,6 +10,7 @@ import {
 import * as experimentDesignStepperAction from './store/experiment-design-stepper.actions';
 import {
   selectAliasTableEditIndex,
+  selectConditionsEditModePreviousRowData,
   selectConditionsTableEditIndex,
   selecthasExperimentStepperDataChanged,
   selectIsAliasTableEditMode,
@@ -29,6 +30,7 @@ export class ExperimentDesignStepperService {
   aliasTableEditIndex$ = this.store$.pipe(select(selectAliasTableEditIndex));
   isConditionsTableEditMode$ = this.store$.pipe(select(selectIsConditionsTableEditMode));
   conditionsTableEditIndex$ = this.store$.pipe(select(selectConditionsTableEditIndex));
+  conditionsEditModePreviousRowData$ = this.store$.pipe(select(selectConditionsEditModePreviousRowData));
 
   constructor(private store$: Store<AppState>) {
     this.hasExperimentStepperDataChanged$.subscribe(
@@ -126,10 +128,11 @@ export class ExperimentDesignStepperService {
     );
   }
 
-  setConditionTableEditModeDetails(rowIndex: number): void {
+  setConditionTableEditModeDetails(rowIndex: number, rowData: any): void {
     this.store$.dispatch(
       experimentDesignStepperAction.actionUpdateConditionsTableEditMode({
         conditionsTableEditIndex: rowIndex,
+        conditionsRowData: rowData,
       })
     );
   }

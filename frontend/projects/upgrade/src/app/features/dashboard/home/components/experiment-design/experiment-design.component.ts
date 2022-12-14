@@ -31,6 +31,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
+  ConditionsTableRowData,
   ExperimentAliasTableRow,
   ExperimentConditionAliasRequestObject,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
@@ -70,7 +71,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   previousAssignmentWeightValues = [];
 
-  conditionDisplayedColumns = ['conditionCode', 'assignmentWeight', 'description', 'actions', 'removeCondition'];
+  conditionDisplayedColumns = ['conditionCode', 'assignmentWeight', 'description', 'actions'];
   partitionDisplayedColumns = ['site', 'target', 'excludeIfReached', 'removePartition'];
 
   // Used for condition code, experiment point and ids auto complete dropdown
@@ -93,6 +94,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   isConditionsTableEditMode$: Observable<boolean>;
   conditionsTableEditIndex$: Observable<number | null>;
   isFormLockedForEdit$: Observable<boolean>;
+  previousRowDataBehaviorSubject$ = new BehaviorSubject<ConditionsTableRowData>(null);
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -165,6 +167,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.isConditionsTableEditMode$ = this.experimentDesignStepperService.isConditionsTableEditMode$;
     this.conditionsTableEditIndex$ = this.experimentDesignStepperService.conditionsTableEditIndex$;
     this.isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
+    this.experimentDesignStepperService.conditionsEditModePreviousRowData$.subscribe(
+      this.previousRowDataBehaviorSubject$
+    );
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
@@ -276,6 +281,36 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return this.experimentDesignForm.dirty && this.experimentDesignStepperService.experimentStepperDataChanged();
   }
 
+  handleConditionTableEditClick(rowIndex: number, rowData: ConditionsTableRowData) {
+    if (this.isConditionTableRowValid()) {
+      this.experimentDesignStepperService.setConditionTableEditModeDetails(rowIndex, rowData);
+    }
+  }
+
+  handleConditionTableClearOrRemoveRow(rowIndex: number): void {
+    // grab previous data before dispatching reset to store
+    const previousRowData = this.previousRowDataBehaviorSubject$.value;
+
+    if (previousRowData) {
+      this.resetPreviousConditionRowDataOnEditCancel(previousRowData, rowIndex);
+    } else {
+      this.removeConditionOrPartition('condition', rowIndex);
+    }
+  }
+
+  resetPreviousConditionRowDataOnEditCancel(previousRowData: ConditionsTableRowData, rowIndex: number): void {
+    const conditionTableRow = this.condition.controls.at(rowIndex);
+
+    if (conditionTableRow) {
+      conditionTableRow.get('conditionCode').setValue(previousRowData.conditionCode, { emitEvent: false });
+      conditionTableRow.get('assignmentWeight').setValue(previousRowData.assignmentWeight, { emitEvent: false });
+      conditionTableRow.get('description').setValue(previousRowData.description, { emitEvent: false });
+      conditionTableRow.get('order').setValue(previousRowData.order, { emitEvent: false });
+    }
+
+    this.experimentDesignStepperService.clearConditionTableEditModeDetails();
+  }
+
   private filterConditionCodes(value: string): string[] {
     const filterValue = value ? value.toLocaleLowerCase() : '';
 
@@ -305,12 +340,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       return currentContextExpIds.filter((option) => option.toLowerCase().startsWith(filterValue));
     }
     return [];
-  }
-
-  handleConditionTableEditClick(rowIndex: number) {
-    if (this.isConditionTableRowValid()) {
-      this.experimentDesignStepperService.setConditionTableEditModeDetails(rowIndex);
-    }
   }
 
   addConditions(conditionCode = null, assignmentWeight = null, description = null, order = null) {
@@ -344,8 +373,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     } else {
       const conditionFormControl = this.experimentDesignForm.get('conditions') as FormArray;
       this.manageConditionCodeControl(conditionFormControl.controls.length - 1);
-
-      this.experimentDesignStepperService.setConditionTableEditModeDetails(conditionFormControl.controls.length - 1);
+      this.experimentDesignStepperService.setConditionTableEditModeDetails(
+        conditionFormControl.controls.length - 1,
+        null
+      );
     }
   }
 
