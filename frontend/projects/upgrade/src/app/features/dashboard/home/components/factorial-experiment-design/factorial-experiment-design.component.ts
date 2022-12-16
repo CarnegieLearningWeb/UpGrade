@@ -877,9 +877,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   ngOnDestroy() {
     // this.allPartitionsSub.unsubscribe();
-    this.allFactorsSub.unsubscribe();
+    this.allFactorsSub?.unsubscribe();
     // this.partitionErrorMessagesSub.unsubscribe();
-    this.contextMetaDataSub.unsubscribe();
+    this.contextMetaDataSub?.unsubscribe();
     // this.designDataSub.unsubscribe();
   }
 }

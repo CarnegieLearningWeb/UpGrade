@@ -130,10 +130,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
     if (this.isContextChanged) {
       this.isContextChanged = false;
-      this.partition.clear();
-      this.condition.clear();
-      this.partitionDataSource.next(this.partition.controls);
-      this.conditionDataSource.next(this.condition.controls);
+      this.partition?.clear();
+      this.condition?.clear();
+      this.partitionDataSource.next(this.partition?.controls);
+      this.conditionDataSource.next(this.condition?.controls);
     }
 
     this.applyEqualWeight();
@@ -748,11 +748,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get condition(): FormArray {
-    return this.experimentDesignForm.get('conditions') as FormArray;
+    return this.experimentDesignForm?.get('conditions') as FormArray;
   }
 
   get partition(): FormArray {
-    return this.experimentDesignForm.get('partitions') as FormArray;
+    return this.experimentDesignForm?.get('partitions') as FormArray;
   }
 
   get NewExperimentDialogEvents() {
