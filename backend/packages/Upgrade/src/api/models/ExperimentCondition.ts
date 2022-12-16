@@ -3,6 +3,7 @@ import { IsNotEmpty, IsNumber, IsAlphanumeric } from 'class-validator';
 import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
 import { ConditionAlias } from './ConditionAlias';
+import { LevelCombinationElement } from './LevelCombinationElement';
 
 @Entity()
 export class ExperimentCondition extends BaseModel {
@@ -24,7 +25,7 @@ export class ExperimentCondition extends BaseModel {
   })
   public description: string;
 
-  @Column()
+  @Column({ nullable: true })
   public conditionCode: string;
 
   @IsNotEmpty()
@@ -44,4 +45,7 @@ export class ExperimentCondition extends BaseModel {
 
   @OneToMany(() => ConditionAlias, (conditionAlias) => conditionAlias.aliasName)
   public parentCondition: ConditionAlias[];
+
+  @OneToMany(() => LevelCombinationElement, (levelCombinationElement) => levelCombinationElement.condition)
+  public levelCombinationElements: LevelCombinationElement[];
 }

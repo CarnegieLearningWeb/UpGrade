@@ -26,6 +26,7 @@ import {
   SERVER_ERROR,
   EXCLUSION_CODE,
   SEGMENT_TYPE,
+  EXPERIMENT_TYPE,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -55,6 +56,12 @@ import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
 import { ConditionAlias } from '../models/ConditionAlias';
 import { ConditionAliasRepository } from '../repositories/ConditionAliasRepository';
+import { Factor } from '../models/Factor';
+import { FactorRepository } from '../repositories/FactorRepository';
+import { Level } from '../models/Level';
+import { LevelRepository } from '../repositories/LevelRepository';
+import { LevelCombinationElement } from '../models/LevelCombinationElement';
+import { LevelCombinationElementRepository } from '../repositories/LevelCombinationElements';
 
 @Service()
 export class ExperimentService {
@@ -73,6 +80,9 @@ export class ExperimentService {
     @OrmRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
     @OrmRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
     @OrmRepository() private conditionAliasRepository: ConditionAliasRepository,
+    @OrmRepository() private factorRepository: FactorRepository,
+    @OrmRepository() private levelRepository: LevelRepository,
+    @OrmRepository() private levelCombinationElementsRepository: LevelCombinationElementRepository,
     public previewUserService: PreviewUserService,
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
@@ -120,8 +130,14 @@ export class ExperimentService {
       .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('partitions.conditionAliases', 'ConditionAliasesArray')
       .leftJoinAndSelect('ConditionAliasesArray.parentCondition', 'parentCondition')
+      .leftJoinAndSelect('partitions.factors', 'factors')
+      .leftJoinAndSelect('factors.levels', 'levels')
+      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
+      .leftJoinAndSelect('levelCombinationElements.level', 'level')
       .addOrderBy('conditions.order', 'ASC')
-      .addOrderBy('partitions.order', 'ASC');
+      .addOrderBy('partitions.order', 'ASC')
+      .addOrderBy('factors.order', 'ASC')
+      .addOrderBy('levels.order', 'ASC');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
       // add search query
@@ -163,6 +179,14 @@ export class ExperimentService {
       .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('partitions.conditionAliases', 'ConditionAliasesArray')
       .leftJoinAndSelect('ConditionAliasesArray.parentCondition', 'parentCondition')
+      .leftJoinAndSelect('partitions.factors', 'factors')
+      .leftJoinAndSelect('factors.levels', 'levels')
+      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
+      .leftJoinAndSelect('levelCombinationElements.level', 'level')
+      .addOrderBy('conditions.order', 'ASC')
+      .addOrderBy('partitions.order', 'ASC')
+      .addOrderBy('factors.order', 'ASC')
+      .addOrderBy('levels.order', 'ASC')
       .where({ id })
       .getOne();
 
@@ -451,6 +475,10 @@ export class ExperimentService {
         'experimentSegmentExclusion.segment.subSegments',
         'partitions.conditionAliases',
         'partitions.conditionAliases.parentCondition',
+        'partitions.factors',
+        'factors.levels',
+        'conditions.levelCombinationElements',
+        'levelCombinationElements.levels',
       ],
     });
     const formatedExperiments = experimentDetails.map((experiment) => {
@@ -582,7 +610,7 @@ export class ExperimentService {
   private checkConditionCodeDefault(conditions: ExperimentCondition[]): any {
     // Check for conditionCode is 'default' then return error:
     const hasDefaultConditionCode = conditions.filter(
-      (condition) => condition.conditionCode.toUpperCase() === 'DEFAULT'
+      (condition) => condition.conditionCode?.toUpperCase() === 'DEFAULT'
     );
     if (hasDefaultConditionCode.length) {
       // TODO remove this validation in the class validator end
@@ -830,6 +858,17 @@ export class ExperimentService {
 
         // delete old decision points, conditions and queries
         await Promise.all([...toDeleteConditions, ...toDeleteDecisionPoints, ...toDeleteQueries]);
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .delete()
+          .from(Factor)
+          .where('decisionPoint IN (:...ids)', { ids: decisionPointDocToSave.map((x) => x.id) })
+          .execute();
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .delete()
+          .from(LevelCombinationElement)
+          .where('condition IN (:...ids)', { ids: conditionDocToSave.map((x) => x.id) });
 
         // saving conditions, saving decision points and saving queries
         let conditionDocs: ExperimentCondition[];
@@ -872,11 +911,11 @@ export class ExperimentService {
           throw error;
         }
 
-        const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
+        let conditionDocToReturn = conditionDocs.map((conditionDoc) => {
           return { ...conditionDoc, experiment: conditionDoc.experiment };
         });
 
-        const decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
+        let decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
           return { ...decisionPointDoc, experiment: decisionPointDoc.experiment };
         });
 
@@ -884,6 +923,17 @@ export class ExperimentService {
           relations: ['parentCondition', 'decisionPoint'],
           where: { id: In(conditionAliasDocs.map((conditionAlias) => conditionAlias.id)) },
         });
+
+        if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+          const [factorDoc, levelDoc, levelCombinationElementDoc] = await this.addFactorialDataInDB(
+            decisionPointDocToSave,
+            conditionDocToSave as any[],
+            transactionalEntityManager,
+            logger
+          );
+          decisionPointDocToReturn = this.formatingFactorAndLevels(decisionPointDocToReturn, factorDoc, levelDoc);
+          conditionDocToReturn = this.formatingElements(conditionDocToReturn, levelCombinationElementDoc);
+        }
 
         const queryDocToReturn =
           !!queryDocs &&
@@ -953,7 +1003,7 @@ export class ExperimentService {
         const updateAuditLog: AuditLogData = {
           experimentId: experiment.id,
           experimentName: experiment.name,
-          diff: diffString(oldExperimentClone, newExperimentClone),
+          //diff: diffString(oldExperimentClone, newExperimentClone), //TODO:solve and uncomment this line
         };
 
         await this.experimentAuditLogRepository.saveRawJson(
@@ -1244,12 +1294,12 @@ export class ExperimentService {
         logger.error(error);
         throw error;
       }
-      const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
+      let conditionDocToReturn = conditionDocs.map((conditionDoc) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { experimentId, ...restDoc } = conditionDoc as any;
         return restDoc;
       });
-      const decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
+      let decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { experimentId, ...restDoc } = decisionPointDoc as any;
         return restDoc;
@@ -1263,6 +1313,17 @@ export class ExperimentService {
       let queryDocToReturn = [];
       if (queryDocs.length > 0) {
         queryDocToReturn = queryDocsToSave;
+      }
+
+      if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+        const [factorDoc, levelDoc, levelCombinationElementDoc] = await this.addFactorialDataInDB(
+          partitions,
+          conditions,
+          transactionalEntityManager,
+          logger
+        );
+        decisionPointDocToReturn = this.formatingFactorAndLevels(decisionPointDocToReturn, factorDoc, levelDoc);
+        conditionDocToReturn = this.formatingElements(conditionDocToReturn, levelCombinationElementDoc);
       }
 
       const newExperiment = {
@@ -1359,6 +1420,97 @@ export class ExperimentService {
       });
     });
     return { ...experiment, conditionAliases: conditionAlias };
+  }
+
+  private async addFactorialDataInDB(
+    partitions: DecisionPoint[],
+    conditions: ExperimentCondition[],
+    transactionalEntityManager: EntityManager,
+    logger: UpgradeLogger
+  ) {
+    // creating factorDoc
+    const allFactors: Factor[] = [];
+    const allLevels: Level[] = [];
+    const allLevelCombinationElements: LevelCombinationElement[] = [];
+
+    partitions.forEach((partition) => {
+      partition.factors.forEach((factor) => {
+        factor.id = factor.id || uuid();
+        factor.decisionPoint = partition;
+
+        factor.levels.forEach((level) => {
+          level.id = level.id || uuid();
+          level.factor = factor;
+        });
+        allLevels.push(...factor.levels);
+      });
+      allFactors.push(...partition.factors);
+    });
+
+    conditions.forEach((condition) => {
+      condition.levelCombinationElements.map((elements) => {
+        elements.id = elements.id || uuid();
+        elements.condition = condition;
+      });
+      allLevelCombinationElements.push(...condition.levelCombinationElements);
+    });
+
+    let factorDoc: Factor[];
+    let levelDoc: Level[];
+    let levelCombinationElementsDoc: LevelCombinationElement[];
+
+    try {
+      [factorDoc, levelDoc, levelCombinationElementsDoc] = await Promise.all([
+        this.factorRepository.insertFactor(allFactors, transactionalEntityManager),
+        this.levelRepository.insertLevel(allLevels, transactionalEntityManager),
+        this.levelCombinationElementsRepository.insertLevelCombinationElement(
+          allLevelCombinationElements,
+          transactionalEntityManager
+        ),
+      ]);
+    } catch (err) {
+      const error = err as Error;
+      error.message = `Error in creating factors & levels"`;
+      logger.error(error);
+      throw error;
+    }
+
+    return [factorDoc, levelDoc, levelCombinationElementsDoc];
+  }
+
+  private formatingFactorAndLevels(partitions: any[], factors: any[], levels: any[]): any[] {
+    const formatedFactors = factors.map((factor) => {
+      return { ...factor, levels: levels.filter((x) => x.factorId == factor.id) };
+    });
+    const formatedData = partitions.map((partition) => {
+      return { ...partition, factors: formatedFactors.filter((x) => x.decisionPointId == partition.id) };
+    });
+
+    formatedData.forEach((partition) => {
+      partition.factors.forEach((factor) => {
+        factor.levels.forEach((level) => {
+          delete level.factorId;
+        });
+        delete factor.decisionPointId;
+      });
+    });
+    return formatedData;
+  }
+
+  private formatingElements(conditions: any[], levelCombinationElements: any[]): any[] {
+    const formatedData = conditions.map((condition) => {
+      return {
+        ...condition,
+        levelCombinationElements: levelCombinationElements.filter((x) => x.conditionId == condition.id),
+      };
+    });
+
+    formatedData.forEach((condition) => {
+      condition.levelCombinationElements.forEach((element) => {
+        delete element.conditionId;
+      });
+    });
+    return formatedData;
   }
 
   private getSegmentDoc(doc: ExperimentSegmentExclusion | ExperimentSegmentInclusion) {
