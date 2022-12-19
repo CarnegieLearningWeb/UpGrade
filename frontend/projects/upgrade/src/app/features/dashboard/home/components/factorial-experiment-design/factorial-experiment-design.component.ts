@@ -135,13 +135,15 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     //   this.conditionCode.nativeElement.focus();
     // }
 
-    // if (this.isContextChanged) {
-    //   this.isContextChanged = false;
-    //   this.partition.clear();
-    //   this.condition.clear();
-    //   this.partitionDataSource.next(this.partition.controls);
-    //   this.conditionDataSource.next(this.condition.controls);
-    // }
+    if (this.isContextChanged) {
+      this.isContextChanged = false;
+      // this.partition.clear();
+      // this.condition.clear();
+      // this.partitionDataSource.next(this.partition.controls);
+      // this.conditionDataSource.next(this.condition.controls);
+      this.factor?.clear();
+      this.factorDataSource.next(this.factor?.controls);
+    }
 
     // this.applyEqualWeight();
   }
@@ -414,7 +416,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   addFactor(){
     console.log("hello add factor");
     const form = this.addFactors();
-    this.factor.push(form);
+    this.factor?.push(form);
     const scrollTableType = 'factorTable';
     this.updateView(scrollTableType);
     const factorFormControl = this.factorialExperimentDesignForm.get('factors') as FormArray;
@@ -463,6 +465,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   updateView(type?: string) {
     // this.conditionDataSource.next(this.condition.controls);
     // this.partitionDataSource.next(this.partition.controls);
+    this.factorDataSource.next(this.factor?.controls);
     if (type) {
       this[type].nativeElement.scroll({
         top: this[type].nativeElement.scrollHeight - 91,
@@ -648,12 +651,12 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   isFormValid() {
     // return (
-    //   // !this.partitionPointErrors.length &&
-    //   // !this.expPointAndIdErrors.length &&
-    //   // this.factorialExperimentDesignForm.valid &&
-    //   // !this.conditionCodeErrors.length &&
-    //   // this.partitionCountError === null &&
-    //   // this.conditionCountError === null
+    //   !this.partitionPointErrors.length &&
+    //   !this.expPointAndIdErrors.length &&
+    //   this.factorialExperimentDesignForm.valid &&
+    //   !this.conditionCodeErrors.length &&
+    //   this.partitionCountError === null &&
+    //   this.conditionCountError === null
     // );
   }
 
@@ -860,11 +863,11 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   // }
 
   get factor(): FormArray {
-    return this.factorialExperimentDesignForm.get('factors') as FormArray;
+    return this.factorialExperimentDesignForm?.get('factors') as FormArray;
   }
 
   get level(): FormArray {
-    return this.factorialExperimentDesignForm.get('levels') as FormArray;
+    return this.factorialExperimentDesignForm?.get('levels') as FormArray;
   }
 
   get NewExperimentDialogEvents() {
@@ -877,7 +880,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   ngOnDestroy() {
     // this.allPartitionsSub.unsubscribe();
-    this.allFactorsSub?.unsubscribe();
+    // this.allFactorsSub?.unsubscribe();
     // this.partitionErrorMessagesSub.unsubscribe();
     this.contextMetaDataSub?.unsubscribe();
     // this.designDataSub.unsubscribe();

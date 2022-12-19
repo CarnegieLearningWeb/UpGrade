@@ -22,7 +22,7 @@
             <ng-container>
               <mat-table
                 class="factor-table"
-                [dataSource]="factorsDataSource"
+                [dataSource]="factorDataSource"
                 #factorTable
                 formArrayName="factors"
                 multiTemplateDataRows
@@ -48,7 +48,7 @@
                   <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                     {{ 'home.new-experiment.design.factor-name.text' | translate }}
                   </mat-header-cell>
-                  <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
+                  <mat-cell *matCellDef="let element">
                     <code>{{groupIndex}}</code>
                     <mat-form-field floatLabel="never">
                       <span
@@ -77,7 +77,7 @@
                   <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                     {{ 'home.new-experiment.design.partition-point.text' | translate }}
                   </mat-header-cell>
-                  <mat-cell *matCellDef="let element; let groupIndex = index;" [formGroupName]="groupIndex">
+                  <mat-cell *matCellDef="let element">
                     <mat-form-field floatLabel="never">
                       <span
                         [matTooltip]="factorialExperimentDesignForm.getRawValue('site')?.factors[groupIndex]?.site"
@@ -105,7 +105,7 @@
                   <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                     {{ 'home.new-experiment.design.partition-id.text' | translate }}
                   </mat-header-cell>
-                  <mat-cell *matCellDef="let element; let groupIndex = index;" [formGroupName]="groupIndex">
+                  <mat-cell *matCellDef="let element">
                     <mat-form-field floatLabel="never">
                       <span
                         [matTooltip]="factorialExperimentDesignForm.getRawValue('target')?.factors[groupIndex]?.target"
