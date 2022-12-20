@@ -423,14 +423,16 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.manageExpFactorPointAndIdControl(factorFormControl.controls.length - 1);
   }
 
-  addLevel(){
+  addLevel(groupIndex){
     console.log("hello add level");
     const form = this.addLevels();
-    this.level.push(form);
+    const temp = this.factor.controls[groupIndex]; //levels.push(form);
+    temp.value.levels.push(form);
+    // this.level?.push(form);
     const scrollTableType = 'levelTable';
-    this.updateView(scrollTableType);
-    const levelFormControl = this.factorialExperimentDesignForm.get('levels') as FormArray;
-    this.manageExpLevelControl(levelFormControl.controls.length - 1);
+    // this.updateView(scrollTableType);
+    // const levelFormControl = this.factorialExperimentDesignForm.get('levels') as FormArray;
+    // this.manageExpLevelControl(levelFormControl.controls.length - 1);
   }
 
   // removeConditionOrPartition(type: string, groupIndex: number) {
@@ -456,17 +458,23 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   removeFactor(groupIndex: number){
     console.log("hello remove");
+    this.factor.removeAt(groupIndex);
+    this.experimentDesignStepperService.experimentStepperDataChanged();
+    this.updateView();
+    if(this.expandedId===groupIndex){
+      this.expandedId=null;
+    }
   }
 
-  expandFactor(index: number){
-    this.expandedId = this.expandedId === index ? null : index;
+  expandFactor(groupIndex: number){
+    this.expandedId = this.expandedId === groupIndex ? null : groupIndex;
   }
 
   updateView(type?: string) {
     // this.conditionDataSource.next(this.condition.controls);
     // this.partitionDataSource.next(this.partition.controls);
     this.factorDataSource.next(this.factor?.controls);
-    if (type) {
+    if(type){
       this[type].nativeElement.scroll({
         top: this[type].nativeElement.scrollHeight - 91,
         behavior: 'smooth',
@@ -867,7 +875,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   get level(): FormArray {
-    return this.factorialExperimentDesignForm?.get('levels') as FormArray;
+    return this.factorialExperimentDesignForm?.get('factors').get('levels') as FormArray;
   }
 
   get NewExperimentDialogEvents() {

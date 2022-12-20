@@ -31,13 +31,13 @@
                 <ng-container matColumnDef="expandIcon">
                   <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
                   <mat-cell
-                    *matCellDef="let element; let index"
+                    *matCellDef="let element; let groupIndex=dataIndex" [formGroupName]="groupIndex"
                     style="justify-content: flex-start"
                   >
                     <mat-icon
                       [disabled]="!isExperimentEditable"
-                      [class.active]="index === expandedId"
-                      (click)="expandFactor(index)"
+                      [class.active]="groupIndex === expandedId"
+                      (click)="expandFactor(groupIndex)"
                       >play_arrow</mat-icon
                     >
                   </mat-cell>
@@ -48,8 +48,7 @@
                   <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                     {{ 'home.new-experiment.design.factor-name.text' | translate }}
                   </mat-header-cell>
-                  <mat-cell *matCellDef="let element">
-                    <code>{{groupIndex}}</code>
+                  <mat-cell *matCellDef="let element; let groupIndex=dataIndex" [formGroupName]="groupIndex">
                     <mat-form-field floatLabel="never">
                       <span
                         [matTooltip]="factorialExperimentDesignForm.getRawValue('factor')?.factors[groupIndex]?.factor"
@@ -77,7 +76,7 @@
                   <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                     {{ 'home.new-experiment.design.partition-point.text' | translate }}
                   </mat-header-cell>
-                  <mat-cell *matCellDef="let element">
+                  <mat-cell *matCellDef="let element; let groupIndex=dataIndex" [formGroupName]="groupIndex">
                     <mat-form-field floatLabel="never">
                       <span
                         [matTooltip]="factorialExperimentDesignForm.getRawValue('site')?.factors[groupIndex]?.site"
@@ -105,7 +104,7 @@
                   <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                     {{ 'home.new-experiment.design.partition-id.text' | translate }}
                   </mat-header-cell>
-                  <mat-cell *matCellDef="let element">
+                  <mat-cell *matCellDef="let element; let groupIndex=dataIndex" [formGroupName]="groupIndex">
                     <mat-form-field floatLabel="never">
                       <span
                         [matTooltip]="factorialExperimentDesignForm.getRawValue('target')?.factors[groupIndex]?.target"
@@ -131,14 +130,14 @@
                 <ng-container matColumnDef="removeFactor">
                   <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
                   <mat-cell
-                    *matCellDef="let element; let index"
+                    *matCellDef="let element; let groupIndex=dataIndex" [formGroupName]="groupIndex"
                     style="justify-content: flex-start"
                   >
                     <button
                       mat-icon-button
                       type="button"
                       [disabled]="!isExperimentEditable"
-                      (click)="removeFactor(index)"
+                      (click)="removeFactor(groupIndex)"
                     >
                       <mat-icon class="remove-icon"> delete_outline </mat-icon>
                     </button>
@@ -147,12 +146,12 @@
 
                 <!-- EXPANDABLE ROW -->
                 <ng-container matColumnDef="expandedDetail">
-                  <mat-cell *matCellDef="let element; let index">
-                    <div *ngIf="index === expandedId" class="level-container">
+                  <mat-cell *matCellDef="let element; let groupIndex=dataIndex" [formGroupName]="groupIndex">
+                    <div *ngIf="groupIndex === expandedId" class="level-container">
                       <div class="level-table-container">
                         <mat-table
                           class="level-table"
-                          [dataSource]="element.levels"
+                          [dataSource]="factorDataSource"
                           #levelTable>
   
                           <!-- Level Column -->
@@ -160,8 +159,22 @@
                             <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                               {{ 'home.new-experiment.design.level-name.text' | translate }}
                             </mat-header-cell>
-                            <mat-cell *matCellDef="let element; let index" >
-                                <span>{{element.level}}</span>
+                            <mat-cell *matCellDef="let element; let group2Index=dataIndex" [formGroupName]="group2Index">
+                              <mat-form-field floatLabel="never">
+                                <span>
+                                  <input
+                                    matInput
+                                    [placeholder]="'home.new-experiment.design.partition-id.placeholder.text' | translate"
+                                    formControlName="level"
+                                    [matAutocomplete]="autoCompleteExperimentIds"
+                                  />
+                                  <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
+                                    <mat-option *ngFor="let level of filteredExpLevels$[group2Index] | async" [value]="level">
+                                      {{ level }}
+                                    </mat-option>
+                                  </mat-autocomplete>
+                                </span>
+                              </mat-form-field>
                             </mat-cell>
                           </ng-container>
                         
@@ -170,8 +183,22 @@
                             <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                               {{ 'home.new-experiment.design.aliases.column-header.alias.text' | translate }}
                             </mat-header-cell>
-                            <mat-cell *matCellDef="let element; let index">
-                                <span>{{element.alias}}</span>
+                            <mat-cell *matCellDef="let element; let group2Index=dataIndex" [formGroupName]="group2Index">
+                              <mat-form-field floatLabel="never">
+                                <span>
+                                  <input
+                                    matInput
+                                    [placeholder]="'home.new-experiment.design.partition-id.placeholder.text' | translate"
+                                    formControlName="alias"
+                                    [matAutocomplete]="autoCompleteExperimentIds"
+                                  />
+                                  <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
+                                    <mat-option *ngFor="let alias of filteredExpLevels$[group2Index] | async" [value]="alias">
+                                      {{ alias }}
+                                    </mat-option>
+                                  </mat-autocomplete>
+                                </span>
+                              </mat-form-field>
                             </mat-cell>
                           </ng-container>
                         
@@ -210,7 +237,7 @@
                         type="button"
                         class="ft-12-700 add-level"
                         *ngIf="!experimentInfo"
-                        (click)="addFactor()"
+                        (click)="addLevel(groupIndex)"
                       >
                         +
                         {{ 'home.new-experiment.design.add-experiment-factor-level.text' | translate }}
