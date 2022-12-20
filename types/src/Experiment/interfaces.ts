@@ -175,7 +175,6 @@ export interface Attempt{
   assignee?: string;
   assignable?: string;
   duration?: string;
-
   extensions?: ILogInput;
 }
 

@@ -35,8 +35,6 @@ import { CaliperLogValidator } from './validators/CaliperLogValidator';
 import { parse, toSeconds } from 'iso8601-duration';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
-import { User } from '../models/User';
-
 /**
  * @swagger
  * definitions:
@@ -700,10 +698,13 @@ export class ExperimentClientController {
        logger: request.logger,
        userDoc: experimentUserDoc,
      });
-
      await this.experimentAuditLogRepository.saveRawJson(
-      EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
-      {experimentName: "Caliper Logs"},
+      EXPERIMENT_LOG_TYPE.CALIPER_LOG,
+      {
+        experimentName: "Caliper Logs",
+        scoreGiven: logData.generated.scoreGiven,
+        duration: logData.generated.attempt.duration
+      },
       null
     );
 
