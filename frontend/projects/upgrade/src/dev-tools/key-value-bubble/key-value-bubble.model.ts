@@ -1,11 +1,11 @@
-export interface IJsonViewerStyles {
+export interface IKeyValueBubbleStyles {
   backgroundColor: string;
   borderColor: string;
   top: number;
   left: number;
 }
 
-export const VIEW_STYLE_CONSTANTS: IJsonViewerStyles[] = [
+export const KEY_VALUE_BUBBLE_STYLE_PRESETS: IKeyValueBubbleStyles[] = [
   {
     backgroundColor: '#B68F40',
     borderColor: '#545454',

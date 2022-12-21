@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { JsonViewerComponent } from './json-viewer/json-viewer.component';
+import { KeyValueBubbleComponent } from './key-value-bubble/key-value-bubble.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 
 @NgModule({
-  declarations: [JsonViewerComponent],
+  declarations: [KeyValueBubbleComponent],
   imports: [CommonModule, DragDropModule],
-  exports: [JsonViewerComponent, DragDropModule],
+  exports: [KeyValueBubbleComponent, DragDropModule],
 })
 export class DevToolsModule {}

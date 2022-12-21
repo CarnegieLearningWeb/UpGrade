@@ -1,4 +1,4 @@
-.json-viewer {
+.key-value-bubble {
   position: fixed;
   // left: 10px;
   // top: 10px;
@@ -10,7 +10,7 @@
   cursor: grab;
   border-radius: 10px;
 
-  .label {
+  .key {
     font-weight: bold;
     font-family: 'Courier New', Courier, monospace;
     font-size: 14px;
