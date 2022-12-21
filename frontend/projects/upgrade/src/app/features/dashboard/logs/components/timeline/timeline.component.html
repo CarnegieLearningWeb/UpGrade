@@ -46,7 +46,7 @@
         <ng-container [ngSwitch]="log.type">
           <div *ngSwitchCase="ExperimentLogType.CALIPER_LOG" class="log-text">
             <span class="ft-16-600 action action-msg">
-              {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.scoreGiven + ' ' + log.data.duration }}           
+              {{ (log.type | experimentActionMessage | translate) + ' scoreGiven ' + log.data.scoreGiven + ' and duration ' + log.data.duration }}           
             </span>
             <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
           </div>
