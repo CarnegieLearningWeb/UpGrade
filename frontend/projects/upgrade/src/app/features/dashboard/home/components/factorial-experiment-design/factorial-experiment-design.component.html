@@ -10,7 +10,7 @@
                 mat-flat-button
                 color="primary"
                 class="ft-14-600 toggle-button"
-                (click)="scrollToConditionsTable()"
+                (click)="scrollToFactorsTable()"
                 [disabled]="!isExperimentEditable"
               >
                 <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
@@ -151,7 +151,8 @@
                       <div class="level-table-container">
                         <mat-table
                           class="level-table"
-                          [dataSource]="factorDataSource"
+                          [dataSource]="levelDataSource"
+                          formArrayName="levels"
                           #levelTable>
   
                           <!-- Level Column -->
@@ -248,7 +249,7 @@
                         *ngIf="experimentInfo"
                         [ngClass]="{ 'add-factor--disabled': !isExperimentEditable }"
                         [disabled]="!isExperimentEditable"
-                        (click)="addFactor()"
+                        (click)="addLevel(groupIndex)"
                       >
                         +
                         {{ 'home.new-experiment.design.add-experiment-factor-level.text' | translate }}

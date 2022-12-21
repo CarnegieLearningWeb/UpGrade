@@ -46,20 +46,14 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
   @ViewChild('stepContainer', { read: ElementRef }) stepContainer: ElementRef;
-  // @ViewChild('conditionTable', { read: ElementRef }) conditionTable: ElementRef;
-  // @ViewChild('partitionTable', { read: ElementRef }) partitionTable: ElementRef;
   @ViewChild('factorTable', { read: ElementRef }) factorTable: ElementRef;
-  // @ViewChild('conditionCode') conditionCode: ElementRef;
+  @ViewChild('levelTable', { read: ElementRef }) levelTable: ElementRef;
 
   factorialExperimentDesignForm: FormGroup;
-  // conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
-  // partitionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   factorDataSource = new BehaviorSubject<AbstractControl[]>([]);
-  factorsDataSource = ELEMENT_DATA;
+  levelDataSource = new BehaviorSubject<AbstractControl[]>([]);
   allFactors = [];
   allFactorsSub: Subscription;
-  // allPartitions = [];
-  // allPartitionsSub: Subscription;
 
   // Condition Errors
   conditionCountError: string;
@@ -78,17 +72,16 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   levelDisplayedColumns = ['level', 'alias', 'removeLevel'];
 
   // Used for condition code, experiment point and ids auto complete dropdown
-  // filteredConditionCodes$: Observable<string[]>[] = [];
   filteredExpFactors$: Observable<string[]>[] = [];
   filteredExpPoints$: Observable<string[]>[] = [];
   filteredExpIds$: Observable<string[]>[] = [];
   filteredExpLevels$: Observable<string[]>[] = [];
+  filteredExpAlias$: Observable<string[]>[] = [];
   contextMetaData: IContextMetaData = {
     contextMetadata: {},
   };
   contextMetaDataSub: Subscription;
   expPointAndIdErrors: string[] = [];
-  // conditionCodeErrors: string[] = [];
   equalWeightFlag = true;
 
   // Alias Table details
@@ -97,6 +90,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   aliasTableData: ExperimentAliasTableRow[] = [];
   isAliasTableEditMode$: Observable<boolean>;
   isExperimentEditable = true;
+  
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -104,48 +98,16 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     private translate: TranslateService,
     private dialogService: DialogService,
     public experimentDesignStepperService: ExperimentDesignStepperService
-  ) {
-    // this.partitionErrorMessagesSub = this.translate
-    //   .get([
-    //     'home.new-experiment.design.assignment-partition-error-1.text',
-    //     'home.new-experiment.design.assignment-partition-error-2.text',
-    //     'home.new-experiment.design.assignment-partition-error-3.text',
-    //     'home.new-experiment.design.assignment-partition-error-4.text',
-    //     'home.new-experiment.design.partition-point-selection-error.text',
-    //     'home.new-experiment.design.partition-id-selection-error.text',
-    //   ])
-    //   .subscribe((translatedMessage) => {
-    //     this.partitionErrorMessages = [
-    //       translatedMessage['home.new-experiment.design.assignment-partition-error-1.text'],
-    //       translatedMessage['home.new-experiment.design.assignment-partition-error-2.text'],
-    //       translatedMessage['home.new-experiment.design.assignment-partition-error-3.text'],
-    //       translatedMessage['home.new-experiment.design.assignment-partition-error-4.text'],
-    //       translatedMessage['home.new-experiment.design.partition-point-selection-error.text'],
-    //       translatedMessage['home.new-experiment.design.partition-id-selection-error.text'],
-    //     ];
-    //   });
-  }
+  ) {}
 
   ngOnChanges(changes: SimpleChanges) {
-    // if (
-    //   changes.animationCompleteStepperIndex &&
-    //   changes.animationCompleteStepperIndex.currentValue === 1 &&
-    //   this.conditionCode
-    // ) {
-    //   this.conditionCode.nativeElement.focus();
-    // }
-
     if (this.isContextChanged) {
       this.isContextChanged = false;
-      // this.partition.clear();
-      // this.condition.clear();
-      // this.partitionDataSource.next(this.partition.controls);
-      // this.conditionDataSource.next(this.condition.controls);
       this.factor?.clear();
+      this.level?.clear();
       this.factorDataSource.next(this.factor?.controls);
+      this.levelDataSource.next(this.level?.controls);
     }
-
-    // this.applyEqualWeight();
   }
 
   ngOnInit() {
@@ -168,9 +130,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     //     );
     //   });
     this.factorialExperimentDesignForm = this._formBuilder.group({
-        // conditions: this._formBuilder.array([this.addConditions()]),
-        // partitions: this._formBuilder.array([this.addPartitions()]),
-        factors: this._formBuilder.array([this.addFactors()]), 
+        factors: this._formBuilder.array([this.addFactors()]),
       }
       // { validators: ExperimentFormValidators.validateExperimentDesignForm }
       // to do: create new form validator 
@@ -218,19 +178,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       }
     }
     this.updateView();
-
-    // // Bind predefined values of experiment conditionCode from backend
-    // const conditionFormControl = this.factorialExperimentDesignForm.get('conditions') as FormArray;
-    // conditionFormControl.controls.forEach((_, index) => {
-    //   this.manageConditionCodeControl(index);
-    // });
-
-    // // Bind predefined values of experiment points and ids from backend
-    // const partitionFormControl = this.factorialExperimentDesignForm.get('partitions') as FormArray;
-    // partitionFormControl.controls.forEach((_, index) => {
-    //   this.manageExpPointAndIdControl(index);
-    // });
-
     // Bind predefined values of experiment factors from backend
     const factorFormControl = this.factorialExperimentDesignForm.get('factors') as FormArray;
     factorFormControl.controls.forEach((_, index) => {
@@ -248,54 +195,24 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     // });
   }
 
-  // manageConditionCodeControl(index: number) {
-  //   const conditionFormControl = this.factorialExperimentDesignForm.get('conditions') as FormArray;
-  //   this.filteredConditionCodes$[index] = conditionFormControl
-  //     .at(index)
-  //     .get('conditionCode')
-  //     .valueChanges.pipe(
-  //       startWith<string>(''),
-  //       map((conditionCode) => this.filterConditionCodes(conditionCode))
-  //     );
-  //   this.applyEqualWeight();
-  // }
-
-  // manageExpPointAndIdControl(index: number) {
-  //   const partitionFormControl = this.factorialExperimentDesignForm.get('partitions') as FormArray;
-  //   this.filteredExpPoints$[index] = partitionFormControl
-  //     .at(index)
-  //     .get('site')
-  //     .valueChanges.pipe(
-  //       startWith<string>(''),
-  //       map((site) => this.filterExpPointsAndIds(site, 'expPoints'))
-  //     );
-  //   this.filteredExpIds$[index] = partitionFormControl
-  //     .at(index)
-  //     .get('target')
-  //     .valueChanges.pipe(
-  //       startWith<string>(''),
-  //       map((target) => this.filterExpPointsAndIds(target, 'expIds'))
-  //     );
-  // }
-
-  manageExpFactorPointAndIdControl(index: number) {
-    const factorFormControl = this.factorialExperimentDesignForm.get('factors') as FormArray;
-    this.filteredExpFactors$[index] = factorFormControl
-      .at(index)
+  manageExpFactorPointAndIdControl(factorIndex: number) {
+    const factorFormControl = this.factor as FormArray;
+    this.filteredExpFactors$[factorIndex] = factorFormControl
+      .at(factorIndex)
       .get('factor')
       .valueChanges.pipe(
         startWith<string>(''),
         map((factor) => this.filterExpFactorsPointsAndIds(factor, 'expFactors'))
       );
-    this.filteredExpPoints$[index] = factorFormControl
-      .at(index)
+    this.filteredExpPoints$[factorIndex] = factorFormControl
+      .at(factorIndex)
       .get('site')
       .valueChanges.pipe(
         startWith<string>(''),
         map((site) => this.filterExpFactorsPointsAndIds(site, 'expPoints'))
       );
-    this.filteredExpIds$[index] = factorFormControl
-      .at(index)
+    this.filteredExpIds$[factorIndex] = factorFormControl
+      .at(factorIndex)
       .get('target')
       .valueChanges.pipe(
         startWith<string>(''),
@@ -303,14 +220,21 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       );
   }
 
-  manageExpLevelControl(index: number) {
-    const levelFormControl = this.factorialExperimentDesignForm.get('levels') as FormArray;
-    this.filteredExpLevels$[index] = levelFormControl
-      .at(index)
+  manageExpLevelAliasControl(factorIndex: number, levelIndex: number) {
+    const levelFormControl = this.factor.at(factorIndex).get('levels') as FormArray;
+    this.filteredExpLevels$[levelIndex] = levelFormControl
+      .at(levelIndex)
       .get('level')
       .valueChanges.pipe(
         startWith<string>(''),
-        map((level) => this.filterExpFactorsPointsAndIds(level, 'expLevels'))
+        map((level) => this.filteredExpLevels(level, 'expLevels'))
+      );
+    this.filteredExpAlias$[levelIndex] = levelFormControl
+      .at(levelIndex)
+      .get('alias')
+      .valueChanges.pipe(
+        startWith<string>(''),
+        map((level) => this.filterExpFactorsPointsAndIds(level, 'expAlias'))
       );
   }
 
@@ -332,19 +256,15 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.aliasTableData = [...aliasTableData];
   }
 
-  // private filterConditionCodes(value: string): string[] {
-  //   const filterValue = value ? value.toLocaleLowerCase() : '';
+  private filteredExpLevels(value: string, key: string): string[] {
+    const filterValue = value ? value.toLocaleLowerCase() : '';
 
-  //   if (!this.contextMetaData) {
-  //     return [];
-  //   }
-
-  //   if (this.currentContext) {
-  //     const currentContextConditionCode = this.contextMetaData.contextMetadata[this.currentContext].CONDITIONS || [];
-  //     return currentContextConditionCode.filter((option) => option.toLowerCase().startsWith(filterValue));
-  //   }
-  //   return [];
-  // }
+    if (!this.contextMetaData) {
+      return [];
+    }
+    
+    return [];
+  }
 
   private filterExpFactorsPointsAndIds(value: string, key: string): string[] {
     const filterValue = value ? value.toLocaleLowerCase() : '';
@@ -363,39 +283,25 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return [];
   }
 
-  // addConditions(conditionCode = null, assignmentWeight = null, description = null, order = null) {
-  //   return this._formBuilder.group({
-  //     conditionCode: [conditionCode, Validators.required],
-  //     assignmentWeight: [assignmentWeight, Validators.required],
-  //     description: [description],
-  //     order: [order],
-  //   });
-  // }
-
-  // addPartitions(site = null, target = null, factors = null, order = null, excludeIfReached = false) {
-  //   return this._formBuilder.group({
-  //     site: [site, Validators.required],
-  //     target: [target, Validators.required],
-  //     factors: [factors, Validators.required],
-  //     order: [order],
-  //     excludeIfReached: [excludeIfReached],
-  //   });
-  // }
-
   addFactors( factor = null, site = null, target = null, level = null, alias = null) {
     return this._formBuilder.group({
-      factor: [factor],
-      site: [site],
-      target: [target],
-      levels: this._formBuilder.array([this.addLevels(level,alias)])
+      factor: [factor, Validators.required],
+      site: [site, Validators.required],
+      target: [target, Validators.required],
+      levels: this._formBuilder.array([this.addLevels(level, alias)])
     });
   }
 
   addLevels( level = null, alias = null) {
     return this._formBuilder.group({
-      level: [level],
-      alias: [alias],
+      level: [level, Validators.required],
+      alias: [alias, Validators.required],
     });
+  }
+
+  getLevels(factorIndex: number) {
+    const levelsArray = this.factor.at(factorIndex).get('levels') as FormArray;
+    return levelsArray;
   }
 
   // addConditionOrPartition(type: string) {
@@ -413,8 +319,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   //   }
   // }
 
-  addFactor(){
-    console.log("hello add factor");
+  addFactor() {
     const form = this.addFactors();
     this.factor?.push(form);
     const scrollTableType = 'factorTable';
@@ -423,16 +328,13 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.manageExpFactorPointAndIdControl(factorFormControl.controls.length - 1);
   }
 
-  addLevel(groupIndex){
-    console.log("hello add level");
-    const form = this.addLevels();
-    const temp = this.factor.controls[groupIndex]; //levels.push(form);
-    temp.value.levels.push(form);
-    // this.level?.push(form);
+  addLevel(factorIndex) {
+    this.getLevels(factorIndex).push(this.addLevels());
+    console.log("form: ", this.factorialExperimentDesignForm);
     const scrollTableType = 'levelTable';
-    // this.updateView(scrollTableType);
-    // const levelFormControl = this.factorialExperimentDesignForm.get('levels') as FormArray;
-    // this.manageExpLevelControl(levelFormControl.controls.length - 1);
+    this.updateView(scrollTableType);
+    const levelFormControl = this.factor.at(factorIndex).get('levels') as FormArray;
+    this.manageExpLevelAliasControl(factorIndex, levelFormControl.controls.length - 1);
   }
 
   // removeConditionOrPartition(type: string, groupIndex: number) {
@@ -461,7 +363,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.factor.removeAt(groupIndex);
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView();
-    if(this.expandedId===groupIndex){
+    if (this.expandedId === groupIndex) {
       this.expandedId=null;
     }
   }
@@ -478,186 +380,15 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   updateView(type?: string) {
-    // this.conditionDataSource.next(this.condition.controls);
-    // this.partitionDataSource.next(this.partition.controls);
     this.factorDataSource.next(this.factor?.controls);
-    if(type){
+    this.levelDataSource.next(this.level?.controls);
+    if (type) {
       this[type].nativeElement.scroll({
         top: this[type].nativeElement.scrollHeight - 91,
         behavior: 'smooth',
       });
     }
   }
-
-  // validatePartitionNames(partitions: any) {
-  //   this.partitionPointErrors = [];
-  //   // Used to differentiate errors
-  //   const duplicatePartitions = [];
-
-  //   // Used for updating existing experiment
-  //   if (this.experimentInfo) {
-  //     this.experimentInfo.partitions.forEach((partition) => {
-  //       const partitionInfo = partition.target ? partition.site + partition.target : partition.site;
-  //       const partitionPointIndex = this.allPartitions.indexOf(partitionInfo);
-  //       if (partitionPointIndex !== -1) {
-  //         this.allPartitions.splice(partitionPointIndex, 1);
-  //       }
-  //     });
-  //   }
-
-  //   partitions.forEach((partition, index) => {
-  //     if (
-  //       partitions.find(
-  //         (value, partitionIndex) =>
-  //           value.site === partition.site &&
-  //           (value.target || '') === (partition.target || '') && // To match null and empty string, add '' as default value. target as optional and hence it's value can be null.
-  //           partitionIndex !== index &&
-  //           !duplicatePartitions.includes(
-  //             partition.target ? partition.site + ' and ' + partition.target : partition.site
-  //           )
-  //       )
-  //     ) {
-  //       duplicatePartitions.push(partition.target ? partition.site + ' and ' + partition.target : partition.site);
-  //     }
-  //   });
-
-  //   // Partition Points error messages
-  //   if (duplicatePartitions.length === 1) {
-  //     this.partitionPointErrors.push(duplicatePartitions[0] + this.partitionErrorMessages[2]);
-  //   } else if (duplicatePartitions.length > 1) {
-  //     this.partitionPointErrors.push(duplicatePartitions.join(', ') + this.partitionErrorMessages[3]);
-  //   }
-  // }
-
-  // validateConditionCodes(conditions: ExperimentCondition[]) {
-  //   const conditionUniqueErrorText = this.translate.instant(
-  //     'home.new-experiment.design.condition-unique-validation.text'
-  //   );
-  //   const conditionCodes = conditions.map((condition) => condition.conditionCode);
-  //   const hasUniqueConditionError = conditionCodes.length !== new Set(conditionCodes).size;
-  //   if (hasUniqueConditionError && !this.conditionCodeErrors.includes(conditionUniqueErrorText)) {
-  //     this.conditionCodeErrors.push(conditionUniqueErrorText);
-  //   } else if (!hasUniqueConditionError) {
-  //     const index = this.conditionCodeErrors.indexOf(conditionUniqueErrorText, 0);
-  //     if (index > -1) {
-  //       this.conditionCodeErrors.splice(index, 1);
-  //     }
-  //   }
-  // }
-
-  // validateHasConditionCodeDefault(conditions: ExperimentCondition[]) {
-  //   const defaultKeyword = this.translate.instant('home.new-experiment.design.condition.invalid.text');
-  //   const defaultConditionCodeErrorText = this.translate.instant(
-  //     'home.new-experiment.design.condition-name-validation.text'
-  //   );
-  //   if (conditions.length) {
-  //     const hasDefaultConditionCode = conditions.filter(
-  //       (condition) =>
-  //         typeof condition.conditionCode === 'string' && condition.conditionCode.toUpperCase().trim() === defaultKeyword
-  //     );
-  //     if (hasDefaultConditionCode.length && !this.conditionCodeErrors.includes(defaultConditionCodeErrorText)) {
-  //       this.conditionCodeErrors.push(defaultConditionCodeErrorText);
-  //     } else if (!hasDefaultConditionCode.length) {
-  //       const index = this.conditionCodeErrors.indexOf(defaultConditionCodeErrorText, 0);
-  //       if (index > -1) {
-  //         this.conditionCodeErrors.splice(index, 1);
-  //       }
-  //     }
-  //   }
-  // }
-
-  // validateHasAssignmentWeightsNegative(conditions: ExperimentCondition[]) {
-  //   const negativeAssignmentWeightErrorText = this.translate.instant(
-  //     'home.new-experiment.design.assignment-weight-negative.text'
-  //   );
-  //   if (conditions.length) {
-  //     const hasNegativeAssignmentWeights = conditions.filter((condition) => condition.assignmentWeight < 0);
-  //     if (
-  //       hasNegativeAssignmentWeights.length &&
-  //       !this.conditionCodeErrors.includes(negativeAssignmentWeightErrorText)
-  //     ) {
-  //       this.conditionCodeErrors.push(negativeAssignmentWeightErrorText);
-  //     } else if (!hasNegativeAssignmentWeights.length) {
-  //       const index = this.conditionCodeErrors.indexOf(negativeAssignmentWeightErrorText, 0);
-  //       if (index > -1) {
-  //         this.conditionCodeErrors.splice(index, 1);
-  //       }
-  //     }
-  //   }
-  // }
-
-  // validateConditionCount(conditions: ExperimentCondition[]) {
-  //   const conditionCountErrorMsg = this.translate.instant(
-  //     'home.new-experiment.design.condition-count-new-exp-error.text'
-  //   );
-  //   if (
-  //     conditions.length === 0 ||
-  //     !conditions.every(
-  //       (condition) =>
-  //         typeof condition.conditionCode === 'string' &&
-  //         condition.conditionCode.trim() &&
-  //         condition.assignmentWeight !== null
-  //     )
-  //   ) {
-  //     this.conditionCountError = conditionCountErrorMsg;
-  //   } else {
-  //     this.conditionCountError = null;
-  //   }
-  // }
-
-  // validatePartitionCount(partitions: ExperimentPartition[]) {
-  //   const partitionCountErrorMsg = this.translate.instant(
-  //     'home.new-experiment.design.partition-count-new-exp-error.text'
-  //   );
-  //   if (
-  //     partitions.length === 0 ||
-  //     !partitions.every(
-  //       (partition) =>
-  //         typeof partition.site === 'string' &&
-  //         partition.site.trim() &&
-  //         typeof partition.target === 'string' &&
-  //         partition.target.trim()
-  //     )
-  //   ) {
-  //     this.partitionCountError = partitionCountErrorMsg;
-  //   } else {
-  //     this.partitionCountError = null;
-  //   }
-  // }
-
-  // validatePartitions() {
-  //   // Reset expPointAndIdErrors errors to re-validate data
-  //   this.expPointAndIdErrors = [];
-  //   const partitions: ExperimentPartition[] = this.factorialExperimentDesignForm.get('partitions').value;
-  //   this.validateExpPoints(partitions);
-  //   this.validateExpIds(partitions);
-  // }
-
-  // validateExpPoints(partitions: ExperimentPartition[]) {
-  //   const sites = partitions.map((partition) => partition.site);
-  //   const currentContextExpPoints = this.contextMetaData.contextMetadata[this.currentContext].EXP_POINTS;
-
-  //   for (let siteIndex = 0; siteIndex < sites.length; siteIndex++) {
-  //     if (!currentContextExpPoints.includes(sites[siteIndex])) {
-  //       // Add partition point selection error
-  //       this.expPointAndIdErrors.push(this.partitionErrorMessages[4]);
-  //       break;
-  //     }
-  //   }
-  // }
-
-  // validateExpIds(partitions: ExperimentPartition[]) {
-  //   const targets = partitions.map((partition) => partition.target).filter((target) => target);
-  //   const currentContextExpIds = this.contextMetaData.contextMetadata[this.currentContext].EXP_IDS;
-
-  //   for (let targetIndex = 0; targetIndex < targets.length; targetIndex++) {
-  //     if (!currentContextExpIds.includes(targets[targetIndex])) {
-  //       // Add partition id selection error
-  //       this.expPointAndIdErrors.push(this.partitionErrorMessages[5]);
-  //       break;
-  //     }
-  //   }
-  // }
 
   // removePartitionName(partition) {
   //   delete partition.target;
@@ -818,48 +549,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   //   return conditionAliases;
   // }
 
-  // applyEqualWeight() {
-  //   if (this.factorialExperimentDesignForm) {
-  //     const conditions = this.factorialExperimentDesignForm.get('conditions') as FormArray;
-  //     if (this.equalWeightFlag) {
-  //       const len = conditions.controls.length;
-  //       this.previousAssignmentWeightValues = [];
-  //       conditions.controls.forEach((control) => {
-  //         control.get('assignmentWeight').setValue(parseFloat((100.0 / len).toFixed(1)).toString());
-  //         this.previousAssignmentWeightValues.push(control.get('assignmentWeight').value);
-  //         control.get('assignmentWeight').disable();
-  //       });
-  //     } else {
-  //       conditions.controls.forEach((control, index) => {
-  //         control
-  //           .get('assignmentWeight')
-  //           .setValue(
-  //             control.value.assignmentWeight
-  //               ? control.value.assignmentWeight
-  //               : this.previousAssignmentWeightValues[index]
-  //           );
-  //         if (this.isExperimentEditable) {
-  //           control.get('assignmentWeight').enable();
-  //         }
-  //       });
-  //     }
-  //   }
-  // }
-
-  // changeEqualWeightFlag(event) {
-  //   event.checked ? (this.equalWeightFlag = true) : (this.equalWeightFlag = false);
-  //   this.applyEqualWeight();
-  // }
-
-  scrollToConditionsTable(): void {
-    this.stepContainer.nativeElement.scroll({
-      top: this.stepContainer.nativeElement.scrollHeight / 2,
-      behavior: 'smooth',
-      duration: 500,
-      easing: 'easeOutCubic',
-    });
-  }
-
   scrollToFactorsTable(): void {
     this.stepContainer.nativeElement.scroll({
       top: 0,
@@ -868,14 +557,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       easing: 'easeOutCubic',
     });
   }
-
-  // get condition(): FormArray {
-  //   return this.factorialExperimentDesignForm.get('conditions') as FormArray;
-  // }
-
-  // get partition(): FormArray {
-  //   return this.factorialExperimentDesignForm.get('partitions') as FormArray;
-  // }
 
   get factor(): FormArray {
     return this.factorialExperimentDesignForm?.get('factors') as FormArray;
@@ -901,40 +582,3 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     // this.designDataSub.unsubscribe();
   }
 }
-
-export interface FactorElement {
-  factor: string;
-  site: string;
-  target: string;
-  levels: LevelElement[];
-}
-
-export interface LevelElement {
-  level: string;
-  alias: string;
-}
-
-const ELEMENT_DATA: FactorElement[] = [
-  // {
-  //   factor: "F1",
-  //   site: "Point-1",
-  //   target: "Id-1",
-  //   levels: [{
-  //     level: "F1L01",
-  //     alias: "F1A01"
-  //   },
-  //   {
-  //     level: "F1L02",
-  //     alias: "F1A02"
-  //   }]
-  // },
-  // {
-  //   factor: "F2",
-  //   site: "Point-2",
-  //   target: "Id-2",
-  //   levels: [{
-  //     level: "F2L01",
-  //     alias: "F2A01"
-  //   }]
-  // }
-];
