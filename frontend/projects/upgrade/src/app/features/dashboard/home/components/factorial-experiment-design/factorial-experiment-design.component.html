@@ -215,14 +215,14 @@
                           <ng-container matColumnDef="removeLevel">
                             <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
                             <mat-cell
-                              *matCellDef="let element; let index"
+                              *matCellDef="let element; let group2Index=dataIndex" [formGroupName]="group2Index"
                               style="justify-content: flex-start"
                             >
                               <button
                                 mat-icon-button
                                 type="button"
                                 [disabled]="!isExperimentEditable"
-                                (click)="removeFactor(index)"
+                                (click)="removeLevel(groupIndex,group2Index)"
                               >
                                 <mat-icon class="remove-icon"> delete_outline </mat-icon>
                               </button>

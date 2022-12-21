@@ -466,6 +466,13 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
+  removeLevel(groupIndex: number,group2Index: number){
+    console.log("hello remove");
+    this.factor[groupIndex].level.removeAt(group2Index);
+    this.experimentDesignStepperService.experimentStepperDataChanged();
+    this.updateView();
+  }
+
   expandFactor(groupIndex: number){
     this.expandedId = this.expandedId === groupIndex ? null : groupIndex;
   }
@@ -875,7 +882,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   get level(): FormArray {
-    return this.factorialExperimentDesignForm?.get('factors').get('levels') as FormArray;
+    return this.factorialExperimentDesignForm?.get('levels') as FormArray;
   }
 
   get NewExperimentDialogEvents() {
