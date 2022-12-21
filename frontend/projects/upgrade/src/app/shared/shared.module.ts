@@ -32,6 +32,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { DevToolsModule } from '../../dev-tools/dev-tools.module';
 
 import { SharedIconsComponent } from './components/shared-icons/shared-icons.component';
 import { TruncatePipe } from './pipes/truncate.pipe';
@@ -43,6 +44,8 @@ import { SegmentStatusPipe } from './pipes/segment-status.pipe';
 import { QueryResultComponent } from './components/query-result/query-result.component';
 import { DeleteComponent } from './components/delete/delete.component';
 import { MatConfirmDialogComponent } from './components/mat-confirm-dialog/mat-confirm-dialog.component';
+
+import { environment } from '../../environments/environment';
 
 @NgModule({
   imports: [
@@ -76,6 +79,7 @@ import { MatConfirmDialogComponent } from './components/mat-confirm-dialog/mat-c
     MatProgressBarModule,
     MatAutocompleteModule,
     MatTreeModule,
+    environment.production ? [] : DevToolsModule,
   ],
   declarations: [
     SharedIconsComponent,
@@ -132,6 +136,7 @@ import { MatConfirmDialogComponent } from './components/mat-confirm-dialog/mat-c
     DeleteComponent,
     SegmentStatusPipe,
     MatConfirmDialogComponent,
+    environment.production ? [] : DevToolsModule,
   ],
 })
 export class SharedModule {}

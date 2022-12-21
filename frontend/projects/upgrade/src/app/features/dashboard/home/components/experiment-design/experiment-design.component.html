@@ -407,3 +407,23 @@
     </span>
   </section>
 </div>
+
+<app-json-viewer
+  [valueToDisplay]="isFormLockedForEdit$ | async"
+  name="isFormLockedForEdit$"
+></app-json-viewer>
+
+<app-json-viewer
+  [valueToDisplay]="experimentDesignForm.getRawValue()"
+  name="experimentDesignForm"
+></app-json-viewer>
+
+<app-json-viewer
+  [valueToDisplay]="aliasTableData"
+  name="aliasTableData"
+></app-json-viewer>
+
+<app-json-viewer
+  [valueToDisplay]="experimentInfo"
+  name="experimentInfo"
+></app-json-viewer>
