@@ -90,7 +90,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   aliasTableData: ExperimentAliasTableRow[] = [];
   isAliasTableEditMode$: Observable<boolean>;
   isExperimentEditable = true;
-  
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -234,7 +233,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       .get('alias')
       .valueChanges.pipe(
         startWith<string>(''),
-        map((level) => this.filterExpFactorsPointsAndIds(level, 'expAlias'))
+        map((alias) => this.filteredExpLevels(alias, 'expAlias'))
       );
   }
 
@@ -322,8 +321,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   addFactor() {
     const form = this.addFactors();
     this.factor?.push(form);
-    const scrollTableType = 'factorTable';
-    this.updateView(scrollTableType);
+    this.updateView('factorTable');
     const factorFormControl = this.factorialExperimentDesignForm.get('factors') as FormArray;
     this.manageExpFactorPointAndIdControl(factorFormControl.controls.length - 1);
   }
@@ -370,7 +368,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   removeLevel(groupIndex: number,group2Index: number){
     console.log("hello remove");
-    this.factor[groupIndex].level.removeAt(group2Index);
+    this.level.removeAt(group2Index);
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView();
   }
@@ -552,6 +550,15 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   scrollToFactorsTable(): void {
     this.stepContainer.nativeElement.scroll({
       top: 0,
+      behavior: 'smooth',
+      duration: 500,
+      easing: 'easeOutCubic',
+    });
+  }
+
+  scrollToConditionsTable(): void {
+    this.stepContainer.nativeElement.scroll({
+      top: this.stepContainer.nativeElement.scrollHeight / 2,
       behavior: 'smooth',
       duration: 500,
       easing: 'easeOutCubic',
