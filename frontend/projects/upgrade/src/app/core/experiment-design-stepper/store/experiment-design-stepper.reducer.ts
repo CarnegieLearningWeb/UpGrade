@@ -1,5 +1,5 @@
 import { Action, createReducer, on } from '@ngrx/store';
-import { DUMMY_CONDITION_TABLE_DATA, ExperimentDesignStepperState } from './experiment-design-stepper.model';
+import { ExperimentDesignStepperState } from './experiment-design-stepper.model';
 import * as experimentDesignStepperAction from './experiment-design-stepper.actions';
 
 const initialState: ExperimentDesignStepperState = {
@@ -9,7 +9,7 @@ const initialState: ExperimentDesignStepperState = {
   conditionsTableEditIndex: null,
   conditionsEditModePreviousRowData: null,
   hasExperimentStepperDataChanged: false,
-  factorialDesignData: DUMMY_CONDITION_TABLE_DATA,
+  factorialDesignData: { factors: [] },
   factorialConditionsTableData: [],
 };
 

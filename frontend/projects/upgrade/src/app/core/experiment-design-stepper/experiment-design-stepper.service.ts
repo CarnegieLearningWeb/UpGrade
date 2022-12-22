@@ -21,6 +21,7 @@ import {
 } from './store/experiment-design-stepper.selectors';
 import {
   ConditionsTableRowData,
+  DUMMY_CONDITION_TABLE_DATA,
   ExperimentAliasTableRow,
   ExperimentFactorialDesignData,
   FactorialConditionTableRowData,
@@ -132,16 +133,8 @@ export class ExperimentDesignStepperService {
   createNewFactorialConditionTableData(designData: ExperimentFactorialDesignData) {
     const tableData: FactorialConditionTableRowData[] = [];
 
-    // remove this null check after implementing filtering on design data observable
-    if (!designData || !designData?.factors.length) {
-      return;
-    }
-
     // currently this table will only support 2 factors due to design constraints
     // this will need revisited to support more factors in this table
-    if (designData.factors.length !== 2) {
-      return;
-    }
 
     const factorOne = designData.factors[0];
     const factorTwo = designData.factors[1];
@@ -175,6 +168,14 @@ export class ExperimentDesignStepperService {
     factorTwoLevel: string
   ) {
     return `${factorOneName}=${factorOneLevel};${factorTwoName}=${factorTwoLevel}`;
+  }
+
+  updateFactorialDesignData(designData: ExperimentFactorialDesignData) {
+    console.log('actual design data:', designData);
+    console.log('using this dummy data instead', DUMMY_CONDITION_TABLE_DATA);
+    designData = DUMMY_CONDITION_TABLE_DATA;
+
+    this.store$.dispatch(experimentDesignStepperAction.actionUpdateFactorialDesignData({ designData }));
   }
 
   setUpdateAliasTableEditMode(details: TableEditModeDetails): void {

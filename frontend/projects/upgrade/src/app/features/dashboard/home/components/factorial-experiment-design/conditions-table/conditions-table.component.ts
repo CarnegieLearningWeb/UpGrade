@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { filter, Subscription } from 'rxjs';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 
 @Component({
@@ -25,11 +25,19 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   ngAfterViewInit(): void {
     // must sub after view init to ensure table reference is loaded before emitting table data
-    this.subscriptions = this.factorialDesignData$.subscribe((designData) => {
-      this.experimentDesignStepperService.createNewFactorialConditionTableData(designData);
-      this.factorOneHeader = designData?.factors[0].factor;
-      this.factorTwoHeader = designData?.factors[1].factor;
-    });
+    this.subscriptions = this.factorialDesignData$
+      .pipe(
+        filter((designData) => {
+          // TODO: compare against previous designData to filter out duplicates?
+          // alos, support is only for two factors currently...
+          return designData && designData?.factors.length === 2;
+        })
+      )
+      .subscribe((designData) => {
+        this.experimentDesignStepperService.createNewFactorialConditionTableData(designData);
+        this.factorOneHeader = designData.factors[0].factor;
+        this.factorTwoHeader = designData.factors[1].factor;
+      });
   }
 
   ngOnDestroy(): void {

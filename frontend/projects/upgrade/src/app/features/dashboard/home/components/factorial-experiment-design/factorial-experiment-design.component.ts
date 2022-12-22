@@ -34,7 +34,7 @@ import { ExperimentAliasTableRow } from '../../../../../core/experiment-design-s
   selector: 'home-factorial-experiment-design',
   templateUrl: './factorial-experiment-design.component.html',
   styleUrls: ['./factorial-experiment-design.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FactorialExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
@@ -63,9 +63,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   previousAssignmentWeightValues = [];
 
-  expandedId:number = null;
+  expandedId: number = null;
 
-  factorDisplayedColumns = ['expandIcon','factor','site', 'target', 'removeFactor'];
+  factorDisplayedColumns = ['expandIcon', 'factor', 'site', 'target', 'removeFactor'];
   levelDisplayedColumns = ['level', 'alias', 'removeLevel'];
 
   // Used for condition code, experiment point and ids auto complete dropdown
@@ -119,15 +119,16 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     //   .pipe(filter((partitions) => !!partitions))
     //   .subscribe((partitions: any) => {
     //     this.allFactors = partitions.map((partition) =>
-    //       partition.factors ? (partition.factors.map((factor) => partition.site + partition.target + factor.name )) 
+    //       partition.factors ? (partition.factors.map((factor) => partition.site + partition.target + factor.name ))
     //         : (partition.target ? partition.site + partition.target : partition.site)
     //     );
     //   });
-    this.factorialExperimentDesignForm = this._formBuilder.group({
+    this.factorialExperimentDesignForm = this._formBuilder.group(
+      {
         factors: this._formBuilder.array([this.addFactors()]),
       }
       // { validators: ExperimentFormValidators.validateExperimentDesignForm }
-      // to do: create new form validator 
+      // to do: create new form validator
     );
     // this.createDesignDataSubject();
     // this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
@@ -246,8 +247,12 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   //     .subscribe(this.designData$);
   // }
 
-  handleAliasTableDataChange(aliasTableData: ExperimentAliasTableRow[]) {
-    this.aliasTableData = [...aliasTableData];
+  // handleAliasTableDataChange(aliasTableData: ExperimentAliasTableRow[]) {
+  //   this.aliasTableData = [...aliasTableData];
+  // }
+  handleConditionsButtonClick() {
+    this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
+    this.scrollToConditionsTable();
   }
 
   private filteredExpLevels(value: string, key: string): string[] {
@@ -256,7 +261,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     if (!this.contextMetaData) {
       return [];
     }
-    
+
     return [];
   }
 
@@ -277,16 +282,16 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return [];
   }
 
-  addFactors( factor = null, site = null, target = null, level = null, alias = null) {
+  addFactors(factor = null, site = null, target = null, level = null, alias = null) {
     return this._formBuilder.group({
       factor: [factor, Validators.required],
       site: [site, Validators.required],
       target: [target, Validators.required],
-      levels: this._formBuilder.array([this.addLevels(level, alias)])
+      levels: this._formBuilder.array([this.addLevels(level, alias)]),
     });
   }
 
-  addLevels( level = null, alias = null) {
+  addLevels(level = null, alias = null) {
     return this._formBuilder.group({
       level: [level, Validators.required],
       alias: [alias, Validators.required],
@@ -349,7 +354,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   //   this.updateView();
   // }
 
-  removeFactor(groupIndex: number){
+  removeFactor(groupIndex: number) {
     this.factor.removeAt(groupIndex);
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView();
@@ -358,7 +363,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
-  removeLevel(factorIndex: number,levelIndex: number) {
+  removeLevel(factorIndex: number, levelIndex: number) {
     this.getLevels(factorIndex).removeAt(levelIndex);
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView('levelTable');
