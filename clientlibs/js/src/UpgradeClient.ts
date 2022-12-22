@@ -51,16 +51,16 @@ export default class UpgradeClient {
     this.token = options?.token;
     this.clientSessionId = options?.clientSessionId || uuid.v4();
     this.api = {
-      init: `${hostUrl}/api/init`,
-      getAllExperimentConditions: `${hostUrl}/api/assign`,
-      markExperimentPoint: `${hostUrl}/api/mark`,
-      setGroupMemberShip: `${hostUrl}/api/groupmembership`,
-      setWorkingGroup: `${hostUrl}/api/workinggroup`,
-      failedExperimentPoint: `${hostUrl}/api/failed`,
-      getAllFeatureFlag: `${hostUrl}/api/featureflag`,
-      log: `${hostUrl}/api/log`,
-      altUserIds: `${hostUrl}/api/useraliases`,
-      addMetrics: `${hostUrl}/api/metric`,
+      init: `${hostUrl}/api/v1/init`,
+      getAllExperimentConditions: `${hostUrl}/api/v1/assign`,
+      markExperimentPoint: `${hostUrl}/api/v1/mark`,
+      setGroupMemberShip: `${hostUrl}/api/v1/groupmembership`,
+      setWorkingGroup: `${hostUrl}/api/v1/workinggroup`,
+      failedExperimentPoint: `${hostUrl}/api/v1/failed`,
+      getAllFeatureFlag: `${hostUrl}/api/v1/featureflag`,
+      log: `${hostUrl}/api/v1/log`,
+      altUserIds: `${hostUrl}/api/v1/useraliases`,
+      addMetrics: `${hostUrl}/api/v1/metric`,
     };
   }
 

@@ -21,18 +21,18 @@ public class Utils
 	public static final String INVALID_METRIC_META_DATA= "Invalid metadata type provided. It should be of MetricMetaData enum type";
 
 
-	public static final String INITIALIZE_USER= "api/init";
-	public static final String SET_GROUP_MEMBERSHIP= "api/groupmembership";
-	public static final String SET_WORKING_GROUP= "api/workinggroup";
-	public static final String GET_ALL_EXPERIMENTS= "api/assign";
-	public static final String MARK_EXPERIMENT_POINT= "api/mark";
-	public static final String GET_ALL_FEATURE_FLAGS= "api/featureflag";
-	public static final String LOG_EVENT= "api/log";
-	public static final String SET_ALT_USER_IDS= "api/useraliases";
-	public static final String ADD_MATRIC= "api/metric";
+	public static final String INITIALIZE_USER= "api/v1/init";
+	public static final String SET_GROUP_MEMBERSHIP= "api/v1/groupmembership";
+	public static final String SET_WORKING_GROUP= "api/v1/workinggroup";
+	public static final String GET_ALL_EXPERIMENTS= "api/v1/assign";
+	public static final String MARK_EXPERIMENT_POINT= "api/v1/mark";
+	public static final String GET_ALL_FEATURE_FLAGS= "api/v1/featureflag";
+	public static final String LOG_EVENT= "api/v1/log";
+	public static final String SET_ALT_USER_IDS= "api/v1/useraliases";
+	public static final String ADD_MATRIC= "api/v1/metric";
 
 	public static final String PATCH = "PATCH";
-	
+
 	public static final int MAX_RETRIES = 3;
 
 
@@ -41,7 +41,7 @@ public class Utils
 		POST,
 		PATCH
 	}
-	
+
 	public static enum MetricMetaData {
 		continuous,
 		categorical
@@ -57,7 +57,7 @@ public class Utils
 		private MarkedDecisionPointStatus(String toString) {
 			this.toString = toString;
 	   	}
-   
+
 	   	public String toString(){
 			return toString;
 	   	}
