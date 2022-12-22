@@ -29,7 +29,6 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
       .pipe(
         filter((designData) => {
           // TODO: compare against previous designData to filter out duplicates?
-          // alos, support is only for two factors currently...
           return designData && designData?.factors.length === 2;
         })
       )
