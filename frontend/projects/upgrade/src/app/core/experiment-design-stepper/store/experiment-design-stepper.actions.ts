@@ -36,3 +36,15 @@ export const actionUpdateFactorialTableData = createAction(
   '[Experiment-Design-Stepper] update factorial table data',
   props<{ tableData: FactorialConditionTableRowData[] }>()
 );
+
+export const actionToggleFactorialConditionsTableEditMode = createAction(
+  '[Experiment-Design-Stepper] Update Factorial Conditions Table Edit Mode Details',
+  props<{
+    factorialConditionsTableEditIndex: number | null;
+    factorialConditionsRowData: FactorialConditionTableRowData;
+  }>()
+);
+
+export const actionClearFactorialConditionTableEditDetails = createAction(
+  `[Experiment-Design-Stepper] Clear Factorial Condition Table Edit Details`
+);

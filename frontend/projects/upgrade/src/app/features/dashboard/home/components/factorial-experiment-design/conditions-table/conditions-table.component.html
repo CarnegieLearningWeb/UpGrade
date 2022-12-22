@@ -7,7 +7,7 @@
         color="primary"
         class="ft-14-600 toggle-button"
         (click)="handleHideClick()"
-        [disabled]="false"
+        [disabled]="(isFormLockedForEdit$ | async)"
       >
         <mat-icon class="icon icon-bump-left">expand_less</mat-icon>
         <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.factors' | translate }}</span>
@@ -91,15 +91,42 @@
       <!-- Actions Column -->
       <ng-container matColumnDef="actions">
         <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
-        <mat-cell *matCellDef="let rowData">
-          <span>
-            {{ 'icon' }}
-          </span>
+        <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell">
+          <button
+            type="button"
+            class="row-action-btn"
+            [disabled]="(isFormLockedForEdit$ | async) && (tableEditIndex$ | async) !== rowIndex"
+            (click)="handleTableEditClick(rowIndex, rowData)"
+          >
+            <!-- Edit Icon -->
+            <ng-container *ngIf="(tableEditIndex$ | async) !== rowIndex">
+              <mat-icon class="icon">create</mat-icon>
+            </ng-container>
+
+            <!-- Done Icon -->
+            <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
+              <mat-icon class="icon">done</mat-icon>
+            </ng-container>
+          </button>
+
+          <button
+            type="button"
+            class="row-action-btn"
+            [disabled]="(isFormLockedForEdit$ | async) && (tableEditIndex$ | async) !== rowIndex"
+            (click)="handleClear(rowIndex)"
+          >
+            <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
+              <mat-icon class="icon">clear</mat-icon>
+            </ng-container>
+          </button>
         </mat-cell>
       </ng-container>
   
       <mat-header-row *matHeaderRowDef="columnHeaders"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: columnHeaders"></mat-row>
+      <mat-row *matRowDef="let row; let rowIndex = index; columns: columnHeaders"
+      [ngClass]="{
+        'row-is-locked': (isFormLockedForEdit$ | async) && (tableEditIndex$ | async) !== rowIndex
+      }"></mat-row>
     </mat-table>
 </section>
   

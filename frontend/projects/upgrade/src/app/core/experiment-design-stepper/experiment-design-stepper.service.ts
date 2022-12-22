@@ -12,11 +12,14 @@ import {
   selectAliasTableEditIndex,
   selectConditionsEditModePreviousRowData,
   selectConditionsTableEditIndex,
+  selectFactorialConditionsEditModePreviousRowData,
+  selectFactorialConditionsTableEditIndex,
   selectFactorialConditionTableData,
   selectFactorialDesignData,
   selecthasExperimentStepperDataChanged,
   selectIsAliasTableEditMode,
   selectIsConditionsTableEditMode,
+  selectIsFactorialConditionsTableEditMode,
   selectIsFormLockedForEdit,
 } from './store/experiment-design-stepper.selectors';
 import {
@@ -42,6 +45,11 @@ export class ExperimentDesignStepperService {
   conditionsEditModePreviousRowData$ = this.store$.pipe(select(selectConditionsEditModePreviousRowData));
   factorialDesignData$ = this.store$.pipe(select(selectFactorialDesignData));
   factorialConditionTableData$ = this.store$.pipe(select(selectFactorialConditionTableData));
+  isFactorialConditionsTableEditMode$ = this.store$.pipe(select(selectIsFactorialConditionsTableEditMode));
+  factorialConditionsTableEditIndex$ = this.store$.pipe(select(selectFactorialConditionsTableEditIndex));
+  factorialConditionsEditModePreviousRowData$ = this.store$.pipe(
+    select(selectFactorialConditionsEditModePreviousRowData)
+  );
 
   constructor(private store$: Store<AppState>) {
     this.hasExperimentStepperDataChanged$.subscribe(
@@ -150,7 +158,7 @@ export class ExperimentDesignStepperService {
             factorTwo.factor,
             factorTwoLevel.level
           ),
-          weight: 10.0,
+          weight: 0.0,
           include: true,
         };
 
@@ -196,7 +204,20 @@ export class ExperimentDesignStepperService {
     );
   }
 
+  setFactorialConditionTableEditModeDetails(rowIndex: number, rowData: FactorialConditionTableRowData): void {
+    this.store$.dispatch(
+      experimentDesignStepperAction.actionToggleFactorialConditionsTableEditMode({
+        factorialConditionsTableEditIndex: rowIndex,
+        factorialConditionsRowData: rowData,
+      })
+    );
+  }
+
   clearConditionTableEditModeDetails(): void {
     this.store$.dispatch(experimentDesignStepperAction.actionClearConditionTableEditDetails());
+  }
+
+  clearFactorialConditionTableEditModeDetails(): void {
+    this.store$.dispatch(experimentDesignStepperAction.actionClearFactorialConditionTableEditDetails());
   }
 }

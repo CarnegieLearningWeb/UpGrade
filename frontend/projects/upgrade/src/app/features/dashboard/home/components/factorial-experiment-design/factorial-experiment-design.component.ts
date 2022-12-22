@@ -87,6 +87,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   aliasTableData: ExperimentAliasTableRow[] = [];
   isAliasTableEditMode$: Observable<boolean>;
   isExperimentEditable = true;
+  isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
 
   constructor(
     private _formBuilder: FormBuilder,

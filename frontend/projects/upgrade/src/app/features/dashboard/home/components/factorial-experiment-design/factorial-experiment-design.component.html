@@ -296,7 +296,9 @@
         <div>
           <br />
           <br />
-          <app-conditions-table></app-conditions-table>
+          <app-conditions-table
+            (hide)="scrollToFactorsTable()"
+          ></app-conditions-table>
           <br />
         </div>
       </form>
@@ -309,8 +311,8 @@
         matStepperPrevious
         mat-raised-button
         class="shared-modal--modal-btn btn-back default-button"
-        [class.default-button--disabled]="isAliasTableEditMode$ | async"
-        [disabled]="isAliasTableEditMode$ | async"
+        [class.default-button--disabled]="(isFormLockedForEdit$ | async)"
+        [disabled]="(isFormLockedForEdit$ | async)"
         (click)="
           factorialExperimentDesignForm.dirty ? experimentDesignStepperService.experimentStepperDataChanged() : ''
         "
@@ -332,8 +334,8 @@
         mat-raised-button
         class="shared-modal--modal-btn default-button"
         (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
-        [class.default-button--disabled]="isAliasTableEditMode$ | async"
-        [disabled]="isAliasTableEditMode$ | async"
+        [class.default-button--disabled]="(isFormLockedForEdit$ | async)"
+        [disabled]="(isFormLockedForEdit$ | async)"
       >
         {{ 'global.next.text' | translate }}
       </button>
@@ -342,8 +344,8 @@
         *ngIf="experimentInfo"
         mat-raised-button
         class="shared-modal--modal-btn default-button"
-        [ngClass]="{ 'default-button--disabled': (isAliasTableEditMode$ | async) || !isExperimentEditable }"
-        [disabled]="(isAliasTableEditMode$ | async) || !isExperimentEditable"
+        [ngClass]="{ 'default-button--disabled': (isFormLockedForEdit$ | async) || !isExperimentEditable }"
+        [disabled]="(isFormLockedForEdit$ | async) || !isExperimentEditable"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
         {{ 'global.update.text' | translate }}

@@ -1,6 +1,7 @@
-import { Component, OnInit, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
-import { filter, Subscription } from 'rxjs';
+import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, EventEmitter, Output } from '@angular/core';
+import { BehaviorSubject, filter, Subscription } from 'rxjs';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
+import { FactorialConditionTableRowData } from '../../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 
 @Component({
   selector: 'app-conditions-table',
@@ -9,9 +10,14 @@ import { ExperimentDesignStepperService } from '../../../../../../core/experimen
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConditionsTableComponent implements OnInit, OnDestroy {
+  @Output() hide = new EventEmitter<boolean>();
+
   subscriptions: Subscription;
   factorialDesignData$ = this.experimentDesignStepperService.factorialDesignData$;
   tableData$ = this.experimentDesignStepperService.factorialConditionTableData$;
+  tableEditIndex$ = this.experimentDesignStepperService.factorialConditionsTableEditIndex$;
+  isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
+  previousRowDataBehaviorSubject$ = new BehaviorSubject<FactorialConditionTableRowData>(null);
   columnHeaders = ['levelNameOne', 'levelNameTwo', 'alias', 'weight', 'include', 'actions'];
   equalWeightFlag = true;
   factorOneHeader = 'factor1';
@@ -20,7 +26,9 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   constructor(private experimentDesignStepperService: ExperimentDesignStepperService) {}
 
   ngOnInit(): void {
-    console.log('hello');
+    this.experimentDesignStepperService.factorialConditionsEditModePreviousRowData$.subscribe(
+      this.previousRowDataBehaviorSubject$
+    );
   }
 
   ngAfterViewInit(): void {
@@ -44,6 +52,20 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   handleHideClick() {
-    console.log('hide?');
+    this.hide.emit(true);
+  }
+
+  handleTableEditClick(rowIndex: number, rowData: FactorialConditionTableRowData) {
+    this.experimentDesignStepperService.setFactorialConditionTableEditModeDetails(rowIndex, rowData);
+  }
+
+  handleClear(rowIndex: number) {
+    const previousRowData = this.previousRowDataBehaviorSubject$.value;
+
+    this.resetPreviousRowDataOnEditCancel(previousRowData, rowIndex);
+  }
+
+  resetPreviousRowDataOnEditCancel(previousRowData: FactorialConditionTableRowData, rowIndex: number) {
+    this.experimentDesignStepperService.clearFactorialConditionTableEditModeDetails();
   }
 }

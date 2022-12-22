@@ -11,6 +11,9 @@ const initialState: ExperimentDesignStepperState = {
   hasExperimentStepperDataChanged: false,
   factorialDesignData: { factors: [] },
   factorialConditionsTableData: [],
+  isFactorialConditionsTableEditMode: false,
+  factorialConditionsTableEditIndex: null,
+  factorialConditionsEditModePreviousRowData: null,
 };
 
 const reducer = createReducer(
@@ -46,6 +49,30 @@ const reducer = createReducer(
         isConditionsTableEditMode: editMode,
         conditionsTableEditIndex: editIndex,
         conditionsEditModePreviousRowData: previousRowData,
+      };
+    }
+  ),
+  on(experimentDesignStepperAction.actionClearFactorialConditionTableEditDetails, (state) => ({
+    ...state,
+    isFactorialConditionsTableEditMode: false,
+    factorialConditionsTableEditIndex: null,
+    factorialConditionsEditModePreviousRowData: null,
+  })),
+  on(
+    experimentDesignStepperAction.actionToggleFactorialConditionsTableEditMode,
+    (state, { factorialConditionsTableEditIndex, factorialConditionsRowData }) => {
+      // toggle edit mode
+      const editMode = !state.isFactorialConditionsTableEditMode;
+
+      // if not in edit mode, use null for row-index
+      const editIndex = editMode ? factorialConditionsTableEditIndex : null;
+      const previousRowData = editMode ? factorialConditionsRowData : null;
+
+      return {
+        ...state,
+        isFactorialConditionsTableEditMode: editMode,
+        factorialConditionsTableEditIndex: editIndex,
+        factorialConditionsEditModePreviousRowData: previousRowData,
       };
     }
   ),

@@ -1,5 +1,9 @@
 .conditions-table-component {
     height: 515px;
+
+    .row-is-locked {
+      opacity: 0.4;
+    }
   
     .conditions-header-container {
       display: flex;
@@ -67,8 +71,22 @@
       }
   
       .cdk-column-actions {
-        flex: 0 0 60px;
-        width: 60px;
+        justify-content: flex-end;
+
+        .row-action-btn {
+          border: none;
+          background-color: transparent;
+
+          .icon {
+            margin-top: -5px;
+            margin-left: -3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--text-size-x-large);
+            color: gray;
+          }
+        }
       }
   
       .include-checkbox{

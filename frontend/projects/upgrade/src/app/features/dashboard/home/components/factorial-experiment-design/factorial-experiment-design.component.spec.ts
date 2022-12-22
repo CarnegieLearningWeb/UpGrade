@@ -2,15 +2,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FactorialExperimentDesignComponent } from './factorial-experiment-design.component';
 
-describe('FactorialExperimentDesignComponent', () => {
+xdescribe('FactorialExperimentDesignComponent', () => {
   let component: FactorialExperimentDesignComponent;
   let fixture: ComponentFixture<FactorialExperimentDesignComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ FactorialExperimentDesignComponent ]
-    })
-    .compileComponents();
+      declarations: [FactorialExperimentDesignComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

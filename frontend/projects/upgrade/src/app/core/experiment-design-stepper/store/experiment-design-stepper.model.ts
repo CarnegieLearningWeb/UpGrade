@@ -53,13 +53,16 @@ export interface ExperimentLevelFormData {
 
 export interface ExperimentDesignStepperState {
   isAliasTableEditMode: boolean;
-  isConditionsTableEditMode: boolean;
   aliasTableEditIndex: number | null;
+  isConditionsTableEditMode: boolean;
   conditionsTableEditIndex: number | null;
-  hasExperimentStepperDataChanged: boolean;
   conditionsEditModePreviousRowData: ConditionsTableRowData;
+  isFactorialConditionsTableEditMode: boolean;
+  factorialConditionsTableEditIndex: number | null;
+  factorialConditionsEditModePreviousRowData: FactorialConditionTableRowData;
   factorialDesignData: ExperimentFactorialDesignData;
   factorialConditionsTableData: FactorialConditionTableRowData[];
+  hasExperimentStepperDataChanged: boolean;
 }
 
 export interface State extends AppState {
