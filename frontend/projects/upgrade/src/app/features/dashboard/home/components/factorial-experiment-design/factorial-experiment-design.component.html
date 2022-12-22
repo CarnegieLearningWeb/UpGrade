@@ -151,15 +151,15 @@
                       <div class="level-table-container">
                         <mat-table
                           class="level-table"
-                          [dataSource]="element.levels"
+                          [dataSource]="element.controls.levels.controls"
+                          formArrayName="levels"
                           #levelTable>
-  
                           <!-- Level Column -->
                           <ng-container matColumnDef="level">
                             <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                               {{ 'home.new-experiment.design.level-name.text' | translate }}
                             </mat-header-cell>
-                            <mat-cell *matCellDef="let element; let levelIndex=dataIndex" [formGroupName]="levelIndex">
+                            <mat-cell *matCellDef="let element; let levelIndex=index" [formGroupName]="levelIndex">
                               <mat-form-field floatLabel="never">
                                 <span>
                                   <input
@@ -183,7 +183,7 @@
                             <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                               {{ 'home.new-experiment.design.aliases.column-header.alias.text' | translate }}
                             </mat-header-cell>
-                            <mat-cell *matCellDef="let element; let levelIndex=dataIndex" [formGroupName]="levelIndex">
+                            <mat-cell *matCellDef="let element; let levelAliasIndex=index" [formGroupName]="levelAliasIndex">
                               <mat-form-field floatLabel="never">
                                 <span>
                                   <input
@@ -193,7 +193,7 @@
                                     [matAutocomplete]="autoCompleteExperimentIds"
                                   />
                                   <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
-                                    <mat-option *ngFor="let alias of filteredExpLevels$[levelIndex] | async" [value]="alias">
+                                    <mat-option *ngFor="let alias of filteredExpLevels$[levelAliasIndex] | async" [value]="alias">
                                       {{ alias }}
                                     </mat-option>
                                   </mat-autocomplete>
@@ -215,14 +215,14 @@
                           <ng-container matColumnDef="removeLevel">
                             <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
                             <mat-cell
-                              *matCellDef="let element; let levelIndex=dataIndex" [formGroupName]="levelIndex"
+                              *matCellDef="let element; let removelevelIndex=index" [formGroupName]="removelevelIndex"
                               style="justify-content: flex-start"
                             >
                               <button
                                 mat-icon-button
                                 type="button"
                                 [disabled]="!isExperimentEditable"
-                                (click)="removeLevel(factorIndex,levelIndex)"
+                                (click)="removeLevel(factorIndex,removelevelIndex)"
                               >
                                 <mat-icon class="remove-icon"> delete_outline </mat-icon>
                               </button>

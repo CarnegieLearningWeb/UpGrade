@@ -12,7 +12,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
-import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -23,14 +23,12 @@ import {
   IContextMetaData,
   EXPERIMENT_STATE,
 } from '../../../../../core/experiments/store/experiments.model';
-import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
-import { filter, map, pairwise, startWith } from 'rxjs/operators';
-import { v4 as uuidv4 } from 'uuid';
+import { map, startWith } from 'rxjs/operators';
 import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
-import { ExperimentAliasTableRow, ExperimentConditionAliasRequestObject } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+import { ExperimentAliasTableRow } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 
 @Component({
   selector: 'home-factorial-experiment-design',
@@ -51,7 +49,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   factorialExperimentDesignForm: FormGroup;
   factorDataSource = new BehaviorSubject<AbstractControl[]>([]);
-  levelDataSource = new BehaviorSubject<AbstractControl[]>([]);
   allFactors = [];
   allFactorsSub: Subscription;
 
@@ -94,7 +91,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
-    private translate: TranslateService,
     private dialogService: DialogService,
     public experimentDesignStepperService: ExperimentDesignStepperService
   ) {}
@@ -105,7 +101,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.factor?.clear();
       this.level?.clear();
       this.factorDataSource.next(this.factor?.controls);
-      this.levelDataSource.next(this.level?.controls);
     }
   }
 
@@ -366,9 +361,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
-  removeLevel(groupIndex: number,group2Index: number){
+  removeLevel(factorIndex: number,levelIndex: number){
     console.log("hello remove");
-    this.level.removeAt(group2Index);
+    this.getLevels(factorIndex).removeAt(levelIndex);
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView();
   }
@@ -379,7 +374,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   updateView(type?: string) {
     this.factorDataSource.next(this.factor?.controls);
-    this.levelDataSource.next(this.level?.controls);
     if (type) {
       this[type].nativeElement.scroll({
         top: this[type].nativeElement.scrollHeight - 91,
