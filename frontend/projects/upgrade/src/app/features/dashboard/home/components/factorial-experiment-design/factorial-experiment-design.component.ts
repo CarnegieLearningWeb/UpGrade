@@ -294,7 +294,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   getLevels(factorIndex: number) {
-    const levelsArray = this.factor.at(factorIndex).get('levels') as FormArray;
+    const levelsArray = this.factor?.at(factorIndex).get('levels') as FormArray;
     return levelsArray;
   }
 
@@ -323,9 +323,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   addLevel(factorIndex) {
     this.getLevels(factorIndex).push(this.addLevels());
-    console.log("form: ", this.factorialExperimentDesignForm);
-    const scrollTableType = 'levelTable';
-    this.updateView(scrollTableType);
+    this.updateView('levelTable');
     const levelFormControl = this.factor.at(factorIndex).get('levels') as FormArray;
     this.manageExpLevelAliasControl(factorIndex, levelFormControl.controls.length - 1);
   }
@@ -352,27 +350,28 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   // }
 
   removeFactor(groupIndex: number){
-    console.log("hello remove");
     this.factor.removeAt(groupIndex);
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView();
     if (this.expandedId === groupIndex) {
-      this.expandedId=null;
+      this.expandedId = null;
     }
   }
 
-  removeLevel(factorIndex: number,levelIndex: number){
-    console.log("hello remove");
+  removeLevel(factorIndex: number,levelIndex: number) {
     this.getLevels(factorIndex).removeAt(levelIndex);
     this.experimentDesignStepperService.experimentStepperDataChanged();
-    this.updateView();
+    this.updateView('levelTable');
   }
 
-  expandFactor(groupIndex: number){
+  expandFactor(groupIndex: number) {
     this.expandedId = this.expandedId === groupIndex ? null : groupIndex;
   }
 
   updateView(type?: string) {
+    if (type === 'levelTable') {
+      this.factorDataSource.next(this.level?.controls);
+    }
     this.factorDataSource.next(this.factor?.controls);
     if (type) {
       this[type].nativeElement.scroll({
@@ -564,7 +563,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   get level(): FormArray {
-    return this.factorialExperimentDesignForm?.get('levels') as FormArray;
+    return this.factorialExperimentDesignForm?.get('factors').get('levels') as FormArray;
   }
 
   get NewExperimentDialogEvents() {
