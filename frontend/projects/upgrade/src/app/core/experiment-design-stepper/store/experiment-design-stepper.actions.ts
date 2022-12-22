@@ -1,5 +1,9 @@
 import { createAction, props } from '@ngrx/store';
-import { ConditionsTableRowData } from './experiment-design-stepper.model';
+import {
+  ConditionsTableRowData,
+  ExperimentFactorialDesignData,
+  FactorialConditionTableRowData,
+} from './experiment-design-stepper.model';
 
 export const actionUpdateAliasTableEditMode = createAction(
   '[Experiment-Design-Stepper] Update Alias Table Edit Mode Details',
@@ -21,4 +25,14 @@ export const experimentStepperDataChanged = createAction(
 
 export const experimentStepperDataReset = createAction(
   '[Experiment-Design-Stepper] turn isExperimentStepperDataChanged false'
+);
+
+export const actionUpdateFactorialDesignData = createAction(
+  '[Experiment-Design-Stepper] update factorial table data',
+  props<{ designData: ExperimentFactorialDesignData }>()
+);
+
+export const actionUpdateFactorialTableData = createAction(
+  '[Experiment-Design-Stepper] update factorial table data',
+  props<{ tableData: FactorialConditionTableRowData[] }>()
 );

@@ -39,3 +39,13 @@ export const selectConditionsEditModePreviousRowData = createSelector(
   selectExperimentDesignStepperState,
   (state) => state.conditionsEditModePreviousRowData
 );
+
+export const selectFactorialDesignData = createSelector(
+  selectExperimentDesignStepperState,
+  (state) => state.factorialDesignData
+);
+
+export const selectFactorialConditionTableData = createSelector(
+  selectExperimentDesignStepperState,
+  (state) => state.factorialConditionsTableData
+);

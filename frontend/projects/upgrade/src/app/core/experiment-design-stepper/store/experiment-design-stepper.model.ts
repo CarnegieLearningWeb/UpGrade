@@ -25,6 +25,32 @@ export interface ConditionsTableRowData {
   order: number;
 }
 
+export interface FactorialConditionTableRowData {
+  levelNameOne: string;
+  levelNameTwo: string;
+  alias: string;
+  weight: number;
+  include: boolean;
+}
+
+export interface ExperimentFactorialDesignData {
+  factors: ExperimentFactorFormData[];
+}
+
+export interface ExperimentFactorFormData {
+  factor: string;
+  site: string;
+  target: string;
+  order: number;
+  levels: ExperimentLevelFormData[];
+}
+
+export interface ExperimentLevelFormData {
+  level: string;
+  alias: string;
+  order: number;
+}
+
 export interface ExperimentDesignStepperState {
   isAliasTableEditMode: boolean;
   isConditionsTableEditMode: boolean;
@@ -32,8 +58,56 @@ export interface ExperimentDesignStepperState {
   conditionsTableEditIndex: number | null;
   hasExperimentStepperDataChanged: boolean;
   conditionsEditModePreviousRowData: ConditionsTableRowData;
+  factorialDesignData: ExperimentFactorialDesignData;
+  factorialConditionsTableData: FactorialConditionTableRowData[];
 }
 
 export interface State extends AppState {
   experimentDesignStepper: ExperimentDesignStepperState;
 }
+
+export const DUMMY_CONDITION_TABLE_DATA = {
+  factors: [
+    {
+      factor: 'Question Type',
+      site: 'SelectSection',
+      target: 'aaa',
+      order: 0,
+      levels: [
+        {
+          level: 'Abstract',
+          alias: '',
+          order: 0,
+        },
+        {
+          level: 'Concrete',
+          alias: '',
+          order: 1,
+        },
+      ],
+    },
+    {
+      factor: 'Motivation',
+      site: 'SelectSection',
+      target: 'aaa',
+      order: 0,
+      levels: [
+        {
+          level: 'No Support',
+          alias: '',
+          order: 0,
+        },
+        {
+          level: 'Mindset',
+          alias: 'Nice',
+          order: 1,
+        },
+        {
+          level: 'Utility Value',
+          alias: 'Swell',
+          order: 1,
+        },
+      ],
+    },
+  ],
+};

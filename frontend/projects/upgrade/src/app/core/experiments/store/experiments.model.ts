@@ -57,7 +57,7 @@ export enum NewExperimentPaths {
 
 export enum ExperimentDesignTypes {
   SIMPLE = 'Simple',
-  FACTORIAL = 'Factorial'
+  FACTORIAL = 'Factorial',
 }
 
 export interface NewExperimentDialogData {
@@ -136,12 +136,12 @@ export interface ExperimentPartition {
 }
 
 export interface ExperimentFactor {
-  name:string;
+  name: string;
   order: number;
   levels: ExperimentLevel[];
 }
 
-export interface ExperimentLevel{
+export interface ExperimentLevel {
   id: string;
   name: string;
   order: number;

@@ -12,12 +12,20 @@ import {
   selectAliasTableEditIndex,
   selectConditionsEditModePreviousRowData,
   selectConditionsTableEditIndex,
+  selectFactorialConditionTableData,
+  selectFactorialDesignData,
   selecthasExperimentStepperDataChanged,
   selectIsAliasTableEditMode,
   selectIsConditionsTableEditMode,
   selectIsFormLockedForEdit,
 } from './store/experiment-design-stepper.selectors';
-import { ConditionsTableRowData, ExperimentAliasTableRow } from './store/experiment-design-stepper.model';
+import {
+  ConditionsTableRowData,
+  ExperimentAliasTableRow,
+  ExperimentFactorialDesignData,
+  FactorialConditionTableRowData,
+} from './store/experiment-design-stepper.model';
+import { actionUpdateFactorialTableData } from './store/experiment-design-stepper.actions';
 
 @Injectable({
   providedIn: 'root',
@@ -31,6 +39,8 @@ export class ExperimentDesignStepperService {
   isConditionsTableEditMode$ = this.store$.pipe(select(selectIsConditionsTableEditMode));
   conditionsTableEditIndex$ = this.store$.pipe(select(selectConditionsTableEditIndex));
   conditionsEditModePreviousRowData$ = this.store$.pipe(select(selectConditionsEditModePreviousRowData));
+  factorialDesignData$ = this.store$.pipe(select(selectFactorialDesignData));
+  factorialConditionTableData$ = this.store$.pipe(select(selectFactorialConditionTableData));
 
   constructor(private store$: Store<AppState>) {
     this.hasExperimentStepperDataChanged$.subscribe(
@@ -117,6 +127,54 @@ export class ExperimentDesignStepperService {
     });
 
     return aliasTableData;
+  }
+
+  createNewFactorialConditionTableData(designData: ExperimentFactorialDesignData) {
+    const tableData: FactorialConditionTableRowData[] = [];
+
+    // remove this null check after implementing filtering on design data observable
+    if (!designData || !designData?.factors.length) {
+      return;
+    }
+
+    // currently this table will only support 2 factors due to design constraints
+    // this will need revisited to support more factors in this table
+    if (designData.factors.length !== 2) {
+      return;
+    }
+
+    const factorOne = designData.factors[0];
+    const factorTwo = designData.factors[1];
+
+    factorOne.levels.forEach((factorOneLevel) => {
+      factorTwo.levels.forEach((factorTwoLevel) => {
+        const tableRow: FactorialConditionTableRowData = {
+          levelNameOne: factorOneLevel.level,
+          levelNameTwo: factorTwoLevel.level,
+          alias: this.createFactorialAliasString(
+            factorOne.factor,
+            factorOneLevel.level,
+            factorTwo.factor,
+            factorTwoLevel.level
+          ),
+          weight: 10.0,
+          include: true,
+        };
+
+        tableData.push(tableRow);
+      });
+    });
+
+    this.store$.dispatch(actionUpdateFactorialTableData({ tableData }));
+  }
+
+  createFactorialAliasString(
+    factorOneName: string,
+    factorOneLevel: string,
+    factorTwoName: string,
+    factorTwoLevel: string
+  ) {
+    return `${factorOneName}=${factorOneLevel};${factorTwoName}=${factorTwoLevel}`;
   }
 
   setUpdateAliasTableEditMode(details: TableEditModeDetails): void {

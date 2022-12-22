@@ -1,4 +1,3 @@
-<p>conditions-table works!</p>
 <section class="conditions-table-component">
     <div class="conditions-header-container">
       <span class="title">{{ 'home.new-experiment.design.condition.text' | translate }}</span>
@@ -8,7 +7,7 @@
         color="primary"
         class="ft-14-600 toggle-button"
         (click)="handleHideClick()"
-        [disabled]="isAliasTableEditMode$ | async"
+        [disabled]="false"
       >
         <mat-icon class="icon icon-bump-left">expand_less</mat-icon>
         <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.factors' | translate }}</span>
@@ -20,144 +19,87 @@
           class="ft-13-700"
           color="primary"
           [checked]="equalWeightFlag"
-          (change)="changeEqualWeightFlag($event)"
+          (change)="equalWeightFlag = !equalWeightFlag"
         >
           {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
         </mat-checkbox>
     </div>
 
-    <mat-table [dataSource]="aliasTableData$" class="conditions-table">
-      <!-- Factors Column -->
-      <ng-container *ngFor="let disCol of factorsDisplayedColumns; let colIndex = index" matColumnDef="{{disCol}}">
+    <mat-table [dataSource]="tableData$" class="conditions-table">
+      <!-- Factor 1 Levels Column -->
+      <ng-container matColumnDef="levelNameOne">
         <mat-header-cell *matHeaderCellDef class="ft-14-700">
-          {{ disCol }}
+          {{ factorOneHeader }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData">
-          <span [matTooltip]="rowData.condition" matTooltipPosition="above">
-            {{ rowData.condition | truncate: 15 }}
+          <span [matTooltip]="rowData.levelNameOne" matTooltipPosition="above">
+            {{ rowData.levelNameOne | truncate: 15 }}
           </span>
         </mat-cell>
       </ng-container>
-  
-      <!-- Alias Column -->
-      <ng-container matColumnDef="alias">
+
+      <!-- Factor 2 Levels Column -->
+      <ng-container matColumnDef="levelNameTwo">
         <mat-header-cell *matHeaderCellDef class="ft-14-700">
-          {{ 'home.new-experiment.design.condition.column-header.alias.text' | translate }}
+          {{ factorTwoHeader }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData">
-          <ng-container *ngIf="!rowData.isEditing">
-            <span [matTooltip]="rowData.alias" matTooltipPosition="above">
-              {{ rowData.alias | truncate: 15 }}
-            </span>
-          </ng-container>
-          <ng-container *ngIf="rowData.isEditing">
-            <mat-form-field floatLabel="never">
-              <input
-                [type]="text"
-                matInput
-                [(ngModel)]="rowData.alias"
-                [placeholder]="'home.new-experiment.design.condition.column-header.alias.text' | translate"
-                required
-                [matAutocomplete]="aliasRowAutoCompleteConditionCodes"
-                (keyup)="handleFilterContextMetaDataConditions(rowData.alias, $event)"
-              />
-              <mat-autocomplete #aliasRowAutoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
-                <mat-option
-                  *ngFor="let conditionCode of filteredContextMetaDataConditions$ | async"
-                  [value]="conditionCode"
-                >
-                  {{ conditionCode }}
-                </mat-option>
-              </mat-autocomplete>
-            </mat-form-field>
-          </ng-container>
+          <span [matTooltip]="rowData.levelNameTwo" matTooltipPosition="above">
+            {{ rowData.levelNameTwo | truncate: 15 }}
+          </span>
+        </mat-cell>
+      </ng-container>
+
+       <!-- Alias Column -->
+       <ng-container matColumnDef="alias">
+        <mat-header-cell *matHeaderCellDef class="ft-14-700">
+          {{ 'ALIAS' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let rowData">
+          <span [matTooltip]="rowData.alias" matTooltipPosition="above">
+            {{ rowData.alias | truncate: 15 }}
+          </span>
         </mat-cell>
       </ng-container>
 
       <!-- Weight Column -->
       <ng-container matColumnDef="weight">
         <mat-header-cell *matHeaderCellDef class="ft-14-700">
-          {{ 'home.new-experiment.design.condition.column-header.weight.text' | translate }}
+          {{ 'WEIGHT' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData">
-          <ng-container *ngIf="!rowData.isEditing">
-            <span [matTooltip]="rowData.alias" matTooltipPosition="above">
-              {{ rowData.alias | truncate: 15 }}
-            </span>
-          </ng-container>
-          <ng-container *ngIf="rowData.isEditing">
-            <mat-form-field floatLabel="never">
-              <input
-                [type]="text"
-                matInput
-                [(ngModel)]="rowData.alias"
-                [placeholder]="'home.new-experiment.design.assignment-weight.placeholder.text' | translate"
-                required
-              />
-            </mat-form-field>
-          </ng-container>
+          <span [matTooltip]="rowData.weight" matTooltipPosition="above">
+            {{ rowData.weight | truncate: 15 }}
+          </span>
         </mat-cell>
       </ng-container>
-  
+
       <!-- Include Column -->
       <ng-container matColumnDef="include">
         <mat-header-cell *matHeaderCellDef class="ft-14-700">
-          {{ 'home.new-experiment.design.condition.column-header.include.text' | translate }}
+          {{ 'INCLUDE' | translate }}
         </mat-header-cell>
-        <mat-cell *matCellDef="let rowData;let index">
-          <ng-container *ngIf="!rowData.isEditing">
-            <mat-checkbox class="ft-8-100 include-checkbox" color="primary"> </mat-checkbox>
-          </ng-container>
-          <ng-container *ngIf="rowData.isEditing">
-            <mat-form-field floatLabel="never">
-              <input
-                [type]="text"
-                matInput
-                [(ngModel)]="rowData.alias"
-                [placeholder]="'home.new-experiment.design.condition.column-header.include.text' | translate"
-                required
-                [matAutocomplete]="aliasRowAutoCompleteConditionCodes"
-                (keyup)="handleFilterContextMetaDataConditions(rowData.alias, $event)"
-              />
-              <mat-autocomplete #aliasRowAutoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
-                <mat-option
-                  *ngFor="let conditionCode of filteredContextMetaDataConditions$ | async"
-                  [value]="conditionCode"
-                >
-                  {{ conditionCode }}
-                </mat-option>
-              </mat-autocomplete>
-            </mat-form-field>
-          </ng-container>
+        <mat-cell *matCellDef="let rowData">
+          <mat-checkbox
+            class="ft-13-700"
+            color="primary"
+          >
+          </mat-checkbox>
         </mat-cell>
       </ng-container>
-  
+
       <!-- Actions Column -->
       <ng-container matColumnDef="actions">
         <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
-        <mat-cell
-          *matCellDef="let rowData; let rowIndex = index"
-          class="actions-cell"
-          style="justify-content: flex-start"
-        >
-          <button
-            type="button"
-            class="row-action-btn"
-            (click)="handleEditClick(rowData, rowIndex)"
-            [disabled]="(isAliasTableEditMode$ | async) && (aliasTableEditIndex$ | async) != rowIndex"
-          >
-            <ng-container *ngIf="!rowData.isEditing">
-              <mat-icon class="icon">create</mat-icon>
-            </ng-container>
-            <ng-container *ngIf="rowData.isEditing">
-              <mat-icon class="icon">done</mat-icon>
-            </ng-container>
-          </button>
+        <mat-cell *matCellDef="let rowData">
+          <span>
+            {{ 'icon' }}
+          </span>
         </mat-cell>
       </ng-container>
   
-      <mat-header-row *matHeaderRowDef="conditionDisplayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: conditionDisplayedColumns"></mat-row>
+      <mat-header-row *matHeaderRowDef="columnHeaders"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: columnHeaders"></mat-row>
     </mat-table>
 </section>
   

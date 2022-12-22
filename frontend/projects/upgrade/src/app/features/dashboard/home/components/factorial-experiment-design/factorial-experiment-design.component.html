@@ -289,12 +289,7 @@
           <div>
             <br />
             <br />
-            <app-conditions-table
-              [designData$]="designData$"
-              [experimentInfo]="experimentInfo"
-              (conditionTableData$)="handleAliasTableDataChange($event)"
-              (hideConditionTable)="scrollToFactorsTable()"
-            ></app-conditions-table>
+            <app-conditions-table></app-conditions-table>
             <br />
           </div>
         </form>
