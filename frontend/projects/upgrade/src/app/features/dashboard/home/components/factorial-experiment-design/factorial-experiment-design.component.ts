@@ -140,17 +140,26 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
-      // this.experimentInfo.partitions.forEach((partition) => {
-      //   this.partition.push(
-      //     this.addPartitions(
-      //       partition.site,
-      //       partition.target,
-      //       partition.factors,
-      //       partition.order,
-      //       partition.excludeIfReached
-      //     )
-      //   );
-      // });
+      this.factor.removeAt(0);
+      this.experimentInfo.partitions.forEach((partition) => {
+        partition.factors.forEach((factor) => {
+          this.factor.push(
+            this.addFactors(
+              factor.name,
+              partition.site,
+              partition.target,
+              factor.order,
+              factor.levels[0]?.name,
+              factor.levels[0]?.alias
+            )
+          );
+          // if(factor.levels.length>0){
+          //   factor.levels.forEach((level,levelindex)=>{
+          //     this.factor.
+          //   })
+          // }
+        });
+      });
 
       this.isExperimentEditable =
         this.experimentInfo.state !== this.ExperimentState.ENROLLING &&
@@ -272,11 +281,12 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return [];
   }
 
-  addFactors(factor = null, site = null, target = null, level = null, alias = null) {
+  addFactors(factor = null, site = null, target = null, order=null, level = null, alias = null) {
     return this._formBuilder.group({
       factor: [factor, Validators.required],
       site: [site, Validators.required],
       target: [target, Validators.required],
+      order: [order],
       levels: this._formBuilder.array([this.addLevels(level, alias)]),
     });
   }
