@@ -141,7 +141,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
       this.factor.removeAt(0);
-      this.experimentInfo.partitions.forEach((partition) => {
+      this.experimentInfo.partitions.forEach((partition, index) => {
         partition.factors.forEach((factor) => {
           this.factor.push(
             this.addFactors(
@@ -149,18 +149,16 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
               partition.site,
               partition.target,
               factor.order,
-              factor.levels[0]?.name,
-              factor.levels[0]?.alias
+              null,
+              null,
             )
           );
-          // if(factor.levels.length>0){
-          //   factor.levels.forEach((level,levelindex)=>{
-          //     this.factor.
-          //   })
-          // }
+          this.getLevels(index).removeAt(0);
+          factor.levels.forEach((level) => {
+            this.getLevels(index).push(this.addLevels(level.name, level.alias))
+          });
         });
       });
-
       this.isExperimentEditable =
         this.experimentInfo.state !== this.ExperimentState.ENROLLING &&
         this.experimentInfo.state !== this.ExperimentState.ENROLLMENT_COMPLETE;
