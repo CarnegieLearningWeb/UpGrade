@@ -29,7 +29,7 @@ import {
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
 import { v4 as uuidv4 } from 'uuid';
-import { filter, map, startWith } from 'rxjs/operators';
+import { map, startWith } from 'rxjs/operators';
 import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import { ExperimentAliasTableRow } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
@@ -120,14 +120,14 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     //       partition.target ? partition.site + partition.target : partition.site
     //     );
     //   });
-    this.allFactorsSub = this.experimentService.allPartitions$
-      .pipe(filter((partitions) => !!partitions))
-      .subscribe((partitions: any) => {
-        this.allFactors = partitions.map((partition) =>
-          partition.factors ? (partition.factors.map((factor) => partition.site + partition.target + factor.name ))
-            : (partition.target ? partition.site + partition.target : partition.site)
-        );
-      });
+    // this.allFactorsSub = this.experimentService.allPartitions$
+    //   .pipe(filter((partitions) => !!partitions))
+    //   .subscribe((partitions: any) => {
+    //     this.allFactors = partitions.map((partition) =>
+    //       partition.factors ? (partition.factors.map((factor) => partition.site + partition.target + factor.name ))
+    //         : (partition.target ? partition.site + partition.target : partition.site)
+    //     );
+    //   });
     this.factorialExperimentDesignForm = this._formBuilder.group(
       {
         factors: this._formBuilder.array([this.addFactors()]),
@@ -140,20 +140,17 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
-      // Remove previously added group of factors
-      this.factor.removeAt(0);
-      this.experimentInfo.partitions.forEach((partition) => {
-        partition.factors.forEach((factor)=>{
-          this.factor.push(
-            this.addFactors(
-              factor.name,
-              partition.site,
-              partition.target,
-              factor.order,
-            )
-          );
-        })
-      });
+      // this.experimentInfo.partitions.forEach((partition) => {
+      //   this.partition.push(
+      //     this.addPartitions(
+      //       partition.site,
+      //       partition.target,
+      //       partition.factors,
+      //       partition.order,
+      //       partition.excludeIfReached
+      //     )
+      //   );
+      // });
 
       this.isExperimentEditable =
         this.experimentInfo.state !== this.ExperimentState.ENROLLING &&
@@ -242,7 +239,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   // handleAliasTableDataChange(aliasTableData: ExperimentAliasTableRow[]) {
   //   this.aliasTableData = [...aliasTableData];
   // }
-  
+
   handleConditionsButtonClick() {
     this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
     this.scrollToConditionsTable();
@@ -275,12 +272,11 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return [];
   }
 
-  addFactors(factor = null, site = null, target = null, order= null, level = null, alias = null) {
+  addFactors(factor = null, site = null, target = null, level = null, alias = null) {
     return this._formBuilder.group({
       factor: [factor, Validators.required],
       site: [site, Validators.required],
       target: [target, Validators.required],
-      order: [order],
       levels: this._formBuilder.array([this.addLevels(level, alias)]),
     });
   }
@@ -433,16 +429,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     //   });
     // }
 
-    /*
-      factorsArray -> partition array
-      factors:
-        factor
-        site
-        target
-        level:
-          name
-          alias
-    */
     if (true) {
       const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
 
