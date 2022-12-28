@@ -119,6 +119,7 @@ export interface ExperimentCondition {
   createdAt: string;
   updatedAt: string;
   versionNumber: number;
+  levelCombinationElements?: string[];
 }
 
 export interface ExperimentPartition {

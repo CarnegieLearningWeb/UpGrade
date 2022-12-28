@@ -129,6 +129,8 @@
   "home.new-experiment.design.partition-point.placeholder.text": "Site",
   "home.new-experiment.design.partition-id.placeholder.text": "Target",
   "home.new-experiment.design.factor.placeholder.text": "Factor",
+  "home.new-experiment.design.level.placeholder.text": "Level",
+  "home.new-experiment.design.alias.placeholder.text": "Alias",
   "home.new-experiment.design.add-experiment-partition.text": "Add Decision Point",
   "home.new-experiment.design.add-experiment-factor.text": "Add Factor",
   "home.new-experiment.design.add-experiment-factor-level.text": "Add Level",

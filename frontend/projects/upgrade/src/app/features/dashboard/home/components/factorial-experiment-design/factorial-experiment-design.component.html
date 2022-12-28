@@ -164,10 +164,11 @@
                           </mat-header-cell>
                           <mat-cell *matCellDef="let element; let levelIndex = index" [formGroupName]="levelIndex">
                             <mat-form-field floatLabel="never">
-                              <span>
+                              <span [matTooltip]="factorialExperimentDesignForm.getRawValue('level')?.factors[factorIndex]?.levels[levelIndex]?.level"
+                                matTooltipPosition="above">
                                 <input
                                   matInput
-                                  [placeholder]="'home.new-experiment.design.partition-id.placeholder.text' | translate"
+                                  [placeholder]="'home.new-experiment.design.level.placeholder.text' | translate"
                                   formControlName="level"
                                   [matAutocomplete]="autoCompleteExperimentIds"
                                 />
@@ -194,10 +195,11 @@
                             [formGroupName]="levelAliasIndex"
                           >
                             <mat-form-field floatLabel="never">
-                              <span>
+                              <span [matTooltip]="factorialExperimentDesignForm.getRawValue('alias')?.factors[factorIndex]?.levels[levelIndex]?.alias"
+                              matTooltipPosition="above">
                                 <input
                                   matInput
-                                  [placeholder]="'home.new-experiment.design.partition-id.placeholder.text' | translate"
+                                  [placeholder]="'home.new-experiment.design.alias.placeholder.text' | translate"
                                   formControlName="alias"
                                   [matAutocomplete]="autoCompleteExperimentIds"
                                 />

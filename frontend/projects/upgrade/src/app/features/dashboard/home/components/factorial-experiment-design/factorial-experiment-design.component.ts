@@ -22,10 +22,14 @@ import {
   ExperimentPartition,
   IContextMetaData,
   EXPERIMENT_STATE,
+  ExperimentFactor,
+  ExperimentLevel,
+  ExperimentConditionAlias,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
-import { map, startWith } from 'rxjs/operators';
+import { v4 as uuidv4 } from 'uuid';
+import { filter, map, startWith } from 'rxjs/operators';
 import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import { ExperimentAliasTableRow } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
@@ -116,14 +120,14 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     //       partition.target ? partition.site + partition.target : partition.site
     //     );
     //   });
-    // this.allFactorsSub = this.experimentService.allPartitions$
-    //   .pipe(filter((partitions) => !!partitions))
-    //   .subscribe((partitions: any) => {
-    //     this.allFactors = partitions.map((partition) =>
-    //       partition.factors ? (partition.factors.map((factor) => partition.site + partition.target + factor.name ))
-    //         : (partition.target ? partition.site + partition.target : partition.site)
-    //     );
-    //   });
+    this.allFactorsSub = this.experimentService.allPartitions$
+      .pipe(filter((partitions) => !!partitions))
+      .subscribe((partitions: any) => {
+        this.allFactors = partitions.map((partition) =>
+          partition.factors ? (partition.factors.map((factor) => partition.site + partition.target + factor.name ))
+            : (partition.target ? partition.site + partition.target : partition.site)
+        );
+      });
     this.factorialExperimentDesignForm = this._formBuilder.group(
       {
         factors: this._formBuilder.array([this.addFactors()]),
@@ -136,33 +140,20 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
-      // this.equalWeightFlag = this.experimentInfo.conditions.every(
-      //   (condition) => condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight
-      // );
-      // Remove previously added group of conditions and partitions
-      // this.condition.removeAt(0);
-      // this.partition.removeAt(0);
-      // this.experimentInfo.conditions.forEach((condition) => {
-      //   this.condition.push(
-      //     this.addConditions(
-      //       condition.conditionCode,
-      //       condition.assignmentWeight,
-      //       condition.description,
-      //       condition.order
-      //     )
-      //   );
-      // });
-      // this.experimentInfo.partitions.forEach((partition) => {
-      //   this.partition.push(
-      //     this.addPartitions(
-      //       partition.site,
-      //       partition.target,
-      //       partition.factors,
-      //       partition.order,
-      //       partition.excludeIfReached
-      //     )
-      //   );
-      // });
+      // Remove previously added group of factors
+      this.factor.removeAt(0);
+      this.experimentInfo.partitions.forEach((partition) => {
+        partition.factors.forEach((factor)=>{
+          this.factor.push(
+            this.addFactors(
+              factor.name,
+              partition.site,
+              partition.target,
+              factor.order,
+            )
+          );
+        })
+      });
 
       this.isExperimentEditable =
         this.experimentInfo.state !== this.ExperimentState.ENROLLING &&
@@ -251,6 +242,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   // handleAliasTableDataChange(aliasTableData: ExperimentAliasTableRow[]) {
   //   this.aliasTableData = [...aliasTableData];
   // }
+  
   handleConditionsButtonClick() {
     this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
     this.scrollToConditionsTable();
@@ -283,11 +275,12 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return [];
   }
 
-  addFactors(factor = null, site = null, target = null, level = null, alias = null) {
+  addFactors(factor = null, site = null, target = null, order= null, level = null, alias = null) {
     return this._formBuilder.group({
       factor: [factor, Validators.required],
       site: [site, Validators.required],
       target: [target, Validators.required],
+      order: [order],
       levels: this._formBuilder.array([this.addLevels(level, alias)]),
     });
   }
@@ -304,21 +297,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return levelsArray;
   }
 
-  // addConditionOrPartition(type: string) {
-  //   const isPartition = type === 'partition';
-  //   const form = isPartition ? this.addPartitions() : this.addConditions();
-  //   this[type].push(form);
-  //   const scrollTableType = isPartition ? 'partitionTable' : 'conditionTable';
-  //   this.updateView(scrollTableType);
-  //   if (isPartition) {
-  //     const partitionFormControl = this.factorialExperimentDesignForm.get('partitions') as FormArray;
-  //     this.manageExpPointAndIdControl(partitionFormControl.controls.length - 1);
-  //   } else {
-  //     const conditionFormControl = this.factorialExperimentDesignForm.get('conditions') as FormArray;
-  //     this.manageConditionCodeControl(conditionFormControl.controls.length - 1);
-  //   }
-  // }
-
   addFactor() {
     const form = this.addFactors();
     this.factor?.push(form);
@@ -333,27 +311,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     const levelFormControl = this.factor.at(factorIndex).get('levels') as FormArray;
     this.manageExpLevelAliasControl(factorIndex, levelFormControl.controls.length - 1);
   }
-
-  // removeConditionOrPartition(type: string, groupIndex: number) {
-  //   this[type].removeAt(groupIndex);
-  //   if (type === 'condition' && this.experimentInfo) {
-  //     const deletedCondition = this.experimentInfo.conditions.find((condition) => condition.order === groupIndex + 1);
-  //     if (deletedCondition) {
-  //       this.experimentInfo.conditions = this.experimentInfo.conditions.filter(
-  //         (condition) => condition == deletedCondition
-  //       );
-  //       if (this.experimentInfo.revertTo === deletedCondition.id) {
-  //         this.experimentInfo.revertTo = null;
-  //       }
-  //     }
-  //   }
-  //   if (type === 'condition') {
-  //     this.previousAssignmentWeightValues.splice(groupIndex, 1);
-  //     this.applyEqualWeight();
-  //   }
-  //   this.experimentDesignStepperService.experimentStepperDataChanged();
-  //   this.updateView();
-  // }
 
   removeFactor(groupIndex: number) {
     this.factor.removeAt(groupIndex);
@@ -387,20 +344,19 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
-  // removePartitionName(partition) {
-  //   delete partition.target;
-  //   return partition;
-  // }
+  removePartitionName(partition) {
+    delete partition.target;
+    return partition;
+  }
 
   isFormValid() {
-    // return (
-    //   !this.partitionPointErrors.length &&
-    //   !this.expPointAndIdErrors.length &&
-    //   this.factorialExperimentDesignForm.valid &&
-    //   !this.conditionCodeErrors.length &&
-    //   this.partitionCountError === null &&
-    //   this.conditionCountError === null
-    // );
+    return (
+      !this.partitionPointErrors.length &&
+      !this.expPointAndIdErrors.length &&
+      this.factorialExperimentDesignForm.valid &&
+      this.partitionCountError === null &&
+      this.conditionCountError === null
+    );
   }
 
   validateForm() {
@@ -476,38 +432,96 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     //     control.get('assignmentWeight').enable({ emitEvent: false });
     //   });
     // }
-    // if (this.isFormValid()) {
-    //   const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
-    //   let order = 1;
-    //   factorialExperimentDesignFormData.conditions = factorialExperimentDesignFormData.conditions.map((condition, index) => {
-    //     if (isNaN(condition.assignmentWeight)) {
-    //       condition.assignmentWeight = Number(condition.assignmentWeight.slice(0, -1));
-    //     }
-    //     return this.experimentInfo
-    //       ? { ...this.experimentInfo.conditions[index], ...condition, order: order++ }
-    //       : { id: uuidv4(), ...condition, name: '', order: order++ };
-    //   });
-    //   order = 1;
-    //   factorialExperimentDesignFormData.partitions = factorialExperimentDesignFormData.partitions.map((partition, index) => {
-    //     return this.experimentInfo
-    //       ? { ...this.experimentInfo.partitions[index], ...partition, order: order++ }
-    //       : partition.target
-    //       ? { ...partition, order: order++ }
-    //       : { ...this.removePartitionName(partition), order: order++ };
-    //   });
-    //   factorialExperimentDesignFormData.conditionAliases = this.createExperimentConditionAliasRequestObject(
-    //     this.aliasTableData,
-    //     factorialExperimentDesignFormData.conditions,
-    //     factorialExperimentDesignFormData.partitions
-    //   );
-    //   this.emitExperimentDialogEvent.emit({
-    //     type: eventType,
-    //     formData: factorialExperimentDesignFormData,
-    //     path: NewExperimentPaths.EXPERIMENT_DESIGN,
-    //   });
-    //   // scroll back to the conditions table
-    //   this.scrollToFactorsTable();
-    // }
+
+    /*
+      factorsArray -> partition array
+      factors:
+        factor
+        site
+        target
+        level:
+          name
+          alias
+    */
+    if (true) {
+      const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
+
+      const factorialConditions: ExperimentCondition[] = [
+        {
+          createdAt: '2022-10-07T05:44:43.162Z',
+          updatedAt: '2022-10-07T05:44:43.162Z',
+          versionNumber: 1,
+          id: '6dd63ad9-f121-4d95-8d27-08a80e9560a3',
+          twoCharacterId: '5H',
+          name: '',
+          description: null,
+          conditionCode: 'null',
+          assignmentWeight: 100,
+          order: 1,
+          levelCombinationElements: [],
+        },
+      ];
+      const factorialConditionAliases: ExperimentConditionAlias[] = [];
+      let order = 1;
+      const factorialPartitions = [];
+      factorialExperimentDesignFormData.factors.forEach((partition) => {
+        let levelOrder = 1;
+        const currentLevels: ExperimentLevel[] = partition.levels.map((level) => {
+          return { name: level.level, alias: level.alias, id: uuidv4(), order: levelOrder++ };
+        });
+
+        const currentFactors: ExperimentFactor = {
+          name: partition.factor,
+          order: order++,
+          levels: currentLevels,
+        };
+
+        if (
+          !factorialPartitions
+            .find(
+              (existingPartition) =>
+                existingPartition.site === partition.site && existingPartition.target === partition.target
+            )
+            ?.factors.push(currentFactors)
+        ) {
+          const partitionData = {
+            site: partition.site,
+            id: uuidv4(),
+            description: '',
+            order: order++,
+            excludeIfReached: false,
+            factors: [currentFactors],
+          };
+          partition.target
+            ? factorialPartitions.push({ ...partitionData, target: partition.target })
+            : factorialPartitions.push(partitionData);
+        }
+      });
+
+      // factorialExperimentDesignFormData.conditionAliases = this.createExperimentConditionAliasRequestObject(
+      //   this.aliasTableData,
+      //   factorialExperimentDesignFormData.factors
+      // );
+
+      this.emitExperimentDialogEvent.emit({
+        type: eventType,
+        formData: {
+          conditions: factorialConditions,
+          partitions: factorialPartitions,
+          conditionAliases: factorialConditionAliases,
+        },
+        path: NewExperimentPaths.EXPERIMENT_DESIGN,
+      });
+
+      // scroll back to the factors table
+      this.scrollToFactorsTable();
+    }
+  }
+
+  convertData(formData) {
+    console.log(formData);
+    const newformData = formData;
+    return newformData;
   }
 
   // createExperimentConditionAliasRequestObject(

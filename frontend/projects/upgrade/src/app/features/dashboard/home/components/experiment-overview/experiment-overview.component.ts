@@ -135,7 +135,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           unitOfAssignment: this.experimentInfo.assignmentUnit,
           groupType,
           consistencyRule: this.experimentInfo.consistencyRule,
-          designType: ExperimentDesignTypes.SIMPLE,
+          designType: this.experimentInfo.type,
           context: this.currentContext,
           tags: this.experimentInfo.tags,
           logging: this.experimentInfo.logging,
