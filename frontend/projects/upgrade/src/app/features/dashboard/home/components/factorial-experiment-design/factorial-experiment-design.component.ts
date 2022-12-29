@@ -139,9 +139,10 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     // this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
 
     // populate values in form to update experiment if experiment data is available
+    let factorIndex=0;
     if (this.experimentInfo) {
       this.factor.removeAt(0);
-      this.experimentInfo.partitions.forEach((partition, index) => {
+      this.experimentInfo.partitions.forEach((partition) => {
         partition.factors.forEach((factor) => {
           this.factor.push(
             this.addFactors(
@@ -149,14 +150,13 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
               partition.site,
               partition.target,
               factor.order,
-              null,
-              null,
             )
           );
-          this.getLevels(index).removeAt(0);
+          this.getLevels(factorIndex).removeAt(0);
           factor.levels.forEach((level) => {
-            this.getLevels(index).push(this.addLevels(level.name, level.alias))
+            this.getLevels(factorIndex).push(this.addLevels(level.name, level.alias))
           });
+          factorIndex++;
         });
       });
       this.isExperimentEditable =
@@ -457,6 +457,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       ];
       const factorialConditionAliases: ExperimentConditionAlias[] = [];
       let order = 1;
+      let factorOrder = 1;
       const factorialPartitions = [];
       factorialExperimentDesignFormData.factors.forEach((partition) => {
         let levelOrder = 1;
@@ -466,7 +467,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
         const currentFactors: ExperimentFactor = {
           name: partition.factor,
-          order: order++,
+          order: factorOrder++,
           levels: currentLevels,
         };
 
