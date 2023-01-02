@@ -43,8 +43,8 @@ export class ExperimentCondition extends BaseModel {
   @ManyToOne(() => Experiment, (experiment) => experiment.conditions, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
-  @OneToMany(() => ConditionAlias, (conditionAlias) => conditionAlias.aliasName)
-  public parentCondition: ConditionAlias[];
+  @OneToMany(() => ConditionAlias, (conditionAlias) => conditionAlias.parentCondition)
+  public conditionAliases: ConditionAlias[];
 
   @OneToMany(() => LevelCombinationElement, (levelCombinationElement) => levelCombinationElement.condition)
   public levelCombinationElements: LevelCombinationElement[];

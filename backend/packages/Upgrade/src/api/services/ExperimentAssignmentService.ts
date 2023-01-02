@@ -15,6 +15,7 @@ import {
   FILTER_MODE,
   EXCLUSION_CODE,
   MARKED_DECISION_POINT_STATUS,
+  EXPERIMENT_TYPE,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -57,6 +58,7 @@ import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Segment } from '../models/Segment';
 import { ConditionAliasRepository } from '../repositories/ConditionAliasRepository';
 import { In } from 'typeorm';
+import { Factor } from '../models/Factor';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -142,6 +144,11 @@ export class ExperimentAssignmentService {
         'experiment',
         'experiment.partitions',
         'experiment.conditions',
+        'experiment.conditions.levelCombinationElements',
+        'experiment.conditions.levelCombinationElements.level',
+        'experiment.conditions.conditionAliases',
+        'experiment.partitions.factors',
+        'experiment.partitions.factors.levels',
         'experiment.experimentSegmentInclusion',
         'experiment.experimentSegmentExclusion',
         'experiment.experimentSegmentInclusion.segment',
@@ -309,6 +316,36 @@ export class ExperimentAssignmentService {
           throw err;
         }
 
+        const { conditions, partitions, type } = experiment;
+
+        const aliasConditions = await this.conditionAliasRepository.find({
+          relations: ['parentCondition', 'decisionPoint'],
+          where: { parentCondition: In(conditions.map((x) => x.id)), decisionPoint: In(partitions.map((x) => x.id)) },
+        });
+
+        const factorialConditions: string[] = [];
+        if (type === EXPERIMENT_TYPE.FACTORIAL) {
+          conditions.forEach((condition) => {
+            partitions.forEach((partition) => {
+              factorialConditions.push(...this.getFactorialCondition(condition, partition.factors)[1]);
+            });
+          });
+        }
+        const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
+        const matchedAliasCondition = aliasConditions.filter((con) => con.aliasName === condition);
+        const matchedFactorialCondition = factorialConditions.filter((con) => con === condition);
+        if (
+          matchedCondition.length === 0 &&
+          matchedAliasCondition.length === 0 &&
+          matchedFactorialCondition.length === 0 &&
+          condition !== null
+        ) {
+          const error = new Error(`Condition not found: ${condition}`);
+          (error as any).type = SERVER_ERROR.CONDITION_NOT_FOUND;
+          logger.error(error);
+          throw error;
+        }
+
         if (
           (experiment.state === EXPERIMENT_STATE.ENROLLING ||
             experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) &&
@@ -330,22 +367,6 @@ export class ExperimentAssignmentService {
           if (experiment.enrollmentCompleteCondition) {
             await this.checkEnrollmentEndingCriteriaForCount(experiment, logger);
           }
-        }
-
-        const { conditions, partitions } = experiment;
-
-        const aliasConditions = await this.conditionAliasRepository.find({
-          relations: ['parentCondition', 'decisionPoint'],
-          where: { parentCondition: In(conditions.map((x) => x.id)), decisionPoint: In(partitions.map((x) => x.id)) },
-        });
-
-        const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
-        const matchedAliasCondition = aliasConditions.filter((con) => con.aliasName === condition);
-        if (matchedCondition.length === 0 && matchedAliasCondition.length === 0 && condition !== null) {
-          const error = new Error(`Condition not found: ${condition}`);
-          (error as any).type = SERVER_ERROR.CONDITION_NOT_FOUND;
-          logger.error(error);
-          throw error;
         }
       }
       // adding in monitored experiment point table
@@ -614,10 +635,11 @@ export class ExperimentAssignmentService {
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
         // const { state, logging, name, id } = experiment;
-        const { state, logging, name, conditionAliases } = experiment;
+        const { state, logging, name, conditionAliases, type } = experiment;
         const decisionPoints = experiment.partitions.map((decisionPoint) => {
-          const { target, site, twoCharacterId } = decisionPoint;
+          const { target, site, twoCharacterId, factors } = decisionPoint;
           const conditionAssigned = assignment;
+          let factorialCondition;
 
           let aliasCondition: ExperimentCondition = null;
           if (conditionAssigned) {
@@ -630,6 +652,10 @@ export class ExperimentAssignmentService {
 
             if (aliasFound) {
               aliasCondition = { ...conditionAssigned, conditionCode: aliasFound.aliasName };
+            }
+
+            if (type === EXPERIMENT_TYPE.FACTORIAL) {
+              factorialCondition = this.getFactorialCondition(conditionAssigned, factors)[0];
             }
           }
 
@@ -648,6 +674,7 @@ export class ExperimentAssignmentService {
             twoCharacterId,
             // experimentId: id,
             assignedCondition: aliasCondition ||
+              factorialCondition ||
               conditionAssigned || {
                 conditionCode: null,
               },
@@ -1534,28 +1561,34 @@ export class ExperimentAssignmentService {
     groupExclusion: GroupExclusion | undefined
   ): ExperimentCondition | void {
     const userId = user.id;
+    const individualEnrollmentCondition = experiment.conditions.find(
+      (condition) => condition.id === individualEnrollment?.condition?.id
+    );
+    const groupEnrollmentCondition = experiment.conditions.find(
+      (condition) => condition.id === groupEnrollment?.condition?.id
+    );
     if (experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE && userId) {
       if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE) {
         if (experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL) {
           return individualExclusion
             ? undefined
-            : individualEnrollment?.condition
-            ? individualEnrollment?.condition
+            : individualEnrollmentCondition
+            ? individualEnrollmentCondition
             : groupExclusion
             ? undefined
-            : groupEnrollment?.condition;
+            : groupEnrollmentCondition;
         } else if (experiment.consistencyRule === CONSISTENCY_RULE.GROUP) {
           return groupExclusion
             ? undefined
-            : groupEnrollment?.condition
-            ? groupEnrollment?.condition
+            : groupEnrollmentCondition
+            ? groupEnrollmentCondition
             : individualExclusion
             ? undefined
-            : individualEnrollment?.condition;
+            : individualEnrollmentCondition;
         } else {
           return experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
-            ? individualEnrollment?.condition
-            : groupEnrollment?.condition;
+            ? individualEnrollmentCondition
+            : groupEnrollmentCondition;
         }
       } else if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN) {
         if (!experiment.revertTo) {
@@ -1572,28 +1605,28 @@ export class ExperimentAssignmentService {
       if (experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL) {
         return individualExclusion
           ? undefined
-          : individualEnrollment?.condition
-          ? individualEnrollment?.condition
+          : individualEnrollmentCondition
+          ? individualEnrollmentCondition
           : groupExclusion
           ? undefined
-          : groupEnrollment?.condition
-          ? groupEnrollment?.condition
+          : groupEnrollmentCondition
+          ? groupEnrollmentCondition
           : this.assignRandom(experiment, user);
       } else if (experiment.consistencyRule === CONSISTENCY_RULE.GROUP) {
         return groupExclusion
           ? undefined
-          : groupEnrollment?.condition
-          ? groupEnrollment?.condition
+          : groupEnrollmentCondition
+          ? groupEnrollmentCondition
           : individualExclusion
           ? undefined
-          : individualEnrollment?.condition
-          ? individualEnrollment?.condition
+          : individualEnrollmentCondition
+          ? individualEnrollmentCondition
           : this.assignRandom(experiment, user);
       } else {
         return (
           (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
-            ? individualEnrollment?.condition
-            : groupEnrollment?.condition) || this.assignRandom(experiment, user)
+            ? individualEnrollmentCondition
+            : groupEnrollmentCondition) || this.assignRandom(experiment, user)
         );
       }
     }
@@ -1816,6 +1849,59 @@ export class ExperimentAssignmentService {
     });
 
     return [includedExperiments, excludedExperiments];
+  }
+
+  private getFactorialCondition(
+    conditionAssigned: ExperimentCondition,
+    factors: Factor[]
+  ): [ExperimentCondition, string[]] {
+    const levelsForCondition: string[] = [];
+    const aliases: string[] = [];
+    let factorialCondition;
+    conditionAssigned.levelCombinationElements.forEach((element) => {
+      levelsForCondition.push(element.level.id);
+    });
+
+    const levelsForDecisionPoint = [];
+    factors.forEach((factor) => {
+      factor.levels.forEach((level) => {
+        levelsForDecisionPoint.push({ ...level, factorName: factor.name, order: factor.order });
+      });
+    });
+
+    const conditionCodeToSet = levelsForDecisionPoint
+      .filter((value) => levelsForCondition.includes(value.id))
+      .sort((a, b) => a.order - b.order);
+
+    if (conditionCodeToSet.length > 1) {
+      let conditionCodeName = '';
+      conditionCodeToSet.forEach((level) => {
+        conditionCodeName += level.factorName + '=' + level.name + '; ';
+      });
+      conditionCodeName = conditionCodeName.slice(0, -2);
+
+      if (conditionAssigned.conditionAliases) {
+        const factorialConditionAlias = conditionAssigned.conditionAliases[0]?.aliasName;
+        factorialCondition = {
+          ...conditionAssigned,
+          conditionCode: factorialConditionAlias || conditionCodeName,
+        };
+
+        if (factorialConditionAlias) {
+          aliases.push(factorialConditionAlias);
+        }
+      }
+
+      aliases.push(conditionCodeName);
+    } else {
+      const levelAlias = conditionCodeToSet[0].alias;
+      factorialCondition = { ...conditionAssigned, conditionCode: levelAlias || conditionCodeToSet[0].name };
+
+      levelAlias ? aliases.push(...[levelAlias, conditionCodeToSet[0].name]) : aliases.push(conditionCodeToSet[0].name);
+    }
+    delete factorialCondition.levelCombinationElements;
+    delete factorialCondition.conditionAliases;
+    return [factorialCondition, aliases];
   }
 }
 function modifiedMarkResponse(monitoredDocument: MonitoredDecisionPoint): MonitoredDecisionPoint {
