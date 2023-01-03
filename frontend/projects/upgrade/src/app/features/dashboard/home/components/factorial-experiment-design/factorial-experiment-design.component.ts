@@ -62,6 +62,10 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   factorErrorMessages = [];
   factorCountError: string = null;
 
+  // Level Errors
+  levelPointErrors = [];
+  levelCountError: string = null;
+
   expandedId: number = null;
 
   factorDisplayedColumns = ['expandIcon', 'factor', 'site', 'target', 'removeFactor'];
@@ -94,6 +98,8 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       .get([
         'home.new-experiment.design.assignment-factor-error-1.text',
         'home.new-experiment.design.assignment-factor-error-2.text',
+        'home.new-experiment.design.assignment-level-error-1.text',
+        'home.new-experiment.design.assignment-level-error-2.text',
         'home.new-experiment.design.partition-point-selection-error.text',
         'home.new-experiment.design.partition-id-selection-error.text',
       ])
@@ -101,6 +107,8 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         this.factorErrorMessages = [
           translatedMessage['home.new-experiment.design.assignment-factor-error-1.text'],
           translatedMessage['home.new-experiment.design.assignment-factor-error-2.text'],
+          translatedMessage['home.new-experiment.design.assignment-level-error-1.text'],
+          translatedMessage['home.new-experiment.design.assignment-level-error-2.text'],
           translatedMessage['home.new-experiment.design.partition-point-selection-error.text'],
           translatedMessage['home.new-experiment.design.partition-id-selection-error.text'],
         ];
@@ -175,9 +183,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.manageExpFactorPointAndIdControl(index);
     });
 
-    // this.factorialExperimentDesignForm.get('factors').valueChanges.subscribe((newValues) => {
-    //   this.validateFactorNames(newValues);
-    // });
+    this.factorialExperimentDesignForm.get('factors').valueChanges.subscribe((newValues) => {
+      this.validateFactorNames(newValues);
+    });
   }
 
   manageExpFactorPointAndIdControl(factorIndex: number) {
@@ -258,7 +266,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   addLevels(level = null, alias = null) {
     return this._formBuilder.group({
       level: [level, Validators.required],
-      alias: [alias, Validators.required],
+      alias: [alias],
     });
   }
 
@@ -312,34 +320,26 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
-  validateFactorNames(partitions: ExperimentPartition[]) {
+  validateFactorNames(factors: any) {
     this.factorPointErrors = [];
+    this.levelPointErrors = [];
     // Used to differentiate errors
     const duplicateFactors = [];
 
-    // Used for updating existing experiment
-    // if (this.experimentInfo) {
-    //   this.experimentInfo.partitions.forEach((partition) => {
-    //     const partitionInfo = partition.target ? partition.site + partition.target : partition.site;
-    //     const partitionPointIndex = this.allFactors.indexOf(partitionInfo);
-    //     if (partitionPointIndex !== -1) {
-    //       this.allFactors.splice(partitionPointIndex, 1);
-    //     }
-    //   });
-    // }
-    partitions.forEach((partition) => {
-      if(partition.factors.length>1){
-        partition.factors.forEach((factor, index) => {
-          if (partition.factors.find(
-              ( value, factorIndex ) =>
-                value.name === factor.name &&
-                factorIndex !== index &&
-                !duplicateFactors.includes(partition.site + ', ' + partition.target + ' and ' + factor.name)
-            )
-          ) {
-            duplicateFactors.push(partition.site + ', ' + partition.target + ' and ' + factor.name);
-          }
-        })
+    factors.forEach((factor, index) => {
+      // factorDetail:string = factor.site + ', ' + factor.target + ', ' + factor.factor;
+      this.validateLevelNames(factor.levels, factor.site + ', ' + factor.target + ', ' + factor.factor);
+      if (
+        factors.find(
+          (value, factorIndex) =>
+            value.site === factor.site &&
+            (value.target || '') === (factor.target || '') &&
+            value.factor === factor.factor &&
+            factorIndex !== index &&
+            !duplicateFactors.includes(factor.site + ', ' + factor.target + ' and ' + factor.factor)
+        )
+      ) {
+        duplicateFactors.push(factor.site + ', ' + factor.target + ' and ' + factor.factor);
       }
     });
 
@@ -351,47 +351,59 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
-  validateFactorCount(partitions: ExperimentPartition[]) {
-    const factorCountErrorMsg = this.translate.instant('home.new-experiment.design.factor-count-new-exp-error.text');
-    if (
-      partitions.length > 0 &&
-      partitions.every((partition) => {
-        return (
-          partition.site.trim() &&
-          partition.target.trim() &&
-          partition.factors.length > 0 &&
-          this.errorInFactor(partition.factors)
-        );
-      })
-    ) {
-      this.factorCountError = null;
-    } else {
-      this.factorCountError = factorCountErrorMsg;
+  validateLevelNames(levels: any, factorDetail: string) {
+    // Used to differentiate errors
+    const duplicateLevels = [];
+
+    levels.forEach((level, index) => {
+      if (
+        levels.find(
+          (value, levelIndex) =>
+            value.level === level.level &&
+            levelIndex !== index &&
+            !duplicateLevels.includes(factorDetail + " factor's " + level.level)
+        )
+      ) {
+        duplicateLevels.push(factorDetail + " factor's " + level.level);
+      }
+    });
+
+    // Level Points error messages
+    if (duplicateLevels.length === 1) {
+      this.levelPointErrors.push(duplicateLevels[0] + this.factorErrorMessages[2]);
+    } else if (duplicateLevels.length > 1) {
+      this.levelPointErrors.push(duplicateLevels.join(', ') + this.factorErrorMessages[3]);
     }
   }
 
-  errorInFactor(factors: ExperimentFactor[]): boolean {
-    let checkFactors: boolean = true;
-    factors.forEach((factor) => {
-      if (factor.name.trim() && factor.levels.length > 0 && this.errorInLevel(factor.levels) && checkFactors) {
-        checkFactors = true;
-      } else {
-        checkFactors = false;
-      }
-    });
-    return checkFactors;
-  }
-
-  errorInLevel(levels: ExperimentLevel[]): boolean {
-    let checkLevels: boolean = true;
-    levels.forEach((level) => {
-      if (level.name.trim() && level.alias.trim() && checkLevels) {
-        checkLevels = true;
-      } else {
-        checkLevels = false;
-      }
-    });
-    return checkLevels;
+  validateFactorCount(factorialExperimentDesignFormData: any) {
+    this.factorCountError = null;
+    this.levelCountError = null;
+    const factorCountErrorMsg = this.translate.instant('home.new-experiment.design.factor-count-new-exp-error.text');
+    const factorValueErrorMsg = this.translate.instant('home.new-experiment.design.factor-value-new-exp-error.text');
+    const levelCountErrorMsg = this.translate.instant('home.new-experiment.design.level-count-new-exp-error.text');
+    const levelValueErrorMsg = this.translate.instant('home.new-experiment.design.level-value-new-exp-error.text');
+    
+    if (factorialExperimentDesignFormData.factors.length > 0) {
+      factorialExperimentDesignFormData.factors.forEach((factor,index) => {
+        if (!factor.site.trim() || !factor.target.trim() || !factor.factor.trim()) {
+          this.factorCountError = factorValueErrorMsg;
+        }
+        if(factor.levels.length>0){
+          factor.levels.forEach((level) => {
+            if (!level.level.trim()) {
+              this.levelCountError=levelValueErrorMsg;
+              this.expandedId=index;
+            }
+          });
+        }else{
+          this.levelCountError=levelCountErrorMsg;
+          this.expandedId=index;
+        }
+      });
+    } else {
+      this.factorCountError = factorCountErrorMsg;
+    }
   }
 
   validateFactors() {
@@ -410,7 +422,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     for (let siteIndex = 0; siteIndex < sites.length; siteIndex++) {
       if (!currentContextExpPoints.includes(sites[siteIndex])) {
         // Add partition point selection error
-        this.expPointAndIdErrors.push(this.factorErrorMessages[2]);
+        this.expPointAndIdErrors.push(this.factorErrorMessages[4]);
         break;
       }
     }
@@ -423,7 +435,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     for (let targetIndex = 0; targetIndex < targets.length; targetIndex++) {
       if (!currentContextExpIds.includes(targets[targetIndex])) {
         // Add partition id selection error
-        this.expPointAndIdErrors.push(this.factorErrorMessages[3]);
+        this.expPointAndIdErrors.push(this.factorErrorMessages[5]);
         break;
       }
     }
@@ -434,15 +446,15 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       !this.factorPointErrors.length &&
       !this.expPointAndIdErrors.length &&
       this.factorialExperimentDesignForm.valid &&
-      this.factorCountError === null
+      this.factorCountError === null &&
+      this.levelCountError === null
     );
   }
 
   validateForm() {
     this.factorialExperimentDesignForm.updateValueAndValidity();
-    const factorialPartitions = this.convertToPartitionData(this.factorialExperimentDesignForm.value);
-    this.validateFactorCount(factorialPartitions);
-    this.validateFactorNames(factorialPartitions);
+    // const factorialPartitions = this.convertToPartitionData(this.factorialExperimentDesignForm.value);
+    this.validateFactorCount(this.factorialExperimentDesignForm.value);
   }
 
   emitEvent(eventType: NewExperimentDialogEvents) {
@@ -538,19 +550,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
       // scroll back to the factors table
       this.scrollToFactorsTable();
-    } else {
-      console.log('isFormValid: ' + this.isFormValid());
-      console.log('factorPointErrors.len: ' + this.factorPointErrors.length + ' .');
-      console.log('expPointAndIdErrors.len: ' + this.expPointAndIdErrors.length + ' .');
-      console.log('expPointAndIdErrors: ' + this.expPointAndIdErrors + ' .');
-      console.log('factorialExperimentDesignForm.valid: ' + this.factorialExperimentDesignForm.valid + ' .');
-      console.log('factorCountError: ' + this.factorCountError + ' .');
-      console.log('type of Hey is ' + typeof 'Hey' + ' .');
-      if (' '.trim()) {
-        console.log('trim: ' + true);
-      } else {
-        console.log('trim: ' + false);
-      }
     }
   }
 

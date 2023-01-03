@@ -68,7 +68,6 @@
                       </mat-autocomplete>
                     </span>
                   </mat-form-field>
-                  <!-- <span>{{element.factor}}</span> -->
                 </mat-cell>
               </ng-container>
 
@@ -96,7 +95,6 @@
                       </mat-autocomplete>
                     </span>
                   </mat-form-field>
-                  <!-- <span>{{element.site}}</span> -->
                 </mat-cell>
               </ng-container>
 
@@ -124,7 +122,6 @@
                       </mat-autocomplete>
                     </span>
                   </mat-form-field>
-                  <!-- <span>{{element.target}}</span> -->
                 </mat-cell>
               </ng-container>
 
@@ -172,14 +169,6 @@
                                   formControlName="level"
                                   [value]="level"
                                 />
-                                <!-- <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
-                                  <mat-option
-                                    *ngFor="let level of filteredExpLevels$[levelIndex] | async"
-                                    [value]="level"
-                                  >
-                                    {{ level }}
-                                  </mat-option>
-                                </mat-autocomplete> -->
                               </span>
                             </mat-form-field>
                           </mat-cell>
@@ -203,14 +192,6 @@
                                   formControlName="alias"
                                   [value]="alias"
                                 />
-                                <!-- <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
-                                  <mat-option
-                                    *ngFor="let alias of filteredExpLevels$[levelAliasIndex] | async"
-                                    [value]="alias"
-                                  >
-                                    {{ alias }}
-                                  </mat-option>
-                                </mat-autocomplete> -->
                               </span>
                             </mat-form-field>
                           </mat-cell>
@@ -296,10 +277,16 @@
 
           <div class="validation-container">
             <span class="ft-14-600 validation-message" *ngFor="let error of factorPointErrors">{{ error }}</span>
+            <span class="ft-14-600 validation-message" *ngFor="let error of levelPointErrors">{{ error }}</span>
             <span
               class="ft-14-600 validation-message"
               *ngIf="factorCountError"
               [innerHTML]="factorCountError"
+            ></span>
+            <span
+              class="ft-14-600 validation-message"
+              *ngIf="levelCountError"
+              [innerHTML]="levelCountError"
             ></span>
             <!-- If experiment point and id are not from predefined value -->
             <span class="ft-14-600 validation-message" *ngFor="let error of expPointAndIdErrors">{{ error }}</span>
