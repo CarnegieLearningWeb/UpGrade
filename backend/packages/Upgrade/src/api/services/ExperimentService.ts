@@ -1003,7 +1003,7 @@ export class ExperimentService {
         const updateAuditLog: AuditLogData = {
           experimentId: experiment.id,
           experimentName: experiment.name,
-          //diff: diffString(oldExperimentClone, newExperimentClone), //TODO:solve and uncomment this line
+          diff: diffString(newExperimentClone, oldExperimentClone),
         };
 
         await this.experimentAuditLogRepository.saveRawJson(
