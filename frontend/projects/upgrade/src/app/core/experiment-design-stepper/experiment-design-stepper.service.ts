@@ -180,8 +180,8 @@ export class ExperimentDesignStepperService {
 
   updateFactorialDesignData(designData: ExperimentFactorialDesignData) {
     console.log('actual design data:', designData);
-    console.log('using this dummy data instead', DUMMY_CONDITION_TABLE_DATA);
-    designData = DUMMY_CONDITION_TABLE_DATA;
+    // console.log('using this dummy data instead', DUMMY_CONDITION_TABLE_DATA);
+    // designData = DUMMY_CONDITION_TABLE_DATA;
 
     this.store$.dispatch(experimentDesignStepperAction.actionUpdateFactorialDesignData({ designData }));
   }
