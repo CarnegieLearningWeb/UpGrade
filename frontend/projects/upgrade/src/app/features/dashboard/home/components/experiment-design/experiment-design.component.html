@@ -13,7 +13,11 @@
               class="ft-14-600 toggle-button"
               (click)="scrollToAliasesTable()"
               [disabled]="
-                aliasTableData.length === 0 || partition.length === 0 || condition.length === 0 || !isExperimentEditable
+                (isFormLockedForEdit$ | async) ||
+                aliasTableData.length === 0 ||
+                partition.length === 0 ||
+                condition.length === 0 ||
+                !isExperimentEditable
               "
             >
               <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
@@ -104,6 +108,7 @@
                     mat-icon-button
                     type="button"
                     [disabled]="!isExperimentEditable"
+                    [disableRipple]="true"
                     (click)="removeConditionOrPartition('partition', groupIndex)"
                   >
                     <mat-icon class="remove-icon"> delete_outline </mat-icon>
@@ -173,29 +178,36 @@
                   {{ 'home.new-experiment.design.name.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                  <mat-form-field floatLabel="never">
-                    <span
-                      [matTooltip]="
-                        experimentDesignForm.getRawValue('conditionCode')?.conditions[groupIndex]?.conditionCode
-                      "
-                      matTooltipPosition="above"
-                    >
-                      <input
-                        matInput
-                        [placeholder]="'home.new-experiment.design.condition.placeholder.text' | translate"
-                        formControlName="conditionCode"
-                        [matAutocomplete]="autoCompleteConditionCodes"
-                      />
-                      <mat-autocomplete #autoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
-                        <mat-option
-                          *ngFor="let conditionCode of filteredConditionCodes$[groupIndex] | async"
-                          [value]="conditionCode"
-                        >
-                          {{ conditionCode }}
-                        </mat-option>
-                      </mat-autocomplete>
+                  <ng-container *ngIf="(conditionsTableEditIndex$ | async) !== groupIndex">
+                    <span [matTooltip]="condition.at(groupIndex).get('conditionCode').value" matTooltipPosition="above">
+                      {{ condition.at(groupIndex).get('conditionCode').value | truncate: 35 }}
                     </span>
-                  </mat-form-field>
+                  </ng-container>
+                  <ng-container *ngIf="(conditionsTableEditIndex$ | async) === groupIndex">
+                    <mat-form-field floatLabel="never">
+                      <span
+                        [matTooltip]="
+                          experimentDesignForm.getRawValue('conditionCode')?.conditions[groupIndex]?.conditionCode
+                        "
+                        matTooltipPosition="above"
+                      >
+                        <input
+                          matInput
+                          [placeholder]="'home.new-experiment.design.condition.placeholder.text' | translate"
+                          formControlName="conditionCode"
+                          [matAutocomplete]="autoCompleteConditionCodes"
+                        />
+                        <mat-autocomplete #autoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
+                          <mat-option
+                            *ngFor="let conditionCode of filteredConditionCodes$[groupIndex] | async"
+                            [value]="conditionCode"
+                          >
+                            {{ conditionCode }}
+                          </mat-option>
+                        </mat-autocomplete>
+                      </span>
+                    </mat-form-field>
+                  </ng-container>
                 </mat-cell>
               </ng-container>
 
@@ -209,15 +221,22 @@
                   [formGroupName]="groupIndex"
                   style="justify-content: center"
                 >
-                  <mat-form-field floatLabel="never" style="text-align: right">
-                    <input
-                      type="number"
-                      matInput
-                      [placeholder]="'home.new-experiment.design.assignment-weight.placeholder.text' | translate"
-                      formControlName="assignmentWeight"
-                      autocomplete="off"
-                    />
-                  </mat-form-field>
+                  <ng-container *ngIf="(conditionsTableEditIndex$ | async) !== groupIndex">
+                    <div class="assignment-weight-readonly align-right">
+                      {{ condition.at(groupIndex).get('assignmentWeight').value | truncate: 35 }}
+                    </div>
+                  </ng-container>
+                  <ng-container *ngIf="(conditionsTableEditIndex$ | async) === groupIndex">
+                    <mat-form-field floatLabel="never" class="align-right">
+                      <input
+                        type="number"
+                        matInput
+                        [placeholder]="'home.new-experiment.design.assignment-weight.placeholder.text' | translate"
+                        formControlName="assignmentWeight"
+                        autocomplete="off"
+                      />
+                    </mat-form-field>
+                  </ng-container>
                 </mat-cell>
               </ng-container>
 
@@ -226,42 +245,76 @@
                 <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                   {{ 'home.new-experiment.design.description.text' | translate }}
                 </mat-header-cell>
-                <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                  <mat-form-field floatLabel="never">
-                    <input
-                      matInput
-                      [placeholder]="'home.new-experiment.design.description.placeholder.text' | translate"
-                      formControlName="description"
-                      autocomplete="off"
-                    />
-                  </mat-form-field>
+                <mat-cell *matCellDef="let rowData; let groupIndex = index" [formGroupName]="groupIndex">
+                  <ng-container *ngIf="(conditionsTableEditIndex$ | async) !== groupIndex">
+                    <span [matTooltip]="condition.at(groupIndex).get('description').value" matTooltipPosition="above">
+                      {{ condition.at(groupIndex).get('description').value | truncate: 35 }}
+                    </span>
+                  </ng-container>
+                  <ng-container *ngIf="(conditionsTableEditIndex$ | async) === groupIndex">
+                    <mat-form-field floatLabel="never">
+                      <input
+                        matInput
+                        [placeholder]="'home.new-experiment.design.description.placeholder.text' | translate"
+                        formControlName="description"
+                        autocomplete="off"
+                      />
+                    </mat-form-field>
+                  </ng-container>
                 </mat-cell>
               </ng-container>
 
-              <ng-container matColumnDef="removeCondition">
-                <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
-                <mat-cell
-                  *matCellDef="let element; let groupIndex = index"
-                  [formGroupName]="groupIndex"
-                  style="justify-content: flex-start"
-                >
+              <!-- Actions Column -->
+              <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
+                <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell">
                   <button
-                    mat-icon-button
                     type="button"
-                    [disabled]="!isExperimentEditable"
-                    (click)="removeConditionOrPartition('condition', groupIndex)"
+                    class="row-action-btn"
+                    [disabled]="(isFormLockedForEdit$ | async) && (conditionsTableEditIndex$ | async) !== rowIndex"
+                    (click)="handleConditionTableEditClick(rowIndex, rowData.getRawValue())"
                   >
-                    <mat-icon class="remove-icon"> delete_outline </mat-icon>
+                    <!-- Edit Icon -->
+                    <ng-container *ngIf="(conditionsTableEditIndex$ | async) !== rowIndex">
+                      <mat-icon class="icon">create</mat-icon>
+                    </ng-container>
+
+                    <!-- Done Icon -->
+                    <ng-container *ngIf="(conditionsTableEditIndex$ | async) === rowIndex">
+                      <mat-icon class="icon">done</mat-icon>
+                    </ng-container>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="row-action-btn"
+                    [disabled]="(isFormLockedForEdit$ | async) && (conditionsTableEditIndex$ | async) !== rowIndex"
+                    (click)="handleConditionTableClearOrRemoveRow(rowIndex)"
+                  >
+                    <ng-container *ngIf="(conditionsTableEditIndex$ | async) !== rowIndex">
+                      <mat-icon class="icon">delete_outline</mat-icon>
+                    </ng-container>
+                    <ng-container *ngIf="(conditionsTableEditIndex$ | async) === rowIndex">
+                      <mat-icon class="icon">clear</mat-icon>
+                    </ng-container>
                   </button>
                 </mat-cell>
               </ng-container>
+
               <mat-header-row *matHeaderRowDef="conditionDisplayedColumns; sticky: true"></mat-header-row>
-              <mat-row *matRowDef="let row; columns: conditionDisplayedColumns"></mat-row>
+              <mat-row
+                *matRowDef="let row; let rowIndex = index; columns: conditionDisplayedColumns"
+                [ngClass]="{
+                  'row-is-locked': (isFormLockedForEdit$ | async) && (conditionsTableEditIndex$ | async) !== rowIndex
+                }"
+              ></mat-row>
             </mat-table>
             <button
               type="button"
               class="ft-12-700 add-condition"
               *ngIf="!experimentInfo"
+              [ngClass]="{ 'add-condition--disabled': (isFormLockedForEdit$ | async) }"
+              [disabled]="isFormLockedForEdit$ | async"
               (click)="addConditionOrPartition('condition')"
             >
               + {{ 'home.new-experiment.design.add-condition.text' | translate }}
@@ -270,8 +323,8 @@
               type="button"
               class="ft-12-700 add-condition"
               *ngIf="experimentInfo"
-              [ngClass]="{ 'add-condition--disabled': !isExperimentEditable }"
-              [disabled]="!isExperimentEditable"
+              [ngClass]="{ 'add-condition--disabled': !isExperimentEditable || (isFormLockedForEdit$ | async) }"
+              [disabled]="!isExperimentEditable || (isFormLockedForEdit$ | async)"
               (click)="addConditionOrPartition('condition')"
             >
               + {{ 'home.new-experiment.design.add-condition.text' | translate }}
@@ -300,7 +353,8 @@
             [experimentInfo]="experimentInfo"
             (aliasTableData$)="handleAliasTableDataChange($event)"
             (hideAliasTable)="scrollToConditionsTable()"
-          ></app-aliases-table>
+          >
+          </app-aliases-table>
           <br />
         </div>
       </form>
@@ -313,9 +367,9 @@
         matStepperPrevious
         mat-raised-button
         class="shared-modal--modal-btn btn-back default-button"
-        [class.default-button--disabled]="isAliasTableEditMode$ | async"
-        [disabled]="isAliasTableEditMode$ | async"
-        (click)="handleCloseClick()"
+        [class.default-button--disabled]="isFormLockedForEdit$ | async"
+        [disabled]="isFormLockedForEdit$ | async"
+        (click)="handleBackBtnClick()"
       >
         {{ 'global.back.text' | translate }}
       </button>
@@ -334,8 +388,8 @@
         mat-raised-button
         class="shared-modal--modal-btn default-button"
         (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
-        [class.default-button--disabled]="isAliasTableEditMode$ | async"
-        [disabled]="isAliasTableEditMode$ | async"
+        [class.default-button--disabled]="isFormLockedForEdit$ | async"
+        [disabled]="isFormLockedForEdit$ | async"
       >
         {{ 'global.next.text' | translate }}
       </button>
@@ -344,8 +398,8 @@
         *ngIf="experimentInfo"
         mat-raised-button
         class="shared-modal--modal-btn default-button"
-        [ngClass]="{ 'default-button--disabled': (isAliasTableEditMode$ | async) || !isExperimentEditable }"
-        [disabled]="(isAliasTableEditMode$ | async) || !isExperimentEditable"
+        [ngClass]="{ 'default-button--disabled': (isFormLockedForEdit$ | async) || !isExperimentEditable }"
+        [disabled]="(isFormLockedForEdit$ | async) || !isExperimentEditable"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
         {{ 'global.update.text' | translate }}
@@ -353,3 +407,4 @@
     </span>
   </section>
 </div>
+

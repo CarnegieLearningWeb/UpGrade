@@ -449,7 +449,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  handleCloseClick() {
+  handleBackBtnClick() {
     return this.queryForm.dirty && this.experimentDesignStepperService.experimentStepperDataChanged();
   }
 
