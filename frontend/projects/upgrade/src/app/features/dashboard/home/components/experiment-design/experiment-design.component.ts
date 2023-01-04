@@ -880,6 +880,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptionHandler.unsubscribe();
+    this.experimentDesignStepperService.clearDecisionPointTableEditModeDetails();
     this.experimentDesignStepperService.clearConditionTableEditModeDetails();
   }
 }
