@@ -32,7 +32,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { filter, map, startWith } from 'rxjs/operators';
 import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
-import { ExperimentAliasTableRow } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+import {
+  ExperimentAliasTableRow,
+  FactorialConditionTableRowData,
+} from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 
 @Component({
   selector: 'home-factorial-experiment-design',
@@ -85,8 +88,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   // Alias Table details
   designData$ = new BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]>([[], []]);
-  aliasTableData: ExperimentAliasTableRow[] = [];
-  isAliasTableEditMode$: Observable<boolean>;
+  factorialConditionsTableData: FactorialConditionTableRowData[] = [];
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -149,6 +151,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.factorialExperimentDesignForm = this._formBuilder.group({
       factors: this._formBuilder.array([this.addFactors()]),
     });
+
     // this.createDesignDataSubject();
     // this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
 
@@ -235,6 +238,10 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   handleConditionsButtonClick() {
     this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
     this.scrollToConditionsTable();
+  }
+
+  handleFactorialConditionTableDataChange($event: FactorialConditionTableRowData[]) {
+    this.factorialConditionsTableData = $event;
   }
 
   private filterExpFactorsPointsAndIds(value: string, key: string): string[] {
@@ -384,22 +391,22 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     const factorValueErrorMsg = this.translate.instant('home.new-experiment.design.factor-value-new-exp-error.text');
     const levelCountErrorMsg = this.translate.instant('home.new-experiment.design.level-count-new-exp-error.text');
     const levelValueErrorMsg = this.translate.instant('home.new-experiment.design.level-value-new-exp-error.text');
-    
+
     if (factorialExperimentDesignFormData.factors.length > 0) {
-      factorialExperimentDesignFormData.factors.forEach((factor,index) => {
+      factorialExperimentDesignFormData.factors.forEach((factor, index) => {
         if (!factor.site?.trim() || !factor.target?.trim() || !factor.factor?.trim()) {
           this.factorCountError = factorValueErrorMsg;
         }
-        if(factor.levels.length>0){
+        if (factor.levels.length > 0) {
           factor.levels.forEach((level) => {
             if (!level.level?.trim()) {
-              this.levelCountError=levelValueErrorMsg;
-              this.expandedId=index;
+              this.levelCountError = levelValueErrorMsg;
+              this.expandedId = index;
             }
           });
-        }else{
-          this.levelCountError=levelCountErrorMsg;
-          this.expandedId=index;
+        } else {
+          this.levelCountError = levelCountErrorMsg;
+          this.expandedId = index;
         }
       });
     } else {
@@ -514,6 +521,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     if (this.isFormValid()) {
       const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
       const factorialPartitions = this.convertToPartitionData(factorialExperimentDesignFormData);
+      // const factorialConditions = this.experimentDesignStepperService.createFactorialConditionRequestObject(
+      //   this.factorialConditionsTableData
+      // );
       const factorialConditions: ExperimentCondition[] = [
         {
           createdAt: '2022-10-07T05:44:43.162Z',
@@ -526,7 +536,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           conditionCode: 'condition 1',
           assignmentWeight: 25,
           order: 1,
-          levelCombinationElements: [{"level":this.levelIds[0]},{"level":this.levelIds[2]}] ,
+          levelCombinationElements: [{ level: this.levelIds[0] }, { level: this.levelIds[2] }],
         },
         {
           createdAt: '2022-10-07T05:44:43.162Z',
@@ -539,8 +549,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           conditionCode: 'condition 2',
           assignmentWeight: 25,
           order: 2,
-          levelCombinationElements: [{"level":this.levelIds[1]},{"level":this.levelIds[3]}],
-        },{
+          levelCombinationElements: [{ level: this.levelIds[1] }, { level: this.levelIds[3] }],
+        },
+        {
           createdAt: '2022-10-07T05:44:43.162Z',
           updatedAt: '2022-10-07T05:44:43.162Z',
           versionNumber: 1,
@@ -551,7 +562,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           conditionCode: 'condition 3',
           assignmentWeight: 25,
           order: 3,
-          levelCombinationElements: [{"level":this.levelIds[0]},{"level":this.levelIds[3]}] ,
+          levelCombinationElements: [{ level: this.levelIds[0] }, { level: this.levelIds[3] }],
         },
         {
           createdAt: '2022-10-07T05:44:43.162Z',
@@ -564,8 +575,8 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           conditionCode: 'condition 4',
           assignmentWeight: 25,
           order: 4,
-          levelCombinationElements: [{"level":this.levelIds[1]},{"level":this.levelIds[2]}],
-        }
+          levelCombinationElements: [{ level: this.levelIds[1] }, { level: this.levelIds[2] }],
+        },
       ];
       const factorialConditionAliases: ExperimentConditionAlias[] = [];
 
@@ -593,11 +604,11 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     let order = 1;
     let factorOrder = 1;
     const Partitions = [];
-    this.levelIds=[];
+    this.levelIds = [];
     factorialExperimentDesignFormData.factors.forEach((partition) => {
       let levelOrder = 1;
       const currentLevels: ExperimentLevel[] = partition.levels.map((level) => {
-        const levelId=uuidv4();
+        const levelId = uuidv4();
         this.levelIds.push(levelId);
         return { name: level.level, alias: level.alias, id: levelId, order: levelOrder++ };
       });

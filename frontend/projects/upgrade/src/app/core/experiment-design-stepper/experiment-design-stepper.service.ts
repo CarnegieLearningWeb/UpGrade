@@ -169,6 +169,14 @@ export class ExperimentDesignStepperService {
     this.store$.dispatch(actionUpdateFactorialTableData({ tableData }));
   }
 
+  createFactorialConditionRequestObject(tableData: FactorialConditionTableRowData[]) {
+    // TODO: what is the request expecting
+
+    const factorialConditionsRequestObject = tableData;
+
+    return factorialConditionsRequestObject;
+  }
+
   createFactorialAliasString(
     factorOneName: string,
     factorOneLevel: string,

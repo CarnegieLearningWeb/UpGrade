@@ -12,6 +12,7 @@ import { FactorialConditionTableRowData } from '../../../../../../core/experimen
 })
 export class ConditionsTableComponent implements OnInit, OnDestroy {
   @Output() hide = new EventEmitter<boolean>();
+  @Output() factorialConditionsTableDataChange = new EventEmitter<FactorialConditionTableRowData[]>();
 
   subscriptions: Subscription;
   factorialConditionTableForm: FormGroup;
@@ -22,7 +23,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   previousRowDataBehaviorSubject$ = new BehaviorSubject<FactorialConditionTableRowData>(null);
   columnHeaders = ['levelNameOne', 'levelNameTwo', 'alias', 'weight', 'include', 'actions'];
   equalWeightFlag = true;
-  showForm = false;
+  // showForm = false;
   factorOneHeader = 'factor1';
   factorTwoHeader = 'factor2';
 
@@ -72,7 +73,8 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
           this.getFactorialConditions().push(formControls);
         });
 
-        this.showForm = true;
+        // this.showForm = true;
+        this.factorialConditionsTableDataChange.emit(this.tableData$.value);
       });
   }
 
@@ -85,10 +87,6 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     this.factorialConditionTableForm = this._formBuilder.group({
       factorialConditions: this._formBuilder.array([]),
     });
-  }
-
-  resetPreviousRowDataOnEditCancel(previousRowData: FactorialConditionTableRowData, rowIndex: number) {
-    this.resetEdit();
   }
 
   resetEdit(): void {
@@ -126,7 +124,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     formRow.get('weight').setValue(previousRowData.weight, { emitEvent: false });
     formRow.get('include').setValue(previousRowData.include, { emitEvent: false });
 
-    this.resetPreviousRowDataOnEditCancel(previousRowData, rowIndex);
+    this.resetEdit();
   }
 
   /* -- convenience accessors --*/
