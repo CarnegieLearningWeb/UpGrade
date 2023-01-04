@@ -226,10 +226,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     partitionFormControl.controls.forEach((_, index) => {
       this.manageExpPointAndIdControl(index);
     });
-
-    this.experimentDesignForm.get('partitions').valueChanges.subscribe((newValues) => {
-      this.validatePartitionNames(newValues);
-    });
   }
 
   manageConditionCodeControl(index: number) {
