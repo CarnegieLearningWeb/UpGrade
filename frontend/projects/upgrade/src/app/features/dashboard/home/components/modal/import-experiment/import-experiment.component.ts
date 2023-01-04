@@ -193,7 +193,7 @@ export class ImportExperimentComponent implements OnInit {
       createdAt: 'string',
       updatedAt: 'string',
       versionNumber: 'number',
-      levelCombinationElements: 'string[]'
+      levelCombinationElements: 'any[]'
     };
 
     const partitionSchema: Record<keyof ExperimentPartition, string> = {

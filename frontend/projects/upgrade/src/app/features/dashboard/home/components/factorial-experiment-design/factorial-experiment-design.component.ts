@@ -67,6 +67,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   levelCountError: string = null;
 
   expandedId: number = null;
+  levelIds: string[] = [];
 
   factorDisplayedColumns = ['expandIcon', 'factor', 'site', 'target', 'removeFactor'];
   levelDisplayedColumns = ['level', 'alias', 'removeLevel'];
@@ -386,12 +387,12 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     
     if (factorialExperimentDesignFormData.factors.length > 0) {
       factorialExperimentDesignFormData.factors.forEach((factor,index) => {
-        if (!factor.site.trim() || !factor.target.trim() || !factor.factor.trim()) {
+        if (!factor.site?.trim() || !factor.target?.trim() || !factor.factor?.trim()) {
           this.factorCountError = factorValueErrorMsg;
         }
         if(factor.levels.length>0){
           factor.levels.forEach((level) => {
-            if (!level.level.trim()) {
+            if (!level.level?.trim()) {
               this.levelCountError=levelValueErrorMsg;
               this.expandedId=index;
             }
@@ -409,14 +410,12 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   validateFactors() {
     // Reset expPointAndIdErrors errors to re-validate data
     this.expPointAndIdErrors = [];
-    const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
-    const factorialPartitions = this.convertToPartitionData(factorialExperimentDesignFormData);
-    this.validateExpPoints(factorialPartitions);
-    this.validateExpIds(factorialPartitions);
+    this.validateExpPoints(this.factorialExperimentDesignForm.value);
+    this.validateExpIds(this.factorialExperimentDesignForm.value);
   }
 
-  validateExpPoints(partitions: ExperimentPartition[]) {
-    const sites = partitions.map((partition) => partition.site);
+  validateExpPoints(factorialExperimentDesignFormData: any) {
+    const sites = factorialExperimentDesignFormData.factors.map((factor) => factor.site);
     const currentContextExpPoints = this.contextMetaData.contextMetadata[this.currentContext].EXP_POINTS;
 
     for (let siteIndex = 0; siteIndex < sites.length; siteIndex++) {
@@ -428,8 +427,8 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
-  validateExpIds(partitions: ExperimentPartition[]) {
-    const targets = partitions.map((partition) => partition.target).filter((target) => target);
+  validateExpIds(factorialExperimentDesignFormData: any) {
+    const targets = factorialExperimentDesignFormData.factors.map((factor) => factor.target).filter((target) => target);
     const currentContextExpIds = this.contextMetaData.contextMetadata[this.currentContext].EXP_IDS;
 
     for (let targetIndex = 0; targetIndex < targets.length; targetIndex++) {
@@ -515,7 +514,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     if (this.isFormValid()) {
       const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
       const factorialPartitions = this.convertToPartitionData(factorialExperimentDesignFormData);
-
       const factorialConditions: ExperimentCondition[] = [
         {
           createdAt: '2022-10-07T05:44:43.162Z',
@@ -523,13 +521,51 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           versionNumber: 1,
           id: uuidv4(),
           twoCharacterId: '5H',
-          name: '',
+          name: 'temp1',
           description: null,
-          conditionCode: 'null',
-          assignmentWeight: 100,
+          conditionCode: 'condition 1',
+          assignmentWeight: 25,
           order: 1,
-          levelCombinationElements: [],
+          levelCombinationElements: [{"level":this.levelIds[0]},{"level":this.levelIds[2]}] ,
         },
+        {
+          createdAt: '2022-10-07T05:44:43.162Z',
+          updatedAt: '2022-10-07T05:44:43.162Z',
+          versionNumber: 1,
+          id: uuidv4(),
+          twoCharacterId: '5H',
+          name: 'temp2',
+          description: null,
+          conditionCode: 'condition 2',
+          assignmentWeight: 25,
+          order: 2,
+          levelCombinationElements: [{"level":this.levelIds[1]},{"level":this.levelIds[3]}],
+        },{
+          createdAt: '2022-10-07T05:44:43.162Z',
+          updatedAt: '2022-10-07T05:44:43.162Z',
+          versionNumber: 1,
+          id: uuidv4(),
+          twoCharacterId: '5H',
+          name: 'temp3',
+          description: null,
+          conditionCode: 'condition 3',
+          assignmentWeight: 25,
+          order: 3,
+          levelCombinationElements: [{"level":this.levelIds[0]},{"level":this.levelIds[3]}] ,
+        },
+        {
+          createdAt: '2022-10-07T05:44:43.162Z',
+          updatedAt: '2022-10-07T05:44:43.162Z',
+          versionNumber: 1,
+          id: uuidv4(),
+          twoCharacterId: '5H',
+          name: 'temp4',
+          description: null,
+          conditionCode: 'condition 4',
+          assignmentWeight: 25,
+          order: 4,
+          levelCombinationElements: [{"level":this.levelIds[1]},{"level":this.levelIds[2]}],
+        }
       ];
       const factorialConditionAliases: ExperimentConditionAlias[] = [];
 
@@ -557,10 +593,13 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     let order = 1;
     let factorOrder = 1;
     const Partitions = [];
+    this.levelIds=[];
     factorialExperimentDesignFormData.factors.forEach((partition) => {
       let levelOrder = 1;
       const currentLevels: ExperimentLevel[] = partition.levels.map((level) => {
-        return { name: level.level, alias: level.alias, id: uuidv4(), order: levelOrder++ };
+        const levelId=uuidv4();
+        this.levelIds.push(levelId);
+        return { name: level.level, alias: level.alias, id: levelId, order: levelOrder++ };
       });
       const currentFactors: ExperimentFactor = {
         name: partition.factor,
@@ -586,7 +625,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           : Partitions.push(partitionData);
       }
     });
-
     return Partitions;
   }
 
