@@ -99,7 +99,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   decisionPointsTableEditIndex$ = this.experimentDesignStepperService.decisionPointsTableEditIndex$;
 
   // Condition table store references
-  previousRowDataBehaviorSubject$ = new BehaviorSubject<ConditionsTableRowData>(null);
+  previousConditionTableRowDataBehaviorSubject$ = new BehaviorSubject<ConditionsTableRowData>(null);
   isConditionsTableEditMode$ = this.experimentDesignStepperService.isConditionsTableEditMode$;
   conditionsTableEditIndex$ = this.experimentDesignStepperService.conditionsTableEditIndex$;
 
@@ -171,7 +171,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.previousDecisionPointTableRowDataBehaviorSubject$
     );
     this.experimentDesignStepperService.conditionsEditModePreviousRowData$.subscribe(
-      this.previousRowDataBehaviorSubject$
+      this.previousConditionTableRowDataBehaviorSubject$
     );
 
     // populate values in form to update experiment if experiment data is available
@@ -305,7 +305,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   handleConditionTableClearOrRemoveRow(rowIndex: number): void {
     // grab previous data before dispatching reset to store
-    const previousRowData = this.previousRowDataBehaviorSubject$.value;
+    const previousRowData = this.previousConditionTableRowDataBehaviorSubject$.value;
 
     if (previousRowData) {
       this.resetPreviousConditionRowDataOnEditCancel(previousRowData, rowIndex);
