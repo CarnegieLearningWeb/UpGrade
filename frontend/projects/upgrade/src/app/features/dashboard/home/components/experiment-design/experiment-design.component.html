@@ -39,24 +39,31 @@
                   {{ 'home.new-experiment.design.partition-point.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                  <mat-form-field floatLabel="never">
-                    <span
-                      [matTooltip]="experimentDesignForm.getRawValue('site')?.partitions[groupIndex]?.site"
-                      matTooltipPosition="above"
-                    >
-                      <input
-                        matInput
-                        [placeholder]="'home.new-experiment.design.partition-point.placeholder.text' | translate"
-                        formControlName="site"
-                        [matAutocomplete]="autoCompleteExperimentPoints"
-                      />
-                      <mat-autocomplete #autoCompleteExperimentPoints="matAutocomplete" panelWidth="fit-content">
-                        <mat-option *ngFor="let site of filteredExpPoints$[groupIndex] | async" [value]="site">
-                          {{ site }}
-                        </mat-option>
-                      </mat-autocomplete>
+                  <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== groupIndex">
+                    <span [matTooltip]="partition.at(groupIndex).get('site').value" matTooltipPosition="above">
+                      {{ partition.at(groupIndex).get('site').value | truncate: 35 }}
                     </span>
-                  </mat-form-field>
+                  </ng-container>
+                  <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
+                    <mat-form-field floatLabel="never">
+                      <span
+                        [matTooltip]="experimentDesignForm.getRawValue('site')?.partitions[groupIndex]?.site"
+                        matTooltipPosition="above"
+                      >
+                        <input
+                          matInput
+                          [placeholder]="'home.new-experiment.design.partition-point.placeholder.text' | translate"
+                          formControlName="site"
+                          [matAutocomplete]="autoCompleteExperimentPoints"
+                        />
+                        <mat-autocomplete #autoCompleteExperimentPoints="matAutocomplete" panelWidth="fit-content">
+                          <mat-option *ngFor="let site of filteredExpPoints$[groupIndex] | async" [value]="site">
+                            {{ site }}
+                          </mat-option>
+                        </mat-autocomplete>
+                      </span>
+                    </mat-form-field>
+                  </ng-container>
                 </mat-cell>
               </ng-container>
 
@@ -66,24 +73,31 @@
                   {{ 'home.new-experiment.design.partition-id.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                  <mat-form-field floatLabel="never">
-                    <span
-                      [matTooltip]="experimentDesignForm.getRawValue('target')?.partitions[groupIndex]?.target"
-                      matTooltipPosition="above"
-                    >
-                      <input
-                        matInput
-                        [placeholder]="'home.new-experiment.design.partition-id.placeholder.text' | translate"
-                        formControlName="target"
-                        [matAutocomplete]="autoCompleteExperimentIds"
-                      />
-                      <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
-                        <mat-option *ngFor="let target of filteredExpIds$[groupIndex] | async" [value]="target">
-                          {{ target }}
-                        </mat-option>
-                      </mat-autocomplete>
+                  <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== groupIndex">
+                    <span [matTooltip]="partition.at(groupIndex).get('target').value" matTooltipPosition="above">
+                      {{ partition.at(groupIndex).get('target').value | truncate: 35 }}
                     </span>
-                  </mat-form-field>
+                  </ng-container>
+                  <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
+                    <mat-form-field floatLabel="never">
+                      <span
+                        [matTooltip]="experimentDesignForm.getRawValue('target')?.partitions[groupIndex]?.target"
+                        matTooltipPosition="above"
+                      >
+                        <input
+                          matInput
+                          [placeholder]="'home.new-experiment.design.partition-id.placeholder.text' | translate"
+                          formControlName="target"
+                          [matAutocomplete]="autoCompleteExperimentIds"
+                        />
+                        <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
+                          <mat-option *ngFor="let target of filteredExpIds$[groupIndex] | async" [value]="target">
+                            {{ target }}
+                          </mat-option>
+                        </mat-autocomplete>
+                      </span>
+                    </mat-form-field>
+                  </ng-container>
                 </mat-cell>
               </ng-container>
 
@@ -93,36 +107,62 @@
                   {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                  <mat-checkbox class="ft-8-100" color="primary" formControlName="excludeIfReached"> </mat-checkbox>
+                  <mat-checkbox class="ft-8-100" color="primary" [disabled]="(decisionPointsTableEditIndex$ | async) !== groupIndex" formControlName="excludeIfReached"> </mat-checkbox>
                 </mat-cell>
               </ng-container>
 
-              <ng-container matColumnDef="removePartition">
-                <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
-                <mat-cell
-                  *matCellDef="let element; let groupIndex = index"
-                  [formGroupName]="groupIndex"
-                  style="justify-content: flex-start"
-                >
+              <!-- Actions Column -->
+              <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
+                <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell">
                   <button
-                    mat-icon-button
                     type="button"
-                    [disabled]="!isExperimentEditable"
-                    [disableRipple]="true"
-                    (click)="removeConditionOrPartition('partition', groupIndex)"
+                    class="row-action-btn"
+                    [disabled]="(isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex"
+                    (click)="handleDecisionPointTableEditClick(rowIndex, rowData.getRawValue())"
                   >
-                    <mat-icon class="remove-icon"> delete_outline </mat-icon>
+                    <!-- Edit Icon -->
+                    <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== rowIndex">
+                      <mat-icon class="icon">create</mat-icon>
+                    </ng-container>
+
+                    <!-- Done Icon -->
+                    <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === rowIndex">
+                      <mat-icon class="icon">done</mat-icon>
+                    </ng-container>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="row-action-btn"
+                    [disabled]="(isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex"
+                    (click)="handleDecisionPointTableClearOrRemoveRow(rowIndex)"
+                  >
+                    <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== rowIndex">
+                      <mat-icon class="icon">delete_outline</mat-icon>
+                    </ng-container>
+                    <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === rowIndex">
+                      <mat-icon class="icon">clear</mat-icon>
+                    </ng-container>
                   </button>
                 </mat-cell>
               </ng-container>
 
               <mat-header-row *matHeaderRowDef="partitionDisplayedColumns; sticky: true"></mat-header-row>
-              <mat-row *matRowDef="let row; columns: partitionDisplayedColumns"></mat-row>
+              <mat-row
+                *matRowDef="let row; let rowIndex = index; columns: partitionDisplayedColumns"
+                [ngClass]="{
+                  'row-is-locked': (isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex
+                }"
+              ></mat-row>
+
             </mat-table>
             <button
               type="button"
               class="ft-12-700 add-partition"
               *ngIf="!experimentInfo"
+              [ngClass]="{ 'add-partition--disabled': (isFormLockedForEdit$ | async) }"
+              [disabled]="isFormLockedForEdit$ | async"
               (click)="addConditionOrPartition('partition')"
             >
               +
@@ -132,8 +172,8 @@
               type="button"
               class="ft-12-700 add-partition"
               *ngIf="experimentInfo"
-              [ngClass]="{ 'add-partition--disabled': !isExperimentEditable }"
-              [disabled]="!isExperimentEditable"
+              [ngClass]="{ 'add-partition--disabled': !isExperimentEditable || (isFormLockedForEdit$ | async) }"
+              [disabled]="!isExperimentEditable || (isFormLockedForEdit$ | async)"
               (click)="addConditionOrPartition('partition')"
             >
               +

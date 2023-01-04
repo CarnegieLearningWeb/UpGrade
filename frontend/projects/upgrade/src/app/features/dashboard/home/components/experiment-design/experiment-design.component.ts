@@ -31,6 +31,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
+  DecisionPointsTableRowData,
   ConditionsTableRowData,
   ExperimentAliasTableRow,
   ExperimentConditionAliasRequestObject,
@@ -72,7 +73,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   previousAssignmentWeightValues = [];
 
   conditionDisplayedColumns = ['conditionCode', 'assignmentWeight', 'description', 'actions'];
-  partitionDisplayedColumns = ['site', 'target', 'excludeIfReached', 'removePartition'];
+  partitionDisplayedColumns = ['site', 'target', 'excludeIfReached', 'actions'];
 
   // Used for condition code, experiment point and ids auto complete dropdown
   filteredConditionCodes$: Observable<string[]>[] = [];
@@ -91,6 +92,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   designData$ = new BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]>([[], []]);
   aliasTableData: ExperimentAliasTableRow[] = [];
   isAliasTableEditMode$ = this.experimentDesignStepperService.isAliasTableEditMode$;
+
+  // Decision Point table store references
+  previousDecisionPointTableRowDataBehaviorSubject$ = new BehaviorSubject<DecisionPointsTableRowData>(null);
+  isDecisionPointsTableEditMode$ = this.experimentDesignStepperService.isDecisionPointsTableEditMode$;
+  decisionPointsTableEditIndex$ = this.experimentDesignStepperService.decisionPointsTableEditIndex$;
 
   // Condition table store references
   previousRowDataBehaviorSubject$ = new BehaviorSubject<ConditionsTableRowData>(null);
@@ -161,6 +167,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       partitions: this._formBuilder.array([this.addPartitions()]),
     });
     this.createDesignDataSubject();
+    this.experimentDesignStepperService.decisionPointsEditModePreviousRowData$.subscribe(
+      this.previousDecisionPointTableRowDataBehaviorSubject$
+    );
     this.experimentDesignStepperService.conditionsEditModePreviousRowData$.subscribe(
       this.previousRowDataBehaviorSubject$
     );
@@ -275,9 +284,26 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return this.experimentDesignForm.dirty && this.experimentDesignStepperService.experimentStepperDataChanged();
   }
 
+  handleDecisionPointTableEditClick(rowIndex: number, rowData: DecisionPointsTableRowData) {
+    if (this.isDecisionPointTableRowValid()) {
+      this.experimentDesignStepperService.setDecisionPointTableEditModeDetails(rowIndex, rowData);
+    }
+  }
+
   handleConditionTableEditClick(rowIndex: number, rowData: ConditionsTableRowData) {
     if (this.isConditionTableRowValid()) {
       this.experimentDesignStepperService.setConditionTableEditModeDetails(rowIndex, rowData);
+    }
+  }
+
+  handleDecisionPointTableClearOrRemoveRow(rowIndex: number): void {
+    // grab previous data before dispatching reset to store
+    const previousRowData = this.previousDecisionPointTableRowDataBehaviorSubject$.value;
+
+    if (previousRowData) {
+      this.resetPreviousDecisionPointRowDataOnEditCancel(previousRowData, rowIndex);
+    } else {
+      this.removeConditionOrPartition('partition', rowIndex);
     }
   }
 
@@ -290,6 +316,19 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     } else {
       this.removeConditionOrPartition('condition', rowIndex);
     }
+  }
+
+  resetPreviousDecisionPointRowDataOnEditCancel(previousRowData: DecisionPointsTableRowData, rowIndex: number): void {
+    const decisionPointTableRow = this.partition.controls.at(rowIndex);
+
+    if (decisionPointTableRow) {
+      decisionPointTableRow.get('site').setValue(previousRowData.site, { emitEvent: false });
+      decisionPointTableRow.get('target').setValue(previousRowData.target, { emitEvent: false });
+      decisionPointTableRow.get('excludeIfReached').setValue(previousRowData.excludeIfReached, { emitEvent: false });
+      decisionPointTableRow.get('order').setValue(previousRowData.order, { emitEvent: false });
+    }
+
+    this.experimentDesignStepperService.clearDecisionPointTableEditModeDetails();
   }
 
   resetPreviousConditionRowDataOnEditCancel(previousRowData: ConditionsTableRowData, rowIndex: number): void {
@@ -364,6 +403,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     if (isPartition) {
       const partitionFormControl = this.experimentDesignForm.get('partitions') as FormArray;
       this.manageExpPointAndIdControl(partitionFormControl.controls.length - 1);
+      this.experimentDesignStepperService.setDecisionPointTableEditModeDetails(
+        partitionFormControl.controls.length - 1,
+        null
+      );
     } else {
       const conditionFormControl = this.experimentDesignForm.get('conditions') as FormArray;
       this.manageConditionCodeControl(conditionFormControl.controls.length - 1);
@@ -375,23 +418,37 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   removeConditionOrPartition(type: string, groupIndex: number) {
+    const isPartition = type === 'partition';
     this[type].removeAt(groupIndex);
-    if (type === 'condition' && this.experimentInfo) {
-      const deletedCondition = this.experimentInfo.conditions.find((condition) => condition.order === groupIndex + 1);
-      if (deletedCondition) {
-        this.experimentInfo.conditions = this.experimentInfo.conditions.filter(
-          (condition) => condition == deletedCondition
-        );
-        if (this.experimentInfo.revertTo === deletedCondition.id) {
-          this.experimentInfo.revertTo = null;
+    if (this.experimentInfo) {
+      if (isPartition) {
+        const deletedPartition = this.experimentInfo.partitions.find((partition) => partition.order === groupIndex + 1);
+        if (deletedPartition) {
+          this.experimentInfo.partitions = this.experimentInfo.partitions.filter(
+            (partition) => partition == deletedPartition
+          );
+          if (this.experimentInfo.revertTo === deletedPartition.id) {
+            this.experimentInfo.revertTo = null;
+          }
+        }
+      } else {
+        const deletedCondition = this.experimentInfo.conditions.find((condition) => condition.order === groupIndex + 1);
+        if (deletedCondition) {
+          this.experimentInfo.conditions = this.experimentInfo.conditions.filter(
+            (condition) => condition == deletedCondition
+          );
+          if (this.experimentInfo.revertTo === deletedCondition.id) {
+            this.experimentInfo.revertTo = null;
+          }
         }
       }
     }
-    if (type === 'condition') {
+    if (!isPartition) {
       this.previousAssignmentWeightValues.splice(groupIndex, 1);
       this.applyEqualWeight();
     }
     this.experimentDesignStepperService.experimentStepperDataChanged();
+    this.experimentDesignStepperService.clearDecisionPointTableEditModeDetails();
     this.experimentDesignStepperService.clearConditionTableEditModeDetails();
     this.updateView();
   }
@@ -445,6 +502,16 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     } else if (duplicatePartitions.length > 1) {
       this.partitionPointErrors.push(duplicatePartitions.join(', ') + this.partitionErrorMessages[3]);
     }
+  }
+
+  isDecisionPointTableRowValid(): boolean {
+    const partitions = this.experimentDesignForm.get('partitions').value;
+
+    this.validatePartitionNames(partitions);
+    this.validatePartitionCount(partitions);
+    this.validatePartitions();
+    
+    return !this.partitionPointErrors.length && !this.partitionCountError && !this.expPointAndIdErrors.length;
   }
 
   isConditionTableRowValid(): boolean {

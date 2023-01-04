@@ -10,14 +10,17 @@ import {
 import * as experimentDesignStepperAction from './store/experiment-design-stepper.actions';
 import {
   selectAliasTableEditIndex,
+  selectDecisionPointsEditModePreviousRowData,
   selectConditionsEditModePreviousRowData,
+  selectDecisionPointsTableEditIndex,
   selectConditionsTableEditIndex,
   selecthasExperimentStepperDataChanged,
   selectIsAliasTableEditMode,
+  selectIsDecisionPointsTableEditMode,
   selectIsConditionsTableEditMode,
   selectIsFormLockedForEdit,
 } from './store/experiment-design-stepper.selectors';
-import { ConditionsTableRowData, ExperimentAliasTableRow } from './store/experiment-design-stepper.model';
+import { ConditionsTableRowData, DecisionPointsTableRowData, ExperimentAliasTableRow } from './store/experiment-design-stepper.model';
 
 @Injectable({
   providedIn: 'root',
@@ -28,6 +31,11 @@ export class ExperimentDesignStepperService {
   hasExperimentStepperDataChanged$ = this.store$.pipe(select(selecthasExperimentStepperDataChanged));
   isAliasTableEditMode$ = this.store$.pipe(select(selectIsAliasTableEditMode));
   aliasTableEditIndex$ = this.store$.pipe(select(selectAliasTableEditIndex));
+
+  isDecisionPointsTableEditMode$ = this.store$.pipe(select(selectIsDecisionPointsTableEditMode));
+  decisionPointsTableEditIndex$ = this.store$.pipe(select(selectDecisionPointsTableEditIndex));
+  decisionPointsEditModePreviousRowData$ = this.store$.pipe(select(selectDecisionPointsEditModePreviousRowData));
+
   isConditionsTableEditMode$ = this.store$.pipe(select(selectIsConditionsTableEditMode));
   conditionsTableEditIndex$ = this.store$.pipe(select(selectConditionsTableEditIndex));
   conditionsEditModePreviousRowData$ = this.store$.pipe(select(selectConditionsEditModePreviousRowData));
@@ -128,6 +136,15 @@ export class ExperimentDesignStepperService {
     );
   }
 
+  setDecisionPointTableEditModeDetails(rowIndex: number, rowData: DecisionPointsTableRowData): void {
+    this.store$.dispatch(
+      experimentDesignStepperAction.actionToggleDecisionPointsTableEditMode({
+        decisionPointsTableEditIndex: rowIndex,
+        decisionPointsRowData: rowData,
+      })
+    );
+  }
+
   setConditionTableEditModeDetails(rowIndex: number, rowData: ConditionsTableRowData): void {
     this.store$.dispatch(
       experimentDesignStepperAction.actionToggleConditionsTableEditMode({
@@ -135,6 +152,10 @@ export class ExperimentDesignStepperService {
         conditionsRowData: rowData,
       })
     );
+  }
+
+  clearDecisionPointTableEditModeDetails(): void {
+    this.store$.dispatch(experimentDesignStepperAction.actionClearDecisionPointTableEditDetails());
   }
 
   clearConditionTableEditModeDetails(): void {
