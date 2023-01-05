@@ -20,7 +20,7 @@ import {
   selectIsConditionsTableEditMode,
   selectIsFormLockedForEdit,
 } from './store/experiment-design-stepper.selectors';
-import { ConditionsTableRowData, DecisionPointsTableRowData, ExperimentAliasTableRow } from './store/experiment-design-stepper.model';
+import { DecisionPointsTableRowData, ConditionsTableRowData, ExperimentAliasTableRow } from './store/experiment-design-stepper.model';
 
 @Injectable({
   providedIn: 'root',
