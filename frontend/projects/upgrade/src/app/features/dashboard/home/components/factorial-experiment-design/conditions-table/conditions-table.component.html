@@ -19,7 +19,7 @@
       class="ft-13-700"
       color="primary"
       [checked]="equalWeightFlag"
-      (change)="equalWeightFlag = !equalWeightFlag"
+      (change)="handleEqualWeightToggle()"
     >
       {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
     </mat-checkbox>
@@ -63,7 +63,7 @@
           </ng-container>
           <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
             <mat-form-field floatLabel="never">
-              <input type="text" matInput formControlName="alias" />
+              <input class="input-alias" type="text" matInput formControlName="alias" />
             </mat-form-field>
           </ng-container>
         </mat-cell>
@@ -81,8 +81,8 @@
             </span>
           </ng-container>
           <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex">
-            <mat-form-field floatLabel="never">
-              <input type="text" matInput formControlName="weight" />
+            <mat-form-field class="input-weight" floatLabel="never">
+              <input type="number" step="0.1" matInput formControlName="weight" />
             </mat-form-field>
           </ng-container>
         </mat-cell>
@@ -150,12 +150,3 @@
     </mat-table>
   </form>
 </section>
-
-<!-- <app-key-value-bubble key="tableData$" [value]="(tableData$ | async)">
-</app-key-value-bubble> -->
-
-<!-- <app-key-value-bubble key="tableEditIndex$" [value]="(tableEditIndex$ | async)">
-</app-key-value-bubble> -->
-
-<!-- <app-key-value-bubble key="factorialConditionTableForm" [value]="factorialConditionTableForm.value">
-</app-key-value-bubble> -->

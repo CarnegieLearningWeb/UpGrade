@@ -69,6 +69,11 @@
         flex: 0 0 calc(10% - 15px);
         width: calc(10% - 15px);
         justify-content: flex-end;
+
+        .input-weight {
+          width: 50px;
+          // text-align: right;
+        }
       }
 
       .mat-header-cell.cdk-column-include,

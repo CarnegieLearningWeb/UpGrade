@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, EventEmitter, Output } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
-import { BehaviorSubject, filter, Subscription, take } from 'rxjs';
+import { BehaviorSubject, filter, Subscription } from 'rxjs';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import { FactorialConditionTableRowData } from '../../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 
@@ -23,6 +23,8 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   previousRowDataBehaviorSubject$ = new BehaviorSubject<FactorialConditionTableRowData>(null);
   columnHeaders = ['levelNameOne', 'levelNameTwo', 'alias', 'weight', 'include', 'actions'];
   equalWeightFlag = true;
+  formInitialized = false;
+  useEllipsis = false;
   // showForm = false;
   factorOneHeader = 'factor1';
   factorTwoHeader = 'factor2';
@@ -56,25 +58,16 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
       });
 
     this.subscriptions = this.tableData$
-      .pipe(
-        filter((tableData) => !!tableData && tableData.length > 0),
-        take(1)
-      )
+      .pipe(filter((tableData) => !!tableData && tableData.length > 0))
       .subscribe((tableData) => {
-        tableData.forEach((tableDataRow) => {
-          const formControls = this._formBuilder.group({
-            levelNameOne: [tableDataRow.levelNameOne],
-            levelNameTwo: [tableDataRow.levelNameTwo],
-            alias: [tableDataRow.alias],
-            weight: [tableDataRow.weight],
-            include: [tableDataRow.include],
-          });
-
-          this.getFactorialConditions().push(formControls);
-        });
-
-        // this.showForm = true;
-        this.factorialConditionsTableDataChange.emit(this.tableData$.value);
+        if (!this.formInitialized) {
+          this.formInitialized = true;
+          this.addFormControls(tableData);
+          const newTableData = this.applyEqualWeights();
+          this.tableData$.next(newTableData);
+        } else {
+          this.factorialConditionsTableDataChange.emit(this.tableData$.value);
+        }
       });
   }
 
@@ -89,11 +82,64 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     });
   }
 
+  addFormControls(tableData: FactorialConditionTableRowData[]) {
+    tableData.forEach((tableDataRow) => {
+      const formControls = this._formBuilder.group({
+        levelNameOne: [tableDataRow.levelNameOne],
+        levelNameTwo: [tableDataRow.levelNameTwo],
+        alias: [tableDataRow.alias],
+        weight: [this.experimentDesignStepperService.formatDisplayWeight(tableDataRow.weight)],
+        include: [tableDataRow.include],
+      });
+
+      this.getFactorialConditions().push(formControls);
+    });
+  }
+
   resetEdit(): void {
     this.experimentDesignStepperService.clearFactorialConditionTableEditModeDetails();
   }
 
+  applyEqualWeights(partiallyUpdatedTableData?: FactorialConditionTableRowData[]): FactorialConditionTableRowData[] {
+    const tableData = partiallyUpdatedTableData || this.getCurrentTableData();
+
+    if (this.equalWeightFlag) {
+      const includedConditionsCount = this.getIncludedConditionCount(tableData);
+      const equalWeight = 100 / includedConditionsCount;
+      const newTableData = this.setNewWeights(tableData, equalWeight);
+
+      return newTableData;
+    } else {
+      return tableData;
+    }
+  }
+
+  setNewWeights(tableData: FactorialConditionTableRowData[], equalWeight: number): FactorialConditionTableRowData[] {
+    const newTableData = this.getFactorialConditions().controls.map((control, index) => {
+      const thisRowWeight: number = control.get('include').value ? equalWeight : 0;
+      control.get('weight').setValue(thisRowWeight.toFixed(1));
+      return { ...tableData[index], weight: this.experimentDesignStepperService.formatDisplayWeight(thisRowWeight) };
+    });
+
+    return newTableData;
+  }
+
+  getIncludedConditionCount(tableData: FactorialConditionTableRowData[]): number {
+    return tableData.reduce((count, row) => {
+      return row.include ? (count += 1) : count;
+    }, 0);
+  }
+
   /* -- action button handlers -- */
+
+  handleEqualWeightToggle() {
+    this.equalWeightFlag = !this.equalWeightFlag;
+
+    if (this.equalWeightFlag) {
+      const newTableData = this.applyEqualWeights();
+      this.tableData$.next(newTableData);
+    }
+  }
 
   handleHideClick() {
     this.hide.emit(true);
@@ -104,7 +150,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   handleRowEditDoneClick(rowIndex: number) {
-    const tableData = [...this.tableData$.value];
+    const tableData = this.getCurrentTableData();
     const formRow = this.getFactorialConditionsAt(rowIndex);
 
     const alias = formRow.get('alias').value;
@@ -112,7 +158,9 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     const include = formRow.get('include').value;
 
     tableData[rowIndex] = { ...tableData[rowIndex], alias, weight, include };
-    this.tableData$.next(tableData);
+    const newTableData = this.applyEqualWeights(tableData);
+
+    this.tableData$.next(newTableData);
     this.experimentDesignStepperService.clearFactorialConditionTableEditModeDetails();
   }
 
@@ -135,5 +183,9 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   getFactorialConditionsAt(rowIndex: number) {
     return this.getFactorialConditions().at(rowIndex);
+  }
+
+  getCurrentTableData(): FactorialConditionTableRowData[] {
+    return [...this.tableData$.value];
   }
 }

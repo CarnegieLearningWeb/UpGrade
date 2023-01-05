@@ -73,6 +73,24 @@ export class ExperimentDesignStepperService {
     return typeof value === 'string' && value.trim();
   }
 
+  formatDisplayWeight(weight: string | number): string {
+    let roundedWeight: string;
+
+    if (typeof weight === 'string') {
+      roundedWeight = parseFloat(weight).toFixed(1);
+    } else {
+      roundedWeight = weight.toFixed(1);
+    }
+
+    console.log({ weight });
+    console.log({ roundedWeight });
+
+    const ellipsis = roundedWeight === weight ? '' : '...';
+    console.log({ ellipsis });
+
+    return roundedWeight + ellipsis;
+  }
+
   filterForUnchangedDesignData(designData: [ExperimentPartition[], ExperimentCondition[]][]): boolean {
     const [previous, current] = designData;
     const prevSiteTargets: string[] = previous[0].map((dp) => dp.site?.trim() + dp.target?.trim());
@@ -158,7 +176,7 @@ export class ExperimentDesignStepperService {
             factorTwo.factor,
             factorTwoLevel.level
           ),
-          weight: 0.0,
+          weight: '0.0',
           include: true,
         };
 

@@ -29,7 +29,7 @@ export interface FactorialConditionTableRowData {
   levelNameOne: string;
   levelNameTwo: string;
   alias: string;
-  weight: number;
+  weight: string;
   include: boolean;
 }
 
