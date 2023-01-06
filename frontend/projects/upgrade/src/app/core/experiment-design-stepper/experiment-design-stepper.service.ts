@@ -82,11 +82,7 @@ export class ExperimentDesignStepperService {
       roundedWeight = weight.toFixed(1);
     }
 
-    console.log({ weight });
-    console.log({ roundedWeight });
-
     const ellipsis = roundedWeight === weight ? '' : '...';
-    console.log({ ellipsis });
 
     return roundedWeight + ellipsis;
   }
@@ -168,8 +164,16 @@ export class ExperimentDesignStepperService {
     factorOne.levels.forEach((factorOneLevel) => {
       factorTwo.levels.forEach((factorTwoLevel) => {
         const tableRow: FactorialConditionTableRowData = {
-          levelNameOne: factorOneLevel.level,
-          levelNameTwo: factorTwoLevel.level,
+          levels: [
+            {
+              id: factorOneLevel.id,
+              name: factorOneLevel.level,
+            },
+            {
+              id: factorTwoLevel.id,
+              name: factorTwoLevel.level,
+            },
+          ],
           alias: this.createFactorialAliasString(
             factorOne.factor,
             factorOneLevel.level,
@@ -184,7 +188,7 @@ export class ExperimentDesignStepperService {
       });
     });
 
-    this.store$.dispatch(actionUpdateFactorialTableData({ tableData }));
+    this.updateFactorialTableData(tableData);
   }
 
   createFactorialConditionRequestObject(tableData: FactorialConditionTableRowData[]) {
@@ -206,10 +210,14 @@ export class ExperimentDesignStepperService {
 
   updateFactorialDesignData(designData: ExperimentFactorialDesignData) {
     console.log('actual design data:', designData);
-    // console.log('using this dummy data instead', DUMMY_CONDITION_TABLE_DATA);
+    console.log('using this dummy data instead', DUMMY_CONDITION_TABLE_DATA);
     // designData = DUMMY_CONDITION_TABLE_DATA;
 
     this.store$.dispatch(experimentDesignStepperAction.actionUpdateFactorialDesignData({ designData }));
+  }
+
+  updateFactorialTableData(tableData: FactorialConditionTableRowData[]) {
+    this.store$.dispatch(actionUpdateFactorialTableData({ tableData }));
   }
 
   setUpdateAliasTableEditMode(details: TableEditModeDetails): void {

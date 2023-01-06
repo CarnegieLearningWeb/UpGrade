@@ -12,7 +12,6 @@ import { FactorialConditionTableRowData } from '../../../../../../core/experimen
 })
 export class ConditionsTableComponent implements OnInit, OnDestroy {
   @Output() hide = new EventEmitter<boolean>();
-  @Output() factorialConditionsTableDataChange = new EventEmitter<FactorialConditionTableRowData[]>();
 
   subscriptions: Subscription;
   factorialConditionTableForm: FormGroup;
@@ -47,7 +46,6 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     this.subscriptions = this.factorialDesignData$
       .pipe(
         filter((designData) => {
-          // TODO: compare against previous designData to filter out duplicates?
           return designData && designData?.factors.length === 2;
         })
       )
@@ -57,6 +55,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
         this.factorTwoHeader = designData.factors[1].factor;
       });
 
+    // TODO: add check here to filter out when tableData has not actually changed
     this.subscriptions = this.tableData$
       .pipe(filter((tableData) => !!tableData && tableData.length > 0))
       .subscribe((tableData) => {
@@ -64,9 +63,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
           this.formInitialized = true;
           this.addFormControls(tableData);
           const newTableData = this.applyEqualWeights();
-          this.tableData$.next(newTableData);
-        } else {
-          this.factorialConditionsTableDataChange.emit(this.tableData$.value);
+          this.experimentDesignStepperService.updateFactorialTableData(newTableData);
         }
       });
   }
@@ -85,8 +82,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   addFormControls(tableData: FactorialConditionTableRowData[]) {
     tableData.forEach((tableDataRow) => {
       const formControls = this._formBuilder.group({
-        levelNameOne: [tableDataRow.levelNameOne],
-        levelNameTwo: [tableDataRow.levelNameTwo],
+        levels: [tableDataRow.levels],
         alias: [tableDataRow.alias],
         weight: [this.experimentDesignStepperService.formatDisplayWeight(tableDataRow.weight)],
         include: [tableDataRow.include],

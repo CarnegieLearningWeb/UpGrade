@@ -26,11 +26,15 @@ export interface ConditionsTableRowData {
 }
 
 export interface FactorialConditionTableRowData {
-  levelNameOne: string;
-  levelNameTwo: string;
+  levels: FactorialLevelTableRowData[];
   alias: string;
   weight: string;
   include: boolean;
+}
+
+export interface FactorialLevelTableRowData {
+  id: string;
+  name: string;
 }
 
 export interface ExperimentFactorialDesignData {
@@ -46,9 +50,9 @@ export interface ExperimentFactorFormData {
 }
 
 export interface ExperimentLevelFormData {
+  id: string;
   level: string;
   alias: string;
-  order: number;
 }
 
 export interface ExperimentDesignStepperState {
@@ -78,14 +82,14 @@ export const DUMMY_CONDITION_TABLE_DATA = {
       order: 0,
       levels: [
         {
+          id: '111',
           level: 'Abstract',
           alias: '',
-          order: 0,
         },
         {
+          id: '222',
           level: 'Concrete',
           alias: '',
-          order: 1,
         },
       ],
     },
@@ -96,19 +100,19 @@ export const DUMMY_CONDITION_TABLE_DATA = {
       order: 0,
       levels: [
         {
+          id: '333',
           level: 'No Support',
           alias: '',
-          order: 0,
         },
         {
+          id: '444',
           level: 'Mindset',
           alias: 'Nice',
-          order: 1,
         },
         {
+          id: '555',
           level: 'Utility Value',
           alias: 'Swell',
-          order: 1,
         },
       ],
     },

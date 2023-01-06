@@ -131,6 +131,12 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.subscriptionHandler = this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
       this.contextMetaData = contextMetaData;
     });
+    this.subscriptionHandler = this.experimentDesignStepperService.factorialConditionTableData$.subscribe(
+      (tableData) => {
+        this.factorialConditionsTableData = tableData;
+        console.log(this.factorialConditionsTableData);
+      }
+    );
     // this.allPartitionsSub = this.experimentService.allPartitions$
     //   .pipe(filter((partitions) => !!partitions))
     //   .subscribe((partitions: any) => {
@@ -240,10 +246,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.scrollToConditionsTable();
   }
 
-  handleFactorialConditionTableDataChange($event: FactorialConditionTableRowData[]) {
-    this.factorialConditionsTableData = $event;
-  }
-
   private filterExpFactorsPointsAndIds(value: string, key: string): string[] {
     const filterValue = value ? value.toLocaleLowerCase() : '';
 
@@ -273,6 +275,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   addLevels(level = null, alias = null) {
     return this._formBuilder.group({
+      id: [uuidv4()],
       level: [level, Validators.required],
       alias: [alias],
     });
@@ -401,13 +404,13 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         if (factor.levels.length > 0) {
           factor.levels.forEach((level) => {
             if (!level.level?.trim()) {
-              this.levelCountError=levelValueErrorMsg;
-              this.expandedId=index;
+              this.levelCountError = levelValueErrorMsg;
+              this.expandedId = index;
             }
           });
-        }else{
-          this.levelCountError=levelCountErrorMsg;
-          this.expandedId=this.expandedId||index+1;
+        } else {
+          this.levelCountError = levelCountErrorMsg;
+          this.expandedId = this.expandedId || index + 1;
         }
       });
     } else {
@@ -523,9 +526,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     if (this.isFormValid()) {
       const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
       const factorialPartitions = this.convertToPartitionData(factorialExperimentDesignFormData);
-      // const factorialConditions = this.experimentDesignStepperService.createFactorialConditionRequestObject(
-      //   this.factorialConditionsTableData
-      // );
       const factorialConditions: ExperimentCondition[] = [
         {
           createdAt: '2022-10-07T05:44:43.162Z',

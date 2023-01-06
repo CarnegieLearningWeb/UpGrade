@@ -32,8 +32,8 @@
           {{ factorOneHeader | uppercase }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData">
-          <span [matTooltip]="rowData.levelNameOne" matTooltipPosition="above">
-            {{ rowData.levelNameOne | truncate: 20 }}
+          <span [matTooltip]="rowData.levels[0].name" matTooltipPosition="above">
+            {{ rowData.levels[0].name | truncate: 20 }}
           </span>
         </mat-cell>
       </ng-container>
@@ -44,8 +44,8 @@
           {{ factorTwoHeader | uppercase }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData">
-          <span [matTooltip]="rowData.levelNameTwo" matTooltipPosition="above">
-            {{ rowData.levelNameTwo | truncate: 20 }}
+          <span [matTooltip]="rowData.levels[1].name" matTooltipPosition="above">
+            {{ rowData.levels[1].name | truncate: 20 }}
           </span>
         </mat-cell>
       </ng-container>
@@ -82,7 +82,7 @@
           </ng-container>
           <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex">
             <mat-form-field class="input-weight" floatLabel="never">
-              <input type="number" step="0.1" matInput formControlName="weight" />
+              <input type="test" matInput formControlName="weight" />
             </mat-form-field>
           </ng-container>
         </mat-cell>
