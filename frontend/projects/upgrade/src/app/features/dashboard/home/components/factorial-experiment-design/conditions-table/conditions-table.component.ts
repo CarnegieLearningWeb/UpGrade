@@ -133,7 +133,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
     if (this.equalWeightFlag) {
       const newTableData = this.applyEqualWeights();
-      this.tableData$.next(newTableData);
+      this.experimentDesignStepperService.updateFactorialTableData(newTableData);
     }
   }
 
@@ -156,7 +156,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     tableData[rowIndex] = { ...tableData[rowIndex], alias, weight, include };
     const newTableData = this.applyEqualWeights(tableData);
 
-    this.tableData$.next(newTableData);
+    this.experimentDesignStepperService.updateFactorialTableData(newTableData);
     this.experimentDesignStepperService.clearFactorialConditionTableEditModeDetails();
   }
 

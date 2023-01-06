@@ -6,6 +6,7 @@ import {
   ExperimentCondition,
   ExperimentConditionAlias,
   TableEditModeDetails,
+  ExperimentVM,
 } from '../experiments/store/experiments.model';
 import * as experimentDesignStepperAction from './store/experiment-design-stepper.actions';
 import {
@@ -30,6 +31,8 @@ import {
   FactorialConditionTableRowData,
 } from './store/experiment-design-stepper.model';
 import { actionUpdateFactorialTableData } from './store/experiment-design-stepper.actions';
+import { BehaviorSubject } from 'rxjs';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({
   providedIn: 'root',
@@ -45,6 +48,7 @@ export class ExperimentDesignStepperService {
   conditionsEditModePreviousRowData$ = this.store$.pipe(select(selectConditionsEditModePreviousRowData));
   factorialDesignData$ = this.store$.pipe(select(selectFactorialDesignData));
   factorialConditionTableData$ = this.store$.pipe(select(selectFactorialConditionTableData));
+  factorialConditionTableDataBehaviorSubject$ = new BehaviorSubject<FactorialConditionTableRowData[]>([]);
   isFactorialConditionsTableEditMode$ = this.store$.pipe(select(selectIsFactorialConditionsTableEditMode));
   factorialConditionsTableEditIndex$ = this.store$.pipe(select(selectFactorialConditionsTableEditIndex));
   factorialConditionsEditModePreviousRowData$ = this.store$.pipe(
@@ -55,10 +59,15 @@ export class ExperimentDesignStepperService {
     this.hasExperimentStepperDataChanged$.subscribe(
       (isDataChanged) => (this.expStepperDataChangedFlag = isDataChanged)
     );
+    this.factorialConditionTableData$.subscribe(this.factorialConditionTableDataBehaviorSubject$);
   }
 
   getHasExperimentDesignStepperDataChanged() {
     return this.expStepperDataChangedFlag;
+  }
+
+  getFactorialConditionTableData() {
+    return this.factorialConditionTableDataBehaviorSubject$.getValue();
   }
 
   experimentStepperDataChanged() {
@@ -164,6 +173,7 @@ export class ExperimentDesignStepperService {
     factorOne.levels.forEach((factorOneLevel) => {
       factorTwo.levels.forEach((factorTwoLevel) => {
         const tableRow: FactorialConditionTableRowData = {
+          id: uuidv4(), // TODO: maybe not the right place?
           levels: [
             {
               id: factorOneLevel.id,
@@ -191,12 +201,80 @@ export class ExperimentDesignStepperService {
     this.updateFactorialTableData(tableData);
   }
 
-  createFactorialConditionRequestObject(tableData: FactorialConditionTableRowData[]) {
-    // TODO: what is the request expecting
+  recreateExistingConditionsTableData(existingExperiment: ExperimentVM) {
+    const { conditions, conditionAliases } = existingExperiment;
+    const tableData = this.getFactorialConditionTableData();
+    console.log('recreate it', tableData);
+    console.log('existing data', existingExperiment);
 
-    const factorialConditionsRequestObject = tableData;
+    // const tableData = conditions.map((factorialCondition) => {
+    //   const tableRow: FactorialConditionTableRowData = {
+    //     id: factorialCondition.id,
+    //     levels: factorialCondition.levelCombinationElements.map((level) => {
+    //       return {
+    //         id: level.id,
+    //         name: level.level,
+    //       };
+    //     }),
+    //     alias: conditionAliases.find((conditionAlias) => conditionAlias.id === factorialCondition.id).aliasName,
+    //     weight: factorialCondition.assignmentWeight.toString(),
+    //     include: true,
+    //   };
+
+    //   return tableRow;
+    // });
+
+    // this.updateFactorialTableData(tableData);
+  }
+
+  createFactorialConditionRequestObject() {
+    const tableData = this.getFactorialConditionTableData();
+    const factorialConditionsRequestObject = [];
+
+    tableData.forEach((factorialConditionTableRow, index) => {
+      // do not push rows that have include = false
+      if (!factorialConditionTableRow.include) {
+        return;
+      }
+
+      factorialConditionsRequestObject.push({
+        createdAt: '2022-10-07T05:44:43.162Z', // not needed
+        updatedAt: '2022-10-07T05:44:43.162Z', // not needed
+        versionNumber: 1, // not needed
+        id: factorialConditionTableRow.id,
+        twoCharacterId: '5H', // not needed
+        name: 'condition ' + index + 1, // what should this be?
+        description: null, // not needed
+        conditionCode: 'condition ' + index + 1, // what should this be?
+        assignmentWeight: parseFloat(factorialConditionTableRow.weight),
+        order: index + 1,
+        levelCombinationElements: factorialConditionTableRow.levels.map((level) => {
+          return {
+            level: level.id,
+          };
+        }),
+      });
+    });
 
     return factorialConditionsRequestObject;
+  }
+
+  createFactorialConditionsConditionAliasesRequestObject() {
+    const tableData = this.getFactorialConditionTableData();
+    const factorialConditionAliasesRequestObject = [];
+
+    tableData.forEach((factorialConditionTableRow) => {
+      if (!factorialConditionTableRow.include) {
+        return;
+      }
+
+      factorialConditionAliasesRequestObject.push({
+        aliasName: factorialConditionTableRow.alias,
+        parentCondition: factorialConditionTableRow.id,
+      });
+    });
+
+    return factorialConditionAliasesRequestObject;
   }
 
   createFactorialAliasString(
@@ -209,8 +287,6 @@ export class ExperimentDesignStepperService {
   }
 
   updateFactorialDesignData(designData: ExperimentFactorialDesignData) {
-    console.log('actual design data:', designData);
-    console.log('using this dummy data instead', DUMMY_CONDITION_TABLE_DATA);
     // designData = DUMMY_CONDITION_TABLE_DATA;
 
     this.store$.dispatch(experimentDesignStepperAction.actionUpdateFactorialDesignData({ designData }));
@@ -253,5 +329,9 @@ export class ExperimentDesignStepperService {
 
   clearFactorialConditionTableEditModeDetails(): void {
     this.store$.dispatch(experimentDesignStepperAction.actionClearFactorialConditionTableEditDetails());
+  }
+
+  clearFactorialDesignStepperData(): void {
+    this.store$.dispatch(experimentDesignStepperAction.clearFactorialDesignStepperData());
   }
 }

@@ -5,7 +5,7 @@ export interface ExperimentConditionAliasRequestObject {
   id?: string;
   aliasName: string;
   parentCondition: string;
-  decisionPoint: string;
+  decisionPoint?: string;
 }
 
 export interface ExperimentAliasTableRow {
@@ -26,6 +26,7 @@ export interface ConditionsTableRowData {
 }
 
 export interface FactorialConditionTableRowData {
+  id: string;
   levels: FactorialLevelTableRowData[];
   alias: string;
   weight: string;

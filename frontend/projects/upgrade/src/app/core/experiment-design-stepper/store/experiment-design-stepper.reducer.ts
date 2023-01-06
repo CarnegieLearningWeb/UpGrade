@@ -89,7 +89,14 @@ const reducer = createReducer(
   on(experimentDesignStepperAction.actionUpdateFactorialTableData, (state, { tableData }) => ({
     ...state,
     factorialConditionsTableData: tableData,
-  }))
+  })),
+  on(experimentDesignStepperAction.clearFactorialDesignStepperData, (state) => {
+    return {
+      ...state,
+      factorialDesignData: { factors: [] },
+      factorialConditionsTableData: [],
+    };
+  })
 );
 
 export function experimentDesignStepperReducer(state: ExperimentDesignStepperState | undefined, action: Action) {

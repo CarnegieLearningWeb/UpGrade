@@ -9,7 +9,7 @@ import {
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
-import { EXPERIMENT_TYPE } from 'upgrade_types'
+import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 
 @Component({
   selector: 'home-new-experiment',
@@ -28,6 +28,7 @@ export class NewExperimentComponent implements OnInit {
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService,
+    private experimentDesignStepperService: ExperimentDesignStepperService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private _snackBar: MatSnackBar,
     private translate: TranslateService
@@ -40,6 +41,10 @@ export class NewExperimentComponent implements OnInit {
   ngOnInit() {
     // Used to fetch contextMetaData only once
     this.experimentService.fetchContextMetaData();
+  }
+
+  ngOnDestroy() {
+    this.experimentDesignStepperService.clearFactorialDesignStepperData();
   }
 
   onNoClick(): void {

@@ -48,3 +48,5 @@ export const actionToggleFactorialConditionsTableEditMode = createAction(
 export const actionClearFactorialConditionTableEditDetails = createAction(
   `[Experiment-Design-Stepper] Clear Factorial Condition Table Edit Details`
 );
+
+export const clearFactorialDesignStepperData = createAction(`[Experiment-Design-Stepper] Clear Factorial Design Data`);

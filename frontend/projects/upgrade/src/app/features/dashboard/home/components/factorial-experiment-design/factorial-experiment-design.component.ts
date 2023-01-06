@@ -34,6 +34,7 @@ import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
   ExperimentAliasTableRow,
+  ExperimentConditionAliasRequestObject,
   FactorialConditionTableRowData,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 
@@ -134,7 +135,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.subscriptionHandler = this.experimentDesignStepperService.factorialConditionTableData$.subscribe(
       (tableData) => {
         this.factorialConditionsTableData = tableData;
-        console.log(this.factorialConditionsTableData);
       }
     );
     // this.allPartitionsSub = this.experimentService.allPartitions$
@@ -170,11 +170,15 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           this.factor.push(this.addFactors(factor.name, partition.site, partition.target, factor.order));
           this.getLevels(factorIndex).removeAt(0);
           factor.levels.forEach((level) => {
-            this.getLevels(factorIndex).push(this.addLevels(level.name, level.alias));
+            this.getLevels(factorIndex).push(this.addLevels(level.id, level.name, level.alias));
           });
           factorIndex++;
         });
       });
+
+      // TODO: fill in condtions table from existing experiment data
+      // this.experimentDesignStepperService.recreateExistingConditionsTableData(this.experimentInfo);
+      // this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
 
       this.isExperimentEditable =
         this.experimentInfo.state !== this.ExperimentState.ENROLLING &&
@@ -223,24 +227,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       );
   }
 
-  // createDesignDataSubject(): void {
-  //   this.designDataSub = combineLatest([
-  //     this.factorialExperimentDesignForm.get('partitions').valueChanges,
-  //     this.factorialExperimentDesignForm.get('conditions').valueChanges,
-  //   ])
-  //     .pipe(
-  //       pairwise(),
-  //       filter((designData) => this.experimentDesignStepperService.filterForUnchangedDesignData(designData)),
-  //       map(([_, current]) => current),
-  //       filter((designData) => this.experimentDesignStepperService.validDesignDataFilter(designData))
-  //     )
-  //     .subscribe(this.designData$);
-  // }
-
-  // handleAliasTableDataChange(aliasTableData: ExperimentAliasTableRow[]) {
-  //   this.aliasTableData = [...aliasTableData];
-  // }
-
   handleConditionsButtonClick() {
     this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
     this.scrollToConditionsTable();
@@ -273,9 +259,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     });
   }
 
-  addLevels(level = null, alias = null) {
+  addLevels(id = null, level = null, alias = null) {
     return this._formBuilder.group({
-      id: [uuidv4()],
+      id: [id || uuidv4()],
       level: [level, Validators.required],
       alias: [alias],
     });
@@ -523,64 +509,73 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     // TODO: Uncomment to validate partitions with predefined site and target
     this.validateFactors();
 
+    // check if the condition table data was never viewed.
+    // if form is valid but conditions table is empty, manually trigger creation of default values
+    if (this.experimentDesignStepperService.getFactorialConditionTableData().length === 0) {
+      this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
+    }
+
     if (this.isFormValid()) {
       const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
       const factorialPartitions = this.convertToPartitionData(factorialExperimentDesignFormData);
-      const factorialConditions: ExperimentCondition[] = [
-        {
-          createdAt: '2022-10-07T05:44:43.162Z',
-          updatedAt: '2022-10-07T05:44:43.162Z',
-          versionNumber: 1,
-          id: uuidv4(),
-          twoCharacterId: '5H',
-          name: 'condition 1',
-          description: null,
-          conditionCode: 'condition 1',
-          assignmentWeight: 25,
-          order: 1,
-          levelCombinationElements: [{ level: this.levelIds[0] }, { level: this.levelIds[2] }],
-        },
-        {
-          createdAt: '2022-10-07T05:44:43.162Z',
-          updatedAt: '2022-10-07T05:44:43.162Z',
-          versionNumber: 1,
-          id: uuidv4(),
-          twoCharacterId: '5H',
-          name: 'condition 2',
-          description: null,
-          conditionCode: 'condition 2',
-          assignmentWeight: 25,
-          order: 2,
-          levelCombinationElements: [{ level: this.levelIds[1] }, { level: this.levelIds[3] }],
-        },
-        {
-          createdAt: '2022-10-07T05:44:43.162Z',
-          updatedAt: '2022-10-07T05:44:43.162Z',
-          versionNumber: 1,
-          id: uuidv4(),
-          twoCharacterId: '5H',
-          name: 'condition 3',
-          description: null,
-          conditionCode: 'condition 3',
-          assignmentWeight: 25,
-          order: 3,
-          levelCombinationElements: [{ level: this.levelIds[0] }, { level: this.levelIds[3] }],
-        },
-        {
-          createdAt: '2022-10-07T05:44:43.162Z',
-          updatedAt: '2022-10-07T05:44:43.162Z',
-          versionNumber: 1,
-          id: uuidv4(),
-          twoCharacterId: '5H',
-          name: 'condition 4',
-          description: null,
-          conditionCode: 'condition 4',
-          assignmentWeight: 25,
-          order: 4,
-          levelCombinationElements: [{ level: this.levelIds[1] }, { level: this.levelIds[2] }],
-        },
-      ];
-      const factorialConditionAliases: ExperimentConditionAlias[] = [];
+      const factorialConditions = this.experimentDesignStepperService.createFactorialConditionRequestObject();
+      // const factorialConditions: ExperimentCondition[] = [
+      //   {
+      //     createdAt: '2022-10-07T05:44:43.162Z',
+      //     updatedAt: '2022-10-07T05:44:43.162Z',
+      //     versionNumber: 1,
+      //     id: uuidv4(),
+      //     twoCharacterId: '5H',
+      //     name: 'condition 1',
+      //     description: null,
+      //     conditionCode: 'condition 1',
+      //     assignmentWeight: 25,
+      //     order: 1,
+      //     levelCombinationElements: [{ level: this.levelIds[0] }, { level: this.levelIds[2] }],
+      //   },
+      //   {
+      //     createdAt: '2022-10-07T05:44:43.162Z',
+      //     updatedAt: '2022-10-07T05:44:43.162Z',
+      //     versionNumber: 1,
+      //     id: uuidv4(),
+      //     twoCharacterId: '5H',
+      //     name: 'condition 2',
+      //     description: null,
+      //     conditionCode: 'condition 2',
+      //     assignmentWeight: 25,
+      //     order: 2,
+      //     levelCombinationElements: [{ level: this.levelIds[1] }, { level: this.levelIds[3] }],
+      //   },
+      //   {
+      //     createdAt: '2022-10-07T05:44:43.162Z',
+      //     updatedAt: '2022-10-07T05:44:43.162Z',
+      //     versionNumber: 1,
+      //     id: uuidv4(),
+      //     twoCharacterId: '5H',
+      //     name: 'condition 3',
+      //     description: null,
+      //     conditionCode: 'condition 3',
+      //     assignmentWeight: 25,
+      //     order: 3,
+      //     levelCombinationElements: [{ level: this.levelIds[0] }, { level: this.levelIds[3] }],
+      //   },
+      //   {
+      //     createdAt: '2022-10-07T05:44:43.162Z',
+      //     updatedAt: '2022-10-07T05:44:43.162Z',
+      //     versionNumber: 1,
+      //     id: uuidv4(),
+      //     twoCharacterId: '5H',
+      //     name: 'condition 4',
+      //     description: null,
+      //     conditionCode: 'condition 4',
+      //     assignmentWeight: 25,
+      //     order: 4,
+      //     levelCombinationElements: [{ level: this.levelIds[1] }, { level: this.levelIds[2] }],
+      //   },
+      // ];
+
+      const factorialConditionAliases: ExperimentConditionAliasRequestObject[] =
+        this.experimentDesignStepperService.createFactorialConditionsConditionAliasesRequestObject();
 
       // factorialExperimentDesignFormData.conditionAliases = this.createExperimentConditionAliasRequestObject(
       //   this.aliasTableData,
@@ -610,9 +605,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     factorialExperimentDesignFormData.factors.forEach((partition) => {
       let levelOrder = 1;
       const currentLevels: ExperimentLevel[] = partition.levels.map((level) => {
-        const levelId = uuidv4();
-        this.levelIds.push(levelId);
-        return { name: level.level, alias: level.alias, id: levelId, order: levelOrder++ };
+        // const levelId = uuidv4();
+        // this.levelIds.push(levelId);
+        return { name: level.level, alias: level.alias, id: level.id, order: levelOrder++ };
       });
       const currentFactors: ExperimentFactor = {
         name: partition.factor,
@@ -640,42 +635,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     });
     return Partitions;
   }
-
-  // createExperimentConditionAliasRequestObject(
-  //   aliases: ExperimentAliasTableRow[],
-  //   conditions: ExperimentCondition[],
-  //   decisionPoints: ExperimentPartition[]
-  // ): ExperimentConditionAliasRequestObject[] {
-  //   const conditionAliases: ExperimentConditionAliasRequestObject[] = [];
-
-  //   aliases.forEach((aliasRowData: ExperimentAliasTableRow) => {
-  //     // if no custom alias, return early, do not add to array to send to backend
-  //     if (aliasRowData.alias === aliasRowData.condition) {
-  //       return;
-  //     }
-
-  //     const parentCondition = conditions.find((condition) => condition.conditionCode === aliasRowData.condition);
-
-  //     const decisionPoint = decisionPoints.find(
-  //       (decisionPoint) => decisionPoint.target === aliasRowData.target && decisionPoint.site === aliasRowData.site
-  //     );
-
-  //     // need some error-handling in UI to prevent creation if aliases can't be created...
-  //     if (!parentCondition || !decisionPoint) {
-  //       console.log('cannot create alias data, cannot find id of parent condition/decisionpoint');
-  //       return;
-  //     }
-
-  //     conditionAliases.push({
-  //       id: aliasRowData.id || uuidv4(),
-  //       aliasName: aliasRowData.alias,
-  //       parentCondition: parentCondition.id,
-  //       decisionPoint: decisionPoint.id,
-  //     });
-  //   });
-
-  //   return conditionAliases;
-  // }
 
   scrollToFactorsTable(): void {
     this.stepContainer.nativeElement.scroll({
