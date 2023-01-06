@@ -387,6 +387,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   validateFactorCount(factorialExperimentDesignFormData: any) {
     this.factorCountError = null;
     this.levelCountError = null;
+    this.expandedId = 0;
     const factorCountErrorMsg = this.translate.instant('home.new-experiment.design.factor-count-new-exp-error.text');
     const factorValueErrorMsg = this.translate.instant('home.new-experiment.design.factor-value-new-exp-error.text');
     const levelCountErrorMsg = this.translate.instant('home.new-experiment.design.level-count-new-exp-error.text');
@@ -400,18 +401,19 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         if (factor.levels.length > 0) {
           factor.levels.forEach((level) => {
             if (!level.level?.trim()) {
-              this.levelCountError = levelValueErrorMsg;
-              this.expandedId = index;
+              this.levelCountError=levelValueErrorMsg;
+              this.expandedId=index;
             }
           });
-        } else {
-          this.levelCountError = levelCountErrorMsg;
-          this.expandedId = index;
+        }else{
+          this.levelCountError=levelCountErrorMsg;
+          this.expandedId=this.expandedId||index+1;
         }
       });
     } else {
       this.factorCountError = factorCountErrorMsg;
     }
+    this.expandedId--;
   }
 
   validateFactors() {
@@ -531,7 +533,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           versionNumber: 1,
           id: uuidv4(),
           twoCharacterId: '5H',
-          name: 'temp1',
+          name: 'condition 1',
           description: null,
           conditionCode: 'condition 1',
           assignmentWeight: 25,
@@ -544,7 +546,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           versionNumber: 1,
           id: uuidv4(),
           twoCharacterId: '5H',
-          name: 'temp2',
+          name: 'condition 2',
           description: null,
           conditionCode: 'condition 2',
           assignmentWeight: 25,
@@ -557,7 +559,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           versionNumber: 1,
           id: uuidv4(),
           twoCharacterId: '5H',
-          name: 'temp3',
+          name: 'condition 3',
           description: null,
           conditionCode: 'condition 3',
           assignmentWeight: 25,
@@ -570,7 +572,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           versionNumber: 1,
           id: uuidv4(),
           twoCharacterId: '5H',
-          name: 'temp4',
+          name: 'condition 4',
           description: null,
           conditionCode: 'condition 4',
           assignmentWeight: 25,
