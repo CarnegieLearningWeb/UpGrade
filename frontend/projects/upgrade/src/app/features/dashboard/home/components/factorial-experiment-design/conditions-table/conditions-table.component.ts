@@ -34,10 +34,10 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.experimentDesignStepperService.factorialConditionsEditModePreviousRowData$.subscribe(
+    this.subscriptions = this.experimentDesignStepperService.factorialConditionsEditModePreviousRowData$.subscribe(
       this.previousRowDataBehaviorSubject$
     );
-    this.experimentDesignStepperService.factorialConditionTableData$.subscribe(this.tableData$);
+    this.subscriptions = this.experimentDesignStepperService.factorialConditionTableData$.subscribe(this.tableData$);
     this.createForm();
   }
 
