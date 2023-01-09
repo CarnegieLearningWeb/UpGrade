@@ -28,7 +28,7 @@ export const experimentStepperDataReset = createAction(
 );
 
 export const actionUpdateFactorialDesignData = createAction(
-  '[Experiment-Design-Stepper] update factorial table data',
+  '[Experiment-Design-Stepper] update factorial design data',
   props<{ designData: ExperimentFactorialDesignData }>()
 );
 
