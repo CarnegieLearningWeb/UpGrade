@@ -134,6 +134,7 @@ export class ExperimentService {
       .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
+      .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
       .addOrderBy('conditions.order', 'ASC')
       .addOrderBy('partitions.order', 'ASC')
       .addOrderBy('factors.order', 'ASC')
@@ -183,6 +184,7 @@ export class ExperimentService {
       .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
+      .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
       .addOrderBy('conditions.order', 'ASC')
       .addOrderBy('partitions.order', 'ASC')
       .addOrderBy('factors.order', 'ASC')
@@ -1406,6 +1408,16 @@ export class ExperimentService {
   }
 
   public formatingConditionAlias(experiment: Experiment): any {
+    if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+      const conditionAlias: ConditionAlias[] = [];
+      experiment.conditions.forEach((condition) => {
+        console.log(condition);
+        conditionAlias.push(...condition.conditionAliases);
+        delete condition.conditionAliases;
+      });
+      return { ...experiment, conditionAliases: conditionAlias };
+    }
+
     const { conditions, partitions } = experiment;
 
     const conditionAlias: ConditionAlias[] = [];
