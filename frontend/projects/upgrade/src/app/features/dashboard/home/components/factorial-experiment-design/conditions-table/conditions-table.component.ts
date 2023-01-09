@@ -55,16 +55,16 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
         this.factorTwoHeader = designData.factors[1].factor;
       });
 
-    // TODO: add check here to filter out when tableData has not actually changed
     this.subscriptions = this.tableData$
       .pipe(filter((tableData) => !!tableData && tableData.length > 0))
       .subscribe((tableData) => {
         if (!this.formInitialized) {
           this.formInitialized = true;
           this.addFormControls(tableData);
-          const newTableData = this.applyEqualWeights();
-          this.experimentDesignStepperService.updateFactorialTableData(newTableData);
         }
+
+        const newTableData = this.applyEqualWeights();
+        this.experimentDesignStepperService.updateFactorialTableData(newTableData);
       });
   }
 

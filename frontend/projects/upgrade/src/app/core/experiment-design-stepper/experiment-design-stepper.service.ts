@@ -31,8 +31,9 @@ import {
   FactorialConditionTableRowData,
 } from './store/experiment-design-stepper.model';
 import { actionUpdateFactorialTableData } from './store/experiment-design-stepper.actions';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, distinctUntilChanged } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
+import * as isEqual from 'lodash.isequal';
 
 @Injectable({
   providedIn: 'root',
@@ -46,8 +47,11 @@ export class ExperimentDesignStepperService {
   isConditionsTableEditMode$ = this.store$.pipe(select(selectIsConditionsTableEditMode));
   conditionsTableEditIndex$ = this.store$.pipe(select(selectConditionsTableEditIndex));
   conditionsEditModePreviousRowData$ = this.store$.pipe(select(selectConditionsEditModePreviousRowData));
-  factorialDesignData$ = this.store$.pipe(select(selectFactorialDesignData));
-  factorialConditionTableData$ = this.store$.pipe(select(selectFactorialConditionTableData));
+  factorialDesignData$ = this.store$.pipe(select(selectFactorialDesignData), distinctUntilChanged(isEqual));
+  factorialConditionTableData$ = this.store$.pipe(
+    select(selectFactorialConditionTableData),
+    distinctUntilChanged(isEqual)
+  );
   factorialConditionTableDataBehaviorSubject$ = new BehaviorSubject<FactorialConditionTableRowData[]>([]);
   isFactorialConditionsTableEditMode$ = this.store$.pipe(select(selectIsFactorialConditionsTableEditMode));
   factorialConditionsTableEditIndex$ = this.store$.pipe(select(selectFactorialConditionsTableEditIndex));
@@ -203,28 +207,23 @@ export class ExperimentDesignStepperService {
 
   recreateExistingConditionsTableData(existingExperiment: ExperimentVM) {
     const { conditions, conditionAliases } = existingExperiment;
-    const tableData = this.getFactorialConditionTableData();
-    console.log('recreate it', tableData);
-    console.log('existing data', existingExperiment);
 
-    // const tableData = conditions.map((factorialCondition) => {
-    //   const tableRow: FactorialConditionTableRowData = {
-    //     id: factorialCondition.id,
-    //     levels: factorialCondition.levelCombinationElements.map((level) => {
-    //       return {
-    //         id: level.id,
-    //         name: level.level,
-    //       };
-    //     }),
-    //     alias: conditionAliases.find((conditionAlias) => conditionAlias.id === factorialCondition.id).aliasName,
-    //     weight: factorialCondition.assignmentWeight.toString(),
-    //     include: true,
-    //   };
-
-    //   return tableRow;
-    // });
-
-    // this.updateFactorialTableData(tableData);
+    const tableData = conditions.map((factorialCondition) => {
+      const tableRow: FactorialConditionTableRowData = {
+        id: factorialCondition.id,
+        levels: factorialCondition.levelCombinationElements.map((level) => {
+          return {
+            id: level.id,
+            name: level.level,
+          };
+        }),
+        alias: conditionAliases.find((conditionAlias) => conditionAlias.id === factorialCondition.id)?.aliasName,
+        weight: factorialCondition.assignmentWeight.toString(),
+        include: factorialCondition.assignmentWeight > 0,
+      };
+      return tableRow;
+    });
+    this.updateFactorialTableData(tableData);
   }
 
   createFactorialConditionRequestObject() {
@@ -232,11 +231,6 @@ export class ExperimentDesignStepperService {
     const factorialConditionsRequestObject = [];
 
     tableData.forEach((factorialConditionTableRow, index) => {
-      // do not push rows that have include = false
-      if (!factorialConditionTableRow.include) {
-        return;
-      }
-
       factorialConditionsRequestObject.push({
         createdAt: '2022-10-07T05:44:43.162Z', // not needed
         updatedAt: '2022-10-07T05:44:43.162Z', // not needed
@@ -264,10 +258,6 @@ export class ExperimentDesignStepperService {
     const factorialConditionAliasesRequestObject = [];
 
     tableData.forEach((factorialConditionTableRow) => {
-      if (!factorialConditionTableRow.include) {
-        return;
-      }
-
       factorialConditionAliasesRequestObject.push({
         aliasName: factorialConditionTableRow.alias,
         parentCondition: factorialConditionTableRow.id,

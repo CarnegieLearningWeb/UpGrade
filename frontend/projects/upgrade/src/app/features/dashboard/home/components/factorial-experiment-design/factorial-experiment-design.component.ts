@@ -176,10 +176,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         });
       });
 
-      // TODO: fill in condtions table from existing experiment data
-      // this.experimentDesignStepperService.recreateExistingConditionsTableData(this.experimentInfo);
-      // this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
-
       this.isExperimentEditable =
         this.experimentInfo.state !== this.ExperimentState.ENROLLING &&
         this.experimentInfo.state !== this.ExperimentState.ENROLLMENT_COMPLETE;
