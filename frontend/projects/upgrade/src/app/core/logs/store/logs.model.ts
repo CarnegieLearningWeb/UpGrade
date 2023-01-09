@@ -1,8 +1,17 @@
 import { AppState } from '../../core.module';
 import { EntityState } from '@ngrx/entity';
-import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
-
-export { EXPERIMENT_LOG_TYPE, SERVER_ERROR };
+import { SERVER_ERROR } from 'upgrade_types';
+export enum EXPERIMENT_LOG_TYPE {
+  EXPERIMENT_CREATED = 'experimentCreated',
+  EXPERIMENT_UPDATED = 'experimentUpdated',
+  EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
+  EXPERIMENT_DELETED = 'experimentDeleted',
+  EXPERIMENT_DATA_EXPORTED = 'experimentDataExported',
+  EXPERIMENT_DATA_REQUESTED = 'experimentDataRequested',
+  EXPERIMENT_DESIGN_EXPORTED = 'experimentDesignExported',
+  CALIPER_LOG = 'caliperLog'
+}
+export { SERVER_ERROR };
 
 export const NUMBER_OF_LOGS = 20;
 
