@@ -17,7 +17,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
-import { IExperimentAssignment, ISingleMetric, IGroupMetric, SERVER_ERROR, ILogInput, EXPERIMENT_LOG_TYPE } from 'upgrade_types';
+import { IExperimentAssignment, ISingleMetric, IGroupMetric, SERVER_ERROR, ILogInput } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -35,6 +35,16 @@ import { CaliperLogValidator } from './validators/CaliperLogValidator';
 import { parse, toSeconds } from 'iso8601-duration';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
+export enum EXPERIMENT_LOG_TYPE {
+  EXPERIMENT_CREATED = 'experimentCreated',
+  EXPERIMENT_UPDATED = 'experimentUpdated',
+  EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
+  EXPERIMENT_DELETED = 'experimentDeleted',
+  EXPERIMENT_DATA_EXPORTED = 'experimentDataExported',
+  EXPERIMENT_DATA_REQUESTED = 'experimentDataRequested',
+  EXPERIMENT_DESIGN_EXPORTED = 'experimentDesignExported',
+  CALIPER_LOG = 'caliperLog'
+}
 /**
  * @swagger
  * definitions:
@@ -698,6 +708,7 @@ export class ExperimentClientController {
        logger: request.logger,
        userDoc: experimentUserDoc,
      });
+     console.log( EXPERIMENT_LOG_TYPE.CALIPER_LOG)
      await this.experimentAuditLogRepository.saveRawJson(
       EXPERIMENT_LOG_TYPE.CALIPER_LOG,
       {
