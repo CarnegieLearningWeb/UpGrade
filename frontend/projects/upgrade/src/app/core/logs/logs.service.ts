@@ -15,7 +15,8 @@ import {
 import { combineLatest } from 'rxjs';
 import { selectAllExperiment } from '../experiments/store/experiments.selectors';
 import { map } from 'rxjs/operators';
-import { AuditLogs, SERVER_ERROR, EXPERIMENT_LOG_TYPE } from './store/logs.model';
+import { AuditLogs, SERVER_ERROR } from './store/logs.model';
+import { EXPERIMENT_LOG_TYPE } from '../../../../../../../types/src';
 
 @Injectable()
 export class LogsService {
