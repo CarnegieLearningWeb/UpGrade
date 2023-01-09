@@ -78,6 +78,7 @@ import {
 } from './Segment/index';
 import { UpgradeLogger } from '../../src/lib/logger/UpgradeLogger';
 import { CompetingExperiment } from './Experiment/competingExperiment';
+import { FactorialExperimentCRUD, FactorialEnrollment } from './Experiment/factorial';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -500,6 +501,15 @@ describe('Integration Tests', () => {
     done();
   });
 
+  test('Factorial CRUD', async (done) => {
+    await FactorialExperimentCRUD();
+    done();
+  });
+
+  test('Factorial Enrollment', async (done) => {
+    await FactorialEnrollment();
+    done();
+  });
   // test('Monitored Point for Export', async (done) => {
   //   await MonitoredPointForExport();
   //   done();
