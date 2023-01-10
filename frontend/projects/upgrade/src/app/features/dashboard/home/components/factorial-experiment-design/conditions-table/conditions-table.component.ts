@@ -44,18 +44,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     );
     this.subscriptions = this.experimentDesignStepperService.factorialConditionTableData$.subscribe(this.tableData$);
     this.createForm();
-
-    if(this.experimentInfo){
-      this.equalWeightFlag = this.experimentInfo.conditions.every(
-        (condition) => condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight
-      );
-    }
-  }
-
-  ngAfterViewInit(): void {
-    // must sub after view init to ensure table reference is loaded before emitting table data
     this.registerDesignDataChanges();
-    this.registerTableDataChanges();
   }
 
   ngOnDestroy(): void {
@@ -96,16 +85,6 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
       });
   }
 
-  registerTableDataChanges() {
-    this.subscriptions = this.tableData$
-      .pipe(filter((tableData) => !!tableData && tableData.length > 0))
-      .subscribe((_) => {
-        const newTableData = this.applyEqualWeights();
-        console.log("registerTableDataChanges")
-        this.experimentDesignStepperService.updateFactorialTableData(newTableData);
-      });
-  }
-
   handleDesignDataChanges(designData: ExperimentFactorialDesignData) {
     if (this.experimentInfo && !this.formInitialized) {
       this.handleInitializeExistingTableData(designData);
@@ -114,7 +93,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     } else {
       // if new exp and form initialized and you move back and forth
       // if edit exp and form already initialized
-      this.handleInitializeNewNewTableData(designData);
+      this.handleInitializeNewNewTableData(designData); // <---- be careful doing this! if you see bugs, it may be because this is not the intended place for this function
       // this.handleUpdateDesignDataTableChanges(designData);
     }
     this.updateFactorHeaders(designData);
@@ -122,6 +101,11 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   handleInitializeExistingTableData(designData: ExperimentFactorialDesignData) {
     console.log('#init preexisting');
+
+    this.equalWeightFlag = this.experimentInfo.conditions.every(
+      (condition) => condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight
+    );
+
     const newTableData = this.experimentDesignStepperService.mergeExistingConditionsTableData(
       designData,
       this.experimentInfo
@@ -131,7 +115,6 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   handleInitializeNewNewTableData(designData: ExperimentFactorialDesignData) {
     console.log('#init new');
-    this.equalWeightFlag=true;
     const newTableData = this.experimentDesignStepperService.createNewFactorialConditionTableData(designData);
     this.initializeForm(newTableData);
   }
@@ -149,7 +132,8 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   initializeForm(tableData: FactorialConditionTableRowData[]) {
     this.createFormControls(tableData);
-    this.experimentDesignStepperService.updateFactorialTableData(tableData);
+    const newTableData = this.applyEqualWeights(tableData);
+    this.experimentDesignStepperService.updateFactorialTableData(newTableData);
     this.formInitialized = true;
   }
 
