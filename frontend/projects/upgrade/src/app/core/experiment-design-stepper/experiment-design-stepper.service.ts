@@ -25,7 +25,6 @@ import {
 } from './store/experiment-design-stepper.selectors';
 import {
   ConditionsTableRowData,
-  DUMMY_CONDITION_TABLE_DATA,
   ExperimentAliasTableRow,
   ExperimentFactorialDesignData,
   FactorialConditionRequestObject,
@@ -226,17 +225,17 @@ export class ExperimentDesignStepperService {
         id: factorialCondition.id,
         conditionAliasId: existingConditionAliasId,
         levels: factorialCondition.levelCombinationElements.map((levelElement) => {
-          if(levelElement.level){
+          if (levelElement.level) {
             return {
               id: levelElement.level.id,
               name: levelElement.level.name,
             };
-          }else{
-            let levelDetail:any;
-            existingPartitions.forEach((partition)=>{
-              partition.factors.forEach((factor)=>{
+          } else {
+            let levelDetail: any;
+            existingPartitions.forEach((partition) => {
+              partition.factors.forEach((factor) => {
                 levelDetail = factor.levels.find(
-                  (level) => level.id === levelElement.id
+                  (level) => level.id === levelElement.levelId
                 );
               })
             })
@@ -244,7 +243,7 @@ export class ExperimentDesignStepperService {
               id: levelDetail.id,
               name: levelDetail.name,
             };
-          }         
+          }
         }),
         alias:aliasname,
         weight: factorialCondition.assignmentWeight.toString(),
@@ -304,8 +303,6 @@ export class ExperimentDesignStepperService {
   }
 
   updateFactorialDesignData(designData: ExperimentFactorialDesignData) {
-    // designData = DUMMY_CONDITION_TABLE_DATA;
-
     this.store$.dispatch(experimentDesignStepperAction.actionUpdateFactorialDesignData({ designData }));
   }
 

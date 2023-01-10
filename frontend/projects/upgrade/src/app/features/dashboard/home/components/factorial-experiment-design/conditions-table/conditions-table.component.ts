@@ -108,7 +108,8 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
       console.log(this.experimentInfo);
       this.handleInitializeNewNewTableData(designData);
     } else {
-      console.log(this.experimentInfo);
+      // if new exp and form initialized and you move back and forth
+      // if edit exp and form already initialized
       this.handleInitializeNewNewTableData(designData);
       // this.handleUpdateDesignDataTableChanges(designData);
     }
