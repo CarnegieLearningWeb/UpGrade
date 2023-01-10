@@ -1411,10 +1411,13 @@ export class ExperimentService {
     if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
       const conditionAlias: ConditionAlias[] = [];
       experiment.conditions.forEach((condition) => {
-        console.log(condition);
-        conditionAlias.push(...condition.conditionAliases);
+        const conditionAliases = condition.conditionAliases.map((conditionAlias) => {
+          return { ...conditionAlias, parentCondition: condition };
+        });
+        conditionAlias.push(...conditionAliases);
         delete condition.conditionAliases;
       });
+
       return { ...experiment, conditionAliases: conditionAlias };
     }
 

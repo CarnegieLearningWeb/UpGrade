@@ -1,8 +1,21 @@
-import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, EventEmitter, Output } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  OnDestroy,
+  EventEmitter,
+  Output,
+  Input,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { BehaviorSubject, filter, Subscription } from 'rxjs';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
-import { FactorialConditionTableRowData } from '../../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+import {
+  ExperimentFactorialDesignData,
+  FactorialConditionTableRowData,
+} from '../../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 
 @Component({
   selector: 'app-conditions-table',
@@ -12,6 +25,7 @@ import { FactorialConditionTableRowData } from '../../../../../../core/experimen
 })
 export class ConditionsTableComponent implements OnInit, OnDestroy {
   @Output() hide = new EventEmitter<boolean>();
+  @Input() experimentInfo: ExperimentVM;
 
   subscriptions: Subscription;
   factorialConditionTableForm: FormGroup;
@@ -20,17 +34,16 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   tableEditIndex$ = this.experimentDesignStepperService.factorialConditionsTableEditIndex$;
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
   previousRowDataBehaviorSubject$ = new BehaviorSubject<FactorialConditionTableRowData>(null);
-  columnHeaders = ['levelNameOne', 'levelNameTwo', 'alias', 'weight', 'include', 'actions'];
+  columnHeaders = ['factorOne', 'factorTwo', 'alias', 'weight', 'include', 'actions'];
+  factorHeaders = ['factorOne', 'factorTwo'];
   equalWeightFlag = true;
   formInitialized = false;
   useEllipsis = false;
-  // showForm = false;
-  factorOneHeader = 'factor1';
-  factorTwoHeader = 'factor2';
 
   constructor(
     private experimentDesignStepperService: ExperimentDesignStepperService,
-    private _formBuilder: FormBuilder
+    private _formBuilder: FormBuilder,
+    private changeDetection: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -43,29 +56,8 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   ngAfterViewInit(): void {
     // must sub after view init to ensure table reference is loaded before emitting table data
-    this.subscriptions = this.factorialDesignData$
-      .pipe(
-        filter((designData) => {
-          return designData && designData?.factors.length === 2;
-        })
-      )
-      .subscribe((designData) => {
-        this.experimentDesignStepperService.createNewFactorialConditionTableData(designData);
-        this.factorOneHeader = designData.factors[0].factor;
-        this.factorTwoHeader = designData.factors[1].factor;
-      });
-
-    this.subscriptions = this.tableData$
-      .pipe(filter((tableData) => !!tableData && tableData.length > 0))
-      .subscribe((tableData) => {
-        if (!this.formInitialized) {
-          this.formInitialized = true;
-          this.addFormControls(tableData);
-        }
-
-        const newTableData = this.applyEqualWeights();
-        this.experimentDesignStepperService.updateFactorialTableData(newTableData);
-      });
+    this.registerDesignDataChanges();
+    this.registerTableDataChanges();
   }
 
   ngOnDestroy(): void {
@@ -79,7 +71,9 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     });
   }
 
-  addFormControls(tableData: FactorialConditionTableRowData[]) {
+  createFormControls(tableData: FactorialConditionTableRowData[]) {
+    this.getFactorialConditions().clear();
+
     tableData.forEach((tableDataRow) => {
       const formControls = this._formBuilder.group({
         levels: [tableDataRow.levels],
@@ -90,6 +84,70 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
       this.getFactorialConditions().push(formControls);
     });
+  }
+
+  registerDesignDataChanges() {
+    this.subscriptions = this.factorialDesignData$
+      .pipe(
+        filter((designData) => {
+          return designData && designData?.factors.length === 2;
+        })
+      )
+      .subscribe((designData) => {
+        this.handleDesignDataChanges(designData);
+      });
+  }
+
+  registerTableDataChanges() {
+    this.subscriptions = this.tableData$
+      .pipe(filter((tableData) => !!tableData && tableData.length > 0))
+      .subscribe((_) => {
+        const newTableData = this.applyEqualWeights();
+        this.experimentDesignStepperService.updateFactorialTableData(newTableData);
+      });
+  }
+
+  handleDesignDataChanges(designData: ExperimentFactorialDesignData) {
+    if (this.experimentInfo && !this.formInitialized) {
+      this.handleInitializeExistingTableData(designData);
+    } else if (!this.experimentInfo && !this.formInitialized) {
+      this.handleInitializeNewNewTableData(designData);
+    } else {
+      this.handleUpdateDesignDataTableChanges(designData);
+    }
+    this.updateFactorHeaders(designData);
+    this.changeDetection.detectChanges();
+  }
+
+  handleInitializeExistingTableData(designData: ExperimentFactorialDesignData) {
+    console.log('#init preexisting');
+    const newTableData = this.experimentDesignStepperService.mergeExistingConditionsTableData(
+      designData,
+      this.experimentInfo
+    );
+    this.initializeForm(newTableData);
+  }
+
+  handleInitializeNewNewTableData(designData: ExperimentFactorialDesignData) {
+    console.log('#init new');
+    const newTableData = this.experimentDesignStepperService.createNewFactorialConditionTableData(designData);
+    this.initializeForm(newTableData);
+  }
+
+  handleUpdateDesignDataTableChanges(designData: ExperimentFactorialDesignData) {
+    console.log('#update table');
+  }
+
+  updateFactorHeaders(designData: ExperimentFactorialDesignData) {
+    this.factorHeaders = designData.factors.map((factor) => {
+      return factor.factor;
+    });
+  }
+
+  initializeForm(tableData: FactorialConditionTableRowData[]) {
+    this.createFormControls(tableData);
+    this.experimentDesignStepperService.updateFactorialTableData(tableData);
+    this.formInitialized = true;
   }
 
   resetEdit(): void {

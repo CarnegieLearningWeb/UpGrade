@@ -28,6 +28,7 @@ import {
   DUMMY_CONDITION_TABLE_DATA,
   ExperimentAliasTableRow,
   ExperimentFactorialDesignData,
+  FactorialConditionRequestObject,
   FactorialConditionTableRowData,
 } from './store/experiment-design-stepper.model';
 import { actionUpdateFactorialTableData } from './store/experiment-design-stepper.actions';
@@ -165,7 +166,7 @@ export class ExperimentDesignStepperService {
     return aliasTableData;
   }
 
-  createNewFactorialConditionTableData(designData: ExperimentFactorialDesignData) {
+  createNewFactorialConditionTableData(designData: ExperimentFactorialDesignData): FactorialConditionTableRowData[] {
     const tableData: FactorialConditionTableRowData[] = [];
 
     // currently this table will only support 2 factors due to design constraints
@@ -202,43 +203,50 @@ export class ExperimentDesignStepperService {
       });
     });
 
-    this.updateFactorialTableData(tableData);
+    return tableData;
   }
 
-  recreateExistingConditionsTableData(existingExperiment: ExperimentVM) {
-    const { conditions, conditionAliases } = existingExperiment;
+  mergeExistingConditionsTableData(
+    designData: ExperimentFactorialDesignData,
+    experimentInfo: ExperimentVM
+  ): FactorialConditionTableRowData[] {
+    const existingConditions = experimentInfo.conditions;
+    const existingConditionAliases = experimentInfo.conditionAliases;
 
-    const tableData = conditions.map((factorialCondition) => {
+    const tableData = existingConditions.map((factorialCondition) => {
+      const existingConditionAlias = existingConditionAliases.find(
+        (conditionAlias) => conditionAlias?.parentCondition.id === factorialCondition.id
+      );
+
+      const alias = existingConditionAlias ? existingConditionAlias.aliasName : '';
+      const conditionAliasId = existingConditionAlias?.id;
+
       const tableRow: FactorialConditionTableRowData = {
         id: factorialCondition.id,
+        conditionAliasId,
         levels: factorialCondition.levelCombinationElements.map((level) => {
           return {
-            id: level.id,
-            name: level.level,
+            id: level.level.id,
+            name: level.level.name,
           };
         }),
-        alias: conditionAliases.find((conditionAlias) => conditionAlias.id === factorialCondition.id)?.aliasName,
+        alias,
         weight: factorialCondition.assignmentWeight.toString(),
         include: factorialCondition.assignmentWeight > 0,
       };
       return tableRow;
     });
-    this.updateFactorialTableData(tableData);
+    return tableData;
   }
 
   createFactorialConditionRequestObject() {
     const tableData = this.getFactorialConditionTableData();
-    const factorialConditionsRequestObject = [];
+    const factorialConditionsRequestObject: FactorialConditionRequestObject[] = [];
 
     tableData.forEach((factorialConditionTableRow, index) => {
       factorialConditionsRequestObject.push({
-        createdAt: '2022-10-07T05:44:43.162Z', // not needed
-        updatedAt: '2022-10-07T05:44:43.162Z', // not needed
-        versionNumber: 1, // not needed
         id: factorialConditionTableRow.id,
-        twoCharacterId: '5H', // not needed
         name: 'condition ' + index + 1, // what should this be?
-        description: null, // not needed
         conditionCode: 'condition ' + index + 1, // what should this be?
         assignmentWeight: parseFloat(factorialConditionTableRow.weight),
         order: index + 1,
@@ -258,7 +266,10 @@ export class ExperimentDesignStepperService {
     const factorialConditionAliasesRequestObject = [];
 
     tableData.forEach((factorialConditionTableRow) => {
+      const id = factorialConditionTableRow.conditionAliasId;
+
       factorialConditionAliasesRequestObject.push({
+        id,
         aliasName: factorialConditionTableRow.alias,
         parentCondition: factorialConditionTableRow.id,
       });

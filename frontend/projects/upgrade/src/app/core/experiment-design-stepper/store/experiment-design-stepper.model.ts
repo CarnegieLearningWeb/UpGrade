@@ -8,6 +8,14 @@ export interface ExperimentConditionAliasRequestObject {
   decisionPoint?: string;
 }
 
+export interface FactorialConditionRequestObject {
+  id: string;
+  name: string;
+  conditionCode: string;
+  assignmentWeight: number;
+  order: number;
+  levelCombinationElements: { [key: string]: string }[];
+}
 export interface ExperimentAliasTableRow {
   id?: string;
   site: string;
@@ -27,6 +35,7 @@ export interface ConditionsTableRowData {
 
 export interface FactorialConditionTableRowData {
   id: string;
+  conditionAliasId?: string;
   levels: FactorialLevelTableRowData[];
   alias: string;
   weight: string;

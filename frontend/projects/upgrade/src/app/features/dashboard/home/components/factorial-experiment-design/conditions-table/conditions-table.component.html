@@ -27,9 +27,9 @@
   <form [formGroup]="factorialConditionTableForm">
     <mat-table [dataSource]="tableData$" class="conditions-table" formArrayName="factorialConditions">
       <!-- Factor 1 Levels Column -->
-      <ng-container matColumnDef="levelNameOne">
+      <ng-container matColumnDef="factorOne">
         <mat-header-cell *matHeaderCellDef class="ft-14-700">
-          {{ factorOneHeader | uppercase }}
+          {{ factorHeaders[0] | uppercase }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData">
           <span [matTooltip]="rowData.levels[0].name" matTooltipPosition="above">
@@ -39,9 +39,9 @@
       </ng-container>
 
       <!-- Factor 2 Levels Column -->
-      <ng-container matColumnDef="levelNameTwo">
+      <ng-container matColumnDef="factorTwo">
         <mat-header-cell *matHeaderCellDef class="ft-14-700">
-          {{ factorTwoHeader | uppercase }}
+          {{ factorHeaders[1] | uppercase }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData">
           <span [matTooltip]="rowData.levels[1].name" matTooltipPosition="above">
