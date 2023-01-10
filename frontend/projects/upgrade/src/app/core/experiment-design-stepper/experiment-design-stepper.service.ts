@@ -32,7 +32,7 @@ import {
   FactorialConditionTableRowData,
 } from './store/experiment-design-stepper.model';
 import { actionUpdateFactorialTableData } from './store/experiment-design-stepper.actions';
-import { BehaviorSubject, distinctUntilChanged } from 'rxjs';
+import { BehaviorSubject, distinctUntilChanged, partition } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 import * as isEqual from 'lodash.isequal';
 
@@ -212,25 +212,41 @@ export class ExperimentDesignStepperService {
   ): FactorialConditionTableRowData[] {
     const existingConditions = experimentInfo.conditions;
     const existingConditionAliases = experimentInfo.conditionAliases;
+    const existingPartitions = experimentInfo.partitions;
 
     const tableData = existingConditions.map((factorialCondition) => {
-      const existingConditionAlias = existingConditionAliases.find(
+      const conditionAlias = existingConditionAliases.find(
         (conditionAlias) => conditionAlias?.parentCondition.id === factorialCondition.id
       );
 
-      const alias = existingConditionAlias ? existingConditionAlias.aliasName : '';
-      const conditionAliasId = existingConditionAlias?.id;
+      const aliasname = conditionAlias ? conditionAlias.aliasName : '';
+      const existingConditionAliasId = conditionAlias?.id;
 
       const tableRow: FactorialConditionTableRowData = {
         id: factorialCondition.id,
-        conditionAliasId,
-        levels: factorialCondition.levelCombinationElements.map((level) => {
-          return {
-            id: level.level.id,
-            name: level.level.name,
-          };
+        conditionAliasId: existingConditionAliasId,
+        levels: factorialCondition.levelCombinationElements.map((levelElement) => {
+          if(levelElement.level){
+            return {
+              id: levelElement.level.id,
+              name: levelElement.level.name,
+            };
+          }else{
+            let levelDetail:any;
+            existingPartitions.forEach((partition)=>{
+              partition.factors.forEach((factor)=>{
+                levelDetail = factor.levels.find(
+                  (level) => level.id === levelElement.id
+                );
+              })
+            })
+            return {
+              id: levelDetail.id,
+              name: levelDetail.name,
+            };
+          }         
         }),
-        alias,
+        alias:aliasname,
         weight: factorialCondition.assignmentWeight.toString(),
         include: factorialCondition.assignmentWeight > 0,
       };
@@ -284,7 +300,7 @@ export class ExperimentDesignStepperService {
     factorTwoName: string,
     factorTwoLevel: string
   ) {
-    return `${factorOneName}=${factorOneLevel};${factorTwoName}=${factorTwoLevel}`;
+    return `${factorOneName}=${factorOneLevel}; ${factorTwoName}=${factorTwoLevel}`;
   }
 
   updateFactorialDesignData(designData: ExperimentFactorialDesignData) {
