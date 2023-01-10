@@ -1,13 +1,4 @@
-import {
-  Component,
-  OnInit,
-  ChangeDetectionStrategy,
-  OnDestroy,
-  EventEmitter,
-  Output,
-  Input,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, EventEmitter, Output, Input } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { BehaviorSubject, filter, Subscription } from 'rxjs';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
@@ -42,8 +33,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   constructor(
     private experimentDesignStepperService: ExperimentDesignStepperService,
-    private _formBuilder: FormBuilder,
-    private changeDetection: ChangeDetectorRef
+    private _formBuilder: FormBuilder
   ) {}
 
   ngOnInit(): void {
@@ -116,7 +106,6 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
       this.handleUpdateDesignDataTableChanges(designData);
     }
     this.updateFactorHeaders(designData);
-    this.changeDetection.detectChanges();
   }
 
   handleInitializeExistingTableData(designData: ExperimentFactorialDesignData) {
@@ -136,6 +125,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   handleUpdateDesignDataTableChanges(designData: ExperimentFactorialDesignData) {
     console.log('#update table');
+    // TODO: intelligently handle updates to design data without triggering complete table re-creation
   }
 
   updateFactorHeaders(designData: ExperimentFactorialDesignData) {

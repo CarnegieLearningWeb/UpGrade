@@ -198,12 +198,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     });
   }
 
-  ngAfterViewInit() {
-    if (this.experimentInfo) {
-      this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
-    }
-  }
-
   manageExpFactorPointAndIdControl(factorIndex: number) {
     const factorFormControl = this.factor as FormArray;
     this.filteredExpFactors$[factorIndex] = factorFormControl
