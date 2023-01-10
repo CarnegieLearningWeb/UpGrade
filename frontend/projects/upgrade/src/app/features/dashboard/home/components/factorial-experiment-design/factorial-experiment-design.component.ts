@@ -515,68 +515,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
       const factorialPartitions = this.convertToPartitionData(factorialExperimentDesignFormData);
       const factorialConditions = this.experimentDesignStepperService.createFactorialConditionRequestObject();
-      // const factorialConditions: ExperimentCondition[] = [
-      //   {
-      //     createdAt: '2022-10-07T05:44:43.162Z',
-      //     updatedAt: '2022-10-07T05:44:43.162Z',
-      //     versionNumber: 1,
-      //     id: uuidv4(),
-      //     twoCharacterId: '5H',
-      //     name: 'condition 1',
-      //     description: null,
-      //     conditionCode: 'condition 1',
-      //     assignmentWeight: 25,
-      //     order: 1,
-      //     levelCombinationElements: [{ level: this.levelIds[0] }, { level: this.levelIds[2] }],
-      //   },
-      //   {
-      //     createdAt: '2022-10-07T05:44:43.162Z',
-      //     updatedAt: '2022-10-07T05:44:43.162Z',
-      //     versionNumber: 1,
-      //     id: uuidv4(),
-      //     twoCharacterId: '5H',
-      //     name: 'condition 2',
-      //     description: null,
-      //     conditionCode: 'condition 2',
-      //     assignmentWeight: 25,
-      //     order: 2,
-      //     levelCombinationElements: [{ level: this.levelIds[1] }, { level: this.levelIds[3] }],
-      //   },
-      //   {
-      //     createdAt: '2022-10-07T05:44:43.162Z',
-      //     updatedAt: '2022-10-07T05:44:43.162Z',
-      //     versionNumber: 1,
-      //     id: uuidv4(),
-      //     twoCharacterId: '5H',
-      //     name: 'condition 3',
-      //     description: null,
-      //     conditionCode: 'condition 3',
-      //     assignmentWeight: 25,
-      //     order: 3,
-      //     levelCombinationElements: [{ level: this.levelIds[0] }, { level: this.levelIds[3] }],
-      //   },
-      //   {
-      //     createdAt: '2022-10-07T05:44:43.162Z',
-      //     updatedAt: '2022-10-07T05:44:43.162Z',
-      //     versionNumber: 1,
-      //     id: uuidv4(),
-      //     twoCharacterId: '5H',
-      //     name: 'condition 4',
-      //     description: null,
-      //     conditionCode: 'condition 4',
-      //     assignmentWeight: 25,
-      //     order: 4,
-      //     levelCombinationElements: [{ level: this.levelIds[1] }, { level: this.levelIds[2] }],
-      //   },
-      // ];
 
       const factorialConditionAliases: ExperimentConditionAliasRequestObject[] =
         this.experimentDesignStepperService.createFactorialConditionsConditionAliasesRequestObject();
-
-      // factorialExperimentDesignFormData.conditionAliases = this.createExperimentConditionAliasRequestObject(
-      //   this.aliasTableData,
-      //   factorialExperimentDesignFormData.factors
-      // );
 
       this.emitExperimentDialogEvent.emit({
         type: eventType,

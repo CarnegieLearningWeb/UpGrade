@@ -213,6 +213,15 @@ export class ExperimentDesignStepperService {
     const existingConditionAliases = experimentInfo.conditionAliases;
     const existingPartitions = experimentInfo.partitions;
 
+    const levelOrder = {};
+    existingPartitions.forEach(partition => {
+      partition.factors.forEach(factor => {
+        factor.levels.forEach(level => {
+          levelOrder[level.id]= factor.order;
+        })
+      })
+    });
+
     const tableData = existingConditions.map((factorialCondition) => {
       const conditionAlias = existingConditionAliases.find(
         (conditionAlias) => conditionAlias?.parentCondition.id === factorialCondition.id
@@ -221,11 +230,14 @@ export class ExperimentDesignStepperService {
       const aliasname = conditionAlias ? conditionAlias.aliasName : '';
       const existingConditionAliasId = conditionAlias?.id;
 
+      // const allLevelsForCondition = factorialCondition.levelCombinationElements
+      //   .sort((a, b) => (levelOrder[a.level.id] > levelOrder[b.level.id] ? 1 : levelOrder[b.level.id] > levelOrder[a.level.id] ? -1 : 0));
+
       const tableRow: FactorialConditionTableRowData = {
         id: factorialCondition.id,
         conditionAliasId: existingConditionAliasId,
         levels: factorialCondition.levelCombinationElements.map((levelElement) => {
-          if (levelElement.level) {
+          if(levelElement.level){
             return {
               id: levelElement.level.id,
               name: levelElement.level.name,
@@ -235,7 +247,7 @@ export class ExperimentDesignStepperService {
             existingPartitions.forEach((partition) => {
               partition.factors.forEach((factor) => {
                 levelDetail = factor.levels.find(
-                  (level) => level.id === levelElement.levelId
+                  (level) => level.id === levelElement.id
                 );
               })
             })
@@ -257,14 +269,14 @@ export class ExperimentDesignStepperService {
   createFactorialConditionRequestObject() {
     const tableData = this.getFactorialConditionTableData();
     const factorialConditionsRequestObject: FactorialConditionRequestObject[] = [];
-
-    tableData.forEach((factorialConditionTableRow, index) => {
+    let conditionIndex=1;
+    tableData.forEach((factorialConditionTableRow) => {
       factorialConditionsRequestObject.push({
         id: factorialConditionTableRow.id,
-        name: 'condition ' + index + 1, // what should this be?
-        conditionCode: 'condition ' + index + 1, // what should this be?
+        name: 'condition ' + conditionIndex , // what should this be?
+        conditionCode: 'condition ' + conditionIndex , // what should this be?
         assignmentWeight: parseFloat(factorialConditionTableRow.weight),
-        order: index + 1,
+        order: conditionIndex++,
         levelCombinationElements: factorialConditionTableRow.levels.map((level) => {
           return {
             level: level.id,
@@ -281,10 +293,8 @@ export class ExperimentDesignStepperService {
     const factorialConditionAliasesRequestObject = [];
 
     tableData.forEach((factorialConditionTableRow) => {
-      const id = factorialConditionTableRow.conditionAliasId;
-
       factorialConditionAliasesRequestObject.push({
-        id,
+        id:factorialConditionTableRow.conditionAliasId || uuidv4(),
         aliasName: factorialConditionTableRow.alias,
         parentCondition: factorialConditionTableRow.id,
       });
@@ -303,6 +313,8 @@ export class ExperimentDesignStepperService {
   }
 
   updateFactorialDesignData(designData: ExperimentFactorialDesignData) {
+    // designData = DUMMY_CONDITION_TABLE_DATA;
+
     this.store$.dispatch(experimentDesignStepperAction.actionUpdateFactorialDesignData({ designData }));
   }
 

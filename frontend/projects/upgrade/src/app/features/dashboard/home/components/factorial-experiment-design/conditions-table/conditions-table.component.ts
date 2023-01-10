@@ -44,6 +44,12 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     );
     this.subscriptions = this.experimentDesignStepperService.factorialConditionTableData$.subscribe(this.tableData$);
     this.createForm();
+
+    if(this.experimentInfo){
+      this.equalWeightFlag = this.experimentInfo.conditions.every(
+        (condition) => condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight
+      );
+    }
   }
 
   ngAfterViewInit(): void {
@@ -102,10 +108,8 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   handleDesignDataChanges(designData: ExperimentFactorialDesignData) {
     if (this.experimentInfo && !this.formInitialized) {
-      console.log(this.experimentInfo);
       this.handleInitializeExistingTableData(designData);
     } else if (!this.experimentInfo && !this.formInitialized) {
-      console.log(this.experimentInfo);
       this.handleInitializeNewNewTableData(designData);
     } else {
       // if new exp and form initialized and you move back and forth
@@ -127,6 +131,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   handleInitializeNewNewTableData(designData: ExperimentFactorialDesignData) {
     console.log('#init new');
+    this.equalWeightFlag=true;
     const newTableData = this.experimentDesignStepperService.createNewFactorialConditionTableData(designData);
     this.initializeForm(newTableData);
   }
@@ -144,7 +149,6 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   initializeForm(tableData: FactorialConditionTableRowData[]) {
     this.createFormControls(tableData);
-    console.log("initializeForm")
     this.experimentDesignStepperService.updateFactorialTableData(tableData);
     this.formInitialized = true;
   }
@@ -190,7 +194,6 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
     if (this.equalWeightFlag) {
       const newTableData = this.applyEqualWeights();
-      console.log("handleEqualWeightToggle")
       this.experimentDesignStepperService.updateFactorialTableData(newTableData);
     }
   }
@@ -214,7 +217,6 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     tableData[rowIndex] = { ...tableData[rowIndex], alias, weight, include };
     const newTableData = this.applyEqualWeights(tableData);
 
-    console.log("handleRowEditDoneClick")
     this.experimentDesignStepperService.updateFactorialTableData(newTableData);
     this.experimentDesignStepperService.clearFactorialConditionTableEditModeDetails();
   }
