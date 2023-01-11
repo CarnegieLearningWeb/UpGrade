@@ -66,8 +66,11 @@ describe('Error Service Testing', () => {
     expect(flags).toBe(error);
   });
 
-  it('should return an error log', async () => {
-    const flags = await service.create(error, null);
-    expect(flags).toBe(error);
+  it('should throw an error when unable to save', async () => {
+    const err = new Error('insert error');
+    repo.save = jest.fn().mockRejectedValue(err);
+    expect(async () => {
+      await service.create(error, null);
+    }).rejects.toThrow(err);
   });
 });
