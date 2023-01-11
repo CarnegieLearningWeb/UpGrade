@@ -165,6 +165,49 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     return newTableData;
   }
 
+  // static validateWeightsEqualTo100(controls: AbstractControl): Record<string, any> | null {
+  //   const conditions = controls.get('conditions').value;
+  //   if (conditions.length >= 0) {
+  //     if (conditions.length === 0) {
+  //       return { assignmentWeightsSumError: false };
+  //     } else if (conditions.length >= 1) {
+  //       const conditionWeight = conditions.map((condition) => condition.assignmentWeight);
+  //       if (!conditionWeight[0]) {
+  //         return { assignmentWeightsSumError: false };
+  //       } else {
+  //         // handling sum of decimal values for assignment weights:
+  //         let sumOfAssignmentWeights = 0.0;
+  //         conditions.forEach(
+  //           (condition) => (sumOfAssignmentWeights += parseFloat(Number(condition.assignmentWeight).toFixed(1)))
+  //         );
+  //         // checking if sum is not equal to 100
+  //         return Math.round(sumOfAssignmentWeights) !== 100.0 ? { assignmentWeightsSumError: true } : null;
+  //       }
+  //     }
+  //   }
+  //   return null;
+  // }
+
+  // validateHasAssignmentWeightsNegative(conditions: ExperimentCondition[]) {
+  //   const negativeAssignmentWeightErrorText = this.translate.instant(
+  //     'home.new-experiment.design.assignment-weight-negative.text'
+  //   );
+  //   if (conditions.length) {
+  //     const hasNegativeAssignmentWeights = conditions.filter((condition) => condition.assignmentWeight < 0);
+  //     if (
+  //       hasNegativeAssignmentWeights.length &&
+  //       !this.conditionCodeErrors.includes(negativeAssignmentWeightErrorText)
+  //     ) {
+  //       this.conditionCodeErrors.push(negativeAssignmentWeightErrorText);
+  //     } else if (!hasNegativeAssignmentWeights.length) {
+  //       const index = this.conditionCodeErrors.indexOf(negativeAssignmentWeightErrorText, 0);
+  //       if (index > -1) {
+  //         this.conditionCodeErrors.splice(index, 1);
+  //       }
+  //     }
+  //   }
+  // }
+
   getIncludedConditionCount(tableData: FactorialConditionTableRowData[]): number {
     return tableData.reduce((count, row) => {
       return row.include ? (count += 1) : count;
