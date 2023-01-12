@@ -18,6 +18,13 @@ export interface ExperimentAliasTableRow {
   rowStyle?: 'odd' | 'even';
 }
 
+export interface DecisionPointsTableRowData {
+  site: string;
+  target: string;
+  excludeIfReached: boolean;
+  order: number;
+}
+
 export interface ConditionsTableRowData {
   conditionCode: string;
   assignmentWeight: string;
@@ -27,10 +34,13 @@ export interface ConditionsTableRowData {
 
 export interface ExperimentDesignStepperState {
   isAliasTableEditMode: boolean;
+  isDecisionPointsTableEditMode: boolean;
   isConditionsTableEditMode: boolean;
   aliasTableEditIndex: number | null;
+  decisionPointsTableEditIndex: number | null;
   conditionsTableEditIndex: number | null;
   hasExperimentStepperDataChanged: boolean;
+  decisionPointsEditModePreviousRowData: DecisionPointsTableRowData;
   conditionsEditModePreviousRowData: ConditionsTableRowData;
 }
 
