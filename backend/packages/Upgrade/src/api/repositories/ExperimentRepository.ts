@@ -30,6 +30,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
+      .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);

@@ -119,7 +119,12 @@ export interface ExperimentCondition {
   createdAt: string;
   updatedAt: string;
   versionNumber: number;
-  levelCombinationElements?: any[];
+  levelCombinationElements?: LevelCombinationElement[];
+}
+
+export interface LevelCombinationElement {
+  id: string;
+  level: ExperimentLevel;
 }
 
 export interface ExperimentPartition {

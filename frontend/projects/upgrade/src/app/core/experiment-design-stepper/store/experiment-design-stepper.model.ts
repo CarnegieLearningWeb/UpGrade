@@ -14,7 +14,7 @@ export interface FactorialConditionRequestObject {
   conditionCode: string;
   assignmentWeight: number;
   order: number;
-  levelCombinationElements: { [key: string]: string }[];
+  levelCombinationElements: { id: string; level: FactorialLevelTableRowData }[];
 }
 export interface ExperimentAliasTableRow {
   id?: string;

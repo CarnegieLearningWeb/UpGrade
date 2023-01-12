@@ -643,19 +643,21 @@ export class ExperimentAssignmentService {
 
           let aliasCondition: ExperimentCondition = null;
           if (conditionAssigned) {
-            const aliasFound = conditionAliases.find(
-              (x) =>
-                x.parentCondition.id === conditionAssigned.id &&
-                x.decisionPoint.site === decisionPoint.site &&
-                x.decisionPoint.target === decisionPoint.target
-            );
-
-            if (aliasFound) {
-              aliasCondition = { ...conditionAssigned, conditionCode: aliasFound.aliasName };
-            }
-
             if (type === EXPERIMENT_TYPE.FACTORIAL) {
+              // returns factorial alias condition or assigned condition
               factorialCondition = this.getFactorialCondition(conditionAssigned, factors)[0];
+            } else {
+              // checking alias condition for simple experiment
+              const aliasFound = conditionAliases.find(
+                (x) =>
+                  x.parentCondition.id === conditionAssigned.id &&
+                  x.decisionPoint.site === decisionPoint.site &&
+                  x.decisionPoint.target === decisionPoint.target
+              );
+
+              if (aliasFound) {
+                aliasCondition = { ...conditionAssigned, conditionCode: aliasFound.aliasName };
+              }
             }
           }
 
