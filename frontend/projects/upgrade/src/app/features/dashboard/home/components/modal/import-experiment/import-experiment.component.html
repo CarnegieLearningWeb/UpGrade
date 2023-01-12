@@ -42,8 +42,8 @@
     <button
       mat-raised-button
       class="shared-modal--modal-btn default-button"
-      [ngClass]="{ 'default-button--disabled': !experimentInfo }"
-      [disabled]="!experimentInfo"
+      [ngClass]="{ 'default-button--disabled': uploadedFileCount === 1 && (!experimentInfo || !isExperimentJSONValid) }"
+      [disabled]="uploadedFileCount === 1 && (!experimentInfo || !isExperimentJSONValid)"
       (click)="importExperiment()"
     >
       {{ 'global.import.text' | translate }}
