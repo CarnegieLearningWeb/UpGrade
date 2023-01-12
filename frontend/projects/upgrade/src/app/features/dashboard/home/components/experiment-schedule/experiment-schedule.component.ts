@@ -197,7 +197,7 @@ export class ExperimentScheduleComponent implements OnInit {
     }
   }
 
-  handleCloseClick() {
+  handleBackBtnClick() {
     return this.experimentScheduleForm.dirty && this.experimentDesignStepperService.experimentStepperDataChanged();
   }
 
