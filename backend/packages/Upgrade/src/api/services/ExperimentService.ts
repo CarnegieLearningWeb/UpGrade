@@ -934,7 +934,7 @@ export class ExperimentService {
             logger
           );
           decisionPointDocToReturn = this.formatingFactorAndLevels(decisionPointDocToReturn, factorDoc, levelDoc);
-          conditionDocToReturn = this.formatingElements(conditionDocToReturn, levelCombinationElementDoc);
+          conditionDocToReturn = this.formatingElements(conditionDocToReturn, levelCombinationElementDoc, levelDoc);
         }
 
         const queryDocToReturn =
@@ -1325,7 +1325,7 @@ export class ExperimentService {
           logger
         );
         decisionPointDocToReturn = this.formatingFactorAndLevels(decisionPointDocToReturn, factorDoc, levelDoc);
-        conditionDocToReturn = this.formatingElements(conditionDocToReturn, levelCombinationElementDoc);
+        conditionDocToReturn = this.formatingElements(conditionDocToReturn, levelCombinationElementDoc, levelDoc);
       }
 
       const newExperiment = {
@@ -1512,17 +1512,22 @@ export class ExperimentService {
     return formatedData;
   }
 
-  private formatingElements(conditions: any[], levelCombinationElements: any[]): any[] {
+  private formatingElements(conditions: any[], levelCombinationElements: any[], levels: any[]): any[] {
     const formatedData = conditions.map((condition) => {
       return {
         ...condition,
-        levelCombinationElements: levelCombinationElements.filter((x) => x.conditionId == condition.id),
+        levelCombinationElements: levelCombinationElements
+          .filter((element) => element.conditionId == condition.id)
+          .map((element) => {
+            return { ...element, level: levels.find((level) => element.levelId === level.id) };
+          }),
       };
     });
 
     formatedData.forEach((condition) => {
       condition.levelCombinationElements.forEach((element) => {
         delete element.conditionId;
+        delete element.levelId;
       });
     });
     return formatedData;
