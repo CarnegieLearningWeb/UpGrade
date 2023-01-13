@@ -1,0 +1,14 @@
+<div
+  class="key-value-bubble"
+  [style.background-color]="styles.backgroundColor"
+  [style.border-color]="styles.borderColor"
+  [style.top.px]="styles.top"
+  [style.left.px]="styles.left"
+  cdkDrag
+  (cdkDragEnded)="dragEnd($event)"
+  (cdkDragStarted)="dragStart($event)"
+  [cdkDragFreeDragPosition]="position"
+>
+  <h6 class="key">{{ key }}</h6>
+  <pre>{{ value | json }}</pre>
+</div>

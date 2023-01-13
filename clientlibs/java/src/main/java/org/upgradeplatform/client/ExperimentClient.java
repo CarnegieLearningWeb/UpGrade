@@ -19,7 +19,6 @@ import javax.ws.rs.core.Response;
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
 import org.upgradeplatform.requestbeans.ExperimentRequest;
-import org.upgradeplatform.requestbeans.FailedExperimentPointRequest;
 import org.upgradeplatform.requestbeans.GroupMetric;
 import org.upgradeplatform.requestbeans.LogInput;
 import org.upgradeplatform.requestbeans.LogRequest;
@@ -31,7 +30,6 @@ import org.upgradeplatform.responsebeans.AssignedCondition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUser;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
-import org.upgradeplatform.responsebeans.FailedExperiment;
 import org.upgradeplatform.responsebeans.FeatureFlag;
 import org.upgradeplatform.responsebeans.InitializeUser;
 import org.upgradeplatform.responsebeans.LogEventResponse;
@@ -289,48 +287,6 @@ public class ExperimentClient implements AutoCloseable {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 
 				    readResponseToCallback(response, callbacks, MarkExperimentPoint.class, mep -> new MarkExperimentPoint(mep.getUserId(), experimentId, experimentPoint, status));
-				} else {
-					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
-					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
-					if (callbacks != null)
-						callbacks.onError(error);
-				}
-			}
-
-			@Override
-			public void failed(Throwable throwable) {
-				callbacks.onError(new ErrorResponse(throwable.getMessage()));
-			}
-		}));
-
-	}
-
-	public void failedExperimentPoint(final String experimentPoint,
-			final ResponseCallback<FailedExperiment> callbacks) {
-		failedExperimentPoint(experimentPoint, "", "", callbacks);
-	}
-
-	public void failedExperimentPoint(final String experimentPoint, final String experimentId,
-			final ResponseCallback<FailedExperiment> callbacks) {
-		failedExperimentPoint(experimentPoint, experimentId, "", callbacks);
-	}
-
-	public void failedExperimentPoint(final String experimentPoint, final String experimentId, final String reason,
-			final ResponseCallback<FailedExperiment> callbacks) {
-		FailedExperimentPointRequest failedExperimentPointRequest = new FailedExperimentPointRequest(this.userId,
-				experimentPoint, experimentId, reason);
-		AsyncInvoker invocation = this.apiService.prepareRequest(FAILED_EXPERIMENT_POINT);
-
-		Entity<FailedExperimentPointRequest> requestContent = Entity.json(failedExperimentPointRequest);
-
-		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
-				new InvocationCallback<Response>() {
-
-			@Override
-			public void completed(Response response) {
-				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-				    readResponseToCallback(response, callbacks, FailedExperiment.class);
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );

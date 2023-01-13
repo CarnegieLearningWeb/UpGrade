@@ -262,7 +262,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     });
   }
 
-  handleCloseClick() {
+  handleBackBtnClick() {
     return (
       (this.participantsForm.dirty || this.participantsForm2.dirty) &&
       this.experimentDesignStepperService.experimentStepperDataChanged()

@@ -26,7 +26,6 @@ public class Utils
 	public static final String SET_WORKING_GROUP= "api/workinggroup";
 	public static final String GET_ALL_EXPERIMENTS= "api/assign";
 	public static final String MARK_EXPERIMENT_POINT= "api/mark";
-	public static final String FAILED_EXPERIMENT_POINT= "api/failed";
 	public static final String GET_ALL_FEATURE_FLAGS= "api/featureflag";
 	public static final String LOG_EVENT= "api/log";
 	public static final String SET_ALT_USER_IDS= "api/useraliases";
