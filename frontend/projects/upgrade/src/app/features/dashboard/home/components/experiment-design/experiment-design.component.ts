@@ -506,7 +506,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.validatePartitionNames(partitions);
     this.validatePartitionCount(partitions);
     this.validatePartitions();
-    
     return !this.partitionPointErrors.length && !this.partitionCountError && !this.expPointAndIdErrors.length;
   }
 
@@ -876,6 +875,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   get ExperimentState() {
     return EXPERIMENT_STATE;
+  }
+
+  get isAliasTableButtonDisabled() {
+    return (
+      this.aliasTableData.length === 0 ||
+      this.partition.length === 0 ||
+      this.condition.length === 0 ||
+      !this.isExperimentEditable
+    );
   }
 
   ngOnDestroy() {
