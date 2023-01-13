@@ -61,6 +61,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   userIdsToSend = [];
   groupsToSend = [];
   groupString = ' ( group )';
+  includeAll = false;
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -138,17 +139,25 @@ export class ExperimentParticipantsComponent implements OnInit {
         });
       } else {
         this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
-        this.experimentInfo.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
+        this.experimentInfo.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
           this.members1.push(this.addMembers1(MemberTypes.INDIVIDUAL, id.userId));
         });
-        this.experimentInfo.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
+        this.experimentInfo.experimentSegmentInclusion.segment.groupForSegment.forEach((group) => {
           this.members1.push(this.addMembers1(group.type, group.groupId));
         });
-        this.experimentInfo.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
+        this.experimentInfo.experimentSegmentInclusion.segment.subSegments.forEach((id) => {
           this.members1.push(this.addMembers1(MemberTypes.SEGMENT, id.name));
         });
+        this.experimentInfo.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
+          this.members2.push(this.addMembers2(MemberTypes.INDIVIDUAL, id.userId));
+        });
+        this.experimentInfo.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
+          this.members2.push(this.addMembers2(group.type, group.groupId));
+        });
+        this.experimentInfo.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
+          this.members2.push(this.addMembers2(MemberTypes.SEGMENT, id.name));
+        });
       }
-
       this.members1.removeAt(0);
       this.members2.removeAt(0);
     }
@@ -160,17 +169,27 @@ export class ExperimentParticipantsComponent implements OnInit {
   selectedOption(event = null, index = null) {
     if (event) {
       if (index === 0 && event.value === 'All') {
-        this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
+        this.members1.controls.at(index).setValue({ type: 'All', id: 'All' });
+        this.members1.controls.at(index).get('id').disable();
+        this.includeAll = true;
         for (let i = 1; i < this.members1.length; i++) {
           this.removeMember1(i);
         }
-      } else {
         this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
+      } else {
+        this.members1.controls.at(index).get('id').enable();
+        this.members1.controls.at(index).get('id').setValue('');
+        this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
       }
     }
   }
 
-  addMembers1(type = null, id = null) {
+  addMembers1(type = null, id = null, index = null) {
+    if (this.participantsForm && index === 0) {
+      this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
+    } else if (this.participantsForm && index !== 0) {
+      this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
+    }
     return this._formBuilder.group({
       type: [type, Validators.required],
       id: [id, Validators.required],
@@ -184,8 +203,8 @@ export class ExperimentParticipantsComponent implements OnInit {
     });
   }
 
-  addMember1() {
-    this.members1.push(this.addMembers1());
+  addMember1(index) {
+    this.members1.push(this.addMembers1(null, null, index));
     this.updateView1();
   }
 
@@ -304,20 +323,19 @@ export class ExperimentParticipantsComponent implements OnInit {
   saveData(eventType) {
     this.participantsForm.markAllAsTouched();
     this.participantsForm2.markAllAsTouched();
-
     const filterMode =
       this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC
         ? FILTER_MODE.EXCLUDE_ALL
         : FILTER_MODE.INCLUDE_ALL;
 
-    if (filterMode === FILTER_MODE.INCLUDE_ALL) {
+    if (this.members1.length !== 0) {
+      this.members1.controls.at(0).get('id').enable();
+    } else {
       this.members2.clear();
     }
-
     const { members1 } = this.participantsForm.value;
     const { members2 } = this.participantsForm2.value;
 
-    // TODO: Handle member2:
     if (this.participantsForm.valid && this.participantsForm2.valid) {
       this.gettingMembersValueToSend(members1);
       const segmentMembers1FormData = {
@@ -326,8 +344,6 @@ export class ExperimentParticipantsComponent implements OnInit {
         subSegmentIds: this.subSegmentIdsToSend,
         type: SEGMENT_TYPE.PRIVATE,
       };
-
-      // if dropdown is includeall except then members2.clear()
       this.gettingMembersValueToSend(members2);
       const segmentMembers2FormData = {
         userIds: this.userIdsToSend,
@@ -345,12 +361,15 @@ export class ExperimentParticipantsComponent implements OnInit {
                 filterMode: filterMode,
               }
             : {
-                experimentSegmentInclusion: segmentMembers2FormData,
-                experimentSegmentExclusion: segmentMembers1FormData,
+                experimentSegmentInclusion: segmentMembers1FormData,
+                experimentSegmentExclusion: segmentMembers2FormData,
                 filterMode: filterMode,
               },
         path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS,
       });
+      if (this.members1.length !== 0) {
+        this.members1.controls.at(0).get('id').disable();
+      }
     }
   }
 

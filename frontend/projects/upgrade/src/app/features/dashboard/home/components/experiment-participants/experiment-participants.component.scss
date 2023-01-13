@@ -80,6 +80,9 @@
     border: 0;
     background-color: transparent;
     color: var(--blue);
+    &--disabled {
+      color: var(--light-blue);
+    }
   }
 
   .property-container {
@@ -92,12 +95,9 @@
       width: 25%;
     }
 
-    .no-include-message-container {
-      color: #8F9BB3;
-    }
-
+    .no-include-message-container,
     .no-exclude-message-container {
-      color: #8F9BB3;
+      color: var(--grey-message);
     }
   }
 

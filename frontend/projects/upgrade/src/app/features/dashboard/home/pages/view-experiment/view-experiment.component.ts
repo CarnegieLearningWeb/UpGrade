@@ -23,7 +23,6 @@ import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/s
 import { ExportModalComponent } from '../../components/modal/export-experiment/export-experiment.component';
 import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-time/enrollment-over-time.component';
-import { FILTER_MODE } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
@@ -153,36 +152,24 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     if (this.experiment) {
       this.includeParticipants = [];
       this.excludeParticipants = [];
-      if (this.experiment.filterMode === FILTER_MODE.EXCLUDE_ALL) {
-        this.experiment.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
-          this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
-        });
-        this.experiment.experimentSegmentInclusion.segment.groupForSegment.forEach((group) => {
-          this.includeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
-        });
-        this.experiment.experimentSegmentInclusion.segment.subSegments.forEach((id) => {
-          this.includeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
-        });
-        this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
-          this.excludeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
-        });
-        this.experiment.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
-          this.excludeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
-        });
-        this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
-          this.excludeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
-        });
-      } else if (this.experiment.experimentSegmentExclusion?.segment) {
-        this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
-          this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
-        });
-        this.experiment.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
-          this.includeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
-        });
-        this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
-          this.includeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
-        });
-      }
+      this.experiment.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
+        this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
+      });
+      this.experiment.experimentSegmentInclusion.segment.groupForSegment.forEach((group) => {
+        this.includeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
+      });
+      this.experiment.experimentSegmentInclusion.segment.subSegments.forEach((id) => {
+        this.includeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
+      });
+      this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
+        this.excludeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
+      });
+      this.experiment.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
+        this.excludeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
+      });
+      this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
+        this.excludeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
+      });
     }
   }
 

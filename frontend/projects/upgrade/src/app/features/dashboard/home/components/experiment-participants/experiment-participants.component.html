@@ -88,8 +88,8 @@
         <button
           type="button"
           class="ft-12-700 add-member"
-          (click)="addMember1()"
-          [disabled]="inclusionCriteriaAsIncludeSpecific && members1?.length !== 0"
+          (click)="addMember1(members1?.length)"
+          [disabled]="!inclusionCriteriaAsIncludeSpecific && members1?.length !== 0 && includeAll"
         >
           + {{ 'segments.members-add-members.text' | translate }}
         </button>
@@ -100,7 +100,7 @@
     <br />
     <form class="experiment-participants" [formGroup]="participantsForm2">
       <div class="property-container">
-        <ng-container *ngIf="inclusionCriteriaAsIncludeSpecific">
+        <ng-container *ngIf="members1?.length !== 0">
           <span class="title"> {{ 'segments.except.text' | translate }} </span>
           <ng-container *ngIf="members2?.length; else initialExcludeMessage">
             <mat-table class="member-table" [dataSource]="members2DataSource" formArrayName="members2" #members2Table>
