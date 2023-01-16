@@ -2,6 +2,7 @@ import { Container } from 'typedi';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 import TestCase1 from './FactorialCRUD';
 import TestCase2 from './FactorialEnrollment';
+import TestCase3 from './FactorialEnrollment2';
 import { CheckService } from '../../../../src/api/services/CheckService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
@@ -48,4 +49,9 @@ export const FactorialExperimentCRUD = async () => {
 export const FactorialEnrollment = async () => {
   await initialChecks();
   await TestCase2();
+};
+
+export const FactorialEnrollment2 = async () => {
+  await initialChecks();
+  await TestCase3();
 };

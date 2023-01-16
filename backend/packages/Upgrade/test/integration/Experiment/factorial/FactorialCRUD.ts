@@ -4,13 +4,13 @@ import { ExperimentService } from '../../../../src/api/services/ExperimentServic
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
-import { factorialExperiment } from '../../mockData/experiment/index';
+import { firstFactorialExperiment } from '../../mockData/experiment/index';
 
 export default async function FactorialExperimentCRUD(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // experiment object
-  const experimentObject = factorialExperiment;
+  const experimentObject = firstFactorialExperiment;
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
@@ -21,9 +21,7 @@ export default async function FactorialExperimentCRUD(): Promise<void> {
   const experiments = await experimentService.find(new UpgradeLogger());
 
   // sort conditions
-  experiments[0].conditions.sort((a, b) => {
-    return a.order < b.order ? 1 : a.order > b.order ? -1 : 0;
-  });
+  experiments[0].conditions.sort((a, b) => (a.order > b.order ? 1 : b.order > a.order ? -1 : 0));
 
   // sort decision points
   experiments[0].partitions.sort((a, b) => (a.order > b.order ? 1 : b.order > a.order ? -1 : 0));

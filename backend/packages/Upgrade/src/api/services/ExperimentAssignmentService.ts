@@ -645,7 +645,11 @@ export class ExperimentAssignmentService {
           if (conditionAssigned) {
             if (type === EXPERIMENT_TYPE.FACTORIAL) {
               // returns factorial alias condition or assigned condition
-              factorialCondition = this.getFactorialCondition(conditionAssigned, factors)[0];
+              const aliasFound = conditionAliases.find((x) => x.parentCondition.id === conditionAssigned.id);
+              factorialCondition = this.getFactorialCondition(
+                { ...conditionAssigned, conditionAliases: [aliasFound] },
+                factors
+              )[0];
             } else {
               // checking alias condition for simple experiment
               const aliasFound = conditionAliases.find(
@@ -1876,6 +1880,7 @@ export class ExperimentAssignmentService {
       .sort((a, b) => a.order - b.order);
 
     if (conditionCodeToSet.length > 1) {
+      // for factorial experiment with same decisionPoints
       let conditionCodeName = '';
       conditionCodeToSet.forEach((level) => {
         conditionCodeName += level.factorName + '=' + level.name + '; ';
@@ -1896,6 +1901,7 @@ export class ExperimentAssignmentService {
 
       aliases.push(conditionCodeName);
     } else {
+      // for factorial experiment with different decisionPoints
       const levelAlias = conditionCodeToSet[0].alias;
       factorialCondition = { ...conditionAssigned, conditionCode: levelAlias || conditionCodeToSet[0].name };
 

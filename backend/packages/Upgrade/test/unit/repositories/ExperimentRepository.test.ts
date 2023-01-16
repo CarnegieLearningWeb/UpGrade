@@ -180,7 +180,7 @@ describe('ExperimentRepository Testing', () => {
       raw: [experiment],
     };
 
-    selectMock.expects('leftJoinAndSelect').exactly(21).returns(selectQueryBuilder);
+    selectMock.expects('leftJoinAndSelect').exactly(22).returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
     let res = await repo.findAllExperiments();
@@ -196,7 +196,7 @@ describe('ExperimentRepository Testing', () => {
       .stub(ExperimentRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
 
-    selectMock.expects('leftJoinAndSelect').exactly(21).returns(selectQueryBuilder);
+    selectMock.expects('leftJoinAndSelect').exactly(22).returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.reject(err));
 
     expect(async () => {
