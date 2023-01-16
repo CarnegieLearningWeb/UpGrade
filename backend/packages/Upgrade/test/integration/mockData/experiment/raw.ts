@@ -418,6 +418,164 @@ export const experimentSixth = {
   groupSatisfied: 0,
 };
 
+export const factorialExperiment = {
+  id: 'edf54471-5266-4a52-a058-90fac2d03678',
+  name: 'Factors with same Decision Points',
+  description: '',
+  context: ['div'],
+  state: 'enrolling',
+  startOn: null,
+  consistencyRule: 'individual',
+  assignmentUnit: 'individual',
+  postExperimentRule: 'continue',
+  enrollmentCompleteCondition: null,
+  endOn: null,
+  revertTo: null,
+  tags: [],
+  group: null,
+  logging: false,
+  filterMode: 'includeAll',
+  backendVersion: '1.0.0',
+  type: 'Factorial',
+  partitions: [
+    {
+      id: '5e335ac8-28df-463d-86bb-837dcd8240c4',
+      twoCharacterId: 'JU',
+      site: 'geometry',
+      target: 'color_shape',
+      description: '',
+      order: 1,
+      excludeIfReached: false,
+      factors: [
+        {
+          name: 'Color',
+          order: 1,
+          levels: [
+            {
+              id: '33333333-1111-4a52-a058-90fac2d03679',
+              name: 'Red',
+              order: 1,
+            },
+            {
+              id: '44444444-2222-4a52-a058-90fac2d03679',
+              name: 'Blue',
+              description: 'description of level2',
+              alias: 'Dark blue - Blue color Alias',
+              order: 2,
+            },
+          ],
+        },
+        {
+          name: 'Shape',
+          order: 2,
+          levels: [
+            {
+              id: '11111111-1111-4a52-a058-90fac2d03679',
+              name: 'Circle',
+              order: 1,
+            },
+            {
+              id: '22222222-2222-4a52-a058-90fac2d03679',
+              name: 'Rectangle',
+              description: 'description of level2',
+              alias: 'Square - rectangle alias',
+              order: 2,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  conditions: [
+    {
+      id: '6dd63ad9-f121-4d95-8d27-08a80e9560a4',
+      twoCharacterId: '5H',
+      name: '',
+      description: null,
+      conditionCode: null,
+      assignmentWeight: 50,
+      order: 1,
+      levelCombinationElements: [
+        {
+          level: '11111111-1111-4a52-a058-90fac2d03679',
+        },
+        {
+          level: '33333333-1111-4a52-a058-90fac2d03679',
+        },
+      ],
+    },
+    {
+      createdAt: '2022-10-07T05:44:43.162Z',
+      updatedAt: '2022-10-07T05:44:43.162Z',
+      versionNumber: 1,
+      id: 'b6bdc056-34a2-4c96-8304-5f5105885211',
+      twoCharacterId: '6Y',
+      name: '',
+      description: null,
+      conditionCode: null,
+      assignmentWeight: 50,
+      order: 2,
+      levelCombinationElements: [
+        {
+          level: '22222222-2222-4a52-a058-90fac2d03679',
+        },
+        {
+          level: '44444444-2222-4a52-a058-90fac2d03679',
+        },
+      ],
+    },
+  ],
+  stateTimeLogs: [
+    {
+      createdAt: '2022-10-07T05:44:57.680Z',
+      updatedAt: '2022-10-07T05:44:57.680Z',
+      versionNumber: 1,
+      id: '49dd73c2-c68a-4e46-bd2a-5473edb0da22',
+      fromState: 'inactive',
+      toState: 'enrolling',
+      timeLog: '2022-10-07T05:44:57.673Z',
+    },
+  ],
+  queries: [],
+  experimentSegmentInclusion: {
+    segment: {
+      createdAt: '2022-10-07T05:44:43.184Z',
+      updatedAt: '2022-10-07T05:44:43.184Z',
+      versionNumber: 1,
+      id: 'ba189e98-b6a9-4516-9da0-484fc61c44d6',
+      name: 'edf54471-5266-4a52-a058-90fac2d03679 Inclusion Segment',
+      description: 'edf54471-5266-4a52-a058-90fac2d03679 Inclusion Segment',
+      context: 'add',
+      type: 'private',
+      individualForSegment: [],
+      groupForSegment: [],
+      subSegments: [],
+    },
+  },
+  experimentSegmentExclusion: {
+    segment: {
+      createdAt: '2022-10-07T05:44:43.210Z',
+      updatedAt: '2022-10-07T05:44:43.210Z',
+      versionNumber: 1,
+      id: '7c698b1e-74ed-4429-8c73-90b86c95ca33',
+      name: 'edf54471-5266-4a52-a058-90fac2d03679 Exclusion Segment',
+      description: 'edf54471-5266-4a52-a058-90fac2d03679 Exclusion Segment',
+      context: 'add',
+      type: 'private',
+      individualForSegment: [],
+      groupForSegment: [],
+      subSegments: [],
+    },
+  },
+  conditionAliases: [
+    {
+      id: '9d753b90-1111-44b5-8acc-2483c0507ea1',
+      aliasName: 'Red-Circle alias name',
+      parentCondition: '6dd63ad9-f121-4d95-8d27-08a80e9560a4',
+    },
+  ],
+};
+
 export function getRevertToExperiment() {
   return JSON.parse(JSON.stringify(revertToExperiment));
 }
@@ -443,4 +601,8 @@ export function getFifthExperiment() {
 
 export function getSixthExperiment() {
   return JSON.parse(JSON.stringify(experimentSixth));
+}
+
+export function getFactorialExperiment() {
+  return JSON.parse(JSON.stringify(factorialExperiment));
 }

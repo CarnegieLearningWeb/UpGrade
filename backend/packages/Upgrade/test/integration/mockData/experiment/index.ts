@@ -6,6 +6,7 @@ import {
   getFourthExperiment,
   getFifthExperiment,
   getSixthExperiment,
+  getFactorialExperiment,
 } from './raw';
 import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'upgrade_types';
 
@@ -82,6 +83,14 @@ export const groupAssignmentWithExperimentConsistencyExperimentSwitchAfterAssign
   ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
+  postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+  state: EXPERIMENT_STATE.INACTIVE,
+};
+
+export const factorialExperiment = {
+  ...getFactorialExperiment(),
+  consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
+  assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
 };
