@@ -20,6 +20,21 @@ export const selecthasExperimentStepperDataChanged = createSelector(
   (state) => state.hasExperimentStepperDataChanged
 );
 
+export const selectIsDecisionPointsTableEditMode = createSelector(
+  selectExperimentDesignStepperState,
+  (state) => state.isDecisionPointsTableEditMode
+);
+
+export const selectDecisionPointsTableEditIndex = createSelector(
+  selectExperimentDesignStepperState,
+  (state) => state.decisionPointsTableEditIndex
+);
+
+export const selectDecisionPointsEditModePreviousRowData = createSelector(
+  selectExperimentDesignStepperState,
+  (state) => state.decisionPointsEditModePreviousRowData
+);
+
 export const selectIsConditionsTableEditMode = createSelector(
   selectExperimentDesignStepperState,
   (state) => state.isConditionsTableEditMode
@@ -33,6 +48,7 @@ export const selectConditionsTableEditIndex = createSelector(
 export const selectIsFormLockedForEdit = createSelector(selectExperimentDesignStepperState, (state) => {
   const lockSources = [
     state.isAliasTableEditMode,
+    state.isDecisionPointsTableEditMode,
     state.isConditionsTableEditMode,
     state.isFactorialConditionsTableEditMode,
   ];
