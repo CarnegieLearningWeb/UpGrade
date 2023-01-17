@@ -89,6 +89,7 @@
           type="button"
           class="ft-12-700 add-member"
           (click)="addMember1(members1?.length)"
+          [ngClass]="{ 'add-member--disabled': (!inclusionCriteriaAsIncludeSpecific && members1?.length !== 0 && includeAll) }"
           [disabled]="!inclusionCriteriaAsIncludeSpecific && members1?.length !== 0 && includeAll"
         >
           + {{ 'segments.members-add-members.text' | translate }}
