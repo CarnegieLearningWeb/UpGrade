@@ -11,7 +11,7 @@
               color="primary"
               class="ft-14-600 toggle-button"
               (click)="handleConditionsButtonClick()"
-              [disabled]="!isExperimentEditable"
+              [disabled]="isConditionButtonFunctional()"
             >
               <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
               <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.conditions' | translate }}</span>
@@ -161,8 +161,14 @@
                           </mat-header-cell>
                           <mat-cell *matCellDef="let element; let levelIndex = index" [formGroupName]="levelIndex">
                             <mat-form-field floatLabel="never">
-                              <span [matTooltip]="factorialExperimentDesignForm.getRawValue('level')?.factors[factorIndex]?.levels[levelIndex]?.level"
-                                matTooltipPosition="above">
+                              <span
+                                [matTooltip]="
+                                  factorialExperimentDesignForm.getRawValue('level')?.factors[factorIndex]?.levels[
+                                    levelIndex
+                                  ]?.level
+                                "
+                                matTooltipPosition="above"
+                              >
                                 <input
                                   matInput
                                   [placeholder]="'home.new-experiment.design.level.placeholder.text' | translate"
@@ -184,8 +190,14 @@
                             [formGroupName]="levelAliasIndex"
                           >
                             <mat-form-field floatLabel="never">
-                              <span [matTooltip]="factorialExperimentDesignForm.getRawValue('alias')?.factors[factorIndex]?.levels[levelIndex]?.alias"
-                              matTooltipPosition="above">
+                              <span
+                                [matTooltip]="
+                                  factorialExperimentDesignForm.getRawValue('alias')?.factors[factorIndex]?.levels[
+                                    levelIndex
+                                  ]?.alias
+                                "
+                                matTooltipPosition="above"
+                              >
                                 <input
                                   matInput
                                   [placeholder]="'home.new-experiment.design.alias.placeholder.text' | translate"
@@ -196,16 +208,6 @@
                             </mat-form-field>
                           </mat-cell>
                         </ng-container>
-
-                        <!-- Description Column 
-                          <ng-container matColumnDef="description">
-                            <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-                              {{ 'home.new-experiment.design.description.text' | translate }}
-                            </mat-header-cell>
-                            <mat-cell *matCellDef="let element; let index">
-                              <span>{{element.description}}</span>
-                            </mat-cell>
-                          </ng-container>-->
 
                         <ng-container matColumnDef="removeLevel">
                           <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
@@ -278,16 +280,8 @@
           <div class="validation-container">
             <span class="ft-14-600 validation-message" *ngFor="let error of factorPointErrors">{{ error }}</span>
             <span class="ft-14-600 validation-message" *ngFor="let error of levelPointErrors">{{ error }}</span>
-            <span
-              class="ft-14-600 validation-message"
-              *ngIf="factorCountError"
-              [innerHTML]="factorCountError"
-            ></span>
-            <span
-              class="ft-14-600 validation-message"
-              *ngIf="levelCountError"
-              [innerHTML]="levelCountError"
-            ></span>
+            <span class="ft-14-600 validation-message" *ngIf="factorCountError" [innerHTML]="factorCountError"></span>
+            <span class="ft-14-600 validation-message" *ngIf="levelCountError" [innerHTML]="levelCountError"></span>
             <!-- If experiment point and id are not from predefined value -->
             <span class="ft-14-600 validation-message" *ngFor="let error of expPointAndIdErrors">{{ error }}</span>
           </div>
@@ -298,7 +292,9 @@
           <br />
           <app-conditions-table
             (hide)="scrollToFactorsTable()"
+            [isAnyRowRemoved]="isAnyRowRemoved"
             [experimentInfo]="experimentInfo"
+            [isExperimentEditable]="isExperimentEditable"
           ></app-conditions-table>
           <br />
         </div>
@@ -312,8 +308,8 @@
         matStepperPrevious
         mat-raised-button
         class="shared-modal--modal-btn btn-back default-button"
-        [class.default-button--disabled]="(isFormLockedForEdit$ | async)"
-        [disabled]="(isFormLockedForEdit$ | async)"
+        [class.default-button--disabled]="isFormLockedForEdit$ | async"
+        [disabled]="isFormLockedForEdit$ | async"
         (click)="
           factorialExperimentDesignForm.dirty ? experimentDesignStepperService.experimentStepperDataChanged() : ''
         "
@@ -335,8 +331,8 @@
         mat-raised-button
         class="shared-modal--modal-btn default-button"
         (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
-        [class.default-button--disabled]="(isFormLockedForEdit$ | async)"
-        [disabled]="(isFormLockedForEdit$ | async)"
+        [class.default-button--disabled]="isFormLockedForEdit$ | async"
+        [disabled]="isFormLockedForEdit$ | async"
       >
         {{ 'global.next.text' | translate }}
       </button>

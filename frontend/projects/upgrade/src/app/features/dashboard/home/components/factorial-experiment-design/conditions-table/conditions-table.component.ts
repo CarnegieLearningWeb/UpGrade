@@ -6,6 +6,7 @@ import {
   ExperimentFactorialDesignData,
   FactorialConditionTableRowData,
 } from '../../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+import { TranslateService } from '@ngx-translate/core';
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 
 @Component({
@@ -17,6 +18,8 @@ import { ExperimentVM } from '../../../../../../core/experiments/store/experimen
 export class ConditionsTableComponent implements OnInit, OnDestroy {
   @Output() hide = new EventEmitter<boolean>();
   @Input() experimentInfo: ExperimentVM;
+  @Input() isAnyRowRemoved: boolean;
+  @Input() isExperimentEditable: boolean;
 
   subscriptions: Subscription;
   factorialConditionTableForm: FormGroup;
@@ -33,9 +36,14 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   formInitialized = false;
   useEllipsis = false;
 
+  // Condition Errors
+  conditionweightSumError: string = null;
+  conditionnegativeweightError: string = null;
+
   constructor(
     private experimentDesignStepperService: ExperimentDesignStepperService,
-    private _formBuilder: FormBuilder
+    private _formBuilder: FormBuilder,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -45,6 +53,11 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     this.subscriptions = this.experimentDesignStepperService.factorialConditionTableData$.subscribe(this.tableData$);
     this.createForm();
     this.registerDesignDataChanges();
+
+    this.factorialConditionTableForm.get('factorialConditions').valueChanges.subscribe((newValues) => {
+      this.validateWeightSumEqualTo100(newValues);
+      this.validateWeightsNotNegative(newValues);
+    });
   }
 
   ngOnDestroy(): void {
@@ -86,9 +99,9 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   handleDesignDataChanges(designData: ExperimentFactorialDesignData) {
-    if (this.experimentInfo && !this.formInitialized) {
-      this.handleInitializeExistingTableData(designData);
-    } else if (!this.experimentInfo && !this.formInitialized) {
+    if (this.experimentInfo && !this.formInitialized && !this.isAnyRowRemoved) {
+      this.handleInitializeExistingTableData();
+    } else if (!this.experimentInfo && this.formInitialized && !this.isAnyRowRemoved) {
       this.handleInitializeNewNewTableData(designData);
     } else {
       // if new exp and form initialized and you move back and forth
@@ -99,30 +112,28 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     this.updateFactorHeaders(designData);
   }
 
-  handleInitializeExistingTableData(designData: ExperimentFactorialDesignData) {
+  handleInitializeExistingTableData() {
     console.log('#init preexisting');
 
     this.equalWeightFlag = this.experimentInfo.conditions.every(
       (condition) => condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight
     );
 
-    const newTableData = this.experimentDesignStepperService.mergeExistingConditionsTableData(
-      designData,
-      this.experimentInfo
-    );
+    const newTableData = this.experimentDesignStepperService.mergeExistingConditionsTableData(this.experimentInfo);
     this.initializeForm(newTableData);
   }
 
   handleInitializeNewNewTableData(designData: ExperimentFactorialDesignData) {
     console.log('#init new');
+    this.equalWeightFlag = true;
     const newTableData = this.experimentDesignStepperService.createNewFactorialConditionTableData(designData);
     this.initializeForm(newTableData);
   }
 
-  handleUpdateDesignDataTableChanges(designData: ExperimentFactorialDesignData) {
-    console.log('#update table');
-    // TODO: intelligently handle updates to design data without triggering complete table re-creation
-  }
+  // handleUpdateDesignDataTableChanges(designData: ExperimentFactorialDesignData) {
+  //   console.log('#update table');
+  //   // TODO: intelligently handle updates to design data without triggering complete table re-creation
+  // }
 
   updateFactorHeaders(designData: ExperimentFactorialDesignData) {
     this.factorHeaders = designData.factors.map((factor) => {
@@ -165,48 +176,32 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     return newTableData;
   }
 
-  // static validateWeightsEqualTo100(controls: AbstractControl): Record<string, any> | null {
-  //   const conditions = controls.get('conditions').value;
-  //   if (conditions.length >= 0) {
-  //     if (conditions.length === 0) {
-  //       return { assignmentWeightsSumError: false };
-  //     } else if (conditions.length >= 1) {
-  //       const conditionWeight = conditions.map((condition) => condition.assignmentWeight);
-  //       if (!conditionWeight[0]) {
-  //         return { assignmentWeightsSumError: false };
-  //       } else {
-  //         // handling sum of decimal values for assignment weights:
-  //         let sumOfAssignmentWeights = 0.0;
-  //         conditions.forEach(
-  //           (condition) => (sumOfAssignmentWeights += parseFloat(Number(condition.assignmentWeight).toFixed(1)))
-  //         );
-  //         // checking if sum is not equal to 100
-  //         return Math.round(sumOfAssignmentWeights) !== 100.0 ? { assignmentWeightsSumError: true } : null;
-  //       }
-  //     }
-  //   }
-  //   return null;
-  // }
+  validateWeightSumEqualTo100(factorialConditions: any) {
+    const weightSumNot100ErrorMsg = this.translate.instant("Weights' sum must be 100");
 
-  // validateHasAssignmentWeightsNegative(conditions: ExperimentCondition[]) {
-  //   const negativeAssignmentWeightErrorText = this.translate.instant(
-  //     'home.new-experiment.design.assignment-weight-negative.text'
-  //   );
-  //   if (conditions.length) {
-  //     const hasNegativeAssignmentWeights = conditions.filter((condition) => condition.assignmentWeight < 0);
-  //     if (
-  //       hasNegativeAssignmentWeights.length &&
-  //       !this.conditionCodeErrors.includes(negativeAssignmentWeightErrorText)
-  //     ) {
-  //       this.conditionCodeErrors.push(negativeAssignmentWeightErrorText);
-  //     } else if (!hasNegativeAssignmentWeights.length) {
-  //       const index = this.conditionCodeErrors.indexOf(negativeAssignmentWeightErrorText, 0);
-  //       if (index > -1) {
-  //         this.conditionCodeErrors.splice(index, 1);
-  //       }
-  //     }
-  //   }
-  // }
+    // handling sum of decimal values for assignment weights:
+    let sumOfAssignmentWeights = 0.0;
+    factorialConditions.forEach(
+      (condition) => (sumOfAssignmentWeights += parseFloat(Number(condition.weight).toFixed(1)))
+    );
+    // checking if sum is not equal to 100
+    if (Math.round(sumOfAssignmentWeights) !== 100.0) {
+      this.conditionweightSumError = weightSumNot100ErrorMsg;
+    } else {
+      this.conditionweightSumError = null;
+    }
+  }
+
+  validateWeightsNotNegative(factorialConditions: any) {
+    this.conditionnegativeweightError = null;
+    const negativeweightErrorMsg = this.translate.instant('home.new-experiment.design.assignment-weight-negative.text');
+    // handling sum of decimal values for assignment weights:
+    factorialConditions.forEach((condition) =>
+      parseFloat(Number(condition.weight).toFixed(1)) < 0
+        ? (this.conditionnegativeweightError = negativeweightErrorMsg)
+        : null
+    );
+  }
 
   getIncludedConditionCount(tableData: FactorialConditionTableRowData[]): number {
     return tableData.reduce((count, row) => {

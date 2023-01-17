@@ -20,6 +20,7 @@
       color="primary"
       [checked]="equalWeightFlag"
       (change)="handleEqualWeightToggle()"
+      [disabled]="!isExperimentEditable"
     >
       {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
     </mat-checkbox>
@@ -63,7 +64,13 @@
           </ng-container>
           <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
             <mat-form-field floatLabel="never">
-              <input class="input-alias" type="text" matInput formControlName="alias" />
+              <input
+                class="input-alias"
+                type="text"
+                matInput
+                formControlName="alias"
+                [disabled]="!isExperimentEditable"
+              />
             </mat-form-field>
           </ng-container>
         </mat-cell>
@@ -82,7 +89,7 @@
           </ng-container>
           <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex">
             <mat-form-field class="input-weight" floatLabel="never">
-              <input type="test" matInput formControlName="weight" />
+              <input type="test" matInput formControlName="weight" [disabled]="!isExperimentEditable" />
             </mat-form-field>
           </ng-container>
         </mat-cell>
@@ -98,7 +105,7 @@
             formControlName="include"
             class="ft-13-700"
             color="primary"
-            [disabled]="(tableEditIndex$ | async) !== rowIndex"
+            [disabled]="(tableEditIndex$ | async) !== rowIndex || !isExperimentEditable"
           >
           </mat-checkbox>
         </mat-cell>
@@ -111,7 +118,9 @@
           <button
             type="button"
             class="row-action-btn"
-            [disabled]="(isFormLockedForEdit$ | async) && (tableEditIndex$ | async) !== rowIndex"
+            [disabled]="
+              ((isFormLockedForEdit$ | async) && (tableEditIndex$ | async) !== rowIndex) || !isExperimentEditable
+            "
             (click)="handleRowEditClick(rowData, rowIndex)"
           >
             <!-- Edit Icon -->
@@ -148,18 +157,9 @@
         }"
       ></mat-row>
     </mat-table>
-    <!-- <div class="validation-container">
-      <span
-        class="ft-14-600 validation-message"
-        *ngIf="experimentDesignForm.errors?.assignmentWeightsSumError"
-        [innerHTML]="'home.new-experiment.design.assignment-weight-validation.text' | translate"
-      ></span>
-      <span class="ft-14-600 validation-message" *ngFor="let error of conditionCodeErrors">{{ error }} </span>
-      <span
-        class="ft-14-600 validation-message"
-        *ngIf="conditionCountError"
-        [innerHTML]="conditionCountError"
-      ></span>
-    </div> -->
+    <div class="validation-container">
+      <span class="ft-14-600 validation-message">{{ conditionweightSumError }}</span>
+      <span class="ft-14-600 validation-message">{{ conditionnegativeweightError }}</span>
+    </div>
   </form>
 </section>

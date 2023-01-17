@@ -8,7 +8,6 @@ import {
   ViewChild,
   ElementRef,
   OnChanges,
-  SimpleChanges,
   OnDestroy,
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
@@ -24,16 +23,14 @@ import {
   EXPERIMENT_STATE,
   ExperimentFactor,
   ExperimentLevel,
-  ExperimentConditionAlias,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
 import { v4 as uuidv4 } from 'uuid';
-import { filter, map, startWith } from 'rxjs/operators';
+import { map, startWith } from 'rxjs/operators';
 import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
-  ExperimentAliasTableRow,
   ExperimentConditionAliasRequestObject,
   FactorialConditionTableRowData,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
@@ -85,6 +82,8 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   };
   expPointAndIdErrors: string[] = [];
   isExperimentEditable = true;
+  isAnyRowRemoved = false;
+  conditionTableDataUpToDate = true;
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
 
   // Alias Table details
@@ -119,7 +118,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       });
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges() {
     if (this.isContextChanged) {
       this.isContextChanged = false;
       this.factor?.clear();
@@ -137,29 +136,10 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         this.factorialConditionsTableData = tableData;
       }
     );
-    // this.allPartitionsSub = this.experimentService.allPartitions$
-    //   .pipe(filter((partitions) => !!partitions))
-    //   .subscribe((partitions: any) => {
-    //     this.allPartitions = partitions.map((partition) =>
-    //       partition.target ? partition.site + partition.target : partition.site
-    //     );
-    //   });
-
-    // this.subscriptionHandler = this.experimentService.allPartitions$
-    //   .pipe(filter((partitions) => !!partitions))
-    //   .subscribe((partitions: any) => {
-    //     this.allFactors = partitions.map((partition) =>
-    //       partition.factors ? (partition.factors.map((factor) => partition.site + partition.target + factor.name ))
-    //         : (partition.target ? partition.site + partition.target : partition.site)
-    //     );
-    //   });
 
     this.factorialExperimentDesignForm = this._formBuilder.group({
       factors: this._formBuilder.array([this.addFactors()]),
     });
-
-    // this.createDesignDataSubject();
-    // this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
 
     // populate values in form to update experiment if experiment data is available
     let factorIndex = 0;
@@ -194,6 +174,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     });
 
     this.factorialExperimentDesignForm.get('factors').valueChanges.subscribe((newValues) => {
+      this.conditionTableDataUpToDate = false;
       this.validateFactorNames(newValues);
     });
   }
@@ -283,6 +264,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   removeFactor(groupIndex: number) {
     this.factor.removeAt(groupIndex);
+    this.isAnyRowRemoved = true;
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView();
     if (this.expandedId === groupIndex) {
@@ -292,6 +274,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   removeLevel(factorIndex: number, levelIndex: number) {
     this.getLevels(factorIndex).removeAt(levelIndex);
+    this.isAnyRowRemoved = true;
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView('levelTable');
   }
@@ -440,7 +423,8 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       !this.expPointAndIdErrors.length &&
       this.factorialExperimentDesignForm.valid &&
       this.factorCountError === null &&
-      this.levelCountError === null
+      this.levelCountError === null &&
+      !this.experimentDesignStepperService.checkConditionTableValidity()
     );
   }
 
@@ -448,6 +432,14 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.factorialExperimentDesignForm.updateValueAndValidity();
     // const factorialPartitions = this.convertToPartitionData(this.factorialExperimentDesignForm.value);
     this.validateFactorCount(this.factorialExperimentDesignForm.value);
+  }
+
+  isConditionButtonFunctional(): boolean {
+    if (this.isExperimentEditable) {
+      return !this.factorialExperimentDesignForm.valid || this.factorialExperimentDesignForm.value.factors.length > 2;
+    } else {
+      return false;
+    }
   }
 
   emitEvent(eventType: NewExperimentDialogEvents) {
@@ -494,6 +486,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         }
         this.saveData(eventType);
         this.experimentDesignStepperService.experimentStepperDataReset();
+        this.isAnyRowRemoved = false;
         this.factorialExperimentDesignForm.markAsPristine();
         break;
     }
@@ -501,13 +494,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   saveData(eventType) {
     this.validateForm();
-
-    // TODO: Uncomment to validate partitions with predefined site and target
     this.validateFactors();
 
-    // check if the condition table data was never viewed.
-    // if form is valid but conditions table is empty, manually trigger creation of default values
-    if (this.experimentDesignStepperService.getFactorialConditionTableData().length === 0) {
+    if (!this.conditionTableDataUpToDate) {
       this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
     }
 
@@ -542,8 +531,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     factorialExperimentDesignFormData.factors.forEach((partition) => {
       let levelOrder = 1;
       const currentLevels: ExperimentLevel[] = partition.levels.map((level) => {
-        // const levelId = uuidv4();
-        // this.levelIds.push(levelId);
         return { name: level.level, alias: level.alias, id: level.id, order: levelOrder++ };
       });
       const currentFactors: ExperimentFactor = {
@@ -583,6 +570,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   scrollToConditionsTable(): void {
+    this.conditionTableDataUpToDate = true;
     this.stepContainer.nativeElement.scroll({
       top: this.stepContainer.nativeElement.scrollHeight / 2,
       behavior: 'smooth',
