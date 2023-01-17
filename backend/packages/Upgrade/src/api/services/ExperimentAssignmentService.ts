@@ -550,10 +550,10 @@ export class ExperimentAssignmentService {
 
       // Create experiment pool
       const experimentPools = this.createExperimentPool(filteredExperiments);
-      console.log(
-        'experimentPools',
-        experimentPools.map((exp) => exp.map(({ id }) => id))
-      );
+      // console.log(
+      //   'experimentPools',
+      //   experimentPools.map((exp) => exp.map(({ id }) => id))
+      // );
 
       // filter pools which are not assigned
       const unassignedPools = experimentPools.filter((pool) => {
@@ -576,7 +576,7 @@ export class ExperimentAssignmentService {
       filteredExperiments = unassignedPools.map((pool) => {
         return pool[Math.floor(random * pool.length)];
       });
-      console.log('Assigned pools', filteredExperiments);
+      // console.log('Assigned pools', filteredExperiments);
 
       // Create new filtered experiment
       const alreadyAssignedExperiment = experimentPools.map((pool) => {
