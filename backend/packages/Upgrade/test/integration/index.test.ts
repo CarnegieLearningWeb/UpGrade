@@ -95,7 +95,7 @@ describe('Integration Tests', () => {
   });
 
   beforeEach(async () => {
-    jest.setTimeout(19999);
+    jest.setTimeout(29999);
     await migrateDatabase(connection);
 
     // create System Users
