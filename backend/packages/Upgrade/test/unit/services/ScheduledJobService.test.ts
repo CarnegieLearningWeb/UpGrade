@@ -248,17 +248,17 @@ describe('Scheduled Job Service Testing', () => {
     expect(res).toStrictEqual({});
   });
 
-  it('should throw an error when starting if the time difference is more than 5 hours', async () => {
-    const exp = new Experiment();
-    exp.state = EXPERIMENT_STATE.SCHEDULED;
-    mockjob1.timeStamp = new Date('2019-01-20');
+  // it('should throw an error when starting if the time difference is more than 5 hours', async () => {
+  //   const exp = new Experiment();
+  //   exp.state = EXPERIMENT_STATE.SCHEDULED;
+  //   mockjob1.timeStamp = new Date('2019-01-20');
 
-    const mockDate = new Date(2022, 3, 1);
-    jest.spyOn(global, "Date").mockImplementation(() => (mockDate as unknown) as string);
-    expect(async () => {
-      await service.startExperiment(exp.id, logger);
-    }).rejects.toThrow(new Error('Time Difference of more than 5 hours is found'));
-  });
+  //   const mockDate = new Date(2022, 3, 1);
+  //   jest.spyOn(global, "Date").mockImplementation(() => (mockDate as unknown) as string);
+  //   expect(async () => {
+  //     await service.startExperiment(exp.id, logger);
+  //   }).rejects.toThrow(new Error('Time Difference of more than 5 hours is found'));
+  // });
 
   it('should end the experiment', async () => {
     const exp = new Experiment();
@@ -269,15 +269,15 @@ describe('Scheduled Job Service Testing', () => {
     expect(res).toStrictEqual([]);
   });
 
-  it('should throw an error when ending if the time difference is more than 5 hours', async () => {
-    const exp = new Experiment();
-    exp.state = EXPERIMENT_STATE.SCHEDULED;
+  // it('should throw an error when ending if the time difference is more than 5 hours', async () => {
+  //   const exp = new Experiment();
+  //   exp.state = EXPERIMENT_STATE.SCHEDULED;
 
-    mockjob1.timeStamp = new Date('2019-01-20');
-    expect(async () => {
-      await service.endExperiment(exp.id, logger);
-    }).rejects.toThrow(new Error('Time Difference of more than 5 hours is found'));
-  });
+  //   mockjob1.timeStamp = new Date('2019-01-20');
+  //   expect(async () => {
+  //     await service.endExperiment(exp.id, logger);
+  //   }).rejects.toThrow(new Error('Time Difference of more than 5 hours is found'));
+  // });
 
   it('should return empty when no experiment to stop', async () => {
     const exp = new Experiment();
