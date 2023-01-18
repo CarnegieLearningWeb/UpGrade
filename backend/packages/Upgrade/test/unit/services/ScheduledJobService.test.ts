@@ -251,9 +251,10 @@ describe('Scheduled Job Service Testing', () => {
   it('should throw an error when starting if the time difference is more than 5 hours', async () => {
     const exp = new Experiment();
     exp.state = EXPERIMENT_STATE.SCHEDULED;
-    jest.useFakeTimers('modern');
-    jest.setSystemTime(new Date(2020, 3, 1));
     mockjob1.timeStamp = new Date('2019-01-20');
+
+    const mockDate = new Date(2022, 3, 1);
+    jest.spyOn(global, "Date").mockImplementation(() => (mockDate as unknown) as string);
     expect(async () => {
       await service.startExperiment(exp.id, logger);
     }).rejects.toThrow(new Error('Time Difference of more than 5 hours is found'));
