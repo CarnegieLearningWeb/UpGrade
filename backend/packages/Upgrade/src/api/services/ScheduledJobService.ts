@@ -33,7 +33,7 @@ export class ScheduledJobService {
         const currentDate = new Date();
         const timeDiff = Math.abs(currentDate.getTime() - scheduledJob.timeStamp.getTime());
         const fiveHoursInMS = 18000000;
-
+        console.log(currentDate, scheduledJob.timeStamp, timeDiff, timeDiff > fiveHoursInMS)
         if (timeDiff > fiveHoursInMS) {
           const errorMsg = 'Time Difference of more than 5 hours is found';
           await scheduledJobRepository.delete({ id: scheduledJob.id });
