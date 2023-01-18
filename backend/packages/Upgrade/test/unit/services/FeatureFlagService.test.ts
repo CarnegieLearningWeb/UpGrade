@@ -145,7 +145,7 @@ describe('Feature Flag Service Testing', () => {
     flagRepo.insertFeatureFlag = jest.fn().mockRejectedValue(err);
     expect(async () => {
       await service.create(mockFlag1, logger);
-    }).rejects.toThrow(err);
+    }).rejects.toThrow(new Error('Error in creating feature flag document \"addFeatureFlagInDB\" Error: insert error'));
   });
 
   it('should throw an error when create variation fails', async () => {
