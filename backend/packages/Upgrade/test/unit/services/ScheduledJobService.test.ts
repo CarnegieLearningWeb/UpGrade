@@ -251,7 +251,8 @@ describe('Scheduled Job Service Testing', () => {
   it('should throw an error when starting if the time difference is more than 5 hours', async () => {
     const exp = new Experiment();
     exp.state = EXPERIMENT_STATE.SCHEDULED;
-
+    jest.useFakeTimers('modern');
+    jest.setSystemTime(new Date(2020, 3, 1));
     mockjob1.timeStamp = new Date('2019-01-20');
     expect(async () => {
       await service.startExperiment(exp.id, logger);
