@@ -165,14 +165,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.previousRowDataBehaviorSubject$
     );
 
+    // Remove previously added group of conditions and partitions
+    this.condition?.removeAt(0);
+    this.partition?.removeAt(0);
+
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
       this.equalWeightFlag = this.experimentInfo.conditions.every(
         (condition) => condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight
       );
-      // Remove previously added group of conditions and partitions
-      this.condition.removeAt(0);
-      this.partition.removeAt(0);
       this.experimentInfo.conditions.forEach((condition) => {
         this.condition.push(
           this.addConditions(
