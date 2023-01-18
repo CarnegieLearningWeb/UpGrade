@@ -5,7 +5,7 @@ import {
   ExperimentCondition,
   ExperimentPartition,
   ExperimentFactor,
-  ExperimentLevel
+  ExperimentLevel,
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { VersionService } from '../../../../../../core/version/version.service';
@@ -21,8 +21,8 @@ interface ImportExperimentJSON {
     | Record<keyof Experiment, string>
     | Record<keyof ExperimentCondition, string>
     | Record<keyof ExperimentPartition, string>
-    |  Record<keyof ExperimentFactor, string>
-    |  Record<keyof ExperimentLevel, string>;
+    | Record<keyof ExperimentFactor, string>
+    | Record<keyof ExperimentLevel, string>;
   data: Experiment | ExperimentCondition | ExperimentPartition | ExperimentFactor | ExperimentLevel;
 }
 
@@ -34,7 +34,7 @@ interface ImportExperimentJSON {
 export class ImportExperimentComponent implements OnInit {
   experimentInfo: Experiment;
   isExperimentJSONValid = true;
-  isExperimentJSONVersionValid = true;
+  experimentJSONVersionStatus = 0;
   missingAllProperties: string;
   allPartitions = [];
   allPartitionsSub: Subscription;
@@ -42,6 +42,7 @@ export class ImportExperimentComponent implements OnInit {
   importFileErrorsDataSource = new MatTableDataSource<{ filename: string; error: string }>();
   importFileErrors: { filename: string; error: string }[] = [];
   displayedColumns: string[] = ['File Name', 'Error'];
+  uploadedFileCount: any;
 
   constructor(
     private experimentService: ExperimentService,
@@ -61,6 +62,7 @@ export class ImportExperimentComponent implements OnInit {
         );
       });
   }
+
   openSnackBar() {
     this._snackBar.open(this.translate.instant('global.import-segments.message.text'), null, { duration: 4000 });
   }
@@ -80,14 +82,32 @@ export class ImportExperimentComponent implements OnInit {
     this.onCancelClick();
     this.openSnackBar();
   }
-  async validateExperimentJSONVersion(experimentInfo: any): Promise<any> {
-    const version = await this.versionService.getVersion();
-    if (experimentInfo.backendVersion !== version) {
-      return false;
+
+  compareVersion(currentBackendVersion, uploadedExperimentBackendVersion) {
+    currentBackendVersion = currentBackendVersion
+      .split('.')
+      .map((s) => s.padStart(10))
+      .join('.');
+    uploadedExperimentBackendVersion = uploadedExperimentBackendVersion
+      .split('.')
+      .map((s) => s.padStart(10))
+      .join('.');
+
+    if (currentBackendVersion === uploadedExperimentBackendVersion) {
+      return 0;
+    } else if (currentBackendVersion > uploadedExperimentBackendVersion) {
+      return 1;
     } else {
-      return true;
+      return 2;
     }
   }
+
+  async validateExperimentJSONVersion(experimentInfo: any): Promise<any> {
+    const currentBackendVersion = await this.versionService.getVersion();
+    const versionStatus = this.compareVersion(currentBackendVersion, experimentInfo.backendVersion);
+    return versionStatus;
+  }
+
   async validateDuplicateExperiment(partitions: any): Promise<any> {
     const alreadyExistedPartitions = [];
     partitions.forEach((partition) => {
@@ -108,50 +128,7 @@ export class ImportExperimentComponent implements OnInit {
     }
   }
 
-  async uploadFile(event) {
-    let index = 0;
-    let fileName = '';
-    const reader = new FileReader();
-
-    this.importFileErrors = [];
-
-    readFile(index);
-    function readFile(fileIndex: number) {
-      if (fileIndex >= event.target.files.length) return;
-      fileName = event.target.files[fileIndex].name;
-      reader.readAsText(event.target.files[fileIndex]);
-    }
-
-    reader.addEventListener(
-      'load',
-      async function () {
-        const result = JSON.parse(reader.result as any);
-        this.experimentInfo = result;
-        this.isExperimentJSONVersionValid = await this.validateExperimentJSONVersion(this.experimentInfo);
-        this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
-
-        if (this.isExperimentJSONVersionValid && this.isExperimentJSONValid) {
-          this.allExperiments.push(this.experimentInfo);
-        } else if (!this.isExperimentJSONValid) {
-          this.importFileErrors.push({
-            fileName: fileName,
-            error: this.translate.instant('home.import-experiment.error.message.text'),
-          });
-        } else {
-          this.importFileErrors.push({
-            fileName: fileName,
-            error: this.translate.instant('home.import-experiment.version-error.message.text'),
-          });
-          this.allExperiments.push(this.experimentInfo);
-        }
-
-        this.importFileErrorsDataSource.data = this.importFileErrors;
-        readFile(++index);
-      }.bind(this)
-    );
-  }
-
-  private validateExperimentJSON(experiment: Experiment) {
+  validateExperimentJSON(experiment: Experiment) {
     // TODO remove this any after typescript version updation
     const experimentSchema: any = {
       id: 'string',
@@ -193,7 +170,7 @@ export class ImportExperimentComponent implements OnInit {
       createdAt: 'string',
       updatedAt: 'string',
       versionNumber: 'number',
-      levelCombinationElements: 'any[]'
+      levelCombinationElements: 'any[]',
     };
 
     const partitionSchema: Record<keyof ExperimentPartition, string> = {
@@ -211,15 +188,15 @@ export class ImportExperimentComponent implements OnInit {
     };
 
     const factorSchema: Record<keyof ExperimentFactor, string> = {
-      name:'string',
+      name: 'string',
       order: 'number',
-      levels: 'interface'
+      levels: 'interface',
     };
 
     const levelSchema: Record<keyof ExperimentLevel, string> = {
       id: 'string',
-      name:'string',
-      alias:'string',
+      name: 'string',
+      alias: 'string',
       order: 'number',
     };
 
@@ -250,7 +227,6 @@ export class ImportExperimentComponent implements OnInit {
         missingFactorProperties = this.checkForMissingProperties({ schema: factorSchema, data: factor });
         factor.levels.map((level) => {
           missingLevelProperties = this.checkForMissingProperties({ schema: levelSchema, data: level });
-  
         });
         if (missingLevelProperties.length > 0) {
           this.missingAllProperties =
@@ -288,8 +264,61 @@ export class ImportExperimentComponent implements OnInit {
     const { schema, data } = experimentJson;
     const missingProperty = Object.keys(schema)
       .filter((key) => data[key] === undefined)
-      .map((key) => key as keyof (Experiment | ExperimentPartition | ExperimentCondition | ExperimentFactor | ExperimentLevel ))
+      .map(
+        (key) =>
+          key as keyof (Experiment | ExperimentPartition | ExperimentCondition | ExperimentFactor | ExperimentLevel)
+      )
       .map((key) => `${key}`);
     return missingProperty.join(', ');
+  }
+
+  async uploadFile(event) {
+    let index = 0;
+    let fileName = '';
+    const reader = new FileReader();
+    this.uploadedFileCount = event.target.files.length;
+    this.importFileErrors = [];
+
+    readFile(index);
+    function readFile(fileIndex: number) {
+      if (fileIndex >= event.target.files.length) return;
+      fileName = event.target.files[fileIndex].name;
+      reader.readAsText(event.target.files[fileIndex]);
+    }
+
+    reader.addEventListener(
+      'load',
+      async function () {
+        const result = JSON.parse(reader.result as any);
+        this.experimentInfo = result;
+        this.experimentJSONVersionStatus = await this.validateExperimentJSONVersion(this.experimentInfo);
+        this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
+        if (this.experimentJSONVersionStatus === 0 && this.isExperimentJSONValid) {
+          this.allExperiments.push(this.experimentInfo);
+        } else if (!this.isExperimentJSONValid) {
+          this.importFileErrors.push({
+            fileName: fileName,
+            error:
+              this.translate.instant('home.import-experiment.error.message.text') + ' ' + this.missingAllProperties,
+          });
+        } else {
+          if (this.experimentJSONVersionStatus === 1) {
+            this.importFileErrors.push({
+              fileName: fileName,
+              error: this.translate.instant('home.import-experiment.old-version-error.message.text'),
+            });
+          } else {
+            this.importFileErrors.push({
+              fileName: fileName,
+              error: this.translate.instant('home.import-experiment.new-version-error.message.text'),
+            });
+          }
+          this.allExperiments.push(this.experimentInfo);
+        }
+
+        this.importFileErrorsDataSource.data = this.importFileErrors;
+        readFile(++index);
+      }.bind(this)
+    );
   }
 }
