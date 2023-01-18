@@ -172,7 +172,7 @@ export class ExperimentParticipantsComponent implements OnInit {
         this.members1.controls.at(index).setValue({ type: 'All', id: 'All' });
         this.members1.controls.at(index).get('id').disable();
         this.includeAll = true;
-        for (let i = 1; i < this.members1.length; i++) {
+        for (let i = this.members1.length - 1; i >= 1; i--) {
           this.removeMember1(i);
         }
         this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
