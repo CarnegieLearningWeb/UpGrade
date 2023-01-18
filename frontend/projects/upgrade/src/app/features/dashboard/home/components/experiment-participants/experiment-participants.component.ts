@@ -256,7 +256,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     }
     // options for Include All:
     this.allSubSegmentTypes = [];
-    this.allSubSegmentTypes.push({ name: 'ALL', value: 'All' });
+    this.allSubSegmentTypes.push({ name: 'All', value: 'All' });
     this.subSegmentTypes.map((option) => {
       this.allSubSegmentTypes.push(option);
     });
