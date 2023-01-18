@@ -70,7 +70,7 @@ describe('Error Service Testing', () => {
     const err = new Error('insert error');
     repo.save = jest.fn().mockRejectedValue(err);
     expect(async () => {
-      await service.create(error, null);
+      await service.create(error, logger);
     }).rejects.toThrow(err);
   });
 });
