@@ -859,18 +859,22 @@ export class ExperimentService {
         });
 
         // delete old decision points, conditions and queries
-        await Promise.all([...toDeleteConditions, ...toDeleteDecisionPoints, ...toDeleteQueries]);
-        await transactionalEntityManager
-          .createQueryBuilder()
-          .delete()
-          .from(Factor)
-          .where('decisionPoint IN (:...ids)', { ids: decisionPointDocToSave.map((x) => x.id) })
-          .execute();
-        await transactionalEntityManager
-          .createQueryBuilder()
-          .delete()
-          .from(LevelCombinationElement)
-          .where('condition IN (:...ids)', { ids: conditionDocToSave.map((x) => x.id) });
+        await Promise.all([
+          ...toDeleteConditions,
+          ...toDeleteDecisionPoints,
+          ...toDeleteQueries,
+          transactionalEntityManager
+            .createQueryBuilder()
+            .delete()
+            .from(Factor)
+            .where('decisionPoint IN (:...ids)', { ids: decisionPointDocToSave.map((x) => x.id) })
+            .execute(),
+          transactionalEntityManager
+            .createQueryBuilder()
+            .delete()
+            .from(LevelCombinationElement)
+            .where('condition IN (:...ids)', { ids: conditionDocToSave.map((x) => x.id) }),
+        ]);
 
         // saving conditions, saving decision points and saving queries
         let conditionDocs: ExperimentCondition[];
