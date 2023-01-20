@@ -116,8 +116,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         'home.new-experiment.design.assignment-partition-error-2.text',
         'home.new-experiment.design.assignment-partition-error-3.text',
         'home.new-experiment.design.assignment-partition-error-4.text',
-        'home.new-experiment.design.partition-point-selection-error.text',
-        'home.new-experiment.design.partition-id-selection-error.text',
       ])
       .subscribe((translatedMessage) => {
         this.partitionErrorMessages = [
@@ -125,8 +123,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           translatedMessage['home.new-experiment.design.assignment-partition-error-2.text'],
           translatedMessage['home.new-experiment.design.assignment-partition-error-3.text'],
           translatedMessage['home.new-experiment.design.assignment-partition-error-4.text'],
-          translatedMessage['home.new-experiment.design.partition-point-selection-error.text'],
-          translatedMessage['home.new-experiment.design.partition-id-selection-error.text'],
         ];
       });
   }
@@ -505,8 +501,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
     this.validatePartitionNames(partitions);
     this.validatePartitionCount(partitions);
-    this.validatePartitions();
-    
+
     return !this.partitionPointErrors.length && !this.partitionCountError && !this.expPointAndIdErrors.length;
   }
 
@@ -613,40 +608,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.partitionCountError = partitionCountErrorMsg;
     } else {
       this.partitionCountError = null;
-    }
-  }
-
-  validatePartitions() {
-    // Reset expPointAndIdErrors errors to re-validate data
-    this.expPointAndIdErrors = [];
-    const partitions: ExperimentPartition[] = this.experimentDesignForm.get('partitions').value;
-    this.validateExpPoints(partitions);
-    this.validateExpIds(partitions);
-  }
-
-  validateExpPoints(partitions: ExperimentPartition[]) {
-    const sites = partitions.map((partition) => partition.site);
-    const currentContextExpPoints = this.contextMetaData.contextMetadata[this.currentContext].EXP_POINTS;
-
-    for (let siteIndex = 0; siteIndex < sites.length; siteIndex++) {
-      if (!currentContextExpPoints.includes(sites[siteIndex])) {
-        // Add partition point selection error
-        this.expPointAndIdErrors.push(this.partitionErrorMessages[4]);
-        break;
-      }
-    }
-  }
-
-  validateExpIds(partitions: ExperimentPartition[]) {
-    const targets = partitions.map((partition) => partition.target).filter((target) => target);
-    const currentContextExpIds = this.contextMetaData.contextMetadata[this.currentContext].EXP_IDS;
-
-    for (let targetIndex = 0; targetIndex < targets.length; targetIndex++) {
-      if (!currentContextExpIds.includes(targets[targetIndex])) {
-        // Add partition id selection error
-        this.expPointAndIdErrors.push(this.partitionErrorMessages[5]);
-        break;
-      }
     }
   }
 

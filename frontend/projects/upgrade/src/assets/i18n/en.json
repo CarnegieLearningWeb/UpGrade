@@ -134,8 +134,6 @@
   "home.new-experiment.design.assignment-partition-error-2.text": " Decision Point's data are already existing",
   "home.new-experiment.design.assignment-partition-error-3.text": " Decision Point data is duplicate",
   "home.new-experiment.design.assignment-partition-error-4.text": " Decision Point data are duplicate",
-  "home.new-experiment.design.partition-point-selection-error.text": "Please select Site from predefined values",
-  "home.new-experiment.design.partition-id-selection-error.text": " Please select Target from predefined values",
   "home.new-experiment.design.aliases.header.text": "Aliases",
   "home.new-experiment.design.aliases.column-header.site.text": "SITE",
   "home.new-experiment.design.aliases.column-header.target.text": "TARGET",
