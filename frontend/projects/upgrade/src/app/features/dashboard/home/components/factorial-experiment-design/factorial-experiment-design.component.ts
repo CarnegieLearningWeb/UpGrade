@@ -106,8 +106,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         'home.new-experiment.design.assignment-factor-error-2.text',
         'home.new-experiment.design.assignment-level-error-1.text',
         'home.new-experiment.design.assignment-level-error-2.text',
-        'home.new-experiment.design.partition-point-selection-error.text',
-        'home.new-experiment.design.partition-id-selection-error.text',
       ])
       .subscribe((translatedMessage) => {
         this.factorErrorMessages = [
@@ -115,8 +113,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           translatedMessage['home.new-experiment.design.assignment-factor-error-2.text'],
           translatedMessage['home.new-experiment.design.assignment-level-error-1.text'],
           translatedMessage['home.new-experiment.design.assignment-level-error-2.text'],
-          translatedMessage['home.new-experiment.design.partition-point-selection-error.text'],
-          translatedMessage['home.new-experiment.design.partition-id-selection-error.text'],
         ];
       });
   }
@@ -355,7 +351,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
-  validateFactorCount(factorialExperimentDesignFormData: ExperimentFactorialDesignData ) {
+  validateFactorCount(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
     this.factorCountError = null;
     this.levelCountError = null;
     this.expandedId = 0;
@@ -385,39 +381,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.factorCountError = factorCountErrorMsg;
     }
     this.expandedId--;
-  }
-
-  validateFactors() {
-    // Reset expPointAndIdErrors errors to re-validate data
-    this.expPointAndIdErrors = [];
-    this.validateExpPoints(this.factorialExperimentDesignForm.value);
-    this.validateExpIds(this.factorialExperimentDesignForm.value);
-  }
-
-  validateExpPoints(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
-    const sites = factorialExperimentDesignFormData.factors.map((factor) => factor.site);
-    const currentContextExpPoints = this.contextMetaData.contextMetadata[this.currentContext].EXP_POINTS;
-
-    for (let siteIndex = 0; siteIndex < sites.length; siteIndex++) {
-      if (!currentContextExpPoints.includes(sites[siteIndex])) {
-        // Add partition point selection error
-        this.expPointAndIdErrors.push(this.factorErrorMessages[4]);
-        break;
-      }
-    }
-  }
-
-  validateExpIds(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
-    const targets = factorialExperimentDesignFormData.factors.map((factor) => factor.target).filter((target) => target);
-    const currentContextExpIds = this.contextMetaData.contextMetadata[this.currentContext].EXP_IDS;
-
-    for (let targetIndex = 0; targetIndex < targets.length; targetIndex++) {
-      if (!currentContextExpIds.includes(targets[targetIndex])) {
-        // Add partition id selection error
-        this.expPointAndIdErrors.push(this.factorErrorMessages[5]);
-        break;
-      }
-    }
   }
 
   isFormValid() {
@@ -496,7 +459,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   saveData(eventType) {
     this.validateForm();
-    this.validateFactors();
 
     if (!this.conditionTableDataUpToDate) {
       this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
