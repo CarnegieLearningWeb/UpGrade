@@ -32,6 +32,9 @@ import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
   ExperimentConditionAliasRequestObject,
+  ExperimentFactorFormData,
+  ExperimentFactorialDesignData,
+  ExperimentLevelFormData,
   FactorialConditionTableRowData,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 
@@ -296,7 +299,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
-  validateFactorNames(factors: any) {
+  validateFactorNames(factors: ExperimentFactorFormData[]) {
     this.factorPointErrors = [];
     this.levelPointErrors = [];
     // Used to differentiate errors
@@ -327,7 +330,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
-  validateLevelNames(levels: any, factorDetail: string) {
+  validateLevelNames(levels: ExperimentLevelFormData[], factorDetail: string) {
     // Used to differentiate errors
     const duplicateLevels = [];
 
@@ -352,7 +355,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
-  validateFactorCount(factorialExperimentDesignFormData: any) {
+  validateFactorCount(factorialExperimentDesignFormData: ExperimentFactorialDesignData ) {
     this.factorCountError = null;
     this.levelCountError = null;
     this.expandedId = 0;
@@ -391,7 +394,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.validateExpIds(this.factorialExperimentDesignForm.value);
   }
 
-  validateExpPoints(factorialExperimentDesignFormData: any) {
+  validateExpPoints(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
     const sites = factorialExperimentDesignFormData.factors.map((factor) => factor.site);
     const currentContextExpPoints = this.contextMetaData.contextMetadata[this.currentContext].EXP_POINTS;
 
@@ -404,7 +407,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
-  validateExpIds(factorialExperimentDesignFormData: any) {
+  validateExpIds(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
     const targets = factorialExperimentDesignFormData.factors.map((factor) => factor.target).filter((target) => target);
     const currentContextExpIds = this.contextMetaData.contextMetadata[this.currentContext].EXP_IDS;
 
@@ -430,7 +433,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   validateForm() {
     this.factorialExperimentDesignForm.updateValueAndValidity();
-    // const factorialPartitions = this.convertToPartitionData(this.factorialExperimentDesignForm.value);
     this.validateFactorCount(this.factorialExperimentDesignForm.value);
   }
 

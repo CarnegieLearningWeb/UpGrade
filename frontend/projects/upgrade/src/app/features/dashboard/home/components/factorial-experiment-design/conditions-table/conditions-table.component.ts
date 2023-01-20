@@ -176,13 +176,13 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     return newTableData;
   }
 
-  validateWeightSumEqualTo100(factorialConditions: any) {
+  validateWeightSumEqualTo100(factorialConditions: FactorialConditionTableRowData[]) {
     const weightSumNot100ErrorMsg = this.translate.instant("Weights' sum must be 100");
 
     // handling sum of decimal values for assignment weights:
     let sumOfAssignmentWeights = 0.0;
     factorialConditions.forEach(
-      (condition) => (sumOfAssignmentWeights += parseFloat(Number(condition.weight).toFixed(1)))
+      (condition) => (sumOfAssignmentWeights += parseFloat(condition.weight))
     );
     // checking if sum is not equal to 100
     if (Math.round(sumOfAssignmentWeights) !== 100.0) {
@@ -192,12 +192,12 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     }
   }
 
-  validateWeightsNotNegative(factorialConditions: any) {
+  validateWeightsNotNegative(factorialConditions: FactorialConditionTableRowData[]) {
     this.conditionnegativeweightError = null;
     const negativeweightErrorMsg = this.translate.instant('home.new-experiment.design.assignment-weight-negative.text');
     // handling sum of decimal values for assignment weights:
     factorialConditions.forEach((condition) =>
-      parseFloat(Number(condition.weight).toFixed(1)) < 0
+      parseFloat(condition.weight) < 0
         ? (this.conditionnegativeweightError = negativeweightErrorMsg)
         : null
     );

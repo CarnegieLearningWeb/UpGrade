@@ -291,15 +291,17 @@ export class ExperimentDesignStepperService {
 
     if (tableData.length > 0) {
       tableData.forEach((factorialConditionTableRow) => {
-        sumOfAssignmentWeights += parseFloat(Number(factorialConditionTableRow.weight).toFixed(1));
-        parseFloat(Number(factorialConditionTableRow.weight).toFixed(1)) < 0 ? (negativeweightError = true) : null;
+        sumOfAssignmentWeights += parseFloat(factorialConditionTableRow.weight);
+        if(parseFloat(factorialConditionTableRow.weight) < 0){
+          negativeweightError = true;
+        }
       });
 
       // checking if sum is not equal to 100
       if (Math.round(sumOfAssignmentWeights) !== 100.0) {
-        return true || negativeweightError;
+        return true;
       } else {
-        return false || negativeweightError;
+        return negativeweightError;
       }
     } else {
       return false;
