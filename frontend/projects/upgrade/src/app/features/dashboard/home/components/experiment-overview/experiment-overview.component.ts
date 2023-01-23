@@ -233,8 +233,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataReset();
-        this.overviewForm.markAsPristine();
         break;
     }
   }
@@ -269,6 +267,11 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         formData: overviewFormData,
         path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
       });
+
+      if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+        this.experimentDesignStepperService.experimentStepperDataReset();
+        this.overviewForm.markAsPristine();
+      }
     }
   }
 
