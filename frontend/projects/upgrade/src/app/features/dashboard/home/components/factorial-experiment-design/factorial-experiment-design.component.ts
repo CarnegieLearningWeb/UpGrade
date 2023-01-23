@@ -359,7 +359,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     const levelCountErrorMsg = this.translate.instant('home.new-experiment.design.level-count-new-exp-error.text');
     const levelValueErrorMsg = this.translate.instant('home.new-experiment.design.level-value-new-exp-error.text');
 
-    if (factorialExperimentDesignFormData.factors.length > 0) {
+    if ( factorialExperimentDesignFormData.factors.length > 0 ) {
       factorialExperimentDesignFormData.factors.forEach((factor, index) => {
         if (!factor.site?.trim() || !factor.target?.trim() || !factor.factor?.trim()) {
           this.factorCountError = factorValueErrorMsg;
@@ -388,6 +388,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.factorialExperimentDesignForm.valid &&
       this.factorCountError === null &&
       this.levelCountError === null &&
+      this.factorialExperimentDesignForm.value.factors.length <= 2 &&
       !this.experimentDesignStepperService.checkConditionTableValidity()
     );
   }
@@ -448,9 +449,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           break;
         }
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataReset();
-        this.isAnyRowRemoved = false;
-        this.factorialExperimentDesignForm.markAsPristine();
         break;
     }
   }
@@ -479,6 +477,12 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         },
         path: NewExperimentPaths.EXPERIMENT_DESIGN,
       });
+
+      if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+        this.experimentDesignStepperService.experimentStepperDataReset();
+        this.isAnyRowRemoved = false;
+        this.factorialExperimentDesignForm.markAsPristine();
+      }
 
       // scroll back to the factors table
       this.scrollToFactorsTable();

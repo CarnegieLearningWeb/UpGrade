@@ -116,7 +116,7 @@
                         [matAutocomplete]="autoCompleteExperimentIds"
                       />
                       <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
-                        <mat-option *ngFor="let target of filteredExpIds$[factorIndex] | async" [value]="target">
+                        <mat-option *ngFor="let target of filteredTargets$[factorIndex] | async" [value]="target">
                           {{ target }}
                         </mat-option>
                       </mat-autocomplete>
@@ -282,8 +282,6 @@
             <span class="ft-14-600 validation-message" *ngFor="let error of levelPointErrors">{{ error }}</span>
             <span class="ft-14-600 validation-message" *ngIf="factorCountError" [innerHTML]="factorCountError"></span>
             <span class="ft-14-600 validation-message" *ngIf="levelCountError" [innerHTML]="levelCountError"></span>
-            <!-- If experiment point and id are not from predefined value -->
-            <span class="ft-14-600 validation-message" *ngFor="let error of siteAndTargetErrors">{{ error }}</span>
           </div>
         </section>
 
