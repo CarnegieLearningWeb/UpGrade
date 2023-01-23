@@ -218,8 +218,8 @@ export class ExperimentDesignStepperService {
     const existingPartitions = experimentInfo.partitions;
 
     const levelOrder = {};
-    existingPartitions.forEach((partition) => {
-      partition.factors.forEach((factor) => {
+    existingPartitions.forEach((decisionPoint) => {
+      decisionPoint.factors.forEach((factor) => {
         factor.levels.forEach((level) => {
           levelOrder[level.id] = factor.order;
         });

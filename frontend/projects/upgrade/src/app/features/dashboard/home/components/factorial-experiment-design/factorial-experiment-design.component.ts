@@ -78,12 +78,11 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   // Used for condition code, experiment point and ids auto complete dropdownfilteredExpFactors$: Observable<string[]>[] = [];
   filteredExpFactors$: Observable<string[]>[] = [];
-  filteredExpPoints$: Observable<string[]>[] = [];
-  filteredExpIds$: Observable<string[]>[] = [];
+  filteredSites$: Observable<string[]>[] = [];
+  filteredTargets$: Observable<string[]>[] = [];
   contextMetaData: IContextMetaData = {
     contextMetadata: {},
   };
-  expPointAndIdErrors: string[] = [];
   isExperimentEditable = true;
   isAnyRowRemoved = false;
   conditionTableDataUpToDate = true;
@@ -144,9 +143,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     let factorIndex = 0;
     if (this.experimentInfo) {
       this.factor.removeAt(0);
-      this.experimentInfo.partitions.forEach((partition) => {
-        partition.factors.forEach((factor) => {
-          this.factor.push(this.addFactors(factor.name, partition.site, partition.target, factor.order));
+      this.experimentInfo.partitions.forEach((decisionPoint) => {
+        decisionPoint.factors.forEach((factor) => {
+          this.factor.push(this.addFactors(factor.name, decisionPoint.site, decisionPoint.target, factor.order));
           this.getLevels(factorIndex).removeAt(0);
           factor.levels.forEach((level) => {
             this.getLevels(factorIndex).push(this.addLevels(level.id, level.name, level.alias));
@@ -187,19 +186,19 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         startWith<string>(''),
         map((factor) => this.filterExpFactorsPointsAndIds(factor, 'expFactors'))
       );
-    this.filteredExpPoints$[factorIndex] = factorFormControl
+    this.filteredSites$[factorIndex] = factorFormControl
       .at(factorIndex)
       .get('site')
       .valueChanges.pipe(
         startWith<string>(''),
-        map((site) => this.filterExpFactorsPointsAndIds(site, 'expPoints'))
+        map((site) => this.filterExpFactorsPointsAndIds(site, 'sites'))
       );
-    this.filteredExpIds$[factorIndex] = factorFormControl
+    this.filteredTargets$[factorIndex] = factorFormControl
       .at(factorIndex)
       .get('target')
       .valueChanges.pipe(
         startWith<string>(''),
-        map((target) => this.filterExpFactorsPointsAndIds(target, 'expIds'))
+        map((target) => this.filterExpFactorsPointsAndIds(target, 'targets'))
       );
   }
 
@@ -215,12 +214,12 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       return [];
     }
 
-    if (key === 'expPoints' && this.currentContext) {
-      const currentContextExpPoints = this.contextMetaData.contextMetadata[this.currentContext].EXP_POINTS || [];
-      return currentContextExpPoints.filter((option) => option.toLowerCase().startsWith(filterValue));
-    } else if (key === 'expIds' && this.currentContext) {
-      const currentContextExpIds = this.contextMetaData.contextMetadata[this.currentContext].EXP_IDS || [];
-      return currentContextExpIds.filter((option) => option.toLowerCase().startsWith(filterValue));
+    if (key === 'sites' && this.currentContext) {
+      const currentContextSites = this.contextMetaData.contextMetadata[this.currentContext].EXP_POINTS || [];
+      return currentContextSites.filter((option) => option.toLowerCase().startsWith(filterValue));
+    } else if (key === 'targets' && this.currentContext) {
+      const currentContextTargets = this.contextMetaData.contextMetadata[this.currentContext].EXP_IDS || [];
+      return currentContextTargets.filter((option) => option.toLowerCase().startsWith(filterValue));
     }
     return [];
   }
@@ -386,7 +385,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   isFormValid() {
     return (
       !this.factorPointErrors.length &&
-      !this.expPointAndIdErrors.length &&
       this.factorialExperimentDesignForm.valid &&
       this.factorCountError === null &&
       this.levelCountError === null &&
@@ -487,41 +485,41 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
-  convertToPartitionData(factorialExperimentDesignFormData) {
+  convertToPartitionData(factorialExperimentDesignFormData: ExperimentFactorialDesignData ) {
     let order = 1;
     let factorOrder = 1;
-    const Partitions = [];
+    const decisionPoints = [];
     this.levelIds = [];
-    factorialExperimentDesignFormData.factors.forEach((partition) => {
+    factorialExperimentDesignFormData.factors.forEach((decisionPoint) => {
       let levelOrder = 1;
-      const currentLevels: ExperimentLevel[] = partition.levels.map((level) => {
+      const currentLevels: ExperimentLevel[] = decisionPoint.levels.map((level) => {
         return { name: level.level, alias: level.alias, id: level.id, order: levelOrder++ };
       });
       const currentFactors: ExperimentFactor = {
-        name: partition.factor,
+        name: decisionPoint.factor,
         order: factorOrder++,
         levels: currentLevels,
       };
       if (
-        !Partitions.find(
+        !decisionPoints.find(
           (existingPartition) =>
-            existingPartition.site === partition.site && existingPartition.target === partition.target
+            existingPartition.site === decisionPoint.site && existingPartition.target === decisionPoint.target
         )?.factors.push(currentFactors)
       ) {
         const partitionData = {
-          site: partition.site,
+          site: decisionPoint.site,
           id: uuidv4(),
           description: '',
           order: order++,
           excludeIfReached: false,
           factors: [currentFactors],
         };
-        partition.target
-          ? Partitions.push({ ...partitionData, target: partition.target })
-          : Partitions.push(partitionData);
+        decisionPoint.target
+          ? decisionPoints.push({ ...partitionData, target: decisionPoint.target })
+          : decisionPoints.push(partitionData);
       }
     });
-    return Partitions;
+    return decisionPoints;
   }
 
   scrollToFactorsTable(): void {
