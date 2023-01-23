@@ -21,8 +21,6 @@ export interface APIEndpoints {
   loginUser: string;
   getAllUsers: string;
   userDetails: string;
-  excludeUsers: string;
-  excludeGroups: string;
   previewUsers: string;
   getAllPreviewUsers: string;
   previewUsersAssignCondition: string;

@@ -52,24 +52,19 @@
         margin-bottom: -5px;
       }
 
-      .cdk-column-removeCondition,
-      .cdk-column-removePartition {
-        flex: 0 0 60px;
-        width: 60px;
-      }
-
       .cdk-column-site {
-        flex: 0 0 220px;
-        width: 220px;
+        width: 100%;
       }
 
       .cdk-column-target {
         margin-left: 30px;
         width: 100%;
-        max-width: 530px;
       }
 
       .cdk-column-excludeIfReached {
+        margin-left: 30px;
+        width: 100%;
+        max-width: 150px;
         justify-content: center;
 
         mat-checkbox {
@@ -78,39 +73,56 @@
       }
 
       .cdk-column-conditionCode {
-        flex: 0 0 220px;
-        width: 220px;
+        width: 100%;
       }
 
       .cdk-column-assignmentWeight {
-        flex: 0 0 82px;
-        width: 82px;
+        margin-left: 30px;
+        width: 100%;
+        max-width: 90px;
+      }
+
+      .assignment-weight-readonly {
+        width: 90px;
       }
 
       .cdk-column-description {
         margin-left: 30px;
         width: 100%;
-        max-width: 350px;
       }
 
-      .remove-icon {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: -3px;
-        min-width: 60px;
-        height: 16px;
-        font-size: var(--text-size-x-large);
-        color: gray;
+      .cdk-column-actions {
+        margin-left: 30px;
+        flex: 0 0 78px;
+        width: 78px;
 
-        &:hover {
-          cursor: pointer;
+        .row-action-btn {
+          border: none;
+          background-color: transparent;
+
+          .icon {
+            margin-top: -5px;
+            margin-left: -3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--text-size-x-large);
+            color: gray;
+          }
         }
       }
 
       mat-form-field {
         width: 100%;
         text-align: left;
+      }
+
+      .align-right {
+        text-align: right;
+      }
+
+      .row-is-locked {
+        opacity: 0.4;
       }
     }
 
@@ -122,7 +134,7 @@
       background-color: transparent;
       color: var(--blue);
       &--disabled {
-        color: var(--grey-6);
+        color: var(--light-blue);
       }
     }
   }
