@@ -16,14 +16,14 @@ let connection;
 let manager;
 let createQueryBuilderStub;
 let insertMock, deleteMock, selectMock;
-let insertQueryBuilder = new InsertQueryBuilder<ExperimentSegmentInclusionRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<ExperimentSegmentInclusionRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<ExperimentSegmentInclusionRepository>(null);
-let repo = new ExperimentSegmentInclusionRepository();
+const insertQueryBuilder = new InsertQueryBuilder<ExperimentSegmentInclusionRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<ExperimentSegmentInclusionRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<ExperimentSegmentInclusionRepository>(null);
+const repo = new ExperimentSegmentInclusionRepository();
 const err = new Error('test error');
-let logger = new UpgradeLogger();
+const logger = new UpgradeLogger();
 
-let segment = new Segment();
+const segment = new Segment();
 segment.id = 'id1';
 
 const result = {
@@ -65,7 +65,7 @@ describe('ExperimentSegmentInclusionRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.insertData(segment, logger, manager);
+    const res = await repo.insertData(segment, logger, manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -102,7 +102,7 @@ describe('ExperimentSegmentInclusionRepository Testing', () => {
     deleteMock.expects('returning').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteData(segment.id, 'exp1', logger);
+    const res = await repo.deleteData(segment.id, 'exp1', logger);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -142,7 +142,7 @@ describe('ExperimentSegmentInclusionRepository Testing', () => {
       .once()
       .returns(Promise.resolve([segment, segment]));
 
-    let res = await repo.getExperimentSegmentInclusionData();
+    const res = await repo.getExperimentSegmentInclusionData();
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();

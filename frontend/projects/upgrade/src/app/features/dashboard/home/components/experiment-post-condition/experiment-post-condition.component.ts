@@ -21,7 +21,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { Subscription } from 'rxjs';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
+import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 @Component({
   selector: 'home-experiment-post-condition',
   templateUrl: './experiment-post-condition.component.html',
@@ -42,7 +42,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
     private dialogService: DialogService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private _formBuilder: FormBuilder,
-    public experimentDesignStepperService: ExperimentDesignStepperService
+    private experimentDesignStepperService: ExperimentDesignStepperService
   ) {}
 
   ngOnChanges() {
@@ -149,6 +149,10 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
       this.experimentDesignStepperService.experimentStepperDataReset();
       this.postExperimentRuleForm.markAsPristine();
     }
+  }
+
+  handleBackBtnClick() {
+    return this.postExperimentRuleForm.dirty && this.experimentDesignStepperService.experimentStepperDataChanged();
   }
 
   get NewExperimentDialogEvents() {

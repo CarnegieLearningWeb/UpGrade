@@ -8,13 +8,13 @@ let connection;
 let createQueryBuilderStub;
 let insertMock, deleteMock, selectMock;
 let manager;
-let insertQueryBuilder = new InsertQueryBuilder<QueryRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<QueryRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<QueryRepository>(null);
-let repo = new QueryRepository();
+const insertQueryBuilder = new InsertQueryBuilder<QueryRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<QueryRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<QueryRepository>(null);
+const repo = new QueryRepository();
 const err = new Error('test error');
 
-let query = new Query();
+const query = new Query();
 query.id = 'id1';
 
 beforeEach(() => {
@@ -48,7 +48,7 @@ describe('QueryRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.upsertQuery(query, manager);
+    const res = await repo.upsertQuery(query, manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -124,7 +124,7 @@ describe('QueryRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.insertQueries([query, query], manager);
+    const res = await repo.insertQueries([query, query], manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -157,7 +157,7 @@ describe('QueryRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.checkIfQueryExists(query.id);
+    const res = await repo.checkIfQueryExists(query.id);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -173,7 +173,7 @@ describe('QueryRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.checkIfQueryExists('id2');
+    const res = await repo.checkIfQueryExists('id2');
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();

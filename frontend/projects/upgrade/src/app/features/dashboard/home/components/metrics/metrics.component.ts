@@ -22,7 +22,7 @@ import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { startWith, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
+import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 @Component({
   selector: 'home-monitored-metrics',
   templateUrl: './metrics.component.html',
@@ -76,7 +76,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     private _formBuilder: FormBuilder,
     private translate: TranslateService,
     private dialogService: DialogService,
-    public experimentDesignStepperService: ExperimentDesignStepperService
+    private experimentDesignStepperService: ExperimentDesignStepperService
   ) {}
 
   optionsSub() {
@@ -449,6 +449,10 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  handleBackBtnClick() {
+    return this.queryForm.dirty && this.experimentDesignStepperService.experimentStepperDataChanged();
+  }
+
   selectRepeatMetricNode(event = null, queryIndex: number, keyIndex: number) {
     // if it is the first Node of the repeated metric, add two new nodes for the first time selection
     if (keyIndex === 0) {
@@ -515,6 +519,9 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       // handling leaf node of repeated metrics
       const metric = this.allMetrics.find((metric) => metric.key === event.option.value.key);
       this.selectedNode[queryIndex] = metric;
+      if (!this.selectedNode[queryIndex]) {
+        this.selectedNode[queryIndex] = event.option.value;
+      }
       // reset options for metric keys:
       this.optionsSub();
     }
