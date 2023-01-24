@@ -6,6 +6,7 @@ import {
   ExperimentPartition,
   ExperimentFactor,
   ExperimentLevel,
+  LevelCombinationElement,
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { VersionService } from '../../../../../../core/version/version.service';
@@ -22,8 +23,15 @@ interface ImportExperimentJSON {
     | Record<keyof ExperimentCondition, string>
     | Record<keyof ExperimentPartition, string>
     | Record<keyof ExperimentFactor, string>
-    | Record<keyof ExperimentLevel, string>;
-  data: Experiment | ExperimentCondition | ExperimentPartition | ExperimentFactor | ExperimentLevel;
+    | Record<keyof ExperimentLevel, string>
+    | Record<keyof LevelCombinationElement, string>;
+  data:
+    | Experiment
+    | ExperimentCondition
+    | ExperimentPartition
+    | ExperimentFactor
+    | ExperimentLevel
+    | LevelCombinationElement;
 }
 
 @Component({
@@ -170,7 +178,7 @@ export class ImportExperimentComponent implements OnInit {
       createdAt: 'string',
       updatedAt: 'string',
       versionNumber: 'number',
-      levelCombinationElements: 'any[]',
+      levelCombinationElements: 'interface',
     };
 
     const partitionSchema: Record<keyof ExperimentPartition, string> = {
@@ -200,6 +208,11 @@ export class ImportExperimentComponent implements OnInit {
       order: 'number',
     };
 
+    const levelCombinationElementSchema: Record<keyof LevelCombinationElement, string> = {
+      id: 'string',
+      level: 'interface',
+    };
+
     const missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
     let missingPropertiesFlag = true;
     this.missingAllProperties =
@@ -208,9 +221,25 @@ export class ImportExperimentComponent implements OnInit {
     let missingPartitionProperties;
     let missingFactorProperties;
     let missingLevelProperties;
+    let missingLevelCombinationElementProperties;
     missingPropertiesFlag = missingPropertiesFlag && missingProperties.length === 0;
     experiment.conditions.map((condition) => {
       missingConditionProperties = this.checkForMissingProperties({ schema: conditionSchema, data: condition });
+      condition.levelCombinationElements.map((element) => {
+        missingLevelCombinationElementProperties = this.checkForMissingProperties({
+          schema: levelCombinationElementSchema,
+          data: element,
+        });
+      });
+      if (missingLevelCombinationElementProperties.length > 0) {
+        this.missingAllProperties =
+          this.missingAllProperties +
+          ', ' +
+          this.translate.instant('global.level.text') +
+          ': ' +
+          missingLevelCombinationElementProperties;
+      }
+      missingPropertiesFlag = missingPropertiesFlag && missingLevelCombinationElementProperties.length === 0;
     });
     if (missingConditionProperties.length > 0) {
       this.missingAllProperties =
@@ -232,7 +261,7 @@ export class ImportExperimentComponent implements OnInit {
           this.missingAllProperties =
             this.missingAllProperties +
             ', ' +
-            this.translate.instant('global.level.text') +
+            this.translate.instant('global.levelCombinationElement.text') +
             ': ' +
             missingLevelProperties;
         }
@@ -266,7 +295,14 @@ export class ImportExperimentComponent implements OnInit {
       .filter((key) => data[key] === undefined)
       .map(
         (key) =>
-          key as keyof (Experiment | ExperimentPartition | ExperimentCondition | ExperimentFactor | ExperimentLevel)
+          key as keyof (
+            | Experiment
+            | ExperimentPartition
+            | ExperimentCondition
+            | ExperimentFactor
+            | ExperimentLevel
+            | LevelCombinationElement
+          )
       )
       .map((key) => `${key}`);
     return missingProperty.join(', ');

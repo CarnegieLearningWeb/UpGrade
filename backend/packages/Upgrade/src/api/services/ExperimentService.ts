@@ -478,9 +478,10 @@ export class ExperimentService {
         'partitions.conditionAliases',
         'partitions.conditionAliases.parentCondition',
         'partitions.factors',
-        'factors.levels',
+        'partitions.factors.levels',
+        'conditions.conditionAliases',
         'conditions.levelCombinationElements',
-        'levelCombinationElements.levels',
+        'conditions.levelCombinationElements.level',
       ],
     });
     const formatedExperiments = experimentDetails.map((experiment) => {
