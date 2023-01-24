@@ -191,8 +191,6 @@ export class ExperimentScheduleComponent implements OnInit {
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataReset();
-        this.experimentScheduleForm.markAsPristine();
         break;
     }
   }
@@ -274,6 +272,11 @@ export class ExperimentScheduleComponent implements OnInit {
         formData: scheduleData,
         path: NewExperimentPaths.EXPERIMENT_SCHEDULE,
       });
+
+      if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+        this.experimentDesignStepperService.experimentStepperDataReset();
+        this.experimentScheduleForm.markAsPristine();
+      }
     }
   }
 }
