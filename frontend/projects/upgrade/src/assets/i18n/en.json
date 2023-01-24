@@ -29,6 +29,7 @@
   "global.condition.text": "CONDITION",
   "global.decision-points.text": "DECISION POINT",
   "global.level.text": "LEVEL",
+  "global.levelCombinationElement": "LEVEL ELEMENT",
   "global.factor.text": "FACTOR",
   "global.context.text": "CONTEXT",
   "global.app-context.text": "App Context",
