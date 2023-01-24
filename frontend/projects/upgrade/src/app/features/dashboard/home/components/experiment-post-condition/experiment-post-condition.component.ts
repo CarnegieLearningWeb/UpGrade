@@ -126,8 +126,6 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataReset();
-        this.postExperimentRuleForm.markAsPristine();
         break;
     }
   }
@@ -147,6 +145,10 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
       },
       path: NewExperimentPaths.POST_EXPERIMENT_RULE,
     });
+    if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+      this.experimentDesignStepperService.experimentStepperDataReset();
+      this.postExperimentRuleForm.markAsPristine();
+    }
   }
 
   handleBackBtnClick() {
