@@ -3,7 +3,7 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
-import { SERVER_ERROR } from 'upgrade_types';
+import { EXPERIMENT_TYPE, SERVER_ERROR } from 'upgrade_types';
 import { ErrorService } from './ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
@@ -34,8 +34,25 @@ export class QueryService {
         relations: ['metric', 'experiment'],
       })
     );
+
+    const modifiedQueryIds = [];
     const promiseResult = await Promise.all(promiseArray);
-    const analyzePromise = promiseResult.map((query) => this.logRepository.analysis(query));
+    const analyzePromise = promiseResult
+      .map((query) => {
+        modifiedQueryIds.push(query.id);
+        if (query.experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+          modifiedQueryIds.push(query.id);
+          return [
+            this.logRepository.analysis({
+              ...query,
+              experiment: { ...query.experiment, type: EXPERIMENT_TYPE.SIMPLE },
+            }),
+            this.logRepository.analysis(query),
+          ];
+        }
+        return [this.logRepository.analysis(query)];
+      })
+      .flat();
     const response = await Promise.allSettled(analyzePromise);
 
     const failedQuery = Array<Promise<any>>();
@@ -65,7 +82,7 @@ export class QueryService {
       await Promise.all(failedQuery);
     }
     modifiedResponse = modifiedResponse.map((res, index) => {
-      return { id: queryIds[index], result: res };
+      return { id: modifiedQueryIds[index], result: res };
     });
     return modifiedResponse;
   }

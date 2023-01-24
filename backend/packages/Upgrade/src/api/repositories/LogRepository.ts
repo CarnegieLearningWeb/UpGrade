@@ -11,10 +11,11 @@ import {
 import { Log } from '../models/Log';
 import repositoryError from './utils/repositoryError';
 import { Experiment } from '../models/Experiment';
-import { OPERATION_TYPES, IMetricMetaData, REPEATED_MEASURE } from 'upgrade_types';
+import { OPERATION_TYPES, IMetricMetaData, REPEATED_MEASURE, EXPERIMENT_TYPE } from 'upgrade_types';
 import { METRICS_JOIN_TEXT } from '../services/MetricService';
 import { Query } from '../models/Query';
 import { Metric } from '../models/Metric';
+import { LevelCombinationElement } from '../models/LevelCombinationElement';
 
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
@@ -175,6 +176,7 @@ export class LogRepository extends Repository<Log> {
 
   public async analysis(query: Query): Promise<any> {
     const experimentId = query.experiment.id;
+    const isFactorialExperiment = query.experiment.type === EXPERIMENT_TYPE.FACTORIAL;
     const metric = query.metric.key;
     const { operationType, compareFn, compareValue } = query.query;
     const { id: queryId, repeatedMeasure } = query;
@@ -196,8 +198,14 @@ export class LogRepository extends Repository<Log> {
       jsonDataValue = `logs.data ->> ${metricString}`;
     }
 
-    let executeQuery = this.getCommonAnalyticQuery(metric, experimentId, queryId, jsonDataValue, query.metric.type);
-    // const result = await executeQuery.execute();
+    let executeQuery = this.getCommonAnalyticQuery(
+      metric,
+      experimentId,
+      queryId,
+      jsonDataValue,
+      query.metric.type,
+      isFactorialExperiment
+    );
 
     let valueToUse = 'extracted.value';
     switch (repeatedMeasure) {
@@ -222,56 +230,91 @@ export class LogRepository extends Repository<Log> {
         castFn = `(cast(${valueToUse} as ${castType}))`;
       }
       if (query.metric.type === IMetricMetaData.CATEGORICAL) {
-        percentQuery = this.getCommonAnalyticQuery(metric, experimentId, queryId, jsonDataValue, query.metric.type)
-          .andWhere(`${castFn} In (:...allowedData)`, {
-            allowedData: query.metric.allowedData,
-          })
-          .addGroupBy('"individualEnrollment"."conditionId"');
+        percentQuery = this.getCommonAnalyticQuery(
+          metric,
+          experimentId,
+          queryId,
+          jsonDataValue,
+          query.metric.type,
+          isFactorialExperiment
+        ).andWhere(`${castFn} In (:...allowedData)`, {
+          allowedData: query.metric.allowedData,
+        });
+
+        percentQuery = isFactorialExperiment
+          ? percentQuery.addGroupBy('"levelCombinationElement"."levelId"')
+          : percentQuery.addGroupBy('"individualEnrollment"."conditionId"');
       }
       executeQuery = executeQuery.andWhere(`${castFn} ${compareFn} :compareValue`, {
         compareValue,
       });
     }
-    executeQuery = executeQuery.groupBy('"individualEnrollment"."conditionId"');
+    executeQuery = isFactorialExperiment
+      ? executeQuery.groupBy('"levelCombinationElement"."levelId"')
+      : executeQuery.groupBy('"individualEnrollment"."conditionId"');
     if (operationType === OPERATION_TYPES.PERCENTAGE) {
-      executeQuery = executeQuery.select([
-        '"individualEnrollment"."conditionId"',
-        `count(cast(${valueToUse} as text)) as result`,
-      ]);
-      percentQuery = percentQuery.select([
-        '"individualEnrollment"."conditionId"',
-        `count(cast(${valueToUse} as text)) as result`,
-      ]);
+      executeQuery = isFactorialExperiment
+        ? executeQuery.select(['"levelCombinationElement"."levelId"', `count(cast(${valueToUse} as text)) as result`])
+        : executeQuery.select(['"individualEnrollment"."conditionId"', `count(cast(${valueToUse} as text)) as result`]);
+      percentQuery = isFactorialExperiment
+        ? percentQuery.select(['"levelCombinationElement"."levelId"', `count(cast(${valueToUse} as text)) as result`])
+        : percentQuery.select(['"individualEnrollment"."conditionId"', `count(cast(${valueToUse} as text)) as result`]);
       const [executeQueryResult, percentQueryResult] = await Promise.all([
         executeQuery.getRawMany(),
         percentQuery.getRawMany(),
       ]);
       const result = executeQueryResult.map((res) => {
-        const { conditionId } = res;
-        const percentageQueryConditionRes = percentQueryResult.find((queryRes) => queryRes.conditionId === conditionId);
-        return {
-          conditionId: conditionId,
-          result: (res.result / percentageQueryConditionRes.result) * 100,
-        };
+        if (isFactorialExperiment) {
+          const { levelId } = res;
+          const percentageQueryConditionRes = percentQueryResult.find((queryRes) => queryRes.levelId === levelId);
+          return {
+            levelId: levelId,
+            result: (res.result / percentageQueryConditionRes.result) * 100,
+          };
+        } else {
+          const { conditionId } = res;
+          const percentageQueryConditionRes = percentQueryResult.find(
+            (queryRes) => queryRes.conditionId === conditionId
+          );
+          return {
+            conditionId: conditionId,
+            result: (res.result / percentageQueryConditionRes.result) * 100,
+          };
+        }
       });
       return result;
     } else {
       if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
         const queryFunction = operationType === OPERATION_TYPES.MEDIAN ? 'percentile_cont(0.5)' : 'mode()';
-        executeQuery = executeQuery.select([
-          '"individualEnrollment"."conditionId"',
-          `${queryFunction} within group (order by (cast(${valueToUse} as decimal))) as result`,
-        ]);
+        executeQuery = isFactorialExperiment
+          ? executeQuery.select([
+              '"levelCombinationElement"."levelId"',
+              `${queryFunction} within group (order by (cast(${valueToUse} as decimal))) as result`,
+            ])
+          : executeQuery.select([
+              '"individualEnrollment"."conditionId"',
+              `${queryFunction} within group (order by (cast(${valueToUse} as decimal))) as result`,
+            ]);
       } else if (operationType === OPERATION_TYPES.COUNT) {
-        executeQuery = executeQuery.select([
-          '"individualEnrollment"."conditionId"',
-          `${operationType}(cast(${valueToUse} as text)) as result`,
-        ]);
+        executeQuery = isFactorialExperiment
+          ? executeQuery.select([
+              '"levelCombinationElement"."levelId"',
+              `${operationType}(cast(${valueToUse} as text)) as result`,
+            ])
+          : executeQuery.select([
+              '"individualEnrollment"."conditionId"',
+              `${operationType}(cast(${valueToUse} as text)) as result`,
+            ]);
       } else {
-        executeQuery = executeQuery.select([
-          '"individualEnrollment"."conditionId"',
-          `${operationType}(cast(${valueToUse} as decimal)) as result`,
-        ]);
+        executeQuery = isFactorialExperiment
+          ? executeQuery.select([
+              '"levelCombinationElement"."levelId"',
+              `${operationType}(cast(${valueToUse} as decimal)) as result`,
+            ])
+          : executeQuery.select([
+              '"individualEnrollment"."conditionId"',
+              `${operationType}(cast(${valueToUse} as decimal)) as result`,
+            ]);
       }
       return executeQuery.getRawMany();
     }
@@ -334,12 +377,13 @@ export class LogRepository extends Repository<Log> {
     experimentId: string,
     queryId: string,
     metricString: string,
-    metricType: string
+    metricType: string,
+    isFactorialExperiment: boolean
   ): SelectQueryBuilder<Experiment> {
     // get experiment repository
     const experimentRepo = getRepository(Experiment);
 
-    const analyticsQuery = experimentRepo
+    let analyticsQuery = experimentRepo
       .createQueryBuilder('experiment')
       .innerJoin('experiment.queries', 'queries')
       .innerJoin('queries.metric', 'metric')
@@ -368,7 +412,26 @@ export class LogRepository extends Repository<Log> {
         },
         'extracted',
         'extracted.id = logs.id'
-      )
+      );
+
+    if (isFactorialExperiment) {
+      analyticsQuery = analyticsQuery.innerJoinAndSelect(
+        (qb) => {
+          return qb
+            .subQuery()
+            .select([
+              `"levelCombinationElement"."conditionId" as "LCEconditionId"`,
+              `"levelCombinationElement"."levelId" as "levelId"`,
+            ])
+            .distinct()
+            .from(LevelCombinationElement, 'levelCombinationElement');
+        },
+        'levelCombinationElement',
+        '"levelCombinationElement"."LCEconditionId" = "individualEnrollment"."conditionId"'
+      );
+    }
+
+    analyticsQuery = analyticsQuery
       .where('metric.key = :metric', { metric })
       .andWhere('experiment.id = :experimentId', { experimentId })
       .andWhere('queries.id = :queryId', { queryId });
