@@ -840,6 +840,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return EXPERIMENT_STATE;
   }
 
+  get isAliasTableButtonDisabled() {
+    return (
+      this.aliasTableData.length === 0 ||
+      this.partition.length === 0 ||
+      this.condition.length === 0 ||
+      !this.isExperimentEditable
+    );
+  }
+
   ngOnDestroy() {
     this.subscriptionHandler.unsubscribe();
     this.experimentDesignStepperService.clearDecisionPointTableEditModeDetails();
