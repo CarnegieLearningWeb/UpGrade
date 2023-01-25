@@ -844,8 +844,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   get isAliasTableButtonDisabled() {
     return (
       this.aliasTableData.length === 0 ||
-      this.partition.length === 0 ||
-      this.condition.length === 0 ||
+      this.decisionPoints.length === 0 ||
+      this.conditions.length === 0 ||
       !this.isExperimentEditable
     );
   }
