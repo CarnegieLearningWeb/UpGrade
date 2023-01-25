@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
 import {
-  ExperimentPartition,
+  ExperimentDecisionPoint,
   ExperimentCondition,
   ExperimentConditionAlias,
   TableEditModeDetails,
@@ -20,7 +20,11 @@ import {
   selectIsConditionsTableEditMode,
   selectIsFormLockedForEdit,
 } from './store/experiment-design-stepper.selectors';
-import { DecisionPointsTableRowData, ConditionsTableRowData, ExperimentAliasTableRow } from './store/experiment-design-stepper.model';
+import {
+  DecisionPointsTableRowData,
+  ConditionsTableRowData,
+  ExperimentAliasTableRow,
+} from './store/experiment-design-stepper.model';
 
 @Injectable({
   providedIn: 'root',
@@ -62,7 +66,7 @@ export class ExperimentDesignStepperService {
     return typeof value === 'string' && value.trim();
   }
 
-  filterForUnchangedDesignData(designData: [ExperimentPartition[], ExperimentCondition[]][]): boolean {
+  filterForUnchangedDesignData(designData: [ExperimentDecisionPoint[], ExperimentCondition[]][]): boolean {
     const [previous, current] = designData;
     const prevSiteTargets: string[] = previous[0].map((dp) => dp.site?.trim() + dp.target?.trim());
     const prevConditions: string[] = previous[1].map((c) => c.conditionCode?.trim());
@@ -77,7 +81,7 @@ export class ExperimentDesignStepperService {
     return !same;
   }
 
-  validDesignDataFilter(designData: [ExperimentPartition[], ExperimentCondition[]]): boolean {
+  validDesignDataFilter(designData: [ExperimentDecisionPoint[], ExperimentCondition[]]): boolean {
     const [partitions, conditions] = designData;
 
     if (!partitions.length || !conditions.length) {
@@ -91,7 +95,7 @@ export class ExperimentDesignStepperService {
   }
 
   createAliasTableData(
-    decisionPoints: ExperimentPartition[],
+    decisionPoints: ExperimentDecisionPoint[],
     conditions: ExperimentCondition[],
     conditionAliases: ExperimentConditionAlias[],
     useExistingAliasData: boolean

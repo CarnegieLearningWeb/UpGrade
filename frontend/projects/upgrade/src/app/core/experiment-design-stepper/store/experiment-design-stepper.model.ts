@@ -18,6 +18,26 @@ export interface ExperimentAliasTableRow {
   rowStyle?: 'odd' | 'even';
 }
 
+export interface SimpleExperimentFormData {
+  decisionPoints?: SimpleExperimentFormDecisionPoints[];
+  partitions?: SimpleExperimentFormDecisionPoints[];
+  conditions: SimplerExperimentFormDecisionConditions[];
+}
+
+export interface SimpleExperimentFormDecisionPoints {
+  site: string;
+  target: string;
+  excludeIfReached: string;
+  order: number;
+}
+
+export interface SimplerExperimentFormDecisionConditions {
+  conditionCode: string;
+  assignmentWeight: string;
+  description: string;
+  order: number;
+}
+
 export interface DecisionPointsTableRowData {
   site: string;
   target: string;

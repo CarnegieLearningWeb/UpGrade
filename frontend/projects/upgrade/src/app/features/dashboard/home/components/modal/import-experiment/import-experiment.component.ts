@@ -3,7 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {
   Experiment,
   ExperimentCondition,
-  ExperimentPartition,
+  ExperimentDecisionPoint,
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { VersionService } from '../../../../../../core/version/version.service';
@@ -18,8 +18,8 @@ interface ImportExperimentJSON {
   schema:
     | Record<keyof Experiment, string>
     | Record<keyof ExperimentCondition, string>
-    | Record<keyof ExperimentPartition, string>;
-  data: Experiment | ExperimentCondition | ExperimentPartition;
+    | Record<keyof ExperimentDecisionPoint, string>;
+  data: Experiment | ExperimentCondition | ExperimentDecisionPoint;
 }
 
 @Component({
@@ -50,7 +50,7 @@ export class ImportExperimentComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.allPartitionsSub = this.experimentService.allPartitions$
+    this.allPartitionsSub = this.experimentService.allDecisionPoints$
       .pipe(filter((partitions) => !!partitions))
       .subscribe((partitions: any) => {
         this.allPartitions = partitions.map((partition) =>
@@ -168,7 +168,7 @@ export class ImportExperimentComponent implements OnInit {
       versionNumber: 'number',
     };
 
-    const partitionSchema: Record<keyof ExperimentPartition, string> = {
+    const partitionSchema: Record<keyof ExperimentDecisionPoint, string> = {
       id: 'string',
       site: 'string',
       target: 'string',
@@ -219,7 +219,7 @@ export class ImportExperimentComponent implements OnInit {
     const { schema, data } = experimentJson;
     const missingProperty = Object.keys(schema)
       .filter((key) => data[key] === undefined)
-      .map((key) => key as keyof (Experiment | ExperimentPartition | ExperimentCondition))
+      .map((key) => key as keyof (Experiment | ExperimentDecisionPoint | ExperimentCondition))
       .map((key) => `${key}`);
     return missingProperty.join(', ');
   }
