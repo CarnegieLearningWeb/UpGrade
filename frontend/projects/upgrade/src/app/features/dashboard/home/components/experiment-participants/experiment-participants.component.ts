@@ -274,9 +274,6 @@ export class ExperimentParticipantsComponent implements OnInit {
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataReset();
-        this.participantsForm.markAsPristine();
-        this.participantsForm2.markAsPristine();
         break;
     }
   }
@@ -331,6 +328,12 @@ export class ExperimentParticipantsComponent implements OnInit {
               },
         path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS,
       });
+
+      if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+        this.experimentDesignStepperService.experimentStepperDataReset();
+        this.participantsForm.markAsPristine();
+        this.participantsForm2.markAsPristine();
+      }
     }
   }
 

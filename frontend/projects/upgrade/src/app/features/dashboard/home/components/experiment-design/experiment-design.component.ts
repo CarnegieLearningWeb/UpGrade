@@ -686,8 +686,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           break;
         }
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataReset();
-        this.experimentDesignForm.markAsPristine();
         break;
     }
   }
@@ -729,6 +727,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         formData: this.renameDecisionPointsAsPartitionsTEMPORARY(experimentDesignFormData),
         path: NewExperimentPaths.EXPERIMENT_DESIGN,
       });
+      if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
+        this.experimentDesignStepperService.experimentStepperDataReset();
+        this.experimentDesignForm.markAsPristine();
+      }
       // scroll back to the conditions table
       this.scrollToConditionsTable();
     }
@@ -837,6 +839,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   get ExperimentState() {
     return EXPERIMENT_STATE;
+  }
+
+  get isAliasTableButtonDisabled() {
+    return (
+      this.aliasTableData.length === 0 ||
+      this.partition.length === 0 ||
+      this.condition.length === 0 ||
+      !this.isExperimentEditable
+    );
   }
 
   ngOnDestroy() {
