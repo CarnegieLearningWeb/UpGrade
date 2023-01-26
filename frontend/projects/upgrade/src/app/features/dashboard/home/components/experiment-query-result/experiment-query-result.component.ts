@@ -3,6 +3,7 @@ import { ExperimentVM } from '../../../../../core/experiments/store/experiments.
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { EXPERIMENT_TYPE } from 'upgrade_types';
 
 @Component({
   selector: 'home-experiment-query-result',
@@ -17,13 +18,31 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     domain: ['#31e8dd', '#7dc7fb', '#fedb64', '#51ed8f', '#ddaaf8', '#fd9099', '#14c9be'],
   };
 
+  colorScheme2 = {
+    domain: ['#D18650', '#5572B8', '#A5A5A5', '#31e8dd', '#7dc7fb', '#fd9099', '#14c9be'],
+  };
+
   queryResults = {};
   queryResultsSub: Subscription;
   isQueryExecuting$ = this.analysisService.isQueryExecuting$;
+  factors = [];
+  displayedColumns: string[] = [];
+  factorialData = {};
+  experimentType: string = null;
+  data: { name: string; series: { name: string; value: number; }[]; dot: boolean; }[];
+  meanData2: { name: string; value: number; }[];
+  meanData1: { name: string; value: number; }[];
+
   constructor(private analysisService: AnalysisService) {}
 
   ngOnInit() {
     const queryIds = [];
+    this.experimentType = this.experiment.type;
+    if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL){
+      this.experiment.partitions.map((decisionPoint) => {
+        this.factors.push(decisionPoint.factors?.at(0).name);
+      });
+    }
     this.queryResults = this.experiment.queries.map((query) => {
       queryIds.push(query.id);
       return {
@@ -47,6 +66,113 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
         };
       });
     });
+
+    this.meanData1 = [
+      {
+        "name": "Abstract",
+        "value": 8
+      },
+      {
+        "name": "Concrete",
+        "value": 5
+      }
+    ];
+
+    this.meanData2 = [
+      {
+        "name": "No Support",
+        "value": 6
+      },
+      {
+        "name": "Mindset",
+        "value": 3
+      },
+      {
+        "name": "Utility Value",
+        "value": 9
+      }
+    ];
+
+    this.data = [
+      {
+        name: 'No Support',
+        series: [
+          {
+            name: 'Abstract',
+            value: 9,
+          },
+          {
+            name: 'Concrete',
+            value: 6,
+          }
+        ],
+        dot: true
+      },
+      {
+        name: 'Minset',
+        series: [
+          {
+            name: 'Abstract',
+            value: 8,
+          },
+          {
+            name: 'Concrete',
+            value: 5,
+          }
+        ],
+        dot: true
+      },
+      {
+        name: 'Utility Value',
+        series: [
+          {
+            name: 'Abstract',
+            value: 7,
+          },
+          {
+            name: 'Concrete',
+            value: 4,
+          }
+        ],
+        dot: true
+      },
+      {
+        name: 'Abstract',
+        series: [
+          {
+            name: 'No Support',
+            value: 3,
+          },
+          {
+            name: 'Mindset',
+            value: 6,
+          },
+          {
+            name: 'Utility Value',
+            value: 9,
+          }
+        ],
+        dot: true
+      },
+      {
+        name: 'Concrete',
+        series: [
+          {
+            name: 'No Support',
+            value: 2,
+          },
+          {
+            name: 'Mindset',
+            value: 5,
+          },
+          {
+            name: 'Utility Value',
+            value: 8,
+          }
+        ],
+        dot: true
+      }
+    ];
   }
 
   isResultExist(queryId: string): boolean {
@@ -70,10 +196,14 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     return !isNaN(value) ? '' : value;
   }
 
+  formateYAxisLabel(value) {
+    return !isNaN(value) ? '' : value;
+  }
+
   formatEmptyBar(data: any) {
     const emptyBars = [];
     // TODO: Decide number of conditions
-    for (let i = 0; i < 15 - data.length; i++) {
+    for (let i = 0; i < 2 - data.length; i++) {
       emptyBars.push({
         name: i,
         value: 0,
