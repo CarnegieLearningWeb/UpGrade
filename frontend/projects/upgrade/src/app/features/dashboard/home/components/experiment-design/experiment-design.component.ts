@@ -683,8 +683,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           break;
         }
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataReset();
-        this.experimentDesignForm.markAsPristine();
         break;
     }
   }
@@ -693,7 +691,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.validateForm();
 
     // TODO: Uncomment to validate partitions with predefined site and target
-    // this.validatePartitions()
     // enabling Assignment weight for form to validate
     if (
       !this.partitionPointErrors.length &&
@@ -734,6 +731,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         formData: experimentDesignFormData,
         path: NewExperimentPaths.EXPERIMENT_DESIGN,
       });
+      if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+        this.experimentDesignStepperService.experimentStepperDataReset();
+        this.experimentDesignForm.markAsPristine();
+      }
       // scroll back to the conditions table
       this.scrollToConditionsTable();
     }
@@ -840,6 +841,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   get ExperimentState() {
     return EXPERIMENT_STATE;
+  }
+
+  get isAliasTableButtonDisabled() {
+    return (
+      this.aliasTableData.length === 0 ||
+      this.partition.length === 0 ||
+      this.condition.length === 0 ||
+      !this.isExperimentEditable
+    );
   }
 
   ngOnDestroy() {
