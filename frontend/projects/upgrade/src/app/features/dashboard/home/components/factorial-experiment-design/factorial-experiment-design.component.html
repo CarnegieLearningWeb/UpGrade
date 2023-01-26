@@ -59,13 +59,8 @@
                         matInput
                         [placeholder]="'home.new-experiment.design.factor.placeholder.text' | translate"
                         formControlName="factor"
-                        [matAutocomplete]="autoCompleteExperimentFactors"
+                        [value]="factor"
                       />
-                      <mat-autocomplete #autoCompleteExperimentFactors="matAutocomplete" panelWidth="fit-content">
-                        <mat-option *ngFor="let factor of filteredExpFactors$[factorIndex] | async" [value]="factor">
-                          "{{ factor }}"
-                        </mat-option>
-                      </mat-autocomplete>
                     </span>
                   </mat-form-field>
                 </mat-cell>

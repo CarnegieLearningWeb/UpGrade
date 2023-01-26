@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, EventEmitter, Output, Input } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject, filter, Subscription } from 'rxjs';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
@@ -78,7 +78,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
       const formControls = this._formBuilder.group({
         levels: [tableDataRow.levels],
         alias: [tableDataRow.alias],
-        weight: [this.experimentDesignStepperService.formatDisplayWeight(tableDataRow.weight)],
+        weight: [this.experimentDesignStepperService.formatDisplayWeight(tableDataRow.weight),Validators.min(0)],
         include: [tableDataRow.include],
       });
 

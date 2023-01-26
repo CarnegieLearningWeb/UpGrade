@@ -47,6 +47,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
+  @Input() isExperimentTypeChanged: boolean;
   @Input() animationCompleteStepperIndex: number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
@@ -136,8 +137,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.conditionCode.nativeElement.focus();
     }
 
-    if (this.isContextChanged) {
+    if (this.isContextChanged || this.isExperimentTypeChanged) {
       this.isContextChanged = false;
+      this.isExperimentTypeChanged = false;
       this.partition?.clear();
       this.condition?.clear();
       this.partitionDataSource.next(this.partition?.controls);
