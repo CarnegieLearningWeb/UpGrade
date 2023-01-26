@@ -78,7 +78,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
       const formControls = this._formBuilder.group({
         levels: [tableDataRow.levels],
         alias: [tableDataRow.alias],
-        weight: [this.experimentDesignStepperService.formatDisplayWeight(tableDataRow.weight),Validators.min(0)],
+        weight: [this.experimentDesignStepperService.formatDisplayWeight(tableDataRow.weight), Validators.min(0)],
         include: [tableDataRow.include],
       });
 
@@ -113,8 +113,6 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   handleInitializeExistingTableData() {
-    console.log('#init preexisting');
-
     this.equalWeightFlag = this.experimentInfo.conditions.every(
       (condition) => condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight
     );
@@ -124,14 +122,12 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   handleInitializeNewNewTableData(designData: ExperimentFactorialDesignData) {
-    console.log('#init new');
     this.equalWeightFlag = true;
     const newTableData = this.experimentDesignStepperService.createNewFactorialConditionTableData(designData);
     this.initializeForm(newTableData);
   }
 
   // handleUpdateDesignDataTableChanges(designData: ExperimentFactorialDesignData) {
-  //   console.log('#update table');
   //   // TODO: intelligently handle updates to design data without triggering complete table re-creation
   // }
 
@@ -181,9 +177,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
     // handling sum of decimal values for assignment weights:
     let sumOfAssignmentWeights = 0.0;
-    factorialConditions.forEach(
-      (condition) => (sumOfAssignmentWeights += parseFloat(condition.weight))
-    );
+    factorialConditions.forEach((condition) => (sumOfAssignmentWeights += parseFloat(condition.weight)));
     // checking if sum is not equal to 100
     if (Math.round(sumOfAssignmentWeights) !== 100.0) {
       this.conditionweightSumError = weightSumNot100ErrorMsg;
@@ -197,9 +191,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     const negativeweightErrorMsg = this.translate.instant('home.new-experiment.design.assignment-weight-negative.text');
     // handling sum of decimal values for assignment weights:
     factorialConditions.forEach((condition) =>
-      parseFloat(condition.weight) < 0
-        ? (this.conditionnegativeweightError = negativeweightErrorMsg)
-        : null
+      parseFloat(condition.weight) < 0 ? (this.conditionnegativeweightError = negativeweightErrorMsg) : null
     );
   }
 
