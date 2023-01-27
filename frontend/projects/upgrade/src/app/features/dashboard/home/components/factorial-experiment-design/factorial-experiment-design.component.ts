@@ -119,10 +119,15 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   ngOnChanges() {
     if (this.isContextChanged || this.isExperimentTypeChanged) {
       this.isContextChanged = false;
-      this.isExperimentTypeChanged = false;
+      this.isExperimentTypeChanged = false;      
       this.factor?.clear();
       this.level?.clear();
       this.factorDataSource.next(this.factor?.controls);
+      if(this.experimentInfo){
+        this.experimentInfo.partitions = [];
+        this.experimentInfo.conditions = [];
+        this.experimentInfo.conditionAliases = [];
+      }
     }
   }
 
@@ -456,7 +461,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     if (this.isFormValid()) {
       const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
-      const factorialPartitions = this.experimentDesignStepperService.convertToPartitionData(factorialExperimentDesignFormData);
+      const factorialPartitions = this.experimentDesignStepperService.convertToDecisionPointData(factorialExperimentDesignFormData);
       const factorialConditions = this.experimentDesignStepperService.createFactorialConditionRequestObject();
 
       const factorialConditionAliases: ExperimentConditionAliasRequestObject[] =

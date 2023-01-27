@@ -214,7 +214,7 @@ export class ExperimentDesignStepperService {
     return tableData;
   }
 
-  convertToPartitionData(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
+  convertToDecisionPointData(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
     let order = 1;
     let factorOrder = 1;
     const decisionPoints = [];
@@ -234,7 +234,7 @@ export class ExperimentDesignStepperService {
             existingDecisionPoint.site === decisionPoint.site && existingDecisionPoint.target === decisionPoint.target
         )?.factors.push(currentFactors)
       ) {
-        const partitionData = {
+        const decisionPointData = {
           site: decisionPoint.site,
           id: uuidv4(),
           description: '',
@@ -243,8 +243,8 @@ export class ExperimentDesignStepperService {
           factors: [currentFactors],
         };
         decisionPoint.target
-          ? decisionPoints.push({ ...partitionData, target: decisionPoint.target })
-          : decisionPoints.push(partitionData);
+          ? decisionPoints.push({ ...decisionPointData, target: decisionPoint.target })
+          : decisionPoints.push(decisionPointData);
       }
     });
     return decisionPoints;

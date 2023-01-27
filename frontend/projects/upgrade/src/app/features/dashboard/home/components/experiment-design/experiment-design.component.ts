@@ -144,6 +144,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.condition?.clear();
       this.partitionDataSource.next(this.partition?.controls);
       this.conditionDataSource.next(this.condition?.controls);
+      if(this.experimentInfo){
+        this.experimentInfo.partitions = [];
+        this.experimentInfo.conditions = [];
+        this.experimentInfo.conditionAliases = [];
+      }
     }
 
     this.applyEqualWeight();
