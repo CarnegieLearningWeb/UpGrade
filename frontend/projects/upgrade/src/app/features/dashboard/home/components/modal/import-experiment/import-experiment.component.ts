@@ -16,6 +16,7 @@ import { filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
+import { EXPERIMENT_TYPE } from 'upgrade_types';
 
 interface ImportExperimentJSON {
   schema:
@@ -222,24 +223,28 @@ export class ImportExperimentComponent implements OnInit {
     let missingFactorProperties;
     let missingLevelProperties;
     let missingLevelCombinationElementProperties;
+
     missingPropertiesFlag = missingPropertiesFlag && missingProperties.length === 0;
     experiment.conditions.map((condition) => {
       missingConditionProperties = this.checkForMissingProperties({ schema: conditionSchema, data: condition });
-      condition.levelCombinationElements.map((element) => {
-        missingLevelCombinationElementProperties = this.checkForMissingProperties({
-          schema: levelCombinationElementSchema,
-          data: element,
+
+      if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+        condition.levelCombinationElements.map((element) => {
+          missingLevelCombinationElementProperties = this.checkForMissingProperties({
+            schema: levelCombinationElementSchema,
+            data: element,
+          });
         });
-      });
-      if (missingLevelCombinationElementProperties.length > 0) {
-        this.missingAllProperties =
-          this.missingAllProperties +
-          ', ' +
-          this.translate.instant('global.level.text') +
-          ': ' +
-          missingLevelCombinationElementProperties;
+        if (missingLevelCombinationElementProperties.length > 0) {
+          this.missingAllProperties =
+            this.missingAllProperties +
+            ', ' +
+            this.translate.instant('global.level.text') +
+            ': ' +
+            missingLevelCombinationElementProperties;
+        }
+        missingPropertiesFlag = missingPropertiesFlag && missingLevelCombinationElementProperties.length === 0;
       }
-      missingPropertiesFlag = missingPropertiesFlag && missingLevelCombinationElementProperties.length === 0;
     });
     if (missingConditionProperties.length > 0) {
       this.missingAllProperties =
@@ -252,30 +257,33 @@ export class ImportExperimentComponent implements OnInit {
     missingPropertiesFlag = missingPropertiesFlag && missingConditionProperties.length === 0;
     experiment.partitions.map((partition) => {
       missingPartitionProperties = this.checkForMissingProperties({ schema: partitionSchema, data: partition });
-      partition.factors.map((factor) => {
-        missingFactorProperties = this.checkForMissingProperties({ schema: factorSchema, data: factor });
-        factor.levels.map((level) => {
-          missingLevelProperties = this.checkForMissingProperties({ schema: levelSchema, data: level });
+
+      if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+        partition.factors.map((factor) => {
+          missingFactorProperties = this.checkForMissingProperties({ schema: factorSchema, data: factor });
+          factor.levels.map((level) => {
+            missingLevelProperties = this.checkForMissingProperties({ schema: levelSchema, data: level });
+          });
+          if (missingLevelProperties.length > 0) {
+            this.missingAllProperties =
+              this.missingAllProperties +
+              ', ' +
+              this.translate.instant('global.levelCombinationElement.text') +
+              ': ' +
+              missingLevelProperties;
+          }
+          missingPropertiesFlag = missingPropertiesFlag && missingLevelProperties.length === 0;
         });
-        if (missingLevelProperties.length > 0) {
+        if (missingFactorProperties.length > 0) {
           this.missingAllProperties =
             this.missingAllProperties +
             ', ' +
-            this.translate.instant('global.levelCombinationElement.text') +
+            this.translate.instant('global.factor.text') +
             ': ' +
-            missingLevelProperties;
+            missingFactorProperties;
         }
-        missingPropertiesFlag = missingPropertiesFlag && missingLevelProperties.length === 0;
-      });
-      if (missingFactorProperties.length > 0) {
-        this.missingAllProperties =
-          this.missingAllProperties +
-          ', ' +
-          this.translate.instant('global.factor.text') +
-          ': ' +
-          missingFactorProperties;
+        missingPropertiesFlag = missingPropertiesFlag && missingFactorProperties.length === 0;
       }
-      missingPropertiesFlag = missingPropertiesFlag && missingFactorProperties.length === 0;
     });
     if (missingPartitionProperties.length > 0) {
       this.missingAllProperties =
