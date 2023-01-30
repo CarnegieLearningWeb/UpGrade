@@ -32,6 +32,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { DevToolsModule } from '../../dev-tools/dev-tools.module';
 
 import { SharedIconsComponent } from './components/shared-icons/shared-icons.component';
 import { TruncatePipe } from './pipes/truncate.pipe';
@@ -42,6 +43,9 @@ import { OperationPipe } from './pipes/operation.pipe';
 import { SegmentStatusPipe } from './pipes/segment-status.pipe';
 import { QueryResultComponent } from './components/query-result/query-result.component';
 import { DeleteComponent } from './components/delete/delete.component';
+import { MatConfirmDialogComponent } from './components/mat-confirm-dialog/mat-confirm-dialog.component';
+
+import { environment } from '../../environments/environment';
 
 @NgModule({
   imports: [
@@ -75,6 +79,7 @@ import { DeleteComponent } from './components/delete/delete.component';
     MatProgressBarModule,
     MatAutocompleteModule,
     MatTreeModule,
+    environment.production ? [] : DevToolsModule,
   ],
   declarations: [
     SharedIconsComponent,
@@ -86,6 +91,7 @@ import { DeleteComponent } from './components/delete/delete.component';
     QueryResultComponent,
     DeleteComponent,
     SegmentStatusPipe,
+    MatConfirmDialogComponent,
   ],
   exports: [
     CommonModule,
@@ -129,6 +135,8 @@ import { DeleteComponent } from './components/delete/delete.component';
     QueryResultComponent,
     DeleteComponent,
     SegmentStatusPipe,
+    MatConfirmDialogComponent,
+    environment.production ? [] : DevToolsModule,
   ],
 })
 export class SharedModule {}

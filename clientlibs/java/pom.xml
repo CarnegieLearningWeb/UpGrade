@@ -8,7 +8,9 @@
 		changed in the next comment. that increases the likelihood that two PRs in-flight 
 		at the same time that happen to rev to the same new version will be caught 
 		by a merge conflict. -->
+
 	<!-- 2.0.0 -> 3.0.0: changes groupMembership, workingGroup, userAliases to PATCH, updated response objects -->
+
 	<version>3.0.0</version>
 	<build>
 		<plugins>
@@ -30,7 +32,7 @@
 		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
-			<version>7.1.0</version>
+			<version>7.7.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

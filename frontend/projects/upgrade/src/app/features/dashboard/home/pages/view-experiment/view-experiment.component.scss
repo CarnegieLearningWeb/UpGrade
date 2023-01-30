@@ -37,7 +37,7 @@ $font-size-small: 15px;
           margin-top: 0.5rem;
 
           .button {
-            background-color: #EFEFF0;
+            background-color: #efeff0;
             border-radius: 4px;
             box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.26);
             color: black;
@@ -79,11 +79,11 @@ $font-size-small: 15px;
           padding: 10px 0px 20px;
           color: var(--grey-5);
         }
-    
+
         &-create-date {
           display: block;
         }
-    
+
         &-last-update-date {
           display: block;
         }
@@ -99,7 +99,7 @@ $font-size-small: 15px;
     &-assign {
       word-break: break-word;
       color: var(--grey-3);
-    }   
+    }
 
     &-secondary-info {
       padding: 34px 34px 24px !important;
@@ -266,11 +266,11 @@ $font-size-small: 15px;
     }
   }
 
-  .enrollment-text{
+  .enrollment-text {
     padding: 0px 34px 5px 34px;
   }
 
-  .enrollment-details-text{
+  .enrollment-details-text {
     color: var(--grey-3);
     margin-bottom: 10px;
     padding: 0px 34px;
@@ -278,25 +278,29 @@ $font-size-small: 15px;
 
   .mat-tab-label {
     background-color: transparent;
-    color: #8992A3;
+    color: #8992a3;
     font-family: Open Sans;
     font-size: 22px;
     font-weight: 600;
     line-height: 48px;
-    margin: 28px 18px 21px 32px;
+    margin: 28px 0px 21px 0px;
     padding: 0px;
+
+    &:first-of-type {
+      margin-left: 34px;
+    }
   }
 
-  .mat-tab-label-active{
-    color: #3366FF;
+  .mat-tab-label-active {
+    color: #3366ff;
     opacity: 1;
   }
 
-  .tab-body-container{
+  .tab-body-container {
     padding: 24px 0px;
   }
 
-  .tab-table-body-container{
+  .tab-table-body-container {
     padding: 0px !important;
   }
 
@@ -307,23 +311,36 @@ $font-size-small: 15px;
       margin-bottom: 24px;
     }
 
-    &-participants,&-metrics{
+    &-participants,
+    &-metrics {
       margin-bottom: 24px;
 
       .table {
         mat-cell,
         mat-header-cell {
-        justify-content: flex-start !important;
-        padding-left: 10.5% !important;
+          justify-content: flex-start !important;
+          padding-left: 10.5% !important;
         }
       }
     }
 
-    &-metrics{
-      mat-row{
+    &-aliases .alias-table-overview {
+      justify-content: space-between;
+
+      .mat-header-cell {
+        justify-content: left;
+      }
+
+      .mat-cell {
+        justify-content: left;
+      }
+    }
+
+    &-metrics {
+      mat-row {
         align-items: flex-start;
       }
-      mat-cell{
+      mat-cell {
         align-items: flex-start;
         flex-direction: column !important;
       }
@@ -344,8 +361,9 @@ $font-size-small: 15px;
       }
     }
   }
-  
-  .metric-key,.metric-Operation{
+
+  .metric-key,
+  .metric-Operation {
     padding-bottom: 5px;
   }
 

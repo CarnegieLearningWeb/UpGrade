@@ -19,14 +19,14 @@ let connection;
 let manager;
 let createQueryBuilderStub;
 let insertMock, deleteMock, selectMock, updateMock;
-let insertQueryBuilder = new InsertQueryBuilder<ExperimentRepository>(null);
-let deleteQueryBuilder = new DeleteQueryBuilder<ExperimentRepository>(null);
-let selectQueryBuilder = new SelectQueryBuilder<ExperimentRepository>(null);
-let updateQueryBuilder = new UpdateQueryBuilder<ExperimentRepository>(null);
-let repo = new ExperimentRepository();
+const insertQueryBuilder = new InsertQueryBuilder<ExperimentRepository>(null);
+const deleteQueryBuilder = new DeleteQueryBuilder<ExperimentRepository>(null);
+const selectQueryBuilder = new SelectQueryBuilder<ExperimentRepository>(null);
+const updateQueryBuilder = new UpdateQueryBuilder<ExperimentRepository>(null);
+const repo = new ExperimentRepository();
 const err = new Error('test error');
 
-let experiment = new Experiment();
+const experiment = new Experiment();
 experiment.id = 'id1';
 
 beforeEach(async () => {
@@ -67,7 +67,7 @@ describe('ExperimentRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.insertExperiment(experiment, manager);
+    const res = await repo.insertExperiment(experiment, manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -106,7 +106,7 @@ describe('ExperimentRepository Testing', () => {
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.insertBatchExps([experiment], manager);
+    const res = await repo.insertBatchExps([experiment], manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     insertMock.verify();
@@ -145,7 +145,7 @@ describe('ExperimentRepository Testing', () => {
     deleteMock.expects('returning').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.deleteById(experiment.id, manager);
+    const res = await repo.deleteById(experiment.id, manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
@@ -183,7 +183,7 @@ describe('ExperimentRepository Testing', () => {
     selectMock.expects('leftJoinAndSelect').exactly(17).returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.findAllExperiments();
+    const res = await repo.findAllExperiments();
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -220,7 +220,7 @@ describe('ExperimentRepository Testing', () => {
     selectMock.expects('select').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.findAllName();
+    const res = await repo.findAllName();
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -258,7 +258,7 @@ describe('ExperimentRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.getValidExperiments('context');
+    const res = await repo.getValidExperiments('context');
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -297,7 +297,7 @@ describe('ExperimentRepository Testing', () => {
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    let res = await repo.getValidExperimentsWithPreview('context');
+    const res = await repo.getValidExperimentsWithPreview('context');
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
@@ -338,7 +338,7 @@ describe('ExperimentRepository Testing', () => {
     updateMock.expects('returning').once().returns(updateQueryBuilder);
     updateMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.updateState(experiment.id, EXPERIMENT_STATE.ENROLLING, new Date('1-19-2022'));
+    const res = await repo.updateState(experiment.id, EXPERIMENT_STATE.ENROLLING, new Date('1-19-2022'));
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     updateMock.verify();
@@ -379,7 +379,7 @@ describe('ExperimentRepository Testing', () => {
     updateMock.expects('returning').once().returns(updateQueryBuilder);
     updateMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.updateState(experiment.id, EXPERIMENT_STATE.ENROLLING, new Date('1-19-2022'), manager);
+    const res = await repo.updateState(experiment.id, EXPERIMENT_STATE.ENROLLING, new Date('1-19-2022'), manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     updateMock.verify();
@@ -418,7 +418,7 @@ describe('ExperimentRepository Testing', () => {
     updateMock.expects('returning').once().returns(updateQueryBuilder);
     updateMock.expects('execute').once().returns(Promise.resolve(result));
 
-    let res = await repo.updateExperiment(experiment, manager);
+    const res = await repo.updateExperiment(experiment, manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     updateMock.verify();
@@ -458,11 +458,11 @@ describe('ExperimentRepository Testing', () => {
     connection.entityMetadatas = entities;
     connection.getRepository = sandbox.stub().returns(ExperimentRepository.prototype);
 
-    let queryStub = sandbox.stub(ExperimentRepository.prototype, 'query').returns(Promise.resolve());
+    const queryStub = sandbox.stub(ExperimentRepository.prototype, 'query').returns(Promise.resolve());
 
-    let segStub = sandbox.stub(globalExcludeSegment, 'createGlobalExcludeSegment').returns(Promise.resolve());
+    const segStub = sandbox.stub(globalExcludeSegment, 'createGlobalExcludeSegment').returns(Promise.resolve());
 
-    let res = await repo.clearDB(manager, new UpgradeLogger());
+    const res = await repo.clearDB(manager, new UpgradeLogger());
 
     sinon.assert.calledOnce(queryStub);
     sinon.assert.calledOnce(segStub);

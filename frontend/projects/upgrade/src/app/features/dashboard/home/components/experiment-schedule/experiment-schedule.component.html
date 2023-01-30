@@ -156,7 +156,12 @@
 
   <section class="shared-modal--buttons-container">
     <span class="shared-modal--buttons-left">
-      <button matStepperPrevious mat-raised-button class="shared-modal--modal-btn btn-back default-button">
+      <button
+        matStepperPrevious
+        mat-raised-button
+        class="shared-modal--modal-btn btn-back default-button"
+        (click)="handleBackBtnClick()"
+      >
         {{ 'global.back.text' | translate }}
       </button>
     </span>
@@ -183,7 +188,7 @@
         [disabled]="experimentInfo && experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
-        {{ 'global.update.text' | translate }}
+        {{ 'global.save.text' | translate }}
       </button>
     </span>
   </section>

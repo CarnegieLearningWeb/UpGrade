@@ -1,0 +1,19 @@
+<div class="content-container">
+  <section class="close-confirm-msg-container">
+    <span class="ft-18-600 content-span">
+      {{ 'home.experiments-edit.confirm-close.text' | translate }}
+    </span>
+  </section>
+  <section class="shared-modal--buttons-container">
+    <span class="shared-modal--buttons-right">
+      <button type="button" mat-raised-button class="shared-modal--modal-btn default-button" [mat-dialog-close]="false">
+        {{ 'No' | translate }}
+      </button>
+    </span>
+    <span class="shared-modal--buttons-left">
+      <button type="button" mat-raised-button class="shared-modal--modal-btn" [mat-dialog-close]="true">
+        {{ 'Yes' | translate }}
+      </button>
+    </span>
+  </section>
+</div>

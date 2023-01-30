@@ -239,8 +239,3 @@ export const actionBeginExperimentDetailStatsPolling = createAction(
 );
 
 export const actionEndExperimentDetailStatsPolling = createAction('[Experiment] End polling for detail stats');
-
-export const actionUpdateAliasTableEditMode = createAction(
-  '[Experiment] Update Alias Table Edit Mode Details',
-  props<{ isAliasTableEditMode: boolean; aliasTableEditIndex: number | null }>()
-);

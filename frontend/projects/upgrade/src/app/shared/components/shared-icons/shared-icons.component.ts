@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 import { Location } from '@angular/common';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-shared-icons',
@@ -13,6 +14,6 @@ export class SharedIconsComponent {
   constructor(private location: Location) {}
 
   svgFill(id: string): string {
-    return `url(${this.location.path()}#${id}`;
+    return `url(${environment.baseHrefPrefix}${this.location.path()}#${id}`;
   }
 }

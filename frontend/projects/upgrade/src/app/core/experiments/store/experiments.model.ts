@@ -192,23 +192,6 @@ export interface ExperimentConditionAlias {
   decisionPoint: ExperimentPartition;
 }
 
-// in PUT/POST request, parentCondition and decisionPoint are id strings
-export interface ExperimentConditionAliasRequestObject {
-  id?: string;
-  aliasName: string;
-  parentCondition: string;
-  decisionPoint: string;
-}
-
-export interface ExperimentAliasTableRow {
-  id?: string;
-  site: string;
-  target: string;
-  condition: string;
-  alias: string;
-  isEditing: boolean;
-}
-
 export const NUMBER_OF_EXPERIMENTS = 20;
 
 export interface ExperimentPaginationParams {
@@ -259,8 +242,6 @@ export interface ExperimentState extends EntityState<Experiment> {
   isLoadingContextMetaData: boolean;
   currentUserSelectedContext: ISingleContextMetadata;
   updatedStat?: IExperimentEnrollmentDetailStats;
-  isAliasTableEditMode: boolean;
-  aliasTableEditIndex: number | null;
 }
 
 export interface State extends AppState {

@@ -21,8 +21,6 @@ export interface APIEndpoints {
   loginUser: string;
   getAllUsers: string;
   userDetails: string;
-  excludeUsers: string;
-  excludeGroups: string;
   previewUsers: string;
   getAllPreviewUsers: string;
   previewUsersAssignCondition: string;
@@ -49,7 +47,7 @@ export interface Environment {
   apiBaseUrl: string;
   production: boolean;
   test: boolean;
-  i18nPrefix: string;
+  baseHrefPrefix: string;
   gapiClientId: string;
   domainName: string;
   pollingEnabled: boolean;

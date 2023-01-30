@@ -23,6 +23,7 @@ export class NewExperimentComponent implements OnInit {
   animationCompletedIndex: number;
   currentContext: string;
   isContextChanged = false;
+
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService,
@@ -69,6 +70,7 @@ export class NewExperimentComponent implements OnInit {
           this.experimentService.createNewExperiment(this.newExperimentData);
           this.onNoClick();
         }
+
         break;
       case NewExperimentDialogEvents.UPDATE_EXPERIMENT:
         this.onNoClick();
