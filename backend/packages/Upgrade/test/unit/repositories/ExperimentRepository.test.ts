@@ -268,6 +268,7 @@ describe('ExperimentRepository Testing', () => {
 
     selectMock.expects('leftJoinAndSelect').exactly(22).returns(selectQueryBuilder);
     selectMock.expects('where').twice().returns(selectQueryBuilder);
+    selectMock.expects('getMany').twice().returns(Promise.reject(err));
 
     expect(async () => {
       await repo.getValidExperiments('context');
@@ -302,6 +303,7 @@ describe('ExperimentRepository Testing', () => {
 
     selectMock.expects('leftJoinAndSelect').exactly(22).returns(selectQueryBuilder);
     selectMock.expects('where').twice().returns(selectQueryBuilder);
+    selectMock.expects('getMany').twice().returns(Promise.reject(err));
 
     expect(async () => {
       await repo.getValidExperimentsWithPreview('context');
