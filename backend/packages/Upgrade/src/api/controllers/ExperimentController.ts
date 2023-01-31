@@ -24,6 +24,7 @@ import { DecisionPoint } from '../models/DecisionPoint';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { env } from '../../env';
 import { AppRequest, PaginationResponse } from '../../types';
+import { ExperimentExportValidator } from './validators/ExperimentExportValidator';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: Experiment[];
@@ -1123,11 +1124,12 @@ export class ExperimentController {
 
   @Post('/export')
   public exportExperiment(
-    @Body({ validate: { validationError: { target: false, value: false } } }) experimentIds: string[],
+    @Body({ validate: { validationError: { target: true, value: true } } })
+    exportParams: ExperimentExportValidator,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<Experiment[]> {
-    return this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
+    return this.experimentService.exportExperiment(exportParams.experimentIds, currentUser, request.logger);
   }
 
   /**

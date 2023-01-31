@@ -171,7 +171,7 @@ describe('Experiment Controller Testing', () => {
   test('Get request for /api/experiments/export', async (done) => {
     await request(app)
       .post('/api/experiments/import')
-      .send([experimentData])
+      .send({"experimentIds":[experimentData.id]})
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
