@@ -60,6 +60,7 @@
     "lodash.clonedeep": "^4.5.0",
     "lodash.find": "^4.6.0",
     "lodash.groupby": "^4.6.0",
+    "lodash.isequal": "^4.5.0",
     "moment": "^2.29.4",
     "ng-pick-datetime-ex": "^13.0.1",
     "ngx-skeleton-loader": "^2.2.0",

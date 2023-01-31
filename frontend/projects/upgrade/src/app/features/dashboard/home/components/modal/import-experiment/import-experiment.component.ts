@@ -4,6 +4,9 @@ import {
   Experiment,
   ExperimentCondition,
   ExperimentPartition,
+  ExperimentFactor,
+  ExperimentLevel,
+  LevelCombinationElement,
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { VersionService } from '../../../../../../core/version/version.service';
@@ -13,13 +16,23 @@ import { filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
+import { EXPERIMENT_TYPE } from 'upgrade_types';
 
 interface ImportExperimentJSON {
   schema:
     | Record<keyof Experiment, string>
     | Record<keyof ExperimentCondition, string>
-    | Record<keyof ExperimentPartition, string>;
-  data: Experiment | ExperimentCondition | ExperimentPartition;
+    | Record<keyof ExperimentPartition, string>
+    | Record<keyof ExperimentFactor, string>
+    | Record<keyof ExperimentLevel, string>
+    | Record<keyof LevelCombinationElement, string>;
+  data:
+    | Experiment
+    | ExperimentCondition
+    | ExperimentPartition
+    | ExperimentFactor
+    | ExperimentLevel
+    | LevelCombinationElement;
 }
 
 @Component({
@@ -30,7 +43,7 @@ interface ImportExperimentJSON {
 export class ImportExperimentComponent implements OnInit {
   experimentInfo: Experiment;
   isExperimentJSONValid = true;
-  isExperimentJSONVersionValid = true;
+  experimentJSONVersionStatus = 0;
   missingAllProperties: string;
   allPartitions = [];
   allPartitionsSub: Subscription;
@@ -38,6 +51,7 @@ export class ImportExperimentComponent implements OnInit {
   importFileErrorsDataSource = new MatTableDataSource<{ filename: string; error: string }>();
   importFileErrors: { filename: string; error: string }[] = [];
   displayedColumns: string[] = ['File Name', 'Error'];
+  uploadedFileCount: any;
 
   constructor(
     private experimentService: ExperimentService,
@@ -57,6 +71,7 @@ export class ImportExperimentComponent implements OnInit {
         );
       });
   }
+
   openSnackBar() {
     this._snackBar.open(this.translate.instant('global.import-segments.message.text'), null, { duration: 4000 });
   }
@@ -76,14 +91,32 @@ export class ImportExperimentComponent implements OnInit {
     this.onCancelClick();
     this.openSnackBar();
   }
-  async validateExperimentJSONVersion(experimentInfo: any): Promise<any> {
-    const version = await this.versionService.getVersion();
-    if (experimentInfo.backendVersion !== version) {
-      return false;
+
+  compareVersion(currentBackendVersion, uploadedExperimentBackendVersion) {
+    currentBackendVersion = currentBackendVersion
+      .split('.')
+      .map((s) => s.padStart(10))
+      .join('.');
+    uploadedExperimentBackendVersion = uploadedExperimentBackendVersion
+      .split('.')
+      .map((s) => s.padStart(10))
+      .join('.');
+
+    if (currentBackendVersion === uploadedExperimentBackendVersion) {
+      return 0;
+    } else if (currentBackendVersion > uploadedExperimentBackendVersion) {
+      return 1;
     } else {
-      return true;
+      return 2;
     }
   }
+
+  async validateExperimentJSONVersion(experimentInfo: any): Promise<any> {
+    const currentBackendVersion = await this.versionService.getVersion();
+    const versionStatus = this.compareVersion(currentBackendVersion, experimentInfo.backendVersion);
+    return versionStatus;
+  }
+
   async validateDuplicateExperiment(partitions: any): Promise<any> {
     const alreadyExistedPartitions = [];
     partitions.forEach((partition) => {
@@ -104,50 +137,7 @@ export class ImportExperimentComponent implements OnInit {
     }
   }
 
-  async uploadFile(event) {
-    let index = 0;
-    let fileName = '';
-    const reader = new FileReader();
-
-    this.importFileErrors = [];
-
-    readFile(index);
-    function readFile(fileIndex: number) {
-      if (fileIndex >= event.target.files.length) return;
-      fileName = event.target.files[fileIndex].name;
-      reader.readAsText(event.target.files[fileIndex]);
-    }
-
-    reader.addEventListener(
-      'load',
-      async function () {
-        const result = JSON.parse(reader.result as any);
-        this.experimentInfo = result;
-        this.isExperimentJSONVersionValid = await this.validateExperimentJSONVersion(this.experimentInfo);
-        this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
-
-        if (this.isExperimentJSONVersionValid && this.isExperimentJSONValid) {
-          this.allExperiments.push(this.experimentInfo);
-        } else if (!this.isExperimentJSONValid) {
-          this.importFileErrors.push({
-            fileName: fileName,
-            error: this.translate.instant('home.import-experiment.error.message.text'),
-          });
-        } else {
-          this.importFileErrors.push({
-            fileName: fileName,
-            error: this.translate.instant('home.import-experiment.version-error.message.text'),
-          });
-          this.allExperiments.push(this.experimentInfo);
-        }
-
-        this.importFileErrorsDataSource.data = this.importFileErrors;
-        readFile(++index);
-      }.bind(this)
-    );
-  }
-
-  private validateExperimentJSON(experiment: Experiment) {
+  validateExperimentJSON(experiment: Experiment) {
     // TODO remove this any after typescript version updation
     const experimentSchema: any = {
       id: 'string',
@@ -189,12 +179,14 @@ export class ImportExperimentComponent implements OnInit {
       createdAt: 'string',
       updatedAt: 'string',
       versionNumber: 'number',
+      levelCombinationElements: 'interface',
     };
 
     const partitionSchema: Record<keyof ExperimentPartition, string> = {
       id: 'string',
       site: 'string',
       target: 'string',
+      factors: 'interface',
       description: 'string',
       twoCharacterId: 'string',
       order: 'number',
@@ -204,15 +196,55 @@ export class ImportExperimentComponent implements OnInit {
       excludeIfReached: 'boolean',
     };
 
+    const factorSchema: Record<keyof ExperimentFactor, string> = {
+      name: 'string',
+      order: 'number',
+      levels: 'interface',
+    };
+
+    const levelSchema: Record<keyof ExperimentLevel, string> = {
+      id: 'string',
+      name: 'string',
+      alias: 'string',
+      order: 'number',
+    };
+
+    const levelCombinationElementSchema: Record<keyof LevelCombinationElement, string> = {
+      id: 'string',
+      level: 'interface',
+    };
+
     const missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
     let missingPropertiesFlag = true;
     this.missingAllProperties =
       this.translate.instant('home.import-experiment.missing-properties.message.text') + missingProperties;
     let missingConditionProperties;
     let missingPartitionProperties;
+    let missingFactorProperties;
+    let missingLevelProperties;
+    let missingLevelCombinationElementProperties;
+
     missingPropertiesFlag = missingPropertiesFlag && missingProperties.length === 0;
     experiment.conditions.map((condition) => {
       missingConditionProperties = this.checkForMissingProperties({ schema: conditionSchema, data: condition });
+
+      if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+        condition.levelCombinationElements.map((element) => {
+          missingLevelCombinationElementProperties = this.checkForMissingProperties({
+            schema: levelCombinationElementSchema,
+            data: element,
+          });
+        });
+        if (missingLevelCombinationElementProperties.length > 0) {
+          this.missingAllProperties =
+            this.missingAllProperties +
+            ', ' +
+            this.translate.instant('global.level.text') +
+            ': ' +
+            missingLevelCombinationElementProperties;
+        }
+        missingPropertiesFlag = missingPropertiesFlag && missingLevelCombinationElementProperties.length === 0;
+      }
     });
     if (missingConditionProperties.length > 0) {
       this.missingAllProperties =
@@ -225,6 +257,33 @@ export class ImportExperimentComponent implements OnInit {
     missingPropertiesFlag = missingPropertiesFlag && missingConditionProperties.length === 0;
     experiment.partitions.map((partition) => {
       missingPartitionProperties = this.checkForMissingProperties({ schema: partitionSchema, data: partition });
+
+      if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+        partition.factors.map((factor) => {
+          missingFactorProperties = this.checkForMissingProperties({ schema: factorSchema, data: factor });
+          factor.levels.map((level) => {
+            missingLevelProperties = this.checkForMissingProperties({ schema: levelSchema, data: level });
+          });
+          if (missingLevelProperties.length > 0) {
+            this.missingAllProperties =
+              this.missingAllProperties +
+              ', ' +
+              this.translate.instant('global.levelCombinationElement.text') +
+              ': ' +
+              missingLevelProperties;
+          }
+          missingPropertiesFlag = missingPropertiesFlag && missingLevelProperties.length === 0;
+        });
+        if (missingFactorProperties.length > 0) {
+          this.missingAllProperties =
+            this.missingAllProperties +
+            ', ' +
+            this.translate.instant('global.factor.text') +
+            ': ' +
+            missingFactorProperties;
+        }
+        missingPropertiesFlag = missingPropertiesFlag && missingFactorProperties.length === 0;
+      }
     });
     if (missingPartitionProperties.length > 0) {
       this.missingAllProperties =
@@ -242,8 +301,68 @@ export class ImportExperimentComponent implements OnInit {
     const { schema, data } = experimentJson;
     const missingProperty = Object.keys(schema)
       .filter((key) => data[key] === undefined)
-      .map((key) => key as keyof (Experiment | ExperimentPartition | ExperimentCondition))
+      .map(
+        (key) =>
+          key as keyof (
+            | Experiment
+            | ExperimentPartition
+            | ExperimentCondition
+            | ExperimentFactor
+            | ExperimentLevel
+            | LevelCombinationElement
+          )
+      )
       .map((key) => `${key}`);
     return missingProperty.join(', ');
+  }
+
+  async uploadFile(event) {
+    let index = 0;
+    let fileName = '';
+    const reader = new FileReader();
+    this.uploadedFileCount = event.target.files.length;
+    this.importFileErrors = [];
+
+    readFile(index);
+    function readFile(fileIndex: number) {
+      if (fileIndex >= event.target.files.length) return;
+      fileName = event.target.files[fileIndex].name;
+      reader.readAsText(event.target.files[fileIndex]);
+    }
+
+    reader.addEventListener(
+      'load',
+      async function () {
+        const result = JSON.parse(reader.result as any);
+        this.experimentInfo = result;
+        this.experimentJSONVersionStatus = await this.validateExperimentJSONVersion(this.experimentInfo);
+        this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
+        if (this.experimentJSONVersionStatus === 0 && this.isExperimentJSONValid) {
+          this.allExperiments.push(this.experimentInfo);
+        } else if (!this.isExperimentJSONValid) {
+          this.importFileErrors.push({
+            fileName: fileName,
+            error:
+              this.translate.instant('home.import-experiment.error.message.text') + ' ' + this.missingAllProperties,
+          });
+        } else {
+          if (this.experimentJSONVersionStatus === 1) {
+            this.importFileErrors.push({
+              fileName: fileName,
+              error: this.translate.instant('home.import-experiment.old-version-error.message.text'),
+            });
+          } else {
+            this.importFileErrors.push({
+              fileName: fileName,
+              error: this.translate.instant('home.import-experiment.new-version-error.message.text'),
+            });
+          }
+          this.allExperiments.push(this.experimentInfo);
+        }
+
+        this.importFileErrorsDataSource.data = this.importFileErrors;
+        readFile(++index);
+      }.bind(this)
+    );
   }
 }

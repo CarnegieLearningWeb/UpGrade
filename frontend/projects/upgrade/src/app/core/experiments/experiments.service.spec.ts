@@ -36,7 +36,7 @@ import {
 } from './store/experiments.actions';
 import { Environment } from '../../../environments/environment-types';
 import { environment } from '../../../environments/environment';
-import { FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { segmentNew } from './store/experiments.model';
 import { Segment } from '../segments/store/segments.model';
 // import { SEGMENT_TYPE } from 'upgrade_types';
@@ -121,6 +121,7 @@ describe('ExperimentService', () => {
     experimentSegmentExclusion: dummyExclusionData,
     backendVersion: '1.0.0',
     groupSatisfied: 0,
+    type: EXPERIMENT_TYPE.SIMPLE,
   };
   const mockExperimentStateInfo = {
     newStatus: EXPERIMENT_STATE.INACTIVE,
