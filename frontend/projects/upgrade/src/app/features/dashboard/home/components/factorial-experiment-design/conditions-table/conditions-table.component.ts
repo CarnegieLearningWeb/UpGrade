@@ -99,7 +99,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   handleDesignDataChanges(designData: ExperimentFactorialDesignData) {
-    if (this.experimentInfo.partitions.length && !this.formInitialized && !this.isAnyRowRemoved) {
+    if (this.experimentInfo?.partitions.length && !this.formInitialized && !this.isAnyRowRemoved) {
       this.handleInitializeExistingTableData();
     } else if (!this.experimentInfo && this.formInitialized && !this.isAnyRowRemoved) {
       this.handleInitializeNewNewTableData(designData);
