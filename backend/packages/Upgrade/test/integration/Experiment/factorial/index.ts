@@ -1,12 +1,13 @@
-import IndExclude from './IndividualExclude';
-import GrpExclude from './GroupExclude';
 import { Container } from 'typedi';
-import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
-import { CheckService } from '../../../src/api/services/CheckService';
-import { experimentUsers } from '../mockData/experimentUsers/index';
-import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
+import TestCase1 from './FactorialCRUD';
+import TestCase2 from './FactorialEnrollment';
+import TestCase3 from './FactorialEnrollment2';
+import { CheckService } from '../../../../src/api/services/CheckService';
+import { experimentUsers } from '../../mockData/experimentUsers/index';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
-const initialCheck = async () => {
+const initialChecks = async () => {
   const userService = Container.get<ExperimentUserService>(ExperimentUserService);
   const checkService = Container.get<CheckService>(CheckService);
 
@@ -40,12 +41,17 @@ const initialCheck = async () => {
   });
 };
 
-export const IndividualExclude = async () => {
-  await initialCheck();
-  await IndExclude();
+export const FactorialExperimentCRUD = async () => {
+  await initialChecks();
+  await TestCase1();
 };
 
-export const GroupExclude = async () => {
-  await initialCheck();
-  await GrpExclude();
+export const FactorialEnrollment = async () => {
+  await initialChecks();
+  await TestCase2();
+};
+
+export const FactorialEnrollment2 = async () => {
+  await initialChecks();
+  await TestCase3();
 };

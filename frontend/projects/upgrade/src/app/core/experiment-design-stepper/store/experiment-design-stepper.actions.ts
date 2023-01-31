@@ -1,5 +1,10 @@
 import { createAction, props } from '@ngrx/store';
-import { DecisionPointsTableRowData, ConditionsTableRowData } from './experiment-design-stepper.model';
+import {
+  DecisionPointsTableRowData,
+  ConditionsTableRowData,
+  ExperimentFactorialDesignData,
+  FactorialConditionTableRowData,
+} from './experiment-design-stepper.model';
 
 export const actionUpdateAliasTableEditMode = createAction(
   '[Experiment-Design-Stepper] Update Alias Table Edit Mode Details',
@@ -31,3 +36,27 @@ export const experimentStepperDataChanged = createAction(
 export const experimentStepperDataReset = createAction(
   '[Experiment-Design-Stepper] turn isExperimentStepperDataChanged false'
 );
+
+export const actionUpdateFactorialDesignData = createAction(
+  '[Experiment-Design-Stepper] update factorial design data',
+  props<{ designData: ExperimentFactorialDesignData }>()
+);
+
+export const actionUpdateFactorialTableData = createAction(
+  '[Experiment-Design-Stepper] update factorial table data',
+  props<{ tableData: FactorialConditionTableRowData[] }>()
+);
+
+export const actionToggleFactorialConditionsTableEditMode = createAction(
+  '[Experiment-Design-Stepper] Update Factorial Conditions Table Edit Mode Details',
+  props<{
+    factorialConditionsTableEditIndex: number | null;
+    factorialConditionsRowData: FactorialConditionTableRowData;
+  }>()
+);
+
+export const actionClearFactorialConditionTableEditDetails = createAction(
+  `[Experiment-Design-Stepper] Clear Factorial Condition Table Edit Details`
+);
+
+export const clearFactorialDesignStepperData = createAction(`[Experiment-Design-Stepper] Clear Factorial Design Data`);

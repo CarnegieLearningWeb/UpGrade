@@ -62,7 +62,7 @@
         <mat-label>{{ 'home-global.design-type.text' | translate }}</mat-label>
         <mat-select class="ft-14-400" formControlName="designType">
           <mat-option *ngFor="let designType of designTypes" [value]="designType.value">
-            {{ designType.value | titlecase }}
+            {{ designType.value + ' Experiment' | titlecase }}
           </mat-option>
         </mat-select>
       </mat-form-field>

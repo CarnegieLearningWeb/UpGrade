@@ -1,5 +1,5 @@
 import { ScheduledJobService } from '../../../src/api/services/ScheduledJobService';
-import { Connection, Repository } from 'typeorm';
+import { Connection, ConnectionManager, Repository } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
@@ -11,6 +11,12 @@ import { SCHEDULE_TYPE } from '../../../src/api/models/ScheduledJob';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { ScheduledJob } from '../../../src/api/models/ScheduledJob';
+import * as sinon from 'sinon';
+import { ExperimentRepository } from '../../../src/api/repositories/ExperimentRepository';
+import { UserRepository } from '../../../src/api/repositories/UserRepository';
+import { ExperimentService } from '../../../src/api/services/ExperimentService';
+import Container from 'typedi';
+import ExperimentServiceMock from '../controllers/mocks/ExperimentServiceMock';
 
 describe('Scheduled Job Service Testing', () => {
   let service: ScheduledJobService;
@@ -23,12 +29,15 @@ describe('Scheduled Job Service Testing', () => {
   mockjob1.id = 'id1';
   mockjob1.type = SCHEDULE_TYPE.START_EXPERIMENT;
   mockjob1.executionArn = 'arn1';
-  mockjob1.timeStamp = new Date('2019-01-16');
+  mockjob1.timeStamp = new Date();
+  const exp = new Experiment();
+  exp.id = 'exp1';
+  mockjob1.experiment = exp;
 
   const mockjob2 = new ScheduledJob();
   mockjob2.id = 'id2';
   mockjob2.type = SCHEDULE_TYPE.END_EXPERIMENT;
-  mockjob2.timeStamp = new Date('2019-01-16');
+  mockjob2.timeStamp = new Date();
 
   const scheduledJobArr = [mockjob1, mockjob2];
 
@@ -37,11 +46,24 @@ describe('Scheduled Job Service Testing', () => {
     throw new Error();
   });
   logger.error = errorSpy;
-  const mockConnection = () => ({
-    transaction: jest.fn(),
-  });
+
+  const queryBuilderMock = {
+    leftJoin: jest.fn().mockReturnThis(),
+    select: jest.fn().mockReturnThis(),
+    addSelect: jest.fn().mockReturnThis(),
+    getMany: jest.fn().mockResolvedValue([mockjob1]),
+  };
+
+  const sandbox = sinon.createSandbox();
+
+  const entityManagerMock = { createQueryBuilder: () => queryBuilderMock, getRepository: () => scheduledJobRepo };
+  sandbox.stub(ConnectionManager.prototype, 'get').returns({
+    transaction: jest.fn(async (passedFunction) => await passedFunction(entityManagerMock)),
+  } as unknown as Connection);
 
   beforeEach(async () => {
+    Container.set(ExperimentService, new ExperimentServiceMock());
+
     module = await Test.createTestingModule({
       providers: [
         ScheduledJobService,
@@ -55,6 +77,20 @@ describe('Scheduled Job Service Testing', () => {
             find: jest.fn().mockResolvedValue(scheduledJobArr),
             delete: jest.fn().mockReturnThis(),
             upsertScheduledJob: jest.fn().mockResolvedValue(true),
+            findOne: jest.fn().mockResolvedValue(mockjob1),
+            update: jest.fn().mockResolvedValue(true),
+          },
+        },
+        {
+          provide: getRepositoryToken(ExperimentRepository),
+          useValue: {
+            findOne: jest.fn().mockResolvedValue(exp),
+          },
+        },
+        {
+          provide: getRepositoryToken(UserRepository),
+          useValue: {
+            findOne: jest.fn().mockResolvedValue(exp),
           },
         },
         {
@@ -68,10 +104,6 @@ describe('Scheduled Job Service Testing', () => {
           useValue: {
             clearLogs: clearLogsSpy,
           },
-        },
-        {
-          provide: Connection,
-          useFactory: mockConnection,
         },
         {
           provide: AWSService,
@@ -198,5 +230,63 @@ describe('Scheduled Job Service Testing', () => {
 
     await service.updateExperimentSchedules(exp, logger);
     expect(errorSpy).toBeCalled();
+  });
+
+  it('should start the experiment', async () => {
+    const exp = new Experiment();
+    exp.state = EXPERIMENT_STATE.SCHEDULED;
+
+    const res = await service.startExperiment(exp.id, logger);
+    expect(res).toStrictEqual([]);
+  });
+
+  it('should return empty when no job to start', async () => {
+    const exp = new Experiment();
+    exp.state = EXPERIMENT_STATE.SCHEDULED;
+    scheduledJobRepo.findOne = jest.fn().mockResolvedValue(mockjob2);
+    const res = await service.startExperiment(exp.id, logger);
+    expect(res).toStrictEqual({});
+  });
+
+  it('should throw an error when starting if the time difference is more than 5 hours', async () => {
+    const exp = new Experiment();
+    exp.state = EXPERIMENT_STATE.SCHEDULED;
+    mockjob1.timeStamp = new Date('2019-01-20');
+
+    const mockDate = new Date(2022, 3, 1);
+    jest.spyOn(global, "Date").mockImplementation(() => (mockDate as unknown) as string);
+    let res = await service.startExperiment(exp.id, logger);
+    expect(res).toStrictEqual(new Error('Error in start experiment of scheduler: Time Difference of more than 5 hours is found'))
+  });
+
+  it('should end the experiment', async () => {
+    const exp = new Experiment();
+    exp.state = EXPERIMENT_STATE.ENROLLING;
+    mockjob1.timeStamp = new Date();
+
+    const res = await service.endExperiment(exp.id, logger);
+    expect(res).toStrictEqual([]);
+  });
+
+  it('should throw an error when ending if the time difference is more than 5 hours', async () => {
+    const exp = new Experiment();
+    exp.state = EXPERIMENT_STATE.SCHEDULED;
+
+    mockjob1.timeStamp = new Date('2019-01-20');
+    jest.useFakeTimers('modern');
+    jest.setSystemTime(new Date(2020, 3, 1));
+    let res = await service.endExperiment(exp.id, logger);
+    expect(res).toStrictEqual(new Error('Error in end experiment of scheduler: Time Difference of more than 5 hours is found'))
+
+  });
+
+  it('should return empty when no experiment to stop', async () => {
+    const exp = new Experiment();
+    exp.state = EXPERIMENT_STATE.SCHEDULED;
+    mockjob1.timeStamp = new Date();
+
+    scheduledJobRepo.findOne = jest.fn().mockResolvedValueOnce(mockjob1).mockResolvedValueOnce(null);
+    const res = await service.endExperiment(exp.id, logger);
+    expect(res).toStrictEqual({});
   });
 });

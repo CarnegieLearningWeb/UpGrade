@@ -78,6 +78,7 @@ import {
 } from './Segment/index';
 import { UpgradeLogger } from '../../src/lib/logger/UpgradeLogger';
 import { CompetingExperiment } from './Experiment/competingExperiment';
+import { FactorialExperimentCRUD, FactorialEnrollment, FactorialEnrollment2 } from './Experiment/factorial';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -94,6 +95,7 @@ describe('Integration Tests', () => {
   });
 
   beforeEach(async () => {
+    jest.setTimeout(29999);
     await migrateDatabase(connection);
 
     // create System Users
@@ -500,6 +502,20 @@ describe('Integration Tests', () => {
     done();
   });
 
+  test('Factorial CRUD', async (done) => {
+    await FactorialExperimentCRUD();
+    done();
+  });
+
+  test('Factorial Enrollment with same Decision Point', async (done) => {
+    await FactorialEnrollment();
+    done();
+  });
+
+  test('Factorial Enrollment with different Decision Point', async (done) => {
+    await FactorialEnrollment2();
+    done();
+  });
   // test('Monitored Point for Export', async (done) => {
   //   await MonitoredPointForExport();
   //   done();

@@ -10,15 +10,10 @@
               type="button"
               mat-flat-button
               color="primary"
-              class="ft-14-600 toggle-button"
+              class="ft-14-600 default-button toggle-button"
               (click)="scrollToAliasesTable()"
-              [disabled]="
-                (isFormLockedForEdit$ | async) ||
-                aliasTableData.length === 0 ||
-                partition.length === 0 ||
-                condition.length === 0 ||
-                !isExperimentEditable
-              "
+              [class.default-button--disabled]= "(isFormLockedForEdit$ | async) || isAliasTableButtonDisabled"
+              [disabled]="(isFormLockedForEdit$ | async) || isAliasTableButtonDisabled"
             >
               <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
               <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.aliases' | translate }}</span>
@@ -107,7 +102,13 @@
                   {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                  <mat-checkbox class="ft-8-100" color="primary" [disabled]="(decisionPointsTableEditIndex$ | async) !== groupIndex" formControlName="excludeIfReached"> </mat-checkbox>
+                  <mat-checkbox
+                    class="ft-8-100"
+                    color="primary"
+                    [disabled]="(decisionPointsTableEditIndex$ | async) !== groupIndex"
+                    formControlName="excludeIfReached"
+                  >
+                  </mat-checkbox>
                 </mat-cell>
               </ng-container>
 
@@ -152,10 +153,10 @@
               <mat-row
                 *matRowDef="let row; let rowIndex = index; columns: partitionDisplayedColumns"
                 [ngClass]="{
-                  'row-is-locked': (isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex
+                  'row-is-locked':
+                    (isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex
                 }"
               ></mat-row>
-
             </mat-table>
             <button
               type="button"
@@ -438,7 +439,7 @@
         *ngIf="experimentInfo"
         mat-raised-button
         class="shared-modal--modal-btn default-button"
-        [ngClass]="{ 'default-button--disabled': (isFormLockedForEdit$ | async) || !isExperimentEditable }"
+        [class.default-button--disabled]= "(isFormLockedForEdit$ | async) || !isExperimentEditable"
         [disabled]="(isFormLockedForEdit$ | async) || !isExperimentEditable"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
@@ -447,4 +448,3 @@
     </span>
   </section>
 </div>
-

@@ -47,6 +47,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
+  @Input() isExperimentTypeChanged: boolean;
   @Input() animationCompleteStepperIndex: number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
@@ -116,8 +117,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         'home.new-experiment.design.assignment-partition-error-2.text',
         'home.new-experiment.design.assignment-partition-error-3.text',
         'home.new-experiment.design.assignment-partition-error-4.text',
-        'home.new-experiment.design.partition-point-selection-error.text',
-        'home.new-experiment.design.partition-id-selection-error.text',
       ])
       .subscribe((translatedMessage) => {
         this.partitionErrorMessages = [
@@ -125,8 +124,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           translatedMessage['home.new-experiment.design.assignment-partition-error-2.text'],
           translatedMessage['home.new-experiment.design.assignment-partition-error-3.text'],
           translatedMessage['home.new-experiment.design.assignment-partition-error-4.text'],
-          translatedMessage['home.new-experiment.design.partition-point-selection-error.text'],
-          translatedMessage['home.new-experiment.design.partition-id-selection-error.text'],
         ];
       });
   }
@@ -140,12 +137,18 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.conditionCode.nativeElement.focus();
     }
 
-    if (this.isContextChanged) {
+    if (this.isContextChanged || this.isExperimentTypeChanged) {
       this.isContextChanged = false;
-      this.partition.clear();
-      this.condition.clear();
-      this.partitionDataSource.next(this.partition.controls);
-      this.conditionDataSource.next(this.condition.controls);
+      this.isExperimentTypeChanged = false;
+      this.partition?.clear();
+      this.condition?.clear();
+      this.partitionDataSource.next(this.partition?.controls);
+      this.conditionDataSource.next(this.condition?.controls);
+      if(this.experimentInfo){
+        this.experimentInfo.partitions = [];
+        this.experimentInfo.conditions = [];
+        this.experimentInfo.conditionAliases = [];
+      }
     }
 
     this.applyEqualWeight();
@@ -174,14 +177,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.previousConditionTableRowDataBehaviorSubject$
     );
 
+    // Remove previously added group of conditions and partitions
+    this.condition?.removeAt(0);
+    this.partition?.removeAt(0);
+
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
       this.equalWeightFlag = this.experimentInfo.conditions.every(
         (condition) => condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight
       );
-      // Remove previously added group of conditions and partitions
-      this.condition.removeAt(0);
-      this.partition.removeAt(0);
       this.experimentInfo.conditions.forEach((condition) => {
         this.condition.push(
           this.addConditions(
@@ -505,8 +509,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
     this.validatePartitionNames(partitions);
     this.validatePartitionCount(partitions);
-    this.validatePartitions();
-    
+
     return !this.partitionPointErrors.length && !this.partitionCountError && !this.expPointAndIdErrors.length;
   }
 
@@ -616,40 +619,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  validatePartitions() {
-    // Reset expPointAndIdErrors errors to re-validate data
-    this.expPointAndIdErrors = [];
-    const partitions: ExperimentPartition[] = this.experimentDesignForm.get('partitions').value;
-    this.validateExpPoints(partitions);
-    this.validateExpIds(partitions);
-  }
-
-  validateExpPoints(partitions: ExperimentPartition[]) {
-    const sites = partitions.map((partition) => partition.site);
-    const currentContextExpPoints = this.contextMetaData.contextMetadata[this.currentContext].EXP_POINTS;
-
-    for (let siteIndex = 0; siteIndex < sites.length; siteIndex++) {
-      if (!currentContextExpPoints.includes(sites[siteIndex])) {
-        // Add partition point selection error
-        this.expPointAndIdErrors.push(this.partitionErrorMessages[4]);
-        break;
-      }
-    }
-  }
-
-  validateExpIds(partitions: ExperimentPartition[]) {
-    const targets = partitions.map((partition) => partition.target).filter((target) => target);
-    const currentContextExpIds = this.contextMetaData.contextMetadata[this.currentContext].EXP_IDS;
-
-    for (let targetIndex = 0; targetIndex < targets.length; targetIndex++) {
-      if (!currentContextExpIds.includes(targets[targetIndex])) {
-        // Add partition id selection error
-        this.expPointAndIdErrors.push(this.partitionErrorMessages[5]);
-        break;
-      }
-    }
-  }
-
   removePartitionName(partition) {
     delete partition.target;
     return partition;
@@ -719,8 +688,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           break;
         }
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataReset();
-        this.experimentDesignForm.markAsPristine();
         break;
     }
   }
@@ -729,7 +696,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.validateForm();
 
     // TODO: Uncomment to validate partitions with predefined site and target
-    // this.validatePartitions()
     // enabling Assignment weight for form to validate
     if (
       !this.partitionPointErrors.length &&
@@ -770,6 +736,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         formData: experimentDesignFormData,
         path: NewExperimentPaths.EXPERIMENT_DESIGN,
       });
+      if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+        this.experimentDesignStepperService.experimentStepperDataReset();
+        this.experimentDesignForm.markAsPristine();
+      }
       // scroll back to the conditions table
       this.scrollToConditionsTable();
     }
@@ -863,11 +833,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get condition(): FormArray {
-    return this.experimentDesignForm.get('conditions') as FormArray;
+    return this.experimentDesignForm?.get('conditions') as FormArray;
   }
 
   get partition(): FormArray {
-    return this.experimentDesignForm.get('partitions') as FormArray;
+    return this.experimentDesignForm?.get('partitions') as FormArray;
   }
 
   get NewExperimentDialogEvents() {
@@ -876,6 +846,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   get ExperimentState() {
     return EXPERIMENT_STATE;
+  }
+
+  get isAliasTableButtonDisabled() {
+    return (
+      this.aliasTableData.length === 0 ||
+      this.partition.length === 0 ||
+      this.condition.length === 0 ||
+      !this.isExperimentEditable
+    );
   }
 
   ngOnDestroy() {

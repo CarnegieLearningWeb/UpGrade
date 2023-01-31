@@ -1,0 +1,165 @@
+<section class="conditions-table-component">
+  <div class="conditions-header-container">
+    <span class="title">{{ 'home.new-experiment.design.condition.text' | translate }}</span>
+    <button
+      type="button"
+      mat-flat-button
+      color="primary"
+      class="ft-14-600 toggle-button"
+      (click)="handleHideClick()"
+      [disabled]="isFormLockedForEdit$ | async"
+    >
+      <mat-icon class="icon icon-bump-left">expand_less</mat-icon>
+      <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.factors' | translate }}</span>
+    </button>
+  </div>
+
+  <div class="conditions-weight-checkbox">
+    <mat-checkbox
+      class="ft-13-700"
+      color="primary"
+      [checked]="equalWeightFlag"
+      (change)="handleEqualWeightToggle()"
+      [disabled]="!isExperimentEditable"
+    >
+      {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
+    </mat-checkbox>
+  </div>
+  <form [formGroup]="factorialConditionTableForm">
+    <mat-table [dataSource]="tableData$" class="conditions-table" formArrayName="factorialConditions">
+      <!-- Factor 1 Levels Column -->
+      <ng-container matColumnDef="factorOne">
+        <mat-header-cell *matHeaderCellDef class="ft-14-700">
+          {{ factorHeaders[0] | uppercase }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let rowData">
+          <span [matTooltip]="rowData.levels[0].name" matTooltipPosition="above">
+            {{ rowData.levels[0].name | truncate: 20 }}
+          </span>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Factor 2 Levels Column -->
+      <ng-container matColumnDef="factorTwo">
+        <mat-header-cell *matHeaderCellDef class="ft-14-700">
+          {{ factorHeaders[1] | uppercase }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let rowData">
+          <span [matTooltip]="rowData.levels[1].name" matTooltipPosition="above">
+            {{ rowData.levels[1].name | truncate: 20 }}
+          </span>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Alias Column -->
+      <ng-container matColumnDef="alias">
+        <mat-header-cell *matHeaderCellDef class="ft-14-700">
+          {{ 'ALIAS' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
+          <ng-container *ngIf="(tableEditIndex$ | async) !== rowIndex">
+            <span [matTooltip]="rowData.alias" matTooltipPosition="above">
+              {{ rowData.alias | truncate: 25 }}
+            </span>
+          </ng-container>
+          <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
+            <mat-form-field floatLabel="never">
+              <input
+                class="input-alias"
+                type="text"
+                matInput
+                formControlName="alias"
+                [disabled]="!isExperimentEditable"
+              />
+            </mat-form-field>
+          </ng-container>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Weight Column -->
+      <ng-container matColumnDef="weight">
+        <mat-header-cell *matHeaderCellDef class="ft-14-700">
+          {{ 'WEIGHT' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
+          <ng-container *ngIf="equalWeightFlag || (tableEditIndex$ | async) !== rowIndex">
+            <span [matTooltip]="rowData.weight" matTooltipPosition="above">
+              {{ rowData.weight }}
+            </span>
+          </ng-container>
+          <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex">
+            <mat-form-field class="input-weight" floatLabel="never">
+              <input type="test" matInput formControlName="weight" [disabled]="!isExperimentEditable" />
+            </mat-form-field>
+          </ng-container>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Include Column -->
+      <ng-container matColumnDef="include">
+        <mat-header-cell *matHeaderCellDef class="ft-14-700">
+          {{ 'INCLUDE' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
+          <mat-checkbox
+            formControlName="include"
+            class="ft-13-700"
+            color="primary"
+            [disabled]="(tableEditIndex$ | async) !== rowIndex || !isExperimentEditable"
+          >
+          </mat-checkbox>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
+        <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell">
+          <button
+            type="button"
+            class="row-action-btn"
+            [disabled]="
+              ((isFormLockedForEdit$ | async) && (tableEditIndex$ | async) !== rowIndex) || !isExperimentEditable
+            "
+            (click)="handleRowEditClick(rowData, rowIndex)"
+          >
+            <!-- Edit Icon -->
+            <ng-container *ngIf="(tableEditIndex$ | async) !== rowIndex">
+              <mat-icon class="icon">create</mat-icon>
+            </ng-container>
+
+            <!-- Done Icon -->
+            <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
+              <mat-icon class="icon" (click)="handleRowEditDoneClick(rowIndex)">done</mat-icon>
+            </ng-container>
+          </button>
+
+          <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
+            <button
+              type="button"
+              class="row-action-btn"
+              [disabled]="(isFormLockedForEdit$ | async) && (tableEditIndex$ | async) !== rowIndex"
+              (click)="handleClear(rowIndex)"
+            >
+              <ng-container>
+                <mat-icon class="icon">clear</mat-icon>
+              </ng-container>
+            </button>
+          </ng-container>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="columnHeaders"></mat-header-row>
+      <mat-row
+        *matRowDef="let row; let rowIndex = index; columns: columnHeaders"
+        [ngClass]="{
+          'row-is-locked': (isFormLockedForEdit$ | async) && (tableEditIndex$ | async) !== rowIndex
+        }"
+      ></mat-row>
+    </mat-table>
+    <div class="validation-container">
+      <span class="ft-14-600 validation-message">{{ conditionweightSumError }}</span>
+      <span class="ft-14-600 validation-message">{{ conditionnegativeweightError }}</span>
+    </div>
+  </form>
+</section>
