@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
-import { FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { environment } from '../../../environments/environment';
 import { Environment } from '../../../environments/environment-types';
 import { Segment } from '../segments/store/segments.model';
@@ -104,6 +104,7 @@ describe('ExperimentDataService', () => {
       groupSatisfied: 0,
       experimentSegmentInclusion: dummyInclusionData,
       experimentSegmentExclusion: dummyExclusionData,
+      type: EXPERIMENT_TYPE.SIMPLE,
     };
   });
 

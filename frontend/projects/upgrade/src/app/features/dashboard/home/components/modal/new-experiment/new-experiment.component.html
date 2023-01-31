@@ -26,13 +26,22 @@
         {{ 'home.new-experiment.experiment-design.text' | translate }}
       </span>
     </ng-template>
-    <home-experiment-design
+    <home-experiment-design *ngIf="newExperimentData?.type=='Simple'"
       [experimentInfo]="experimentInfo"
       [currentContext]="currentContext"
       [isContextChanged]="isContextChanged"
+      [isExperimentTypeChanged]="isExperimentTypeChanged"
       [animationCompleteStepperIndex]="animationCompletedIndex"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-design>
+    <home-factorial-experiment-design *ngIf="newExperimentData?.type=='Factorial'"
+      [experimentInfo]="experimentInfo"
+      [currentContext]="currentContext"
+      [isContextChanged]="isContextChanged"
+      [isExperimentTypeChanged]="isExperimentTypeChanged"
+      [animationCompleteStepperIndex]="animationCompletedIndex"
+      (emitExperimentDialogEvent)="getExperimentData($event)"
+    ></home-factorial-experiment-design>
   </mat-step>
 
   <mat-step>
@@ -45,6 +54,7 @@
       [experimentInfo]="experimentInfo"
       [currentContext]="currentContext"
       [isContextChanged]="isContextChanged"
+      [isExperimentTypeChanged]="isExperimentTypeChanged"
       [animationCompleteStepperIndex]="animationCompletedIndex"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-participants>
@@ -60,6 +70,7 @@
       [experimentInfo]="experimentInfo"
       [currentContext]="currentContext"
       [isContextChanged]="isContextChanged"
+      [isExperimentTypeChanged]="isExperimentTypeChanged"
       [animationCompleteStepperIndex]="animationCompletedIndex"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-monitored-metrics>

@@ -110,7 +110,7 @@ if (window.self !== window.top) {
       activeWindowEvent.target.removeEventListener(activeWindowEvent.type, activeWindowEvent.callback, true);
       activeWindowEvent = null;
     }
-  }
+  };
 
   const addWindowEvent = (target, type, callback) => {
     removeActiveWindowEvent();
@@ -122,28 +122,32 @@ if (window.self !== window.top) {
     activeWindowEvent = {
       target,
       type,
-      callback
+      callback,
     };
-  }
+  };
 
   const closeOpenedModals = () => {
     const modalButtonsSelector = 'div.cdk-overlay-pane button.mat-raised-button';
-    const modalCloseButton = Array.from(document.querySelectorAll(modalButtonsSelector)).find((elem) => elem.innerText.toLowerCase() === 'close');
+    const modalCloseButton = Array.from(document.querySelectorAll(modalButtonsSelector)).find(
+      (elem) => elem.innerText.toLowerCase() === 'close'
+    );
     if (modalCloseButton) {
       modalCloseButton.click();
-      const confirmCloseButton = Array.from(document.querySelectorAll(modalButtonsSelector)).find((elem) => elem.innerText.toLowerCase() === 'yes');
+      const confirmCloseButton = Array.from(document.querySelectorAll(modalButtonsSelector)).find(
+        (elem) => elem.innerText.toLowerCase() === 'yes'
+      );
       if (confirmCloseButton) {
         confirmCloseButton.click();
       }
     }
-  }
+  };
 
   // A set of functions that do more than triggering an event
   const initCallFunction = {
     'set-zoom-level': (args) => {
       document.body.style.zoom = args[0];
     },
-    'logout': () => {
+    logout: () => {
       closeOpenedModals();
       const signOutButton = getElementById('signout-button');
       if (signOutButton) {
@@ -161,7 +165,7 @@ if (window.self !== window.top) {
     },
     'remove-active-window-event': () => {
       removeActiveWindowEvent();
-    }
+    },
   };
 
   // Used to call a function or trigger event on element
@@ -193,14 +197,16 @@ if (window.self !== window.top) {
     'on-experiment-click': (args, onNextCall) => {
       const experimentName = args[0];
       const onWindowClick = (event) => {
-        const elem = Array.from(document.querySelectorAll('div.experiment-list-table-container a.experiment-name')).find((elem) => elem.innerText === experimentName);
+        const elem = Array.from(
+          document.querySelectorAll('div.experiment-list-table-container a.experiment-name')
+        ).find((elem) => elem.innerText === experimentName);
         if (elem && elem.contains(event.target)) {
           removeActiveWindowEvent();
           onNextCall();
         }
       };
       addWindowEvent(window, 'click', onWindowClick);
-    }
+    },
   };
 
   // Used to detect event on element
