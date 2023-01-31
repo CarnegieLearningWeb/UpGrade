@@ -169,7 +169,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
           let groups = 0;
           // Find index based on experiment conditions from graphInfoConditions to maintain colors
           const index = graphInfoConditions.findIndex((graphCondition) => graphCondition.id === condition.id);
-          graphInfoConditions[index].partitions.map((partition) => {
+          graphInfoConditions[index]?.partitions.map((partition) => {
             if (this.selectedPartition.includes(partition.id)) {
               users += partition.users;
               groups += partition.groups;

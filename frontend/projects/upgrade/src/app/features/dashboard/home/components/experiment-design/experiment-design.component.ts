@@ -47,6 +47,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
+  @Input() isExperimentTypeChanged: boolean;
   @Input() animationCompleteStepperIndex: number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
@@ -136,12 +137,18 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.conditionCode.nativeElement.focus();
     }
 
-    if (this.isContextChanged) {
+    if (this.isContextChanged || this.isExperimentTypeChanged) {
       this.isContextChanged = false;
-      this.partition.clear();
-      this.condition.clear();
-      this.partitionDataSource.next(this.partition.controls);
-      this.conditionDataSource.next(this.condition.controls);
+      this.isExperimentTypeChanged = false;
+      this.partition?.clear();
+      this.condition?.clear();
+      this.partitionDataSource.next(this.partition?.controls);
+      this.conditionDataSource.next(this.condition?.controls);
+      if(this.experimentInfo){
+        this.experimentInfo.partitions = [];
+        this.experimentInfo.conditions = [];
+        this.experimentInfo.conditionAliases = [];
+      }
     }
 
     this.applyEqualWeight();
@@ -170,14 +177,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.previousConditionTableRowDataBehaviorSubject$
     );
 
+    // Remove previously added group of conditions and partitions
+    this.condition?.removeAt(0);
+    this.partition?.removeAt(0);
+
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
       this.equalWeightFlag = this.experimentInfo.conditions.every(
         (condition) => condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight
       );
-      // Remove previously added group of conditions and partitions
-      this.condition.removeAt(0);
-      this.partition.removeAt(0);
       this.experimentInfo.conditions.forEach((condition) => {
         this.condition.push(
           this.addConditions(
@@ -825,11 +833,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get condition(): FormArray {
-    return this.experimentDesignForm.get('conditions') as FormArray;
+    return this.experimentDesignForm?.get('conditions') as FormArray;
   }
 
   get partition(): FormArray {
-    return this.experimentDesignForm.get('partitions') as FormArray;
+    return this.experimentDesignForm?.get('partitions') as FormArray;
   }
 
   get NewExperimentDialogEvents() {

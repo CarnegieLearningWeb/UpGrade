@@ -33,6 +33,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
+  @Input() isExperimentTypeChanged: boolean;
   @Input() animationCompleteStepperIndex: number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('metricTable', { static: false, read: ElementRef }) metricTable: ElementRef;
@@ -658,8 +659,9 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges() {
-    if (this.isContextChanged) {
+    if (this.isContextChanged || this.isExperimentTypeChanged) {
       this.isContextChanged = false;
+      this.isExperimentTypeChanged = false;
       this.queries.clear();
       this.metricsDataSource.next(this.queries.controls);
     }
