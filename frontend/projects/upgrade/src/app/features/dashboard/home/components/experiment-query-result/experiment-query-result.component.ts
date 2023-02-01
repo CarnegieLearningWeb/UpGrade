@@ -23,6 +23,9 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   };
 
   queryResults = {};
+  queryFactorResults1 = {};
+  queryFactorResults2 = {};
+  interactionEffectQueryFactorResults = {};
   queryResultsSub: Subscription;
   isQueryExecuting$ = this.analysisService.isQueryExecuting$;
   factors = [];
@@ -51,128 +54,137 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     });
     this.analysisService.executeQuery(queryIds);
     this.queryResultsSub = this.analysisService.queryResult$.pipe(filter((result) => !!result)).subscribe((result) => {
+      // main effect graph data
       result.map((res) => {
-        let resultData = res.result.map((data) => ({
-          name: this.getConditionCode(data.conditionId),
-          value: Number(data.result),
-        }));
-        resultData = this.formatEmptyBar(resultData);
-        this.queryResults = {
-          ...this.queryResults,
-          [res.id]: resultData,
-        };
+        let resultData = [];
+        let resultData1 = [];
+        let resultData2 = [];
+        if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
+          res.mainEffect.map((data) => {
+            let decisionPointIndex = this.getFactorIndex(data.levelId);
+            let resData = {
+              name: this.getLevelName(data.levelId),
+              value: Number(data.result),
+            };
+            decisionPointIndex === 0 ? resultData1.push(resData) : resultData2.push(resData);
+          });
+          resultData1 = this.formatEmptyBar(resultData1);
+          this.queryFactorResults1 = {
+            ...this.queryFactorResults1,
+            [res.id]: resultData1,
+          };
+          resultData2 = this.formatEmptyBar(resultData2);
+          this.queryFactorResults2 = {
+            ...this.queryFactorResults2,
+            [res.id]: resultData2,
+          };
+        } else {
+          resultData = res.result.map((data) => ({
+            name: this.getConditionCode(data.conditionId),
+            value: Number(data.result),
+          }));
+          resultData = this.formatEmptyBar(resultData);
+          this.queryResults = {
+            ...this.queryResults,
+            [res.id]: resultData,
+          };
+        }
         return {
           [res.id]: resultData,
         };
       });
+      // interactive effect graph data
+      result.map((res) => {
+        let resultData1 = [];
+        let resultData2 = [];
+        let emptySeries1 = [];
+        let emptySeries2 = [];
+        if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
+          // prepare all combination series with 0 result
+          this.experiment.partitions.map((decisionPoint, decisionPointIndex) => {
+            decisionPoint.factors.map(( factor, factorIndex) => {
+              factor.levels.map((level) => {
+                let levelName = level.name;
+                // collect level names in 2 list
+                decisionPointIndex === 0 ? resultData1.push(levelName) : resultData2.push(levelName)
+              });
+            });
+          });
+          // factor 1 with factor 2
+          resultData1.map((level1) => {
+            let series = [];
+            resultData2.map((level2) => {
+              series.push({
+                  name: level2,
+                  value: 0,
+              });
+            });
+            emptySeries1.push({
+              name: level1,
+              series: series,
+              dot: true
+            });
+          });
+          // factor 2 with factor 1
+          resultData2.map((level2) => {
+            let series = [];
+            resultData1.map((level1) => {
+              series.push({
+                  name: level1,
+                  value: 0,
+              });
+            });
+            emptySeries2.push({
+              name: level2,
+              series: series,
+              dot: true
+            });
+          });
+          // both factors
+          let multiFactorSeries = [...emptySeries2, ...emptySeries1]
+          // fill the result values for wach query:
+          let resultData = multiFactorSeries;
+          res.interactionEffect.map((data) => {
+            // levels of the condition:
+            let levels = this.getLevels(data.conditionId);
+            resultData.map((resData) => {
+              if (resData.name === levels[0].level.name) {
+                return resData.series.map((level) => {
+                  if (level.name === levels[1].level.name) {
+                    return level.value = Number(data.result);
+                  }
+                });
+              }
+              else if (resData.name === levels[1].level.name) {
+                return resData.series.map((level) => {
+                  if (level.name === levels[0].level.name) {
+                    return level.value = Number(data.result);
+                  }
+                });
+              }
+            });
+          });
+          this.interactionEffectQueryFactorResults = {
+            ...this.interactionEffectQueryFactorResults,
+            [res.id]: resultData,
+          };
+        }
+      });
     });
+  }
 
-    this.meanData1 = [
-      {
-        "name": "Abstract",
-        "value": 8
-      },
-      {
-        "name": "Concrete",
-        "value": 5
-      }
-    ];
-
-    this.meanData2 = [
-      {
-        "name": "No Support",
-        "value": 6
-      },
-      {
-        "name": "Mindset",
-        "value": 3
-      },
-      {
-        "name": "Utility Value",
-        "value": 9
-      }
-    ];
-
-    this.data = [
-      {
-        name: 'No Support',
-        series: [
-          {
-            name: 'Abstract',
-            value: 9,
-          },
-          {
-            name: 'Concrete',
-            value: 6,
+  getFactorIndex(levelId: any) {
+    let decisionPointIndex;
+    this.experiment.partitions.map((decisionPoint, decisionpointIndex) => {
+      decisionPoint.factors.map((factor) => {
+        factor.levels.map((level) => {
+          if (level.id === levelId) {
+            decisionPointIndex = decisionpointIndex;
           }
-        ],
-        dot: true
-      },
-      {
-        name: 'Minset',
-        series: [
-          {
-            name: 'Abstract',
-            value: 8,
-          },
-          {
-            name: 'Concrete',
-            value: 5,
-          }
-        ],
-        dot: true
-      },
-      {
-        name: 'Utility Value',
-        series: [
-          {
-            name: 'Abstract',
-            value: 7,
-          },
-          {
-            name: 'Concrete',
-            value: 4,
-          }
-        ],
-        dot: true
-      },
-      {
-        name: 'Abstract',
-        series: [
-          {
-            name: 'No Support',
-            value: 3,
-          },
-          {
-            name: 'Mindset',
-            value: 6,
-          },
-          {
-            name: 'Utility Value',
-            value: 9,
-          }
-        ],
-        dot: true
-      },
-      {
-        name: 'Concrete',
-        series: [
-          {
-            name: 'No Support',
-            value: 2,
-          },
-          {
-            name: 'Mindset',
-            value: 5,
-          },
-          {
-            name: 'Utility Value',
-            value: 8,
-          }
-        ],
-        dot: true
-      }
-    ];
+        })
+      });
+    })
+    return decisionPointIndex;
   }
 
   isResultExist(queryId: string): boolean {
@@ -191,13 +203,35 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     );
   }
 
+  getLevels(conditionId: string) {
+    return this.experiment.conditions.reduce(
+      (acc, condition) => (condition.id === conditionId ? (acc = condition.levelCombinationElements as any) : acc),
+      null
+    );
+  }
+
+  getLevelName(levelId: string) {
+    // TODO: look for factors at index apart from 0
+    let levelName;
+    this.experiment.partitions.map((decisionPoint, decisionPointIndex) => {
+      decisionPoint.factors.map((factor, factorIndex) => {
+        factor.levels.map((level) => {
+          if (level.id === levelId) {
+            levelName = level.name;
+          }
+        });
+      });
+    });
+    return levelName;
+  }
+
   // remove empty series data labels
   formateXAxisLabel(value) {
     return !isNaN(value) ? '' : value;
   }
 
   formateYAxisLabel(value) {
-    return !isNaN(value) ? '' : value;
+    return value;
   }
 
   formatEmptyBar(data: any) {

@@ -84,7 +84,7 @@ export class QueryService {
       await Promise.all(failedQuery);
     }
     const modifiedResponseToReturn = modifiedResponse.map((res, index) => {
-      return { id: queryIds[index], mainEfffect: res[0], interactionEffect: res[1] || null };
+      return { id: queryIds[index], mainEffect: res[0], interactionEffect: res[1] || null };
     });
     return modifiedResponseToReturn;
   }

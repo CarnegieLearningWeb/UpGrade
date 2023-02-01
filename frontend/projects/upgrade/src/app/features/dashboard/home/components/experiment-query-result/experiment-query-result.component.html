@@ -26,13 +26,14 @@
               <ngx-charts-bar-vertical
                 [view]="[320, 250]"
                 [scheme]="colorScheme"
-                [results]="meanData1"
+                [results]="queryFactorResults1[query?.id]"
                 [xAxis]="true"
                 [yAxis]="true"
                 [barPadding]="20"
                 [showXAxisLabel]="true"
                 [showYAxisLabel]="true"
                 [xAxisTickFormatting]="formateXAxisLabel"
+                [yAxisTickFormatting]="formateYAxisLabel"
                 [trimXAxisTicks]="true"
                 [rotateXAxisTicks]="false"
               >
@@ -42,13 +43,14 @@
               <ngx-charts-bar-vertical
                 [view]="[320, 250]"
                 [scheme]="colorScheme"
-                [results]="meanData2"
+                [results]="queryFactorResults2[query?.id]"
                 [xAxis]="true"
                 [yAxis]="true"
                 [barPadding]="20"
                 [showXAxisLabel]="true"
                 [showYAxisLabel]="true"
                 [xAxisTickFormatting]="formateXAxisLabel"
+                [yAxisTickFormatting]="formateYAxisLabel"
                 [trimXAxisTicks]="true"
                 [rotateXAxisTicks]="false"
               >
@@ -94,124 +96,51 @@
     </ng-template>
   </div>
   <br />
-  <span class="ft-18-700 interaction-effect-data-text">{{
-    'home.experiment-query-result.interaction-effect.title.text' | translate
-  }}</span>
-  <br />
-  <div *ngIf="factors?.length === 2">
-    <div *ngFor="let query of experiment.queries">
-      <br />
-      <span class="ft-16-700 interaction-effect-data-text">
-        {{ query.name }}
-      </span>
-      <br />
-      <table>
-        <tr>
-          <td class="ft-14-600 factor-name1" *ngFor="let factor of factors;">{{ factor | uppercase}}</td>
-        </tr>
-      </table>
-      <table>
-        <tr> 
-          <td class="ft-12-600 factor-name2" *ngFor="let factor of factors.slice().reverse();"> ({{ factor | uppercase}})</td>
-        </tr>
-      </table>
-      <ng-container *ngIf="!(isQueryExecuting$ | async); else spinnerTemplate">
-        <div style="height: 250px; width: 45%">
-          <ngx-charts-line-chart
-            [view]="[800, 210]"
-            [scheme]="colorScheme2"
-            [xAxis]="true"
-            [yAxis]="true"
-            [legend]="true"
-            [showXAxisLabel]="true"
-            [showYAxisLabel]="true"
-            [results]="data"
-            [legendTitle]=null
-            [legendPosition]="'below'"
-            >
+  <!-- Interaction Section -->
+  <div *ngIf="experimentType === 'Factorial'">
+    <span class="ft-18-700 interaction-effect-data-text">{{
+      'home.experiment-query-result.interaction-effect.title.text' | translate
+    }}</span>
+    <div *ngIf="factors?.length === 2">
+      <div *ngFor="let query of experiment.queries">
+        <br />
+        <span class="ft-16-700 interaction-effect-data-text">
+          {{ query.name }}
+        </span>
+        <br />
+        <table>
+          <tr>
+            <td class="ft-14-600 factor-name1" *ngFor="let factor of factors;">{{ factor | uppercase}}</td>
+          </tr>
+        </table>
+        <table>
+          <tr>
+            <td class="ft-12-600 factor-name2" *ngFor="let factor of factors.slice().reverse();"> ({{ factor | uppercase}})</td>
+          </tr>
+        </table>
+        <ng-container *ngIf="!(isQueryExecuting$ | async); else spinnerTemplate">
+          <div style="height: 250px; width: 45%">
+            <ngx-charts-line-chart
+              [view]="[700, 210]"
+              [scheme]="colorScheme2"
+              [xAxis]="true"
+              [yAxis]="true"
+              [legend]="true"
+              [showXAxisLabel]="true"
+              [showYAxisLabel]="true"
+              [yAxisTickFormatting]="formateYAxisLabel"
+              [results]="interactionEffectQueryFactorResults[query?.id]"
+              [legendTitle]=null
+              [legendPosition]="'below'"
+              >
             </ngx-charts-line-chart>
-        </div>
-        <ng-template #noResultTemplate>
-          <span class="zero-state" [innerHTML]="'query.result.empty-result.text' | translate"> </span>
-        </ng-template>
-      </ng-container>
+          </div>
+          <ng-template #noResultTemplate>
+            <span class="zero-state" [innerHTML]="'query.result.empty-result.text' | translate"> </span>
+          </ng-template>
+        </ng-container>
+      </div>
     </div>
-  </div>
-  <!-- <div *ngIf="factors.length >= 3"> -->
-  <div *ngIf="factors.length === 3">
-    <!-- Experiment Conditions Table -->
-    <!-- <div class="table-container table-container-partition">
-      <span class="ft-24-700">{{ 'home.view-experiment.experiment-conditions-title.text' | translate }}</span>
-        <mat-table [dataSource]="experiment.partitions.factors" class="conditions-table">
-          Factor 1 Levels Column -->
-          <!-- <ng-container matColumnDef="factorOne">
-            <mat-header-cell *matHeaderCellDef class="ft-14-700">
-              {{ factorHeaders[0] | uppercase }}
-            </mat-header-cell>
-            <mat-cell *matCellDef="let rowData">
-              <span [matTooltip]="rowData.levels[0].name" matTooltipPosition="above">
-                {{ rowData.levels[0].name | truncate: 20 }}
-              </span>
-            </mat-cell>
-          </ng-container>
-     -->
-          <!-- Factor 2 Levels Column -->
-          <!-- <ng-container matColumnDef="factorTwo">
-            <mat-header-cell *matHeaderCellDef class="ft-14-700">
-              {{ factorHeaders[1] | uppercase }}
-            </mat-header-cell>
-            <mat-cell *matCellDef="let rowData">
-              <span [matTooltip]="rowData.levels[1].name" matTooltipPosition="above">
-                {{ rowData.levels[1].name | truncate: 20 }}
-              </span>
-            </mat-cell>
-          </ng-container> -->
-        <!-- Condition Code Column -->
-        <!-- <ng-container matColumnDef="conditionCode">
-          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            {{ 'global.condition.text' | translate }}
-          </mat-header-cell>
-          <mat-cell class="ft-12-600" *matCellDef="let data">
-            <span *ngIf="data.conditionCode?.length < 50; else conditionCode">
-              {{ data.conditionCode }}
-            </span>
-            <ng-template #conditionCode>
-              <span [matTooltip]="data.conditionCode" matTooltipPosition="above">
-                {{ data.conditionCode | truncate: 50 }}
-              </span>
-            </ng-template>
-          </mat-cell>
-        </ng-container> -->
-
-        <!-- Weight Column -->
-        <!-- <ng-container matColumnDef="assignmentWeight">
-          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            {{ 'home-global.assignment-weight.text' | translate }}
-          </mat-header-cell>
-          <mat-cell class="ft-12-600" *matCellDef="let data"> {{ data.assignmentWeight }} </mat-cell>
-        </ng-container> -->
-
-        <!-- Description Column -->
-        <!-- <ng-container matColumnDef="description">
-          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            {{ 'global.description.text' | translate }}
-          </mat-header-cell>
-          <mat-cell class="ft-12-600" *matCellDef="let data">
-            <span *ngIf="data.description?.length < 50; else conditionDescription">
-              {{ data.description }}
-            </span>
-            <ng-template #conditionDescription>
-              <span [matTooltip]="data.description" matTooltipPosition="above">
-                {{ data.description | truncate: 50 }}
-              </span>
-            </ng-template>
-          </mat-cell>
-        </ng-container> -->
-
-        <!-- <mat-header-row *matHeaderRowDef="displayedConditionColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedConditionColumns"></mat-row>
-      </mat-table>
-    </div> -->
   </div>
   <ng-template #spinnerTemplate>
     <div class="loading-container">
