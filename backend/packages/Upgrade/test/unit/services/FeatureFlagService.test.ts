@@ -1,6 +1,6 @@
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
 import * as sinon from 'sinon';
-import { Connection, ConnectionManager, Repository } from 'typeorm';
+import { Connection, ConnectionManager } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
@@ -15,8 +15,8 @@ import { isUUID } from 'class-validator';
 
 describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
-  let flagRepo: Repository<FeatureFlagRepository>;
-  let flagVariationRepo: Repository<FlagVariationRepository>;
+  let flagRepo: FeatureFlagRepository;
+  let flagVariationRepo: FlagVariationRepository;
   let module: TestingModule;
 
   const logger = new UpgradeLogger();
@@ -118,8 +118,8 @@ describe('Feature Flag Service Testing', () => {
     }).compile();
 
     service = module.get<FeatureFlagService>(FeatureFlagService);
-    flagRepo = module.get<Repository<FeatureFlagRepository>>(getRepositoryToken(FeatureFlagRepository));
-    flagVariationRepo = module.get<Repository<FlagVariationRepository>>(getRepositoryToken(FlagVariationRepository));
+    flagRepo = module.get<FeatureFlagRepository>(getRepositoryToken(FeatureFlagRepository));
+    flagVariationRepo = module.get<FlagVariationRepository>(getRepositoryToken(FlagVariationRepository));
   });
 
   it('should be defined', async () => {
@@ -145,7 +145,7 @@ describe('Feature Flag Service Testing', () => {
     flagRepo.insertFeatureFlag = jest.fn().mockRejectedValue(err);
     expect(async () => {
       await service.create(mockFlag1, logger);
-    }).rejects.toThrow(new Error('Error in creating feature flag document \"addFeatureFlagInDB\" Error: insert error'));
+    }).rejects.toThrow(new Error('Error in creating feature flag document "addFeatureFlagInDB" Error: insert error'));
   });
 
   it('should throw an error when create variation fails', async () => {
@@ -153,7 +153,7 @@ describe('Feature Flag Service Testing', () => {
     flagVariationRepo.insertVariations = jest.fn().mockRejectedValue(err);
     expect(async () => {
       await service.create(mockFlag1, logger);
-    }).rejects.toThrow(new Error('Error in creating variation \"addFeatureFlagInDB\" Error: insert error'));
+    }).rejects.toThrow(new Error('Error in creating variation "addFeatureFlagInDB" Error: insert error'));
   });
 
   it('should return a count of feature flags', async () => {
@@ -272,7 +272,9 @@ describe('Feature Flag Service Testing', () => {
     flagRepo.updateFeatureFlag = jest.fn().mockRejectedValue(err);
     expect(async () => {
       await service.update(mockFlag1, logger);
-    }).rejects.toThrow(new Error('Error in updating feature flag document \"updateFeatureFlagInDB\" Error: insert error'));
+    }).rejects.toThrow(
+      new Error('Error in updating feature flag document "updateFeatureFlagInDB" Error: insert error')
+    );
   });
 
   it('should throw an error when unable to update flag variation', async () => {
@@ -280,7 +282,7 @@ describe('Feature Flag Service Testing', () => {
     flagVariationRepo.upsertFlagVariation = jest.fn().mockRejectedValue(err);
     expect(async () => {
       await service.update(mockFlag1, logger);
-    }).rejects.toThrow(new Error('Error in creating variations \"updateFeatureFlagInDB\" Error: insert error'));
+    }).rejects.toThrow(new Error('Error in creating variations "updateFeatureFlagInDB" Error: insert error'));
   });
 
   it('should update the flag state', async () => {
