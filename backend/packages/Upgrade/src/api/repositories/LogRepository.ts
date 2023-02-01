@@ -316,6 +316,7 @@ export class LogRepository extends Repository<Log> {
               `${operationType}(cast(${valueToUse} as decimal)) as result`,
             ]);
       }
+      executeQuery.addSelect('COUNT(DISTINCT "individualEnrollment"."userId") as "participantsLogged"');
       return executeQuery.getRawMany();
     }
   }
