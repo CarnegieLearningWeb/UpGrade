@@ -64,7 +64,8 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
             let decisionPointIndex = this.getFactorIndex(data.levelId);
             let resData = {
               name: this.getLevelName(data.levelId),
-              value: Number(data.result),
+              value: Math.round(Number(data.result) * 100)/ 100,
+              participantsLogged: Number(data.participantsLogged),
             };
             decisionPointIndex === 0 ? resultData1.push(resData) : resultData2.push(resData);
           });
@@ -79,9 +80,10 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
             [res.id]: resultData2,
           };
         } else {
-          resultData = res.result.map((data) => ({
+          resultData = res.mainEffect.map((data) => ({
             name: this.getConditionCode(data.conditionId),
-            value: Number(data.result),
+            value: Math.round(Number(data.result) * 100)/ 100,
+            participantsLogged: Number(data.participantsLogged),
           }));
           resultData = this.formatEmptyBar(resultData);
           this.queryResults = {
@@ -117,6 +119,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
               series.push({
                   name: level2,
                   value: 0,
+                  participantsLogged: 0
               });
             });
             emptySeries1.push({
@@ -132,6 +135,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
               series.push({
                   name: level1,
                   value: 0,
+                  participantsLogged: 0
               });
             });
             emptySeries2.push({
@@ -151,14 +155,16 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
               if (resData.name === levels[0].level.name) {
                 return resData.series.map((level) => {
                   if (level.name === levels[1].level.name) {
-                    return level.value = Number(data.result);
+                    level.value = Math.round(Number(data.result) * 100)/ 100;
+                    level.participantsLogged = Number(data.participantsLogged);
                   }
                 });
               }
               else if (resData.name === levels[1].level.name) {
                 return resData.series.map((level) => {
                   if (level.name === levels[0].level.name) {
-                    return level.value = Number(data.result);
+                    level.value =Math.round( Number(data.result) * 100)/ 100;
+                    level.participantsLogged = Number(data.participantsLogged);
                   }
                 });
               }
@@ -241,6 +247,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
       emptyBars.push({
         name: i,
         value: 0,
+        participantsLogged: 0,
       });
     }
     return [...data, ...emptyBars];

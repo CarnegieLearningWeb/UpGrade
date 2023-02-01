@@ -37,6 +37,13 @@
                 [trimXAxisTicks]="true"
                 [rotateXAxisTicks]="false"
               >
+              <ng-template #tooltipTemplate let-model="model">
+                <span>{{ model.name }}</span>
+                <br>
+                <span>{{ model.value }}</span>
+                <br>
+                <span>( n = {{ queryFactorResults1[query?.id][0].participantsLogged }} )</span>
+              </ng-template>
               </ngx-charts-bar-vertical>
             </div>
             <div style="height: 250px; width: 28%">
@@ -54,6 +61,13 @@
                 [trimXAxisTicks]="true"
                 [rotateXAxisTicks]="false"
               >
+              <ng-template #tooltipTemplate let-model="model">
+                <span>{{ model.name }}</span>
+                <br>
+                <span>{{ model.value }}</span>
+                <br>
+                <span>( n = {{ queryFactorResults2[query?.id][0].participantsLogged }} )</span>
+              </ng-template>
               </ngx-charts-bar-vertical>
             </div>
           </div>
@@ -81,6 +95,13 @@
             [trimXAxisTicks]="true"
             [rotateXAxisTicks]="false"
           >
+          <ng-template #tooltipTemplate let-model="model">
+            <span>{{ model.name }}</span>
+            <br>
+            <span>{{ model.value }}</span>
+            <br>
+            <span>( n = {{ queryResults[query?.id][0].participantsLogged }} )</span>
+          </ng-template>
           </ngx-charts-bar-vertical>
         </div>
       </ng-container>
@@ -133,6 +154,13 @@
               [legendTitle]=null
               [legendPosition]="'below'"
               >
+              <ng-template #tooltipTemplate let-model="model">
+                <span>{{ model.series }}</span>
+                <br>
+                <span>{{ model.value }}</span>
+                <br>
+                <span>( n = {{ model.participantsLogged }} )</span>
+              </ng-template>
             </ngx-charts-line-chart>
           </div>
           <ng-template #noResultTemplate>
