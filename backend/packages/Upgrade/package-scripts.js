@@ -9,12 +9,8 @@ module.exports = {
       default: 'nps test.coverage',
       integration: {
         default: {
-          script: series('nps banner.testIntegration', 'nps test.integration.pretest', 'nps test.integration.run'),
+          script: series('nps banner.testIntegration', 'nps test.integration.run'),
           description: 'Runs the integration tests',
-        },
-        pretest: {
-          // script: eslint('./test/integration'),
-          hiddenFromHelp: true,
         },
         run: {
           default: {
@@ -30,12 +26,8 @@ module.exports = {
       },
       unit: {
         default: {
-          script: series('nps banner.testUnit', 'nps test.unit.pretest', 'nps test.unit.run'),
+          script: series('nps banner.testUnit', 'nps test.unit.run'),
           description: 'Runs the integration tests',
-        },
-        pretest: {
-          // script: eslint(`./test/unit`),
-          hiddenFromHelp: true,
         },
         run: {
           default: {

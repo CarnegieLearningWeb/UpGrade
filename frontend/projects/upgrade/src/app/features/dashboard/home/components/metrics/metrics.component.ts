@@ -33,6 +33,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
+  @Input() isExperimentTypeChanged: boolean;
   @Input() animationCompleteStepperIndex: number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('metricTable', { static: false, read: ElementRef }) metricTable: ElementRef;
@@ -577,8 +578,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataReset();
-        this.queryForm.markAsPristine();
         break;
     }
   }
@@ -651,12 +650,18 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         formData: monitoredMetricsFormData,
         path: NewExperimentPaths.MONITORED_METRIC,
       });
+
+      if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+        this.experimentDesignStepperService.experimentStepperDataReset();
+        this.queryForm.markAsPristine();
+      }
     }
   }
 
   ngOnChanges() {
-    if (this.isContextChanged) {
+    if (this.isContextChanged || this.isExperimentTypeChanged) {
       this.isContextChanged = false;
+      this.isExperimentTypeChanged = false;
       this.queries.clear();
       this.metricsDataSource.next(this.queries.controls);
     }

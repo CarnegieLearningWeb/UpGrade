@@ -48,6 +48,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   @Input() experimentInfo: ExperimentVM;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
+  @Input() isExperimentTypeChanged: boolean;
   @Input() animationCompleteStepperIndex: number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
@@ -76,8 +77,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   factorDisplayedColumns = ['expandIcon', 'factor', 'site', 'target', 'removeFactor'];
   levelDisplayedColumns = ['level', 'alias', 'removeLevel'];
 
-  // Used for condition code, experiment point and ids auto complete dropdownfilteredExpFactors$: Observable<string[]>[] = [];
-  filteredExpFactors$: Observable<string[]>[] = [];
+  // Used for condition code, experiment point and ids auto complete dropdown
   filteredSites$: Observable<string[]>[] = [];
   filteredTargets$: Observable<string[]>[] = [];
   contextMetaData: IContextMetaData = {
@@ -117,11 +117,17 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   ngOnChanges() {
-    if (this.isContextChanged) {
+    if (this.isContextChanged || this.isExperimentTypeChanged) {
       this.isContextChanged = false;
+      this.isExperimentTypeChanged = false;      
       this.factor?.clear();
       this.level?.clear();
       this.factorDataSource.next(this.factor?.controls);
+      if(this.experimentInfo){
+        this.experimentInfo.partitions = [];
+        this.experimentInfo.conditions = [];
+        this.experimentInfo.conditionAliases = [];
+      }
     }
   }
 
@@ -179,13 +185,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   manageExpFactorPointAndIdControl(factorIndex: number) {
     const factorFormControl = this.factor as FormArray;
-    this.filteredExpFactors$[factorIndex] = factorFormControl
-      .at(factorIndex)
-      .get('factor')
-      .valueChanges.pipe(
-        startWith<string>(''),
-        map((factor) => this.filterExpFactorsPointsAndIds(factor, 'expFactors'))
-      );
     this.filteredSites$[factorIndex] = factorFormControl
       .at(factorIndex)
       .get('site')
@@ -462,7 +461,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     if (this.isFormValid()) {
       const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
-      const factorialPartitions = this.convertToPartitionData(factorialExperimentDesignFormData);
+      const factorialPartitions = this.experimentDesignStepperService.convertToDecisionPointData(factorialExperimentDesignFormData);
       const factorialConditions = this.experimentDesignStepperService.createFactorialConditionRequestObject();
 
       const factorialConditionAliases: ExperimentConditionAliasRequestObject[] =
@@ -487,43 +486,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       // scroll back to the factors table
       this.scrollToFactorsTable();
     }
-  }
-
-  convertToPartitionData(factorialExperimentDesignFormData: ExperimentFactorialDesignData ) {
-    let order = 1;
-    let factorOrder = 1;
-    const decisionPoints = [];
-    this.levelIds = [];
-    factorialExperimentDesignFormData.factors.forEach((decisionPoint) => {
-      let levelOrder = 1;
-      const currentLevels: ExperimentLevel[] = decisionPoint.levels.map((level) => {
-        return { name: level.level, alias: level.alias, id: level.id, order: levelOrder++ };
-      });
-      const currentFactors: ExperimentFactor = {
-        name: decisionPoint.factor,
-        order: factorOrder++,
-        levels: currentLevels,
-      };
-      if (
-        !decisionPoints.find(
-          (existingPartition) =>
-            existingPartition.site === decisionPoint.site && existingPartition.target === decisionPoint.target
-        )?.factors.push(currentFactors)
-      ) {
-        const partitionData = {
-          site: decisionPoint.site,
-          id: uuidv4(),
-          description: '',
-          order: order++,
-          excludeIfReached: false,
-          factors: [currentFactors],
-        };
-        decisionPoint.target
-          ? decisionPoints.push({ ...partitionData, target: decisionPoint.target })
-          : decisionPoints.push(partitionData);
-      }
-    });
-    return decisionPoints;
   }
 
   scrollToFactorsTable(): void {

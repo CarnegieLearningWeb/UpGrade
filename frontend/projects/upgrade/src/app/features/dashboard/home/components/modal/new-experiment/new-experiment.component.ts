@@ -24,6 +24,8 @@ export class NewExperimentComponent implements OnInit {
   animationCompletedIndex: number;
   currentContext: string;
   isContextChanged = false;
+  currentExperimentType: string;
+  isExperimentTypeChanged = false;
 
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
@@ -70,6 +72,14 @@ export class NewExperimentComponent implements OnInit {
         this.isContextChanged = this.currentContext !== this.newExperimentData.context[0];
 
         this.currentContext = this.newExperimentData.context[0];
+
+        if (!this.currentExperimentType && this.experimentInfo) {
+          this.currentExperimentType = this.experimentInfo.type;
+        }
+
+        this.isExperimentTypeChanged = this.currentExperimentType !== this.newExperimentData.type;
+
+        this.currentExperimentType = this.newExperimentData.type;
 
         this.stepper.next();
         if (path === NewExperimentPaths.POST_EXPERIMENT_RULE) {

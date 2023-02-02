@@ -7,6 +7,8 @@ import {
   ExperimentConditionAlias,
   TableEditModeDetails,
   ExperimentVM,
+  ExperimentFactor,
+  ExperimentLevel,
 } from '../experiments/store/experiments.model';
 import * as experimentDesignStepperAction from './store/experiment-design-stepper.actions';
 import {
@@ -210,6 +212,42 @@ export class ExperimentDesignStepperService {
     });
 
     return tableData;
+  }
+
+  convertToDecisionPointData(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
+    let order = 1;
+    let factorOrder = 1;
+    const decisionPoints = [];
+    factorialExperimentDesignFormData.factors.forEach((decisionPoint) => {
+      let levelOrder = 1;
+      const currentLevels: ExperimentLevel[] = decisionPoint.levels.map((level) => {
+        return { name: level.level, alias: level.alias, id: level.id, order: levelOrder++ };
+      });
+      const currentFactors: ExperimentFactor = {
+        name: decisionPoint.factor,
+        order: factorOrder++,
+        levels: currentLevels,
+      };
+      if (
+        !decisionPoints.find(
+          (existingDecisionPoint) =>
+            existingDecisionPoint.site === decisionPoint.site && existingDecisionPoint.target === decisionPoint.target
+        )?.factors.push(currentFactors)
+      ) {
+        const decisionPointData = {
+          site: decisionPoint.site,
+          id: uuidv4(),
+          description: '',
+          order: order++,
+          excludeIfReached: false,
+          factors: [currentFactors],
+        };
+        decisionPoint.target
+          ? decisionPoints.push({ ...decisionPointData, target: decisionPoint.target })
+          : decisionPoints.push(decisionPointData);
+      }
+    });
+    return decisionPoints;
   }
 
   mergeExistingConditionsTableData(experimentInfo: ExperimentVM): FactorialConditionTableRowData[] {
