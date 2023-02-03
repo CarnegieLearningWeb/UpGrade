@@ -144,7 +144,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.condition?.clear();
       this.partitionDataSource.next(this.partition?.controls);
       this.conditionDataSource.next(this.condition?.controls);
-      if(this.experimentInfo){
+      if (this.experimentInfo) {
         this.experimentInfo.partitions = [];
         this.experimentInfo.conditions = [];
         this.experimentInfo.conditionAliases = [];
@@ -736,7 +736,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         formData: experimentDesignFormData,
         path: NewExperimentPaths.EXPERIMENT_DESIGN,
       });
-      if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+      if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
         this.experimentDesignStepperService.experimentStepperDataReset();
         this.experimentDesignForm.markAsPristine();
       }

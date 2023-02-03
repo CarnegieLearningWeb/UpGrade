@@ -22,7 +22,7 @@
       }
     }
 
-    .factor-table{
+    .factor-table {
       max-height: 380px;
       overflow: auto;
 
@@ -47,19 +47,19 @@
       mat-icon {
         position: relative;
         cursor: pointer;
-  
+
         &.active {
           transform: rotate(90deg);
         }
       }
 
-      .cdk-column-expandIcon{
+      .cdk-column-expandIcon {
         flex: 0 0 60px;
         width: 30px;
         padding-left: 0px;
       }
 
-      .cdk-column-removeFactor{
+      .cdk-column-removeFactor {
         flex: 0 0 60px;
         width: 60px;
       }
@@ -81,7 +81,7 @@
         max-width: 250px;
       }
 
-      .cdk-column-expandedDetail{
+      .cdk-column-expandedDetail {
         margin-left: 60px;
         border-width: 1px;
         border-radius: 10%;
@@ -91,12 +91,12 @@
       .expandable-row {
         min-height: 0;
         overflow: hidden;
-        
+
         mat-cell,
         mat-header-cell {
           padding: 0px;
         }
-  
+
         .mat-column-experimentPoint {
           padding-left: 20px;
         }
@@ -123,7 +123,7 @@
       }
     }
 
-    .level-table{
+    .level-table {
       mat-header-row {
         min-height: 35px;
         justify-content: space-between;
@@ -132,7 +132,7 @@
       mat-row {
         justify-content: space-between;
         border-bottom-style: none;
-        border-top: 1px solid #D3D3D3;
+        border-top: 1px solid #d3d3d3;
       }
 
       mat-header-cell {
@@ -158,14 +158,14 @@
         margin-left: 30px;
       }
 
-      .cdk-column-removeLevel{
+      .cdk-column-removeLevel {
         flex: 0 0 60px;
         width: 60px;
       }
-    }  
+    }
 
     .add-factor,
-    .add-level{
+    .add-level {
       margin: 10px 0px;
       outline: 0;
       border: 0;
@@ -176,13 +176,13 @@
       }
     }
   }
-  
-  .level-container{
+
+  .level-container {
     width: 100%;
   }
 
-  .level-table-container{
-    border: 1px solid #D3D3D3;
+  .level-table-container {
+    border: 1px solid #d3d3d3;
     border-radius: 5px;
     padding: 0px 5px;
     margin: 10px 5px 0px;
@@ -216,4 +216,3 @@
     -moz-appearance: textfield;
   }
 }
-  
