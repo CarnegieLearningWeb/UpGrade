@@ -90,7 +90,13 @@
           </ng-container>
           <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex">
             <mat-form-field class="input-weight" floatLabel="never">
-              <input autocomplete="off" type="text" matInput formControlName="weight" [disabled]="!isExperimentEditable" />
+              <input
+                autocomplete="off"
+                type="text"
+                matInput
+                formControlName="weight"
+                [disabled]="!isExperimentEditable"
+              />
             </mat-form-field>
           </ng-container>
         </mat-cell>

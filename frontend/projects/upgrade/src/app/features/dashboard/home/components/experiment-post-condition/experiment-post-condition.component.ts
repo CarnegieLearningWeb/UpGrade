@@ -145,7 +145,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
       },
       path: NewExperimentPaths.POST_EXPERIMENT_RULE,
     });
-    if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+    if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
       this.experimentDesignStepperService.experimentStepperDataReset();
       this.postExperimentRuleForm.markAsPristine();
     }
