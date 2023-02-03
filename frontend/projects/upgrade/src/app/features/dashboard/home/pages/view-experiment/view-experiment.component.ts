@@ -23,7 +23,7 @@ import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/s
 import { ExportModalComponent } from '../../components/modal/export-experiment/export-experiment.component';
 import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-time/enrollment-over-time.component';
-import { FILTER_MODE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
@@ -124,12 +124,14 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.onExperimentChange(experiment, isPolling);
         this.loadParticipants();
         this.loadMetrics();
-        this.aliasTableData = this.experimentDesignStepperService.createAliasTableData(
-          experiment.partitions,
-          experiment.conditions,
-          experiment.conditionAliases,
-          true
-        );
+        if (experiment.type === EXPERIMENT_TYPE.SIMPLE) {
+          this.aliasTableData = this.experimentDesignStepperService.createAliasTableData(
+            experiment.partitions,
+            experiment.conditions,
+            experiment.conditionAliases,
+            true
+          );
+        }
       });
 
     if (this.experiment) {
