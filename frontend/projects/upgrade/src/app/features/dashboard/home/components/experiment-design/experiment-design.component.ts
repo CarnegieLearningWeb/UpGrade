@@ -153,10 +153,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
     if (this.isContextChanged || this.isExperimentTypeChanged) {
       this.isContextChanged = false;
-      this.decisionPoints.clear();
-      this.conditions.clear();
-      this.decisionPointDataSource.next(this.decisionPoints.controls);
-      this.conditionDataSource.next(this.conditions.controls);
+      this.decisionPoints?.clear();
+      this.conditions?.clear();
+      this.decisionPointDataSource.next(this.decisionPoints?.controls);
+      this.conditionDataSource.next(this.conditions?.controls);
       this.isExperimentTypeChanged = false;
 
       if (this.experimentInfo) {
@@ -193,14 +193,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.previousConditionTableRowDataBehaviorSubject$
     );
 
+    // Remove previously added group of conditions and decision points
+    this.conditions?.removeAt(0);
+    this.decisionPoints?.removeAt(0);
+
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
       this.equalWeightFlag = this.experimentInfo.conditions.every(
         (condition) => condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight
       );
-      // Remove previously added group of conditions and decision points
-      this.conditions.removeAt(0);
-      this.decisionPoints.removeAt(0);
       this.experimentInfo.conditions.forEach((condition) => {
         this.conditions.push(
           this.addConditions(
@@ -830,11 +831,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get conditions(): FormArray {
-    return this.experimentDesignForm.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITIONS_ARRAY) as FormArray;
+    return this.experimentDesignForm?.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITIONS_ARRAY) as FormArray;
   }
 
   get decisionPoints(): FormArray {
-    return this.experimentDesignForm.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY) as FormArray;
+    return this.experimentDesignForm?.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY) as FormArray;
   }
 
   get NewExperimentDialogEvents() {

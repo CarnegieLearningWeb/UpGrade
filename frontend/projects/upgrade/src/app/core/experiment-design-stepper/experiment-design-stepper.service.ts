@@ -125,12 +125,12 @@ export class ExperimentDesignStepperService {
   }
 
   validDesignDataFilter(designData: [ExperimentDecisionPoint[], ExperimentCondition[]]): boolean {
-    const [partitions, conditions] = designData;
+    const [decisionPoints, conditions] = designData;
 
-    if (!partitions.length || !conditions.length) {
+    if (!decisionPoints.length || !conditions.length) {
       return false;
     }
-    const hasValidDecisionPointStrings = partitions.every(
+    const hasValidDecisionPointStrings = decisionPoints.every(
       ({ site, target }) => this.isValidString(site) && this.isValidString(target)
     );
     const hasValidConditionStrings = conditions.every(({ conditionCode }) => this.isValidString(conditionCode));
@@ -255,10 +255,10 @@ export class ExperimentDesignStepperService {
   mergeExistingConditionsTableData(experimentInfo: ExperimentVM): FactorialConditionTableRowData[] {
     const existingConditions = experimentInfo.conditions;
     const existingConditionAliases = experimentInfo.conditionAliases;
-    const existingPartitions = experimentInfo.partitions;
+    const existingDecisionPoints = experimentInfo.partitions;
 
     const levelOrder = {};
-    existingPartitions.forEach((decisionPoint) => {
+    existingDecisionPoints.forEach((decisionPoint) => {
       decisionPoint.factors.forEach((factor) => {
         factor.levels.forEach((level) => {
           levelOrder[level.id] = factor.order;
@@ -308,8 +308,8 @@ export class ExperimentDesignStepperService {
     tableData.forEach((factorialConditionTableRow) => {
       factorialConditionsRequestObject.push({
         id: factorialConditionTableRow.id,
-        name: 'condition ' + conditionIndex, // what should this be?
-        conditionCode: 'condition ' + conditionIndex, // what should this be?
+        name: 'condition ' + conditionIndex,
+        conditionCode: 'condition ' + conditionIndex,
         assignmentWeight: parseFloat(factorialConditionTableRow.weight),
         order: conditionIndex++,
         levelCombinationElements: factorialConditionTableRow.levels.map((level) => {
