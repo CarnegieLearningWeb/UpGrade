@@ -1,5 +1,4 @@
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
-import { Repository } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
@@ -17,7 +16,7 @@ const logger = new UpgradeLogger();
 
 describe('Preview User Service Testing', () => {
   let service: PreviewUserService;
-  let userRepo: Repository<PreviewUserRepository>;
+  let userRepo: PreviewUserRepository;
   let module: TestingModule;
 
   const assign1 = new ExplicitIndividualAssignment();
@@ -97,7 +96,7 @@ describe('Preview User Service Testing', () => {
     }).compile();
 
     service = module.get<PreviewUserService>(PreviewUserService);
-    userRepo = module.get<Repository<PreviewUserRepository>>(getRepositoryToken(PreviewUserRepository));
+    userRepo = module.get<PreviewUserRepository>(getRepositoryToken(PreviewUserRepository));
   });
 
   it('should be defined', async () => {
