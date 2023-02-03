@@ -60,6 +60,7 @@
                         [placeholder]="'home.new-experiment.design.factor.placeholder.text' | translate"
                         formControlName="factor"
                         [value]="factor"
+                        autocomplete="off"
                       />
                     </span>
                   </mat-form-field>
@@ -109,6 +110,7 @@
                         [placeholder]="'home.new-experiment.design.partition-id.placeholder.text' | translate"
                         formControlName="target"
                         [matAutocomplete]="autoCompleteExperimentIds"
+                        autocomplete="off"
                       />
                       <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
                         <mat-option *ngFor="let target of filteredTargets$[factorIndex] | async" [value]="target">
@@ -169,6 +171,7 @@
                                   [placeholder]="'home.new-experiment.design.level.placeholder.text' | translate"
                                   formControlName="level"
                                   [value]="level"
+                                  autocomplete="off"
                                 />
                               </span>
                             </mat-form-field>
@@ -198,6 +201,7 @@
                                   [placeholder]="'home.new-experiment.design.alias.placeholder.text' | translate"
                                   formControlName="alias"
                                   [value]="alias"
+                                  autocomplete="off"
                                 />
                               </span>
                             </mat-form-field>
