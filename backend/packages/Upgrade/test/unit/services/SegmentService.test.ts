@@ -1,6 +1,6 @@
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import * as sinon from 'sinon';
-import { Connection, ConnectionManager, Repository } from 'typeorm';
+import { Connection, ConnectionManager } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { SegmentRepository } from '../../../src/api/repositories/SegmentRepository';
@@ -27,7 +27,7 @@ const include = [{ segment: seg1, experiment: exp }];
 
 describe('Segment Service Testing', () => {
   let service: SegmentService;
-  let repo: Repository<SegmentRepository>;
+  let repo: SegmentRepository;
   let module: TestingModule;
 
   const queryBuilderMock = {
@@ -164,7 +164,7 @@ describe('Segment Service Testing', () => {
     }).compile();
 
     service = module.get<SegmentService>(SegmentService);
-    repo = module.get<Repository<SegmentRepository>>(getRepositoryToken(SegmentRepository));
+    repo = module.get<SegmentRepository>(getRepositoryToken(SegmentRepository));
   });
 
   it('should be defined', async () => {
@@ -271,7 +271,7 @@ describe('Segment Service Testing', () => {
     segment.userIds = [];
     segment.groups = [];
     repo.findOne = jest.fn().mockResolvedValue(seg2);
-    const indivRepo = module.get<Repository<IndividualForSegmentRepository>>(
+    const indivRepo = module.get<IndividualForSegmentRepository>(
       getRepositoryToken(IndividualForSegmentRepository)
     );
     indivRepo.insertIndividualForSegment = jest.fn().mockImplementation(() => {
