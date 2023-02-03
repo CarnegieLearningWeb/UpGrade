@@ -6,6 +6,9 @@ import {
   ExperimentCondition,
   ExperimentConditionAlias,
   TableEditModeDetails,
+  ExperimentVM,
+  ExperimentFactor,
+  ExperimentLevel,
 } from '../experiments/store/experiments.model';
 import * as experimentDesignStepperAction from './store/experiment-design-stepper.actions';
 import {
@@ -14,17 +17,29 @@ import {
   selectConditionsEditModePreviousRowData,
   selectDecisionPointsTableEditIndex,
   selectConditionsTableEditIndex,
+  selectFactorialConditionsEditModePreviousRowData,
+  selectFactorialConditionsTableEditIndex,
+  selectFactorialConditionTableData,
+  selectFactorialDesignData,
   selecthasExperimentStepperDataChanged,
   selectIsAliasTableEditMode,
   selectIsDecisionPointsTableEditMode,
   selectIsConditionsTableEditMode,
+  selectIsFactorialConditionsTableEditMode,
   selectIsFormLockedForEdit,
 } from './store/experiment-design-stepper.selectors';
 import {
   DecisionPointsTableRowData,
   ConditionsTableRowData,
   ExperimentAliasTableRow,
+  ExperimentFactorialDesignData,
+  FactorialConditionRequestObject,
+  FactorialConditionTableRowData,
 } from './store/experiment-design-stepper.model';
+import { actionUpdateFactorialTableData } from './store/experiment-design-stepper.actions';
+import { BehaviorSubject, distinctUntilChanged } from 'rxjs';
+import { v4 as uuidv4 } from 'uuid';
+import * as isEqual from 'lodash.isequal';
 
 @Injectable({
   providedIn: 'root',
@@ -43,15 +58,31 @@ export class ExperimentDesignStepperService {
   isConditionsTableEditMode$ = this.store$.pipe(select(selectIsConditionsTableEditMode));
   conditionsTableEditIndex$ = this.store$.pipe(select(selectConditionsTableEditIndex));
   conditionsEditModePreviousRowData$ = this.store$.pipe(select(selectConditionsEditModePreviousRowData));
+  factorialDesignData$ = this.store$.pipe(select(selectFactorialDesignData), distinctUntilChanged(isEqual));
+  factorialConditionTableData$ = this.store$.pipe(
+    select(selectFactorialConditionTableData),
+    distinctUntilChanged(isEqual)
+  );
+  factorialConditionTableDataBehaviorSubject$ = new BehaviorSubject<FactorialConditionTableRowData[]>([]);
+  isFactorialConditionsTableEditMode$ = this.store$.pipe(select(selectIsFactorialConditionsTableEditMode));
+  factorialConditionsTableEditIndex$ = this.store$.pipe(select(selectFactorialConditionsTableEditIndex));
+  factorialConditionsEditModePreviousRowData$ = this.store$.pipe(
+    select(selectFactorialConditionsEditModePreviousRowData)
+  );
 
   constructor(private store$: Store<AppState>) {
     this.hasExperimentStepperDataChanged$.subscribe(
       (isDataChanged) => (this.expStepperDataChangedFlag = isDataChanged)
     );
+    this.factorialConditionTableData$.subscribe(this.factorialConditionTableDataBehaviorSubject$);
   }
 
   getHasExperimentDesignStepperDataChanged() {
     return this.expStepperDataChangedFlag;
+  }
+
+  getFactorialConditionTableData() {
+    return this.factorialConditionTableDataBehaviorSubject$.getValue();
   }
 
   experimentStepperDataChanged() {
@@ -64,6 +95,18 @@ export class ExperimentDesignStepperService {
 
   isValidString(value: any) {
     return typeof value === 'string' && value.trim();
+  }
+
+  formatDisplayWeight(weight: string | number): string {
+    let roundedWeight: string;
+
+    if (typeof weight === 'string') {
+      roundedWeight = parseFloat(weight).toFixed(1);
+    } else {
+      roundedWeight = weight.toFixed(1);
+    }
+
+    return roundedWeight;
   }
 
   filterForUnchangedDesignData(designData: [ExperimentDecisionPoint[], ExperimentCondition[]][]): boolean {
@@ -131,6 +174,212 @@ export class ExperimentDesignStepperService {
     return aliasTableData;
   }
 
+  createNewFactorialConditionTableData(designData: ExperimentFactorialDesignData): FactorialConditionTableRowData[] {
+    const tableData: FactorialConditionTableRowData[] = [];
+
+    // currently this table will only support 2 factors due to design constraints
+    // this will need revisited to support more factors in this table
+
+    const factorOne = designData.factors[0];
+    const factorTwo = designData.factors[1];
+
+    factorOne.levels.forEach((factorOneLevel) => {
+      factorTwo.levels.forEach((factorTwoLevel) => {
+        const tableRow: FactorialConditionTableRowData = {
+          id: uuidv4(), // TODO: maybe not the right place?
+          levels: [
+            {
+              id: factorOneLevel.id,
+              name: factorOneLevel.level,
+            },
+            {
+              id: factorTwoLevel.id,
+              name: factorTwoLevel.level,
+            },
+          ],
+          alias: this.createFactorialAliasString(
+            factorOne.factor,
+            factorOneLevel.level,
+            factorTwo.factor,
+            factorTwoLevel.level
+          ),
+          weight: '0.0',
+          include: true,
+        };
+
+        tableData.push(tableRow);
+      });
+    });
+
+    return tableData;
+  }
+
+  convertToDecisionPointData(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
+    let order = 1;
+    let factorOrder = 1;
+    const decisionPoints = [];
+    factorialExperimentDesignFormData.factors.forEach((decisionPoint) => {
+      let levelOrder = 1;
+      const currentLevels: ExperimentLevel[] = decisionPoint.levels.map((level) => {
+        return { name: level.level, alias: level.alias, id: level.id, order: levelOrder++ };
+      });
+      const currentFactors: ExperimentFactor = {
+        name: decisionPoint.factor,
+        order: factorOrder++,
+        levels: currentLevels,
+      };
+      if (
+        !decisionPoints
+          .find(
+            (existingDecisionPoint) =>
+              existingDecisionPoint.site === decisionPoint.site && existingDecisionPoint.target === decisionPoint.target
+          )
+          ?.factors.push(currentFactors)
+      ) {
+        const decisionPointData = {
+          site: decisionPoint.site,
+          id: uuidv4(),
+          description: '',
+          order: order++,
+          excludeIfReached: false,
+          factors: [currentFactors],
+        };
+        decisionPoint.target
+          ? decisionPoints.push({ ...decisionPointData, target: decisionPoint.target })
+          : decisionPoints.push(decisionPointData);
+      }
+    });
+    return decisionPoints;
+  }
+
+  mergeExistingConditionsTableData(experimentInfo: ExperimentVM): FactorialConditionTableRowData[] {
+    const existingConditions = experimentInfo.conditions;
+    const existingConditionAliases = experimentInfo.conditionAliases;
+    const existingPartitions = experimentInfo.partitions;
+
+    const levelOrder = {};
+    existingPartitions.forEach((decisionPoint) => {
+      decisionPoint.factors.forEach((factor) => {
+        factor.levels.forEach((level) => {
+          levelOrder[level.id] = factor.order;
+        });
+      });
+    });
+
+    const tableData = existingConditions.map((factorialCondition) => {
+      const conditionAlias = existingConditionAliases.find(
+        (conditionAlias) => conditionAlias?.parentCondition.id === factorialCondition.id
+      );
+
+      const aliasname = conditionAlias ? conditionAlias.aliasName : '';
+      const existingConditionAliasId = conditionAlias?.id;
+
+      factorialCondition.levelCombinationElements.sort((a, b) =>
+        levelOrder[a.level?.id] > levelOrder[b.level?.id]
+          ? 1
+          : levelOrder[b.level?.id] > levelOrder[a.level?.id]
+          ? -1
+          : 0
+      );
+
+      const tableRow: FactorialConditionTableRowData = {
+        id: factorialCondition.id,
+        conditionAliasId: existingConditionAliasId,
+        levels: factorialCondition.levelCombinationElements.map((levelElement) => {
+          return {
+            id: levelElement.level.id,
+            name: levelElement.level.name,
+          };
+        }),
+
+        alias: aliasname,
+        weight: factorialCondition.assignmentWeight.toString(),
+        include: factorialCondition.assignmentWeight > 0,
+      };
+      return tableRow;
+    });
+    return tableData;
+  }
+
+  createFactorialConditionRequestObject() {
+    const tableData = this.getFactorialConditionTableData();
+    const factorialConditionsRequestObject: FactorialConditionRequestObject[] = [];
+    let conditionIndex = 1;
+    tableData.forEach((factorialConditionTableRow) => {
+      factorialConditionsRequestObject.push({
+        id: factorialConditionTableRow.id,
+        name: 'condition ' + conditionIndex, // what should this be?
+        conditionCode: 'condition ' + conditionIndex, // what should this be?
+        assignmentWeight: parseFloat(factorialConditionTableRow.weight),
+        order: conditionIndex++,
+        levelCombinationElements: factorialConditionTableRow.levels.map((level) => {
+          return {
+            id: uuidv4(),
+            level: level,
+          };
+        }),
+      });
+    });
+
+    return factorialConditionsRequestObject;
+  }
+
+  checkConditionTableValidity() {
+    const tableData = this.getFactorialConditionTableData();
+    let sumOfAssignmentWeights = 0.0;
+    let negativeweightError = false;
+
+    if (tableData.length > 0) {
+      tableData.forEach((factorialConditionTableRow) => {
+        sumOfAssignmentWeights += parseFloat(factorialConditionTableRow.weight);
+        if (parseFloat(factorialConditionTableRow.weight) < 0) {
+          negativeweightError = true;
+        }
+      });
+
+      // checking if sum is not equal to 100
+      if (Math.round(sumOfAssignmentWeights) !== 100.0) {
+        return true;
+      } else {
+        return negativeweightError;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  createFactorialConditionsConditionAliasesRequestObject() {
+    const tableData = this.getFactorialConditionTableData();
+    const factorialConditionAliasesRequestObject = [];
+
+    tableData.forEach((factorialConditionTableRow) => {
+      factorialConditionAliasesRequestObject.push({
+        id: factorialConditionTableRow.conditionAliasId || uuidv4(),
+        aliasName: factorialConditionTableRow.alias,
+        parentCondition: factorialConditionTableRow.id,
+      });
+    });
+
+    return factorialConditionAliasesRequestObject;
+  }
+
+  createFactorialAliasString(
+    factorOneName: string,
+    factorOneLevel: string,
+    factorTwoName: string,
+    factorTwoLevel: string
+  ) {
+    return `${factorOneName}=${factorOneLevel}; ${factorTwoName}=${factorTwoLevel}`;
+  }
+
+  updateFactorialDesignData(designData: ExperimentFactorialDesignData) {
+    this.store$.dispatch(experimentDesignStepperAction.actionUpdateFactorialDesignData({ designData }));
+  }
+
+  updateFactorialTableData(tableData: FactorialConditionTableRowData[]) {
+    this.store$.dispatch(actionUpdateFactorialTableData({ tableData }));
+  }
+
   setUpdateAliasTableEditMode(details: TableEditModeDetails): void {
     this.store$.dispatch(
       experimentDesignStepperAction.actionUpdateAliasTableEditMode({
@@ -158,11 +407,28 @@ export class ExperimentDesignStepperService {
     );
   }
 
+  setFactorialConditionTableEditModeDetails(rowIndex: number, rowData: FactorialConditionTableRowData): void {
+    this.store$.dispatch(
+      experimentDesignStepperAction.actionToggleFactorialConditionsTableEditMode({
+        factorialConditionsTableEditIndex: rowIndex,
+        factorialConditionsRowData: rowData,
+      })
+    );
+  }
+
   clearDecisionPointTableEditModeDetails(): void {
     this.store$.dispatch(experimentDesignStepperAction.actionClearDecisionPointTableEditDetails());
   }
 
   clearConditionTableEditModeDetails(): void {
     this.store$.dispatch(experimentDesignStepperAction.actionClearConditionTableEditDetails());
+  }
+
+  clearFactorialConditionTableEditModeDetails(): void {
+    this.store$.dispatch(experimentDesignStepperAction.actionClearFactorialConditionTableEditDetails());
+  }
+
+  clearFactorialDesignStepperData(): void {
+    this.store$.dispatch(experimentDesignStepperAction.clearFactorialDesignStepperData());
   }
 }

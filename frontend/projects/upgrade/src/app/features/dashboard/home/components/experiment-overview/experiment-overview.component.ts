@@ -44,11 +44,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   allContexts = [];
   currentContext = null;
   consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
-  designTypes = [
-    {
-      value: ExperimentDesignTypes.SIMPLE,
-    },
-  ];
+  designTypes = [{ value: ExperimentDesignTypes.SIMPLE }, { value: ExperimentDesignTypes.FACTORIAL }];
 
   // Used to control chips
   isChipSelectable = true;
@@ -139,7 +135,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           unitOfAssignment: this.experimentInfo.assignmentUnit,
           groupType,
           consistencyRule: this.experimentInfo.consistencyRule,
-          designType: ExperimentDesignTypes.SIMPLE,
+          designType: this.experimentInfo.type,
           context: this.currentContext,
           tags: this.experimentInfo.tags,
           logging: this.experimentInfo.logging,
@@ -250,14 +246,24 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       });
     }
     if (this.overviewForm.valid) {
-      const { experimentName, description, unitOfAssignment, groupType, consistencyRule, context, tags, logging } =
-        this.overviewForm.value;
+      const {
+        experimentName,
+        description,
+        unitOfAssignment,
+        groupType,
+        consistencyRule,
+        context,
+        designType,
+        tags,
+        logging,
+      } = this.overviewForm.value;
       const overviewFormData = {
         name: experimentName,
         description: description || '',
         consistencyRule: consistencyRule,
         assignmentUnit: unitOfAssignment,
         group: groupType,
+        type: designType,
         context: [context],
         tags,
         logging,
@@ -268,7 +274,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
       });
 
-      if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+      if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
         this.experimentDesignStepperService.experimentStepperDataReset();
         this.overviewForm.markAsPristine();
       }

@@ -11,7 +11,7 @@
               color="primary"
               class="ft-14-600 default-button toggle-button"
               (click)="scrollToAliasesTable()"
-              [class.default-button--disabled]= "(isFormLockedForEdit$ | async) || isAliasTableButtonDisabled"
+              [class.default-button--disabled]="(isFormLockedForEdit$ | async) || isAliasTableButtonDisabled"
               [disabled]="(isFormLockedForEdit$ | async) || isAliasTableButtonDisabled"
             >
               <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
@@ -477,7 +477,7 @@
         *ngIf="experimentInfo"
         mat-raised-button
         class="shared-modal--modal-btn default-button"
-        [class.default-button--disabled]= "(isFormLockedForEdit$ | async) || !isExperimentEditable"
+        [class.default-button--disabled]="(isFormLockedForEdit$ | async) || !isExperimentEditable"
         [disabled]="(isFormLockedForEdit$ | async) || !isExperimentEditable"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >

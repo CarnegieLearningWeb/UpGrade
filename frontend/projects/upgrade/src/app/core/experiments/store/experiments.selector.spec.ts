@@ -1,4 +1,4 @@
-import { FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import {
   ExperimentState,
   EXPERIMENT_SORT_AS,
@@ -196,6 +196,7 @@ describe('Experiments Selectors', () => {
             timeLog: '2022-05-20T17:40:13.682Z',
           },
         ],
+        type: EXPERIMENT_TYPE.SIMPLE,
       },
     },
     isLoadingExperiment: false,

@@ -4,6 +4,9 @@ import {
   Experiment,
   ExperimentCondition,
   ExperimentDecisionPoint,
+  ExperimentFactor,
+  ExperimentLevel,
+  LevelCombinationElement,
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { VersionService } from '../../../../../../core/version/version.service';
@@ -13,13 +16,23 @@ import { filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
+import { EXPERIMENT_TYPE } from 'upgrade_types';
 
 interface ImportExperimentJSON {
   schema:
     | Record<keyof Experiment, string>
     | Record<keyof ExperimentCondition, string>
-    | Record<keyof ExperimentDecisionPoint, string>;
-  data: Experiment | ExperimentCondition | ExperimentDecisionPoint;
+    | Record<keyof ExperimentDecisionPoint, string>
+    | Record<keyof ExperimentFactor, string>
+    | Record<keyof ExperimentLevel, string>
+    | Record<keyof LevelCombinationElement, string>;
+  data:
+    | Experiment
+    | ExperimentCondition
+    | ExperimentDecisionPoint
+    | ExperimentFactor
+    | ExperimentLevel
+    | LevelCombinationElement;
 }
 
 @Component({
@@ -166,12 +179,14 @@ export class ImportExperimentComponent implements OnInit {
       createdAt: 'string',
       updatedAt: 'string',
       versionNumber: 'number',
+      levelCombinationElements: 'interface',
     };
 
     const partitionSchema: Record<keyof ExperimentDecisionPoint, string> = {
       id: 'string',
       site: 'string',
       target: 'string',
+      factors: 'interface',
       description: 'string',
       twoCharacterId: 'string',
       order: 'number',
@@ -181,15 +196,55 @@ export class ImportExperimentComponent implements OnInit {
       excludeIfReached: 'boolean',
     };
 
+    const factorSchema: Record<keyof ExperimentFactor, string> = {
+      name: 'string',
+      order: 'number',
+      levels: 'interface',
+    };
+
+    const levelSchema: Record<keyof ExperimentLevel, string> = {
+      id: 'string',
+      name: 'string',
+      alias: 'string',
+      order: 'number',
+    };
+
+    const levelCombinationElementSchema: Record<keyof LevelCombinationElement, string> = {
+      id: 'string',
+      level: 'interface',
+    };
+
     const missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
     let missingPropertiesFlag = true;
     this.missingAllProperties =
       this.translate.instant('home.import-experiment.missing-properties.message.text') + missingProperties;
     let missingConditionProperties;
     let missingPartitionProperties;
+    let missingFactorProperties;
+    let missingLevelProperties;
+    let missingLevelCombinationElementProperties;
+
     missingPropertiesFlag = missingPropertiesFlag && missingProperties.length === 0;
     experiment.conditions.map((condition) => {
       missingConditionProperties = this.checkForMissingProperties({ schema: conditionSchema, data: condition });
+
+      if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+        condition.levelCombinationElements.map((element) => {
+          missingLevelCombinationElementProperties = this.checkForMissingProperties({
+            schema: levelCombinationElementSchema,
+            data: element,
+          });
+        });
+        if (missingLevelCombinationElementProperties.length > 0) {
+          this.missingAllProperties =
+            this.missingAllProperties +
+            ', ' +
+            this.translate.instant('global.level.text') +
+            ': ' +
+            missingLevelCombinationElementProperties;
+        }
+        missingPropertiesFlag = missingPropertiesFlag && missingLevelCombinationElementProperties.length === 0;
+      }
     });
     if (missingConditionProperties.length > 0) {
       this.missingAllProperties =
@@ -202,6 +257,33 @@ export class ImportExperimentComponent implements OnInit {
     missingPropertiesFlag = missingPropertiesFlag && missingConditionProperties.length === 0;
     experiment.partitions.map((partition) => {
       missingPartitionProperties = this.checkForMissingProperties({ schema: partitionSchema, data: partition });
+
+      if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+        partition.factors.map((factor) => {
+          missingFactorProperties = this.checkForMissingProperties({ schema: factorSchema, data: factor });
+          factor.levels.map((level) => {
+            missingLevelProperties = this.checkForMissingProperties({ schema: levelSchema, data: level });
+          });
+          if (missingLevelProperties.length > 0) {
+            this.missingAllProperties =
+              this.missingAllProperties +
+              ', ' +
+              this.translate.instant('global.levelCombinationElement.text') +
+              ': ' +
+              missingLevelProperties;
+          }
+          missingPropertiesFlag = missingPropertiesFlag && missingLevelProperties.length === 0;
+        });
+        if (missingFactorProperties.length > 0) {
+          this.missingAllProperties =
+            this.missingAllProperties +
+            ', ' +
+            this.translate.instant('global.factor.text') +
+            ': ' +
+            missingFactorProperties;
+        }
+        missingPropertiesFlag = missingPropertiesFlag && missingFactorProperties.length === 0;
+      }
     });
     if (missingPartitionProperties.length > 0) {
       this.missingAllProperties =
@@ -219,7 +301,17 @@ export class ImportExperimentComponent implements OnInit {
     const { schema, data } = experimentJson;
     const missingProperty = Object.keys(schema)
       .filter((key) => data[key] === undefined)
-      .map((key) => key as keyof (Experiment | ExperimentDecisionPoint | ExperimentCondition))
+      .map(
+        (key) =>
+          key as keyof (
+            | Experiment
+            | ExperimentDecisionPoint
+            | ExperimentCondition
+            | ExperimentFactor
+            | ExperimentLevel
+            | LevelCombinationElement
+          )
+      )
       .map((key) => `${key}`);
     return missingProperty.join(', ');
   }

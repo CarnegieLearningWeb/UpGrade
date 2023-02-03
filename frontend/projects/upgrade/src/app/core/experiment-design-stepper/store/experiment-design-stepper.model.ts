@@ -5,9 +5,17 @@ export interface ExperimentConditionAliasRequestObject {
   id?: string;
   aliasName: string;
   parentCondition: string;
-  decisionPoint: string;
+  decisionPoint?: string;
 }
 
+export interface FactorialConditionRequestObject {
+  id: string;
+  name: string;
+  conditionCode: string;
+  assignmentWeight: number;
+  order: number;
+  levelCombinationElements: { id: string; level: FactorialLevelTableRowData }[];
+}
 export interface ExperimentAliasTableRow {
   id?: string;
   site: string;
@@ -52,6 +60,38 @@ export interface ConditionsTableRowData {
   order: number;
 }
 
+export interface FactorialConditionTableRowData {
+  id: string;
+  conditionAliasId?: string;
+  levels: FactorialLevelTableRowData[];
+  alias: string;
+  weight: string;
+  include: boolean;
+}
+
+export interface FactorialLevelTableRowData {
+  id: string;
+  name: string;
+}
+
+export interface ExperimentFactorialDesignData {
+  factors: ExperimentFactorFormData[];
+}
+
+export interface ExperimentFactorFormData {
+  factor: string;
+  site: string;
+  target: string;
+  order: number;
+  levels: ExperimentLevelFormData[];
+}
+
+export interface ExperimentLevelFormData {
+  id: string;
+  level: string;
+  alias: string;
+}
+
 export interface ExperimentDesignStepperState {
   isAliasTableEditMode: boolean;
   isDecisionPointsTableEditMode: boolean;
@@ -59,9 +99,14 @@ export interface ExperimentDesignStepperState {
   aliasTableEditIndex: number | null;
   decisionPointsTableEditIndex: number | null;
   conditionsTableEditIndex: number | null;
-  hasExperimentStepperDataChanged: boolean;
   decisionPointsEditModePreviousRowData: DecisionPointsTableRowData;
   conditionsEditModePreviousRowData: ConditionsTableRowData;
+  isFactorialConditionsTableEditMode: boolean;
+  factorialConditionsTableEditIndex: number | null;
+  factorialConditionsEditModePreviousRowData: FactorialConditionTableRowData;
+  factorialDesignData: ExperimentFactorialDesignData;
+  factorialConditionsTableData: FactorialConditionTableRowData[];
+  hasExperimentStepperDataChanged: boolean;
 }
 
 export interface State extends AppState {
