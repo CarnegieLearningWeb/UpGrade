@@ -18,7 +18,7 @@ import {
   selectIsLoadingExperiment,
   selectIsLoadingExperimentDetailStats,
   selectSelectedExperiment,
-  selectAllPartitions,
+  selectAllDecisionPoints,
   selectAllExperimentNames,
   selectExperimentById,
   selectSearchString,
@@ -64,7 +64,7 @@ export class ExperimentService {
   isLoadingExperimentDetailStats$ = this.store$.pipe(select(selectIsLoadingExperimentDetailStats));
   isPollingExperimentDetailStats$ = this.store$.pipe(select(selectIsPollingExperimentDetailStats));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
-  allPartitions$ = this.store$.pipe(select(selectAllPartitions));
+  allDecisionPoints$ = this.store$.pipe(select(selectAllDecisionPoints));
   allExperimentNames$ = this.store$.pipe(select(selectAllExperimentNames));
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));

@@ -30,13 +30,13 @@ if (window.self !== window.top) {
 
       // Experiment Stepper - Design Step
       case 'experiment-stepper-design-add-decision-point-button':
-        return document.querySelector('form.experiment-design button.add-partition');
+        return document.querySelector('form.experiment-design button.add-decision-point');
       case 'experiment-stepper-design-decision-points-row1-site':
-        return document.querySelectorAll('mat-table.partition-table input.mat-input-element')[0];
+        return document.querySelectorAll('mat-table.decision-point-table input.mat-input-element')[0];
       case 'experiment-stepper-design-decision-points-row1-target':
-        return document.querySelectorAll('mat-table.partition-table input.mat-input-element')[1];
+        return document.querySelectorAll('mat-table.decision-point-table input.mat-input-element')[1];
       case 'experiment-stepper-design-decision-points-row1-exclude-if-reached':
-        return document.querySelector('mat-table.partition-table input.mat-checkbox-input');
+        return document.querySelector('mat-table.decision-point-table input.mat-checkbox-input');
       case 'experiment-stepper-design-add-condition-button':
         return document.querySelector('form.experiment-design button.add-condition');
       case 'experiment-stepper-design-conditions-row1-condition':

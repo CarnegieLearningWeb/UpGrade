@@ -18,11 +18,9 @@ import {
   NewExperimentPaths,
   ExperimentVM,
   ExperimentCondition,
-  ExperimentPartition,
+  ExperimentDecisionPoint,
   IContextMetaData,
   EXPERIMENT_STATE,
-  ExperimentFactor,
-  ExperimentLevel,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -89,7 +87,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
 
   // Alias Table details
-  designData$ = new BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]>([[], []]);
+  designData$ = new BehaviorSubject<[ExperimentDecisionPoint[], ExperimentCondition[]]>([[], []]);
   factorialConditionsTableData: FactorialConditionTableRowData[] = [];
 
   constructor(
@@ -461,7 +459,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     if (this.isFormValid()) {
       const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
-      const factorialPartitions = this.experimentDesignStepperService.convertToDecisionPointData(
+      const factorialDecisionPoints = this.experimentDesignStepperService.convertToDecisionPointData(
         factorialExperimentDesignFormData
       );
       const factorialConditions = this.experimentDesignStepperService.createFactorialConditionRequestObject();
@@ -473,7 +471,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         type: eventType,
         formData: {
           conditions: factorialConditions,
-          partitions: factorialPartitions,
+          partitions: factorialDecisionPoints,
           conditionAliases: factorialConditionAliases,
         },
         path: NewExperimentPaths.EXPERIMENT_DESIGN,
