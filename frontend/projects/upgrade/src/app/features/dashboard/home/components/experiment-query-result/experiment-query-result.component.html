@@ -21,10 +21,10 @@
       <br />
       <ng-container *ngIf="!(isQueryExecuting$ | async); else spinnerTemplate">
         <ng-container *ngIf="!isResultExist(query.id); else noResultTemplate">
-          <div style="display: flex;">
-            <div style="height: 250px; width: 28%">
+          <div style="display: flex">
+            <div style="margin-right: 150px; height: 250px; width: 28%">
               <ngx-charts-bar-vertical
-                [view]="[320, 250]"
+                [view]="[400, 250]"
                 [scheme]="colorScheme"
                 [results]="queryFactorResults1[query?.id]"
                 [xAxis]="true"
@@ -42,13 +42,13 @@
                 <br>
                 <span>{{ model.value }}</span>
                 <br>
-                <span>( n = {{ queryFactorResults1[query?.id][0].participantsLogged }} )</span>
+                <span>( n = {{ model.extra }} )</span>
               </ng-template>
               </ngx-charts-bar-vertical>
             </div>
-            <div style="height: 250px; width: 28%">
+            <div style="margin-right: 150px; height: 250px; width: 28%">
               <ngx-charts-bar-vertical
-                [view]="[320, 250]"
+                [view]="[400, 250]"
                 [scheme]="colorScheme"
                 [results]="queryFactorResults2[query?.id]"
                 [xAxis]="true"
@@ -66,23 +66,20 @@
                 <br>
                 <span>{{ model.value }}</span>
                 <br>
-                <span>( n = {{ queryFactorResults2[query?.id][0].participantsLogged }} )</span>
+                <span>( n = {{ model.extra }} )</span>
               </ng-template>
               </ngx-charts-bar-vertical>
             </div>
           </div>
         </ng-container>
-        <ng-template #noResultTemplate>
-          <span class="zero-state" [innerHTML]="'query.result.empty-result.text' | translate"> </span>
-        </ng-template>
       </ng-container>
     </div>
     <div *ngIf="experimentType === 'Simple'">
     <ng-container *ngIf="!(isQueryExecuting$ | async); else spinnerTemplate">
       <ng-container *ngIf="!isResultExist(query.id); else noResultTemplate">
-        <div style="height: 250px; width: 45%">
+        <div style="height: 250px; width: 30%">
           <ngx-charts-bar-vertical
-            [view]="[400, 250]"
+            [view]="[300, 250]"
             [scheme]="colorScheme"
             [results]="queryResults[query?.id]"
             [xAxis]="true"
@@ -100,21 +97,13 @@
             <br>
             <span>{{ model.value }}</span>
             <br>
-            <span>( n = {{ queryResults[query?.id][0].participantsLogged }} )</span>
+            <span>( n = {{ model.extra }} )</span>
           </ng-template>
           </ngx-charts-bar-vertical>
         </div>
       </ng-container>
-      <ng-template #noResultTemplate>
-        <span class="zero-state" [innerHTML]="'query.result.empty-result.text' | translate"> </span>
-      </ng-template>
     </ng-container>
     </div>
-    <ng-template #spinnerTemplate>
-      <div class="loading-container">
-        <mat-spinner diameter="60"></mat-spinner>
-      </div>
-    </ng-template>
   </div>
   <br />
   <!-- Interaction Section -->
@@ -129,47 +118,76 @@
           {{ query.name }}
         </span>
         <br />
-        <table>
-          <tr>
-            <td class="ft-14-600 factor-name1" *ngFor="let factor of factors;">{{ factor | uppercase}}</td>
-          </tr>
-        </table>
-        <table>
-          <tr>
-            <td class="ft-12-600 factor-name2" *ngFor="let factor of factors.slice().reverse();"> ({{ factor | uppercase}})</td>
-          </tr>
-        </table>
         <ng-container *ngIf="!(isQueryExecuting$ | async); else spinnerTemplate">
-          <div style="height: 250px; width: 45%">
-            <ngx-charts-line-chart
-              [view]="[700, 210]"
-              [scheme]="colorScheme2"
-              [xAxis]="true"
-              [yAxis]="true"
-              [legend]="true"
-              [showXAxisLabel]="true"
-              [showYAxisLabel]="true"
-              [yAxisTickFormatting]="formateYAxisLabel"
-              [results]="interactionEffectQueryFactorResults[query?.id]"
-              [legendTitle]=null
-              [legendPosition]="'below'"
-              >
-              <ng-template #tooltipTemplate let-model="model">
-                <span>{{ model.series }}</span>
-                <br>
-                <span>{{ model.value }}</span>
-                <br>
-                <span>( n = {{ model.participantsLogged }} )</span>
-              </ng-template>
-            </ngx-charts-line-chart>
-          </div>
-          <ng-template #noResultTemplate>
-            <span class="zero-state" [innerHTML]="'query.result.empty-result.text' | translate"> </span>
-          </ng-template>
+          <ng-container *ngIf="!isResultExist(query.id); else noResultTemplate">
+            <table>
+              <tr>
+                <td class="ft-14-600 factor-name1" *ngFor="let factor of factors;">{{ factor | uppercase}}</td>
+              </tr>
+            </table>
+            <table>
+              <tr>
+                <td class="ft-12-600 factor-name2" *ngFor="let factor of factors.slice().reverse();"> ({{ factor | uppercase}})</td>
+              </tr>
+            </table>
+            <div style="display: flex">
+              <div style="margin-right: 150px; height: 250px; width: 28%">
+                <ngx-charts-line-chart
+                  [view]="[400, 250]"
+                  [scheme]="colorScheme"
+                  [xAxis]="true"
+                  [yAxis]="true"
+                  [legend]="true"
+                  [showXAxisLabel]="true"
+                  [showYAxisLabel]="true"
+                  [yAxisTickFormatting]="formateYAxisLabel"
+                  [results]="interactionEffectQueryFactorResults1[query?.id]"
+                  [legendTitle]=null
+                  [legendPosition]="'below'"
+                  >
+                  <ng-template #tooltipTemplate let-model="model">
+                    <span>{{ model.series }}</span>
+                    <br>
+                    <span>{{ model.value }}</span>
+                    <br>
+                    <span>( n = {{ model.participantsLogged }} )</span>
+                  </ng-template>
+                </ngx-charts-line-chart>
+              </div>
+              <div style="margin-right: 150px; height: 250px; width: 28%">
+                <ngx-charts-line-chart
+                [view]="[420, 250]"
+                [scheme]="colorScheme"
+                [xAxis]="true"
+                [yAxis]="true"
+                [legend]="true"
+                [showXAxisLabel]="true"
+                [showYAxisLabel]="true"
+                [yAxisTickFormatting]="formateYAxisLabel"
+                [results]="interactionEffectQueryFactorResults2[query?.id]"
+                [legendTitle]=null
+                [legendPosition]="'below'"
+                >
+                <ng-template #tooltipTemplate let-model="model">
+                  <span>{{ model.series }}</span>
+                  <br>
+                  <span>{{ model.value }}</span>
+                  <br>
+                  <span>( n = {{ model.participantsLogged }} )</span>
+                </ng-template>
+                </ngx-charts-line-chart>
+              </div>
+            </div>
+          </ng-container>
         </ng-container>
+        <br />
+        <br />
       </div>
     </div>
   </div>
+  <ng-template #noResultTemplate>
+    <span class="zero-state" [innerHTML]="'query.result.empty-result.text' | translate"> </span>
+  </ng-template>
   <ng-template #spinnerTemplate>
     <div class="loading-container">
       <mat-spinner diameter="60"></mat-spinner>

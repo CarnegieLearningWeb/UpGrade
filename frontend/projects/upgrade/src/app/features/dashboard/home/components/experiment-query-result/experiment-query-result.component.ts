@@ -18,14 +18,11 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     domain: ['#31e8dd', '#7dc7fb', '#fedb64', '#51ed8f', '#ddaaf8', '#fd9099', '#14c9be'],
   };
 
-  colorScheme2 = {
-    domain: ['#D18650', '#5572B8', '#A5A5A5', '#31e8dd', '#7dc7fb', '#fd9099', '#14c9be'],
-  };
-
   queryResults = {};
   queryFactorResults1 = {};
   queryFactorResults2 = {};
-  interactionEffectQueryFactorResults = {};
+  interactionEffectQueryFactorResults1 = {};
+  interactionEffectQueryFactorResults2 = {};
   queryResultsSub: Subscription;
   isQueryExecuting$ = this.analysisService.isQueryExecuting$;
   factors = [];
@@ -35,16 +32,21 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   data: { name: string; series: { name: string; value: number; }[]; dot: boolean; }[];
   meanData2: { name: string; value: number; }[];
   meanData1: { name: string; value: number; }[];
+  maxLevelCount = 0;
 
   constructor(private analysisService: AnalysisService) {}
 
   ngOnInit() {
     const queryIds = [];
+
     this.experimentType = this.experiment.type;
     if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL){
+      this.setMaxLevelsCount();
       this.experiment.partitions.map((decisionPoint) => {
         this.factors.push(decisionPoint.factors?.at(0).name);
       });
+    } else {
+      this.setConditionCount();
     }
     this.queryResults = this.experiment.queries.map((query) => {
       queryIds.push(query.id);
@@ -65,7 +67,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
             let resData = {
               name: this.getLevelName(data.levelId),
               value: Math.round(Number(data.result) * 100)/ 100,
-              participantsLogged: Number(data.participantsLogged),
+              extra: Number(data.participantsLogged),
             };
             decisionPointIndex === 0 ? resultData1.push(resData) : resultData2.push(resData);
           });
@@ -83,7 +85,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
           resultData = res.mainEffect.map((data) => ({
             name: this.getConditionCode(data.conditionId),
             value: Math.round(Number(data.result) * 100)/ 100,
-            participantsLogged: Number(data.participantsLogged),
+            extra: Number(data.participantsLogged),
           }));
           resultData = this.formatEmptyBar(resultData);
           this.queryResults = {
@@ -144,14 +146,13 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
               dot: true
             });
           });
-          // both factors
-          let multiFactorSeries = [...emptySeries2, ...emptySeries1]
           // fill the result values for wach query:
-          let resultData = multiFactorSeries;
+          let resData1 = emptySeries1;
+          let resData2 = emptySeries2;
           res.interactionEffect.map((data) => {
             // levels of the condition:
             let levels = this.getLevels(data.conditionId);
-            resultData.map((resData) => {
+            resData1.map((resData) => {
               if (resData.name === levels[0].level.name) {
                 return resData.series.map((level) => {
                   if (level.name === levels[1].level.name) {
@@ -160,7 +161,9 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
                   }
                 });
               }
-              else if (resData.name === levels[1].level.name) {
+            });
+            resData2.map((resData) => {
+                if (resData.name === levels[1].level.name) {
                 return resData.series.map((level) => {
                   if (level.name === levels[0].level.name) {
                     level.value =Math.round( Number(data.result) * 100)/ 100;
@@ -170,13 +173,32 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
               }
             });
           });
-          this.interactionEffectQueryFactorResults = {
-            ...this.interactionEffectQueryFactorResults,
-            [res.id]: resultData,
+          this.interactionEffectQueryFactorResults1 = {
+            ...this.interactionEffectQueryFactorResults1,
+            [res.id]: resData1,
+          };
+          this.interactionEffectQueryFactorResults2 = {
+            ...this.interactionEffectQueryFactorResults2,
+            [res.id]: resData2,
           };
         }
       });
     });
+  }
+  
+  setMaxLevelsCount() {
+    this.experiment.partitions.map((decisionPoint, decisionPointIndex) => {
+      decisionPoint.factors.map((factor, factorIndex) => {
+        let levelCount = factor.levels.length;
+        if (levelCount > this.maxLevelCount) {
+          this.maxLevelCount = levelCount;
+        }
+      });
+    });
+  }
+
+  setConditionCount() {
+    this.maxLevelCount = this.experiment.conditions.length;
   }
 
   getFactorIndex(levelId: any) {
@@ -242,12 +264,12 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
 
   formatEmptyBar(data: any) {
     const emptyBars = [];
-    // TODO: Decide number of conditions
-    for (let i = 0; i < 2 - data.length; i++) {
+    // Decide number of bars by inserting empty bars in case data not present:
+    for (let i = 0; i < this.maxLevelCount - data.length; i++) {
       emptyBars.push({
         name: i,
         value: 0,
-        participantsLogged: 0,
+        extra: 0,
       });
     }
     return [...data, ...emptyBars];
