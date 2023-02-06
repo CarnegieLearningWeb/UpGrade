@@ -368,6 +368,7 @@ export class ExperimentParticipantsComponent implements OnInit {
       });
       if (this.members1.length !== 0) {
         this.members1.controls.at(0).get('id').disable();
+      }
 
       if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
         this.experimentDesignStepperService.experimentStepperDataReset();
