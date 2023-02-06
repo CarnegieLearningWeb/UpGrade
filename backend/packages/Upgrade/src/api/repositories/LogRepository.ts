@@ -106,35 +106,25 @@ export class LogRepository extends Repository<Log> {
     return dataResult;
   }
 
-  public async getMetricUniquifierData(metricKeys: string[], uniquifierKeys: string[], userId: string): Promise<any> {
+  public async getMetricUniquifierData(
+    filteredKeyUniqueArray: { key: string; uniquifier: string }[],
+    userId: string
+  ): Promise<{ data: Record<string, any>; uniquifier: string; timeStamp: string; id: string; key: string }[]> {
     const metricsRepository = getRepository(Metric);
+    const values = filteredKeyUniqueArray
+      .map((value) => {
+        return `('${value.uniquifier}', '${value.key}')`;
+      })
+      .join(',');
 
-    return metricsRepository
-      .createQueryBuilder('metric')
-      .select([
-        'logs.data as data',
-        'logs.uniquifier as uniquifier',
-        'logs."timeStamp" as timeStamp',
-        'logs.id as id',
-        'metric.key as key',
-      ])
-      .innerJoin('metric.logs', 'logs')
-      .where('logs."userId" = :userId', { userId })
-      .andWhere('logs.uniquifier IN (:...uniquifierKeys)', { uniquifierKeys })
-      .andWhere('metric.key IN (:...metricKeys)', { metricKeys })
-      .groupBy('logs.id')
-      .addGroupBy('metric.key')
-      .orderBy('logs."timeStamp"', 'DESC')
-      .execute()
-      .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          this.constructor.name,
-          'getMetricUniquifierData',
-          { metricKeys, uniquifierKeys },
-          errorMsg
-        );
-        throw errorMsgString;
-      });
+    // Writing raw sql because querying composite column in Typeorm is not easily achievable
+    const result =
+      await metricsRepository.query(`SELECT data, uniquifier, "timeStamp" as "timeStamp", id, metric_log."metricKey" as key
+                                      FROM log
+                                      JOIN metric_log on metric_log."logId" = log.id
+                                      WHERE (uniquifier, metric_log."metricKey") = ANY (VALUES${values})
+                                      AND "userId"='${userId}'`);
+    return result;
   }
 
   // TODO check if subQuery is better way of doing it

@@ -296,7 +296,7 @@ describe('LogRepository Testing', () => {
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
     selectMock.expects('execute').once().returns(Promise.resolve(result));
 
-    const res = await repo.getMetricUniquifierData(['metrickey'], ['uniquifierkey'], 'uid');
+    const res = await repo.getMetricUniquifierData([{ key: 'metrickey', uniquifier: 'uniquifierkey' }], 'uid');
 
     sinon.assert.calledOnce(metricStub);
     selectMock.verify();
@@ -317,7 +317,7 @@ describe('LogRepository Testing', () => {
     selectMock.expects('execute').once().returns(Promise.reject(err));
 
     expect(async () => {
-      await repo.getMetricUniquifierData(['metrickey'], ['uniquifierkey'], 'uid');
+      await repo.getMetricUniquifierData([{ key: 'metrickey', uniquifier: 'uniquifierkey' }], 'uid');
     }).rejects.toThrow(err);
 
     sinon.assert.calledOnce(metricStub);
