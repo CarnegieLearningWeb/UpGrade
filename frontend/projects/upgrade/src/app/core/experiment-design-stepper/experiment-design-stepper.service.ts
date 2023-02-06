@@ -229,10 +229,12 @@ export class ExperimentDesignStepperService {
         levels: currentLevels,
       };
       if (
-        !decisionPoints.find(
-          (existingDecisionPoint) =>
-            existingDecisionPoint.site === decisionPoint.site && existingDecisionPoint.target === decisionPoint.target
-        )?.factors.push(currentFactors)
+        !decisionPoints
+          .find(
+            (existingDecisionPoint) =>
+              existingDecisionPoint.site === decisionPoint.site && existingDecisionPoint.target === decisionPoint.target
+          )
+          ?.factors.push(currentFactors)
       ) {
         const decisionPointData = {
           site: decisionPoint.site,
@@ -306,8 +308,8 @@ export class ExperimentDesignStepperService {
     tableData.forEach((factorialConditionTableRow) => {
       factorialConditionsRequestObject.push({
         id: factorialConditionTableRow.id,
-        name: 'condition ' + conditionIndex, // what should this be?
-        conditionCode: 'condition ' + conditionIndex, // what should this be?
+        name: factorialConditionTableRow.alias,
+        conditionCode: factorialConditionTableRow.alias,
         assignmentWeight: parseFloat(factorialConditionTableRow.weight),
         order: conditionIndex++,
         levelCombinationElements: factorialConditionTableRow.levels.map((level) => {
@@ -330,7 +332,7 @@ export class ExperimentDesignStepperService {
     if (tableData.length > 0) {
       tableData.forEach((factorialConditionTableRow) => {
         sumOfAssignmentWeights += parseFloat(factorialConditionTableRow.weight);
-        if(parseFloat(factorialConditionTableRow.weight) < 0){
+        if (parseFloat(factorialConditionTableRow.weight) < 0) {
           negativeweightError = true;
         }
       });
