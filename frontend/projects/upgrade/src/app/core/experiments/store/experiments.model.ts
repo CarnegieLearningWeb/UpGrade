@@ -15,6 +15,7 @@ import {
   DATE_RANGE,
   IExperimentEnrollmentDetailDateStats,
   FILTER_MODE,
+  EXPERIMENT_TYPE,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
 
@@ -55,7 +56,8 @@ export enum NewExperimentPaths {
 }
 
 export enum ExperimentDesignTypes {
-  SIMPLE = 'Simple Experiment',
+  SIMPLE = 'Simple',
+  FACTORIAL = 'Factorial',
 }
 
 export interface NewExperimentDialogData {
@@ -117,9 +119,15 @@ export interface ExperimentCondition {
   createdAt: string;
   updatedAt: string;
   versionNumber: number;
+  levelCombinationElements?: LevelCombinationElement[];
 }
 
-export interface ExperimentPartition {
+export interface LevelCombinationElement {
+  id: string;
+  level: ExperimentLevel;
+}
+
+export interface ExperimentDecisionPoint {
   id: string;
   site: string;
   target: string;
@@ -130,6 +138,20 @@ export interface ExperimentPartition {
   updatedAt: string;
   versionNumber: number;
   excludeIfReached: boolean;
+  factors?: ExperimentFactor[];
+}
+
+export interface ExperimentFactor {
+  name: string;
+  order: number;
+  levels: ExperimentLevel[];
+}
+
+export interface ExperimentLevel {
+  id: string;
+  name: string;
+  alias: string;
+  order: number;
 }
 
 export interface ExperimentNameVM {
@@ -171,10 +193,11 @@ export interface Experiment {
   endOn: string;
   revertTo: string;
   tags: string[];
+  type: EXPERIMENT_TYPE;
   group: string;
   logging: boolean;
   conditions: ExperimentCondition[];
-  partitions: ExperimentPartition[];
+  partitions: ExperimentDecisionPoint[];
   conditionAliases: ExperimentConditionAlias[];
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
@@ -189,7 +212,7 @@ export interface ExperimentConditionAlias {
   id?: string;
   aliasName: string;
   parentCondition: ExperimentCondition;
-  decisionPoint: ExperimentPartition;
+  decisionPoint: ExperimentDecisionPoint;
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;
@@ -236,7 +259,7 @@ export interface ExperimentState extends EntityState<Experiment> {
   graphInfo: IExperimentGraphInfo;
   graphRange: DATE_RANGE;
   isGraphInfoLoading: boolean;
-  allPartitions: Record<string, ExperimentPartition>;
+  allDecisionPoints: Record<string, ExperimentDecisionPoint>;
   allExperimentNames: ExperimentNameVM[];
   contextMetaData: IContextMetaData;
   isLoadingContextMetaData: boolean;

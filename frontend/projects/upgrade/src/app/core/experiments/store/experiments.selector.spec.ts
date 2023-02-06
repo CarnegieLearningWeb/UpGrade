@@ -1,4 +1,4 @@
-import { FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import {
   ExperimentState,
   EXPERIMENT_SORT_AS,
@@ -13,7 +13,7 @@ import { initialState } from './experiments.reducer';
 import {
   selectAllExperiment,
   selectAllExperimentNames,
-  selectAllPartitions,
+  selectAllDecisionPoints,
   selectContextMetaData,
   selectExperimentById,
   selectExperimentGraphInfo,
@@ -196,6 +196,7 @@ describe('Experiments Selectors', () => {
             timeLog: '2022-05-20T17:40:13.682Z',
           },
         ],
+        type: EXPERIMENT_TYPE.SIMPLE,
       },
     },
     isLoadingExperiment: false,
@@ -447,7 +448,7 @@ describe('Experiments Selectors', () => {
     },
     graphRange: DATE_RANGE.LAST_SEVEN_DAYS,
     isGraphInfoLoading: false,
-    allPartitions: {},
+    allDecisionPoints: {},
     allExperimentNames: null,
     contextMetaData: {
       contextMetadata: null,
@@ -624,9 +625,9 @@ describe('Experiments Selectors', () => {
         ...mockState,
       };
 
-      const result = selectAllPartitions.projector(state);
+      const result = selectAllDecisionPoints.projector(state);
 
-      expect(result).toEqual(state.allPartitions);
+      expect(result).toEqual(state.allDecisionPoints);
     });
   });
 

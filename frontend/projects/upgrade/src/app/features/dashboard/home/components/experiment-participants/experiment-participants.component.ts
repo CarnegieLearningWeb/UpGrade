@@ -35,6 +35,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   @Input() experimentInfo: ExperimentVM;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
+  @Input() isExperimentTypeChanged: boolean;
   @Input() animationCompleteStepperIndex: number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('members1Table', { static: false, read: ElementRef }) members1Table: ElementRef;
@@ -86,8 +87,9 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.setMemberTypes();
     }
 
-    if (this.isContextChanged) {
+    if (this.isContextChanged || this.isExperimentTypeChanged) {
       this.isContextChanged = false;
+      this.isExperimentTypeChanged = false;
       this.members1.clear();
       this.members2.clear();
       this.members1DataSource.next(this.members1.controls);
@@ -313,9 +315,6 @@ export class ExperimentParticipantsComponent implements OnInit {
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataReset();
-        this.participantsForm.markAsPristine();
-        this.participantsForm2.markAsPristine();
         break;
     }
   }
@@ -369,6 +368,11 @@ export class ExperimentParticipantsComponent implements OnInit {
       });
       if (this.members1.length !== 0) {
         this.members1.controls.at(0).get('id').disable();
+
+      if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
+        this.experimentDesignStepperService.experimentStepperDataReset();
+        this.participantsForm.markAsPristine();
+        this.participantsForm2.markAsPristine();
       }
     }
   }

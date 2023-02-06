@@ -26,6 +26,7 @@ import {
   SERVER_ERROR,
   EXCLUSION_CODE,
   SEGMENT_TYPE,
+  EXPERIMENT_TYPE,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -55,6 +56,12 @@ import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
 import { ConditionAlias } from '../models/ConditionAlias';
 import { ConditionAliasRepository } from '../repositories/ConditionAliasRepository';
+import { Factor } from '../models/Factor';
+import { FactorRepository } from '../repositories/FactorRepository';
+import { Level } from '../models/Level';
+import { LevelRepository } from '../repositories/LevelRepository';
+import { LevelCombinationElement } from '../models/LevelCombinationElement';
+import { LevelCombinationElementRepository } from '../repositories/LevelCombinationElements';
 
 @Service()
 export class ExperimentService {
@@ -73,6 +80,9 @@ export class ExperimentService {
     @OrmRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
     @OrmRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
     @OrmRepository() private conditionAliasRepository: ConditionAliasRepository,
+    @OrmRepository() private factorRepository: FactorRepository,
+    @OrmRepository() private levelRepository: LevelRepository,
+    @OrmRepository() private levelCombinationElementsRepository: LevelCombinationElementRepository,
     public previewUserService: PreviewUserService,
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
@@ -120,8 +130,15 @@ export class ExperimentService {
       .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('partitions.conditionAliases', 'ConditionAliasesArray')
       .leftJoinAndSelect('ConditionAliasesArray.parentCondition', 'parentCondition')
+      .leftJoinAndSelect('partitions.factors', 'factors')
+      .leftJoinAndSelect('factors.levels', 'levels')
+      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
+      .leftJoinAndSelect('levelCombinationElements.level', 'level')
+      .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
       .addOrderBy('conditions.order', 'ASC')
-      .addOrderBy('partitions.order', 'ASC');
+      .addOrderBy('partitions.order', 'ASC')
+      .addOrderBy('factors.order', 'ASC')
+      .addOrderBy('levels.order', 'ASC');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
       // add search query
@@ -163,6 +180,15 @@ export class ExperimentService {
       .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('partitions.conditionAliases', 'ConditionAliasesArray')
       .leftJoinAndSelect('ConditionAliasesArray.parentCondition', 'parentCondition')
+      .leftJoinAndSelect('partitions.factors', 'factors')
+      .leftJoinAndSelect('factors.levels', 'levels')
+      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
+      .leftJoinAndSelect('levelCombinationElements.level', 'level')
+      .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
+      .addOrderBy('conditions.order', 'ASC')
+      .addOrderBy('partitions.order', 'ASC')
+      .addOrderBy('factors.order', 'ASC')
+      .addOrderBy('levels.order', 'ASC')
       .where({ id })
       .getOne();
 
@@ -451,6 +477,11 @@ export class ExperimentService {
         'experimentSegmentExclusion.segment.subSegments',
         'partitions.conditionAliases',
         'partitions.conditionAliases.parentCondition',
+        'partitions.factors',
+        'partitions.factors.levels',
+        'conditions.conditionAliases',
+        'conditions.levelCombinationElements',
+        'conditions.levelCombinationElements.level',
       ],
     });
     const formatedExperiments = experimentDetails.map((experiment) => {
@@ -582,7 +613,7 @@ export class ExperimentService {
   private checkConditionCodeDefault(conditions: ExperimentCondition[]): any {
     // Check for conditionCode is 'default' then return error:
     const hasDefaultConditionCode = conditions.filter(
-      (condition) => condition.conditionCode.toUpperCase() === 'DEFAULT'
+      (condition) => condition.conditionCode?.toUpperCase() === 'DEFAULT'
     );
     if (hasDefaultConditionCode.length) {
       // TODO remove this validation in the class validator end
@@ -645,56 +676,22 @@ export class ExperimentService {
         }
 
         experimentDoc.experimentSegmentInclusion = oldExperiment.experimentSegmentInclusion;
-        experimentDoc.experimentSegmentExclusion = oldExperiment.experimentSegmentExclusion;
-        let segmentInclude;
-        let segmentIncludeData;
-        if (experimentDoc.experimentSegmentInclusion.segment) {
-          segmentIncludeData = {
-            ...experimentSegmentInclusion,
-            id: experimentDoc.experimentSegmentInclusion.segment.id,
-            name: experimentDoc.experimentSegmentInclusion.segment.name,
-            description: experimentDoc.experimentSegmentInclusion.segment.description,
-            context: experiment.context[0],
-            type: SEGMENT_TYPE.PRIVATE,
-          };
-        } else {
-          segmentInclude = experimentDoc.experimentSegmentInclusion;
-          segmentIncludeData = {
-            ...segmentInclude,
-            id: uuid(),
-            name: experiment.id + ' Inclusion Segment',
-            description: experiment.id + ' Inclusion Segment',
-            context: experiment.context[0],
-          };
-        }
+        const segmentIncludeData = this.includeExcludeSegmentCreation(
+          experimentSegmentInclusion,
+          experimentDoc.experimentSegmentInclusion,
+          experiment.id,
+          experiment.context,
+          true
+        );
 
-        let segmentExclude;
-        let segmentExcludeData;
-        if (experimentDoc.experimentSegmentExclusion.segment) {
-          segmentExcludeData = {
-            ...experimentSegmentExclusion,
-            id: experimentDoc.experimentSegmentExclusion.segment.id,
-            name: experimentDoc.experimentSegmentExclusion.segment.name,
-            description: experimentDoc.experimentSegmentExclusion.segment.description,
-            context: experiment.context[0],
-            type: SEGMENT_TYPE.PRIVATE,
-          };
-        } else {
-          segmentExclude = experimentDoc.experimentSegmentExclusion;
-          segmentExcludeData = {
-            ...segmentExclude,
-            id: uuid(),
-            name: experiment.id + ' Exclusion Segment',
-            description: experiment.id + ' Exclusion Segment',
-            context: experiment.context[0],
-          };
-        }
-        // for test cases:
-        if (segmentIncludeData['subSegmentIds'] === undefined) {
-          segmentIncludeData.subSegmentIds = [];
-          segmentIncludeData.userIds = [];
-          segmentIncludeData.groups = [];
-        }
+        experimentDoc.experimentSegmentExclusion = oldExperiment.experimentSegmentExclusion;
+        const segmentExcludeData = this.includeExcludeSegmentCreation(
+          experimentSegmentExclusion,
+          experimentDoc.experimentSegmentExclusion,
+          experiment.id,
+          experiment.context,
+          false
+        );
 
         let segmentIncludeDoc: Segment;
         try {
@@ -705,12 +702,6 @@ export class ExperimentService {
           error.type = SERVER_ERROR.QUERY_FAILED;
           logger.error(error);
           throw error;
-        }
-        // for test cases:
-        if (segmentExcludeData['subSegmentIds'] === undefined) {
-          segmentExcludeData.subSegmentIds = [];
-          segmentExcludeData.userIds = [];
-          segmentExcludeData.groups = [];
         }
 
         let segmentExcludeDoc: Segment;
@@ -829,7 +820,22 @@ export class ExperimentService {
         });
 
         // delete old decision points, conditions and queries
-        await Promise.all([...toDeleteConditions, ...toDeleteDecisionPoints, ...toDeleteQueries]);
+        await Promise.all([
+          ...toDeleteConditions,
+          ...toDeleteDecisionPoints,
+          ...toDeleteQueries,
+          transactionalEntityManager
+            .createQueryBuilder()
+            .delete()
+            .from(Factor)
+            .where('decisionPoint IN (:...ids)', { ids: decisionPointDocToSave.map((x) => x.id) })
+            .execute(),
+          transactionalEntityManager
+            .createQueryBuilder()
+            .delete()
+            .from(LevelCombinationElement)
+            .where('condition IN (:...ids)', { ids: conditionDocToSave.map((x) => x.id) }),
+        ]);
 
         // saving conditions, saving decision points and saving queries
         let conditionDocs: ExperimentCondition[];
@@ -872,11 +878,11 @@ export class ExperimentService {
           throw error;
         }
 
-        const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
+        let conditionDocToReturn = conditionDocs.map((conditionDoc) => {
           return { ...conditionDoc, experiment: conditionDoc.experiment };
         });
 
-        const decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
+        let decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
           return { ...decisionPointDoc, experiment: decisionPointDoc.experiment };
         });
 
@@ -884,6 +890,17 @@ export class ExperimentService {
           relations: ['parentCondition', 'decisionPoint'],
           where: { id: In(conditionAliasDocs.map((conditionAlias) => conditionAlias.id)) },
         });
+
+        if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+          const [factorDoc, levelDoc, levelCombinationElementDoc] = await this.addFactorialDataInDB(
+            decisionPointDocToSave,
+            conditionDocToSave as any[],
+            transactionalEntityManager,
+            logger
+          );
+          decisionPointDocToReturn = this.formatingFactorAndLevels(decisionPointDocToReturn, factorDoc, levelDoc);
+          conditionDocToReturn = this.formatingElements(conditionDocToReturn, levelCombinationElementDoc, levelDoc);
+        }
 
         const queryDocToReturn =
           !!queryDocs &&
@@ -953,7 +970,7 @@ export class ExperimentService {
         const updateAuditLog: AuditLogData = {
           experimentId: experiment.id,
           experimentName: experiment.name,
-          diff: diffString(oldExperimentClone, newExperimentClone),
+          diff: diffString(newExperimentClone, oldExperimentClone),
         };
 
         await this.experimentAuditLogRepository.saveRawJson(
@@ -1244,12 +1261,12 @@ export class ExperimentService {
         logger.error(error);
         throw error;
       }
-      const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
+      let conditionDocToReturn = conditionDocs.map((conditionDoc) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { experimentId, ...restDoc } = conditionDoc as any;
         return restDoc;
       });
-      const decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
+      let decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { experimentId, ...restDoc } = decisionPointDoc as any;
         return restDoc;
@@ -1263,6 +1280,17 @@ export class ExperimentService {
       let queryDocToReturn = [];
       if (queryDocs.length > 0) {
         queryDocToReturn = queryDocsToSave;
+      }
+
+      if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+        const [factorDoc, levelDoc, levelCombinationElementDoc] = await this.addFactorialDataInDB(
+          partitions,
+          conditions,
+          transactionalEntityManager,
+          logger
+        );
+        decisionPointDocToReturn = this.formatingFactorAndLevels(decisionPointDocToReturn, factorDoc, levelDoc);
+        conditionDocToReturn = this.formatingElements(conditionDocToReturn, levelCombinationElementDoc, levelDoc);
       }
 
       const newExperiment = {
@@ -1345,6 +1373,19 @@ export class ExperimentService {
   }
 
   public formatingConditionAlias(experiment: Experiment): any {
+    if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+      const conditionAlias: ConditionAlias[] = [];
+      experiment.conditions.forEach((condition) => {
+        const conditionAliases = condition.conditionAliases.map((conditionAlias) => {
+          return { ...conditionAlias, parentCondition: condition };
+        });
+        conditionAlias.push(...conditionAliases);
+        delete condition.conditionAliases;
+      });
+
+      return { ...experiment, conditionAliases: conditionAlias };
+    }
+
     const { conditions, partitions } = experiment;
 
     const conditionAlias: ConditionAlias[] = [];
@@ -1359,6 +1400,152 @@ export class ExperimentService {
       });
     });
     return { ...experiment, conditionAliases: conditionAlias };
+  }
+
+  private includeExcludeSegmentCreation(
+    experimentSegment: ExperimentSegmentInclusion | ExperimentSegmentExclusion,
+    experimentDocSegmentData: ExperimentSegmentInclusion | ExperimentSegmentExclusion,
+    experimentId: string,
+    context: string[],
+    isIncludeMode: boolean
+  ) {
+    const currentData = experimentSegment.segment
+      ? {
+          ...experimentSegment.segment,
+          userIds: experimentSegment.segment.individualForSegment.map((user) => user.userId),
+          groups: experimentSegment.segment.groupForSegment.map((group) => {
+            return { groupId: group.groupId, type: group.type };
+          }),
+          subSegmentIds: experimentSegment.segment.subSegments.map((segment) => segment.id),
+        }
+      : experimentSegment;
+
+    let segment;
+    let segmentDataToReturn;
+    if (experimentDocSegmentData.segment) {
+      segmentDataToReturn = {
+        ...currentData,
+        id: experimentDocSegmentData.segment.id,
+        name: experimentDocSegmentData.segment.name,
+        description: experimentDocSegmentData.segment.description,
+        context: context[0],
+        type: SEGMENT_TYPE.PRIVATE,
+      };
+    } else {
+      segment = experimentDocSegmentData;
+      segmentDataToReturn = {
+        ...segment,
+        id: uuid(),
+        name: isIncludeMode ? experimentId + ' Inclusion Segment' : experimentId + ' Exclusion Segment',
+        description: isIncludeMode ? experimentId + ' Inclusion Segment' : experimentId + ' Exclusion Segment',
+        context: context[0],
+      };
+    }
+
+    // for test cases:
+    if (segmentDataToReturn['subSegmentIds'] === undefined) {
+      segmentDataToReturn.subSegmentIds = [];
+      segmentDataToReturn.userIds = [];
+      segmentDataToReturn.groups = [];
+    }
+
+    return segmentDataToReturn;
+  }
+
+  private async addFactorialDataInDB(
+    partitions: DecisionPoint[],
+    conditions: ExperimentCondition[],
+    transactionalEntityManager: EntityManager,
+    logger: UpgradeLogger
+  ) {
+    // creating factorDoc
+    const allFactors: Factor[] = [];
+    const allLevels: Level[] = [];
+    const allLevelCombinationElements: LevelCombinationElement[] = [];
+
+    partitions.forEach((partition) => {
+      partition.factors.forEach((factor) => {
+        factor.id = factor.id || uuid();
+        factor.decisionPoint = partition;
+
+        factor.levels.forEach((level) => {
+          level.id = level.id || uuid();
+          level.factor = factor;
+        });
+        allLevels.push(...factor.levels);
+      });
+      allFactors.push(...partition.factors);
+    });
+
+    conditions.forEach((condition) => {
+      condition.levelCombinationElements.map((elements) => {
+        elements.id = elements.id || uuid();
+        elements.condition = condition;
+      });
+      allLevelCombinationElements.push(...condition.levelCombinationElements);
+    });
+
+    let factorDoc: Factor[];
+    let levelDoc: Level[];
+    let levelCombinationElementsDoc: LevelCombinationElement[];
+
+    try {
+      [factorDoc, levelDoc, levelCombinationElementsDoc] = await Promise.all([
+        this.factorRepository.insertFactor(allFactors, transactionalEntityManager),
+        this.levelRepository.insertLevel(allLevels, transactionalEntityManager),
+        this.levelCombinationElementsRepository.insertLevelCombinationElement(
+          allLevelCombinationElements,
+          transactionalEntityManager
+        ),
+      ]);
+    } catch (err) {
+      const error = err as Error;
+      error.message = `Error in creating factors & levels"`;
+      logger.error(error);
+      throw error;
+    }
+
+    return [factorDoc, levelDoc, levelCombinationElementsDoc];
+  }
+
+  private formatingFactorAndLevels(partitions: any[], factors: any[], levels: any[]): any[] {
+    const formatedFactors = factors.map((factor) => {
+      return { ...factor, levels: levels.filter((x) => x.factorId == factor.id) };
+    });
+    const formatedData = partitions.map((partition) => {
+      return { ...partition, factors: formatedFactors.filter((x) => x.decisionPointId == partition.id) };
+    });
+
+    formatedData.forEach((partition) => {
+      partition.factors.forEach((factor) => {
+        factor.levels.forEach((level) => {
+          delete level.factorId;
+        });
+        delete factor.decisionPointId;
+      });
+    });
+    return formatedData;
+  }
+
+  private formatingElements(conditions: any[], levelCombinationElements: any[], levels: any[]): any[] {
+    const formatedData = conditions.map((condition) => {
+      return {
+        ...condition,
+        levelCombinationElements: levelCombinationElements
+          .filter((element) => element.conditionId == condition.id)
+          .map((element) => {
+            return { ...element, level: levels.find((level) => element.levelId === level.id) };
+          }),
+      };
+    });
+
+    formatedData.forEach((condition) => {
+      condition.levelCombinationElements.forEach((element) => {
+        delete element.conditionId;
+        delete element.levelId;
+      });
+    });
+    return formatedData;
   }
 
   private getSegmentDoc(doc: ExperimentSegmentExclusion | ExperimentSegmentInclusion) {

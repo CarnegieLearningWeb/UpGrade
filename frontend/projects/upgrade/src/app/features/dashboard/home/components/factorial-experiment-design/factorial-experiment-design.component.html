@@ -1,0 +1,349 @@
+<div class="shared-modal--step-container scrollable" #stepContainer>
+  <section class="shared-modal--form-container">
+    <section class="factorial-experiment-form">
+      <form class="experiment-design" [formGroup]="factorialExperimentDesignForm">
+        <section class="factorial-experiment-factors-levels-view">
+          <div class="factors-header-container">
+            <span class="title">{{ 'home.new-experiment.design.factor.text' | translate }}</span>
+            <button
+              type="button"
+              mat-flat-button
+              color="primary"
+              class="ft-14-600 toggle-button"
+              (click)="handleConditionsButtonClick()"
+              [disabled]="isConditionButtonFunctional()"
+            >
+              <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
+              <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.conditions' | translate }}</span>
+            </button>
+          </div>
+
+          <!-- Factors Table -->
+          <ng-container>
+            <mat-table
+              class="factor-table"
+              [dataSource]="factorDataSource"
+              #factorTable
+              formArrayName="factors"
+              multiTemplateDataRows
+            >
+              <!-- Expand Icon Column -->
+              <ng-container matColumnDef="expandIcon">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+                <mat-cell
+                  *matCellDef="let element; let factorIndex = dataIndex"
+                  [formGroupName]="factorIndex"
+                  style="justify-content: flex-start"
+                >
+                  <mat-icon
+                    [disabled]="!isExperimentEditable"
+                    [class.active]="factorIndex === expandedId"
+                    (click)="expandFactor(factorIndex)"
+                    >play_arrow</mat-icon
+                  >
+                </mat-cell>
+              </ng-container>
+
+              <!-- Factor Column -->
+              <ng-container matColumnDef="factor">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                  {{ 'home.new-experiment.design.factor-name.text' | translate }}
+                </mat-header-cell>
+                <mat-cell *matCellDef="let element; let factorIndex = dataIndex" [formGroupName]="factorIndex">
+                  <mat-form-field floatLabel="never">
+                    <span
+                      [matTooltip]="factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.factor"
+                      matTooltipPosition="above"
+                    >
+                      <input
+                        matInput
+                        [placeholder]="'home.new-experiment.design.factor.placeholder.text' | translate"
+                        formControlName="factor"
+                        [value]="factor"
+                        autocomplete="off"
+                      />
+                    </span>
+                  </mat-form-field>
+                </mat-cell>
+              </ng-container>
+
+              <!-- Site Column -->
+              <ng-container matColumnDef="site">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                  {{ 'home.new-experiment.design.decision-point-site.text' | translate }}
+                </mat-header-cell>
+                <mat-cell *matCellDef="let element; let factorIndex = dataIndex" [formGroupName]="factorIndex">
+                  <mat-form-field floatLabel="never">
+                    <span
+                      [matTooltip]="factorialExperimentDesignForm.getRawValue('site')?.factors[factorIndex]?.site"
+                      matTooltipPosition="above"
+                    >
+                      <input
+                        matInput
+                        [placeholder]="'home.new-experiment.design.decision-point-site.placeholder.text' | translate"
+                        formControlName="site"
+                        [matAutocomplete]="autoCompleteExperimentPoints"
+                      />
+                      <mat-autocomplete #autoCompleteExperimentPoints="matAutocomplete" panelWidth="fit-content">
+                        <mat-option *ngFor="let site of filteredSites$[factorIndex] | async" [value]="site">
+                          {{ site }}
+                        </mat-option>
+                      </mat-autocomplete>
+                    </span>
+                  </mat-form-field>
+                </mat-cell>
+              </ng-container>
+
+              <!-- Target Column -->
+              <ng-container matColumnDef="target">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                  {{ 'home.new-experiment.design.decision-point-target.text' | translate }}
+                </mat-header-cell>
+                <mat-cell *matCellDef="let element; let factorIndex = dataIndex" [formGroupName]="factorIndex">
+                  <mat-form-field floatLabel="never">
+                    <span
+                      [matTooltip]="factorialExperimentDesignForm.getRawValue('target')?.factors[factorIndex]?.target"
+                      matTooltipPosition="above"
+                    >
+                      <input
+                        matInput
+                        [placeholder]="'home.new-experiment.design.decision-point-target.placeholder.text' | translate"
+                        formControlName="target"
+                        [matAutocomplete]="autoCompleteExperimentIds"
+                        autocomplete="off"
+                      />
+                      <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
+                        <mat-option *ngFor="let target of filteredTargets$[factorIndex] | async" [value]="target">
+                          {{ target }}
+                        </mat-option>
+                      </mat-autocomplete>
+                    </span>
+                  </mat-form-field>
+                </mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="removeFactor">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+                <mat-cell
+                  *matCellDef="let element; let factorIndex = dataIndex"
+                  [formGroupName]="factorIndex"
+                  style="justify-content: flex-start"
+                >
+                  <button
+                    mat-icon-button
+                    type="button"
+                    [disabled]="!isExperimentEditable"
+                    (click)="removeFactor(factorIndex)"
+                  >
+                    <mat-icon class="remove-icon"> delete_outline </mat-icon>
+                  </button>
+                </mat-cell>
+              </ng-container>
+
+              <!-- EXPANDABLE ROW -->
+              <ng-container matColumnDef="expandedDetail">
+                <mat-cell *matCellDef="let element; let factorIndex = dataIndex" [formGroupName]="factorIndex">
+                  <div *ngIf="factorIndex === expandedId" class="level-container">
+                    <div class="level-table-container">
+                      <mat-table
+                        class="level-table"
+                        [dataSource]="element.controls.levels.controls"
+                        formArrayName="levels"
+                        #levelTable
+                      >
+                        <!-- Level Column -->
+                        <ng-container matColumnDef="level">
+                          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                            {{ 'home.new-experiment.design.level-name.text' | translate }}
+                          </mat-header-cell>
+                          <mat-cell *matCellDef="let element; let levelIndex = index" [formGroupName]="levelIndex">
+                            <mat-form-field floatLabel="never">
+                              <span
+                                [matTooltip]="
+                                  factorialExperimentDesignForm.getRawValue('level')?.factors[factorIndex]?.levels[
+                                    levelIndex
+                                  ]?.level
+                                "
+                                matTooltipPosition="above"
+                              >
+                                <input
+                                  matInput
+                                  [placeholder]="'home.new-experiment.design.level.placeholder.text' | translate"
+                                  formControlName="level"
+                                  [value]="level"
+                                  autocomplete="off"
+                                />
+                              </span>
+                            </mat-form-field>
+                          </mat-cell>
+                        </ng-container>
+
+                        <!-- Alias Column -->
+                        <ng-container matColumnDef="alias">
+                          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                            {{ 'home.new-experiment.design.aliases.column-header.alias.text' | translate }}
+                          </mat-header-cell>
+                          <mat-cell
+                            *matCellDef="let element; let levelAliasIndex = index"
+                            [formGroupName]="levelAliasIndex"
+                          >
+                            <mat-form-field floatLabel="never">
+                              <span
+                                [matTooltip]="
+                                  factorialExperimentDesignForm.getRawValue('alias')?.factors[factorIndex]?.levels[
+                                    levelIndex
+                                  ]?.alias
+                                "
+                                matTooltipPosition="above"
+                              >
+                                <input
+                                  matInput
+                                  [placeholder]="'home.new-experiment.design.alias.placeholder.text' | translate"
+                                  formControlName="alias"
+                                  [value]="alias"
+                                  autocomplete="off"
+                                />
+                              </span>
+                            </mat-form-field>
+                          </mat-cell>
+                        </ng-container>
+
+                        <ng-container matColumnDef="removeLevel">
+                          <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+                          <mat-cell
+                            *matCellDef="let element; let removelevelIndex = index"
+                            [formGroupName]="removelevelIndex"
+                            style="justify-content: flex-start"
+                          >
+                            <button
+                              mat-icon-button
+                              type="button"
+                              [disabled]="!isExperimentEditable"
+                              (click)="removeLevel(factorIndex, removelevelIndex)"
+                            >
+                              <mat-icon class="remove-icon"> delete_outline </mat-icon>
+                            </button>
+                          </mat-cell>
+                        </ng-container>
+
+                        <mat-header-row *matHeaderRowDef="levelDisplayedColumns; sticky: true"></mat-header-row>
+                        <mat-row *matRowDef="let row; columns: levelDisplayedColumns"></mat-row>
+                      </mat-table>
+                    </div>
+                    <button
+                      type="button"
+                      class="ft-12-700 add-level"
+                      *ngIf="!experimentInfo"
+                      (click)="addLevel(factorIndex)"
+                    >
+                      +
+                      {{ 'home.new-experiment.design.add-experiment-factor-level.text' | translate }}
+                    </button>
+                    <button
+                      type="button"
+                      class="ft-12-700 add-level"
+                      *ngIf="experimentInfo"
+                      [ngClass]="{ 'add-factor--disabled': !isExperimentEditable }"
+                      [disabled]="!isExperimentEditable"
+                      (click)="addLevel(factorIndex)"
+                    >
+                      +
+                      {{ 'home.new-experiment.design.add-experiment-factor-level.text' | translate }}
+                    </button>
+                  </div>
+                </mat-cell>
+              </ng-container>
+
+              <mat-header-row *matHeaderRowDef="factorDisplayedColumns; sticky: true"></mat-header-row>
+              <mat-row *matRowDef="let row; columns: factorDisplayedColumns"></mat-row>
+
+              <mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"> </mat-row>
+            </mat-table>
+            <button type="button" class="ft-12-700 add-factor" *ngIf="!experimentInfo" (click)="addFactor()">
+              +
+              {{ 'home.new-experiment.design.add-experiment-factor.text' | translate }}
+            </button>
+            <button
+              type="button"
+              class="ft-12-700 add-factor"
+              *ngIf="experimentInfo"
+              [ngClass]="{ 'add-factor--disabled': !isExperimentEditable }"
+              [disabled]="!isExperimentEditable"
+              (click)="addFactor()"
+            >
+              +
+              {{ 'home.new-experiment.design.add-experiment-factor.text' | translate }}
+            </button>
+          </ng-container>
+
+          <div class="validation-container">
+            <span class="ft-14-600 validation-message" *ngFor="let error of factorPointErrors">{{ error }}</span>
+            <span class="ft-14-600 validation-message" *ngFor="let error of levelPointErrors">{{ error }}</span>
+            <span class="ft-14-600 validation-message" *ngIf="factorCountError" [innerHTML]="factorCountError"></span>
+            <span class="ft-14-600 validation-message" *ngIf="levelCountError" [innerHTML]="levelCountError"></span>
+          </div>
+        </section>
+
+        <div>
+          <br />
+          <br />
+          <app-conditions-table
+            (hide)="scrollToFactorsTable()"
+            [isAnyRowRemoved]="isAnyRowRemoved"
+            [experimentInfo]="experimentInfo"
+            [isExperimentEditable]="isExperimentEditable"
+          ></app-conditions-table>
+          <br />
+        </div>
+      </form>
+    </section>
+  </section>
+
+  <section class="shared-modal--buttons-container sticky">
+    <span class="shared-modal--buttons-left">
+      <button
+        matStepperPrevious
+        mat-raised-button
+        class="shared-modal--modal-btn btn-back default-button"
+        [class.default-button--disabled]="isFormLockedForEdit$ | async"
+        [disabled]="isFormLockedForEdit$ | async"
+        (click)="
+          factorialExperimentDesignForm.dirty ? experimentDesignStepperService.experimentStepperDataChanged() : ''
+        "
+      >
+        {{ 'global.back.text' | translate }}
+      </button>
+    </span>
+    <span class="shared-modal--buttons-right">
+      <button
+        type="button"
+        mat-raised-button
+        class="shared-modal--modal-btn"
+        (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
+      >
+        {{ 'global.cancel.text' | translate }}
+      </button>
+      <button
+        type="button"
+        mat-raised-button
+        class="shared-modal--modal-btn default-button"
+        (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
+        [class.default-button--disabled]="isFormLockedForEdit$ | async"
+        [disabled]="isFormLockedForEdit$ | async"
+      >
+        {{ 'global.next.text' | translate }}
+      </button>
+      <button
+        type="button"
+        *ngIf="experimentInfo"
+        mat-raised-button
+        class="shared-modal--modal-btn default-button"
+        [ngClass]="{ 'default-button--disabled': (isFormLockedForEdit$ | async) || !isExperimentEditable }"
+        [disabled]="(isFormLockedForEdit$ | async) || !isExperimentEditable"
+        (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
+      >
+        {{ 'global.update.text' | translate }}
+      </button>
+    </span>
+  </section>
+</div>

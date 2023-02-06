@@ -12,6 +12,11 @@ const initialState: ExperimentDesignStepperState = {
   decisionPointsEditModePreviousRowData: null,
   conditionsEditModePreviousRowData: null,
   hasExperimentStepperDataChanged: false,
+  factorialDesignData: { factors: [] },
+  factorialConditionsTableData: [],
+  isFactorialConditionsTableEditMode: false,
+  factorialConditionsTableEditIndex: null,
+  factorialConditionsEditModePreviousRowData: null,
 };
 
 const reducer = createReducer(
@@ -74,12 +79,51 @@ const reducer = createReducer(
       };
     }
   ),
+  on(experimentDesignStepperAction.actionClearFactorialConditionTableEditDetails, (state) => ({
+    ...state,
+    isFactorialConditionsTableEditMode: false,
+    factorialConditionsTableEditIndex: null,
+    factorialConditionsEditModePreviousRowData: null,
+  })),
+  on(
+    experimentDesignStepperAction.actionToggleFactorialConditionsTableEditMode,
+    (state, { factorialConditionsTableEditIndex, factorialConditionsRowData }) => {
+      // toggle edit mode
+      const editMode = !state.isFactorialConditionsTableEditMode;
+
+      // if not in edit mode, use null for row-index
+      const editIndex = editMode ? factorialConditionsTableEditIndex : null;
+      const previousRowData = editMode ? factorialConditionsRowData : null;
+
+      return {
+        ...state,
+        isFactorialConditionsTableEditMode: editMode,
+        factorialConditionsTableEditIndex: editIndex,
+        factorialConditionsEditModePreviousRowData: previousRowData,
+      };
+    }
+  ),
   on(experimentDesignStepperAction.actionClearConditionTableEditDetails, (state) => ({
     ...state,
     isConditionsTableEditMode: false,
     conditionsTableEditIndex: null,
     conditionsEditModePreviousRowData: null,
-  }))
+  })),
+  on(experimentDesignStepperAction.actionUpdateFactorialDesignData, (state, { designData }) => ({
+    ...state,
+    factorialDesignData: designData,
+  })),
+  on(experimentDesignStepperAction.actionUpdateFactorialTableData, (state, { tableData }) => ({
+    ...state,
+    factorialConditionsTableData: tableData,
+  })),
+  on(experimentDesignStepperAction.clearFactorialDesignStepperData, (state) => {
+    return {
+      ...state,
+      factorialDesignData: { factors: [] },
+      factorialConditionsTableData: [],
+    };
+  })
 );
 
 export function experimentDesignStepperReducer(state: ExperimentDesignStepperState | undefined, action: Action) {

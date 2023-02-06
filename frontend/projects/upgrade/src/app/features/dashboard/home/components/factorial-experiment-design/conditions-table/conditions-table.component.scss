@@ -1,0 +1,114 @@
+.conditions-table-component {
+  height: 515px;
+
+  .row-is-locked {
+    opacity: 0.4;
+  }
+
+  .conditions-header-container {
+    display: flex;
+    justify-content: space-between;
+
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .toggle-button {
+      margin-top: -5px;
+      .icon-bump-left {
+        margin-left: -5px;
+      }
+      .toggle-text {
+        margin-left: 5px;
+      }
+    }
+  }
+
+  .conditions-weight-checkbox {
+    margin: 5px 20px 30px;
+  }
+
+  .conditions-table {
+    max-height: 380px;
+    overflow: auto;
+
+    .mat-header-row {
+      min-height: 35px;
+      justify-content: space-between;
+    }
+
+    .mat-row {
+      min-height: 46px;
+      max-height: 46px;
+      justify-content: space-between;
+    }
+
+    .mat-header-cell {
+      justify-content: left;
+      color: var(--grey-6);
+    }
+
+    .mat-cell {
+      justify-content: left;
+    }
+
+    .cdk-column-levelNameOne,
+    .cdk-column-levelNameTwo {
+      flex: 0 0 calc(22% - 15px);
+      width: calc(22% - 15px);
+    }
+
+    .cdk-column-alias {
+      flex: 0 0 calc(30% - 15px);
+      width: calc(30% - 15px);
+    }
+
+    .mat-header-cell.cdk-column-weight,
+    .mat-cell.cdk-column-weight {
+      flex: 0 0 calc(10% - 15px);
+      width: calc(10% - 15px);
+      justify-content: flex-end;
+
+      .input-weight {
+        width: 50px;
+        // text-align: right;
+      }
+    }
+
+    .mat-header-cell.cdk-column-include,
+    .mat-cell.cdk-column-include {
+      flex: 0 0 calc(15% - 15px);
+      width: calc(15% - 15px);
+      justify-content: center;
+    }
+
+    .cdk-column-actions {
+      margin-left: 15px;
+      padding-right: 10px;
+      justify-content: flex-end;
+
+      .row-action-btn {
+        border: none;
+        background-color: transparent;
+
+        .icon {
+          margin-top: -5px;
+          margin-left: -3px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: var(--text-size-x-large);
+          color: gray;
+        }
+      }
+    }
+  }
+
+  .validation-container {
+    min-height: 30px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    z-index: 1;
+  }
+}
