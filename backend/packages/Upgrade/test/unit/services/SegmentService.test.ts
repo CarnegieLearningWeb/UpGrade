@@ -272,6 +272,7 @@ describe('Segment Service Testing', () => {
     segment.groups = [];
     repo.findOne = jest.fn().mockResolvedValue(seg2);
     const indivRepo = module.get<IndividualForSegmentRepository>(getRepositoryToken(IndividualForSegmentRepository));
+
     indivRepo.insertIndividualForSegment = jest.fn().mockImplementation(() => {
       throw err;
     });

@@ -36,7 +36,7 @@ export class LocalStorageService {
       graphInfo: null,
       graphRange: null,
       isGraphInfoLoading: false,
-      allPartitions: null,
+      allDecisionPoints: null,
       allExperimentNames: null,
       contextMetaData: {
         contextMetadata: {},

@@ -26,7 +26,8 @@
         {{ 'home.new-experiment.experiment-design.text' | translate }}
       </span>
     </ng-template>
-    <home-experiment-design *ngIf="newExperimentData?.type=='Simple'"
+    <home-experiment-design
+      *ngIf="newExperimentData?.type == 'Simple'"
       [experimentInfo]="experimentInfo"
       [currentContext]="currentContext"
       [isContextChanged]="isContextChanged"
@@ -34,7 +35,8 @@
       [animationCompleteStepperIndex]="animationCompletedIndex"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-design>
-    <home-factorial-experiment-design *ngIf="newExperimentData?.type=='Factorial'"
+    <home-factorial-experiment-design
+      *ngIf="newExperimentData?.type == 'Factorial'"
       [experimentInfo]="experimentInfo"
       [currentContext]="currentContext"
       [isContextChanged]="isContextChanged"

@@ -84,14 +84,14 @@ export const actionUpdateExperimentStateSuccess = createAction(
 
 export const actionUpdateExperimentStateFailure = createAction('[Experiment] Update Experiment State Failure');
 
-export const actionFetchAllPartitions = createAction('[Experiment] Fetch All Partitions');
+export const actionFetchAllDecisionPoints = createAction('[Experiment] Fetch All Decision Points');
 
-export const actionFetchAllPartitionSuccess = createAction(
-  '[Experiment] Fetch All Partitions Success',
-  props<{ partitions: any }>()
+export const actionFetchAllDecisionPointsSuccess = createAction(
+  '[Experiment] Fetch All DecisionPoints Success',
+  props<{ decisionPoints: any }>()
 );
 
-export const actionFetchAllPartitionFailure = createAction('[Experiment] Fetch All Partitions Failure');
+export const actionFetchAllDecisionPointsFailure = createAction('[Experiment] Fetch All Decision Points Failure');
 
 export const actionSetIsLoadingExperiment = createAction(
   '[Experiment] Set Is Loading Experiment',

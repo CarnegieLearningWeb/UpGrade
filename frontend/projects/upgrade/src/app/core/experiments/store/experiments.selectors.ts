@@ -37,7 +37,7 @@ export const selectExperimentById = createSelector(
 
 export const selectExperimentStats = createSelector(selectExperimentState, (state) => state.stats);
 
-export const selectAllPartitions = createSelector(selectExperimentState, (state) => state.allPartitions);
+export const selectAllDecisionPoints = createSelector(selectExperimentState, (state) => state.allDecisionPoints);
 
 export const selectSkipExperiment = createSelector(selectExperimentState, (state) => state.skipExperiment);
 
