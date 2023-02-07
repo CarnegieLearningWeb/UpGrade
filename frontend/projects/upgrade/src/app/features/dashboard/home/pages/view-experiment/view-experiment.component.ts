@@ -56,7 +56,9 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   isPollingExperimentDetailStats$: Observable<boolean>;
 
   displayedConditionColumns: string[] = ['conditionCode', 'assignmentWeight', 'description'];
+  displayedConditionColumnsFactorial: string[] = ['conditionCode', 'assignmentWeight'];
   displayedPartitionColumns: string[] = ['partitionPoint', 'partitionId', 'excludeIfReached'];
+  displayedPartitionColumnsFactorial: string[] = ['Factor', 'partitionPoint', 'partitionId'];
   displayedAliasConditionColumns: string[] = ['site', 'target', 'condition', 'alias'];
   displayedParticipantsColumns: string[] = ['participantsType', 'participantsId'];
   displayedMetricsColumns: string[] = ['metricsKey', 'metricsOperation', 'metricsName'];
