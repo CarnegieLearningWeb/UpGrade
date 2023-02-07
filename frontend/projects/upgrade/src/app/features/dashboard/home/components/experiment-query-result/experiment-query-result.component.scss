@@ -50,18 +50,18 @@
   //   transform: scale(1,1);
   // }
 
-  ::ng-deep{
-    .legend-labels{
+  ::ng-deep {
+    .legend-labels {
       background: none !important;
       margin-left: 50px;
     }
   }
 
-  ::ng-deep{
-    .legend-label-text{
-      color: black;
-    }
-  }
+  // ::ng-deep{
+  //   .legend-label-text{
+  //     color: white;
+  //   }
+  // }
 
   .loading-container {
     display: flex;
