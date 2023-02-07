@@ -27,7 +27,6 @@ import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
-import { ExperimentAliasTableRow } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 // Used in view-experiment component only
 enum DialogType {
   CHANGE_STATUS = 'Change status',
@@ -64,7 +63,6 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
   displayMetrics: Metrics[] = [];
-  aliasTableData: ExperimentAliasTableRow[] = [];
 
   constructor(
     private experimentService: ExperimentService,
@@ -93,6 +91,11 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   get isExperimentStateCancelled() {
     return this.experiment.state === EXPERIMENT_STATE.CANCELLED;
+  }
+
+  get aliasTableData$() {
+    //start here
+    return this.experimentDesignStepperService.simpleExperimentAliasTableData$;
   }
 
   ngOnInit() {
@@ -125,7 +128,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.loadParticipants();
         this.loadMetrics();
         if (experiment.type === EXPERIMENT_TYPE.SIMPLE) {
-          this.aliasTableData = this.experimentDesignStepperService.createAliasTableData(
+          this.experimentDesignStepperService.createAliasTableData(
             experiment.partitions,
             experiment.conditions,
             experiment.conditionAliases,

@@ -5,14 +5,12 @@ import {
   ExperimentDecisionPoint,
   ExperimentCondition,
   ExperimentConditionAlias,
-  TableEditModeDetails,
   ExperimentVM,
   ExperimentFactor,
   ExperimentLevel,
 } from '../experiments/store/experiments.model';
 import * as experimentDesignStepperAction from './store/experiment-design-stepper.actions';
 import {
-  selectAliasTableEditIndex,
   selectDecisionPointsEditModePreviousRowData,
   selectConditionsEditModePreviousRowData,
   selectDecisionPointsTableEditIndex,
@@ -22,21 +20,29 @@ import {
   selectFactorialConditionTableData,
   selectFactorialDesignData,
   selecthasExperimentStepperDataChanged,
-  selectIsAliasTableEditMode,
   selectIsDecisionPointsTableEditMode,
   selectIsConditionsTableEditMode,
   selectIsFactorialConditionsTableEditMode,
   selectIsFormLockedForEdit,
+  selectSimpleExperimentDesignData,
+  selectSimpleExperimentAliasTableData,
+  selectIsSimpleExperimentAliasTableEditMode,
+  selectSimpleExperimentAliasTableEditIndex,
 } from './store/experiment-design-stepper.selectors';
 import {
   DecisionPointsTableRowData,
   ConditionsTableRowData,
-  ExperimentAliasTableRow,
+  SimpleExperimentAliasTableRow,
   ExperimentFactorialDesignData,
   FactorialConditionRequestObject,
   FactorialConditionTableRowData,
+  ExperimentConditionAliasRequestObject,
+  SimpleExperimentDesignData,
 } from './store/experiment-design-stepper.model';
-import { actionUpdateFactorialTableData } from './store/experiment-design-stepper.actions';
+import {
+  actionUpdateFactorialTableData,
+  actionUpdateSimpleExperimentAliasTableData,
+} from './store/experiment-design-stepper.actions';
 import { BehaviorSubject, distinctUntilChanged } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 import * as isEqual from 'lodash.isequal';
@@ -48,8 +54,8 @@ export class ExperimentDesignStepperService {
   expStepperDataChangedFlag = false;
   isFormLockedForEdit$ = this.store$.pipe(select(selectIsFormLockedForEdit));
   hasExperimentStepperDataChanged$ = this.store$.pipe(select(selecthasExperimentStepperDataChanged));
-  isAliasTableEditMode$ = this.store$.pipe(select(selectIsAliasTableEditMode));
-  aliasTableEditIndex$ = this.store$.pipe(select(selectAliasTableEditIndex));
+  isSimpleExperimentAliasTableEditMode$ = this.store$.pipe(select(selectIsSimpleExperimentAliasTableEditMode));
+  simpleExperimentAliasTableEditIndex$ = this.store$.pipe(select(selectSimpleExperimentAliasTableEditIndex));
 
   isDecisionPointsTableEditMode$ = this.store$.pipe(select(selectIsDecisionPointsTableEditMode));
   decisionPointsTableEditIndex$ = this.store$.pipe(select(selectDecisionPointsTableEditIndex));
@@ -64,10 +70,20 @@ export class ExperimentDesignStepperService {
     distinctUntilChanged(isEqual)
   );
   factorialConditionTableDataBehaviorSubject$ = new BehaviorSubject<FactorialConditionTableRowData[]>([]);
+  simpleExperimentAliasTableDataBehaviorSubject$ = new BehaviorSubject<SimpleExperimentAliasTableRow[]>([]);
+
   isFactorialConditionsTableEditMode$ = this.store$.pipe(select(selectIsFactorialConditionsTableEditMode));
   factorialConditionsTableEditIndex$ = this.store$.pipe(select(selectFactorialConditionsTableEditIndex));
   factorialConditionsEditModePreviousRowData$ = this.store$.pipe(
     select(selectFactorialConditionsEditModePreviousRowData)
+  );
+  simpleExperimentDesignData$ = this.store$.pipe(
+    select(selectSimpleExperimentDesignData),
+    distinctUntilChanged(isEqual)
+  );
+  simpleExperimentAliasTableData$ = this.store$.pipe(
+    select(selectSimpleExperimentAliasTableData),
+    distinctUntilChanged(isEqual)
   );
 
   constructor(private store$: Store<AppState>) {
@@ -75,6 +91,7 @@ export class ExperimentDesignStepperService {
       (isDataChanged) => (this.expStepperDataChangedFlag = isDataChanged)
     );
     this.factorialConditionTableData$.subscribe(this.factorialConditionTableDataBehaviorSubject$);
+    this.simpleExperimentAliasTableData$.subscribe(this.simpleExperimentAliasTableDataBehaviorSubject$);
   }
 
   getHasExperimentDesignStepperDataChanged() {
@@ -83,6 +100,10 @@ export class ExperimentDesignStepperService {
 
   getFactorialConditionTableData() {
     return this.factorialConditionTableDataBehaviorSubject$.getValue();
+  }
+
+  getSimpleExperimentAliasTableData() {
+    return [...this.simpleExperimentAliasTableDataBehaviorSubject$.getValue()];
   }
 
   experimentStepperDataChanged() {
@@ -109,27 +130,21 @@ export class ExperimentDesignStepperService {
     return roundedWeight;
   }
 
-  filterForUnchangedDesignData(designData: [ExperimentDecisionPoint[], ExperimentCondition[]][]): boolean {
-    const [previous, current] = designData;
-    const prevSiteTargets: string[] = previous[0].map((dp) => dp.site?.trim() + dp.target?.trim());
-    const prevConditions: string[] = previous[1].map((c) => c.conditionCode?.trim());
-    const currentSiteTargets: string[] = current[0].map((dp) => dp.site?.trim() + dp.target?.trim());
-    const currentConditions: string[] = current[1].map((c) => c.conditionCode?.trim());
-
-    const prev = prevSiteTargets.concat(prevConditions);
-    const curr = currentSiteTargets.concat(currentConditions);
-
-    const same = JSON.stringify(prev) === JSON.stringify(curr);
-
-    return !same;
+  setNewSimpleExperimentAliasTableData(tableData: SimpleExperimentAliasTableRow[]) {
+    this.store$.dispatch(actionUpdateSimpleExperimentAliasTableData({ tableData }));
   }
 
-  validDesignDataFilter(designData: [ExperimentDecisionPoint[], ExperimentCondition[]]): boolean {
-    const [decisionPoints, conditions] = designData;
+  setNewDesignData(designData: SimpleExperimentDesignData) {
+    this.store$.dispatch(experimentDesignStepperAction.actionUpdateSimpleExperimentDesignData({ designData }));
+  }
+
+  validDesignDataFilter(designData: SimpleExperimentDesignData): boolean {
+    const { decisionPoints, conditions } = designData;
 
     if (!decisionPoints.length || !conditions.length) {
       return false;
     }
+
     const hasValidDecisionPointStrings = decisionPoints.every(
       ({ site, target }) => this.isValidString(site) && this.isValidString(target)
     );
@@ -142,8 +157,8 @@ export class ExperimentDesignStepperService {
     conditions: ExperimentCondition[],
     conditionAliases: ExperimentConditionAlias[],
     useExistingAliasData: boolean
-  ): ExperimentAliasTableRow[] {
-    const aliasTableData: ExperimentAliasTableRow[] = [];
+  ) {
+    const aliasTableData: SimpleExperimentAliasTableRow[] = [];
 
     decisionPoints.forEach((decisionPoint, index) => {
       conditions.forEach((condition) => {
@@ -165,13 +180,39 @@ export class ExperimentDesignStepperService {
           target: decisionPoint.target,
           condition: condition.conditionCode,
           alias: existingAlias?.aliasName || condition.conditionCode,
-          isEditing: false,
           rowStyle: index % 2 === 0 ? 'even' : 'odd',
         });
       });
     });
 
-    return aliasTableData;
+    this.setNewSimpleExperimentAliasTableData(aliasTableData);
+  }
+
+  createExperimentConditionAliasRequestObject({ decisionPoints, conditions }): ExperimentConditionAliasRequestObject[] {
+    const conditionAliases: ExperimentConditionAliasRequestObject[] = [];
+    const aliasTableData = this.getSimpleExperimentAliasTableData();
+
+    aliasTableData.forEach((aliasRowData: SimpleExperimentAliasTableRow) => {
+      // if no custom alias, return early, do not add to array to send to backend
+      if (aliasRowData.alias === aliasRowData.condition) {
+        return;
+      }
+
+      const parentCondition = conditions.find((condition) => condition.conditionCode === aliasRowData.condition);
+
+      const decisionPoint = decisionPoints.find(
+        (decisionPoint) => decisionPoint.target === aliasRowData.target && decisionPoint.site === aliasRowData.site
+      );
+
+      conditionAliases.push({
+        id: aliasRowData.id || uuidv4(),
+        aliasName: aliasRowData.alias,
+        parentCondition: parentCondition.id,
+        decisionPoint: decisionPoint.id,
+      });
+    });
+
+    return conditionAliases;
   }
 
   createNewFactorialConditionTableData(designData: ExperimentFactorialDesignData): FactorialConditionTableRowData[] {
@@ -380,11 +421,10 @@ export class ExperimentDesignStepperService {
     this.store$.dispatch(actionUpdateFactorialTableData({ tableData }));
   }
 
-  setUpdateAliasTableEditMode(details: TableEditModeDetails): void {
+  setUpdateAliasTableEditModeDetails(rowIndex: number | null): void {
     this.store$.dispatch(
-      experimentDesignStepperAction.actionUpdateAliasTableEditMode({
-        isAliasTableEditMode: details.isEditMode,
-        aliasTableEditIndex: details.rowIndex,
+      experimentDesignStepperAction.actionUpdateSimpleExperimentAliasTableEditModeDetails({
+        simpleExperimentAliasTableEditIndex: rowIndex,
       })
     );
   }
@@ -430,5 +470,9 @@ export class ExperimentDesignStepperService {
 
   clearFactorialDesignStepperData(): void {
     this.store$.dispatch(experimentDesignStepperAction.clearFactorialDesignStepperData());
+  }
+
+  clearSimpleExperimentDesignStepperData(): void {
+    this.store$.dispatch(experimentDesignStepperAction.clearSimpleExperimentDesignStepperData());
   }
 }

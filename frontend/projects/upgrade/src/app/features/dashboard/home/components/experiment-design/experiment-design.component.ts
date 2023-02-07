@@ -26,15 +26,13 @@ import {
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
-import { filter, map, pairwise, startWith } from 'rxjs/operators';
+import { filter, map, startWith } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
   DecisionPointsTableRowData,
   ConditionsTableRowData,
-  ExperimentAliasTableRow,
-  ExperimentConditionAliasRequestObject,
   SimpleExperimentFormData,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { SIMPLE_EXP_CONSTANTS } from './experiment-design.constants';
@@ -102,11 +100,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   equalWeightFlag = true;
   isExperimentEditable = true;
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
-
-  // Alias Table details
-  designData$ = new BehaviorSubject<[ExperimentDecisionPoint[], ExperimentCondition[]]>([[], []]);
-  aliasTableData: ExperimentAliasTableRow[] = [];
-  isAliasTableEditMode$ = this.experimentDesignStepperService.isAliasTableEditMode$;
 
   // Decision Point table store references
   previousDecisionPointTableRowDataBehaviorSubject$ = new BehaviorSubject<DecisionPointsTableRowData>(null);
@@ -185,7 +178,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       decisionPoints: this._formBuilder.array([this.addDecisionPoints()]),
     });
 
-    this.createDesignDataSubject();
+    this.registerDesignDataChanges();
     this.experimentDesignStepperService.decisionPointsEditModePreviousRowData$.subscribe(
       this.previousDecisionPointTableRowDataBehaviorSubject$
     );
@@ -279,19 +272,13 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       );
   }
 
-  createDesignDataSubject(): void {
-    this.subscriptionHandler = combineLatest([this.decisionPoints.valueChanges, this.conditions.valueChanges])
-      .pipe(
-        pairwise(),
-        filter((designData) => this.experimentDesignStepperService.filterForUnchangedDesignData(designData)),
-        map(([_, current]) => current),
-        filter((designData) => this.experimentDesignStepperService.validDesignDataFilter(designData))
-      )
-      .subscribe(this.designData$);
-  }
-
-  handleAliasTableDataChange(aliasTableData: ExperimentAliasTableRow[]) {
-    this.aliasTableData = [...aliasTableData];
+  registerDesignDataChanges(): void {
+    this.subscriptionHandler = combineLatest([
+      this.decisionPoints.valueChanges,
+      this.conditions.valueChanges,
+    ]).subscribe(([decisionPoints, conditions]) =>
+      this.experimentDesignStepperService.setNewDesignData({ decisionPoints, conditions })
+    );
   }
 
   handleBackBtnClick() {
@@ -726,11 +713,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           ? { ...decisionPoint, order: order++, id: uuidv4() }
           : { ...this.removeDecisionPointName(decisionPoint), order: order++ };
       });
-      experimentDesignFormData.conditionAliases = this.createExperimentConditionAliasRequestObject(
-        this.aliasTableData,
-        experimentDesignFormData.conditions,
-        experimentDesignFormData.decisionPoints
-      );
+      experimentDesignFormData.conditionAliases =
+        this.experimentDesignStepperService.createExperimentConditionAliasRequestObject({
+          decisionPoints: experimentDesignFormData.decisionPoints,
+          conditions: experimentDesignFormData.conditions,
+        });
       this.emitExperimentDialogEvent.emit({
         type: eventType,
         formData: this.renameDecisionPointsAsPartitionsTEMPORARY(experimentDesignFormData),
@@ -750,36 +737,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     renamedFormData.partitions = experimentDesignFormData.decisionPoints;
     delete renamedFormData.decisionPoints;
     return renamedFormData;
-  }
-
-  createExperimentConditionAliasRequestObject(
-    aliases: ExperimentAliasTableRow[],
-    conditions: ExperimentCondition[],
-    decisionPoints: ExperimentDecisionPoint[]
-  ): ExperimentConditionAliasRequestObject[] {
-    const conditionAliases: ExperimentConditionAliasRequestObject[] = [];
-
-    aliases.forEach((aliasRowData: ExperimentAliasTableRow) => {
-      // if no custom alias, return early, do not add to array to send to backend
-      if (aliasRowData.alias === aliasRowData.condition) {
-        return;
-      }
-
-      const parentCondition = conditions.find((condition) => condition.conditionCode === aliasRowData.condition);
-
-      const decisionPoint = decisionPoints.find(
-        (decisionPoint) => decisionPoint.target === aliasRowData.target && decisionPoint.site === aliasRowData.site
-      );
-
-      conditionAliases.push({
-        id: aliasRowData.id || uuidv4(),
-        aliasName: aliasRowData.alias,
-        parentCondition: parentCondition.id,
-        decisionPoint: decisionPoint.id,
-      });
-    });
-
-    return conditionAliases;
   }
 
   applyEqualWeight() {
@@ -850,13 +807,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return EXPERIMENT_STATE;
   }
 
-  get isAliasTableButtonDisabled() {
-    return (
-      this.aliasTableData.length === 0 ||
-      this.decisionPoints.length === 0 ||
-      this.conditions.length === 0 ||
-      !this.isExperimentEditable
-    );
+  get aliasTableData$() {
+    return this.experimentDesignStepperService.simpleExperimentAliasTableData$;
   }
 
   ngOnDestroy() {

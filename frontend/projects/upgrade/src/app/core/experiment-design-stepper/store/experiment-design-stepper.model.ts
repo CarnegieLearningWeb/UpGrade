@@ -1,4 +1,5 @@
 import { AppState } from '../../core.module';
+import { ExperimentCondition, ExperimentDecisionPoint } from '../../experiments/store/experiments.model';
 
 // in PUT/POST request, parentCondition and decisionPoint are id string
 export interface ExperimentConditionAliasRequestObject {
@@ -16,13 +17,12 @@ export interface FactorialConditionRequestObject {
   order: number;
   levelCombinationElements: { id: string; level: FactorialLevelTableRowData }[];
 }
-export interface ExperimentAliasTableRow {
+export interface SimpleExperimentAliasTableRow {
   id?: string;
   site: string;
   target: string;
   condition: string;
   alias: string;
-  isEditing: boolean;
   rowStyle?: 'odd' | 'even';
 }
 
@@ -44,6 +44,11 @@ export interface SimplerExperimentFormDecisionConditions {
   assignmentWeight: string;
   description: string;
   order: number;
+}
+
+export interface SimpleExperimentDesignData {
+  decisionPoints: ExperimentDecisionPoint[];
+  conditions: ExperimentCondition[];
 }
 
 export interface DecisionPointsTableRowData {
@@ -93,14 +98,16 @@ export interface ExperimentLevelFormData {
 }
 
 export interface ExperimentDesignStepperState {
-  isAliasTableEditMode: boolean;
+  isSimpleExperimentAliasTableEditMode: boolean;
   isDecisionPointsTableEditMode: boolean;
   isConditionsTableEditMode: boolean;
-  aliasTableEditIndex: number | null;
+  simpleExperimentAliasTableEditIndex: number | null;
   decisionPointsTableEditIndex: number | null;
   conditionsTableEditIndex: number | null;
   decisionPointsEditModePreviousRowData: DecisionPointsTableRowData;
   conditionsEditModePreviousRowData: ConditionsTableRowData;
+  simpleExperimentDesignData: SimpleExperimentDesignData;
+  simpleExperimentAliasTableData: SimpleExperimentAliasTableRow[];
   isFactorialConditionsTableEditMode: boolean;
   factorialConditionsTableEditIndex: number | null;
   factorialConditionsEditModePreviousRowData: FactorialConditionTableRowData;

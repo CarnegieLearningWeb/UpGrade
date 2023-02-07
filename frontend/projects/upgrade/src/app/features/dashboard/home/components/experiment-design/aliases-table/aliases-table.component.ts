@@ -1,14 +1,12 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { BehaviorSubject, combineLatest, filter, map, Observable, Subscription } from 'rxjs';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
-import { ExperimentAliasTableRow } from '../../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
-import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import {
-  ExperimentCondition,
-  ExperimentDecisionPoint,
-  ExperimentVM,
-  TableEditModeDetails,
-} from '../../../../../../core/experiments/store/experiments.model';
+  SimpleExperimentAliasTableRow,
+  SimpleExperimentDesignData,
+} from '../../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
+import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 @Component({
   selector: 'app-aliases-table',
   templateUrl: './aliases-table.component.html',
@@ -16,19 +14,20 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AliasesTableComponent implements OnInit, OnDestroy {
-  @Output() aliasTableData$ = new EventEmitter<ExperimentAliasTableRow[]>();
+  // @Output() aliasTableData$ = new EventEmitter<SimpleExperimentAliasTableRow[]>();
   @Output() hideAliasTable = new EventEmitter<boolean>();
-  @Input() designData$: Observable<[ExperimentDecisionPoint[], ExperimentCondition[]]>;
+  // @Input() designData$: Observable<[ExperimentDecisionPoint[], ExperimentCondition[]]>;
   @Input() experimentInfo: ExperimentVM;
 
   subscriptions: Subscription;
-  isAliasTableEditMode$: Observable<boolean>;
-  aliasTableEditIndex$: Observable<number>;
+  isSimpleExperimentAliasTableEditMode$: Observable<boolean>;
+  simpleExperimentAliasTableEditIndex$: Observable<number>;
   currentContextMetaDataConditions$: Observable<string[]>;
   filteredContextMetaDataConditions$ = new BehaviorSubject<string[]>(['']);
   currentAliasInput$ = new BehaviorSubject<string>('');
+  designData$: Observable<SimpleExperimentDesignData>;
 
-  aliasTableData: ExperimentAliasTableRow[] = [];
+  aliasTableData$ = new BehaviorSubject<SimpleExperimentAliasTableRow[]>([]);
   aliasesDisplayedColumns = ['site', 'target', 'condition', 'alias', 'actions'];
 
   initialLoad = true;
@@ -39,29 +38,26 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.isAliasTableEditMode$ = this.experimentDesignStepperService.isAliasTableEditMode$;
-    this.aliasTableEditIndex$ = this.experimentDesignStepperService.aliasTableEditIndex$;
+    this.isSimpleExperimentAliasTableEditMode$ =
+      this.experimentDesignStepperService.isSimpleExperimentAliasTableEditMode$;
+    this.simpleExperimentAliasTableEditIndex$ =
+      this.experimentDesignStepperService.simpleExperimentAliasTableEditIndex$;
     this.currentContextMetaDataConditions$ = this.experimentService.currentContextMetaDataConditions$;
+    this.designData$ = this.experimentDesignStepperService.simpleExperimentDesignData$;
   }
 
   ngAfterViewInit(): void {
     // must sub after view init to ensure table reference is loaded before emitting table data
-    this.subscriptions = this.designData$.subscribe(
-      (designData: [ExperimentDecisionPoint[], ExperimentCondition[]]) => {
-        const [decisionPoints, conditions] = designData;
-        const conditionAliases = this.experimentInfo?.conditionAliases;
-        const useExistingAliasData = !!(conditionAliases && this.initialLoad);
 
-        this.aliasTableData = this.experimentDesignStepperService.createAliasTableData(
-          decisionPoints,
-          conditions,
-          conditionAliases,
-          useExistingAliasData
-        );
-        this.initialLoad = false;
-        this.aliasTableData$.emit(this.aliasTableData);
-      }
+    this.subscriptions = this.experimentDesignStepperService.simpleExperimentAliasTableData$.subscribe(
+      this.aliasTableData$
     );
+
+    this.subscriptions = this.experimentDesignStepperService.simpleExperimentDesignData$
+      .pipe(filter((designData) => this.experimentDesignStepperService.validDesignDataFilter(designData)))
+      .subscribe((designData) => {
+        this.handleDesignDataChanges(designData);
+      });
 
     this.subscriptions = combineLatest([this.currentContextMetaDataConditions$, this.currentAliasInput$])
       .pipe(
@@ -74,30 +70,46 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.experimentDesignStepperService.setUpdateAliasTableEditMode({
-      isEditMode: false,
-      rowIndex: null,
-    });
+    this.experimentDesignStepperService.setUpdateAliasTableEditModeDetails(null);
+    // this.experimentDesignStepperService.resetSimpleExperimentData();
     this.subscriptions.unsubscribe();
+  }
+
+  handleDesignDataChanges(designData: SimpleExperimentDesignData) {
+    const { decisionPoints, conditions } = designData;
+    const conditionAliases = this.experimentInfo?.conditionAliases;
+    const useExistingAliasData = !!(conditionAliases && this.initialLoad);
+
+    // if design data is initial load
+    if (this.initialLoad) {
+      this.handleInitialAliasTableCreation({ decisionPoints, conditions, conditionAliases, useExistingAliasData });
+      this.initialLoad = false;
+    }
+    // if design data is modified
+    // if design data has added rows
+    // if design data has deleted rows
+  }
+
+  handleInitialAliasTableCreation({ decisionPoints, conditions, conditionAliases, useExistingAliasData }) {
+    this.experimentDesignStepperService.createAliasTableData(
+      decisionPoints,
+      conditions,
+      conditionAliases,
+      useExistingAliasData
+    );
   }
 
   handleHideClick() {
     this.hideAliasTable.emit(true);
   }
 
-  handleEditClick(rowData: ExperimentAliasTableRow, rowIndex: number) {
-    if (rowData.isEditing && !this.experimentDesignStepperService.isValidString(rowData.alias)) {
-      rowData.alias = rowData.condition;
-    }
+  handleEditClick(rowData: SimpleExperimentAliasTableRow, rowIndex: number) {
+    const aliasTableData = this.experimentDesignStepperService.getSimpleExperimentAliasTableData();
+    const rowDataCopy = { ...rowData };
+    aliasTableData[rowIndex] = rowDataCopy;
 
-    rowData.isEditing = !rowData.isEditing;
-
-    const isEditMode = this.aliasTableData.some((rowData) => rowData.isEditing);
-    const editModeDetails: TableEditModeDetails = {
-      isEditMode,
-      rowIndex: isEditMode ? rowIndex : null,
-    };
-    this.experimentDesignStepperService.setUpdateAliasTableEditMode(editModeDetails);
+    this.experimentDesignStepperService.setUpdateAliasTableEditModeDetails(rowIndex);
+    this.experimentDesignStepperService.setNewSimpleExperimentAliasTableData(aliasTableData);
     this.currentAliasInput$.next(rowData.alias);
   }
 

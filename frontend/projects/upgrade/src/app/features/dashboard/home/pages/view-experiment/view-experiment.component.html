@@ -496,8 +496,8 @@
           <!-- Aliases Table -->
           <div class="table-container table-container-aliases">
             <span class="ft-24-700">{{ 'home.view-experiment.experiment-aliases-title.text' | translate }}</span>
-            <ng-container *ngIf="aliasTableData.length">
-              <mat-table [dataSource]="aliasTableData" class="table alias-table-overview">
+            <ng-container *ngIf="(aliasTableData$ | async).length">
+              <mat-table [dataSource]="aliasTableData$" class="table alias-table-overview">
                 <ng-container matColumnDef="site">
                   <mat-header-cell class="ft-12-700" *matHeaderCellDef>
                     {{ 'home.view-experiment.experiment-aliases.column-label.site' | translate }}

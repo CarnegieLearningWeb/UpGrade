@@ -5,14 +5,14 @@ export const selectExperimentDesignStepperState = createFeatureSelector<State, E
   'experimentDesignStepper'
 );
 
-export const selectIsAliasTableEditMode = createSelector(
+export const selectIsSimpleExperimentAliasTableEditMode = createSelector(
   selectExperimentDesignStepperState,
-  (state) => state.isAliasTableEditMode
+  (state) => state.isSimpleExperimentAliasTableEditMode
 );
 
-export const selectAliasTableEditIndex = createSelector(
+export const selectSimpleExperimentAliasTableEditIndex = createSelector(
   selectExperimentDesignStepperState,
-  (state) => state.aliasTableEditIndex
+  (state) => state.simpleExperimentAliasTableEditIndex
 );
 
 export const selecthasExperimentStepperDataChanged = createSelector(
@@ -47,7 +47,7 @@ export const selectConditionsTableEditIndex = createSelector(
 
 export const selectIsFormLockedForEdit = createSelector(selectExperimentDesignStepperState, (state) => {
   const lockSources = [
-    state.isAliasTableEditMode,
+    state.isSimpleExperimentAliasTableEditMode,
     state.isDecisionPointsTableEditMode,
     state.isConditionsTableEditMode,
     state.isFactorialConditionsTableEditMode,
@@ -64,6 +64,17 @@ export const selectFactorialDesignData = createSelector(
   selectExperimentDesignStepperState,
   (state) => state.factorialDesignData
 );
+
+export const selectSimpleExperimentDesignData = createSelector(
+  selectExperimentDesignStepperState,
+  (state) => state.simpleExperimentDesignData
+);
+
+export const selectSimpleExperimentAliasTableData = createSelector(selectExperimentDesignStepperState, (state) => {
+  return [...state.simpleExperimentAliasTableData].map((rowData) => {
+    return { ...rowData };
+  });
+});
 
 export const selectFactorialConditionTableData = createSelector(
   selectExperimentDesignStepperState,
