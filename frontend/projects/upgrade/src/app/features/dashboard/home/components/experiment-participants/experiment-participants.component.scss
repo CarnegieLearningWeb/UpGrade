@@ -101,6 +101,12 @@
     }
   }
 
+  .validation-container {
+    min-height: 30px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+  }
+
   ::ng-deep .mat-form-field-label {
     color: var(--grey-6);
   }

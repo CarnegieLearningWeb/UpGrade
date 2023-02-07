@@ -63,6 +63,8 @@ export class ExperimentParticipantsComponent implements OnInit {
   groupsToSend = [];
   groupString = ' ( group )';
   includeAll = false;
+  segmentNotValid = false;
+  segmentNotValid2 = false;
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -166,9 +168,17 @@ export class ExperimentParticipantsComponent implements OnInit {
 
     this.updateView1();
     this.updateView2();
+
+    this.participantsForm.get('members1').valueChanges.subscribe((newValues) => {
+      this.checkSegmentvalidity(newValues,1);
+    });
+
+    this.participantsForm2.get('members2').valueChanges.subscribe((newValues) => {
+      this.checkSegmentvalidity(newValues,2);
+    });
   }
 
-  selectedOption(event = null, index = null) {
+  selectedOption(event = null, index = null, table: number) {
     if (event) {
       if (index === 0 && event.value === 'All') {
         this.members1.controls.at(index).setValue({ type: 'All', id: 'All' });
@@ -179,9 +189,13 @@ export class ExperimentParticipantsComponent implements OnInit {
         }
         this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
       } else {
-        this.members1.controls.at(index).get('id').enable();
-        this.members1.controls.at(index).get('id').setValue('');
-        this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
+          this.members1.controls.at(index).get('id').enable();
+          if ( table === 1 ){
+          this.members1.controls.at(index).get('id').setValue('');
+          this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
+        } else if ( table === 2 ){
+          this.members2.controls.at(index).get('id').setValue('');
+        }
       }
     }
   }
@@ -287,6 +301,22 @@ export class ExperimentParticipantsComponent implements OnInit {
     });
   }
 
+  checkSegmentvalidity(members : any, table: number){
+    this.segmentNotValid = false;
+    this.segmentNotValid2 = false;
+    members.forEach((member) => {
+      if (member.type === MemberTypes.SEGMENT) {
+        if (!this.subSegmentIds.find((segment) => segment === member.id)) {
+          if(table==1){
+            this.segmentNotValid=true;
+          }else{
+            this.segmentNotValid2=true;
+          }
+        }
+      }
+    })
+  }
+
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
@@ -335,7 +365,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     const { members1 } = this.participantsForm.value;
     const { members2 } = this.participantsForm2.value;
 
-    if (this.participantsForm.valid && this.participantsForm2.valid) {
+    if (this.participantsForm.valid && this.participantsForm2.valid && !this.segmentNotValid && !this.segmentNotValid2) {
       this.gettingMembersValueToSend(members1);
       const segmentMembers1FormData = {
         userIds: this.userIdsToSend,
@@ -366,7 +396,8 @@ export class ExperimentParticipantsComponent implements OnInit {
               },
         path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS,
       });
-      if (this.members1.length !== 0) {
+
+      if (this.members1.length !== 0 && this.members1.controls.at(0).get('type').value === "All") {
         this.members1.controls.at(0).get('id').disable();
       }
 

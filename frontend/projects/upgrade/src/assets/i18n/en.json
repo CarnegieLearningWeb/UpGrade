@@ -93,6 +93,7 @@
   "home.new-experiment.participants.text": "Participants",
   "home.new-experiment.participants.inital.include-message": "No one will be enrolled in the experiment",
   "home.new-experiment.participants.inital.exclude-message": "No participants will be excluded",
+  "home.new-experiment.participants.unvalid-segment.text": "Add Segment Id/Name from Suggested Values only",
   "home.new-experiment.schedule.text": "Schedule",
   "home.new-experiment.schedule-end-date-and-time-error.text": "Select experiment end date and time",
   "home.new-experiment.schedule-start-date-and-time-error.text": "Select experiment start date and time",
