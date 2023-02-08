@@ -273,7 +273,7 @@ export class ExperimentScheduleComponent implements OnInit {
         path: NewExperimentPaths.EXPERIMENT_SCHEDULE,
       });
 
-      if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+      if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
         this.experimentDesignStepperService.experimentStepperDataReset();
         this.experimentScheduleForm.markAsPristine();
       }

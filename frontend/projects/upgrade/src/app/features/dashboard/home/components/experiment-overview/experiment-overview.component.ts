@@ -44,7 +44,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   allContexts = [];
   currentContext = null;
   consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
-  designTypes = [{ value: ExperimentDesignTypes.SIMPLE},{ value: ExperimentDesignTypes.FACTORIAL }];
+  designTypes = [{ value: ExperimentDesignTypes.SIMPLE }, { value: ExperimentDesignTypes.FACTORIAL }];
 
   // Used to control chips
   isChipSelectable = true;
@@ -246,8 +246,17 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       });
     }
     if (this.overviewForm.valid) {
-      const { experimentName, description, unitOfAssignment, groupType, consistencyRule, context, designType, tags, logging } =
-        this.overviewForm.value;
+      const {
+        experimentName,
+        description,
+        unitOfAssignment,
+        groupType,
+        consistencyRule,
+        context,
+        designType,
+        tags,
+        logging,
+      } = this.overviewForm.value;
       const overviewFormData = {
         name: experimentName,
         description: description || '',
@@ -265,7 +274,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
       });
 
-      if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+      if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
         this.experimentDesignStepperService.experimentStepperDataReset();
         this.overviewForm.markAsPristine();
       }

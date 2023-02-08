@@ -34,7 +34,7 @@
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData">
           <span [matTooltip]="rowData.levels[0].name" matTooltipPosition="above">
-            {{ rowData.levels[0].name | truncate: 20 }}
+            {{ rowData.levels[0].name | truncate : 20 }}
           </span>
         </mat-cell>
       </ng-container>
@@ -46,7 +46,7 @@
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData">
           <span [matTooltip]="rowData.levels[1].name" matTooltipPosition="above">
-            {{ rowData.levels[1].name | truncate: 20 }}
+            {{ rowData.levels[1].name | truncate : 20 }}
           </span>
         </mat-cell>
       </ng-container>
@@ -59,7 +59,7 @@
         <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
           <ng-container *ngIf="(tableEditIndex$ | async) !== rowIndex">
             <span [matTooltip]="rowData.alias" matTooltipPosition="above">
-              {{ rowData.alias | truncate: 25 }}
+              {{ rowData.alias | truncate : 25 }}
             </span>
           </ng-container>
           <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
@@ -90,7 +90,13 @@
           </ng-container>
           <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex">
             <mat-form-field class="input-weight" floatLabel="never">
-              <input autocomplete="off" type="text" matInput formControlName="weight" [disabled]="!isExperimentEditable" />
+              <input
+                autocomplete="off"
+                type="text"
+                matInput
+                formControlName="weight"
+                [disabled]="!isExperimentEditable"
+              />
             </mat-form-field>
           </ng-container>
         </mat-cell>

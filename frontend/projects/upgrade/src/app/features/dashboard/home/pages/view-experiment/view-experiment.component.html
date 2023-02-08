@@ -12,7 +12,11 @@
           {{ experiment?.name }}
           <span class="ft-16-400 experiment-overview-partitions">
             (
-            {{ experiment.partitions?.length + ' ' + ('home.view-experiment.experiments-partitions.text' | translate) }}
+            {{
+              experiment.partitions?.length +
+                ' ' +
+                ('home.view-experiment.experiments-decision-points.text' | translate)
+            }}
             )
           </span>
         </span>
@@ -51,14 +55,16 @@
         <span class="ft-32-700 experiment-overview-dates">
           <span class="ft-14-700 experiment-overview-create-date">
             {{
-              ('home.view-experiment.created-on.text' | translate) + (experiment.createdAt | formatDate: 'medium date')
+              ('home.view-experiment.created-on.text' | translate) + (experiment.createdAt | formatDate : 'medium date')
             }}
           </span>
 
           <span class="ft-14-700 experiment-overview-last-update-date">
             {{
               ('home.view-experiment.last-updated-on.text' | translate) +
-                (experiment.updatedAt | formatDate: 'medium
+                (experiment.updatedAt
+                  | formatDate
+                    : 'medium
             date')
             }}
           </span>
@@ -96,7 +102,7 @@
                     <span
                       class="state-circle"
                       [ngStyle]="{
-                        backgroundColor: experiment.state | experimentState: ExperimentStatePipeTypes.COLOR
+                        backgroundColor: experiment.state | experimentState : ExperimentStatePipeTypes.COLOR
                       }"
                     ></span>
                   </ng-template>
@@ -193,7 +199,7 @@
                       [matTooltip]="experiment.group"
                       matTooltipPosition="above"
                     >
-                      {{ '( ' + (experiment.group | truncate: 35) + ' )' }}
+                      {{ '( ' + (experiment.group | truncate : 35) + ' )' }}
                     </span>
                   </ng-template>
                 </ng-container>
@@ -242,11 +248,11 @@
                       >
                         {{ groupCount + ' ' }}
                         <span *ngIf="groupCount < 2; else groupTypePlural">
-                          {{ 'global.group-type-singular.text' | translate: { groupType: experiment.group } }}
+                          {{ 'global.group-type-singular.text' | translate : { groupType: experiment.group } }}
                         </span>
                         <ng-template #groupTypePlural>
                           <span>{{
-                            'global.group-type-plural.text' | translate: { groupType: experiment.group }
+                            'global.group-type-plural.text' | translate : { groupType: experiment.group }
                           }}</span>
                         </ng-template>
                       </span>
@@ -282,13 +288,13 @@
                       *ngIf="permissions?.experiments.update && !isExperimentStateCancelled; else endOnReadOnly"
                     >
                       <span class="end-criteria-underline--grey" (click)="updateEndingCriteria()">
-                        {{ experiment.endOn | formatDate: 'medium date' }}
+                        {{ experiment.endOn | formatDate : 'medium date' }}
                       </span>
                       <mat-icon class="edit-icon">create</mat-icon>
                     </ng-container>
 
                     <ng-template #endOnReadOnly>
-                      <span>{{ experiment.endOn | formatDate: 'medium date' }}</span>
+                      <span>{{ experiment.endOn | formatDate : 'medium date' }}</span>
                     </ng-template>
                   </span>
                 </ng-container>
@@ -401,7 +407,7 @@
                     </span>
                     <ng-template #partitionPoint>
                       <span [matTooltip]="data.site" matTooltipPosition="above">
-                        {{ data.site | truncate: 50 }}
+                        {{ data.site | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
@@ -418,7 +424,7 @@
                     </span>
                     <ng-template #partitionName>
                       <span [matTooltip]="data.target" matTooltipPosition="above">
-                        {{ data.target | truncate: 50 }}
+                        {{ data.target | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
@@ -441,9 +447,8 @@
             <div *ngIf="experiment.type === 'Factorial'">
               <span class="ft-24-700">{{ 'home.new-experiment.design.factor.text' | translate }}</span>
               <mat-table [dataSource]="experiment.partitions" class="table">
-
-                 <!-- Factor Column -->
-                 <ng-container matColumnDef="Factor">
+                <!-- Factor Column -->
+                <ng-container matColumnDef="Factor">
                   <mat-header-cell class="ft-12-700" *matHeaderCellDef>
                     {{ 'home.new-experiment.design.factor-name.text' | translate }}
                   </mat-header-cell>
@@ -453,7 +458,7 @@
                     </span>
                     <ng-template #partitionPoint>
                       <span [matTooltip]="data.site" matTooltipPosition="above">
-                        {{ data.site | truncate: 50 }}
+                        {{ data.site | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
@@ -470,7 +475,7 @@
                     </span>
                     <ng-template #partitionPoint>
                       <span [matTooltip]="data.site" matTooltipPosition="above">
-                        {{ data.site | truncate: 50 }}
+                        {{ data.site | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
@@ -487,7 +492,7 @@
                     </span>
                     <ng-template #partitionName>
                       <span [matTooltip]="data.target" matTooltipPosition="above">
-                        {{ data.target | truncate: 50 }}
+                        {{ data.target | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
@@ -514,7 +519,7 @@
                     </span>
                     <ng-template #conditionCode>
                       <span [matTooltip]="data.conditionCode" matTooltipPosition="above">
-                        {{ data.conditionCode | truncate: 50 }}
+                        {{ data.conditionCode | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
@@ -539,7 +544,7 @@
                     </span>
                     <ng-template #conditionDescription>
                       <span [matTooltip]="data.description" matTooltipPosition="above">
-                        {{ data.description | truncate: 50 }}
+                        {{ data.description | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
@@ -553,16 +558,20 @@
               <mat-table [dataSource]="experiment.conditions" class="table">
                 <!-- Condition Code Column -->
                 <ng-container matColumnDef="conditionCode">
-                  <mat-header-cell style="justify-content: left; padding-left: 15px;" class="ft-12-700" *matHeaderCellDef>
+                  <mat-header-cell
+                    style="justify-content: left; padding-left: 15px"
+                    class="ft-12-700"
+                    *matHeaderCellDef
+                  >
                     {{ 'global.condition.text' | translate }}
                   </mat-header-cell>
-                  <mat-cell style="justify-content: left;" class="ft-12-600" *matCellDef="let data">
-                    <span style="padding-left: 5px;" *ngIf="data.conditionCode?.length < 50; else conditionCode">
+                  <mat-cell style="justify-content: left" class="ft-12-600" *matCellDef="let data">
+                    <span style="padding-left: 5px" *ngIf="data.conditionCode?.length < 50; else conditionCode">
                       {{ data.conditionCode }}
                     </span>
                     <ng-template #conditionCode>
                       <span [matTooltip]="data.conditionCode" matTooltipPosition="above">
-                        {{ data.conditionCode | truncate: 50 }}
+                        {{ data.conditionCode | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
@@ -570,10 +579,12 @@
 
                 <!-- Weight Column -->
                 <ng-container matColumnDef="assignmentWeight">
-                  <mat-header-cell style="justify-content: left;" class="ft-12-700" *matHeaderCellDef>
+                  <mat-header-cell style="justify-content: left" class="ft-12-700" *matHeaderCellDef>
                     {{ 'home-global.assignment-weight.text' | translate }}
                   </mat-header-cell>
-                  <mat-cell style="justify-content: left; padding-left: 10px;" class="ft-12-600" *matCellDef="let data"> {{ data.assignmentWeight }} </mat-cell>
+                  <mat-cell style="justify-content: left; padding-left: 10px" class="ft-12-600" *matCellDef="let data">
+                    {{ data.assignmentWeight }}
+                  </mat-cell>
                 </ng-container>
 
                 <mat-header-row *matHeaderRowDef="displayedConditionColumnsFactorial"></mat-header-row>
@@ -593,7 +604,7 @@
                   </mat-header-cell>
                   <mat-cell class="ft-12-600" *matCellDef="let rowData">
                     <span [matTooltip]="rowData.site" matTooltipPosition="above">
-                      {{ rowData.site | truncate: 50 }}
+                      {{ rowData.site | truncate : 50 }}
                     </span>
                   </mat-cell>
                 </ng-container>
@@ -604,7 +615,7 @@
                   </mat-header-cell>
                   <mat-cell class="ft-12-600" *matCellDef="let rowData">
                     <span [matTooltip]="rowData.target" matTooltipPosition="above">
-                      {{ rowData.target | truncate: 50 }}
+                      {{ rowData.target | truncate : 50 }}
                     </span>
                   </mat-cell>
                 </ng-container>
@@ -615,7 +626,7 @@
                   </mat-header-cell>
                   <mat-cell class="ft-12-600" *matCellDef="let rowData">
                     <span [matTooltip]="rowData.condition" matTooltipPosition="above">
-                      {{ rowData.condition | truncate: 50 }}
+                      {{ rowData.condition | truncate : 50 }}
                     </span>
                   </mat-cell>
                 </ng-container>
@@ -626,13 +637,16 @@
                   </mat-header-cell>
                   <mat-cell class="ft-12-600" *matCellDef="let rowData">
                     <span [matTooltip]="rowData.alias" matTooltipPosition="above">
-                      {{ rowData.alias | truncate: 50 }}
+                      {{ rowData.alias | truncate : 50 }}
                     </span>
                   </mat-cell>
                 </ng-container>
 
                 <mat-header-row *matHeaderRowDef="displayedAliasConditionColumns"></mat-header-row>
-                <mat-row *matRowDef="let row; columns: displayedAliasConditionColumns" [ngClass]="row?.rowStyle"></mat-row>
+                <mat-row
+                  *matRowDef="let row; columns: displayedAliasConditionColumns"
+                  [ngClass]="row?.rowStyle"
+                ></mat-row>
               </mat-table>
             </ng-container>
           </div>
@@ -656,7 +670,7 @@
                   </span>
                   <ng-template #participantType>
                     <span [matTooltip]="data.participant_Type" matTooltipPosition="above">
-                      {{ data.participant_Type | truncate: 50 }}
+                      {{ data.participant_Type | truncate : 50 }}
                     </span>
                   </ng-template>
                 </mat-cell>
@@ -673,7 +687,7 @@
                   </span>
                   <ng-template #participantId>
                     <span [matTooltip]="data.participant_id" matTooltipPosition="above">
-                      {{ data.participant_id | truncate: 50 }}
+                      {{ data.participant_id | truncate : 50 }}
                     </span>
                   </ng-template>
                 </mat-cell>
@@ -699,7 +713,7 @@
                   </span>
                   <ng-template #participantType>
                     <span [matTooltip]="data.participant_Type" matTooltipPosition="above">
-                      {{ data.participant_Type | truncate: 50 }}
+                      {{ data.participant_Type | truncate : 50 }}
                     </span>
                   </ng-template>
                 </mat-cell>
@@ -716,7 +730,7 @@
                   </span>
                   <ng-template #participantId>
                     <span [matTooltip]="data.participant_id" matTooltipPosition="above">
-                      {{ data.participant_id | truncate: 50 }}
+                      {{ data.participant_id | truncate : 50 }}
                     </span>
                   </ng-template>
                 </mat-cell>
@@ -774,7 +788,7 @@
                   </span>
                   <ng-template #displayName>
                     <span [matTooltip]="data.metric_Name" matTooltipPosition="above">
-                      {{ data.metric_Name | truncate: 50 }}
+                      {{ data.metric_Name | truncate : 50 }}
                     </span>
                   </ng-template>
                 </mat-cell>

@@ -18,11 +18,9 @@ import {
   NewExperimentPaths,
   ExperimentVM,
   ExperimentCondition,
-  ExperimentPartition,
+  ExperimentDecisionPoint,
   IContextMetaData,
   EXPERIMENT_STATE,
-  ExperimentFactor,
-  ExperimentLevel,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -89,7 +87,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
 
   // Alias Table details
-  designData$ = new BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]>([[], []]);
+  designData$ = new BehaviorSubject<[ExperimentDecisionPoint[], ExperimentCondition[]]>([[], []]);
   factorialConditionsTableData: FactorialConditionTableRowData[] = [];
 
   constructor(
@@ -119,11 +117,11 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   ngOnChanges() {
     if (this.isContextChanged || this.isExperimentTypeChanged) {
       this.isContextChanged = false;
-      this.isExperimentTypeChanged = false;      
+      this.isExperimentTypeChanged = false;
       this.factor?.clear();
       this.level?.clear();
       this.factorDataSource.next(this.factor?.controls);
-      if(this.experimentInfo){
+      if (this.experimentInfo) {
         this.experimentInfo.partitions = [];
         this.experimentInfo.conditions = [];
         this.experimentInfo.conditionAliases = [];
@@ -358,7 +356,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     const levelCountErrorMsg = this.translate.instant('home.new-experiment.design.level-count-new-exp-error.text');
     const levelValueErrorMsg = this.translate.instant('home.new-experiment.design.level-value-new-exp-error.text');
 
-    if ( factorialExperimentDesignFormData.factors.length > 0 ) {
+    if (factorialExperimentDesignFormData.factors.length > 0) {
       factorialExperimentDesignFormData.factors.forEach((factor, index) => {
         if (!factor.site?.trim() || !factor.target?.trim() || !factor.factor?.trim()) {
           this.factorCountError = factorValueErrorMsg;
@@ -461,7 +459,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     if (this.isFormValid()) {
       const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
-      const factorialPartitions = this.experimentDesignStepperService.convertToDecisionPointData(factorialExperimentDesignFormData);
+      const factorialDecisionPoints = this.experimentDesignStepperService.convertToDecisionPointData(
+        factorialExperimentDesignFormData
+      );
       const factorialConditions = this.experimentDesignStepperService.createFactorialConditionRequestObject();
 
       const factorialConditionAliases: ExperimentConditionAliasRequestObject[] =
@@ -471,13 +471,13 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         type: eventType,
         formData: {
           conditions: factorialConditions,
-          partitions: factorialPartitions,
+          partitions: factorialDecisionPoints,
           conditionAliases: factorialConditionAliases,
         },
         path: NewExperimentPaths.EXPERIMENT_DESIGN,
       });
 
-      if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+      if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
         this.experimentDesignStepperService.experimentStepperDataReset();
         this.isAnyRowRemoved = false;
         this.factorialExperimentDesignForm.markAsPristine();

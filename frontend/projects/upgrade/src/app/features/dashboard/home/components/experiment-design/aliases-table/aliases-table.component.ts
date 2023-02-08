@@ -5,7 +5,7 @@ import { ExperimentAliasTableRow } from '../../../../../../core/experiment-desig
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import {
   ExperimentCondition,
-  ExperimentPartition,
+  ExperimentDecisionPoint,
   ExperimentVM,
   TableEditModeDetails,
 } from '../../../../../../core/experiments/store/experiments.model';
@@ -18,7 +18,7 @@ import {
 export class AliasesTableComponent implements OnInit, OnDestroy {
   @Output() aliasTableData$ = new EventEmitter<ExperimentAliasTableRow[]>();
   @Output() hideAliasTable = new EventEmitter<boolean>();
-  @Input() designData$: Observable<[ExperimentPartition[], ExperimentCondition[]]>;
+  @Input() designData$: Observable<[ExperimentDecisionPoint[], ExperimentCondition[]]>;
   @Input() experimentInfo: ExperimentVM;
 
   subscriptions: Subscription;
@@ -46,20 +46,22 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
 
   ngAfterViewInit(): void {
     // must sub after view init to ensure table reference is loaded before emitting table data
-    this.subscriptions = this.designData$.subscribe((designData: [ExperimentPartition[], ExperimentCondition[]]) => {
-      const [decisionPoints, conditions] = designData;
-      const conditionAliases = this.experimentInfo?.conditionAliases;
-      const useExistingAliasData = !!(conditionAliases && this.initialLoad);
+    this.subscriptions = this.designData$.subscribe(
+      (designData: [ExperimentDecisionPoint[], ExperimentCondition[]]) => {
+        const [decisionPoints, conditions] = designData;
+        const conditionAliases = this.experimentInfo?.conditionAliases;
+        const useExistingAliasData = !!(conditionAliases && this.initialLoad);
 
-      this.aliasTableData = this.experimentDesignStepperService.createAliasTableData(
-        decisionPoints,
-        conditions,
-        conditionAliases,
-        useExistingAliasData
-      );
-      this.initialLoad = false;
-      this.aliasTableData$.emit(this.aliasTableData);
-    });
+        this.aliasTableData = this.experimentDesignStepperService.createAliasTableData(
+          decisionPoints,
+          conditions,
+          conditionAliases,
+          useExistingAliasData
+        );
+        this.initialLoad = false;
+        this.aliasTableData$.emit(this.aliasTableData);
+      }
+    );
 
     this.subscriptions = combineLatest([this.currentContextMetaDataConditions$, this.currentAliasInput$])
       .pipe(

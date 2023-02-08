@@ -574,7 +574,7 @@ export default async function LogOperations(): Promise<void> {
   for (let i = 0; i < allQuery.length; i++) {
     const query = allQuery[i];
     const queryResult = await queryService.analyze([query.id], new UpgradeLogger());
-    const res = reduceResult(queryResult[0].result);
+    const res = reduceResult(queryResult[0].mainEffect);
     let expectedValue;
     // Used for console output
     const consoleString =

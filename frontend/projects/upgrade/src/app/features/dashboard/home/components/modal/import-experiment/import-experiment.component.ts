@@ -3,7 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {
   Experiment,
   ExperimentCondition,
-  ExperimentPartition,
+  ExperimentDecisionPoint,
   ExperimentFactor,
   ExperimentLevel,
   LevelCombinationElement,
@@ -22,14 +22,14 @@ interface ImportExperimentJSON {
   schema:
     | Record<keyof Experiment, string>
     | Record<keyof ExperimentCondition, string>
-    | Record<keyof ExperimentPartition, string>
+    | Record<keyof ExperimentDecisionPoint, string>
     | Record<keyof ExperimentFactor, string>
     | Record<keyof ExperimentLevel, string>
     | Record<keyof LevelCombinationElement, string>;
   data:
     | Experiment
     | ExperimentCondition
-    | ExperimentPartition
+    | ExperimentDecisionPoint
     | ExperimentFactor
     | ExperimentLevel
     | LevelCombinationElement;
@@ -63,7 +63,7 @@ export class ImportExperimentComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.allPartitionsSub = this.experimentService.allPartitions$
+    this.allPartitionsSub = this.experimentService.allDecisionPoints$
       .pipe(filter((partitions) => !!partitions))
       .subscribe((partitions: any) => {
         this.allPartitions = partitions.map((partition) =>
@@ -182,7 +182,7 @@ export class ImportExperimentComponent implements OnInit {
       levelCombinationElements: 'interface',
     };
 
-    const partitionSchema: Record<keyof ExperimentPartition, string> = {
+    const partitionSchema: Record<keyof ExperimentDecisionPoint, string> = {
       id: 'string',
       site: 'string',
       target: 'string',
@@ -305,7 +305,7 @@ export class ImportExperimentComponent implements OnInit {
         (key) =>
           key as keyof (
             | Experiment
-            | ExperimentPartition
+            | ExperimentDecisionPoint
             | ExperimentCondition
             | ExperimentFactor
             | ExperimentLevel

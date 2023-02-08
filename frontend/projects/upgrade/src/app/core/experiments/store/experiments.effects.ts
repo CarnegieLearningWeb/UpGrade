@@ -162,7 +162,7 @@ export class ExperimentEffects {
                 return [
                   experimentAction.actionFetchExperimentStatsSuccess({ stats }),
                   experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
-                  experimentAction.actionFetchAllPartitions(),
+                  experimentAction.actionFetchAllDecisionPoints(),
                   analysisAction.actionExecuteQuery({ queryIds }),
                 ];
               })
@@ -202,7 +202,7 @@ export class ExperimentEffects {
         this.experimentDataService.deleteExperiment(experimentId).pipe(
           switchMap(() => [
             experimentAction.actionDeleteExperimentSuccess({ experimentId }),
-            experimentAction.actionFetchAllPartitions(),
+            experimentAction.actionFetchAllDecisionPoints(),
           ]),
           catchError(() => [experimentAction.actionDeleteExperimentFailure()])
         )
@@ -274,13 +274,13 @@ export class ExperimentEffects {
     )
   );
 
-  fetchAllPartitions = createEffect(() =>
+  fetchAllDecisionPoints = createEffect(() =>
     this.actions$.pipe(
-      ofType(experimentAction.actionFetchAllPartitions),
+      ofType(experimentAction.actionFetchAllDecisionPoints),
       switchMap(() =>
         this.experimentDataService.fetchAllPartitions().pipe(
-          map((allPartitions) => experimentAction.actionFetchAllPartitionSuccess({ partitions: allPartitions })),
-          catchError(() => [experimentAction.actionFetchAllPartitionFailure()])
+          map((decisionPoints) => experimentAction.actionFetchAllDecisionPointsSuccess({ decisionPoints })),
+          catchError(() => [experimentAction.actionFetchAllDecisionPointsFailure()])
         )
       )
     )
