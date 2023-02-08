@@ -10,6 +10,14 @@
     display: flex;
     justify-content: space-between;
 
+    .sites {
+      width: 250px;
+    }
+
+    .conditions {
+      width: 400px;
+    }
+
     mat-form-field {
       margin-right: 20px;
 

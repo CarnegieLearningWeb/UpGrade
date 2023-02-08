@@ -1,7 +1,7 @@
 <div class="enrollment-over-time">
   <span class="ft-18-700 title">{{ 'home.view-experiment.enrollments-by-decision-point.title.text' | translate }}</span>
   <div class="enrollment-filters">
-    <mat-form-field>
+    <mat-form-field class="sites">
       <mat-label class="ft-16-700 dropdown-label">{{
         'home.view-experiment.graph-partitions.text' | translate
       }}</mat-label>
@@ -26,7 +26,7 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field>
+    <mat-form-field class="conditions">
       <mat-label class="ft-16-700 dropdown-label">{{
         'home.view-experiment.graph-conditions.text' | translate
       }}</mat-label>
@@ -84,7 +84,7 @@
         <span>{{ condition.conditionCode }}</span>
       </div>
     </div>
-
+  <br />
     <div class="chart">
       <div class="chart-data">
         <ngx-charts-bar-vertical-stacked

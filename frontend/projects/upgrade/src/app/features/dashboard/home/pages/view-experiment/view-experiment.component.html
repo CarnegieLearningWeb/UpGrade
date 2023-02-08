@@ -553,11 +553,11 @@
               <mat-table [dataSource]="experiment.conditions" class="table">
                 <!-- Condition Code Column -->
                 <ng-container matColumnDef="conditionCode">
-                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                  <mat-header-cell style="justify-content: left; padding-left: 15px;" class="ft-12-700" *matHeaderCellDef>
                     {{ 'global.condition.text' | translate }}
                   </mat-header-cell>
-                  <mat-cell class="ft-12-600" *matCellDef="let data">
-                    <span *ngIf="data.conditionCode?.length < 50; else conditionCode">
+                  <mat-cell style="justify-content: left;" class="ft-12-600" *matCellDef="let data">
+                    <span style="padding-left: 5px;" *ngIf="data.conditionCode?.length < 50; else conditionCode">
                       {{ data.conditionCode }}
                     </span>
                     <ng-template #conditionCode>
@@ -570,10 +570,10 @@
 
                 <!-- Weight Column -->
                 <ng-container matColumnDef="assignmentWeight">
-                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                  <mat-header-cell style="justify-content: left;" class="ft-12-700" *matHeaderCellDef>
                     {{ 'home-global.assignment-weight.text' | translate }}
                   </mat-header-cell>
-                  <mat-cell class="ft-12-600" *matCellDef="let data"> {{ data.assignmentWeight }} </mat-cell>
+                  <mat-cell style="justify-content: left; padding-left: 10px;" class="ft-12-600" *matCellDef="let data"> {{ data.assignmentWeight }} </mat-cell>
                 </ng-container>
 
                 <mat-header-row *matHeaderRowDef="displayedConditionColumnsFactorial"></mat-header-row>

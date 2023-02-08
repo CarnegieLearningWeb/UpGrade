@@ -43,7 +43,9 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL){
       this.setMaxLevelsCount();
       this.experiment.partitions.map((decisionPoint) => {
-        this.factors.push(decisionPoint.factors?.at(0).name);
+        decisionPoint.factors.map((factor) => {
+          this.factors.push(factor?.name);
+        });
       });
     } else {
       this.setConditionCount();
@@ -105,11 +107,13 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
         let emptySeries2 = [];
         if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
           // prepare all combination series with 0 result
-          this.experiment.partitions.map((decisionPoint, decisionPointIndex) => {
-            decisionPoint.factors.map(( factor, factorIndex) => {
+          let decisionPointIndex;
+          this.experiment.partitions.map((decisionPoint, decisionpointIndex) => {
+            decisionPoint.factors.map((factor, factorIndex) => {
               factor.levels.map((level) => {
                 let levelName = level.name;
                 // collect level names in 2 list
+                decisionPoint.factors.length >= 2 ? decisionPointIndex = factorIndex : decisionPointIndex = decisionpointIndex;
                 decisionPointIndex === 0 ? resultData1.push(levelName) : resultData2.push(levelName)
               });
             });
@@ -147,8 +151,8 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
             });
           });
           // fill the result values for wach query:
-          let resData1 = emptySeries1;
-          let resData2 = emptySeries2;
+          let resData1 = emptySeries2;
+          let resData2 = emptySeries1;
           res.interactionEffect.map((data) => {
             // levels of the condition:
             let levels = this.getLevels(data.conditionId);
@@ -204,10 +208,10 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   getFactorIndex(levelId: any) {
     let decisionPointIndex;
     this.experiment.partitions.map((decisionPoint, decisionpointIndex) => {
-      decisionPoint.factors.map((factor) => {
+      decisionPoint.factors.map((factor, factorIndex) => {
         factor.levels.map((level) => {
           if (level.id === levelId) {
-            decisionPointIndex = decisionpointIndex;
+            decisionPoint.factors.length >= 2 ? decisionPointIndex = factorIndex : decisionPointIndex = decisionpointIndex;
           }
         })
       });

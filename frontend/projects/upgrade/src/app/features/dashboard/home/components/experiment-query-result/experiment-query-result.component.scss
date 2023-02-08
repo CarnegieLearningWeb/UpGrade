@@ -21,15 +21,15 @@
   .factor-name1 {
     color: var(--grey-3);
     margin-top: 10px;
-    padding-left: 100px;
-    padding-right: 380px;
+    padding-left: 170px;
+    padding-right: 230px;
   }
 
   .factor-name2 {
     color: var(--grey-3);
     margin-bottom: -50px;
-    padding-left: 100px;
-    padding-right: 400px;
+    padding-left: 170px;
+    padding-right: 250px;
   }
 
   ::ng-deep .ngx-charts {
@@ -39,16 +39,16 @@
       display: flex;
       flex-grow: 1;
     }
-    /* Make lines in line chart thick, with rounded ends */
-    // ::ng-deep .ngx-charts g.line-chart > g:last-of-type > g:nth-child(n) g.line-series > path {
-    //   stroke-width: 40;
-    //   stroke-linecap: round;
-    // }
   }
 
-  // ::ng-deep .ngx-charts .bar {
-  //   transform: scale(1,1);
-  // }
+  ::ng-deep .ngx-charts
+    g.line-chart
+    > g:last-of-type
+    > g:nth-child(n)
+    g.line-series
+    > path {
+    stroke-width: 5px;
+    }
 
   ::ng-deep {
     .legend-labels {
