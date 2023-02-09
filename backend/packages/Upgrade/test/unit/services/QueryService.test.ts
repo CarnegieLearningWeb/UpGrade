@@ -39,7 +39,12 @@ describe('Query Service Testing', () => {
 
   const logResult = {
     conditionId: 'cond1',
-    result: 22,
+    result: {
+      interactionEffect: null,
+      mainEffect: {
+        result: 22,
+      },
+    }
   };
   beforeEach(async () => {
     module = await Test.createTestingModule({
@@ -115,7 +120,8 @@ describe('Query Service Testing', () => {
     expect(response).toEqual([
       {
         id: mockquery1.id,
-        result: logResult,
+        interactionEffect: null,
+        mainEffect: logResult,
       },
     ]);
   });

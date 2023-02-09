@@ -70,7 +70,7 @@
               <!-- Site Column -->
               <ng-container matColumnDef="site">
                 <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-                  {{ 'home.new-experiment.design.partition-point.text' | translate }}
+                  {{ 'home.new-experiment.design.decision-point-site.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let factorIndex = dataIndex" [formGroupName]="factorIndex">
                   <mat-form-field floatLabel="never">
@@ -80,7 +80,7 @@
                     >
                       <input
                         matInput
-                        [placeholder]="'home.new-experiment.design.partition-point.placeholder.text' | translate"
+                        [placeholder]="'home.new-experiment.design.decision-point-site.placeholder.text' | translate"
                         formControlName="site"
                         [matAutocomplete]="autoCompleteExperimentPoints"
                       />
@@ -97,7 +97,7 @@
               <!-- Target Column -->
               <ng-container matColumnDef="target">
                 <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-                  {{ 'home.new-experiment.design.partition-id.text' | translate }}
+                  {{ 'home.new-experiment.design.decision-point-target.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let factorIndex = dataIndex" [formGroupName]="factorIndex">
                   <mat-form-field floatLabel="never">
@@ -107,7 +107,7 @@
                     >
                       <input
                         matInput
-                        [placeholder]="'home.new-experiment.design.partition-id.placeholder.text' | translate"
+                        [placeholder]="'home.new-experiment.design.decision-point-target.placeholder.text' | translate"
                         formControlName="target"
                         [matAutocomplete]="autoCompleteExperimentIds"
                         autocomplete="off"
@@ -342,7 +342,7 @@
         [disabled]="(isFormLockedForEdit$ | async) || !isExperimentEditable"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
-        {{ 'global.update.text' | translate }}
+        {{ 'global.save.text' | translate }}
       </button>
     </span>
   </section>

@@ -651,7 +651,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         path: NewExperimentPaths.MONITORED_METRIC,
       });
 
-      if(eventType==NewExperimentDialogEvents.SAVE_DATA){
+      if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
         this.experimentDesignStepperService.experimentStepperDataReset();
         this.queryForm.markAsPristine();
       }

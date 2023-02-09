@@ -9,9 +9,9 @@ import {
   actionUpdateExperimentStateSuccess,
   actionFetchAllExperimentNamesFailure,
   actionFetchAllExperimentNamesSuccess,
-  actionFetchAllPartitionFailure,
-  actionFetchAllPartitions,
-  actionFetchAllPartitionSuccess,
+  actionFetchAllDecisionPointsFailure,
+  actionFetchAllDecisionPoints,
+  actionFetchAllDecisionPointsSuccess,
   actionFetchExperimentStats,
   actionFetchExperimentStatsFailure,
   actionFetchExperimentStatsSuccess,
@@ -362,7 +362,7 @@ describe('ExperimentEffects', () => {
       const expectedActions = [
         actionFetchExperimentStatsSuccess({ stats: { test1: undefined } }), // this seems weird
         actionUpsertExperimentSuccess({ experiment }),
-        actionFetchAllPartitions(),
+        actionFetchAllDecisionPoints(),
         actionExecuteQuery({ queryIds: ['queryid1'] }),
       ];
 
@@ -395,7 +395,7 @@ describe('ExperimentEffects', () => {
       const expectedActions = [
         actionFetchExperimentStatsSuccess({ stats: { test1: undefined } }), // this seems weird
         actionUpsertExperimentSuccess({ experiment }),
-        actionFetchAllPartitions(),
+        actionFetchAllDecisionPoints(),
         actionExecuteQuery({ queryIds: ['queryid1'] }),
       ];
 
@@ -428,7 +428,7 @@ describe('ExperimentEffects', () => {
       const expectedActions = [
         actionFetchExperimentStatsSuccess({ stats: { test1: undefined } }), // this seems weird
         actionUpsertExperimentSuccess({ experiment }),
-        actionFetchAllPartitions(),
+        actionFetchAllDecisionPoints(),
         actionExecuteQuery({ queryIds: ['queryid1'] }),
       ];
 
@@ -536,7 +536,7 @@ describe('ExperimentEffects', () => {
 
       service.deleteExperiment$.pipe(take(2), pairwise()).subscribe((result: any) => {
         const successAction = actionDeleteExperimentSuccess({ experimentId });
-        const fetchAction = actionFetchAllPartitions();
+        const fetchAction = actionFetchAllDecisionPoints();
 
         tick(0);
         expect(result).toEqual([successAction, fetchAction]);
@@ -721,35 +721,35 @@ describe('ExperimentEffects', () => {
     }));
   });
 
-  describe('#fetchAllPartitions', () => {
-    it('should map result to action: actionFetchAllPartitionSuccess on success', fakeAsync(() => {
+  describe('#fetchAllDecisionPoints', () => {
+    it('should map result to action: actionFetchAllDecisionPointsSuccess on success', fakeAsync(() => {
       experimentDataService.fetchAllPartitions = jest.fn().mockReturnValue(of(['test1', 'test2']));
 
-      service.fetchAllPartitions.subscribe((result: any) => {
+      service.fetchAllDecisionPoints.subscribe((result: any) => {
         tick(0);
 
-        const successAction = actionFetchAllPartitionSuccess({
-          partitions: result.partitions,
+        const successAction = actionFetchAllDecisionPointsSuccess({
+          decisionPoints: result.decisionPoints,
         });
 
         expect(result).toEqual(successAction);
       });
 
-      actions$.next(actionFetchAllPartitions());
+      actions$.next(actionFetchAllDecisionPoints());
     }));
 
-    it('should return action: actionFetchAllPartitionFailure on failure', fakeAsync(() => {
+    it('should return action: actionFetchAllDecisionPointsFailure on failure', fakeAsync(() => {
       experimentDataService.fetchAllPartitions = jest.fn().mockReturnValue(throwError('errorTest'));
 
-      service.fetchAllPartitions.subscribe((result: any) => {
+      service.fetchAllDecisionPoints.subscribe((result: any) => {
         tick(0);
 
-        const failureAction = actionFetchAllPartitionFailure();
+        const failureAction = actionFetchAllDecisionPointsFailure();
 
         expect(result).toEqual(failureAction);
       });
 
-      actions$.next(actionFetchAllPartitions());
+      actions$.next(actionFetchAllDecisionPoints());
     }));
   });
 

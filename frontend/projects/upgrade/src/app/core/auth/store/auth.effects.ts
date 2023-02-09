@@ -169,7 +169,7 @@ export class AuthEffects {
         const actions = [
           experimentUserActions.actionFetchExcludedUsers(),
           experimentUserActions.actionFetchExcludedGroups(),
-          experimentActions.actionFetchAllPartitions(),
+          experimentActions.actionFetchAllDecisionPoints(),
           usersActions.actionFetchUsers({ fromStarting: true }),
           settingsActions.actionGetSetting(),
           analysisActions.actionFetchMetrics(),
