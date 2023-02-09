@@ -29,15 +29,16 @@ export namespace Interfaces {
 
   export interface IUser {
     id: string;
-    group?: Map<string, string[]>;
-    workingGroup?: Map<string, string>;
+    group?: Record<string, Array<string>>;
+    workingGroup?: Record<string, string>;
   }
 
   export interface IMarkExperimentPoint {
-    experimentPoint: string;
-    experimentId: string;
+    id: string;
+    site: string;
+    target?: string;
     userId: string;
-    condition: string | null;
+    experimentId: string;
   }
 
   export interface IFailedExperimentPoint {
@@ -46,9 +47,6 @@ export namespace Interfaces {
   }
 
   export interface ILog {
-    createdAt: string;
-    updatedAt: string;
-    versionNumber: number;
     id: string;
     data: any;
     metrics: IMetric[];
@@ -64,15 +62,13 @@ export namespace Interfaces {
   }
 
   export interface IExperimentUser {
-    createdAt: string;
-    updatedAt: string;
-    versionNumber: number;
     id: string;
     group: object;
     workingGroup: object;
   }
 
-  export interface IExperimentUserAliases extends IExperimentUser {
-    originalUser: string;
+  export interface IExperimentUserAliases {
+    userId: string;
+    aliases: string[];
   }
 }

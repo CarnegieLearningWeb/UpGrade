@@ -24,9 +24,10 @@ describe('UpgradeClient quick local tests', () => {
 
     it('should successfully init user with valid group', async () => {
       const userId = 'testUserInit4';
-      const group = new Map();
-      group.set('schoolId', ['washington']);
-      group.set('classId', ['qwerty', 'yuiop']);
+      const group = {
+        schoolId: ['washington'],
+        classId: ['qwerty', 'yuiop'],
+      };
       console.log(group);
 
       client = new UpgradeClient(userId, hostUrl, { token });

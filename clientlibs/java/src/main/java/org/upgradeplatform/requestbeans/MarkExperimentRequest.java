@@ -4,26 +4,26 @@ public class MarkExperimentRequest {
 
 	
 	private String userId;
-	private String experimentPoint;
-	private String partitionId;
+	private String site;
+	private String target;
 	private String condition;
 	private String status;
 	
 	public MarkExperimentRequest() {}
 
-	public MarkExperimentRequest(String userId, String experimentPoint, String partitionId, String condition) {
+	public MarkExperimentRequest(String userId, String site, String target, String condition) {
 		super();
 		this.userId = userId;
-		this.experimentPoint = experimentPoint;
-		this.partitionId = partitionId;
+		this.site = site;
+		this.target = target;
 		this.condition = condition;
 	}
 
-	public MarkExperimentRequest(String userId, String experimentPoint, String partitionId, String condition, String status) {
+	public MarkExperimentRequest(String userId, String site, String target, String condition, String status) {
 		super();
 		this.userId = userId;
-		this.experimentPoint = experimentPoint;
-		this.partitionId = partitionId;
+		this.site = site;
+		this.target = target;
 		this.condition = condition;
 		this.status = status;
 	}
@@ -36,20 +36,20 @@ public class MarkExperimentRequest {
 		this.userId = userId;
 	}
 
-	public String getExperimentPoint() {
-		return experimentPoint;
+	public String getSite() {
+		return site;
 	}
 
-	public void setExperimentPoint(String experimentPoint) {
-		this.experimentPoint = experimentPoint;
+	public void setSite(String site) {
+		this.site = site;
 	}
 
-	public String getPartitionId() {
-		return partitionId;
+	public String getTarget() {
+		return target;
 	}
 
-	public void setPartitionId(String partitionId) {
-		this.partitionId = partitionId;
+	public void setTarget(String target) {
+		this.target = target;
 	}
 
 	public String getCondition() {
