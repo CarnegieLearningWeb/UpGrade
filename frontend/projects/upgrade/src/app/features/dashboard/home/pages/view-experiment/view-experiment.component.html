@@ -644,7 +644,7 @@
           </div>
 
           <!-- Aliases Table -->
-          <div class="table-container table-container-aliases">
+          <div class="table-container table-container-aliases" *ngIf="experiment.type === 'Simple'">
             <span class="ft-24-700">{{ 'home.view-experiment.experiment-aliases-title.text' | translate }}</span>
             <ng-container *ngIf="aliasTableData.length">
               <mat-table [dataSource]="aliasTableData" class="table alias-table-overview">
