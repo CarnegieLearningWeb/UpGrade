@@ -7,7 +7,7 @@
       }}</mat-header-cell>
 
       <mat-cell style="justify-content: left;" class="ft-12-600" *matCellDef="let element; let i = dataIndex">
-        <span *ngIf="!key.includes('Icon'); else icon" style="padding-left: 15px;">{{ element.data[key] }}</span>
+        <span *ngIf="!key.includes('Icon'); else icon">{{ element.data[key] }}</span>
         <ng-template #icon>
           <mat-icon
             style="margin-left: -10px;"

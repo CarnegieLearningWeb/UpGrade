@@ -8,10 +8,9 @@ import {
   EXPERIMENT_STATE,
   ExperimentVM,
   EXPERIMENT_SEARCH_KEY,
-  ExperimentPartition,
   ExperimentLevel,
 } from '../../../../../core/experiments/store/experiments.model';
-import { Observable, partition, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { filter, withLatestFrom } from 'rxjs/operators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
