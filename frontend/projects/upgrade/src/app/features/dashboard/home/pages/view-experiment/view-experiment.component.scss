@@ -309,6 +309,56 @@ $font-size-small: 15px;
 
     &-partition {
       margin-bottom: 24px;
+
+      .factor-table{
+        overflow: auto;
+  
+        mat-header-row,
+        mat-row {
+          justify-content: space-between;
+        }
+  
+        mat-header-cell,
+        mat-cell {
+          justify-content: left;
+        }
+  
+        mat-icon {
+          position: relative;
+          cursor: pointer;
+    
+          &.active {
+            transform: rotate(90deg);
+          }
+        }
+
+        .cdk-column-expandIcon{
+          flex: 0 0 60px;
+          width: 30px;
+          padding-left: 10px;
+        }
+  
+        .expandable-row {
+          min-height: 0px !important;
+          overflow: hidden;
+          
+          mat-cell,
+          mat-header-cell {
+            padding-left: 30px;
+            justify-content: left;
+          }
+        }
+      }
+
+      .level-table-container{
+        width: 100%;
+      }
+
+      .level-table{
+        border: 1px solid #D3D3D3;
+        border-radius: 5px;
+        margin: 10px 5px 10px 55px;
+      }
     }
 
     &-participants,
