@@ -27,7 +27,7 @@ export const initialState: ExperimentState = adapter.getInitialState({
   graphInfo: null,
   graphRange: null,
   isGraphInfoLoading: false,
-  allPartitions: null,
+  allDecisionPoints: null,
   allExperimentNames: null,
   contextMetaData: {
     contextMetadata: {},
@@ -93,9 +93,9 @@ const reducer = createReducer(
   on(experimentsAction.actionUpdateExperimentStateSuccess, (state, { experiment }) =>
     adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
   ),
-  on(experimentsAction.actionFetchAllPartitionSuccess, (state, { partitions }) => ({
+  on(experimentsAction.actionFetchAllDecisionPointsSuccess, (state, { decisionPoints }) => ({
     ...state,
-    allPartitions: partitions,
+    allDecisionPoints: decisionPoints,
   })),
   on(experimentsAction.actionSetIsLoadingExperiment, (state, { isLoadingExperiment }) => ({
     ...state,

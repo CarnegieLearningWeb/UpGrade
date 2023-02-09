@@ -5,7 +5,7 @@ import {
   actionDeleteExperimentSuccess,
   actionEndExperimentDetailStatsPolling,
   actionFetchAllExperimentNamesSuccess,
-  actionFetchAllPartitionSuccess,
+  actionFetchAllDecisionPointsSuccess,
   actionFetchContextMetaDataSuccess,
   actionFetchExperimentDetailStat,
   actionFetchExperimentDetailStatFailure,
@@ -487,18 +487,18 @@ describe('ExperimentsReducer', () => {
     });
   });
 
-  it('action "actionFetchAllPartitionSuccess" should set partitions', () => {
+  it('action "actionFetchAllDecisionPointsSuccess" should set decisionPoints', () => {
     const previousState = { ...initialState };
-    previousState.allPartitions = {};
+    previousState.allDecisionPoints = {};
 
-    const testAction: Action = actionFetchAllPartitionSuccess({
-      partitions: ['test'],
+    const testAction: Action = actionFetchAllDecisionPointsSuccess({
+      decisionPoints: ['test'],
     });
 
     const newState = experimentsReducer(previousState, testAction);
 
     expect(newState).not.toBe(previousState);
-    expect(newState.allPartitions).toEqual(['test']);
+    expect(newState.allDecisionPoints).toEqual(['test']);
   });
 
   it('action "actionSetIsLoadingExperiment" should set loading to true', () => {

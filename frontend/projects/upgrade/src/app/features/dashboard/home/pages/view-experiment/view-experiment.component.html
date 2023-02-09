@@ -12,7 +12,11 @@
           {{ experiment?.name }}
           <span class="ft-16-400 experiment-overview-partitions">
             (
-            {{ experiment.partitions?.length + ' ' + ('home.view-experiment.experiments-partitions.text' | translate) }}
+            {{
+              experiment.partitions?.length +
+                ' ' +
+                ('home.view-experiment.experiments-decision-points.text' | translate)
+            }}
             )
           </span>
         </span>
@@ -387,7 +391,7 @@
         <div class="tab-body-container tab-table-body-container">
           <!-- Experiment Decision Points Table -->
           <div class="table-container table-container-partition">
-            <span class="ft-24-700">{{ 'home.view-experiment.experiment-partitions-title.text' | translate }}</span>
+            <span class="ft-24-700">{{ 'home.view-experiment.experiment-decision-point-title.text' | translate }}</span>
             <mat-table [dataSource]="experiment.partitions" class="table">
               <!-- Site Column -->
               <ng-container matColumnDef="partitionPoint">
@@ -539,7 +543,10 @@
                 </ng-container>
 
                 <mat-header-row *matHeaderRowDef="displayedAliasConditionColumns"></mat-header-row>
-                <mat-row *matRowDef="let row; columns: displayedAliasConditionColumns" [ngClass]="row?.rowStyle"></mat-row>
+                <mat-row
+                  *matRowDef="let row; columns: displayedAliasConditionColumns"
+                  [ngClass]="row?.rowStyle"
+                ></mat-row>
               </mat-table>
             </ng-container>
           </div>

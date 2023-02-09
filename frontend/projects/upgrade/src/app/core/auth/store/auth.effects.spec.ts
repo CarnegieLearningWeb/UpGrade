@@ -9,7 +9,7 @@ import {
   actionFetchExcludedGroups,
   actionFetchExcludedUsers,
 } from '../../experiment-users/store/experiment-users.actions';
-import { actionFetchAllPartitions } from '../../experiments/store/experiments.actions';
+import { actionFetchAllDecisionPoints } from '../../experiments/store/experiments.actions';
 import { actionFetchUsers } from '../../users/store/users.actions';
 import { actionGetSetting } from '../../settings/store/settings.actions';
 import { actionFetchMetrics } from '../../analysis/store/analysis.actions';
@@ -378,7 +378,7 @@ describe('AuthEffects', () => {
       const actions = [
         actionFetchExcludedUsers(),
         actionFetchExcludedGroups(),
-        actionFetchAllPartitions(),
+        actionFetchAllDecisionPoints(),
         actionFetchUsers({ fromStarting: true }),
         actionGetSetting(),
         actionFetchMetrics(),
@@ -408,7 +408,7 @@ describe('AuthEffects', () => {
       const actions = [
         actionFetchExcludedUsers(),
         actionFetchExcludedGroups(),
-        actionFetchAllPartitions(),
+        actionFetchAllDecisionPoints(),
         actionFetchUsers({ fromStarting: true }),
         actionGetSetting(),
         actionFetchMetrics(),
@@ -437,7 +437,7 @@ describe('AuthEffects', () => {
       const actions = [
         actionFetchExcludedUsers(),
         actionFetchExcludedGroups(),
-        actionFetchAllPartitions(),
+        actionFetchAllDecisionPoints(),
         actionFetchUsers({ fromStarting: true }),
         actionGetSetting(),
         actionFetchMetrics(),
@@ -455,7 +455,7 @@ describe('AuthEffects', () => {
       const actions = [
         actionFetchExcludedUsers(),
         actionFetchExcludedGroups(),
-        actionFetchAllPartitions(),
+        actionFetchAllDecisionPoints(),
         actionFetchUsers({ fromStarting: true }),
         actionGetSetting(),
         actionFetchMetrics(),
@@ -486,7 +486,7 @@ describe('AuthEffects', () => {
       const actions = [
         actionFetchExcludedUsers(),
         actionFetchExcludedGroups(),
-        actionFetchAllPartitions(),
+        actionFetchAllDecisionPoints(),
         actionFetchUsers({ fromStarting: true }),
         actionGetSetting(),
         actionFetchMetrics(),
@@ -517,7 +517,7 @@ describe('AuthEffects', () => {
       const actions = [
         actionFetchExcludedUsers(),
         actionFetchExcludedGroups(),
-        actionFetchAllPartitions(),
+        actionFetchAllDecisionPoints(),
         actionFetchUsers({ fromStarting: true }),
         actionGetSetting(),
         actionFetchMetrics(),
