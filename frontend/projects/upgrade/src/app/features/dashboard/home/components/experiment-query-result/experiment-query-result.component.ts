@@ -150,7 +150,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
               dot: true
             });
           });
-          // fill the result values for wach query:
+          // fill the result values for each query:
           let resData1 = emptySeries2;
           let resData2 = emptySeries1;
           res.interactionEffect.map((data) => {
@@ -263,7 +263,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   }
 
   formateYAxisLabel(value) {
-    return value;
+    return value === 0.5 || value === 1.5 ? '' : value;
   }
 
   formatEmptyBar(data: any) {
