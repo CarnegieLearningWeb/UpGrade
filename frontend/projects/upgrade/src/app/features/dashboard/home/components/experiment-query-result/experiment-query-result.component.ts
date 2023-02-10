@@ -151,8 +151,8 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
             });
           });
           // fill the result values for wach query:
-          let resData1 = emptySeries2;
-          let resData2 = emptySeries1;
+          let resData1 = emptySeries1;
+          let resData2 = emptySeries2;
           res.interactionEffect.map((data) => {
             // levels of the condition:
             let levels = this.getLevels(data.conditionId);
