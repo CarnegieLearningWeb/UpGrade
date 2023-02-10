@@ -151,8 +151,8 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
             });
           });
           // fill the result values for wach query:
-          let resData1 = emptySeries1;
-          let resData2 = emptySeries2;
+          let resData1 = emptySeries2;
+          let resData2 = emptySeries1;
           res.interactionEffect.map((data) => {
             // levels of the condition:
             let levels = this.getLevels(data.conditionId);
@@ -263,7 +263,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   }
 
   formateYAxisLabel(value) {
-    return value;
+    return value === 0.5 || value === 1.5 ? '' : value;
   }
 
   formatEmptyBar(data: any) {
