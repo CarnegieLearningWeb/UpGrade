@@ -2,9 +2,6 @@ package org.upgradeplatform.responsebeans;
 
 public class LogEventResponse {
 
-	private String createdAt;
-	private String updatedAt;
-	private int versionNumber;
 	private String id;
 	private Object data;
 	private Metric metrics;
@@ -12,12 +9,9 @@ public class LogEventResponse {
 	private String timeStamp;
 	private String uniquifier;
 	
-	public LogEventResponse(String createdAt, String updatedAt, int versionNumber, String id, Object data,
+	public LogEventResponse(String id, Object data,
 			Metric metrics, ExperimentUser user, String timeStamp, String uniquifier) {
 		super();
-		this.createdAt = createdAt;
-		this.updatedAt = updatedAt;
-		this.versionNumber = versionNumber;
 		this.id = id;
 		this.data = data;
 		this.metrics = metrics;
@@ -26,24 +20,6 @@ public class LogEventResponse {
 		this.uniquifier = uniquifier;
 	}
 	
-	public String getCreatedAt() {
-		return createdAt;
-	}
-	public void setCreatedAt(String createdAt) {
-		this.createdAt = createdAt;
-	}
-	public String getUpdatedAt() {
-		return updatedAt;
-	}
-	public void setUpdatedAt(String updatedAt) {
-		this.updatedAt = updatedAt;
-	}
-	public int getVersionNumber() {
-		return versionNumber;
-	}
-	public void setVersionNumber(int versionNumber) {
-		this.versionNumber = versionNumber;
-	}
 	public String getId() {
 		return id;
 	}

@@ -458,7 +458,7 @@ describe('ExperimentRepository Testing', () => {
     sinon.assert.calledOnce(queryStub);
     sinon.assert.calledOnce(segStub);
 
-    expect(res).toEqual('DB truncate successful');
+    expect(res).toBeUndefined();
   });
 
   it('should throw an error when clear the database fails', async () => {
@@ -479,6 +479,6 @@ describe('ExperimentRepository Testing', () => {
 
     expect(async () => {
       await repo.clearDB(manager, new UpgradeLogger());
-    }).rejects.toThrow('DB truncate error. DB truncate unsuccessful');
+    }).rejects.toThrow('test error');
   });
 });

@@ -1,14 +1,13 @@
 import { Interfaces, Types } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
-import convertMapToObj from '../common/convertMapToObj';
 
 export default async function init(
   url: string,
   userId: string,
   token: string,
   clientSessionId: string,
-  group?: Map<string, string[]>,
-  workingGroup?: Map<string, string>
+  group?: Record<string, Array<string>>,
+  workingGroup?: Record<string, string>
 ): Promise<Interfaces.IUser> {
   try {
     let data: any = {
@@ -16,24 +15,16 @@ export default async function init(
     };
 
     if (group) {
-      if (!(group instanceof Map)) {
-        throw new Error('Group type should be Map<string, Array<string>>');
-      }
-      const groupObj = convertMapToObj(group);
       data = {
         ...data,
-        groupObj,
+        group,
       };
     }
 
     if (workingGroup) {
-      if (!(workingGroup instanceof Map)) {
-        throw new Error('Working group type should be Map<string, string>');
-      }
-      const workingGroupObj = convertMapToObj(workingGroup);
       data = {
         ...data,
-        workingGroupObj,
+        workingGroup,
       };
     }
 

@@ -60,6 +60,9 @@ public class PublishingRetryCallback<T> implements InvocationCallback<Response> 
 			case GET:
 				invoker.get(this);
 				break;
+			case PATCH:
+				invoker.method(PATCH, message, this);
+				break;
 			default:
 				break;
 		}

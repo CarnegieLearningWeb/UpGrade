@@ -7,7 +7,7 @@ export class ExperimentAssignmentValidator {
   public experimentId: string;
 
   @IsNotEmpty()
-  public experimentPoint: string;
+  public site: string;
 
   @IsNotEmpty()
   public userId: string;
