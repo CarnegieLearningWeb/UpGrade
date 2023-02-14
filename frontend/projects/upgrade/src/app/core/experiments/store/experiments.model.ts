@@ -140,7 +140,7 @@ export interface LevelCombinationElement {
   level: ExperimentLevel;
 }
 
-export interface ExperimentPartition {
+export interface ExperimentDecisionPoint {
   id: string;
   site: string;
   target: string;
@@ -223,7 +223,7 @@ export interface Experiment {
   group: string;
   logging: boolean;
   conditions: ExperimentCondition[];
-  partitions: ExperimentPartition[];
+  partitions: ExperimentDecisionPoint[];
   conditionAliases: ExperimentConditionAlias[];
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
@@ -238,7 +238,7 @@ export interface ExperimentConditionAlias {
   id?: string;
   aliasName: string;
   parentCondition: ExperimentCondition;
-  decisionPoint: ExperimentPartition;
+  decisionPoint: ExperimentDecisionPoint;
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;
@@ -285,7 +285,7 @@ export interface ExperimentState extends EntityState<Experiment> {
   graphInfo: IExperimentGraphInfo;
   graphRange: DATE_RANGE;
   isGraphInfoLoading: boolean;
-  allPartitions: Record<string, ExperimentPartition>;
+  allDecisionPoints: Record<string, ExperimentDecisionPoint>;
   allExperimentNames: ExperimentNameVM[];
   contextMetaData: IContextMetaData;
   isLoadingContextMetaData: boolean;

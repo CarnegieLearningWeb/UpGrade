@@ -1,6 +1,6 @@
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
 import * as sinon from 'sinon';
-import { Connection, ConnectionManager, Repository } from 'typeorm';
+import { Connection, ConnectionManager } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
@@ -15,8 +15,8 @@ import { isUUID } from 'class-validator';
 
 describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
-  let flagRepo: Repository<FeatureFlagRepository>;
-  let flagVariationRepo: Repository<FlagVariationRepository>;
+  let flagRepo: FeatureFlagRepository;
+  let flagVariationRepo: FlagVariationRepository;
   let module: TestingModule;
 
   const logger = new UpgradeLogger();
@@ -118,8 +118,8 @@ describe('Feature Flag Service Testing', () => {
     }).compile();
 
     service = module.get<FeatureFlagService>(FeatureFlagService);
-    flagRepo = module.get<Repository<FeatureFlagRepository>>(getRepositoryToken(FeatureFlagRepository));
-    flagVariationRepo = module.get<Repository<FlagVariationRepository>>(getRepositoryToken(FlagVariationRepository));
+    flagRepo = module.get<FeatureFlagRepository>(getRepositoryToken(FeatureFlagRepository));
+    flagVariationRepo = module.get<FlagVariationRepository>(getRepositoryToken(FlagVariationRepository));
   });
 
   it('should be defined', async () => {

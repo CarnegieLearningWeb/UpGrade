@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
 import {
-  ExperimentPartition,
+  ExperimentDecisionPoint,
   ExperimentCondition,
   ExperimentConditionAlias,
   TableEditModeDetails,
@@ -109,7 +109,7 @@ export class ExperimentDesignStepperService {
     return roundedWeight;
   }
 
-  filterForUnchangedDesignData(designData: [ExperimentPartition[], ExperimentCondition[]][]): boolean {
+  filterForUnchangedDesignData(designData: [ExperimentDecisionPoint[], ExperimentCondition[]][]): boolean {
     const [previous, current] = designData;
     const prevSiteTargets: string[] = previous[0].map((dp) => dp.site?.trim() + dp.target?.trim());
     const prevConditions: string[] = previous[1].map((c) => c.conditionCode?.trim());
@@ -124,13 +124,13 @@ export class ExperimentDesignStepperService {
     return !same;
   }
 
-  validDesignDataFilter(designData: [ExperimentPartition[], ExperimentCondition[]]): boolean {
-    const [partitions, conditions] = designData;
+  validDesignDataFilter(designData: [ExperimentDecisionPoint[], ExperimentCondition[]]): boolean {
+    const [decisionPoints, conditions] = designData;
 
-    if (!partitions.length || !conditions.length) {
+    if (!decisionPoints.length || !conditions.length) {
       return false;
     }
-    const hasValidDecisionPointStrings = partitions.every(
+    const hasValidDecisionPointStrings = decisionPoints.every(
       ({ site, target }) => this.isValidString(site) && this.isValidString(target)
     );
     const hasValidConditionStrings = conditions.every(({ conditionCode }) => this.isValidString(conditionCode));
@@ -138,7 +138,7 @@ export class ExperimentDesignStepperService {
   }
 
   createAliasTableData(
-    decisionPoints: ExperimentPartition[],
+    decisionPoints: ExperimentDecisionPoint[],
     conditions: ExperimentCondition[],
     conditionAliases: ExperimentConditionAlias[],
     useExistingAliasData: boolean
@@ -255,10 +255,10 @@ export class ExperimentDesignStepperService {
   mergeExistingConditionsTableData(experimentInfo: ExperimentVM): FactorialConditionTableRowData[] {
     const existingConditions = experimentInfo.conditions;
     const existingConditionAliases = experimentInfo.conditionAliases;
-    const existingPartitions = experimentInfo.partitions;
+    const existingDecisionPoints = experimentInfo.partitions;
 
     const levelOrder = {};
-    existingPartitions.forEach((decisionPoint) => {
+    existingDecisionPoints.forEach((decisionPoint) => {
       decisionPoint.factors.forEach((factor) => {
         factor.levels.forEach((level) => {
           levelOrder[level.id] = factor.order;
@@ -308,8 +308,8 @@ export class ExperimentDesignStepperService {
     tableData.forEach((factorialConditionTableRow) => {
       factorialConditionsRequestObject.push({
         id: factorialConditionTableRow.id,
-        name: 'condition ' + conditionIndex, // what should this be?
-        conditionCode: 'condition ' + conditionIndex, // what should this be?
+        name: 'condition ' + conditionIndex,
+        conditionCode: 'condition ' + conditionIndex,
         assignmentWeight: parseFloat(factorialConditionTableRow.weight),
         order: conditionIndex++,
         levelCombinationElements: factorialConditionTableRow.levels.map((level) => {

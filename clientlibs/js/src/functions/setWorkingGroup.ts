@@ -7,19 +7,15 @@ export default async function setWorkingGroup(
   userId: string,
   token: string,
   clientSessionId: string,
-  workingGroup: Map<string, string>
+  workingGroup: Record<string, string>
 ): Promise<Interfaces.IUser> {
   try {
-    if (!(workingGroup instanceof Map)) {
-      throw new Error('Working group type should be Map<string, string>');
-    }
-    const workingGroupObj = convertMapToObj(workingGroup);
     const response = await fetchDataService(
       url,
       token,
       clientSessionId,
-      { id: userId, workingGroup: workingGroupObj },
-      Types.REQUEST_TYPES.POST
+      { id: userId, workingGroup: workingGroup },
+      Types.REQUEST_TYPES.PATCH
     );
     if (response.status) {
       return response.data;

@@ -2,15 +2,13 @@ import { IExperimentAssignment } from 'upgrade_types';
 
 export default function getExperimentCondition(
   experimentConditionData: IExperimentAssignment[],
-  experimentPoint: string,
-  partitionId?: string
+  site: string,
+  target?: string
 ): IExperimentAssignment {
   try {
     if (experimentConditionData) {
       const result = experimentConditionData.filter((data) =>
-        partitionId
-          ? data.expId === partitionId && data.expPoint === experimentPoint
-          : data.expPoint === experimentPoint && !data.expId
+        target ? data.target === target && data.site === site : data.site === site && !data.target
       );
 
       return result.length ? result[0] : null;

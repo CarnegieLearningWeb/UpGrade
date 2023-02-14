@@ -1,6 +1,5 @@
 <div class="shared-modal--step-container scrollable" #stepContainer>
   <section class="shared-modal--form-container">
-    <!--NOTE: this form content may need to be broken out into separate component when factorial design-type introduced-->
     <section class="simple-experiment-form">
       <form class="experiment-design" [formGroup]="experimentDesignForm">
         <section class="simple-experiment-decision-point-conditions-view">
@@ -23,36 +22,46 @@
           <!-- Decision Point Table -->
           <ng-container>
             <mat-table
-              class="partition-table"
-              [dataSource]="partitionDataSource"
-              formArrayName="partitions"
-              #partitionTable
+              class="decision-point-table"
+              [dataSource]="decisionPointDataSource"
+              [formArrayName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY"
+              #decisionPointTable
             >
               <!-- Site Column -->
-              <ng-container matColumnDef="site">
+              <ng-container [matColumnDef]="SIMPLE_EXP_CONSTANTS.TABLE_COLUMNS.DECISION_POINTS.SITE">
                 <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-                  {{ 'home.new-experiment.design.partition-point.text' | translate }}
+                  {{ 'home.new-experiment.design.decision-point-site.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== groupIndex">
-                    <span [matTooltip]="partition.at(groupIndex).get('site').value" matTooltipPosition="above">
-                      {{ partition.at(groupIndex).get('site').value | truncate: 35 }}
+                    <span
+                      [matTooltip]="
+                        decisionPoints.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.SITE).value
+                      "
+                      matTooltipPosition="above"
+                    >
+                      {{
+                        decisionPoints.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.SITE).value
+                          | truncate: 35
+                      }}
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
                     <mat-form-field floatLabel="never">
                       <span
-                        [matTooltip]="experimentDesignForm.getRawValue('site')?.partitions[groupIndex]?.site"
+                        [matTooltip]="
+                          decisionPoints.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.SITE).value
+                        "
                         matTooltipPosition="above"
                       >
                         <input
                           matInput
-                          [placeholder]="'home.new-experiment.design.partition-point.placeholder.text' | translate"
-                          formControlName="site"
-                          [matAutocomplete]="autoCompleteExperimentPoints"
+                          [placeholder]="'home.new-experiment.design.decision-point-site.placeholder.text' | translate"
+                          [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.SITE"
+                          [matAutocomplete]="autoCompleteSites"
                         />
-                        <mat-autocomplete #autoCompleteExperimentPoints="matAutocomplete" panelWidth="fit-content">
-                          <mat-option *ngFor="let site of filteredExpPoints$[groupIndex] | async" [value]="site">
+                        <mat-autocomplete #autoCompleteSites="matAutocomplete" panelWidth="fit-content">
+                          <mat-option *ngFor="let site of filteredSites$[groupIndex] | async" [value]="site">
                             {{ site }}
                           </mat-option>
                         </mat-autocomplete>
@@ -63,30 +72,42 @@
               </ng-container>
 
               <!-- Target Column -->
-              <ng-container matColumnDef="target">
+              <ng-container [matColumnDef]="SIMPLE_EXP_CONSTANTS.TABLE_COLUMNS.DECISION_POINTS.TARGET">
                 <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-                  {{ 'home.new-experiment.design.partition-id.text' | translate }}
+                  {{ 'home.new-experiment.design.decision-point-target.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== groupIndex">
-                    <span [matTooltip]="partition.at(groupIndex).get('target').value" matTooltipPosition="above">
-                      {{ partition.at(groupIndex).get('target').value | truncate: 35 }}
+                    <span
+                      [matTooltip]="
+                        decisionPoints.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.TARGET).value
+                      "
+                      matTooltipPosition="above"
+                    >
+                      {{
+                        decisionPoints.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.TARGET).value
+                          | truncate: 35
+                      }}
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
                     <mat-form-field floatLabel="never">
                       <span
-                        [matTooltip]="experimentDesignForm.getRawValue('target')?.partitions[groupIndex]?.target"
+                        [matTooltip]="
+                          decisionPoints.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.TARGET).value
+                        "
                         matTooltipPosition="above"
                       >
                         <input
                           matInput
-                          [placeholder]="'home.new-experiment.design.partition-id.placeholder.text' | translate"
-                          formControlName="target"
-                          [matAutocomplete]="autoCompleteExperimentIds"
+                          [placeholder]="
+                            'home.new-experiment.design.decision-point-target.placeholder.text' | translate
+                          "
+                          [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.TARGET"
+                          [matAutocomplete]="autoCompleteTargets"
                         />
-                        <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
-                          <mat-option *ngFor="let target of filteredExpIds$[groupIndex] | async" [value]="target">
+                        <mat-autocomplete #autoCompleteTargets="matAutocomplete" panelWidth="fit-content">
+                          <mat-option *ngFor="let target of filteredTargets$[groupIndex] | async" [value]="target">
                             {{ target }}
                           </mat-option>
                         </mat-autocomplete>
@@ -97,7 +118,7 @@
               </ng-container>
 
               <!-- ExcludeIfReached Column -->
-              <ng-container matColumnDef="excludeIfReached">
+              <ng-container [matColumnDef]="SIMPLE_EXP_CONSTANTS.TABLE_COLUMNS.DECISION_POINTS.EXCLUDE_IF_REACHED">
                 <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                   {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
                 </mat-header-cell>
@@ -106,14 +127,14 @@
                     class="ft-8-100"
                     color="primary"
                     [disabled]="(decisionPointsTableEditIndex$ | async) !== groupIndex"
-                    formControlName="excludeIfReached"
+                    [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.EXCLUDE_IF_REACHED"
                   >
                   </mat-checkbox>
                 </mat-cell>
               </ng-container>
 
               <!-- Actions Column -->
-              <ng-container matColumnDef="actions">
+              <ng-container [matColumnDef]="SIMPLE_EXP_CONSTANTS.TABLE_COLUMNS.DECISION_POINTS.ACTIONS">
                 <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
                 <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell">
                   <button
@@ -149,9 +170,9 @@
                 </mat-cell>
               </ng-container>
 
-              <mat-header-row *matHeaderRowDef="partitionDisplayedColumns; sticky: true"></mat-header-row>
+              <mat-header-row *matHeaderRowDef="decisionPointDisplayedColumns; sticky: true"></mat-header-row>
               <mat-row
-                *matRowDef="let row; let rowIndex = index; columns: partitionDisplayedColumns"
+                *matRowDef="let row; let rowIndex = index; columns: decisionPointDisplayedColumns"
                 [ngClass]="{
                   'row-is-locked':
                     (isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex
@@ -160,36 +181,34 @@
             </mat-table>
             <button
               type="button"
-              class="ft-12-700 add-partition"
+              class="ft-12-700 add-decision-point"
               *ngIf="!experimentInfo"
-              [ngClass]="{ 'add-partition--disabled': (isFormLockedForEdit$ | async) }"
+              [ngClass]="{ 'add-decision-point--disabled': (isFormLockedForEdit$ | async) }"
               [disabled]="isFormLockedForEdit$ | async"
-              (click)="addConditionOrPartition('partition')"
+              (click)="addConditionOrDecisionPoint(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY)"
             >
               +
-              {{ 'home.new-experiment.design.add-experiment-partition.text' | translate }}
+              {{ 'home.new-experiment.design.add-experiment-decision-point.text' | translate }}
             </button>
             <button
               type="button"
-              class="ft-12-700 add-partition"
+              class="ft-12-700 add-decision-point"
               *ngIf="experimentInfo"
-              [ngClass]="{ 'add-partition--disabled': !isExperimentEditable || (isFormLockedForEdit$ | async) }"
+              [ngClass]="{ 'add-decision-point--disabled': !isExperimentEditable || (isFormLockedForEdit$ | async) }"
               [disabled]="!isExperimentEditable || (isFormLockedForEdit$ | async)"
-              (click)="addConditionOrPartition('partition')"
+              (click)="addConditionOrDecisionPoint(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY)"
             >
               +
-              {{ 'home.new-experiment.design.add-experiment-partition.text' | translate }}
+              {{ 'home.new-experiment.design.add-experiment-decision-point.text' | translate }}
             </button>
           </ng-container>
           <div class="validation-container">
-            <span class="ft-14-600 validation-message" *ngFor="let error of partitionPointErrors">{{ error }}</span>
+            <span class="ft-14-600 validation-message" *ngFor="let error of decisionPointErrors">{{ error }}</span>
             <span
               class="ft-14-600 validation-message"
-              *ngIf="partitionCountError"
-              [innerHTML]="partitionCountError"
+              *ngIf="decisionPointCountError"
+              [innerHTML]="decisionPointCountError"
             ></span>
-            <!-- If experiment point and id are not from predefined value -->
-            <span class="ft-14-600 validation-message" *ngFor="let error of expPointAndIdErrors">{{ error }}</span>
           </div>
 
           <!-- Condition table -->
@@ -210,32 +229,40 @@
             <mat-table
               class="condition-table"
               [dataSource]="conditionDataSource"
-              formArrayName="conditions"
+              [formArrayName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITIONS_ARRAY"
               #conditionTable
             >
               <!-- CONDITION NAME Column -->
-              <ng-container matColumnDef="conditionCode">
+              <ng-container [matColumnDef]="SIMPLE_EXP_CONSTANTS.TABLE_COLUMNS.CONDITIONS.CONDITION_CODE">
                 <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                   {{ 'home.new-experiment.design.name.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
                   <ng-container *ngIf="(conditionsTableEditIndex$ | async) !== groupIndex">
-                    <span [matTooltip]="condition.at(groupIndex).get('conditionCode').value" matTooltipPosition="above">
-                      {{ condition.at(groupIndex).get('conditionCode').value | truncate: 35 }}
+                    <span
+                      [matTooltip]="
+                        conditions.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITION_CODE).value
+                      "
+                      matTooltipPosition="above"
+                    >
+                      {{
+                        conditions.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITION_CODE).value
+                          | truncate: 35
+                      }}
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(conditionsTableEditIndex$ | async) === groupIndex">
                     <mat-form-field floatLabel="never">
                       <span
                         [matTooltip]="
-                          experimentDesignForm.getRawValue('conditionCode')?.conditions[groupIndex]?.conditionCode
+                          conditions.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITION_CODE).value
                         "
                         matTooltipPosition="above"
                       >
                         <input
                           matInput
                           [placeholder]="'home.new-experiment.design.condition.placeholder.text' | translate"
-                          formControlName="conditionCode"
+                          [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITION_CODE"
                           [matAutocomplete]="autoCompleteConditionCodes"
                         />
                         <mat-autocomplete #autoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
@@ -253,7 +280,7 @@
               </ng-container>
 
               <!-- ASSIGNMENT WEIGHT Column -->
-              <ng-container matColumnDef="assignmentWeight">
+              <ng-container [matColumnDef]="SIMPLE_EXP_CONSTANTS.TABLE_COLUMNS.CONDITIONS.ASSIGNMENT_WEIGHT">
                 <mat-header-cell class="ft-14-700" *matHeaderCellDef style="justify-content: right">
                   {{ 'home-global.assignment-weight.text' | translate }}
                 </mat-header-cell>
@@ -264,7 +291,10 @@
                 >
                   <ng-container *ngIf="(conditionsTableEditIndex$ | async) !== groupIndex">
                     <div class="assignment-weight-readonly align-right">
-                      {{ condition.at(groupIndex).get('assignmentWeight').value | truncate: 35 }}
+                      {{
+                        conditions.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.ASSIGNMENT_WEIGHT).value
+                          | truncate: 35
+                      }}
                     </div>
                   </ng-container>
                   <ng-container *ngIf="(conditionsTableEditIndex$ | async) === groupIndex">
@@ -273,7 +303,7 @@
                         type="number"
                         matInput
                         [placeholder]="'home.new-experiment.design.assignment-weight.placeholder.text' | translate"
-                        formControlName="assignmentWeight"
+                        [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.ASSIGNMENT_WEIGHT"
                         autocomplete="off"
                       />
                     </mat-form-field>
@@ -282,14 +312,22 @@
               </ng-container>
 
               <!-- DESCRIPTION Column -->
-              <ng-container matColumnDef="description">
+              <ng-container [matColumnDef]="SIMPLE_EXP_CONSTANTS.TABLE_COLUMNS.CONDITIONS.DESCRIPTION">
                 <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                   {{ 'home.new-experiment.design.description.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let rowData; let groupIndex = index" [formGroupName]="groupIndex">
                   <ng-container *ngIf="(conditionsTableEditIndex$ | async) !== groupIndex">
-                    <span [matTooltip]="condition.at(groupIndex).get('description').value" matTooltipPosition="above">
-                      {{ condition.at(groupIndex).get('description').value | truncate: 35 }}
+                    <span
+                      [matTooltip]="
+                        conditions.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DESCRIPTION).value
+                      "
+                      matTooltipPosition="above"
+                    >
+                      {{
+                        conditions.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DESCRIPTION).value
+                          | truncate: 35
+                      }}
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(conditionsTableEditIndex$ | async) === groupIndex">
@@ -297,7 +335,7 @@
                       <input
                         matInput
                         [placeholder]="'home.new-experiment.design.description.placeholder.text' | translate"
-                        formControlName="description"
+                        [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DESCRIPTION"
                         autocomplete="off"
                       />
                     </mat-form-field>
@@ -306,7 +344,7 @@
               </ng-container>
 
               <!-- Actions Column -->
-              <ng-container matColumnDef="actions">
+              <ng-container [matColumnDef]="SIMPLE_EXP_CONSTANTS.TABLE_COLUMNS.CONDITIONS.ACTIONS">
                 <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
                 <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell">
                   <button
@@ -356,7 +394,7 @@
               *ngIf="!experimentInfo"
               [ngClass]="{ 'add-condition--disabled': (isFormLockedForEdit$ | async) }"
               [disabled]="isFormLockedForEdit$ | async"
-              (click)="addConditionOrPartition('condition')"
+              (click)="addConditionOrDecisionPoint(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITIONS_ARRAY)"
             >
               + {{ 'home.new-experiment.design.add-condition.text' | translate }}
             </button>
@@ -366,7 +404,7 @@
               *ngIf="experimentInfo"
               [ngClass]="{ 'add-condition--disabled': !isExperimentEditable || (isFormLockedForEdit$ | async) }"
               [disabled]="!isExperimentEditable || (isFormLockedForEdit$ | async)"
-              (click)="addConditionOrPartition('condition')"
+              (click)="addConditionOrDecisionPoint(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITIONS_ARRAY)"
             >
               + {{ 'home.new-experiment.design.add-condition.text' | translate }}
             </button>

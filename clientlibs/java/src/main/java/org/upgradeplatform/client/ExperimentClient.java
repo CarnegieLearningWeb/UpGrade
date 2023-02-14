@@ -26,7 +26,8 @@ import org.upgradeplatform.requestbeans.MarkExperimentRequest;
 import org.upgradeplatform.requestbeans.MetricUnitBody;
 import org.upgradeplatform.requestbeans.SingleMetric;
 import org.upgradeplatform.requestbeans.UserAlias;
-import org.upgradeplatform.responsebeans.AssignedCondition;
+import org.upgradeplatform.responsebeans.UserAliasResponse;
+import org.upgradeplatform.responsebeans.Condition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUser;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
@@ -126,7 +127,7 @@ public class ExperimentClient implements AutoCloseable {
 		Entity<ExperimentUser> requestContent = Entity.json(experimentUser);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES,RequestType.POST, 
+		invocation.method(PATCH, requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.PATCH, 
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -153,7 +154,7 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP);
 		Entity<ExperimentUser> requestContent = Entity.json(experimentUser);
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+		invocation.method(PATCH, requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.PATCH,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -205,18 +206,18 @@ public class ExperimentClient implements AutoCloseable {
 		}));
 	}
 
-    /**@param experimentPoint This is matched case-insensitively*/
-	public void getExperimentCondition(String context, String experimentPoint, final ResponseCallback<ExperimentsResponse> callbacks) {
-		getExperimentCondition(context, experimentPoint, null, callbacks);
+    /**@param site This is matched case-insensitively*/
+	public void getExperimentCondition(String context, String site, final ResponseCallback<ExperimentsResponse> callbacks) {
+		getExperimentCondition(context, site, null, callbacks);
 	}
 
-    /**@param experimentPoint This is matched case-insensitively
-     * @param experimentId This is matched case-insensitively*/
-	public void getExperimentCondition(String context, String experimentPoint, String experimentId,
+    /**@param site This is matched case-insensitively
+     * @param target This is matched case-insensitively*/
+	public void getExperimentCondition(String context, String site, String target,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
 		if (this.allExperiments != null) {
 
-			ExperimentsResponse resultCondition = findExperimentResponse(experimentPoint, experimentId, allExperiments);
+			ExperimentsResponse resultCondition = findExperimentResponse(site, target, allExperiments);
 
 			if (callbacks != null) {
 				callbacks.onSuccess(resultCondition);
@@ -226,7 +227,7 @@ public class ExperimentClient implements AutoCloseable {
 				@Override
 				public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
-					ExperimentsResponse resultCondition = findExperimentResponse(experimentPoint, experimentId, experiments);
+					ExperimentsResponse resultCondition = findExperimentResponse(site, target, experiments);
 
 					if (callbacks != null) {
 						callbacks.onSuccess(resultCondition);
@@ -243,37 +244,35 @@ public class ExperimentClient implements AutoCloseable {
 		}
 	}
 
-	private ExperimentsResponse findExperimentResponse(String experimentPoint, String experimentId,
+	private ExperimentsResponse findExperimentResponse(String site, String target,
 			List<ExperimentsResponse> experiments) {
 		return experiments.stream()
-				.filter(t -> t.getExpPoint().equalsIgnoreCase(experimentPoint) &&
-						(isStringNull(experimentId) ? isStringNull(t.getExpId().toString())
-								: t.getExpId().toString().equalsIgnoreCase(experimentId)))
+				.filter(t -> t.getSite().equalsIgnoreCase(site) &&
+						(isStringNull(target) ? isStringNull(t.getTarget().toString())
+								: t.getTarget().toString().equalsIgnoreCase(target)))
 				.findFirst()
 				.map(ExperimentClient::copyExperimentResponse)
 				.orElse(new ExperimentsResponse());
 	}
 
 	private static ExperimentsResponse copyExperimentResponse(ExperimentsResponse experimentsResponse) {
-		AssignedCondition assignedCondition = new AssignedCondition(
-				experimentsResponse.getAssignedCondition().getTwoCharacterId(),
-				experimentsResponse.getAssignedCondition().getConditionCode(),
-				experimentsResponse.getAssignedCondition().getDescription());
+		Condition assignedCondition = new Condition(
+				experimentsResponse.getAssignedCondition().getCondition());
 
-		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getExpId().toString(),
-				experimentsResponse.getExpPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
+		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getTarget().toString(),
+				experimentsResponse.getSite(), assignedCondition);
 		return resultCondition;
 	}
 
-	public void markExperimentPoint(final String experimentPoint, String condition, MarkedDecisionPointStatus status,
+	public void markExperimentPoint(final String site, String condition, MarkedDecisionPointStatus status,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		markExperimentPoint(experimentPoint, "", condition, status, callbacks);
+		markExperimentPoint(site, "", condition, status, callbacks);
 	}
 
-	public void markExperimentPoint(final String experimentPoint, String experimentId, String condition, MarkedDecisionPointStatus status,
+	public void markExperimentPoint(final String site, String target, String condition, MarkedDecisionPointStatus status,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, experimentPoint,
-				experimentId, condition, status.toString());
+		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, site,
+				target, condition, status.toString());
 		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
 
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
@@ -286,7 +285,7 @@ public class ExperimentClient implements AutoCloseable {
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 
-				    readResponseToCallback(response, callbacks, MarkExperimentPoint.class, mep -> new MarkExperimentPoint(mep.getUserId(), experimentId, experimentPoint, status));
+				    readResponseToCallback(response, callbacks, MarkExperimentPoint.class);
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
@@ -379,20 +378,20 @@ public class ExperimentClient implements AutoCloseable {
 		return resultFeatureFlag;
 	}
 
-	public void setAltUserIds(final List<String> altUserIds, final ResponseCallback<List<ExperimentUser>> callbacks) {
+	public void setAltUserIds(final List<String> altUserIds, final ResponseCallback<UserAliasResponse> callbacks) {
 
 		UserAlias userAlias = new UserAlias(this.userId, altUserIds );
 
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_ALT_USER_IDS);
 		Entity<UserAlias> requestContent = Entity.json(userAlias);
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+		invocation.method(PATCH, requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.PATCH,
 				new InvocationCallback<Response>() {
 
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-				    readResponseToCallback(response, callbacks, new GenericType<List<ExperimentUser>>() {});
+				    readResponseToCallback(response, callbacks, new GenericType<UserAliasResponse>() {});
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );

@@ -317,7 +317,7 @@ export class ExperimentRepository extends Repository<Experiment> {
     return result.raw;
   }
 
-  public async clearDB(entityManager: EntityManager, logger: UpgradeLogger): Promise<string> {
+  public async clearDB(entityManager: EntityManager, logger: UpgradeLogger): Promise<void> {
     try {
       const entities = entityManager.connection.entityMetadatas;
       for (const entity of entities) {
@@ -328,9 +328,9 @@ export class ExperimentRepository extends Repository<Experiment> {
       }
       // Create global exclude segment
       await createGlobalExcludeSegment(logger);
-      return 'DB truncate successful';
+      return;
     } catch (err) {
-      const error = new Error('DB truncate error. DB truncate unsuccessful');
+      const error = err;
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
       logger.error(error);
       throw error;
