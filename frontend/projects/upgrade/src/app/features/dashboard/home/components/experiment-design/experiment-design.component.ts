@@ -198,6 +198,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.experimentInfo.conditions.forEach((condition) => {
         this.conditions.push(
           this.addConditions(
+            condition.id,
             condition.conditionCode,
             condition.assignmentWeight,
             condition.description,
@@ -208,6 +209,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.experimentInfo.partitions.forEach((decisionPoint) => {
         this.decisionPoints.push(
           this.addDecisionPoints(
+            decisionPoint.id,
             decisionPoint.site,
             decisionPoint.target,
             decisionPoint.description,
@@ -378,8 +380,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return [];
   }
 
-  addConditions(conditionCode = null, assignmentWeight = null, description = null, order = null) {
+  addConditions(id = null, conditionCode = null, assignmentWeight = null, description = null, order = null) {
     return this._formBuilder.group({
+      id: [id || uuidv4()],
       conditionCode: [conditionCode, Validators.required],
       assignmentWeight: [assignmentWeight, Validators.required],
       description: [description],
@@ -387,8 +390,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
-  addDecisionPoints(site = null, target = null, description = '', order = null, excludeIfReached = false) {
+  addDecisionPoints(id = null, site = null, target = null, description = '', order = null, excludeIfReached = false) {
     return this._formBuilder.group({
+      id: [id || uuidv4()],
       site: [site, Validators.required],
       target: [target, Validators.required],
       description: [description],
@@ -703,14 +707,14 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         }
         return this.experimentInfo
           ? { ...this.experimentInfo.conditions[index], ...condition, order: order++ }
-          : { id: uuidv4(), ...condition, name: '', order: order++ };
+          : { ...condition, name: '', order: order++ };
       });
       order = 1;
       experimentDesignFormData.decisionPoints = experimentDesignFormData.decisionPoints.map((decisionPoint, index) => {
         return this.experimentInfo
           ? { ...this.experimentInfo.partitions[index], ...decisionPoint, order: order++ }
           : decisionPoint.target
-          ? { ...decisionPoint, order: order++, id: uuidv4() }
+          ? { ...decisionPoint, order: order++ }
           : { ...this.removeDecisionPointName(decisionPoint), order: order++ };
       });
       experimentDesignFormData.conditionAliases =

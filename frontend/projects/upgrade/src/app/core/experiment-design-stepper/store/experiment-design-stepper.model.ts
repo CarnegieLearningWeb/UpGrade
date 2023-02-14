@@ -19,11 +19,12 @@ export interface FactorialConditionRequestObject {
 }
 export interface SimpleExperimentAliasTableRow {
   id?: string;
+  designTableCombinationId?: string;
   site: string;
   target: string;
   condition: string;
   alias: string;
-  rowStyle?: 'odd' | 'even';
+  rowStyle?: string;
 }
 
 export interface SimpleExperimentFormData {

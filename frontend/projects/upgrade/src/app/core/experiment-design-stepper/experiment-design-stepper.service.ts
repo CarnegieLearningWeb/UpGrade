@@ -180,34 +180,45 @@ export class ExperimentDesignStepperService {
     const aliasTableData: SimpleExperimentAliasTableRow[] = [];
     decisionPoints.forEach((decisionPoint, index) => {
       conditions.forEach((condition) => {
-        // check the list of condtionAliases, if exist, to see if this parentCondition has an alias match
+        // check if a condition alias exists for this decision point + condition combo
         const existingAlias = this.matchPreexistingAliasData({
           preexistingAliasRowData,
-          site: decisionPoint.site,
-          target: decisionPoint.target,
-          condition: condition.conditionCode,
+          decisionPoint,
+          condition,
         });
 
-        aliasTableData.push({
+        console.log('$ decisionpoint.id:', decisionPoint.id);
+        console.log('$ condition.id:', condition.id);
+
+        // assign a reference back to the decision point and condition rows if not an existingAlias
+        const designTableCombinationId = existingAlias?.designTableCombinationId || decisionPoint.id + condition.id;
+
+        console.log('$ designTableCombinationId:', designTableCombinationId);
+
+        const aliasTableDataRow = {
           id: existingAlias?.id,
+          designTableCombinationId,
           site: decisionPoint.site,
           target: decisionPoint.target,
           condition: condition.conditionCode,
           alias: existingAlias?.alias || condition.conditionCode,
           rowStyle: index % 2 === 0 ? 'even' : 'odd',
-        });
+        };
+
+        console.log('$ aliasTableDataRow:', aliasTableDataRow);
+
+        aliasTableData.push(aliasTableDataRow);
       });
     });
 
     return aliasTableData;
   }
 
-  matchPreexistingAliasData({ preexistingAliasRowData, site, target, condition }): SimpleExperimentAliasTableRow {
+  matchPreexistingAliasData({ preexistingAliasRowData, decisionPoint, condition }): SimpleExperimentAliasTableRow {
     let existingAlias: SimpleExperimentAliasTableRow = null;
 
     existingAlias = preexistingAliasRowData.find(
-      (alias: SimpleExperimentAliasTableRow) =>
-        alias.target === target && alias.site === site && alias.condition === condition
+      (alias: SimpleExperimentAliasTableRow) => alias.designTableCombinationId === decisionPoint.id + condition.id
     );
 
     return existingAlias;
