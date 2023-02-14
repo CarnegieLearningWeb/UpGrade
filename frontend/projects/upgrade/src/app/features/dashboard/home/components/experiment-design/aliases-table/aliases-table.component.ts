@@ -14,9 +14,7 @@ import { ExperimentVM } from '../../../../../../core/experiments/store/experimen
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AliasesTableComponent implements OnInit, OnDestroy {
-  // @Output() aliasTableData$ = new EventEmitter<SimpleExperimentAliasTableRow[]>();
   @Output() hideAliasTable = new EventEmitter<boolean>();
-  // @Input() designData$: Observable<[ExperimentDecisionPoint[], ExperimentCondition[]]>;
   @Input() experimentInfo: ExperimentVM;
 
   subscriptions: Subscription;
@@ -29,7 +27,6 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
 
   aliasTableData$ = new BehaviorSubject<SimpleExperimentAliasTableRow[]>([]);
   aliasesDisplayedColumns = ['site', 'target', 'condition', 'alias', 'actions'];
-
   initialLoad = true;
 
   constructor(
@@ -47,8 +44,6 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // must sub after view init to ensure table reference is loaded before emitting table data
-
     this.subscriptions = this.experimentDesignStepperService.simpleExperimentAliasTableData$.subscribe(
       this.aliasTableData$
     );
@@ -77,26 +72,17 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
 
   handleDesignDataChanges(designData: SimpleExperimentDesignData) {
     const { decisionPoints, conditions } = designData;
-    const conditionAliases = this.experimentInfo?.conditionAliases;
-    const useExistingAliasData = !!(conditionAliases && this.initialLoad);
+    const preexistingConditionAliasData =
+      this.initialLoad && this.experimentInfo ? this.experimentInfo.conditionAliases : [];
+    const conditionAliasesRowData: SimpleExperimentAliasTableRow[] =
+      this.experimentDesignStepperService.getExistingConditionAliasRowData(preexistingConditionAliasData);
 
-    // if design data is initial load
-    if (this.initialLoad) {
-      this.handleInitialAliasTableCreation({ decisionPoints, conditions, conditionAliases, useExistingAliasData });
-      this.initialLoad = false;
-    }
-    // if design data is modified
-    // if design data has added rows
-    // if design data has deleted rows
-  }
-
-  handleInitialAliasTableCreation({ decisionPoints, conditions, conditionAliases, useExistingAliasData }) {
-    this.experimentDesignStepperService.createAliasTableData(
+    this.experimentDesignStepperService.updateAndStoreAliasTableData(
       decisionPoints,
       conditions,
-      conditionAliases,
-      useExistingAliasData
+      conditionAliasesRowData
     );
+    this.initialLoad = false;
   }
 
   handleHideClick() {

@@ -152,40 +152,96 @@ export class ExperimentDesignStepperService {
     return hasValidDecisionPointStrings && hasValidConditionStrings;
   }
 
+  updateAndStoreAliasTableData(
+    decisionPoints: ExperimentDecisionPoint[],
+    conditions: ExperimentCondition[],
+    preexistingAliasRowData: SimpleExperimentAliasTableRow[]
+  ): void {
+    const aliasTableData = this.createAliasTableData(decisionPoints, conditions, preexistingAliasRowData);
+
+    this.setNewSimpleExperimentAliasTableData(aliasTableData);
+  }
+
+  createAliasTableDataForViewExperiment(experiment: ExperimentVM) {
+    const decisionPoints = experiment.partitions;
+    const conditions = experiment.conditions;
+    const conditionAliases = experiment.conditionAliases || [];
+    const conditionAliasesRowData = this.getExistingConditionAliasRowData(conditionAliases);
+    const aliasTableData = this.createAliasTableData(decisionPoints, conditions, conditionAliasesRowData);
+
+    return aliasTableData;
+  }
+
   createAliasTableData(
     decisionPoints: ExperimentDecisionPoint[],
     conditions: ExperimentCondition[],
-    conditionAliases: ExperimentConditionAlias[],
-    useExistingAliasData: boolean
-  ) {
+    preexistingAliasRowData: SimpleExperimentAliasTableRow[]
+  ): SimpleExperimentAliasTableRow[] {
     const aliasTableData: SimpleExperimentAliasTableRow[] = [];
-
     decisionPoints.forEach((decisionPoint, index) => {
       conditions.forEach((condition) => {
         // check the list of condtionAliases, if exist, to see if this parentCondition has an alias match
-        let existingAlias: ExperimentConditionAlias = null;
-
-        if (useExistingAliasData) {
-          existingAlias = conditionAliases.find(
-            (alias) =>
-              alias.decisionPoint.target === decisionPoint.target &&
-              alias.decisionPoint.site === decisionPoint.site &&
-              alias.parentCondition.conditionCode === condition.conditionCode
-          );
-        }
+        const existingAlias = this.matchPreexistingAliasData({
+          preexistingAliasRowData,
+          site: decisionPoint.site,
+          target: decisionPoint.target,
+          condition: condition.conditionCode,
+        });
 
         aliasTableData.push({
           id: existingAlias?.id,
           site: decisionPoint.site,
           target: decisionPoint.target,
           condition: condition.conditionCode,
-          alias: existingAlias?.aliasName || condition.conditionCode,
+          alias: existingAlias?.alias || condition.conditionCode,
           rowStyle: index % 2 === 0 ? 'even' : 'odd',
         });
       });
     });
 
-    this.setNewSimpleExperimentAliasTableData(aliasTableData);
+    return aliasTableData;
+  }
+
+  matchPreexistingAliasData({ preexistingAliasRowData, site, target, condition }): SimpleExperimentAliasTableRow {
+    let existingAlias: SimpleExperimentAliasTableRow = null;
+
+    existingAlias = preexistingAliasRowData.find(
+      (alias: SimpleExperimentAliasTableRow) =>
+        alias.target === target && alias.site === site && alias.condition === condition
+    );
+
+    return existingAlias;
+  }
+
+  getExistingConditionAliasRowData(
+    preexistingConditionAliasData: ExperimentConditionAlias[]
+  ): SimpleExperimentAliasTableRow[] {
+    const currentAliasTableData = this.getSimpleExperimentAliasTableData();
+
+    if (preexistingConditionAliasData.length) {
+      const aliasTableData = this.mapPreexistingConditionAliasesToTableData(preexistingConditionAliasData);
+      return aliasTableData;
+    }
+
+    if (currentAliasTableData.length) {
+      return currentAliasTableData;
+    }
+
+    return [];
+  }
+
+  mapPreexistingConditionAliasesToTableData(
+    conditionAliases: ExperimentConditionAlias[]
+  ): SimpleExperimentAliasTableRow[] {
+    return conditionAliases.map((conditionAlias) => {
+      return {
+        id: conditionAlias.id,
+        site: conditionAlias.decisionPoint.site,
+        target: conditionAlias.decisionPoint.target,
+        condition: conditionAlias.parentCondition.conditionCode,
+        alias: conditionAlias.aliasName,
+      };
+    });
   }
 
   createExperimentConditionAliasRequestObject({ decisionPoints, conditions }): ExperimentConditionAliasRequestObject[] {
