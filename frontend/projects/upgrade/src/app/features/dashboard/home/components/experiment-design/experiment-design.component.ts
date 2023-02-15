@@ -178,7 +178,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       decisionPoints: this._formBuilder.array([this.addDecisionPoints()]),
     });
 
-    this.registerDesignDataChanges();
     this.experimentDesignStepperService.decisionPointsEditModePreviousRowData$.subscribe(
       this.previousDecisionPointTableRowDataBehaviorSubject$
     );
@@ -274,28 +273,28 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       );
   }
 
-  registerDesignDataChanges(): void {
-    this.subscriptionHandler = combineLatest([
-      this.decisionPoints.valueChanges,
-      this.conditions.valueChanges,
-    ]).subscribe(([decisionPoints, conditions]) =>
-      this.experimentDesignStepperService.setNewDesignData({ decisionPoints, conditions })
-    );
-  }
-
   handleBackBtnClick() {
     return this.experimentDesignForm.dirty && this.experimentDesignStepperService.experimentStepperDataChanged();
+  }
+
+  handleDesignDataUpdate() {
+    this.experimentDesignStepperService.setNewDesignData({
+      decisionPoints: this.decisionPoints.value,
+      conditions: this.conditions.value,
+    });
   }
 
   handleDecisionPointTableEditClick(rowIndex: number, rowData: DecisionPointsTableRowData) {
     if (this.isDecisionPointTableRowValid()) {
       this.experimentDesignStepperService.setDecisionPointTableEditModeDetails(rowIndex, rowData);
+      this.handleDesignDataUpdate();
     }
   }
 
   handleConditionTableEditClick(rowIndex: number, rowData: ConditionsTableRowData) {
     if (this.isConditionTableRowValid()) {
       this.experimentDesignStepperService.setConditionTableEditModeDetails(rowIndex, rowData);
+      this.handleDesignDataUpdate();
     }
   }
 
@@ -453,6 +452,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.experimentDesignStepperService.clearDecisionPointTableEditModeDetails();
     this.experimentDesignStepperService.clearConditionTableEditModeDetails();
+    this.handleDesignDataUpdate();
     this.updateView();
   }
 

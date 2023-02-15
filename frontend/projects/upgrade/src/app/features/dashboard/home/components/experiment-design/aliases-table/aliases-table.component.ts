@@ -94,10 +94,8 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
     const rowDataCopy = { ...rowData };
     aliasTableData[rowIndex] = rowDataCopy;
 
-    // remove this after debugging
     if (this.currentAliasInput$.value !== rowData.alias) {
-      console.log('currentAliasInput$.value:', this.currentAliasInput$.value);
-      console.log('rowData.alias', rowData.alias);
+      aliasTableData[rowIndex].useCustom = true;
     }
 
     this.currentAliasInput$.next(rowData.alias);

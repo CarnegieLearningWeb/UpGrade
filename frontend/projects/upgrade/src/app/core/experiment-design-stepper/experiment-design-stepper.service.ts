@@ -187,13 +187,10 @@ export class ExperimentDesignStepperService {
           condition,
         });
 
-        console.log('$ decisionpoint.id:', decisionPoint.id);
-        console.log('$ condition.id:', condition.id);
-
         // assign a reference back to the decision point and condition rows if not an existingAlias
         const designTableCombinationId = existingAlias?.designTableCombinationId || decisionPoint.id + condition.id;
 
-        console.log('$ designTableCombinationId:', designTableCombinationId);
+        const alias = existingAlias?.useCustom ? existingAlias.alias : condition.conditionCode;
 
         const aliasTableDataRow = {
           id: existingAlias?.id,
@@ -201,11 +198,10 @@ export class ExperimentDesignStepperService {
           site: decisionPoint.site,
           target: decisionPoint.target,
           condition: condition.conditionCode,
-          alias: existingAlias?.alias || condition.conditionCode,
+          alias,
           rowStyle: index % 2 === 0 ? 'even' : 'odd',
+          useCustom: existingAlias?.useCustom || false,
         };
-
-        console.log('$ aliasTableDataRow:', aliasTableDataRow);
 
         aliasTableData.push(aliasTableDataRow);
       });
@@ -247,10 +243,12 @@ export class ExperimentDesignStepperService {
     return conditionAliases.map((conditionAlias) => {
       return {
         id: conditionAlias.id,
+        designTableCombinationId: conditionAlias.decisionPoint.id + conditionAlias.parentCondition.id,
         site: conditionAlias.decisionPoint.site,
         target: conditionAlias.decisionPoint.target,
         condition: conditionAlias.parentCondition.conditionCode,
         alias: conditionAlias.aliasName,
+        useCustom: conditionAlias.aliasName !== conditionAlias.parentCondition.conditionCode,
       };
     });
   }

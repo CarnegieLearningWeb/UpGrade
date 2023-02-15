@@ -25,6 +25,7 @@ export interface SimpleExperimentAliasTableRow {
   condition: string;
   alias: string;
   rowStyle?: string;
+  useCustom?: boolean;
 }
 
 export interface SimpleExperimentFormData {
