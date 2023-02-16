@@ -7,6 +7,8 @@ import {
   ExperimentFactor,
   ExperimentLevel,
   LevelCombinationElement,
+  ExperimentConditionForSimpleExp,
+  ExperimentDecisionPointForSimpleExp,
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { VersionService } from '../../../../../../core/version/version.service';
@@ -22,6 +24,8 @@ interface ImportExperimentJSON {
   schema:
     | Record<keyof Experiment, string>
     | Record<keyof ExperimentCondition, string>
+    | Record<keyof ExperimentConditionForSimpleExp, string>
+    | Record<keyof ExperimentDecisionPointForSimpleExp, string>
     | Record<keyof ExperimentDecisionPoint, string>
     | Record<keyof ExperimentFactor, string>
     | Record<keyof ExperimentLevel, string>
@@ -29,6 +33,8 @@ interface ImportExperimentJSON {
   data:
     | Experiment
     | ExperimentCondition
+    | ExperimentConditionForSimpleExp
+    | ExperimentDecisionPointForSimpleExp
     | ExperimentDecisionPoint
     | ExperimentFactor
     | ExperimentLevel
@@ -182,11 +188,37 @@ export class ImportExperimentComponent implements OnInit {
       levelCombinationElements: 'interface',
     };
 
+    const conditionSchemaForSimpleExp: Record<keyof ExperimentConditionForSimpleExp, string> = {
+      id: 'string',
+      name: 'string',
+      description: 'string',
+      conditionCode: 'string',
+      assignmentWeight: 'number',
+      twoCharacterId: 'string',
+      order: 'number',
+      createdAt: 'string',
+      updatedAt: 'string',
+      versionNumber: 'number',
+    };
+
     const partitionSchema: Record<keyof ExperimentDecisionPoint, string> = {
       id: 'string',
       site: 'string',
       target: 'string',
       factors: 'interface',
+      description: 'string',
+      twoCharacterId: 'string',
+      order: 'number',
+      createdAt: 'string',
+      updatedAt: 'string',
+      versionNumber: 'number',
+      excludeIfReached: 'boolean',
+    };
+
+    const partitionSchemaForSimpleExp: Record<keyof ExperimentDecisionPointForSimpleExp, string> = {
+      id: 'string',
+      site: 'string',
+      target: 'string',
       description: 'string',
       twoCharacterId: 'string',
       order: 'number',
@@ -215,6 +247,7 @@ export class ImportExperimentComponent implements OnInit {
     };
 
     const missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
+    const isFactorialExperiment = experiment.type === EXPERIMENT_TYPE.FACTORIAL;
     let missingPropertiesFlag = true;
     this.missingAllProperties =
       this.translate.instant('home.import-experiment.missing-properties.message.text') + missingProperties;
@@ -226,9 +259,12 @@ export class ImportExperimentComponent implements OnInit {
 
     missingPropertiesFlag = missingPropertiesFlag && missingProperties.length === 0;
     experiment.conditions.map((condition) => {
-      missingConditionProperties = this.checkForMissingProperties({ schema: conditionSchema, data: condition });
+      missingConditionProperties = this.checkForMissingProperties({
+        schema: isFactorialExperiment ? conditionSchema : conditionSchemaForSimpleExp,
+        data: condition,
+      });
 
-      if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+      if (isFactorialExperiment) {
         condition.levelCombinationElements.map((element) => {
           missingLevelCombinationElementProperties = this.checkForMissingProperties({
             schema: levelCombinationElementSchema,
@@ -256,9 +292,12 @@ export class ImportExperimentComponent implements OnInit {
     }
     missingPropertiesFlag = missingPropertiesFlag && missingConditionProperties.length === 0;
     experiment.partitions.map((partition) => {
-      missingPartitionProperties = this.checkForMissingProperties({ schema: partitionSchema, data: partition });
+      missingPartitionProperties = this.checkForMissingProperties({
+        schema: isFactorialExperiment ? partitionSchema : partitionSchemaForSimpleExp,
+        data: partition,
+      });
 
-      if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+      if (isFactorialExperiment) {
         partition.factors.map((factor) => {
           missingFactorProperties = this.checkForMissingProperties({ schema: factorSchema, data: factor });
           factor.levels.map((level) => {
@@ -306,7 +345,9 @@ export class ImportExperimentComponent implements OnInit {
           key as keyof (
             | Experiment
             | ExperimentDecisionPoint
+            | ExperimentDecisionPointForSimpleExp
             | ExperimentCondition
+            | ExperimentConditionForSimpleExp
             | ExperimentFactor
             | ExperimentLevel
             | LevelCombinationElement
