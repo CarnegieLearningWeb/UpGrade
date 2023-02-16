@@ -45,6 +45,10 @@
       justify-content: left;
     }
 
+    .mat-row.row-is-locked {
+      opacity: 0.4;
+    }
+
     .cdk-column-site {
       flex: 0 0 calc(25% - 15px);
       width: calc(25% - 15px);

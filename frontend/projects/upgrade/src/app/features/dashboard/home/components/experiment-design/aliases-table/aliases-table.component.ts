@@ -66,7 +66,6 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.experimentDesignStepperService.setUpdateAliasTableEditModeDetails(null);
-    // this.experimentDesignStepperService.resetSimpleExperimentData();
     this.subscriptions.unsubscribe();
   }
 
