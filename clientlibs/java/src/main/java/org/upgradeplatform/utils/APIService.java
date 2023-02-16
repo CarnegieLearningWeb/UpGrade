@@ -11,6 +11,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 
 import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 
 
 public class APIService implements AutoCloseable{
@@ -56,6 +57,7 @@ public class APIService implements AutoCloseable{
 				.request(MediaType.APPLICATION_JSON)
 				.header("Authorization", "Bearer "+this.authToken)
 				.header("Session-Id", this.sessionId)
+				.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true)
 				.async();
 	}
 
