@@ -47,6 +47,7 @@
 
     .mat-row.row-is-locked {
       opacity: 0.4;
+      pointer-events: none;
     }
 
     .cdk-column-site {
