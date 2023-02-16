@@ -44,16 +44,41 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.subscriptions = this.experimentDesignStepperService.simpleExperimentAliasTableData$.subscribe(
-      this.aliasTableData$
-    );
+    this.listenToAliasTableDataChanges();
+    this.listenToContextMetadataAndInputChanges();
+    this.listenToDesignDataChanges();
+  }
 
+  ngOnDestroy(): void {
+    this.experimentDesignStepperService.setUpdateAliasTableEditModeDetails(null);
+    this.subscriptions.unsubscribe();
+  }
+
+  listenToAliasTableDataChanges(): void {
+    this.subscriptions = this.experimentDesignStepperService.simpleExperimentAliasTableData$
+      .pipe(
+        map((aliasTableData) => {
+          // data from ngrx store is immutable
+          // this ensures that a mutable clone of alias table data is emitted
+          return [
+            ...aliasTableData.map((rowData) => {
+              return { ...rowData };
+            }),
+          ];
+        })
+      )
+      .subscribe(this.aliasTableData$);
+  }
+
+  listenToDesignDataChanges() {
     this.subscriptions = this.experimentDesignStepperService.simpleExperimentDesignData$
       .pipe(filter((designData) => this.experimentDesignStepperService.validDesignDataFilter(designData)))
       .subscribe((designData) => {
         this.handleDesignDataChanges(designData);
       });
+  }
 
+  listenToContextMetadataAndInputChanges() {
     this.subscriptions = combineLatest([this.currentContextMetaDataConditions$, this.currentAliasInput$])
       .pipe(
         filter(([conditions, input]) => !!conditions && !!this.experimentDesignStepperService.isValidString(input)),
@@ -62,11 +87,6 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
         )
       )
       .subscribe(this.filteredContextMetaDataConditions$);
-  }
-
-  ngOnDestroy(): void {
-    this.experimentDesignStepperService.setUpdateAliasTableEditModeDetails(null);
-    this.subscriptions.unsubscribe();
   }
 
   handleDesignDataChanges(designData: SimpleExperimentDesignData) {

@@ -70,11 +70,10 @@ export const selectSimpleExperimentDesignData = createSelector(
   (state) => state.simpleExperimentDesignData
 );
 
-export const selectSimpleExperimentAliasTableData = createSelector(selectExperimentDesignStepperState, (state) => {
-  return [...state.simpleExperimentAliasTableData].map((rowData) => {
-    return { ...rowData };
-  });
-});
+export const selectSimpleExperimentAliasTableData = createSelector(
+  selectExperimentDesignStepperState,
+  (state) => state.simpleExperimentAliasTableData
+);
 
 export const selectFactorialConditionTableData = createSelector(
   selectExperimentDesignStepperState,
