@@ -8,7 +8,7 @@ import {
   ExperimentLevel,
   LevelCombinationElement,
   ExperimentConditionForSimpleExp,
-  ExperimentPartitionForSimpleExp,
+  ExperimentDecisionPointForSimpleExp,
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { VersionService } from '../../../../../../core/version/version.service';
@@ -25,7 +25,7 @@ interface ImportExperimentJSON {
     | Record<keyof Experiment, string>
     | Record<keyof ExperimentCondition, string>
     | Record<keyof ExperimentConditionForSimpleExp, string>
-    | Record<keyof ExperimentPartitionForSimpleExp, string>
+    | Record<keyof ExperimentDecisionPointForSimpleExp, string>
     | Record<keyof ExperimentDecisionPoint, string>
     | Record<keyof ExperimentFactor, string>
     | Record<keyof ExperimentLevel, string>
@@ -34,7 +34,7 @@ interface ImportExperimentJSON {
     | Experiment
     | ExperimentCondition
     | ExperimentConditionForSimpleExp
-    | ExperimentPartitionForSimpleExp
+    | ExperimentDecisionPointForSimpleExp
     | ExperimentDecisionPoint
     | ExperimentFactor
     | ExperimentLevel
@@ -215,7 +215,7 @@ export class ImportExperimentComponent implements OnInit {
       excludeIfReached: 'boolean',
     };
 
-    const partitionSchemaForSimpleExp: Record<keyof ExperimentPartitionForSimpleExp, string> = {
+    const partitionSchemaForSimpleExp: Record<keyof ExperimentDecisionPointForSimpleExp, string> = {
       id: 'string',
       site: 'string',
       target: 'string',
@@ -345,7 +345,7 @@ export class ImportExperimentComponent implements OnInit {
           key as keyof (
             | Experiment
             | ExperimentDecisionPoint
-            | ExperimentPartitionForSimpleExp
+            | ExperimentDecisionPointForSimpleExp
             | ExperimentCondition
             | ExperimentConditionForSimpleExp
             | ExperimentFactor

@@ -154,7 +154,7 @@ export interface ExperimentDecisionPoint {
   factors?: ExperimentFactor[];
 }
 
-export interface ExperimentPartitionForSimpleExp {
+export interface ExperimentDecisionPointForSimpleExp {
   id: string;
   site: string;
   target: string;
