@@ -8,7 +8,9 @@
 		changed in the next comment. that increases the likelihood that two PRs in-flight 
 		at the same time that happen to rev to the same new version will be caught 
 		by a merge conflict. -->
-    <!-- 2.0.0 -> 3.0.0: remove failedExperimentPoint -->
+
+	<!-- 2.0.0 -> 3.0.0: changes groupMembership, workingGroup, userAliases to PATCH, updated response objects -->
+
 	<version>3.0.0</version>
 	<build>
 		<plugins>

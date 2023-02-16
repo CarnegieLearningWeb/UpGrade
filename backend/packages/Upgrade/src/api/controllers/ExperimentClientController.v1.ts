@@ -8,56 +8,63 @@ import {
   Req,
   InternalServerError,
   Delete,
+  Patch,
+  OnUndefined,
 } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
-import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
+import { MarkExperimentValidator } from './validators/MarkExperimentValidator.v1';
 import { ExperimentAssignmentValidator } from './validators/ExperimentAssignmentValidator';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
-import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
-import { ISingleMetric, IGroupMetric, SERVER_ERROR } from 'upgrade_types';
-import { FailedParamsValidator } from './validators/FailedParamsValidator';
+import {
+  IExperimentAssignment,
+  ISingleMetric,
+  IGroupMetric,
+  SERVER_ERROR,
+  IGroupMembership,
+  IUserAliases,
+  IWorkingGroup,
+} from 'upgrade_types';
+import { FailedParamsValidator } from './validators/FailedParamsValidator.v1';
 import { ExperimentError } from '../models/ExperimentError';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidator } from './validators/LogValidator';
-import { Log } from '../models/Log';
 import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAliasesValidator';
 import { Metric } from '../models/Metric';
 import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
+import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 
-interface IExperimentAssignment {
-  expId: string;
-  expPoint: string;
-  twoCharacterId: string;
-  description: string;
-  assignedCondition: {
-    conditionCode: string;
-    twoCharacterId: string;
-    description: string;
-  };
+interface ILog {
+  id: string;
+  uniquifier: string;
+  timeStamp: Date;
+  data: any;
+  metrics: Metric[];
+  user: ExperimentUser;
 }
 
+interface IMonitoredDeciosionPoint {
+  id: string;
+  user: ExperimentUser;
+  site: string;
+  target: string;
+  experimentId: string;
+  condition: string;
+  monitoredPointLogs: MonitoredDecisionPointLog[];
+}
 /**
  * @swagger
  * definitions:
  *   initResponse:
  *     type: object
  *     properties:
- *       createdAt:
- *         type: string
- *         minLength: 1
- *       updatedAt:
- *         type: string
- *         minLength: 1
- *       versionNumber:
- *         type: number
  *       id:
  *         type: string
  *         minLength: 1
@@ -88,9 +95,6 @@ interface IExperimentAssignment {
  *           - class
  *           - instructor
  *     required:
- *       - createdAt
- *       - updatedAt
- *       - versionNumber
  *       - id
  *       - group
  *       - workingGroup
@@ -103,7 +107,7 @@ interface IExperimentAssignment {
  *     description: CRUD operations related to experiments points
  */
 
-@JsonController('/')
+@JsonController('/v1/')
 @UseBefore(ClientLibMiddleware)
 export class ExperimentClientController {
   constructor(
@@ -204,7 +208,7 @@ export class ExperimentClientController {
   /**
    * @swagger
    * /groupmembership:
-   *    post:
+   *    patch:
    *       description: Set group membership for a user
    *       consumes:
    *         - application/json
@@ -249,13 +253,13 @@ export class ExperimentClientController {
    *          '500':
    *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
    */
-  @Post('groupmembership')
+  @Patch('groupmembership')
   public async setGroupMemberShip(
     @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
     experimentUser: ExperimentUser
-  ): Promise<ExperimentUser> {
+  ): Promise<IGroupMembership> {
     request.logger.info({ message: 'Starting the groupmembership call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.getUserDoc(experimentUser.id, request.logger);
@@ -264,16 +268,21 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    return this.experimentUserService.updateGroupMembership(experimentUser.id, experimentUser.group, {
-      logger: request.logger,
-      userDoc: experimentUserDoc,
-    });
+    const { id, group } = await this.experimentUserService.updateGroupMembership(
+      experimentUser.id,
+      experimentUser.group,
+      {
+        logger: request.logger,
+        userDoc: experimentUserDoc,
+      }
+    );
+    return { id, group };
   }
 
   /**
    * @swagger
    * /workinggroup:
-   *    post:
+   *    patch:
    *       description: Set working group for a user
    *       consumes:
    *         - application/json
@@ -312,13 +321,13 @@ export class ExperimentClientController {
    *          '500':
    *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
    */
-  @Post('workinggroup')
+  @Patch('workinggroup')
   public async setWorkingGroup(
     @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
     workingGroupParams: UpdateWorkingGroupValidator
-  ): Promise<ExperimentUser> {
+  ): Promise<IWorkingGroup> {
     request.logger.info({ message: 'Starting the workinggroup call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.getUserDoc(workingGroupParams.id, request.logger);
@@ -327,10 +336,15 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    return this.experimentUserService.updateWorkingGroup(workingGroupParams.id, workingGroupParams.workingGroup, {
-      logger: request.logger,
-      userDoc: experimentUserDoc,
-    });
+    const { id, workingGroup } = await this.experimentUserService.updateWorkingGroup(
+      workingGroupParams.id,
+      workingGroupParams.workingGroup,
+      {
+        logger: request.logger,
+        userDoc: experimentUserDoc,
+      }
+    );
+    return { id, workingGroup };
   }
 
   /**
@@ -353,11 +367,9 @@ export class ExperimentClientController {
    *             properties:
    *               userId:
    *                 type: string
-   *                 example: user1
-   *               experimentPoint:
+   *               site:
    *                 type: string
-   *                 example: point1
-   *               partitionId:
+   *               target:
    *                 type: string
    *                 example: partition1
    *               condition:
@@ -380,33 +392,22 @@ export class ExperimentClientController {
    *            schema:
    *              type: object
    *              properties:
-   *                createdAt:
-   *                  type: string
-   *                  minLength: 1
-   *                updatedAt:
-   *                  type: string
-   *                  minLength: 1
-   *                versionNumber:
-   *                  type: number
    *                id:
    *                  type: string
    *                  minLength: 1
    *                experimentId:
    *                  type: string
    *                  minLength: 1
-   *                enrollmentCode:
+   *                site:
    *                  type: string
    *                  minLength: 1
-   *                userId:
+   *                target:
    *                  type: string
    *                  minLength: 1
    *                condition:
    *                  type: string
    *                  minLength: 1
    *              required:
-   *                - createdAt
-   *                - updatedAt
-   *                - versionNumber
    *                - id
    *                - experimentId
    *                - enrollmentCode
@@ -417,11 +418,11 @@ export class ExperimentClientController {
    */
   @Post('mark')
   public async markExperimentPoint(
+    @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
-    @Body({ validate: { validationError: { target: false, value: false } } })
     experiment: MarkExperimentValidator
-  ): Promise<MonitoredDecisionPoint> {
+  ): Promise<IMonitoredDeciosionPoint> {
     request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.getUserDoc(experiment.userId, request.logger);
@@ -430,18 +431,19 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    return this.experimentAssignmentService.markExperimentPoint(
+    const { createdAt, updatedAt, versionNumber, ...rest } = await this.experimentAssignmentService.markExperimentPoint(
       experiment.userId,
-      experiment.experimentPoint,
+      experiment.site,
       experiment.status,
       experiment.condition,
       {
         logger: request.logger,
         userDoc: experimentUserDoc,
       },
-      experiment.partitionId,
+      experiment.target,
       experiment.experimentId ? experiment.experimentId : null
     );
+    return rest;
   }
 
   /**
@@ -480,57 +482,19 @@ export class ExperimentClientController {
    *              items:
    *                type: object
    *                required:
-   *                  - expId
-   *                  - expPoint
-   *                  - twoCharacterId
-   *                  - assignedCondition
+   *                  - site
+   *                  - target
+   *                  - condition
    *                properties:
-   *                  expId:
+   *                  site:
    *                    type: string
    *                    minLength: 1
-   *                  expPoint:
+   *                  target:
    *                    type: string
    *                    minLength: 1
-   *                  twoCharacterId:
+   *                  condition:
    *                    type: string
    *                    minLength: 1
-   *                  assignedCondition:
-   *                    type: object
-   *                    properties:
-   *                      createdAt:
-   *                        type: string
-   *                        minLength: 1
-   *                      updatedAt:
-   *                        type: string
-   *                        minLength: 1
-   *                      versionNumber:
-   *                        type: number
-   *                      id:
-   *                        type: string
-   *                        minLength: 1
-   *                      twoCharacterId:
-   *                        type: string
-   *                        minLength: 1
-   *                      name:
-   *                        type: string
-   *                      description: {}
-   *                      conditionCode:
-   *                        type: string
-   *                        minLength: 1
-   *                      assignmentWeight:
-   *                        type: number
-   *                      order:
-   *                        type: number
-   *                    required:
-   *                      - createdAt
-   *                      - updatedAt
-   *                      - versionNumber
-   *                      - id
-   *                      - twoCharacterId
-   *                      - name
-   *                      - conditionCode
-   *                      - assignmentWeight
-   *                      - order
    *          '500':
    *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
    *          '404':
@@ -553,11 +517,11 @@ export class ExperimentClientController {
       }
     );
 
-    return assignedData.map(({ site, target, ...rest }) => {
+    return assignedData.map(({ site, target, assignedCondition }) => {
       return {
-        expPoint: site,
-        expId: target,
-        ...rest,
+        site,
+        target,
+        assignedCondition: { condition: assignedCondition.conditionCode },
       };
     });
   }
@@ -635,7 +599,7 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     logData: LogValidator
-  ): Promise<Log[]> {
+  ): Promise<ILog[]> {
     request.logger.info({ message: 'Starting the log call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.getUserDoc(logData.userId, request.logger);
@@ -644,9 +608,12 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    return this.experimentAssignmentService.dataLog(logData.userId, logData.value, {
+    const logs = await this.experimentAssignmentService.dataLog(logData.userId, logData.value, {
       logger: request.logger,
       userDoc: experimentUserDoc,
+    });
+    return logs.map(({ createdAt, updatedAt, versionNumber, ...rest }) => {
+      return rest;
     });
   }
 
@@ -733,11 +700,11 @@ export class ExperimentClientController {
    *             properties:
    *              reason:
    *                type: string
-   *              experimentPoint:
+   *              site:
    *                type: string
    *              userId:
    *                type: string
-   *              experimentId:
+   *              target:
    *                type: string
    *            description: Experiment Error from client
    *       tags:
@@ -765,9 +732,9 @@ export class ExperimentClientController {
     }
     return this.experimentAssignmentService.clientFailedExperimentPoint(
       errorBody.reason,
-      errorBody.experimentPoint,
+      errorBody.site,
       errorBody.userId,
-      errorBody.experimentId,
+      errorBody.target,
       {
         logger: request.logger,
         userDoc: experimentUserDoc,
@@ -831,7 +798,7 @@ export class ExperimentClientController {
   /**
    * @swagger
    * /useraliases:
-   *    post:
+   *    patch:
    *       description: Set aliases for current user
    *       consumes:
    *         - application/json
@@ -862,66 +829,38 @@ export class ExperimentClientController {
    *          '200':
    *            description: Experiment User aliases added
    *            schema:
-   *              type: array
-   *              description: ''
-   *              minItems: 1
-   *              uniqueItems: true
-   *              items:
-   *                type: object
-   *                required:
-   *                  - id
-   *                  - createdAt
-   *                  - updatedAt
-   *                  - versionNumber
-   *                  - originalUser
-   *                properties:
-   *                  id:
+   *              type: object
+   *              properties:
+   *                userId:
+   *                  type: string
+   *                  minLength: 1
+   *                aliases:
+   *                  type: array
+   *                  items:
    *                    type: string
-   *                    minLength: 1
-   *                  group: {}
-   *                  workingGroup: {}
-   *                  createdAt:
-   *                    type: string
-   *                    minLength: 1
-   *                  updatedAt:
-   *                    type: string
-   *                    minLength: 1
-   *                  versionNumber:
-   *                    type: number
-   *                  originalUser:
-   *                    type: string
-   *                    minLength: 1
+   *              required:
+   *               - userId
+   *               - userAliases
    *          '500':
    *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
    */
-  @Post('useraliases')
+  @Patch('useraliases')
   public async setUserAliases(
     @Req()
     request: AppRequest,
     @Body()
     user: ExperimentUserAliasesValidator
-  ): Promise<ExperimentUser[]> {
+  ): Promise<IUserAliases> {
     const experimentUserDoc = await this.getUserDoc(user.userId, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    const aliasData = await this.experimentUserService.setAliasesForUser(user.userId, user.aliases, {
+    return this.experimentUserService.setAliasesForUser(user.userId, user.aliases, {
       logger: request.logger,
       userDoc: experimentUserDoc,
     });
-
-    return [
-      {
-        ...experimentUserDoc,
-        aliases: aliasData.aliases.map((alias) => {
-          return {
-            id: alias,
-          };
-        }),
-      } as any,
-    ];
   }
 
   public async getUserDoc(experimentUserId, logger) {
@@ -962,12 +901,14 @@ export class ExperimentClientController {
    *            description: DEMO mode is disabled
    */
   @Delete('clearDB')
-  public async clearDB(@Req() request: AppRequest): Promise<string> {
+  @OnUndefined(204)
+  public clearDB(@Req() request: AppRequest) {
     // if DEMO mode is enabled, then clear the database:
-    if (env.app.demo) {
-      await this.experimentUserService.clearDB(request.logger);
-      return 'DB truncate successful';
+    if (!env.app.demo) {
+      this.experimentUserService.clearDB(request.logger);
+    } else {
+      request.logger.error({ message: 'DEMO mode is disabled. You cannot clear DB.' });
     }
-    return Promise.resolve('DEMO mode is disabled. You cannot clear DB.');
+    return;
   }
 }
