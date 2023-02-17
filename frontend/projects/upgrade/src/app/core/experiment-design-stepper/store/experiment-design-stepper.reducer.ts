@@ -3,15 +3,17 @@ import { ExperimentDesignStepperState } from './experiment-design-stepper.model'
 import * as experimentDesignStepperAction from './experiment-design-stepper.actions';
 
 const initialState: ExperimentDesignStepperState = {
-  isAliasTableEditMode: false,
+  isSimpleExperimentAliasTableEditMode: false,
   isDecisionPointsTableEditMode: false,
   isConditionsTableEditMode: false,
-  aliasTableEditIndex: null,
+  simpleExperimentAliasTableEditIndex: null,
   decisionPointsTableEditIndex: null,
   conditionsTableEditIndex: null,
   decisionPointsEditModePreviousRowData: null,
   conditionsEditModePreviousRowData: null,
   hasExperimentStepperDataChanged: false,
+  simpleExperimentDesignData: { decisionPoints: [], conditions: [] },
+  simpleExperimentAliasTableData: [],
   factorialDesignData: { factors: [] },
   factorialConditionsTableData: [],
   isFactorialConditionsTableEditMode: false,
@@ -79,6 +81,22 @@ const reducer = createReducer(
       };
     }
   ),
+  on(
+    experimentDesignStepperAction.actionUpdateSimpleExperimentAliasTableEditModeDetails,
+    (state, { simpleExperimentAliasTableEditIndex }): ExperimentDesignStepperState => {
+      // toggle edit mode
+      const editMode = !state.isSimpleExperimentAliasTableEditMode;
+
+      // if not in edit mode, use null for row-index
+      const editIndex = editMode ? simpleExperimentAliasTableEditIndex : null;
+
+      return {
+        ...state,
+        isSimpleExperimentAliasTableEditMode: editMode,
+        simpleExperimentAliasTableEditIndex: editIndex,
+      };
+    }
+  ),
   on(experimentDesignStepperAction.actionClearFactorialConditionTableEditDetails, (state) => ({
     ...state,
     isFactorialConditionsTableEditMode: false,
@@ -109,6 +127,14 @@ const reducer = createReducer(
     conditionsTableEditIndex: null,
     conditionsEditModePreviousRowData: null,
   })),
+  on(experimentDesignStepperAction.actionUpdateSimpleExperimentDesignData, (state, { designData }) => ({
+    ...state,
+    simpleExperimentDesignData: designData,
+  })),
+  on(experimentDesignStepperAction.actionUpdateSimpleExperimentAliasTableData, (state, { tableData }) => ({
+    ...state,
+    simpleExperimentAliasTableData: tableData,
+  })),
   on(experimentDesignStepperAction.actionUpdateFactorialDesignData, (state, { designData }) => ({
     ...state,
     factorialDesignData: designData,
@@ -122,6 +148,15 @@ const reducer = createReducer(
       ...state,
       factorialDesignData: { factors: [] },
       factorialConditionsTableData: [],
+    };
+  }),
+  on(experimentDesignStepperAction.clearSimpleExperimentDesignStepperData, (state) => {
+    return {
+      ...state,
+      simpleExperimentDesignData: { decisionPoints: [], conditions: [] },
+      simpleExperimentAliasTableData: [],
+      simpleExperimentAliasTableEditIndex: null,
+      isSimpleExperimentAliasTableEditMode: false,
     };
   })
 );

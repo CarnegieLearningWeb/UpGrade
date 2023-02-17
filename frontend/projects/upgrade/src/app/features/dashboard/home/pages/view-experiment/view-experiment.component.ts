@@ -27,7 +27,7 @@ import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
-import { ExperimentAliasTableRow } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+import { SimpleExperimentAliasTableRow } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 // Used in view-experiment component only
 enum DialogType {
   CHANGE_STATUS = 'Change status',
@@ -64,7 +64,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
   displayMetrics: Metrics[] = [];
-  aliasTableData: ExperimentAliasTableRow[] = [];
+  simpleExperimentAliasTableData: SimpleExperimentAliasTableRow[] = [];
 
   constructor(
     private experimentService: ExperimentService,
@@ -124,14 +124,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.onExperimentChange(experiment, isPolling);
         this.loadParticipants();
         this.loadMetrics();
-        if (experiment.type === EXPERIMENT_TYPE.SIMPLE) {
-          this.aliasTableData = this.experimentDesignStepperService.createAliasTableData(
-            experiment.partitions,
-            experiment.conditions,
-            experiment.conditionAliases,
-            true
-          );
-        }
+        this.loadAliasTable(experiment);
       });
 
     if (this.experiment) {
@@ -148,6 +141,13 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       this.experimentService.toggleDetailsPolling(experiment, isPolling);
     } else {
       this.experimentService.fetchExperimentDetailStat(experiment.id);
+    }
+  }
+
+  loadAliasTable(experiment: ExperimentVM) {
+    if (experiment.type === EXPERIMENT_TYPE.SIMPLE) {
+      this.simpleExperimentAliasTableData =
+        this.experimentDesignStepperService.createAliasTableDataForViewExperiment(experiment);
     }
   }
 
