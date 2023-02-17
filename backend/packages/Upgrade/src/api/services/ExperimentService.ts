@@ -119,26 +119,29 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
-      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
-      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
-      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
-      .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
-      .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
+      // Commented leftJoin for faster paginated responses
+      // .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
+      // .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
+      // .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
+      // .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
+      // .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
+      // .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
+      // .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
+      // .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('partitions.conditionAliases', 'ConditionAliasesArray')
       .leftJoinAndSelect('ConditionAliasesArray.parentCondition', 'parentCondition')
-      .leftJoinAndSelect('partitions.factors', 'factors')
-      .leftJoinAndSelect('factors.levels', 'levels')
-      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
-      .leftJoinAndSelect('levelCombinationElements.level', 'level')
-      .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
+      // .leftJoinAndSelect('partitions.factors', 'factors')
+      // .leftJoinAndSelect('factors.levels', 'levels')
+      // .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
+      // .leftJoinAndSelect('levelCombinationElements.level', 'level')
+      // .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
+      .distinctOn(['experiment.id'])
+      .addOrderBy('experiment.id', 'ASC')
       .addOrderBy('conditions.order', 'ASC')
-      .addOrderBy('partitions.order', 'ASC')
-      .addOrderBy('factors.order', 'ASC')
-      .addOrderBy('levels.order', 'ASC');
+      .addOrderBy('partitions.order', 'ASC');
+    // .addOrderBy('factors.order', 'ASC')
+    // .addOrderBy('levels.order', 'ASC');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
       // add search query
@@ -154,7 +157,8 @@ export class ExperimentService {
 
     queryBuilder = queryBuilder.skip(skip).take(take);
 
-    return (await queryBuilder.getMany()).map((x) => this.formatingConditionAlias(x));
+    return await queryBuilder.getMany();
+    // return (await queryBuilder.getMany()).map((x) => this.formatingConditionAlias(x));
   }
 
   public async findOne(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
@@ -970,7 +974,7 @@ export class ExperimentService {
         const updateAuditLog: AuditLogData = {
           experimentId: experiment.id,
           experimentName: experiment.name,
-          diff: diffString(newExperimentClone, oldExperimentClone),
+          //diff: diffString(newExperimentClone, oldExperimentClone),
         };
 
         await this.experimentAuditLogRepository.saveRawJson(
