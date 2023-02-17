@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: get-node-version
     container: node:${{ needs.get-node-version.outputs.node-version }}
+    env:
+      NODE_OPTIONS: "--max_old_space_size=4096"
     defaults:
       run:
         working-directory: backend
