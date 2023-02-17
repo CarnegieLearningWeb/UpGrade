@@ -122,6 +122,19 @@ export interface ExperimentCondition {
   levelCombinationElements?: LevelCombinationElement[];
 }
 
+export interface ExperimentConditionForSimpleExp {
+  id: string;
+  name: string;
+  description: string;
+  conditionCode: string;
+  assignmentWeight: number;
+  twoCharacterId: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+  versionNumber: number;
+}
+
 export interface LevelCombinationElement {
   id: string;
   level: ExperimentLevel;
@@ -139,6 +152,19 @@ export interface ExperimentDecisionPoint {
   versionNumber: number;
   excludeIfReached: boolean;
   factors?: ExperimentFactor[];
+}
+
+export interface ExperimentDecisionPointForSimpleExp {
+  id: string;
+  site: string;
+  target: string;
+  description: string;
+  twoCharacterId: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+  versionNumber: number;
+  excludeIfReached: boolean;
 }
 
 export interface ExperimentFactor {
