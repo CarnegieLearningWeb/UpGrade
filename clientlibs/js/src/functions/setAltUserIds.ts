@@ -7,7 +7,7 @@ export default async function setAltUserIds(
   token: string,
   clientSessionId: string,
   altUserIds: string[]
-): Promise<Interfaces.IExperimentUserAliases[]> {
+): Promise<Interfaces.IExperimentUserAliases> {
   try {
     const data = {
       userId,
@@ -19,7 +19,7 @@ export default async function setAltUserIds(
       token,
       clientSessionId,
       data,
-      Types.REQUEST_TYPES.POST,
+      Types.REQUEST_TYPES.PATCH,
       false,
       skipRetryOnStatusCodes
     );

@@ -93,9 +93,9 @@ describe('Experiment Client Controller Testing', () => {
     done();
   });
 
-  test('Post request for /api/groupmembership', async (done) => {
+  test('Post request for /api/v1/groupmembership', async (done) => {
     await request(app)
-      .post('/api/groupmembership')
+      .patch('/api/v1/groupmembership')
       .send({
         id: 'u21',
         group: {
@@ -108,9 +108,9 @@ describe('Experiment Client Controller Testing', () => {
     done();
   });
 
-  test('Post request for /api/workinggroup', async (done) => {
+  test('Post request for /api/v1/workinggroup', async (done) => {
     await request(app)
-      .post('/api/workinggroup')
+      .patch('/api/v1/workinggroup')
       .send({
         id: 'u21',
         workingGroup: {
@@ -198,9 +198,9 @@ describe('Experiment Client Controller Testing', () => {
     done();
   });
 
-  test('Post request for /api/useraliases', async (done) => {
+  test('Post request for /api/v1/useraliases', async (done) => {
     await request(app)
-      .post('/api/useraliases')
+      .patch('/api/v1/useraliases')
       .send({
         userId: 'u21',
         aliases: ['abc'],
