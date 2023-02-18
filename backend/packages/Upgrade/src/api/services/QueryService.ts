@@ -37,7 +37,7 @@ export class QueryService {
 
     const promiseResult = await Promise.all(promiseArray);
     const analyzePromise = promiseResult.map((query) => {
-      if (query.experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+      if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {
         return [
           this.logRepository.analysis(query),
           this.logRepository.analysis({

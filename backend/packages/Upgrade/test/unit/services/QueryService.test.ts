@@ -132,7 +132,8 @@ describe('Query Service Testing', () => {
     expect(response).toEqual([
       {
         id: mockquery1.id,
-        result: ['rejected'],
+        interactionEffect: null,
+        mainEffect: ['rejected'],
       },
     ]);
   });
