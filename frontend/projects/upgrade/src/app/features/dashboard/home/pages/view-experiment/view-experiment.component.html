@@ -446,18 +446,12 @@
             </div>
             <div *ngIf="experiment.type === 'Factorial'">
               <span class="ft-24-700">{{ 'home.new-experiment.design.factor.text' | translate }}</span>
-              <mat-table class="factor-table" [dataSource]="factorsDataSource" multiTemplateDataRows >
-
+              <mat-table class="factor-table" [dataSource]="factorsDataSource" multiTemplateDataRows>
                 <!-- Expand Icon Column -->
                 <ng-container matColumnDef="expandIcon">
                   <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
-                  <mat-cell
-                    *matCellDef="let data; let factorIndex = dataIndex"
-                    style="justify-content: flex-start"
-                  >
-                    <mat-icon
-                      [class.active]="factorIndex === expandedId"
-                      (click)="expandFactor(factorIndex)"
+                  <mat-cell *matCellDef="let data; let factorIndex = dataIndex" style="justify-content: flex-start">
+                    <mat-icon [class.active]="factorIndex === expandedId" (click)="expandFactor(factorIndex)"
                       >play_arrow</mat-icon
                     >
                   </mat-cell>
@@ -474,7 +468,7 @@
                     </span>
                     <ng-template #factorName>
                       <span [matTooltip]="data.factor" matTooltipPosition="above">
-                        {{ data.factor | truncate: 50 }}
+                        {{ data.factor | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
@@ -525,7 +519,7 @@
                             {{ 'home.new-experiment.design.level-name.text' | translate }}
                           </mat-header-cell>
                           <mat-cell *matCellDef="let data; let levelIndex = index">
-                            <span>{{data.name}}</span>
+                            <span>{{ data.name }}</span>
                           </mat-cell>
                         </ng-container>
 
@@ -535,11 +529,13 @@
                             {{ 'home.new-experiment.design.aliases.column-header.alias.text' | translate }}
                           </mat-header-cell>
                           <mat-cell *matCellDef="let data; let levelIndex = index">
-                            <span>{{data.alias}}</span>
+                            <span>{{ data.alias }}</span>
                           </mat-cell>
                         </ng-container>
 
-                        <mat-header-row *matHeaderRowDef="displayedPartitionLevelColumnsFactorial; sticky: true"></mat-header-row>
+                        <mat-header-row
+                          *matHeaderRowDef="displayedPartitionLevelColumnsFactorial; sticky: true"
+                        ></mat-header-row>
                         <mat-row *matRowDef="let row; columns: displayedPartitionLevelColumnsFactorial"></mat-row>
                       </mat-table>
                     </div>
@@ -646,8 +642,8 @@
           <!-- Aliases Table -->
           <div class="table-container table-container-aliases" *ngIf="experiment.type === 'Simple'">
             <span class="ft-24-700">{{ 'home.view-experiment.experiment-aliases-title.text' | translate }}</span>
-            <ng-container *ngIf="aliasTableData.length">
-              <mat-table [dataSource]="aliasTableData" class="table alias-table-overview">
+            <ng-container *ngIf="simpleExperimentAliasTableData.length">
+              <mat-table [dataSource]="simpleExperimentAliasTableData" class="table alias-table-overview">
                 <ng-container matColumnDef="site">
                   <mat-header-cell class="ft-12-700" *matHeaderCellDef>
                     {{ 'home.view-experiment.experiment-aliases.column-label.site' | translate }}

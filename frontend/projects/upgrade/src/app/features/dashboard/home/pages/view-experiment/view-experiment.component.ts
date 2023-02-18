@@ -28,7 +28,7 @@ import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
-import { ExperimentAliasTableRow } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+import { SimpleExperimentAliasTableRow } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 // Used in view-experiment component only
 enum DialogType {
   CHANGE_STATUS = 'Change status',
@@ -71,7 +71,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
   displayMetrics: Metrics[] = [];
-  aliasTableData: ExperimentAliasTableRow[] = [];
+  simpleExperimentAliasTableData: SimpleExperimentAliasTableRow[] = [];
 
   constructor(
     private experimentService: ExperimentService,
@@ -131,17 +131,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.onExperimentChange(experiment, isPolling);
         this.loadParticipants();
         this.loadMetrics();
-        if (experiment.type === EXPERIMENT_TYPE.SIMPLE) {
-          this.aliasTableData = this.experimentDesignStepperService.createAliasTableData(
-            experiment.partitions,
-            experiment.conditions,
-            experiment.conditionAliases,
-            true
-          );
-        }
-        if(experiment.type === EXPERIMENT_TYPE.FACTORIAL){
-          this.createFactorialTableData();
-        }
+        this.loadAliasTable(experiment);
       });
 
     if (this.experiment) {
@@ -161,19 +151,11 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     }
   }
 
-  createFactorialTableData(){
-    if (this.experiment) {
-      this.factorsDataSource = [];
-      this.experiment.partitions?.forEach((partition)=>{
-        partition.factors?.forEach((factor)=>{
-          this.factorsDataSource.push({ factor: factor.name, site: partition.site, target: partition.target, levels: factor.levels });
-        })
-      })
+  loadAliasTable(experiment: ExperimentVM) {
+    if (experiment.type === EXPERIMENT_TYPE.SIMPLE) {
+      this.simpleExperimentAliasTableData =
+        this.experimentDesignStepperService.createAliasTableDataForViewExperiment(experiment);
     }
-  }
-
-  expandFactor(groupIndex: number) {
-    this.expandedId = this.expandedId === groupIndex ? null : groupIndex;
   }
 
   loadParticipants() {

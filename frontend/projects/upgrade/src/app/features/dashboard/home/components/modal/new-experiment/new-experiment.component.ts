@@ -47,6 +47,7 @@ export class NewExperimentComponent implements OnInit {
 
   ngOnDestroy() {
     this.experimentDesignStepperService.clearFactorialDesignStepperData();
+    this.experimentDesignStepperService.clearSimpleExperimentDesignStepperData();
   }
 
   onNoClick(): void {
