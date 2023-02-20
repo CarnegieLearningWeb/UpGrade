@@ -176,6 +176,11 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.participantsForm2.get('members2').valueChanges.subscribe((newValues) => {
       this.checkSegmentvalidity(newValues,2);
     });
+
+    if (this.members1.length !== 0 && this.members1.controls.at(0).get('type').value === "All") {
+      this.members1.controls.at(0).get('id').disable();
+      this.includeAll = true;
+    }
   }
 
   selectedOption(event = null, index = null, table: number) {
@@ -189,12 +194,12 @@ export class ExperimentParticipantsComponent implements OnInit {
         }
         this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
       } else {
-          this.members1.controls.at(index).get('id').enable();
+          this.members1.controls.at(index)?.get('id').enable();
           if ( table === 1 ){
-          this.members1.controls.at(index).get('id').setValue('');
+          this.members1.controls.at(index)?.get('id').setValue('');
           this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
         } else if ( table === 2 ){
-          this.members2.controls.at(index).get('id').setValue('');
+          this.members2.controls.at(index)?.get('id').setValue('');
         }
       }
     }
