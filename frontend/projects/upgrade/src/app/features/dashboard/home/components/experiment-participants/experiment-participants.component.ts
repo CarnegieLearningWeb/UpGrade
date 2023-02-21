@@ -312,10 +312,10 @@ export class ExperimentParticipantsComponent implements OnInit {
     members.forEach((member) => {
       if (member.type === MemberTypes.SEGMENT) {
         if (!this.subSegmentIds.find((segment) => segment === member.id)) {
-          if(table==1){
-            this.segmentNotValid=true;
-          }else{
-            this.segmentNotValid2=true;
+          if (table == 1) {
+            this.segmentNotValid = true;
+          } else {
+            this.segmentNotValid2 = true;
           }
         }
       }
