@@ -158,6 +158,8 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         });
       });
 
+      this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
+
       this.isExperimentEditable =
         this.experimentInfo.state !== this.ExperimentState.ENROLLING &&
         this.experimentInfo.state !== this.ExperimentState.ENROLLMENT_COMPLETE;

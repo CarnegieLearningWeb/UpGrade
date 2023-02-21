@@ -44,7 +44,7 @@ describe('QueryRepository Testing', () => {
     insertMock.expects('into').once().returns(insertQueryBuilder);
     insertMock.expects('values').once().returns(insertQueryBuilder);
     insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-    insertMock.expects('setParameter').thrice().returns(insertQueryBuilder);
+    insertMock.expects('setParameter').exactly(4).returns(insertQueryBuilder);
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.resolve(result));
 
@@ -63,7 +63,7 @@ describe('QueryRepository Testing', () => {
     insertMock.expects('into').once().returns(insertQueryBuilder);
     insertMock.expects('values').once().returns(insertQueryBuilder);
     insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-    insertMock.expects('setParameter').thrice().returns(insertQueryBuilder);
+    insertMock.expects('setParameter').exactly(4).returns(insertQueryBuilder);
     insertMock.expects('returning').once().returns(insertQueryBuilder);
     insertMock.expects('execute').once().returns(Promise.reject(err));
 
