@@ -23,10 +23,11 @@ export class QueryRepository extends Repository<Query> {
       .insert()
       .into(Query)
       .values(queryDoc)
-      .onConflict(`("id") DO UPDATE SET "query" = :query, "name" = :name`)
+      .onConflict(`("id") DO UPDATE SET "query" = :query, "name" = :name, "repeatedMeasure" = :repeatedMeasure`)
       .setParameter('query', queryDoc.query)
       .setParameter('name', queryDoc.name)
       .setParameter('metric', queryDoc.metric)
+      .setParameter('repeatedMeasure', queryDoc.repeatedMeasure)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
