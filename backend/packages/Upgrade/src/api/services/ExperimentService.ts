@@ -959,7 +959,7 @@ export class ExperimentService {
         const updateAuditLog: AuditLogData = {
           experimentId: experiment.id,
           experimentName: experiment.name,
-          //diff: diffString(newExperimentClone, oldExperimentClone),
+          diff: diffString(newExperimentClone, oldExperimentClone),
         };
 
         await this.experimentAuditLogRepository.saveRawJson(
