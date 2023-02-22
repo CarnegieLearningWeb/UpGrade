@@ -116,32 +116,17 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
-      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
-      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
-      .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
-      // Commented leftJoin for faster paginated responses
-      // .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
-      // .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
-      // .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
-      // .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
-      // .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
-      // .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
-      // .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
-      // .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('partitions.conditionAliases', 'ConditionAliasesArray')
       .leftJoinAndSelect('ConditionAliasesArray.parentCondition', 'parentCondition')
-      // .leftJoinAndSelect('partitions.factors', 'factors')
-      // .leftJoinAndSelect('factors.levels', 'levels')
-      // .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
-      // .leftJoinAndSelect('levelCombinationElements.level', 'level')
-      // .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
+      .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
       .distinctOn(['experiment.id'])
       .addOrderBy('experiment.id', 'ASC')
       .addOrderBy('conditions.order', 'ASC')
-      .addOrderBy('partitions.order', 'ASC');
-    // .addOrderBy('factors.order', 'ASC')
-    // .addOrderBy('levels.order', 'ASC');
+      .addOrderBy('partitions.order', 'ASC')
+      .limit(take)
+      .offset(skip);
+
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
       // add search query
