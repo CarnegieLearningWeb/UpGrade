@@ -597,16 +597,17 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         if (keys[0].metricKey || operationType || queryName || compareFn || compareValue) {
           this.checkMetricKeyRequiredError(keys);
         }
+        let metrics = keys;
         keys = keys
           .filter((key) => key.metricKey !== null)
           .map((key) => (key.metricKey.key ? key.metricKey.key : key.metricKey));
         if (keys.length) {
           this.checkQueryNameRequiredError(queryName);
           this.checkStatisticRequiredError(operationType);
-          const metric = this.allMetrics.find((metric) => metric.key === keys[0]);
           const {
             metadata: { type },
-          } = metric;
+          } = metrics[keys.length-1].metricKey;
+          
           if (type === IMetricMetaData.CATEGORICAL) {
             this.checkComparisonStatisticRequiredError(compareFn, compareValue);
           }
