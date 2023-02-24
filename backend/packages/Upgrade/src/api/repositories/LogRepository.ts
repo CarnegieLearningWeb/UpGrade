@@ -200,7 +200,9 @@ export class LogRepository extends Repository<Log> {
     let valueToUse = 'extracted.value';
     switch (repeatedMeasure) {
       case REPEATED_MEASURE.mostRecent:
-        this.repeatedMeasureMostRecent(executeQuery);
+        if (query.metric.type === IMetricMetaData.CATEGORICAL) {
+          this.repeatedMeasureMostRecent(executeQuery);
+        }
         break;
       case REPEATED_MEASURE.earliest:
         this.repeatedMeasureEarliest(executeQuery);
