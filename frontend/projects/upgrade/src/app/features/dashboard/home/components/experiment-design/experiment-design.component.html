@@ -12,10 +12,10 @@
               class="ft-14-600 default-button toggle-button"
               (click)="scrollToAliasesTable()"
               [class.default-button--disabled]="
-                (isFormLockedForEdit$ | async) || !(aliasTableData$ | async).length || !this.isExperimentEditable
+                (isFormLockedForEdit$ | async) || !(aliasTableData$ | async).length 
               "
               [disabled]="
-                (isFormLockedForEdit$ | async) || !(aliasTableData$ | async).length || !this.isExperimentEditable
+                (isFormLockedForEdit$ | async) || !(aliasTableData$ | async).length 
               "
             >
               <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
