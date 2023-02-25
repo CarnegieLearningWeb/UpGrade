@@ -1,43 +1,209 @@
-var gapi = (window.gapi = window.gapi || {});
-gapi._bs = new Date().getTime();
 (function () {
-  /*
-
-  Copyright The Closure Library Authors.
-  SPDX-License-Identifier: Apache-2.0
- */
-  var m = this || self,
+  var m,
     aa = function (a) {
-      var b = typeof a;
-      if ('object' == b)
-        if (a) {
-          if (a instanceof Array) return 'array';
-          if (a instanceof Object) return b;
-          var c = Object.prototype.toString.call(a);
-          if ('[object Window]' == c) return 'object';
-          if (
-            '[object Array]' == c ||
-            ('number' == typeof a.length &&
-              'undefined' != typeof a.splice &&
-              'undefined' != typeof a.propertyIsEnumerable &&
-              !a.propertyIsEnumerable('splice'))
-          )
-            return 'array';
-          if (
-            '[object Function]' == c ||
-            ('undefined' != typeof a.call &&
-              'undefined' != typeof a.propertyIsEnumerable &&
-              !a.propertyIsEnumerable('call'))
-          )
-            return 'function';
-        } else return 'null';
-      else if ('function' == b && 'undefined' == typeof a.call) return 'object';
-      return b;
+      var b = 0;
+      return function () {
+        return b < a.length ? { done: !1, value: a[b++] } : { done: !0 };
+      };
     },
-    ba = function (a, b, c) {
+    ba =
+      'function' == typeof Object.defineProperties
+        ? Object.defineProperty
+        : function (a, b, c) {
+            if (a == Array.prototype || a == Object.prototype) return a;
+            a[b] = c.value;
+            return a;
+          },
+    ca = function (a) {
+      a = [
+        'object' == typeof globalThis && globalThis,
+        a,
+        'object' == typeof window && window,
+        'object' == typeof self && self,
+        'object' == typeof global && global,
+      ];
+      for (var b = 0; b < a.length; ++b) {
+        var c = a[b];
+        if (c && c.Math == Math) return c;
+      }
+      throw Error('Cannot find global object');
+    },
+    da = ca(this),
+    r = function (a, b) {
+      if (b)
+        a: {
+          var c = da;
+          a = a.split('.');
+          for (var d = 0; d < a.length - 1; d++) {
+            var e = a[d];
+            if (!(e in c)) break a;
+            c = c[e];
+          }
+          a = a[a.length - 1];
+          d = c[a];
+          b = b(d);
+          b != d && null != b && ba(c, a, { configurable: !0, writable: !0, value: b });
+        }
+    };
+  r('Symbol', function (a) {
+    if (a) return a;
+    var b = function (f, g) {
+      this.ia = f;
+      ba(this, 'description', { configurable: !0, writable: !0, value: g });
+    };
+    b.prototype.toString = function () {
+      return this.ia;
+    };
+    var c = 'jscomp_symbol_' + ((1e9 * Math.random()) >>> 0) + '_',
+      d = 0,
+      e = function (f) {
+        if (this instanceof e) throw new TypeError('Symbol is not a constructor');
+        return new b(c + (f || '') + '_' + d++, f);
+      };
+    return e;
+  });
+  r('Symbol.iterator', function (a) {
+    if (a) return a;
+    a = Symbol('Symbol.iterator');
+    for (
+      var b =
+          'Array Int8Array Uint8Array Uint8ClampedArray Int16Array Uint16Array Int32Array Uint32Array Float32Array Float64Array'.split(
+            ' '
+          ),
+        c = 0;
+      c < b.length;
+      c++
+    ) {
+      var d = da[b[c]];
+      'function' === typeof d &&
+        'function' != typeof d.prototype[a] &&
+        ba(d.prototype, a, {
+          configurable: !0,
+          writable: !0,
+          value: function () {
+            return ea(aa(this));
+          },
+        });
+    }
+    return a;
+  });
+  var ea = function (a) {
+      a = { next: a };
+      a[Symbol.iterator] = function () {
+        return this;
+      };
+      return a;
+    },
+    fa = function (a, b, c) {
+      if (null == a)
+        throw new TypeError("The 'this' value for String.prototype." + c + ' must not be null or undefined');
+      if (b instanceof RegExp)
+        throw new TypeError('First argument to String.prototype.' + c + ' must not be a regular expression');
+      return a + '';
+    };
+  r('String.prototype.endsWith', function (a) {
+    return a
+      ? a
+      : function (b, c) {
+          var d = fa(this, b, 'endsWith');
+          b += '';
+          void 0 === c && (c = d.length);
+          c = Math.max(0, Math.min(c | 0, d.length));
+          for (var e = b.length; 0 < e && 0 < c; ) if (d[--c] != b[--e]) return !1;
+          return 0 >= e;
+        };
+  });
+  var ha = function (a, b) {
+    a instanceof String && (a += '');
+    var c = 0,
+      d = !1,
+      e = {
+        next: function () {
+          if (!d && c < a.length) {
+            var f = c++;
+            return { value: b(f, a[f]), done: !1 };
+          }
+          d = !0;
+          return { done: !0, value: void 0 };
+        },
+      };
+    e[Symbol.iterator] = function () {
+      return e;
+    };
+    return e;
+  };
+  r('Array.prototype.entries', function (a) {
+    return a
+      ? a
+      : function () {
+          return ha(this, function (b, c) {
+            return [b, c];
+          });
+        };
+  });
+  r('Array.prototype.keys', function (a) {
+    return a
+      ? a
+      : function () {
+          return ha(this, function (b) {
+            return b;
+          });
+        };
+  });
+  r('Object.is', function (a) {
+    return a
+      ? a
+      : function (b, c) {
+          return b === c ? 0 !== b || 1 / b === 1 / c : b !== b && c !== c;
+        };
+  });
+  r('Array.prototype.includes', function (a) {
+    return a
+      ? a
+      : function (b, c) {
+          var d = this;
+          d instanceof String && (d = String(d));
+          var e = d.length;
+          c = c || 0;
+          for (0 > c && (c = Math.max(c + e, 0)); c < e; c++) {
+            var f = d[c];
+            if (f === b || Object.is(f, b)) return !0;
+          }
+          return !1;
+        };
+  });
+  r('String.prototype.includes', function (a) {
+    return a
+      ? a
+      : function (b, c) {
+          return -1 !== fa(this, b, 'includes').indexOf(b, c || 0);
+        };
+  });
+  window.gapi = window.gapi || {};
+  window.gapi.ua = new Date().getTime(); /*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+  var t = this || self,
+    ia = function (a) {
+      var b = typeof a;
+      return 'object' != b ? b : a ? (Array.isArray(a) ? 'array' : b) : 'null';
+    },
+    la = function (a) {
+      var b = ia(a);
+      return 'array' == b || ('object' == b && 'number' == typeof a.length);
+    },
+    u = function (a) {
+      var b = typeof a;
+      return ('object' == b && null != a) || 'function' == b;
+    },
+    ma = 'closure_uid_' + ((1e9 * Math.random()) >>> 0),
+    na = 0,
+    oa = function (a, b, c) {
       return a.call.apply(a.bind, arguments);
     },
-    ca = function (a, b, c) {
+    pa = function (a, b, c) {
       if (!a) throw Error();
       if (2 < arguments.length) {
         var d = Array.prototype.slice.call(arguments, 2);
@@ -51,190 +217,417 @@ gapi._bs = new Date().getTime();
         return a.apply(b, arguments);
       };
     },
-    da = function (a, b, c) {
-      da = Function.prototype.bind && -1 != Function.prototype.bind.toString().indexOf('native code') ? ba : ca;
-      return da.apply(null, arguments);
+    qa = function (a, b, c) {
+      qa = Function.prototype.bind && -1 != Function.prototype.bind.toString().indexOf('native code') ? oa : pa;
+      return qa.apply(null, arguments);
     },
-    ha = function (a, b) {
+    ra = function (a, b) {
       function c() {}
       c.prototype = b.prototype;
+      a.ya = b.prototype;
       a.prototype = new c();
       a.prototype.constructor = a;
-      a.C = function (d, e, f) {
+      a.B = function (d, e, f) {
         for (var g = Array(arguments.length - 2), k = 2; k < arguments.length; k++) g[k - 2] = arguments[k];
         return b.prototype[e].apply(d, g);
       };
-    };
-  var q = function (a) {
-    if (Error.captureStackTrace) Error.captureStackTrace(this, q);
-    else {
-      var b = Error().stack;
-      b && (this.stack = b);
-    }
-    a && (this.message = String(a));
-  };
-  ha(q, Error);
-  q.prototype.name = 'CustomError';
-  var ia = function (a, b) {
-    a = a.split('%s');
-    for (var c = '', d = a.length - 1, e = 0; e < d; e++) c += a[e] + (e < b.length ? b[e] : '%s');
-    q.call(this, c + a[d]);
-  };
-  ha(ia, q);
-  ia.prototype.name = 'AssertionError';
-  var ja = function (a, b, c, d) {
-      var e = 'Assertion failed';
-      if (c) {
-        e += ': ' + c;
-        var f = d;
-      } else a && ((e += ': ' + a), (f = b));
-      throw new ia('' + e, f || []);
     },
-    ka = function (a, b, c) {
-      a || ja('', null, b, Array.prototype.slice.call(arguments, 2));
+    sa = function (a) {
       return a;
     },
-    la = function (a, b) {
-      throw new ia('Failure' + (a ? ': ' + a : ''), Array.prototype.slice.call(arguments, 1));
-    },
-    ma = function (a, b, c) {
-      'string' !== typeof a &&
-        ja('Expected string but got %s: %s.', [aa(a), a], b, Array.prototype.slice.call(arguments, 2));
+    ta = function (a) {
+      var b = null,
+        c = t.trustedTypes;
+      if (!c || !c.createPolicy) return b;
+      try {
+        b = c.createPolicy(a, { createHTML: sa, createScript: sa, createScriptURL: sa });
+      } catch (d) {
+        t.console && t.console.error(d.message);
+      }
+      return b;
     };
-  var t = function (a, b) {
-    this.T = (a === na && b) || '';
-    this.ga = oa;
-  };
-  t.prototype.w = !0;
-  t.prototype.v = function () {
-    return this.T;
-  };
-  t.prototype.toString = function () {
-    return 'Const{' + this.T + '}';
-  };
-  var pa = function (a) {
-      if (a instanceof t && a.constructor === t && a.ga === oa) return a.T;
-      la("expected object of type Const, got '" + a + "'");
-      return 'type_error:Const';
+  function ua(a, b) {
+    if (Error.captureStackTrace) Error.captureStackTrace(this, ua);
+    else {
+      var c = Error().stack;
+      c && (this.stack = c);
+    }
+    a && (this.message = String(a));
+    void 0 !== b && (this.cause = b);
+  }
+  ra(ua, Error);
+  ua.prototype.name = 'CustomError';
+  var va;
+  function wa(a, b) {
+    a = a.split('%s');
+    for (var c = '', d = a.length - 1, e = 0; e < d; e++) c += a[e] + (e < b.length ? b[e] : '%s');
+    ua.call(this, c + a[d]);
+  }
+  ra(wa, ua);
+  wa.prototype.name = 'AssertionError';
+  function xa(a, b, c, d) {
+    var e = 'Assertion failed';
+    if (c) {
+      e += ': ' + c;
+      var f = d;
+    } else a && ((e += ': ' + a), (f = b));
+    throw new wa('' + e, f || []);
+  }
+  var ya = function (a, b, c) {
+      a || xa('', null, b, Array.prototype.slice.call(arguments, 2));
+      return a;
     },
-    oa = {},
-    na = {};
-  var v = function () {
-    this.N = '';
+    za = function (a, b) {
+      throw new wa('Failure' + (a ? ': ' + a : ''), Array.prototype.slice.call(arguments, 1));
+    },
+    Aa = function (a, b, c) {
+      'string' !== typeof a &&
+        xa('Expected string but got %s: %s.', [ia(a), a], b, Array.prototype.slice.call(arguments, 2));
+    };
+  var Ba = Array.prototype.forEach
+    ? function (a, b) {
+        ya(null != a.length);
+        Array.prototype.forEach.call(a, b, void 0);
+      }
+    : function (a, b) {
+        for (var c = a.length, d = 'string' === typeof a ? a.split('') : a, e = 0; e < c; e++)
+          e in d && b.call(void 0, d[e], e, a);
+      };
+  function Ca(a) {
+    var b = a.length;
+    if (0 < b) {
+      for (var c = Array(b), d = 0; d < b; d++) c[d] = a[d];
+      return c;
+    }
+    return [];
+  }
+  function Da(a, b) {
+    for (var c in a) b.call(void 0, a[c], c, a);
+  }
+  var Ea;
+  var v = function (a, b) {
+    this.U = (a === Fa && b) || '';
+    this.ja = Ga;
   };
-  v.prototype.w = !0;
-  v.prototype.v = function () {
-    return this.N.toString();
+  v.prototype.G = !0;
+  v.prototype.F = function () {
+    return this.U;
   };
   v.prototype.toString = function () {
-    return 'SafeScript{' + this.N + '}';
+    return 'Const{' + this.U + '}';
   };
-  v.prototype.i = function (a) {
-    this.N = a;
-    return this;
-  };
-  new v().i('');
-  var w = function (a, b) {
-    this.R = (a === qa && b) || '';
-    this.fa = ra;
-  };
-  w.prototype.w = !0;
-  w.prototype.v = function () {
-    return this.R.toString();
-  };
-  w.prototype.toString = function () {
-    return 'SafeUrl{' + this.R + '}';
-  };
-  var sa = /^(?:(?:https?|mailto|ftp):|[^:/?#]*(?:[/?#]|$))/i,
-    ra = {},
-    qa = {};
-  var x = function () {
-    this.P = '';
-  };
-  x.prototype.w = !0;
-  x.prototype.v = function () {
-    return this.P;
+  var Ia = function (a) {
+      if (a instanceof v && a.constructor === v && a.ja === Ga) return a.U;
+      za("expected object of type Const, got '" + a + "'");
+      return 'type_error:Const';
+    },
+    Ga = {},
+    Fa = {};
+  var x = function (a, b) {
+    this.S = b === Ja ? a : '';
   };
   x.prototype.toString = function () {
-    return 'SafeStyle{' + this.P + '}';
+    return this.S.toString();
   };
-  x.prototype.i = function (a) {
-    this.P = a;
-    return this;
+  x.prototype.G = !0;
+  x.prototype.F = function () {
+    return this.S.toString();
   };
-  new x().i('');
-  var ta = function () {
-    this.O = '';
-  };
-  ta.prototype.w = !0;
-  ta.prototype.v = function () {
-    return this.O;
-  };
-  ta.prototype.toString = function () {
-    return 'SafeStyleSheet{' + this.O + '}';
-  };
-  ta.prototype.i = function (a) {
-    this.O = a;
-    return this;
-  };
-  new ta().i('');
-  var z = function () {
-    this.G = '';
-    this.ea = ua;
-  };
-  z.prototype.w = !0;
-  z.prototype.v = function () {
-    return this.G.toString();
-  };
-  z.prototype.toString = function () {
-    return 'SafeHtml{' + this.G + '}';
-  };
-  var va = function (a) {
-      if (a instanceof z && a.constructor === z && a.ea === ua) return a.G;
-      la("expected object of type SafeHtml, got '" + a + "' of type " + aa(a));
-      return 'type_error:SafeHtml';
+  var Ka = function (a) {
+      if (a instanceof x && a.constructor === x) return a.S;
+      za("expected object of type SafeUrl, got '" + a + "' of type " + ia(a));
+      return 'type_error:SafeUrl';
     },
-    ua = {};
-  z.prototype.i = function (a) {
-    this.G = a;
-    return this;
+    La = /^(?:(?:https?|mailto|ftp):|[^:/?#]*(?:[/?#]|$))/i,
+    Ma = function (a) {
+      if (a instanceof x) return a;
+      a = 'object' == typeof a && a.G ? a.F() : String(a);
+      ya(La.test(a), '%s does not match the safe URL pattern', a) || (a = 'about:invalid#zClosurez');
+      return new x(a, Ja);
+    },
+    Ja = {};
+  var Na = {},
+    Oa = function (a, b) {
+      this.R = b === Na ? a : '';
+      this.G = !0;
+    };
+  Oa.prototype.F = function () {
+    return this.R.toString();
   };
-  new z().i('<!DOCTYPE html>');
-  var wa = new z().i('');
-  new z().i('<br>');
-  var xa = { MATH: !0, SCRIPT: !0, STYLE: !0, SVG: !0, TEMPLATE: !0 },
-    za = (function (a) {
-      var b = !1,
-        c;
-      return function () {
-        b || ((c = a()), (b = !0));
-        return c;
+  Oa.prototype.toString = function () {
+    return this.R.toString();
+  };
+  var Pa = function (a, b) {
+    this.name = a;
+    this.value = b;
+  };
+  Pa.prototype.toString = function () {
+    return this.name;
+  };
+  var Qa = new Pa('OFF', Infinity),
+    Ra = new Pa('WARNING', 900),
+    Sa = new Pa('CONFIG', 700),
+    Ta = function () {
+      this.C = 0;
+      this.clear();
+    },
+    Ua;
+  Ta.prototype.clear = function () {
+    this.X = Array(this.C);
+    this.Z = -1;
+    this.ba = !1;
+  };
+  var Va = function (a, b, c) {
+    this.reset(a || Qa, b, c, void 0, void 0);
+  };
+  Va.prototype.reset = function () {};
+  var Wa = function (a, b) {
+      this.level = null;
+      this.na = [];
+      this.parent = (void 0 === b ? null : b) || null;
+      this.children = [];
+      this.pa = {
+        N: function () {
+          return a;
+        },
       };
-    })(function () {
-      if ('undefined' === typeof document) return !1;
-      var a = document.createElement('div'),
-        b = document.createElement('div');
-      b.appendChild(document.createElement('div'));
-      a.appendChild(b);
-      if (!a.firstChild) return !1;
-      b = a.firstChild.firstChild;
-      a.innerHTML = va(wa);
-      return !b.parentElement;
-    }); /*
-  gapi.loader.OBJECT_CREATE_TEST_OVERRIDE &&*/
-  var A = window,
-    B = document,
-    Aa = A.location,
-    Ba = function () {},
-    Ca = /\[native code\]/,
-    C = function (a, b, c) {
+    },
+    Xa = function (a) {
+      if (a.level) return a.level;
+      if (a.parent) return Xa(a.parent);
+      za('Root logger has no level set.');
+      return Qa;
+    },
+    Ya = function (a, b) {
+      for (; a; )
+        a.na.forEach(function (c) {
+          c(b);
+        }),
+          (a = a.parent);
+    },
+    Za = function () {
+      this.entries = {};
+      var a = new Wa('');
+      a.level = Sa;
+      this.entries[''] = a;
+    },
+    $a,
+    ab = function (a, b) {
+      var c = a.entries[b];
+      if (c) return c;
+      c = ab(a, b.slice(0, Math.max(b.lastIndexOf('.'), 0)));
+      var d = new Wa(b, c);
+      a.entries[b] = d;
+      c.children.push(d);
+      return d;
+    },
+    bb = function () {
+      $a || ($a = new Za());
+      return $a;
+    }; /*
+
+ SPDX-License-Identifier: Apache-2.0
+*/
+  var cb = [],
+    db = function (a) {
+      var b;
+      if ((b = ab(bb(), 'safevalues').pa)) {
+        var c = "A URL with content '" + a + "' was sanitized away.",
+          d = Ra;
+        if ((a = b))
+          if ((a = b && d)) {
+            a = d.value;
+            var e = b ? Xa(ab(bb(), b.N())) : Qa;
+            a = a >= e.value;
+          }
+        if (a) {
+          d = d || Qa;
+          a = ab(bb(), b.N());
+          'function' === typeof c && (c = c());
+          Ua || (Ua = new Ta());
+          e = Ua;
+          b = b.N();
+          if (0 < e.C) {
+            var f = (e.Z + 1) % e.C;
+            e.Z = f;
+            e.ba ? ((e = e.X[f]), e.reset(d, c, b), (b = e)) : ((e.ba = f == e.C - 1), (b = e.X[f] = new Va(d, c, b)));
+          } else b = new Va(d, c, b);
+          Ya(a, b);
+        }
+      }
+    };
+  -1 === cb.indexOf(db) && cb.push(db);
+  var eb = function (a, b) {
+    if (
+      !u(a) ||
+      !u(a) ||
+      !u(a) ||
+      1 !== a.nodeType ||
+      (a.namespaceURI && 'http://www.w3.org/1999/xhtml' !== a.namespaceURI) ||
+      a.tagName.toUpperCase() !== b.toString()
+    ) {
+      b = b.toString() + '; got: ';
+      if (u(a))
+        try {
+          var c = a.constructor.displayName || a.constructor.name || Object.prototype.toString.call(a);
+        } catch (d) {
+          c = '<object could not be stringified>';
+        }
+      else c = void 0 === a ? 'undefined' : null === a ? 'null' : typeof a;
+      za('Argument is not an HTML Element with tag name ' + (b + c));
+    }
+    return a;
+  };
+  var hb = function (a, b) {
+      Da(b, function (c, d) {
+        c && 'object' == typeof c && c.G && (c = c.F());
+        'style' == d
+          ? (a.style.cssText = c)
+          : 'class' == d
+          ? (a.className = c)
+          : 'for' == d
+          ? (a.htmlFor = c)
+          : fb.hasOwnProperty(d)
+          ? a.setAttribute(fb[d], c)
+          : 0 == d.lastIndexOf('aria-', 0) || 0 == d.lastIndexOf('data-', 0)
+          ? a.setAttribute(d, c)
+          : (a[d] = c);
+      });
+    },
+    fb = {
+      cellpadding: 'cellPadding',
+      cellspacing: 'cellSpacing',
+      colspan: 'colSpan',
+      frameborder: 'frameBorder',
+      height: 'height',
+      maxlength: 'maxLength',
+      nonce: 'nonce',
+      role: 'role',
+      rowspan: 'rowSpan',
+      type: 'type',
+      usemap: 'useMap',
+      valign: 'vAlign',
+      width: 'width',
+    },
+    ib = function (a, b, c, d) {
+      function e(k) {
+        k && b.appendChild('string' === typeof k ? a.createTextNode(k) : k);
+      }
+      for (; d < c.length; d++) {
+        var f = c[d];
+        if (!la(f) || (u(f) && 0 < f.nodeType)) e(f);
+        else {
+          a: {
+            if (f && 'number' == typeof f.length) {
+              if (u(f)) {
+                var g = 'function' == typeof f.item || 'string' == typeof f.item;
+                break a;
+              }
+              if ('function' === typeof f) {
+                g = 'function' == typeof f.item;
+                break a;
+              }
+            }
+            g = !1;
+          }
+          Ba(g ? Ca(f) : f, e);
+        }
+      }
+    },
+    jb = function (a, b) {
+      b = String(b);
+      'application/xhtml+xml' === a.contentType && (b = b.toLowerCase());
+      return a.createElement(b);
+    },
+    kb = function (a) {
+      ya(a, 'Node cannot be null or undefined.');
+      return 9 == a.nodeType ? a : a.ownerDocument || a.document;
+    },
+    lb = function (a) {
+      this.D = a || t.document || document;
+    };
+  m = lb.prototype;
+  m.getElementsByTagName = function (a, b) {
+    return (b || this.D).getElementsByTagName(String(a));
+  };
+  m.ma = function (a, b, c) {
+    var d = this.D,
+      e = arguments,
+      f = e[1],
+      g = jb(d, String(e[0]));
+    f && ('string' === typeof f ? (g.className = f) : Array.isArray(f) ? (g.className = f.join(' ')) : hb(g, f));
+    2 < e.length && ib(d, g, e, 2);
+    return g;
+  };
+  m.createElement = function (a) {
+    return jb(this.D, a);
+  };
+  m.createTextNode = function (a) {
+    return this.D.createTextNode(String(a));
+  };
+  m.appendChild = function (a, b) {
+    ya(null != a && null != b, 'goog.dom.appendChild expects non-null arguments');
+    a.appendChild(b);
+  };
+  m.append = function (a, b) {
+    ib(kb(a), a, arguments, 1);
+  };
+  m.canHaveChildren = function (a) {
+    if (1 != a.nodeType) return !1;
+    switch (a.tagName) {
+      case 'APPLET':
+      case 'AREA':
+      case 'BASE':
+      case 'BR':
+      case 'COL':
+      case 'COMMAND':
+      case 'EMBED':
+      case 'FRAME':
+      case 'HR':
+      case 'IMG':
+      case 'INPUT':
+      case 'IFRAME':
+      case 'ISINDEX':
+      case 'KEYGEN':
+      case 'LINK':
+      case 'NOFRAMES':
+      case 'NOSCRIPT':
+      case 'META':
+      case 'OBJECT':
+      case 'PARAM':
+      case 'SCRIPT':
+      case 'SOURCE':
+      case 'STYLE':
+      case 'TRACK':
+      case 'WBR':
+        return !1;
+    }
+    return !0;
+  };
+  m.removeNode = function (a) {
+    return a && a.parentNode ? a.parentNode.removeChild(a) : null;
+  };
+  m.contains = function (a, b) {
+    if (!a || !b) return !1;
+    if (a.contains && 1 == b.nodeType) return a == b || a.contains(b);
+    if ('undefined' != typeof a.compareDocumentPosition) return a == b || !!(a.compareDocumentPosition(b) & 16);
+    for (; b && a != b; ) b = b.parentNode;
+    return b == a;
+  }; /*
+ gapi.loader.OBJECT_CREATE_TEST_OVERRIDE &&*/
+  var y = window,
+    A = document,
+    mb = y.location,
+    nb = function () {},
+    ob = /\[native code\]/,
+    B = function (a, b, c) {
       return (a[b] = a[b] || c);
     },
-    Da = function (a) {
+    pb = function (a) {
       for (var b = 0; b < this.length; b++) if (this[b] === a) return b;
       return -1;
     },
-    Ea = function (a) {
+    qb = function (a) {
       a = a.sort();
       for (var b = [], c = void 0, d = 0; d < a.length; d++) {
         var e = a[d];
@@ -243,52 +636,52 @@ gapi._bs = new Date().getTime();
       }
       return b;
     },
-    Fa = /&/g,
-    Ga = /</g,
-    Ha = />/g,
-    Ia = /"/g,
-    Ja = /'/g,
-    Ka = function (a) {
+    rb = /&/g,
+    sb = /</g,
+    tb = />/g,
+    ub = /"/g,
+    vb = /'/g,
+    wb = function (a) {
       return String(a)
-        .replace(Fa, '&amp;')
-        .replace(Ga, '&lt;')
-        .replace(Ha, '&gt;')
-        .replace(Ia, '&quot;')
-        .replace(Ja, '&#39;');
+        .replace(rb, '&amp;')
+        .replace(sb, '&lt;')
+        .replace(tb, '&gt;')
+        .replace(ub, '&quot;')
+        .replace(vb, '&#39;');
     },
-    D = function () {
+    C = function () {
       var a;
-      if ((a = Object.create) && Ca.test(a)) a = a(null);
+      if ((a = Object.create) && ob.test(a)) a = a(null);
       else {
         a = {};
         for (var b in a) a[b] = void 0;
       }
       return a;
     },
-    E = function (a, b) {
+    D = function (a, b) {
       return Object.prototype.hasOwnProperty.call(a, b);
     },
-    La = function (a) {
-      if (Ca.test(Object.keys)) return Object.keys(a);
+    xb = function (a) {
+      if (ob.test(Object.keys)) return Object.keys(a);
       var b = [],
         c;
-      for (c in a) E(a, c) && b.push(c);
+      for (c in a) D(a, c) && b.push(c);
       return b;
     },
-    G = function (a, b) {
+    E = function (a, b) {
       a = a || {};
-      for (var c in a) E(a, c) && (b[c] = a[c]);
+      for (var c in a) D(a, c) && (b[c] = a[c]);
     },
-    Ma = function (a) {
+    yb = function (a) {
       return function () {
-        A.setTimeout(a, 0);
+        y.setTimeout(a, 0);
       };
     },
-    H = function (a, b) {
+    F = function (a, b) {
       if (!a) throw Error(b || '');
     },
-    I = C(A, 'gapi', {});
-  var J = function (a, b, c) {
+    H = B(y, 'gapi', {});
+  var I = function (a, b, c) {
       var d = new RegExp('([#].*&|[#])' + b + '=([^&#]*)', 'g');
       b = new RegExp('([?#].*&|[?#])' + b + '=([^&#]*)', 'g');
       if ((a = a && (d.exec(a) || b.exec(a))))
@@ -297,7 +690,7 @@ gapi._bs = new Date().getTime();
         } catch (e) {}
       return c;
     },
-    Na = new RegExp(
+    zb = new RegExp(
       /^/.source +
         /([a-zA-Z][-+.a-zA-Z0-9]*:)?/.source +
         /(\/\/[^\/?#]*)?/.source +
@@ -306,32 +699,32 @@ gapi._bs = new Date().getTime();
         /(#((#|[^#])*))?/.source +
         /$/.source
     ),
-    Oa = /[\ud800-\udbff][\udc00-\udfff]|[^!-~]/g,
-    Pa = new RegExp(
+    Ab = /[\ud800-\udbff][\udc00-\udfff]|[^!-~]/g,
+    Bb = new RegExp(
       /(%([^0-9a-fA-F%]|[0-9a-fA-F]([^0-9a-fA-F%])?)?)*/.source +
         /%($|[^0-9a-fA-F]|[0-9a-fA-F]($|[^0-9a-fA-F]))/.source,
       'g'
     ),
-    Ra = /%([a-f]|[0-9a-fA-F][a-f])/g,
-    Sa = /^(https?|ftp|file|chrome-extension):$/i,
-    Ta = function (a) {
+    Cb = /%([a-f]|[0-9a-fA-F][a-f])/g,
+    Db = /^(https?|ftp|file|chrome-extension):$/i,
+    Eb = function (a) {
       a = String(a);
       a = a
-        .replace(Oa, function (e) {
+        .replace(Ab, function (e) {
           try {
             return encodeURIComponent(e);
           } catch (f) {
             return encodeURIComponent(e.replace(/^[^%]+$/g, '\ufffd'));
           }
         })
-        .replace(Pa, function (e) {
+        .replace(Bb, function (e) {
           return e.replace(/%/g, '%25');
         })
-        .replace(Ra, function (e) {
+        .replace(Cb, function (e) {
           return e.toUpperCase();
         });
-      a = a.match(Na) || [];
-      var b = D(),
+      a = a.match(zb) || [];
+      var b = C(),
         c = function (e) {
           return e
             .replace(/\\/g, '%5C')
@@ -341,35 +734,35 @@ gapi._bs = new Date().getTime();
             .replace(/\|/g, '%7C')
             .replace(/\}/g, '%7D');
         },
-        d = !!(a[1] || '').match(Sa);
-      b.C = c((a[1] || '') + (a[2] || '') + (a[3] || (a[2] && d ? '/' : '')));
+        d = !!(a[1] || '').match(Db);
+      b.B = c((a[1] || '') + (a[2] || '') + (a[3] || (a[2] && d ? '/' : '')));
       d = function (e) {
         return c(e.replace(/\?/g, '%3F').replace(/#/g, '%23'));
       };
       b.query = a[5] ? [d(a[5])] : [];
-      b.g = a[7] ? [d(a[7])] : [];
+      b.j = a[7] ? [d(a[7])] : [];
       return b;
     },
-    Ua = function (a) {
-      return a.C + (0 < a.query.length ? '?' + a.query.join('&') : '') + (0 < a.g.length ? '#' + a.g.join('&') : '');
+    Fb = function (a) {
+      return a.B + (0 < a.query.length ? '?' + a.query.join('&') : '') + (0 < a.j.length ? '#' + a.j.join('&') : '');
     },
-    Va = function (a, b) {
+    Gb = function (a, b) {
       var c = [];
       if (a)
         for (var d in a)
-          if (E(a, d) && null != a[d]) {
+          if (D(a, d) && null != a[d]) {
             var e = b ? b(a[d]) : a[d];
             c.push(encodeURIComponent(d) + '=' + encodeURIComponent(e));
           }
       return c;
     },
-    Wa = function (a, b, c, d) {
-      a = Ta(a);
-      a.query.push.apply(a.query, Va(b, d));
-      a.g.push.apply(a.g, Va(c, d));
-      return Ua(a);
+    Hb = function (a, b, c, d) {
+      a = Eb(a);
+      a.query.push.apply(a.query, Gb(b, d));
+      a.j.push.apply(a.j, Gb(c, d));
+      return Fb(a);
     },
-    Xa = new RegExp(
+    Ib = new RegExp(
       /\/?\??#?/.source +
         '(' +
         /[\/?#]/i.source +
@@ -382,130 +775,104 @@ gapi._bs = new Date().getTime();
         ')$',
       'i'
     ),
-    Ya = function (a, b) {
-      var c = Ta(b);
-      b = c.C;
+    Jb = function (a, b) {
+      var c = Eb(b);
+      b = c.B;
       c.query.length && (b += '?' + c.query.join(''));
-      c.g.length && (b += '#' + c.g.join(''));
+      c.j.length && (b += '#' + c.j.join(''));
       var d = '';
-      2e3 < b.length && ((d = b), (b = b.substr(0, 2e3)), (b = b.replace(Xa, '')), (d = d.substr(b.length)));
+      2e3 < b.length && ((d = b), (b = b.substr(0, 2e3)), (b = b.replace(Ib, '')), (d = d.substr(b.length)));
       var e = a.createElement('div');
       a = a.createElement('a');
-      c = Ta(b);
-      b = c.C;
+      c = Eb(b);
+      b = c.B;
       c.query.length && (b += '?' + c.query.join(''));
-      c.g.length && (b += '#' + c.g.join(''));
-      b = new w(qa, b);
-      a: {
-        try {
-          var f = a && a.ownerDocument,
-            g = f && (f.defaultView || f.parentWindow);
-          g = g || m;
-          if (g.Element && g.Location) {
-            var k = g;
-            break a;
-          }
-        } catch (l) {}
-        k = null;
-      }
-      if (
-        k &&
-        'undefined' != typeof k.HTMLAnchorElement &&
-        (!a || (!(a instanceof k.HTMLAnchorElement) && (a instanceof k.Location || a instanceof k.Element)))
-      ) {
-        k = typeof a;
-        if (('object' == k && null != a) || 'function' == k)
-          try {
-            var h = a.constructor.displayName || a.constructor.name || Object.prototype.toString.call(a);
-          } catch (l) {
-            h = '<object could not be stringified>';
-          }
-        else h = void 0 === a ? 'undefined' : null === a ? 'null' : typeof a;
-        la('Argument is not a %s (or a non-Element, non-Location mock); got: %s', 'HTMLAnchorElement', h);
-      }
-      b instanceof w
-        ? (h = b)
-        : ((h = b),
-          h instanceof w ||
-            ((h = 'object' == typeof h && h.w ? h.v() : String(h)),
-            ka(sa.test(h), '%s does not match the safe URL pattern', h) || (h = 'about:invalid#zClosurez'),
-            (h = new w(qa, h))));
-      h instanceof w && h.constructor === w && h.fa === ra
-        ? (h = h.R)
-        : (la("expected object of type SafeUrl, got '" + h + "' of type " + aa(h)), (h = 'type_error:SafeUrl'));
-      a.href = h;
+      c.j.length && (b += '#' + c.j.join(''));
+      b = null === b ? 'null' : void 0 === b ? 'undefined' : b;
+      if ('string' !== typeof b) throw Error('Expected a string');
+      b = new x(b, Ja);
+      eb(a, 'A');
+      b = b instanceof x ? b : Ma(b);
+      a.href = Ka(b);
       e.appendChild(a);
       a = e.innerHTML;
-      h = new t(na, 'Assignment to self.');
-      ma(pa(h), 'must provide justification');
-      ka(!/^[\s\xa0]*$/.test(pa(h)), 'must provide non-empty justification');
-      a = new z().i(a);
-      if (xa[e.tagName.toUpperCase()])
-        throw Error('goog.dom.safe.setInnerHtml cannot be used to set content of ' + e.tagName + '.');
-      if (za()) for (; e.lastChild; ) e.removeChild(e.lastChild);
-      e.innerHTML = va(a);
+      b = new v(Fa, 'Assignment to self.');
+      Aa(Ia(b), 'must provide justification');
+      ya(!/^[\s\xa0]*$/.test(Ia(b)), 'must provide non-empty justification');
+      void 0 === Ea && (Ea = ta('gapi#html'));
+      a = (b = Ea) ? b.createHTML(a) : a;
+      a = new Oa(a, Na);
+      if (void 0 !== e.tagName) {
+        if ('script' === e.tagName.toLowerCase()) throw Error('Use setTextContent with a SafeScript.');
+        if ('style' === e.tagName.toLowerCase()) throw Error('Use setTextContent with a SafeStyleSheet.');
+      }
+      a instanceof Oa && a.constructor === Oa
+        ? (a = a.R)
+        : (za("expected object of type SafeHtml, got '" + a + "' of type " + ia(a)), (a = 'type_error:SafeHtml'));
+      e.innerHTML = a;
       b = String(e.firstChild.href);
       e.parentNode && e.parentNode.removeChild(e);
-      c = Ta(b + d);
-      d = c.C;
+      c = Eb(b + d);
+      d = c.B;
       c.query.length && (d += '?' + c.query.join(''));
-      c.g.length && (d += '#' + c.g.join(''));
+      c.j.length && (d += '#' + c.j.join(''));
       return d;
     },
-    Za = /^https?:\/\/[^\/%\\?#\s]+\/[^\s]*$/i;
-  var $a = function (a, b, c, d) {
-      if (A[c + 'EventListener']) A[c + 'EventListener'](a, b, !1);
-      else if (A[d + 'tachEvent']) A[d + 'tachEvent']('on' + a, b);
+    Kb = /^https?:\/\/[^\/%\\?#\s]+\/[^\s]*$/i;
+  var Lb;
+  var Mb = function (a, b, c, d) {
+      if (y[c + 'EventListener']) y[c + 'EventListener'](a, b, !1);
+      else if (y[d + 'tachEvent']) y[d + 'tachEvent']('on' + a, b);
     },
-    ab = function () {
-      var a = B.readyState;
+    Nb = function () {
+      var a = A.readyState;
       return 'complete' === a || ('interactive' === a && -1 == navigator.userAgent.indexOf('MSIE'));
     },
-    db = function (a) {
-      var b = bb;
-      if (!ab())
+    Qb = function (a) {
+      var b = Ob;
+      if (!Nb())
         try {
           b();
         } catch (c) {}
-      cb(a);
+      Pb(a);
     },
-    cb = function (a) {
-      if (ab()) a();
+    Pb = function (a) {
+      if (Nb()) a();
       else {
         var b = !1,
           c = function () {
             if (!b) return (b = !0), a.apply(this, arguments);
           };
-        A.addEventListener
-          ? (A.addEventListener('load', c, !1), A.addEventListener('DOMContentLoaded', c, !1))
-          : A.attachEvent &&
-            (A.attachEvent('onreadystatechange', function () {
-              ab() && c.apply(this, arguments);
+        y.addEventListener
+          ? (y.addEventListener('load', c, !1), y.addEventListener('DOMContentLoaded', c, !1))
+          : y.attachEvent &&
+            (y.attachEvent('onreadystatechange', function () {
+              Nb() && c.apply(this, arguments);
             }),
-            A.attachEvent('onload', c));
+            y.attachEvent('onload', c));
       }
     },
-    eb = function (a) {
+    Rb = function (a) {
       for (; a.firstChild; ) a.removeChild(a.firstChild);
     },
-    fb = { button: !0, div: !0, span: !0 };
-  var L;
-  L = C(A, '___jsl', D());
-  C(L, 'I', 0);
-  C(L, 'hel', 10);
-  var gb = function (a) {
-      return L.dpo ? L.h : J(a, 'jsh', L.h);
+    Sb = { button: !0, div: !0, span: !0 };
+  var M = {};
+  M = B(y, '___jsl', C());
+  B(M, 'I', 0);
+  B(M, 'hel', 10);
+  var Tb = function (a) {
+      return M.dpo ? M.h : I(a, 'jsh', M.h);
     },
-    hb = function (a) {
-      var b = C(L, 'sws', []);
+    Ub = function (a) {
+      var b = B(M, 'sws', []);
       b.push.apply(b, a);
     },
-    ib = function (a) {
-      return C(L, 'watt', D())[a];
+    Vb = function (a) {
+      return B(M, 'watt', C())[a];
     },
-    jb = function (a) {
-      var b = C(L, 'PQ', []);
-      L.PQ = [];
+    Wb = function (a) {
+      var b = B(M, 'PQ', []);
+      M.PQ = [];
       var c = b.length;
       if (0 === c) a();
       else
@@ -520,75 +887,96 @@ gapi._bs = new Date().getTime();
         )
           b[f](e);
     },
-    kb = function (a) {
-      return C(C(L, 'H', D()), a, D());
+    Xb = function (a) {
+      return B(B(M, 'H', C()), a, C());
     };
-  var lb = C(L, 'perf', D()),
-    mb = C(lb, 'g', D()),
-    nb = C(lb, 'i', D());
-  C(lb, 'r', []);
-  D();
-  D();
-  var ob = function (a, b, c) {
-      var d = lb.r;
+  var Yb = B(M, 'perf', C()),
+    Zb = B(Yb, 'g', C()),
+    $b = B(Yb, 'i', C());
+  B(Yb, 'r', []);
+  C();
+  C();
+  var ac = function (a, b, c) {
+      var d = Yb.r;
       'function' === typeof d ? d(a, b, c) : d.push([a, b, c]);
     },
     N = function (a, b, c) {
-      mb[a] = (!b && mb[a]) || c || new Date().getTime();
-      ob(a);
+      Zb[a] = (!b && Zb[a]) || c || new Date().getTime();
+      ac(a);
     },
-    qb = function (a, b, c) {
+    cc = function (a, b, c) {
       b &&
         0 < b.length &&
-        ((b = pb(b)),
-        c && 0 < c.length && (b += '___' + pb(c)),
+        ((b = bc(b)),
+        c && 0 < c.length && (b += '___' + bc(c)),
         28 < b.length && (b = b.substr(0, 28) + (b.length - 28)),
         (c = b),
-        (b = C(nb, '_p', D())),
-        (C(b, c, D())[a] = new Date().getTime()),
-        ob(a, '_p', c));
+        (b = B($b, '_p', C())),
+        (B(b, c, C())[a] = new Date().getTime()),
+        ac(a, '_p', c));
     },
-    pb = function (a) {
+    bc = function (a) {
       return a.join('__').replace(/\./g, '_').replace(/\-/g, '_').replace(/,/g, '_');
     };
-  var rb = D(),
-    sb = [],
-    O = function (a) {
-      throw Error('Bad hint' + (a ? ': ' + a : ''));
+  var dc = C(),
+    O = [],
+    P = function (a) {
+      throw Error('Bad hint: ' + a);
     };
-  sb.push([
+  O.push([
     'jsl',
     function (a) {
       for (var b in a)
-        if (E(a, b)) {
+        if (D(a, b)) {
           var c = a[b];
-          'object' == typeof c ? (L[b] = C(L, b, []).concat(c)) : C(L, b, c);
+          'object' == typeof c ? (M[b] = B(M, b, []).concat(c)) : B(M, b, c);
         }
-      if ((b = a.u)) (a = C(L, 'us', [])), a.push(b), (b = /^https:(.*)$/.exec(b)) && a.push('http:' + b[1]);
+      if ((b = a.u)) (a = B(M, 'us', [])), a.push(b), (b = /^https:(.*)$/.exec(b)) && a.push('http:' + b[1]);
     },
   ]);
-  var tb = /^(\/[a-zA-Z0-9_\-]+)+$/,
-    ub = [/\/amp\//, /\/amp$/, /^\/amp$/],
-    vb = /^[a-zA-Z0-9\-_\.,!]+$/,
-    wb = /^gapi\.loaded_[0-9]+$/,
-    xb = /^[a-zA-Z0-9,._-]+$/,
-    Bb = function (a, b, c, d) {
-      var e = a.split(';'),
-        f = e.shift(),
-        g = rb[f],
-        k = null;
-      g ? (k = g(e, b, c, d)) : O('no hint processor for: ' + f);
-      k || O('failed to generate load url');
-      b = k;
-      c = b.match(yb);
-      ((d = b.match(zb)) && 1 === d.length && Ab.test(b) && c && 1 === c.length) || O('failed sanity: ' + a);
-      return k;
+  var ec = /^(\/[a-zA-Z0-9_\-]+)+$/,
+    fc = [/\/amp\//, /\/amp$/, /^\/amp$/],
+    gc = /^[a-zA-Z0-9\-_\.,!]+$/,
+    hc = /^gapi\.loaded_[0-9]+$/,
+    ic = /^[a-zA-Z0-9,._-]+$/,
+    mc = function (a, b, c, d, e) {
+      var f = a.split(';'),
+        g = f.shift(),
+        k = dc[g],
+        h = null;
+      k ? (h = k(f, b, c, d)) : P('no hint processor for: ' + g);
+      h || P('failed to generate load url');
+      b = h;
+      c = b.match(jc);
+      ((d = b.match(kc)) && 1 === d.length && lc.test(b) && c && 1 === c.length) || P('failed sanity: ' + a);
+      try {
+        a = '?';
+        if (e && 0 < e.length) {
+          c = b = 0;
+          for (d = {}; c < e.length; ) {
+            var l = e[c++];
+            f = void 0;
+            f = u(l)
+              ? 'o' + ((Object.prototype.hasOwnProperty.call(l, ma) && l[ma]) || (l[ma] = ++na))
+              : (typeof l).charAt(0) + l;
+            Object.prototype.hasOwnProperty.call(d, f) || ((d[f] = !0), (e[b++] = l));
+          }
+          e.length = b;
+          h = h + '?le=' + e.join(',');
+          a = '&';
+        }
+        if (M.rol) {
+          var n = M.ol;
+          n && n.length && (h = '' + h + a + 'ol=' + n.length);
+        }
+      } catch (q) {}
+      return h;
     },
-    Eb = function (a, b, c, d) {
-      a = Cb(a);
-      wb.test(c) || O('invalid_callback');
-      b = Db(b);
-      d = d && d.length ? Db(d) : null;
+    pc = function (a, b, c, d) {
+      a = nc(a);
+      hc.test(c) || P('invalid_callback');
+      b = oc(b);
+      d = d && d.length ? oc(d) : null;
       var e = function (f) {
         return encodeURIComponent(f).replace(/%2C/g, ',');
       };
@@ -600,18 +988,18 @@ gapi._bs = new Date().getTime();
         e(b),
         d ? '/exm=' + e(d) : '',
         '/rt=j/sv=1/d=1/ed=1',
-        a.V ? '/am=' + e(a.V) : '',
-        a.ba ? '/rs=' + e(a.ba) : '',
-        a.da ? '/t=' + e(a.da) : '',
+        a.W ? '/am=' + e(a.W) : '',
+        a.fa ? '/rs=' + e(a.fa) : '',
+        a.ha ? '/t=' + e(a.ha) : '',
         '/cb=',
         e(c),
       ].join('');
     },
-    Cb = function (a) {
-      '/' !== a.charAt(0) && O('relative path');
+    nc = function (a) {
+      '/' !== a.charAt(0) && P('relative path');
       for (var b = a.substring(1).split('/'), c = []; b.length; ) {
         a = b.shift();
-        if (!a.length || 0 == a.indexOf('.')) O('empty/relative directory');
+        if (!a.length || 0 == a.indexOf('.')) P('empty/relative directory');
         else if (0 < a.indexOf('=')) {
           b.unshift(a);
           break;
@@ -626,212 +1014,189 @@ gapi._bs = new Date().getTime();
         2 == f.length && g && k && (a[g] = a[g] || k);
       }
       b = '/' + c.join('/');
-      tb.test(b) || O('invalid_prefix');
+      ec.test(b) || P('invalid_prefix');
       c = 0;
-      for (d = ub.length; c < d; ++c) ub[c].test(b) && O('invalid_prefix');
-      c = Fb(a, 'k', !0);
-      d = Fb(a, 'am');
-      e = Fb(a, 'rs');
-      a = Fb(a, 't');
-      return { pathPrefix: b, version: c, V: d, ba: e, da: a };
+      for (d = fc.length; c < d; ++c) fc[c].test(b) && P('invalid_prefix');
+      c = qc(a, 'k', !0);
+      d = qc(a, 'am');
+      e = qc(a, 'rs');
+      a = qc(a, 't');
+      return { pathPrefix: b, version: c, W: d, fa: e, ha: a };
     },
-    Db = function (a) {
+    oc = function (a) {
       for (var b = [], c = 0, d = a.length; c < d; ++c) {
         var e = a[c].replace(/\./g, '_').replace(/-/g, '_');
-        xb.test(e) && b.push(e);
+        ic.test(e) && b.push(e);
       }
       return b.join(',');
     },
-    Fb = function (a, b, c) {
+    qc = function (a, b, c) {
       a = a[b];
-      !a && c && O('missing: ' + b);
+      !a && c && P('missing: ' + b);
       if (a) {
-        if (vb.test(a)) return a;
-        O('invalid: ' + b);
+        if (gc.test(a)) return a;
+        P('invalid: ' + b);
       }
       return null;
     },
-    Ab = /^https?:\/\/[a-z0-9_.-]+\.google(rs)?\.com(:\d+)?\/[a-zA-Z0-9_.,!=\-\/]+$/,
-    zb = /\/cb=/g,
-    yb = /\/\//g,
-    Gb = function () {
-      var a = gb(Aa.href);
-      if (!a) throw Error('Bad hint');
-      return a;
-    };
-  rb.m = function (a, b, c, d) {
-    (a = a[0]) || O('missing_hint');
-    return 'https://apis.google.com' + Eb(a, b, c, d);
+    lc = /^https?:\/\/[a-z0-9_.-]+\.google(rs)?\.com(:\d+)?\/[a-zA-Z0-9_.,!=\-\/]+$/,
+    kc = /\/cb=/g,
+    jc = /\/\//g;
+  dc.m = function (a, b, c, d) {
+    (a = a[0]) || P('missing_hint');
+    return 'https://apis.google.com' + pc(a, b, c, d);
   };
-  var Hb = decodeURI('%73cript'),
-    Ib = /^[-+_0-9\/A-Za-z]+={0,2}$/,
-    Jb = function (a, b) {
+  var rc = decodeURI('%73cript'),
+    sc = /^[-+_0-9\/A-Za-z]+={0,2}$/,
+    tc = function (a, b) {
       for (var c = [], d = 0; d < a.length; ++d) {
         var e = a[d];
-        e && 0 > Da.call(b, e) && c.push(e);
+        e && 0 > pb.call(b, e) && c.push(e);
       }
       return c;
     },
-    Kb = function () {
-      var a = L.nonce;
+    uc = function () {
+      var a = M.nonce;
       return void 0 !== a
-        ? a && a === String(a) && a.match(Ib)
+        ? a && a === String(a) && a.match(sc)
           ? a
-          : (L.nonce = null)
-        : B.querySelector
-        ? (a = B.querySelector('script[nonce]'))
+          : (M.nonce = null)
+        : A.querySelector
+        ? (a = A.querySelector('script[nonce]'))
           ? ((a = a.nonce || a.getAttribute('nonce') || ''),
-            a && a === String(a) && a.match(Ib) ? (L.nonce = a) : (L.nonce = null))
+            a && a === String(a) && a.match(sc) ? (M.nonce = a) : (M.nonce = null))
           : null
         : null;
     },
-    Mb = function (a) {
-      if ('loading' != B.readyState) Lb(a);
+    xc = function (a) {
+      if ('loading' != A.readyState) vc(a);
       else {
-        var b = Kb(),
+        var b = uc(),
           c = '';
         null !== b && (c = ' nonce="' + b + '"');
-        a = '<' + Hb + ' src="' + encodeURI(a) + '"' + c + '></' + Hb + '>';
-        B.write(a);
+        a = '<' + rc + ' src="' + encodeURI(a) + '"' + c + '></' + rc + '>';
+        A.write(wc ? wc.createHTML(a) : a);
       }
     },
-    Lb = function (a) {
-      var b = B.createElement(Hb);
-      b.setAttribute('src', a);
-      a = Kb();
+    vc = function (a) {
+      var b = A.createElement(rc);
+      b.setAttribute('src', wc ? wc.createScriptURL(a) : a);
+      a = uc();
       null !== a && b.setAttribute('nonce', a);
       b.async = 'true';
-      (a = B.getElementsByTagName(Hb)[0])
+      (a = A.getElementsByTagName(rc)[0])
         ? a.parentNode.insertBefore(b, a)
-        : (B.head || B.body || B.documentElement).appendChild(b);
+        : (A.head || A.body || A.documentElement).appendChild(b);
     },
-    Nb = function (a, b) {
-      var c = b && b._c;
-      if (c)
-        for (var d = 0; d < sb.length; d++) {
-          var e = sb[d][0],
-            f = sb[d][1];
-          f && E(c, e) && f(c[e], a, b);
-        }
-    },
-    Pb = function (a, b, c) {
-      Ob(function () {
-        var d = b === gb(Aa.href) ? C(I, '_', D()) : D();
-        d = C(kb(b), '_', d);
+    zc = function (a, b, c) {
+      yc(function () {
+        var d = b === Tb(mb.href) ? B(H, '_', C()) : C();
+        d = B(Xb(b), '_', d);
         a(d);
       }, c);
     },
-    Rb = function (a, b) {
+    Bc = function (a, b) {
       var c = b || {};
       'function' == typeof b && ((c = {}), (c.callback = b));
-      Nb(a, c);
-      b = a ? a.split(':') : [];
-      var d = c.h || Gb(),
-        e = C(L, 'ah', D());
-      if (e['::'] && b.length) {
-        a = [];
-        for (var f = null; (f = b.shift()); ) {
-          var g = f.split('.');
-          g = e[f] || e[(g[1] && 'ns:' + g[0]) || ''] || d;
-          var k = (a.length && a[a.length - 1]) || null,
-            h = k;
-          (k && k.hint == g) || ((h = { hint: g, Y: [] }), a.push(h));
-          h.Y.push(f);
+      var d = (b = c) && b._c;
+      if (d)
+        for (var e = 0; e < O.length; e++) {
+          var f = O[e][0],
+            g = O[e][1];
+          g && D(d, f) && g(d[f], a, b);
         }
-        var l = a.length;
-        if (1 < l) {
-          var n = c.callback;
-          n &&
-            (c.callback = function () {
-              0 == --l && n();
-            });
-        }
-        for (; (b = a.shift()); ) Qb(b.Y, c, b.hint);
-      } else Qb(b || [], c, d);
+      b = [];
+      a ? (b = a.split(':')) : c.features && (b = c.features);
+      if (!(a = c.h) && ((a = Tb(mb.href)), !a)) throw Error('Bad hint: !hint');
+      Ac(b || [], c, a);
     },
-    Qb = function (a, b, c) {
-      a = Ea(a) || [];
-      var d = b.callback,
-        e = b.config,
-        f = b.timeout,
-        g = b.ontimeout,
-        k = b.onerror,
-        h = void 0;
-      'function' == typeof k && (h = k);
-      var l = null,
-        n = !1;
-      if ((f && !g) || (!f && g)) throw 'Timeout requires both the timeout parameter and ontimeout parameter to be set';
-      k = C(kb(c), 'r', []).sort();
-      var p = C(kb(c), 'L', []).sort(),
-        r = [].concat(k),
-        u = function (M, ea) {
-          if (n) return 0;
-          A.clearTimeout(l);
-          p.push.apply(p, y);
-          var fa = ((I || {}).config || {}).update;
-          fa ? fa(e) : e && C(L, 'cu', []).push(e);
-          if (ea) {
-            qb('me0', M, r);
+    Ac = function (a, b, c) {
+      var d = !!M.glrp;
+      a = qb(a) || [];
+      var e = b.callback,
+        f = b.config,
+        g = b.timeout,
+        k = b.ontimeout,
+        h = b.onerror,
+        l = void 0;
+      'function' == typeof h && (l = h);
+      var n = null,
+        q = !1;
+      if ((g && !k) || (!g && k)) throw 'Timeout requires both the timeout parameter and ontimeout parameter to be set';
+      h = B(Xb(c), 'r', []).sort();
+      var p = B(Xb(c), 'L', []).sort(),
+        J = M.le || [],
+        z = [].concat(h),
+        w = function (R, ja) {
+          if (q) return 0;
+          y.clearTimeout(n);
+          p.push.apply(p, G);
+          var ka = ((H || {}).config || {}).update;
+          ka ? ka(f) : f && B(M, 'cu', []).push(f);
+          if (ja) {
+            cc('me0', R, z);
             try {
-              Pb(ea, c, h);
+              zc(ja, c, l);
             } finally {
-              qb('me1', M, r);
+              cc('me1', R, z);
             }
           }
           return 1;
         };
-      0 < f &&
-        (l = A.setTimeout(function () {
-          n = !0;
-          g();
-        }, f));
-      var y = Jb(a, p);
-      if (y.length) {
-        y = Jb(a, k);
-        var F = C(L, 'CP', []),
-          K = F.length;
-        F[K] = function (M) {
-          if (!M) return 0;
-          qb('ml1', y, r);
-          var ea = function (ya) {
-              F[K] = null;
-              u(y, M) &&
-                jb(function () {
-                  d && d();
-                  ya();
-                });
+      0 < g &&
+        (n = y.setTimeout(function () {
+          q = !0;
+          k();
+        }, g));
+      var G = tc(a, p);
+      if (G.length) {
+        G = tc(a, h);
+        var K = B(M, 'CP', []),
+          L = K.length;
+        K[L] = function (R) {
+          if (!R) return 0;
+          cc('ml1', G, z);
+          var ja = function (Ha) {
+              d || (K[L] = null);
+              w(G, R) &&
+                (d && (K[L] = null),
+                Wb(function () {
+                  e && e();
+                  Ha();
+                }));
             },
-            fa = function () {
-              var ya = F[K + 1];
-              ya && ya();
+            ka = function () {
+              var Ha = K[L + 1];
+              Ha && Ha();
             };
-          0 < K && F[K - 1]
-            ? (F[K] = function () {
-                ea(fa);
+          0 < L && K[L - 1]
+            ? (K[L] = function () {
+                ja(ka);
               })
-            : ea(fa);
+            : ja(ka);
         };
-        if (y.length) {
-          var Qa = 'loaded_' + L.I++;
-          I[Qa] = function (M) {
-            F[K](M);
-            I[Qa] = null;
+        if (G.length) {
+          var gb = 'loaded_' + M.I++;
+          H[gb] = function (R) {
+            K[L](R);
+            H[gb] = null;
           };
-          a = Bb(c, y, 'gapi.' + Qa, k);
-          k.push.apply(k, y);
-          qb('ml0', y, r);
-          b.sync || A.___gapisync ? Mb(a) : Lb(a);
-        } else F[K](Ba);
-      } else u(y) && d && d();
-    };
-  var Ob = function (a, b) {
-    if (L.hee && 0 < L.hel)
+          a = mc(c, G, 'gapi.' + gb, h, J);
+          h.push.apply(h, G);
+          cc('ml0', G, z);
+          b.sync || y.___gapisync ? xc(a) : vc(a);
+        } else K[L](nb);
+      } else w(G) && e && e();
+    },
+    wc = ta('gapi#gapi');
+  var yc = function (a, b) {
+    if (M.hee && 0 < M.hel)
       try {
         return a();
       } catch (c) {
         b && b(c),
-          L.hel--,
-          Rb('debug_error', function () {
+          M.hel--,
+          Bc('debug_error', function () {
             try {
               window.___jsl.hefn(c);
             } catch (d) {
@@ -846,36 +1211,38 @@ gapi._bs = new Date().getTime();
         throw (b && b(c), c);
       }
   };
-  I.load = function (a, b) {
-    return Ob(function () {
-      return Rb(a, b);
+  var Cc = H.load;
+  Cc && B(M, 'ol', []).push(Cc);
+  H.load = function (a, b) {
+    return yc(function () {
+      return Bc(a, b);
     });
   };
-  var Sb = function (a) {
+  var Dc = function (a) {
       var b = (window.___jsl = window.___jsl || {});
       b[a] = b[a] || [];
       return b[a];
     },
-    Tb = function (a) {
+    Ec = function (a) {
       var b = (window.___jsl = window.___jsl || {});
       b.cfg = (!a && b.cfg) || {};
       return b.cfg;
     },
-    Ub = function (a) {
+    Fc = function (a) {
       return 'object' === typeof a && /\[native code\]/.test(a.push);
     },
-    P = function (a, b, c) {
+    Q = function (a, b, c) {
       if (b && 'object' === typeof b)
         for (var d in b)
           !Object.prototype.hasOwnProperty.call(b, d) ||
             (c && '___goc' === d && 'undefined' === typeof b[d]) ||
-            (a[d] && b[d] && 'object' === typeof a[d] && 'object' === typeof b[d] && !Ub(a[d]) && !Ub(b[d])
-              ? P(a[d], b[d])
+            (a[d] && b[d] && 'object' === typeof a[d] && 'object' === typeof b[d] && !Fc(a[d]) && !Fc(b[d])
+              ? Q(a[d], b[d])
               : b[d] && 'object' === typeof b[d]
-              ? ((a[d] = Ub(b[d]) ? [] : {}), P(a[d], b[d]))
+              ? ((a[d] = Fc(b[d]) ? [] : {}), Q(a[d], b[d]))
               : (a[d] = b[d]));
     },
-    Vb = function (a) {
+    Gc = function (a) {
       if (a && !/^\s+$/.test(a)) {
         for (; 0 == a.charCodeAt(a.length - 1); ) a = a.substring(0, a.length - 1);
         try {
@@ -892,56 +1259,53 @@ gapi._bs = new Date().getTime();
         return 'object' === typeof b ? b : {};
       }
     },
-    Wb = function (a, b) {
+    Hc = function (a, b) {
       var c = { ___goc: void 0 };
       a.length &&
         a[a.length - 1] &&
         Object.hasOwnProperty.call(a[a.length - 1], '___goc') &&
         'undefined' === typeof a[a.length - 1].___goc &&
         (c = a.pop());
-      P(c, b);
+      Q(c, b);
       a.push(c);
     },
-    Xb = function (a) {
-      Tb(!0);
+    Ic = function (a) {
+      Ec(!0);
       var b = window.___gcfg,
-        c = Sb('cu'),
+        c = Dc('cu'),
         d = window.___gu;
-      b && b !== d && (Wb(c, b), (window.___gu = b));
-      b = Sb('cu');
+      b && b !== d && (Hc(c, b), (window.___gu = b));
+      b = Dc('cu');
       var e = document.scripts || document.getElementsByTagName('script') || [];
       d = [];
       var f = [];
-      f.push.apply(f, Sb('us'));
+      f.push.apply(f, Dc('us'));
       for (var g = 0; g < e.length; ++g)
         for (var k = e[g], h = 0; h < f.length; ++h) k.src && 0 == k.src.indexOf(f[h]) && d.push(k);
       0 == d.length && 0 < e.length && e[e.length - 1].src && d.push(e[e.length - 1]);
       for (e = 0; e < d.length; ++e)
         d[e].getAttribute('gapi_processed') ||
           (d[e].setAttribute('gapi_processed', !0),
-          (f = d[e])
-            ? ((g = f.nodeType),
-              (f = 3 == g || 4 == g ? f.nodeValue : f.textContent || f.innerText || f.innerHTML || ''))
-            : (f = void 0),
-          (f = Vb(f)) && b.push(f));
-      a && Wb(c, a);
-      d = Sb('cd');
+          (f = d[e]) ? ((g = f.nodeType), (f = 3 == g || 4 == g ? f.nodeValue : f.textContent || '')) : (f = void 0),
+          (f = Gc(f)) && b.push(f));
+      a && Hc(c, a);
+      d = Dc('cd');
       a = 0;
-      for (b = d.length; a < b; ++a) P(Tb(), d[a], !0);
-      d = Sb('ci');
+      for (b = d.length; a < b; ++a) Q(Ec(), d[a], !0);
+      d = Dc('ci');
       a = 0;
-      for (b = d.length; a < b; ++a) P(Tb(), d[a], !0);
+      for (b = d.length; a < b; ++a) Q(Ec(), d[a], !0);
       a = 0;
-      for (b = c.length; a < b; ++a) P(Tb(), c[a], !0);
+      for (b = c.length; a < b; ++a) Q(Ec(), c[a], !0);
     },
-    Q = function (a) {
-      var b = Tb();
+    S = function (a) {
+      var b = Ec();
       if (!a) return b;
       a = a.split('/');
       for (var c = 0, d = a.length; b && 'object' === typeof b && c < d; ++c) b = b[a[c]];
       return c === a.length && void 0 !== b ? b : void 0;
     },
-    Yb = function (a, b) {
+    Jc = function (a, b) {
       var c;
       if ('string' === typeof a) {
         var d = (c = {});
@@ -952,16 +1316,16 @@ gapi._bs = new Date().getTime();
         }
         d[a[e]] = b;
       } else c = a;
-      Xb(c);
+      Ic(c);
     };
-  var Zb = function () {
+  var Kc = function () {
     var a = window.__GOOGLEAPIS;
     a &&
       (a.googleapis && !a['googleapis.config'] && (a['googleapis.config'] = a.googleapis),
-      C(L, 'ci', []).push(a),
+      B(M, 'ci', []).push(a),
       (window.__GOOGLEAPIS = void 0));
   };
-  var $b = {
+  var Lc = {
       callback: 1,
       clientid: 1,
       cookiepolicy: 1,
@@ -970,97 +1334,115 @@ gapi._bs = new Date().getTime();
       requestvisibleactions: 1,
       scope: 1,
     },
-    ac = !1,
-    bc = D(),
-    cc = function () {
-      if (!ac) {
+    Mc = !1,
+    Nc = C(),
+    Oc = function () {
+      if (!Mc) {
         for (var a = document.getElementsByTagName('meta'), b = 0; b < a.length; ++b) {
           var c = a[b].name.toLowerCase();
           if (0 == c.lastIndexOf('google-signin-', 0)) {
             c = c.substring(14);
             var d = a[b].content;
-            $b[c] && d && (bc[c] = d);
+            Lc[c] && d && (Nc[c] = d);
           }
         }
         if (window.self !== window.top) {
           a = document.location.toString();
-          for (var e in $b) 0 < $b[e] && (b = J(a, e, '')) && (bc[e] = b);
+          for (var e in Lc) 0 < Lc[e] && (b = I(a, e, '')) && (Nc[e] = b);
         }
-        ac = !0;
+        Mc = !0;
       }
-      e = D();
-      G(bc, e);
+      e = C();
+      E(Nc, e);
       return e;
     },
-    dc = function (a) {
+    Pc = function (a) {
       return !!(a.clientid && a.scope && a.callback);
     };
-  var ec = window.console,
-    fc = function (a) {
-      ec && ec.log && ec.log(a);
-    };
-  var gc = function () {
-      return !!L.oa;
+  var Qc = function () {
+    this.i = window.console;
+  };
+  Qc.prototype.log = function (a) {
+    this.i && this.i.log && this.i.log(a);
+  };
+  Qc.prototype.error = function (a) {
+    this.i && (this.i.error ? this.i.error(a) : this.i.log && this.i.log(a));
+  };
+  Qc.prototype.warn = function (a) {
+    this.i && (this.i.warn ? this.i.warn(a) : this.i.log && this.i.log(a));
+  };
+  Qc.prototype.debug = function () {};
+  var Rc = new Qc();
+  var Sc = function () {
+      return !!M.oa;
     },
-    hc = function () {};
-  var R = C(L, 'rw', D()),
-    ic = function (a) {
-      for (var b in R) a(R[b]);
+    Tc = function () {};
+  var T = B(M, 'rw', C()),
+    Uc = function (a) {
+      for (var b in T) a(T[b]);
     },
-    jc = function (a, b) {
-      (a = R[a]) && a.state < b && (a.state = b);
+    Vc = function (a, b) {
+      (a = T[a]) && a.state < b && (a.state = b);
     };
-  var kc;
-  var lc = /^https?:\/\/(?:\w|[\-\.])+\.google\.(?:\w|[\-:\.])+(?:\/[^\?#]*)?\/u\/(\d)\//,
-    mc = /^https?:\/\/(?:\w|[\-\.])+\.google\.(?:\w|[\-:\.])+(?:\/[^\?#]*)?\/b\/(\d{10,21})\//,
-    nc = function (a) {
-      var b = Q('googleapis.config/sessionIndex');
-      'string' === typeof b && 254 < b.length && (b = null);
-      null == b && (b = window.__X_GOOG_AUTHUSER);
-      'string' === typeof b && 254 < b.length && (b = null);
-      if (null == b) {
-        var c = window.google;
-        c && (b = c.authuser);
+  var U = function (a) {
+    var b = (window.___jsl = window.___jsl || {});
+    b.cfg = b.cfg || {};
+    b = b.cfg;
+    if (!a) return b;
+    a = a.split('/');
+    for (var c = 0, d = a.length; b && 'object' === typeof b && c < d; ++c) b = b[a[c]];
+    return c === a.length && void 0 !== b ? b : void 0;
+  };
+  var Wc = /^https?:\/\/(?:\w|[\-\.])+\.google\.(?:\w|[\-:\.])+(?:\/[^\?#]*)?\/u\/(\d)\//,
+    Xc = /^https?:\/\/(?:\w|[\-\.])+\.google\.(?:\w|[\-:\.])+(?:\/[^\?#]*)?\/b\/(\d{10,21})\//,
+    Yc = function () {
+      var a = U('googleapis.config/sessionIndex');
+      'string' === typeof a && 254 < a.length && (a = null);
+      null == a && (a = window.__X_GOOG_AUTHUSER);
+      'string' === typeof a && 254 < a.length && (a = null);
+      if (null == a) {
+        var b = window.google;
+        b && (a = b.authuser);
       }
-      'string' === typeof b && 254 < b.length && (b = null);
-      null == b &&
-        ((a = a || window.location.href),
-        (b = J(a, 'authuser') || null),
-        null == b && (b = (b = a.match(lc)) ? b[1] : null));
-      if (null == b) return null;
-      b = String(b);
-      254 < b.length && (b = null);
-      return b;
+      'string' === typeof a && 254 < a.length && (a = null);
+      null == a &&
+        ((b = window.location.href),
+        (a = I(b, 'authuser') || null),
+        null == a && (a = (a = b.match(Wc)) ? a[1] : null));
+      if (null == a) return null;
+      a = String(a);
+      254 < a.length && (a = null);
+      return a;
     },
-    oc = function (a) {
-      var b = Q('googleapis.config/sessionDelegate');
-      'string' === typeof b && 21 < b.length && (b = null);
-      null == b && (b = (a = (a || window.location.href).match(mc)) ? a[1] : null);
-      if (null == b) return null;
-      b = String(b);
-      21 < b.length && (b = null);
-      return b;
+    Zc = function () {
+      var a = U('googleapis.config/sessionDelegate');
+      'string' === typeof a && 21 < a.length && (a = null);
+      null == a && (a = (a = window.location.href.match(Xc)) ? a[1] : null);
+      if (null == a) return null;
+      a = String(a);
+      21 < a.length && (a = null);
+      return a;
     };
-  var pc,
-    S,
-    T = void 0,
-    U = function (a) {
+  var $c,
+    V,
+    W = void 0,
+    X = function (a) {
       try {
-        return m.JSON.parse.call(m.JSON, a);
+        return t.JSON.parse.call(t.JSON, a);
       } catch (b) {
         return !1;
       }
     },
-    V = function (a) {
+    Y = function (a) {
       return Object.prototype.toString.call(a);
     },
-    qc = V(0),
-    rc = V(new Date(0)),
-    sc = V(!0),
-    tc = V(''),
-    uc = V({}),
-    vc = V([]),
-    W = function (a, b) {
+    ad = Y(0),
+    bd = Y(new Date(0)),
+    cd = Y(!0),
+    dd = Y(''),
+    ed = Y({}),
+    fd = Y([]),
+    gd = function (a, b) {
       if (b)
         for (var c = 0, d = b.length; c < d; ++c)
           if (a === b[c]) throw new TypeError('Converting circular structure to JSON');
@@ -1069,33 +1451,33 @@ gapi._bs = new Date().getTime();
         c = Array.prototype.slice.call(b || [], 0);
         c[c.length] = a;
         b = [];
-        var e = V(a);
+        var e = Y(a);
         if (
           null != a &&
           'function' === typeof a.toJSON &&
           (Object.prototype.hasOwnProperty.call(a, 'toJSON') ||
-            ((e !== vc || (a.constructor !== Array && a.constructor !== Object)) &&
-              (e !== uc || (a.constructor !== Array && a.constructor !== Object)) &&
-              e !== tc &&
-              e !== qc &&
-              e !== sc &&
-              e !== rc))
+            ((e !== fd || (a.constructor !== Array && a.constructor !== Object)) &&
+              (e !== ed || (a.constructor !== Array && a.constructor !== Object)) &&
+              e !== dd &&
+              e !== ad &&
+              e !== cd &&
+              e !== bd))
         )
-          return W(a.toJSON.call(a), c);
+          return gd(a.toJSON.call(a), c);
         if (null == a) b[b.length] = 'null';
-        else if (e === qc)
+        else if (e === ad)
           (a = Number(a)),
             isNaN(a) || isNaN(a - a) ? (a = 'null') : -0 === a && 0 > 1 / a && (a = '-0'),
             (b[b.length] = String(a));
-        else if (e === sc) b[b.length] = String(!!Number(a));
+        else if (e === cd) b[b.length] = String(!!Number(a));
         else {
-          if (e === rc) return W(a.toISOString.call(a), c);
-          if (e === vc && V(a.length) === qc) {
+          if (e === bd) return gd(a.toISOString.call(a), c);
+          if (e === fd && Y(a.length) === ad) {
             b[b.length] = '[';
             var f = 0;
-            for (d = Number(a.length) >> 0; f < d; ++f) f && (b[b.length] = ','), (b[b.length] = W(a[f], c) || 'null');
+            for (d = Number(a.length) >> 0; f < d; ++f) f && (b[b.length] = ','), (b[b.length] = gd(a[f], c) || 'null');
             b[b.length] = ']';
-          } else if (e == tc && V(a.length) === qc) {
+          } else if (e == dd && Y(a.length) === ad) {
             b[b.length] = '"';
             f = 0;
             for (c = Number(a.length) >> 0; f < c; ++f)
@@ -1125,86 +1507,86 @@ gapi._bs = new Date().getTime();
             d = 0;
             for (f in a)
               Object.prototype.hasOwnProperty.call(a, f) &&
-                ((e = W(a[f], c)),
+                ((e = gd(a[f], c)),
                 void 0 !== e &&
-                  (d++ && (b[b.length] = ','), (b[b.length] = W(f)), (b[b.length] = ':'), (b[b.length] = e)));
+                  (d++ && (b[b.length] = ','), (b[b.length] = gd(f)), (b[b.length] = ':'), (b[b.length] = e)));
             b[b.length] = '}';
           } else return;
         }
         return b.join('');
       }
     },
-    wc = /[\0-\x07\x0b\x0e-\x1f]/,
-    xc = /^([^"]*"([^\\"]|\\.)*")*[^"]*"([^"\\]|\\.)*[\0-\x1f]/,
-    yc = /^([^"]*"([^\\"]|\\.)*")*[^"]*"([^"\\]|\\.)*\\[^\\\/"bfnrtu]/,
-    zc = /^([^"]*"([^\\"]|\\.)*")*[^"]*"([^"\\]|\\.)*\\u([0-9a-fA-F]{0,3}[^0-9a-fA-F])/,
-    Ac = /"([^\0-\x1f\\"]|\\[\\\/"bfnrt]|\\u[0-9a-fA-F]{4})*"/g,
-    Bc = /-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][-+]?[0-9]+)?/g,
-    Cc = /[ \t\n\r]+/g,
-    Dc = /[^"]:/,
-    Ec = /""/g,
-    Fc = /true|false|null/g,
-    Gc = /00/,
-    Hc = /[\{]([^0\}]|0[^:])/,
-    Ic = /(^|\[)[,:]|[,:](\]|\}|[,:]|$)/,
-    Jc = /[^\[,:][\[\{]/,
-    Kc = /^(\{|\}|\[|\]|,|:|0)+/,
-    Lc = /\u2028/g,
-    Mc = /\u2029/g,
-    Nc = function (a) {
+    hd = /[\0-\x07\x0b\x0e-\x1f]/,
+    id = /^([^"]*"([^\\"]|\\.)*")*[^"]*"([^"\\]|\\.)*[\0-\x1f]/,
+    jd = /^([^"]*"([^\\"]|\\.)*")*[^"]*"([^"\\]|\\.)*\\[^\\\/"bfnrtu]/,
+    kd = /^([^"]*"([^\\"]|\\.)*")*[^"]*"([^"\\]|\\.)*\\u([0-9a-fA-F]{0,3}[^0-9a-fA-F])/,
+    ld = /"([^\0-\x1f\\"]|\\[\\\/"bfnrt]|\\u[0-9a-fA-F]{4})*"/g,
+    md = /-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][-+]?[0-9]+)?/g,
+    nd = /[ \t\n\r]+/g,
+    od = /[^"]:/,
+    pd = /""/g,
+    qd = /true|false|null/g,
+    rd = /00/,
+    sd = /[\{]([^0\}]|0[^:])/,
+    td = /(^|\[)[,:]|[,:](\]|\}|[,:]|$)/,
+    ud = /[^\[,:][\[\{]/,
+    vd = /^(\{|\}|\[|\]|,|:|0)+/,
+    wd = /\u2028/g,
+    xd = /\u2029/g,
+    yd = function (a) {
       a = String(a);
-      if (wc.test(a) || xc.test(a) || yc.test(a) || zc.test(a)) return !1;
-      var b = a.replace(Ac, '""');
-      b = b.replace(Bc, '0');
-      b = b.replace(Cc, '');
-      if (Dc.test(b)) return !1;
-      b = b.replace(Ec, '0');
-      b = b.replace(Fc, '0');
-      if (Gc.test(b) || Hc.test(b) || Ic.test(b) || Jc.test(b) || !b || (b = b.replace(Kc, ''))) return !1;
-      a = a.replace(Lc, '\\u2028').replace(Mc, '\\u2029');
+      if (hd.test(a) || id.test(a) || jd.test(a) || kd.test(a)) return !1;
+      var b = a.replace(ld, '""');
+      b = b.replace(md, '0');
+      b = b.replace(nd, '');
+      if (od.test(b)) return !1;
+      b = b.replace(pd, '0');
+      b = b.replace(qd, '0');
+      if (rd.test(b) || sd.test(b) || td.test(b) || ud.test(b) || !b || (b = b.replace(vd, ''))) return !1;
+      a = a.replace(wd, '\\u2028').replace(xd, '\\u2029');
       b = void 0;
       try {
-        b = T
-          ? [U(a)]
+        b = W
+          ? [X(a)]
           : eval('(function (var_args) {\n  return Array.prototype.slice.call(arguments, 0);\n})(\n' + a + '\n)');
       } catch (c) {
         return !1;
       }
       return b && 1 === b.length ? b[0] : !1;
     },
-    Oc = function () {
-      var a = ((m.document || {}).scripts || []).length;
-      if ((void 0 === pc || void 0 === T || S !== a) && -1 !== S) {
-        pc = T = !1;
-        S = -1;
+    zd = function () {
+      var a = ((t.document || {}).scripts || []).length;
+      if ((void 0 === $c || void 0 === W || V !== a) && -1 !== V) {
+        $c = W = !1;
+        V = -1;
         try {
           try {
-            T =
-              !!m.JSON &&
+            W =
+              !!t.JSON &&
               '{"a":[3,true,"1970-01-01T00:00:00.000Z"]}' ===
-                m.JSON.stringify.call(m.JSON, { a: [3, !0, new Date(0)], c: function () {} }) &&
-              !0 === U('true') &&
-              3 === U('[{"a":3}]')[0].a;
+                t.JSON.stringify.call(t.JSON, { a: [3, !0, new Date(0)], c: function () {} }) &&
+              !0 === X('true') &&
+              3 === X('[{"a":3}]')[0].a;
           } catch (b) {}
-          pc = T && !U('[00]') && !U('"\u0007"') && !U('"\\0"') && !U('"\\v"');
+          $c = W && !X('[00]') && !X('"\u0007"') && !X('"\\0"') && !X('"\\v"');
         } finally {
-          S = a;
+          V = a;
         }
       }
     },
-    Pc = function (a) {
-      if (-1 === S) return !1;
-      Oc();
-      return (pc ? U : Nc)(a);
+    Ad = function (a) {
+      if (-1 === V) return !1;
+      zd();
+      return ($c ? X : yd)(a);
     },
-    Qc = function (a) {
-      if (-1 !== S) return Oc(), T ? m.JSON.stringify.call(m.JSON, a) : W(a);
+    Bd = function (a) {
+      if (-1 !== V) return zd(), W ? t.JSON.stringify.call(t.JSON, a) : gd(a);
     },
-    Rc =
+    Cd =
       !Date.prototype.toISOString ||
       'function' !== typeof Date.prototype.toISOString ||
       '1970-01-01T00:00:00.000Z' !== new Date(0).toISOString(),
-    Sc = function () {
+    Dd = function () {
       var a = Date.prototype.getUTCFullYear.call(this);
       return [
         0 > a
@@ -1227,33 +1609,34 @@ gapi._bs = new Date().getTime();
         'Z',
       ].join('');
     };
-  Date.prototype.toISOString = Rc ? Sc : Date.prototype.toISOString;
-  var Tc = function () {
-    this.l = -1;
+  Date.prototype.toISOString = Cd ? Dd : Date.prototype.toISOString;
+  var Ed = function () {
+    this.blockSize = -1;
   };
-  var Uc = function () {
-    this.l = 64;
-    this.b = [];
-    this.K = [];
-    this.ha = [];
-    this.F = [];
-    this.F[0] = 128;
-    for (var a = 1; a < this.l; ++a) this.F[a] = 0;
-    this.H = this.A = 0;
+  var Fd = function () {
+    this.blockSize = -1;
+    this.blockSize = 64;
+    this.g = [];
+    this.M = [];
+    this.ka = [];
+    this.J = [];
+    this.J[0] = 128;
+    for (var a = 1; a < this.blockSize; ++a) this.J[a] = 0;
+    this.K = this.v = 0;
     this.reset();
   };
-  ha(Uc, Tc);
-  Uc.prototype.reset = function () {
-    this.b[0] = 1732584193;
-    this.b[1] = 4023233417;
-    this.b[2] = 2562383102;
-    this.b[3] = 271733878;
-    this.b[4] = 3285377520;
-    this.H = this.A = 0;
+  ra(Fd, Ed);
+  Fd.prototype.reset = function () {
+    this.g[0] = 1732584193;
+    this.g[1] = 4023233417;
+    this.g[2] = 2562383102;
+    this.g[3] = 271733878;
+    this.g[4] = 3285377520;
+    this.K = this.v = 0;
   };
-  var Vc = function (a, b, c) {
+  var Gd = function (a, b, c) {
     c || (c = 0);
-    var d = a.ha;
+    var d = a.ka;
     if ('string' === typeof b)
       for (var e = 0; 16 > e; e++)
         (d[e] =
@@ -1264,11 +1647,11 @@ gapi._bs = new Date().getTime();
       var f = d[e - 3] ^ d[e - 8] ^ d[e - 14] ^ d[e - 16];
       d[e] = ((f << 1) | (f >>> 31)) & 4294967295;
     }
-    b = a.b[0];
-    c = a.b[1];
-    var g = a.b[2],
-      k = a.b[3],
-      h = a.b[4];
+    b = a.g[0];
+    c = a.g[1];
+    var g = a.g[2],
+      k = a.g[3],
+      h = a.g[4];
     for (e = 0; 80 > e; e++) {
       if (40 > e)
         if (20 > e) {
@@ -1283,101 +1666,90 @@ gapi._bs = new Date().getTime();
       c = b;
       b = f;
     }
-    a.b[0] = (a.b[0] + b) & 4294967295;
-    a.b[1] = (a.b[1] + c) & 4294967295;
-    a.b[2] = (a.b[2] + g) & 4294967295;
-    a.b[3] = (a.b[3] + k) & 4294967295;
-    a.b[4] = (a.b[4] + h) & 4294967295;
+    a.g[0] = (a.g[0] + b) & 4294967295;
+    a.g[1] = (a.g[1] + c) & 4294967295;
+    a.g[2] = (a.g[2] + g) & 4294967295;
+    a.g[3] = (a.g[3] + k) & 4294967295;
+    a.g[4] = (a.g[4] + h) & 4294967295;
   };
-  Uc.prototype.update = function (a, b) {
+  Fd.prototype.update = function (a, b) {
     if (null != a) {
       void 0 === b && (b = a.length);
-      for (var c = b - this.l, d = 0, e = this.K, f = this.A; d < b; ) {
-        if (0 == f) for (; d <= c; ) Vc(this, a, d), (d += this.l);
+      for (var c = b - this.blockSize, d = 0, e = this.M, f = this.v; d < b; ) {
+        if (0 == f) for (; d <= c; ) Gd(this, a, d), (d += this.blockSize);
         if ('string' === typeof a)
           for (; d < b; ) {
-            if (((e[f] = a.charCodeAt(d)), ++f, ++d, f == this.l)) {
-              Vc(this, e);
+            if (((e[f] = a.charCodeAt(d)), ++f, ++d, f == this.blockSize)) {
+              Gd(this, e);
               f = 0;
               break;
             }
           }
         else
           for (; d < b; )
-            if (((e[f] = a[d]), ++f, ++d, f == this.l)) {
-              Vc(this, e);
+            if (((e[f] = a[d]), ++f, ++d, f == this.blockSize)) {
+              Gd(this, e);
               f = 0;
               break;
             }
       }
-      this.A = f;
-      this.H += b;
+      this.v = f;
+      this.K += b;
     }
   };
-  Uc.prototype.digest = function () {
+  Fd.prototype.digest = function () {
     var a = [],
-      b = 8 * this.H;
-    56 > this.A ? this.update(this.F, 56 - this.A) : this.update(this.F, this.l - (this.A - 56));
-    for (var c = this.l - 1; 56 <= c; c--) (this.K[c] = b & 255), (b /= 256);
-    Vc(this, this.K);
-    for (c = b = 0; 5 > c; c++) for (var d = 24; 0 <= d; d -= 8) (a[b] = (this.b[c] >> d) & 255), ++b;
+      b = 8 * this.K;
+    56 > this.v ? this.update(this.J, 56 - this.v) : this.update(this.J, this.blockSize - (this.v - 56));
+    for (var c = this.blockSize - 1; 56 <= c; c--) (this.M[c] = b & 255), (b /= 256);
+    Gd(this, this.M);
+    for (c = b = 0; 5 > c; c++) for (var d = 24; 0 <= d; d -= 8) (a[b] = (this.g[c] >> d) & 255), ++b;
     return a;
   };
-  var Wc = function () {
-    this.S = new Uc();
+  var Hd = function () {
+    this.T = new Fd();
   };
-  Wc.prototype.reset = function () {
-    this.S.reset();
+  Hd.prototype.reset = function () {
+    this.T.reset();
   };
-  var Xc = A.crypto,
-    Yc = !1,
-    Zc = 0,
-    $c = 0,
-    ad = 1,
-    bd = 0,
-    cd = '',
-    dd = function (a) {
-      a = a || A.event;
+  var Id = y.crypto,
+    Jd = !1,
+    Kd = 0,
+    Ld = 0,
+    Md = 1,
+    Nd = 0,
+    Od = '',
+    Pd = function (a) {
+      a = a || y.event;
       var b = (a.screenX + a.clientX) << 16;
       b += a.screenY + a.clientY;
       b *= new Date().getTime() % 1e6;
-      ad = (ad * b) % bd;
-      0 < Zc && ++$c == Zc && $a('mousemove', dd, 'remove', 'de');
+      Md = (Md * b) % Nd;
+      0 < Kd && ++Ld == Kd && Mb('mousemove', Pd, 'remove', 'de');
     },
-    ed = function (a) {
-      var b = new Wc();
+    Qd = function (a) {
+      var b = new Hd();
       a = unescape(encodeURIComponent(a));
       for (var c = [], d = 0, e = a.length; d < e; ++d) c.push(a.charCodeAt(d));
-      b.S.update(c);
-      b = b.S.digest();
+      b.T.update(c);
+      b = b.T.digest();
       a = '';
       for (c = 0; c < b.length; c++)
         a += '0123456789ABCDEF'.charAt(Math.floor(b[c] / 16)) + '0123456789ABCDEF'.charAt(b[c] % 16);
       return a;
     };
-  Yc = !!Xc && 'function' == typeof Xc.getRandomValues;
-  Yc ||
-    ((bd = 1e6 * (screen.width * screen.width + screen.height)),
-    (cd = ed(B.cookie + '|' + B.location + '|' + new Date().getTime() + '|' + Math.random())),
-    (Zc = Q('random/maxObserveMousemove') || 0),
-    0 != Zc && $a('mousemove', dd, 'add', 'at'));
-  var fd = function () {
-      var a = ad;
-      a += parseInt(cd.substr(0, 20), 16);
-      cd = ed(cd);
-      return a / (bd + Math.pow(16, 20));
-    },
-    gd = function () {
-      var a = new A.Uint32Array(1);
-      Xc.getRandomValues(a);
-      return Number('0.' + a[0]);
-    };
-  var hd = function () {
-      var a = L.onl;
+  Jd = !!Id && 'function' == typeof Id.getRandomValues;
+  Jd ||
+    ((Nd = 1e6 * (screen.width * screen.width + screen.height)),
+    (Od = Qd(A.cookie + '|' + A.location + '|' + new Date().getTime() + '|' + Math.random())),
+    (Kd = U('random/maxObserveMousemove') || 0),
+    0 != Kd && Mb('mousemove', Pd, 'add', 'at'));
+  var Rd = function () {
+      var a = M.onl;
       if (!a) {
-        a = D();
-        L.onl = a;
-        var b = D();
+        a = C();
+        M.onl = a;
+        var b = C();
         a.e = function (c) {
           var d = b[c];
           d && (delete b[c], d());
@@ -1391,19 +1763,18 @@ gapi._bs = new Date().getTime();
       }
       return a;
     },
-    id = function (a, b) {
+    Sd = function (a, b) {
       b = b.onload;
-      return 'function' === typeof b ? (hd().a(a, b), b) : null;
+      return 'function' === typeof b ? (Rd().a(a, b), b) : null;
     },
-    jd = function (a) {
-      H(/^\w+$/.test(a), 'Unsupported id - ' + a);
-      hd();
+    Td = function (a) {
+      F(/^\w+$/.test(a), 'Unsupported id - ' + a);
       return 'onload="window.___jsl.onl.e(&#34;' + a + '&#34;)"';
     },
-    kd = function (a) {
-      hd().r(a);
+    Ud = function (a) {
+      Rd().r(a);
     };
-  var ld = {
+  var Vd = {
       allowtransparency: 'true',
       frameborder: '0',
       hspace: '0',
@@ -1415,64 +1786,64 @@ gapi._bs = new Date().getTime();
       vspace: '0',
       width: '100%',
     },
-    md = { allowtransparency: !0, onload: !0 },
-    nd = 0,
-    od = function (a) {
-      H(!a || Za.test(a), 'Illegal url for new iframe - ' + a);
+    Wd = { allowtransparency: !0, onload: !0 },
+    Xd = 0,
+    Yd = function (a) {
+      F(!a || Kb.test(a), 'Illegal url for new iframe - ' + a);
     },
-    pd = function (a, b, c, d, e) {
-      od(c.src);
+    Zd = function (a, b, c, d, e) {
+      Yd(c.src);
       var f,
-        g = id(d, c),
-        k = g ? jd(d) : '';
+        g = Sd(d, c),
+        k = g ? Td(d) : '';
       try {
         document.all &&
           (f = a.createElement(
             '<iframe frameborder="' +
-              Ka(String(c.frameborder)) +
+              wb(String(c.frameborder)) +
               '" scrolling="' +
-              Ka(String(c.scrolling)) +
+              wb(String(c.scrolling)) +
               '" ' +
               k +
               ' name="' +
-              Ka(String(c.name)) +
+              wb(String(c.name)) +
               '"/>'
           ));
       } catch (l) {
       } finally {
         f ||
-          ((f = a.createElement('iframe')),
+          ((f = (a ? new lb(kb(a)) : va || (va = new lb())).ma('IFRAME')),
           g &&
             ((f.onload = function () {
               f.onload = null;
               g.call(this);
             }),
-            kd(d)));
+            Ud(d)));
       }
       f.setAttribute('ng-non-bindable', '');
       for (var h in c)
-        (a = c[h]), 'style' === h && 'object' === typeof a ? G(a, f.style) : md[h] || f.setAttribute(h, String(a));
-      (h = (e && e.beforeNode) || null) || (e && e.dontclear) || eb(b);
+        (a = c[h]), 'style' === h && 'object' === typeof a ? E(a, f.style) : Wd[h] || f.setAttribute(h, String(a));
+      (h = (e && e.beforeNode) || null) || (e && e.dontclear) || Rb(b);
       b.insertBefore(f, h);
       f = h ? h.previousSibling : b.lastChild;
       c.allowtransparency && (f.allowTransparency = !0);
       return f;
     };
-  var qd = /^:[\w]+$/,
-    rd = /:([a-zA-Z_]+):/g,
-    sd = function () {
-      var a = nc() || '0',
-        b = oc();
-      var c = nc(void 0) || a;
-      var d = oc(void 0),
+  var $d = /^:[\w]+$/,
+    ae = /:([a-zA-Z_]+):/g,
+    be = function () {
+      var a = Yc() || '0',
+        b = Zc();
+      var c = Yc() || a;
+      var d = Zc(),
         e = '';
       c && (e += 'u/' + encodeURIComponent(String(c)) + '/');
       d && (e += 'b/' + encodeURIComponent(String(d)) + '/');
       c = e || null;
-      (e = (d = !1 === Q('isLoggedIn')) ? '_/im/' : '') && (c = '');
-      var f = Q('iframes/:socialhost:'),
-        g = Q('iframes/:im_socialhost:');
-      return (kc = {
+      (e = (d = !1 === U('isLoggedIn')) ? '_/im/' : '') && (c = '');
+      var f = U('iframes/:socialhost:'),
+        g = U('iframes/:im_socialhost:');
+      return (Lb = {
         socialhost: f,
         ctx_socialhost: d ? g : f,
         session_index: a,
@@ -1481,20 +1852,21 @@ gapi._bs = new Date().getTime();
         im_prefix: e,
       });
     },
-    td = function (a, b) {
-      return sd()[b] || '';
+    ce = function (a, b) {
+      return be()[b] || '';
     },
-    ud = function (a) {
+    de = function (a) {
       return function (b, c) {
-        return a ? sd()[c] || a[c] || '' : sd()[c] || '';
+        return a ? be()[c] || a[c] || '' : be()[c] || '';
       };
     };
-  var vd = function (a) {
+  var ee = function (a) {
       var b;
       a.match(/^https?%3A/i) && (b = decodeURIComponent(a));
-      return Ya(document, b ? b : a);
+      a = b ? b : a;
+      return Jb(document, a);
     },
-    wd = function (a) {
+    fe = function (a) {
       a = a || 'canonical';
       for (var b = document.getElementsByTagName('link'), c = 0, d = b.length; c < d; c++) {
         var e = b[c],
@@ -1503,252 +1875,258 @@ gapi._bs = new Date().getTime();
           f &&
           f.toLowerCase() == a &&
           (e = e.getAttribute('href')) &&
-          (e = vd(e)) &&
+          (e = ee(e)) &&
           null != e.match(/^https?:\/\/[\w\-_\.]+/i)
         )
           return e;
       }
       return window.location.href;
     };
-  var xd = { se: '0' },
-    yd = { post: !0 },
-    zd = { style: 'position:absolute;top:-10000px;width:450px;margin:0px;border-style:none' },
-    Ad = 'onPlusOne _ready _close _open _resizeMe _renderstart oncircled drefresh erefresh'.split(' '),
-    Bd = C(L, 'WI', D()),
-    Cd = function (a, b, c) {
+  var ge = { se: '0' },
+    he = { post: !0 },
+    ie = { style: 'position:absolute;top:-10000px;width:450px;margin:0px;border-style:none' },
+    je = 'onPlusOne _ready _close _open _resizeMe _renderstart oncircled drefresh erefresh'.split(' '),
+    ke = B(M, 'WI', C()),
+    le = function (a, b, c) {
       var d;
       var e = {};
       var f = (d = a);
       'plus' == a && b.action && ((d = a + '_' + b.action), (f = a + '/' + b.action));
-      (d = Q('iframes/' + d + '/url')) ||
+      (d = S('iframes/' + d + '/url')) ||
         (d = ':im_socialhost:/:session_prefix::im_prefix:_/widget/render/' + f + '?usegapi=1');
-      for (var g in xd) e[g] = g + '/' + (b[g] || xd[g]) + '/';
-      e = Ya(B, d.replace(rd, ud(e)));
+      for (var g in ge) e[g] = g + '/' + (b[g] || ge[g]) + '/';
+      e = Jb(A, d.replace(ae, de(e)));
       g = 'iframes/' + a + '/params/';
       f = {};
-      G(b, f);
-      (d = Q('lang') || Q('gwidget/lang')) && (f.hl = d);
-      yd[a] || (f.origin = window.location.origin || window.location.protocol + '//' + window.location.host);
-      f.exp = Q(g + 'exp');
-      if ((g = Q(g + 'location')))
+      E(b, f);
+      (d = S('lang') || S('gwidget/lang')) && (f.hl = d);
+      he[a] || (f.origin = window.location.origin || window.location.protocol + '//' + window.location.host);
+      f.exp = S(g + 'exp');
+      if ((g = S(g + 'location')))
         for (d = 0; d < g.length; d++) {
           var k = g[d];
-          f[k] = A.location[k];
+          f[k] = y.location[k];
         }
       switch (a) {
         case 'plus':
         case 'follow':
           g = f.href;
           d = b.action ? void 0 : 'publisher';
-          g = (g = 'string' == typeof g ? g : void 0) ? vd(g) : wd(d);
+          g = (g = 'string' == typeof g ? g : void 0) ? ee(g) : fe(d);
           f.url = g;
           delete f.href;
           break;
         case 'plusone':
-          g = (g = b.href) ? vd(g) : wd();
+          g = (g = b.href) ? ee(g) : fe();
           f.url = g;
           g = b.db;
-          d = Q();
+          d = S();
           null == g && d && ((g = d.db), null == g && (g = d.gwidget && d.gwidget.db));
           f.db = g || void 0;
           g = b.ecp;
-          d = Q();
+          d = S();
           null == g && d && ((g = d.ecp), null == g && (g = d.gwidget && d.gwidget.ecp));
           f.ecp = g || void 0;
           delete f.href;
           break;
         case 'signin':
-          f.url = wd();
+          f.url = fe();
       }
-      L.ILI && (f.iloader = '1');
+      M.ILI && (f.iloader = '1');
       delete f['data-onload'];
       delete f.rd;
-      for (var h in xd) f[h] && delete f[h];
-      f.gsrc = Q('iframes/:source:');
-      h = Q('inline/css');
+      for (var h in ge) f[h] && delete f[h];
+      f.gsrc = S('iframes/:source:');
+      h = S('inline/css');
       'undefined' !== typeof h && 0 < c && h >= c && (f.ic = '1');
       h = /^#|^fr-/;
       c = {};
-      for (var l in f) E(f, l) && h.test(l) && ((c[l.replace(h, '')] = f[l]), delete f[l]);
-      l = 'q' == Q('iframes/' + a + '/params/si') ? f : c;
-      h = cc();
-      for (var n in h) !E(h, n) || E(f, n) || E(c, n) || (l[n] = h[n]);
-      n = [].concat(Ad);
-      (l = Q('iframes/' + a + '/methods')) && 'object' === typeof l && Ca.test(l.push) && (n = n.concat(l));
-      for (var p in b) E(b, p) && /^on/.test(p) && ('plus' != a || 'onconnect' != p) && (n.push(p), delete f[p]);
+      for (var l in f) D(f, l) && h.test(l) && ((c[l.replace(h, '')] = f[l]), delete f[l]);
+      l = 'q' == S('iframes/' + a + '/params/si') ? f : c;
+      h = Oc();
+      for (var n in h) !D(h, n) || D(f, n) || D(c, n) || (l[n] = h[n]);
+      n = [].concat(je);
+      (l = S('iframes/' + a + '/methods')) && 'object' === typeof l && ob.test(l.push) && (n = n.concat(l));
+      for (var q in b) D(b, q) && /^on/.test(q) && ('plus' != a || 'onconnect' != q) && (n.push(q), delete f[q]);
       delete f.callback;
       c._methods = n.join(',');
-      return Wa(e, f, c);
+      return Hb(e, f, c);
     },
-    Dd = ['style', 'data-gapiscan'],
-    Fd = function (a) {
-      for (var b = D(), c = 0 != a.nodeName.toLowerCase().indexOf('g:'), d = 0, e = a.attributes.length; d < e; d++) {
-        var f = a.attributes[d],
+    me = ['style', 'data-gapiscan'],
+    oe = function (a) {
+      for (var b = C(), c = 0 != a.nodeName.toLowerCase().indexOf('g:'), d = a.attributes.length, e = 0; e < d; e++) {
+        var f = a.attributes[e],
           g = f.name,
           k = f.value;
-        0 <= Da.call(Dd, g) ||
+        0 <= pb.call(me, g) ||
           (c && 0 != g.indexOf('data-')) ||
           'null' === k ||
           ('specified' in f && !f.specified) ||
           (c && (g = g.substr(5)), (b[g.toLowerCase()] = k));
       }
       a = a.style;
-      (c = Ed(a && a.height)) && (b.height = String(c));
-      (a = Ed(a && a.width)) && (b.width = String(a));
+      (c = ne(a && a.height)) && (b.height = String(c));
+      (a = ne(a && a.width)) && (b.width = String(a));
       return b;
     },
-    Ed = function (a) {
+    ne = function (a) {
       var b = void 0;
       'number' === typeof a ? (b = a) : 'string' === typeof a && (b = parseInt(a, 10));
       return b;
     },
-    Hd = function () {
-      var a = L.drw;
-      ic(function (b) {
+    re = function () {
+      var a = M.drw;
+      Uc(function (b) {
         if (a !== b.id && 4 != b.state && 'share' != b.type) {
           var c = b.id,
             d = b.type,
             e = b.url;
           b = b.userParams;
-          var f = B.getElementById(c);
+          var f = A.getElementById(c);
           if (f) {
-            var g = Cd(d, b, 0);
+            var g = le(d, b, 0);
             g
               ? ((f = f.parentNode),
-                e.replace(/#.*/, '').replace(/(\?|&)ic=1/, '') !== g.replace(/#.*/, '').replace(/(\?|&)ic=1/, '') &&
+                pe(e) !== pe(g) &&
                   ((b.dontclear = !0),
                   (b.rd = !0),
                   (b.ri = !0),
                   (b.type = d),
-                  Gd(f, b),
-                  (d = R[f.lastChild.id]) && (d.oid = c),
-                  jc(c, 4)))
-              : delete R[c];
-          } else delete R[c];
+                  qe(f, b),
+                  (d = T[f.lastChild.id]) && (d.oid = c),
+                  Vc(c, 4)))
+              : delete T[c];
+          } else delete T[c];
         }
       });
-    };
-  var Id,
-    Jd,
-    X,
-    Kd,
-    Ld,
-    Md = /(?:^|\s)g-((\S)*)(?:$|\s)/,
-    Nd = { plusone: !0, autocomplete: !0, profile: !0, signin: !0, signin2: !0 };
-  Id = C(L, 'SW', D());
-  Jd = C(L, 'SA', D());
-  X = C(L, 'SM', D());
-  Kd = C(L, 'FW', []);
-  Ld = null;
-  var Pd = function (a, b) {
-      Od(void 0, !1, a, b);
     },
-    Od = function (a, b, c, d) {
+    pe = function (a) {
+      var b = RegExp('(\\?|&)ic=1');
+      return a.replace(/#.*/, '').replace(b, '');
+    };
+  var se,
+    te,
+    ue,
+    ve,
+    we,
+    xe = /(?:^|\s)g-((\S)*)(?:$|\s)/,
+    ye = { plusone: !0, autocomplete: !0, profile: !0, signin: !0, signin2: !0 };
+  se = B(M, 'SW', C());
+  te = B(M, 'SA', C());
+  ue = B(M, 'SM', C());
+  ve = B(M, 'FW', []);
+  we = null;
+  var ze = function (a, b) {
+      return ('string' === typeof a ? document.getElementById(a) : a) || b;
+    },
+    Be = function (a, b) {
+      Ae(void 0, !1, a, b);
+    },
+    Ae = function (a, b, c, d) {
       N('ps0', !0);
-      c = ('string' === typeof c ? document.getElementById(c) : c) || B;
-      var e = B.documentMode;
+      c = ze(c, A);
+      var e = A.documentMode;
       if (c.querySelectorAll && (!e || 8 < e)) {
-        e = d ? [d] : La(Id).concat(La(Jd)).concat(La(X));
+        e = d ? [d] : xb(se).concat(xb(te)).concat(xb(ue));
         for (var f = [], g = 0; g < e.length; g++) {
           var k = e[g];
           f.push('.g-' + k, 'g\\:' + k);
         }
         e = c.querySelectorAll(f.join(','));
       } else e = c.getElementsByTagName('*');
-      c = D();
+      c = C();
       for (f = 0; f < e.length; f++) {
         g = e[f];
-        var h = g;
         k = d;
-        var l = h.nodeName.toLowerCase(),
-          n = void 0;
-        if (h.getAttribute('data-gapiscan')) k = null;
+        var h = g.nodeName.toLowerCase(),
+          l = void 0;
+        if (g.getAttribute('data-gapiscan')) k = null;
         else {
-          var p = l.indexOf('g:');
-          0 == p
-            ? (n = l.substr(2))
-            : (p = (p = String(h.className || h.getAttribute('class'))) && Md.exec(p)) && (n = p[1]);
-          k = !n || !(Id[n] || Jd[n] || X[n]) || (k && n !== k) ? null : n;
+          var n = h.indexOf('g:');
+          0 == n
+            ? (l = h.substr(2))
+            : (n = (n = String(g.className || g.getAttribute('class'))) && xe.exec(n)) && (l = n[1]);
+          k = !l || !(se[l] || te[l] || ue[l]) || (k && l !== k) ? null : l;
         }
         k &&
-          (Nd[k] || 0 == g.nodeName.toLowerCase().indexOf('g:') || 0 != La(Fd(g)).length) &&
-          (g.setAttribute('data-gapiscan', !0), C(c, k, []).push(g));
+          (ye[k] || 0 == g.nodeName.toLowerCase().indexOf('g:') || 0 != xb(oe(g)).length) &&
+          (g.setAttribute('data-gapiscan', !0), B(c, k, []).push(g));
       }
-      if (b) for (var r in c) for (b = c[r], d = 0; d < b.length; d++) b[d].setAttribute('data-onload', !0);
-      for (var u in c) Kd.push(u);
+      if (b) for (var q in c) for (b = c[q], d = 0; d < b.length; d++) b[d].setAttribute('data-onload', !0);
+      for (var p in c) ve.push(p);
       N('ps1', !0);
-      if ((r = Kd.join(':')) || a)
+      if ((q = ve.join(':')) || a)
         try {
-          I.load(r, a);
-        } catch (F) {
-          fc(F);
+          H.load(q, a);
+        } catch (z) {
+          Rc.log(z);
           return;
         }
-      if (Qd(Ld || {}))
-        for (var y in c) {
-          a = c[y];
-          u = 0;
-          for (b = a.length; u < b; u++) a[u].removeAttribute('data-gapiscan');
-          Rd(y);
+      if (Ce(we || {}))
+        for (var J in c) {
+          a = c[J];
+          p = 0;
+          for (b = a.length; p < b; p++) a[p].removeAttribute('data-gapiscan');
+          De(J);
         }
       else {
         d = [];
-        for (y in c) for (a = c[y], u = 0, b = a.length; u < b; u++) (e = a[u]), Sd(y, e, Fd(e), d, b);
-        Td(r, d);
+        for (J in c) for (a = c[J], p = 0, b = a.length; p < b; p++) (e = a[p]), Ee(J, e, oe(e), d, b);
+        Fe(q, d);
       }
     },
-    Ud = function (a) {
-      var b = C(I, a, {});
+    Ge = function (a) {
+      var b = B(H, a, {});
       b.go ||
         ((b.go = function (c) {
-          return Pd(c, a);
+          return Be(c, a);
         }),
         (b.render = function (c, d) {
           d = d || {};
           d.type = a;
-          return Gd(c, d);
+          return qe(c, d);
         }));
     },
-    Vd = function (a) {
-      Id[a] = !0;
+    He = function (a) {
+      se[a] = !0;
     },
-    Wd = function (a) {
-      Jd[a] = !0;
+    Ie = function (a) {
+      te[a] = !0;
     },
-    Xd = function (a) {
-      X[a] = !0;
+    Je = function (a) {
+      ue[a] = !0;
     };
-  var Rd = function (a, b) {
-      var c = ib(a);
+  var De = function (a, b) {
+      var c = Vb(a);
       b && c
         ? (c(b), (c = b.iframeNode) && c.setAttribute('data-gapiattached', !0))
-        : I.load(a, function () {
-            var d = ib(a),
+        : H.load(a, function () {
+            var d = Vb(a),
               e = b && b.iframeNode,
               f = b && b.userParams;
             e && d
               ? (d(b), e.setAttribute('data-gapiattached', !0))
-              : ((d = I[a].go), 'signin2' == a ? d(e, f) : d(e && e.parentNode, f));
+              : ((d = H[a].go), 'signin2' == a ? d(e, f) : d(e && e.parentNode, f));
           });
     },
-    Qd = function () {
+    Ce = function () {
       return !1;
     },
-    Td = function () {},
-    Sd = function (a, b, c, d, e, f, g) {
-      switch (Yd(b, a, f)) {
+    Fe = function () {},
+    Ee = function (a, b, c, d, e, f) {
+      switch (Ke(b, a, f)) {
         case 0:
-          a = X[a] ? a + '_annotation' : a;
+          a = ue[a] ? a + '_annotation' : a;
           d = {};
           d.iframeNode = b;
           d.userParams = c;
-          Rd(a, d);
+          De(a, d);
           break;
         case 1:
           if (b.parentNode) {
-            for (var k in c) {
-              if ((f = E(c, k)))
-                (f = c[k]),
+            for (var g in c) {
+              if ((f = D(c, g)))
+                (f = c[g]),
                   (f =
                     !!f &&
                     'object' === typeof f &&
@@ -1757,273 +2135,285 @@ gapi._bs = new Date().getTime();
                       f.toString === Array.prototype.toString));
               if (f)
                 try {
-                  c[k] = Qc(c[k]);
-                } catch (y) {
-                  delete c[k];
+                  c[g] = Bd(c[g]);
+                } catch (G) {
+                  delete c[g];
                 }
             }
-            f = !0;
-            c.dontclear && (f = !1);
+            var k = !0;
+            c.dontclear && (k = !1);
             delete c.dontclear;
-            hc();
-            k = Cd(a, c, e);
-            e = g || {};
-            e.allowPost = 1;
-            e.attributes = zd;
-            e.dontclear = !f;
-            g = {};
-            g.userParams = c;
-            g.url = k;
-            g.type = a;
+            Tc();
+            f = le(a, c, e);
+            g = { allowPost: 1, attributes: ie };
+            g.dontclear = !k;
+            e = {};
+            e.userParams = c;
+            e.url = f;
+            e.type = a;
             if (c.rd) var h = b;
             else
               (h = document.createElement('div')),
                 b.setAttribute('data-gapistub', !0),
                 (h.style.cssText = 'position:absolute;width:450px;left:-10000px;'),
                 b.parentNode.insertBefore(h, b);
-            g.siteElement = h;
-            h.id || ((b = h), C(Bd, a, 0), (f = '___' + a + '_' + Bd[a]++), (b.id = f));
-            b = D();
+            e.siteElement = h;
+            h.id || ((b = h), B(ke, a, 0), (k = '___' + a + '_' + ke[a]++), (b.id = k));
+            b = C();
             b['>type'] = a;
-            G(c, b);
-            f = k;
+            E(c, b);
+            k = f;
             c = h;
-            k = e || {};
-            b = k.attributes || {};
-            H(
-              !(k.allowPost || k.forcePost) || !b.onload,
+            f = g || {};
+            b = f.attributes || {};
+            F(
+              !(f.allowPost || f.forcePost) || !b.onload,
               'onload is not supported by post iframe (allowPost or forcePost)'
             );
-            e = b = f;
-            qd.test(b) &&
-              ((e = Q('iframes/' + e.substring(1) + '/url')), H(!!e, 'Unknown iframe url config for - ' + b));
-            f = Ya(B, e.replace(rd, td));
-            b = c.ownerDocument || B;
+            g = b = k;
+            $d.test(b) &&
+              ((g = U('iframes/' + g.substring(1) + '/url')), F(!!g, 'Unknown iframe url config for - ' + b));
+            k = Jb(A, g.replace(ae, ce));
+            b = c.ownerDocument || A;
             h = 0;
-            do e = k.id || ['I', nd++, '_', new Date().getTime()].join('');
-            while (b.getElementById(e) && 5 > ++h);
-            H(5 > h, 'Error creating iframe id');
+            do g = f.id || ['I', Xd++, '_', new Date().getTime()].join('');
+            while (b.getElementById(g) && 5 > ++h);
+            F(5 > h, 'Error creating iframe id');
             h = {};
             var l = {};
             b.documentMode && 9 > b.documentMode && (h.hostiemode = b.documentMode);
-            G(k.queryParams || {}, h);
-            G(k.fragmentParams || {}, l);
-            var n = k.pfname;
-            var p = D();
-            Q('iframes/dropLegacyIdParam') || (p.id = e);
-            p._gfid = e;
-            p.parent = b.location.protocol + '//' + b.location.host;
-            var r = J(b.location.href, 'parent');
+            E(f.queryParams || {}, h);
+            E(f.fragmentParams || {}, l);
+            var n = f.pfname;
+            var q = C();
+            U('iframes/dropLegacyIdParam') || (q.id = g);
+            q._gfid = g;
+            q.parent = b.location.protocol + '//' + b.location.host;
+            var p = I(b.location.href, 'parent');
             n = n || '';
             !n &&
-              r &&
-              ((r = J(b.location.href, '_gfid', '') || J(b.location.href, 'id', '')),
-              (n = J(b.location.href, 'pfname', '')),
-              (n = r ? n + '/' + r : ''));
+              p &&
+              ((p = I(b.location.href, '_gfid', '') || I(b.location.href, 'id', '')),
+              (n = I(b.location.href, 'pfname', '')),
+              (n = p ? n + '/' + p : ''));
             n ||
-              ((r = Pc(J(b.location.href, 'jcp', ''))) &&
-                'object' == typeof r &&
-                (n = (n = r.id) ? r.pfname + '/' + n : ''));
-            p.pfname = n;
-            k.connectWithJsonParam && ((r = {}), (r.jcp = Qc(p)), (p = r));
-            r = J(f, 'rpctoken') || h.rpctoken || l.rpctoken;
-            r || ((r = k.rpctoken || String(Math.round(1e8 * (Yc ? gd() : fd())))), (p.rpctoken = r));
-            k.rpctoken = r;
-            G(p, k.connectWithQueryParams ? h : l);
-            r = b.location.href;
-            p = D();
-            (n = J(r, '_bsh', L.bsh)) && (p._bsh = n);
-            (r = gb(r)) && (p.jsh = r);
-            k.hintInFragment ? G(p, l) : G(p, h);
-            f = Wa(f, h, l, k.paramsSerializer);
-            l = D();
-            G(ld, l);
-            G(k.attributes, l);
-            l.name = l.id = e;
-            l.src = f;
-            k.eurl = f;
-            h = k || {};
-            p = !!h.allowPost;
-            if (h.forcePost || (p && 2e3 < f.length)) {
-              h = Ta(f);
-              l.src = '';
-              k.dropDataPostorigin || (l['data-postorigin'] = f);
-              f = pd(b, c, l, e);
-              if (-1 != navigator.userAgent.indexOf('WebKit')) {
-                var u = f.contentWindow.document;
-                u.open();
-                l = u.createElement('div');
-                p = {};
-                r = e + '_inner';
-                p.name = r;
-                p.src = '';
-                p.style = 'display:none';
-                pd(b, l, p, r, k);
+              ((p = Ad(I(b.location.href, 'jcp', ''))) &&
+                'object' == typeof p &&
+                (n = (n = p.id) ? p.pfname + '/' + n : ''));
+            q.pfname = n;
+            f.connectWithJsonParam && ((p = {}), (p.jcp = Bd(q)), (q = p));
+            p = I(k, 'rpctoken') || h.rpctoken || l.rpctoken;
+            if (!p) {
+              if (!(p = f.rpctoken)) {
+                p = String;
+                n = Math;
+                var J = n.round;
+                if (Jd) {
+                  var z = new y.Uint32Array(1);
+                  Id.getRandomValues(z);
+                  z = Number('0.' + z[0]);
+                } else (z = Md), (z += parseInt(Od.substr(0, 20), 16)), (Od = Qd(Od)), (z /= Nd + Math.pow(16, 20));
+                p = p(J.call(n, 1e8 * z));
               }
-              l = (k = h.query[0]) ? k.split('&') : [];
-              k = [];
-              for (p = 0; p < l.length; p++)
-                (r = l[p].split('=', 2)), k.push([decodeURIComponent(r[0]), decodeURIComponent(r[1])]);
+              q.rpctoken = p;
+            }
+            f.rpctoken = p;
+            E(q, f.connectWithQueryParams ? h : l);
+            p = b.location.href;
+            q = C();
+            (n = I(p, '_bsh', M.bsh)) && (q._bsh = n);
+            (p = Tb(p)) && (q.jsh = p);
+            f.hintInFragment ? E(q, l) : E(q, h);
+            k = Hb(k, h, l, f.paramsSerializer);
+            l = C();
+            E(Vd, l);
+            E(f.attributes, l);
+            l.name = l.id = g;
+            l.src = k;
+            f.eurl = k;
+            h = f || {};
+            q = !!h.allowPost;
+            if (h.forcePost || (q && 2e3 < k.length)) {
+              h = Eb(k);
+              l.src = '';
+              f.dropDataPostorigin || (l['data-postorigin'] = k);
+              k = Zd(b, c, l, g);
+              if (-1 != navigator.userAgent.indexOf('WebKit')) {
+                var w = k.contentWindow.document;
+                w.open();
+                l = w.createElement('div');
+                q = {};
+                p = g + '_inner';
+                q.name = p;
+                q.src = '';
+                q.style = 'display:none';
+                Zd(b, l, q, p, f);
+              }
+              l = (f = h.query[0]) ? f.split('&') : [];
+              f = [];
+              for (q = 0; q < l.length; q++)
+                (p = l[q].split('=', 2)), f.push([decodeURIComponent(p[0]), decodeURIComponent(p[1])]);
               h.query = [];
-              l = Ua(h);
-              H(Za.test(l), 'Invalid URL: ' + l);
+              l = Fb(h);
+              F(Kb.test(l), 'Invalid URL: ' + l);
               h = b.createElement('form');
-              h.action = l;
               h.method = 'POST';
-              h.target = e;
+              h.target = g;
               h.style.display = 'none';
-              for (e = 0; e < k.length; e++)
+              g = l instanceof x ? l : Ma(l);
+              eb(h, 'FORM').action = Ka(g);
+              for (g = 0; g < f.length; g++)
                 (l = b.createElement('input')),
                   (l.type = 'hidden'),
-                  (l.name = k[e][0]),
-                  (l.value = k[e][1]),
+                  (l.name = f[g][0]),
+                  (l.value = f[g][1]),
                   h.appendChild(l);
               c.appendChild(h);
               h.submit();
               h.parentNode.removeChild(h);
-              u && u.close();
-              u = f;
-            } else u = pd(b, c, l, e, k);
-            g.iframeNode = u;
-            g.id = u.getAttribute('id');
-            u = g.id;
-            c = D();
-            c.id = u;
-            c.userParams = g.userParams;
-            c.url = g.url;
-            c.type = g.type;
+              w && w.close();
+              w = k;
+            } else w = Zd(b, c, l, g, f);
+            e.iframeNode = w;
+            e.id = w.getAttribute('id');
+            w = e.id;
+            c = C();
+            c.id = w;
+            c.userParams = e.userParams;
+            c.url = e.url;
+            c.type = e.type;
             c.state = 1;
-            R[u] = c;
-            u = g;
-          } else u = null;
-          u && ((g = u.id) && d.push(g), Rd(a, u));
+            T[w] = c;
+            w = e;
+          } else w = null;
+          w && ((e = w.id) && d.push(e), De(a, w));
       }
     },
-    Yd = function (a, b, c) {
+    Ke = function (a, b, c) {
       if (a && 1 === a.nodeType && b) {
         if (c) return 1;
-        if (X[b]) {
-          if (fb[a.nodeName.toLowerCase()]) return (a = a.innerHTML) && a.replace(/^[\s\xa0]+|[\s\xa0]+$/g, '') ? 0 : 1;
+        if (ue[b]) {
+          if (Sb[a.nodeName.toLowerCase()]) return (a = a.innerHTML) && a.replace(/^[\s\xa0]+|[\s\xa0]+$/g, '') ? 0 : 1;
         } else {
-          if (Jd[b]) return 0;
-          if (Id[b]) return 1;
+          if (te[b]) return 0;
+          if (se[b]) return 1;
         }
       }
       return null;
     },
-    Gd = function (a, b) {
+    qe = function (a, b) {
       var c = b.type;
       delete b.type;
-      var d = ('string' === typeof a ? document.getElementById(a) : a) || void 0;
+      var d = ze(a);
       if (d) {
         a = {};
-        for (var e in b) E(b, e) && (a[e.toLowerCase()] = b[e]);
+        for (var e in b) D(b, e) && (a[e.toLowerCase()] = b[e]);
         a.rd = 1;
         (b = !!a.ri) && delete a.ri;
         e = [];
-        Sd(c, d, a, e, 0, b, void 0);
-        Td(c, e);
-      } else fc('string' === 'gapi.' + c + '.render: missing element ' + typeof a ? a : '');
+        Ee(c, d, a, e, 0, b);
+        Fe(c, e);
+      } else Rc.log('string' === 'gapi.' + c + '.render: missing element ' + typeof a ? a : '');
     };
-  C(I, 'platform', {}).go = Pd;
-  Qd = function (a) {
+  B(H, 'platform', {}).go = Be;
+  Ce = function (a) {
     for (var b = ['_c', 'jsl', 'h'], c = 0; c < b.length && a; c++) a = a[b[c]];
-    b = gb(Aa.href);
+    b = Tb(mb.href);
     return !a || (0 != a.indexOf('n;') && 0 != b.indexOf('n;') && a !== b);
   };
-  Td = function (a, b) {
-    Zd(a, b);
+  Fe = function (a, b) {
+    Le(a, b);
   };
-  var bb = function (a) {
-      Od(a, !0);
+  var Ob = function (a) {
+      Ae(a, !0);
     },
-    $d = function (a, b) {
+    Me = function (a, b) {
       b = b || [];
       for (var c = 0; c < b.length; ++c) a(b[c]);
-      for (a = 0; a < b.length; a++) Ud(b[a]);
+      for (a = 0; a < b.length; a++) Ge(b[a]);
     };
-  sb.push([
+  O.push([
     'platform',
     function (a, b, c) {
-      Ld = c;
-      b && Kd.push(b);
-      $d(Vd, a);
-      $d(Wd, c._c.annotation);
-      $d(Xd, c._c.bimodal);
-      Zb();
-      Xb();
-      if ('explicit' != Q('parsetags')) {
-        hb(a);
-        dc(cc()) && !Q('disableRealtimeCallback') && hc();
+      we = c;
+      (b || c.features) && ve.push(b || c.features.join(':'));
+      Me(He, a);
+      Me(Ie, c._c.annotation);
+      Me(Je, c._c.bimodal);
+      Kc();
+      Ic();
+      if ('explicit' != S('parsetags')) {
+        Ub(a);
+        Pc(Oc()) && !S('disableRealtimeCallback') && Tc();
         if (c && (a = c.callback)) {
-          var d = Ma(a);
+          var d = yb(a);
           delete c.callback;
         }
-        db(function () {
-          bb(d);
+        Qb(function () {
+          Ob(d);
         });
       }
     },
   ]);
-  I._pl = !0;
-  var ae = function (a) {
-    a = (a = R[a]) ? a.oid : void 0;
+  H._pl = !0;
+  var Ne = function (a) {
+    a = (a = T[a]) ? a.oid : void 0;
     if (a) {
-      var b = B.getElementById(a);
+      var b = A.getElementById(a);
       b && b.parentNode.removeChild(b);
-      delete R[a];
-      ae(a);
+      delete T[a];
+      Ne(a);
     }
   };
-  var be = /^\{h:'/,
-    ce = /^!_/,
-    de = '',
-    Zd = function (a, b) {
+  var Oe = /^\{h:'/,
+    Pe = /^!_/,
+    Qe = '',
+    Le = function (a, b) {
       function c() {
-        $a('message', d, 'remove', 'de');
+        Mb('message', d, 'remove', 'de');
       }
       function d(f) {
         var g = f.data,
           k = f.origin;
-        if (ee(g, b)) {
+        if (Re(g, b)) {
           var h = e;
           e = !1;
           h && N('rqe');
-          fe(a, function () {
+          Se(a, function () {
             h && N('rqd');
             c();
-            for (var l = C(L, 'RPMQ', []), n = 0; n < l.length; n++) l[n]({ data: g, origin: k });
+            for (var l = B(M, 'RPMQ', []), n = 0; n < l.length; n++) l[n]({ data: g, origin: k });
           });
         }
       }
       if (0 !== b.length) {
-        de = J(Aa.href, 'pfname', '');
+        Qe = I(mb.href, 'pfname', '');
         var e = !0;
-        $a('message', d, 'add', 'at');
-        Rb(a, c);
+        Mb('message', d, 'add', 'at');
+        Bc(a, c);
       }
     },
-    ee = function (a, b) {
+    Re = function (a, b) {
       a = String(a);
-      if (be.test(a)) return !0;
+      if (Oe.test(a)) return !0;
       var c = !1;
-      ce.test(a) && ((c = !0), (a = a.substr(2)));
+      Pe.test(a) && ((c = !0), (a = a.substr(2)));
       if (!/^\{/.test(a)) return !1;
-      var d = Pc(a);
+      var d = Ad(a);
       if (!d) return !1;
       a = d.f;
-      if (d.s && a && -1 != Da.call(b, a)) {
-        if ('_renderstart' === d.s || d.s === de + '/' + a + '::_renderstart')
-          if (((d = d.a && d.a[c ? 0 : 1]), (b = B.getElementById(a)), jc(a, 2), d && b && d.width && d.height)) {
+      if (d.s && a && -1 != pb.call(b, a)) {
+        if ('_renderstart' === d.s || d.s === Qe + '/' + a + '::_renderstart')
+          if (((d = d.a && d.a[c ? 0 : 1]), (b = A.getElementById(a)), Vc(a, 2), d && b && d.width && d.height)) {
             a: {
               c = b.parentNode;
               a = d || {};
-              if (gc()) {
+              if (Sc()) {
                 var e = b.id;
                 if (e) {
-                  d = (d = R[e]) ? d.state : void 0;
+                  d = (d = T[e]) ? d.state : void 0;
                   if (1 === d || 4 === d) break a;
-                  ae(e);
+                  Ne(e);
                 }
               }
               (d = c.nextSibling) &&
@@ -2053,7 +2443,7 @@ gapi._bs = new Date().getTime();
               d && (c.width = g.width = d + 'px');
               f && (c.height = g.height = f + 'px');
               a.verticalAlign && (c.verticalAlign = a.verticalAlign);
-              e && jc(e, 3);
+              e && Vc(e, 3);
             }
             b['data-csi-wdt'] = new Date().getTime();
           }
@@ -2061,71 +2451,71 @@ gapi._bs = new Date().getTime();
       }
       return !1;
     },
-    fe = function (a, b) {
-      Rb(a, b);
+    Se = function (a, b) {
+      Bc(a, b);
     };
-  var ge = function (a, b) {
-      this.M = a;
-      a = b || {};
-      this.ja = Number(a.maxAge) || 0;
-      this.X = a.domain;
-      this.$ = a.path;
-      this.ka = !!a.secure;
-    },
-    he = /^[-+/_=.:|%&a-zA-Z0-9@]*$/,
-    ie = /^[A-Z_][A-Z0-9_]{0,63}$/;
-  ge.prototype.read = function () {
-    for (var a = this.M + '=', b = document.cookie.split(/;\s*/), c = 0; c < b.length; ++c) {
+  var Te = function (a, b) {
+    this.P = a;
+    a = b || {};
+    this.qa = Number(a.maxAge) || 0;
+    this.aa = a.domain;
+    this.da = a.path;
+    this.ra = !!a.secure;
+  };
+  Te.prototype.read = function () {
+    for (var a = this.P + '=', b = document.cookie.split(/;\s*/), c = 0; c < b.length; ++c) {
       var d = b[c];
       if (0 == d.indexOf(a)) return d.substr(a.length);
     }
   };
-  ge.prototype.write = function (a, b) {
-    if (!ie.test(this.M)) throw 'Invalid cookie name';
-    if (!he.test(a)) throw 'Invalid cookie value';
-    a = this.M + '=' + a;
-    this.X && (a += ';domain=' + this.X);
-    this.$ && (a += ';path=' + this.$);
-    b = 'number' === typeof b ? b : this.ja;
+  Te.prototype.write = function (a, b) {
+    if (!Ue.test(this.P)) throw 'Invalid cookie name';
+    if (!Ve.test(a)) throw 'Invalid cookie value';
+    a = this.P + '=' + a;
+    this.aa && (a += ';domain=' + this.aa);
+    this.da && (a += ';path=' + this.da);
+    b = 'number' === typeof b ? b : this.qa;
     if (0 <= b) {
       var c = new Date();
       c.setSeconds(c.getSeconds() + b);
       a += ';expires=' + c.toUTCString();
     }
-    this.ka && (a += ';secure');
+    this.ra && (a += ';secure');
     document.cookie = a;
     return !0;
   };
-  ge.prototype.clear = function () {
+  Te.prototype.clear = function () {
     this.write('', 0);
   };
-  ge.iterate = function (a) {
+  var Ve = /^[-+/_=.:|%&a-zA-Z0-9@]*$/,
+    Ue = /^[A-Z_][A-Z0-9_]{0,63}$/;
+  Te.iterate = function (a) {
     for (var b = document.cookie.split(/;\s*/), c = 0; c < b.length; ++c) {
       var d = b[c].split('='),
         e = d.shift();
       a(e, d.join('='));
     }
   };
-  var je = function (a) {
-      this.D = a;
-    },
-    Y = {};
-  je.prototype.read = function () {
-    if (Y.hasOwnProperty(this.D)) return Y[this.D];
+  var We = function (a) {
+    this.H = a;
   };
-  je.prototype.write = function (a) {
-    Y[this.D] = a;
+  We.prototype.read = function () {
+    if (Z.hasOwnProperty(this.H)) return Z[this.H];
+  };
+  We.prototype.write = function (a) {
+    Z[this.H] = a;
     return !0;
   };
-  je.prototype.clear = function () {
-    delete Y[this.D];
+  We.prototype.clear = function () {
+    delete Z[this.H];
   };
-  je.iterate = function (a) {
-    for (var b in Y) Y.hasOwnProperty(b) && a(b, Y[b]);
+  var Z = {};
+  We.iterate = function (a) {
+    for (var b in Z) Z.hasOwnProperty(b) && a(b, Z[b]);
   };
-  var ke = 'https:' === window.location.protocol,
-    le = ke || 'http:' === window.location.protocol ? ge : je,
-    me = function (a) {
+  var Xe = 'https:' === window.location.protocol,
+    Ye = Xe || 'http:' === window.location.protocol ? Te : We,
+    Ze = function (a) {
       var b = a.substr(1),
         c = '',
         d = window.location.hostname;
@@ -2136,272 +2526,260 @@ gapi._bs = new Date().getTime();
         if (b.length < c - 1) return null;
         b.length == c - 1 && (d = '.' + d);
       } else d = '';
-      return { j: 'S' == a.charAt(0), domain: d, o: c };
+      return { l: 'S' == a.charAt(0), domain: d, o: c };
     },
-    ne = function () {
+    $e = function () {
       var a,
         b = null;
-      le.iterate(function (c, d) {
+      Ye.iterate(function (c, d) {
         0 === c.indexOf('G_AUTHUSER_') &&
-          ((c = me(c.substring(11))), !a || (c.j && !a.j) || (c.j == a.j && c.o > a.o)) &&
+          ((c = Ze(c.substring(11))), !a || (c.l && !a.l) || (c.l == a.l && c.o > a.o)) &&
           ((a = c), (b = d));
       });
-      return { ia: a, J: b };
+      return { la: a, L: b };
     };
-  var oe = function (a) {
-      if (0 !== a.indexOf('GCSC')) return null;
-      var b = { Z: !1 };
-      a = a.substr(4);
-      if (!a) return b;
-      var c = a.charAt(0);
-      a = a.substr(1);
-      var d = a.lastIndexOf('_');
-      if (-1 == d) return b;
-      var e = me(a.substr(d + 1));
-      if (null == e) return b;
-      a = a.substring(0, d);
-      if ('_' !== a.charAt(0)) return b;
-      d = 'E' === c && e.j;
-      return (!d && ('U' !== c || e.j)) || (d && !ke) ? b : { Z: !0, j: d, na: a.substr(1), domain: e.domain, o: e.o };
-    },
-    pe = function (a) {
+  function af(a) {
+    if (0 !== a.indexOf('GCSC')) return null;
+    var b = { ca: !1 };
+    a = a.substr(4);
+    if (!a) return b;
+    var c = a.charAt(0);
+    a = a.substr(1);
+    var d = a.lastIndexOf('_');
+    if (-1 == d) return b;
+    var e = Ze(a.substr(d + 1));
+    if (null == e) return b;
+    a = a.substring(0, d);
+    if ('_' !== a.charAt(0)) return b;
+    d = 'E' === c && e.l;
+    return (!d && ('U' !== c || e.l)) || (d && !Xe) ? b : { ca: !0, l: d, va: a.substr(1), domain: e.domain, o: e.o };
+  }
+  var bf = function (a) {
       if (!a) return [];
       a = a.split('=');
       return a[1] ? a[1].split('|') : [];
     },
-    qe = function (a) {
+    cf = function (a) {
       a = a.split(':');
-      return { clientId: a[0].split('=')[1], ma: pe(a[1]), qa: pe(a[2]), pa: pe(a[3]) };
+      return { clientId: a[0].split('=')[1], ta: bf(a[1]), xa: bf(a[2]), wa: bf(a[3]) };
     },
-    re = function () {
-      var a = ne(),
-        b = a.ia;
-      a = a.J;
+    df = function () {
+      var a = $e(),
+        b = a.la;
+      a = a.L;
       if (null !== a) {
         var c;
-        le.iterate(function (f, g) {
-          (f = oe(f)) && f.Z && f.j == b.j && f.o == b.o && (c = g);
+        Ye.iterate(function (f, g) {
+          (f = af(f)) && f.ca && f.l == b.l && f.o == b.o && (c = g);
         });
         if (c) {
-          var d = qe(c),
-            e = d && d.ma[Number(a)];
+          var d = cf(c),
+            e = d && d.ta[Number(a)];
           d = d && d.clientId;
-          if (e) return { J: a, la: e, clientId: d };
+          if (e) return { L: a, sa: e, clientId: d };
         }
       }
       return null;
     };
-  var Z = function () {
-    this.W = se;
+  var ff = function () {
+    this.Y = ef;
   };
-  Z.prototype.B = 0;
-  Z.prototype.U = 2;
-  Z.prototype.W = null;
-  Z.prototype.L = !1;
-  Z.prototype.ca = function () {
-    this.L || ((this.B = 0), (this.L = !0), this.aa());
+  m = ff.prototype;
+  m.ga = function () {
+    this.O || ((this.A = 0), (this.O = !0), this.ea());
   };
-  Z.prototype.aa = function () {
-    this.L &&
-      (this.W() ? (this.B = this.U) : (this.B = Math.min(2 * (this.B || this.U), 120)),
-      window.setTimeout(da(this.aa, this), 1e3 * this.B));
+  m.ea = function () {
+    this.O &&
+      (this.Y() ? (this.A = this.V) : (this.A = Math.min(2 * (this.A || this.V), 120)),
+      window.setTimeout(qa(this.ea, this), 1e3 * this.A));
   };
-  for (var te = 0; 64 > te; ++te);
-  var ue = null;
-  gc = function () {
-    return (L.oa = !0);
+  m.A = 0;
+  m.V = 2;
+  m.Y = null;
+  m.O = !1;
+  var gf = null;
+  Sc = function () {
+    return (M.oa = !0);
   };
-  hc = function () {
-    L.oa = !0;
-    var a = re();
-    (a = a && a.J) && Yb('googleapis.config/sessionIndex', a);
-    ue || (ue = C(L, 'ss', new Z()));
-    a = ue;
-    a.ca && a.ca();
+  Tc = function () {
+    M.oa = !0;
+    var a = df();
+    (a = a && a.L) && Jc('googleapis.config/sessionIndex', a);
+    gf || (gf = B(M, 'ss', new ff()));
+    a = gf;
+    a.ga && a.ga();
   };
-  var se = function () {
-    var a = re(),
-      b = (a && a.la) || null,
+  var ef = function () {
+    var a = df(),
+      b = (a && a.sa) || null,
       c = a && a.clientId;
-    Rb('auth', {
+    Bc('auth', {
       callback: function () {
-        var d = A.gapi.auth,
+        var d = y.gapi.auth,
           e = { client_id: c, session_state: b };
         d.checkSessionState(e, function (f) {
           var g = e.session_state,
-            k = Q('isLoggedIn');
-          f = Q('debug/forceIm') ? !1 : (g && f) || (!g && !f);
-          if ((k = k != f)) Yb('isLoggedIn', f), hc(), Hd(), f || ((f = d.signOut) ? f() : (f = d.setToken) && f(null));
-          f = cc();
-          var h = Q('savedUserState');
+            k = !!S('isLoggedIn');
+          f = S('debug/forceIm') ? !1 : (g && f) || (!g && !f);
+          if ((k = k !== f))
+            Jc('isLoggedIn', f), Tc(), re(), f || ((f = d.signOut) ? f() : (f = d.setToken) && f(null));
+          f = Oc();
+          var h = S('savedUserState');
           g = d._guss(f.cookiepolicy);
           h = h != g && 'undefined' != typeof h;
-          Yb('savedUserState', g);
-          (k || h) && dc(f) && !Q('disableRealtimeCallback') && d._pimf(f, !0);
+          Jc('savedUserState', g);
+          (k || h) && Pc(f) && !S('disableRealtimeCallback') && d._pimf(f, !0);
         });
       },
     });
     return !0;
   };
+  O.unshift([
+    'url',
+    function (a, b, c) {
+      !a ||
+        (b && '' !== b) ||
+        !a.endsWith('.js') ||
+        ((a = a.substring(0, a.length - 3)),
+        (b = a.lastIndexOf('/') + 1),
+        b >= a.length ||
+          ((a = a
+            .substr(b)
+            .split(':')
+            .filter(function (d) {
+              return !['api', 'platform'].includes(d);
+            })),
+          (c.features = a)));
+    },
+  ]);
   N('bs0', !0, window.gapi._bs);
   N('bs1', !0);
   delete window.gapi._bs;
-}.call(this));
-gapi.load('', {
-  callback: window['gapi_onload'],
-  _c: {
-    jsl: {
-      ci: {
-        deviceType: 'mobile',
-        'oauth-flow': {
-          authUrl: 'https://accounts.google.com/o/oauth2/auth',
-          proxyUrl: 'https://accounts.google.com/o/oauth2/postmessageRelay',
-          disableOpt: true,
-          idpIframeUrl: 'https://accounts.google.com/o/oauth2/iframe',
-          usegapi: false,
+  window.gapi.load('', {
+    callback: window['gapi_onload'],
+    _c: {
+      url: 'https://apis.google.com/js/platform.js',
+      jsl: {
+        ci: {
+          'oauth-flow': {
+            authUrl: 'https://accounts.google.com/o/oauth2/auth',
+            proxyUrl: 'https://accounts.google.com/o/oauth2/postmessageRelay',
+            disableOpt: !0,
+            idpIframeUrl: 'https://accounts.google.com/o/oauth2/iframe',
+            usegapi: !1,
+          },
+          debug: { reportExceptionRate: 1, forceIm: !1, rethrowException: !0, host: 'https://apis.google.com' },
+          enableMultilogin: !0,
+          'googleapis.config': {
+            auth: { useFirstPartyAuthV2: !0 },
+            root: 'https://content.googleapis.com',
+            'root-1p': 'https://clients6.google.com',
+          },
+          inline: { css: 1 },
+          disableRealtimeCallback: !1,
+          drive_share: { skipInitCommand: !0 },
+          csi: { rate: 0.01 },
+          client: { cors: !1 },
+          signInDeprecation: { rate: 0 },
+          include_granted_scopes: !0,
+          llang: 'en',
+          iframes: {
+            youtube: {
+              params: { location: ['search', 'hash'] },
+              url: ':socialhost:/:session_prefix:_/widget/render/youtube?usegapi=1',
+              methods: ['scroll', 'openwindow'],
+            },
+            ytsubscribe: { url: 'https://www.youtube.com/subscribe_embed?usegapi=1' },
+            plus_circle: {
+              params: { url: '' },
+              url: ':socialhost:/:session_prefix::se:_/widget/plus/circle?usegapi=1',
+            },
+            plus_share: {
+              params: { url: '' },
+              url: ':socialhost:/:session_prefix::se:_/+1/sharebutton?plusShare=true&usegapi=1',
+            },
+            rbr_s: {
+              params: { url: '' },
+              url: ':socialhost:/:session_prefix::se:_/widget/render/recobarsimplescroller',
+            },
+            ':source:': '3p',
+            playemm: { url: 'https://play.google.com/work/embedded/search?usegapi=1&usegapi=1' },
+            savetoandroidpay: { url: 'https://pay.google.com/gp/v/widget/save' },
+            blogger: {
+              params: { location: ['search', 'hash'] },
+              url: ':socialhost:/:session_prefix:_/widget/render/blogger?usegapi=1',
+              methods: ['scroll', 'openwindow'],
+            },
+            evwidget: { params: { url: '' }, url: ':socialhost:/:session_prefix:_/events/widget?usegapi=1' },
+            partnersbadge: { url: 'https://www.gstatic.com/partners/badge/templates/badge.html?usegapi=1' },
+            dataconnector: { url: 'https://dataconnector.corp.google.com/:session_prefix:ui/widgetview?usegapi=1' },
+            surveyoptin: { url: 'https://www.google.com/shopping/customerreviews/optin?usegapi=1' },
+            ':socialhost:': 'https://apis.google.com',
+            shortlists: { url: '' },
+            hangout: { url: 'https://talkgadget.google.com/:session_prefix:talkgadget/_/widget' },
+            plus_followers: { params: { url: '' }, url: ':socialhost:/_/im/_/widget/render/plus/followers?usegapi=1' },
+            post: {
+              params: { url: '' },
+              url: ':socialhost:/:session_prefix::im_prefix:_/widget/render/post?usegapi=1',
+            },
+            signin: {
+              params: { url: '' },
+              url: ':socialhost:/:session_prefix:_/widget/render/signin?usegapi=1',
+              methods: ['onauth'],
+            },
+            rbr_i: { params: { url: '' }, url: ':socialhost:/:session_prefix::se:_/widget/render/recobarinvitation' },
+            share: { url: ':socialhost:/:session_prefix::im_prefix:_/widget/render/share?usegapi=1' },
+            plusone: {
+              params: { count: '', size: '', url: '' },
+              url: ':socialhost:/:session_prefix::se:_/+1/fastbutton?usegapi=1',
+            },
+            comments: {
+              params: { location: ['search', 'hash'] },
+              url: ':socialhost:/:session_prefix:_/widget/render/comments?usegapi=1',
+              methods: ['scroll', 'openwindow'],
+            },
+            ':im_socialhost:': 'https://plus.googleapis.com',
+            backdrop: { url: 'https://clients3.google.com/cast/chromecast/home/widget/backdrop?usegapi=1' },
+            visibility: {
+              params: { url: '' },
+              url: ':socialhost:/:session_prefix:_/widget/render/visibility?usegapi=1',
+            },
+            autocomplete: { params: { url: '' }, url: ':socialhost:/:session_prefix:_/widget/render/autocomplete' },
+            ':signuphost:': 'https://plus.google.com',
+            ratingbadge: { url: 'https://www.google.com/shopping/customerreviews/badge?usegapi=1' },
+            appcirclepicker: { url: ':socialhost:/:session_prefix:_/widget/render/appcirclepicker' },
+            follow: { url: ':socialhost:/:session_prefix:_/widget/render/follow?usegapi=1' },
+            community: { url: ':ctx_socialhost:/:session_prefix::im_prefix:_/widget/render/community?usegapi=1' },
+            sharetoclassroom: { url: 'https://classroom.google.com/sharewidget?usegapi=1' },
+            ytshare: { params: { url: '' }, url: ':socialhost:/:session_prefix:_/widget/render/ytshare?usegapi=1' },
+            plus: { url: ':socialhost:/:session_prefix:_/widget/render/badge?usegapi=1' },
+            family_creation: {
+              params: { url: '' },
+              url: 'https://families.google.com/webcreation?usegapi=1&usegapi=1',
+            },
+            commentcount: { url: ':socialhost:/:session_prefix:_/widget/render/commentcount?usegapi=1' },
+            configurator: { url: ':socialhost:/:session_prefix:_/plusbuttonconfigurator?usegapi=1' },
+            zoomableimage: { url: 'https://ssl.gstatic.com/microscope/embed/' },
+            appfinder: { url: 'https://workspace.google.com/:session_prefix:marketplace/appfinder?usegapi=1' },
+            savetowallet: { url: 'https://pay.google.com/gp/v/widget/save' },
+            person: { url: ':socialhost:/:session_prefix:_/widget/render/person?usegapi=1' },
+            savetodrive: { url: 'https://drive.google.com/savetodrivebutton?usegapi=1', methods: ['save'] },
+            page: { url: ':socialhost:/:session_prefix:_/widget/render/page?usegapi=1' },
+            card: { url: ':socialhost:/:session_prefix:_/hovercard/card' },
+          },
         },
-        debug: { reportExceptionRate: 0.05, forceIm: false, rethrowException: false, host: 'https://apis.google.com' },
-        enableMultilogin: true,
-        'googleapis.config': { auth: { useFirstPartyAuthV2: true } },
-        isPlusUser: false,
-        inline: { css: 1 },
-        disableRealtimeCallback: false,
-        drive_share: { skipInitCommand: true },
-        csi: { rate: 0.01 },
-        client: { cors: false },
-        isLoggedIn: true,
-        signInDeprecation: { rate: 0.0 },
-        include_granted_scopes: true,
-        llang: 'en',
-        iframes: {
-          youtube: {
-            params: { location: ['search', 'hash'] },
-            url: ':socialhost:/:session_prefix:_/widget/render/youtube?usegapi\u003d1',
-            methods: ['scroll', 'openwindow'],
-          },
-          ytsubscribe: { url: 'https://www.youtube.com/subscribe_embed?usegapi\u003d1' },
-          plus_circle: {
-            params: { url: '' },
-            url: ':socialhost:/:session_prefix::se:_/widget/plus/circle?usegapi\u003d1',
-          },
-          plus_share: {
-            params: { url: '' },
-            url: ':socialhost:/:session_prefix::se:_/+1/sharebutton?plusShare\u003dtrue\u0026usegapi\u003d1',
-          },
-          rbr_s: { params: { url: '' }, url: ':socialhost:/:session_prefix::se:_/widget/render/recobarsimplescroller' },
-          ':source:': '3p',
-          playemm: { url: 'https://play.google.com/work/embedded/search?usegapi\u003d1\u0026usegapi\u003d1' },
-          savetoandroidpay: { url: 'https://pay.google.com/gp/v/widget/save' },
-          blogger: {
-            params: { location: ['search', 'hash'] },
-            url: ':socialhost:/:session_prefix:_/widget/render/blogger?usegapi\u003d1',
-            methods: ['scroll', 'openwindow'],
-          },
-          evwidget: { params: { url: '' }, url: ':socialhost:/:session_prefix:_/events/widget?usegapi\u003d1' },
-          partnersbadge: { url: 'https://www.gstatic.com/partners/badge/templates/badge.html?usegapi\u003d1' },
-          dataconnector: { url: 'https://dataconnector.corp.google.com/:session_prefix:ui/widgetview?usegapi\u003d1' },
-          surveyoptin: { url: 'https://www.google.com/shopping/customerreviews/optin?usegapi\u003d1' },
-          ':socialhost:': 'https://apis.google.com',
-          shortlists: { url: '' },
-          hangout: { url: 'https://talkgadget.google.com/:session_prefix:talkgadget/_/widget' },
-          plus_followers: {
-            params: { url: '' },
-            url: ':socialhost:/_/im/_/widget/render/plus/followers?usegapi\u003d1',
-          },
-          post: {
-            params: { url: '' },
-            url: ':socialhost:/:session_prefix::im_prefix:_/widget/render/post?usegapi\u003d1',
-          },
-          ':gplus_url:': 'https://plus.google.com',
-          signin: {
-            params: { url: '' },
-            url: ':socialhost:/:session_prefix:_/widget/render/signin?usegapi\u003d1',
-            methods: ['onauth'],
-          },
-          rbr_i: { params: { url: '' }, url: ':socialhost:/:session_prefix::se:_/widget/render/recobarinvitation' },
-          donation: { url: 'https://onetoday.google.com/home/donationWidget?usegapi\u003d1' },
-          share: { url: ':socialhost:/:session_prefix::im_prefix:_/widget/render/share?usegapi\u003d1' },
-          plusone: {
-            params: { count: '', size: '', url: '' },
-            url: ':socialhost:/:session_prefix::se:_/+1/fastbutton?usegapi\u003d1',
-          },
-          comments: {
-            params: { location: ['search', 'hash'] },
-            url: ':socialhost:/:session_prefix:_/widget/render/comments?usegapi\u003d1',
-            methods: ['scroll', 'openwindow'],
-          },
-          ':im_socialhost:': 'https://plus.googleapis.com',
-          backdrop: { url: 'https://clients3.google.com/cast/chromecast/home/widget/backdrop?usegapi\u003d1' },
-          visibility: {
-            params: { url: '' },
-            url: ':socialhost:/:session_prefix:_/widget/render/visibility?usegapi\u003d1',
-          },
-          autocomplete: { params: { url: '' }, url: ':socialhost:/:session_prefix:_/widget/render/autocomplete' },
-          additnow: { url: 'https://apis.google.com/marketplace/button?usegapi\u003d1', methods: ['launchurl'] },
-          ':signuphost:': 'https://plus.google.com',
-          ratingbadge: { url: 'https://www.google.com/shopping/customerreviews/badge?usegapi\u003d1' },
-          appcirclepicker: { url: ':socialhost:/:session_prefix:_/widget/render/appcirclepicker' },
-          follow: { url: ':socialhost:/:session_prefix:_/widget/render/follow?usegapi\u003d1' },
-          community: { url: ':ctx_socialhost:/:session_prefix::im_prefix:_/widget/render/community?usegapi\u003d1' },
-          sharetoclassroom: { url: 'https://www.gstatic.com/classroom/sharewidget/widget_stable.html?usegapi\u003d1' },
-          ytshare: { params: { url: '' }, url: ':socialhost:/:session_prefix:_/widget/render/ytshare?usegapi\u003d1' },
-          plus: { url: ':socialhost:/:session_prefix:_/widget/render/badge?usegapi\u003d1' },
-          family_creation: {
-            params: { url: '' },
-            url: 'https://families.google.com/webcreation?usegapi\u003d1\u0026usegapi\u003d1',
-          },
-          commentcount: { url: ':socialhost:/:session_prefix:_/widget/render/commentcount?usegapi\u003d1' },
-          configurator: { url: ':socialhost:/:session_prefix:_/plusbuttonconfigurator?usegapi\u003d1' },
-          zoomableimage: { url: 'https://ssl.gstatic.com/microscope/embed/' },
-          appfinder: { url: 'https://gsuite.google.com/:session_prefix:marketplace/appfinder?usegapi\u003d1' },
-          savetowallet: { url: 'https://pay.google.com/gp/v/widget/save' },
-          person: { url: ':socialhost:/:session_prefix:_/widget/render/person?usegapi\u003d1' },
-          savetodrive: { url: 'https://drive.google.com/savetodrivebutton?usegapi\u003d1', methods: ['save'] },
-          page: { url: ':socialhost:/:session_prefix:_/widget/render/page?usegapi\u003d1' },
-          card: { url: ':socialhost:/:session_prefix:_/hovercard/card' },
-        },
+        h: 'm;/_/scs/abc-static/_/js/k=gapi.lb.en.AMZ27oQJoUI.O/d=1/rs=AHpOoo9dsXwz2g0gTMdQFEKa7ZoVvtQf4g/m=__features__',
+        u: 'https://apis.google.com/js/platform.js',
+        hee: !0,
+        dpo: !1,
+        le: ['scs'],
+        glrp: false,
       },
-      h: 'm;/_/scs/apps-static/_/js/k\u003doz.gapi.en.OfYsKuVZ3qI.O/am\u003dwQE/d\u003d1/ct\u003dzgms/rs\u003dAGLTcCMVod3aO7ybjljp3cyn2IsEoP0pUg/m\u003d__features__',
-      u: 'https://apis.google.com/js/platform.js',
-      hee: true,
-      fp: '57294629c903ba59d8728b5986c60aef076ab323',
-      dpo: false,
+      platform:
+        'backdrop blogger comments commentcount community donation family_creation follow hangout health page partnersbadge person playemm playreview plus plusone post ratingbadge savetoandroidpay savetodrive savetowallet sharetoclassroom shortlists signin2 surveyoptin visibility youtube ytsubscribe zoomableimage'.split(
+          ' '
+        ),
+      annotation: ['interactivepost', 'recobar', 'signin2', 'autocomplete'],
     },
-    platform: [
-      'additnow',
-      'backdrop',
-      'blogger',
-      'comments',
-      'commentcount',
-      'community',
-      'donation',
-      'family_creation',
-      'follow',
-      'hangout',
-      'health',
-      'page',
-      'partnersbadge',
-      'person',
-      'playemm',
-      'playreview',
-      'plus',
-      'plusone',
-      'post',
-      'ratingbadge',
-      'savetoandroidpay',
-      'savetodrive',
-      'savetowallet',
-      'sharetoclassroom',
-      'shortlists',
-      'signin2',
-      'surveyoptin',
-      'visibility',
-      'youtube',
-      'ytsubscribe',
-      'zoomableimage',
-    ],
-    fp: '57294629c903ba59d8728b5986c60aef076ab323',
-    annotation: ['interactivepost', 'recobar', 'signin2', 'autocomplete', 'profile'],
-    bimodal: ['signin', 'share'],
-  },
-});
+  });
+}.call(this));
