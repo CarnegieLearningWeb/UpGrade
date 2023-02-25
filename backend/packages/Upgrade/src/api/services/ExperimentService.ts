@@ -140,8 +140,6 @@ export class ExperimentService {
       queryBuilder = queryBuilder.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
     }
 
-    queryBuilder = queryBuilder.skip(skip).take(take);
-
     return await queryBuilder.getMany();
     // return (await queryBuilder.getMany()).map((x) => this.formatingConditionAlias(x));
   }
