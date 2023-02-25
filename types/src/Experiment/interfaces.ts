@@ -46,8 +46,8 @@ export type INewExperimentAssignment = Pick<IExperimentAssignment, 'assignedCond
 };
 
 export interface IExperimentAssignment {
-  expId: string;
-  expPoint: string;
+  site: string;
+  target: string;
   assignedCondition: {
     conditionCode: string;
     conditionAlias: string;

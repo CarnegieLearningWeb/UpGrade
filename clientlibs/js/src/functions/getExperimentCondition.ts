@@ -66,8 +66,8 @@ export default function getExperimentCondition(
   if (experimentConditionData) {
     const result = experimentConditionData.filter((data) =>
       partitionId
-        ? data.expId === partitionId && data.expPoint === experimentPoint
-        : data.expPoint === experimentPoint && !data.expId
+        ? data.target === partitionId && data.site === experimentPoint
+        : data.site === experimentPoint && !data.target
     );
 
     if (result.length) {
