@@ -491,7 +491,7 @@ describe('LogRepository Testing', () => {
     selectMock.expects('innerJoin').twice().returns(selectQueryBuilder);
     selectMock.expects('innerJoinAndSelect').thrice().returns(selectQueryBuilder);
     selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').exactly(5).returns(selectQueryBuilder);
+    selectMock.expects('andWhere').exactly(4).returns(selectQueryBuilder);
     selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
     const res = await repo.analysis(q);
 

@@ -301,3 +301,44 @@ export interface TableEditModeDetails {
   isEditMode: boolean;
   rowIndex: number | null;
 }
+
+export interface SimpleExpMainEffectResult {
+  conditionId: string;
+  participantsLogged: string;
+  result: string;
+}
+
+export interface FactorialExpMainEffectResult {
+  levelId: string;
+  participantsLogged: string;
+  result: string;
+}
+
+export interface InteractionEffectResult {
+  conditionId: string;
+  participantsLogged: string;
+  result: string;
+}
+export interface QueryResult {
+  id: string;
+  interactionEffect: InteractionEffectResult[];
+  mainEffect: SimpleExpMainEffectResult[] | FactorialExpMainEffectResult[];
+}
+
+export interface MainEffectGraphData {
+  name: string;
+  value: number;
+  extra: number;
+}
+
+export interface InteractionEffectLineChartSeriesData {
+  name: string;
+  value: number;
+  participantsLogged: number;
+}
+
+export interface InteractionEffectGraphData {
+  name: string;
+  series: InteractionEffectLineChartSeriesData[];
+  dot: boolean;
+}
