@@ -83,11 +83,6 @@ export class AuthService {
     this.ngZone.run(() => this.handleGoogleAuthClickInNgZone(googleIdCredentialResponse));
   };
 
-  onAuthedUserFetchError = (error): void => {
-    console.log(JSON.stringify(error, undefined, 2));
-    this.store$.dispatch(AuthActions.actionLoginFailure());
-  };
-
   handleGoogleAuthClickInNgZone = (googleIdCredentialResponse: google.accounts.id.CredentialResponse): void => {
     const payload: GoogleAuthJWTPayload = this.decodeJWT(googleIdCredentialResponse);
 
@@ -142,25 +137,25 @@ export class AuthService {
     });
   }
 
-  setUserSettingsWithRole(user: any, actions: Action[]) {
+  setUserSettingsWithRole(user: User, actions: Action[]): Action[] {
     this.setUserInBrowserStorage(user);
     this.setUserPermissions(user.role);
     return [AuthActions.actionSetUserInfoSuccess({ user }), ...actions];
   }
 
-  authLoginStart() {
+  authLoginStart(): void {
     this.store$.dispatch(AuthActions.actionLoginStart());
   }
 
-  authLogout() {
+  authLogout(): void {
     this.store$.dispatch(AuthActions.actionLogoutStart());
   }
 
-  setRedirectionUrl(redirectUrl: string) {
+  setRedirectionUrl(redirectUrl: string): void {
     this.store$.dispatch(AuthActions.actionSetRedirectUrl({ redirectUrl }));
   }
 
-  setUserPermissions(role: UserRole) {
+  setUserPermissions(role: UserRole): void {
     switch (role) {
       // Permissions for managing queries will be same as experiments
       case UserRole.ADMIN:

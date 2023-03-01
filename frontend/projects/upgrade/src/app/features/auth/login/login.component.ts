@@ -20,10 +20,8 @@ export class LoginComponent implements AfterViewInit {
     @Inject(ENV) private environment: Environment
   ) {}
 
-  ngAfterViewInit() {
-    if (google) {
-      this.authService.initializeGoogleSignInButton(this.googleSignInButtonRef);
-    }
+  ngAfterViewInit(): void {
+    this.authService.initializeGoogleSignInButton(this.googleSignInButtonRef);
   }
 
   get ThemeOptions() {
