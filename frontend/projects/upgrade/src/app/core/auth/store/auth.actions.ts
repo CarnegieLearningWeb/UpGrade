@@ -1,10 +1,6 @@
 import { Action, createAction, props } from '@ngrx/store';
 import { User } from '../../users/store/users.model';
 
-export const actionInitializeGapi = createAction('[Auth] Initialize Gapi');
-
-export const actionBindAttachHandlerWithButton = createAction('[Auth] Bind Google Sign In Attach Handler with Button');
-
 export const actionLoginStart = createAction('[Auth] Login Start');
 
 export const actionLoginSuccess = createAction('[Auth] Login Success');
@@ -27,8 +23,6 @@ export const actionSetUserInfoFailed = createAction('[Auth] Set User Info Failed
 export const actionLogoutStart = createAction('[Auth] Logout Start');
 
 export const actionLogoutSuccess = createAction('[Auth] Logout Success');
-
-export const actionLogoutFailure = createAction('[Auth] Logout Failure');
 
 export const actionSetRedirectUrl = createAction('[Auth] Set Redirect Url', props<{ redirectUrl: string }>());
 

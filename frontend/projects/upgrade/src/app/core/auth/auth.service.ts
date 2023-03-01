@@ -56,7 +56,7 @@ export class AuthService {
 
   initializeGoogleSignIn(): void {
     const initConfig: google.accounts.id.IdConfiguration = {
-      client_id: this.environment.gapiClientId,
+      client_id: this.environment.googleClientId,
       callback: (response: google.accounts.id.CredentialResponse) => {
         this.onAuthedUserFetchSuccess(response);
       },

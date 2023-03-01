@@ -11,24 +11,24 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { SimpleNotificationsModule } from 'angular2-notifications';
 import { environment } from '../environments/environment';
-import { ENV, Environment } from '../environments/environment-types';
+import { ENV, Environment, RuntimeEnvironmentConfig } from '../environments/environment-types';
 
 export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
   // in non-prod build, all env vars can be provided on .environment.ts,
   // so skip fetch
-  if (!environment.production || (environment.apiBaseUrl && environment.gapiClientId)) {
+  if (!environment.production || (environment.apiBaseUrl && environment.googleClientId)) {
     return () => Promise.resolve();
   }
 
-  // in a prod build, we currently need to fetch environment.json at root to provide
-  // apiBaseUrl and gapiClientId
+  // in a prod build, we currently need to fetch environment.json at runtime
+  // to provide apiBaseUrl and googleClientId
   return () =>
     http
       .get('/environment.json')
       .toPromise()
-      .then((data) => {
-        env.apiBaseUrl = (data as any).endpointApi;
-        env.gapiClientId = (data as any).gapiClientId;
+      .then((config: RuntimeEnvironmentConfig) => {
+        env.apiBaseUrl = config.endpointApi || config.apiBaseUrl;
+        env.googleClientId = config.googleClientId || config.googleClientId;
       })
       .catch((error) => {
         console.log({ error });
