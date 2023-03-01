@@ -1,4 +1,4 @@
-import { Injectable, Inject, NgZone } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as authActions from './auth.actions';
 import * as experimentUserActions from '../../experiment-users/store/experiment-users.actions';
@@ -23,7 +23,6 @@ export class AuthEffects {
     private actions$: Actions,
     private store$: Store<AppState>,
     private router: Router,
-    private ngZone: NgZone,
     private authDataService: AuthDataService,
     private authService: AuthService,
     private settingsService: SettingsService,
