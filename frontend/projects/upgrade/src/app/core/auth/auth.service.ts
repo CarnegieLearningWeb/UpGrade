@@ -3,12 +3,12 @@ import { AppState, LocalStorageService } from '../core.module';
 import { Store, select, Action } from '@ngrx/store';
 import * as AuthActions from './store/auth.actions';
 import { selectIsLoggedIn, selectIsAuthenticating, selectCurrentUser } from './store/auth.selectors';
-import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { UserPermission } from './store/auth.models';
 import { BehaviorSubject } from 'rxjs';
-import { User, UserRole } from '../users/store/users.model';
+import { AUTH_CONSTANTS, GoogleAuthJWTPayload, User, UserRole } from '../users/store/users.model';
 import { ENV, Environment } from '../../../environments/environment-types';
-import jwt_decode, { JwtPayload } from 'jwt-decode';
+import jwt_decode from 'jwt-decode';
 import { AuthDataService } from './auth.data.service';
 import { NavigationEnd, Router } from '@angular/router';
 
@@ -23,8 +23,6 @@ export class AuthService {
   );
   userPermissions$ = new BehaviorSubject<UserPermission>(null);
 
-  hasUserClickedLogin = false;
-
   constructor(
     private store$: Store<AppState>,
     private authDataService: AuthDataService,
@@ -34,41 +32,31 @@ export class AuthService {
     @Inject(ENV) private environment: Environment
   ) {}
 
+  initializeUserSession(): void {
+    const currentUser = this.getUserFromBrowserStorage();
+
+    if (currentUser) {
+      this.handleAutomaticLogin(currentUser);
+    } else {
+      this.authLogout();
+    }
+  }
+
   initializeGoogleSignInButton(btnRef: ElementRef): void {
     this.initializeGoogleSignIn();
     this.renderGoogleSignInButton(btnRef);
   }
 
-  // make these dispatchable effects?
-
-  initializeUserSession(): void {
-    const currentUser: User = this.localStorageService.getItem('currentUser');
-
-    if (currentUser) {
-      this.handleAutomaticLogin(currentUser);
-    } else {
-      console.log('do login, no user:', currentUser);
-      this.router.navigateByUrl('/login');
-    }
-  }
-
-  removeStoredUser() {
-    this.localStorageService.removeItem('currentUser');
-  }
-
   handleAutomaticLogin(currentUser: User): void {
-    console.log('dont do login:', currentUser);
-
     this.store$.dispatch(AuthActions.actionSetIsLoggedIn({ isLoggedIn: true }));
     this.store$.dispatch(AuthActions.actionSetIsAuthenticating({ isAuthenticating: false }));
-    this.doLogin(currentUser, currentUser.token);
     this.store$.dispatch(AuthActions.actionSetUserInfo({ user: currentUser }));
+    this.doLogin(currentUser, currentUser.token);
   }
 
   initializeGoogleSignIn(): void {
     const initConfig: google.accounts.id.IdConfiguration = {
       client_id: this.environment.gapiClientId,
-      ux_mode: 'popup',
       callback: (response: google.accounts.id.CredentialResponse) => {
         this.onAuthedUserFetchSuccess(response);
       },
@@ -86,31 +74,24 @@ export class AuthService {
     google.accounts.id.renderButton(btnRef.nativeElement, buttonConfig);
   }
 
-  // *************************************
-
-  decodeJWT(googleIdCredentialResponse: google.accounts.id.CredentialResponse): JwtPayload {
-    // put some error handling in here if cred has unexpected data
-    console.log('googleIdCredResponse:', googleIdCredentialResponse);
-    // this type might not be quite right, doesn't match all of Google JWT
-    const result = jwt_decode<JwtPayload>(googleIdCredentialResponse.credential);
-    console.log('decodedJWTPayload:', result);
+  decodeJWT(googleIdCredentialResponse: google.accounts.id.CredentialResponse): GoogleAuthJWTPayload {
+    const result = jwt_decode<GoogleAuthJWTPayload>(googleIdCredentialResponse.credential);
     return result;
   }
 
-  onAuthedUserFetchSuccess = (googleIdCredentialResponse: google.accounts.id.CredentialResponse) => {
-    this.hasUserClickedLogin = true;
+  onAuthedUserFetchSuccess = (googleIdCredentialResponse: google.accounts.id.CredentialResponse): void => {
     this.ngZone.run(() => this.handleGoogleAuthClickInNgZone(googleIdCredentialResponse));
   };
 
-  onAuthedUserFetchError = (error) => {
+  onAuthedUserFetchError = (error): void => {
     console.log(JSON.stringify(error, undefined, 2));
     this.store$.dispatch(AuthActions.actionLoginFailure());
   };
 
-  handleGoogleAuthClickInNgZone = (googleIdCredentialResponse: google.accounts.id.CredentialResponse) => {
-    const payload: any = this.decodeJWT(googleIdCredentialResponse);
+  handleGoogleAuthClickInNgZone = (googleIdCredentialResponse: google.accounts.id.CredentialResponse): void => {
+    const payload: GoogleAuthJWTPayload = this.decodeJWT(googleIdCredentialResponse);
 
-    const user = {
+    const user: User = {
       firstName: payload.given_name,
       lastName: payload.family_name,
       email: payload.email,
@@ -125,12 +106,11 @@ export class AuthService {
     this.doLogin(user, token);
   };
 
-  doLogin = (user, token: string): void => {
+  doLogin = (user: User, token: string): void => {
     this.authDataService
       .login(user)
       .pipe(
         tap((res: User) => {
-          this.hasUserClickedLogin = false;
           this.store$.dispatch(AuthActions.actionLoginSuccess());
           this.deferSetUserInfoAfterNavigateEnd(res, token);
         }),
@@ -140,7 +120,15 @@ export class AuthService {
   };
 
   setUserInBrowserStorage(user: User): void {
-    this.localStorageService.setItem('currentUser', user);
+    this.localStorageService.setItem(AUTH_CONSTANTS.USER_STORAGE_KEY, user);
+  }
+
+  getUserFromBrowserStorage(): User {
+    return this.localStorageService.getItem(AUTH_CONSTANTS.USER_STORAGE_KEY);
+  }
+
+  removeUserFromBrowserStorage(): void {
+    this.localStorageService.removeItem(AUTH_CONSTANTS.USER_STORAGE_KEY);
   }
 
   // wait after google auth login navs back to app on success to dispatch data fetches
@@ -160,35 +148,12 @@ export class AuthService {
     return [AuthActions.actionSetUserInfoSuccess({ user }), ...actions];
   }
 
-  trySetUserSettingWithEmail(user: any, actions: Action[]) {
-    this.authDataService.getUserByEmail(user.email).pipe(
-      switchMap((res: User) => {
-        if (res[0]) {
-          // Avoid null name in account
-          if (res[0].firstName) {
-            this.setUserPermissions(res[0].role);
-            this.setUserInBrowserStorage(user);
-            return [AuthActions.actionSetUserInfoSuccess({ user: { ...res[0], token: user.token } }), ...actions];
-          } else {
-            return [AuthActions.actionLogoutStart()];
-          }
-        } else {
-          return [AuthActions.actionSetUserInfoFailed()];
-        }
-      })
-    );
-  }
-
   authLoginStart() {
     this.store$.dispatch(AuthActions.actionLoginStart());
   }
 
   authLogout() {
     this.store$.dispatch(AuthActions.actionLogoutStart());
-  }
-
-  initializeGapi() {
-    this.store$.dispatch(AuthActions.actionInitializeGapi());
   }
 
   setRedirectionUrl(redirectUrl: string) {

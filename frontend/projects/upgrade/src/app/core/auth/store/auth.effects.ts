@@ -8,12 +8,12 @@ import * as analysisActions from '../../analysis/store/analysis.actions';
 import * as settingsActions from '../../settings/store/settings.actions';
 import { tap, map, filter, withLatestFrom, catchError, switchMap } from 'rxjs/operators';
 import { AppState } from '../../core.module';
-import { Store, select, Action } from '@ngrx/store';
-import { NavigationEnd, Router } from '@angular/router';
+import { Store, select } from '@ngrx/store';
+import { Router } from '@angular/router';
 import { selectRedirectUrl } from './auth.selectors';
 import { AuthDataService } from '../auth.data.service';
 import { AuthService } from '../auth.service';
-import { User, UserRole } from '../../users/store/users.model';
+import { User } from '../../users/store/users.model';
 import { SettingsService } from '../../settings/settings.service';
 import { ENV, Environment } from '../../../../environments/environment-types';
 
@@ -46,14 +46,39 @@ export class AuthEffects {
         ];
         // Set theme from local storage if exist
         this.settingsService.setLocalStorageTheme();
-        if (!user.role) {
-          user.role === UserRole.READER;
+
+        if (user.role) {
+          return this.authService.setUserSettingsWithRole(user, actions);
+        } else {
+          return [authActions.actionSetUserInfoWithEmail({ user, actions })];
         }
-        // if (user.role) {
-        return this.authService.setUserSettingsWithRole(user, actions);
-        // } else {
-        //   this.authService.trySetUserSettingWithEmail(user, actions);
-        // }
+      })
+    )
+  );
+
+  setUserInfoWithEmail$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(authActions.actionSetUserInfoWithEmail),
+      switchMap(({ user, actions }) => {
+        return this.authDataService.getUserByEmail(user.email).pipe(
+          switchMap((res: User) => {
+            if (res[0]) {
+              // Avoid null name in account
+              if (res[0].firstName) {
+                this.authService.setUserPermissions(res[0].role);
+                this.authService.setUserInBrowserStorage(user);
+                return [authActions.actionSetUserInfoSuccess({ user: { ...res[0], token: user.token } }), ...actions];
+              } else {
+                return [authActions.actionLogoutStart()];
+              }
+            } else {
+              return [authActions.actionSetUserInfoFailed()];
+            }
+          }),
+          catchError(() => {
+            return [authActions.actionSetUserInfoFailed()];
+          })
+        );
       })
     )
   );
@@ -63,10 +88,8 @@ export class AuthEffects {
       this.actions$.pipe(
         ofType(authActions.actionLogoutStart),
         tap(() => {
-          this.ngZone.run(() => {
-            this.authService.removeStoredUser();
-            this.store$.dispatch(authActions.actionLogoutSuccess());
-          });
+          this.authService.removeUserFromBrowserStorage();
+          this.store$.dispatch(authActions.actionLogoutSuccess());
         })
       ),
     { dispatch: false }
