@@ -115,25 +115,15 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       // Remove the default empty row
       this.queries.removeAt(0);
       this.experimentInfo.queries.forEach((query, queryIndex) => {
-        let key;
-        if (query.metric.key) {
-          key = query.metric.key;
-        } else {
-          key = query.metric;
-        }
-
+        let key = query.metric.key ? query.metric.key : query.metric;
         // separating keys from metric
         const rootKey = key.split(METRICS_JOIN_TEXT);
-
         // set selectedNode for first key of simple/repeated metrics
         let metricObj = this.allMetrics.find((metric) => metric.key === rootKey[0]);
         this.firstSelectedNode[queryIndex] = metricObj;
         this.selectedNode[queryIndex] = metricObj;
-        const {
-          metadata: { type },
-        } = this.selectedNode[queryIndex];
+        const type = query.metric.type;
         this.filteredStatistic$[queryIndex] = this.setFilteredStatistic(type);
-
         // push first key in query form:
         if (query.query.compareFn && !!query.query.compareValue) {
           this.queries.push(
@@ -155,12 +145,13 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         if (rootKey.length > 1) {
           rootKey.map((key, keyindex) => {
             if (keyindex !== 0) {
-              this.selectedNode[this.queryIndex] = metricObj;
+              this.selectedNode[queryIndex] = metricObj;
               // call select option for first key of grouped metrics:
               this.selectedOption(null, metricObj, key, queryIndex, keyindex);
               this.optionsSub();
               metricObj = metricObj.children;
               metricObj = metricObj.find((metric) => metric.key === key);
+              this.selectedNode[queryIndex] = metricObj;
             }
           });
         }
@@ -215,8 +206,14 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     return IMetricMetaData;
   }
 
-  get RepeatedMeasure() {
-    const repeatedMeasure = Object.values(REPEATED_MEASURE);
+  get ContinuousRepeatedMeasure() {
+    let repeatedMeasure = Object.values(REPEATED_MEASURE);
+    return repeatedMeasure;
+  }
+
+  get CategoricalRepeatedMeasure() {
+    let repeatedMeasure = Object.values(REPEATED_MEASURE);
+    repeatedMeasure.shift();
     return repeatedMeasure;
   }
 
