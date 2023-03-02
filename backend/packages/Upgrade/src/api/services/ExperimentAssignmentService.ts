@@ -837,7 +837,7 @@ export class ExperimentAssignmentService {
   ): Promise<Log[]> {
     const { logger, userDoc } = requestContext;
     logger.info({ message: `Add data log userId ${userId}`, details: jsonLog });
-    const keyUniqueArray = [];
+    const keyUniqueArray: { key: string; uniquifier: string }[] = [];
 
     // throw error if user not defined
     if (!userDoc) {
@@ -970,8 +970,8 @@ export class ExperimentAssignmentService {
   }
 
   private async createLog(
-    individualMetrics: ILogInput,
-    keyUniqueArray: any[],
+    log: ILogInput,
+    keyUniqueArray: { key: string; uniquifier: string }[],
     userDoc: ExperimentUser,
     logger: UpgradeLogger
   ): Promise<Log[]> {
@@ -980,19 +980,19 @@ export class ExperimentAssignmentService {
       timestamp,
       metrics,
       metrics: { groupedMetrics },
-    } = individualMetrics;
-    logger.info({ message: `Add data log in createLog: userId => ${userId}`, details: individualMetrics });
-    // add individual metrics in the database
+    } = log;
+    logger.info({ message: `Add data log in createLog: userId => ${userId}`, details: log });
+    // Populate attribute and uniquifier for individual metric
     if (metrics && metrics.attributes) {
       // search metrics log with default uniquifier
       keyUniqueArray.push(
         ...Object.keys(metrics.attributes).map((metricKey) => {
-          return { key: metricKey, uniquifier: 1 };
+          return { key: metricKey, uniquifier: '1' };
         })
       );
     }
 
-    // add group metrics in the database
+    // Populate attribute and key for group metrics
     if (groupedMetrics) {
       logger.info({ message: `Add group metrics userId ${userId}`, details: groupedMetrics });
       // search metrics log with specific uniquifier
@@ -1003,33 +1003,25 @@ export class ExperimentAssignmentService {
         });
       });
     }
-    // all metrics keys
-    let metricKeys = keyUniqueArray.map(({ key }) => key);
-    // const uniquifierKeys = keyUniqueArray.map(({ uniquifier }) => uniquifier);
 
     // get metrics document
-    const metricDocs = await this.metricRepository.findMetricsWithQueries(metricKeys);
+    const metricKeyInQueries = await this.metricRepository.findMetricsWithQueries(keyUniqueArray.map(({ key }) => key));
 
-    if (metricDocs.length === 0) {
+    if (metricKeyInQueries.length === 0) {
       return [];
     }
 
     const filteredKeyUniqueArray = keyUniqueArray.filter(({ key }) => {
-      return metricDocs.find((doc) => doc.key === key);
+      return metricKeyInQueries.find((doc) => doc.key === key);
     });
 
-    metricKeys = filteredKeyUniqueArray.map(({ key }) => key);
-    const uniquifierKeys = filteredKeyUniqueArray.map(({ uniquifier }) => uniquifier);
-
-    // get all metric detail
-    const logGroup = await this.logRepository.getMetricUniquifierData(metricKeys, uniquifierKeys, userId);
-
+    const logGroup = await this.logRepository.getMetricUniquifierData(filteredKeyUniqueArray, userId);
     const mergedLogGroup = [];
 
     // merge the metrics field
     logGroup.forEach((logData, index) => {
       if (logData !== null) {
-        const { id, uniquifier, data, timestamp, key } = logData;
+        const { id, uniquifier, data, timeStamp, key } = logData;
         const metric_keys = [key];
         for (let i = index + 1; i < logGroup.length; i++) {
           const toCheckMetrics = logGroup[i];
@@ -1038,7 +1030,7 @@ export class ExperimentAssignmentService {
             toCheckMetrics.id === id &&
             toCheckMetrics.uniquifier === uniquifier &&
             isequal(toCheckMetrics.data, data) &&
-            new Date(toCheckMetrics.timestamp).getTime() === new Date(timestamp).getTime()
+            new Date(toCheckMetrics.timeStamp).getTime() === new Date(timeStamp).getTime()
           ) {
             metric_keys.push(toCheckMetrics.key);
             logGroup[i] = null;
@@ -1048,12 +1040,15 @@ export class ExperimentAssignmentService {
       }
     });
 
-    // if logGroup is empty insert the log data
-    // transform log data to database format
-    // array for dataLogs
-
     const toUpdateLogGroup = [];
-    let rawDataLogs = this.createDataLogsFromCLFormat(timestamp, metrics, groupedMetrics, metricDocs, userDoc, logger);
+    let rawDataLogs = this.createDataLogsFromCLFormat(
+      timestamp,
+      metrics,
+      groupedMetrics,
+      metricKeyInQueries,
+      userDoc,
+      logger
+    );
 
     rawDataLogs.forEach((rawLogs) => {
       const { metrics, data, uniquifier, timeStamp } = rawLogs;
@@ -1083,7 +1078,7 @@ export class ExperimentAssignmentService {
           });
 
           if (toMergeElement && uniquifier === toMergeElement.uniquifier) {
-            if (new Date(timeStamp).getTime() >= new Date(toMergeElement.timestamp).getTime()) {
+            if (new Date(timeStamp).getTime() >= new Date(toMergeElement.timeStamp).getTime()) {
               const toMergeElementRoot = this.getRootMetric(toMergeElement.data, metricArray);
               const dataRoot = this.getRootMetric(data, metricArray);
               toMergeElementRoot[lastKey] = dataRoot[lastKey];

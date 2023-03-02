@@ -43,7 +43,12 @@
 
         <mat-form-field class="ft-14-600 group-type" *ngIf="unitOfAssignmentValue">
           <mat-label>{{ 'home.new-experiment.overview.group-type.placeHolder' | translate }}</mat-label>
-          <mat-select class="ft-14-400" formControlName="groupType">
+          <mat-select 
+            class="ft-14-400" 
+            formControlName="groupType"
+            [disabled]="this.experimentInfo.state == this.ExperimentState.ENROLLING ||
+            this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE" 
+            >
             <mat-option *ngFor="let group of groupTypes" [value]="group.value">{{ group.value }}</mat-option>
           </mat-select>
         </mat-form-field>
