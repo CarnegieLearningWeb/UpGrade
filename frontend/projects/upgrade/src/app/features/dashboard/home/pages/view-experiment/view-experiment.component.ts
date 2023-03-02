@@ -8,6 +8,7 @@ import {
   EXPERIMENT_STATE,
   ExperimentVM,
   EXPERIMENT_SEARCH_KEY,
+  ExperimentLevel,
 } from '../../../../../core/experiments/store/experiments.model';
 import { Observable, Subscription } from 'rxjs';
 import { filter, withLatestFrom } from 'rxjs/operators';
@@ -38,6 +39,7 @@ enum DialogType {
 }
 
 type Participants = { participant_Type: string; participant_id: string };
+type Factors = { factor: string; site: string; target: string; levels: ExperimentLevel[] };
 type Metrics = { metric_Key: string[]; metric_Operation: string[]; metric_Name: string };
 
 @Component({
@@ -54,9 +56,14 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   experimentIdSub: Subscription;
   isLoadingExperimentDetailStats$: Observable<boolean>;
   isPollingExperimentDetailStats$: Observable<boolean>;
+  factorsDataSource: Factors[];
+  expandedId: number = null;
 
   displayedConditionColumns: string[] = ['conditionCode', 'assignmentWeight', 'description'];
+  displayedConditionColumnsFactorial: string[] = ['conditionCode', 'assignmentWeight'];
   displayedPartitionColumns: string[] = ['partitionPoint', 'partitionId', 'excludeIfReached'];
+  displayedPartitionColumnsFactorial: string[] = ['expandIcon', 'factorName', 'partitionPoint', 'partitionId'];
+  displayedPartitionLevelColumnsFactorial = ['level', 'alias'];
   displayedAliasConditionColumns: string[] = ['site', 'target', 'condition', 'alias'];
   displayedParticipantsColumns: string[] = ['participantsType', 'participantsId'];
   displayedMetricsColumns: string[] = ['metricsKey', 'metricsOperation', 'metricsName'];

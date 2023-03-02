@@ -133,7 +133,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           experimentName: this.experimentInfo.name,
           description: this.experimentInfo.description,
           unitOfAssignment: this.experimentInfo.assignmentUnit,
-          groupType,
+          groupType: this.experimentInfo.group,
           consistencyRule: this.experimentInfo.consistencyRule,
           designType: this.experimentInfo.type,
           context: this.currentContext,
@@ -244,8 +244,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         formData: this.experimentInfo,
         path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
       });
-    }
-    if (this.overviewForm.valid) {
+    }else if (this.overviewForm.valid) {
       const {
         experimentName,
         description,
