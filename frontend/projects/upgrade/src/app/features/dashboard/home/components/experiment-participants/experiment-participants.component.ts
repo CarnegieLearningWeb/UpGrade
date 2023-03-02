@@ -9,7 +9,7 @@ import {
   ElementRef,
 } from '@angular/core';
 import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray } from '@angular/forms';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject, map, Observable, startWith, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -54,6 +54,8 @@ export class ExperimentParticipantsComponent implements OnInit {
   contextMetaDataSub: Subscription;
   allSegments: Segment[];
   allSegmentsSub: Subscription;
+  filteredSegmentIds$: Observable<string[]>[] = [];
+  filteredSegmentIds2$: Observable<string[]>[] = [];
   subSegmentIds = [];
   segmentNameId = new Map();
   subSegmentTypes: any[];
@@ -96,6 +98,7 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.members2.clear();
       this.members1DataSource.next(this.members1.controls);
       this.members2DataSource.next(this.members2.controls);
+      this.bindParticipantsData();
     }
   }
 
@@ -181,6 +184,68 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.members1.controls.at(0).get('id').disable();
       this.includeAll = true;
     }
+
+    // Bind predefined values of experiment participants from backend
+    this.bindParticipantsData();
+  }
+
+  bindParticipantsData(){
+    const participantsForm1Control = this.participantsForm?.get('members1') as FormArray;
+    participantsForm1Control?.controls.forEach((_, groupindex) => {
+      this.manageSegmentIdsControl(groupindex,1);
+    });
+
+    const participantsForm2Control = this.participantsForm2?.get('members2') as FormArray;
+    participantsForm2Control?.controls.forEach((_, groupindex) => {
+      this.manageSegmentIdsControl(groupindex,2);
+    });
+  }
+
+  manageSegmentIdsControl(index: number, form: number) {
+    if (form == 1){
+      const participantsForm = this.members1 as FormArray;
+
+      this.filteredSegmentIds$[index] = participantsForm
+      .at(index)
+      .get('id')
+      .valueChanges.pipe(
+        startWith<string>(''),
+        map((id) => this.filterSegmentNameId(id))
+      );
+    }
+    
+    if (form == 2) {
+      const participantsForm = this.members2 as FormArray;
+
+      this.filteredSegmentIds2$[index] = participantsForm
+      .at(index)
+      .get('id')
+      .valueChanges.pipe(
+        startWith<string>(''),
+        map((id) => this.filterSegmentNameId(id))
+      );
+    }
+  }
+
+  private  filterSegmentNameId(value: string): string[] {
+    const filterValue = value ? value.toLocaleLowerCase() : '';
+
+    if (!this.contextMetaData) {
+      return [];
+    }
+
+    if (this.currentContext) {
+      const allSegmentIds = [];
+      if (this.allSegments) {
+        this.allSegments.forEach((segment) => {
+          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.context === this.currentContext) {
+            allSegmentIds.push(segment.name);
+          }
+        });
+      }
+      return allSegmentIds.filter((option) => option.toLowerCase().startsWith(filterValue));
+    } 
+    return [];
   }
 
   selectedOption(event = null, index = null, table: number) {
