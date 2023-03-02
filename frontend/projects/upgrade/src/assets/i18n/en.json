@@ -73,6 +73,8 @@
   "home.experiment.import-experiment.text": "IMPORT EXPERIMENT",
   "home.experiment-query-result.title.text": "Metrics Data",
   "home.experiment-query-result.detail.text": "Metrics reflect participants who have provided data on the relevant metric",
+  "home.experiment-query-result.main-effect.title.text": "Main Effect",
+  "home.experiment-query-result.interaction-effect.title.text": "Interaction",
   "home.experiments-table.text.name": "NAME",
   "home.experiments-table.text.created-date": "CREATED ON",
   "home.experiments-table.text.context": "CONTEXT",

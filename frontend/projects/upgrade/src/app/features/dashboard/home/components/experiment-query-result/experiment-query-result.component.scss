@@ -5,17 +5,63 @@
     display: block;
   }
 
+  .main-effect-data-text {
+    display: block;
+  }
+
+  .interaction-effect-data-text {
+    display: block;
+  }
+
   .metric-data-detail-text {
     color: var(--grey-3);
     margin-bottom: 10px;
+  }
+
+  .factor-name1 {
+    color: var(--grey-3);
+    margin-top: 10px;
+    padding-left: 170px;
+    padding-right: 230px;
+  }
+
+  .factor-name2 {
+    color: var(--grey-3);
+    margin-bottom: -50px;
+    padding-left: 170px;
+    padding-right: 250px;
   }
 
   ::ng-deep .ngx-charts {
     ::ng-deep text {
       font-family: 'Open Sans';
       font-weight: 600;
+      display: flex;
+      flex-grow: 1;
     }
   }
+
+  ::ng-deep .ngx-charts
+    g.line-chart
+    > g:last-of-type
+    > g:nth-child(n)
+    g.line-series
+    > path {
+    stroke-width: 5px;
+    }
+
+  ::ng-deep {
+    .legend-labels {
+      background: none !important;
+      margin-left: 50px;
+    }
+  }
+
+  // ::ng-deep{
+  //   .legend-label-text{
+  //     color: white;
+  //   }
+  // }
 
   .loading-container {
     display: flex;

@@ -55,14 +55,16 @@
         <span class="ft-32-700 experiment-overview-dates">
           <span class="ft-14-700 experiment-overview-create-date">
             {{
-              ('home.view-experiment.created-on.text' | translate) + (experiment.createdAt | formatDate: 'medium date')
+              ('home.view-experiment.created-on.text' | translate) + (experiment.createdAt | formatDate : 'medium date')
             }}
           </span>
 
           <span class="ft-14-700 experiment-overview-last-update-date">
             {{
               ('home.view-experiment.last-updated-on.text' | translate) +
-                (experiment.updatedAt | formatDate: 'medium
+                (experiment.updatedAt
+                  | formatDate
+                    : 'medium
             date')
             }}
           </span>
@@ -100,7 +102,7 @@
                     <span
                       class="state-circle"
                       [ngStyle]="{
-                        backgroundColor: experiment.state | experimentState: ExperimentStatePipeTypes.COLOR
+                        backgroundColor: experiment.state | experimentState : ExperimentStatePipeTypes.COLOR
                       }"
                     ></span>
                   </ng-template>
@@ -197,7 +199,7 @@
                       [matTooltip]="experiment.group"
                       matTooltipPosition="above"
                     >
-                      {{ '( ' + (experiment.group | truncate: 35) + ' )' }}
+                      {{ '( ' + (experiment.group | truncate : 35) + ' )' }}
                     </span>
                   </ng-template>
                 </ng-container>
@@ -246,11 +248,11 @@
                       >
                         {{ groupCount + ' ' }}
                         <span *ngIf="groupCount < 2; else groupTypePlural">
-                          {{ 'global.group-type-singular.text' | translate: { groupType: experiment.group } }}
+                          {{ 'global.group-type-singular.text' | translate : { groupType: experiment.group } }}
                         </span>
                         <ng-template #groupTypePlural>
                           <span>{{
-                            'global.group-type-plural.text' | translate: { groupType: experiment.group }
+                            'global.group-type-plural.text' | translate : { groupType: experiment.group }
                           }}</span>
                         </ng-template>
                       </span>
@@ -286,13 +288,13 @@
                       *ngIf="permissions?.experiments.update && !isExperimentStateCancelled; else endOnReadOnly"
                     >
                       <span class="end-criteria-underline--grey" (click)="updateEndingCriteria()">
-                        {{ experiment.endOn | formatDate: 'medium date' }}
+                        {{ experiment.endOn | formatDate : 'medium date' }}
                       </span>
                       <mat-icon class="edit-icon">create</mat-icon>
                     </ng-container>
 
                     <ng-template #endOnReadOnly>
-                      <span>{{ experiment.endOn | formatDate: 'medium date' }}</span>
+                      <span>{{ experiment.endOn | formatDate : 'medium date' }}</span>
                     </ng-template>
                   </span>
                 </ng-container>
@@ -391,110 +393,254 @@
         <div class="tab-body-container tab-table-body-container">
           <!-- Experiment Decision Points Table -->
           <div class="table-container table-container-partition">
-            <span class="ft-24-700">{{ 'home.view-experiment.experiment-decision-point-title.text' | translate }}</span>
-            <mat-table [dataSource]="experiment.partitions" class="table">
-              <!-- Site Column -->
-              <ng-container matColumnDef="partitionPoint">
-                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                  {{ 'home.view-experiment-global.experiment-site.text' | translate }}
-                </mat-header-cell>
-                <mat-cell class="ft-12-600" *matCellDef="let data">
-                  <span *ngIf="data.site?.length < 50; else partitionPoint">
-                    {{ data.site }}
-                  </span>
-                  <ng-template #partitionPoint>
-                    <span [matTooltip]="data.site" matTooltipPosition="above">
-                      {{ data.site | truncate: 50 }}
+            <div *ngIf="experiment.type === 'Simple'">
+              <span class="ft-24-700">{{ 'home.view-experiment.experiment-decision-point-title.text' | translate }}</span>
+              <mat-table [dataSource]="experiment.partitions" class="table">
+                <!-- Site Column -->
+                <ng-container matColumnDef="partitionPoint">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'home.view-experiment-global.experiment-site.text' | translate }}
+                  </mat-header-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let data">
+                    <span *ngIf="data.site?.length < 50; else partitionPoint">
+                      {{ data.site }}
                     </span>
-                  </ng-template>
-                </mat-cell>
-              </ng-container>
+                    <ng-template #partitionPoint>
+                      <span [matTooltip]="data.site" matTooltipPosition="above">
+                        {{ data.site | truncate : 50 }}
+                      </span>
+                    </ng-template>
+                  </mat-cell>
+                </ng-container>
 
-              <!-- Target Column -->
-              <ng-container matColumnDef="partitionId">
-                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                  {{ 'home.view-experiment-global.experiment-target.text' | translate }}
-                </mat-header-cell>
-                <mat-cell class="ft-12-600" *matCellDef="let data">
-                  <span *ngIf="data.target?.length < 50; else partitionName">
-                    {{ data.target }}
-                  </span>
-                  <ng-template #partitionName>
-                    <span [matTooltip]="data.target" matTooltipPosition="above">
-                      {{ data.target | truncate: 50 }}
+                <!-- Target Column -->
+                <ng-container matColumnDef="partitionId">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'home.view-experiment-global.experiment-target.text' | translate }}
+                  </mat-header-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let data">
+                    <span *ngIf="data.target?.length < 50; else partitionName">
+                      {{ data.target }}
                     </span>
-                  </ng-template>
-                </mat-cell>
-              </ng-container>
+                    <ng-template #partitionName>
+                      <span [matTooltip]="data.target" matTooltipPosition="above">
+                        {{ data.target | truncate : 50 }}
+                      </span>
+                    </ng-template>
+                  </mat-cell>
+                </ng-container>
 
-              <!-- ExcludeIfReached Column -->
-              <ng-container matColumnDef="excludeIfReached">
-                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                  {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
-                </mat-header-cell>
-                <mat-cell *matCellDef="let data; let groupIndex = index" style="margin-left: 25px">
-                  <mat-checkbox class="ft-8-100" color="primary" [checked]="data.excludeIfReached" [disabled]="true">
-                  </mat-checkbox>
-                </mat-cell>
-              </ng-container>
-              <mat-header-row *matHeaderRowDef="displayedPartitionColumns"></mat-header-row>
-              <mat-row *matRowDef="let row; columns: displayedPartitionColumns"></mat-row>
-            </mat-table>
+                <!-- ExcludeIfReached Column -->
+                <ng-container matColumnDef="excludeIfReached">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
+                  </mat-header-cell>
+                  <mat-cell *matCellDef="let data; let groupIndex = index" style="margin-left: 25px">
+                    <mat-checkbox class="ft-8-100" color="primary" [checked]="data.excludeIfReached" [disabled]="true">
+                    </mat-checkbox>
+                  </mat-cell>
+                </ng-container>
+                <mat-header-row *matHeaderRowDef="displayedPartitionColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedPartitionColumns"></mat-row>
+              </mat-table>
+            </div>
+            <div *ngIf="experiment.type === 'Factorial'">
+              <span class="ft-24-700">{{ 'home.new-experiment.design.factor.text' | translate }}</span>
+              <mat-table class="factor-table" [dataSource]="factorsDataSource" multiTemplateDataRows>
+                <!-- Expand Icon Column -->
+                <ng-container matColumnDef="expandIcon">
+                  <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+                  <mat-cell *matCellDef="let data; let factorIndex = dataIndex" style="justify-content: flex-start">
+                    <mat-icon [class.active]="factorIndex === expandedId" (click)="expandFactor(factorIndex)"
+                      >play_arrow</mat-icon
+                    >
+                  </mat-cell>
+                </ng-container>
+
+                <!-- Factor Column -->
+                <ng-container matColumnDef="factorName">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'home.new-experiment.design.factor-name.text' | translate }}
+                  </mat-header-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let data; let factorIndex = dataIndex">
+                    <span *ngIf="data.factor?.length < 50; else factorName">
+                      {{ data.factor }}
+                    </span>
+                    <ng-template #factorName>
+                      <span [matTooltip]="data.factor" matTooltipPosition="above">
+                        {{ data.factor | truncate : 50 }}
+                      </span>
+                    </ng-template>
+                  </mat-cell>
+                </ng-container>
+
+                <!-- Site Column -->
+                <ng-container matColumnDef="partitionPoint">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'home.view-experiment-global.experiment-site.text' | translate }}
+                  </mat-header-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let data; let factorIndex = dataIndex">
+                    <span *ngIf="data.site?.length < 50; else partitionPoint">
+                      {{ data.site }}
+                    </span>
+                    <ng-template #partitionPoint>
+                      <span [matTooltip]="data.site" matTooltipPosition="above">
+                        {{ data.site | truncate : 50 }}
+                      </span>
+                    </ng-template>
+                  </mat-cell>
+                </ng-container>
+
+                <!-- Target Column -->
+                <ng-container matColumnDef="partitionId">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'home.view-experiment-global.experiment-target.text' | translate }}
+                  </mat-header-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let data; let factorIndex = dataIndex">
+                    <span *ngIf="data.target?.length < 50; else partitionName">
+                      {{ data.target }}
+                    </span>
+                    <ng-template #partitionName>
+                      <span [matTooltip]="data.target" matTooltipPosition="above">
+                        {{ data.target | truncate : 50 }}
+                      </span>
+                    </ng-template>
+                  </mat-cell>
+                </ng-container>
+
+                <!-- EXPANDABLE ROW -->
+                <ng-container matColumnDef="expandedDetail">
+                  <mat-cell *matCellDef="let data; let factorIndex = dataIndex">
+                    <div *ngIf="factorIndex === expandedId" class="level-table-container">
+                      <mat-table class="table level-table" [dataSource]="data.levels">
+                        <!-- Level Column -->
+                        <ng-container matColumnDef="level">
+                          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                            {{ 'home.new-experiment.design.level-name.text' | translate }}
+                          </mat-header-cell>
+                          <mat-cell *matCellDef="let data; let levelIndex = index">
+                            <span>{{ data.name }}</span>
+                          </mat-cell>
+                        </ng-container>
+
+                        <!-- Alias Column -->
+                        <ng-container matColumnDef="alias">
+                          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                            {{ 'home.new-experiment.design.aliases.column-header.alias.text' | translate }}
+                          </mat-header-cell>
+                          <mat-cell *matCellDef="let data; let levelIndex = index">
+                            <span>{{ data.alias }}</span>
+                          </mat-cell>
+                        </ng-container>
+
+                        <mat-header-row
+                          *matHeaderRowDef="displayedPartitionLevelColumnsFactorial; sticky: true"
+                        ></mat-header-row>
+                        <mat-row *matRowDef="let row; columns: displayedPartitionLevelColumnsFactorial"></mat-row>
+                      </mat-table>
+                    </div>
+                  </mat-cell>
+                </ng-container>
+
+                <mat-header-row *matHeaderRowDef="displayedPartitionColumnsFactorial; sticky: true"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedPartitionColumnsFactorial"></mat-row>
+                <mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"> </mat-row>
+              </mat-table>
+            </div>
           </div>
 
           <!-- Experiment Conditions Table -->
           <div class="table-container table-container-partition">
             <span class="ft-24-700">{{ 'home.view-experiment.experiment-conditions-title.text' | translate }}</span>
-            <mat-table [dataSource]="experiment.conditions" class="table">
-              <!-- Condition Code Column -->
-              <ng-container matColumnDef="conditionCode">
-                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                  {{ 'global.condition.text' | translate }}
-                </mat-header-cell>
-                <mat-cell class="ft-12-600" *matCellDef="let data">
-                  <span *ngIf="data.conditionCode?.length < 50; else conditionCode">
-                    {{ data.conditionCode }}
-                  </span>
-                  <ng-template #conditionCode>
-                    <span [matTooltip]="data.conditionCode" matTooltipPosition="above">
-                      {{ data.conditionCode | truncate: 50 }}
+            <div *ngIf="experiment.type === 'Simple'">
+              <mat-table [dataSource]="experiment.conditions" class="table">
+                <!-- Condition Code Column -->
+                <ng-container matColumnDef="conditionCode">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'global.condition.text' | translate }}
+                  </mat-header-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let data">
+                    <span *ngIf="data.conditionCode?.length < 50; else conditionCode">
+                      {{ data.conditionCode }}
                     </span>
-                  </ng-template>
-                </mat-cell>
-              </ng-container>
+                    <ng-template #conditionCode>
+                      <span [matTooltip]="data.conditionCode" matTooltipPosition="above">
+                        {{ data.conditionCode | truncate : 50 }}
+                      </span>
+                    </ng-template>
+                  </mat-cell>
+                </ng-container>
 
-              <!-- Weight Column -->
-              <ng-container matColumnDef="assignmentWeight">
-                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                  {{ 'home-global.assignment-weight.text' | translate }}
-                </mat-header-cell>
-                <mat-cell class="ft-12-600" *matCellDef="let data"> {{ data.assignmentWeight }} </mat-cell>
-              </ng-container>
+                <!-- Weight Column -->
+                <ng-container matColumnDef="assignmentWeight">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'home-global.assignment-weight.text' | translate }}
+                  </mat-header-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let data"> {{ data.assignmentWeight }} </mat-cell>
+                </ng-container>
 
-              <!-- Description Column -->
-              <ng-container matColumnDef="description">
-                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                  {{ 'global.description.text' | translate }}
-                </mat-header-cell>
-                <mat-cell class="ft-12-600" *matCellDef="let data">
-                  <span *ngIf="data.description?.length < 50; else conditionDescription">
-                    {{ data.description }}
-                  </span>
-                  <ng-template #conditionDescription>
-                    <span [matTooltip]="data.description" matTooltipPosition="above">
-                      {{ data.description | truncate: 50 }}
+                <!-- Description Column -->
+                <ng-container matColumnDef="description">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'global.description.text' | translate }}
+                  </mat-header-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let data">
+                    <span *ngIf="data.description?.length < 50; else conditionDescription">
+                      {{ data.description }}
                     </span>
-                  </ng-template>
-                </mat-cell>
-              </ng-container>
+                    <ng-template #conditionDescription>
+                      <span [matTooltip]="data.description" matTooltipPosition="above">
+                        {{ data.description | truncate : 50 }}
+                      </span>
+                    </ng-template>
+                  </mat-cell>
+                </ng-container>
 
-              <mat-header-row *matHeaderRowDef="displayedConditionColumns"></mat-header-row>
-              <mat-row *matRowDef="let row; columns: displayedConditionColumns"></mat-row>
-            </mat-table>
+                <mat-header-row *matHeaderRowDef="displayedConditionColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedConditionColumns"></mat-row>
+              </mat-table>
+            </div>
+            <div *ngIf="experiment.type === 'Factorial'">
+              <mat-table [dataSource]="experiment.conditions" class="table">
+                <!-- Condition Code Column -->
+                <ng-container matColumnDef="conditionCode">
+                  <mat-header-cell
+                    style="justify-content: left; padding-left: 15px"
+                    class="ft-12-700"
+                    *matHeaderCellDef
+                  >
+                    {{ 'global.condition.text' | translate }}
+                  </mat-header-cell>
+                  <mat-cell style="justify-content: left" class="ft-12-600" *matCellDef="let data">
+                    <span style="padding-left: 5px" *ngIf="data.conditionCode?.length < 50; else conditionCode">
+                      {{ data.conditionCode }}
+                    </span>
+                    <ng-template #conditionCode>
+                      <span [matTooltip]="data.conditionCode" matTooltipPosition="above">
+                        {{ data.conditionCode | truncate : 50 }}
+                      </span>
+                    </ng-template>
+                  </mat-cell>
+                </ng-container>
+
+                <!-- Weight Column -->
+                <ng-container matColumnDef="assignmentWeight">
+                  <mat-header-cell style="justify-content: left" class="ft-12-700" *matHeaderCellDef>
+                    {{ 'home-global.assignment-weight.text' | translate }}
+                  </mat-header-cell>
+                  <mat-cell style="justify-content: left; padding-left: 10px" class="ft-12-600" *matCellDef="let data">
+                    {{ data.assignmentWeight }}
+                  </mat-cell>
+                </ng-container>
+
+                <mat-header-row *matHeaderRowDef="displayedConditionColumnsFactorial"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedConditionColumnsFactorial"></mat-row>
+              </mat-table>
+            </div>
           </div>
 
           <!-- Aliases Table -->
-          <div class="table-container table-container-aliases">
+          <div class="table-container table-container-aliases" *ngIf="experiment.type === 'Simple'">
             <span class="ft-24-700">{{ 'home.view-experiment.experiment-aliases-title.text' | translate }}</span>
             <ng-container *ngIf="simpleExperimentAliasTableData.length">
               <mat-table [dataSource]="simpleExperimentAliasTableData" class="table alias-table-overview">
@@ -504,7 +650,7 @@
                   </mat-header-cell>
                   <mat-cell class="ft-12-600" *matCellDef="let rowData">
                     <span [matTooltip]="rowData.site" matTooltipPosition="above">
-                      {{ rowData.site | truncate: 50 }}
+                      {{ rowData.site | truncate : 50 }}
                     </span>
                   </mat-cell>
                 </ng-container>
@@ -515,7 +661,7 @@
                   </mat-header-cell>
                   <mat-cell class="ft-12-600" *matCellDef="let rowData">
                     <span [matTooltip]="rowData.target" matTooltipPosition="above">
-                      {{ rowData.target | truncate: 50 }}
+                      {{ rowData.target | truncate : 50 }}
                     </span>
                   </mat-cell>
                 </ng-container>
@@ -526,7 +672,7 @@
                   </mat-header-cell>
                   <mat-cell class="ft-12-600" *matCellDef="let rowData">
                     <span [matTooltip]="rowData.condition" matTooltipPosition="above">
-                      {{ rowData.condition | truncate: 50 }}
+                      {{ rowData.condition | truncate : 50 }}
                     </span>
                   </mat-cell>
                 </ng-container>
@@ -537,7 +683,7 @@
                   </mat-header-cell>
                   <mat-cell class="ft-12-600" *matCellDef="let rowData">
                     <span [matTooltip]="rowData.alias" matTooltipPosition="above">
-                      {{ rowData.alias | truncate: 50 }}
+                      {{ rowData.alias | truncate : 50 }}
                     </span>
                   </mat-cell>
                 </ng-container>
@@ -570,7 +716,7 @@
                   </span>
                   <ng-template #participantType>
                     <span [matTooltip]="data.participant_Type" matTooltipPosition="above">
-                      {{ data.participant_Type | truncate: 50 }}
+                      {{ data.participant_Type | truncate : 50 }}
                     </span>
                   </ng-template>
                 </mat-cell>
@@ -587,7 +733,7 @@
                   </span>
                   <ng-template #participantId>
                     <span [matTooltip]="data.participant_id" matTooltipPosition="above">
-                      {{ data.participant_id | truncate: 50 }}
+                      {{ data.participant_id | truncate : 50 }}
                     </span>
                   </ng-template>
                 </mat-cell>
@@ -613,7 +759,7 @@
                   </span>
                   <ng-template #participantType>
                     <span [matTooltip]="data.participant_Type" matTooltipPosition="above">
-                      {{ data.participant_Type | truncate: 50 }}
+                      {{ data.participant_Type | truncate : 50 }}
                     </span>
                   </ng-template>
                 </mat-cell>
@@ -630,7 +776,7 @@
                   </span>
                   <ng-template #participantId>
                     <span [matTooltip]="data.participant_id" matTooltipPosition="above">
-                      {{ data.participant_id | truncate: 50 }}
+                      {{ data.participant_id | truncate : 50 }}
                     </span>
                   </ng-template>
                 </mat-cell>
@@ -688,7 +834,7 @@
                   </span>
                   <ng-template #displayName>
                     <span [matTooltip]="data.metric_Name" matTooltipPosition="above">
-                      {{ data.metric_Name | truncate: 50 }}
+                      {{ data.metric_Name | truncate : 50 }}
                     </span>
                   </ng-template>
                 </mat-cell>

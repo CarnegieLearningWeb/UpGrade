@@ -2,9 +2,9 @@ div {
   width: 100%;
 
   .inner-table-container {
-    div {
-      margin-bottom: 5px;
-    }
+    border: 1px solid #D3D3D3;
+    border-radius: 5px;
+    margin: 10px 5px 10px 25px;
   }
 
   .mat-table {
@@ -12,7 +12,7 @@ div {
     mat-header-cell {
       display: flex;
       justify-content: center;
-      padding: 10px;
+      padding: 0px 15px !important;
       text-align: center;
       word-break: break-word;
     }

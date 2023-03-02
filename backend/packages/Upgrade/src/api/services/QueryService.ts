@@ -3,7 +3,7 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
-import { SERVER_ERROR } from 'upgrade_types';
+import { EXPERIMENT_TYPE, SERVER_ERROR } from 'upgrade_types';
 import { ErrorService } from './ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
@@ -34,39 +34,58 @@ export class QueryService {
         relations: ['metric', 'experiment'],
       })
     );
+
     const promiseResult = await Promise.all(promiseArray);
-    const analyzePromise = promiseResult.map((query) => this.logRepository.analysis(query));
-    const response = await Promise.allSettled(analyzePromise);
+    const analyzePromise = promiseResult.map((query) => {
+      if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {
+        return [
+          this.logRepository.analysis(query),
+          this.logRepository.analysis({
+            ...query,
+            experiment: { ...query.experiment, type: EXPERIMENT_TYPE.SIMPLE },
+          }),
+        ];
+      }
+      return [this.logRepository.analysis(query)];
+    });
+
+    const response = await Promise.all(
+      analyzePromise.map(async (queryArray) => {
+        return await Promise.allSettled(queryArray);
+      })
+    );
 
     const failedQuery = Array<Promise<any>>();
 
-    let modifiedResponse = response.map((query, index) => {
-      if (query.status === 'fulfilled') {
-        return query.value;
-      } else {
-        logger.error({ message: `Error in Query Id ${queryIds[index]}` });
-        failedQuery.push(
-          this.errorService.create(
-            {
-              endPoint: '/api/query/analyse',
-              errorCode: 500,
-              message: `Query Failed error: ${JSON.stringify(queryIds[index], undefined, 2)}`,
-              name: 'Query Failed error',
-              type: SERVER_ERROR.QUERY_FAILED,
-            } as ExperimentError,
-            logger
-          )
-        );
-        return [query.status];
-      }
+    const modifiedResponse = response.map((queryArray, index) => {
+      return queryArray.map((query) => {
+        if (query.status === 'fulfilled') {
+          return query.value;
+        } else {
+          logger.error({ message: `Error in Query Id ${queryIds[index]}` });
+          failedQuery.push(
+            this.errorService.create(
+              {
+                endPoint: '/api/query/analyse',
+                errorCode: 500,
+                message: `Query Failed error: ${JSON.stringify(queryIds[index], undefined, 2)}`,
+                name: 'Query Failed error',
+                type: SERVER_ERROR.QUERY_FAILED,
+              } as ExperimentError,
+              logger
+            )
+          );
+          return [query.status];
+        }
+      });
     });
 
     if (failedQuery.length) {
       await Promise.all(failedQuery);
     }
-    modifiedResponse = modifiedResponse.map((res, index) => {
-      return { id: queryIds[index], result: res };
+    const modifiedResponseToReturn = modifiedResponse.map((res, index) => {
+      return { id: queryIds[index], mainEffect: res[0], interactionEffect: res[1] || null };
     });
-    return modifiedResponse;
+    return modifiedResponseToReturn;
   }
 }
