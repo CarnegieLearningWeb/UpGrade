@@ -24,7 +24,7 @@ import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/s
 import { ExportModalComponent } from '../../components/modal/export-experiment/export-experiment.component';
 import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-time/enrollment-over-time.component';
-import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, FILTER_MODE, IMetricMetaData } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
@@ -67,6 +67,11 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   displayedAliasConditionColumns: string[] = ['site', 'target', 'condition', 'alias'];
   displayedParticipantsColumns: string[] = ['participantsType', 'participantsId'];
   displayedMetricsColumns: string[] = ['metricsKey', 'metricsOperation', 'metricsName'];
+
+  comparisonFns = [
+    { value: '=', viewValue: 'equal' },
+    { value: '<>', viewValue: 'not equal' },
+  ];
 
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
@@ -214,14 +219,21 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         } else {
           key = query.metric;
         }
-
         // separating keys from metric
         const rootKey: string[] = key.split(METRICS_JOIN_TEXT);
-        //console.log(rootKey);
-
         const statisticOperation: string[] = [query.query.operationType];
         if (rootKey.length > 1) {
           statisticOperation.push(query.repeatedMeasure);
+          if (query.metric.type === IMetricMetaData.CATEGORICAL) {
+            let compareFn;
+            this.comparisonFns.forEach((comparisonFn) => {
+              if (comparisonFn.value === query.query.compareFn) {
+                compareFn = comparisonFn.viewValue;
+              }
+            });
+            statisticOperation.push(compareFn);
+            statisticOperation.push(query.query.compareValue);
+          }
         }
         this.displayMetrics.push({
           metric_Key: rootKey,
