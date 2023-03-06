@@ -98,7 +98,6 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.members2.clear();
       this.members1DataSource.next(this.members1.controls);
       this.members2DataSource.next(this.members2.controls);
-      this.bindParticipantsData();
     }
   }
 
