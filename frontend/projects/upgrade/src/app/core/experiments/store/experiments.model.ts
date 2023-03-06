@@ -234,6 +234,11 @@ export interface Experiment {
   backendVersion: string;
 }
 
+export interface ParticipantsMember{
+  id: string;
+  type: string;
+}
+
 export interface ExperimentConditionAlias {
   id?: string;
   aliasName: string;

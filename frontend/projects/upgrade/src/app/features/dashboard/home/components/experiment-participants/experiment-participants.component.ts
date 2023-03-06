@@ -16,6 +16,7 @@ import {
   NewExperimentPaths,
   ExperimentVM,
   IContextMetaData,
+  ParticipantsMember,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Segment, MemberTypes } from '../../../../../core/segments/store/segments.model';
@@ -354,7 +355,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     );
   }
 
-  gettingMembersValueToSend(members: any) {
+  gettingMembersValueToSend(members: ParticipantsMember[]) {
     this.userIdsToSend = [];
     this.subSegmentIdsToSend = [];
     this.groupsToSend = [];
@@ -370,7 +371,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     });
   }
 
-  checkSegmentvalidity(members : any, table: number){
+  checkSegmentvalidity(members : ParticipantsMember[], table: number){
     this.segmentNotValid = false;
     this.segmentNotValid2 = false;
     members.forEach((member) => {
