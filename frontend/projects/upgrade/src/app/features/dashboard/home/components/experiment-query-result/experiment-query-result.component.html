@@ -1,40 +1,197 @@
 <div class="experiment-queries-result">
   <span class="ft-24-700 metric-data-text">{{ 'home.experiment-query-result.title.text' | translate }}</span>
   <span class="ft-12-600 metric-data-detail-text">{{ 'home.experiment-query-result.detail.text' | translate }}</span>
-  <mat-accordion>
-    <mat-expansion-panel *ngFor="let query of experiment.queries">
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          {{ query.name }}
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-
+  <br />
+  <br />
+  <span class="ft-18-700 main-effect-data-text">{{
+    'home.experiment-query-result.main-effect.title.text' | translate
+  }}</span>
+  <br />
+  <div *ngFor="let query of experiment.queries">
+    <span class="ft-16-700 main-effect-data-text">
+      {{ query.name }}
+    </span>
+    <br />
+    <div *ngIf="experimentType === 'Factorial'">
+      <table>
+        <tr>
+          <td class="ft-14-600 factor-name1" *ngFor="let factor of factors;">{{ factor | uppercase}}</td>
+        </tr>
+      </table>
+      <br />
       <ng-container *ngIf="!(isQueryExecuting$ | async); else spinnerTemplate">
         <ng-container *ngIf="!isResultExist(query.id); else noResultTemplate">
+          <div style="display: flex">
+            <div style="margin-right: 150px; height: 250px; width: 28%">
+              <ngx-charts-bar-vertical
+                [view]="[400, 250]"
+                [scheme]="colorScheme"
+                [results]="queryFactorResults1[query?.id]"
+                [xAxis]="true"
+                [yAxis]="true"
+                [barPadding]="20"
+                [showXAxisLabel]="true"
+                [showYAxisLabel]="true"
+                [xAxisTickFormatting]="formateXAxisLabel"
+                [yAxisTickFormatting]="formateYAxisLabel"
+                [trimXAxisTicks]="true"
+                [rotateXAxisTicks]="false"
+              >
+              <ng-template #tooltipTemplate let-model="model">
+                <span>{{ model.name }}</span>
+                <br>
+                <span>{{ model.value }}</span>
+                <br>
+                <span>( n = {{ model.extra }} )</span>
+              </ng-template>
+              </ngx-charts-bar-vertical>
+            </div>
+            <div style="margin-right: 150px; height: 250px; width: 28%">
+              <ngx-charts-bar-vertical
+                [view]="[400, 250]"
+                [scheme]="colorScheme"
+                [results]="queryFactorResults2[query?.id]"
+                [xAxis]="true"
+                [yAxis]="true"
+                [barPadding]="20"
+                [showXAxisLabel]="true"
+                [showYAxisLabel]="true"
+                [xAxisTickFormatting]="formateXAxisLabel"
+                [yAxisTickFormatting]="formateYAxisLabel"
+                [trimXAxisTicks]="true"
+                [rotateXAxisTicks]="false"
+              >
+              <ng-template #tooltipTemplate let-model="model">
+                <span>{{ model.name }}</span>
+                <br>
+                <span>{{ model.value }}</span>
+                <br>
+                <span>( n = {{ model.extra }} )</span>
+              </ng-template>
+              </ngx-charts-bar-vertical>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+    </div>
+    <div *ngIf="experimentType === 'Simple'">
+    <ng-container *ngIf="!(isQueryExecuting$ | async); else spinnerTemplate">
+      <ng-container *ngIf="!isResultExist(query.id); else noResultTemplate">
+        <div style="height: 250px; width: 30%">
           <ngx-charts-bar-vertical
+            [view]="[300, 250]"
             [scheme]="colorScheme"
             [results]="queryResults[query?.id]"
             [xAxis]="true"
             [yAxis]="true"
+            [barPadding]="10"
             [showXAxisLabel]="true"
             [showYAxisLabel]="true"
             [xAxisTickFormatting]="formateXAxisLabel"
+            [yAxisTickFormatting]="formateYAxisLabel"
             [trimXAxisTicks]="true"
-            [maxXAxisTickLength]="10"
+            [rotateXAxisTicks]="false"
           >
+          <ng-template #tooltipTemplate let-model="model">
+            <span>{{ model.name }}</span>
+            <br>
+            <span>{{ model.value }}</span>
+            <br>
+            <span>( n = {{ model.extra }} )</span>
+          </ng-template>
           </ngx-charts-bar-vertical>
-        </ng-container>
-
-        <ng-template #noResultTemplate>
-          <span class="zero-state" [innerHTML]="'query.result.empty-result.text' | translate"> </span>
-        </ng-template>
-      </ng-container>
-
-      <ng-template #spinnerTemplate>
-        <div class="loading-container">
-          <mat-spinner diameter="60"></mat-spinner>
         </div>
-      </ng-template>
-    </mat-expansion-panel>
-  </mat-accordion>
+      </ng-container>
+    </ng-container>
+    </div>
+  </div>
+  <br />
+  <!-- Interaction Section -->
+  <div *ngIf="experimentType === 'Factorial'">
+    <span class="ft-18-700 interaction-effect-data-text">{{
+      'home.experiment-query-result.interaction-effect.title.text' | translate
+    }}</span>
+    <div *ngIf="factors?.length === 2">
+      <div *ngFor="let query of experiment.queries">
+        <br />
+        <span class="ft-16-700 interaction-effect-data-text">
+          {{ query.name }}
+        </span>
+        <br />
+        <ng-container *ngIf="!(isQueryExecuting$ | async); else spinnerTemplate">
+          <ng-container *ngIf="!isResultExist(query.id); else noResultTemplate">
+            <table>
+              <tr>
+                <td class="ft-14-600 factor-name1" *ngFor="let factor of factors;">{{ factor | uppercase}}</td>
+              </tr>
+            </table>
+            <table>
+              <tr>
+                <td class="ft-12-600 factor-name2" *ngFor="let factor of factors.slice().reverse();"> ({{ factor | uppercase}})</td>
+              </tr>
+            </table>
+            <div style="display: flex">
+              <div style="margin-right: 150px; height: 250px; width: 28%">
+                <ngx-charts-line-chart
+                  [view]="[400, 250]"
+                  [scheme]="colorScheme"
+                  [xAxis]="true"
+                  [yAxis]="true"
+                  [legend]="true"
+                  [showXAxisLabel]="true"
+                  [showYAxisLabel]="true"
+                  [yAxisTickFormatting]="formateYAxisLabel"
+                  [results]="interactionEffectQueryFactorResults1[query?.id]"
+                  [legendTitle]=null
+                  [legendPosition]="'below'"
+                  >
+                  <ng-template #tooltipTemplate let-model="model">
+                    <span>{{ model.series }}</span>
+                    <br>
+                    <span>{{ model.value }}</span>
+                    <br>
+                    <span>( n = {{ model.participantsLogged }} )</span>
+                  </ng-template>
+                </ngx-charts-line-chart>
+              </div>
+              <div style="margin-right: 150px; height: 250px; width: 28%">
+                <ngx-charts-line-chart
+                [view]="[420, 250]"
+                [scheme]="colorScheme"
+                [xAxis]="true"
+                [yAxis]="true"
+                [legend]="true"
+                [showXAxisLabel]="true"
+                [showYAxisLabel]="true"
+                [yAxisTickFormatting]="formateYAxisLabel"
+                [results]="interactionEffectQueryFactorResults2[query?.id]"
+                [legendTitle]=null
+                [legendPosition]="'below'"
+                >
+                <ng-template #tooltipTemplate let-model="model">
+                  <span>{{ model.series }}</span>
+                  <br>
+                  <span>{{ model.value }}</span>
+                  <br>
+                  <span>( n = {{ model.participantsLogged }} )</span>
+                </ng-template>
+                </ngx-charts-line-chart>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+        <br />
+        <br />
+      </div>
+    </div>
+  </div>
+  <ng-template #noResultTemplate>
+    <span class="zero-state" [innerHTML]="'query.result.empty-result.text' | translate"> </span>
+  </ng-template>
+  <ng-template #spinnerTemplate>
+    <div class="loading-container">
+      <mat-spinner diameter="60"></mat-spinner>
+    </div>
+  </ng-template>
+  <br />
 </div>

@@ -414,8 +414,8 @@ export class ExperimentDesignStepperService {
     tableData.forEach((factorialConditionTableRow) => {
       factorialConditionsRequestObject.push({
         id: factorialConditionTableRow.id,
-        name: 'condition ' + conditionIndex,
-        conditionCode: 'condition ' + conditionIndex,
+        name: factorialConditionTableRow.alias,
+        conditionCode: factorialConditionTableRow.alias,
         assignmentWeight: parseFloat(factorialConditionTableRow.weight),
         order: conditionIndex++,
         levelCombinationElements: factorialConditionTableRow.levels.map((level) => {

@@ -318,13 +318,13 @@ export default async function RepeatedMeasure(): Promise<void> {
   const queries = await queryService.find(new UpgradeLogger());
   // now do the query
   let queryResult = await queryService.analyze([queries[0].id], new UpgradeLogger());
-  expect(parseInt(queryResult[0].result[0].result, 10)).toEqual(20);
+  expect(parseInt(queryResult[0].mainEffect[0].result, 10)).toEqual(30);
 
   queryResult = await queryService.analyze([queries[1].id], new UpgradeLogger());
-  expect(parseInt(queryResult[0].result[0].result, 10)).toEqual(10);
+  expect(parseInt(queryResult[0].mainEffect[0].result, 10)).toEqual(10);
 
   queryResult = await queryService.analyze([queries[2].id], new UpgradeLogger());
-  expect(parseInt(queryResult[0].result[0].result, 10)).toEqual(15);
+  expect(parseInt(queryResult[0].mainEffect[0].result, 10)).toEqual(15);
 
   // create log for second user
   timestamp = new Date().toISOString();
@@ -358,19 +358,19 @@ export default async function RepeatedMeasure(): Promise<void> {
   expect(logData.length).toEqual(3);
 
   queryResult = await queryService.analyze([queries[0].id], new UpgradeLogger());
-  let totalSum = queryResult[0].result.reduce((acc, { result }) => {
+  let totalSum = queryResult[0].mainEffect.reduce((acc, { result }) => {
     return acc + parseInt(result, 10);
   }, 0);
-  expect(parseInt(totalSum, 10)).toEqual(30);
+  expect(parseInt(totalSum, 10)).toEqual(40);
 
   queryResult = await queryService.analyze([queries[1].id], new UpgradeLogger());
-  totalSum = queryResult[0].result.reduce((acc, { result }) => {
+  totalSum = queryResult[0].mainEffect.reduce((acc, { result }) => {
     return acc + parseInt(result, 10);
   }, 0);
   expect(parseInt(totalSum, 10)).toEqual(20);
 
   queryResult = await queryService.analyze([queries[2].id], new UpgradeLogger());
-  totalSum = queryResult[0].result.reduce((acc, { result }) => {
+  totalSum = queryResult[0].mainEffect.reduce((acc, { result }) => {
     return acc + parseInt(result, 10);
   }, 0);
   expect(parseInt(totalSum, 10)).toEqual(25);
@@ -400,19 +400,19 @@ export default async function RepeatedMeasure(): Promise<void> {
     userDoc: experimentUserDoc,
   });
   queryResult = await queryService.analyze([queries[0].id], new UpgradeLogger());
-  totalSum = queryResult[0].result.reduce((acc, { result }) => {
+  totalSum = queryResult[0].mainEffect.reduce((acc, { result }) => {
     return acc + parseInt(result, 10);
   }, 0);
-  expect(parseInt(totalSum, 10)).toEqual(40);
+  expect(parseInt(totalSum, 10)).toEqual(60);
 
   queryResult = await queryService.analyze([queries[1].id], new UpgradeLogger());
-  totalSum = queryResult[0].result.reduce((acc, { result }) => {
+  totalSum = queryResult[0].mainEffect.reduce((acc, { result }) => {
     return acc + parseInt(result, 10);
   }, 0);
   expect(parseInt(totalSum, 10)).toEqual(20);
 
   queryResult = await queryService.analyze([queries[2].id], new UpgradeLogger());
-  totalSum = queryResult[0].result.reduce((acc, { result }) => {
+  totalSum = queryResult[0].mainEffect.reduce((acc, { result }) => {
     return acc + parseInt(result, 10);
   }, 0);
   expect(parseInt(totalSum, 10)).toEqual(30);

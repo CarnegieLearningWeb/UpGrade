@@ -10,6 +10,14 @@
     display: flex;
     justify-content: space-between;
 
+    .sites {
+      width: 250px;
+    }
+
+    .conditions {
+      width: 400px;
+    }
+
     mat-form-field {
       margin-right: 20px;
 
@@ -31,7 +39,7 @@
 
     .condition-container {
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       margin-bottom: 20px;
       padding-left: 15px;
 

@@ -22,7 +22,7 @@
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.site" matTooltipPosition="above">
-          {{ rowData.site | truncate: 15 }}
+          {{ rowData.site | truncate : 15 }}
         </span>
       </mat-cell>
     </ng-container>
@@ -34,7 +34,7 @@
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.target" matTooltipPosition="above">
-          {{ rowData.target | truncate: 15 }}
+          {{ rowData.target | truncate : 15 }}
         </span>
       </mat-cell>
     </ng-container>
@@ -46,7 +46,7 @@
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.condition" matTooltipPosition="above">
-          {{ rowData.condition | truncate: 15 }}
+          {{ rowData.condition | truncate : 15 }}
         </span>
       </mat-cell>
     </ng-container>
@@ -59,7 +59,7 @@
       <mat-cell *matCellDef="let rowData; let rowIndex = index">
         <ng-container *ngIf="(simpleExperimentAliasTableEditIndex$ | async) !== rowIndex">
           <span [matTooltip]="rowData.alias" matTooltipPosition="above">
-            {{ rowData.alias | truncate: 15 }}
+            {{ rowData.alias | truncate : 15 }}
           </span>
         </ng-container>
         <ng-container *ngIf="(simpleExperimentAliasTableEditIndex$ | async) === rowIndex">
@@ -98,7 +98,10 @@
           type="button"
           class="row-action-btn"
           (click)="handleEditClick(rowData, rowIndex)"
-          [disabled]="(isSimpleExperimentAliasTableEditMode$ | async) && (simpleExperimentAliasTableEditIndex$ | async) !== rowIndex"
+          [disabled]="
+            (isSimpleExperimentAliasTableEditMode$ | async) &&
+            (simpleExperimentAliasTableEditIndex$ | async) !== rowIndex
+          "
         >
           <ng-container *ngIf="(simpleExperimentAliasTableEditIndex$ | async) !== rowIndex">
             <mat-icon class="icon">create</mat-icon>
@@ -111,9 +114,14 @@
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="aliasesDisplayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; let rowIndex = index; columns: aliasesDisplayedColumns" [ngClass]="{
-      'row-is-locked': (isSimpleExperimentAliasTableEditMode$ | async) && (simpleExperimentAliasTableEditIndex$ | async) !== rowIndex,
-      'odd': row?.rowStyle === 'odd'
-    }"></mat-row>
+    <mat-row
+      *matRowDef="let row; let rowIndex = index; columns: aliasesDisplayedColumns"
+      [ngClass]="{
+        'row-is-locked':
+          (isSimpleExperimentAliasTableEditMode$ | async) &&
+          (simpleExperimentAliasTableEditIndex$ | async) !== rowIndex,
+        odd: row?.rowStyle === 'odd'
+      }"
+    ></mat-row>
   </mat-table>
 </section>
