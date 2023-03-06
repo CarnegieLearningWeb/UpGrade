@@ -10,10 +10,7 @@
           <span class="login-info__description ft-16-700">{{ 'global.app.description' | translate }}</span>
         </div>
       </div>
-      <button #googleBtn class="google-sign-in-btn ft-16-700" (click)="login()">
-        <app-shared-icons [iconType]="'google'"></app-shared-icons>
-        {{ 'login.sign-in-btn.text' | translate }}
-      </button>
+      <div #googleSignInButtonRef class="google-sign-in-btn"></div>
       <span class="info ft-12-700">
         {{ 'login.description-1.text' | translate }}
         <span class="info--terms">{{ 'login.description-2.text' | translate }}</span>

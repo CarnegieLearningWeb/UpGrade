@@ -5,7 +5,7 @@ export const environment = {
   production: true,
   test: false,
   baseHrefPrefix: '/upgrade',
-  gapiClientId: '586868075529-8k9hvk5ber8cb6qfu50945kpln7eo870.apps.googleusercontent.com',
+  googleClientId: '586868075529-8k9hvk5ber8cb6qfu50945kpln7eo870.apps.googleusercontent.com',
   domainName: '',
   pollingEnabled: true,
   pollingInterval: 10 * 1000,

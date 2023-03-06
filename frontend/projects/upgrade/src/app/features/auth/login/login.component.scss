@@ -47,17 +47,6 @@ $login-info-text-color: #6e6f72;
         align-items: center;
         justify-content: center;
         margin: 49px 0 12px;
-        border: solid 1px var(--blue);
-        border-radius: 4px;
-        background-color: var(--blue);
-        padding: 0;
-        width: 400px;
-        height: 48px;
-        color: var(--white);
-
-        ::ng-deep svg {
-          margin-right: 11px;
-        }
       }
 
       .info {
