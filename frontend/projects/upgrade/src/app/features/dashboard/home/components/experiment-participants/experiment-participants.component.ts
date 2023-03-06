@@ -9,13 +9,14 @@ import {
   ElementRef,
 } from '@angular/core';
 import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray } from '@angular/forms';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject, map, Observable, startWith, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
   NewExperimentPaths,
   ExperimentVM,
   IContextMetaData,
+  ParticipantsMember,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Segment, MemberTypes } from '../../../../../core/segments/store/segments.model';
@@ -54,13 +55,19 @@ export class ExperimentParticipantsComponent implements OnInit {
   contextMetaDataSub: Subscription;
   allSegments: Segment[];
   allSegmentsSub: Subscription;
+  filteredSegmentIds$: Observable<string[]>[] = [];
+  filteredSegmentIds2$: Observable<string[]>[] = [];
   subSegmentIds = [];
   segmentNameId = new Map();
   subSegmentTypes: any[];
+  allSubSegmentTypes: any[];
   subSegmentIdsToSend = [];
   userIdsToSend = [];
   groupsToSend = [];
   groupString = ' ( group )';
+  includeAll = false;
+  segmentNotValid = false;
+  segmentNotValid2 = false;
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -139,26 +146,136 @@ export class ExperimentParticipantsComponent implements OnInit {
         });
       } else {
         this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
-        this.experimentInfo.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
+        this.experimentInfo.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
           this.members1.push(this.addMembers1(MemberTypes.INDIVIDUAL, id.userId));
         });
-        this.experimentInfo.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
+        this.experimentInfo.experimentSegmentInclusion.segment.groupForSegment.forEach((group) => {
           this.members1.push(this.addMembers1(group.type, group.groupId));
         });
-        this.experimentInfo.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
+        this.experimentInfo.experimentSegmentInclusion.segment.subSegments.forEach((id) => {
           this.members1.push(this.addMembers1(MemberTypes.SEGMENT, id.name));
         });
+        this.experimentInfo.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
+          this.members2.push(this.addMembers2(MemberTypes.INDIVIDUAL, id.userId));
+        });
+        this.experimentInfo.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
+          this.members2.push(this.addMembers2(group.type, group.groupId));
+        });
+        this.experimentInfo.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
+          this.members2.push(this.addMembers2(MemberTypes.SEGMENT, id.name));
+        });
       }
-
       this.members1.removeAt(0);
       this.members2.removeAt(0);
     }
 
     this.updateView1();
     this.updateView2();
+
+    this.participantsForm.get('members1').valueChanges.subscribe((newValues) => {
+      this.checkSegmentvalidity(newValues,1);
+    });
+
+    this.participantsForm2.get('members2').valueChanges.subscribe((newValues) => {
+      this.checkSegmentvalidity(newValues,2);
+    });
+
+    if (this.members1.length !== 0 && this.members1.controls.at(0).get('type').value === "All") {
+      this.members1.controls.at(0).get('id').disable();
+      this.includeAll = true;
+    }
+
+    // Bind predefined values of experiment participants from backend
+    this.bindParticipantsData();
   }
 
-  addMembers1(type = null, id = null) {
+  bindParticipantsData(){
+    const participantsForm1Control = this.participantsForm?.get('members1') as FormArray;
+    participantsForm1Control?.controls.forEach((_, groupindex) => {
+      this.manageSegmentIdsControl(groupindex,1);
+    });
+
+    const participantsForm2Control = this.participantsForm2?.get('members2') as FormArray;
+    participantsForm2Control?.controls.forEach((_, groupindex) => {
+      this.manageSegmentIdsControl(groupindex,2);
+    });
+  }
+
+  manageSegmentIdsControl(index: number, form: number) {
+    if (form == 1){
+      const participantsForm = this.members1 as FormArray;
+
+      this.filteredSegmentIds$[index] = participantsForm
+      .at(index)
+      .get('id')
+      .valueChanges.pipe(
+        startWith<string>(''),
+        map((id) => this.filterSegmentNameId(id))
+      );
+    }
+    
+    if (form == 2) {
+      const participantsForm = this.members2 as FormArray;
+
+      this.filteredSegmentIds2$[index] = participantsForm
+      .at(index)
+      .get('id')
+      .valueChanges.pipe(
+        startWith<string>(''),
+        map((id) => this.filterSegmentNameId(id))
+      );
+    }
+  }
+
+  private  filterSegmentNameId(value: string): string[] {
+    const filterValue = value ? value.toLocaleLowerCase() : '';
+
+    if (!this.contextMetaData) {
+      return [];
+    }
+
+    if (this.currentContext) {
+      const allSegmentIds = [];
+      if (this.allSegments) {
+        this.allSegments.forEach((segment) => {
+          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.context === this.currentContext) {
+            allSegmentIds.push(segment.name);
+          }
+        });
+      }
+      return allSegmentIds.filter((option) => option.toLowerCase().startsWith(filterValue));
+    } 
+    return [];
+  }
+
+  selectedOption(event = null, index = null, table: number) {
+    if (event) {
+      if (index === 0 && event.value === 'All') {
+        this.members1.controls.at(index).setValue({ type: 'All', id: 'All' });
+        this.members1.controls.at(index).get('id').disable();
+        this.includeAll = true;
+        for (let i = this.members1.length - 1; i >= 1; i--) {
+          this.removeMember1(i);
+        }
+        this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
+      } else {
+          this.members1.controls.at(index)?.get('id').enable();
+          if ( table === 1 ){
+          this.members1.controls.at(index)?.get('id').setValue('');
+          this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
+        } else if ( table === 2 ){
+          this.members2.controls.at(index)?.get('id').setValue('');
+        }
+      }
+    }
+  }
+
+  addMembers1(type = null, id = null, index = null) {
+    if (this.participantsForm && index === 0) {
+      this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
+    } else if (this.participantsForm && index !== 0) {
+      this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
+    }
     return this._formBuilder.group({
       type: [type, Validators.required],
       id: [id, Validators.required],
@@ -172,8 +289,8 @@ export class ExperimentParticipantsComponent implements OnInit {
     });
   }
 
-  addMember1() {
-    this.members1.push(this.addMembers1());
+  addMember1(index) {
+    this.members1.push(this.addMembers1(null, null, index));
     this.updateView1();
   }
 
@@ -223,6 +340,12 @@ export class ExperimentParticipantsComponent implements OnInit {
         this.subSegmentTypes.push({ name: type + this.groupString, value: type });
       });
     }
+    // options for Include All:
+    this.allSubSegmentTypes = [];
+    this.allSubSegmentTypes.push({ name: 'All', value: 'All' });
+    this.subSegmentTypes.map((option) => {
+      this.allSubSegmentTypes.push(option);
+    });
   }
 
   handleBackBtnClick() {
@@ -232,7 +355,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     );
   }
 
-  gettingMembersValueToSend(members: any) {
+  gettingMembersValueToSend(members: ParticipantsMember[]) {
     this.userIdsToSend = [];
     this.subSegmentIdsToSend = [];
     this.groupsToSend = [];
@@ -246,6 +369,22 @@ export class ExperimentParticipantsComponent implements OnInit {
         this.groupsToSend.push({ type: member.type, groupId: member.id });
       }
     });
+  }
+
+  checkSegmentvalidity(members : ParticipantsMember[], table: number){
+    this.segmentNotValid = false;
+    this.segmentNotValid2 = false;
+    members.forEach((member) => {
+      if (member.type === MemberTypes.SEGMENT) {
+        if (!this.subSegmentIds.find((segment) => segment === member.id) && member.id !== "") {
+          if (table == 1) {
+            this.segmentNotValid = true;
+          } else {
+            this.segmentNotValid2 = true;
+          }
+        }
+      }
+    })
   }
 
   emitEvent(eventType: NewExperimentDialogEvents) {
@@ -283,21 +422,20 @@ export class ExperimentParticipantsComponent implements OnInit {
   saveData(eventType) {
     this.participantsForm.markAllAsTouched();
     this.participantsForm2.markAllAsTouched();
-
     const filterMode =
       this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC
         ? FILTER_MODE.EXCLUDE_ALL
         : FILTER_MODE.INCLUDE_ALL;
 
-    if (filterMode === FILTER_MODE.INCLUDE_ALL) {
+    if (this.members1.length !== 0) {
+      this.members1.controls.at(0).get('id').enable();
+    } else {
       this.members2.clear();
     }
-
     const { members1 } = this.participantsForm.value;
     const { members2 } = this.participantsForm2.value;
 
-    // TODO: Handle member2:
-    if (this.participantsForm.valid && this.participantsForm2.valid) {
+    if (this.participantsForm.valid && this.participantsForm2.valid && !this.segmentNotValid && !this.segmentNotValid2) {
       this.gettingMembersValueToSend(members1);
       const segmentMembers1FormData = {
         userIds: this.userIdsToSend,
@@ -305,8 +443,6 @@ export class ExperimentParticipantsComponent implements OnInit {
         subSegmentIds: this.subSegmentIdsToSend,
         type: SEGMENT_TYPE.PRIVATE,
       };
-
-      // if dropdown is includeall except then members2.clear()
       this.gettingMembersValueToSend(members2);
       const segmentMembers2FormData = {
         userIds: this.userIdsToSend,
@@ -324,12 +460,16 @@ export class ExperimentParticipantsComponent implements OnInit {
                 filterMode: filterMode,
               }
             : {
-                experimentSegmentInclusion: segmentMembers2FormData,
-                experimentSegmentExclusion: segmentMembers1FormData,
+                experimentSegmentInclusion: segmentMembers1FormData,
+                experimentSegmentExclusion: segmentMembers2FormData,
                 filterMode: filterMode,
               },
         path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS,
       });
+
+      if (this.members1.length !== 0 && this.members1.controls.at(0).get('type').value === "All") {
+        this.members1.controls.at(0).get('id').disable();
+      }
 
       if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
         this.experimentDesignStepperService.experimentStepperDataReset();
@@ -351,7 +491,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     return this.subSegmentTypes;
   }
 
-  get inclusionCriterisAsIncludeSpecific() {
+  get inclusionCriteriaAsIncludeSpecific() {
     return this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC;
   }
 

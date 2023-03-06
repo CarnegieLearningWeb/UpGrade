@@ -159,6 +159,7 @@ export enum INCLUSION_CRITERIA {
   INCLUDE_SPECIFIC = 'Include Specific',
   EXCEPT = 'Include All Except...',
 }
+
 export enum EXPORT_METHOD {
   DESIGN = 'Download Experiment Design (JSON)',
   DATA = 'Email Experiment Data (CSV)',
