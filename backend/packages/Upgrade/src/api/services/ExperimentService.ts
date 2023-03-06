@@ -115,11 +115,6 @@ export class ExperimentService {
       .createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .leftJoinAndSelect('experiment.queries', 'queries')
-      .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('partitions.conditionAliases', 'ConditionAliasesArray')
-      .leftJoinAndSelect('ConditionAliasesArray.parentCondition', 'parentCondition')
-      .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
       .distinctOn(['experiment.id'])
       .addOrderBy('experiment.id', 'ASC')
       .addOrderBy('conditions.order', 'ASC')
@@ -136,12 +131,40 @@ export class ExperimentService {
         .addOrderBy('rank', 'DESC')
         .setParameter('query', `${customSearchString}:*`);
     }
-    if (sortParams) {
-      queryBuilder = queryBuilder.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
-    }
 
-    return await queryBuilder.getMany();
-    // return (await queryBuilder.getMany()).map((x) => this.formatingConditionAlias(x));
+    const expIds = (await queryBuilder.getMany()).map((exp) => exp.id);
+
+    let queryBuilderToReturn = this.experimentRepository
+      .createQueryBuilder('experiment')
+      .leftJoinAndSelect('experiment.conditions', 'conditions')
+      .leftJoinAndSelect('experiment.partitions', 'partitions')
+      .leftJoinAndSelect('experiment.queries', 'queries')
+      .leftJoinAndSelect('queries.metric', 'metric')
+      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
+      .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
+      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
+      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
+      .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
+      .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
+      .leftJoinAndSelect('partitions.factors', 'factors')
+      .leftJoinAndSelect('factors.levels', 'levels')
+      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
+      .leftJoinAndSelect('levelCombinationElements.level', 'level')
+      .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
+      .addOrderBy('conditions.order', 'ASC')
+      .addOrderBy('partitions.order', 'ASC')
+      .addOrderBy('factors.order', 'ASC')
+      .addOrderBy('levels.order', 'ASC')
+      .whereInIds(expIds);
+
+    if (sortParams) {
+      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
+    }
+    return await queryBuilderToReturn.getMany();
   }
 
   public async findOne(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {

@@ -131,7 +131,13 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.onExperimentChange(experiment, isPolling);
         this.loadParticipants();
         this.loadMetrics();
-        this.loadAliasTable(experiment);
+        
+        if (experiment.type === EXPERIMENT_TYPE.SIMPLE) {
+          this.loadAliasTable(experiment);
+        }
+        if(experiment.type === EXPERIMENT_TYPE.FACTORIAL){
+          this.createFactorialTableData();
+        }
       });
 
     if (this.experiment) {
@@ -156,6 +162,21 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       this.simpleExperimentAliasTableData =
         this.experimentDesignStepperService.createAliasTableDataForViewExperiment(experiment);
     }
+  }
+
+  createFactorialTableData(){
+    if (this.experiment) {
+      this.factorsDataSource = [];
+      this.experiment.partitions?.forEach((partition)=>{
+        partition.factors?.forEach((factor)=>{
+          this.factorsDataSource.push({ factor: factor.name, site: partition.site, target: partition.target, levels: factor.levels });
+        })
+      })
+    }
+  }
+
+  expandFactor(groupIndex: number) {
+    this.expandedId = this.expandedId === groupIndex ? null : groupIndex;
   }
 
   loadParticipants() {
