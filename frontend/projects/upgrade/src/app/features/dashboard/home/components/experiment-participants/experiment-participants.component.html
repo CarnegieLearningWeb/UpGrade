@@ -3,99 +3,9 @@
     <form class="experiment-participants" [formGroup]="participantsForm">
       <!-- Table -->
       <div class="property-container">
-        <mat-form-field class="ft-14-600 inclusion-criteria">
-          <mat-label>{{ 'home-global.inclusion-criteria.text' | translate }}</mat-label>
-          <mat-select class="ft-14-400" formControlName="inclusionCriteria">
-            <mat-option *ngFor="let criteria of inclusionCriteria" [value]="criteria.value">
-              {{ criteria.value | titlecase }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-        <br />
         <span class="title"> {{ 'segments.include.text' | translate }} </span>
-        <mat-table class="member-table" [dataSource]="members1DataSource" formArrayName="members1" #members1Table>
-          <!-- Members Type Column -->
-          <ng-container matColumnDef="type">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-              {{ 'segments.global-members-type.text' | translate }}
-            </mat-header-cell>
-            <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-              <mat-form-field floatLabel="never" class="form-control">
-                <mat-label>{{ 'segments.members-placeholder-type.text' | translate }}</mat-label>
-                <mat-select formControlName="type">
-                  <mat-option *ngFor="let val of subSegmentTypes" [value]="val.value">
-                    {{ val.name }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-            </mat-cell>
-          </ng-container>
-          <!-- Members Id Column -->
-          <ng-container matColumnDef="id">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-              {{ 'segments.global-members-id/name.text' | translate }}
-            </mat-header-cell>
-            <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-              <ng-container
-                *ngIf="participantsForm.getRawValue('type')?.members1[groupIndex]?.type === 'Segment'; else noSelect"
-              >
-                <mat-form-field floatLabel="never" class="form-control">
-                  <mat-select formControlName="id">
-                    <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
-                      {{ subSegmentId }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </ng-container>
-              <ng-template #noSelect>
-                <mat-form-field floatLabel="never" class="form-control">
-                  <input
-                    matInput
-                    [placeholder]="'segments.members-placeholder-id/name.text' | translate"
-                    formControlName="id"
-                    autocomplete="off"
-                  />
-                </mat-form-field>
-              </ng-template>
-            </mat-cell>
-          </ng-container>
-          <!-- Members Remove Column -->
-          <ng-container matColumnDef="removeMember">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
-            <mat-cell
-              style="justify-content: flex-start"
-              *matCellDef="let element; let groupIndex = index"
-              [formGroupName]="groupIndex"
-            >
-              <mat-icon class="remove-icon" (click)="removeMember1(groupIndex)"> delete_outline </mat-icon>
-            </mat-cell>
-          </ng-container>
-          <mat-header-row *matHeaderRowDef="membersDisplayedColumns; sticky: true"></mat-header-row>
-          <mat-row *matRowDef="let row; columns: membersDisplayedColumns"></mat-row>
-        </mat-table>
-        <button type="button" class="ft-12-700 add-member" (click)="addMember1()">
-          + {{ 'segments.members-add-members.text' | translate }}
-        </button>
-        <br />
-      </div>
-    </form>
-    <br />
-    <br />
-    <form class="experiment-participants" [formGroup]="participantsForm2">
-      <div class="property-container">
-        <ng-container *ngIf="inclusionCriterisAsIncludeSpecific">
-          <span class="title"> {{ 'segments.except.text' | translate }} </span>
-          <mat-table class="member-table" [dataSource]="members2DataSource" formArrayName="members2" #members2Table>
-            <!-- Members NUMBER Column -->
-            <ng-container matColumnDef="memberNumber">
-              <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-                {{ 'global.number.text' | translate }}
-              </mat-header-cell>
-              <mat-cell *matCellDef="let element; let groupIndex = index">
-                <span>{{ groupIndex + 1 }}</span>
-              </mat-cell>
-            </ng-container>
-
+        <ng-container *ngIf="members1?.length; else initialIncludeMessage">
+          <mat-table class="member-table" [dataSource]="members1DataSource" formArrayName="members1" #members1Table>
             <!-- Members Type Column -->
             <ng-container matColumnDef="type">
               <mat-header-cell class="ft-14-700" *matHeaderCellDef>
@@ -104,10 +14,17 @@
               <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
                 <mat-form-field floatLabel="never" class="form-control">
                   <mat-label>{{ 'segments.members-placeholder-type.text' | translate }}</mat-label>
-                  <mat-select formControlName="type">
-                    <mat-option *ngFor="let val of subSegmentTypes" [value]="val.value">
-                      {{ val.name }}
-                    </mat-option>
+                  <mat-select formControlName="type" (selectionChange)="selectedOption($event, groupIndex,1)">
+                    <div *ngIf="groupIndex === 0">
+                      <mat-option *ngFor="let val of allSubSegmentTypes" [value]="val.value">
+                        {{ val.name }}
+                      </mat-option>
+                    </div>
+                    <div *ngIf="groupIndex !== 0">
+                      <mat-option *ngFor="let val of subSegmentTypes" [value]="val.value">
+                        {{ val.name }}
+                      </mat-option>
+                    </div>
                   </mat-select>
                 </mat-form-field>
               </mat-cell>
@@ -119,15 +36,21 @@
               </mat-header-cell>
               <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
                 <ng-container
-                  *ngIf="participantsForm2.getRawValue('type')?.members2[groupIndex]?.type === 'Segment'; else noSelect"
+                  *ngIf="participantsForm.getRawValue('type')?.members1[groupIndex]?.type === 'Segment'; else noSelect"
                 >
-                  <mat-form-field floatLabel="never" class="form-control">
-                    <mat-select formControlName="id">
-                      <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
-                        {{ subSegmentId }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
+                <mat-form-field floatLabel="never" class="form-control">
+                  <input
+                    matInput
+                    [placeholder]="'segments.members-placeholder-id/name.text' | translate"
+                    formControlName="id"
+                    [matAutocomplete]="autoCompleteSegmentName"
+                  />
+                  <mat-autocomplete #autoCompleteSegmentName="matAutocomplete" panelWidth="fit-content">
+                    <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
+                      {{ subSegmentId }}
+                    </mat-option>
+                  </mat-autocomplete>
+                </mat-form-field>
                 </ng-container>
                 <ng-template #noSelect>
                   <mat-form-field floatLabel="never" class="form-control">
@@ -149,19 +72,156 @@
                 *matCellDef="let element; let groupIndex = index"
                 [formGroupName]="groupIndex"
               >
-                <mat-icon class="remove-icon" (click)="removeMember2(groupIndex)"> delete_outline </mat-icon>
+                <mat-icon class="remove-icon" (click)="removeMember1(groupIndex)"> delete_outline </mat-icon>
               </mat-cell>
             </ng-container>
             <mat-header-row *matHeaderRowDef="membersDisplayedColumns; sticky: true"></mat-header-row>
             <mat-row *matRowDef="let row; columns: membersDisplayedColumns"></mat-row>
           </mat-table>
+        </ng-container>
+        <ng-container>
+          <ng-template #initialIncludeMessage>
+            <br />
+            <br />
+            <div class="no-include-message-container">
+              <span
+                class="ft-14-600 no-include-message"
+                [innerHTML]="'home.new-experiment.participants.inital.include-message' | translate"
+              ></span>
+            </div>
+          </ng-template>
+        </ng-container>
+        <button
+          type="button"
+          class="ft-12-700 add-member"
+          (click)="addMember1(members1?.length)"
+          [ngClass]="{ 'add-member--disabled': (!inclusionCriteriaAsIncludeSpecific && members1?.length !== 0 && includeAll) }"
+          [disabled]="!inclusionCriteriaAsIncludeSpecific && members1?.length !== 0 && includeAll"
+        >
+          + {{ 'segments.members-add-members.text' | translate }}
+        </button>
+        <br />
+      </div>
+    </form>
+    <div class="validation-container">
+      <span
+        class="ft-14-600 validation-message"
+        *ngIf="segmentNotValid"
+        [innerHTML]="'home.new-experiment.participants.unvalid-segment.text' | translate"
+      ></span>
+    </div>
+    <br />
+    <br />
+    <form class="experiment-participants" [formGroup]="participantsForm2">
+      <div class="property-container">
+        <ng-container *ngIf="members1?.length !== 0">
+          <span class="title"> {{ 'segments.except.text' | translate }} </span>
+          <ng-container *ngIf="members2?.length; else initialExcludeMessage">
+            <mat-table class="member-table" [dataSource]="members2DataSource" formArrayName="members2" #members2Table>
+              <!-- Members NUMBER Column -->
+              <ng-container matColumnDef="memberNumber">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                  {{ 'global.number.text' | translate }}
+                </mat-header-cell>
+                <mat-cell *matCellDef="let element; let groupIndex = index">
+                  <span>{{ groupIndex + 1 }}</span>
+                </mat-cell>
+              </ng-container>
+
+              <!-- Members Type Column -->
+              <ng-container matColumnDef="type">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                  {{ 'segments.global-members-type.text' | translate }}
+                </mat-header-cell>
+                <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
+                  <mat-form-field floatLabel="never" class="form-control">
+                    <mat-label>{{ 'segments.members-placeholder-type.text' | translate }}</mat-label>
+                    <mat-select formControlName="type"  (selectionChange)="selectedOption($event, groupIndex,2)">
+                      <mat-option *ngFor="let val of subSegmentTypes" [value]="val.value">
+                        {{ val.name }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </mat-cell>
+              </ng-container>
+              <!-- Members Id Column -->
+              <ng-container matColumnDef="id">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                  {{ 'segments.global-members-id/name.text' | translate }}
+                </mat-header-cell>
+                <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
+                  <ng-container
+                    *ngIf="
+                      participantsForm2.getRawValue('type')?.members2[groupIndex]?.type === 'Segment';
+                      else noSelect
+                    "
+                  >
+                    <mat-form-field floatLabel="never" class="form-control">
+                      <input
+                        matInput
+                        [placeholder]="'segments.members-placeholder-id/name.text' | translate"
+                        formControlName="id"
+                        [matAutocomplete]="autoCompleteSegmentName"
+                      />
+                      <mat-autocomplete #autoCompleteSegmentName="matAutocomplete" panelWidth="fit-content">
+                        <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
+                          {{ subSegmentId }}
+                        </mat-option>
+                      </mat-autocomplete>
+                    </mat-form-field>
+                  </ng-container>
+                  <ng-template #noSelect>
+                    <mat-form-field floatLabel="never" class="form-control">
+                      <input
+                        matInput
+                        [placeholder]="'segments.members-placeholder-id/name.text' | translate"
+                        formControlName="id"
+                        autocomplete="off"
+                      />
+                    </mat-form-field>
+                  </ng-template>
+                </mat-cell>
+              </ng-container>
+              <!-- Members Remove Column -->
+              <ng-container matColumnDef="removeMember">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+                <mat-cell
+                  style="justify-content: flex-start"
+                  *matCellDef="let element; let groupIndex = index"
+                  [formGroupName]="groupIndex"
+                >
+                  <mat-icon class="remove-icon" (click)="removeMember2(groupIndex)"> delete_outline </mat-icon>
+                </mat-cell>
+              </ng-container>
+              <mat-header-row *matHeaderRowDef="membersDisplayedColumns; sticky: true"></mat-header-row>
+              <mat-row *matRowDef="let row; columns: membersDisplayedColumns"></mat-row>
+            </mat-table>
+          </ng-container>
+          <ng-container>
+            <ng-template #initialExcludeMessage>
+              <br />
+              <br />
+              <div class="no-exclude-message-container">
+                <span
+                  class="ft-14-600 no-exclude-message"
+                  [innerHTML]="'home.new-experiment.participants.inital.exclude-message' | translate"
+                ></span>
+              </div>
+            </ng-template>
+          </ng-container>
           <button type="button" class="ft-12-700 add-member" (click)="addMember2()">
             + {{ 'segments.members-add-members.text' | translate }}
           </button>
         </ng-container>
-        <!-- <br> -->
       </div>
     </form>
+    <div class="validation-container">
+      <span
+        class="ft-14-600 validation-message"
+        *ngIf="segmentNotValid2"
+        [innerHTML]="'home.new-experiment.participants.unvalid-segment.text' | translate"
+      ></span>
+    </div>
   </section>
 
   <section class="shared-modal--buttons-container">

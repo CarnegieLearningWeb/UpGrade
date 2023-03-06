@@ -136,7 +136,13 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.onExperimentChange(experiment, isPolling);
         this.loadParticipants();
         this.loadMetrics();
-        this.loadAliasTable(experiment);
+        
+        if (experiment.type === EXPERIMENT_TYPE.SIMPLE) {
+          this.loadAliasTable(experiment);
+        }
+        if(experiment.type === EXPERIMENT_TYPE.FACTORIAL){
+          this.createFactorialTableData();
+        }
       });
 
     if (this.experiment) {
@@ -163,40 +169,43 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     }
   }
 
+  createFactorialTableData(){
+    if (this.experiment) {
+      this.factorsDataSource = [];
+      this.experiment.partitions?.forEach((partition)=>{
+        partition.factors?.forEach((factor)=>{
+          this.factorsDataSource.push({ factor: factor.name, site: partition.site, target: partition.target, levels: factor.levels });
+        })
+      })
+    }
+  }
+
+  expandFactor(groupIndex: number) {
+    this.expandedId = this.expandedId === groupIndex ? null : groupIndex;
+  }
+
   loadParticipants() {
     if (this.experiment) {
       this.includeParticipants = [];
       this.excludeParticipants = [];
-      if (this.experiment.filterMode === FILTER_MODE.EXCLUDE_ALL) {
-        this.experiment.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
-          this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
-        });
-        this.experiment.experimentSegmentInclusion.segment.groupForSegment.forEach((group) => {
-          this.includeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
-        });
-        this.experiment.experimentSegmentInclusion.segment.subSegments.forEach((id) => {
-          this.includeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
-        });
-        this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
-          this.excludeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
-        });
-        this.experiment.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
-          this.excludeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
-        });
-        this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
-          this.excludeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
-        });
-      } else if (this.experiment.experimentSegmentExclusion?.segment) {
-        this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
-          this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
-        });
-        this.experiment.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
-          this.includeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
-        });
-        this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
-          this.includeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
-        });
-      }
+      this.experiment.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
+        this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
+      });
+      this.experiment.experimentSegmentInclusion.segment.groupForSegment.forEach((group) => {
+        this.includeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
+      });
+      this.experiment.experimentSegmentInclusion.segment.subSegments.forEach((id) => {
+        this.includeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
+      });
+      this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
+        this.excludeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
+      });
+      this.experiment.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
+        this.excludeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
+      });
+      this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
+        this.excludeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
+      });
     }
   }
 
