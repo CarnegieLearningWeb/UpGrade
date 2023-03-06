@@ -94,7 +94,7 @@ export class AuthService {
       localTimeZone: '',
     };
 
-    const token = payload.sub;
+    const token = googleIdCredentialResponse.credential;
 
     // Store the token in the ngrx store as this is being passed in every request via http interceptor
     this.store$.dispatch(AuthActions.actionSetUserInfo({ user: { token } as User }));
