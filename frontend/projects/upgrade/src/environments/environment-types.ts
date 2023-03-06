@@ -48,10 +48,17 @@ export interface Environment {
   production: boolean;
   test: boolean;
   baseHrefPrefix: string;
-  gapiClientId: string;
+  googleClientId: string;
   domainName: string;
   pollingEnabled: boolean;
   pollingInterval: number;
   pollingLimit: number;
   api: APIEndpoints;
+}
+
+export interface RuntimeEnvironmentConfig {
+  gapiClientId?: string;
+  googleClientId?: string;
+  endpointApi?: string;
+  apiBaseUrl?: string;
 }

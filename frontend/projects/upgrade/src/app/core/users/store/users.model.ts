@@ -18,6 +18,10 @@ export enum SORT_AS {
   DESCENDING = 'DESC',
 }
 
+export enum AUTH_CONSTANTS {
+  USER_STORAGE_KEY = 'currentUser',
+}
+
 export interface UpdateUser {
   firstName: string;
   lastName: string;
@@ -28,16 +32,33 @@ export interface UpdateUser {
 export const NUMBER_OF_USERS = 20;
 
 export interface User {
-  createdAt: string;
-  updatedAt: string;
-  versionNumber: string;
+  createdAt?: string;
+  updatedAt?: string;
+  versionNumber?: string;
   firstName: string;
   lastName: string;
   imageUrl: string;
   email: string;
   token?: string;
-  role: UserRole;
+  role?: UserRole;
   localTimeZone?: string;
+}
+
+export interface GoogleAuthJWTPayload {
+  aud: string;
+  email: string;
+  email_verified: boolean;
+  exp: number;
+  family_name: string;
+  given_name: string;
+  hd: string;
+  iat: number;
+  iss: string;
+  jti: string;
+  name: string;
+  nbf: number;
+  picture: string;
+  sub: string;
 }
 
 export interface UserState extends EntityState<User> {

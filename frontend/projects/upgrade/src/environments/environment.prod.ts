@@ -5,7 +5,7 @@ export const environment = {
   production: true,
   test: false,
   baseHrefPrefix: '',
-  gapiClientId: '',
+  googleClientId: '',
   domainName: '',
   pollingEnabled: true,
   pollingInterval: 10 * 1000,
