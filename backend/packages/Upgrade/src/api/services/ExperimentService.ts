@@ -114,13 +114,7 @@ export class ExperimentService {
     let queryBuilder = this.experimentRepository
       .createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .distinctOn(['experiment.id'])
-      .addOrderBy('experiment.id', 'ASC')
-      .addOrderBy('conditions.order', 'ASC')
-      .addOrderBy('partitions.order', 'ASC')
-      .limit(take)
-      .offset(skip);
+      .leftJoinAndSelect('experiment.partitions', 'partitions');
 
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
@@ -132,7 +126,8 @@ export class ExperimentService {
         .setParameter('query', `${customSearchString}:*`);
     }
 
-    const expIds = (await queryBuilder.getMany()).map((exp) => exp.id);
+    let expIds = (await queryBuilder.getMany()).map((exp) => exp.id);
+    expIds = Array.from(new Set(expIds));
 
     let queryBuilderToReturn = this.experimentRepository
       .createQueryBuilder('experiment')
@@ -155,11 +150,9 @@ export class ExperimentService {
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
       .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
-      .addOrderBy('conditions.order', 'ASC')
-      .addOrderBy('partitions.order', 'ASC')
-      .addOrderBy('factors.order', 'ASC')
-      .addOrderBy('levels.order', 'ASC')
-      .whereInIds(expIds);
+      .whereInIds(expIds)
+      .limit(take)
+      .offset(skip);
 
     if (sortParams) {
       queryBuilderToReturn = queryBuilderToReturn.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
