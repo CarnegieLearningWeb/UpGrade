@@ -99,6 +99,8 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.members2.clear();
       this.members1DataSource.next(this.members1.controls);
       this.members2DataSource.next(this.members2.controls);
+      // Bind predefined values of experiment participants from backend
+      this.bindParticipantsData();
     }
   }
 
@@ -172,6 +174,9 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.updateView1();
     this.updateView2();
 
+    // Bind predefined values of experiment participants from backend
+    this.bindParticipantsData();
+
     this.participantsForm.get('members1').valueChanges.subscribe((newValues) => {
       this.checkSegmentvalidity(newValues,1);
     });
@@ -184,20 +189,17 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.members1.controls.at(0).get('id').disable();
       this.includeAll = true;
     }
-
-    // Bind predefined values of experiment participants from backend
-    this.bindParticipantsData();
   }
 
   bindParticipantsData(){
     const participantsForm1Control = this.participantsForm?.get('members1') as FormArray;
-    participantsForm1Control?.controls.forEach((_, groupindex) => {
-      this.manageSegmentIdsControl(groupindex,1);
+    participantsForm1Control?.controls.forEach((_, index) => {
+      this.manageSegmentIdsControl(index, 1);
     });
 
     const participantsForm2Control = this.participantsForm2?.get('members2') as FormArray;
-    participantsForm2Control?.controls.forEach((_, groupindex) => {
-      this.manageSegmentIdsControl(groupindex,2);
+    participantsForm2Control?.controls.forEach((_, index) => {
+      this.manageSegmentIdsControl(index, 2);
     });
   }
 

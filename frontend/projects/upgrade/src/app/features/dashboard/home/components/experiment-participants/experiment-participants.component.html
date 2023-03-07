@@ -46,7 +46,7 @@
                     [matAutocomplete]="autoCompleteSegmentName"
                   />
                   <mat-autocomplete #autoCompleteSegmentName="matAutocomplete" panelWidth="fit-content">
-                    <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
+                    <mat-option *ngFor="let subSegmentId of filteredSegmentIds$[groupIndex] | async" [value]="subSegmentId">
                       {{ subSegmentId }}
                     </mat-option>
                   </mat-autocomplete>
@@ -164,7 +164,7 @@
                         [matAutocomplete]="autoCompleteSegmentName"
                       />
                       <mat-autocomplete #autoCompleteSegmentName="matAutocomplete" panelWidth="fit-content">
-                        <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
+                        <mat-option *ngFor="let subSegmentId of filteredSegmentIds$[groupIndex] | async" [value]="subSegmentId">
                           {{ subSegmentId }}
                         </mat-option>
                       </mat-autocomplete>
