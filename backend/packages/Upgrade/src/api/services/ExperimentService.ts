@@ -150,10 +150,6 @@ export class ExperimentService {
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
       .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
-      .addOrderBy('conditions.order', 'ASC')
-      .addOrderBy('partitions.order', 'ASC')
-      .addOrderBy('factors.order', 'ASC')
-      .addOrderBy('levels.order', 'ASC')
       .whereInIds(expIds)
       .limit(take)
       .offset(skip);
