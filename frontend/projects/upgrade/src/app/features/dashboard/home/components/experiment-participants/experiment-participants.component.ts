@@ -192,12 +192,12 @@ export class ExperimentParticipantsComponent implements OnInit {
   bindParticipantsData(){
     const participantsForm1Control = this.participantsForm?.get('members1') as FormArray;
     participantsForm1Control?.controls.forEach((_, groupindex) => {
-      this.manageSegmentIdsControl(groupindex,1);
+      this.manageSegmentIdsControl(groupindex, 1);
     });
 
     const participantsForm2Control = this.participantsForm2?.get('members2') as FormArray;
     participantsForm2Control?.controls.forEach((_, groupindex) => {
-      this.manageSegmentIdsControl(groupindex,2);
+      this.manageSegmentIdsControl(groupindex, 2);
     });
   }
 
