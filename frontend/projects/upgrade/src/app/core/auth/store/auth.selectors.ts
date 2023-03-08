@@ -14,3 +14,5 @@ export const selectCurrentUser = createSelector(selectAuthState, (state: AuthSta
 export const selectRedirectUrl = createSelector(selectAuthState, (state: AuthState) =>
   state.redirectUrl ? state.redirectUrl : null
 );
+
+export const selectGoogleCredential = createSelector(selectAuthState, (state: AuthState) => state.googleCredential);
