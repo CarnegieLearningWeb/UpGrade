@@ -7,7 +7,7 @@ describe('HttpAuthInterceptor', () => {
 
   it('should set headers if idToken is present', () => {
     class MockAuthService {
-      getIdToken$ = new BehaviorSubject('abc123');
+      getGoogleCredential$ = new BehaviorSubject('abc123');
     }
     mockAuthService = new MockAuthService();
     service = new HttpAuthInterceptor(mockAuthService);
@@ -31,7 +31,7 @@ describe('HttpAuthInterceptor', () => {
 
   it('should NOT set headers if no idToken is present', () => {
     class MockAuthService {
-      getIdToken$ = new BehaviorSubject(null);
+      getGoogleCredential$ = new BehaviorSubject(null);
     }
     mockAuthService = new MockAuthService();
     service = new HttpAuthInterceptor(mockAuthService);
