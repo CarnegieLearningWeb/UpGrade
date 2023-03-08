@@ -254,6 +254,7 @@ export class LogRepository extends Repository<Log> {
       percentQuery = isFactorialExperiment
         ? percentQuery.select(['"levelCombinationElement"."levelId"', `count(cast(${valueToUse} as text)) as result`])
         : percentQuery.select(['"individualEnrollment"."conditionId"', `count(cast(${valueToUse} as text)) as result`]);
+      percentQuery.addSelect('COUNT(DISTINCT "individualEnrollment"."userId") as "participantsLogged"');
       const [executeQueryResult, percentQueryResult] = await Promise.all([
         executeQuery.getRawMany(),
         percentQuery.getRawMany(),
@@ -265,6 +266,7 @@ export class LogRepository extends Repository<Log> {
           return {
             levelId: levelId,
             result: (res.result / percentageQueryConditionRes.result) * 100,
+            participantsLogged: percentageQueryConditionRes.participantsLogged
           };
         } else {
           const { conditionId } = res;
@@ -274,6 +276,7 @@ export class LogRepository extends Repository<Log> {
           return {
             conditionId: conditionId,
             result: (res.result / percentageQueryConditionRes.result) * 100,
+            participantsLogged: percentageQueryConditionRes.participantsLogged
           };
         }
       });
