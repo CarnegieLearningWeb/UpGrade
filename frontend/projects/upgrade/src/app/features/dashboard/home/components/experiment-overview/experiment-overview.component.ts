@@ -55,6 +55,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
   isLoadingContextMetaData$: Observable<boolean>;
+  isExperimentEditable = true;
 
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
@@ -126,6 +127,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE
         ) {
           this.overviewForm.disable();
+          this.isExperimentEditable = false;
         }
         this.currentContext = this.experimentInfo.context[0];
         const { groupType } = this.setGroupTypeControlValue();
@@ -133,7 +135,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           experimentName: this.experimentInfo.name,
           description: this.experimentInfo.description,
           unitOfAssignment: this.experimentInfo.assignmentUnit,
-          groupType,
+          groupType: this.experimentInfo.group,
           consistencyRule: this.experimentInfo.consistencyRule,
           designType: this.experimentInfo.type,
           context: this.currentContext,
@@ -244,8 +246,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         formData: this.experimentInfo,
         path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
       });
-    }
-    if (this.overviewForm.valid) {
+    } else if (this.overviewForm.valid) {
       const {
         experimentName,
         description,

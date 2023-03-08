@@ -85,7 +85,9 @@ export class ExperimentUserService {
       throw error;
     }
     const promiseArray = [];
-    aliases.map((aliasId) => {
+    const dedupedArray = [...new Set(aliases)];
+
+    dedupedArray.map((aliasId) => {
       promiseArray.push(
         this.userRepository.findOne({
           where: { id: aliasId },
@@ -164,12 +166,30 @@ export class ExperimentUserService {
     let aliasesToReturn = alreadyLinkedAliases.map((alias) => alias.id);
 
     if (userAliasesDocs.length) {
-      let aliasesUsers = await this.userRepository.save(userAliasesDocs);
-      aliasesUsers = aliasesUsers.map((user) => {
-        const { originalUser, ...rest } = user;
-        return { ...rest, originalUser: originalUser.id };
-      });
-      aliasesToReturn = [...aliasesToReturn, ...aliasesUsers.map((alias) => alias.id)];
+      try {
+        let aliasesUsers = await this.userRepository.save(userAliasesDocs);
+        aliasesUsers = aliasesUsers.map((user) => {
+          const { originalUser, ...rest } = user;
+          return { ...rest, originalUser: originalUser.id };
+        });
+        aliasesToReturn = [...aliasesToReturn, ...aliasesUsers.map((alias) => alias.id)];
+      } catch (err) {
+        logger.error({
+          message: `Could not insert new aliases for user ${userId}`,
+          details: JSON.stringify(userAliasesDocs),
+        });
+        const error = new Error(
+          JSON.stringify(
+            {
+              type: SERVER_ERROR.QUERY_FAILED,
+              message: `Could not insert new aliases for user ${userId}. Aliases: ${JSON.stringify(userAliasesDocs)}`,
+            },
+            null,
+            2
+          )
+        );
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      }
     }
     return { userId, aliases: aliasesToReturn };
   }

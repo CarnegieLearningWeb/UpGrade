@@ -281,47 +281,28 @@ describe('LogRepository Testing', () => {
   });
 
   it('should get metric uniquifier data', async () => {
-    const metricStub = sandbox.stub(MetricRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
     const result = {
       identifiers: [{ id: log.id }],
       generatedMaps: [log],
       raw: [log],
     };
-    selectMock.expects('select').once().returns(selectQueryBuilder);
-    selectMock.expects('innerJoin').once().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').twice().returns(selectQueryBuilder);
-    selectMock.expects('groupBy').once().returns(selectQueryBuilder);
-    selectMock.expects('addGroupBy').once().returns(selectQueryBuilder);
-    selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-    selectMock.expects('execute').once().returns(Promise.resolve(result));
+    const metricStub = sandbox.stub(MetricRepository.prototype, 'query').returns(Promise.resolve(result));
 
-    const res = await repo.getMetricUniquifierData(['metrickey'], ['uniquifierkey'], 'uid');
+    const res = await repo.getMetricUniquifierData([{ key: 'metrickey', uniquifier: 'uniquifierkey' }], 'uid');
 
     sinon.assert.calledOnce(metricStub);
-    selectMock.verify();
 
     expect(res).toEqual(result);
   });
 
   it('should throw an error when get metric uniquifier data fails', async () => {
-    const metricStub = sandbox.stub(MetricRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
-
-    selectMock.expects('select').once().returns(selectQueryBuilder);
-    selectMock.expects('innerJoin').once().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').twice().returns(selectQueryBuilder);
-    selectMock.expects('groupBy').once().returns(selectQueryBuilder);
-    selectMock.expects('addGroupBy').once().returns(selectQueryBuilder);
-    selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-    selectMock.expects('execute').once().returns(Promise.reject(err));
+    const metricStub = sandbox.stub(MetricRepository.prototype, 'query').returns(Promise.reject(err));
 
     expect(async () => {
-      await repo.getMetricUniquifierData(['metrickey'], ['uniquifierkey'], 'uid');
+      await repo.getMetricUniquifierData([{ key: 'metrickey', uniquifier: 'uniquifierkey' }], 'uid');
     }).rejects.toThrow(err);
 
     sinon.assert.calledOnce(metricStub);
-    selectMock.verify();
   });
 
   it('should analyse a continuous simple metric sum', async () => {
@@ -510,7 +491,7 @@ describe('LogRepository Testing', () => {
     selectMock.expects('innerJoin').twice().returns(selectQueryBuilder);
     selectMock.expects('innerJoinAndSelect').thrice().returns(selectQueryBuilder);
     selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').exactly(5).returns(selectQueryBuilder);
+    selectMock.expects('andWhere').exactly(4).returns(selectQueryBuilder);
     selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
     const res = await repo.analysis(q);
 

@@ -114,9 +114,27 @@ export class ExperimentService {
     let queryBuilder = this.experimentRepository
       .createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
+      .leftJoinAndSelect('experiment.partitions', 'partitions');
+
+    if (searchParams) {
+      const customSearchString = searchParams.string.split(' ').join(`:*&`);
+      // add search query
+      const postgresSearchString = this.postgresSearchString(searchParams.key);
+      queryBuilder = queryBuilder
+        .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
+        .addOrderBy('rank', 'DESC')
+        .setParameter('query', `${customSearchString}:*`);
+    }
+
+    let expIds = (await queryBuilder.getMany()).map((exp) => exp.id);
+    expIds = Array.from(new Set(expIds));
+
+    let queryBuilderToReturn = this.experimentRepository
+      .createQueryBuilder('experiment')
+      .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
-      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
+      .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
@@ -127,34 +145,19 @@ export class ExperimentService {
       .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
-      .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('partitions.conditionAliases', 'ConditionAliasesArray')
-      .leftJoinAndSelect('ConditionAliasesArray.parentCondition', 'parentCondition')
       .leftJoinAndSelect('partitions.factors', 'factors')
       .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
       .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
-      .addOrderBy('conditions.order', 'ASC')
-      .addOrderBy('partitions.order', 'ASC')
-      .addOrderBy('factors.order', 'ASC')
-      .addOrderBy('levels.order', 'ASC');
-    if (searchParams) {
-      const customSearchString = searchParams.string.split(' ').join(`:*&`);
-      // add search query
-      const postgresSearchString = this.postgresSearchString(searchParams.key);
-      queryBuilder = queryBuilder
-        .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
-        .addOrderBy('rank', 'DESC')
-        .setParameter('query', `${customSearchString}:*`);
-    }
+      .whereInIds(expIds)
+      .limit(take)
+      .offset(skip);
+
     if (sortParams) {
-      queryBuilder = queryBuilder.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
+      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
     }
-
-    queryBuilder = queryBuilder.skip(skip).take(take);
-
-    return (await queryBuilder.getMany()).map((x) => this.formatingConditionAlias(x));
+    return await queryBuilderToReturn.getMany();
   }
 
   public async findOne(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {

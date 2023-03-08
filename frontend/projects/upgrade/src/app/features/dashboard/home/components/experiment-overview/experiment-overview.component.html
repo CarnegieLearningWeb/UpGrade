@@ -43,7 +43,7 @@
 
         <mat-form-field class="ft-14-600 group-type" *ngIf="unitOfAssignmentValue">
           <mat-label>{{ 'home.new-experiment.overview.group-type.placeHolder' | translate }}</mat-label>
-          <mat-select class="ft-14-400" formControlName="groupType">
+          <mat-select class="ft-14-400" formControlName="groupType" [disabled]="!isExperimentEditable">
             <mat-option *ngFor="let group of groupTypes" [value]="group.value">{{ group.value }}</mat-option>
           </mat-select>
         </mat-form-field>
@@ -123,14 +123,9 @@
         mat-raised-button
         class="shared-modal--modal-btn default-button"
         [ngClass]="{
-          'default-button--disabled':
-            experimentInfo.state == ExperimentState.ENROLLING ||
-            experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE
+          'default-button--disabled': !isExperimentEditable
         }"
-        [disabled]="
-          experimentInfo.state == ExperimentState.ENROLLING ||
-          experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE
-        "
+        [disabled]="!isExperimentEditable"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
         {{ 'global.save.text' | translate }}

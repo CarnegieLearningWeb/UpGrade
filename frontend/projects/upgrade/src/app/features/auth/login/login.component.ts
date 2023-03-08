@@ -1,8 +1,9 @@
-import { Component, ElementRef, ChangeDetectionStrategy, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, ChangeDetectionStrategy, AfterViewInit, ViewChild, Inject } from '@angular/core';
+import { ENV, Environment } from '../../../../environments/environment-types';
 import { AuthService } from '../../../core/auth/auth.service';
 import { SettingsService } from '../../../core/settings/settings.service';
 import { ThemeOptions } from '../../../core/settings/store/settings.model';
-
+// declare const google: any; // TODO download google types
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -11,15 +12,16 @@ import { ThemeOptions } from '../../../core/settings/store/settings.model';
 })
 export class LoginComponent implements AfterViewInit {
   theme$ = this.settingsService.theme$;
-  @ViewChild('googleBtn') googleSignInBtn: ElementRef;
-  constructor(private authService: AuthService, private settingsService: SettingsService) {}
+  @ViewChild('googleSignInButtonRef') googleSignInButtonRef: ElementRef;
 
-  login() {
-    this.authService.authLoginStart();
-  }
+  constructor(
+    private authService: AuthService,
+    private settingsService: SettingsService,
+    @Inject(ENV) private environment: Environment
+  ) {}
 
-  ngAfterViewInit() {
-    this.authService.attachSignIn(this.googleSignInBtn.nativeElement);
+  ngAfterViewInit(): void {
+    this.authService.initializeGoogleSignInButton(this.googleSignInButtonRef);
   }
 
   get ThemeOptions() {
