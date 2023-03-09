@@ -109,7 +109,6 @@ export class ExperimentService {
     searchParams?: IExperimentSearchParams,
     sortParams?: IExperimentSortParams
   ): Promise<Experiment[]> {
-    take = 1;
     logger.info({ message: `Find paginated experiments` });
 
     let queryBuilder = this.experimentRepository
