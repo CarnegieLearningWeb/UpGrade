@@ -109,12 +109,15 @@ export class ExperimentService {
     searchParams?: IExperimentSearchParams,
     sortParams?: IExperimentSortParams
   ): Promise<Experiment[]> {
+    take = 1;
     logger.info({ message: `Find paginated experiments` });
 
     let queryBuilder = this.experimentRepository
       .createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .leftJoinAndSelect('experiment.partitions', 'partitions');
+      .leftJoinAndSelect('experiment.partitions', 'partitions')
+      .take(take)
+      .skip(skip);
 
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
@@ -150,9 +153,7 @@ export class ExperimentService {
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
       .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
-      .whereInIds(expIds)
-      .limit(take)
-      .offset(skip);
+      .whereInIds(expIds);
 
     if (sortParams) {
       queryBuilderToReturn = queryBuilderToReturn.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
