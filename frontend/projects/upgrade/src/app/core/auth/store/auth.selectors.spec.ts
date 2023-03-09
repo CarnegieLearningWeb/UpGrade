@@ -17,6 +17,7 @@ describe('Auth Selectors', () => {
       email: 'email@test.com',
       role: UserRole.ADMIN,
     },
+    googleCredential: 'test',
   };
 
   describe('#selectAuth', () => {

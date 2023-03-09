@@ -6,6 +6,7 @@ export const initialState: AuthState = {
   isLoggedIn: false,
   isAuthenticating: false,
   user: null,
+  googleCredential: null,
 };
 
 const reducer = createReducer(
@@ -17,7 +18,8 @@ const reducer = createReducer(
   on(authActions.actionSetIsAuthenticating, (state, { isAuthenticating }) => ({ ...state, isAuthenticating })),
   on(authActions.actionSetUserInfo, authActions.actionSetUserInfoSuccess, (state, { user }) => ({ ...state, user })),
   on(authActions.actionLogoutSuccess, (state) => ({ ...state, user: null, isLoggedIn: false })),
-  on(authActions.actionSetRedirectUrl, (state, { redirectUrl }) => ({ ...state, redirectUrl }))
+  on(authActions.actionSetRedirectUrl, (state, { redirectUrl }) => ({ ...state, redirectUrl })),
+  on(authActions.actionSetGoogleCredential, (state, { googleCredential }) => ({ ...state, googleCredential }))
 );
 
 export function authReducer(state: AuthState | undefined, action: Action): AuthState {
