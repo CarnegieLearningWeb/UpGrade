@@ -9,6 +9,13 @@ import { ExperimentError } from '../models/ExperimentError';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { Experiment } from '../models/Experiment';
 
+interface queryResult {
+  conditionId?: string;
+  levelId?: string;
+  result: number;
+  participantsLogged: number;
+}
+
 @Service()
 export class QueryService {
   constructor(
@@ -44,7 +51,7 @@ export class QueryService {
     );
 
     const promiseResult = await Promise.all(promiseArray);
-    const experiments = [];
+    const experiments: Experiment[] = [];
     const analyzePromise = promiseResult.map((query) => {
       experiments.push(query.experiment);
       if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {
@@ -100,7 +107,11 @@ export class QueryService {
     return modifiedResponseToReturn;
   }
 
-  public addZeroDataToResults(experiment: Experiment, mainEffect, interactionEffect) {
+  public addZeroDataToResults(
+    experiment: Experiment,
+    mainEffect: queryResult[],
+    interactionEffect: queryResult[]
+  ): [queryResult[], queryResult[]] {
     const conditionIds = experiment.conditions.map((condition) => condition.id);
 
     if (interactionEffect) {
