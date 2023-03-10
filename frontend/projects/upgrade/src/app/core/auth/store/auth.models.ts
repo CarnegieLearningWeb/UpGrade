@@ -23,6 +23,7 @@ export interface AuthState {
   isAuthenticating: boolean;
   redirectUrl?: string;
   user: User;
+  googleCredential: string;
 }
 
 export interface State extends AppState {
