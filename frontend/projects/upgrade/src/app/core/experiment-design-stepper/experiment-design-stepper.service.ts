@@ -38,6 +38,7 @@ import {
   FactorialConditionTableRowData,
   ExperimentConditionAliasRequestObject,
   SimpleExperimentDesignData,
+  ExperimentFactorFormData
 } from './store/experiment-design-stepper.model';
 import {
   actionUpdateFactorialTableData,
@@ -289,6 +290,8 @@ export class ExperimentDesignStepperService {
     const factorOne = designData.factors[0];
     const factorTwo = designData.factors[1];
 
+    const tempTableData = this.withRecurssion(designData);
+
     factorOne.levels.forEach((factorOneLevel) => {
       factorTwo.levels.forEach((factorTwoLevel) => {
         const tableRow: FactorialConditionTableRowData = {
@@ -316,9 +319,90 @@ export class ExperimentDesignStepperService {
         tableData.push(tableRow);
       });
     });
+    console.log('tempTableData');
+    console.log(tempTableData);
+    console.log('tableData');
+    console.log(tableData);
 
     return tableData;
   }
+
+  withRecurssion(designData: ExperimentFactorialDesignData): FactorialConditionTableRowData[]{
+    const tableData: FactorialConditionTableRowData[] = [];
+
+    for (let i=0; i < designData.factors.length-1; i++){
+      for (let j=i+1; j < designData.factors.length; j++){
+        designData.factors[i].levels.forEach((factorOneLevel) => {
+          designData.factors[j].levels.forEach((factorTwoLevel) => {
+            const tableRow: FactorialConditionTableRowData = {
+              id: uuidv4(), // TODO: maybe not the right place?
+              levels: [
+                {
+                  id: factorOneLevel.id,
+                  name: factorOneLevel.level,
+                },
+                {
+                  id: factorTwoLevel.id,
+                  name: factorTwoLevel.level,
+                },
+              ],
+              alias: this.createFactorialAliasString(
+                designData.factors[i].factor,
+                factorOneLevel.level,
+                designData.factors[j].factor,
+                factorTwoLevel.level
+              ),
+              weight: '0.0',
+              include: true,
+            };
+    
+            tableData.push(tableRow);
+          });
+        });
+      }
+    }
+
+    return tableData;
+  }
+
+  // permutation(factors : any[]): FactorialConditionTableRowData[]{
+  //   const tableData: FactorialConditionTableRowData[] = [];
+
+  //   const permutations = [];
+  //   for (let i=0; i < factors.length-1; i++){
+  //     for (const rest of this.permutation(factors.slice(1))) {
+  //       factors[i].levels.forEach((factorOneLevel) => {
+  //         factors[j].levels.forEach((factorTwoLevel) => {
+  //           const tableRow: FactorialConditionTableRowData = {
+  //             id: uuidv4(), // TODO: maybe not the right place?
+  //             levels: [
+  //               {
+  //                 id: factorOneLevel.id,
+  //                 name: factorOneLevel.level,
+  //               },
+  //               {
+  //                 id: factorTwoLevel.id,
+  //                 name: factorTwoLevel.level,
+  //               },
+  //             ],
+  //             alias: this.createFactorialAliasString(
+  //               factors[i].factor,
+  //               factorOneLevel.level,
+  //               factors[j].factor,
+  //               factorTwoLevel.level
+  //             ),
+  //             weight: '0.0',
+  //             include: true,
+  //           };
+    
+  //           tableData.push(tableRow);
+  //         });
+  //       });
+  //     }
+  //   }
+
+  //   return tableData;
+  // }
 
   convertToDecisionPointData(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
     let order = 1;
