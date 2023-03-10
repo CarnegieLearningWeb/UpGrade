@@ -109,6 +109,7 @@ export class ExperimentService {
     searchParams?: IExperimentSearchParams,
     sortParams?: IExperimentSortParams
   ): Promise<Experiment[]> {
+    take = 2;
     logger.info({ message: `Find paginated experiments` });
 
     let queryBuilder = this.experimentRepository
@@ -126,6 +127,8 @@ export class ExperimentService {
         .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
         .addOrderBy('rank', 'DESC')
         .setParameter('query', `${customSearchString}:*`);
+    } else {
+      queryBuilder = queryBuilder.addOrderBy('experiment.updatedAt', 'DESC');
     }
 
     let expIds = (await queryBuilder.getMany()).map((exp) => exp.id);
