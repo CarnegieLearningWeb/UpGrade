@@ -173,11 +173,11 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.updateView2();
 
     this.participantsForm.get('members1').valueChanges.subscribe((newValues) => {
-      this.checkSegmentvalidity(newValues, 1);
+      this.checkSegmentValidity(newValues, 1);
     });
 
     this.participantsForm2.get('members2').valueChanges.subscribe((newValues) => {
-      this.checkSegmentvalidity(newValues, 2);
+      this.checkSegmentValidity(newValues, 2);
     });
 
     if (this.members1.length !== 0 && this.members1.controls.at(0).get('type').value === 'All') {
@@ -371,12 +371,12 @@ export class ExperimentParticipantsComponent implements OnInit {
     });
   }
 
-  checkSegmentvalidity(members: ParticipantsMember[], table: number) {
+  checkSegmentValidity(members: ParticipantsMember[], table: number) {
     this.segmentNotValid = false;
     this.segmentNotValid2 = false;
     members.forEach((member) => {
       if (member.type === MemberTypes.SEGMENT) {
-        if (!this.subSegmentIds.find((segment) => segment === member.id) && member.id !== '') {
+        if (!this.subSegmentIds.find((segment) => segment === member.id) && member.id) {
           if (table == 1) {
             this.segmentNotValid = true;
           } else {
