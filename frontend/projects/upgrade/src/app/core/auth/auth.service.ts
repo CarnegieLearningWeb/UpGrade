@@ -2,7 +2,12 @@ import { ElementRef, Inject, Injectable, NgZone } from '@angular/core';
 import { AppState, LocalStorageService } from '../core.module';
 import { Store, select, Action } from '@ngrx/store';
 import * as AuthActions from './store/auth.actions';
-import { selectIsLoggedIn, selectIsAuthenticating, selectCurrentUser } from './store/auth.selectors';
+import {
+  selectIsLoggedIn,
+  selectIsAuthenticating,
+  selectCurrentUser,
+  selectGoogleCredential,
+} from './store/auth.selectors';
 import { catchError, map, tap } from 'rxjs/operators';
 import { UserPermission } from './store/auth.models';
 import { BehaviorSubject } from 'rxjs';
@@ -17,10 +22,7 @@ export class AuthService {
   isLoggedIn$ = this.store$.pipe(select(selectIsLoggedIn));
   isAuthenticating$ = this.store$.pipe(select(selectIsAuthenticating));
   currentUser$ = this.store$.pipe(select(selectCurrentUser));
-  getIdToken$ = this.store$.pipe(
-    select(selectCurrentUser),
-    map((currentUser) => (currentUser ? currentUser.token : null))
-  );
+  getGoogleCredential$ = this.store$.pipe(select(selectGoogleCredential));
   userPermissions$ = new BehaviorSubject<UserPermission>(null);
 
   constructor(
@@ -94,20 +96,19 @@ export class AuthService {
       localTimeZone: '',
     };
 
-    const token = googleIdCredentialResponse.credential;
+    const googleCredential = googleIdCredentialResponse.credential;
 
-    // Store the token in the ngrx store as this is being passed in every request via http interceptor
-    this.store$.dispatch(AuthActions.actionSetUserInfo({ user: { token } as User }));
-    this.doLogin(user, token);
+    this.store$.dispatch(AuthActions.actionSetGoogleCredential({ googleCredential }));
+    this.doLogin(user, googleCredential);
   };
 
-  doLogin = (user: User, token: string): void => {
+  doLogin = (user: User, googleCredential: string): void => {
     this.authDataService
       .login(user)
       .pipe(
         tap((res: User) => {
           this.store$.dispatch(AuthActions.actionLoginSuccess());
-          this.deferSetUserInfoAfterNavigateEnd(res, token);
+          this.deferSetUserInfoAfterNavigateEnd(res, googleCredential);
         }),
         catchError(() => [this.store$.dispatch(AuthActions.actionLoginFailure())])
       )
@@ -127,12 +128,12 @@ export class AuthService {
   }
 
   // wait after google auth login navs back to app on success to dispatch data fetches
-  deferSetUserInfoAfterNavigateEnd(res: User, token: string): void {
+  deferSetUserInfoAfterNavigateEnd(res: User, googleCredential: string): void {
     let hasFired = false;
     this.router.events.pipe().subscribe((event) => {
       if (!hasFired && event instanceof NavigationEnd) {
         hasFired = true;
-        this.store$.dispatch(AuthActions.actionSetUserInfo({ user: { ...res, token } }));
+        this.store$.dispatch(AuthActions.actionSetUserInfo({ user: { ...res, token: googleCredential } }));
       }
     });
   }

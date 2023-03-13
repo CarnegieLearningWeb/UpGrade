@@ -30,3 +30,8 @@ export const actionSetUserInfoWithEmail = createAction(
   '[Auth] Set User Info Via Email',
   props<{ user: User; actions: Action[] }>()
 );
+
+export const actionSetGoogleCredential = createAction(
+  '[Auth] Set Google Credential',
+  props<{ googleCredential: string }>()
+);

@@ -5,19 +5,19 @@ import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class HttpAuthInterceptor implements HttpInterceptor {
-  private idToken: string;
+  private googleCredential: string;
   constructor(private authService: AuthService) {
-    this.authService.getIdToken$.subscribe((token) => {
-      this.idToken = token;
+    this.authService.getGoogleCredential$.subscribe((googleCredential) => {
+      this.googleCredential = googleCredential;
     });
   }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // add authorization header with token if available
-    if (this.idToken) {
+    if (this.googleCredential) {
       request = request.clone({
         setHeaders: {
-          Authorization: `Bearer ${this.idToken}`,
+          Authorization: `Bearer ${this.googleCredential}`,
         },
       });
     }
