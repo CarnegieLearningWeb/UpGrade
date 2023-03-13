@@ -14,7 +14,7 @@
               <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
                 <mat-form-field floatLabel="never" class="form-control">
                   <mat-label>{{ 'segments.members-placeholder-type.text' | translate }}</mat-label>
-                  <mat-select formControlName="type" (selectionChange)="selectedOption($event, groupIndex,1)">
+                  <mat-select formControlName="type" (selectionChange)="selectedOption($event, groupIndex, 1)">
                     <div *ngIf="groupIndex === 0">
                       <mat-option *ngFor="let val of allSubSegmentTypes" [value]="val.value">
                         {{ val.name }}
@@ -38,19 +38,22 @@
                 <ng-container
                   *ngIf="participantsForm.getRawValue('type')?.members1[groupIndex]?.type === 'Segment'; else noSelect"
                 >
-                <mat-form-field floatLabel="never" class="form-control">
-                  <input
-                    matInput
-                    [placeholder]="'segments.members-placeholder-id/name.text' | translate"
-                    formControlName="id"
-                    [matAutocomplete]="autoCompleteSegmentName"
-                  />
-                  <mat-autocomplete #autoCompleteSegmentName="matAutocomplete" panelWidth="fit-content">
-                    <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
-                      {{ subSegmentId }}
-                    </mat-option>
-                  </mat-autocomplete>
-                </mat-form-field>
+                  <mat-form-field floatLabel="never" class="form-control">
+                    <input
+                      matInput
+                      [placeholder]="'segments.members-placeholder-id/name.text' | translate"
+                      formControlName="id"
+                      [matAutocomplete]="autoCompleteSegmentName"
+                    />
+                    <mat-autocomplete #autoCompleteSegmentName="matAutocomplete" panelWidth="fit-content">
+                      <mat-option
+                        *ngFor="let subSegmentId of filteredSegmentIds$[groupIndex] | async"
+                        [value]="subSegmentId"
+                      >
+                        {{ subSegmentId }}
+                      </mat-option>
+                    </mat-autocomplete>
+                  </mat-form-field>
                 </ng-container>
                 <ng-template #noSelect>
                   <mat-form-field floatLabel="never" class="form-control">
@@ -95,7 +98,9 @@
           type="button"
           class="ft-12-700 add-member"
           (click)="addMember1(members1?.length)"
-          [ngClass]="{ 'add-member--disabled': (!inclusionCriteriaAsIncludeSpecific && members1?.length !== 0 && includeAll) }"
+          [ngClass]="{
+            'add-member--disabled': !inclusionCriteriaAsIncludeSpecific && members1?.length !== 0 && includeAll
+          }"
           [disabled]="!inclusionCriteriaAsIncludeSpecific && members1?.length !== 0 && includeAll"
         >
           + {{ 'segments.members-add-members.text' | translate }}
@@ -136,7 +141,7 @@
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
                   <mat-form-field floatLabel="never" class="form-control">
                     <mat-label>{{ 'segments.members-placeholder-type.text' | translate }}</mat-label>
-                    <mat-select formControlName="type"  (selectionChange)="selectedOption($event, groupIndex,2)">
+                    <mat-select formControlName="type" (selectionChange)="selectedOption($event, groupIndex, 2)">
                       <mat-option *ngFor="let val of subSegmentTypes" [value]="val.value">
                         {{ val.name }}
                       </mat-option>
@@ -164,7 +169,10 @@
                         [matAutocomplete]="autoCompleteSegmentName"
                       />
                       <mat-autocomplete #autoCompleteSegmentName="matAutocomplete" panelWidth="fit-content">
-                        <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
+                        <mat-option
+                          *ngFor="let subSegmentId of filteredSegmentIds2$[groupIndex] | async"
+                          [value]="subSegmentId"
+                        >
                           {{ subSegmentId }}
                         </mat-option>
                       </mat-autocomplete>

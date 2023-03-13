@@ -173,14 +173,14 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.updateView2();
 
     this.participantsForm.get('members1').valueChanges.subscribe((newValues) => {
-      this.checkSegmentvalidity(newValues,1);
+      this.checkSegmentValidity(newValues, 1);
     });
 
     this.participantsForm2.get('members2').valueChanges.subscribe((newValues) => {
-      this.checkSegmentvalidity(newValues,2);
+      this.checkSegmentValidity(newValues, 2);
     });
 
-    if (this.members1.length !== 0 && this.members1.controls.at(0).get('type').value === "All") {
+    if (this.members1.length !== 0 && this.members1.controls.at(0).get('type').value === 'All') {
       this.members1.controls.at(0).get('id').disable();
       this.includeAll = true;
     }
@@ -189,45 +189,43 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.bindParticipantsData();
   }
 
-  bindParticipantsData(){
+  bindParticipantsData() {
     const participantsForm1Control = this.participantsForm?.get('members1') as FormArray;
     participantsForm1Control?.controls.forEach((_, groupindex) => {
-      this.manageSegmentIdsControl(groupindex,1);
+      this.manageSegmentIdsControl(groupindex, 1);
     });
 
     const participantsForm2Control = this.participantsForm2?.get('members2') as FormArray;
     participantsForm2Control?.controls.forEach((_, groupindex) => {
-      this.manageSegmentIdsControl(groupindex,2);
+      this.manageSegmentIdsControl(groupindex, 2);
     });
   }
 
   manageSegmentIdsControl(index: number, form: number) {
-    if (form == 1){
+    if (form === 1) {
       const participantsForm = this.members1 as FormArray;
 
       this.filteredSegmentIds$[index] = participantsForm
-      .at(index)
-      .get('id')
-      .valueChanges.pipe(
-        startWith<string>(''),
-        map((id) => this.filterSegmentNameId(id))
-      );
-    }
-    
-    if (form == 2) {
+        .at(index)
+        .get('id')
+        .valueChanges.pipe(
+          startWith<string>(''),
+          map((id) => this.filterSegmentNameId(id))
+        );
+    } else {
       const participantsForm = this.members2 as FormArray;
 
       this.filteredSegmentIds2$[index] = participantsForm
-      .at(index)
-      .get('id')
-      .valueChanges.pipe(
-        startWith<string>(''),
-        map((id) => this.filterSegmentNameId(id))
-      );
+        .at(index)
+        .get('id')
+        .valueChanges.pipe(
+          startWith<string>(''),
+          map((id) => this.filterSegmentNameId(id))
+        );
     }
   }
 
-  private  filterSegmentNameId(value: string): string[] {
+  private filterSegmentNameId(value: string): string[] {
     const filterValue = value ? value.toLocaleLowerCase() : '';
 
     if (!this.contextMetaData) {
@@ -244,13 +242,13 @@ export class ExperimentParticipantsComponent implements OnInit {
         });
       }
       return allSegmentIds.filter((option) => option.toLowerCase().startsWith(filterValue));
-    } 
+    }
     return [];
   }
 
   selectedOption(event = null, index = null, table: number) {
     if (event) {
-      if (index === 0 && event.value === 'All') {
+      if (table === 1 && index === 0 && event.value === 'All') {
         this.members1.controls.at(index).setValue({ type: 'All', id: 'All' });
         this.members1.controls.at(index).get('id').disable();
         this.includeAll = true;
@@ -259,11 +257,11 @@ export class ExperimentParticipantsComponent implements OnInit {
         }
         this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
       } else {
+        if (table === 1 && index === 0 && event.value !== 'All') {
           this.members1.controls.at(index)?.get('id').enable();
-          if ( table === 1 ){
           this.members1.controls.at(index)?.get('id').setValue('');
           this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
-        } else if ( table === 2 ){
+        } else if (table === 2) {
           this.members2.controls.at(index)?.get('id').setValue('');
         }
       }
@@ -271,9 +269,9 @@ export class ExperimentParticipantsComponent implements OnInit {
   }
 
   addMembers1(type = null, id = null, index = null) {
-    if (this.participantsForm && index === 0) {
+    if (this.participantsForm && index === 0 && type === 'All') {
       this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
-    } else if (this.participantsForm && index !== 0) {
+    } else if (this.participantsForm && index !== 0 && type !== 'All') {
       this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
     }
     return this._formBuilder.group({
@@ -291,11 +289,13 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   addMember1(index) {
     this.members1.push(this.addMembers1(null, null, index));
+    this.manageSegmentIdsControl(index, 1);
     this.updateView1();
   }
 
   addMember2() {
     this.members2.push(this.addMembers2());
+    this.manageSegmentIdsControl(this.members2.controls.length - 1, 2);
     this.updateView2();
   }
 
@@ -371,12 +371,12 @@ export class ExperimentParticipantsComponent implements OnInit {
     });
   }
 
-  checkSegmentvalidity(members : ParticipantsMember[], table: number){
+  checkSegmentValidity(members: ParticipantsMember[], table: number) {
     this.segmentNotValid = false;
     this.segmentNotValid2 = false;
     members.forEach((member) => {
       if (member.type === MemberTypes.SEGMENT) {
-        if (!this.subSegmentIds.find((segment) => segment === member.id) && member.id !== "") {
+        if (!this.subSegmentIds.find((segment) => segment === member.id) && member.id) {
           if (table == 1) {
             this.segmentNotValid = true;
           } else {
@@ -384,7 +384,7 @@ export class ExperimentParticipantsComponent implements OnInit {
           }
         }
       }
-    })
+    });
   }
 
   emitEvent(eventType: NewExperimentDialogEvents) {
@@ -435,7 +435,12 @@ export class ExperimentParticipantsComponent implements OnInit {
     const { members1 } = this.participantsForm.value;
     const { members2 } = this.participantsForm2.value;
 
-    if (this.participantsForm.valid && this.participantsForm2.valid && !this.segmentNotValid && !this.segmentNotValid2) {
+    if (
+      this.participantsForm.valid &&
+      this.participantsForm2.valid &&
+      !this.segmentNotValid &&
+      !this.segmentNotValid2
+    ) {
       this.gettingMembersValueToSend(members1);
       const segmentMembers1FormData = {
         userIds: this.userIdsToSend,
@@ -467,7 +472,7 @@ export class ExperimentParticipantsComponent implements OnInit {
         path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS,
       });
 
-      if (this.members1.length !== 0 && this.members1.controls.at(0).get('type').value === "All") {
+      if (this.members1.length !== 0 && this.members1.controls.at(0).get('type').value === 'All') {
         this.members1.controls.at(0).get('id').disable();
       }
 
