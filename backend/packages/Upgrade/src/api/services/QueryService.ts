@@ -112,7 +112,7 @@ export class QueryService {
     mainEffect: queryResult[],
     interactionEffect: queryResult[]
   ): [queryResult[], queryResult[]] {
-    const conditionIds = experiment.conditions.map((condition) => condition.id);
+    const conditionIds = experiment?.conditions.map((condition) => condition.id) || [];
 
     if (interactionEffect) {
       conditionIds.forEach((conditionId) => {
