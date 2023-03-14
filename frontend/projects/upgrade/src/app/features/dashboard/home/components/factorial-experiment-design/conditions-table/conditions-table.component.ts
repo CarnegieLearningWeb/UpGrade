@@ -29,9 +29,8 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   factorialDesignData$ = this.experimentDesignStepperService.factorialDesignData$;
   tableEditIndex$ = this.experimentDesignStepperService.factorialConditionsTableEditIndex$;
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
-
-  columnHeaders = ['factorOne', 'factorTwo', 'alias', 'weight', 'include', 'actions'];
   factorHeaders = ['factorOne', 'factorTwo'];
+  columnHeaders = [...this.factorHeaders, 'alias', 'weight', 'include', 'actions'];
   equalWeightFlag = true;
   formInitialized = false;
   useEllipsis = false;
@@ -88,11 +87,6 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   registerDesignDataChanges() {
     this.subscriptions = this.factorialDesignData$
-      .pipe(
-        filter((designData) => {
-          return designData && designData?.factors.length === 2;
-        })
-      )
       .subscribe((designData) => {
         this.handleDesignDataChanges(designData);
       });

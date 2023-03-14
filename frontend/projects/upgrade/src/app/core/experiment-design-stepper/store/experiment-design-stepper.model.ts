@@ -76,6 +76,17 @@ export interface FactorialConditionTableRowData {
   include: boolean;
 }
 
+export interface ForConditionTableRowData {
+  levels: FactorialLevelTableRowData[];
+  alias: string;
+}
+
+export interface FactorLevelData {
+  factor: string;
+  id: string;
+  name: string;
+}
+
 export interface FactorialLevelTableRowData {
   id: string;
   name: string;

@@ -38,7 +38,9 @@ import {
   FactorialConditionTableRowData,
   ExperimentConditionAliasRequestObject,
   SimpleExperimentDesignData,
-  ExperimentFactorFormData
+  ExperimentFactorFormData,
+  FactorLevelData,
+  FactorialLevelTableRowData,
 } from './store/experiment-design-stepper.model';
 import {
   actionUpdateFactorialTableData,
@@ -283,126 +285,73 @@ export class ExperimentDesignStepperService {
 
   createNewFactorialConditionTableData(designData: ExperimentFactorialDesignData): FactorialConditionTableRowData[] {
     const tableData: FactorialConditionTableRowData[] = [];
+    const requiredFactorialTableData = this.factorDataToConditions(designData.factors);
 
-    // currently this table will only support 2 factors due to design constraints
-    // this will need revisited to support more factors in this table
+    requiredFactorialTableData.map((conditionData) => {
+      const conditionLevelsData = this.filterLevelsData(conditionData);
+      const conditionAlias = this.createConditionAliasString(conditionData);
 
-    const factorOne = designData.factors[0];
-    const factorTwo = designData.factors[1];
+      const tableRow: FactorialConditionTableRowData = {
+        id: uuidv4(), // TODO: maybe not the right place?
+        levels: conditionLevelsData,
+        alias: conditionAlias,
+        weight: '0.0',
+        include: true,
+      };
 
-    const tempTableData = this.withRecurssion(designData);
+      tableData.push(tableRow);
+    })
 
-    factorOne.levels.forEach((factorOneLevel) => {
-      factorTwo.levels.forEach((factorTwoLevel) => {
-        const tableRow: FactorialConditionTableRowData = {
-          id: uuidv4(), // TODO: maybe not the right place?
-          levels: [
-            {
-              id: factorOneLevel.id,
-              name: factorOneLevel.level,
-            },
-            {
-              id: factorTwoLevel.id,
-              name: factorTwoLevel.level,
-            },
-          ],
-          alias: this.createFactorialAliasString(
-            factorOne.factor,
-            factorOneLevel.level,
-            factorTwo.factor,
-            factorTwoLevel.level
-          ),
-          weight: '0.0',
-          include: true,
-        };
-
-        tableData.push(tableRow);
-      });
-    });
-    console.log('tempTableData');
-    console.log(tempTableData);
-    console.log('tableData');
-    console.log(tableData);
-
+    console.log("tableData")
+    console.log(tableData)
     return tableData;
   }
 
-  withRecurssion(designData: ExperimentFactorialDesignData): FactorialConditionTableRowData[]{
-    const tableData: FactorialConditionTableRowData[] = [];
-
-    for (let i=0; i < designData.factors.length-1; i++){
-      for (let j=i+1; j < designData.factors.length; j++){
-        designData.factors[i].levels.forEach((factorOneLevel) => {
-          designData.factors[j].levels.forEach((factorTwoLevel) => {
-            const tableRow: FactorialConditionTableRowData = {
-              id: uuidv4(), // TODO: maybe not the right place?
-              levels: [
-                {
-                  id: factorOneLevel.id,
-                  name: factorOneLevel.level,
-                },
-                {
-                  id: factorTwoLevel.id,
-                  name: factorTwoLevel.level,
-                },
-              ],
-              alias: this.createFactorialAliasString(
-                designData.factors[i].factor,
-                factorOneLevel.level,
-                designData.factors[j].factor,
-                factorTwoLevel.level
-              ),
-              weight: '0.0',
-              include: true,
-            };
-    
-            tableData.push(tableRow);
-          });
-        });
+  factorDataToConditions(factorsData:  ExperimentFactorFormData[], levelsCombinationData : FactorLevelData[] = []) {
+    // return if no data in factors
+    if (factorsData.length === 0) {
+      return [levelsCombinationData];
+    } else {
+      // taking the 1st factor
+      const currentFactor = factorsData[0];
+      const levelPermutations = [];
+  
+      for (let i = 0; i < currentFactor.levels.length; i++) {
+        const levelId = currentFactor.levels[i].id;
+        const levelName = currentFactor.levels[i].level;
+        
+        // taking level of current factor and processing on other factors
+        const remainingLevelsPermutations = this.factorDataToConditions(factorsData.slice(1), [
+          ...levelsCombinationData,
+          { factor: currentFactor.factor, id: levelId, name: levelName },
+        ]);
+        levelPermutations.push(...remainingLevelsPermutations);
       }
+      return levelPermutations;
     }
-
-    return tableData;
   }
 
-  // permutation(factors : any[]): FactorialConditionTableRowData[]{
-  //   const tableData: FactorialConditionTableRowData[] = [];
+  filterLevelsData(conditionData: FactorLevelData[]) {
+    let levels : FactorialLevelTableRowData[] = [];
+    conditionData.forEach((level) => {
+      levels.push({ id: level.id, name: level.name });
+    })
+    return levels;
+  }
 
-  //   const permutations = [];
-  //   for (let i=0; i < factors.length-1; i++){
-  //     for (const rest of this.permutation(factors.slice(1))) {
-  //       factors[i].levels.forEach((factorOneLevel) => {
-  //         factors[j].levels.forEach((factorTwoLevel) => {
-  //           const tableRow: FactorialConditionTableRowData = {
-  //             id: uuidv4(), // TODO: maybe not the right place?
-  //             levels: [
-  //               {
-  //                 id: factorOneLevel.id,
-  //                 name: factorOneLevel.level,
-  //               },
-  //               {
-  //                 id: factorTwoLevel.id,
-  //                 name: factorTwoLevel.level,
-  //               },
-  //             ],
-  //             alias: this.createFactorialAliasString(
-  //               factors[i].factor,
-  //               factorOneLevel.level,
-  //               factors[j].factor,
-  //               factorTwoLevel.level
-  //             ),
-  //             weight: '0.0',
-  //             include: true,
-  //           };
-    
-  //           tableData.push(tableRow);
-  //         });
-  //       });
-  //     }
-  //   }
-
-  //   return tableData;
-  // }
+  createConditionAliasString(conditionData: FactorLevelData[]) {
+    let alias : string;
+    let count = 0;
+    conditionData.forEach((level) => {
+      if (count == 0) {
+        alias = `${level.factor}=${level.name}`;
+      } else {
+        alias = `${alias}; ${level.factor}=${level.name}`;
+      }
+      count++;
+    })
+    return alias;
+  }
 
   convertToDecisionPointData(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
     let order = 1;
@@ -551,15 +500,6 @@ export class ExperimentDesignStepperService {
     });
 
     return factorialConditionAliasesRequestObject;
-  }
-
-  createFactorialAliasString(
-    factorOneName: string,
-    factorOneLevel: string,
-    factorTwoName: string,
-    factorTwoLevel: string
-  ) {
-    return `${factorOneName}=${factorOneLevel}; ${factorTwoName}=${factorTwoLevel}`;
   }
 
   updateFactorialDesignData(designData: ExperimentFactorialDesignData) {

@@ -387,7 +387,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.factorialExperimentDesignForm.valid &&
       this.factorCountError === null &&
       this.levelCountError === null &&
-      this.factorialExperimentDesignForm.value.factors.length <= 2 &&
       !this.experimentDesignStepperService.checkConditionTableValidity()
     );
   }
@@ -399,7 +398,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   isConditionButtonFunctional(): boolean {
     if (this.isExperimentEditable) {
-      return !this.factorialExperimentDesignForm.valid || this.factorialExperimentDesignForm.value.factors.length > 2;
+      return !this.factorialExperimentDesignForm.valid ;
     } else {
       return false;
     }
