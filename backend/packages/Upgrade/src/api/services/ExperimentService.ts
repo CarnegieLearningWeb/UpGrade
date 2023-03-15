@@ -115,12 +115,8 @@ export class ExperimentService {
       .createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .distinctOn(['experiment.id'])
-      .addOrderBy('experiment.id', 'ASC')
-      .addOrderBy('conditions.order', 'ASC')
-      .addOrderBy('partitions.order', 'ASC')
-      .limit(take)
-      .offset(skip);
+      .take(take)
+      .skip(skip);
 
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
@@ -130,9 +126,12 @@ export class ExperimentService {
         .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
         .addOrderBy('rank', 'DESC')
         .setParameter('query', `${customSearchString}:*`);
+    } else {
+      queryBuilder = queryBuilder.addOrderBy('experiment.updatedAt', 'DESC');
     }
 
-    const expIds = (await queryBuilder.getMany()).map((exp) => exp.id);
+    let expIds = (await queryBuilder.getMany()).map((exp) => exp.id);
+    expIds = Array.from(new Set(expIds));
 
     let queryBuilderToReturn = this.experimentRepository
       .createQueryBuilder('experiment')
@@ -155,10 +154,6 @@ export class ExperimentService {
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
       .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
-      .addOrderBy('conditions.order', 'ASC')
-      .addOrderBy('partitions.order', 'ASC')
-      .addOrderBy('factors.order', 'ASC')
-      .addOrderBy('levels.order', 'ASC')
       .whereInIds(expIds);
 
     if (sortParams) {
