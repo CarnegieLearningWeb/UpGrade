@@ -12,26 +12,28 @@ export default async function markExperimentPoint(
   status: MARKED_DECISION_POINT_STATUS,
   target?: string
 ): Promise<Interfaces.IMarkExperimentPoint> {
-  try {
-    let data: any = {
-      site,
-      condition,
-      userId,
-      status,
+  let data: any = {
+    site,
+    condition,
+    userId,
+    status,
+  };
+  if (target) {
+    data = {
+      ...data,
+      target,
     };
-    if (target) {
-      data = {
-        ...data,
-        target,
-      };
-    }
-    const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
-    if (response.status) {
-      return response.data;
-    } else {
-      throw new Error(JSON.stringify(response.message));
-    }
-  } catch (error) {
-    throw new Error(error.message);
+  }
+  const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
+  if (response.status) {
+    return response.data;
+    // return {
+    //   experimentPoint,
+    //   experimentId: partitionId,
+    //   userId,
+    //   condition,
+    // };
+  } else {
+    throw new Error(JSON.stringify(response.message));
   }
 }
