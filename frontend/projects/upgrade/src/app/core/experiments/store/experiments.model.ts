@@ -169,6 +169,7 @@ export interface ExperimentDecisionPointForSimpleExp {
 
 export interface ExperimentFactor {
   name: string;
+  description: string;
   order: number;
   levels: ExperimentLevel[];
 }
@@ -176,7 +177,7 @@ export interface ExperimentFactor {
 export interface ExperimentLevel {
   id: string;
   name: string;
-  alias: string;
+  payload: string;
   order: number;
 }
 
@@ -224,6 +225,7 @@ export interface Experiment {
   logging: boolean;
   conditions: ExperimentCondition[];
   partitions: ExperimentDecisionPoint[];
+  factors: ExperimentFactor[];
   conditionAliases: ExperimentConditionAlias[];
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];

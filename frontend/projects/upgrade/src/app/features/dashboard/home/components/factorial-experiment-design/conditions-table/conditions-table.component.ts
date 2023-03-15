@@ -16,7 +16,7 @@ import { ExperimentVM } from '../../../../../../core/experiments/store/experimen
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConditionsTableComponent implements OnInit, OnDestroy {
-  @Output() hide = new EventEmitter<boolean>();
+  // @Output() hide = new EventEmitter<boolean>();
   @Input() experimentInfo: ExperimentVM;
   @Input() isAnyRowRemoved: boolean;
   @Input() isExperimentEditable: boolean;
@@ -212,9 +212,9 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     }
   }
 
-  handleHideClick() {
-    this.hide.emit(true);
-  }
+  // handleHideClick() {
+  //   this.hide.emit(true);
+  // }
 
   handleRowEditClick(rowData: FactorialConditionTableRowData, rowIndex: number) {
     this.experimentDesignStepperService.setFactorialConditionTableEditModeDetails(rowIndex, rowData);

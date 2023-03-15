@@ -1,6 +1,7 @@
 .factorial-experiment-form {
   .factorial-experiment-factors-levels-view {
     height: 515px;
+    overflow-y: auto;
 
     .title {
       font-size: 18px;
@@ -59,26 +60,15 @@
         padding-left: 0px;
       }
 
-      .cdk-column-removeFactor {
-        flex: 0 0 60px;
-        width: 60px;
-      }
-
       .cdk-column-factor {
         flex: 0 0 220px;
         width: 150px;
       }
 
-      .cdk-column-site {
+      .cdk-column-description {
         flex: 0 0 220px;
         width: 170px;
         margin-left: 30px;
-      }
-
-      .cdk-column-target {
-        margin-left: 30px;
-        width: 100%;
-        max-width: 250px;
       }
 
       .cdk-column-expandedDetail {
@@ -86,6 +76,27 @@
         border-width: 1px;
         border-radius: 10%;
         padding: 10px 0px;
+      }
+
+      .cdk-column-actions {
+        margin-left: 15px;
+        padding-right: 10px;
+        justify-content: flex-end;
+  
+        .row-action-btn {
+          border: none;
+          background-color: transparent;
+  
+          .icon {
+            margin-top: -5px;
+            margin-left: -3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--text-size-x-large);
+            color: gray;
+          }
+        }
       }
 
       .expandable-row {
@@ -151,16 +162,32 @@
         width: 180px;
       }
 
-      .cdk-column-alias {
+      .cdk-column-payload {
         flex: 0 0 220px;
         width: 100%;
         min-width: 320px;
         margin-left: 30px;
       }
 
-      .cdk-column-removeLevel {
-        flex: 0 0 60px;
-        width: 60px;
+      .cdk-column-actions {
+        margin-left: 15px;
+        padding-right: 10px;
+        justify-content: flex-end;
+  
+        .row-action-btn {
+          border: none;
+          background-color: transparent;
+  
+          .icon {
+            margin-top: -5px;
+            margin-left: -3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--text-size-x-large);
+            color: gray;
+          }
+        }
       }
     }
 
@@ -191,7 +218,7 @@
   .validation-container {
     min-height: 30px;
     margin-top: 5px;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
   }
 
   // This rule is pretty invasive, we should reconsider how and why we are refusing underlines
@@ -215,4 +242,5 @@
   input[type='number'] {
     -moz-appearance: textfield;
   }
+  
 }

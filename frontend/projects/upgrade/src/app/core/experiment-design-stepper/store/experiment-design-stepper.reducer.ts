@@ -17,7 +17,9 @@ const initialState: ExperimentDesignStepperState = {
   factorialDesignData: { factors: [] },
   factorialConditionsTableData: [],
   isFactorialConditionsTableEditMode: false,
+  isFactorialLevelsTableEditMode: false,
   factorialConditionsTableEditIndex: null,
+  factorialLevelsTableEditIndex: null,
   factorialConditionsEditModePreviousRowData: null,
 };
 

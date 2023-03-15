@@ -34,6 +34,7 @@ import {
   ExperimentFactorialDesignData,
   ExperimentLevelFormData,
   FactorialConditionTableRowData,
+  FactorialLevelTableRowData,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 
 @Component({
@@ -56,8 +57,11 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   subscriptionHandler: Subscription;
 
+  experimentDesignForm: FormGroup;
   factorialExperimentDesignForm: FormGroup;
   factorDataSource = new BehaviorSubject<AbstractControl[]>([]);
+  tableData$ = new BehaviorSubject<ExperimentLevelFormData[]>([]);
+  previousRowDataBehaviorSubject$ = new BehaviorSubject<FactorialConditionTableRowData>(null);
   allFactors = [];
 
   // Factor Errors
@@ -72,18 +76,16 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   expandedId: number = null;
   levelIds: string[] = [];
 
-  factorDisplayedColumns = ['expandIcon', 'factor', 'site', 'target', 'removeFactor'];
-  levelDisplayedColumns = ['level', 'alias', 'removeLevel'];
+  factorDisplayedColumns = ['expandIcon', 'factor', 'description', 'removeFactor'];
+  levelDisplayedColumns = ['level', 'payload', 'removeLevel'];
 
-  // Used for condition code, experiment point and ids auto complete dropdown
-  filteredSites$: Observable<string[]>[] = [];
-  filteredTargets$: Observable<string[]>[] = [];
   contextMetaData: IContextMetaData = {
     contextMetadata: {},
   };
   isExperimentEditable = true;
   isAnyRowRemoved = false;
   conditionTableDataUpToDate = true;
+  tableLevelEditIndex$ = this.experimentDesignStepperService.factorialLevelsTableEditIndex$;
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
 
   // Alias Table details
@@ -149,10 +151,10 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.factor.removeAt(0);
       this.experimentInfo.partitions.forEach((decisionPoint) => {
         decisionPoint.factors.forEach((factor) => {
-          this.factor.push(this.addFactors(factor.name, decisionPoint.site, decisionPoint.target, factor.order));
+          this.factor.push(this.addFactors(factor.name, factor.description, factor.order));
           this.getLevels(factorIndex).removeAt(0);
           factor.levels.forEach((level) => {
-            this.getLevels(factorIndex).push(this.addLevels(level.id, level.name, level.alias));
+            this.getLevels(factorIndex).push(this.addLevels(level.id, level.name, level.payload));
           });
           factorIndex++;
         });
@@ -172,10 +174,10 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.updateView();
 
     // Bind predefined values of experiment factors from backend
-    const factorFormControl = this.factorialExperimentDesignForm.get('factors') as FormArray;
-    factorFormControl.controls.forEach((_, index) => {
-      this.manageExpFactorPointAndIdControl(index);
-    });
+    // const factorFormControl = this.factorialExperimentDesignForm.get('factors') as FormArray;
+    // factorFormControl.controls.forEach((_, index) => {
+    //   this.manageExpFactorPointAndIdControl(index);
+    // });
 
     this.factorialExperimentDesignForm.get('factors').valueChanges.subscribe((newValues) => {
       this.conditionTableDataUpToDate = false;
@@ -183,61 +185,61 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     });
   }
 
-  manageExpFactorPointAndIdControl(factorIndex: number) {
-    const factorFormControl = this.factor as FormArray;
-    this.filteredSites$[factorIndex] = factorFormControl
-      .at(factorIndex)
-      .get('site')
-      .valueChanges.pipe(
-        startWith<string>(''),
-        map((site) => this.filterExpFactorsPointsAndIds(site, 'sites'))
-      );
-    this.filteredTargets$[factorIndex] = factorFormControl
-      .at(factorIndex)
-      .get('target')
-      .valueChanges.pipe(
-        startWith<string>(''),
-        map((target) => this.filterExpFactorsPointsAndIds(target, 'targets'))
-      );
-  }
+  // manageExpFactorPointAndIdControl(factorIndex: number) {
+  //   const factorFormControl = this.factor as FormArray;
+  //   this.filteredSites$[factorIndex] = factorFormControl
+  //     .at(factorIndex)
+  //     .get('site')
+  //     .valueChanges.pipe(
+  //       startWith<string>(''),
+  //       map((site) => this.filterExpFactorsPointsAndIds(site, 'sites'))
+  //     );
+  //   this.filteredTargets$[factorIndex] = factorFormControl
+  //     .at(factorIndex)
+  //     .get('target')
+  //     .valueChanges.pipe(
+  //       startWith<string>(''),
+  //       map((target) => this.filterExpFactorsPointsAndIds(target, 'targets'))
+  //     );
+  // }
 
   handleConditionsButtonClick() {
     this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
-    this.scrollToConditionsTable();
+    this.conditionTableDataUpToDate = true;
+    // this.scrollToConditionsTable();
   }
 
-  private filterExpFactorsPointsAndIds(value: string, key: string): string[] {
-    const filterValue = value ? value.toLocaleLowerCase() : '';
+  // private filterExpFactorsPointsAndIds(value: string, key: string): string[] {
+  //   const filterValue = value ? value.toLocaleLowerCase() : '';
 
-    if (!this.contextMetaData) {
-      return [];
-    }
+  //   if (!this.contextMetaData) {
+  //     return [];
+  //   }
 
-    if (key === 'sites' && this.currentContext) {
-      const currentContextSites = this.contextMetaData.contextMetadata[this.currentContext].EXP_POINTS || [];
-      return currentContextSites.filter((option) => option.toLowerCase().startsWith(filterValue));
-    } else if (key === 'targets' && this.currentContext) {
-      const currentContextTargets = this.contextMetaData.contextMetadata[this.currentContext].EXP_IDS || [];
-      return currentContextTargets.filter((option) => option.toLowerCase().startsWith(filterValue));
-    }
-    return [];
-  }
+  //   if (key === 'sites' && this.currentContext) {
+  //     const currentContextSites = this.contextMetaData.contextMetadata[this.currentContext].EXP_POINTS || [];
+  //     return currentContextSites.filter((option) => option.toLowerCase().startsWith(filterValue));
+  //   } else if (key === 'targets' && this.currentContext) {
+  //     const currentContextTargets = this.contextMetaData.contextMetadata[this.currentContext].EXP_IDS || [];
+  //     return currentContextTargets.filter((option) => option.toLowerCase().startsWith(filterValue));
+  //   }
+  //   return [];
+  // }
 
-  addFactors(factor = null, site = null, target = null, order = null, level = null, alias = null) {
+  addFactors(factor = null, description = '', order = null, level = null, payload = null) {
     return this._formBuilder.group({
       factor: [factor, Validators.required],
-      site: [site, Validators.required],
-      target: [target, Validators.required],
+      description: [description],
       order: [order],
-      levels: this._formBuilder.array([this.addLevels(level, alias)]),
+      levels: this._formBuilder.array([this.addLevels(level, payload)]),
     });
   }
 
-  addLevels(id = null, level = null, alias = null) {
+  addLevels(id = null, level = null, payload = null) {
     return this._formBuilder.group({
       id: [id || uuidv4()],
       level: [level, Validators.required],
-      alias: [alias],
+      payload: [payload],
     });
   }
 
@@ -250,8 +252,11 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     const form = this.addFactors();
     this.factor?.push(form);
     this.updateView('factorTable');
-    const factorFormControl = this.factorialExperimentDesignForm.get('factors') as FormArray;
-    this.manageExpFactorPointAndIdControl(factorFormControl.controls.length - 1);
+    // const factorFormControl = this.factorialExperimentDesignForm.get('factors') as FormArray;
+    // this.manageExpFactorPointAndIdControl(factorFormControl.controls.length - 1);
+    if (this.factor?.length > 1) {
+      this.handleConditionsButtonClick();
+    }
   }
 
   addLevel(factorIndex) {
@@ -301,19 +306,19 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     factors.forEach((factor, index) => {
       // factorDetail:string = factor.site + ', ' + factor.target + ', ' + factor.factor;
-      this.validateLevelNames(factor.levels, factor.site + ', ' + factor.target + ', ' + factor.factor);
-      if (
-        factors.find(
-          (value, factorIndex) =>
-            value.site === factor.site &&
-            (value.target || '') === (factor.target || '') &&
-            value.factor === factor.factor &&
-            factorIndex !== index &&
-            !duplicateFactors.includes(factor.site + ', ' + factor.target + ' and ' + factor.factor)
-        )
-      ) {
-        duplicateFactors.push(factor.site + ', ' + factor.target + ' and ' + factor.factor);
-      }
+      this.validateLevelNames(factor.levels, factor.factor);
+    //   if (
+    //     factors.find(
+    //       (value, factorIndex) =>
+    //         value.site === factor.site &&
+    //         (value.target || '') === (factor.target || '') &&
+    //         value.factor === factor.factor &&
+    //         factorIndex !== index &&
+    //         !duplicateFactors.includes(factor.site + ', ' + factor.target + ' and ' + factor.factor)
+    //     )
+    //   ) {
+    //     duplicateFactors.push(factor.site + ', ' + factor.target + ' and ' + factor.factor);
+    //   }
     });
 
     // Factor Points error messages
@@ -360,7 +365,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     if (factorialExperimentDesignFormData.factors.length > 0) {
       factorialExperimentDesignFormData.factors.forEach((factor, index) => {
-        if (!factor.site?.trim() || !factor.target?.trim() || !factor.factor?.trim()) {
+        if (!factor.factor?.trim()) {
           this.factorCountError = factorValueErrorMsg;
         }
         if (factor.levels.length > 0) {
@@ -403,6 +408,11 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     } else {
       return false;
     }
+  }
+
+  removeDecisionPointName(decisionPoint: ExperimentDecisionPoint) {
+    delete decisionPoint.target;
+    return decisionPoint;
   }
 
   emitEvent(eventType: NewExperimentDialogEvents) {
@@ -461,9 +471,23 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     if (this.isFormValid()) {
       const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
-      const factorialDecisionPoints = this.experimentDesignStepperService.convertToDecisionPointData(
-        factorialExperimentDesignFormData
-      );
+      const experimentDesignFormData = this.experimentDesignForm.value;
+      let order = 1;
+      experimentDesignFormData.decisionPoints = experimentDesignFormData.decisionPoints.map((decisionPoint, index) => {
+        return this.experimentInfo
+          ? { ...this.experimentInfo.partitions[index], ...decisionPoint, order: order++ }
+          : decisionPoint.target
+          ? { ...decisionPoint, order: order++ }
+          : { ...this.removeDecisionPointName(decisionPoint), order: order++ };
+      });
+
+      order = 1;
+      factorialExperimentDesignFormData.factors = factorialExperimentDesignFormData.factors.map((factor, index) => {
+        return this.experimentInfo
+          ? { ...this.experimentInfo.factors[index], ...factor, order: order++ }
+          : { ...factor, name: '', order: order++ };
+      });
+
       const factorialConditions = this.experimentDesignStepperService.createFactorialConditionRequestObject();
 
       const factorialConditionAliases: ExperimentConditionAliasRequestObject[] =
@@ -473,7 +497,8 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         type: eventType,
         formData: {
           conditions: factorialConditions,
-          partitions: factorialDecisionPoints,
+          partitions: experimentDesignFormData.decisionPoints,
+          factors: factorialExperimentDesignFormData.factors,
           conditionAliases: factorialConditionAliases,
         },
         path: NewExperimentPaths.EXPERIMENT_DESIGN,
@@ -484,29 +509,41 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         this.isAnyRowRemoved = false;
         this.factorialExperimentDesignForm.markAsPristine();
       }
-
-      // scroll back to the factors table
-      this.scrollToFactorsTable();
     }
   }
 
-  scrollToFactorsTable(): void {
-    this.stepContainer.nativeElement.scroll({
-      top: 0,
-      behavior: 'smooth',
-      duration: 500,
-      easing: 'easeOutCubic',
-    });
+  getCurrentTableData(): ExperimentLevelFormData[] {
+    return [...this.tableData$.value];
   }
 
-  scrollToConditionsTable(): void {
-    this.conditionTableDataUpToDate = true;
-    this.stepContainer.nativeElement.scroll({
-      top: this.stepContainer.nativeElement.scrollHeight / 2,
-      behavior: 'smooth',
-      duration: 500,
-      easing: 'easeOutCubic',
-    });
+  handleRowEditClick(rowData: ExperimentLevelFormData, rowIndex: number) {
+    this.experimentDesignStepperService.setFactorialLevelsTableEditModeDetails(rowIndex, rowData);
+  }
+
+  getFactorialLevelsAt(rowIndex: number) {
+    return this.getLevels(rowIndex);
+  }
+
+  handleRowEditDoneClick(rowIndex: number) {
+    const tableData = this.getCurrentTableData();
+    const formRow = this.getFactorialLevelsAt(rowIndex);
+
+    const payload = formRow.get('payload').value;
+
+    tableData[rowIndex] = { ...tableData[rowIndex], payload };
+
+    this.experimentDesignStepperService.clearFactorialLevelTableEditModeDetails();
+  }
+
+  resetEdit(): void {
+    this.experimentDesignStepperService.clearFactorialLevelTableEditModeDetails();
+  }
+
+  handleClear(rowIndex: number) {
+    // const previousRowData = this.previousRowDataBehaviorSubject$.value;
+    // const formRow = this.getLevels(rowIndex);
+    // formRow.get('alias').setValue(previousRowData.alias, { emitEvent: false });
+    this.resetEdit();
   }
 
   get factor(): FormArray {

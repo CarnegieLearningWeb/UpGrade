@@ -230,6 +230,7 @@ export class ImportExperimentComponent implements OnInit {
 
     const factorSchema: Record<keyof ExperimentFactor, string> = {
       name: 'string',
+      description: 'string',
       order: 'number',
       levels: 'interface',
     };
@@ -237,7 +238,7 @@ export class ImportExperimentComponent implements OnInit {
     const levelSchema: Record<keyof ExperimentLevel, string> = {
       id: 'string',
       name: 'string',
-      alias: 'string',
+      payload: 'string',
       order: 'number',
     };
 

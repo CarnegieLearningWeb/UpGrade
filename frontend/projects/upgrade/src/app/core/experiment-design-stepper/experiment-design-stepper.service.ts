@@ -22,12 +22,15 @@ import {
   selecthasExperimentStepperDataChanged,
   selectIsDecisionPointsTableEditMode,
   selectIsConditionsTableEditMode,
+  selectIsLevelsTableEditMode,
   selectIsFactorialConditionsTableEditMode,
+  selectIsFactorialLevelsTableEditMode,
   selectIsFormLockedForEdit,
   selectSimpleExperimentDesignData,
   selectSimpleExperimentAliasTableData,
   selectIsSimpleExperimentAliasTableEditMode,
   selectSimpleExperimentAliasTableEditIndex,
+  selectFactorialLevelsTableEditIndex,
 } from './store/experiment-design-stepper.selectors';
 import {
   DecisionPointsTableRowData,
@@ -38,6 +41,8 @@ import {
   FactorialConditionTableRowData,
   ExperimentConditionAliasRequestObject,
   SimpleExperimentDesignData,
+  FactorialLevelTableRowData,
+  ExperimentLevelFormData,
 } from './store/experiment-design-stepper.model';
 import {
   actionUpdateFactorialTableData,
@@ -62,6 +67,7 @@ export class ExperimentDesignStepperService {
   decisionPointsEditModePreviousRowData$ = this.store$.pipe(select(selectDecisionPointsEditModePreviousRowData));
 
   isConditionsTableEditMode$ = this.store$.pipe(select(selectIsConditionsTableEditMode));
+  isLevelsTableEditMode$ = this.store$.pipe(select(selectIsLevelsTableEditMode));
   conditionsTableEditIndex$ = this.store$.pipe(select(selectConditionsTableEditIndex));
   conditionsEditModePreviousRowData$ = this.store$.pipe(select(selectConditionsEditModePreviousRowData));
   factorialDesignData$ = this.store$.pipe(select(selectFactorialDesignData), distinctUntilChanged(isEqual));
@@ -74,6 +80,8 @@ export class ExperimentDesignStepperService {
 
   isFactorialConditionsTableEditMode$ = this.store$.pipe(select(selectIsFactorialConditionsTableEditMode));
   factorialConditionsTableEditIndex$ = this.store$.pipe(select(selectFactorialConditionsTableEditIndex));
+  isFactorialLevelsTableEditMode$ = this.store$.pipe(select(selectIsFactorialLevelsTableEditMode));
+  factorialLevelsTableEditIndex$ = this.store$.pipe(select(selectFactorialLevelsTableEditIndex));
   factorialConditionsEditModePreviousRowData$ = this.store$.pipe(
     select(selectFactorialConditionsEditModePreviousRowData)
   );
@@ -320,43 +328,45 @@ export class ExperimentDesignStepperService {
     return tableData;
   }
 
-  convertToDecisionPointData(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
-    let order = 1;
-    let factorOrder = 1;
-    const decisionPoints = [];
-    factorialExperimentDesignFormData.factors.forEach((decisionPoint) => {
-      let levelOrder = 1;
-      const currentLevels: ExperimentLevel[] = decisionPoint.levels.map((level) => {
-        return { name: level.level, alias: level.alias, id: level.id, order: levelOrder++ };
-      });
-      const currentFactors: ExperimentFactor = {
-        name: decisionPoint.factor,
-        order: factorOrder++,
-        levels: currentLevels,
-      };
-      if (
-        !decisionPoints
-          .find(
-            (existingDecisionPoint) =>
-              existingDecisionPoint.site === decisionPoint.site && existingDecisionPoint.target === decisionPoint.target
-          )
-          ?.factors.push(currentFactors)
-      ) {
-        const decisionPointData = {
-          site: decisionPoint.site,
-          id: uuidv4(),
-          description: '',
-          order: order++,
-          excludeIfReached: false,
-          factors: [currentFactors],
-        };
-        decisionPoint.target
-          ? decisionPoints.push({ ...decisionPointData, target: decisionPoint.target })
-          : decisionPoints.push(decisionPointData);
-      }
-    });
-    return decisionPoints;
-  }
+  // convertToDecisionPointData(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
+  //   let order = 1;
+  //   let factorOrder = 1;
+  //   const decisionPoints = [];
+  //   factorialExperimentDesignFormData.factors.forEach((decisionPoint) => {
+  //     let levelOrder = 1;
+  //     const currentLevels: ExperimentLevel[] = decisionPoint.levels.map((level) => {
+  //       return { name: level.level, alias: level.alias, id: level.id, order: levelOrder++ };
+  //     });
+  //     const currentFactors: ExperimentFactor = {
+  //       name: decisionPoint.factor,
+  //       // TODO: pratik add description
+  //       description: decisionPoint.description,
+  //       order: factorOrder++,
+  //       levels: currentLevels,
+  //     };
+  //     if (
+  //       !decisionPoints
+  //         .find(
+  //           (existingDecisionPoint) =>
+  //             existingDecisionPoint.site === decisionPoint.site && existingDecisionPoint.target === decisionPoint.target
+  //         )
+  //         ?.factors.push(currentFactors)
+  //     ) {
+  //       const decisionPointData = {
+  //         site: decisionPoint.site,
+  //         id: uuidv4(),
+  //         description: '',
+  //         order: order++,
+  //         excludeIfReached: false,
+  //         factors: [currentFactors],
+  //       };
+  //       decisionPoint.target
+  //         ? decisionPoints.push({ ...decisionPointData, target: decisionPoint.target })
+  //         : decisionPoints.push(decisionPointData);
+  //     }
+  //   });
+  //   return decisionPoints;
+  // }
 
   mergeExistingConditionsTableData(experimentInfo: ExperimentVM): FactorialConditionTableRowData[] {
     const existingConditions = experimentInfo.conditions;
@@ -521,6 +531,15 @@ export class ExperimentDesignStepperService {
     );
   }
 
+  setFactorialLevelsTableEditModeDetails(rowIndex: number, rowData: ExperimentLevelFormData): void {
+    this.store$.dispatch(
+      experimentDesignStepperAction.actionToggleFactorialLevelsTableEditMode({
+        factorialLevelsTableEditIndex: rowIndex,
+        factorialLevelsRowData: rowData,
+      })
+    );
+  }
+
   clearDecisionPointTableEditModeDetails(): void {
     this.store$.dispatch(experimentDesignStepperAction.actionClearDecisionPointTableEditDetails());
   }
@@ -531,6 +550,10 @@ export class ExperimentDesignStepperService {
 
   clearFactorialConditionTableEditModeDetails(): void {
     this.store$.dispatch(experimentDesignStepperAction.actionClearFactorialConditionTableEditDetails());
+  }
+
+  clearFactorialLevelTableEditModeDetails(): void {
+    this.store$.dispatch(experimentDesignStepperAction.actionClearFactorialLevelTableEditDetails());
   }
 
   clearFactorialDesignStepperData(): void {
