@@ -8,6 +8,11 @@
       font-weight: bold;
     }
 
+    .no-decision-point-message-container,
+    .no-factor-message-container {
+      color: var(--grey-message);
+    }
+
     .header-container,
     .factors-header-container {
       display: flex;

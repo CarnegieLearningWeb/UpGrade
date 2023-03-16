@@ -3,7 +3,7 @@
     <a [routerLink]="['/home']" class="ft-16-400 experiment-link"
       >{{ 'home.view-experiment.experiments.text' | translate }}
     </a>
-    > <b> {{ experiment?.name }} </b>
+    <b> {{ experiment?.name }} </b>
   </span>
   <mat-card class="experiment">
     <div class="experiment-info">
@@ -62,10 +62,7 @@
           <span class="ft-14-700 experiment-overview-last-update-date">
             {{
               ('home.view-experiment.last-updated-on.text' | translate) +
-                (experiment.updatedAt
-                  | formatDate
-                    : 'medium
-            date')
+                (experiment.updatedAt | formatDate : 'medium date')
             }}
           </span>
         </span>
