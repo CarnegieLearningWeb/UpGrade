@@ -50,10 +50,8 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     this.experimentType = this.experiment.type;
     if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
       this.setMaxLevelsCount();
-      this.experiment.partitions.map((decisionPoint) => {
-        decisionPoint.factors.map((factor) => {
-          this.factors.push(factor?.name);
-        });
+      this.experiment.factors.map((factor) => {
+        this.factors.push(factor?.name);
       });
     } else {
       this.setConditionCount();
@@ -80,13 +78,13 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
       let resultData2: MainEffectGraphData[] = [];
       if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
         res.mainEffect.forEach((data) => {
-          const decisionPointIndex = this.getFactorIndex(data.levelId);
+          const factorIndex = this.getFactorIndex(data.levelId);
           const resData = {
             name: this.getLevelName(data.levelId),
             value: Math.round(Number(data.result) * 100) / 100,
             extra: Number(data.participantsLogged),
           };
-          decisionPointIndex === 0 ? resultData1.push(resData) : resultData2.push(resData);
+          factorIndex === 0 ? resultData1.push(resData) : resultData2.push(resData);
         });
         resultData1 = this.formatEmptyBar(resultData1);
         this.queryFactorResults1 = {
@@ -124,17 +122,11 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
       let emptySeries2: InteractionEffectGraphData[] = [];
       if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
         // prepare all combination series with 0 result
-        let decisionPointIndex;
-        this.experiment.partitions.map((decisionPoint, decisionpointIndex) => {
-          decisionPoint.factors.map((factor, factorIndex) => {
-            factor.levels.map((level) => {
-              const levelName = level.name;
-              // collect level names in 2 list
-              decisionPoint.factors.length >= 2
-                ? (decisionPointIndex = factorIndex)
-                : (decisionPointIndex = decisionpointIndex);
-              decisionPointIndex === 0 ? resultData1.push(levelName) : resultData2.push(levelName);
-            });
+        this.experiment.factors.map((factor, index) => {
+          factor.levels.map((level) => {
+            const levelName = level.name;
+            // collect level names in 2 list
+            index === 0 ? resultData1.push(levelName) : resultData2.push(levelName);
           });
         });
 
@@ -205,13 +197,11 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   }
 
   setMaxLevelsCount() {
-    this.experiment.partitions.forEach((decisionPoint) => {
-      decisionPoint.factors.forEach((factor) => {
-        const levelCount = factor.levels.length;
-        if (levelCount > this.maxLevelCount) {
-          this.maxLevelCount = levelCount;
-        }
-      });
+    this.experiment.factors.forEach((factor) => {
+      const levelCount = factor.levels.length;
+      if (levelCount > this.maxLevelCount) {
+        this.maxLevelCount = levelCount;
+      }
     });
   }
 
@@ -220,19 +210,15 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   }
 
   getFactorIndex(levelId: string): number {
-    let decisionPointIndex;
-    this.experiment.partitions.forEach((decisionPoint, decisionpointIndex) => {
-      decisionPoint.factors.forEach((factor, factorIndex) => {
-        factor.levels.forEach((level) => {
-          if (level.id === levelId) {
-            decisionPoint.factors.length >= 2
-              ? (decisionPointIndex = factorIndex)
-              : (decisionPointIndex = decisionpointIndex);
-          }
-        });
+    let factorIndex;
+    this.experiment.factors.forEach((factor, index) => {
+      factor.levels.forEach((level) => {
+        if (level.id === levelId) {
+          factorIndex = index;
+        }
       });
     });
-    return decisionPointIndex;
+    return factorIndex;
   }
 
   isResultExist(queryId: string): boolean {
@@ -261,13 +247,11 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   getLevelName(levelId: string): string {
     // TODO: look for factors at index apart from 0
     let levelName;
-    this.experiment.partitions.forEach((decisionPoint) => {
-      decisionPoint.factors.forEach((factor) => {
-        factor.levels.forEach((level) => {
-          if (level.id === levelId) {
-            levelName = level.name;
-          }
-        });
+    this.experiment.factors.forEach((factor) => {
+      factor.levels.forEach((level) => {
+        if (level.id === levelId) {
+          levelName = level.name;
+        }
       });
     });
     return levelName;
