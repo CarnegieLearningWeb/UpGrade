@@ -193,6 +193,7 @@
   "home.new-experiment.schedule.group-count.placeholder.text": "Number of",
   "home.new-experiment.schedule.group-count.text": "enrolled",
   "home.new-experiment.schedule.group-count-having-met-ending-criters.text": "Number of groups having met ending criteria: {{ groupSatisfied }}",
+  "home.view-experiment-global.description.text": "DESCRIPTION",
   "home.view-experiment-global.experiment-site.text": "SITE",
   "home.view-experiment-global.experiment-target.text": "TARGET",
   "home.view-experiment.design.required.text": "REQUIRED",

@@ -475,34 +475,17 @@
                 </ng-container>
 
                 <!-- Site Column -->
-                <ng-container matColumnDef="partitionPoint">
+                <ng-container matColumnDef="description">
                   <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                    {{ 'home.view-experiment-global.experiment-site.text' | translate }}
+                    {{ 'home.view-experiment-global.description.text' | translate }}
                   </mat-header-cell>
                   <mat-cell class="ft-12-600" *matCellDef="let data; let factorIndex = dataIndex">
-                    <span *ngIf="data.site?.length < 50; else partitionPoint">
-                      {{ data.site }}
+                    <span *ngIf="data.description?.length < 50; else descriptionTrimmed">
+                      {{ data.description }}
                     </span>
-                    <ng-template #partitionPoint>
-                      <span [matTooltip]="data.site" matTooltipPosition="above">
+                    <ng-template #descriptionTrimmed>
+                      <span [matTooltip]="data.description" matTooltipPosition="above">
                         {{ data.site | truncate : 50 }}
-                      </span>
-                    </ng-template>
-                  </mat-cell>
-                </ng-container>
-
-                <!-- Target Column -->
-                <ng-container matColumnDef="partitionId">
-                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                    {{ 'home.view-experiment-global.experiment-target.text' | translate }}
-                  </mat-header-cell>
-                  <mat-cell class="ft-12-600" *matCellDef="let data; let factorIndex = dataIndex">
-                    <span *ngIf="data.target?.length < 50; else partitionName">
-                      {{ data.target }}
-                    </span>
-                    <ng-template #partitionName>
-                      <span [matTooltip]="data.target" matTooltipPosition="above">
-                        {{ data.target | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
@@ -526,7 +509,7 @@
                         <!-- Alias Column -->
                         <ng-container matColumnDef="alias">
                           <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-                            {{ 'home.new-experiment.design.aliases.column-header.alias.text' | translate }}
+                            {{ 'home.new-experiment.design.payloads.column-header.payload.text' | translate }}
                           </mat-header-cell>
                           <mat-cell *matCellDef="let data; let levelIndex = index">
                             <span>{{ data.alias }}</span>

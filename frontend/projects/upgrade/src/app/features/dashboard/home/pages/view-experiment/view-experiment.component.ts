@@ -39,7 +39,7 @@ enum DialogType {
 }
 
 type Participants = { participant_Type: string; participant_id: string };
-type Factors = { factor: string; site: string; target: string; levels: ExperimentLevel[] };
+type Factors = { factor: string; description: string; levels: ExperimentLevel[] };
 type Metrics = { metric_Key: string[]; metric_Operation: string[]; metric_Name: string };
 
 @Component({
@@ -62,7 +62,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   displayedConditionColumns: string[] = ['conditionCode', 'assignmentWeight', 'description'];
   displayedConditionColumnsFactorial: string[] = ['conditionCode', 'assignmentWeight'];
   displayedPartitionColumns: string[] = ['partitionPoint', 'partitionId', 'excludeIfReached'];
-  displayedPartitionColumnsFactorial: string[] = ['expandIcon', 'factorName', 'partitionPoint', 'partitionId'];
+  displayedPartitionColumnsFactorial: string[] = ['expandIcon', 'factorName', 'description'];
   displayedPartitionLevelColumnsFactorial = ['level', 'alias'];
   displayedAliasConditionColumns: string[] = ['site', 'target', 'condition', 'alias'];
   displayedParticipantsColumns: string[] = ['participantsType', 'participantsId'];
@@ -164,14 +164,12 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     }
   }
 
-  createFactorialTableData(){
+  createFactorialTableData() {
     if (this.experiment) {
       this.factorsDataSource = [];
-      this.experiment.partitions?.forEach((partition)=>{
-        partition.factors?.forEach((factor)=>{
-          this.factorsDataSource.push({ factor: factor.name, site: partition.site, target: partition.target, levels: factor.levels });
-        })
-      })
+      this.experiment.factors?.forEach((factor) => {
+          this.factorsDataSource.push({ factor: factor.name, description: factor.description, levels: factor.levels });
+      });
     }
   }
 
