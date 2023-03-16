@@ -4,6 +4,7 @@ import {
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
   IMetricMetaData,
+  PAYLOAD_TYPE,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -170,4 +171,9 @@ export interface IWorkingGroup {
 export interface IUserAliases {
   userId: string;
   aliases: string[];
+}
+
+export interface IPayload {
+  type: PAYLOAD_TYPE;
+  value: string;
 }

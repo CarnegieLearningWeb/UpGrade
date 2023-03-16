@@ -1,4 +1,4 @@
-import { IExperimentAssignment, EXPERIMENT_TYPE } from 'upgrade_types';
+import { IExperimentAssignment, EXPERIMENT_TYPE, PAYLOAD_TYPE, IPayload } from 'upgrade_types';
 
 export class Assignment {
   private _conditionCode: string;
@@ -17,15 +17,15 @@ export class Assignment {
     this._assignedFactor = assignedFactor;
   }
 
-  public get conditionCode(): string {
+  public getCondition(): string {
     return this._conditionCode;
   }
 
-  public get conditionAlias(): string {
-    return this._conditionAlias;
+  public getPayload(): IPayload {
+    return this._conditionAlias ? { type: PAYLOAD_TYPE.STRING, value: this._conditionAlias } : null;
   }
 
-  public get experimentType(): EXPERIMENT_TYPE {
+  public getExperimentType(): EXPERIMENT_TYPE {
     return this._experimentType;
   }
 
@@ -33,28 +33,22 @@ export class Assignment {
     return this._experimentType === EXPERIMENT_TYPE.FACTORIAL ? Object.keys(this._assignedFactor) : null;
   }
 
-  public getFactorAssignment(factor: string): FactorAssignment {
-    return this._experimentType === EXPERIMENT_TYPE.FACTORIAL
-      ? new FactorAssignment(this._assignedFactor[factor])
-      : null;
-  }
-}
-
-class FactorAssignment {
-  private _levelCode: string;
-  private _levelAlias: string;
-
-  constructor(assignedFactor: { level: string; alias: string }) {
-    this._levelCode = assignedFactor['level'] || null;
-    this._levelAlias = assignedFactor['alias'] || null;
+  public getFactorLevel(factor: string): string {
+    if (this._experimentType === EXPERIMENT_TYPE.FACTORIAL) {
+      return this._assignedFactor[factor] ? this._assignedFactor[factor].level : null;
+    } else {
+      return null;
+    }
   }
 
-  public get levelCode(): string {
-    return this._levelCode;
-  }
-
-  public get levelAlias(): string {
-    return this._levelAlias;
+  public getFactorPayload(factor: string): IPayload {
+    if (this._experimentType === EXPERIMENT_TYPE.FACTORIAL) {
+      return this._assignedFactor[factor]
+        ? { type: PAYLOAD_TYPE.STRING, value: this._assignedFactor[factor].alias }
+        : null;
+    } else {
+      return null;
+    }
   }
 }
 
