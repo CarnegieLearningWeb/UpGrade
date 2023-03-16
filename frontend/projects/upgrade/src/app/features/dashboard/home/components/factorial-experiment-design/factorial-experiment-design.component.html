@@ -463,8 +463,6 @@
                 </mat-cell>
               </ng-container>
 
-              
-
               <!-- Actions Column -->
               <!-- <ng-container matColumnDef="actions">
                 <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
@@ -548,15 +546,17 @@
               class="ft-14-600 toggle-button"
               (click)="handleConditionsButtonClick()"
             >
-            Update Table
+            Update Condition Table
             </button>
             <br />
             <br />
-            <app-conditions-table
-              [isAnyRowRemoved]="isAnyRowRemoved"
-              [experimentInfo]="experimentInfo"
-              [isExperimentEditable]="isExperimentEditable"
-            ></app-conditions-table>
+            <div *ngIf="this.factor.length >= 2">
+              <app-conditions-table
+                [isAnyRowRemoved]="isAnyRowRemoved"
+                [experimentInfo]="experimentInfo"
+                [isExperimentEditable]="isExperimentEditable"
+              ></app-conditions-table>
+            </div>
           </div>
         </section>
       </form>
