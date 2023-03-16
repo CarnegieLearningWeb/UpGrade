@@ -439,10 +439,10 @@
               <mat-header-row *matHeaderRowDef="displayedPartitionColumns"></mat-header-row>
               <mat-row *matRowDef="let row; columns: displayedPartitionColumns"></mat-row>
             </mat-table>
-            <br />
-            <br />
-            <br />
             <div *ngIf="experiment.type === 'Factorial'">
+              <br />
+              <br />
+              <br />
               <span class="ft-24-700">{{ 'home.new-experiment.design.factor.text' | translate }}</span>
               <mat-table class="factor-table" [dataSource]="factorsDataSource" multiTemplateDataRows>
                 <!-- Expand Icon Column -->
