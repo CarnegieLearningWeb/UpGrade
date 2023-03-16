@@ -372,13 +372,12 @@ export class ExperimentDesignStepperService {
     const existingConditions = experimentInfo.conditions;
     const existingConditionAliases = experimentInfo.conditionAliases;
     const existingDecisionPoints = experimentInfo.partitions;
+    const existingFactors = experimentInfo.factors;
 
     const levelOrder = {};
-    existingDecisionPoints.forEach((decisionPoint) => {
-      decisionPoint.factors.forEach((factor) => {
-        factor.levels.forEach((level) => {
-          levelOrder[level.id] = factor.order;
-        });
+    existingFactors.forEach((factor) => {
+      factor.levels.forEach((level) => {
+        levelOrder[level.id] = factor.order;
       });
     });
 

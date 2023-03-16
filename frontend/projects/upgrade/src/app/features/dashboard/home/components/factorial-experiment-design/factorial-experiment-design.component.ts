@@ -201,15 +201,13 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         );
       });
 
-      this.experimentInfo.partitions.forEach((decisionPoint) => {
-        decisionPoint.factors.forEach((factor) => {
-          this.factor.push(this.addFactors(factor.name, factor.description, factor.order));
-          this.getLevels(factorIndex).removeAt(0);
-          factor.levels.forEach((level) => {
-            this.getLevels(factorIndex).push(this.addLevels(level.id, level.name, level.alias));
-          });
-          factorIndex++;
+      this.experimentInfo.factors.forEach((factor) => {
+        this.factor.push(this.addFactors(factor.name, factor.description, factor.order));
+        this.getLevels(factorIndex).removeAt(0);
+        factor.levels.forEach((level) => {
+          this.getLevels(factorIndex).push(this.addLevels(level.id, level.name, level.alias));
         });
+        factorIndex++;
       });
 
       this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
@@ -372,7 +370,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.getLevels(factorIndex).removeAt(levelIndex);
     this.isAnyRowRemoved = true;
     this.experimentDesignStepperService.experimentStepperDataChanged();
-    // this.updateView('levelTable');
+    this.updateView('levelTable');
   }
 
   expandFactor(groupIndex: number) {
