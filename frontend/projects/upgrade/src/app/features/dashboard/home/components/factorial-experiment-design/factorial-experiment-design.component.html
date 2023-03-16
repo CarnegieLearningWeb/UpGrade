@@ -6,9 +6,8 @@
           <div class="decision-point-header-container">
             <span class="title">{{ 'home.new-experiment.design.decision-point.text' | translate }}</span>
           </div>
-          <br/>
           <!-- Decision Point Table -->
-          <ng-container>
+          <ng-container *ngIf="decisionPoints?.length; else initialDecisionPointMessage">
             <mat-table
               class="decision-point-table"
               [dataSource]="decisionPointDataSource"
@@ -167,6 +166,18 @@
                 }"
               ></mat-row>
             </mat-table>
+          </ng-container>
+          <ng-container>
+            <ng-template #initialDecisionPointMessage>
+              <br />
+              <div class="no-decision-point-message-container">
+                <span
+                  class="ft-14-600 no-decision-point-message"
+                  [innerHTML]="'home.new-experiment.design.decision-point.inital.include-message' | translate"
+                ></span>
+              </div>
+            </ng-template>
+          </ng-container>
             <button
               type="button"
               class="ft-12-700 add-decision-point"
@@ -189,7 +200,7 @@
               +
               {{ 'home.new-experiment.design.add-experiment-decision-point.text' | translate }}
             </button>
-          </ng-container>
+
           <div class="validation-container">
             <span class="ft-14-600 validation-message" *ngFor="let error of decisionPointErrors">{{ error }}</span>
             <span
@@ -214,7 +225,7 @@
             </button> -->
           </div>
           <!-- Factors Table -->
-          <ng-container>
+          <ng-container *ngIf="factor?.length; else initialFactorsMessage">
             <mat-table
               class="factor-table"
               [dataSource]="factorDataSource"
@@ -495,22 +506,33 @@
 
               <mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"> </mat-row>
             </mat-table>
-            <button type="button" class="ft-12-700 add-factor" *ngIf="!experimentInfo" (click)="addFactor()">
-              +
-              {{ 'home.new-experiment.design.add-experiment-factor.text' | translate }}
-            </button>
-            <button
-              type="button"
-              class="ft-12-700 add-factor"
-              *ngIf="experimentInfo"
-              [ngClass]="{ 'add-factor--disabled': !isExperimentEditable }"
-              [disabled]="!isExperimentEditable"
-              (click)="addFactor()"
-            >
-              +
-              {{ 'home.new-experiment.design.add-experiment-factor.text' | translate }}
-            </button>
           </ng-container>
+          <ng-container>
+            <ng-template #initialFactorsMessage>
+              <br />
+              <div class="no-factor-message-container">
+                <span
+                  class="ft-14-600 no-factor-message"
+                  [innerHTML]="'home.new-experiment.design.factors.inital.include-message' | translate"
+                ></span>
+              </div>
+            </ng-template>
+          </ng-container>
+          <button type="button" class="ft-12-700 add-factor" *ngIf="!experimentInfo" (click)="addFactor()">
+            +
+            {{ 'home.new-experiment.design.add-experiment-factor.text' | translate }}
+          </button>
+          <button
+            type="button"
+            class="ft-12-700 add-factor"
+            *ngIf="experimentInfo"
+            [ngClass]="{ 'add-factor--disabled': !isExperimentEditable }"
+            [disabled]="!isExperimentEditable"
+            (click)="addFactor()"
+          >
+            +
+            {{ 'home.new-experiment.design.add-experiment-factor.text' | translate }}
+          </button>
           <div class="validation-container" *ngIf="factorPointErrors.length || levelPointErrors.length || factorCountError || levelCountError">
             <span class="ft-14-600 validation-message" *ngFor="let error of factorPointErrors">{{ error }}</span>
             <span class="ft-14-600 validation-message" *ngFor="let error of levelPointErrors">{{ error }}</span>

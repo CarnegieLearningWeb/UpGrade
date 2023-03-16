@@ -114,6 +114,8 @@
   "home.new-experiment.overview.consistency-rule.error.text": "Please choose consistency rule",
   "home.new-experiment.overview.context.error.text": "Please enter at least one context",
   "home.new-experiment.design.design-type.label": "Design Type",
+  "home.new-experiment.design.decision-point.inital.include-message": "Experiment require atleast one decision point.",
+  "home.new-experiment.design.factors.inital.include-message": "Factorial experiment require factors.",
   "home.new-experiment.design.toggle-actions.aliases": "ALIASES",
   "home.new-experiment.design.toggle-actions.conditions": "CONDITIONS",
   "home.new-experiment.design.toggle-actions.factors": "FACTORS",
