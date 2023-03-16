@@ -1,21 +1,80 @@
-import { IExperimentAssignment } from 'upgrade_types';
+import { IExperimentAssignment, EXPERIMENT_TYPE, PAYLOAD_TYPE, IPayload } from 'upgrade_types';
 
-export default function getExperimentCondition(
-  experimentConditionData: IExperimentAssignment[],
-  site: string,
-  target?: string
-): IExperimentAssignment {
-  try {
-    if (experimentConditionData) {
-      const result = experimentConditionData.filter((data) =>
-        target ? data.target === target && data.site === site : data.site === site && !data.target
-      );
+export class Assignment {
+  private _conditionCode: string;
+  private _conditionAlias: string;
+  private _experimentType: EXPERIMENT_TYPE;
+  private _assignedFactor: Record<string, { level: string; alias: string }>;
 
-      return result.length ? result[0] : null;
+  constructor(
+    conditionCode: string,
+    conditionAlias: string,
+    assignedFactor?: Record<string, { level: string; alias: string }>
+  ) {
+    this._conditionCode = conditionCode;
+    this._conditionAlias = conditionAlias;
+    this._experimentType = assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE;
+    this._assignedFactor = assignedFactor;
+  }
+
+  public getCondition(): string {
+    return this._conditionCode;
+  }
+
+  public getPayload(): IPayload {
+    return this._conditionAlias ? { type: PAYLOAD_TYPE.STRING, value: this._conditionAlias } : null;
+  }
+
+  public getExperimentType(): EXPERIMENT_TYPE {
+    return this._experimentType;
+  }
+
+  public get factors(): string[] {
+    return this._experimentType === EXPERIMENT_TYPE.FACTORIAL ? Object.keys(this._assignedFactor) : null;
+  }
+
+  public getFactorLevel(factor: string): string {
+    if (this._experimentType === EXPERIMENT_TYPE.FACTORIAL) {
+      return this._assignedFactor[factor] ? this._assignedFactor[factor].level : null;
     } else {
       return null;
     }
-  } catch (error) {
-    throw new Error(error);
+  }
+
+  public getFactorPayload(factor: string): IPayload {
+    if (this._experimentType === EXPERIMENT_TYPE.FACTORIAL) {
+      return this._assignedFactor[factor]
+        ? { type: PAYLOAD_TYPE.STRING, value: this._assignedFactor[factor].alias }
+        : null;
+    } else {
+      return null;
+    }
+  }
+}
+
+export default function getExperimentCondition(
+  experimentConditionData: IExperimentAssignment[],
+  experimentPoint: string,
+  partitionId?: string
+): Assignment {
+  if (experimentConditionData) {
+    const result = experimentConditionData.filter((data) =>
+      partitionId
+        ? data.target === partitionId && data.site === experimentPoint
+        : data.site === experimentPoint && !data.target
+    );
+
+    if (result.length) {
+      const assignment = new Assignment(
+        result[0].assignedCondition.conditionCode,
+        result[0].assignedCondition.conditionCode,
+        result[0].assignedFactor
+      );
+      return assignment;
+    } else {
+      return null;
+    }
+  } else {
+    return null;
   }
 }

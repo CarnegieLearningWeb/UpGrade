@@ -35,13 +35,7 @@ import { env } from '../../env';
 interface IExperimentAssignment {
   expId: string;
   expPoint: string;
-  twoCharacterId: string;
-  description: string;
-  assignedCondition: {
-    conditionCode: string;
-    twoCharacterId: string;
-    description: string;
-  };
+  assignedCondition: object;
 }
 
 /**
@@ -553,11 +547,12 @@ export class ExperimentClientController {
       }
     );
 
-    return assignedData.map(({ site, target, ...rest }) => {
+    return assignedData.map(({ site, target, assignedCondition }) => {
+      const conditionCode = assignedCondition.conditionAlias || assignedCondition.conditionCode;
       return {
         expPoint: site,
         expId: target,
-        ...rest,
+        assignedCondition: { ...assignedCondition, conditionCode: conditionCode },
       };
     });
   }

@@ -9,20 +9,20 @@ export default async function setGroupMembership(
   clientSessionId: string,
   group: Record<string, Array<string>>
 ): Promise<Interfaces.IUser> {
-  try {
-    const response = await fetchDataService(
-      url,
-      token,
-      clientSessionId,
-      { id: userId, group: group },
-      Types.REQUEST_TYPES.PATCH
-    );
-    if (response.status) {
-      return response.data;
-    } else {
-      throw new Error(JSON.stringify(response.message));
-    }
-  } catch (error) {
-    throw new Error(error.message);
+  if (!(group instanceof Map)) {
+    throw new Error('Group type should be Map<string, Array<string>>');
+  }
+  const groupObj = convertMapToObj(group);
+  const response = await fetchDataService(
+    url,
+    token,
+    clientSessionId,
+    { id: userId, group: groupObj },
+    Types.REQUEST_TYPES.POST
+  );
+  if (response.status) {
+    return response.data;
+  } else {
+    throw new Error(JSON.stringify(response.message));
   }
 }
