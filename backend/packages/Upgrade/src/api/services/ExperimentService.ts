@@ -1466,7 +1466,7 @@ export class ExperimentService {
   }
 
   private async addFactorialDataInDB(
-    factors: Factor[],
+    factors: any[],
     conditions: ExperimentCondition[],
     experimentDoc: Experiment,
     transactionalEntityManager: EntityManager,
@@ -1479,12 +1479,14 @@ export class ExperimentService {
     const allFactors =
       factors &&
       factors.length > 0 &&
-      factors.map((factor: Factor) => {
+      factors.map((factor) => {
         factor.id = factor.id || uuid();
+        factor.name = factor.factor;
         factor.experiment = experimentDoc;
 
         factor.levels.forEach((level) => {
           level.id = level.id || uuid();
+          level.name = level.level;
           level.factor = factor;
         });
         allLevels.push(...factor.levels);
@@ -1515,7 +1517,7 @@ export class ExperimentService {
       ]);
     } catch (err) {
       const error = err as Error;
-      error.message = `Error in creating factors & levels"`;
+      error.message = `Error in creating factors & levels`;
       logger.error(error);
       throw error;
     }

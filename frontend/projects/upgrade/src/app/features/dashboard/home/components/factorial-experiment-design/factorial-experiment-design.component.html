@@ -352,17 +352,17 @@
                             <mat-form-field floatLabel="never">
                               <span
                                 [matTooltip]="
-                                  factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
+                                  factorialExperimentDesignForm.getRawValue('alias')?.factors[factorIndex]?.levels[
                                     levelIndex
-                                  ]?.payload
+                                  ]?.alias
                                 "
                                 matTooltipPosition="above"
                               >
                                 <input
                                   matInput
                                   [placeholder]="'home.new-experiment.design.payload.placeholder.text' | translate"
-                                  formControlName="payload"
-                                  [value]="payload"
+                                  formControlName="alias"
+                                  [value]="alias"
                                   autocomplete="off"
                                 />
                               </span>

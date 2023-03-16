@@ -1,7 +1,6 @@
 import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { BaseModel } from './base/BaseModel';
-import { DecisionPoint } from './DecisionPoint';
 import { Level } from './Level';
 import { Experiment } from './Experiment';
 

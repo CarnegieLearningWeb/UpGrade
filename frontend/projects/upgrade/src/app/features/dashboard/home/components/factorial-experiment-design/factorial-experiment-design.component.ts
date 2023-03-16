@@ -21,6 +21,8 @@ import {
   ExperimentDecisionPoint,
   IContextMetaData,
   EXPERIMENT_STATE,
+  ExperimentLevel,
+  ExperimentFactor,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -60,7 +62,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   subscriptionHandler: Subscription;
 
-  experimentDesignForm: FormGroup;
   factorialExperimentDesignForm: FormGroup;
   decisionPointDataSource = new BehaviorSubject<AbstractControl[]>([]);
   factorDataSource = new BehaviorSubject<AbstractControl[]>([]);
@@ -205,7 +206,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           this.factor.push(this.addFactors(factor.name, factor.description, factor.order));
           this.getLevels(factorIndex).removeAt(0);
           factor.levels.forEach((level) => {
-            this.getLevels(factorIndex).push(this.addLevels(level.id, level.name, level.payload));
+            this.getLevels(factorIndex).push(this.addLevels(level.id, level.name, level.alias));
           });
           factorIndex++;
         });
@@ -301,7 +302,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return this._formBuilder.group({
       id: [id || uuidv4()],
       level: [level, Validators.required],
-      payload: [payload],
+      alias: [payload],
     });
   }
 
@@ -354,14 +355,14 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.experimentDesignStepperService.clearDecisionPointTableEditModeDetails();
-    this.updateView();
+    this.updateView('decisionPointTable');
   }
 
   removeFactor(groupIndex: number) {
     this.factor.removeAt(groupIndex);
     this.isAnyRowRemoved = true;
     this.experimentDesignStepperService.experimentStepperDataChanged();
-    this.updateView();
+    this.updateView('factorTable');
     if (this.expandedId === groupIndex) {
       this.expandedId = null;
     }
@@ -371,7 +372,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.getLevels(factorIndex).removeAt(levelIndex);
     this.isAnyRowRemoved = true;
     this.experimentDesignStepperService.experimentStepperDataChanged();
-    this.updateView('levelTable');
+    // this.updateView('levelTable');
   }
 
   expandFactor(groupIndex: number) {
@@ -381,11 +382,13 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   updateView(type?: string) {
     if (type === 'levelTable') {
       this.factorDataSource.next(this.level?.controls);
-    }else if (type === 'factorTable') {
+    } else if (type === 'factorTable') {
       this.factorDataSource.next(this.factor?.controls);
-    }else if (type === 'decisionPointTable'){
+    } else if (type === 'decisionPointTable') {
       this.decisionPointDataSource.next(this.decisionPoints.controls);
     }
+    this.factorDataSource.next(this.factor?.controls);
+    this.decisionPointDataSource.next(this.decisionPoints.controls);
     if (type) {
       this[type].nativeElement.scroll({
         top: this[type].nativeElement.scrollHeight - 91,
@@ -632,13 +635,8 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     if (this.isFormValid()) {
       const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
-      console.log("factorialExperimentDesignForm");
-      console.log(this.factorialExperimentDesignForm);
-      console.log("this.factorialExperimentDesignForm.value");
-      console.log(this.factorialExperimentDesignForm.value);
-      const experimentDesignFormData = this.experimentDesignForm.value;
       let order = 1;
-      experimentDesignFormData.decisionPoints = experimentDesignFormData.decisionPoints.map((decisionPoint, index) => {
+      factorialExperimentDesignFormData.decisionPoints = factorialExperimentDesignFormData.decisionPoints.map((decisionPoint, index) => {
         return this.experimentInfo
           ? { ...this.experimentInfo.partitions[index], ...decisionPoint, order: order++ }
           : decisionPoint.target
@@ -650,7 +648,22 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       factorialExperimentDesignFormData.factors = factorialExperimentDesignFormData.factors.map((factor, index) => {
         return this.experimentInfo
           ? { ...this.experimentInfo.factors[index], ...factor, order: order++ }
-          : { ...factor, name: '', order: order++ };
+          : { ...factor, order: order++ };
+      });
+
+      let factorOrder = 1;
+      const factorsData = factorialExperimentDesignFormData.factors.map((factor) => {
+        let levelOrder = 1;
+        const currentLevels: ExperimentLevel[] = factor.levels.map((level) => {
+          return { name: level.level, alias: level.alias, id: level.id, order: levelOrder++ };
+        });
+        const currentFactors: ExperimentFactor = {
+          name: factor.factor,
+          description: factor.description,
+          order: factorOrder++,
+          levels: currentLevels,
+        };
+        return currentFactors;
       });
 
       const factorialConditions = this.experimentDesignStepperService.createFactorialConditionRequestObject();
@@ -662,7 +675,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         type: eventType,
         formData: {
           conditions: factorialConditions,
-          partitions: experimentDesignFormData.decisionPoints,
+          partitions: factorialExperimentDesignFormData.decisionPoints,
           factors: factorialExperimentDesignFormData.factors,
           conditionAliases: factorialConditionAliases,
         },
@@ -725,7 +738,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     const tableData = this.getCurrentTableData();
     const formRow = this.getFactorialLevelsAt(rowIndex);
 
-    const payload = formRow.get('payload').value;
+    const payload = formRow.get('alias').value;
 
     tableData[rowIndex] = { ...tableData[rowIndex], payload };
 
