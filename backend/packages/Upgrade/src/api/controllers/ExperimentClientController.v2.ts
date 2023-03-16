@@ -19,6 +19,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import {
+  IExperimentAssignment,
   ISingleMetric,
   IGroupMetric,
   SERVER_ERROR,
@@ -59,13 +60,6 @@ interface IMonitoredDeciosionPoint {
   monitoredPointLogs: MonitoredDecisionPointLog[];
 }
 
-interface IExperimentAssignment {
-  site: string;
-  target: string;
-  assignedCondition: {
-    condition: string;
-  };
-}
 /**
  * @swagger
  * definitions:
@@ -114,7 +108,7 @@ interface IExperimentAssignment {
  *     description: CRUD operations related to experiments points
  */
 
-@JsonController('/v1/')
+@JsonController('/v2/')
 @UseBefore(ClientLibMiddleware)
 export class ExperimentClientController {
   constructor(
@@ -524,11 +518,14 @@ export class ExperimentClientController {
       }
     );
 
-    return assignedData.map(({ site, target, assignedCondition }) => {
+    return assignedData.map(({ assignedCondition, ...rest }) => {
       return {
-        site,
-        target,
-        assignedCondition: { condition: assignedCondition.conditionAlias || assignedCondition.conditionCode },
+        ...rest,
+        assignedCondition: {
+          conditionCode: assignedCondition.conditionCode,
+          conditionAlias: assignedCondition.conditionAlias,
+          experimentId: assignedCondition.experimentId,
+        },
       };
     });
   }

@@ -169,3 +169,9 @@ export enum EXPERIMENT_TYPE {
   SIMPLE = 'Simple',
   FACTORIAL = 'Factorial',
 }
+
+export enum PAYLOAD_TYPE {
+  STRING = 'string',
+  JSON = 'json',
+  CSV = 'csv',
+}
