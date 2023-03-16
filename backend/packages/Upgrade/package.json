@@ -1,6 +1,6 @@
 {
     "name": "ab_testing_backend",
-    "version": "4.0",
+    "version": "4.0.0",
     "description": "Backend for A/B Testing Project",
     "main": "index.js",
     "scripts": {
