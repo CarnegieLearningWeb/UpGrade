@@ -8,18 +8,95 @@
       font-weight: bold;
     }
 
+    .header-container,
     .factors-header-container {
       display: flex;
       justify-content: space-between;
 
-      .toggle-button {
-        margin-top: -5px;
-        .icon-bump-left {
-          margin-left: -5px;
+      // .toggle-button {
+      //   margin-top: -5px;
+      //   .icon-bump-left {
+      //     margin-left: -5px;
+      //   }
+      //   .toggle-text {
+      //     margin-left: 5px;
+      //   }
+      // }
+    }
+
+    .decision-point-table {
+      max-height: 135px;
+      overflow: auto;
+      mat-header-row {
+        min-height: 35px;
+        justify-content: space-between;
+      }
+    
+      mat-row {
+        min-height: 46px;
+        max-height: 46px;
+        justify-content: space-between;
+      }
+    
+      mat-header-cell {
+        justify-content: left;
+        color: var(--grey-6);
+      }
+    
+      mat-cell {
+        justify-content: left;
+        margin-bottom: -5px;
+      }
+    
+      .cdk-column-site {
+        width: 100%;
+      }
+    
+      .cdk-column-target {
+        margin-left: 30px;
+        width: 100%;
+      }
+    
+      .cdk-column-excludeIfReached {
+        margin-left: 30px;
+        width: 100%;
+        max-width: 150px;
+        justify-content: center;
+        mat-checkbox {
+          margin-top: -5px;
         }
-        .toggle-text {
-          margin-left: 5px;
+      }
+    
+      .cdk-column-actions {
+        margin-left: 30px;
+        flex: 0 0 78px;
+        width: 78px;
+        .row-action-btn {
+          border: none;
+          background-color: transparent;
+          .icon {
+            margin-top: -5px;
+            margin-left: -3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--text-size-x-large);
+            color: gray;
+          }
         }
+      }
+    
+      mat-form-field {
+        width: 100%;
+        text-align: left;
+      }
+    
+      .align-right {
+        text-align: right;
+      }
+    
+      .row-is-locked {
+        opacity: 0.4;
       }
     }
 
@@ -191,6 +268,7 @@
       }
     }
 
+    .add-decision-point,
     .add-factor,
     .add-level {
       margin: 10px 0px;
