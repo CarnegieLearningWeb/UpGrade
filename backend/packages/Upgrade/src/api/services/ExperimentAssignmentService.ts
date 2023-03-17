@@ -147,8 +147,8 @@ export class ExperimentAssignmentService {
         'experiment.conditions.levelCombinationElements',
         'experiment.conditions.levelCombinationElements.level',
         'experiment.conditions.conditionAliases',
-        'experiment.partitions.factors',
-        'experiment.partitions.factors.levels',
+        'experiment.factors',
+        'experiment.factors.levels',
         'experiment.experimentSegmentInclusion',
         'experiment.experimentSegmentExclusion',
         'experiment.experimentSegmentInclusion.segment',
@@ -317,30 +317,16 @@ export class ExperimentAssignmentService {
           throw err;
         }
 
-        const { conditions, partitions, type } = experiment;
+        const { conditions, partitions } = experiment;
 
         const aliasConditions = await this.conditionAliasRepository.find({
           relations: ['parentCondition', 'decisionPoint'],
           where: { parentCondition: In(conditions.map((x) => x.id)), decisionPoint: In(partitions.map((x) => x.id)) },
         });
 
-        const factorialConditions: string[] = [];
-        if (type === EXPERIMENT_TYPE.FACTORIAL) {
-          conditions.forEach((condition) => {
-            partitions.forEach((partition) => {
-              factorialConditions.push(...this.getFactorialCondition(condition, partition.factors)['aliases']);
-            });
-          });
-        }
         const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
         const matchedAliasCondition = aliasConditions.filter((con) => con.aliasName === condition);
-        const matchedFactorialCondition = factorialConditions.filter((con) => con === condition);
-        if (
-          matchedCondition.length === 0 &&
-          matchedAliasCondition.length === 0 &&
-          matchedFactorialCondition.length === 0 &&
-          condition !== null
-        ) {
+        if (matchedCondition.length === 0 && matchedAliasCondition.length === 0 && condition !== null) {
           const error = new Error(`Condition not found: ${condition}`);
           (error as any).type = SERVER_ERROR.CONDITION_NOT_FOUND;
           logger.error(error);
