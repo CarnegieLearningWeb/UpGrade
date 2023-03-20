@@ -47,7 +47,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   ngOnInit() {
     const queryIds = [];
     // sort the factors:
-    this.experiment.factors = this.experiment.factors.slice().sort((a,b)=> (a.order > b.order ? 1 : -1))
+    this.experiment.factors = this.experiment.factors.slice().sort((a, b) => (a.order > b.order ? 1 : b.order > a.order ? -1 : 0));
     this.experimentType = this.experiment.type;
     if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
       this.setMaxLevelsCount();
@@ -124,7 +124,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
       if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
         // prepare all combination series with 0 result
         // sort the factors:
-        this.experiment.factors = this.experiment.factors.slice().sort((a,b)=> (a.order > b.order ? 1 : -1))
+        this.experiment.factors = this.experiment.factors.slice().sort((a, b) => (a.order > b.order ? 1 : b.order > a.order ? -1 : 0));
         this.experiment.factors.map((factor, index) => {
           factor.levels.map((level) => {
             const levelName = level.name;
