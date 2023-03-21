@@ -18,6 +18,10 @@ export class Factor extends BaseModel {
   @IsNumber()
   public order: number;
 
+  @Column({ nullable: true })
+  @IsString()
+  public description: string;
+
   @ManyToOne(() => Experiment, (experiment) => experiment.factors, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 

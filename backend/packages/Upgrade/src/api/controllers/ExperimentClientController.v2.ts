@@ -40,6 +40,7 @@ import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
 import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
+import { MarkExperimentValidator2 } from './validators/MarkExperimentValidator.v2';
 
 interface ILog {
   id: string;
@@ -422,7 +423,7 @@ export class ExperimentClientController {
     @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
-    experiment: MarkExperimentValidator
+    experiment: MarkExperimentValidator2
   ): Promise<IMonitoredDeciosionPoint> {
     request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
     // getOriginalUserDoc call for alias
@@ -436,13 +437,13 @@ export class ExperimentClientController {
       experiment.userId,
       experiment.site,
       experiment.status,
-      experiment.condition,
+      experiment.assignedCondition.conditionCode,
       {
         logger: request.logger,
         userDoc: experimentUserDoc,
       },
       experiment.target,
-      experiment.experimentId ? experiment.experimentId : null
+      experiment.assignedCondition.experimentId ? experiment.assignedCondition.experimentId : null
     );
     return rest;
   }

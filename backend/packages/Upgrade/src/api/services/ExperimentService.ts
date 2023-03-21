@@ -1481,12 +1481,12 @@ export class ExperimentService {
       factors.length > 0 &&
       factors.map((factor) => {
         factor.id = factor.id || uuid();
-        factor.name = factor.factor;
+        factor.name = factor.name || factor.factor;
         factor.experiment = experimentDoc;
 
         factor.levels.forEach((level) => {
           level.id = level.id || uuid();
-          level.name = level.level;
+          level.name = level.name || level.level;
           level.factor = factor;
         });
         allLevels.push(...factor.levels);

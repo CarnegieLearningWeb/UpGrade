@@ -43,7 +43,7 @@ export class Assignment {
 
   public getFactorPayload(factor: string): IPayload {
     if (this._experimentType === EXPERIMENT_TYPE.FACTORIAL) {
-      return this._assignedFactor[factor]
+      return this._assignedFactor[factor] && this._assignedFactor[factor].alias
         ? { type: PAYLOAD_TYPE.STRING, value: this._assignedFactor[factor].alias }
         : null;
     } else {

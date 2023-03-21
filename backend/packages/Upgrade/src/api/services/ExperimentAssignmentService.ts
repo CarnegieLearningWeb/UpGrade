@@ -317,11 +317,11 @@ export class ExperimentAssignmentService {
           throw err;
         }
 
-        const { conditions, partitions } = experiment;
+        const { conditions } = experiment;
 
         const aliasConditions = await this.conditionAliasRepository.find({
-          relations: ['parentCondition', 'decisionPoint'],
-          where: { parentCondition: In(conditions.map((x) => x.id)), decisionPoint: In(partitions.map((x) => x.id)) },
+          relations: ['parentCondition'],
+          where: { parentCondition: In(conditions.map((x) => x.id)) },
         });
 
         const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);

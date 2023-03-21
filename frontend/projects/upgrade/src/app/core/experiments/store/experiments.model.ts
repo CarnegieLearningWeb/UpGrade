@@ -151,20 +151,6 @@ export interface ExperimentDecisionPoint {
   updatedAt: string;
   versionNumber: number;
   excludeIfReached: boolean;
-  factors?: ExperimentFactor[];
-}
-
-export interface ExperimentDecisionPointForSimpleExp {
-  id: string;
-  site: string;
-  target: string;
-  description: string;
-  twoCharacterId: string;
-  order: number;
-  createdAt: string;
-  updatedAt: string;
-  versionNumber: number;
-  excludeIfReached: boolean;
 }
 
 export interface ExperimentFactor {
@@ -236,7 +222,7 @@ export interface Experiment {
   backendVersion: string;
 }
 
-export interface ParticipantsMember{
+export interface ParticipantsMember {
   id: string;
   type: string;
 }
