@@ -13,7 +13,6 @@ import {
 } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
-import { MarkExperimentValidator } from './validators/MarkExperimentValidator.v1';
 import { ExperimentAssignmentValidator } from './validators/ExperimentAssignmentValidator';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
