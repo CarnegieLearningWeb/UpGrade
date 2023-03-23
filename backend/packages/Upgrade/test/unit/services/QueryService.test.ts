@@ -20,6 +20,7 @@ describe('Query Service Testing', () => {
   const exp1 = new Experiment();
   exp1.id = 'exp1';
   exp1.name = 'experiment1';
+  exp1.conditions = [];
 
   const mockquery1 = new Query();
   mockquery1.id = 'id1';
@@ -39,12 +40,8 @@ describe('Query Service Testing', () => {
 
   const logResult = {
     conditionId: 'cond1',
-    result: {
-      interactionEffect: null,
-      mainEffect: {
-        result: 22,
-      },
-    }
+    result: 0,
+    participantsLogged: 0,
   };
   beforeEach(async () => {
     module = await Test.createTestingModule({
