@@ -1,18 +1,20 @@
-import { IExperimentAssignment, EXPERIMENT_TYPE, PAYLOAD_TYPE, IPayload } from 'upgrade_types';
+import { IExperimentAssignment2, EXPERIMENT_TYPE, PAYLOAD_TYPE, IPayload } from 'upgrade_types';
 
 export class Assignment {
   private _conditionCode: string;
-  private _conditionAlias: string;
+  private _payloadType: PAYLOAD_TYPE;
+  private _payloadValue: string;
   private _experimentType: EXPERIMENT_TYPE;
-  private _assignedFactor: Record<string, { level: string; alias: string }>;
+  private _assignedFactor: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }>;
 
   constructor(
     conditionCode: string,
-    conditionAlias: string,
-    assignedFactor?: Record<string, { level: string; alias: string }>
+    payload: { type: PAYLOAD_TYPE; value: string },
+    assignedFactor?: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }>
   ) {
     this._conditionCode = conditionCode;
-    this._conditionAlias = conditionAlias;
+    this._payloadType = payload.type;
+    this._payloadValue = payload.value;
     this._experimentType = assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE;
     this._assignedFactor = assignedFactor;
   }
@@ -22,7 +24,7 @@ export class Assignment {
   }
 
   public getPayload(): IPayload {
-    return this._conditionAlias ? { type: PAYLOAD_TYPE.STRING, value: this._conditionAlias } : null;
+    return this._payloadValue ? { type: this._payloadType, value: this._payloadValue } : null;
   }
 
   public getExperimentType(): EXPERIMENT_TYPE {
@@ -43,8 +45,8 @@ export class Assignment {
 
   public getFactorPayload(factor: string): IPayload {
     if (this._experimentType === EXPERIMENT_TYPE.FACTORIAL) {
-      return this._assignedFactor[factor] && this._assignedFactor[factor].alias
-        ? { type: PAYLOAD_TYPE.STRING, value: this._assignedFactor[factor].alias }
+      return this._assignedFactor[factor] && this._assignedFactor[factor].payload.value
+        ? { type: this._assignedFactor[factor].payload.type, value: this._assignedFactor[factor].payload.value }
         : null;
     } else {
       return null;
@@ -53,22 +55,20 @@ export class Assignment {
 }
 
 export default function getExperimentCondition(
-  experimentConditionData: IExperimentAssignment[],
-  experimentPoint: string,
-  partitionId?: string
+  experimentConditionData: IExperimentAssignment2[],
+  site: string,
+  target?: string
 ): Assignment {
   if (experimentConditionData) {
-    const result = experimentConditionData.filter((data) =>
-      partitionId
-        ? data.target === partitionId && data.site === experimentPoint
-        : data.site === experimentPoint && !data.target
+    const result = experimentConditionData.find((data) =>
+      target ? data.target === target && data.site === site : data.site === site && !data.target
     );
 
-    if (result.length) {
+    if (result) {
       const assignment = new Assignment(
-        result[0].assignedCondition.conditionCode,
-        result[0].assignedCondition.conditionCode,
-        result[0].assignedFactor
+        result.assignedCondition.conditionCode,
+        result.assignedCondition.payload,
+        result.assignedFactor
       );
       return assignment;
     } else {

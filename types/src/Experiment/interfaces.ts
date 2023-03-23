@@ -54,7 +54,18 @@ export interface IExperimentAssignment {
     conditionAlias: string;
     experimentId: string;
   };
-  assignedFactor?: Record<string, { level: string; alias: string }>;
+  assignedFactor?: Record<string, { level: string; levelAlias: string }>;
+}
+
+export interface IExperimentAssignment2 {
+  site: string;
+  target: string;
+  assignedCondition: {
+    conditionCode: string;
+    payload: { type: PAYLOAD_TYPE; value: string };
+    experimentId: string;
+  };
+  assignedFactor?: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }>;
 }
 
 interface ExperimentCreatedData {

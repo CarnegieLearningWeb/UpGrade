@@ -2,11 +2,11 @@ import { IFeatureFlag } from 'upgrade_types';
 
 export default function getFeatureFlag(featureFlagsData: IFeatureFlag[], key: string): IFeatureFlag {
   if (featureFlagsData) {
-    const result = featureFlagsData.filter((data) => data.key === key);
-    if (result.length) {
-      const activeVariation = getActiveVariation(result[0]) as any;
+    const result = featureFlagsData.find((data) => data.key === key);
+    if (result) {
+      const activeVariation = getActiveVariation(result) as any;
       return {
-        ...result[0],
+        ...result,
         variations: activeVariation,
       };
     } else {

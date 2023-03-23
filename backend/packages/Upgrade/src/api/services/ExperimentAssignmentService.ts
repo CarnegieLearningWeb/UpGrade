@@ -108,10 +108,19 @@ export class ExperimentAssignmentService {
     condition: string | null,
     requestContext: { logger: UpgradeLogger; userDoc: any },
     target?: string,
-    experimentId?: string
+    experimentId?: string,
+    clientError?: string
   ): Promise<Omit<MonitoredDecisionPoint, 'createdAt | updatedAt | versionNumber'>> {
     // find working group for user
     const { logger, userDoc } = requestContext;
+
+    // check error from client side
+    if (clientError) {
+      const error = new Error(clientError);
+      (error as any).type = SERVER_ERROR.REPORTED_ERROR;
+      logger.error(error);
+      throw error;
+    }
 
     // adding experiment error when user is not defined
     if (!userDoc) {
@@ -626,26 +635,26 @@ export class ExperimentAssignmentService {
           let factorialObject;
 
           let aliasCondition: ExperimentCondition = null;
+          let aliasFound;
           if (conditionAssigned) {
             if (type === EXPERIMENT_TYPE.FACTORIAL) {
               // returns factorial alias condition or assigned condition
-              const aliasFound = conditionAliases.find((x) => x.parentCondition.id === conditionAssigned.id);
+              aliasFound = conditionAliases.find((x) => x.parentCondition.id === conditionAssigned.id);
               factorialObject = this.getFactorialCondition(
                 { ...conditionAssigned, conditionAliases: [aliasFound] },
                 factors
               );
             } else {
               // checking alias condition for simple experiment
-              const aliasFound = conditionAliases.find(
+              aliasFound = conditionAliases.find(
                 (x) =>
                   x.parentCondition.id === conditionAssigned.id &&
                   x.decisionPoint.site === decisionPoint.site &&
                   x.decisionPoint.target === decisionPoint.target
               );
-
-              if (aliasFound) {
-                aliasCondition = { ...conditionAssigned, conditionCode: aliasFound.aliasName };
-              }
+            }
+            if (aliasFound) {
+              aliasCondition = { ...conditionAssigned, conditionCode: aliasFound.aliasName };
             }
           }
 
@@ -1904,6 +1913,5 @@ export class ExperimentAssignmentService {
     objectToReturn['conditionAlias'] = factorialConditionAlias;
 
     return objectToReturn;
-    return [factorialCondition, aliases, assignedFactor];
   }
 }

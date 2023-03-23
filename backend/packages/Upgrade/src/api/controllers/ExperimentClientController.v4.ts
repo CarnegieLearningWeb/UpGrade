@@ -18,13 +18,14 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import {
-  IExperimentAssignment,
+  IExperimentAssignment2,
   ISingleMetric,
   IGroupMetric,
   SERVER_ERROR,
   IGroupMembership,
   IUserAliases,
   IWorkingGroup,
+  PAYLOAD_TYPE,
 } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator.v1';
 import { ExperimentError } from '../models/ExperimentError';
@@ -39,7 +40,7 @@ import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
 import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
-import { MarkExperimentValidator2 } from './validators/MarkExperimentValidator.v2';
+import { MarkExperimentValidator2 } from './validators/MarkExperimentValidator.v4';
 
 interface ILog {
   id: string;
@@ -108,7 +109,7 @@ interface IMonitoredDeciosionPoint {
  *     description: CRUD operations related to experiments points
  */
 
-@JsonController('/v2/')
+@JsonController('/v4/')
 @UseBefore(ClientLibMiddleware)
 export class ExperimentClientController {
   constructor(
@@ -434,15 +435,15 @@ export class ExperimentClientController {
     }
     const { createdAt, updatedAt, versionNumber, ...rest } = await this.experimentAssignmentService.markExperimentPoint(
       experiment.userId,
-      experiment.site,
+      experiment.data.site,
       experiment.status,
-      experiment.assignedCondition.conditionCode,
+      experiment.data.assignedCondition.conditionCode,
       {
         logger: request.logger,
         userDoc: experimentUserDoc,
       },
-      experiment.target,
-      experiment.assignedCondition.experimentId ? experiment.assignedCondition.experimentId : null
+      experiment.data.target,
+      experiment.data.assignedCondition.experimentId ? experiment.data.assignedCondition.experimentId : null
     );
     return rest;
   }
@@ -507,7 +508,7 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     experiment: ExperimentAssignmentValidator
-  ): Promise<IExperimentAssignment[]> {
+  ): Promise<IExperimentAssignment2[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
     const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
       experiment.userId,
@@ -518,14 +519,25 @@ export class ExperimentClientController {
       }
     );
 
-    return assignedData.map(({ assignedCondition, ...rest }) => {
+    return assignedData.map(({ assignedFactor, assignedCondition, ...rest }) => {
+      const updatedAssignedFactor: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }> =
+        {};
+      if (assignedFactor) {
+        Object.keys(assignedFactor).forEach((key) => {
+          updatedAssignedFactor[key] = {
+            level: assignedFactor[key].level,
+            payload: { type: PAYLOAD_TYPE.STRING, value: assignedFactor[key].levelAlias },
+          };
+        });
+      }
       return {
         ...rest,
         assignedCondition: {
           conditionCode: assignedCondition.conditionCode,
-          conditionAlias: assignedCondition.conditionAlias,
+          payload: { type: PAYLOAD_TYPE.STRING, value: assignedCondition.conditionAlias },
           experimentId: assignedCondition.experimentId,
         },
+        assignedFactor: assignedFactor ? updatedAssignedFactor : undefined,
       };
     });
   }

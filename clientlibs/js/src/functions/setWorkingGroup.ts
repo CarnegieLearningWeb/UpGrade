@@ -1,6 +1,5 @@
 import { Interfaces, Types } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
-import convertMapToObj from '../common/convertMapToObj';
 
 export default async function setWorkingGroup(
   url: string,
@@ -9,15 +8,11 @@ export default async function setWorkingGroup(
   clientSessionId: string,
   workingGroup: Record<string, string>
 ): Promise<Interfaces.IUser> {
-  if (!(workingGroup instanceof Map)) {
-    throw new Error('Working group type should be Map<string, string>');
-  }
-  const workingGroupObj = convertMapToObj(workingGroup);
   const response = await fetchDataService(
     url,
     token,
     clientSessionId,
-    { id: userId, workingGroup: workingGroupObj },
+    { id: userId, workingGroup: workingGroup },
     Types.REQUEST_TYPES.POST
   );
   if (response.status) {

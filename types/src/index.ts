@@ -44,4 +44,5 @@ export {
   IGroupMembership,
   IUserAliases,
   IPayload,
+  IExperimentAssignment2,
 } from './Experiment/interfaces';

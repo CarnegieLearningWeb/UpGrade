@@ -1,5 +1,5 @@
 import fetchDataService from '../common/fetchDataService';
-import { IExperimentAssignment } from 'upgrade_types';
+import { IExperimentAssignment2 } from 'upgrade_types';
 import { Types } from '../identifiers';
 
 export default async function getAllExperimentConditions(
@@ -8,7 +8,7 @@ export default async function getAllExperimentConditions(
   token: string,
   clientSessionId: string,
   context: string
-): Promise<IExperimentAssignment[]> {
+): Promise<IExperimentAssignment2[]> {
   const params: any = {
     userId,
     context,
@@ -21,18 +21,9 @@ export default async function getAllExperimentConditions(
     Types.REQUEST_TYPES.POST
   );
   if (experimentConditionResponse.status) {
-    experimentConditionResponse.data = experimentConditionResponse.data.map(
-      (data: { assignedCondition: { conditionCode: any; conditionAlias: any; experimentId: any } }) => {
-        return {
-          ...data,
-          assignedCondition: {
-            conditionCode: data.assignedCondition.conditionCode,
-            conditionAlias: data.assignedCondition.conditionAlias,
-            experimentId: data.assignedCondition.experimentId,
-          },
-        };
-      }
-    );
+    experimentConditionResponse.data = experimentConditionResponse.data.map((data: IExperimentAssignment2) => {
+      return data;
+    });
     return experimentConditionResponse.data;
   } else {
     throw new Error(JSON.stringify(experimentConditionResponse.message));

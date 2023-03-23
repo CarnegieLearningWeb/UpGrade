@@ -2,6 +2,14 @@ import { Interfaces, Types } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
 import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 
+interface markData {
+  site: string;
+  condition: string;
+  userId: string;
+  status: MARKED_DECISION_POINT_STATUS;
+  target?: string;
+}
+
 export default async function markExperimentPoint(
   url: string,
   userId: string,
@@ -12,7 +20,7 @@ export default async function markExperimentPoint(
   status: MARKED_DECISION_POINT_STATUS,
   target?: string
 ): Promise<Interfaces.IMarkExperimentPoint> {
-  let data: any = {
+  let data: markData = {
     site,
     condition,
     userId,
