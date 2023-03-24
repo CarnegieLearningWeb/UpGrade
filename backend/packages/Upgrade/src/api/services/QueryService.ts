@@ -44,8 +44,8 @@ export class QueryService {
           'experiment',
           'experiment.conditions',
           'experiment.partitions',
-          'experiment.partitions.factors',
-          'experiment.partitions.factors.levels',
+          'experiment.factors',
+          'experiment.factors.levels',
         ],
       })
     );
