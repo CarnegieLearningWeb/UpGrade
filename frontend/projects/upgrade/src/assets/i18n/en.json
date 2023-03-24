@@ -27,6 +27,7 @@
   "global.number.text": "NO.",
   "global.description.text": "DESCRIPTION",
   "global.condition.text": "CONDITION",
+  "global.payload.text": "PAYLOAD",
   "global.decision-points.text": "DECISION POINT",
   "global.level.text": "LEVEL",
   "global.levelCombinationElement": "LEVEL ELEMENT",

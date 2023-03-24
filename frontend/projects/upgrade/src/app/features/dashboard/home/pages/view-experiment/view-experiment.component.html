@@ -552,6 +552,23 @@
                   </mat-cell>
                 </ng-container>
 
+                <!-- Payload Column -->
+                <ng-container matColumnDef="payload">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'global.payload.text' | translate }}
+                  </mat-header-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let data">
+                    <span *ngIf="data.payload?.length < 50; else trimmedPayload">
+                      {{ data.payload }}
+                    </span>
+                    <ng-template #trimmedPayload>
+                      <span [matTooltip]="data.payload" matTooltipPosition="above">
+                        {{ data.payload | truncate : 50 }}
+                      </span>
+                    </ng-template>
+                  </mat-cell>
+                </ng-container>
+
                 <!-- Weight Column -->
                 <ng-container matColumnDef="assignmentWeight">
                   <mat-header-cell class="ft-12-700" *matHeaderCellDef>
@@ -599,6 +616,23 @@
                     <ng-template #conditionCode>
                       <span [matTooltip]="data.conditionCode" matTooltipPosition="above">
                         {{ data.conditionCode | truncate : 50 }}
+                      </span>
+                    </ng-template>
+                  </mat-cell>
+                </ng-container>
+
+                <!-- Payload Column -->
+                <ng-container matColumnDef="payload">
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                    {{ 'global.payload.text' | translate }}
+                  </mat-header-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let data">
+                    <span *ngIf="data.payload?.length < 50; else trimmedPayload">
+                      {{ data.payload }}
+                    </span>
+                    <ng-template #trimmedPayload>
+                      <span [matTooltip]="data.payload" matTooltipPosition="above">
+                        {{ data.payload | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
