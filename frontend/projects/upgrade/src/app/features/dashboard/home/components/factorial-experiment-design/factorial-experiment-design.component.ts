@@ -36,6 +36,7 @@ import {
   ExperimentFactorFormData,
   ExperimentFactorialDesignData,
   ExperimentLevelFormData,
+  FactorialConditionRequestObject,
   FactorialConditionTableRowData,
   FactorialLevelTableRowData,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
@@ -111,7 +112,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   // Alias Table details
   designData$ = new BehaviorSubject<[ExperimentDecisionPoint[], ExperimentCondition[]]>([[], []]);
   factorialConditionsTableData: FactorialConditionTableRowData[] = [];
-  factorialOriginalConditions = [];
+  factorialConditions: FactorialConditionRequestObject[] = [];
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -274,8 +275,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   handleConditionsButtonClick() {
     this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
     this.conditionTableDataUpToDate = true;
-    this.factorialOriginalConditions = this.experimentDesignStepperService.createFactorialConditionRequestObject();
-    // this.scrollToConditionsTable();
+    this.factorialConditions = this.experimentDesignStepperService.createFactorialConditionRequestObject();
   }
 
   addDecisionPoints(id = null, site = null, target = null, description = '', order = null, excludeIfReached = false) {
@@ -672,7 +672,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.emitExperimentDialogEvent.emit({
         type: eventType,
         formData: {
-          conditions: this.factorialOriginalConditions,
+          conditions: this.factorialConditions,
           partitions: factorialExperimentDesignFormData.decisionPoints,
           factors: factorialExperimentDesignFormData.factors,
           conditionAliases: factorialConditionAliases,
