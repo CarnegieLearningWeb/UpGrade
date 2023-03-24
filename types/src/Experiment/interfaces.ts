@@ -53,6 +53,7 @@ export interface IExperimentAssignment {
     conditionCode: string;
     conditionAlias: string;
     experimentId: string;
+    id: string;
   };
   assignedFactor?: Record<string, { level: string; levelAlias: string }>;
 }

@@ -26,6 +26,7 @@ import {
   IUserAliases,
   IWorkingGroup,
   PAYLOAD_TYPE,
+  EXPERIMENT_TYPE,
 } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator.v1';
 import { ExperimentError } from '../models/ExperimentError';
@@ -526,15 +527,21 @@ export class ExperimentClientController {
         Object.keys(assignedFactor).forEach((key) => {
           updatedAssignedFactor[key] = {
             level: assignedFactor[key].level,
-            payload: { type: PAYLOAD_TYPE.STRING, value: assignedFactor[key].levelAlias },
+            payload: assignedFactor[key].levelAlias
+              ? { type: PAYLOAD_TYPE.STRING, value: assignedFactor[key].levelAlias }
+              : null,
           };
         });
       }
       return {
         ...rest,
+        experimentType: assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE,
         assignedCondition: {
+          id: assignedCondition.id,
           conditionCode: assignedCondition.conditionCode,
-          payload: { type: PAYLOAD_TYPE.STRING, value: assignedCondition.conditionAlias },
+          payload: assignedCondition.conditionAlias
+            ? { type: PAYLOAD_TYPE.STRING, value: assignedCondition.conditionAlias }
+            : null,
           experimentId: assignedCondition.experimentId,
         },
         assignedFactor: assignedFactor ? updatedAssignedFactor : undefined,
