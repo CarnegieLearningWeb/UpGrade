@@ -51,10 +51,10 @@
         </mat-cell>
       </ng-container>
 
-      <!-- Alias Column -->
+      <!-- Payload Column -->
       <ng-container matColumnDef="alias">
         <mat-header-cell *matHeaderCellDef class="ft-14-700">
-          {{ 'ALIAS' | translate }}
+          {{ 'home.new-experiment.design.payloads.column-header.payload.text' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
           <ng-container *ngIf="(tableEditIndex$ | async) !== rowIndex">
