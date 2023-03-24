@@ -6,8 +6,6 @@ import {
   ExperimentCondition,
   ExperimentConditionAlias,
   ExperimentVM,
-  ExperimentFactor,
-  ExperimentLevel,
 } from '../experiments/store/experiments.model';
 import * as experimentDesignStepperAction from './store/experiment-design-stepper.actions';
 import {
@@ -311,12 +309,8 @@ export class ExperimentDesignStepperService {
               name: factorTwoLevel.level,
             },
           ],
-          alias: this.createFactorialAliasString(
-            factorOne.factor,
-            factorOneLevel.level,
-            factorTwo.factor,
-            factorTwoLevel.level
-          ),
+          condition: factorOneLevel.level + '; ' + factorTwoLevel.level,
+          alias: '',
           weight: '0.0',
           include: true,
         };
@@ -328,50 +322,9 @@ export class ExperimentDesignStepperService {
     return tableData;
   }
 
-  // convertToDecisionPointData(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
-  //   let order = 1;
-  //   let factorOrder = 1;
-  //   const decisionPoints = [];
-  //   factorialExperimentDesignFormData.factors.forEach((decisionPoint) => {
-  //     let levelOrder = 1;
-  //     const currentLevels: ExperimentLevel[] = decisionPoint.levels.map((level) => {
-  //       return { name: level.level, alias: level.alias, id: level.id, order: levelOrder++ };
-  //     });
-  //     const currentFactors: ExperimentFactor = {
-  //       name: decisionPoint.factor,
-  //       // TODO: pratik add description
-  //       description: decisionPoint.description,
-  //       order: factorOrder++,
-  //       levels: currentLevels,
-  //     };
-  //     if (
-  //       !decisionPoints
-  //         .find(
-  //           (existingDecisionPoint) =>
-  //             existingDecisionPoint.site === decisionPoint.site && existingDecisionPoint.target === decisionPoint.target
-  //         )
-  //         ?.factors.push(currentFactors)
-  //     ) {
-  //       const decisionPointData = {
-  //         site: decisionPoint.site,
-  //         id: uuidv4(),
-  //         description: '',
-  //         order: order++,
-  //         excludeIfReached: false,
-  //         factors: [currentFactors],
-  //       };
-  //       decisionPoint.target
-  //         ? decisionPoints.push({ ...decisionPointData, target: decisionPoint.target })
-  //         : decisionPoints.push(decisionPointData);
-  //     }
-  //   });
-  //   return decisionPoints;
-  // }
-
   mergeExistingConditionsTableData(experimentInfo: ExperimentVM): FactorialConditionTableRowData[] {
     const existingConditions = experimentInfo.conditions;
     const existingConditionAliases = experimentInfo.conditionAliases;
-    const existingDecisionPoints = experimentInfo.partitions;
     const existingFactors = experimentInfo.factors;
 
     const levelOrder = {};
@@ -406,7 +359,7 @@ export class ExperimentDesignStepperService {
             name: levelElement.level.name,
           };
         }),
-
+        condition: factorialCondition.conditionCode,
         alias: aliasname,
         weight: factorialCondition.assignmentWeight.toString(),
         include: factorialCondition.assignmentWeight > 0,
@@ -423,8 +376,8 @@ export class ExperimentDesignStepperService {
     tableData.forEach((factorialConditionTableRow) => {
       factorialConditionsRequestObject.push({
         id: factorialConditionTableRow.id,
-        name: factorialConditionTableRow.alias,
-        conditionCode: factorialConditionTableRow.alias,
+        name: factorialConditionTableRow.condition,
+        conditionCode: factorialConditionTableRow.condition,
         assignmentWeight: parseFloat(factorialConditionTableRow.weight),
         order: conditionIndex++,
         levelCombinationElements: factorialConditionTableRow.levels.map((level) => {

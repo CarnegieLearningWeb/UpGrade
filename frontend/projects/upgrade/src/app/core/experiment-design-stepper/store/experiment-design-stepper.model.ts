@@ -72,6 +72,7 @@ export interface FactorialConditionTableRowData {
   id: string;
   conditionAliasId?: string;
   levels: FactorialLevelTableRowData[];
+  condition: string;
   alias: string;
   weight: string;
   include: boolean;
