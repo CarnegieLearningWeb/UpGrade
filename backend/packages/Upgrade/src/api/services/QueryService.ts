@@ -7,6 +7,14 @@ import { EXPERIMENT_TYPE, SERVER_ERROR } from 'upgrade_types';
 import { ErrorService } from './ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+import { Experiment } from '../models/Experiment';
+
+interface queryResult {
+  conditionId?: string;
+  levelId?: string;
+  result: number;
+  participantsLogged: number;
+}
 
 @Service()
 export class QueryService {
@@ -31,12 +39,21 @@ export class QueryService {
     logger.info({ message: `Get analysis of query with queryIds ${queryIds}` });
     const promiseArray = queryIds.map((queryId) =>
       this.queryRepository.findOne(queryId, {
-        relations: ['metric', 'experiment'],
+        relations: [
+          'metric',
+          'experiment',
+          'experiment.conditions',
+          'experiment.partitions',
+          'experiment.partitions.factors',
+          'experiment.partitions.factors.levels',
+        ],
       })
     );
 
     const promiseResult = await Promise.all(promiseArray);
+    const experiments: Experiment[] = [];
     const analyzePromise = promiseResult.map((query) => {
+      experiments.push(query.experiment);
       if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {
         return [
           this.logRepository.analysis(query),
@@ -84,8 +101,43 @@ export class QueryService {
       await Promise.all(failedQuery);
     }
     const modifiedResponseToReturn = modifiedResponse.map((res, index) => {
-      return { id: queryIds[index], mainEffect: res[0], interactionEffect: res[1] || null };
+      const [mainEffect, interactionEffect] = this.addZeroDataToResults(experiments[index], res[0], res[1]);
+      return { id: queryIds[index], mainEffect: mainEffect, interactionEffect: interactionEffect || null };
     });
     return modifiedResponseToReturn;
+  }
+
+  public addZeroDataToResults(
+    experiment: Experiment,
+    mainEffect: queryResult[],
+    interactionEffect: queryResult[]
+  ): [queryResult[], queryResult[]] {
+    const conditionIds = experiment?.conditions.map((condition) => condition.id) || [];
+
+    if (interactionEffect) {
+      conditionIds.forEach((conditionId) => {
+        if (!interactionEffect.some((result) => result.conditionId === conditionId)) {
+          interactionEffect.push({ conditionId, result: 0, participantsLogged: 0 });
+        }
+      });
+
+      experiment.partitions.forEach((partition) => {
+        partition.factors.forEach((factor) => {
+          factor.levels.forEach((level) => {
+            if (!mainEffect.some((result) => result.levelId === level.id)) {
+              mainEffect.push({ levelId: level.id, result: 0, participantsLogged: 0 });
+            }
+          });
+        });
+      });
+    } else {
+      conditionIds.forEach((conditionId) => {
+        if (!mainEffect.some((result) => result.conditionId === conditionId)) {
+          mainEffect.push({ conditionId, result: 0, participantsLogged: 0 });
+        }
+      });
+    }
+
+    return [mainEffect, interactionEffect];
   }
 }

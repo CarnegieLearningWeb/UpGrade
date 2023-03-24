@@ -183,32 +183,36 @@ export class LogRepository extends Repository<Log> {
     }
 
     // updating metric string to use logs.data
+    let jsonDataValueLog = `sqlog.data -> ${metricString}`;
     let jsonDataValue = `logs.data -> ${metricString}`;
     if (compareFn && metricId.length <= 1) {
+      jsonDataValueLog = `sqlog.data ->> ${metricString}`;
       jsonDataValue = `logs.data ->> ${metricString}`;
     }
-
     let executeQuery = this.getCommonAnalyticQuery(
       metric,
       experimentId,
       queryId,
       jsonDataValue,
-      query.metric.type,
       isFactorialExperiment
     );
 
     let valueToUse = 'extracted.value';
+    let andQuery;
+    if (query.metric.type == 'continuous') {
+      andQuery = `jsonb_typeof(${jsonDataValueLog}) = 'number'`;
+    } else {
+      andQuery = `${jsonDataValueLog} IS NOT NULL`;
+    }
     switch (repeatedMeasure) {
       case REPEATED_MEASURE.mostRecent:
-        if (query.metric.type === IMetricMetaData.CATEGORICAL) {
-          this.repeatedMeasureMostRecent(executeQuery);
-        }
+        this.repeatedMeasureMostRecent(executeQuery, andQuery);
         break;
       case REPEATED_MEASURE.earliest:
-        this.repeatedMeasureEarliest(executeQuery);
+        this.repeatedMeasureEarliest(executeQuery, andQuery);
         break;
       default:
-        this.repeatedMeasureMean(executeQuery, jsonDataValue);
+        this.repeatedMeasureMean(executeQuery, jsonDataValue, andQuery);
         valueToUse = 'avg.avgval';
         break;
     }
@@ -227,7 +231,6 @@ export class LogRepository extends Repository<Log> {
           experimentId,
           queryId,
           jsonDataValue,
-          query.metric.type,
           isFactorialExperiment
         ).andWhere(`${castFn} In (:...allowedData)`, {
           allowedData: query.metric.allowedData,
@@ -251,6 +254,7 @@ export class LogRepository extends Repository<Log> {
       percentQuery = isFactorialExperiment
         ? percentQuery.select(['"levelCombinationElement"."levelId"', `count(cast(${valueToUse} as text)) as result`])
         : percentQuery.select(['"individualEnrollment"."conditionId"', `count(cast(${valueToUse} as text)) as result`]);
+      percentQuery.addSelect('COUNT(DISTINCT "individualEnrollment"."userId") as "participantsLogged"');
       const [executeQueryResult, percentQueryResult] = await Promise.all([
         executeQuery.getRawMany(),
         percentQuery.getRawMany(),
@@ -262,6 +266,7 @@ export class LogRepository extends Repository<Log> {
           return {
             levelId: levelId,
             result: (res.result / percentageQueryConditionRes.result) * 100,
+            participantsLogged: percentageQueryConditionRes.participantsLogged
           };
         } else {
           const { conditionId } = res;
@@ -271,6 +276,7 @@ export class LogRepository extends Repository<Log> {
           return {
             conditionId: conditionId,
             result: (res.result / percentageQueryConditionRes.result) * 100,
+            participantsLogged: percentageQueryConditionRes.participantsLogged
           };
         }
       });
@@ -313,25 +319,27 @@ export class LogRepository extends Repository<Log> {
     }
   }
 
-  private repeatedMeasureMostRecent(query: SelectQueryBuilder<Experiment>): SelectQueryBuilder<Experiment> {
+  private repeatedMeasureMostRecent(query: SelectQueryBuilder<Experiment>, andQuery: string): SelectQueryBuilder<Experiment> {
     return query.andWhere((qb) => {
       const subQuery = qb
         .subQuery()
         .select('max(sqlog."createdAt")')
         .from(Log, 'sqlog')
         .where('sqlog."userId" = logs."userId"')
+        .andWhere(andQuery)
         .getSql();
       return `logs."createdAt" = ${subQuery}`;
     });
   }
 
-  private repeatedMeasureEarliest(query: SelectQueryBuilder<Experiment>): SelectQueryBuilder<Experiment> {
+  private repeatedMeasureEarliest(query: SelectQueryBuilder<Experiment>, andQuery: string): SelectQueryBuilder<Experiment> {
     return query.andWhere((qb) => {
       const subQuery = qb
         .subQuery()
         .select('min(sqlog."createdAt")')
         .from(Log, 'sqlog')
         .where('sqlog."userId" = logs."userId"')
+        .andWhere(andQuery)
         .getSql();
       return `logs."createdAt" = ${subQuery}`;
     });
@@ -339,9 +347,9 @@ export class LogRepository extends Repository<Log> {
 
   private repeatedMeasureMean(
     query: SelectQueryBuilder<Experiment>,
-    jsonDataValue: string
+    jsonDataValue: string,
+    andQuery: string
   ): SelectQueryBuilder<Experiment> {
-    // return query.select([`avg(cast(extracted.value as decimal)) as avgval`, 'logs."userId"']).groupBy('logs."userId"');
     return query
       .innerJoin(
         (qb) => {
@@ -360,6 +368,7 @@ export class LogRepository extends Repository<Log> {
           .select('min(sqlog."createdAt")')
           .from(Log, 'sqlog')
           .where('sqlog."userId" = logs."userId"')
+          .andWhere(andQuery)
           .getSql();
         return `logs."createdAt" = ${subQuery}`;
       });
@@ -370,7 +379,6 @@ export class LogRepository extends Repository<Log> {
     experimentId: string,
     queryId: string,
     metricString: string,
-    metricType: string,
     isFactorialExperiment: boolean
   ): SelectQueryBuilder<Experiment> {
     // get experiment repository
@@ -429,10 +437,6 @@ export class LogRepository extends Repository<Log> {
       .andWhere('experiment.id = :experimentId', { experimentId })
       .andWhere('queries.id = :queryId', { queryId });
 
-    if (metricType == 'continuous') {
-      return analyticsQuery.andWhere(`jsonb_typeof(${metricString}) = 'number'`);
-    } else {
-      return analyticsQuery.andWhere(`${metricString} IS NOT NULL`);
-    }
+    return analyticsQuery;
   }
 }
