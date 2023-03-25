@@ -167,7 +167,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           decisionPoint.target ? decisionPoint.site + decisionPoint.target : decisionPoint.site
         );
       });
-      
+
     this.subscriptionHandler = this.experimentDesignStepperService.factorialConditionTableData$.subscribe(
       (tableData) => {
         this.factorialConditionsTableData = tableData;
@@ -182,7 +182,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.experimentDesignStepperService.decisionPointsEditModePreviousRowData$.subscribe(
       this.previousDecisionPointTableRowDataBehaviorSubject$
     );
-       
+
     // Remove previously added group of decision points
     this.decisionPoints?.removeAt(0);
     this.factor?.removeAt(0);
@@ -471,18 +471,18 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     factors.forEach((factor, index) => {
       // factorDetail:string = factor.site + ', ' + factor.target + ', ' + factor.factor;
       this.validateLevelNames(factor.levels, factor.factor);
-    //   if (
-    //     factors.find(
-    //       (value, factorIndex) =>
-    //         value.site === factor.site &&
-    //         (value.target || '') === (factor.target || '') &&
-    //         value.factor === factor.factor &&
-    //         factorIndex !== index &&
-    //         !duplicateFactors.includes(factor.site + ', ' + factor.target + ' and ' + factor.factor)
-    //     )
-    //   ) {
-    //     duplicateFactors.push(factor.site + ', ' + factor.target + ' and ' + factor.factor);
-    //   }
+      //   if (
+      //     factors.find(
+      //       (value, factorIndex) =>
+      //         value.site === factor.site &&
+      //         (value.target || '') === (factor.target || '') &&
+      //         value.factor === factor.factor &&
+      //         factorIndex !== index &&
+      //         !duplicateFactors.includes(factor.site + ', ' + factor.target + ' and ' + factor.factor)
+      //     )
+      //   ) {
+      //     duplicateFactors.push(factor.site + ', ' + factor.target + ' and ' + factor.factor);
+      //   }
     });
 
     // Factor Points error messages
@@ -636,13 +636,15 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     if (this.isFormValid()) {
       const factorialExperimentDesignFormData = this.factorialExperimentDesignForm.value;
       let order = 1;
-      factorialExperimentDesignFormData.decisionPoints = factorialExperimentDesignFormData.decisionPoints.map((decisionPoint, index) => {
-        return this.experimentInfo
-          ? { ...this.experimentInfo.partitions[index], ...decisionPoint, order: order++ }
-          : decisionPoint.target
-          ? { ...decisionPoint, order: order++ }
-          : { ...this.removeDecisionPointName(decisionPoint), order: order++ };
-      });
+      factorialExperimentDesignFormData.decisionPoints = factorialExperimentDesignFormData.decisionPoints.map(
+        (decisionPoint, index) => {
+          return this.experimentInfo
+            ? { ...this.experimentInfo.partitions[index], ...decisionPoint, order: order++ }
+            : decisionPoint.target
+            ? { ...decisionPoint, order: order++ }
+            : { ...this.removeDecisionPointName(decisionPoint), order: order++ };
+        }
+      );
 
       order = 1;
       factorialExperimentDesignFormData.factors = factorialExperimentDesignFormData.factors.map((factor, index) => {
@@ -672,7 +674,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.emitExperimentDialogEvent.emit({
         type: eventType,
         formData: {
-          conditions: this.factorialConditions,
+          conditions: this.experimentInfo.conditions || this.factorialConditions,
           partitions: factorialExperimentDesignFormData.decisionPoints,
           factors: factorialExperimentDesignFormData.factors,
           conditionAliases: factorialConditionAliases,
@@ -755,7 +757,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   get decisionPoints(): FormArray {
-    return this.factorialExperimentDesignForm?.get(FACTORIAL_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY) as FormArray;
+    return this.factorialExperimentDesignForm?.get(
+      FACTORIAL_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY
+    ) as FormArray;
   }
 
   get factor(): FormArray {
