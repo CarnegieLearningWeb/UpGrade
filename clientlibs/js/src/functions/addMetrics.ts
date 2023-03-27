@@ -16,13 +16,9 @@ export default async function addMetrics(
     Types.REQUEST_TYPES.POST
   );
   if (response.status) {
-    response.data = response.data.map(
-      (metric: { [x: string]: any; createdAt: any; updatedAt: any; versionNumber: any }) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { createdAt, updatedAt, versionNumber, ...rest } = metric;
-        return rest;
-      }
-    );
+    response.data = response.data.map((metric: Interfaces.IMetric) => {
+      return metric;
+    });
     return response.data;
   } else {
     throw new Error(JSON.stringify(response.message));

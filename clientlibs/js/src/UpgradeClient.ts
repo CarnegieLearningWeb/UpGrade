@@ -23,16 +23,16 @@ import * as uuid from 'uuid';
 export default class UpgradeClient {
   // Endpoints URLs
   private api = {
-    init: null as string,
-    getAllExperimentConditions: null as string,
-    markExperimentPoint: null as string,
-    setGroupMemberShip: null as string,
-    setWorkingGroup: null as string,
-    failedExperimentPoint: null as string,
-    getAllFeatureFlag: null as string,
-    log: null as string,
-    altUserIds: null as string,
-    addMetrics: null as string,
+    init: '',
+    getAllExperimentConditions: '',
+    markExperimentPoint: '',
+    setGroupMemberShip: '',
+    setWorkingGroup: '',
+    failedExperimentPoint: '',
+    getAllFeatureFlag: '',
+    log: '',
+    altUserIds: '',
+    addMetrics: '',
   };
   private userId: string;
   private hostUrl: string;

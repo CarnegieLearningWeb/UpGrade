@@ -674,7 +674,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.emitExperimentDialogEvent.emit({
         type: eventType,
         formData: {
-          conditions: this.experimentInfo.conditions || this.factorialConditions,
+          conditions: this.experimentInfo?.conditions || this.factorialConditions,
           partitions: factorialExperimentDesignFormData.decisionPoints,
           factors: factorialExperimentDesignFormData.factors,
           conditionAliases: factorialConditionAliases,

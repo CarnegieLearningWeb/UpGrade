@@ -35,12 +35,6 @@ export default async function markExperimentPoint(
   const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
   if (response.status) {
     return response.data;
-    // return {
-    //   experimentPoint,
-    //   experimentId: partitionId,
-    //   userId,
-    //   condition,
-    // };
   } else {
     throw new Error(JSON.stringify(response.message));
   }
