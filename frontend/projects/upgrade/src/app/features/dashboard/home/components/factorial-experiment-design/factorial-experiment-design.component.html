@@ -11,40 +11,27 @@
             <mat-table
               class="decision-point-table"
               [dataSource]="decisionPointDataSource"
-              formArrayName='decisionPoints'
+              formArrayName="decisionPoints"
               #decisionPointTable
             >
               <!-- Site Column -->
-              <ng-container matColumnDef='site'>
+              <ng-container matColumnDef="site">
                 <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                   {{ 'home.new-experiment.design.decision-point-site.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== groupIndex">
-                    <span
-                      [matTooltip]="
-                        decisionPoints.at(groupIndex).get('site').value
-                      "
-                      matTooltipPosition="above"
-                    >
-                      {{
-                        decisionPoints.at(groupIndex).get('site').value
-                          | truncate : 35
-                      }}
+                    <span [matTooltip]="decisionPoints.at(groupIndex).get('site').value" matTooltipPosition="above">
+                      {{ decisionPoints.at(groupIndex).get('site').value | truncate: 35 }}
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
                     <mat-form-field floatLabel="never">
-                      <span
-                        [matTooltip]="
-                          decisionPoints.at(groupIndex).get('site').value
-                        "
-                        matTooltipPosition="above"
-                      >
+                      <span [matTooltip]="decisionPoints.at(groupIndex).get('site').value" matTooltipPosition="above">
                         <input
                           matInput
                           [placeholder]="'home.new-experiment.design.decision-point-site.placeholder.text' | translate"
-                          formControlName='site'
+                          formControlName="site"
                           [matAutocomplete]="autoCompleteSites"
                         />
                         <mat-autocomplete #autoCompleteSites="matAutocomplete" panelWidth="fit-content">
@@ -59,38 +46,25 @@
               </ng-container>
 
               <!-- Target Column -->
-              <ng-container matColumnDef='target'>
+              <ng-container matColumnDef="target">
                 <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                   {{ 'home.new-experiment.design.decision-point-target.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== groupIndex">
-                    <span
-                      [matTooltip]="
-                        decisionPoints.at(groupIndex).get('target').value
-                      "
-                      matTooltipPosition="above"
-                    >
-                      {{
-                        decisionPoints.at(groupIndex).get('target').value
-                          | truncate : 35
-                      }}
+                    <span [matTooltip]="decisionPoints.at(groupIndex).get('target').value" matTooltipPosition="above">
+                      {{ decisionPoints.at(groupIndex).get('target').value | truncate: 35 }}
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
                     <mat-form-field floatLabel="never">
-                      <span
-                        [matTooltip]="
-                          decisionPoints.at(groupIndex).get('target').value
-                        "
-                        matTooltipPosition="above"
-                      >
+                      <span [matTooltip]="decisionPoints.at(groupIndex).get('target').value" matTooltipPosition="above">
                         <input
                           matInput
                           [placeholder]="
                             'home.new-experiment.design.decision-point-target.placeholder.text' | translate
                           "
-                          formControlName='target'
+                          formControlName="target"
                           [matAutocomplete]="autoCompleteTargets"
                         />
                         <mat-autocomplete #autoCompleteTargets="matAutocomplete" panelWidth="fit-content">
@@ -105,7 +79,7 @@
               </ng-container>
 
               <!-- ExcludeIfReached Column -->
-              <ng-container matColumnDef='excludeIfReached'>
+              <ng-container matColumnDef="excludeIfReached">
                 <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                   {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
                 </mat-header-cell>
@@ -114,14 +88,14 @@
                     class="ft-8-100"
                     color="primary"
                     [disabled]="(decisionPointsTableEditIndex$ | async) !== groupIndex"
-                    formControlName='excludeIfReached'
+                    formControlName="excludeIfReached"
                   >
                   </mat-checkbox>
                 </mat-cell>
               </ng-container>
 
               <!-- Actions Column -->
-              <ng-container matColumnDef='actions'>
+              <ng-container matColumnDef="actions">
                 <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
                 <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell">
                   <button
@@ -178,28 +152,28 @@
               </div>
             </ng-template>
           </ng-container>
-            <button
-              type="button"
-              class="ft-12-700 add-decision-point"
-              *ngIf="!experimentInfo"
-              [ngClass]="{ 'add-decision-point--disabled': (isFormLockedForEdit$ | async) }"
-              [disabled]="isFormLockedForEdit$ | async"
-              (click)="addDecisionPoint('decisionPoints')"
-            >
-              +
-              {{ 'home.new-experiment.design.add-experiment-decision-point.text' | translate }}
-            </button>
-            <button
-              type="button"
-              class="ft-12-700 add-decision-point"
-              *ngIf="experimentInfo"
-              [ngClass]="{ 'add-decision-point--disabled': !isExperimentEditable || (isFormLockedForEdit$ | async) }"
-              [disabled]="!isExperimentEditable || (isFormLockedForEdit$ | async)"
-              (click)="addDecisionPoint('decisionPoints')"
-            >
-              +
-              {{ 'home.new-experiment.design.add-experiment-decision-point.text' | translate }}
-            </button>
+          <button
+            type="button"
+            class="ft-12-700 add-decision-point"
+            *ngIf="!experimentInfo"
+            [ngClass]="{ 'add-decision-point--disabled': (isFormLockedForEdit$ | async) }"
+            [disabled]="isFormLockedForEdit$ | async"
+            (click)="addDecisionPoint('decisionPoints')"
+          >
+            +
+            {{ 'home.new-experiment.design.add-experiment-decision-point.text' | translate }}
+          </button>
+          <button
+            type="button"
+            class="ft-12-700 add-decision-point"
+            *ngIf="experimentInfo"
+            [ngClass]="{ 'add-decision-point--disabled': !isExperimentEditable || (isFormLockedForEdit$ | async) }"
+            [disabled]="!isExperimentEditable || (isFormLockedForEdit$ | async)"
+            (click)="addDecisionPoint('decisionPoints')"
+          >
+            +
+            {{ 'home.new-experiment.design.add-experiment-decision-point.text' | translate }}
+          </button>
 
           <div class="validation-container">
             <span class="ft-14-600 validation-message" *ngFor="let error of decisionPointErrors">{{ error }}</span>
@@ -258,14 +232,14 @@
                 <mat-cell *matCellDef="let element; let factorIndex = dataIndex" [formGroupName]="factorIndex">
                   <mat-form-field floatLabel="never">
                     <span
-                      [matTooltip]="factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.factor"
+                      [matTooltip]="factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.name"
                       matTooltipPosition="above"
                     >
                       <input
                         matInput
                         [placeholder]="'home.new-experiment.design.factor.placeholder.text' | translate"
-                        formControlName="factor"
-                        [value]="factor"
+                        formControlName="name"
+                        [value]="name"
                         autocomplete="off"
                       />
                     </span>
@@ -281,8 +255,10 @@
                 <mat-cell *matCellDef="let element; let factorIndex = dataIndex" [formGroupName]="factorIndex">
                   <mat-form-field floatLabel="never">
                     <span
-                    [matTooltip]="factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.description"
-                    matTooltipPosition="above"
+                      [matTooltip]="
+                        factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.description
+                      "
+                      matTooltipPosition="above"
                     >
                       <input
                         matInput
@@ -335,15 +311,15 @@
                                 [matTooltip]="
                                   factorialExperimentDesignForm.getRawValue('level')?.factors[factorIndex]?.levels[
                                     levelIndex
-                                  ]?.level
+                                  ]?.name
                                 "
                                 matTooltipPosition="above"
                               >
                                 <input
                                   matInput
                                   [placeholder]="'home.new-experiment.design.level.placeholder.text' | translate"
-                                  formControlName="level"
-                                  [value]="level"
+                                  formControlName="name"
+                                  [value]="name"
                                   autocomplete="off"
                                 />
                               </span>
@@ -400,7 +376,7 @@
                         </ng-container>
 
                         <!-- Actions Column -->
-                         <!-- <ng-container matColumnDef="actions">
+                        <!-- <ng-container matColumnDef="actions">
                           <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
                           <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell" style="justify-content: flex-end">
                             <button
@@ -531,7 +507,10 @@
             +
             {{ 'home.new-experiment.design.add-experiment-factor.text' | translate }}
           </button>
-          <div class="validation-container" *ngIf="factorPointErrors.length || levelPointErrors.length || factorCountError || levelCountError">
+          <div
+            class="validation-container"
+            *ngIf="factorPointErrors.length || levelPointErrors.length || factorCountError || levelCountError"
+          >
             <span class="ft-14-600 validation-message" *ngFor="let error of factorPointErrors">{{ error }}</span>
             <span class="ft-14-600 validation-message" *ngFor="let error of levelPointErrors">{{ error }}</span>
             <span class="ft-14-600 validation-message" *ngIf="factorCountError" [innerHTML]="factorCountError"></span>
@@ -546,7 +525,7 @@
               class="ft-14-600 toggle-button"
               (click)="handleConditionsButtonClick()"
             >
-            Update Condition Table
+              Update Condition Table
             </button>
             <br />
             <br />

@@ -88,7 +88,7 @@ export interface ExperimentFactorialDesignData {
 }
 
 export interface ExperimentFactorFormData {
-  factor: string;
+  name: string;
   description: string;
   order: number;
   levels: ExperimentLevelFormData[];
@@ -96,7 +96,7 @@ export interface ExperimentFactorFormData {
 
 export interface ExperimentLevelFormData {
   id: string;
-  level: string;
+  name: string;
   payload: string;
 }
 

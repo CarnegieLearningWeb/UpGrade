@@ -289,19 +289,19 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     });
   }
 
-  addFactors(factor = null, description = '', order = null, level = null, payload = null) {
+  addFactors(name = null, description = '', order = null, level = null, payload = null) {
     return this._formBuilder.group({
-      factor: [factor, Validators.required],
+      name: [name, Validators.required],
       description: [description],
       order: [order],
       levels: this._formBuilder.array([this.addLevels(level, payload)]),
     });
   }
 
-  addLevels(id = null, level = null, payload = null) {
+  addLevels(id = null, name = null, payload = null) {
     return this._formBuilder.group({
       id: [id || uuidv4()],
-      level: [level, Validators.required],
+      name: [name, Validators.required],
       alias: [payload],
     });
   }
@@ -470,7 +470,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     factors.forEach((factor, index) => {
       // factorDetail:string = factor.site + ', ' + factor.target + ', ' + factor.factor;
-      this.validateLevelNames(factor.levels, factor.factor);
+      this.validateLevelNames(factor.levels, factor.name);
       //   if (
       //     factors.find(
       //       (value, factorIndex) =>
@@ -501,12 +501,12 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       if (
         levels.find(
           (value, levelIndex) =>
-            value.level === level.level &&
+            value.name === level.name &&
             levelIndex !== index &&
-            !duplicateLevels.includes(factorDetail + " factor's " + level.level)
+            !duplicateLevels.includes(factorDetail + " factor's " + level.name)
         )
       ) {
-        duplicateLevels.push(factorDetail + " factor's " + level.level);
+        duplicateLevels.push(factorDetail + " factor's " + level.name);
       }
     });
 
@@ -529,12 +529,12 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     if (factorialExperimentDesignFormData.factors.length > 0) {
       factorialExperimentDesignFormData.factors.forEach((factor, index) => {
-        if (!factor.factor?.trim()) {
+        if (!factor.name?.trim()) {
           this.factorCountError = factorValueErrorMsg;
         }
         if (factor.levels.length > 0) {
           factor.levels.forEach((level) => {
-            if (!level.level?.trim()) {
+            if (!level.name?.trim()) {
               this.levelCountError = levelValueErrorMsg;
               this.expandedId = index;
             }
@@ -668,13 +668,16 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         return currentFactors;
       });
 
+      const currentConditions =
+        this.factorialConditions.length > 0 ? this.factorialConditions : this.experimentInfo?.conditions;
+
       const factorialConditionAliases: ExperimentConditionAliasRequestObject[] =
         this.experimentDesignStepperService.createFactorialConditionsConditionAliasesRequestObject();
 
       this.emitExperimentDialogEvent.emit({
         type: eventType,
         formData: {
-          conditions: this.experimentInfo?.conditions || this.factorialConditions,
+          conditions: currentConditions,
           partitions: factorialExperimentDesignFormData.decisionPoints,
           factors: factorialExperimentDesignFormData.factors,
           conditionAliases: factorialConditionAliases,

@@ -39,7 +39,6 @@ import {
   FactorialConditionTableRowData,
   ExperimentConditionAliasRequestObject,
   SimpleExperimentDesignData,
-  FactorialLevelTableRowData,
   ExperimentLevelFormData,
 } from './store/experiment-design-stepper.model';
 import {
@@ -302,14 +301,14 @@ export class ExperimentDesignStepperService {
           levels: [
             {
               id: factorOneLevel.id,
-              name: factorOneLevel.level,
+              name: factorOneLevel.name,
             },
             {
               id: factorTwoLevel.id,
-              name: factorTwoLevel.level,
+              name: factorTwoLevel.name,
             },
           ],
-          condition: factorOneLevel.level + '; ' + factorTwoLevel.level,
+          condition: factorOneLevel.name + '; ' + factorTwoLevel.name,
           alias: '',
           weight: '0.0',
           include: true,
