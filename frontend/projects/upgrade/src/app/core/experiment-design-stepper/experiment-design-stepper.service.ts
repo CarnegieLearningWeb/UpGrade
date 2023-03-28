@@ -42,7 +42,7 @@ import {
   ExperimentLevelFormData,
 } from './store/experiment-design-stepper.model';
 import {
-  actionUpdateFactorialTableData,
+  actionUpdateFactorialConditionTableData,
   actionUpdateSimpleExperimentAliasTableData,
 } from './store/experiment-design-stepper.actions';
 import { BehaviorSubject, distinctUntilChanged } from 'rxjs';
@@ -430,21 +430,12 @@ export class ExperimentDesignStepperService {
     return factorialConditionAliasesRequestObject;
   }
 
-  createFactorialAliasString(
-    factorOneName: string,
-    factorOneLevel: string,
-    factorTwoName: string,
-    factorTwoLevel: string
-  ) {
-    return `${factorOneName}=${factorOneLevel}; ${factorTwoName}=${factorTwoLevel}`;
-  }
-
   updateFactorialDesignData(designData: ExperimentFactorialDesignData) {
     this.store$.dispatch(experimentDesignStepperAction.actionUpdateFactorialDesignData({ designData }));
   }
 
-  updateFactorialTableData(tableData: FactorialConditionTableRowData[]) {
-    this.store$.dispatch(actionUpdateFactorialTableData({ tableData }));
+  updateFactorialConditionTableData(tableData: FactorialConditionTableRowData[]) {
+    this.store$.dispatch(actionUpdateFactorialConditionTableData({ tableData }));
   }
 
   setUpdateAliasTableEditModeDetails(rowIndex: number | null): void {

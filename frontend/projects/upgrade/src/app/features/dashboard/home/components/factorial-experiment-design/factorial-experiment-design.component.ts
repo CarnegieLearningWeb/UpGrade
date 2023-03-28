@@ -599,9 +599,12 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
+        this.handleConditionsButtonClick();
         if (this.factorialExperimentDesignForm.dirty) {
           this.experimentDesignStepperService.experimentStepperDataChanged();
         }
+        console.log('isExperimentEditable in next: ', !this.isExperimentEditable);
+        console.log('this.experimentInfo conditions in next 1: ', this.experimentInfo.conditions);
         if (!this.isExperimentEditable) {
           this.emitExperimentDialogEvent.emit({
             type: eventType,
@@ -611,9 +614,13 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           break;
         }
         this.saveData(eventType);
+        console.log('this.experimentInfo conditions in next 2: ', this.experimentInfo.conditions);
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
+        this.handleConditionsButtonClick();
+        console.log('isExperimentEditable in save: ', !this.isExperimentEditable);
         if (!this.isExperimentEditable) {
+          console.log('this.experimentInfo conditions in save: ', this.experimentInfo.conditions);
           this.emitExperimentDialogEvent.emit({
             type: eventType,
             formData: this.experimentInfo,
@@ -653,24 +660,8 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           : { ...factor, order: order++ };
       });
 
-      let factorOrder = 1;
-      const factorsData = factorialExperimentDesignFormData.factors.map((factor) => {
-        let levelOrder = 1;
-        const currentLevels: ExperimentLevel[] = factor.levels.map((level) => {
-          return { name: level.level, alias: level.alias, id: level.id, order: levelOrder++ };
-        });
-        const currentFactors: ExperimentFactor = {
-          name: factor.factor,
-          description: factor.description,
-          order: factorOrder++,
-          levels: currentLevels,
-        };
-        return currentFactors;
-      });
-
       const currentConditions =
         this.factorialConditions.length > 0 ? this.factorialConditions : this.experimentInfo?.conditions;
-
       const factorialConditionAliases: ExperimentConditionAliasRequestObject[] =
         this.experimentDesignStepperService.createFactorialConditionsConditionAliasesRequestObject();
 

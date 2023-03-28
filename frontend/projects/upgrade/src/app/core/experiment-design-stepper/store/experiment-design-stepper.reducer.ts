@@ -141,7 +141,7 @@ const reducer = createReducer(
     ...state,
     factorialDesignData: designData,
   })),
-  on(experimentDesignStepperAction.actionUpdateFactorialTableData, (state, { tableData }) => ({
+  on(experimentDesignStepperAction.actionUpdateFactorialConditionTableData, (state, { tableData }) => ({
     ...state,
     factorialConditionsTableData: tableData,
   })),

@@ -1,10 +1,12 @@
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import {
+  ExperimentFactor,
   ExperimentVM,
   InteractionEffectGraphData,
   InteractionEffectLineChartSeriesData,
   InteractionEffectResult,
   LevelCombinationElement,
+  LevelsMap,
   MainEffectGraphData,
   QueryResult,
 } from '../../../../../core/experiments/store/experiments.model';
@@ -42,18 +44,30 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   meanData1: { name: string; value: number }[];
   maxLevelCount = 0;
 
+  /**
+   * What we want is a flat map of "id: Level":
+   * {
+   *   'abc1': Level,
+   *   'd6f3': Level,
+   *   'a2b5': Level
+   * }
+   */
+  levels: LevelsMap = {};
+
   constructor(private analysisService: AnalysisService) {}
 
   ngOnInit() {
     const queryIds = [];
-    // sort the factors:
-    this.experiment.factors = this.experiment.factors.slice().sort((a, b) => (a.order > b.order ? 1 : b.order > a.order ? -1 : 0));
     this.experimentType = this.experiment.type;
+
     if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
       this.setMaxLevelsCount();
+      // sort the factors:
+      this.experiment.factors = this.sortFactorsByOrderAscending(this.experiment.factors);
       this.experiment.factors.map((factor) => {
         this.factors.push(factor?.name);
       });
+      this.levels = this.createLevelsMap(this.experiment.factors); // make a flat lookup map one time
     } else {
       this.setConditionCount();
     }
@@ -72,6 +86,13 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
       this.populateInteractionGraphData(result);
     });
   }
+
+  sortFactorsByOrderAscending(factors: ExperimentFactor[]): ExperimentFactor[] {
+    return factors
+      .slice()
+      .sort((factorA, factorB) => (factorA.order > factorB.order ? 1 : factorB.order > factorA.order ? -1 : 0));
+  }
+
   populateMainEffectGraphData(result: QueryResult[]) {
     result.forEach((res) => {
       let resultData: MainEffectGraphData[] = [];
@@ -124,7 +145,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
       if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
         // prepare all combination series with 0 result
         // sort the factors:
-        this.experiment.factors = this.experiment.factors.slice().sort((a, b) => (a.order > b.order ? 1 : b.order > a.order ? -1 : 0));
+        this.experiment.factors = this.sortFactorsByOrderAscending(this.experiment.factors);
         this.experiment.factors.map((factor, index) => {
           factor.levels.map((level) => {
             const levelName = level.name;
@@ -247,17 +268,18 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     );
   }
 
-  getLevelName(levelId: string): string {
-    // TODO: look for factors at index apart from 0
-    let levelName;
-    this.experiment.factors.forEach((factor) => {
+  createLevelsMap(factors: ExperimentFactor[]): LevelsMap {
+    return factors.reduce((levelsMap, factor) => {
       factor.levels.forEach((level) => {
-        if (level.id === levelId) {
-          levelName = level.name;
-        }
+        levelsMap[level.id] = level;
       });
-    });
-    return levelName;
+      return levelsMap;
+    }, {});
+  }
+
+  getLevelName(levelId: string): string {
+    const level = this.levels[levelId];
+    return level?.name || '';
   }
 
   // remove empty series data labels

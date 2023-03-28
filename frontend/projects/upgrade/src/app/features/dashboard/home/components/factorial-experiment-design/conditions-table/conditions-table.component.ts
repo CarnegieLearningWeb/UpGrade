@@ -132,7 +132,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   initializeForm(tableData: FactorialConditionTableRowData[]) {
     this.createFormControls(tableData);
     const newTableData = this.applyEqualWeights(tableData);
-    this.experimentDesignStepperService.updateFactorialTableData(newTableData);
+    this.experimentDesignStepperService.updateFactorialConditionTableData(newTableData);
     this.formInitialized = true;
   }
 
@@ -199,13 +199,9 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
     if (this.equalWeightFlag) {
       const newTableData = this.applyEqualWeights();
-      this.experimentDesignStepperService.updateFactorialTableData(newTableData);
+      this.experimentDesignStepperService.updateFactorialConditionTableData(newTableData);
     }
   }
-
-  // handleHideClick() {
-  //   this.hide.emit(true);
-  // }
 
   handleRowEditClick(rowData: FactorialConditionTableRowData, rowIndex: number) {
     this.experimentDesignStepperService.setFactorialConditionTableEditModeDetails(rowIndex, rowData);
@@ -222,7 +218,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     tableData[rowIndex] = { ...tableData[rowIndex], alias, weight, include };
     const newTableData = this.applyEqualWeights(tableData);
 
-    this.experimentDesignStepperService.updateFactorialTableData(newTableData);
+    this.experimentDesignStepperService.updateFactorialConditionTableData(newTableData);
     this.experimentDesignStepperService.clearFactorialConditionTableEditModeDetails();
   }
 

@@ -63,8 +63,8 @@ export const actionUpdateFactorialDesignData = createAction(
   props<{ designData: ExperimentFactorialDesignData }>()
 );
 
-export const actionUpdateFactorialTableData = createAction(
-  '[Experiment-Design-Stepper] update factorial table data',
+export const actionUpdateFactorialConditionTableData = createAction(
+  '[Experiment-Design-Stepper] update factorial condition table data',
   props<{ tableData: FactorialConditionTableRowData[] }>()
 );
 

@@ -160,6 +160,10 @@ export interface ExperimentFactor {
   levels: ExperimentLevel[];
 }
 
+export interface LevelsMap {
+  [key: string]: ExperimentLevel;
+}
+
 export interface ExperimentLevel {
   id: string;
   name: string;
