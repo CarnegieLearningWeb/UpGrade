@@ -335,7 +335,7 @@ export class ExperimentDesignStepperService {
     });
 
     const tableData = existingConditions.map((factorialCondition) => {
-      const conditionAlias = existingConditionAliases.find(
+      const conditionAlias = existingConditionAliases?.find(
         (conditionAlias) => conditionAlias?.parentCondition.id === factorialCondition.id
       );
 

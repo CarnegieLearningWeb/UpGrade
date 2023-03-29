@@ -18,7 +18,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import {
-  IExperimentAssignment2,
+  IExperimentAssignment,
   ISingleMetric,
   IGroupMetric,
   SERVER_ERROR,
@@ -509,7 +509,7 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     experiment: ExperimentAssignmentValidator
-  ): Promise<IExperimentAssignment2[]> {
+  ): Promise<IExperimentAssignment[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
     const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
       experiment.userId,
@@ -527,8 +527,8 @@ export class ExperimentClientController {
         Object.keys(assignedFactor).forEach((key) => {
           updatedAssignedFactor[key] = {
             level: assignedFactor[key].level,
-            payload: assignedFactor[key].levelAlias
-              ? { type: PAYLOAD_TYPE.STRING, value: assignedFactor[key].levelAlias }
+            payload: assignedFactor[key].payload
+              ? { type: PAYLOAD_TYPE.STRING, value: assignedFactor[key].payload.value }
               : null,
           };
         });
@@ -539,8 +539,8 @@ export class ExperimentClientController {
         assignedCondition: {
           id: assignedCondition.id,
           conditionCode: assignedCondition.conditionCode,
-          payload: assignedCondition.conditionAlias
-            ? { type: PAYLOAD_TYPE.STRING, value: assignedCondition.conditionAlias }
+          payload: assignedCondition.payload
+            ? { type: PAYLOAD_TYPE.STRING, value: assignedCondition.payload.value }
             : null,
           experimentId: assignedCondition.experimentId,
         },

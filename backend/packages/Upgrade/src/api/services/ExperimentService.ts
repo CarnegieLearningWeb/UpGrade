@@ -54,14 +54,17 @@ import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
-import { ConditionAlias } from '../models/ConditionAlias';
-import { ConditionAliasRepository } from '../repositories/ConditionAliasRepository';
+import { ConditionPayload } from '../models/ConditionAlias';
+import { ConditionPayloadRepository } from '../repositories/ConditionAliasRepository';
 import { Factor } from '../models/Factor';
 import { FactorRepository } from '../repositories/FactorRepository';
 import { Level } from '../models/Level';
 import { LevelRepository } from '../repositories/LevelRepository';
 import { LevelCombinationElement } from '../models/LevelCombinationElement';
 import { LevelCombinationElementRepository } from '../repositories/LevelCombinationElements';
+import { ExperimentDTO } from '../DTO/ExperimentDTO';
+import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
+// import { ConditionPayloadObj } from '../../../../../../types/src/Experiment/interfaces';
 
 @Service()
 export class ExperimentService {
@@ -79,7 +82,7 @@ export class ExperimentService {
     @OrmRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
     @OrmRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
     @OrmRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
-    @OrmRepository() private conditionAliasRepository: ConditionAliasRepository,
+    @OrmRepository() private conditionPayloadRepository: ConditionPayloadRepository,
     @OrmRepository() private factorRepository: FactorRepository,
     @OrmRepository() private levelRepository: LevelRepository,
     @OrmRepository() private levelCombinationElementsRepository: LevelCombinationElementRepository,
@@ -89,15 +92,15 @@ export class ExperimentService {
     public errorService: ErrorService
   ) {}
 
-  public async find(logger?: UpgradeLogger): Promise<Experiment[]> {
+  public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
     if (logger) {
       logger.info({ message: `Find all experiments` });
     }
     const experiments = await this.experimentRepository.findAllExperiments();
-    return experiments.map((x) => this.formatingConditionAlias(x));
+    return experiments.map((x) => this.formatingConditionPayload(x));
   }
 
-  public findAllName(logger: UpgradeLogger): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
+  public findAllName(logger: UpgradeLogger): Promise<Array<Pick<ExperimentDTO, 'id' | 'name'>>> {
     logger.info({ message: `Find all experiment names` });
     return this.experimentRepository.findAllName();
   }
@@ -153,7 +156,7 @@ export class ExperimentService {
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
-      .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
+      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
       .whereInIds(expIds);
 
     if (sortParams) {
@@ -162,7 +165,7 @@ export class ExperimentService {
     return await queryBuilderToReturn.getMany();
   }
 
-  public async findOne(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
+  public async findOne(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
     if (logger) {
       logger.info({ message: `Find experiment by id => ${id}` });
     }
@@ -185,11 +188,11 @@ export class ExperimentService {
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('partitions.conditionAliases', 'ConditionAliasesArray')
-      .leftJoinAndSelect('ConditionAliasesArray.parentCondition', 'parentCondition')
+      .leftJoinAndSelect('partitions.conditionPayloads', 'ConditionPayloadsArray')
+      .leftJoinAndSelect('ConditionPayloadsArray.parentCondition', 'parentCondition')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
-      .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
+      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
       .addOrderBy('conditions.order', 'ASC')
       .addOrderBy('partitions.order', 'ASC')
       .addOrderBy('factors.order', 'ASC')
@@ -197,7 +200,7 @@ export class ExperimentService {
       .where({ id })
       .getOne();
 
-    return this.formatingConditionAlias(experiment);
+    return this.formatingConditionPayload(experiment);
   }
 
   public getTotalCount(): Promise<number> {
@@ -212,11 +215,11 @@ export class ExperimentService {
   }
 
   public create(
-    experiment: Experiment,
+    experiment: ExperimentDTO,
     currentUser: User,
     logger: UpgradeLogger,
     createType?: string
-  ): Promise<Experiment> {
+  ): Promise<ExperimentDTO> {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
 
     // order for condition
@@ -248,7 +251,7 @@ export class ExperimentService {
     return this.addExperimentInDB(experiment, currentUser, logger);
   }
 
-  public createMultipleExperiments(experiment: Experiment[], user: User, logger: UpgradeLogger): Promise<Experiment[]> {
+  public createMultipleExperiments(experiment: ExperimentDTO[], user: User, logger: UpgradeLogger): Promise<ExperimentDTO[]> {
     logger.info({ message: `Generating test experiments`, details: experiment });
     return this.addBulkExperiments(experiment, user, logger);
   }
@@ -310,22 +313,22 @@ export class ExperimentService {
     });
   }
 
-  public update(experiment: Experiment, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
+  public update(experiment: ExperimentDTO, currentUser: User, logger: UpgradeLogger): Promise<ExperimentDTO> {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
-    return this.updateExperimentInDB(experiment as any, currentUser, logger);
+    return this.updateExperimentInDB(experiment as ExperimentDTO, currentUser, logger);
   }
 
   public async getExperimentalConditions(experimentId: string, logger: UpgradeLogger): Promise<ExperimentCondition[]> {
     logger.info({ message: `getExperimentalConditions experiment => ${experimentId}` });
-    const experiment: Experiment = await this.findOne(experimentId, logger);
+    const experiment: ExperimentDTO = await this.findOne(experimentId, logger);
     return experiment.conditions;
   }
 
   public async getExperimentPartitions(experimentId: string, logger: UpgradeLogger): Promise<DecisionPoint[]> {
     logger.info({ message: `getExperimentPartitions experiment => ${experimentId}` });
-    const experiment: Experiment = await this.findOne(experimentId, logger);
+    const experiment: ExperimentDTO = await this.findOne(experimentId, logger);
     return experiment.partitions;
   }
 
@@ -411,7 +414,7 @@ export class ExperimentService {
     };
   }
 
-  public async importExperiment(experiments: Experiment[], user: User, logger: UpgradeLogger): Promise<Experiment[]> {
+  public async importExperiment(experiments: ExperimentDTO[], user: User, logger: UpgradeLogger): Promise<ExperimentDTO[]> {
     for (const experiment of experiments) {
       const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
       if (duplicateExperiment && experiment.id) {
@@ -480,11 +483,11 @@ export class ExperimentService {
         'experimentSegmentExclusion.segment.individualForSegment',
         'experimentSegmentExclusion.segment.groupForSegment',
         'experimentSegmentExclusion.segment.subSegments',
-        'partitions.conditionAliases',
-        'partitions.conditionAliases.parentCondition',
+        'partitions.conditionPayloads',
+        'partitions.conditionPayloads.parentCondition',
         'factors',
         'factors.levels',
-        'conditions.conditionAliases',
+        'conditions.conditionPayloads',
         'conditions.levelCombinationElements',
         'conditions.levelCombinationElements.level',
       ],
@@ -496,7 +499,7 @@ export class ExperimentService {
         { experimentName: experiment.name },
         user
       );
-      return this.formatingConditionAlias(experiment);
+      return this.formatingConditionPayload(experiment);
     });
 
     return formatedExperiments;
@@ -626,7 +629,7 @@ export class ExperimentService {
     }
   }
 
-  private async updateExperimentInDB(experiment: Experiment, user: User, logger: UpgradeLogger): Promise<Experiment> {
+  private async updateExperimentInDB(experiment: ExperimentDTO, user: User, logger: UpgradeLogger): Promise<ExperimentDTO> {
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id, logger);
     const oldConditions = oldExperiment.conditions;
@@ -657,14 +660,14 @@ export class ExperimentService {
           conditions,
           partitions: decisionPoints,
           factors,
-          conditionAliases,
+          conditionPayloads,
           queries,
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          versionNumber,
+          // versionNumber,
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          createdAt,
+          // createdAt,
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          updatedAt,
+          // updatedAt,
           experimentSegmentInclusion,
           experimentSegmentExclusion,
           ...expDoc
@@ -739,6 +742,20 @@ export class ExperimentService {
               return rest;
             })) ||
           [];
+
+        const conditionPayloadDocToSave : Array<Partial<ConditionPayloadDTO>> =
+          (conditionPayloads &&
+            conditionPayloads.length > 0 &&
+            conditionPayloads.map((conditionPayload: ConditionPayloadDTO) => {
+              let conditionPayloadToReturn: ConditionPayload;
+              conditionPayloadToReturn.id = conditionPayload.id
+              conditionPayloadToReturn.payloadType = conditionPayload.payload.type
+              conditionPayloadToReturn.payloadValue = conditionPayload.payload.value
+              conditionPayloadToReturn.parentCondition = conditionPayload.parentCondition
+              conditionPayloadToReturn.decisionPoint = conditionPayload.decisionPoint
+              return conditionPayloadToReturn;
+            })) ||
+          []; 
 
         // creating decision point docs
         let promiseArray = [];
@@ -847,9 +864,9 @@ export class ExperimentService {
         let conditionDocs: ExperimentCondition[];
         let decisionPointDocs: DecisionPoint[];
         let queryDocs: Query[];
-        let conditionAliasDocs: ConditionAlias[];
+        let conditionPayloadDocs: ConditionPayloadDTO[];
         try {
-          [conditionDocs, decisionPointDocs, conditionAliasDocs, queryDocs] = await Promise.all([
+          [conditionDocs, decisionPointDocs, conditionPayloadDocs, queryDocs] = await Promise.all([
             Promise.all(
               conditionDocToSave.map(async (conditionDoc) => {
                 return this.experimentConditionRepository.upsertExperimentCondition(
@@ -867,8 +884,8 @@ export class ExperimentService {
               })
             ) as any,
             Promise.all(
-              conditionAliases.map(async (conditionAlias) => {
-                return this.conditionAliasRepository.upsertConditionAlias(conditionAlias, transactionalEntityManager);
+              conditionPayloadDocToSave.map(async (conditionPayload) => {
+                return this.conditionPayloadRepository.upsertConditionPayload(conditionPayload, transactionalEntityManager);
               })
             ) as any,
             Promise.all(
@@ -879,7 +896,7 @@ export class ExperimentService {
           ]);
         } catch (err) {
           const error = err as Error;
-          error.message = `Error in creating conditions, decision points, conditionAliases, queries "updateExperimentInDB"`;
+          error.message = `Error in creating conditions, decision points, conditionPayloads, queries "updateExperimentInDB"`;
           logger.error(error);
           throw error;
         }
@@ -892,9 +909,9 @@ export class ExperimentService {
           return { ...decisionPointDoc, experiment: decisionPointDoc.experiment };
         });
 
-        const conditionAliasDocToReturn = await transactionalEntityManager.getRepository(ConditionAlias).find({
+        const conditionPayloadDocToReturn = await transactionalEntityManager.getRepository(ConditionPayload).find({
           relations: ['parentCondition', 'decisionPoint'],
-          where: { id: In(conditionAliasDocs.map((conditionAlias) => conditionAlias.id)) },
+          where: { id: In(conditionPayloadDocs.map((conditionPayload) => conditionPayload.id)) },
         });
 
         let factorDocToReturn = [];
@@ -923,7 +940,7 @@ export class ExperimentService {
           conditions: conditionDocToReturn as any,
           partitions: decisionPointDocToReturn as any,
           factors: factorDocToReturn as any,
-          conditionAliases: conditionAliasDocToReturn as any,
+          conditionPayloads: conditionPayloadDocToReturn as any,
           queries: (queryDocToReturn as any) || [],
         };
 
@@ -1041,7 +1058,7 @@ export class ExperimentService {
     return [updatedData, uniqueIdentifiers];
   }
 
-  private async addExperimentInDB(experiment: Experiment, user: User, logger: UpgradeLogger): Promise<Experiment> {
+  private async addExperimentInDB(experiment: ExperimentDTO, user: User, logger: UpgradeLogger): Promise<ExperimentDTO> {
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
@@ -1063,7 +1080,7 @@ export class ExperimentService {
         queries,
         experimentSegmentInclusion,
         experimentSegmentExclusion,
-        conditionAliases,
+        conditionPayloads,
         ...expDoc
       } = experiment;
       // Check for conditionCode is 'default' then return error:
@@ -1175,24 +1192,29 @@ export class ExperimentService {
           return decisionPoint;
         });
 
-      // update conditionAliases condition uuids:
-      if (conditionAliases) {
-        conditionAliases.map((conditionAlias) => {
+      // update conditionPayloads condition uuids:
+      if (conditionPayloads) {
+        conditionPayloads.map((conditionPayload) => {
           const condition = conditions.find((doc) => {
-            return doc.conditionCode === conditionAlias.parentCondition.conditionCode;
+            return doc.conditionCode === conditionPayload.parentCondition.conditionCode;
           });
           if (condition) {
-            conditionAlias.parentCondition.id = condition.id;
+            conditionPayload.parentCondition.id = condition.id;
           }
         });
       }
 
-      const conditionAliasDocsToSave =
-        (conditionAliases &&
-          conditionAliases.length > 0 &&
-          conditionAliases.map((conditionAlias: ConditionAlias) => {
-            conditionAlias.id = conditionAlias.id || uuid();
-            return conditionAlias;
+      const conditionPayloadDocToSave : ConditionPayload[] =
+        (conditionPayloads &&
+          conditionPayloads.length > 0 &&
+          conditionPayloads.map((conditionPayload: ConditionPayloadDTO) => {
+            let conditionPayloadToReturn: ConditionPayload;
+            conditionPayloadToReturn.id = conditionPayload.id
+            conditionPayloadToReturn.payloadType = conditionPayload.payload.type
+            conditionPayloadToReturn.payloadValue = conditionPayload.payload.value
+            conditionPayloadToReturn.parentCondition = conditionPayload.parentCondition
+            conditionPayloadToReturn.decisionPoint = conditionPayload.decisionPoint
+            return conditionPayloadToReturn;
           })) ||
         [];
 
@@ -1237,7 +1259,7 @@ export class ExperimentService {
       let experimentSegmentInclusionDoc: ExperimentSegmentInclusion;
       let experimentSegmentExclusionDoc: ExperimentSegmentExclusion;
       let decisionPointDocs: DecisionPoint[];
-      let conditionAliasDoc: ConditionAlias[];
+      let conditionPayloadDoc: ConditionPayload[];
       let queryDocs: any;
       try {
         [
@@ -1245,7 +1267,7 @@ export class ExperimentService {
           decisionPointDocs,
           experimentSegmentInclusionDoc,
           experimentSegmentExclusionDoc,
-          conditionAliasDoc,
+          conditionPayloadDoc,
           queryDocs,
         ] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
@@ -1260,14 +1282,14 @@ export class ExperimentService {
             logger,
             transactionalEntityManager
           ),
-          this.conditionAliasRepository.insertConditionAlias(conditionAliasDocsToSave, transactionalEntityManager),
+          this.conditionPayloadRepository.insertConditionPayload(conditionPayloadDocToSave, transactionalEntityManager),
           queryDocsToSave.length > 0
             ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
             : (Promise.resolve([]) as any),
         ]);
       } catch (err) {
         const error = err as Error;
-        error.message = `Error in creating conditions, decision points, conditionAliases and queries "addExperimentInDB"`;
+        error.message = `Error in creating conditions, decision points, conditionPayloads and queries "addExperimentInDB"`;
         logger.error(error);
         throw error;
       }
@@ -1282,9 +1304,9 @@ export class ExperimentService {
         return restDoc;
       });
 
-      const conditionAliasDocToReturn = await transactionalEntityManager.getRepository(ConditionAlias).find({
+      const conditionPayloadDocToReturn = await transactionalEntityManager.getRepository(ConditionPayload).find({
         relations: ['parentCondition', 'decisionPoint'],
-        where: { id: In(conditionAliasDoc.map((conditionAlias) => conditionAlias.id)) },
+        where: { id: In(conditionPayloadDoc.map((conditionPayload) => conditionPayload.id)) },
       });
 
       let queryDocToReturn = [];
@@ -1312,7 +1334,7 @@ export class ExperimentService {
         factors: factorDocToReturn as any,
         experimentSegmentInclusion: { ...experimentSegmentInclusionDoc, segment: segmentIncludeDoc } as any,
         experimentSegmentExclusion: { ...experimentSegmentExclusionDoc, segment: segmentExcludeDoc } as any,
-        conditionAliases: conditionAliasDocToReturn as any,
+        conditionPayloads: conditionPayloadDocToReturn as any,
         queries: (queryDocToReturn as any) || [],
       };
       return newExperiment;
@@ -1365,10 +1387,10 @@ export class ExperimentService {
   }
 
   private async addBulkExperiments(
-    experiments: Experiment[],
+    experiments: ExperimentDTO[],
     currentUser: User,
     logger: UpgradeLogger
-  ): Promise<Experiment[]> {
+  ): Promise<ExperimentDTO[]> {
     const createdExperiments = await Promise.all(
       experiments.map(async (exp) => {
         try {
@@ -1385,34 +1407,34 @@ export class ExperimentService {
     return createdExperiments;
   }
 
-  public formatingConditionAlias(experiment: Experiment): any {
+  public formatingConditionPayload(experiment: Experiment): any {
     if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
-      const conditionAlias: ConditionAlias[] = [];
+      const conditionPayload: ConditionPayload[] = [];
       experiment.conditions.forEach((condition) => {
-        const conditionAliases = condition.conditionAliases.map((conditionAlias) => {
-          return { ...conditionAlias, parentCondition: condition };
+        const conditionPayloads = condition.conditionPayloads.map((conditionPayload) => {
+          return { ...conditionPayload, parentCondition: condition };
         });
-        conditionAlias.push(...conditionAliases);
-        delete condition.conditionAliases;
+        conditionPayload.push(...conditionPayloads);
+        delete condition.conditionPayloads;
       });
 
-      return { ...experiment, conditionAliases: conditionAlias };
+      return { ...experiment, conditionPayloads: conditionPayload };
     }
 
     const { conditions, partitions } = experiment;
 
-    const conditionAlias: ConditionAlias[] = [];
+    const conditionPayload: ConditionPayload[] = [];
     partitions.forEach((partition) => {
-      const conditionAliasData = partition.conditionAliases;
-      delete partition.conditionAliases;
+      const conditionPayloadData = partition.conditionPayloads;
+      delete partition.conditionPayloads;
 
-      conditionAliasData.forEach((x) => {
+      conditionPayloadData.forEach((x) => {
         if (x && conditions.filter((con) => con.id === x.parentCondition.id).length > 0) {
-          conditionAlias.push({ ...x, decisionPoint: partition });
+          conditionPayload.push({ ...x, decisionPoint: partition });
         }
       });
     });
-    return { ...experiment, conditionAliases: conditionAlias };
+    return { ...experiment, conditionPayloads: conditionPayload };
   }
 
   private includeExcludeSegmentCreation(

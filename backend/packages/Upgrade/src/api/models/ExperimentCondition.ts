@@ -2,7 +2,7 @@ import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { IsNotEmpty, IsNumber, IsAlphanumeric } from 'class-validator';
 import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
-import { ConditionAlias } from './ConditionAlias';
+import { ConditionPayload } from './ConditionAlias';
 import { LevelCombinationElement } from './LevelCombinationElement';
 
 @Entity()
@@ -43,8 +43,8 @@ export class ExperimentCondition extends BaseModel {
   @ManyToOne(() => Experiment, (experiment) => experiment.conditions, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
-  @OneToMany(() => ConditionAlias, (conditionAlias) => conditionAlias.parentCondition)
-  public conditionAliases: ConditionAlias[];
+  @OneToMany(() => ConditionPayload, (conditionPayload) => conditionPayload.parentCondition)
+  public conditionPayloads: ConditionPayload[];
 
   @OneToMany(() => LevelCombinationElement, (levelCombinationElement) => levelCombinationElement.condition)
   public levelCombinationElements: LevelCombinationElement[];

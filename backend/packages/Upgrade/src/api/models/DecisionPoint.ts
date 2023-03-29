@@ -2,7 +2,7 @@ import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { IsNotEmpty, IsAlphanumeric, IsNumber } from 'class-validator';
 import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
-import { ConditionAlias } from './ConditionAlias';
+import { ConditionPayload } from './ConditionAlias';
 
 @Entity()
 export class DecisionPoint extends BaseModel {
@@ -39,6 +39,7 @@ export class DecisionPoint extends BaseModel {
   @ManyToOne(() => Experiment, (experiment) => experiment.partitions, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
-  @OneToMany(() => ConditionAlias, (conditionAlias) => conditionAlias.decisionPoint)
-  public conditionAliases: ConditionAlias[];
+  @OneToMany(() => ConditionPayload, (conditionPayload) => conditionPayload.decisionPoint)
+  public conditionPayloads: ConditionPayload[];
+
 }

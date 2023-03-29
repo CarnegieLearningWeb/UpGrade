@@ -46,7 +46,7 @@ export type INewExperimentAssignment = Pick<IExperimentAssignment, 'assignedCond
   experimentId: string;
 };
 
-export interface IExperimentAssignment {
+export interface IExperimentAssignment2 {
   site: string;
   target: string;
   assignedCondition: {
@@ -58,7 +58,7 @@ export interface IExperimentAssignment {
   assignedFactor?: Record<string, { level: string; levelAlias: string }>;
 }
 
-export interface IExperimentAssignment2 {
+export interface IExperimentAssignment {
   site: string;
   target: string;
   assignedCondition: {

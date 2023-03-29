@@ -2,18 +2,26 @@ import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { ExperimentCondition } from './ExperimentCondition';
 import { DecisionPoint } from './DecisionPoint';
+import { PAYLOAD_TYPE } from '../../../../../../types/src';
 
 @Entity()
-export class ConditionAlias extends BaseModel {
+export class ConditionPayload extends BaseModel {
   @PrimaryColumn('uuid')
   public id: string;
 
   @Column()
-  public aliasName: string;
+  public payloadValue: string;
 
-  @ManyToOne(() => ExperimentCondition, (condition) => condition.conditionAliases, { onDelete: 'CASCADE' })
+  @Column({ 
+    type : 'enum',
+    enum: PAYLOAD_TYPE,
+    default: PAYLOAD_TYPE.STRING
+  })
+  public payloadType: PAYLOAD_TYPE;
+
+  @ManyToOne(() => ExperimentCondition, (condition) => condition.conditionPayloads, { onDelete: 'CASCADE' })
   public parentCondition: ExperimentCondition;
 
-  @ManyToOne(() => DecisionPoint, (decisionPoint) => decisionPoint.conditionAliases, { onDelete: 'CASCADE' })
+  @ManyToOne(() => DecisionPoint, (decisionPoint) => decisionPoint.conditionPayloads, { onDelete: 'CASCADE' })
   public decisionPoint: DecisionPoint;
 }
