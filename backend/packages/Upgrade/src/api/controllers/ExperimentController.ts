@@ -202,13 +202,13 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *             properties:
  *               id:
  *                 type: string
-  *              payload:
+ *               payload:
  *                 type: object
  *                 properties:
  *                   type:
- *                   type: enum
+ *                     type: enum
  *                   value:
- *                   type: enum
+ *                     type: enum
  *               parentCondition:
  *                 type: object
  *               decisionPoint:
@@ -468,10 +468,9 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *                 type: object
  *                 properties:
  *                   type:
- *                   type: enum
+ *                     type: enum
  *                   value:
- *                   type: enum
- *                 type: string
+ *                     type: enum
  *               parentCondition:
  *                 type: object
  *               decisionPoint:
