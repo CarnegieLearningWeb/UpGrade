@@ -18,7 +18,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import {
-  IExperimentAssignment2,
+  IExperimentAssignmentv4,
   ISingleMetric,
   IGroupMetric,
   SERVER_ERROR,
@@ -509,7 +509,7 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     experiment: ExperimentAssignmentValidator
-  ): Promise<IExperimentAssignment2[]> {
+  ): Promise<IExperimentAssignmentv4[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
     const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
       experiment.userId,
