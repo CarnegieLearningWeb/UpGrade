@@ -1466,7 +1466,7 @@ export class ExperimentService {
   }
 
   private async addFactorialDataInDB(
-    factors: any[],
+    factors: Factor[],
     conditions: ExperimentCondition[],
     experimentDoc: Experiment,
     transactionalEntityManager: EntityManager,
@@ -1481,12 +1481,10 @@ export class ExperimentService {
       factors.length > 0 &&
       factors.map((factor) => {
         factor.id = factor.id || uuid();
-        factor.name = factor.name || factor.factor;
         factor.experiment = experimentDoc;
 
         factor.levels.forEach((level) => {
           level.id = level.id || uuid();
-          level.name = level.name || level.level;
           level.factor = factor;
         });
         allLevels.push(...factor.levels);
@@ -1525,7 +1523,7 @@ export class ExperimentService {
     return [factorDoc, levelDoc, levelCombinationElementsDoc];
   }
 
-  private formatingFactorAndLevels(factors: any[], levels: any[]): any[] {
+  private formatingFactorAndLevels(factors, levels): Factor[] {
     const formatedFactors = factors.map((factor) => {
       return { ...factor, levels: levels.filter((x) => x.factorId == factor.id) };
     });
@@ -1539,7 +1537,7 @@ export class ExperimentService {
     return formatedFactors;
   }
 
-  private formatingElements(conditions: any[], levelCombinationElements: any[], levels: any[]): any[] {
+  private formatingElements(conditions, levelCombinationElements, levels): ExperimentCondition[] {
     const formatedData = conditions.map((condition) => {
       return {
         ...condition,

@@ -58,7 +58,7 @@ export interface IExperimentAssignment {
   assignedFactor?: Record<string, { level: string; levelAlias: string }>;
 }
 
-export interface IExperimentAssignment2 {
+export interface IExperimentAssignmentv4 {
   site: string;
   target: string;
   assignedCondition: {
