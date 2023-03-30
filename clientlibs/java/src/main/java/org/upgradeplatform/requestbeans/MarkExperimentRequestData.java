@@ -1,13 +1,15 @@
 package org.upgradeplatform.requestbeans;
+import java.util.Map;
 
 import org.upgradeplatform.responsebeans.Condition;
+import org.upgradeplatform.responsebeans.Factor;
 
 public class MarkExperimentRequestData {
 
   private String site;
   private String target;
   private Condition assignedCondition;
-  private Object assignedFactor;
+  private Map<String, Factor> assignedFactor;
 
   public MarkExperimentRequestData(){
     super();
@@ -26,7 +28,7 @@ public class MarkExperimentRequestData {
     this.assignedCondition = assignedCondition;
   }
   
-  public MarkExperimentRequestData(String site, String target, Condition assignedCondition, Object assignedFactor){
+  public MarkExperimentRequestData(String site, String target, Condition assignedCondition, Map<String, Factor> assignedFactor){
     super();
     this.site = site;
     this.target = target;
@@ -58,11 +60,11 @@ public class MarkExperimentRequestData {
     this.assignedCondition = assignedCondition;
   }
 
-  public Object getAssignedFactor() {
+  public Map<String, Factor> getAssignedFactor() {
     return this.assignedFactor;
   }
 
-  public void setAssignedFactor(Object assignedFactor) {
+  public void setAssignedFactor(Map<String, Factor> assignedFactor) {
     this.assignedFactor = assignedFactor;
   }
     
