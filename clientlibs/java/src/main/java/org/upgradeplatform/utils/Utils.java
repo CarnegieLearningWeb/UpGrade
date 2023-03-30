@@ -42,6 +42,17 @@ public class Utils
 		PATCH
 	}
 
+	public static enum PayloadType {
+		string,
+  		json,
+  		csv
+	}
+
+	public static enum ExperimentType {
+		Factorial,
+		Simple
+	}
+
 	public static enum MetricMetaData {
 		continuous,
 		categorical

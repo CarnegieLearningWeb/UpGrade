@@ -4,7 +4,7 @@ public class Condition {
 
     private String id;
     private String conditionCode;
-    private String payload;
+    private Payload payload;
     private String experimentId;
 
     public Condition() {
@@ -22,11 +22,12 @@ public class Condition {
         this.experimentId = experimentId;
     }
 	
-	public Condition(String id, String conditionCode, String experimentId, String payload) {
+	public Condition(String id, String conditionCode, String experimentId, Payload payload) {
 		super();
         this.id = id;
 		this.conditionCode= conditionCode;
         this.experimentId = experimentId;
+        this.payload = payload;
 	}
 
     public String getConditionCode() {
@@ -53,17 +54,17 @@ public class Condition {
         this.experimentId = experimentId;
     }
 
-    public String getPayload() {
+    public Payload getPayload() {
         return payload;
     }
 
-    public void setPayload(String payload) {
+    public void setPayload(Payload payload) {
         this.payload = payload;
     }
 
     @Override
     public String toString(){
-        return  "Condition [conditionCode=" + conditionCode + "]";
+        return  "Condition [conditionCode=" + conditionCode + ", payload=" + payload + "]";
     }
     
 }

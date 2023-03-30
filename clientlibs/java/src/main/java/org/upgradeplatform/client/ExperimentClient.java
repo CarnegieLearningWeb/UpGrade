@@ -262,7 +262,7 @@ public class ExperimentClient implements AutoCloseable {
 				experimentsResponse.getAssignedCondition().getPayload());
 
 		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getTarget().toString(),
-				experimentsResponse.getSite(), experimentsResponse.getExperimentType(), assignedCondition);
+				experimentsResponse.getSite(), experimentsResponse.getExperimentType(), assignedCondition, experimentsResponse.getAssignedFactor());
 		return resultCondition;
 	}
 
