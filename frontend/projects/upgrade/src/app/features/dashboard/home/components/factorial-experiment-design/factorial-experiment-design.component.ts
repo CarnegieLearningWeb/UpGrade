@@ -389,12 +389,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
     this.factorDataSource.next(this.factor?.controls);
     this.decisionPointDataSource.next(this.decisionPoints.controls);
-    // if (type) {
-    //   this[type].nativeElement?.scroll({
-    //     top: this[type].nativeElement.scrollHeight - 91,
-    //     behavior: 'smooth',
-    //   });
-    // }
   }
 
   isDecisionPointTableRowValid(): boolean {
@@ -603,8 +597,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         if (this.factorialExperimentDesignForm.dirty) {
           this.experimentDesignStepperService.experimentStepperDataChanged();
         }
-        console.log('isExperimentEditable in next: ', !this.isExperimentEditable);
-        console.log('this.experimentInfo conditions in next 1: ', this.experimentInfo.conditions);
         if (!this.isExperimentEditable) {
           this.emitExperimentDialogEvent.emit({
             type: eventType,
@@ -614,13 +606,10 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           break;
         }
         this.saveData(eventType);
-        console.log('this.experimentInfo conditions in next 2: ', this.experimentInfo.conditions);
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.handleConditionsButtonClick();
-        console.log('isExperimentEditable in save: ', !this.isExperimentEditable);
         if (!this.isExperimentEditable) {
-          console.log('this.experimentInfo conditions in save: ', this.experimentInfo.conditions);
           this.emitExperimentDialogEvent.emit({
             type: eventType,
             formData: this.experimentInfo,
