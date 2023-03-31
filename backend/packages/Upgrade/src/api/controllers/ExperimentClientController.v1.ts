@@ -26,6 +26,7 @@ import {
   IGroupMembership,
   IUserAliases,
   IWorkingGroup,
+  ILogInput,
 } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator.v1';
 import { ExperimentError } from '../models/ExperimentError';
@@ -40,6 +41,9 @@ import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
 import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
+import { parse, toSeconds } from 'iso8601-duration';
+import { Log } from '../models/Log';
+import { CaliperLogEnvelope } from './validators/CaliperLogEnvelope';
 
 interface ILog {
   id: string;
@@ -616,6 +620,69 @@ export class ExperimentClientController {
       return rest;
     });
   }
+
+     /**
+   * @swagger
+   * /log/caliper:
+   *    post:
+   *       description: Post Caliper format log data
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *          - in: body
+   *            name: data
+   *            required: true
+   *            description: User Document
+   *       tags:
+   *         - Client Side SDK
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Log data
+   *          '500':
+   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
+   */
+     @Post('log/caliper')
+     public async caliperLog(
+       @Body({ validate: { validationError: { target: false, value: false } } })
+       @Req()
+       request: AppRequest,
+       envelope: CaliperLogEnvelope
+     ): Promise<Log[]> {
+       let logResponse: Log[] = [];
+       envelope.data.forEach(async log => {
+         request.logger.info({ message: 'Starting the log call for user' });
+         const userId = log.object.assignee.id
+         // getOriginalUserDoc call for alias
+         const experimentUserDoc = await this.getUserDoc(userId, request.logger);
+         if (experimentUserDoc) {
+           // append userDoc in logger
+           request.logger.child({ userDoc: experimentUserDoc });
+           request.logger.info({ message: 'Got the original user doc' });
+         }
+         const logs: ILogInput = {
+           "metrics": {
+             "attributes": log.generated.attempt.extensions.metrics.attributes || {},
+             "groupedMetrics": log.generated.attempt.extensions.metrics.groupedMetrics || [],
+           },
+           timestamp: log.eventTime
+         };
+   
+         logs.metrics.attributes['duration'] = toSeconds(parse(log.generated.attempt.duration));
+         logs.metrics.attributes['scoreGiven'] = log.generated.scoreGiven;
+   
+         let res = await this.experimentAssignmentService.dataLog(userId, [logs], {
+           logger: request.logger,
+           userDoc: experimentUserDoc,
+         })
+   
+         logResponse.concat(res);
+   
+       });
+       return logResponse;
+   
+     }
 
   /**
    * @swagger
