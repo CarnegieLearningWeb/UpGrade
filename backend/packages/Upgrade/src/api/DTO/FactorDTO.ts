@@ -15,5 +15,4 @@ export class FactorDTO {
   public description: string;
 
   public levels: LevelDTO[];
-
 }

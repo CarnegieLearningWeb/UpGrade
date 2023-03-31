@@ -11,9 +11,8 @@ export class LevelDTO {
   @IsString()
   public description: string;
 
-  public payload: { type: PAYLOAD_TYPE, value: string };
-  
+  public payload: { type: PAYLOAD_TYPE; value: string };
+
   @IsNumber()
   public order: number;
-
 }

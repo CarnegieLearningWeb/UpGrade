@@ -64,6 +64,8 @@ import { LevelCombinationElement } from '../models/LevelCombinationElement';
 import { LevelCombinationElementRepository } from '../repositories/LevelCombinationElements';
 import { ExperimentDTO } from '../DTO/ExperimentDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
+import { FactorDTO } from '../DTO/FactorDTO';
+import { LevelDTO } from '../DTO/LevelDTO';
 // import { ConditionPayloadObj } from '../../../../../../types/src/Experiment/interfaces';
 
 @Service()
@@ -97,10 +99,10 @@ export class ExperimentService {
       logger.info({ message: `Find all experiments` });
     }
     const experiments = await this.experimentRepository.findAllExperiments();
-    return experiments.map((x) => this.formatingConditionPayload(x));
+    return experiments.map((x) => this.formatingPayload(x));
   }
 
-  public findAllName(logger: UpgradeLogger): Promise<Array<Pick<ExperimentDTO, 'id' | 'name'>>> {
+  public findAllName(logger: UpgradeLogger): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
     logger.info({ message: `Find all experiment names` });
     return this.experimentRepository.findAllName();
   }
@@ -200,7 +202,7 @@ export class ExperimentService {
       .where({ id })
       .getOne();
 
-    return this.formatingConditionPayload(experiment);
+    return this.formatingPayload(experiment);
   }
 
   public getTotalCount(): Promise<number> {
@@ -251,7 +253,11 @@ export class ExperimentService {
     return this.addExperimentInDB(experiment, currentUser, logger);
   }
 
-  public createMultipleExperiments(experiment: ExperimentDTO[], user: User, logger: UpgradeLogger): Promise<ExperimentDTO[]> {
+  public createMultipleExperiments(
+    experiment: ExperimentDTO[],
+    user: User,
+    logger: UpgradeLogger
+  ): Promise<ExperimentDTO[]> {
     logger.info({ message: `Generating test experiments`, details: experiment });
     return this.addBulkExperiments(experiment, user, logger);
   }
@@ -414,7 +420,11 @@ export class ExperimentService {
     };
   }
 
-  public async importExperiment(experiments: ExperimentDTO[], user: User, logger: UpgradeLogger): Promise<ExperimentDTO[]> {
+  public async importExperiment(
+    experiments: ExperimentDTO[],
+    user: User,
+    logger: UpgradeLogger
+  ): Promise<ExperimentDTO[]> {
     for (const experiment of experiments) {
       const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
       if (duplicateExperiment && experiment.id) {
@@ -463,7 +473,7 @@ export class ExperimentService {
     return this.addBulkExperiments(experiments, user, logger);
   }
 
-  public async exportExperiment(experimentIds: string[], user: User, logger: UpgradeLogger): Promise<Experiment[]> {
+  public async exportExperiment(experimentIds: string[], user: User, logger: UpgradeLogger): Promise<ExperimentDTO[]> {
     logger.info({ message: `Inside export Experiment JSON ${experimentIds}` });
     const experimentDetails = await this.experimentRepository.find({
       where: { id: In(experimentIds) },
@@ -499,7 +509,7 @@ export class ExperimentService {
         { experimentName: experiment.name },
         user
       );
-      return this.formatingConditionPayload(experiment);
+      return this.formatingPayload(experiment);
     });
 
     return formatedExperiments;
@@ -629,7 +639,11 @@ export class ExperimentService {
     }
   }
 
-  private async updateExperimentInDB(experiment: ExperimentDTO, user: User, logger: UpgradeLogger): Promise<ExperimentDTO> {
+  private async updateExperimentInDB(
+    experiment: ExperimentDTO,
+    user: User,
+    logger: UpgradeLogger
+  ): Promise<ExperimentDTO> {
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id, logger);
     const oldConditions = oldExperiment.conditions;
@@ -743,19 +757,19 @@ export class ExperimentService {
             })) ||
           [];
 
-        const conditionPayloadDocToSave : Array<Partial<ConditionPayloadDTO>> =
+        const conditionPayloadDocToSave: Array<Partial<ConditionPayloadDTO>> =
           (conditionPayloads &&
             conditionPayloads.length > 0 &&
             conditionPayloads.map((conditionPayload: ConditionPayloadDTO) => {
               let conditionPayloadToReturn: ConditionPayload;
-              conditionPayloadToReturn.id = conditionPayload.id
-              conditionPayloadToReturn.payloadType = conditionPayload.payload.type
-              conditionPayloadToReturn.payloadValue = conditionPayload.payload.value
-              conditionPayloadToReturn.parentCondition = conditionPayload.parentCondition
-              conditionPayloadToReturn.decisionPoint = conditionPayload.decisionPoint
+              conditionPayloadToReturn.id = conditionPayload.id;
+              conditionPayloadToReturn.payloadType = conditionPayload.payload.type;
+              conditionPayloadToReturn.payloadValue = conditionPayload.payload.value;
+              conditionPayloadToReturn.parentCondition = conditionPayload.parentCondition;
+              conditionPayloadToReturn.decisionPoint = conditionPayload.decisionPoint;
               return conditionPayloadToReturn;
             })) ||
-          []; 
+          [];
 
         // creating decision point docs
         let promiseArray = [];
@@ -885,7 +899,10 @@ export class ExperimentService {
             ) as any,
             Promise.all(
               conditionPayloadDocToSave.map(async (conditionPayload) => {
-                return this.conditionPayloadRepository.upsertConditionPayload(conditionPayload, transactionalEntityManager);
+                return this.conditionPayloadRepository.upsertConditionPayload(
+                  conditionPayload,
+                  transactionalEntityManager
+                );
               })
             ) as any,
             Promise.all(
@@ -1058,7 +1075,11 @@ export class ExperimentService {
     return [updatedData, uniqueIdentifiers];
   }
 
-  private async addExperimentInDB(experiment: ExperimentDTO, user: User, logger: UpgradeLogger): Promise<ExperimentDTO> {
+  private async addExperimentInDB(
+    experiment: ExperimentDTO,
+    user: User,
+    logger: UpgradeLogger
+  ): Promise<ExperimentDTO> {
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
@@ -1204,16 +1225,16 @@ export class ExperimentService {
         });
       }
 
-      const conditionPayloadDocToSave : ConditionPayload[] =
+      const conditionPayloadDocToSave: ConditionPayload[] =
         (conditionPayloads &&
           conditionPayloads.length > 0 &&
           conditionPayloads.map((conditionPayload: ConditionPayloadDTO) => {
             let conditionPayloadToReturn: ConditionPayload;
-            conditionPayloadToReturn.id = conditionPayload.id
-            conditionPayloadToReturn.payloadType = conditionPayload.payload.type
-            conditionPayloadToReturn.payloadValue = conditionPayload.payload.value
-            conditionPayloadToReturn.parentCondition = conditionPayload.parentCondition
-            conditionPayloadToReturn.decisionPoint = conditionPayload.decisionPoint
+            conditionPayloadToReturn.id = conditionPayload.id;
+            conditionPayloadToReturn.payloadType = conditionPayload.payload.type;
+            conditionPayloadToReturn.payloadValue = conditionPayload.payload.value;
+            conditionPayloadToReturn.parentCondition = conditionPayload.parentCondition;
+            conditionPayloadToReturn.decisionPoint = conditionPayload.decisionPoint;
             return conditionPayloadToReturn;
           })) ||
         [];
@@ -1407,34 +1428,53 @@ export class ExperimentService {
     return createdExperiments;
   }
 
-  public formatingConditionPayload(experiment: Experiment): any {
+  public formatingPayload(experiment: Experiment): ExperimentDTO {
     if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
-      const conditionPayload: ConditionPayload[] = [];
+      const conditionPayload: ConditionPayloadDTO[] = [];
       experiment.conditions.forEach((condition) => {
         const conditionPayloads = condition.conditionPayloads.map((conditionPayload) => {
-          return { ...conditionPayload, parentCondition: condition };
+          const { payloadType, payloadValue, ...rest } = conditionPayload;
+          return {
+            ...rest,
+            payload: { type: payloadType, value: payloadValue },
+            parentCondition: condition,
+          };
         });
         conditionPayload.push(...conditionPayloads);
         delete condition.conditionPayloads;
       });
 
-      return { ...experiment, conditionPayloads: conditionPayload };
+      const updatedFactors: FactorDTO[] = experiment.factors.map((factor) => {
+        const updatedLevels: LevelDTO[] = factor.levels.map((level) => {
+          const { payloadType, payloadValue, ...rest } = level;
+          return { ...rest, payload: { type: payloadType, value: payloadValue } };
+        });
+        const { createdAt, updatedAt, versionNumber, experiment, ...rest } = factor;
+        return { ...rest, levels: updatedLevels };
+      });
+
+      return { ...experiment, factors: updatedFactors, conditionPayloads: conditionPayload };
     }
 
     const { conditions, partitions } = experiment;
 
-    const conditionPayload: ConditionPayload[] = [];
+    const updatedConditionPayload: ConditionPayloadDTO[] = [];
     partitions.forEach((partition) => {
       const conditionPayloadData = partition.conditionPayloads;
       delete partition.conditionPayloads;
 
-      conditionPayloadData.forEach((x) => {
-        if (x && conditions.filter((con) => con.id === x.parentCondition.id).length > 0) {
-          conditionPayload.push({ ...x, decisionPoint: partition });
+      conditionPayloadData.forEach((conditionPayload) => {
+        if (conditionPayload && conditions.filter((con) => con.id === conditionPayload.parentCondition.id).length > 0) {
+          const { payloadType, payloadValue, ...rest } = conditionPayload;
+          updatedConditionPayload.push({
+            ...rest,
+            decisionPoint: partition,
+            payload: { type: payloadType, value: payloadValue },
+          });
         }
       });
     });
-    return { ...experiment, conditionPayloads: conditionPayload };
+    return { ...experiment, factors: [], conditionPayloads: updatedConditionPayload };
   }
 
   private includeExcludeSegmentCreation(
@@ -1497,7 +1537,6 @@ export class ExperimentService {
     const allLevels: Level[] = [];
     const allLevelCombinationElements: LevelCombinationElement[] = [];
 
-    // creating factors docs
     const allFactors =
       factors &&
       factors.length > 0 &&

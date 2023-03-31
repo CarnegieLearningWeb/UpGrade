@@ -1125,7 +1125,7 @@ export class ExperimentController {
    */
   @Post('/import')
   public importExperiment(
-    @Body({ validate: { validationError: { target: false, value: false } }, type: Experiment })
+    @Body({ validate: { validationError: { target: false, value: false } }, type: ExperimentDTO })
     experiments: ExperimentDTO[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
@@ -1138,7 +1138,7 @@ export class ExperimentController {
     @Body({ validate: { validationError: { target: false, value: false } }, type: String }) ids: string[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
-  ): Promise<Experiment[]> {
+  ): Promise<ExperimentDTO[]> {
     return this.experimentService.exportExperiment(ids, currentUser, request.logger);
   }
 
