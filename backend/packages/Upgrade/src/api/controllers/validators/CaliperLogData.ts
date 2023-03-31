@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsDefined, IsString, IsJSON, IsObject } from 'class-validator';
-import { Attempt, CaliperActor, ScoreObject } from '../../../../../../../types/src/Experiment/interfaces';
+import { Attempt, CaliperActor, ScoreObject } from 'upgrade_types';
 
 export class CaliperLogData {
 

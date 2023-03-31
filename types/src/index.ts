@@ -42,4 +42,9 @@ export {
   IWorkingGroup,
   IGroupMembership,
   IUserAliases,
+  ScoreObject,
+  CaliperActor,
+  Attempt,
+  CaliperGradingProfile,
+  CaliperEnvelope
 } from './Experiment/interfaces';
