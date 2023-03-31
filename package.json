@@ -49,5 +49,8 @@
   "bugs": {
     "url": "https://github.com/CarnegieLearningWeb/UpGrade/issues"
   },
-  "homepage": "https://github.com/CarnegieLearningWeb/UpGrade#readme"
+  "homepage": "https://github.com/CarnegieLearningWeb/UpGrade#readme",
+  "dependencies": {
+    "iso8601-duration": "^2.1.1"
+  }
 }
