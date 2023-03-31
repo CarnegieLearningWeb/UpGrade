@@ -204,10 +204,12 @@ export interface CaliperGradingProfile {
   id: string,
   type: string,
   profile: string,
-  actor: object,
+  actor: CaliperActor,
   action: string,
   object: Attempt,
-  generated: ScoreObject
+  generated: ScoreObject,
+  extensions: Record<string, unknown>,
+  eventTime: string,
 }
 
 export interface CaliperEnvelope {
