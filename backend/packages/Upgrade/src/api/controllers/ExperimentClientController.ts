@@ -31,20 +31,11 @@ import { Metric } from '../models/Metric';
 import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
-import { CaliperLogValidator } from './validators/CaliperLogValidator';
 import { parse, toSeconds } from 'iso8601-duration';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
-export enum EXPERIMENT_LOG_TYPE {
-  EXPERIMENT_CREATED = 'experimentCreated',
-  EXPERIMENT_UPDATED = 'experimentUpdated',
-  EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
-  EXPERIMENT_DELETED = 'experimentDeleted',
-  EXPERIMENT_DATA_EXPORTED = 'experimentDataExported',
-  EXPERIMENT_DATA_REQUESTED = 'experimentDataRequested',
-  EXPERIMENT_DESIGN_EXPORTED = 'experimentDesignExported',
-  CALIPER_LOG = 'caliperLog'
-}
+import { CaliperLogEnvelope } from './validators/CaliperLogEnvelope';
+
 /**
  * @swagger
  * definitions:
@@ -658,7 +649,7 @@ export class ExperimentClientController {
    * @swagger
    * /log/caliper:
    *    post:
-   *       description: Post log data
+   *       description: Post Caliper format log data
    *       consumes:
    *         - application/json
    *       parameters:
@@ -676,52 +667,50 @@ export class ExperimentClientController {
    *          '500':
    *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
    */
-   @Post('log/caliper')
-   public async caliperLog(
-     @Body({ validate: { validationError: { target: false, value: false } } })
-     @Req()
-     request: AppRequest,
-     logData: CaliperLogValidator
-   ): Promise<Log[]> {
-     request.logger.info({ message: 'Starting the log call for user' });
-     console.log(logData)
-     const userId = logData.actor.id
-     // getOriginalUserDoc call for alias
-     const experimentUserDoc = await this.getUserDoc(userId, request.logger);
-     if (experimentUserDoc) {
-       // append userDoc in logger
-       request.logger.child({ userDoc: experimentUserDoc });
-       request.logger.info({ message: 'Got the original user doc' });
-     }
-     const logs: ILogInput = {
-      "metrics": {
-        "attributes": logData.generated.attempt.extensions.metrics.attributes || {},
-        "groupedMetrics": logData.generated.attempt.extensions.metrics.groupedMetrics || [],
-      },
-      timestamp: (new Date()).toISOString()
-    };
+  @Post('log/caliper')
+  public async caliperLog(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
+    envelope: CaliperLogEnvelope
+  ): Promise<Log[]> {
+    let logResponse: Log[] = [];
+    envelope.data.forEach(async log => {
+      request.logger.info({ message: 'Starting the log call for user' });
+      const userId = log.object.assignee.id
+      // getOriginalUserDoc call for alias
+      const experimentUserDoc = await this.getUserDoc(userId, request.logger);
+      if (experimentUserDoc) {
+        // append userDoc in logger
+        request.logger.child({ userDoc: experimentUserDoc });
+        request.logger.info({ message: 'Got the original user doc' });
+      }
+      const logs: ILogInput = {
+        "metrics": {
+          "attributes": log.generated.attempt.extensions.metrics.attributes || {},
+          "groupedMetrics": log.generated.attempt.extensions.metrics.groupedMetrics || [],
+        },
+        timestamp: log.eventTime
+      };
 
-     logs.metrics.attributes['duration'] = toSeconds(parse(logData.generated.attempt.duration));
-     logs.metrics.attributes['scoreGiven'] = logData.generated.scoreGiven;
+      logs.metrics.attributes['duration'] = toSeconds(parse(log.generated.attempt.duration));
+      logs.metrics.attributes['scoreGiven'] = log.generated.scoreGiven;
 
-     const logResponse = await this.experimentAssignmentService.dataLog(userId, [logs], {
-       logger: request.logger,
-       userDoc: experimentUserDoc,
-     });
-     console.log( EXPERIMENT_LOG_TYPE.CALIPER_LOG)
-     await this.experimentAuditLogRepository.saveRawJson(
-      EXPERIMENT_LOG_TYPE.CALIPER_LOG,
-      {
-        experimentName: "Caliper Logs",
-        scoreGiven: logData.generated.scoreGiven,
-        duration: logData.generated.attempt.duration
-      },
-      null
-    );
+      let res = await this.experimentAssignmentService.dataLog(userId, [logs], {
+        logger: request.logger,
+        userDoc: experimentUserDoc,
+      })
 
+      logResponse.concat(res);
+
+    });
     return logResponse;
 
-   }
+  }
+
+
+
+
 
 
   /**

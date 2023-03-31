@@ -1,8 +1,7 @@
 import { IsNotEmpty, IsDefined, IsString, IsJSON, IsObject } from 'class-validator';
-import { Attempt, ScoreObject } from '../../../../../../../types/src/Experiment/interfaces';
-import { ExperimentUser } from '../../../../src/api/models/ExperimentUser';
+import { Attempt, CaliperActor, ScoreObject } from '../../../../../../../types/src/Experiment/interfaces';
 
-export class CaliperLogValidator {
+export class CaliperLogData {
 
   @IsDefined()
   @IsNotEmpty()
@@ -12,12 +11,17 @@ export class CaliperLogValidator {
   @IsDefined()
   @IsNotEmpty()
   @IsJSON()
-  public actor: ExperimentUser;
+  public actor: CaliperActor;
 
   @IsDefined()
   @IsNotEmpty()
   @IsString()
   public action: string;
+
+  @IsDefined()
+  @IsNotEmpty()
+  @IsString()
+  public eventTime: string;
 
   @IsDefined()
   @IsNotEmpty()
