@@ -29,7 +29,7 @@ export class CaliperLogData {
   public object: Attempt;
 
   @IsObject()
-  public extensions: object;
+  public extensions: Record<string, unknown>;
 
   @IsObject()
   @IsNotEmpty()

@@ -661,13 +661,7 @@ export class ExperimentClientController {
            request.logger.child({ userDoc: experimentUserDoc });
            request.logger.info({ message: 'Got the original user doc' });
          }
-         const logs: ILogInput = {
-           "metrics": {
-             "attributes": log.generated.attempt.extensions.metrics.attributes || {},
-             "groupedMetrics": log.generated.attempt.extensions.metrics.groupedMetrics || [],
-           },
-           timestamp: log.eventTime
-         };
+         const logs: ILogInput = log.generated.attempt.extensions;
    
          logs.metrics.attributes['duration'] = toSeconds(parse(log.generated.attempt.duration));
          logs.metrics.attributes['scoreGiven'] = log.generated.scoreGiven;

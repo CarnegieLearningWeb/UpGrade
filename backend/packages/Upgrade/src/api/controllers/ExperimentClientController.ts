@@ -676,45 +676,39 @@ export class ExperimentClientController {
    *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
    */
    @Post('log/caliper')
-   public async caliperLog(
-     @Body({ validate: { validationError: { target: false, value: false } } })
-     @Req()
-     request: AppRequest,
-     envelope: CaliperLogEnvelope
-   ): Promise<Log[]> {
-     let logResponse: Log[] = [];
-     envelope.data.forEach(async log => {
-       request.logger.info({ message: 'Starting the log call for user' });
-       const userId = log.object.assignee.id
-       // getOriginalUserDoc call for alias
-       const experimentUserDoc = await this.getUserDoc(userId, request.logger);
-       if (experimentUserDoc) {
-         // append userDoc in logger
-         request.logger.child({ userDoc: experimentUserDoc });
-         request.logger.info({ message: 'Got the original user doc' });
-       }
-       const logs: ILogInput = {
-         "metrics": {
-           "attributes": log.generated.attempt.extensions.metrics.attributes || {},
-           "groupedMetrics": log.generated.attempt.extensions.metrics.groupedMetrics || [],
-         },
-         timestamp: log.eventTime
-       };
- 
-       logs.metrics.attributes['duration'] = toSeconds(parse(log.generated.attempt.duration));
-       logs.metrics.attributes['scoreGiven'] = log.generated.scoreGiven;
- 
-       let res = await this.experimentAssignmentService.dataLog(userId, [logs], {
-         logger: request.logger,
-         userDoc: experimentUserDoc,
-       })
- 
-       logResponse.concat(res);
- 
-     });
-     return logResponse;
- 
-   }
+     public async caliperLog(
+       @Body({ validate: { validationError: { target: false, value: false } } })
+       @Req()
+       request: AppRequest,
+       envelope: CaliperLogEnvelope
+     ): Promise<Log[]> {
+       let logResponse: Log[] = [];
+       envelope.data.forEach(async log => {
+         request.logger.info({ message: 'Starting the log call for user' });
+         const userId = log.object.assignee.id
+         // getOriginalUserDoc call for alias
+         const experimentUserDoc = await this.getUserDoc(userId, request.logger);
+         if (experimentUserDoc) {
+           // append userDoc in logger
+           request.logger.child({ userDoc: experimentUserDoc });
+           request.logger.info({ message: 'Got the original user doc' });
+         }
+         const logs: ILogInput = log.generated.attempt.extensions;
+   
+         logs.metrics.attributes['duration'] = toSeconds(parse(log.generated.attempt.duration));
+         logs.metrics.attributes['scoreGiven'] = log.generated.scoreGiven;
+   
+         let res = await this.experimentAssignmentService.dataLog(userId, [logs], {
+           logger: request.logger,
+           userDoc: experimentUserDoc,
+         })
+   
+         logResponse.concat(res);
+   
+       });
+       return logResponse;
+   
+     }
 
   /**
    * @swagger
