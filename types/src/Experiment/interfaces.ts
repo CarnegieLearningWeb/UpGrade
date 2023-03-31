@@ -169,11 +169,16 @@ export interface ScoreObject{
   scoreGiven?: number;
 }
 
+export interface CaliperActor {
+  id: string;
+  type: string;
+}
+
 export interface Attempt{
   id?: string;
   type: string;
-  assignee?: string;
-  assignable?: string;
+  assignee?: CaliperActor;
+  assignable?: CaliperActor;
   duration?: string;
   extensions?: ILogInput;
 }
