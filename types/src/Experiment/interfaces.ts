@@ -176,3 +176,43 @@ export interface IUserAliases {
   userId: string;
   aliases: string[];
 }
+
+
+export interface ScoreObject {
+  id: string;
+  type: string;
+  attempt: Attempt;
+  extensions?: object;
+  scoreGiven?: number;
+}
+
+export interface CaliperActor {
+  id: string;
+  type: string;
+}
+
+export interface Attempt {
+  id?: string;
+  type: string;
+  assignee?: CaliperActor;
+  assignable?: CaliperActor;
+  duration?: string;
+  extensions?: ILogInput;
+}
+
+export interface CaliperGradingProfile {
+  id: string,
+  type: string,
+  profile: string,
+  actor: object,
+  action: string,
+  object: Attempt,
+  generated: ScoreObject
+}
+
+export interface CaliperEnvelope {
+  sensor: string,
+  sendTime: string,
+  dataVersion: string,
+  data: CaliperGradingProfile[]
+}
