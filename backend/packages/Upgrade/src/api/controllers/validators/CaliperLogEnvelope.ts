@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsDefined, IsString, IsJSON, IsObject } from 'class-validator';
+import { IsNotEmpty, IsDefined, IsString } from 'class-validator';
 import { CaliperLogData } from './CaliperLogData';
 
 
