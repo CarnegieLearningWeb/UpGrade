@@ -4,27 +4,21 @@ public class MarkExperimentRequest {
 
 	
 	private String userId;
-	private String site;
-	private String target;
-	private String condition;
 	private String status;
+	private MarkExperimentRequestData data;
 	
 	public MarkExperimentRequest() {}
 
-	public MarkExperimentRequest(String userId, String site, String target, String condition) {
+	public MarkExperimentRequest(String userId, MarkExperimentRequestData data) {
 		super();
 		this.userId = userId;
-		this.site = site;
-		this.target = target;
-		this.condition = condition;
+		this.data = data;
 	}
 
-	public MarkExperimentRequest(String userId, String site, String target, String condition, String status) {
+	public MarkExperimentRequest(String userId, MarkExperimentRequestData data, String status) {
 		super();
 		this.userId = userId;
-		this.site = site;
-		this.target = target;
-		this.condition = condition;
+		this.data = data;
 		this.status = status;
 	}
 
@@ -36,35 +30,19 @@ public class MarkExperimentRequest {
 		this.userId = userId;
 	}
 
-	public String getSite() {
-		return site;
-	}
-
-	public void setSite(String site) {
-		this.site = site;
-	}
-
-	public String getTarget() {
-		return target;
-	}
-
-	public void setTarget(String target) {
-		this.target = target;
-	}
-
-	public String getCondition() {
-		return condition;
-	}
-
-	public void setCondition(String condition) {
-		this.condition = condition;
-	}
-
 	public String getStatus() {
 		return status;
 	}
 
 	public void setStatus(String status){
 		this.status = status;
+	}
+
+	public MarkExperimentRequestData getData(){
+		return data;
+	}
+	
+	public void setData(MarkExperimentRequestData data){
+		this.data = data;
 	}
 }

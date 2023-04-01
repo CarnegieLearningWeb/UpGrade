@@ -28,4 +28,9 @@ public class UserAliasResponse
 		this.aliases = aliases;
 	}
 
+	@Override
+    public String toString(){
+        return "UserAliasResponse [uerId=" + userId + ", aliases=" + aliases + "]";
+    }
+
 }

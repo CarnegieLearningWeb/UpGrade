@@ -75,5 +75,9 @@ public class ExperimentUser
 		this.requestedUserId = requestedUserId;
 	}
 	
-
+	@Override
+    public String toString(){
+        return "ExperimentUser [id=" + id + ", group=" + group 
+               + ", workingGroup=" + workingGroup + "]";
+    }
 }

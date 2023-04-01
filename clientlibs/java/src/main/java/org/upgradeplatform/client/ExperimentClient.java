@@ -23,6 +23,7 @@ import org.upgradeplatform.requestbeans.GroupMetric;
 import org.upgradeplatform.requestbeans.LogInput;
 import org.upgradeplatform.requestbeans.LogRequest;
 import org.upgradeplatform.requestbeans.MarkExperimentRequest;
+import org.upgradeplatform.requestbeans.MarkExperimentRequestData;
 import org.upgradeplatform.requestbeans.MetricUnitBody;
 import org.upgradeplatform.requestbeans.SingleMetric;
 import org.upgradeplatform.requestbeans.UserAlias;
@@ -256,23 +257,30 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	private static ExperimentsResponse copyExperimentResponse(ExperimentsResponse experimentsResponse) {
-		Condition assignedCondition = new Condition(
-				experimentsResponse.getAssignedCondition().getCondition());
+		Condition assignedCondition = new Condition(experimentsResponse.getAssignedCondition().getId(),
+				experimentsResponse.getAssignedCondition().getConditionCode(), experimentsResponse.getAssignedCondition().getExperimentId(),
+				experimentsResponse.getAssignedCondition().getPayload());
 
 		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getTarget().toString(),
-				experimentsResponse.getSite(), assignedCondition);
+				experimentsResponse.getSite(), experimentsResponse.getExperimentType(), assignedCondition, experimentsResponse.getAssignedFactor());
 		return resultCondition;
 	}
 
 	public void markExperimentPoint(final String site, String condition, MarkedDecisionPointStatus status,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		markExperimentPoint(site, "", condition, status, callbacks);
+		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, "", new Condition(condition));
+		markExperimentPoint(status, markExperimentRequestData, callbacks);
 	}
 
 	public void markExperimentPoint(final String site, String target, String condition, MarkedDecisionPointStatus status,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, site,
-				target, condition, status.toString());
+		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(condition));
+		markExperimentPoint(status, markExperimentRequestData, callbacks);
+	}
+
+	public void markExperimentPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data,
+			final ResponseCallback<MarkExperimentPoint> callbacks) {
+		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, data, status.toString());
 		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
 
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
