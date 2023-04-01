@@ -472,7 +472,7 @@
                   </mat-cell>
                 </ng-container>
 
-                <!-- Site Column -->
+                <!-- Description Column -->
                 <ng-container matColumnDef="description">
                   <mat-header-cell class="ft-12-700" *matHeaderCellDef>
                     {{ 'home.view-experiment-global.description.text' | translate }}
@@ -483,7 +483,7 @@
                     </span>
                     <ng-template #descriptionTrimmed>
                       <span [matTooltip]="data.description" matTooltipPosition="above">
-                        {{ data.site | truncate : 50 }}
+                        {{ data.description | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
@@ -504,13 +504,13 @@
                           </mat-cell>
                         </ng-container>
 
-                        <!-- Alias Column -->
-                        <ng-container matColumnDef="alias">
+                        <!-- Payload Column -->
+                        <ng-container matColumnDef="payload">
                           <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                             {{ 'home.new-experiment.design.payloads.column-header.payload.text' | translate }}
                           </mat-header-cell>
                           <mat-cell *matCellDef="let data; let levelIndex = index">
-                            <span>{{ data.alias }}</span>
+                            <span>{{ data.payload }}</span>
                           </mat-cell>
                         </ng-container>
 

@@ -108,7 +108,6 @@
                     <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== rowIndex">
                       <mat-icon class="icon">create</mat-icon>
                     </ng-container>
-
                     <!-- Done Icon -->
                     <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === rowIndex">
                       <mat-icon class="icon">done</mat-icon>
@@ -121,9 +120,11 @@
                     [disabled]="(isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex"
                     (click)="handleDecisionPointTableClearOrRemoveRow(rowIndex)"
                   >
+                    <!-- Delete Icon -->
                     <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== rowIndex">
                       <mat-icon class="icon">delete_outline</mat-icon>
                     </ng-container>
+                    <!-- Cancel/Clear Icon -->
                     <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === rowIndex">
                       <mat-icon class="icon">clear</mat-icon>
                     </ng-container>
@@ -303,9 +304,11 @@
                     "
                     (click)="handleFactorTableEditClick(rowData.getRawValue(), rowIndex)"
                   >
+                    <!-- Edit Icon -->
                     <ng-container *ngIf="(factorsTableEditIndex$ | async) !== rowIndex">
                       <mat-icon class="icon">create</mat-icon>
                     </ng-container>
+                    <!-- Done Icon -->
                     <ng-container
                       *ngIf="(factorsTableEditIndex$ | async) === rowIndex && (levelsTableEditIndex$ | async) === null"
                     >
@@ -318,9 +321,11 @@
                     [disabled]="(isFormLockedForEdit$ | async) && (factorsTableEditIndex$ | async) !== rowIndex"
                     (click)="handleFactorTableClearOrRemoveRow(rowIndex)"
                   >
+                    <!-- Delete Icon -->
                     <ng-container *ngIf="(factorsTableEditIndex$ | async) !== rowIndex">
                       <mat-icon class="icon">delete_outline</mat-icon>
                     </ng-container>
+                    <!-- Cancel/Clear Icon -->
                     <ng-container
                       *ngIf="(factorsTableEditIndex$ | async) === rowIndex && (levelsTableEditIndex$ | async) === null"
                     >
@@ -399,14 +404,14 @@
                               <span
                                 [matTooltip]="
                                   factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
-                                    levelIndex
+                                  levelPayloadIndex
                                   ]?.payload
                                 "
                                 matTooltipPosition="above"
                               >
                                 {{
                                   factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
-                                    levelIndex
+                                  levelPayloadIndex
                                   ]?.payload | truncate : 35
                                 }}
                               </span>
@@ -416,7 +421,7 @@
                                 <span
                                   [matTooltip]="
                                     factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
-                                      levelIndex
+                                    levelPayloadIndex
                                     ]?.payload
                                   "
                                   matTooltipPosition="above"
@@ -451,9 +456,11 @@
                               "
                               (click)="handleLevelTableEditClick(rowData.getRawValue(), rowIndex)"
                             >
+                              <!-- Edit Icon -->
                               <ng-container *ngIf="(levelsTableEditIndex$ | async) !== rowIndex">
                                 <mat-icon class="icon">create</mat-icon>
                               </ng-container>
+                              <!-- Done Icon -->
                               <ng-container
                                 *ngIf="
                                   (levelsTableEditIndex$ | async) === rowIndex &&
@@ -471,9 +478,11 @@
                               "
                               (click)="handleLevelTableClearOrRemoveRow(factorIndex, rowIndex)"
                             >
+                              <!-- Delete Icon -->
                               <ng-container *ngIf="(levelsTableEditIndex$ | async) !== rowIndex">
                                 <mat-icon class="icon">delete_outline</mat-icon>
                               </ng-container>
+                              <!-- Cancel/Clear Icon -->
                               <ng-container
                                 *ngIf="
                                   (levelsTableEditIndex$ | async) === rowIndex &&
@@ -590,6 +599,7 @@
           </div>
           <div>
             <div *ngIf="this.factor.length >= 2">
+              <br />
               <app-conditions-table
                 [isAnyRowRemoved]="isAnyRowRemoved"
                 [experimentInfo]="experimentInfo"
