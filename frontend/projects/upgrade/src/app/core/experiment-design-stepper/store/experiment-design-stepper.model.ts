@@ -29,10 +29,8 @@ export interface SimpleExperimentAliasTableRow {
 }
 
 export interface SimpleExperimentFormData {
-  // Why are there 2 set of same entity?
   decisionPoints?: SimpleExperimentFormDecisionPoints[];
   partitions?: SimpleExperimentFormDecisionPoints[];
-
   conditions: SimplerExperimentFormDecisionConditions[];
 }
 
@@ -80,15 +78,9 @@ export interface FactorialConditionTableRowData {
   include: boolean;
 }
 
-export interface FactorialFactorTableRowData {
-  id: string;
-  name: string;
-  description: string;
-}
 export interface FactorialLevelTableRowData {
   id: string;
   name: string;
-  payload: string;
 }
 
 export interface ExperimentFactorialDesignData {
@@ -109,45 +101,26 @@ export interface ExperimentLevelFormData {
 }
 
 export interface ExperimentDesignStepperState {
-
-  hasExperimentStepperDataChanged: boolean;
-
-  simpleExperimentDesignData: SimpleExperimentDesignData;
-  factorialExperimentDesignData: ExperimentFactorialDesignData;
-  simpleExperimentAliasTableData: SimpleExperimentAliasTableRow[];
-  factorialConditionsTableData: FactorialConditionTableRowData[];
-  factorialLevelsTableData: FactorialLevelTableRowData[];
-  factorialFactorsTableData: FactorialFactorTableRowData[];
-
-  // Alias Table
   isSimpleExperimentAliasTableEditMode: boolean;
-  simpleExperimentAliasTableEditIndex: number | null;
-
-  // Decision Point Table
   isDecisionPointsTableEditMode: boolean;
-  decisionPointsTableEditIndex: number | null;
-  decisionPointsEditModePreviousRowData: DecisionPointsTableRowData;
-
-  // Condition Table
   isConditionsTableEditMode: boolean;
+  isLevelsTableEditMode?: boolean;
+  simpleExperimentAliasTableEditIndex: number | null;
+  decisionPointsTableEditIndex: number | null;
   conditionsTableEditIndex: number | null;
+  levelsTableEditIndex?: number | null;
+  decisionPointsEditModePreviousRowData: DecisionPointsTableRowData;
   conditionsEditModePreviousRowData: ConditionsTableRowData;
-
-  // Factor Table
-  isFactorialFactorsTableEditMode: boolean;
-  factorialFactorsTableEditIndex: number | null;
-  factorialFactorsTableIndex: number | null;
-  factorialFactorsEditModePreviousRowData: FactorialFactorTableRowData;
-
-  // Level Table
-  isFactorialLevelsTableEditMode: boolean;
-  factorialLevelsTableEditIndex: number | null;
-  factorialLevelsEditModePreviousRowData: FactorialLevelTableRowData;
-
-  // Factorial Condition Table
+  simpleExperimentDesignData: SimpleExperimentDesignData;
+  simpleExperimentAliasTableData: SimpleExperimentAliasTableRow[];
   isFactorialConditionsTableEditMode: boolean;
+  isFactorialLevelsTableEditMode: boolean;
   factorialConditionsTableEditIndex: number | null;
+  factorialLevelsTableEditIndex: number | null;
   factorialConditionsEditModePreviousRowData: FactorialConditionTableRowData;
+  factorialDesignData: ExperimentFactorialDesignData;
+  factorialConditionsTableData: FactorialConditionTableRowData[];
+  hasExperimentStepperDataChanged: boolean;
 }
 
 export interface State extends AppState {

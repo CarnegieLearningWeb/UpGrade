@@ -25,7 +25,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   tableData$ = new BehaviorSubject<FactorialConditionTableRowData[]>([]);
   previousRowDataBehaviorSubject$ = new BehaviorSubject<FactorialConditionTableRowData>(null);
 
-  factorialExperimentDesignData$ = this.experimentDesignStepperService.factorialExperimentDesignData$;
+  factorialDesignData$ = this.experimentDesignStepperService.factorialDesignData$;
   tableEditIndex$ = this.experimentDesignStepperService.factorialConditionsTableEditIndex$;
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
 
@@ -86,7 +86,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   registerDesignDataChanges() {
-    this.subscriptions = this.factorialExperimentDesignData$
+    this.subscriptions = this.factorialDesignData$
       .pipe(
         filter((designData) => {
           return designData && designData?.factors.length === 2;
