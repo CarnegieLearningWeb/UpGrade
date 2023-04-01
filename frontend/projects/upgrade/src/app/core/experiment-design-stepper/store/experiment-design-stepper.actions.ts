@@ -4,34 +4,11 @@ import {
   ConditionsTableRowData,
   ExperimentFactorialDesignData,
   FactorialConditionTableRowData,
+  FactorialFactorTableRowData,
   SimpleExperimentDesignData,
   SimpleExperimentAliasTableRow,
-  FactorialLevelTableRowData,
   ExperimentLevelFormData,
 } from './experiment-design-stepper.model';
-
-export const actionUpdateAliasTableEditMode = createAction(
-  '[Experiment-Design-Stepper] Update Alias Table Edit Mode Details',
-  props<{ isAliasTableEditMode: boolean; aliasTableEditIndex: number | null }>()
-);
-
-export const actionToggleDecisionPointsTableEditMode = createAction(
-  '[Experiment-Design-Stepper] Update Decision Points Table Edit Mode Details',
-  props<{ decisionPointsTableEditIndex: number | null; decisionPointsRowData: DecisionPointsTableRowData }>()
-);
-
-export const actionToggleConditionsTableEditMode = createAction(
-  '[Experiment-Design-Stepper] Update Conditions Table Edit Mode Details',
-  props<{ conditionsTableEditIndex: number | null; conditionsRowData: ConditionsTableRowData }>()
-);
-
-export const actionClearDecisionPointTableEditDetails = createAction(
-  `[Experiment-Design-Stepper] Clear Decision Point Table Edit Details`
-);
-
-export const actionClearConditionTableEditDetails = createAction(
-  `[Experiment-Design-Stepper] Clear Condition Table Edit Details`
-);
 
 export const experimentStepperDataChanged = createAction(
   '[Experiment-Design-Stepper] turn isExperimentStepperDataChanged true'
@@ -46,21 +23,66 @@ export const actionUpdateSimpleExperimentDesignData = createAction(
   props<{ designData: SimpleExperimentDesignData }>()
 );
 
-export const actionUpdateSimpleExperimentAliasTableData = createAction(
-  '[Experiment-Design-Stepper] update simple experiment alias table data',
-  props<{ tableData: SimpleExperimentAliasTableRow[] }>()
+export const actionUpdateFactorialExperimentDesignData = createAction(
+  '[Experiment-Design-Stepper] update factorial experiment design data',
+  props<{ designData: ExperimentFactorialDesignData }>()
 );
 
-export const actionUpdateSimpleExperimentAliasTableEditModeDetails = createAction(
+export const clearSimpleExperimentDesignStepperData = createAction(
+  `[Experiment-Design-Stepper] Clear Simple Experiment Design Data`
+);
+
+export const clearFactorialDesignStepperData = createAction(
+  `[Experiment-Design-Stepper] Clear Factorial Experiment Design Data`
+);
+
+// Alias Table
+export const actionUpdateAliasTableEditMode = createAction(
+  '[Experiment-Design-Stepper] Update Alias Table Edit Mode Details',
+  props<{ isAliasTableEditMode: boolean; aliasTableEditIndex: number | null }>()
+);
+
+export const actionToggleSimpleExperimentAliasTableEditMode = createAction(
   '[Experiment-Design-Stepper] Update Simple Experiment Alias Table Edit Mode Details',
   props<{
     simpleExperimentAliasTableEditIndex: number | null;
   }>()
 );
 
-export const actionUpdateFactorialDesignData = createAction(
-  '[Experiment-Design-Stepper] update factorial design data',
-  props<{ designData: ExperimentFactorialDesignData }>()
+export const actionUpdateSimpleExperimentAliasTableData = createAction(
+  '[Experiment-Design-Stepper] update simple experiment alias table data',
+  props<{ tableData: SimpleExperimentAliasTableRow[] }>()
+);
+
+// Decision Point Table
+export const actionToggleDecisionPointsTableEditMode = createAction(
+  '[Experiment-Design-Stepper] Update Decision Points Table Edit Mode Details',
+  props<{ decisionPointsTableEditIndex: number | null; decisionPointsRowData: DecisionPointsTableRowData }>()
+);
+
+export const actionClearDecisionPointTableEditDetails = createAction(
+  `[Experiment-Design-Stepper] Clear Decision Point Table Edit Details`
+);
+
+// Condition Table
+export const actionToggleConditionsTableEditMode = createAction(
+  '[Experiment-Design-Stepper] Update Conditions Table Edit Mode Details',
+  props<{ conditionsTableEditIndex: number | null; conditionsRowData: ConditionsTableRowData }>()
+);
+
+export const actionClearConditionTableEditDetails = createAction(
+  `[Experiment-Design-Stepper] Clear Condition Table Edit Details`
+);
+
+// Factorial  Condition Table
+export const actionToggleFactorialConditionsTableEditMode = createAction(
+  '[Experiment-Design-Stepper] Update Factorial Conditions Table Edit Mode Details',
+  props<{
+    factorialConditionsTableEditIndex: number | null; factorialConditionsRowData: FactorialConditionTableRowData }>()
+);
+
+export const actionClearFactorialConditionTableEditDetails = createAction(
+  `[Experiment-Design-Stepper] Clear Factorial Condition Table Edit Details`
 );
 
 export const actionUpdateFactorialConditionTableData = createAction(
@@ -68,14 +90,20 @@ export const actionUpdateFactorialConditionTableData = createAction(
   props<{ tableData: FactorialConditionTableRowData[] }>()
 );
 
-export const actionToggleFactorialConditionsTableEditMode = createAction(
-  '[Experiment-Design-Stepper] Update Factorial Conditions Table Edit Mode Details',
+// Factor Table:
+export const actionToggleFactorialFactorsTableEditMode = createAction(
+  '[Experiment-Design-Stepper] Update Factorial Factors Table Edit Mode Details',
   props<{
-    factorialConditionsTableEditIndex: number | null;
-    factorialConditionsRowData: FactorialConditionTableRowData;
+    factorialFactorsTableEditIndex: number | null;
+    factorialFactorsRowData: FactorialFactorTableRowData;
   }>()
 );
 
+export const actionClearFactorialFactorTableEditDetails = createAction(
+  `[Experiment-Design-Stepper] Clear Factorial Factor Table Edit Details`
+);
+
+// Level Table:
 export const actionToggleFactorialLevelsTableEditMode = createAction(
   '[Experiment-Design-Stepper] Update Factorial Levels Table Edit Mode Details',
   props<{
@@ -84,16 +112,6 @@ export const actionToggleFactorialLevelsTableEditMode = createAction(
   }>()
 );
 
-export const actionClearFactorialConditionTableEditDetails = createAction(
-  `[Experiment-Design-Stepper] Clear Factorial Condition Table Edit Details`
-);
-
 export const actionClearFactorialLevelTableEditDetails = createAction(
   `[Experiment-Design-Stepper] Clear Factorial Level Table Edit Details`
-);
-
-export const clearFactorialDesignStepperData = createAction(`[Experiment-Design-Stepper] Clear Factorial Design Data`);
-
-export const clearSimpleExperimentDesignStepperData = createAction(
-  `[Experiment-Design-Stepper] Clear Simple Experiment Design Data`
 );
