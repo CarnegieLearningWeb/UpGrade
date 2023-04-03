@@ -41,7 +41,7 @@ import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
 import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
-import { MarkExperimentValidator2 } from './validators/MarkExperimentValidator.v4';
+import { MarkExperimentValidatorv4 } from './validators/MarkExperimentValidator.v4';
 
 interface ILog {
   id: string;
@@ -52,7 +52,7 @@ interface ILog {
   user: ExperimentUser;
 }
 
-interface IMonitoredDeciosionPoint {
+interface IMonitoredDecisionPoint {
   id: string;
   user: ExperimentUser;
   site: string;
@@ -424,8 +424,8 @@ export class ExperimentClientController {
     @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
-    experiment: MarkExperimentValidator2
-  ): Promise<IMonitoredDeciosionPoint> {
+    experiment: MarkExperimentValidatorv4
+  ): Promise<IMonitoredDecisionPoint> {
     request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.getUserDoc(experiment.userId, request.logger);
@@ -444,7 +444,8 @@ export class ExperimentClientController {
         userDoc: experimentUserDoc,
       },
       experiment.data.target,
-      experiment.data.assignedCondition.experimentId ? experiment.data.assignedCondition.experimentId : null
+      experiment.data.assignedCondition.experimentId ? experiment.data.assignedCondition.experimentId : null,
+      experiment.clientError ? experiment.clientError : null
     );
     return rest;
   }

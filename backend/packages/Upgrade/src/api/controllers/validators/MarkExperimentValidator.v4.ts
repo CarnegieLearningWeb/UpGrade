@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsDefined } from 'class-validator';
 import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 
-export class MarkExperimentValidator2 {
+export class MarkExperimentValidatorv4 {
   @IsNotEmpty()
   @IsDefined()
   public userId: string;
@@ -13,15 +13,7 @@ export class MarkExperimentValidator2 {
     assignedFactor: object | undefined;
   };
 
-  @IsNotEmpty()
-  @IsDefined()
-  public site: string;
-
-  @IsNotEmpty()
-  @IsDefined()
-  public assignedCondition: { conditionCode: string; experimentId: string };
-
-  public assignedFactor: object | undefined;
-
   public status?: MARKED_DECISION_POINT_STATUS;
+
+  public clientError?: string;
 }
