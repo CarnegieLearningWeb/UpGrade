@@ -152,7 +152,8 @@ export default class UpgradeClient {
     site: string,
     condition: string = null,
     status: MARKED_DECISION_POINT_STATUS,
-    target?: string
+    target?: string,
+    clientError?: string
   ): Promise<Interfaces.IMarkExperimentPoint> {
     this.validateClient();
     return await markExperimentPoint(
@@ -163,7 +164,8 @@ export default class UpgradeClient {
       site,
       condition,
       status,
-      target
+      target,
+      clientError
     );
   }
 

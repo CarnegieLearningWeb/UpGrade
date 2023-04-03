@@ -1,4 +1,4 @@
-import { IExperimentAssignment2, EXPERIMENT_TYPE, PAYLOAD_TYPE, IPayload } from 'upgrade_types';
+import { IExperimentAssignmentv4, EXPERIMENT_TYPE, PAYLOAD_TYPE, IPayload } from 'upgrade_types';
 
 export class Assignment {
   private _conditionCode: string;
@@ -55,7 +55,7 @@ export class Assignment {
 }
 
 export default function getExperimentCondition(
-  experimentConditionData: IExperimentAssignment2[],
+  experimentConditionData: IExperimentAssignmentv4[],
   site: string,
   target?: string
 ): Assignment {
