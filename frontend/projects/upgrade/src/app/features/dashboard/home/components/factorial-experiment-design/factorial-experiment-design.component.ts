@@ -687,6 +687,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
+        this.handleConditionsButtonClick();
         if (this.factorialExperimentDesignForm.dirty) {
           this.experimentDesignStepperService.experimentStepperDataChanged();
         }
