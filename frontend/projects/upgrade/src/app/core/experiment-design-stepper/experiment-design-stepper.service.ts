@@ -11,32 +11,24 @@ import * as experimentDesignStepperAction from './store/experiment-design-steppe
 import {
   selectIsFormLockedForEdit,
   selecthasExperimentStepperDataChanged,
-
   selectIsSimpleExperimentAliasTableEditMode,
   selectSimpleExperimentAliasTableEditIndex,
   selectSimpleExperimentAliasTableData,
-
   selectSimpleExperimentDesignData,
-
   selectIsDecisionPointsTableEditMode,
   selectDecisionPointsTableEditIndex,
   selectDecisionPointsEditModePreviousRowData,
-  
   selectIsConditionsTableEditMode,
   selectConditionsTableEditIndex,
   selectConditionsEditModePreviousRowData,
-
   selectIsFactorialConditionsTableEditMode,
   selectFactorialConditionsTableEditIndex,
   selectFactorialConditionsEditModePreviousRowData,
   selectFactorialConditionTableData,
-
   selectFactorialDesignData,
-
   selectIsFactorialFactorsTableEditMode,
   selectFactorialFactorsTableEditIndex,
   selectFactorialFactorsEditModePreviousRowData,
-
   selectIsFactorialLevelsTableEditMode,
   selectFactorialLevelsTableEditIndex,
   selectFactorialLevelsEditModePreviousRowData,
@@ -47,7 +39,6 @@ import {
   ExperimentConditionAliasRequestObject,
   ExperimentFactorialDesignData,
   FactorialConditionRequestObject,
-  
   DecisionPointsTableRowData,
   ConditionsTableRowData,
   SimpleExperimentAliasTableRow,
@@ -70,15 +61,12 @@ export class ExperimentDesignStepperService {
   expStepperDataChangedFlag = false;
   isFormLockedForEdit$ = this.store$.pipe(select(selectIsFormLockedForEdit));
   hasExperimentStepperDataChanged$ = this.store$.pipe(select(selecthasExperimentStepperDataChanged));
-  
+
   simpleExperimentDesignData$ = this.store$.pipe(
     select(selectSimpleExperimentDesignData),
     distinctUntilChanged(isEqual)
   );
-  factorialExperimentDesignData$ = this.store$.pipe(
-    select(selectFactorialDesignData),
-    distinctUntilChanged(isEqual)
-  );
+  factorialExperimentDesignData$ = this.store$.pipe(select(selectFactorialDesignData), distinctUntilChanged(isEqual));
 
   // Alias table:
   simpleExperimentAliasTableDataBehaviorSubject$ = new BehaviorSubject<SimpleExperimentAliasTableRow[]>([]);
@@ -103,7 +91,9 @@ export class ExperimentDesignStepperService {
   factorialConditionTableDataBehaviorSubject$ = new BehaviorSubject<FactorialConditionTableRowData[]>([]);
   isFactorialConditionsTableEditMode$ = this.store$.pipe(select(selectIsFactorialConditionsTableEditMode));
   factorialConditionsTableEditIndex$ = this.store$.pipe(select(selectFactorialConditionsTableEditIndex));
-  factorialConditionsEditModePreviousRowData$ = this.store$.pipe(select(selectFactorialConditionsEditModePreviousRowData));
+  factorialConditionsEditModePreviousRowData$ = this.store$.pipe(
+    select(selectFactorialConditionsEditModePreviousRowData)
+  );
   factorialConditionTableData$ = this.store$.pipe(
     select(selectFactorialConditionTableData),
     distinctUntilChanged(isEqual)
@@ -115,10 +105,7 @@ export class ExperimentDesignStepperService {
   factorialFactorsTableEditIndex$ = this.store$.pipe(select(selectFactorialFactorsTableEditIndex));
   factorialFactorsTableIndex$ = this.store$.pipe(select(selectFactorialFactorsTableIndex));
   factorialFactorsEditModePreviousRowData$ = this.store$.pipe(select(selectFactorialFactorsEditModePreviousRowData));
-  factorialFactorTableData$ = this.store$.pipe(
-    select(selectFactorialDesignData),
-    distinctUntilChanged(isEqual)
-  );
+  factorialFactorTableData$ = this.store$.pipe(select(selectFactorialDesignData), distinctUntilChanged(isEqual));
 
   // Level Table
   factorialLevelTableDataBehaviorSubject$ = new BehaviorSubject<ExperimentLevelFormData[]>([]);
@@ -348,12 +335,12 @@ export class ExperimentDesignStepperService {
             {
               id: factorOneLevel.id,
               name: factorOneLevel.name,
-              payload: factorOneLevel.payload
+              payload: factorOneLevel.payload,
             },
             {
               id: factorTwoLevel.id,
               name: factorTwoLevel.name,
-              payload: factorTwoLevel.payload
+              payload: factorTwoLevel.payload,
             },
           ],
           condition: this.createFactorialAliasString(
@@ -409,7 +396,7 @@ export class ExperimentDesignStepperService {
           return {
             id: levelElement.level.id,
             name: levelElement.level.name,
-            payload: levelElement.level.payload
+            payload: levelElement.level.alias,
           };
         }),
         condition: factorialCondition.conditionCode,

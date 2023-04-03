@@ -167,7 +167,7 @@ export interface LevelsMap {
 export interface ExperimentLevel {
   id: string;
   name: string;
-  payload: string;
+  alias: string;
   order: number;
 }
 
