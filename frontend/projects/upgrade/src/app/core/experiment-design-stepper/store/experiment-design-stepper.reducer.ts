@@ -3,30 +3,43 @@ import { ExperimentDesignStepperState } from './experiment-design-stepper.model'
 import * as experimentDesignStepperAction from './experiment-design-stepper.actions';
 
 const initialState: ExperimentDesignStepperState = {
-  isSimpleExperimentAliasTableEditMode: false,
-  isDecisionPointsTableEditMode: false,
-  isConditionsTableEditMode: false,
-  simpleExperimentAliasTableEditIndex: null,
-  decisionPointsTableEditIndex: null,
-  conditionsTableEditIndex: null,
-  decisionPointsEditModePreviousRowData: null,
-  conditionsEditModePreviousRowData: null,
   hasExperimentStepperDataChanged: false,
+
   simpleExperimentDesignData: { decisionPoints: [], conditions: [] },
   simpleExperimentAliasTableData: [],
-  factorialDesignData: { factors: [] },
+  factorialExperimentDesignData: { factors: [] },
   factorialConditionsTableData: [],
+  factorialFactorsTableData: [],
+  factorialLevelsTableData: [],
+
+  isSimpleExperimentAliasTableEditMode: false,
+  simpleExperimentAliasTableEditIndex: null,
+
+  isDecisionPointsTableEditMode: false,
+  decisionPointsTableEditIndex: null,
+  decisionPointsEditModePreviousRowData: null,
+
+  isConditionsTableEditMode: false,
+  conditionsTableEditIndex: null,
+  conditionsEditModePreviousRowData: null,
+
   isFactorialConditionsTableEditMode: false,
-  isFactorialLevelsTableEditMode: false,
   factorialConditionsTableEditIndex: null,
-  factorialLevelsTableEditIndex: null,
   factorialConditionsEditModePreviousRowData: null,
+
+  isFactorialFactorsTableEditMode: false,
+  factorialFactorsTableEditIndex: null,
+  factorialFactorsTableIndex: null,
+  factorialFactorsEditModePreviousRowData: null,
+
+  isFactorialLevelsTableEditMode: false,
+  factorialLevelsTableEditIndex: null,
+  factorialLevelsEditModePreviousRowData: null,
 };
 
 const reducer = createReducer(
   initialState,
-  on(
-    experimentDesignStepperAction.actionUpdateAliasTableEditMode,
+  on(experimentDesignStepperAction.actionUpdateAliasTableEditMode,
     (state, { isAliasTableEditMode, aliasTableEditIndex }) => ({
       ...state,
       isAliasTableEditMode,
@@ -41,12 +54,41 @@ const reducer = createReducer(
     ...state,
     hasExperimentStepperDataChanged: false,
   })),
-  on(
-    experimentDesignStepperAction.actionToggleDecisionPointsTableEditMode,
+  on(experimentDesignStepperAction.actionUpdateSimpleExperimentDesignData, (state, { designData }) => ({
+    ...state,
+    simpleExperimentDesignData: designData,
+  })),
+  on(experimentDesignStepperAction.actionUpdateSimpleExperimentAliasTableData, (state, { tableData }) => ({
+    ...state,
+    simpleExperimentAliasTableData: tableData,
+  })),
+  on(experimentDesignStepperAction.actionUpdateFactorialExperimentDesignData, (state, { designData }) => ({
+    ...state,
+    factorialExperimentDesignData: designData,
+  })),
+  on(experimentDesignStepperAction.actionUpdateFactorialConditionTableData, (state, { tableData }) => ({
+    ...state,
+    factorialConditionsTableData: tableData,
+  })),
+  on(experimentDesignStepperAction.actionToggleSimpleExperimentAliasTableEditMode,
+    (state, { simpleExperimentAliasTableEditIndex }): ExperimentDesignStepperState => {
+      // toggle edit mode
+      const editMode = !state.isSimpleExperimentAliasTableEditMode;
+
+      // if not in edit mode, use null for row-index
+      const editIndex = editMode ? simpleExperimentAliasTableEditIndex : null;
+
+      return {
+        ...state,
+        isSimpleExperimentAliasTableEditMode: editMode,
+        simpleExperimentAliasTableEditIndex: editIndex,
+      };
+    }
+  ),
+  on(experimentDesignStepperAction.actionToggleDecisionPointsTableEditMode,
     (state, { decisionPointsTableEditIndex, decisionPointsRowData }) => {
       // toggle edit mode
       const editMode = !state.isDecisionPointsTableEditMode;
-
       // if not in edit mode, use null for row-index
       const editIndex = editMode ? decisionPointsTableEditIndex : null;
       const previousRowData = editMode ? decisionPointsRowData : null;
@@ -65,8 +107,7 @@ const reducer = createReducer(
     decisionPointsTableEditIndex: null,
     decisionPointsEditModePreviousRowData: null,
   })),
-  on(
-    experimentDesignStepperAction.actionToggleConditionsTableEditMode,
+  on(experimentDesignStepperAction.actionToggleConditionsTableEditMode,
     (state, { conditionsTableEditIndex, conditionsRowData }) => {
       // toggle edit mode
       const editMode = !state.isConditionsTableEditMode;
@@ -83,30 +124,13 @@ const reducer = createReducer(
       };
     }
   ),
-  on(
-    experimentDesignStepperAction.actionUpdateSimpleExperimentAliasTableEditModeDetails,
-    (state, { simpleExperimentAliasTableEditIndex }): ExperimentDesignStepperState => {
-      // toggle edit mode
-      const editMode = !state.isSimpleExperimentAliasTableEditMode;
-
-      // if not in edit mode, use null for row-index
-      const editIndex = editMode ? simpleExperimentAliasTableEditIndex : null;
-
-      return {
-        ...state,
-        isSimpleExperimentAliasTableEditMode: editMode,
-        simpleExperimentAliasTableEditIndex: editIndex,
-      };
-    }
-  ),
-  on(experimentDesignStepperAction.actionClearFactorialConditionTableEditDetails, (state) => ({
+  on(experimentDesignStepperAction.actionClearConditionTableEditDetails, (state) => ({
     ...state,
-    isFactorialConditionsTableEditMode: false,
-    factorialConditionsTableEditIndex: null,
-    factorialConditionsEditModePreviousRowData: null,
+    isConditionsTableEditMode: false,
+    conditionsTableEditIndex: null,
+    conditionsEditModePreviousRowData: null,
   })),
-  on(
-    experimentDesignStepperAction.actionToggleFactorialConditionsTableEditMode,
+  on(experimentDesignStepperAction.actionToggleFactorialConditionsTableEditMode,
     (state, { factorialConditionsTableEditIndex, factorialConditionsRowData }) => {
       // toggle edit mode
       const editMode = !state.isFactorialConditionsTableEditMode;
@@ -123,32 +147,16 @@ const reducer = createReducer(
       };
     }
   ),
-  on(experimentDesignStepperAction.actionClearConditionTableEditDetails, (state) => ({
+  on(experimentDesignStepperAction.actionClearFactorialConditionTableEditDetails, (state) => ({
     ...state,
-    isConditionsTableEditMode: false,
-    conditionsTableEditIndex: null,
-    conditionsEditModePreviousRowData: null,
-  })),
-  on(experimentDesignStepperAction.actionUpdateSimpleExperimentDesignData, (state, { designData }) => ({
-    ...state,
-    simpleExperimentDesignData: designData,
-  })),
-  on(experimentDesignStepperAction.actionUpdateSimpleExperimentAliasTableData, (state, { tableData }) => ({
-    ...state,
-    simpleExperimentAliasTableData: tableData,
-  })),
-  on(experimentDesignStepperAction.actionUpdateFactorialDesignData, (state, { designData }) => ({
-    ...state,
-    factorialDesignData: designData,
-  })),
-  on(experimentDesignStepperAction.actionUpdateFactorialTableData, (state, { tableData }) => ({
-    ...state,
-    factorialConditionsTableData: tableData,
+    isFactorialConditionsTableEditMode: false,
+    factorialConditionsTableEditIndex: null,
+    factorialConditionsEditModePreviousRowData: null,
   })),
   on(experimentDesignStepperAction.clearFactorialDesignStepperData, (state) => {
     return {
       ...state,
-      factorialDesignData: { factors: [] },
+      factorialExperimentDesignData: { factors: [] },
       factorialConditionsTableData: [],
     };
   }),
@@ -160,7 +168,53 @@ const reducer = createReducer(
       simpleExperimentAliasTableEditIndex: null,
       isSimpleExperimentAliasTableEditMode: false,
     };
-  })
+  }),
+  on(experimentDesignStepperAction.actionToggleFactorialFactorsTableEditMode,
+    (state, { factorialFactorsTableEditIndex, factorialFactorsRowData }) => {
+      // toggle edit mode
+      const editMode = !state.isFactorialFactorsTableEditMode;
+
+      // if not in edit mode, use null for row-index
+      const editIndex = editMode ? factorialFactorsTableEditIndex : null;
+      const previousRowData = editMode ? factorialFactorsRowData : null;
+
+      return {
+        ...state,
+        isFactorialFactorsTableEditMode: editMode,
+        factorialFactorsTableEditIndex: editIndex,
+        factorialFactorsTableIndex: factorialFactorsTableEditIndex,
+        factorialFactorsRowData: previousRowData,
+      };
+    }
+  ),
+  on(experimentDesignStepperAction.actionClearFactorialFactorTableEditDetails, (state) => ({
+    ...state,
+    isFactorialFactorsTableEditMode: false,
+    factorialFactorsTableEditIndex: null,
+    factorialFactorsRowData: null,
+  })),
+  on(experimentDesignStepperAction.actionToggleFactorialLevelsTableEditMode,
+    (state, { factorialLevelsTableEditIndex, factorialLevelsRowData }) => {
+      // toggle edit mode
+      const editMode = !state.isFactorialLevelsTableEditMode;
+      // if not in edit mode, use null for row-index
+      const editIndex = editMode ? factorialLevelsTableEditIndex : null;
+      const previousRowData = editMode ? factorialLevelsRowData : null;
+
+      return {
+        ...state,
+        isFactorialLevelsTableEditMode: editMode,
+        factorialLevelsTableEditIndex: editIndex,
+        factorialLevelsRowData: previousRowData,
+      };
+    }
+  ),
+  on(experimentDesignStepperAction.actionClearFactorialLevelTableEditDetails, (state) => ({
+    ...state,
+    isFactorialLevelsTableEditMode: false,
+    factorialLevelsTableEditIndex: null,
+    factorialLevelsRowData: null,
+  })),
 );
 
 export function experimentDesignStepperReducer(state: ExperimentDesignStepperState | undefined, action: Action) {

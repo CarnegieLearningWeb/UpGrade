@@ -163,7 +163,7 @@ export interface ExperimentFactor {
 export interface ExperimentLevel {
   id: string;
   name: string;
-  alias: string;
+  payload: string;
   order: number;
 }
 

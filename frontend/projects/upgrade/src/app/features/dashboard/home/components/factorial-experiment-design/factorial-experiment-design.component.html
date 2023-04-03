@@ -21,16 +21,8 @@
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== groupIndex">
-                    <span
-                      [matTooltip]="
-                        decisionPoints.at(groupIndex).get('site').value
-                      "
-                      matTooltipPosition="above"
-                    >
-                      {{
-                        decisionPoints.at(groupIndex).get('site').value
-                          | truncate : 35
-                      }}
+                    <span [matTooltip]="decisionPoints.at(groupIndex).get('site').value" matTooltipPosition="above">
+                      {{ decisionPoints.at(groupIndex).get('site').value | truncate : 35 }}
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
@@ -65,16 +57,8 @@
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== groupIndex">
-                    <span
-                      [matTooltip]="
-                        decisionPoints.at(groupIndex).get('target').value
-                      "
-                      matTooltipPosition="above"
-                    >
-                      {{
-                        decisionPoints.at(groupIndex).get('target').value
-                          | truncate : 35
-                      }}
+                    <span [matTooltip]="decisionPoints.at(groupIndex).get('target').value" matTooltipPosition="above">
+                      {{ decisionPoints.at(groupIndex).get('target').value | truncate : 35 }}
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
@@ -134,7 +118,6 @@
                     <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== rowIndex">
                       <mat-icon class="icon">create</mat-icon>
                     </ng-container>
-
                     <!-- Done Icon -->
                     <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === rowIndex">
                       <mat-icon class="icon">done</mat-icon>
@@ -147,9 +130,11 @@
                     [disabled]="(isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex"
                     (click)="handleDecisionPointTableClearOrRemoveRow(rowIndex)"
                   >
+                    <!-- Delete Icon -->
                     <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== rowIndex">
                       <mat-icon class="icon">delete_outline</mat-icon>
                     </ng-container>
+                    <!-- Cancel/Clear Icon -->
                     <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === rowIndex">
                       <mat-icon class="icon">clear</mat-icon>
                     </ng-container>
@@ -178,29 +163,28 @@
               </div>
             </ng-template>
           </ng-container>
-            <button
-              type="button"
-              class="ft-12-700 add-decision-point"
-              *ngIf="!experimentInfo"
-              [ngClass]="{ 'add-decision-point--disabled': (isFormLockedForEdit$ | async) }"
-              [disabled]="isFormLockedForEdit$ | async"
-              (click)="addDecisionPoint('decisionPoints')"
-            >
-              +
-              {{ 'home.new-experiment.design.add-experiment-decision-point.text' | translate }}
-            </button>
-            <button
-              type="button"
-              class="ft-12-700 add-decision-point"
-              *ngIf="experimentInfo"
-              [ngClass]="{ 'add-decision-point--disabled': !isExperimentEditable || (isFormLockedForEdit$ | async) }"
-              [disabled]="!isExperimentEditable || (isFormLockedForEdit$ | async)"
-              (click)="addDecisionPoint('decisionPoints')"
-            >
-              +
-              {{ 'home.new-experiment.design.add-experiment-decision-point.text' | translate }}
-            </button>
-
+          <button
+            type="button"
+            class="ft-12-700 add-decision-point"
+            *ngIf="!experimentInfo"
+            [ngClass]="{ 'add-decision-point--disabled': (isFormLockedForEdit$ | async) }"
+            [disabled]="isFormLockedForEdit$ | async"
+            (click)="addDecisionPoint()"
+          >
+            +
+            {{ 'home.new-experiment.design.add-experiment-decision-point.text' | translate }}
+          </button>
+          <button
+            type="button"
+            class="ft-12-700 add-decision-point"
+            *ngIf="experimentInfo"
+            [ngClass]="{ 'add-decision-point--disabled': !isExperimentEditable || (isFormLockedForEdit$ | async) }"
+            [disabled]="!isExperimentEditable || (isFormLockedForEdit$ | async)"
+            (click)="addDecisionPoint()"
+          >
+            +
+            {{ 'home.new-experiment.design.add-experiment-decision-point.text' | translate }}
+          </button>
           <div class="validation-container">
             <span class="ft-14-600 validation-message" *ngFor="let error of decisionPointErrors">{{ error }}</span>
             <span
@@ -212,17 +196,6 @@
 
           <div class="factors-header-container">
             <span class="title">{{ 'home.new-experiment.design.factor.text' | translate }}</span>
-            <!-- <button
-              type="button"
-              mat-flat-button
-              color="primary"
-              class="ft-14-600 toggle-button"
-              (click)="handleConditionsButtonClick()"
-              [disabled]="isConditionButtonFunctional()"
-            >
-              <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
-              <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.conditions' | translate }}</span>
-            </button> -->
           </div>
           <!-- Factors Table -->
           <ng-container *ngIf="factor?.length; else initialFactorsMessage">
@@ -256,20 +229,32 @@
                   {{ 'home.new-experiment.design.factor-name.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let factorIndex = dataIndex" [formGroupName]="factorIndex">
-                  <mat-form-field floatLabel="never">
+                  <ng-container *ngIf="(factorsTableEditIndex$ | async) !== factorIndex">
                     <span
                       [matTooltip]="factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.factor"
                       matTooltipPosition="above"
                     >
-                      <input
-                        matInput
-                        [placeholder]="'home.new-experiment.design.factor.placeholder.text' | translate"
-                        formControlName="factor"
-                        [value]="factor"
-                        autocomplete="off"
-                      />
+                      {{
+                        factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.name | truncate : 35
+                      }}
                     </span>
-                  </mat-form-field>
+                  </ng-container>
+                  <ng-container *ngIf="(factorsTableEditIndex$ | async) === factorIndex">
+                    <mat-form-field floatLabel="never">
+                      <span
+                        [matTooltip]="factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.name"
+                        matTooltipPosition="above"
+                      >
+                        <input
+                          matInput
+                          [placeholder]="'home.new-experiment.design.factor.placeholder.text' | translate"
+                          formControlName="name"
+                          [value]="name"
+                          autocomplete="off"
+                        />
+                      </span>
+                    </mat-form-field>
+                  </ng-container>
                 </mat-cell>
               </ng-container>
 
@@ -279,36 +264,81 @@
                   {{ 'home.new-experiment.design.description.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let factorIndex = dataIndex" [formGroupName]="factorIndex">
-                  <mat-form-field floatLabel="never">
+                  <ng-container *ngIf="(factorsTableEditIndex$ | async) !== factorIndex">
                     <span
                     [matTooltip]="factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.description"
                     matTooltipPosition="above"
                     >
-                      <input
-                        matInput
-                        [placeholder]="'home.new-experiment.design.description.placeholder.text' | translate"
-                        formControlName="description"
-                        [value]="description"
-                      />
+                      {{
+                        factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.description
+                          | truncate : 35
+                      }}
                     </span>
-                  </mat-form-field>
+                  </ng-container>
+                  <ng-container *ngIf="(factorsTableEditIndex$ | async) === factorIndex">
+                    <mat-form-field floatLabel="never">
+                      <span
+                        [matTooltip]="
+                          factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.description
+                        "
+                        matTooltipPosition="above"
+                      >
+                        <input
+                          matInput
+                          [placeholder]="'home.new-experiment.design.description.placeholder.text' | translate"
+                          formControlName="description"
+                          [value]="description"
+                        />
+                      </span>
+                    </mat-form-field>
+                  </ng-container>
                 </mat-cell>
               </ng-container>
 
-              <ng-container matColumnDef="removeFactor">
-                <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+              <!-- Actions Column -->
+              <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
                 <mat-cell
-                  *matCellDef="let element; let factorIndex = dataIndex"
-                  [formGroupName]="factorIndex"
+                  *matCellDef="let rowData; let rowIndex = dataIndex"
+                  class="actions-cell"
                   style="justify-content: flex-end"
                 >
                   <button
-                    mat-icon-button
                     type="button"
-                    [disabled]="!isExperimentEditable"
-                    (click)="removeFactor(factorIndex)"
+                    class="row-action-btn"
+                    [disabled]="
+                      ((isFormLockedForEdit$ | async) && (factorsTableEditIndex$ | async) !== rowIndex) ||
+                      !isExperimentEditable
+                    "
+                    (click)="handleFactorTableEditClick(rowData.getRawValue(), rowIndex)"
                   >
-                    <mat-icon class="remove-icon"> delete_outline </mat-icon>
+                    <!-- Edit Icon -->
+                    <ng-container *ngIf="(factorsTableEditIndex$ | async) !== rowIndex">
+                      <mat-icon class="icon">create</mat-icon>
+                    </ng-container>
+                    <!-- Done Icon -->
+                    <ng-container
+                      *ngIf="(factorsTableEditIndex$ | async) === rowIndex && (levelsTableEditIndex$ | async) === null"
+                    >
+                      <mat-icon class="icon">done</mat-icon>
+                    </ng-container>
+                  </button>
+                  <button
+                    type="button"
+                    class="row-action-btn"
+                    [disabled]="(isFormLockedForEdit$ | async) && (factorsTableEditIndex$ | async) !== rowIndex"
+                    (click)="handleFactorTableClearOrRemoveRow(rowIndex)"
+                  >
+                    <!-- Delete Icon -->
+                    <ng-container *ngIf="(factorsTableEditIndex$ | async) !== rowIndex">
+                      <mat-icon class="icon">delete_outline</mat-icon>
+                    </ng-container>
+                    <!-- Cancel/Clear Icon -->
+                    <ng-container
+                      *ngIf="(factorsTableEditIndex$ | async) === rowIndex && (levelsTableEditIndex$ | async) === null"
+                    >
+                      <mat-icon class="icon">clear</mat-icon>
+                    </ng-container>
                   </button>
                 </mat-cell>
               </ng-container>
@@ -330,7 +360,7 @@
                             {{ 'home.new-experiment.design.level-name.text' | translate }}
                           </mat-header-cell>
                           <mat-cell *matCellDef="let element; let levelIndex = index" [formGroupName]="levelIndex">
-                            <mat-form-field floatLabel="never">
+                            <ng-container *ngIf="(levelsTableEditIndex$ | async) !== levelIndex">
                               <span
                                 [matTooltip]="
                                   factorialExperimentDesignForm.getRawValue('level')?.factors[factorIndex]?.levels[
@@ -339,15 +369,33 @@
                                 "
                                 matTooltipPosition="above"
                               >
-                                <input
-                                  matInput
-                                  [placeholder]="'home.new-experiment.design.level.placeholder.text' | translate"
-                                  formControlName="level"
-                                  [value]="level"
-                                  autocomplete="off"
-                                />
+                                {{
+                                  factorialExperimentDesignForm.getRawValue('level')?.factors[factorIndex]?.levels[
+                                    levelIndex
+                                  ]?.name | truncate : 35
+                                }}
                               </span>
-                            </mat-form-field>
+                            </ng-container>
+                            <ng-container *ngIf="(levelsTableEditIndex$ | async) === levelIndex">
+                              <mat-form-field floatLabel="never">
+                                <span
+                                  [matTooltip]="
+                                    factorialExperimentDesignForm.getRawValue('level')?.factors[factorIndex]?.levels[
+                                      levelIndex
+                                    ]?.name
+                                  "
+                                  matTooltipPosition="above"
+                                >
+                                  <input
+                                    matInput
+                                    [placeholder]="'home.new-experiment.design.level.placeholder.text' | translate"
+                                    formControlName="name"
+                                    [value]="name"
+                                    autocomplete="off"
+                                  />
+                                </span>
+                              </mat-form-field>
+                            </ng-container>
                           </mat-cell>
                         </ng-container>
 
@@ -360,89 +408,117 @@
                             *matCellDef="let element; let levelPayloadIndex = index"
                             [formGroupName]="levelPayloadIndex"
                           >
-                            <mat-form-field floatLabel="never">
+                            <ng-container *ngIf="(levelsTableEditIndex$ | async) !== levelPayloadIndex">
                               <span
                                 [matTooltip]="
-                                  factorialExperimentDesignForm.getRawValue('alias')?.factors[factorIndex]?.levels[
-                                    levelIndex
-                                  ]?.alias
+                                  factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
+                                  levelPayloadIndex
+                                  ]?.payload
                                 "
                                 matTooltipPosition="above"
                               >
-                                <input
-                                  matInput
-                                  [placeholder]="'home.new-experiment.design.payload.placeholder.text' | translate"
-                                  formControlName="alias"
-                                  [value]="alias"
-                                  autocomplete="off"
-                                />
+                                {{
+                                  factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
+                                  levelPayloadIndex
+                                  ]?.payload | truncate : 35
+                                }}
                               </span>
-                            </mat-form-field>
-                          </mat-cell>
-                        </ng-container>
-
-                        <ng-container matColumnDef="removeLevel">
-                          <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
-                          <mat-cell
-                            *matCellDef="let element; let removelevelIndex = index"
-                            [formGroupName]="removelevelIndex"
-                            style="justify-content: flex-end"
-                          >
-                            <button
-                              mat-icon-button
-                              type="button"
-                              [disabled]="!isExperimentEditable"
-                              (click)="removeLevel(factorIndex, removelevelIndex)"
-                            >
-                              <mat-icon class="remove-icon"> delete_outline </mat-icon>
-                            </button>
+                            </ng-container>
+                            <ng-container *ngIf="(levelsTableEditIndex$ | async) === levelPayloadIndex">
+                              <mat-form-field floatLabel="never">
+                                <span
+                                  [matTooltip]="
+                                    factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
+                                    levelPayloadIndex
+                                    ]?.payload
+                                  "
+                                  matTooltipPosition="above"
+                                >
+                                  <input
+                                    matInput
+                                    [placeholder]="'home.new-experiment.design.payload.placeholder.text' | translate"
+                                    formControlName="payload"
+                                    [value]="payload"
+                                    autocomplete="off"
+                                  />
+                                </span>
+                              </mat-form-field>
+                            </ng-container>
                           </mat-cell>
                         </ng-container>
 
                         <!-- Actions Column -->
-                         <!-- <ng-container matColumnDef="actions">
+                        <ng-container matColumnDef="actions">
                           <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
-                          <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell" style="justify-content: flex-end">
+                          <mat-cell
+                            *matCellDef="let rowData; let rowIndex = index"
+                            class="actions-cell"
+                            style="justify-content: flex-end"
+                          >
                             <button
                               type="button"
                               class="row-action-btn"
                               [disabled]="
-                                ((isFormLockedForEdit$ | async) && (tableLevelEditIndex$ | async) !== rowIndex) || !isExperimentEditable
+                                ((isFormLockedForEdit$ | async) && (levelsTableEditIndex$ | async) !== rowIndex) ||
+                                !isExperimentEditable
                               "
-                              (click)="handleRowEditClick(rowData, rowIndex)"
+                              (click)="handleLevelTableEditClick(rowData.getRawValue(), rowIndex)"
                             >
-                              <ng-container *ngIf="(tableLevelEditIndex$ | async) !== rowIndex">
+                              <!-- Edit Icon -->
+                              <ng-container *ngIf="(levelsTableEditIndex$ | async) !== rowIndex">
                                 <mat-icon class="icon">create</mat-icon>
                               </ng-container>
-                              <ng-container *ngIf="(tableLevelEditIndex$ | async) === rowIndex">
-                                <mat-icon class="icon" 
-                                  (click)="handleRowEditDoneClick(rowIndex)">done</mat-icon>
+                              <!-- Done Icon -->
+                              <ng-container
+                                *ngIf="
+                                  (levelsTableEditIndex$ | async) === rowIndex &&
+                                  (factorsTableIndex$ | async) === factorIndex
+                                "
+                              >
+                                <mat-icon class="icon">done</mat-icon>
                               </ng-container>
                             </button>
                             <button
                               type="button"
                               class="row-action-btn"
-                              [disabled]="(isFormLockedForEdit$ | async) && (tableLevelEditIndex$ | async) !== rowIndex"
-                              (click)="handleClear(rowIndex)"
+                              [disabled]="
+                                (isFormLockedForEdit$ | async) && (levelsTableEditIndex$ | async) !== rowIndex
+                              "
+                              (click)="handleLevelTableClearOrRemoveRow(factorIndex, rowIndex)"
                             >
-                              <ng-container *ngIf="(tableLevelEditIndex$ | async) !== rowIndex">
+                              <!-- Delete Icon -->
+                              <ng-container *ngIf="(levelsTableEditIndex$ | async) !== rowIndex">
                                 <mat-icon class="icon">delete_outline</mat-icon>
                               </ng-container>
-                              <ng-container *ngIf="(tableLevelEditIndex$ | async) === rowIndex">
+                              <!-- Cancel/Clear Icon -->
+                              <ng-container
+                                *ngIf="
+                                  (levelsTableEditIndex$ | async) === rowIndex &&
+                                  (factorsTableIndex$ | async) === factorIndex
+                                "
+                              >
                                 <mat-icon class="icon">clear</mat-icon>
                               </ng-container>
-                            </button>                            
+                            </button>
                           </mat-cell>
-                        </ng-container> -->
-
+                        </ng-container>
                         <mat-header-row *matHeaderRowDef="levelDisplayedColumns; sticky: true"></mat-header-row>
-                        <mat-row *matRowDef="let row; columns: levelDisplayedColumns"></mat-row>
+                        <mat-row
+                          *matRowDef="let row; let rowIndex = index; columns: levelDisplayedColumns"
+                          [ngClass]="{
+                            'row-is-locked':
+                              (isFormLockedForEdit$ | async) && (levelsTableEditIndex$ | async) !== rowIndex
+                          }"
+                        >
+                        </mat-row>
                       </mat-table>
                     </div>
                     <button
                       type="button"
                       class="ft-12-700 add-level"
                       *ngIf="!experimentInfo"
+                      [ngClass]="{ 'add-level--disabled': (isFormLockedForEdit$ | async) }"
+                      [disabled]="isFormLockedForEdit$ | async"
                       (click)="addLevel(factorIndex)"
                     >
                       +
@@ -452,8 +528,8 @@
                       type="button"
                       class="ft-12-700 add-level"
                       *ngIf="experimentInfo"
-                      [ngClass]="{ 'add-factor--disabled': !isExperimentEditable }"
-                      [disabled]="!isExperimentEditable"
+                      [ngClass]="{ 'add-level--disabled': !isExperimentEditable || (isFormLockedForEdit$ | async) }"
+                      [disabled]="!isExperimentEditable || (isFormLockedForEdit$ | async)"
                       (click)="addLevel(factorIndex)"
                     >
                       +
@@ -462,47 +538,17 @@
                   </div>
                 </mat-cell>
               </ng-container>
-
-              <!-- Actions Column -->
-              <!-- <ng-container matColumnDef="actions">
-                <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
-                <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell" style="justify-content: flex-end">
-                  <button
-                    type="button"
-                    class="row-action-btn"
-                    [disabled]="
-                      ((isFormLockedForEdit$ | async) && (tableLevelEditIndex$ | async) !== rowIndex) || !isExperimentEditable
-                    "
-                    (click)="handleRowEditClick(rowData, rowIndex)"
-                  >
-                    <ng-container *ngIf="(tableLevelEditIndex$ | async) !== rowIndex">
-                      <mat-icon class="icon">create</mat-icon>
-                    </ng-container>
-
-                    <ng-container *ngIf="(tableLevelEditIndex$ | async) === rowIndex">
-                      <mat-icon class="icon" (click)="handleRowEditDoneClick(rowIndex)">done</mat-icon>
-                    </ng-container>
-                  </button>
-
-                  <ng-container *ngIf="(tableLevelEditIndex$ | async) === rowIndex">
-                    <button
-                      type="button"
-                      class="row-action-btn"
-                      [disabled]="(isFormLockedForEdit$ | async) && (tableEditIndex$ | async) !== rowIndex"
-                      (click)="handleClear(rowIndex)"
-                    >
-                      <ng-container>
-                        <mat-icon class="icon">clear</mat-icon>
-                      </ng-container>
-                    </button>
-                  </ng-container>
-                </mat-cell>
-              </ng-container> -->
-
               <mat-header-row *matHeaderRowDef="factorDisplayedColumns; sticky: true"></mat-header-row>
-              <mat-row *matRowDef="let row; columns: factorDisplayedColumns"></mat-row>
-
-              <mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"> </mat-row>
+              <mat-row
+                *matRowDef="let row; let rowIndex = dataIndex; columns: factorDisplayedColumns"
+                [ngClass]="{
+                  'row-is-locked':
+                    (isFormLockedForEdit$ | async) &&
+                    (factorsTableEditIndex$ | async) !== null &&
+                    (factorsTableEditIndex$ | async) !== rowIndex
+                }"
+              ></mat-row>
+              <mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"></mat-row>
             </mat-table>
           </ng-container>
           <ng-container>
@@ -516,7 +562,17 @@
               </div>
             </ng-template>
           </ng-container>
-          <button type="button" class="ft-12-700 add-factor" *ngIf="!experimentInfo" (click)="addFactor()">
+          <button
+            type="button"
+            class="ft-12-700 add-factor"
+            *ngIf="!experimentInfo"
+            [ngClass]="{
+              'add-factor--disabled':
+                (isFormLockedForEdit$ | async) || factorialExperimentDesignForm.value.factors.length === 2
+            }"
+            [disabled]="(isFormLockedForEdit$ | async) || factorialExperimentDesignForm.value.factors.length === 2"
+            (click)="addFactor()"
+          >
             +
             {{ 'home.new-experiment.design.add-experiment-factor.text' | translate }}
           </button>
@@ -524,8 +580,17 @@
             type="button"
             class="ft-12-700 add-factor"
             *ngIf="experimentInfo"
-            [ngClass]="{ 'add-factor--disabled': !isExperimentEditable }"
-            [disabled]="!isExperimentEditable"
+            [ngClass]="{
+              'add-factor--disabled':
+                !isExperimentEditable ||
+                (isFormLockedForEdit$ | async) ||
+                factorialExperimentDesignForm.value.factors.length === 2
+            }"
+            [disabled]="
+              !isExperimentEditable ||
+              (isFormLockedForEdit$ | async) ||
+              factorialExperimentDesignForm.value.factors.length === 2
+            "
             (click)="addFactor()"
           >
             +
@@ -538,19 +603,8 @@
             <span class="ft-14-600 validation-message" *ngIf="levelCountError" [innerHTML]="levelCountError"></span>
           </div>
           <div>
-            <br />
-            <button
-              type="button"
-              mat-flat-button
-              color="primary"
-              class="ft-14-600 toggle-button"
-              (click)="handleConditionsButtonClick()"
-            >
-            Update Condition Table
-            </button>
-            <br />
-            <br />
             <div *ngIf="this.factor.length >= 2">
+              <br />
               <app-conditions-table
                 [isAnyRowRemoved]="isAnyRowRemoved"
                 [experimentInfo]="experimentInfo"

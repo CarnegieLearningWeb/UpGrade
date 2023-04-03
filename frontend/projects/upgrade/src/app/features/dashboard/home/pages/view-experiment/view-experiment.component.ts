@@ -63,7 +63,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   displayedConditionColumnsFactorial: string[] = ['conditionCode', 'payload', 'assignmentWeight'];
   displayedPartitionColumns: string[] = ['partitionPoint', 'partitionId', 'excludeIfReached'];
   displayedPartitionColumnsFactorial: string[] = ['expandIcon', 'factorName', 'description'];
-  displayedPartitionLevelColumnsFactorial = ['level', 'alias'];
+  displayedPartitionLevelColumnsFactorial = ['level', 'payload'];
   displayedAliasConditionColumns: string[] = ['site', 'target', 'condition', 'alias'];
   displayedParticipantsColumns: string[] = ['participantsType', 'participantsId'];
   displayedMetricsColumns: string[] = ['metricsKey', 'metricsOperation', 'metricsName'];
