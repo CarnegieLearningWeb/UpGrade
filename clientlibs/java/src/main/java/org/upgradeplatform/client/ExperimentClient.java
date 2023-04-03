@@ -269,18 +269,30 @@ public class ExperimentClient implements AutoCloseable {
 	public void markExperimentPoint(final String site, String condition, MarkedDecisionPointStatus status,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
 		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, "", new Condition(condition));
-		markExperimentPoint(status, markExperimentRequestData, callbacks);
+		markExperimentPoint(status, markExperimentRequestData, "", callbacks);
 	}
 
 	public void markExperimentPoint(final String site, String target, String condition, MarkedDecisionPointStatus status,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
 		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(condition));
-		markExperimentPoint(status, markExperimentRequestData, callbacks);
+		markExperimentPoint(status, markExperimentRequestData, "", callbacks);
 	}
 
-	public void markExperimentPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data,
+	public void markExperimentPoint(final String site, String condition, MarkedDecisionPointStatus status, String clientError,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, data, status.toString());
+		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, "", new Condition(condition));
+		markExperimentPoint(status, markExperimentRequestData, clientError, callbacks);
+	}
+
+	public void markExperimentPoint(final String site, String target, String condition, MarkedDecisionPointStatus status, String clientError,
+			final ResponseCallback<MarkExperimentPoint> callbacks) {
+		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(condition));
+		markExperimentPoint(status, markExperimentRequestData, clientError, callbacks);
+	}
+
+	public void markExperimentPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data, String clientError,
+			final ResponseCallback<MarkExperimentPoint> callbacks) {
+		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, status, data, clientError);
 		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
 
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
