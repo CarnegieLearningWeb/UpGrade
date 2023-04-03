@@ -290,6 +290,11 @@ public class ExperimentClient implements AutoCloseable {
 		markExperimentPoint(status, markExperimentRequestData, clientError, callbacks);
 	}
 
+	public void markExperimentPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data,
+			final ResponseCallback<MarkExperimentPoint> callbacks) {
+		markExperimentPoint(status, data, "", callbacks);
+	}
+
 	public void markExperimentPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data, String clientError,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
 		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, status, data, clientError);
