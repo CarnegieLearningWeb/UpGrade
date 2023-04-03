@@ -404,15 +404,15 @@
                               <span
                                 [matTooltip]="
                                   factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
-                                  levelPayloadIndex
-                                  ]?.payload
+                                    levelPayloadIndex
+                                  ]?.alias
                                 "
                                 matTooltipPosition="above"
                               >
                                 {{
                                   factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
-                                  levelPayloadIndex
-                                  ]?.payload | truncate : 35
+                                    levelPayloadIndex
+                                  ]?.alias | truncate : 35
                                 }}
                               </span>
                             </ng-container>
@@ -421,15 +421,15 @@
                                 <span
                                   [matTooltip]="
                                     factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
-                                    levelPayloadIndex
-                                    ]?.payload
+                                      levelPayloadIndex
+                                    ]?.alias
                                   "
                                   matTooltipPosition="above"
                                 >
                                   <input
                                     matInput
                                     [placeholder]="'home.new-experiment.design.payload.placeholder.text' | translate"
-                                    formControlName="payload"
+                                    formControlName="alias"
                                     [value]="payload"
                                     autocomplete="off"
                                   />

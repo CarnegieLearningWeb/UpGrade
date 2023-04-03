@@ -222,7 +222,7 @@ export class ImportExperimentComponent implements OnInit {
     const levelSchema: Record<keyof ExperimentLevel, string> = {
       id: 'string',
       name: 'string',
-      payload: 'string',
+      alias: 'string',
       order: 'number',
     };
 

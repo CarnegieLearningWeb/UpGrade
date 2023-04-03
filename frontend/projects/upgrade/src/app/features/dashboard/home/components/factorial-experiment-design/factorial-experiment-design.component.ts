@@ -217,7 +217,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         this.factor.push(this.addFactors(factor.name, factor.description, factor.order));
         this.getFactorialLevelsAt(factorIndex).removeAt(0);
         factor.levels.forEach((level) => {
-          this.getFactorialLevelsAt(factorIndex).push(this.addLevels(level.id, level.name, level.payload));
+          this.getFactorialLevelsAt(factorIndex).push(this.addLevels(level.id, level.name, level.alias));
         });
         factorIndex++;
       });
@@ -306,7 +306,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return this._formBuilder.group({
       id: [id || uuidv4()],
       name: [name, Validators.required],
-      payload: [payload],
+      alias: [payload],
     });
   }
 
@@ -622,7 +622,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     const levelTableRow = this.getFactorialLevelsAt(factorRowIndex).controls.at(levelRowIndex);
     if (levelTableRow) {
       levelTableRow.get('name').setValue(previousRowData.name, { emitEvent: false });
-      levelTableRow.get('payload').setValue(previousRowData.payload, { emitEvent: false });
+      levelTableRow.get('alias').setValue(previousRowData.payload, { emitEvent: false });
     }
     this.experimentDesignStepperService.clearFactorialLevelTableEditModeDetails();
   }
