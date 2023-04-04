@@ -2,7 +2,7 @@ import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { IsNotEmpty, IsNumber, IsAlphanumeric } from 'class-validator';
 import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
-import { ConditionPayload } from './ConditionAlias';
+import { ConditionPayload } from './ConditionPayload';
 import { LevelCombinationElement } from './LevelCombinationElement';
 
 @Entity()

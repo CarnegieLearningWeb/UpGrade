@@ -1,7 +1,7 @@
 import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
-import { ConditionPayload } from '../models/ConditionAlias';
+import { ConditionPayload } from '../models/ConditionPayload';
 
 @EntityRepository(ConditionPayload)
 export class ConditionPayloadRepository extends Repository<ConditionPayload> {
@@ -16,7 +16,7 @@ export class ConditionPayloadRepository extends Repository<ConditionPayload> {
   }
 
   public async insertConditionPayload(
-    conditionPayloadDoc: ConditionPayload[],
+    conditionPayloadDoc: Array<Partial<ConditionPayload>>,
     entityManager: EntityManager
   ): Promise<ConditionPayload[]> {
     const result = await entityManager
@@ -72,7 +72,12 @@ export class ConditionPayloadRepository extends Repository<ConditionPayload> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('conditionPayloadRepository', 'deleteConditionPayload', { id }, errorMsg);
+        const errorMsgString = repositoryError(
+          'conditionPayloadRepository',
+          'deleteConditionPayload',
+          { id },
+          errorMsg
+        );
         logger.error(errorMsg);
         throw errorMsgString;
       });

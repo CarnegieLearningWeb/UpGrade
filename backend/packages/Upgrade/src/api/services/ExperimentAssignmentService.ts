@@ -56,7 +56,7 @@ import { globalExcludeSegment } from '../../../src/init/seed/globalExcludeSegmen
 import { GroupEnrollment } from '../models/GroupEnrollment';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Segment } from '../models/Segment';
-import { ConditionPayloadRepository } from '../repositories/ConditionAliasRepository';
+import { ConditionPayloadRepository } from '../repositories/ConditionPayloadRepository';
 import { In } from 'typeorm';
 import { Factor } from '../models/Factor';
 @Service()
@@ -1878,7 +1878,10 @@ export class ExperimentAssignmentService {
 
     let factorialConditionPayload = null;
     if (conditionAssigned.conditionPayloads) {
-      factorialConditionPayload = { type: conditionAssigned.conditionPayloads[0]?.payloadType, value : conditionAssigned.conditionPayloads[0]?.payloadValue }
+      factorialConditionPayload = {
+        type: conditionAssigned.conditionPayloads[0]?.payloadType,
+        value: conditionAssigned.conditionPayloads[0]?.payloadValue,
+      };
     }
 
     if (conditionCodeToSet.length > 1) {
@@ -1901,7 +1904,9 @@ export class ExperimentAssignmentService {
       const levelAlias = conditionCodeToSet[0].payload;
       factorialCondition = { ...conditionAssigned, conditionCode: levelAlias || conditionCodeToSet[0].name };
 
-      levelAlias ? payloads.push(...[levelAlias, conditionCodeToSet[0].name]) : payloads.push(conditionCodeToSet[0].name);
+      levelAlias
+        ? payloads.push(...[levelAlias, conditionCodeToSet[0].name])
+        : payloads.push(conditionCodeToSet[0].name);
     }
     delete factorialCondition.levelCombinationElements;
     delete factorialCondition.conditionPayloads;

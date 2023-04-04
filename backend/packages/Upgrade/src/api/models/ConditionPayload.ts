@@ -12,10 +12,10 @@ export class ConditionPayload extends BaseModel {
   @Column()
   public payloadValue: string;
 
-  @Column({ 
-    type : 'enum',
+  @Column({
+    type: 'enum',
     enum: PAYLOAD_TYPE,
-    default: PAYLOAD_TYPE.STRING
+    default: PAYLOAD_TYPE.STRING,
   })
   public payloadType: PAYLOAD_TYPE;
 

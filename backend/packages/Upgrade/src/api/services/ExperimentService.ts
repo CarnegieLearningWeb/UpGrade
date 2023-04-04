@@ -54,8 +54,8 @@ import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
-import { ConditionPayload } from '../models/ConditionAlias';
-import { ConditionPayloadRepository } from '../repositories/ConditionAliasRepository';
+import { ConditionPayload } from '../models/ConditionPayload';
+import { ConditionPayloadRepository } from '../repositories/ConditionPayloadRepository';
 import { Factor } from '../models/Factor';
 import { FactorRepository } from '../repositories/FactorRepository';
 import { Level } from '../models/Level';
@@ -757,16 +757,17 @@ export class ExperimentService {
             })) ||
           [];
 
-        const conditionPayloadDocToSave: Array<Partial<ConditionPayloadDTO>> =
+        const conditionPayloadDocToSave: Array<Partial<ConditionPayload>> =
           (conditionPayloads &&
             conditionPayloads.length > 0 &&
             conditionPayloads.map((conditionPayload: ConditionPayloadDTO) => {
-              let conditionPayloadToReturn: ConditionPayload;
-              conditionPayloadToReturn.id = conditionPayload.id;
-              conditionPayloadToReturn.payloadType = conditionPayload.payload.type;
-              conditionPayloadToReturn.payloadValue = conditionPayload.payload.value;
-              conditionPayloadToReturn.parentCondition = conditionPayload.parentCondition;
-              conditionPayloadToReturn.decisionPoint = conditionPayload.decisionPoint;
+              const conditionPayloadToReturn = {
+                id: conditionPayload.id,
+                payloadType: conditionPayload.payload.type,
+                payloadValue: conditionPayload.payload.value,
+                parentCondition: conditionPayload.parentCondition,
+                decisionPoint: conditionPayload.decisionPoint,
+              };
               return conditionPayloadToReturn;
             })) ||
           [];
@@ -960,6 +961,7 @@ export class ExperimentService {
           conditionPayloads: conditionPayloadDocToReturn as any,
           queries: (queryDocToReturn as any) || [],
         };
+        const updatedExperiment = this.formatingPayload(newExperiment);
 
         // removing unwanted params for diff
         const oldExperimentClone: Experiment = JSON.parse(JSON.stringify(oldExperiment));
@@ -986,7 +988,7 @@ export class ExperimentService {
         });
 
         // removing unwanted params for diff
-        const newExperimentClone = JSON.parse(JSON.stringify(newExperiment));
+        const newExperimentClone = JSON.parse(JSON.stringify(updatedExperiment));
         delete newExperimentClone.versionNumber;
         delete newExperimentClone.updatedAt;
         delete newExperimentClone.createdAt;
@@ -1008,7 +1010,7 @@ export class ExperimentService {
           delete condition.createdAt;
           delete (condition as any).experimentId;
         });
-        logger.info({ message: 'Updated experiment:', details: newExperiment });
+        logger.info({ message: 'Updated experiment:', details: updatedExperiment });
         // add AuditLogs here
         const updateAuditLog: AuditLogData = {
           experimentId: experiment.id,
@@ -1021,10 +1023,10 @@ export class ExperimentService {
           updateAuditLog,
           user
         );
-        return { newExperiment, toDeleteQueriesDoc };
+        return { updatedExperiment, toDeleteQueriesDoc };
       })
-      .then(async ({ newExperiment }) => {
-        return newExperiment;
+      .then(async ({ updatedExperiment }) => {
+        return updatedExperiment;
       });
   }
 
@@ -1225,16 +1227,17 @@ export class ExperimentService {
         });
       }
 
-      const conditionPayloadDocToSave: ConditionPayload[] =
+      const conditionPayloadDocToSave: Array<Partial<ConditionPayload>> =
         (conditionPayloads &&
           conditionPayloads.length > 0 &&
           conditionPayloads.map((conditionPayload: ConditionPayloadDTO) => {
-            let conditionPayloadToReturn: ConditionPayload;
-            conditionPayloadToReturn.id = conditionPayload.id;
-            conditionPayloadToReturn.payloadType = conditionPayload.payload.type;
-            conditionPayloadToReturn.payloadValue = conditionPayload.payload.value;
-            conditionPayloadToReturn.parentCondition = conditionPayload.parentCondition;
-            conditionPayloadToReturn.decisionPoint = conditionPayload.decisionPoint;
+            const conditionPayloadToReturn = {
+              id: conditionPayload.id,
+              payloadType: conditionPayload.payload.type,
+              payloadValue: conditionPayload.payload.value,
+              parentCondition: conditionPayload.parentCondition,
+              decisionPoint: conditionPayload.decisionPoint,
+            };
             return conditionPayloadToReturn;
           })) ||
         [];
@@ -1375,7 +1378,7 @@ export class ExperimentService {
       createAuditLogData,
       user
     );
-    return createdExperiment;
+    return this.formatingPayload(createdExperiment);
   }
 
   private postgresSearchString(type: string): string {
@@ -1432,7 +1435,7 @@ export class ExperimentService {
     if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
       const conditionPayload: ConditionPayloadDTO[] = [];
       experiment.conditions.forEach((condition) => {
-        const conditionPayloads = condition.conditionPayloads.map((conditionPayload) => {
+        const conditionPayloads = condition.conditionPayloads?.map((conditionPayload) => {
           const { payloadType, payloadValue, ...rest } = conditionPayload;
           return {
             ...rest,
@@ -1440,7 +1443,9 @@ export class ExperimentService {
             parentCondition: condition,
           };
         });
-        conditionPayload.push(...conditionPayloads);
+        if (conditionPayloads?.length) {
+          conditionPayload.push(...conditionPayloads);
+        }
         delete condition.conditionPayloads;
       });
 
@@ -1528,7 +1533,7 @@ export class ExperimentService {
   }
 
   private async addFactorialDataInDB(
-    factors: any[],
+    factors: FactorDTO[],
     conditions: ExperimentCondition[],
     experimentDoc: Experiment,
     transactionalEntityManager: EntityManager,
@@ -1537,22 +1542,41 @@ export class ExperimentService {
     const allLevels: Level[] = [];
     const allLevelCombinationElements: LevelCombinationElement[] = [];
 
-    const allFactors =
-      factors &&
-      factors.length > 0 &&
-      factors.map((factor) => {
-        factor.id = factor.id || uuid();
-        factor.name = factor.name || factor.factor;
-        factor.experiment = experimentDoc;
+    //converting factorDTO to factor
+    const normalFactors = factors.map((factor) => {
+      const normalLevels = factor.levels.map((level) => {
+        const { payload, ...rest } = level;
+        return { ...rest, payloadType: payload?.type, payloadValue: payload?.value };
+      });
+      return { ...factor, levels: normalLevels };
+    });
 
-        factor.levels.forEach((level) => {
-          level.id = level.id || uuid();
-          level.name = level.name || level.level;
-          level.factor = factor;
+    const allFactors: Array<Partial<Factor>> =
+      normalFactors &&
+      normalFactors.length > 0 &&
+      normalFactors.map((factor) => {
+        const factorReturn = {
+          id: factor.id || uuid(),
+          name: factor.name,
+          order: factor.order,
+          description: factor.description,
+          experiment: experimentDoc,
+          levels: [],
+        };
+
+        factorReturn.levels = factor.levels.map((level) => {
+          return {
+            id: level.id || uuid(),
+            name: level.name,
+            order: level.order,
+            description: level.description,
+            payloadType: level.payloadType,
+            payloadValue: level.payloadValue,
+            factor: factorReturn,
+          };
         });
-        allLevels.push(...factor.levels);
-
-        return factor;
+        allLevels.push(...factorReturn.levels);
+        return factorReturn;
       });
 
     conditions.forEach((condition) => {
@@ -1586,7 +1610,7 @@ export class ExperimentService {
     return [factorDoc, levelDoc, levelCombinationElementsDoc];
   }
 
-  private formatingFactorAndLevels(factors: any[], levels: any[]): any[] {
+  private formatingFactorAndLevels(factors, levels): Factor[] {
     const formatedFactors = factors.map((factor) => {
       return { ...factor, levels: levels.filter((x) => x.factorId == factor.id) };
     });
@@ -1600,7 +1624,7 @@ export class ExperimentService {
     return formatedFactors;
   }
 
-  private formatingElements(conditions: any[], levelCombinationElements: any[], levels: any[]): any[] {
+  private formatingElements(conditions, levelCombinationElements, levels): ExperimentCondition[] {
     const formatedData = conditions.map((condition) => {
       return {
         ...condition,
