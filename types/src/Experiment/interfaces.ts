@@ -4,6 +4,8 @@ import {
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
   IMetricMetaData,
+  SUPPORTED_CALIPER_EVENTS,
+  SUPPORTED_CALIPER_PROFILES,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -202,8 +204,8 @@ export interface Attempt {
 
 export interface CaliperGradingProfile {
   id: string,
-  type: string,
-  profile: string,
+  type: SUPPORTED_CALIPER_EVENTS,
+  profile: SUPPORTED_CALIPER_PROFILES,
   actor: CaliperActor,
   action: string,
   object: Attempt,
