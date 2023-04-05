@@ -1,17 +1,6 @@
 <section class="conditions-table-component">
   <div class="conditions-header-container">
     <span class="title">{{ 'home.new-experiment.design.condition.text' | translate }}</span>
-    <!-- <button
-      type="button"
-      mat-flat-button
-      color="primary"
-      class="ft-14-600 toggle-button"
-      (click)="handleHideClick()"
-      [disabled]="isFormLockedForEdit$ | async"
-    >
-      <mat-icon class="icon icon-bump-left">expand_less</mat-icon>
-      <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.factors' | translate }}</span>
-    </button> -->
   </div>
 
   <div class="conditions-weight-checkbox">
@@ -30,11 +19,11 @@
       <!-- Condition Column -->
       <ng-container matColumnDef="condition">
         <mat-header-cell *matHeaderCellDef class="ft-14-700">
-          {{  'home.new-experiment.design.aliases.column-header.condition.text' | translate }}
+          {{ 'home.new-experiment.design.aliases.column-header.condition.text' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData">
           <span [matTooltip]="rowData.condition" matTooltipPosition="above">
-            {{ rowData.condition }}
+            {{ experimentDesignStepperService.trimFactorialConditionName(rowData.condition) }}
           </span>
         </mat-cell>
       </ng-container>

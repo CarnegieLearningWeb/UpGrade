@@ -123,6 +123,13 @@ export class ExperimentDesignStepperService {
     return typeof value === 'string' && value.trim();
   }
 
+  trimFactorialConditionName(factorialConditionName: string) {
+    const level1 = factorialConditionName.split(';')[0].split('=')[1];
+    const level2 = factorialConditionName.split(';')[1].split('=')[1];
+    const trimmedFactorialConditionName = `${level1}; ${level2}`;
+    return trimmedFactorialConditionName;
+  }
+
   formatDisplayWeight(weight: string | number): string {
     let roundedWeight: string;
 
@@ -308,7 +315,12 @@ export class ExperimentDesignStepperService {
               name: factorTwoLevel.name,
             },
           ],
-          condition: factorOneLevel.name + '; ' + factorTwoLevel.name,
+          condition: this.createFactorialAliasString(
+            factorOne.name,
+            factorOneLevel.name,
+            factorTwo.name,
+            factorTwoLevel.name
+          ),
           alias: '',
           weight: '0.0',
           include: true,
@@ -366,6 +378,15 @@ export class ExperimentDesignStepperService {
       return tableRow;
     });
     return tableData;
+  }
+
+  createFactorialAliasString(
+    factorOneName: string,
+    factorOneLevel: string,
+    factorTwoName: string,
+    factorTwoLevel: string
+  ) {
+    return `${factorOneName}=${factorOneLevel}; ${factorTwoName}=${factorTwoLevel}`;
   }
 
   createFactorialConditionRequestObject() {
