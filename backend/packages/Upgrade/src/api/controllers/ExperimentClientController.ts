@@ -698,8 +698,6 @@ export class ExperimentClientController {
 
     const logsToReturn = await Promise.all(result);
     return flatten(logsToReturn);
-
-
   }
 
   /**
