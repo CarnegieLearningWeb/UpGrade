@@ -119,7 +119,6 @@ export class ExperimentAssignmentService {
       const error = new Error(clientError);
       (error as any).type = SERVER_ERROR.REPORTED_ERROR;
       logger.error(error);
-      throw error;
     }
 
     // adding experiment error when user is not defined

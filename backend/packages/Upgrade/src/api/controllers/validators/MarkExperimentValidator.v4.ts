@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsDefined } from 'class-validator';
-import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { MARKED_DECISION_POINT_STATUS, PAYLOAD_TYPE } from 'upgrade_types';
 
 export class MarkExperimentValidatorv4 {
   @IsNotEmpty()
@@ -10,7 +10,9 @@ export class MarkExperimentValidatorv4 {
     site: string;
     target: string | undefined;
     assignedCondition: { conditionCode: string; experimentId: string };
-    assignedFactor: object | undefined;
+    assignedFactor:
+      | Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } | null }>
+      | undefined;
   };
 
   public status?: MARKED_DECISION_POINT_STATUS;

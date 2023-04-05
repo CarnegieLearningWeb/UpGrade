@@ -35,7 +35,12 @@ import { env } from '../../env';
 interface IExperimentAssignment {
   expId: string;
   expPoint: string;
-  assignedCondition: object;
+  assignedCondition: {
+    conditionCode: string;
+    conditionAlias: string;
+    experimentId: string;
+    id: string;
+  };
 }
 
 /**
