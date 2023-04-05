@@ -22,6 +22,8 @@ export {
   INCLUSION_CRITERIA,
   EXPORT_METHOD,
   EXPERIMENT_TYPE,
+  SUPPORTED_CALIPER_PROFILES,
+  SUPPORTED_CALIPER_EVENTS
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,
