@@ -1433,21 +1433,32 @@ export class ExperimentService {
 
   public formatingPayload(experiment: Experiment): ExperimentDTO {
     if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
-      const conditionPayload: ConditionPayloadDTO[] = [];
-      experiment.conditions.forEach((condition) => {
-        const conditionPayloads = condition.conditionPayloads?.map((conditionPayload) => {
+      let conditionPayload: ConditionPayloadDTO[] = [];
+
+      if (experiment.conditionPayloads) {
+        conditionPayload = experiment.conditionPayloads.map((conditionPayload) => {
           const { payloadType, payloadValue, ...rest } = conditionPayload;
           return {
             ...rest,
             payload: { type: payloadType, value: payloadValue },
-            parentCondition: condition,
           };
         });
-        if (conditionPayloads?.length) {
-          conditionPayload.push(...conditionPayloads);
-        }
-        delete condition.conditionPayloads;
-      });
+      } else {
+        experiment.conditions.forEach((condition) => {
+          const conditionPayloads = condition.conditionPayloads?.map((conditionPayload) => {
+            const { payloadType, payloadValue, ...rest } = conditionPayload;
+            return {
+              ...rest,
+              payload: { type: payloadType, value: payloadValue },
+              parentCondition: condition,
+            };
+          });
+          if (conditionPayloads?.length) {
+            conditionPayload.push(...conditionPayloads);
+          }
+          delete condition.conditionPayloads;
+        });
+      }
 
       const updatedFactors: FactorDTO[] = experiment.factors.map((factor) => {
         const updatedLevels: LevelDTO[] = factor.levels.map((level) => {
@@ -1465,7 +1476,7 @@ export class ExperimentService {
 
     const updatedConditionPayload: ConditionPayloadDTO[] = [];
     partitions.forEach((partition) => {
-      const conditionPayloadData = partition.conditionPayloads;
+      const conditionPayloadData = partition.conditionPayloads || [];
       delete partition.conditionPayloads;
 
       conditionPayloadData.forEach((conditionPayload) => {
