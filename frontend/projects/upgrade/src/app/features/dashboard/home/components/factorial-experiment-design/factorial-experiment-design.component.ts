@@ -608,7 +608,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         this.saveData(eventType);
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
-        this.handleConditionsButtonClick();
+        if (!this.conditionTableDataUpToDate) {
+          this.handleConditionsButtonClick();
+        }
         if (!this.isExperimentEditable) {
           this.emitExperimentDialogEvent.emit({
             type: eventType,

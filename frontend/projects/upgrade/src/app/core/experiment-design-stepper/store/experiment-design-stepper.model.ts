@@ -31,7 +31,7 @@ export interface SimpleExperimentAliasTableRow {
 export interface SimpleExperimentFormData {
   decisionPoints?: SimpleExperimentFormDecisionPoints[];
   partitions?: SimpleExperimentFormDecisionPoints[];
-  conditions: SimplerExperimentFormDecisionConditions[];
+  conditions: SimpleExperimentFormDecisionConditions[];
 }
 
 export interface SimpleExperimentFormDecisionPoints {
@@ -41,7 +41,7 @@ export interface SimpleExperimentFormDecisionPoints {
   order: number;
 }
 
-export interface SimplerExperimentFormDecisionConditions {
+export interface SimpleExperimentFormDecisionConditions {
   conditionCode: string;
   assignmentWeight: string;
   description: string;

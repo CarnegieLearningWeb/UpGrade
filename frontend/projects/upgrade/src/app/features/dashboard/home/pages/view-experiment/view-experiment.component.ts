@@ -24,7 +24,7 @@ import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/s
 import { ExportModalComponent } from '../../components/modal/export-experiment/export-experiment.component';
 import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-time/enrollment-over-time.component';
-import { EXPERIMENT_TYPE, FILTER_MODE, IMetricMetaData } from 'upgrade_types';
+import { EXPERIMENT_TYPE, IMetricMetaData } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
@@ -59,7 +59,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   factorsDataSource: Factors[];
   expandedId: number = null;
 
-  displayedConditionColumns: string[] = ['conditionCode', 'payload', 'assignmentWeight', 'description'];
+  displayedConditionColumns: string[] = ['conditionCode', 'assignmentWeight', 'description'];
   displayedConditionColumnsFactorial: string[] = ['conditionCode', 'payload', 'assignmentWeight'];
   displayedPartitionColumns: string[] = ['partitionPoint', 'partitionId', 'excludeIfReached'];
   displayedPartitionColumnsFactorial: string[] = ['expandIcon', 'factorName', 'description'];

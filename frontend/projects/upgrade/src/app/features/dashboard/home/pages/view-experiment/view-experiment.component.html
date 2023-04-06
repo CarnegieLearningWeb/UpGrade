@@ -552,23 +552,6 @@
                   </mat-cell>
                 </ng-container>
 
-                <!-- Payload Column -->
-                <ng-container matColumnDef="payload">
-                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                    {{ 'global.payload.text' | translate }}
-                  </mat-header-cell>
-                  <mat-cell class="ft-12-600" *matCellDef="let data">
-                    <span *ngIf="data.payload?.length < 50; else trimmedPayload">
-                      {{ data.payload }}
-                    </span>
-                    <ng-template #trimmedPayload>
-                      <span [matTooltip]="data.payload" matTooltipPosition="above">
-                        {{ data.payload | truncate : 50 }}
-                      </span>
-                    </ng-template>
-                  </mat-cell>
-                </ng-container>
-
                 <!-- Weight Column -->
                 <ng-container matColumnDef="assignmentWeight">
                   <mat-header-cell class="ft-12-700" *matHeaderCellDef>
@@ -599,7 +582,7 @@
               </mat-table>
             </div>
             <div *ngIf="experiment.type === 'Factorial'">
-              <mat-table [dataSource]="experiment.conditions" class="table">
+              <mat-table [dataSource]="experiment.conditionAliases" class="table">
                 <!-- Condition Code Column -->
                 <ng-container matColumnDef="conditionCode">
                   <mat-header-cell
@@ -610,12 +593,12 @@
                     {{ 'global.condition.text' | translate }}
                   </mat-header-cell>
                   <mat-cell style="justify-content: left" class="ft-12-600" *matCellDef="let data">
-                    <span style="padding-left: 5px" *ngIf="data.conditionCode?.length < 50; else conditionCode">
-                      {{ experimentDesignStepperService.trimFactorialConditionName(data.conditionCode) }}
+                    <span style="padding-left: 5px" *ngIf="data.parentCondition.conditionCode?.length < 50; else conditionCode">
+                      {{ experimentDesignStepperService.trimFactorialConditionName(data.parentCondition.conditionCode) }}
                     </span>
                     <ng-template #conditionCode>
-                      <span [matTooltip]="data.conditionCode" matTooltipPosition="above">
-                        {{ data.conditionCode | truncate : 50 }}
+                      <span [matTooltip]="data.parentCondition.conditionCode" matTooltipPosition="above">
+                        {{ data.parentCondition.conditionCode | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
@@ -627,12 +610,12 @@
                     {{ 'global.payload.text' | translate }}
                   </mat-header-cell>
                   <mat-cell class="ft-12-600" *matCellDef="let data">
-                    <span *ngIf="data.payload?.length < 50; else trimmedPayload">
-                      {{ data.payload }}
+                    <span *ngIf="data?.aliasName.length < 50; else trimmedPayload">
+                      {{ data.aliasName }}
                     </span>
                     <ng-template #trimmedPayload>
-                      <span [matTooltip]="data.payload" matTooltipPosition="above">
-                        {{ data.payload | truncate : 50 }}
+                      <span [matTooltip]="data" matTooltipPosition="above">
+                        {{ data.aliasName | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
@@ -644,7 +627,7 @@
                     {{ 'home-global.assignment-weight.text' | translate }}
                   </mat-header-cell>
                   <mat-cell style="justify-content: left; padding-left: 10px" class="ft-12-600" *matCellDef="let data">
-                    {{ data.assignmentWeight }}
+                    {{ data.parentCondition.assignmentWeight }}
                   </mat-cell>
                 </ng-container>
 
@@ -694,7 +677,7 @@
 
                 <ng-container matColumnDef="alias">
                   <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                    {{ 'home.view-experiment.experiment-aliases.column-label.alias' | translate }}
+                    {{ 'home.view-experiment.experiment-aliases.column-label.payload' | translate }}
                   </mat-header-cell>
                   <mat-cell class="ft-12-600" *matCellDef="let rowData">
                     <span [matTooltip]="rowData.alias" matTooltipPosition="above">
