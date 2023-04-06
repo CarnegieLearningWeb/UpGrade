@@ -204,10 +204,6 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   handleRowEditClick(rowData: FactorialConditionTableRowData, rowIndex: number) {
-    this.experimentDesignStepperService.setFactorialConditionTableEditModeDetails(rowIndex, rowData);
-  }
-
-  handleRowEditDoneClick(rowIndex: number) {
     const tableData = this.getCurrentTableData();
     const formRow = this.getFactorialConditionsAt(rowIndex);
 
@@ -219,7 +215,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     const newTableData = this.applyEqualWeights(tableData);
 
     this.experimentDesignStepperService.updateFactorialConditionTableData(newTableData);
-    this.experimentDesignStepperService.clearFactorialConditionTableEditModeDetails();
+    this.experimentDesignStepperService.setFactorialConditionTableEditModeDetails(rowIndex, rowData);
   }
 
   handleClear(rowIndex: number) {
