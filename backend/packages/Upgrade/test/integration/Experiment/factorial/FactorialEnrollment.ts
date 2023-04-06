@@ -24,7 +24,7 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
   const conditions = experimentObject.conditions;
   const experimentID = experimentObject.id;
   const context = experimentObject.context[0];
-  const experimentConditionAlias = experimentObject.conditionAliases[0];
+  const experimentConditionPayload = experimentObject.conditionPayloads[0];
 
   // setting condition-1 weight as 100%
   conditions.sort((a, b) => (a.order > b.order ? 1 : b.order > a.order ? -1 : 0));
@@ -76,15 +76,15 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
   );
   expect(experimentConditionAssignments.length).toEqual(1);
 
-  // checking conditionAlias name for conditionCode
+  // checking conditionPayload name for conditionCode
   expect(experimentConditionAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         target: experimentTarget,
         site: experimentSite,
         assignedCondition: expect.objectContaining({
-          id: experimentConditionAlias.parentCondition,
-          conditionCode: experimentConditionAlias.aliasName,
+          id: experimentConditionPayload.parentCondition,
+          conditionCode: experimentConditionPayload.payload.value,
         }),
       }),
     ])
@@ -95,7 +95,7 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
     experimentUsers[0].id,
     experimentTarget,
     experimentSite,
-    experimentConditionAlias.aliasName,
+    experimentConditionPayload.payload.value,
     new UpgradeLogger(),
     experimentID
   );
@@ -132,7 +132,7 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
     experimentUsers[1].id,
     experimentTarget,
     experimentSite,
-    experimentConditionAlias.aliasName,
+    experimentConditionPayload.payload.value,
     new UpgradeLogger(),
     experimentID
   );

@@ -1,4 +1,4 @@
-import { aliasConditionExperiment } from '../../mockData/experiment/index';
+import { payloadConditionExperiment } from '../../mockData/experiment/index';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { UserService } from '../../../../src/api/services/UserService';
@@ -14,7 +14,7 @@ export default async function ConditionPayload(): Promise<void> {
   const entityManager = getManager();
 
   // experiment object
-  const experimentObject = aliasConditionExperiment;
+  const experimentObject = payloadConditionExperiment;
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
@@ -34,13 +34,17 @@ export default async function ConditionPayload(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         id: '9d753b90-1111-44b5-8acc-2483c0507ea0',
-        payloadValue: 'ConditionA_W1',
-        payloadType: 'string',
+        payload: {
+          value: 'ConditionA_W1',
+          type: PAYLOAD_TYPE.STRING,
+        },
       }),
       expect.objectContaining({
         id: '9d753b90-1111-44b5-8acc-2483c0507ea1',
-        payloadValue: 'ConditionA_W2',
-        payloadType: 'string',
+        payload: {
+          value: 'ConditionA_W2',
+          type: PAYLOAD_TYPE.STRING,
+        },
       }),
     ])
   );
@@ -58,8 +62,10 @@ export default async function ConditionPayload(): Promise<void> {
       ...experiments.conditionPayloads,
       {
         id: '9d753b90-1111-44b5-8acc-2483c0507ea2',
-        payloadValue: 'ConditionB_W2',
-        payloadType: 'string',
+        payload: {
+          value: 'ConditionB_W2',
+          type: PAYLOAD_TYPE.STRING,
+        },
         parentCondition: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
         decisionPoint: 'e22467b1-f0e9-4444-9517-cc03037bc079',
       },
@@ -75,14 +81,14 @@ export default async function ConditionPayload(): Promise<void> {
         payload: {
           value: 'ConditionB_W2',
           type: PAYLOAD_TYPE.STRING,
-        }
+        },
       }),
       expect.objectContaining({
         id: '9d753b90-1111-44b5-8acc-2483c0507ea1',
         payload: {
           value: 'ConditionA_W2_updated',
           type: PAYLOAD_TYPE.STRING,
-        }
+        },
       }),
     ])
   );
@@ -104,7 +110,7 @@ export default async function ConditionPayload(): Promise<void> {
         payload: {
           value: 'ConditionB_W2',
           type: PAYLOAD_TYPE.STRING,
-        }
+        },
       }),
     ])
   );

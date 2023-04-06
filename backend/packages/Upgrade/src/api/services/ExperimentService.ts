@@ -100,7 +100,7 @@ export class ExperimentService {
     }
     const experiments = await this.experimentRepository.findAllExperiments();
     return experiments.map((experiment) => {
-      return this.formatingPayload(this.formatingConditionAlias(experiment));
+      return this.formatingPayload(this.formatingConditionPayload(experiment));
     });
   }
 
@@ -209,7 +209,7 @@ export class ExperimentService {
       .where({ id })
       .getOne();
 
-    return this.formatingConditionAlias(experiment);
+    return this.formatingConditionPayload(experiment);
   }
 
   public getTotalCount(): Promise<number> {
@@ -516,7 +516,7 @@ export class ExperimentService {
         { experimentName: experiment.name },
         user
       );
-      return this.formatingPayload(this.formatingConditionAlias(experiment));
+      return this.formatingPayload(this.formatingConditionPayload(experiment));
     });
 
     return formatedExperiments;
@@ -1438,12 +1438,12 @@ export class ExperimentService {
     return createdExperiments;
   }
 
-  public formatingConditionAlias(experiment: Experiment): Experiment {
+  public formatingConditionPayload(experiment: Experiment): Experiment {
     if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
       const conditionPayload: ConditionPayload[] = [];
       experiment.conditions.forEach((condition) => {
-        const conditionPayloads = condition.conditionPayloads.map((conditionAlias) => {
-          return { ...conditionAlias, parentCondition: condition };
+        const conditionPayloads = condition.conditionPayloads.map((conditionPayload) => {
+          return { ...conditionPayload, parentCondition: condition };
         });
         conditionPayload.push(...conditionPayloads);
         delete condition.conditionPayloads;
