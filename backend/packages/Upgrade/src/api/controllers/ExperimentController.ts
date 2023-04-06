@@ -775,7 +775,7 @@ export class ExperimentController {
         )
       );
     }
-    return this.experimentService.findOne(id, request.logger);
+    return this.experimentService.getSingleExperiment(id, request.logger);
   }
 
   /**

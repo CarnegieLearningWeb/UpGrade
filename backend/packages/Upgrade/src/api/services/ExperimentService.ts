@@ -99,7 +99,9 @@ export class ExperimentService {
       logger.info({ message: `Find all experiments` });
     }
     const experiments = await this.experimentRepository.findAllExperiments();
-    return experiments.map((x) => this.formatingPayload(x));
+    return experiments.map((experiment) => {
+      return this.formatingPayload(this.formatingConditionAlias(experiment));
+    });
   }
 
   public findAllName(logger: UpgradeLogger): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
@@ -167,7 +169,12 @@ export class ExperimentService {
     return await queryBuilderToReturn.getMany();
   }
 
-  public async findOne(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
+  public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
+    const experiment = await this.findOne(id, logger);
+    return this.formatingPayload(experiment);
+  }
+
+  public async findOne(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
     if (logger) {
       logger.info({ message: `Find experiment by id => ${id}` });
     }
@@ -202,7 +209,7 @@ export class ExperimentService {
       .where({ id })
       .getOne();
 
-    return this.formatingPayload(experiment);
+    return this.formatingConditionAlias(experiment);
   }
 
   public getTotalCount(): Promise<number> {
@@ -328,13 +335,13 @@ export class ExperimentService {
 
   public async getExperimentalConditions(experimentId: string, logger: UpgradeLogger): Promise<ExperimentCondition[]> {
     logger.info({ message: `getExperimentalConditions experiment => ${experimentId}` });
-    const experiment: ExperimentDTO = await this.findOne(experimentId, logger);
+    const experiment: Experiment = await this.findOne(experimentId, logger);
     return experiment.conditions;
   }
 
   public async getExperimentPartitions(experimentId: string, logger: UpgradeLogger): Promise<DecisionPoint[]> {
     logger.info({ message: `getExperimentPartitions experiment => ${experimentId}` });
-    const experiment: ExperimentDTO = await this.findOne(experimentId, logger);
+    const experiment: Experiment = await this.findOne(experimentId, logger);
     return experiment.partitions;
   }
 
@@ -509,7 +516,7 @@ export class ExperimentService {
         { experimentName: experiment.name },
         user
       );
-      return this.formatingPayload(experiment);
+      return this.formatingPayload(this.formatingConditionAlias(experiment));
     });
 
     return formatedExperiments;
@@ -1431,66 +1438,52 @@ export class ExperimentService {
     return createdExperiments;
   }
 
-  public formatingPayload(experiment: Experiment): ExperimentDTO {
+  public formatingConditionAlias(experiment: Experiment): Experiment {
     if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
-      let conditionPayload: ConditionPayloadDTO[] = [];
-
-      if (experiment.conditionPayloads) {
-        conditionPayload = experiment.conditionPayloads.map((conditionPayload) => {
-          const { payloadType, payloadValue, ...rest } = conditionPayload;
-          return {
-            ...rest,
-            payload: { type: payloadType, value: payloadValue },
-          };
+      const conditionPayload: ConditionPayload[] = [];
+      experiment.conditions.forEach((condition) => {
+        const conditionPayloads = condition.conditionPayloads.map((conditionAlias) => {
+          return { ...conditionAlias, parentCondition: condition };
         });
-      } else {
-        experiment.conditions.forEach((condition) => {
-          const conditionPayloads = condition.conditionPayloads?.map((conditionPayload) => {
-            const { payloadType, payloadValue, ...rest } = conditionPayload;
-            return {
-              ...rest,
-              payload: { type: payloadType, value: payloadValue },
-              parentCondition: condition,
-            };
-          });
-          if (conditionPayloads?.length) {
-            conditionPayload.push(...conditionPayloads);
-          }
-          delete condition.conditionPayloads;
-        });
-      }
-
-      const updatedFactors: FactorDTO[] = experiment.factors.map((factor) => {
-        const updatedLevels: LevelDTO[] = factor.levels.map((level) => {
-          const { payloadType, payloadValue, ...rest } = level;
-          return { ...rest, payload: { type: payloadType, value: payloadValue } };
-        });
-        const { createdAt, updatedAt, versionNumber, experiment, ...rest } = factor;
-        return { ...rest, levels: updatedLevels };
+        conditionPayload.push(...conditionPayloads);
+        delete condition.conditionPayloads;
       });
 
-      return { ...experiment, factors: updatedFactors, conditionPayloads: conditionPayload };
+      return { ...experiment, conditionPayloads: conditionPayload };
     }
 
     const { conditions, partitions } = experiment;
 
-    const updatedConditionPayload: ConditionPayloadDTO[] = [];
+    const conditionPayload: ConditionPayload[] = [];
     partitions.forEach((partition) => {
-      const conditionPayloadData = partition.conditionPayloads || [];
+      const conditionPayloadData = partition.conditionPayloads;
       delete partition.conditionPayloads;
 
-      conditionPayloadData.forEach((conditionPayload) => {
-        if (conditionPayload && conditions.filter((con) => con.id === conditionPayload.parentCondition.id).length > 0) {
-          const { payloadType, payloadValue, ...rest } = conditionPayload;
-          updatedConditionPayload.push({
-            ...rest,
-            decisionPoint: partition,
-            payload: { type: payloadType, value: payloadValue },
-          });
+      conditionPayloadData.forEach((x) => {
+        if (x && conditions.filter((con) => con.id === x.parentCondition.id).length > 0) {
+          conditionPayload.push({ ...x, decisionPoint: partition });
         }
       });
     });
-    return { ...experiment, factors: [], conditionPayloads: updatedConditionPayload };
+    return { ...experiment, conditionPayloads: conditionPayload };
+  }
+
+  public formatingPayload(experiment: Experiment): ExperimentDTO {
+    const updatedConditionPayloads = experiment.conditionPayloads.map((conditionPayload) => {
+      const { payloadType, payloadValue, ...rest } = conditionPayload;
+      return { ...rest, payload: { type: payloadType, value: payloadValue } };
+    });
+
+    const updatedFactors: FactorDTO[] = experiment.factors.map((factor) => {
+      const updatedLevels: LevelDTO[] = factor.levels.map((level) => {
+        const { payloadType, payloadValue, ...rest } = level;
+        return { ...rest, payload: { type: payloadType, value: payloadValue } };
+      });
+      const { createdAt, updatedAt, versionNumber, experiment, ...rest } = factor;
+      return { ...rest, levels: updatedLevels };
+    });
+
+    return { ...experiment, factors: updatedFactors, conditionPayloads: updatedConditionPayloads };
   }
 
   private includeExcludeSegmentCreation(
