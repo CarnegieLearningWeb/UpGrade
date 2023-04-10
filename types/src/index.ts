@@ -23,7 +23,7 @@ export {
   EXPORT_METHOD,
   EXPERIMENT_TYPE,
   SUPPORTED_CALIPER_PROFILES,
-  SUPPORTED_CALIPER_EVENTS
+  SUPPORTED_CALIPER_EVENTS,
   PAYLOAD_TYPE,
 } from './Experiment/enums';
 export {
@@ -49,7 +49,7 @@ export {
   CaliperActor,
   Attempt,
   CaliperGradingProfile,
-  CaliperEnvelope
+  CaliperEnvelope,
   IPayload,
   IExperimentAssignmentv4,
 } from './Experiment/interfaces';
