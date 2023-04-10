@@ -4,6 +4,7 @@ import {
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
   IMetricMetaData,
+  PAYLOAD_TYPE,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -39,28 +40,35 @@ export interface IExperimentEnrollmentDetailStats {
 }
 
 // TODO Delete this after changing in clientSDK
-export interface INewExperimentAssignment {
+export type INewExperimentAssignment = Pick<IExperimentAssignment, 'assignedCondition'> & {
   target: string;
   site: string;
   experimentId: string;
-  twoCharacterId: string;
-  description: string;
-  assignedCondition: {
-    conditionCode: string;
-    twoCharacterId: string;
-    description: string;
-  };
-}
+};
 
 export interface IExperimentAssignment {
   site: string;
   target: string;
-  assignedCondition: AssignedCondition;
+  assignedCondition: {
+    conditionCode: string;
+    conditionAlias: string;
+    experimentId: string;
+    id: string;
+  };
+  assignedFactor?: Record<string, { level: string; levelAlias: string }>;
 }
 
-interface AssignedCondition {
-  condition: string;
+export interface IExperimentAssignmentv4 {
+  site: string;
+  target: string;
+  assignedCondition: {
+    conditionCode: string;
+    payload: { type: PAYLOAD_TYPE; value: string };
+    experimentId: string;
+  };
+  assignedFactor?: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }>;
 }
+
 interface ExperimentCreatedData {
   experimentId: string;
   experimentName: string;
@@ -175,4 +183,9 @@ export interface IWorkingGroup {
 export interface IUserAliases {
   userId: string;
   aliases: string[];
+}
+
+export interface IPayload {
+  type: PAYLOAD_TYPE;
+  value: string;
 }

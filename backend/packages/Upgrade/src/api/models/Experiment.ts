@@ -23,6 +23,7 @@ import { StateTimeLog } from './StateTimeLogs';
 import { ExperimentSegmentInclusion } from './ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
 import { ConditionAlias } from 'src/api/models/ConditionAlias';
+import { Factor } from './Factor';
 
 export {
   EXPERIMENT_SEARCH_KEY,
@@ -114,6 +115,11 @@ export class Experiment extends BaseModel {
   @ValidateNested()
   @Type(() => ExperimentCondition)
   public conditions: ExperimentCondition[];
+
+  @OneToMany(() => Factor, (factor) => factor.experiment)
+  @ValidateNested()
+  @Type(() => Factor)
+  public factors: Factor[];
 
   @OneToMany(() => DecisionPoint, (decisionPoint) => decisionPoint.experiment)
   @ValidateNested()
