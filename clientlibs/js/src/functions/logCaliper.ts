@@ -10,7 +10,6 @@ export default async function logCaliper(
   value: CaliperEnvelope,
   sendAsAnalytics = false
 ): Promise<Interfaces.ILog[]> {
-  try {
     const logResponse = await fetchDataService(
       url,
       token,
@@ -24,7 +23,5 @@ export default async function logCaliper(
     } else {
       throw new Error(JSON.stringify(logResponse.message));
     }
-  } catch (error) {
-    throw new Error(error.message);
-  }
+
 }
