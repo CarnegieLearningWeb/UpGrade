@@ -138,6 +138,8 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
+      .leftJoinAndSelect('experiment.factors', 'factors')
+      .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
@@ -149,8 +151,6 @@ export class ExperimentService {
       .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
-      .leftJoinAndSelect('partitions.factors', 'factors')
-      .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
       .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
@@ -173,6 +173,8 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
+      .leftJoinAndSelect('experiment.factors', 'factors')
+      .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
@@ -185,8 +187,6 @@ export class ExperimentService {
       .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('partitions.conditionAliases', 'ConditionAliasesArray')
       .leftJoinAndSelect('ConditionAliasesArray.parentCondition', 'parentCondition')
-      .leftJoinAndSelect('partitions.factors', 'factors')
-      .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
       .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
@@ -482,8 +482,8 @@ export class ExperimentService {
         'experimentSegmentExclusion.segment.subSegments',
         'partitions.conditionAliases',
         'partitions.conditionAliases.parentCondition',
-        'partitions.factors',
-        'partitions.factors.levels',
+        'factors',
+        'factors.levels',
         'conditions.conditionAliases',
         'conditions.levelCombinationElements',
         'conditions.levelCombinationElements.level',
@@ -656,6 +656,7 @@ export class ExperimentService {
         const {
           conditions,
           partitions: decisionPoints,
+          factors,
           conditionAliases,
           queries,
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -833,7 +834,7 @@ export class ExperimentService {
             .createQueryBuilder()
             .delete()
             .from(Factor)
-            .where('decisionPoint IN (:...ids)', { ids: decisionPointDocToSave.map((x) => x.id) })
+            .where('experiment IN (:...ids)', { ids: [experimentDoc.id] })
             .execute(),
           transactionalEntityManager
             .createQueryBuilder()
@@ -887,7 +888,7 @@ export class ExperimentService {
           return { ...conditionDoc, experiment: conditionDoc.experiment };
         });
 
-        let decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
+        const decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
           return { ...decisionPointDoc, experiment: decisionPointDoc.experiment };
         });
 
@@ -896,14 +897,16 @@ export class ExperimentService {
           where: { id: In(conditionAliasDocs.map((conditionAlias) => conditionAlias.id)) },
         });
 
+        let factorDocToReturn = [];
         if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
           const [factorDoc, levelDoc, levelCombinationElementDoc] = await this.addFactorialDataInDB(
-            decisionPointDocToSave,
+            factors,
             conditionDocToSave as any[],
+            experimentDoc,
             transactionalEntityManager,
             logger
           );
-          decisionPointDocToReturn = this.formatingFactorAndLevels(decisionPointDocToReturn, factorDoc, levelDoc);
+          factorDocToReturn = this.formatingFactorAndLevels(factorDoc, levelDoc);
           conditionDocToReturn = this.formatingElements(conditionDocToReturn, levelCombinationElementDoc, levelDoc);
         }
 
@@ -919,6 +922,7 @@ export class ExperimentService {
           ...experimentDoc,
           conditions: conditionDocToReturn as any,
           partitions: decisionPointDocToReturn as any,
+          factors: factorDocToReturn as any,
           conditionAliases: conditionAliasDocToReturn as any,
           queries: (queryDocToReturn as any) || [],
         };
@@ -1055,6 +1059,7 @@ export class ExperimentService {
       const {
         conditions,
         partitions,
+        factors,
         queries,
         experimentSegmentInclusion,
         experimentSegmentExclusion,
@@ -1271,7 +1276,7 @@ export class ExperimentService {
         const { experimentId, ...restDoc } = conditionDoc as any;
         return restDoc;
       });
-      let decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
+      const decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { experimentId, ...restDoc } = decisionPointDoc as any;
         return restDoc;
@@ -1287,14 +1292,16 @@ export class ExperimentService {
         queryDocToReturn = queryDocsToSave;
       }
 
+      let factorDocToReturn = [];
       if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
         const [factorDoc, levelDoc, levelCombinationElementDoc] = await this.addFactorialDataInDB(
-          partitions,
+          factors,
           conditions,
+          experimentDoc,
           transactionalEntityManager,
           logger
         );
-        decisionPointDocToReturn = this.formatingFactorAndLevels(decisionPointDocToReturn, factorDoc, levelDoc);
+        factorDocToReturn = this.formatingFactorAndLevels(factorDoc, levelDoc);
         conditionDocToReturn = this.formatingElements(conditionDocToReturn, levelCombinationElementDoc, levelDoc);
       }
 
@@ -1302,6 +1309,7 @@ export class ExperimentService {
         ...experimentDoc,
         conditions: conditionDocToReturn as any,
         partitions: decisionPointDocToReturn as any,
+        factors: factorDocToReturn as any,
         experimentSegmentInclusion: { ...experimentSegmentInclusionDoc, segment: segmentIncludeDoc } as any,
         experimentSegmentExclusion: { ...experimentSegmentExclusionDoc, segment: segmentExcludeDoc } as any,
         conditionAliases: conditionAliasDocToReturn as any,
@@ -1458,29 +1466,31 @@ export class ExperimentService {
   }
 
   private async addFactorialDataInDB(
-    partitions: DecisionPoint[],
+    factors: Factor[],
     conditions: ExperimentCondition[],
+    experimentDoc: Experiment,
     transactionalEntityManager: EntityManager,
     logger: UpgradeLogger
   ) {
-    // creating factorDoc
-    const allFactors: Factor[] = [];
     const allLevels: Level[] = [];
     const allLevelCombinationElements: LevelCombinationElement[] = [];
 
-    partitions.forEach((partition) => {
-      partition.factors.forEach((factor) => {
+    // creating factors docs
+    const allFactors =
+      factors &&
+      factors.length > 0 &&
+      factors.map((factor) => {
         factor.id = factor.id || uuid();
-        factor.decisionPoint = partition;
+        factor.experiment = experimentDoc;
 
         factor.levels.forEach((level) => {
           level.id = level.id || uuid();
           level.factor = factor;
         });
         allLevels.push(...factor.levels);
+
+        return factor;
       });
-      allFactors.push(...partition.factors);
-    });
 
     conditions.forEach((condition) => {
       condition.levelCombinationElements.map((elements) => {
@@ -1505,7 +1515,7 @@ export class ExperimentService {
       ]);
     } catch (err) {
       const error = err as Error;
-      error.message = `Error in creating factors & levels"`;
+      error.message = `Error in creating factors & levels`;
       logger.error(error);
       throw error;
     }
@@ -1513,26 +1523,21 @@ export class ExperimentService {
     return [factorDoc, levelDoc, levelCombinationElementsDoc];
   }
 
-  private formatingFactorAndLevels(partitions: any[], factors: any[], levels: any[]): any[] {
+  private formatingFactorAndLevels(factors, levels): Factor[] {
     const formatedFactors = factors.map((factor) => {
       return { ...factor, levels: levels.filter((x) => x.factorId == factor.id) };
     });
-    const formatedData = partitions.map((partition) => {
-      return { ...partition, factors: formatedFactors.filter((x) => x.decisionPointId == partition.id) };
-    });
 
-    formatedData.forEach((partition) => {
-      partition.factors.forEach((factor) => {
-        factor.levels.forEach((level) => {
-          delete level.factorId;
-        });
-        delete factor.decisionPointId;
+    formatedFactors.forEach((factor) => {
+      factor.levels.forEach((level) => {
+        delete level.factorId;
       });
+      delete factor.experimentId;
     });
-    return formatedData;
+    return formatedFactors;
   }
 
-  private formatingElements(conditions: any[], levelCombinationElements: any[], levels: any[]): any[] {
+  private formatingElements(conditions, levelCombinationElements, levels): ExperimentCondition[] {
     const formatedData = conditions.map((condition) => {
       return {
         ...condition,

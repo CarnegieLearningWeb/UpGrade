@@ -19,7 +19,6 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import {
-  IExperimentAssignment,
   ISingleMetric,
   IGroupMetric,
   SERVER_ERROR,
@@ -40,15 +39,7 @@ import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
 import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
-
-interface ILog {
-  id: string;
-  uniquifier: string;
-  timeStamp: Date;
-  data: any;
-  metrics: Metric[];
-  user: ExperimentUser;
-}
+import { Log } from '../models/Log';
 
 interface IMonitoredDeciosionPoint {
   id: string;
@@ -58,6 +49,14 @@ interface IMonitoredDeciosionPoint {
   experimentId: string;
   condition: string;
   monitoredPointLogs: MonitoredDecisionPointLog[];
+}
+
+interface IExperimentAssignment {
+  site: string;
+  target: string;
+  assignedCondition: {
+    condition: string;
+  };
 }
 /**
  * @swagger
@@ -521,7 +520,7 @@ export class ExperimentClientController {
       return {
         site,
         target,
-        assignedCondition: { condition: assignedCondition.conditionCode },
+        assignedCondition: { condition: assignedCondition.conditionAlias || assignedCondition.conditionCode },
       };
     });
   }
@@ -599,7 +598,7 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     logData: LogValidator
-  ): Promise<ILog[]> {
+  ): Promise<Omit<Log, 'createdAt' | 'updatedAt' | 'versionNumber'>[]> {
     request.logger.info({ message: 'Starting the log call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.getUserDoc(logData.userId, request.logger);

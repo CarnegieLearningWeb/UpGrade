@@ -54,7 +54,7 @@
     <!-- Alias Column -->
     <ng-container matColumnDef="alias">
       <mat-header-cell *matHeaderCellDef class="ft-14-700">
-        {{ 'home.new-experiment.design.aliases.column-header.alias.text' | translate }}
+        {{ 'home.new-experiment.design.aliases.column-header.payload.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData; let rowIndex = index">
         <ng-container *ngIf="(simpleExperimentAliasTableEditIndex$ | async) !== rowIndex">
@@ -68,7 +68,7 @@
               [type]="text"
               matInput
               [(ngModel)]="rowData.alias"
-              [placeholder]="'home.new-experiment.design.aliases.column-header.alias.text' | translate"
+              [placeholder]="'home.new-experiment.design.aliases.column-header.payload.text' | translate"
               required
               [matAutocomplete]="aliasRowAutoCompleteConditionCodes"
               (keyup)="handleFilterContextMetaDataConditions(rowData.alias, $event)"

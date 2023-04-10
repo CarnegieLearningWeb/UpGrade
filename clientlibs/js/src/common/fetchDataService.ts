@@ -57,7 +57,7 @@ async function fetchData(
       };
     }
 
-    const response = await fetch(url, options);
+    const response = await fetch(url, options as RequestInit);
     const responseData = await response.json();
     // If value of ok is false then it's error
     if (response.ok) {

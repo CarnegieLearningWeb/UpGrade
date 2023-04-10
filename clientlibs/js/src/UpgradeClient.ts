@@ -3,14 +3,14 @@ import { Interfaces } from './identifiers';
 import setWorkingGroup from './functions/setWorkingGroup';
 import getAllExperimentConditions from './functions/getAllExperimentConditions';
 import {
-  IExperimentAssignment,
   IFeatureFlag,
   ISingleMetric,
   IGroupMetric,
   ILogInput,
   MARKED_DECISION_POINT_STATUS,
+  IExperimentAssignmentv4,
 } from 'upgrade_types';
-import getExperimentCondition from './functions/getExperimentCondition';
+import getExperimentCondition, { Assignment } from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
 import getAllFeatureFlags from './functions/getAllfeatureFlags';
 import log from './functions/log';
@@ -23,44 +23,51 @@ import * as uuid from 'uuid';
 export default class UpgradeClient {
   // Endpoints URLs
   private api = {
-    init: null,
-    getAllExperimentConditions: null,
-    markExperimentPoint: null,
-    setGroupMemberShip: null,
-    setWorkingGroup: null,
-    failedExperimentPoint: null,
-    getAllFeatureFlag: null,
-    log: null,
-    altUserIds: null,
-    addMetrics: null,
+    init: '',
+    getAllExperimentConditions: '',
+    markExperimentPoint: '',
+    setGroupMemberShip: '',
+    setWorkingGroup: '',
+    failedExperimentPoint: '',
+    getAllFeatureFlag: '',
+    log: '',
+    altUserIds: '',
+    addMetrics: '',
   };
   private userId: string;
   private hostUrl: string;
+  private context: string;
   // Use token if it is given in constructor
   private token: string;
   private clientSessionId: string;
 
   private group: Record<string, Array<string>> = null;
   private workingGroup: Record<string, string> = null;
-  private experimentConditionData: IExperimentAssignment[] = null;
+  private experimentConditionData: IExperimentAssignmentv4[] = null;
   private featureFlags: IFeatureFlag[] = null;
 
-  constructor(userId: string, hostUrl: string, options?: { token?: string; clientSessionId?: string }) {
+  constructor(
+    userId: string,
+    hostUrl: string,
+    context: string,
+    options?: { token?: string; clientSessionId?: string }
+  ) {
     this.userId = userId;
     this.hostUrl = hostUrl;
+    this.context = context;
     this.token = options?.token;
     this.clientSessionId = options?.clientSessionId || uuid.v4();
     this.api = {
-      init: `${hostUrl}/api/v1/init`,
-      getAllExperimentConditions: `${hostUrl}/api/v1/assign`,
-      markExperimentPoint: `${hostUrl}/api/v1/mark`,
-      setGroupMemberShip: `${hostUrl}/api/v1/groupmembership`,
-      setWorkingGroup: `${hostUrl}/api/v1/workinggroup`,
-      failedExperimentPoint: `${hostUrl}/api/v1/failed`,
-      getAllFeatureFlag: `${hostUrl}/api/v1/featureflag`,
-      log: `${hostUrl}/api/v1/log`,
-      altUserIds: `${hostUrl}/api/v1/useraliases`,
-      addMetrics: `${hostUrl}/api/v1/metric`,
+      init: `${hostUrl}/api/v4/init`,
+      getAllExperimentConditions: `${hostUrl}/api/v4/assign`,
+      markExperimentPoint: `${hostUrl}/api/v4/mark`,
+      setGroupMemberShip: `${hostUrl}/api/v4/groupmembership`,
+      setWorkingGroup: `${hostUrl}/api/v4/workinggroup`,
+      failedExperimentPoint: `${hostUrl}/api/v4/failed`,
+      getAllFeatureFlag: `${hostUrl}/api/v4/featureflag`,
+      log: `${hostUrl}/api/v4/log`,
+      altUserIds: `${hostUrl}/api/v4/useraliases`,
+      addMetrics: `${hostUrl}/api/v4/metric`,
     };
   }
 
@@ -118,14 +125,14 @@ export default class UpgradeClient {
     return response;
   }
 
-  async getAllExperimentConditions(context: string): Promise<IExperimentAssignment[]> {
+  async getAllExperimentConditions(): Promise<IExperimentAssignmentv4[]> {
     this.validateClient();
     const response = await getAllExperimentConditions(
       this.api.getAllExperimentConditions,
       this.userId,
       this.token,
       this.clientSessionId,
-      context
+      this.context
     );
     if (Array.isArray(response)) {
       this.experimentConditionData = response;
@@ -133,19 +140,20 @@ export default class UpgradeClient {
     return response;
   }
 
-  async getExperimentCondition(context: string, site: string, target?: string): Promise<IExperimentAssignment> {
+  async getDecisionPointAssignment(site: string, target?: string): Promise<Assignment> {
     this.validateClient();
     if (this.experimentConditionData == null) {
-      await this.getAllExperimentConditions(context);
+      await this.getAllExperimentConditions();
     }
     return getExperimentCondition(this.experimentConditionData, site, target);
   }
 
   async markExperimentPoint(
     site: string,
-    condition: string,
+    condition: string = null,
     status: MARKED_DECISION_POINT_STATUS,
-    target?: string
+    target?: string,
+    clientError?: string
   ): Promise<Interfaces.IMarkExperimentPoint> {
     this.validateClient();
     return await markExperimentPoint(
@@ -156,7 +164,8 @@ export default class UpgradeClient {
       site,
       condition,
       status,
-      target
+      target,
+      clientError
     );
   }
 
@@ -179,7 +188,7 @@ export default class UpgradeClient {
     return await log(this.api.log, this.userId, this.token, this.clientSessionId, value, sendAsAnalytics);
   }
 
-  async setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUserAliases> {
+  async setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUserAliases[]> {
     this.validateClient();
     return await setAltUserIds(this.api.altUserIds, this.userId, this.token, this.clientSessionId, altUserIds);
   }

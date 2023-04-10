@@ -2,6 +2,15 @@ import { Interfaces, Types } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
 import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 
+interface markData {
+  site: string;
+  condition: string;
+  userId: string;
+  status: MARKED_DECISION_POINT_STATUS;
+  target?: string;
+  clientError?: string;
+}
+
 export default async function markExperimentPoint(
   url: string,
   userId: string,
@@ -10,28 +19,31 @@ export default async function markExperimentPoint(
   site: string,
   condition: string,
   status: MARKED_DECISION_POINT_STATUS,
-  target?: string
+  target?: string,
+  clientError?: string
 ): Promise<Interfaces.IMarkExperimentPoint> {
-  try {
-    let data: any = {
-      site,
-      condition,
-      userId,
-      status,
+  let data: markData = {
+    site,
+    condition,
+    userId,
+    status,
+  };
+  if (target) {
+    data = {
+      ...data,
+      target,
     };
-    if (target) {
-      data = {
-        ...data,
-        target,
-      };
-    }
-    const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
-    if (response.status) {
-      return response.data;
-    } else {
-      throw new Error(JSON.stringify(response.message));
-    }
-  } catch (error) {
-    throw new Error(error.message);
+  }
+  if (clientError) {
+    data = {
+      ...data,
+      clientError,
+    };
+  }
+  const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
+  if (response.status) {
+    return response.data;
+  } else {
+    throw new Error(JSON.stringify(response.message));
   }
 }
