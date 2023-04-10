@@ -43,15 +43,6 @@ import { Log } from '../models/Log';
 import flatten from 'lodash.flatten';
 import { CaliperLogEnvelope } from './validators/CaliperLogEnvelope';
 
-interface ILog {
-  id: string;
-  uniquifier: string;
-  timeStamp: Date;
-  data: any;
-  metrics: Metric[];
-  user: ExperimentUser;
-}
-
 interface IMonitoredDeciosionPoint {
   id: string;
   user: ExperimentUser;
