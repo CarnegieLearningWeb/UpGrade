@@ -10,25 +10,21 @@ export default async function log(
   value: ILogInput[],
   sendAsAnalytics = false
 ): Promise<Interfaces.ILog[]> {
-  try {
-    const data = {
-      userId,
-      value,
-    };
-    const logResponse = await fetchDataService(
-      url,
-      token,
-      clientSessionId,
-      data,
-      Types.REQUEST_TYPES.POST,
-      sendAsAnalytics
-    );
-    if (logResponse.status) {
-      return logResponse.data;
-    } else {
-      throw new Error(JSON.stringify(logResponse.message));
-    }
-  } catch (error) {
-    throw new Error(error.message);
+  const data = {
+    userId,
+    value,
+  };
+  const logResponse = await fetchDataService(
+    url,
+    token,
+    clientSessionId,
+    data,
+    Types.REQUEST_TYPES.POST,
+    sendAsAnalytics
+  );
+  if (logResponse.status) {
+    return logResponse.data;
+  } else {
+    throw new Error(JSON.stringify(logResponse.message));
   }
 }

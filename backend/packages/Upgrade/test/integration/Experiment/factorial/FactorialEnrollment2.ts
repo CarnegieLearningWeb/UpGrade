@@ -83,14 +83,14 @@ export default async function FactorialExperimentEnrollment2(): Promise<void> {
         target: partitions[0].target,
         site: partitions[0].site,
         assignedCondition: expect.objectContaining({
-          conditionCode: 'Concrete Alias',
+          conditionCode: 'Question Type=Concrete; Motivation=Mindset',
         }),
       }),
       expect.objectContaining({
         target: partitions[1].target,
         site: partitions[1].site,
         assignedCondition: expect.objectContaining({
-          conditionCode: 'Mindset Alias',
+          conditionCode: 'Question Type=Concrete; Motivation=Mindset',
         }),
       }),
     ])
@@ -101,7 +101,7 @@ export default async function FactorialExperimentEnrollment2(): Promise<void> {
     experimentUsers[0].id,
     partitions[0].target,
     partitions[0].site,
-    'Concrete Alias',
+    'Question Type=Concrete; Motivation=Mindset',
     new UpgradeLogger(),
     experimentID
   );
@@ -133,14 +133,14 @@ export default async function FactorialExperimentEnrollment2(): Promise<void> {
         target: partitions[0].target,
         site: partitions[0].site,
         assignedCondition: expect.objectContaining({
-          conditionCode: 'Abstract',
+          conditionCode: 'Question Type=Abstract; Motivation=No support',
         }),
       }),
       expect.objectContaining({
         target: partitions[1].target,
         site: partitions[1].site,
         assignedCondition: expect.objectContaining({
-          conditionCode: 'No support',
+          conditionCode: 'Question Type=Abstract; Motivation=No support',
         }),
       }),
     ])
@@ -151,7 +151,7 @@ export default async function FactorialExperimentEnrollment2(): Promise<void> {
     experimentUsers[1].id,
     partitions[0].target,
     partitions[0].site,
-    'Abstract',
+    'Question Type=Abstract; Motivation=No support',
     new UpgradeLogger(),
     experimentID
   );

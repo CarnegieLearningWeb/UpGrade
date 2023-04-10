@@ -6,6 +6,8 @@ import {
   FactorialConditionTableRowData,
   SimpleExperimentDesignData,
   SimpleExperimentAliasTableRow,
+  FactorialLevelTableRowData,
+  ExperimentLevelFormData,
 } from './experiment-design-stepper.model';
 
 export const actionUpdateAliasTableEditMode = createAction(
@@ -61,8 +63,8 @@ export const actionUpdateFactorialDesignData = createAction(
   props<{ designData: ExperimentFactorialDesignData }>()
 );
 
-export const actionUpdateFactorialTableData = createAction(
-  '[Experiment-Design-Stepper] update factorial table data',
+export const actionUpdateFactorialConditionTableData = createAction(
+  '[Experiment-Design-Stepper] update factorial condition table data',
   props<{ tableData: FactorialConditionTableRowData[] }>()
 );
 
@@ -74,8 +76,20 @@ export const actionToggleFactorialConditionsTableEditMode = createAction(
   }>()
 );
 
+export const actionToggleFactorialLevelsTableEditMode = createAction(
+  '[Experiment-Design-Stepper] Update Factorial Levels Table Edit Mode Details',
+  props<{
+    factorialLevelsTableEditIndex: number | null;
+    factorialLevelsRowData: ExperimentLevelFormData;
+  }>()
+);
+
 export const actionClearFactorialConditionTableEditDetails = createAction(
   `[Experiment-Design-Stepper] Clear Factorial Condition Table Edit Details`
+);
+
+export const actionClearFactorialLevelTableEditDetails = createAction(
+  `[Experiment-Design-Stepper] Clear Factorial Level Table Edit Details`
 );
 
 export const clearFactorialDesignStepperData = createAction(`[Experiment-Design-Stepper] Clear Factorial Design Data`);

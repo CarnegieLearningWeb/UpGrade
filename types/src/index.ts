@@ -24,6 +24,7 @@ export {
   EXPERIMENT_TYPE,
   SUPPORTED_CALIPER_PROFILES,
   SUPPORTED_CALIPER_EVENTS
+  PAYLOAD_TYPE,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,
@@ -49,4 +50,6 @@ export {
   Attempt,
   CaliperGradingProfile,
   CaliperEnvelope
+  IPayload,
+  IExperimentAssignmentv4,
 } from './Experiment/interfaces';

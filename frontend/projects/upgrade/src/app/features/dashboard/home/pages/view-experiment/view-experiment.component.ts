@@ -24,7 +24,7 @@ import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/s
 import { ExportModalComponent } from '../../components/modal/export-experiment/export-experiment.component';
 import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-time/enrollment-over-time.component';
-import { EXPERIMENT_TYPE, FILTER_MODE, IMetricMetaData } from 'upgrade_types';
+import { EXPERIMENT_TYPE, IMetricMetaData } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
@@ -39,7 +39,7 @@ enum DialogType {
 }
 
 type Participants = { participant_Type: string; participant_id: string };
-type Factors = { factor: string; site: string; target: string; levels: ExperimentLevel[] };
+type Factors = { factor: string; description: string; levels: ExperimentLevel[] };
 type Metrics = { metric_Key: string[]; metric_Operation: string[]; metric_Name: string };
 
 @Component({
@@ -60,9 +60,9 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   expandedId: number = null;
 
   displayedConditionColumns: string[] = ['conditionCode', 'assignmentWeight', 'description'];
-  displayedConditionColumnsFactorial: string[] = ['conditionCode', 'assignmentWeight'];
+  displayedConditionColumnsFactorial: string[] = ['conditionCode', 'payload', 'assignmentWeight'];
   displayedPartitionColumns: string[] = ['partitionPoint', 'partitionId', 'excludeIfReached'];
-  displayedPartitionColumnsFactorial: string[] = ['expandIcon', 'factorName', 'partitionPoint', 'partitionId'];
+  displayedPartitionColumnsFactorial: string[] = ['expandIcon', 'factorName', 'description'];
   displayedPartitionLevelColumnsFactorial = ['level', 'alias'];
   displayedAliasConditionColumns: string[] = ['site', 'target', 'condition', 'alias'];
   displayedParticipantsColumns: string[] = ['participantsType', 'participantsId'];
@@ -169,14 +169,12 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     }
   }
 
-  createFactorialTableData(){
+  createFactorialTableData() {
     if (this.experiment) {
       this.factorsDataSource = [];
-      this.experiment.partitions?.forEach((partition)=>{
-        partition.factors?.forEach((factor)=>{
-          this.factorsDataSource.push({ factor: factor.name, site: partition.site, target: partition.target, levels: factor.levels });
-        })
-      })
+      this.experiment.factors?.forEach((factor) => {
+          this.factorsDataSource.push({ factor: factor.name, description: factor.description, levels: factor.levels });
+      });
     }
   }
 

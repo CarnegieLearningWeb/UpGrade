@@ -138,6 +138,7 @@ describe('Experiments Selectors', () => {
             excludeIfReached: false,
           },
         ],
+        factors: [],
         conditionAliases: [],
         queries: [],
         stateTimeLogs: [

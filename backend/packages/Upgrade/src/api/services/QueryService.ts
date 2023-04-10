@@ -44,8 +44,8 @@ export class QueryService {
           'experiment',
           'experiment.conditions',
           'experiment.partitions',
-          'experiment.partitions.factors',
-          'experiment.partitions.factors.levels',
+          'experiment.factors',
+          'experiment.factors.levels',
         ],
       })
     );
@@ -121,13 +121,11 @@ export class QueryService {
         }
       });
 
-      experiment.partitions.forEach((partition) => {
-        partition.factors.forEach((factor) => {
-          factor.levels.forEach((level) => {
-            if (!mainEffect.some((result) => result.levelId === level.id)) {
-              mainEffect.push({ levelId: level.id, result: 0, participantsLogged: 0 });
-            }
-          });
+      experiment.factors.forEach((factor) => {
+        factor.levels.forEach((level) => {
+          if (!mainEffect.some((result) => result.levelId === level.id)) {
+            mainEffect.push({ levelId: level.id, result: 0, participantsLogged: 0 });
+          }
         });
       });
     } else {

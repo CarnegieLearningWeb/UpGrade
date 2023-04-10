@@ -171,6 +171,12 @@ export enum EXPERIMENT_TYPE {
   FACTORIAL = 'Factorial',
 }
 
+export enum PAYLOAD_TYPE {
+  STRING = 'string',
+  JSON = 'json',
+  CSV = 'csv',
+}
+
 export enum SUPPORTED_CALIPER_PROFILES {
   GRADING = "GradingProfile"
 }

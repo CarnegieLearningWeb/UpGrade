@@ -9,32 +9,28 @@ export default async function init(
   group?: Record<string, Array<string>>,
   workingGroup?: Record<string, string>
 ): Promise<Interfaces.IUser> {
-  try {
-    let data: any = {
-      id: userId,
+  let data: any = {
+    id: userId,
+  };
+
+  if (group) {
+    data = {
+      ...data,
+      group,
     };
+  }
 
-    if (group) {
-      data = {
-        ...data,
-        group,
-      };
-    }
+  if (workingGroup) {
+    data = {
+      ...data,
+      workingGroup,
+    };
+  }
 
-    if (workingGroup) {
-      data = {
-        ...data,
-        workingGroup,
-      };
-    }
-
-    const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
-    if (response.status) {
-      return response.data;
-    } else {
-      throw new Error(JSON.stringify(response.message));
-    }
-  } catch (error) {
-    throw new Error(error.message);
+  const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
+  if (response.status) {
+    return response.data;
+  } else {
+    throw new Error(JSON.stringify(response.message));
   }
 }

@@ -11,11 +11,11 @@ import {
   POST_EXPERIMENT_RULE,
   ASSIGNMENT_UNIT,
   SERVER_ERROR,
-  INewExperimentAssignment,
   FILTER_MODE,
   EXCLUSION_CODE,
   MARKED_DECISION_POINT_STATUS,
   EXPERIMENT_TYPE,
+  IExperimentAssignment,
   SUPPORTED_CALIPER_PROFILES,
   SUPPORTED_CALIPER_EVENTS,
 } from 'upgrade_types';
@@ -112,10 +112,18 @@ export class ExperimentAssignmentService {
     condition: string | null,
     requestContext: { logger: UpgradeLogger; userDoc: any },
     target?: string,
-    experimentId?: string
+    experimentId?: string,
+    clientError?: string
   ): Promise<Omit<MonitoredDecisionPoint, 'createdAt | updatedAt | versionNumber'>> {
     // find working group for user
     const { logger, userDoc } = requestContext;
+
+    // check error from client side
+    if (clientError) {
+      const error = new Error(clientError);
+      (error as any).type = SERVER_ERROR.REPORTED_ERROR;
+      logger.error(error);
+    }
 
     // adding experiment error when user is not defined
     if (!userDoc) {
@@ -151,8 +159,8 @@ export class ExperimentAssignmentService {
         'experiment.conditions.levelCombinationElements',
         'experiment.conditions.levelCombinationElements.level',
         'experiment.conditions.conditionAliases',
-        'experiment.partitions.factors',
-        'experiment.partitions.factors.levels',
+        'experiment.factors',
+        'experiment.factors.levels',
         'experiment.experimentSegmentInclusion',
         'experiment.experimentSegmentExclusion',
         'experiment.experimentSegmentInclusion.segment',
@@ -321,30 +329,16 @@ export class ExperimentAssignmentService {
           throw err;
         }
 
-        const { conditions, partitions, type } = experiment;
+        const { conditions } = experiment;
 
         const aliasConditions = await this.conditionAliasRepository.find({
-          relations: ['parentCondition', 'decisionPoint'],
-          where: { parentCondition: In(conditions.map((x) => x.id)), decisionPoint: In(partitions.map((x) => x.id)) },
+          relations: ['parentCondition'],
+          where: { parentCondition: In(conditions.map((x) => x.id)) },
         });
 
-        const factorialConditions: string[] = [];
-        if (type === EXPERIMENT_TYPE.FACTORIAL) {
-          conditions.forEach((condition) => {
-            partitions.forEach((partition) => {
-              factorialConditions.push(...this.getFactorialCondition(condition, partition.factors)[1]);
-            });
-          });
-        }
         const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
         const matchedAliasCondition = aliasConditions.filter((con) => con.aliasName === condition);
-        const matchedFactorialCondition = factorialConditions.filter((con) => con === condition);
-        if (
-          matchedCondition.length === 0 &&
-          matchedAliasCondition.length === 0 &&
-          matchedFactorialCondition.length === 0 &&
-          condition !== null
-        ) {
+        if (matchedCondition.length === 0 && matchedAliasCondition.length === 0 && condition !== null) {
           const error = new Error(`Condition not found: ${condition}`);
           (error as any).type = SERVER_ERROR.CONDITION_NOT_FOUND;
           logger.error(error);
@@ -408,7 +402,7 @@ export class ExperimentAssignmentService {
     userId: string,
     context: string,
     requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<INewExperimentAssignment[]> {
+  ): Promise<IExperimentAssignment[]> {
     const { logger, userDoc } = requestContext;
     logger.info({ message: `getAllExperimentConditions: User: ${userId}` });
 
@@ -637,33 +631,33 @@ export class ExperimentAssignmentService {
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
         // const { state, logging, name, id } = experiment;
-        const { state, logging, name, conditionAliases, type } = experiment;
+        const { state, logging, name, conditionAliases, type, id, factors } = experiment;
         const decisionPoints = experiment.partitions.map((decisionPoint) => {
-          const { target, site, twoCharacterId, factors } = decisionPoint;
+          const { target, site } = decisionPoint;
           const conditionAssigned = assignment;
-          let factorialCondition;
+          let factorialObject;
 
           let aliasCondition: ExperimentCondition = null;
+          let aliasFound;
           if (conditionAssigned) {
             if (type === EXPERIMENT_TYPE.FACTORIAL) {
               // returns factorial alias condition or assigned condition
-              const aliasFound = conditionAliases.find((x) => x.parentCondition.id === conditionAssigned.id);
-              factorialCondition = this.getFactorialCondition(
+              aliasFound = conditionAliases.find((x) => x.parentCondition.id === conditionAssigned.id);
+              factorialObject = this.getFactorialCondition(
                 { ...conditionAssigned, conditionAliases: [aliasFound] },
                 factors
-              )[0];
+              );
             } else {
               // checking alias condition for simple experiment
-              const aliasFound = conditionAliases.find(
+              aliasFound = conditionAliases.find(
                 (x) =>
                   x.parentCondition.id === conditionAssigned.id &&
                   x.decisionPoint.site === decisionPoint.site &&
                   x.decisionPoint.target === decisionPoint.target
               );
-
-              if (aliasFound) {
-                aliasCondition = { ...conditionAssigned, conditionCode: aliasFound.aliasName };
-              }
+            }
+            if (aliasFound) {
+              aliasCondition = { ...conditionAssigned, conditionCode: aliasFound.aliasName };
             }
           }
 
@@ -676,16 +670,23 @@ export class ExperimentAssignmentService {
               }`,
             });
           }
+
+          const assignedFactor = factorialObject ? factorialObject['assignedFactor'] : null;
+          const factorialCondition = factorialObject ? factorialObject['factorialCondition'] : null;
+          const assignedConditionToReturn = factorialCondition ||
+            conditionAssigned || {
+              conditionCode: null,
+            };
+
           return {
             target,
             site,
-            twoCharacterId,
-            // experimentId: id,
-            assignedCondition: aliasCondition ||
-              factorialCondition ||
-              conditionAssigned || {
-                conditionCode: null,
-              },
+            assignedCondition: {
+              ...assignedConditionToReturn,
+              conditionAlias: aliasCondition?.conditionCode,
+              experimentId: id,
+            },
+            assignedFactor,
           };
         });
         return assignment ? [...accumulator, ...decisionPoints] : accumulator;
@@ -1878,10 +1879,7 @@ export class ExperimentAssignmentService {
     return [includedExperiments, excludedExperiments];
   }
 
-  private getFactorialCondition(
-    conditionAssigned: ExperimentCondition,
-    factors: Factor[]
-  ): [ExperimentCondition, string[]] {
+  private getFactorialCondition(conditionAssigned: ExperimentCondition, factors: Factor[]): object {
     const levelsForCondition: string[] = [];
     const aliases: string[] = [];
     let factorialCondition;
@@ -1900,6 +1898,16 @@ export class ExperimentAssignmentService {
       .filter((value) => levelsForCondition.includes(value.id))
       .sort((a, b) => a.order - b.order);
 
+    const assignedFactor = {};
+    conditionCodeToSet.forEach((x) => {
+      assignedFactor[x.factorName] = { level: x.name, levelAlias: x.alias };
+    });
+
+    let factorialConditionAlias = null;
+    if (conditionAssigned.conditionAliases) {
+      factorialConditionAlias = conditionAssigned.conditionAliases[0]?.aliasName;
+    }
+
     if (conditionCodeToSet.length > 1) {
       // for factorial experiment with same decisionPoints
       let conditionCodeName = '';
@@ -1908,19 +1916,13 @@ export class ExperimentAssignmentService {
       });
       conditionCodeName = conditionCodeName.slice(0, -2);
 
-      if (conditionAssigned.conditionAliases) {
-        const factorialConditionAlias = conditionAssigned.conditionAliases[0]?.aliasName;
-        factorialCondition = {
-          ...conditionAssigned,
-          conditionCode: factorialConditionAlias || conditionCodeName,
-        };
-
-        if (factorialConditionAlias) {
-          aliases.push(factorialConditionAlias);
-        }
-      }
-
-      aliases.push(conditionCodeName);
+      factorialCondition = {
+        ...conditionAssigned,
+        conditionCode: factorialConditionAlias || conditionCodeName,
+      };
+      factorialConditionAlias
+        ? aliases.push(...[factorialConditionAlias, conditionCodeName])
+        : aliases.push(conditionCodeName);
     } else {
       // for factorial experiment with different decisionPoints
       const levelAlias = conditionCodeToSet[0].alias;
@@ -1930,6 +1932,13 @@ export class ExperimentAssignmentService {
     }
     delete factorialCondition.levelCombinationElements;
     delete factorialCondition.conditionAliases;
-    return [factorialCondition, aliases];
+
+    const objectToReturn = {};
+    objectToReturn['factorialCondition'] = factorialCondition;
+    objectToReturn['aliases'] = aliases;
+    objectToReturn['assignedFactor'] = assignedFactor;
+    objectToReturn['conditionAlias'] = factorialConditionAlias;
+
+    return objectToReturn;
   }
 }

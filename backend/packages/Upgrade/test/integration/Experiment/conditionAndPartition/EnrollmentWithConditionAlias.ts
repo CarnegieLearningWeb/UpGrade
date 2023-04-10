@@ -66,13 +66,21 @@ export default async function EnrollmentWithConditionAlias(): Promise<void> {
   const experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
   expect(experimentConditionAssignments).toHaveLength(3);
+  experimentConditionAssignments.sort((a, b) => {
+    return a.assignedCondition.conditionCode > b.assignedCondition.conditionCode
+      ? 1
+      : a.assignedCondition.conditionCode < b.assignedCondition.conditionCode
+      ? -1
+      : 0;
+  });
+  // expecting response from Service
   expect(experimentConditionAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        assignedCondition: expect.objectContaining({ conditionCode: 'ConditionA_W1' }),
+        assignedCondition: expect.objectContaining({ conditionAlias: 'ConditionA_W2', conditionCode: 'ConditionA' }),
       }),
       expect.objectContaining({
-        assignedCondition: expect.objectContaining({ conditionCode: 'ConditionA_W2' }),
+        assignedCondition: expect.objectContaining({ conditionAlias: 'ConditionA_W1', conditionCode: 'ConditionA' }),
       }),
       expect.objectContaining({
         assignedCondition: expect.objectContaining({ conditionCode: 'ConditionA' }),

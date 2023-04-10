@@ -37,12 +37,11 @@ import { CaliperLogEnvelope } from './validators/CaliperLogEnvelope';
 interface IExperimentAssignment {
   expId: string;
   expPoint: string;
-  twoCharacterId: string;
-  description: string;
   assignedCondition: {
     conditionCode: string;
-    twoCharacterId: string;
-    description: string;
+    conditionAlias: string;
+    experimentId: string;
+    id: string;
   };
 }
 
@@ -555,11 +554,12 @@ export class ExperimentClientController {
       }
     );
 
-    return assignedData.map(({ site, target, ...rest }) => {
+    return assignedData.map(({ site, target, assignedCondition }) => {
+      const conditionCode = assignedCondition.conditionAlias || assignedCondition.conditionCode;
       return {
         expPoint: site,
         expId: target,
-        ...rest,
+        assignedCondition: { ...assignedCondition, conditionCode: conditionCode },
       };
     });
   }
