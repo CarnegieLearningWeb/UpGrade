@@ -1,6 +1,6 @@
 import { Types, Interfaces } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
-import { CaliperEnvelope } from '../../../../types/src/Experiment/interfaces';
+import { CaliperEnvelope } from 'upgrade_types';
 
 export default async function logCaliper(
   url: string,

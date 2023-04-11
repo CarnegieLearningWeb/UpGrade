@@ -9,6 +9,7 @@ import {
   ILogInput,
   MARKED_DECISION_POINT_STATUS,
   IExperimentAssignmentv4,
+  CaliperEnvelope
 } from 'upgrade_types';
 import getExperimentCondition, { Assignment } from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
@@ -20,7 +21,6 @@ import addMetrics from './functions/addMetrics';
 import getFeatureFlag from './functions/getFeatureFlag';
 import init from './functions/init';
 import * as uuid from 'uuid';
-import { CaliperEnvelope } from '../../../types/src/Experiment/interfaces';
 
 export default class UpgradeClient {
   // Endpoints URLs
