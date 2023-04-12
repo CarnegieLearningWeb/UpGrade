@@ -548,7 +548,7 @@ export class ExperimentClientController {
     );
 
     return assignedData.map(({ site, target, assignedCondition }) => {
-      const conditionCode = assignedCondition.payload.value || assignedCondition.conditionCode;
+      const conditionCode = assignedCondition.payload?.value || assignedCondition.conditionCode;
       return {
         expPoint: site,
         expId: target,

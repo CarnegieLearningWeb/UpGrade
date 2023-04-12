@@ -528,7 +528,7 @@ export class ExperimentClientController {
       return {
         site,
         target,
-        assignedCondition: { condition: assignedCondition.payload.value || assignedCondition.conditionCode },
+        assignedCondition: { condition: assignedCondition.payload?.value || assignedCondition.conditionCode },
       };
     });
   }

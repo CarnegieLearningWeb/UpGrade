@@ -527,9 +527,10 @@ export class ExperimentClientController {
         Object.keys(assignedFactor).forEach((key) => {
           updatedAssignedFactor[key] = {
             level: assignedFactor[key].level,
-            payload: assignedFactor[key].payload
-              ? { type: PAYLOAD_TYPE.STRING, value: assignedFactor[key].payload.value }
-              : null,
+            payload:
+              assignedFactor[key].payload && assignedFactor[key].payload.value
+                ? { type: PAYLOAD_TYPE.STRING, value: assignedFactor[key].payload.value }
+                : null,
           };
         });
       }
@@ -539,9 +540,10 @@ export class ExperimentClientController {
         assignedCondition: {
           id: assignedCondition.id,
           conditionCode: assignedCondition.conditionCode,
-          payload: assignedCondition.payload
-            ? { type: PAYLOAD_TYPE.STRING, value: assignedCondition.payload.value }
-            : null,
+          payload:
+            assignedCondition.payload && assignedCondition.payload.value
+              ? { type: PAYLOAD_TYPE.STRING, value: assignedCondition.payload.value }
+              : null,
           experimentId: assignedCondition.experimentId,
         },
         assignedFactor: assignedFactor ? updatedAssignedFactor : undefined,

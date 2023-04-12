@@ -29,6 +29,10 @@ export default class ExperimentServieMock {
     return Promise.resolve([]);
   }
 
+  public getSingleExperiment(id: string): Promise<[]> {
+    return Promise.resolve([]);
+  }
+
   public findOne(id: string): Promise<[]> {
     return Promise.resolve([]);
   }

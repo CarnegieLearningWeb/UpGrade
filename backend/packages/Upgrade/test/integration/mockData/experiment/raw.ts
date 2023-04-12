@@ -1,4 +1,4 @@
-import { FILTER_MODE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 
 export const revertToExperiment = {
   id: 'be3ae74f-370a-4015-93f3-7761d16f8b11',
@@ -298,6 +298,7 @@ export const experimentFifth = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
+  type: EXPERIMENT_TYPE.SIMPLE,
   experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [

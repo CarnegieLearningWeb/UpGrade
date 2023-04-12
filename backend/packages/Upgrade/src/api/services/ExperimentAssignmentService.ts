@@ -58,7 +58,8 @@ import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Segment } from '../models/Segment';
 import { ConditionPayloadRepository } from '../repositories/ConditionPayloadRepository';
 import { In } from 'typeorm';
-import { Factor } from '../models/Factor';
+import { FactorDTO } from '../DTO/FactorDTO';
+import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -628,22 +629,19 @@ export class ExperimentAssignmentService {
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
         // const { state, logging, name, id } = experiment;
-        const { state, logging, name, conditionPayloads, type, id, factors } = experiment;
+        const { state, logging, name, conditionPayloads, type, id, factors } =
+          this.experimentService.formatingPayload(experiment);
         const decisionPoints = experiment.partitions.map((decisionPoint) => {
           const { target, site } = decisionPoint;
           const conditionAssigned = assignment;
           let factorialObject;
 
-          let payloadCondition: ExperimentCondition = null;
-          let payloadFound;
+          let payloadFound: ConditionPayloadDTO;
           if (conditionAssigned) {
             if (type === EXPERIMENT_TYPE.FACTORIAL) {
               // returns factorial alias condition or assigned condition
               payloadFound = conditionPayloads.find((x) => x.parentCondition.id === conditionAssigned.id);
-              factorialObject = this.getFactorialCondition(
-                { ...conditionAssigned, conditionPayloads: [payloadFound] },
-                factors
-              );
+              factorialObject = this.getFactorialCondition(conditionAssigned, payloadFound, factors);
             } else {
               // checking alias condition for simple experiment
               payloadFound = conditionPayloads.find(
@@ -652,9 +650,6 @@ export class ExperimentAssignmentService {
                   x.decisionPoint.site === decisionPoint.site &&
                   x.decisionPoint.target === decisionPoint.target
               );
-            }
-            if (payloadFound) {
-              payloadCondition = { ...conditionAssigned, conditionCode: payloadFound.payload.value };
             }
           }
 
@@ -680,7 +675,7 @@ export class ExperimentAssignmentService {
             site,
             assignedCondition: {
               ...assignedConditionToReturn,
-              conditionPayload: payloadCondition?.conditionCode,
+              payload: payloadFound?.payload,
               experimentId: id,
             },
             assignedFactor,
@@ -1852,7 +1847,11 @@ export class ExperimentAssignmentService {
     return [includedExperiments, excludedExperiments];
   }
 
-  private getFactorialCondition(conditionAssigned: ExperimentCondition, factors: Factor[]): object {
+  private getFactorialCondition(
+    conditionAssigned: ExperimentCondition,
+    conditionPayloads: ConditionPayloadDTO,
+    factors: FactorDTO[]
+  ): object {
     const levelsForCondition: string[] = [];
     const payloads: string[] = [];
     let factorialCondition;
@@ -1877,11 +1876,8 @@ export class ExperimentAssignmentService {
     });
 
     let factorialConditionPayload = null;
-    if (conditionAssigned.conditionPayloads) {
-      factorialConditionPayload = {
-        type: conditionAssigned.conditionPayloads[0]?.payloadType,
-        value: conditionAssigned.conditionPayloads[0]?.payloadValue,
-      };
+    if (conditionPayloads) {
+      factorialConditionPayload = conditionPayloads.payload.value;
     }
 
     if (conditionCodeToSet.length > 1) {
@@ -1894,7 +1890,7 @@ export class ExperimentAssignmentService {
 
       factorialCondition = {
         ...conditionAssigned,
-        conditionCode: factorialConditionPayload || conditionCodeName,
+        conditionCode: conditionCodeName,
       };
       factorialConditionPayload
         ? payloads.push(...[factorialConditionPayload, conditionCodeName])

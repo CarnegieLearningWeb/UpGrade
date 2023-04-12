@@ -22,7 +22,7 @@ export default async function ConditionPayload(): Promise<void> {
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
-  const experiments = await experimentService.findOne(experimentObject.id, new UpgradeLogger());
+  const experiments = await experimentService.getSingleExperiment(experimentObject.id, new UpgradeLogger());
 
   // sort conditionPayloads
   experiments.conditionPayloads.sort((a, b) => {
@@ -100,7 +100,10 @@ export default async function ConditionPayload(): Promise<void> {
   await entityManager.delete(ExperimentCondition, updatedExperimentDoc.conditions[0].id);
 
   // conditionPayload related to condition should also gets deleted
-  updatedExperimentDoc = await experimentService.findOne(updatedExperimentDoc.id as any, new UpgradeLogger());
+  updatedExperimentDoc = await experimentService.getSingleExperiment(
+    updatedExperimentDoc.id as any,
+    new UpgradeLogger()
+  );
 
   expect(updatedExperimentDoc.conditionPayloads.length).toEqual(1);
   expect(updatedExperimentDoc.conditionPayloads).toEqual(
@@ -122,6 +125,9 @@ export default async function ConditionPayload(): Promise<void> {
   await entityManager.delete(DecisionPoint, updatedExperimentDoc.partitions[1].id);
 
   // conditionPayload related to decitionPoint should also gets deleted
-  updatedExperimentDoc = await experimentService.findOne(updatedExperimentDoc.id as any, new UpgradeLogger());
+  updatedExperimentDoc = await experimentService.getSingleExperiment(
+    updatedExperimentDoc.id as any,
+    new UpgradeLogger()
+  );
   expect(updatedExperimentDoc.conditionPayloads.length).toEqual(0);
 }
