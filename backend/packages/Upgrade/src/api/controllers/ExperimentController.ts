@@ -27,7 +27,7 @@ import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentDTO } from '../DTO/ExperimentDTO';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
-  nodes: Experiment[];
+  nodes: ExperimentDTO[];
 }
 
 /**
@@ -37,6 +37,7 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *     required:
  *       - id
  *       - name
+ *       - context
  *       - state
  *       - consistencyRule
  *       - assignmentUnit
@@ -45,6 +46,9 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       - group
  *       - conditions
  *       - partitions
+ *       - factors
+ *       - conditionPayload
+ *       - type
  *     properties:
  *       id:
  *         type: string
@@ -55,6 +59,10 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       description:
  *         type: string
  *         example: a simple test experiment
+ *       context:
+ *         type: array
+ *         items:
+ *           type: string
  *       state:
  *         type: string
  *         enum: [inactive, demo, scheduled, enrolling, enrollmentComplete, cancelled]
@@ -88,6 +96,9 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *            type: string
  *       group:
  *         type: string
+ *       filterMode:
+ *         type: string
+ *         enum: [includeAll, excludeAll]
  *       conditions:
  *           type: array
  *           items:
@@ -102,6 +113,9 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *               description:
  *                type: string
  *                example: Control Condition
+ *               conditionCode:
+ *                type: string
+ *                example: control
  *       partitions:
  *         type: array
  *         items:
@@ -119,6 +133,30 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *               type: string
  *             excludeIfReached:
  *                type: boolean
+ *       factors:
+ *         type: array
+ *         items:
+ *           type: object
+ *           properties:
+ *             name:
+ *               type: string
+ *             description:
+ *               type: string
+ *             levels:
+ *               type: object
+ *               properties:
+ *                 name:
+ *                   type: string
+ *                 description:
+ *                   type: string
+ *                 payload:
+ *                   type: object
+ *                   properties:
+ *                     type:
+ *                       type: string
+ *                       enum: [string, json, csv]
+ *                     value:
+ *                       type:string
  *       queries:
  *         type: array
  *         items:
@@ -195,6 +233,8 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *                          type: string
  *                        context:
  *                          type: string
+ *       type:
+ *         type: string
  *       conditionPayloads:
  *         type: array
  *         items:
@@ -206,13 +246,10 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *                 type: object
  *                 properties:
  *                   type:
- *                     type: enum
+ *                     type: string
+ *                     enum: [string, json, csv]
  *                   value:
- *                     type: enum
- *               parentCondition:
- *                 type: object
- *               decisionPoint:
- *                 type: object
+ *                     type:string
  *   ExperimentResponse:
  *     description: ''
  *     type: object

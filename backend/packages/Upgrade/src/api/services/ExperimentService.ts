@@ -115,7 +115,7 @@ export class ExperimentService {
     logger: UpgradeLogger,
     searchParams?: IExperimentSearchParams,
     sortParams?: IExperimentSortParams
-  ): Promise<Experiment[]> {
+  ): Promise<ExperimentDTO[]> {
     logger.info({ message: `Find paginated experiments` });
 
     let queryBuilder = this.experimentRepository
@@ -166,7 +166,10 @@ export class ExperimentService {
     if (sortParams) {
       queryBuilderToReturn = queryBuilderToReturn.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
     }
-    return await queryBuilderToReturn.getMany();
+    const experiments = await queryBuilderToReturn.getMany();
+    return experiments.map((experiment) => {
+      return this.formatingPayload(this.formatingConditionPayload(experiment));
+    });
   }
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
