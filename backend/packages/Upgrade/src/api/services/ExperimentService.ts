@@ -161,6 +161,8 @@ export class ExperimentService {
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
       .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
+      .leftJoinAndSelect('partitions.conditionPayloads', 'ConditionPayloadsArray')
+      .leftJoinAndSelect('ConditionPayloadsArray.parentCondition', 'parentCondition')
       .whereInIds(expIds);
 
     if (sortParams) {
