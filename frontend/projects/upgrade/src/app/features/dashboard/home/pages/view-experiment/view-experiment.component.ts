@@ -24,11 +24,14 @@ import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/s
 import { ExportModalComponent } from '../../components/modal/export-experiment/export-experiment.component';
 import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-time/enrollment-over-time.component';
-import { EXPERIMENT_TYPE, FILTER_MODE, IMetricMetaData } from 'upgrade_types';
+import { EXPERIMENT_TYPE, IMetricMetaData, PAYLOAD_TYPE } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
-import { SimpleExperimentAliasTableRow } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+import {
+  FactorialConditionTableDataFromConditionPayload,
+  SimpleExperimentPayloadTableRow,
+} from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 // Used in view-experiment component only
 enum DialogType {
   CHANGE_STATUS = 'Change status',
@@ -57,6 +60,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   isLoadingExperimentDetailStats$: Observable<boolean>;
   isPollingExperimentDetailStats$: Observable<boolean>;
   factorsDataSource: Factors[];
+  conditionDatasource: FactorialConditionTableDataFromConditionPayload[];
   expandedId: number = null;
 
   displayedConditionColumns: string[] = ['conditionCode', 'payload', 'assignmentWeight', 'description'];
@@ -64,7 +68,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   displayedPartitionColumns: string[] = ['partitionPoint', 'partitionId', 'excludeIfReached'];
   displayedPartitionColumnsFactorial: string[] = ['expandIcon', 'factorName', 'description'];
   displayedPartitionLevelColumnsFactorial = ['level', 'payload'];
-  displayedAliasConditionColumns: string[] = ['site', 'target', 'condition', 'alias'];
+  displayedPayloadConditionColumns: string[] = ['site', 'target', 'condition', 'payload'];
   displayedParticipantsColumns: string[] = ['participantsType', 'participantsId'];
   displayedMetricsColumns: string[] = ['metricsKey', 'metricsOperation', 'metricsName'];
 
@@ -76,7 +80,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
   displayMetrics: Metrics[] = [];
-  simpleExperimentAliasTableData: SimpleExperimentAliasTableRow[] = [];
+  simpleExperimentPayloadTableData: SimpleExperimentPayloadTableRow[] = [];
 
   constructor(
     private experimentService: ExperimentService,
@@ -136,12 +140,13 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.onExperimentChange(experiment, isPolling);
         this.loadParticipants();
         this.loadMetrics();
-        
+
         if (experiment.type === EXPERIMENT_TYPE.SIMPLE) {
-          this.loadAliasTable(experiment);
+          this.loadPayloadTable(experiment);
         }
-        if(experiment.type === EXPERIMENT_TYPE.FACTORIAL){
+        if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
           this.createFactorialTableData();
+          this.loadConditionTableData();
         }
       });
 
@@ -162,10 +167,28 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadAliasTable(experiment: ExperimentVM) {
+  loadPayloadTable(experiment: ExperimentVM) {
     if (experiment.type === EXPERIMENT_TYPE.SIMPLE) {
-      this.simpleExperimentAliasTableData =
-        this.experimentDesignStepperService.createAliasTableDataForViewExperiment(experiment);
+      this.simpleExperimentPayloadTableData =
+        this.experimentDesignStepperService.createPayloadTableDataForViewExperiment(experiment);
+    }
+  }
+
+  loadConditionTableData() {
+    if (this.experiment) {
+      this.conditionDatasource = [];
+      this.experiment.conditionPayloads?.forEach((conditionPayload) => {
+        this.conditionDatasource.push({
+          id: conditionPayload.parentCondition.id,
+          conditionPayloadId: conditionPayload.id,
+          conditionCode: conditionPayload.parentCondition.conditionCode,
+          payload: {
+            type: PAYLOAD_TYPE.STRING,
+            value: conditionPayload.payload.value,
+          },
+          assignmentWeight: conditionPayload.parentCondition.assignmentWeight.toString(),
+        });
+      });
     }
   }
 
@@ -173,7 +196,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     if (this.experiment) {
       this.factorsDataSource = [];
       this.experiment.factors?.forEach((factor) => {
-          this.factorsDataSource.push({ factor: factor.name, description: factor.description, levels: factor.levels });
+        this.factorsDataSource.push({ factor: factor.name, description: factor.description, levels: factor.levels });
       });
     }
   }

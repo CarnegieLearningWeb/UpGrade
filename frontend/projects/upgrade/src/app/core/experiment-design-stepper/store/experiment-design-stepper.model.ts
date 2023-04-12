@@ -1,10 +1,19 @@
+import { PAYLOAD_TYPE } from '../../../../../../../../types/src';
 import { AppState } from '../../core.module';
-import { ExperimentCondition, ExperimentDecisionPoint } from '../../experiments/store/experiments.model';
+import {
+  ExperimentCondition,
+  ExperimentDecisionPoint,
+  LevelCombinationElement,
+} from '../../experiments/store/experiments.model';
 
 // in PUT/POST request, parentCondition and decisionPoint are id string
-export interface ExperimentConditionAliasRequestObject {
+export interface ExperimentConditionPayloadRequestObject {
   id?: string;
-  aliasName: string;
+  payload: {
+    type: PAYLOAD_TYPE;
+    value: string;
+  };
+  // payload: string;
   parentCondition: string;
   decisionPoint?: string;
 }
@@ -17,13 +26,17 @@ export interface FactorialConditionRequestObject {
   order: number;
   levelCombinationElements: { id: string; level: FactorialLevelTableRowData }[];
 }
-export interface SimpleExperimentAliasTableRow {
+export interface SimpleExperimentPayloadTableRow {
   id?: string;
   designTableCombinationId?: string;
   site: string;
   target: string;
   condition: string;
-  alias: string;
+  // payload: string;
+  payload: {
+    type: PAYLOAD_TYPE;
+    value: string;
+  };
   rowStyle?: string;
   useCustom?: boolean;
 }
@@ -72,12 +85,26 @@ export interface ConditionsTableRowData {
 
 export interface FactorialConditionTableRowData {
   id: string;
-  conditionAliasId?: string;
+  conditionPayloadId?: string;
   levels: FactorialLevelTableRowData[];
   condition: string;
-  alias: string;
+  payload: {
+    type: PAYLOAD_TYPE;
+    value: string;
+  };
   weight: string;
   include: boolean;
+}
+
+export interface FactorialConditionTableDataFromConditionPayload {
+  id: string;
+  conditionPayloadId?: string;
+  conditionCode: string;
+  payload: {
+    type: PAYLOAD_TYPE;
+    value: string;
+  };
+  assignmentWeight: string;
 }
 
 export interface FactorialFactorTableRowData {
@@ -88,10 +115,36 @@ export interface FactorialFactorTableRowData {
 export interface FactorialLevelTableRowData {
   id: string;
   name: string;
-  payload: string;
+  // payload: string;
+  payload: {
+    type: PAYLOAD_TYPE;
+    value: string;
+  };
 }
 
+//Design data with payload as object
 export interface ExperimentFactorialDesignData {
+  factors: ExperimentFactorData[];
+}
+
+export interface ExperimentFactorData {
+  name: string;
+  description: string;
+  order: number;
+  levels: ExperimentLevelData[];
+}
+
+export interface ExperimentLevelData {
+  id: string;
+  name: string;
+  payload: {
+    type: PAYLOAD_TYPE;
+    value: string;
+  };
+}
+
+//Form data with payload as string
+export interface ExperimentFactorialFormDesignData {
   factors: ExperimentFactorFormData[];
 }
 
@@ -109,19 +162,18 @@ export interface ExperimentLevelFormData {
 }
 
 export interface ExperimentDesignStepperState {
-
   hasExperimentStepperDataChanged: boolean;
 
   simpleExperimentDesignData: SimpleExperimentDesignData;
   factorialExperimentDesignData: ExperimentFactorialDesignData;
-  simpleExperimentAliasTableData: SimpleExperimentAliasTableRow[];
+  simpleExperimentPayloadTableData: SimpleExperimentPayloadTableRow[];
   factorialConditionsTableData: FactorialConditionTableRowData[];
   factorialLevelsTableData: FactorialLevelTableRowData[];
   factorialFactorsTableData: FactorialFactorTableRowData[];
 
-  // Alias Table
-  isSimpleExperimentAliasTableEditMode: boolean;
-  simpleExperimentAliasTableEditIndex: number | null;
+  // Payload Table
+  isSimpleExperimentPayloadTableEditMode: boolean;
+  simpleExperimentPayloadTableEditIndex: number | null;
 
   // Decision Point Table
   isDecisionPointsTableEditMode: boolean;

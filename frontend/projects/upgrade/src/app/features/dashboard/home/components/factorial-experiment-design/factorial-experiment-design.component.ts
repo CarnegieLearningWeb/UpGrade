@@ -30,9 +30,10 @@ import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
   DecisionPointsTableRowData,
-  ExperimentConditionAliasRequestObject,
+  ExperimentConditionPayloadRequestObject,
   ExperimentFactorFormData,
   ExperimentFactorialDesignData,
+  ExperimentFactorialFormDesignData,
   ExperimentLevelFormData,
   FactorialConditionRequestObject,
   FactorialConditionTableRowData,
@@ -119,7 +120,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   factorsTableEditIndex$ = this.experimentDesignStepperService.factorialFactorsTableEditIndex$;
   factorsTableIndex$ = this.experimentDesignStepperService.factorialFactorsTableIndex$;
 
-  // Alias Table details
+  // Payload Table details
   designData$ = new BehaviorSubject<[ExperimentDecisionPoint[], ExperimentCondition[]]>([[], []]);
   factorialConditionsTableData: FactorialConditionTableRowData[] = [];
   factorialConditions: FactorialConditionRequestObject[] = [];
@@ -160,7 +161,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       if (this.experimentInfo) {
         this.experimentInfo.partitions = [];
         this.experimentInfo.conditions = [];
-        this.experimentInfo.conditionAliases = [];
+        this.experimentInfo.conditionPayloads = [];
       }
     }
   }
@@ -217,7 +218,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         this.factor.push(this.addFactors(factor.name, factor.description, factor.order));
         this.getFactorialLevelsAt(factorIndex).removeAt(0);
         factor.levels.forEach((level) => {
-          this.getFactorialLevelsAt(factorIndex).push(this.addLevels(level.id, level.name, level.payload));
+          this.getFactorialLevelsAt(factorIndex).push(this.addLevels(level.id, level.name, level.payload.value));
         });
         factorIndex++;
       });
@@ -293,7 +294,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     });
   }
 
-  addFactors(name = null, description = '', order = null, level = null, payload = null) {
+  addFactors(name = null, description = '', order = null, level = null, payload = '') {
     return this._formBuilder.group({
       name: [name, Validators.required],
       description: [description],
@@ -302,7 +303,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     });
   }
 
-  addLevels(id = null, name = null, payload = null) {
+  addLevels(id = null, name = null, payload = '') {
     return this._formBuilder.group({
       id: [id || uuidv4()],
       name: [name, Validators.required],
@@ -483,7 +484,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
-  validateFactorCount(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
+  validateFactorCount(factorialExperimentDesignFormData: ExperimentFactorialFormDesignData) {
     this.factorCountError = null;
     this.levelCountError = null;
     this.expandedId = 0;
@@ -737,14 +738,17 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       );
 
       order = 1;
-      factorialExperimentDesignFormData.factors = factorialExperimentDesignFormData.factors.map((factor, index) => {
+      const factorsDesignFormData = this.experimentDesignStepperService.createFactorialDesignDataFromForm(
+        this.factorialExperimentDesignForm.value
+      );
+      factorialExperimentDesignFormData.factors = factorsDesignFormData.map((factor, index) => {
         return this.experimentInfo
           ? { ...this.experimentInfo.factors[index], ...factor, order: order++ }
           : { ...factor, order: order++ };
       });
 
-      const factorialConditionAliases: ExperimentConditionAliasRequestObject[] =
-        this.experimentDesignStepperService.createFactorialConditionsConditionAliasesRequestObject();
+      const factorialConditionPayloads: ExperimentConditionPayloadRequestObject[] =
+        this.experimentDesignStepperService.createFactorialConditionsConditionPayloadsRequestObject();
 
       this.emitExperimentDialogEvent.emit({
         type: eventType,
@@ -752,7 +756,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           conditions: this.experimentInfo?.conditions || this.factorialConditions,
           partitions: factorialExperimentDesignFormData.decisionPoints,
           factors: factorialExperimentDesignFormData.factors,
-          conditionAliases: factorialConditionAliases,
+          conditionPayloads: factorialConditionPayloads,
         },
         path: NewExperimentPaths.EXPERIMENT_DESIGN,
       });

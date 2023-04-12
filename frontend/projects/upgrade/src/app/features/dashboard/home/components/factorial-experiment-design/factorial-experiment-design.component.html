@@ -399,6 +399,12 @@
                           </mat-cell>
                         </ng-container>
 
+                        <app-key-value-bubble
+                          key="levelPayload"
+                          [value]="factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
+                          levelPayloadIndex
+                          ]?.payload">
+                        </app-key-value-bubble>
                         <!-- Payload Column -->
                         <ng-container matColumnDef="payload">
                           <mat-header-cell class="ft-14-700" *matHeaderCellDef>
@@ -407,7 +413,13 @@
                           <mat-cell
                             *matCellDef="let element; let levelPayloadIndex = index"
                             [formGroupName]="levelPayloadIndex"
-                          >
+                          > 
+                        <app-key-value-bubble
+                          key="levelPayload"
+                          [value]="factorialExperimentDesignForm.getRawValue('value')?.factors[factorIndex]?.levels[
+                          levelPayloadIndex
+                          ]?.payload">
+                        </app-key-value-bubble>
                             <ng-container *ngIf="(levelsTableEditIndex$ | async) !== levelPayloadIndex">
                               <span
                                 [matTooltip]="
@@ -428,7 +440,7 @@
                               <mat-form-field floatLabel="never">
                                 <span
                                   [matTooltip]="
-                                    factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
+                                    factorialExperimentDesignForm.getRawValue('value')?.factors[factorIndex]?.levels[
                                     levelPayloadIndex
                                     ]?.payload
                                   "

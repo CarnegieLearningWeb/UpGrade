@@ -6,7 +6,7 @@ import {
   FactorialConditionTableRowData,
   FactorialFactorTableRowData,
   SimpleExperimentDesignData,
-  SimpleExperimentAliasTableRow,
+  SimpleExperimentPayloadTableRow,
   ExperimentLevelFormData,
 } from './experiment-design-stepper.model';
 
@@ -36,22 +36,22 @@ export const clearFactorialDesignStepperData = createAction(
   `[Experiment-Design-Stepper] Clear Factorial Experiment Design Data`
 );
 
-// Alias Table
-export const actionUpdateAliasTableEditMode = createAction(
-  '[Experiment-Design-Stepper] Update Alias Table Edit Mode Details',
-  props<{ isAliasTableEditMode: boolean; aliasTableEditIndex: number | null }>()
+// Payload Table
+export const actionUpdatePayloadTableEditMode = createAction(
+  '[Experiment-Design-Stepper] Update Payload Table Edit Mode Details',
+  props<{ isPayloadTableEditMode: boolean; payloadTableEditIndex: number | null }>()
 );
 
-export const actionToggleSimpleExperimentAliasTableEditMode = createAction(
-  '[Experiment-Design-Stepper] Update Simple Experiment Alias Table Edit Mode Details',
+export const actionToggleSimpleExperimentPayloadTableEditMode = createAction(
+  '[Experiment-Design-Stepper] Update Simple Experiment Payload Table Edit Mode Details',
   props<{
-    simpleExperimentAliasTableEditIndex: number | null;
+    simpleExperimentPayloadTableEditIndex: number | null;
   }>()
 );
 
-export const actionUpdateSimpleExperimentAliasTableData = createAction(
-  '[Experiment-Design-Stepper] update simple experiment alias table data',
-  props<{ tableData: SimpleExperimentAliasTableRow[] }>()
+export const actionUpdateSimpleExperimentPayloadTableData = createAction(
+  '[Experiment-Design-Stepper] update simple experiment payload table data',
+  props<{ tableData: SimpleExperimentPayloadTableRow[] }>()
 );
 
 // Decision Point Table
@@ -78,7 +78,9 @@ export const actionClearConditionTableEditDetails = createAction(
 export const actionToggleFactorialConditionsTableEditMode = createAction(
   '[Experiment-Design-Stepper] Update Factorial Conditions Table Edit Mode Details',
   props<{
-    factorialConditionsTableEditIndex: number | null; factorialConditionsRowData: FactorialConditionTableRowData }>()
+    factorialConditionsTableEditIndex: number | null;
+    factorialConditionsRowData: FactorialConditionTableRowData;
+  }>()
 );
 
 export const actionClearFactorialConditionTableEditDetails = createAction(

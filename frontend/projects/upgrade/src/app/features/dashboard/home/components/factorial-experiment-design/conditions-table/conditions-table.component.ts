@@ -76,7 +76,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
       const formControls = this._formBuilder.group({
         condition: [tableDataRow.condition],
         levels: [tableDataRow.levels],
-        alias: [tableDataRow.alias],
+        payload: [tableDataRow.payload],
         weight: [this.experimentDesignStepperService.formatDisplayWeight(tableDataRow.weight)],
         include: [tableDataRow.include],
       });
@@ -215,11 +215,11 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     const tableData = this.getCurrentTableData();
     const formRow = this.getFactorialConditionsAt(rowIndex);
 
-    const alias = formRow.get('alias').value;
+    const payload = formRow.get('payload').value;
     const weight = formRow.get('weight').value;
     const include = formRow.get('include').value;
 
-    tableData[rowIndex] = { ...tableData[rowIndex], alias, weight, include };
+    tableData[rowIndex] = { ...tableData[rowIndex], payload, weight, include };
     const newTableData = this.applyEqualWeights(tableData);
 
     this.experimentDesignStepperService.updateFactorialTableData(newTableData);
@@ -230,7 +230,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     const previousRowData = this.previousRowDataBehaviorSubject$.value;
     const formRow = this.getFactorialConditionsAt(rowIndex);
 
-    formRow.get('alias').setValue(previousRowData.alias, { emitEvent: false });
+    formRow.get('payload').setValue(previousRowData.payload, { emitEvent: false });
     formRow.get('weight').setValue(previousRowData.weight, { emitEvent: false });
     formRow.get('include').setValue(previousRowData.include, { emitEvent: false });
 

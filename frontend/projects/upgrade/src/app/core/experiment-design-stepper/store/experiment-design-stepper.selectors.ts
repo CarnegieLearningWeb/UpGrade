@@ -16,12 +16,12 @@ export const selectIsFormLockedForEdit = createSelector(selectExperimentDesignSt
     // Common for Simple and Factorial Experiment:
     state.isDecisionPointsTableEditMode,
     // Simple Experiment:
-    state.isSimpleExperimentAliasTableEditMode,
+    state.isSimpleExperimentPayloadTableEditMode,
     state.isConditionsTableEditMode,
     // Factorial Experiment:
     state.isFactorialConditionsTableEditMode,
     state.isFactorialFactorsTableEditMode,
-    state.isFactorialLevelsTableEditMode
+    state.isFactorialLevelsTableEditMode,
   ];
   return lockSources.some((lockSource) => !!lockSource);
 });
@@ -37,9 +37,9 @@ export const selectFactorialDesignData = createSelector(
   (state) => state.factorialExperimentDesignData
 );
 
-export const selectSimpleExperimentAliasTableData = createSelector(
+export const selectSimpleExperimentPayloadTableData = createSelector(
   selectExperimentDesignStepperState,
-  (state) => state.simpleExperimentAliasTableData
+  (state) => state.simpleExperimentPayloadTableData
 );
 
 export const selectFactorialConditionTableData = createSelector(
@@ -81,15 +81,15 @@ export const selectConditionsEditModePreviousRowData = createSelector(
   (state) => state.conditionsEditModePreviousRowData
 );
 
-// Alias Table Selectors:
-export const selectIsSimpleExperimentAliasTableEditMode = createSelector(
+// Payload Table Selectors:
+export const selectIsSimpleExperimentPayloadTableEditMode = createSelector(
   selectExperimentDesignStepperState,
-  (state) => state.isSimpleExperimentAliasTableEditMode
+  (state) => state.isSimpleExperimentPayloadTableEditMode
 );
 
-export const selectSimpleExperimentAliasTableEditIndex = createSelector(
+export const selectSimpleExperimentPayloadTableEditIndex = createSelector(
   selectExperimentDesignStepperState,
-  (state) => state.simpleExperimentAliasTableEditIndex
+  (state) => state.simpleExperimentPayloadTableEditIndex
 );
 
 // Factorial Experiment Selectors:
@@ -134,13 +134,11 @@ export const selectIsFactorialFactorsTableEditMode = createSelector(
 export const selectFactorialFactorsTableEditIndex = createSelector(
   selectExperimentDesignStepperState,
   (state) => state.factorialFactorsTableEditIndex
-
 );
 
 export const selectFactorialFactorsTableIndex = createSelector(
   selectExperimentDesignStepperState,
   (state) => state.factorialFactorsTableIndex
-
 );
 
 export const selectFactorialFactorsEditModePreviousRowData = createSelector(

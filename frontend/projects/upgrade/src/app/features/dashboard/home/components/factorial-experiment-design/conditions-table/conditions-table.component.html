@@ -30,7 +30,7 @@
       <!-- Condition Column -->
       <ng-container matColumnDef="condition">
         <mat-header-cell *matHeaderCellDef class="ft-14-700">
-          {{  'home.new-experiment.design.aliases.column-header.condition.text' | translate }}
+          {{  'home.new-experiment.design.payloads.column-header.condition.text' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData">
           <span [matTooltip]="rowData.condition" matTooltipPosition="above">
@@ -46,17 +46,17 @@
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
           <ng-container *ngIf="(tableEditIndex$ | async) !== rowIndex">
-            <span [matTooltip]="rowData.alias" matTooltipPosition="above">
-              {{ rowData.alias | truncate : 25 }}
+            <span [matTooltip]="rowData.payload" matTooltipPosition="above">
+              {{ rowData.payload | truncate : 25 }}
             </span>
           </ng-container>
           <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
             <mat-form-field floatLabel="never">
               <input
-                class="input-alias"
+                class="input-payload"
                 type="text"
                 matInput
-                formControlName="alias"
+                formControlName="payload"
                 [disabled]="!isExperimentEditable"
                 autocomplete="off"
               />

@@ -1897,11 +1897,11 @@ export class ExperimentAssignmentService {
         : payloads.push(conditionCodeName);
     } else {
       // for factorial experiment with different decisionPoints
-      const levelAlias = conditionCodeToSet[0].payload;
-      factorialCondition = { ...conditionAssigned, conditionCode: levelAlias || conditionCodeToSet[0].name };
+      const levelPayload = conditionCodeToSet[0].payload;
+      factorialCondition = { ...conditionAssigned, conditionCode: levelPayload || conditionCodeToSet[0].name };
 
-      levelAlias
-        ? payloads.push(...[levelAlias, conditionCodeToSet[0].name])
+      levelPayload
+        ? payloads.push(...[levelPayload, conditionCodeToSet[0].name])
         : payloads.push(conditionCodeToSet[0].name);
     }
     delete factorialCondition.levelCombinationElements;
