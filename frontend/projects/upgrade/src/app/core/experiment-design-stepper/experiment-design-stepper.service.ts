@@ -225,9 +225,7 @@ export class ExperimentDesignStepperService {
         // assign a reference back to the decision point and condition rows if not an existingPayload
         const designTableCombinationId = existingPayload?.designTableCombinationId || decisionPoint.id + condition.id;
 
-        const payload = existingPayload?.useCustom
-          ? existingPayload.payload
-          : { type: PAYLOAD_TYPE.STRING, value: condition.conditionCode };
+        const payload = existingPayload?.useCustom ? existingPayload.payload : condition.conditionCode;
 
         const payloadTableDataRow = {
           id: existingPayload?.id,
@@ -288,7 +286,7 @@ export class ExperimentDesignStepperService {
         site: conditionPayload.decisionPoint.site,
         target: conditionPayload.decisionPoint.target,
         condition: conditionPayload.parentCondition.conditionCode,
-        payload: conditionPayload.payload,
+        payload: conditionPayload.payload.value,
         useCustom: conditionPayload.payload.value !== conditionPayload.parentCondition.conditionCode,
       };
     });
@@ -303,7 +301,7 @@ export class ExperimentDesignStepperService {
 
     payloadTableData.forEach((payloadRowData: SimpleExperimentPayloadTableRow) => {
       // if no custom payload, return early, do not add to array to send to backend
-      if (payloadRowData.payload.value === payloadRowData.condition) {
+      if (payloadRowData.payload === payloadRowData.condition) {
         return;
       }
 
@@ -315,7 +313,7 @@ export class ExperimentDesignStepperService {
 
       conditionPayloads.push({
         id: payloadRowData.id || uuidv4(),
-        payload: payloadRowData.payload,
+        payload: { type: PAYLOAD_TYPE.STRING, value: payloadRowData.payload },
         parentCondition: parentCondition.id,
         decisionPoint: decisionPoint.id,
       });
@@ -327,14 +325,12 @@ export class ExperimentDesignStepperService {
   createFactorialDesignDataFromForm(
     factorialFormDesignData: ExperimentFactorialFormDesignData
   ): ExperimentFactorData[] {
-    let designData: ExperimentFactorialDesignData;
     const factorsData: ExperimentFactorData[] = factorialFormDesignData.factors.map((factor) => {
       const levelsData: ExperimentLevelData[] = factor.levels.map((level) => {
         return { ...level, payload: { type: PAYLOAD_TYPE.STRING, value: level.payload } };
       });
       return { ...factor, levels: levelsData };
     });
-    // designData.factors = factorsData;
     return factorsData;
   }
 
@@ -364,11 +360,11 @@ export class ExperimentDesignStepperService {
             },
           ],
           condition: factorOneLevel.name + '; ' + factorTwoLevel.name,
-          // payload: '',
-          payload: {
-            type: PAYLOAD_TYPE.STRING,
-            value: '',
-          },
+          payload: '',
+          // payload: {
+          //   type: PAYLOAD_TYPE.STRING,
+          //   value: '',
+          // },
           weight: '0.0',
           include: true,
         };
@@ -419,11 +415,11 @@ export class ExperimentDesignStepperService {
           };
         }),
         condition: factorialCondition.conditionCode,
-        // payload: payloadValue,
-        payload: {
-          type: PAYLOAD_TYPE.STRING,
-          value: payloadValue,
-        },
+        payload: payloadValue,
+        // payload: {
+        //   type: PAYLOAD_TYPE.STRING,
+        //   value: payloadValue,
+        // },
         weight: factorialCondition.assignmentWeight.toString(),
         include: factorialCondition.assignmentWeight > 0,
       };
@@ -486,7 +482,7 @@ export class ExperimentDesignStepperService {
     tableData.forEach((factorialConditionTableRow) => {
       factorialConditionPayloadsRequestObject.push({
         id: factorialConditionTableRow.conditionPayloadId || uuidv4(),
-        payload: factorialConditionTableRow.payload,
+        payload: { type: PAYLOAD_TYPE.STRING, value: factorialConditionTableRow.payload },
         parentCondition: factorialConditionTableRow.id,
       });
     });

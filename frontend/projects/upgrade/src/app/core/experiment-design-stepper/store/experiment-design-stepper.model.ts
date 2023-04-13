@@ -32,11 +32,11 @@ export interface SimpleExperimentPayloadTableRow {
   site: string;
   target: string;
   condition: string;
-  // payload: string;
-  payload: {
-    type: PAYLOAD_TYPE;
-    value: string;
-  };
+  payload: string;
+  // payload: {
+  //   type: PAYLOAD_TYPE;
+  //   value: string;
+  // };
   rowStyle?: string;
   useCustom?: boolean;
 }
@@ -88,10 +88,11 @@ export interface FactorialConditionTableRowData {
   conditionPayloadId?: string;
   levels: FactorialLevelTableRowData[];
   condition: string;
-  payload: {
-    type: PAYLOAD_TYPE;
-    value: string;
-  };
+  // payload: {
+  //   type: PAYLOAD_TYPE;
+  //   value: string;
+  // };
+  payload: string;
   weight: string;
   include: boolean;
 }

@@ -697,8 +697,8 @@
                     {{ 'home.view-experiment.experiment-payloads.column-label.payload' | translate }}
                   </mat-header-cell>
                   <mat-cell class="ft-12-600" *matCellDef="let rowData">
-                    <span [matTooltip]="rowData.payload?.value" matTooltipPosition="above">
-                      {{ rowData.payload?.value | truncate : 50 }}
+                    <span [matTooltip]="rowData.payload" matTooltipPosition="above">
+                      {{ rowData.payload | truncate : 50 }}
                     </span>
                   </mat-cell>
                 </ng-container>

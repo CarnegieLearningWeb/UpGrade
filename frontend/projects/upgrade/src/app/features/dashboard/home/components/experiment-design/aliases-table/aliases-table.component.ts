@@ -113,11 +113,11 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
     const rowDataCopy = { ...rowData };
     payloadTableData[rowIndex] = rowDataCopy;
 
-    if (this.currentPayloadInput$.value !== rowData.payload.value) {
+    if (this.currentPayloadInput$.value !== rowData.payload) {
       payloadTableData[rowIndex].useCustom = true;
     }
 
-    this.currentPayloadInput$.next(rowData.payload.value);
+    this.currentPayloadInput$.next(rowData.payload);
     this.experimentDesignStepperService.setUpdatePayloadTableEditModeDetails(rowIndex);
     this.experimentDesignStepperService.setNewSimpleExperimentPayloadTableData(payloadTableData);
   }
