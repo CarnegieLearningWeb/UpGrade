@@ -98,7 +98,6 @@ export interface FactorialConditionTableRowData {
 
 export interface FactorialConditionTableDataFromConditionPayload {
   id: string;
-  conditionPayloadId?: string;
   conditionCode: string;
   payload: {
     type: PAYLOAD_TYPE;

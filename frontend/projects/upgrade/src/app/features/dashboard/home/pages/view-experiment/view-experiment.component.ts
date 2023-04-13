@@ -9,6 +9,7 @@ import {
   ExperimentVM,
   EXPERIMENT_SEARCH_KEY,
   ExperimentLevel,
+  ExperimentConditionPayload,
 } from '../../../../../core/experiments/store/experiments.model';
 import { Observable, Subscription } from 'rxjs';
 import { filter, withLatestFrom } from 'rxjs/operators';
@@ -177,16 +178,22 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   loadConditionTableData() {
     if (this.experiment) {
       this.conditionDatasource = [];
-      this.experiment.conditionPayloads?.forEach((conditionPayload) => {
+      this.experiment.conditions?.forEach((condition) => {
+        let conditionPayload: ExperimentConditionPayload;
+        this.experiment.conditionPayloads.forEach((payloadcondition) => {
+          if (payloadcondition.parentCondition.id === condition.id) {
+            conditionPayload = payloadcondition;
+          }
+        });
+
         this.conditionDatasource.push({
-          id: conditionPayload.parentCondition.id,
-          conditionPayloadId: conditionPayload.id,
-          conditionCode: conditionPayload.parentCondition.conditionCode,
+          id: condition.id,
+          conditionCode: condition.conditionCode,
           payload: {
             type: PAYLOAD_TYPE.STRING,
-            value: conditionPayload.payload.value,
+            value: conditionPayload?.payload?.value,
           },
-          assignmentWeight: conditionPayload.parentCondition.assignmentWeight.toString(),
+          assignmentWeight: condition.assignmentWeight.toString(),
         });
       });
     }
