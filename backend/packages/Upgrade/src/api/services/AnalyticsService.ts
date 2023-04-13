@@ -24,7 +24,7 @@ import { UserRepository } from '../repositories/UserRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { METRICS_JOIN_TEXT } from './MetricService';
 import { getCustomRepository } from 'typeorm';
-import moment from "moment-timezone";
+// import moment from "moment-timezone";
 
 interface IEnrollmentStatByDate {
   date: string;
@@ -174,7 +174,7 @@ export class AnalyticsService {
         userRepository.findOne({ email }),
 
       ]);
-      const { localTimeZone } = user;
+      // const { localTimeZone } = user;
 
       // make new query here
       let toLoop = true;
@@ -302,7 +302,7 @@ export class AnalyticsService {
             GroupId: row.groupId,
             ConditionName: row.conditionName,
             FirstDecisionPointReachedOn: new Date(row.firstDecisionPointReachedOn).toISOString(),
-            FirstDecisionPointReachedOn_LocalTime: moment(row.firstDecisionPointReachedOn).tz(localTimeZone).toISOString(true),
+            // FirstDecisionPointReachedOn_LocalTime: moment(row.firstDecisionPointReachedOn).tz(localTimeZone).toISOString(true),
             UniqueDecisionPointsMarked: row.decisionPointReachedCount,
             ...queryDataToAdd,
           };
@@ -341,7 +341,7 @@ export class AnalyticsService {
             GroupId: '',
             ConditionName: '',
             FirstDecisionPointReachedOn: '',
-            FirstDecisionPointReachedOn_LocalTime: '',
+            // FirstDecisionPointReachedOn_LocalTime: '',
           },
         ];
         const csv = new ObjectsToCsv(csvRows);
