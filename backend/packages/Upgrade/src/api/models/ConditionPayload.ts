@@ -2,7 +2,7 @@ import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { ExperimentCondition } from './ExperimentCondition';
 import { DecisionPoint } from './DecisionPoint';
-import { PAYLOAD_TYPE } from '../../../../../../types/src';
+import { PAYLOAD_TYPE } from 'upgrade_types';
 
 @Entity()
 export class ConditionPayload extends BaseModel {

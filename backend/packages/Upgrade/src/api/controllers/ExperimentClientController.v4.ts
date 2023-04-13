@@ -27,7 +27,6 @@ import {
   IWorkingGroup,
   PAYLOAD_TYPE,
   EXPERIMENT_TYPE,
-  IExperimentAssignment,
 } from 'upgrade_types';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagService } from '../services/FeatureFlagService';

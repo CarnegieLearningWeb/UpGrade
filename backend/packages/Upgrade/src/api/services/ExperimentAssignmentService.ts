@@ -15,7 +15,6 @@ import {
   EXCLUSION_CODE,
   MARKED_DECISION_POINT_STATUS,
   EXPERIMENT_TYPE,
-  IExperimentAssignment,
   IExperimentAssignmentv4,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
