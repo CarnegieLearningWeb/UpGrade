@@ -8,12 +8,12 @@ import {
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 @Component({
-  selector: 'app-aliases-table',
-  templateUrl: './aliases-table.component.html',
-  styleUrls: ['./aliases-table.component.scss'],
+  selector: 'app-payloads-table',
+  templateUrl: './payloads-table.component.html',
+  styleUrls: ['./payloads-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AliasesTableComponent implements OnInit, OnDestroy {
+export class PayloadsTableComponent implements OnInit, OnDestroy {
   @Output() hidePayloadTable = new EventEmitter<boolean>();
   @Input() experimentInfo: ExperimentVM;
 

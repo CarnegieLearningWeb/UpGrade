@@ -408,12 +408,6 @@
                             *matCellDef="let element; let levelPayloadIndex = index"
                             [formGroupName]="levelPayloadIndex"
                           > 
-                        <app-key-value-bubble
-                          key="levelPayload"
-                          [value]="factorialExperimentDesignForm.getRawValue('value')?.factors[factorIndex]?.levels[
-                          levelPayloadIndex
-                          ]?.payload">
-                        </app-key-value-bubble>
                             <ng-container *ngIf="(levelsTableEditIndex$ | async) !== levelPayloadIndex">
                               <span
                                 [matTooltip]="

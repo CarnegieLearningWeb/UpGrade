@@ -32,7 +32,6 @@ import {
   DecisionPointsTableRowData,
   ExperimentConditionPayloadRequestObject,
   ExperimentFactorFormData,
-  ExperimentFactorialDesignData,
   ExperimentFactorialFormDesignData,
   ExperimentLevelFormData,
   FactorialConditionRequestObject,
