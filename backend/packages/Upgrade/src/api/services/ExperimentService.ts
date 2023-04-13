@@ -66,7 +66,6 @@ import { ExperimentDTO } from '../DTO/ExperimentDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
-// import { ConditionPayloadObj } from '../../../../../../types/src/Experiment/interfaces';
 
 @Service()
 export class ExperimentService {

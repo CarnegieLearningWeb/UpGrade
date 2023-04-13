@@ -3,7 +3,7 @@ import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { BaseModel } from './base/BaseModel';
 import { Factor } from './Factor';
 import { LevelCombinationElement } from './LevelCombinationElement';
-import { PAYLOAD_TYPE } from '../../../../../../types/src';
+import { PAYLOAD_TYPE } from 'upgrade_types';
 
 @Entity()
 export class Level extends BaseModel {
