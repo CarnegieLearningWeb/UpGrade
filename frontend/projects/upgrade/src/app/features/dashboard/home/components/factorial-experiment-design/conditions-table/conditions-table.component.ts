@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, EventEmitter, Output, Input } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, Input } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { BehaviorSubject, filter, Subscription } from 'rxjs';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
@@ -132,7 +132,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   initializeForm(tableData: FactorialConditionTableRowData[]) {
     this.createFormControls(tableData);
     const newTableData = this.applyEqualWeights(tableData);
-    this.experimentDesignStepperService.updateFactorialTableData(newTableData);
+    this.experimentDesignStepperService.updateFactorialConditionTableData(newTableData);
     this.formInitialized = true;
   }
 
@@ -199,19 +199,11 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
     if (this.equalWeightFlag) {
       const newTableData = this.applyEqualWeights();
-      this.experimentDesignStepperService.updateFactorialTableData(newTableData);
+      this.experimentDesignStepperService.updateFactorialConditionTableData(newTableData);
     }
   }
 
-  // handleHideClick() {
-  //   this.hide.emit(true);
-  // }
-
   handleRowEditClick(rowData: FactorialConditionTableRowData, rowIndex: number) {
-    this.experimentDesignStepperService.setFactorialConditionTableEditModeDetails(rowIndex, rowData);
-  }
-
-  handleRowEditDoneClick(rowIndex: number) {
     const tableData = this.getCurrentTableData();
     const formRow = this.getFactorialConditionsAt(rowIndex);
 
@@ -222,8 +214,8 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     tableData[rowIndex] = { ...tableData[rowIndex], payload, weight, include };
     const newTableData = this.applyEqualWeights(tableData);
 
-    this.experimentDesignStepperService.updateFactorialTableData(newTableData);
-    this.experimentDesignStepperService.clearFactorialConditionTableEditModeDetails();
+    this.experimentDesignStepperService.updateFactorialConditionTableData(newTableData);
+    this.experimentDesignStepperService.setFactorialConditionTableEditModeDetails(rowIndex, rowData);
   }
 
   handleClear(rowIndex: number) {

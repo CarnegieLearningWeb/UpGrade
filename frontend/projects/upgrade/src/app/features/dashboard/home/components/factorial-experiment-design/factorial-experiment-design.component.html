@@ -231,7 +231,7 @@
                 <mat-cell *matCellDef="let element; let factorIndex = dataIndex" [formGroupName]="factorIndex">
                   <ng-container *ngIf="(factorsTableEditIndex$ | async) !== factorIndex">
                     <span
-                      [matTooltip]="factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.factor"
+                      [matTooltip]="factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.name"
                       matTooltipPosition="above"
                     >
                       {{
@@ -365,7 +365,7 @@
                                 [matTooltip]="
                                   factorialExperimentDesignForm.getRawValue('level')?.factors[factorIndex]?.levels[
                                     levelIndex
-                                  ]?.level
+                                  ]?.name
                                 "
                                 matTooltipPosition="above"
                               >

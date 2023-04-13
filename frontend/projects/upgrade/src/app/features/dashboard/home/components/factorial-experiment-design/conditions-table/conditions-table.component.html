@@ -1,17 +1,6 @@
 <section class="conditions-table-component">
   <div class="conditions-header-container">
     <span class="title">{{ 'home.new-experiment.design.condition.text' | translate }}</span>
-    <!-- <button
-      type="button"
-      mat-flat-button
-      color="primary"
-      class="ft-14-600 toggle-button"
-      (click)="handleHideClick()"
-      [disabled]="isFormLockedForEdit$ | async"
-    >
-      <mat-icon class="icon icon-bump-left">expand_less</mat-icon>
-      <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.factors' | translate }}</span>
-    </button> -->
   </div>
 
   <div class="conditions-weight-checkbox">
@@ -125,7 +114,7 @@
 
             <!-- Done Icon -->
             <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
-              <mat-icon class="icon" (click)="handleRowEditDoneClick(rowIndex)">done</mat-icon>
+              <mat-icon class="icon">done</mat-icon>
             </ng-container>
           </button>
           <!-- Clear Icon -->

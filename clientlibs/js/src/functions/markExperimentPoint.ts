@@ -8,6 +8,7 @@ interface markData {
   userId: string;
   status: MARKED_DECISION_POINT_STATUS;
   target?: string;
+  clientError?: string;
 }
 
 export default async function markExperimentPoint(
@@ -18,7 +19,8 @@ export default async function markExperimentPoint(
   site: string,
   condition: string,
   status: MARKED_DECISION_POINT_STATUS,
-  target?: string
+  target?: string,
+  clientError?: string
 ): Promise<Interfaces.IMarkExperimentPoint> {
   let data: markData = {
     site,
@@ -30,6 +32,12 @@ export default async function markExperimentPoint(
     data = {
       ...data,
       target,
+    };
+  }
+  if (clientError) {
+    data = {
+      ...data,
+      clientError,
     };
   }
   const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);

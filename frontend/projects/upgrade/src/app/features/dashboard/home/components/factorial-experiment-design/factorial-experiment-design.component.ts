@@ -746,13 +746,15 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           : { ...factor, order: order++ };
       });
 
+      const currentConditions =
+        this.factorialConditions.length > 0 ? this.factorialConditions : this.experimentInfo?.conditions;
       const factorialConditionPayloads: ExperimentConditionPayloadRequestObject[] =
         this.experimentDesignStepperService.createFactorialConditionsConditionPayloadsRequestObject();
 
       this.emitExperimentDialogEvent.emit({
         type: eventType,
         formData: {
-          conditions: this.experimentInfo?.conditions || this.factorialConditions,
+          conditions: currentConditions,
           partitions: factorialExperimentDesignFormData.decisionPoints,
           factors: factorialExperimentDesignFormData.factors,
           conditionPayloads: factorialConditionPayloads,

@@ -9,19 +9,13 @@ import {
 } from '../experiments/store/experiments.model';
 import * as experimentDesignStepperAction from './store/experiment-design-stepper.actions';
 import {
-  selectIsFormLockedForEdit,
-  selecthasExperimentStepperDataChanged,
   selectIsSimpleExperimentPayloadTableEditMode,
   selectSimpleExperimentPayloadTableEditIndex,
   selectSimpleExperimentPayloadTableData,
-  selectSimpleExperimentDesignData,
-  selectIsDecisionPointsTableEditMode,
   selectDecisionPointsTableEditIndex,
   selectDecisionPointsEditModePreviousRowData,
-  selectIsConditionsTableEditMode,
   selectConditionsTableEditIndex,
   selectConditionsEditModePreviousRowData,
-  selectIsFactorialConditionsTableEditMode,
   selectFactorialConditionsTableEditIndex,
   selectFactorialConditionsEditModePreviousRowData,
   selectFactorialConditionTableData,
@@ -29,13 +23,19 @@ import {
   selectIsFactorialFactorsTableEditMode,
   selectFactorialFactorsTableEditIndex,
   selectFactorialFactorsEditModePreviousRowData,
-  selectIsFactorialLevelsTableEditMode,
-  selectFactorialLevelsTableEditIndex,
   selectFactorialLevelsEditModePreviousRowData,
   selectFactorialFactorsTableIndex,
+  selecthasExperimentStepperDataChanged,
+  selectIsDecisionPointsTableEditMode,
+  selectIsConditionsTableEditMode,
+  selectIsLevelsTableEditMode,
+  selectIsFactorialConditionsTableEditMode,
+  selectIsFactorialLevelsTableEditMode,
+  selectIsFormLockedForEdit,
+  selectSimpleExperimentDesignData,
+  selectFactorialLevelsTableEditIndex,
 } from './store/experiment-design-stepper.selectors';
 import {
-  SimpleExperimentDesignData,
   ExperimentConditionPayloadRequestObject,
   ExperimentFactorialDesignData,
   FactorialConditionRequestObject,
@@ -43,11 +43,12 @@ import {
   ConditionsTableRowData,
   SimpleExperimentPayloadTableRow,
   FactorialConditionTableRowData,
-  FactorialFactorTableRowData,
+  SimpleExperimentDesignData,
   ExperimentLevelFormData,
-  ExperimentFactorialFormDesignData,
   ExperimentFactorData,
+  ExperimentFactorialFormDesignData,
   ExperimentLevelData,
+  FactorialFactorTableRowData,
 } from './store/experiment-design-stepper.model';
 import {
   actionUpdateFactorialConditionTableData,
@@ -88,6 +89,7 @@ export class ExperimentDesignStepperService {
 
   // Conditions Table
   isConditionsTableEditMode$ = this.store$.pipe(select(selectIsConditionsTableEditMode));
+  isLevelsTableEditMode$ = this.store$.pipe(select(selectIsLevelsTableEditMode));
   conditionsTableEditIndex$ = this.store$.pipe(select(selectConditionsTableEditIndex));
   conditionsEditModePreviousRowData$ = this.store$.pipe(select(selectConditionsEditModePreviousRowData));
 
@@ -151,6 +153,13 @@ export class ExperimentDesignStepperService {
 
   isValidString(value: any) {
     return typeof value === 'string' && value.trim();
+  }
+
+  trimFactorialConditionName(factorialConditionName: string) {
+    const level1 = factorialConditionName.split(';')[0].split('=')[1];
+    const level2 = factorialConditionName.split(';')[1].split('=')[1];
+    const trimmedFactorialConditionName = `${level1}; ${level2}`;
+    return trimmedFactorialConditionName;
   }
 
   formatDisplayWeight(weight: string | number): string {
@@ -428,6 +437,15 @@ export class ExperimentDesignStepperService {
     return tableData;
   }
 
+  createFactorialAliasString(
+    factorOneName: string,
+    factorOneLevel: string,
+    factorTwoName: string,
+    factorTwoLevel: string
+  ) {
+    return `${factorOneName}=${factorOneLevel}; ${factorTwoName}=${factorTwoLevel}`;
+  }
+
   createFactorialConditionRequestObject() {
     const tableData = this.getFactorialConditionTableData();
     const factorialConditionsRequestObject: FactorialConditionRequestObject[] = [];
@@ -495,7 +513,7 @@ export class ExperimentDesignStepperService {
     this.store$.dispatch(experimentDesignStepperAction.actionUpdateFactorialExperimentDesignData({ designData }));
   }
 
-  updateFactorialTableData(tableData: FactorialConditionTableRowData[]) {
+  updateFactorialConditionTableData(tableData: FactorialConditionTableRowData[]) {
     this.store$.dispatch(actionUpdateFactorialConditionTableData({ tableData }));
   }
 

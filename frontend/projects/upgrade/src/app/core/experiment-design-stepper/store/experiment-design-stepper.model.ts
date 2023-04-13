@@ -45,8 +45,7 @@ export interface SimpleExperimentFormData {
   // Why are there 2 set of same entity?
   decisionPoints?: SimpleExperimentFormDecisionPoints[];
   partitions?: SimpleExperimentFormDecisionPoints[];
-
-  conditions: SimplerExperimentFormDecisionConditions[];
+  conditions: SimpleExperimentFormDecisionConditions[];
 }
 
 export interface SimpleExperimentFormDecisionPoints {
@@ -56,7 +55,7 @@ export interface SimpleExperimentFormDecisionPoints {
   order: number;
 }
 
-export interface SimplerExperimentFormDecisionConditions {
+export interface SimpleExperimentFormDecisionConditions {
   conditionCode: string;
   assignmentWeight: string;
   description: string;
@@ -178,7 +177,9 @@ export interface ExperimentDesignStepperState {
 
   // Decision Point Table
   isDecisionPointsTableEditMode: boolean;
+  isLevelsTableEditMode?: boolean;
   decisionPointsTableEditIndex: number | null;
+  levelsTableEditIndex?: number | null;
   decisionPointsEditModePreviousRowData: DecisionPointsTableRowData;
 
   // Condition Table

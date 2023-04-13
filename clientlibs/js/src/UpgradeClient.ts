@@ -8,7 +8,7 @@ import {
   IGroupMetric,
   ILogInput,
   MARKED_DECISION_POINT_STATUS,
-  IExperimentAssignment,
+  IExperimentAssignmentv4,
 } from 'upgrade_types';
 import getExperimentCondition, { Assignment } from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
@@ -43,7 +43,7 @@ export default class UpgradeClient {
 
   private group: Record<string, Array<string>> = null;
   private workingGroup: Record<string, string> = null;
-  private experimentConditionData: IExperimentAssignment[] = null;
+  private experimentConditionData: IExperimentAssignmentv4[] = null;
   private featureFlags: IFeatureFlag[] = null;
 
   constructor(
@@ -125,7 +125,7 @@ export default class UpgradeClient {
     return response;
   }
 
-  async getAllExperimentConditions(): Promise<IExperimentAssignment[]> {
+  async getAllExperimentConditions(): Promise<IExperimentAssignmentv4[]> {
     this.validateClient();
     const response = await getAllExperimentConditions(
       this.api.getAllExperimentConditions,
@@ -152,7 +152,8 @@ export default class UpgradeClient {
     site: string,
     condition: string = null,
     status: MARKED_DECISION_POINT_STATUS,
-    target?: string
+    target?: string,
+    clientError?: string
   ): Promise<Interfaces.IMarkExperimentPoint> {
     this.validateClient();
     return await markExperimentPoint(
@@ -163,7 +164,8 @@ export default class UpgradeClient {
       site,
       condition,
       status,
-      target
+      target,
+      clientError
     );
   }
 

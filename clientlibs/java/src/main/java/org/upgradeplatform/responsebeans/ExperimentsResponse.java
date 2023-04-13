@@ -1,29 +1,35 @@
 package org.upgradeplatform.responsebeans;
 
+import java.util.Map;
 
+import org.upgradeplatform.utils.Utils.ExperimentType;
 
 public class ExperimentsResponse {
 	
 	private Object target;
 	private String site;
+	private ExperimentType experimentType;
 	private Condition assignedCondition;
+	private Map<String, Factor> assignedFactor;
 	
-	public ExperimentsResponse() {}
-	
-	
-
-	public ExperimentsResponse(Object target, String site, Condition assignedCondition) {
+	public ExperimentsResponse() {
 		super();
-		this.target = target;
-		this.site = site;
-		this.assignedCondition = assignedCondition;
 	}
 
-	public ExperimentsResponse(Object target, String site, Condition assignedCondition, String id) {
-		super();
+	public ExperimentsResponse(Object target, String site, ExperimentType experimentType, Condition assignedCondition, Map<String,Factor> assignedFactor) {
 		this.target = target;
 		this.site = site;
+		this.experimentType = experimentType;
 		this.assignedCondition = assignedCondition;
+		this.assignedFactor = assignedFactor;
+	}
+
+	public Map<String,Factor> getAssignedFactor() {
+		return this.assignedFactor;
+	}
+
+	public void setAssignedFactor(Map<String,Factor> assignedFactor) {
+		this.assignedFactor = assignedFactor;
 	}
 
 	public Object getTarget() {
@@ -42,6 +48,13 @@ public class ExperimentsResponse {
 		this.site = site;
 	}
 
+	public ExperimentType getExperimentType(){
+		return experimentType;
+	}
+
+	public void setExperimentType(ExperimentType experimentType){
+		this.experimentType = experimentType;
+	}
 
 	public Condition getAssignedCondition() {
 		return assignedCondition;
@@ -54,6 +67,24 @@ public class ExperimentsResponse {
     @Override
     public String toString(){
         return "ExperimentsResponse [target=" + target + ", site=" + site 
-               + ", assignedCondition=" + assignedCondition + "]";
+               + ", assignedCondition=" + assignedCondition + ", assignedFactor=" + assignedFactor + "]";
     }
+
+	public String getFactorLevel(String factor) {
+		if (this.experimentType == ExperimentType.Factorial){
+			return this.assignedFactor.containsKey(factor) ? this.assignedFactor.get(factor).getLevel() : null;
+		}
+		else {
+			return null;
+		}
+	}
+
+	public Payload getFactorPayload(String factor){
+		if (this.experimentType == ExperimentType.Factorial){
+			return this.assignedFactor.containsKey(factor) ? this.assignedFactor.get(factor).getPayload() : null;
+		}
+		else {
+			return null;
+		}
+	}
 }

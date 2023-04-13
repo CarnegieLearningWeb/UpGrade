@@ -63,7 +63,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   conditionDatasource: FactorialConditionTableDataFromConditionPayload[];
   expandedId: number = null;
 
-  displayedConditionColumns: string[] = ['conditionCode', 'payload', 'assignmentWeight', 'description'];
+  displayedConditionColumns: string[] = ['conditionCode', 'assignmentWeight', 'description'];
   displayedConditionColumnsFactorial: string[] = ['conditionCode', 'payload', 'assignmentWeight'];
   displayedPartitionColumns: string[] = ['partitionPoint', 'partitionId', 'excludeIfReached'];
   displayedPartitionColumnsFactorial: string[] = ['expandIcon', 'factorName', 'description'];

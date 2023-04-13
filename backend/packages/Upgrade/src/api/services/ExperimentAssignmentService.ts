@@ -16,6 +16,7 @@ import {
   MARKED_DECISION_POINT_STATUS,
   EXPERIMENT_TYPE,
   IExperimentAssignment,
+  IExperimentAssignmentv4,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -120,7 +121,6 @@ export class ExperimentAssignmentService {
       const error = new Error(clientError);
       (error as any).type = SERVER_ERROR.REPORTED_ERROR;
       logger.error(error);
-      throw error;
     }
 
     // adding experiment error when user is not defined
@@ -400,7 +400,7 @@ export class ExperimentAssignmentService {
     userId: string,
     context: string,
     requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<IExperimentAssignment[]> {
+  ): Promise<IExperimentAssignmentv4[]> {
     const { logger, userDoc } = requestContext;
     logger.info({ message: `getAllExperimentConditions: User: ${userId}` });
 

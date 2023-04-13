@@ -22,7 +22,7 @@ import { Query } from './Query';
 import { StateTimeLog } from './StateTimeLogs';
 import { ExperimentSegmentInclusion } from './ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
-import { ConditionPayload } from 'src/api/models/ConditionAlias';
+import { ConditionPayload } from 'src/api/models/ConditionPayload';
 import { Factor } from './Factor';
 
 export {

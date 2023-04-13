@@ -39,15 +39,7 @@ import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
 import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
-
-interface ILog {
-  id: string;
-  uniquifier: string;
-  timeStamp: Date;
-  data: any;
-  metrics: Metric[];
-  user: ExperimentUser;
-}
+import { Log } from '../models/Log';
 
 interface IMonitoredDeciosionPoint {
   id: string;
@@ -606,7 +598,7 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     logData: LogValidator
-  ): Promise<ILog[]> {
+  ): Promise<Omit<Log, 'createdAt' | 'updatedAt' | 'versionNumber'>[]> {
     request.logger.info({ message: 'Starting the log call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.getUserDoc(logData.userId, request.logger);
