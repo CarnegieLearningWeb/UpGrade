@@ -78,7 +78,9 @@ export const actionClearConditionTableEditDetails = createAction(
 export const actionToggleFactorialConditionsTableEditMode = createAction(
   '[Experiment-Design-Stepper] Update Factorial Conditions Table Edit Mode Details',
   props<{
-    factorialConditionsTableEditIndex: number | null; factorialConditionsRowData: FactorialConditionTableRowData }>()
+    factorialConditionsTableEditIndex: number | null;
+    factorialConditionsRowData: FactorialConditionTableRowData;
+  }>()
 );
 
 export const actionClearFactorialConditionTableEditDetails = createAction(
@@ -96,6 +98,13 @@ export const actionToggleFactorialFactorsTableEditMode = createAction(
   props<{
     factorialFactorsTableEditIndex: number | null;
     factorialFactorsRowData: FactorialFactorTableRowData;
+  }>()
+);
+
+export const actionUpdateFactorialFactorsTableIndex = createAction(
+  '[Experiment-Design-Stepper] Update Factorial Factors Table Index',
+  props<{
+    factorialFactorsTableIndex: number | null;
   }>()
 );
 

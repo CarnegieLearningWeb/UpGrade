@@ -532,6 +532,14 @@ export class ExperimentDesignStepperService {
     );
   }
 
+  setFactorialFactorTableIndex(rowIndex: number): void {
+    this.store$.dispatch(
+      experimentDesignStepperAction.actionUpdateFactorialFactorsTableIndex({
+        factorialFactorsTableIndex: rowIndex,
+      })
+    );
+  }
+
   setFactorialLevelTableEditModeDetails(rowIndex: number, rowData: ExperimentLevelFormData): void {
     this.store$.dispatch(
       experimentDesignStepperAction.actionToggleFactorialLevelsTableEditMode({

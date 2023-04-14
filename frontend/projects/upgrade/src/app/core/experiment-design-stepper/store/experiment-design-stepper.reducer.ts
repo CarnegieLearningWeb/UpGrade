@@ -39,7 +39,8 @@ const initialState: ExperimentDesignStepperState = {
 
 const reducer = createReducer(
   initialState,
-  on(experimentDesignStepperAction.actionUpdateAliasTableEditMode,
+  on(
+    experimentDesignStepperAction.actionUpdateAliasTableEditMode,
     (state, { isAliasTableEditMode, aliasTableEditIndex }) => ({
       ...state,
       isAliasTableEditMode,
@@ -70,7 +71,8 @@ const reducer = createReducer(
     ...state,
     factorialConditionsTableData: tableData,
   })),
-  on(experimentDesignStepperAction.actionToggleSimpleExperimentAliasTableEditMode,
+  on(
+    experimentDesignStepperAction.actionToggleSimpleExperimentAliasTableEditMode,
     (state, { simpleExperimentAliasTableEditIndex }): ExperimentDesignStepperState => {
       // toggle edit mode
       const editMode = !state.isSimpleExperimentAliasTableEditMode;
@@ -85,7 +87,8 @@ const reducer = createReducer(
       };
     }
   ),
-  on(experimentDesignStepperAction.actionToggleDecisionPointsTableEditMode,
+  on(
+    experimentDesignStepperAction.actionToggleDecisionPointsTableEditMode,
     (state, { decisionPointsTableEditIndex, decisionPointsRowData }) => {
       // toggle edit mode
       const editMode = !state.isDecisionPointsTableEditMode;
@@ -107,7 +110,8 @@ const reducer = createReducer(
     decisionPointsTableEditIndex: null,
     decisionPointsEditModePreviousRowData: null,
   })),
-  on(experimentDesignStepperAction.actionToggleConditionsTableEditMode,
+  on(
+    experimentDesignStepperAction.actionToggleConditionsTableEditMode,
     (state, { conditionsTableEditIndex, conditionsRowData }) => {
       // toggle edit mode
       const editMode = !state.isConditionsTableEditMode;
@@ -130,7 +134,8 @@ const reducer = createReducer(
     conditionsTableEditIndex: null,
     conditionsEditModePreviousRowData: null,
   })),
-  on(experimentDesignStepperAction.actionToggleFactorialConditionsTableEditMode,
+  on(
+    experimentDesignStepperAction.actionToggleFactorialConditionsTableEditMode,
     (state, { factorialConditionsTableEditIndex, factorialConditionsRowData }) => {
       // toggle edit mode
       const editMode = !state.isFactorialConditionsTableEditMode;
@@ -169,7 +174,8 @@ const reducer = createReducer(
       isSimpleExperimentAliasTableEditMode: false,
     };
   }),
-  on(experimentDesignStepperAction.actionToggleFactorialFactorsTableEditMode,
+  on(
+    experimentDesignStepperAction.actionToggleFactorialFactorsTableEditMode,
     (state, { factorialFactorsTableEditIndex, factorialFactorsRowData }) => {
       // toggle edit mode
       const editMode = !state.isFactorialFactorsTableEditMode;
@@ -182,18 +188,26 @@ const reducer = createReducer(
         ...state,
         isFactorialFactorsTableEditMode: editMode,
         factorialFactorsTableEditIndex: editIndex,
+        // storing duplicate factor table index which will be not be set to null
         factorialFactorsTableIndex: factorialFactorsTableEditIndex,
         factorialFactorsRowData: previousRowData,
       };
     }
   ),
+  on(experimentDesignStepperAction.actionUpdateFactorialFactorsTableIndex, (state, { factorialFactorsTableIndex }) => {
+    return {
+      ...state,
+      factorialFactorsTableIndex: factorialFactorsTableIndex,
+    };
+  }),
   on(experimentDesignStepperAction.actionClearFactorialFactorTableEditDetails, (state) => ({
     ...state,
     isFactorialFactorsTableEditMode: false,
     factorialFactorsTableEditIndex: null,
     factorialFactorsRowData: null,
   })),
-  on(experimentDesignStepperAction.actionToggleFactorialLevelsTableEditMode,
+  on(
+    experimentDesignStepperAction.actionToggleFactorialLevelsTableEditMode,
     (state, { factorialLevelsTableEditIndex, factorialLevelsRowData }) => {
       // toggle edit mode
       const editMode = !state.isFactorialLevelsTableEditMode;
@@ -214,7 +228,7 @@ const reducer = createReducer(
     isFactorialLevelsTableEditMode: false,
     factorialLevelsTableEditIndex: null,
     factorialLevelsRowData: null,
-  })),
+  }))
 );
 
 export function experimentDesignStepperReducer(state: ExperimentDesignStepperState | undefined, action: Action) {
