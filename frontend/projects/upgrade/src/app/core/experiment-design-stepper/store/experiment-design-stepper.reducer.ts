@@ -24,9 +24,7 @@ const initialState: ExperimentDesignStepperState = {
   conditionsEditModePreviousRowData: null,
 
   isFactorialConditionsTableEditMode: false,
-  isFactorialLevelsTableEditMode: false,
   factorialConditionsTableEditIndex: null,
-  factorialLevelsTableEditIndex: null,
   factorialConditionsEditModePreviousRowData: null,
 
   isFactorialFactorsTableEditMode: false,
@@ -34,6 +32,8 @@ const initialState: ExperimentDesignStepperState = {
   factorialFactorsTableIndex: null,
   factorialFactorsEditModePreviousRowData: null,
 
+  isFactorialLevelsTableEditMode: false,
+  factorialLevelsTableEditIndex: null,
   factorialLevelsEditModePreviousRowData: null,
 };
 
@@ -152,21 +152,6 @@ const reducer = createReducer(
       };
     }
   ),
-
-  on(experimentDesignStepperAction.actionClearConditionTableEditDetails, (state) => ({
-    ...state,
-    isConditionsTableEditMode: false,
-    conditionsTableEditIndex: null,
-    conditionsEditModePreviousRowData: null,
-  })),
-  on(experimentDesignStepperAction.actionUpdateSimpleExperimentDesignData, (state, { designData }) => ({
-    ...state,
-    simpleExperimentDesignData: designData,
-  })),
-  on(experimentDesignStepperAction.actionUpdateSimpleExperimentPayloadTableData, (state, { tableData }) => ({
-    ...state,
-    simpleExperimentAliasTableData: tableData,
-  })),
   on(experimentDesignStepperAction.actionClearFactorialConditionTableEditDetails, (state) => ({
     ...state,
     isFactorialConditionsTableEditMode: false,
@@ -203,11 +188,18 @@ const reducer = createReducer(
         ...state,
         isFactorialFactorsTableEditMode: editMode,
         factorialFactorsTableEditIndex: editIndex,
+        // storing duplicate factor table index which will be not be set to null
         factorialFactorsTableIndex: factorialFactorsTableEditIndex,
         factorialFactorsRowData: previousRowData,
       };
     }
   ),
+  on(experimentDesignStepperAction.actionUpdateFactorialFactorsTableIndex, (state, { factorialFactorsTableIndex }) => {
+    return {
+      ...state,
+      factorialFactorsTableIndex: factorialFactorsTableIndex,
+    };
+  }),
   on(experimentDesignStepperAction.actionClearFactorialFactorTableEditDetails, (state) => ({
     ...state,
     isFactorialFactorsTableEditMode: false,

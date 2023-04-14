@@ -326,7 +326,8 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     const form = this.addFactors();
     this.factor?.push(form);
     this.updateView('factorTable');
-    this.experimentDesignStepperService.setFactorialFactorTableEditModeDetails(this.factor?.controls.length - 1, null);
+    const factorIndex = this.factor?.controls.length - 1;
+    this.experimentDesignStepperService.setFactorialFactorTableEditModeDetails(factorIndex, null);
     if (this.factor?.length > 1) {
       this.handleConditionsButtonClick();
     }
@@ -335,6 +336,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   addLevel(factorIndex: number) {
     this.getFactorialLevelsAt(factorIndex).push(this.addLevels());
     this.updateView('levelTable');
+    this.experimentDesignStepperService.setFactorialFactorTableIndex(factorIndex);
     this.experimentDesignStepperService.setFactorialLevelTableEditModeDetails(
       this.getFactorialLevelsAt(factorIndex).controls.length - 1,
       null
@@ -362,6 +364,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   removeFactor(groupIndex: number) {
     this.factor.removeAt(groupIndex);
+    this.handleConditionsButtonClick();
     this.isAnyRowRemoved = true;
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.experimentDesignStepperService.clearFactorialFactorTableEditModeDetails();
@@ -373,6 +376,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   removeLevel(factorIndex: number, levelIndex: number) {
     this.getFactorialLevelsAt(factorIndex).removeAt(levelIndex);
+    this.handleConditionsButtonClick();
     this.isAnyRowRemoved = true;
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.experimentDesignStepperService.clearFactorialLevelTableEditModeDetails();
@@ -381,10 +385,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   expandFactor(factorIndex: number) {
     this.expandedId = this.expandedId === factorIndex ? null : factorIndex;
-    this.experimentDesignStepperService.setFactorialLevelTableEditModeDetails(
-      this.getFactorialLevelsAt(factorIndex).controls.length - 1,
-      null
-    );
   }
 
   updateView(type?: string) {
@@ -609,7 +609,8 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return levelsArray;
   }
 
-  handleLevelTableEditClick(rowData: ExperimentLevelFormData, levelRowIndex: number) {
+  handleLevelTableEditClick(rowData: ExperimentLevelFormData, levelRowIndex: number, factorIndex: number) {
+    this.experimentDesignStepperService.setFactorialFactorTableIndex(factorIndex);
     this.experimentDesignStepperService.setFactorialLevelTableEditModeDetails(levelRowIndex, rowData);
     this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
   }
@@ -644,6 +645,15 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   handleFactorTableEditClick(rowData: FactorialFactorTableRowData, factorRowIndex: number) {
+    if (
+      this.getFactorialLevelsAt(factorRowIndex).controls.length === 1 &&
+      this.getFactorialLevelsAt(factorRowIndex).controls.at(0).value.name === ''
+    ) {
+      this.experimentDesignStepperService.setFactorialLevelTableEditModeDetails(
+        this.getFactorialLevelsAt(factorRowIndex).controls.length - 1,
+        null
+      );
+    }
     this.experimentDesignStepperService.setFactorialFactorTableEditModeDetails(factorRowIndex, rowData);
     this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
   }
@@ -804,5 +814,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   ngOnDestroy() {
     this.subscriptionHandler.unsubscribe();
     this.experimentDesignStepperService.clearDecisionPointTableEditModeDetails();
+    this.experimentDesignStepperService.clearFactorialFactorTableEditModeDetails();
+    this.experimentDesignStepperService.clearFactorialLevelTableEditModeDetails();
   }
 }

@@ -9,13 +9,19 @@ import {
 } from '../experiments/store/experiments.model';
 import * as experimentDesignStepperAction from './store/experiment-design-stepper.actions';
 import {
+  selectIsFormLockedForEdit,
+  selecthasExperimentStepperDataChanged,
   selectIsSimpleExperimentPayloadTableEditMode,
   selectSimpleExperimentPayloadTableEditIndex,
   selectSimpleExperimentPayloadTableData,
+  selectSimpleExperimentDesignData,
+  selectIsDecisionPointsTableEditMode,
   selectDecisionPointsTableEditIndex,
   selectDecisionPointsEditModePreviousRowData,
+  selectIsConditionsTableEditMode,
   selectConditionsTableEditIndex,
   selectConditionsEditModePreviousRowData,
+  selectIsFactorialConditionsTableEditMode,
   selectFactorialConditionsTableEditIndex,
   selectFactorialConditionsEditModePreviousRowData,
   selectFactorialConditionTableData,
@@ -23,19 +29,13 @@ import {
   selectIsFactorialFactorsTableEditMode,
   selectFactorialFactorsTableEditIndex,
   selectFactorialFactorsEditModePreviousRowData,
+  selectIsFactorialLevelsTableEditMode,
+  selectFactorialLevelsTableEditIndex,
   selectFactorialLevelsEditModePreviousRowData,
   selectFactorialFactorsTableIndex,
-  selecthasExperimentStepperDataChanged,
-  selectIsDecisionPointsTableEditMode,
-  selectIsConditionsTableEditMode,
-  selectIsLevelsTableEditMode,
-  selectIsFactorialConditionsTableEditMode,
-  selectIsFactorialLevelsTableEditMode,
-  selectIsFormLockedForEdit,
-  selectSimpleExperimentDesignData,
-  selectFactorialLevelsTableEditIndex,
 } from './store/experiment-design-stepper.selectors';
 import {
+  SimpleExperimentDesignData,
   ExperimentConditionPayloadRequestObject,
   ExperimentFactorialDesignData,
   FactorialConditionRequestObject,
@@ -43,12 +43,11 @@ import {
   ConditionsTableRowData,
   SimpleExperimentPayloadTableRow,
   FactorialConditionTableRowData,
-  SimpleExperimentDesignData,
+  FactorialFactorTableRowData,
   ExperimentLevelFormData,
   ExperimentFactorData,
   ExperimentFactorialFormDesignData,
   ExperimentLevelData,
-  FactorialFactorTableRowData,
 } from './store/experiment-design-stepper.model';
 import {
   actionUpdateFactorialConditionTableData,
@@ -89,7 +88,6 @@ export class ExperimentDesignStepperService {
 
   // Conditions Table
   isConditionsTableEditMode$ = this.store$.pipe(select(selectIsConditionsTableEditMode));
-  isLevelsTableEditMode$ = this.store$.pipe(select(selectIsLevelsTableEditMode));
   conditionsTableEditIndex$ = this.store$.pipe(select(selectConditionsTableEditIndex));
   conditionsEditModePreviousRowData$ = this.store$.pipe(select(selectConditionsEditModePreviousRowData));
 
@@ -513,7 +511,6 @@ export class ExperimentDesignStepperService {
   }
 
   updateFactorialDesignData(designData: ExperimentFactorialDesignData) {
-    // const designData = this.createFactorialDesignDataFromForm(formDesignData);
     this.store$.dispatch(experimentDesignStepperAction.actionUpdateFactorialExperimentDesignData({ designData }));
   }
 
@@ -561,6 +558,14 @@ export class ExperimentDesignStepperService {
       experimentDesignStepperAction.actionToggleFactorialFactorsTableEditMode({
         factorialFactorsTableEditIndex: rowIndex,
         factorialFactorsRowData: rowData,
+      })
+    );
+  }
+
+  setFactorialFactorTableIndex(rowIndex: number): void {
+    this.store$.dispatch(
+      experimentDesignStepperAction.actionUpdateFactorialFactorsTableIndex({
+        factorialFactorsTableIndex: rowIndex,
       })
     );
   }

@@ -176,9 +176,7 @@ export interface ExperimentDesignStepperState {
 
   // Decision Point Table
   isDecisionPointsTableEditMode: boolean;
-  isLevelsTableEditMode?: boolean;
   decisionPointsTableEditIndex: number | null;
-  levelsTableEditIndex?: number | null;
   decisionPointsEditModePreviousRowData: DecisionPointsTableRowData;
 
   // Condition Table

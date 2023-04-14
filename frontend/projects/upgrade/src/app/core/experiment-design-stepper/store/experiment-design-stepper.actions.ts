@@ -50,7 +50,7 @@ export const actionToggleSimpleExperimentPayloadTableEditMode = createAction(
 );
 
 export const actionUpdateSimpleExperimentPayloadTableData = createAction(
-  '[Experiment-Design-Stepper] update simple experiment payload table data',
+  '[Experiment-Design-Stepper] Update Simple Experiment Payload Table Data',
   props<{ tableData: SimpleExperimentPayloadTableRow[] }>()
 );
 
@@ -98,6 +98,13 @@ export const actionToggleFactorialFactorsTableEditMode = createAction(
   props<{
     factorialFactorsTableEditIndex: number | null;
     factorialFactorsRowData: FactorialFactorTableRowData;
+  }>()
+);
+
+export const actionUpdateFactorialFactorsTableIndex = createAction(
+  '[Experiment-Design-Stepper] Update Factorial Factors Table Index',
+  props<{
+    factorialFactorsTableIndex: number | null;
   }>()
 );
 
