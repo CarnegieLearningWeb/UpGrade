@@ -498,6 +498,10 @@ export class ExperimentDesignStepperService {
     const factorialConditionPayloadsRequestObject = [];
 
     tableData.forEach((factorialConditionTableRow) => {
+      if (factorialConditionTableRow.payload === '' || factorialConditionTableRow.payload === null) {
+        return;
+      }
+
       factorialConditionPayloadsRequestObject.push({
         id: factorialConditionTableRow.conditionPayloadId || uuidv4(),
         payload: { type: PAYLOAD_TYPE.STRING, value: factorialConditionTableRow.payload },
