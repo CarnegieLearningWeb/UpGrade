@@ -533,7 +533,7 @@ export class ExperimentClientController {
           conditionCode: assignedCondition.conditionCode,
           payload:
             assignedCondition.payload && assignedCondition.payload.value
-              ? { type: PAYLOAD_TYPE.STRING, value: assignedCondition.payload.value }
+              ? { type: assignedCondition.payload.type, value: assignedCondition.payload.value }
               : null,
           experimentId: assignedCondition.experimentId,
         },

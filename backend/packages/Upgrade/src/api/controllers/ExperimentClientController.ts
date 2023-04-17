@@ -17,7 +17,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
-import { ISingleMetric, IGroupMetric, SERVER_ERROR } from 'upgrade_types';
+import { ISingleMetric, IGroupMetric, SERVER_ERROR, PAYLOAD_TYPE } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -35,7 +35,12 @@ import { env } from '../../env';
 interface IExperimentAssignment {
   expId: string;
   expPoint: string;
-  assignedCondition: object;
+  assignedCondition: {
+    conditionCode: string;
+    payload: { type: PAYLOAD_TYPE; value: string };
+    experimentId: string;
+    id?: string;
+  };
 }
 
 /**

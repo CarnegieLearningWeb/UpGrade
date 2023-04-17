@@ -36,34 +36,6 @@ export class NewExperimentComponent implements OnInit {
     private translate: TranslateService
   ) {
     if (this.data) {
-      // To convert payload Obj into string with payload value only
-      // if (this.data.experiment.type === 'Factorial') {
-      //   const factorsWithPayloadString = this.data.experiment.factors.map((factor) => {
-      //     const levelsWithPayload = factor.levels.map((level) => {
-      //       return { ...level, payload: level.payload.value };
-      //     });
-      //     return { ...factor, levels: levelsWithPayload };
-      //   });
-
-      //   const conditionPayloadWithPayloadString = this.data.experiment.conditionPayloads.map((conditionPayload) => {
-      //     return { ...conditionPayload, payload: conditionPayload.payload.value };
-      //   });
-
-      //   this.experimentInfo = {
-      //     ...this.data.experiment,
-      //     factors: factorsWithPayloadString,
-      //     conditionPayloads: conditionPayloadWithPayloadString,
-      //   };
-      // } else {
-      //   const conditionPayloadWithPayloadString = this.data.experiment.conditionPayloads.map((conditionPayload) => {
-      //     return { ...conditionPayload, payload: conditionPayload.payload.value };
-      //   });
-
-      //   this.experimentInfo = {
-      //     ...this.data.experiment,
-      //     conditionPayloads: conditionPayloadWithPayloadString,
-      //   };
-      // }
       this.experimentInfo = this.data.experiment;
     }
   }
