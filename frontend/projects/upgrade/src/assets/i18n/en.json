@@ -150,6 +150,7 @@
   "home.new-experiment.design.condition-unique-validation.text": "Condition should be unique",
   "home.new-experiment.design.condition-name-validation.text": "Condition name cannot be 'default'",
   "home.new-experiment.design.condition-count-new-exp-error.text": "Please have at least 1 valid Condition to move forward",
+  "home.new-experiment.design.condition-create-count-new-factorial-exp-error.text": "Have atleast two levels in one of the factors, to have at least two conditions for enabling enrolling state",
   "home.new-experiment.design.decision-point-count-new-exp-error.text": "Please have at least 1 valid Decision Point to move forward",
   "home.new-experiment.design.assignment-decision-point-error-1.text": " Decision Point data already exist",
   "home.new-experiment.design.assignment-decision-point-error-2.text": " Decision Point's data are already existing",

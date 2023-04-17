@@ -728,11 +728,12 @@
             +
             {{ 'home.new-experiment.design.add-experiment-factor.text' | translate }}
           </button>
-          <div class="validation-container" *ngIf="factorPointErrors.length || levelPointErrors.length || factorCountError || levelCountError">
+          <div class="validation-container" *ngIf="factorPointErrors.length || levelPointErrors.length || factorCountError || levelCountError || conditionCountError">
             <span class="ft-14-600 validation-message" *ngFor="let error of factorPointErrors">{{ error }}</span>
             <span class="ft-14-600 validation-message" *ngFor="let error of levelPointErrors">{{ error }}</span>
             <span class="ft-14-600 validation-message" *ngIf="factorCountError" [innerHTML]="factorCountError"></span>
             <span class="ft-14-600 validation-message" *ngIf="levelCountError" [innerHTML]="levelCountError"></span>
+            <span class="ft-14-600 validation-message" *ngIf="conditionCountError" [innerHTML]="conditionCountError"></span>
           </div>
           <br />
           <br />

@@ -85,6 +85,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   expandedId: number = null;
   levelIds: string[] = [];
+  conditionCountError: string = null;
 
   decisionPointDisplayedColumns = ['site', 'target', 'excludeIfReached', 'actions'];
   factorDisplayedColumns = ['expandIcon', 'factor', 'description', 'actions'];
@@ -515,6 +516,15 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.expandedId--;
   }
 
+  validateConditionCount() {
+    this.conditionCountError = null;
+    if (this.factorialConditions.length < 2) {
+      this.conditionCountError = this.translate.instant(
+        'home.new-experiment.design.condition-create-count-new-factorial-exp-error.text'
+      );
+    }
+  }
+
   validateLevelNames(levels: ExperimentLevelFormData[], factorDetail: string) {
     // Used to differentiate errors
     const duplicateLevels = [];
@@ -548,6 +558,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.factorialExperimentDesignForm.valid &&
       this.factorCountError === null &&
       this.levelCountError === null &&
+      this.conditionCountError === null &&
       this.factorialExperimentDesignForm.value.factors.length <= 2 &&
       !this.experimentDesignStepperService.checkConditionTableValidity()
     );
@@ -557,6 +568,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.factorialExperimentDesignForm.updateValueAndValidity();
     this.validateDecisionPointCount(this.decisionPoints.value);
     this.validateFactorCount(this.factorialExperimentDesignForm.value);
+    this.validateConditionCount();
   }
 
   // decision point table:
