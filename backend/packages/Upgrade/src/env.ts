@@ -69,6 +69,7 @@ export const env = {
     enabled: toBool(getOsEnv('SWAGGER_ENABLED')),
     route: getOsEnv('SWAGGER_ROUTE'),
     api: getOsEnv('SWAGGER_API'),
+    json: getOsEnv('SWAGGER_JSON'),
   },
   monitor: {},
   email: {

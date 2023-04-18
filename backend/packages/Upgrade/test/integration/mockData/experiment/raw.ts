@@ -437,6 +437,46 @@ export const factorialExperimentFirst = {
   filterMode: 'includeAll',
   backendVersion: '1.0.0',
   type: 'Factorial',
+  factors: [
+    {
+      name: 'Color',
+      description: '',
+      order: 1,
+      levels: [
+        {
+          id: '33333333-1111-4a52-a058-90fac2d03679',
+          name: 'Red',
+          order: 1,
+        },
+        {
+          id: '44444444-2222-4a52-a058-90fac2d03679',
+          name: 'Blue',
+          description: 'description of level2',
+          alias: 'Dark blue - Blue color Alias',
+          order: 2,
+        },
+      ],
+    },
+    {
+      name: 'Shape',
+      description: '',
+      order: 2,
+      levels: [
+        {
+          id: '11111111-1111-4a52-a058-90fac2d03679',
+          name: 'Circle',
+          order: 1,
+        },
+        {
+          id: '22222222-2222-4a52-a058-90fac2d03679',
+          name: 'Rectangle',
+          description: 'description of level2',
+          alias: 'Square - rectangle alias',
+          order: 2,
+        },
+      ],
+    },
+  ],
   partitions: [
     {
       id: '5e335ac8-28df-463d-86bb-837dcd8240c4',
@@ -446,44 +486,6 @@ export const factorialExperimentFirst = {
       description: '',
       order: 1,
       excludeIfReached: false,
-      factors: [
-        {
-          name: 'Color',
-          order: 1,
-          levels: [
-            {
-              id: '33333333-1111-4a52-a058-90fac2d03679',
-              name: 'Red',
-              order: 1,
-            },
-            {
-              id: '44444444-2222-4a52-a058-90fac2d03679',
-              name: 'Blue',
-              description: 'description of level2',
-              alias: 'Dark blue - Blue color Alias',
-              order: 2,
-            },
-          ],
-        },
-        {
-          name: 'Shape',
-          order: 2,
-          levels: [
-            {
-              id: '11111111-1111-4a52-a058-90fac2d03679',
-              name: 'Circle',
-              order: 1,
-            },
-            {
-              id: '22222222-2222-4a52-a058-90fac2d03679',
-              name: 'Rectangle',
-              description: 'description of level2',
-              alias: 'Square - rectangle alias',
-              order: 2,
-            },
-          ],
-        },
-      ],
     },
   ],
   conditions: [
@@ -492,7 +494,7 @@ export const factorialExperimentFirst = {
       twoCharacterId: '5H',
       name: '',
       description: null,
-      conditionCode: null,
+      conditionCode: 'Shape=Circle; Color=Red',
       assignmentWeight: 50,
       order: 1,
       levelCombinationElements: [
@@ -512,7 +514,7 @@ export const factorialExperimentFirst = {
       twoCharacterId: '6Y',
       name: '',
       description: null,
-      conditionCode: null,
+      conditionCode: 'Shape=Rectangle; Color=Blue',
       assignmentWeight: 50,
       order: 2,
       levelCombinationElements: [
@@ -598,6 +600,46 @@ export const factorialExperimentSecond = {
   filterMode: 'includeAll',
   backendVersion: '1.0.0',
   type: 'Factorial',
+  factors: [
+    {
+      name: 'Question Type',
+      description: '',
+      order: 1,
+      levels: [
+        {
+          id: '33333333-3333-4a52-a058-90fac2d03679',
+          name: 'Abstract',
+          order: 1,
+        },
+        {
+          id: '44444444-4444-4a52-a058-90fac2d03679',
+          name: 'Concrete',
+          description: 'description of level2',
+          alias: 'Concrete Alias',
+          order: 2,
+        },
+      ],
+    },
+    {
+      name: 'Motivation',
+      description: '',
+      order: 2,
+      levels: [
+        {
+          id: '33333333-5555-4a52-a058-90fac2d03679',
+          name: 'No support',
+          order: 1,
+        },
+        {
+          id: '44444444-6666-4a52-a058-90fac2d03679',
+          name: 'Mindset',
+          description: 'description of level2',
+          alias: 'Mindset Alias',
+          order: 2,
+        },
+      ],
+    },
+  ],
   partitions: [
     {
       createdAt: '2022-10-07T05:44:43.162Z',
@@ -610,26 +652,6 @@ export const factorialExperimentSecond = {
       description: '',
       order: 1,
       excludeIfReached: false,
-      factors: [
-        {
-          name: 'Question Type',
-          order: 1,
-          levels: [
-            {
-              id: '33333333-3333-4a52-a058-90fac2d03679',
-              name: 'Abstract',
-              order: 1,
-            },
-            {
-              id: '44444444-4444-4a52-a058-90fac2d03679',
-              name: 'Concrete',
-              description: 'description of level2',
-              alias: 'Concrete Alias',
-              order: 2,
-            },
-          ],
-        },
-      ],
     },
     {
       createdAt: '2022-10-07T05:44:43.162Z',
@@ -642,26 +664,6 @@ export const factorialExperimentSecond = {
       description: '',
       order: 2,
       excludeIfReached: false,
-      factors: [
-        {
-          name: 'Motivation',
-          order: 1,
-          levels: [
-            {
-              id: '33333333-5555-4a52-a058-90fac2d03679',
-              name: 'No support',
-              order: 1,
-            },
-            {
-              id: '44444444-6666-4a52-a058-90fac2d03679',
-              name: 'Mindset',
-              description: 'description of level2',
-              alias: 'Mindset Alias',
-              order: 2,
-            },
-          ],
-        },
-      ],
     },
   ],
   conditions: [
@@ -673,7 +675,7 @@ export const factorialExperimentSecond = {
       twoCharacterId: '5H',
       name: '',
       description: null,
-      conditionCode: null,
+      conditionCode: 'Question Type=Abstract; Motivation=No support',
       assignmentWeight: 25,
       order: 1,
       levelCombinationElements: [
@@ -693,7 +695,7 @@ export const factorialExperimentSecond = {
       twoCharacterId: '6Y',
       name: '',
       description: null,
-      conditionCode: null,
+      conditionCode: 'Question Type=Concrete; Motivation=Mindset',
       assignmentWeight: 25,
       order: 2,
       levelCombinationElements: [
@@ -713,7 +715,7 @@ export const factorialExperimentSecond = {
       twoCharacterId: '5H',
       name: '',
       description: null,
-      conditionCode: null,
+      conditionCode: 'Question Type=Abstract; Motivation=Mindset',
       assignmentWeight: 25,
       order: 3,
       levelCombinationElements: [
@@ -733,7 +735,7 @@ export const factorialExperimentSecond = {
       twoCharacterId: '6Y',
       name: '',
       description: null,
-      conditionCode: null,
+      conditionCode: 'Question Type=Concrete; Motivation=No support',
       assignmentWeight: 25,
       order: 4,
       levelCombinationElements: [

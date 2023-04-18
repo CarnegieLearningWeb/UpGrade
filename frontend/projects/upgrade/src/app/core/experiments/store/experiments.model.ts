@@ -151,26 +151,17 @@ export interface ExperimentDecisionPoint {
   updatedAt: string;
   versionNumber: number;
   excludeIfReached: boolean;
-  factors?: ExperimentFactor[];
-}
-
-export interface ExperimentDecisionPointForSimpleExp {
-  id: string;
-  site: string;
-  target: string;
-  description: string;
-  twoCharacterId: string;
-  order: number;
-  createdAt: string;
-  updatedAt: string;
-  versionNumber: number;
-  excludeIfReached: boolean;
 }
 
 export interface ExperimentFactor {
   name: string;
+  description: string;
   order: number;
   levels: ExperimentLevel[];
+}
+
+export interface LevelsMap {
+  [key: string]: ExperimentLevel;
 }
 
 export interface ExperimentLevel {
@@ -224,6 +215,7 @@ export interface Experiment {
   logging: boolean;
   conditions: ExperimentCondition[];
   partitions: ExperimentDecisionPoint[];
+  factors: ExperimentFactor[];
   conditionAliases: ExperimentConditionAlias[];
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
@@ -234,7 +226,7 @@ export interface Experiment {
   backendVersion: string;
 }
 
-export interface ParticipantsMember{
+export interface ParticipantsMember {
   id: string;
   type: string;
 }

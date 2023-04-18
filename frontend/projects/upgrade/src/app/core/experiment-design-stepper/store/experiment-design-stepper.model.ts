@@ -31,7 +31,7 @@ export interface SimpleExperimentAliasTableRow {
 export interface SimpleExperimentFormData {
   decisionPoints?: SimpleExperimentFormDecisionPoints[];
   partitions?: SimpleExperimentFormDecisionPoints[];
-  conditions: SimplerExperimentFormDecisionConditions[];
+  conditions: SimpleExperimentFormDecisionConditions[];
 }
 
 export interface SimpleExperimentFormDecisionPoints {
@@ -41,7 +41,7 @@ export interface SimpleExperimentFormDecisionPoints {
   order: number;
 }
 
-export interface SimplerExperimentFormDecisionConditions {
+export interface SimpleExperimentFormDecisionConditions {
   conditionCode: string;
   assignmentWeight: string;
   description: string;
@@ -51,6 +51,7 @@ export interface SimplerExperimentFormDecisionConditions {
 export interface SimpleExperimentDesignData {
   decisionPoints: ExperimentDecisionPoint[];
   conditions: ExperimentCondition[];
+  // TODO: add factors
 }
 
 export interface DecisionPointsTableRowData {
@@ -71,6 +72,7 @@ export interface FactorialConditionTableRowData {
   id: string;
   conditionAliasId?: string;
   levels: FactorialLevelTableRowData[];
+  condition: string;
   alias: string;
   weight: string;
   include: boolean;
@@ -97,32 +99,35 @@ export interface ExperimentFactorialDesignData {
 }
 
 export interface ExperimentFactorFormData {
-  factor: string;
-  site: string;
-  target: string;
+  name: string;
+  description: string;
   order: number;
   levels: ExperimentLevelFormData[];
 }
 
 export interface ExperimentLevelFormData {
   id: string;
-  level: string;
-  alias: string;
+  name: string;
+  payload: string;
 }
 
 export interface ExperimentDesignStepperState {
   isSimpleExperimentAliasTableEditMode: boolean;
   isDecisionPointsTableEditMode: boolean;
   isConditionsTableEditMode: boolean;
+  isLevelsTableEditMode?: boolean;
   simpleExperimentAliasTableEditIndex: number | null;
   decisionPointsTableEditIndex: number | null;
   conditionsTableEditIndex: number | null;
+  levelsTableEditIndex?: number | null;
   decisionPointsEditModePreviousRowData: DecisionPointsTableRowData;
   conditionsEditModePreviousRowData: ConditionsTableRowData;
   simpleExperimentDesignData: SimpleExperimentDesignData;
   simpleExperimentAliasTableData: SimpleExperimentAliasTableRow[];
   isFactorialConditionsTableEditMode: boolean;
+  isFactorialLevelsTableEditMode: boolean;
   factorialConditionsTableEditIndex: number | null;
+  factorialLevelsTableEditIndex: number | null;
   factorialConditionsEditModePreviousRowData: FactorialConditionTableRowData;
   factorialDesignData: ExperimentFactorialDesignData;
   factorialConditionsTableData: FactorialConditionTableRowData[];

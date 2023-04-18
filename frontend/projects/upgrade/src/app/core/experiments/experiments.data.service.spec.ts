@@ -96,6 +96,7 @@ describe('ExperimentDataService', () => {
       logging: true,
       conditions: [],
       partitions: [],
+      factors: [],
       conditionAliases: [],
       queries: [],
       stateTimeLogs: [],
