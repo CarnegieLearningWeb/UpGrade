@@ -316,13 +316,9 @@ export class ExperimentDesignStepperService {
         weight: '0.0',
         include: true,
       };
-      console.log("tableRow.condition.split(';').length");
-      console.log(tableRow.condition.split(';').length);
       tableData.push(tableRow);
     });
 
-    // console.log('tableData');
-    // console.log(tableData);
     return tableData;
   }
 
@@ -359,15 +355,13 @@ export class ExperimentDesignStepperService {
   }
 
   createConditionString(conditionData: FactorLevelData[]) {
-    let alias: string;
-    let count = 0;
-    conditionData.forEach((level) => {
-      if (count == 0) {
+    let alias = '';
+    conditionData.forEach((level, index) => {
+      if (index == 0) {
         alias = `${level.factor}=${level.name}`;
       } else {
         alias = `${alias}; ${level.factor}=${level.name}`;
       }
-      count++;
     });
     return alias;
   }
