@@ -77,7 +77,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   // Factor Errors
   factorPointErrors = [];
-  factorErrorMessages = [];
   factorCountError: string = null;
 
   // Level Errors
@@ -232,7 +231,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     this.factorialExperimentDesignForm.get('factors').valueChanges.subscribe((newValues) => {
       this.conditionTableDataUpToDate = false;
-      this.validateFactorNames(newValues);
+      this.validateUniqueFactorAndLevelNames(newValues);
     });
   }
 
@@ -456,59 +455,23 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
-  validateFactorNames(factors: ExperimentFactorFormData[]) {
+  validateUniqueFactorAndLevelNames(factors: ExperimentFactorFormData[]) {
     this.factorPointErrors = [];
     this.levelPointErrors = [];
-    // Used to differentiate errors
-    const duplicateFactors = [];
 
-    factors.forEach((factor, index) => {
-      // factorDetail:string = factor.site + ', ' + factor.target + ', ' + factor.factor;
-      this.validateLevelNames(factor.levels, factor.name);
-      //   if (
-      //     factors.find(
-      //       (value, factorIndex) =>
-      //         value.site === factor.site &&
-      //         (value.target || '') === (factor.target || '') &&
-      //         value.factor === factor.factor &&
-      //         factorIndex !== index &&
-      //         !duplicateFactors.includes(factor.site + ', ' + factor.target + ' and ' + factor.factor)
-      //     )
-      //   ) {
-      //     duplicateFactors.push(factor.site + ', ' + factor.target + ' and ' + factor.factor);
-      //   }
-    });
+    const uniqueFactorNames = new Set(factors.map((factor) => factor.name));
 
-    // Factor Points error messages
-    if (duplicateFactors.length === 1) {
-      this.factorPointErrors.push(duplicateFactors[0] + this.factorErrorMessages[0]);
-    } else if (duplicateFactors.length > 1) {
-      this.factorPointErrors.push(duplicateFactors.join(', ') + this.factorErrorMessages[1]);
+    if (uniqueFactorNames.size < factors.length) {
+      this.factorPointErrors.push('Factor should be unique');
     }
-  }
 
-  validateLevelNames(levels: ExperimentLevelFormData[], factorDetail: string) {
-    // Used to differentiate errors
-    const duplicateLevels = [];
+    for (const factor of factors) {
+      const uniqueLevelNames = new Set(factor.levels.map((level) => level.name));
 
-    levels.forEach((level, index) => {
-      if (
-        levels.find(
-          (value, levelIndex) =>
-            value.name === level.name &&
-            levelIndex !== index &&
-            !duplicateLevels.includes(factorDetail + " factor's " + level.name)
-        )
-      ) {
-        duplicateLevels.push(factorDetail + " factor's " + level.name);
+      if (uniqueLevelNames.size < factor.levels.length) {
+        this.levelPointErrors.push('Level should be unique');
+        break;
       }
-    });
-
-    // Level Points error messages
-    if (duplicateLevels.length === 1) {
-      this.levelPointErrors.push(duplicateLevels[0] + this.factorErrorMessages[2]);
-    } else if (duplicateLevels.length > 1) {
-      this.levelPointErrors.push(duplicateLevels.join(', ') + this.factorErrorMessages[3]);
     }
   }
 
