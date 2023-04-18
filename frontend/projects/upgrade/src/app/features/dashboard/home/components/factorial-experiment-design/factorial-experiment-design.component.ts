@@ -649,6 +649,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.getFactorialLevelsAt(factorRowIndex).controls.length === 1 &&
       this.getFactorialLevelsAt(factorRowIndex).controls.at(0).value.name === null
     ) {
+      this.expandFactor(factorRowIndex);
       this.experimentDesignStepperService.setFactorialLevelTableEditModeDetails(
         this.getFactorialLevelsAt(factorRowIndex).controls.length - 1,
         null
