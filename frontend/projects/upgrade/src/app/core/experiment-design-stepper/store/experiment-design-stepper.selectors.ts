@@ -37,6 +37,16 @@ export const selectFactorialDesignData = createSelector(
   (state) => state.factorialExperimentDesignData
 );
 
+export const selectFactorialFactorDesignData = createSelector(
+  selectExperimentDesignStepperState,
+  (state) => state.factorialFactorsTableData
+);
+
+export const selectFactorialLevelDesignData = createSelector(
+  selectExperimentDesignStepperState,
+  (state) => state.factorialLevelsTableData
+);
+
 export const selectSimpleExperimentAliasTableData = createSelector(
   selectExperimentDesignStepperState,
   (state) => state.simpleExperimentAliasTableData

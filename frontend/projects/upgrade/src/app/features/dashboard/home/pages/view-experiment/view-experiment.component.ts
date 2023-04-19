@@ -28,7 +28,7 @@ import { EXPERIMENT_TYPE, IMetricMetaData } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
-import { SimpleExperimentAliasTableRow } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+import { SimpleExperimentAliasTableRowData } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 // Used in view-experiment component only
 enum DialogType {
   CHANGE_STATUS = 'Change status',
@@ -76,7 +76,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
   displayMetrics: Metrics[] = [];
-  simpleExperimentAliasTableData: SimpleExperimentAliasTableRow[] = [];
+  simpleExperimentAliasTableData: SimpleExperimentAliasTableRowData[] = [];
 
   constructor(
     private experimentService: ExperimentService,

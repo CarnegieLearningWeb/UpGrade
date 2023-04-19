@@ -17,7 +17,7 @@ export interface FactorialConditionRequestObject {
   order: number;
   levelCombinationElements: { id: string; level: FactorialLevelTableRowData }[];
 }
-export interface SimpleExperimentAliasTableRow {
+export interface SimpleExperimentAliasTableRowData {
   id?: string;
   designTableCombinationId?: string;
   site: string;
@@ -83,6 +83,7 @@ export interface FactorialFactorTableRowData {
   id: string;
   name: string;
   description: string;
+  levels: FactorialLevelTableRowData[];
 }
 export interface FactorialLevelTableRowData {
   id: string;
@@ -94,17 +95,15 @@ export interface ExperimentFactorialDesignData {
   factors: ExperimentFactorFormData[];
 }
 
+export interface ExperimentFactorialLevelDesignData {
+  levels: FactorialLevelTableRowData[];
+}
+
 export interface ExperimentFactorFormData {
   name: string;
   description: string;
   order: number;
-  levels: ExperimentLevelFormData[];
-}
-
-export interface ExperimentLevelFormData {
-  id: string;
-  name: string;
-  payload: string;
+  levels: FactorialLevelTableRowData[];
 }
 
 export interface ExperimentDesignStepperState {
@@ -113,7 +112,7 @@ export interface ExperimentDesignStepperState {
 
   simpleExperimentDesignData: SimpleExperimentDesignData;
   factorialExperimentDesignData: ExperimentFactorialDesignData;
-  simpleExperimentAliasTableData: SimpleExperimentAliasTableRow[];
+  simpleExperimentAliasTableData: SimpleExperimentAliasTableRowData[];
   factorialConditionsTableData: FactorialConditionTableRowData[];
   factorialLevelsTableData: FactorialLevelTableRowData[];
   factorialFactorsTableData: FactorialFactorTableRowData[];

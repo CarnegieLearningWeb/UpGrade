@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter
 import { BehaviorSubject, combineLatest, filter, map, Observable, Subscription } from 'rxjs';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
-  SimpleExperimentAliasTableRow,
+  SimpleExperimentAliasTableRowData,
   SimpleExperimentDesignData,
 } from '../../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
@@ -25,7 +25,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   currentAliasInput$ = new BehaviorSubject<string>('');
   designData$: Observable<SimpleExperimentDesignData>;
 
-  aliasTableData$ = new BehaviorSubject<SimpleExperimentAliasTableRow[]>([]);
+  aliasTableData$ = new BehaviorSubject<SimpleExperimentAliasTableRowData[]>([]);
   aliasesDisplayedColumns = ['site', 'target', 'condition', 'alias', 'actions'];
   initialLoad = true;
 
@@ -93,7 +93,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
     const { decisionPoints, conditions } = designData;
     const preexistingConditionAliasData =
       this.initialLoad && this.experimentInfo ? this.experimentInfo.conditionAliases : [];
-    const conditionAliasesRowData: SimpleExperimentAliasTableRow[] =
+    const conditionAliasesRowData: SimpleExperimentAliasTableRowData[] =
       this.experimentDesignStepperService.getExistingConditionAliasRowData(preexistingConditionAliasData);
 
     this.experimentDesignStepperService.updateAndStoreAliasTableData(
@@ -108,7 +108,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
     this.hideAliasTable.emit(true);
   }
 
-  handleEditClick(rowData: SimpleExperimentAliasTableRow, rowIndex: number) {
+  handleEditClick(rowData: SimpleExperimentAliasTableRowData, rowIndex: number) {
     const aliasTableData = this.experimentDesignStepperService.getSimpleExperimentAliasTableData();
     const rowDataCopy = { ...rowData };
     aliasTableData[rowIndex] = rowDataCopy;

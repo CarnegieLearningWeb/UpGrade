@@ -6,8 +6,8 @@ import {
   FactorialConditionTableRowData,
   FactorialFactorTableRowData,
   SimpleExperimentDesignData,
-  SimpleExperimentAliasTableRow,
-  ExperimentLevelFormData,
+  SimpleExperimentAliasTableRowData,
+  FactorialLevelTableRowData,
 } from './experiment-design-stepper.model';
 
 export const experimentStepperDataChanged = createAction(
@@ -51,7 +51,7 @@ export const actionToggleSimpleExperimentAliasTableEditMode = createAction(
 
 export const actionUpdateSimpleExperimentAliasTableData = createAction(
   '[Experiment-Design-Stepper] update simple experiment alias table data',
-  props<{ tableData: SimpleExperimentAliasTableRow[] }>()
+  props<{ tableData: SimpleExperimentAliasTableRowData[] }>()
 );
 
 // Decision Point Table
@@ -117,7 +117,7 @@ export const actionToggleFactorialLevelsTableEditMode = createAction(
   '[Experiment-Design-Stepper] Update Factorial Levels Table Edit Mode Details',
   props<{
     factorialLevelsTableEditIndex: number | null;
-    factorialLevelsRowData: ExperimentLevelFormData;
+    factorialLevelsRowData: FactorialLevelTableRowData;
   }>()
 );
 
