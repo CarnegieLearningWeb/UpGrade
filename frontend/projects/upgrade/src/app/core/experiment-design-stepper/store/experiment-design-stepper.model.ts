@@ -3,7 +3,6 @@ import { AppState } from '../../core.module';
 import {
   ExperimentCondition,
   ExperimentDecisionPoint,
-  LevelCombinationElement,
 } from '../../experiments/store/experiments.model';
 
 // in PUT/POST request, parentCondition and decisionPoint are id string
@@ -26,7 +25,7 @@ export interface FactorialConditionRequestObject {
   order: number;
   levelCombinationElements: { id: string; level: FactorialLevelTableRowData }[];
 }
-export interface SimpleExperimentPayloadTableRow {
+export interface SimpleExperimentPayloadTableRowData {
   id?: string;
   designTableCombinationId?: string;
   site: string;
@@ -110,11 +109,11 @@ export interface FactorialFactorTableRowData {
   id: string;
   name: string;
   description: string;
+  levels: FactorialLevelTableRowData[];
 }
 export interface FactorialLevelTableRowData {
   id: string;
   name: string;
-  // payload: string;
   payload: {
     type: PAYLOAD_TYPE;
     value: string;
@@ -147,6 +146,10 @@ export interface ExperimentFactorialFormDesignData {
   factors: ExperimentFactorFormData[];
 }
 
+export interface ExperimentFactorialLevelDesignData {
+  levels: FactorialLevelTableRowData[];
+}
+
 export interface ExperimentFactorFormData {
   name: string;
   description: string;
@@ -165,7 +168,7 @@ export interface ExperimentDesignStepperState {
 
   simpleExperimentDesignData: SimpleExperimentDesignData;
   factorialExperimentDesignData: ExperimentFactorialDesignData;
-  simpleExperimentPayloadTableData: SimpleExperimentPayloadTableRow[];
+  simpleExperimentPayloadTableData: SimpleExperimentPayloadTableRowData[];
   factorialConditionsTableData: FactorialConditionTableRowData[];
   factorialLevelsTableData: FactorialLevelTableRowData[];
   factorialFactorsTableData: FactorialFactorTableRowData[];

@@ -190,7 +190,7 @@ const reducer = createReducer(
         factorialFactorsTableEditIndex: editIndex,
         // storing duplicate factor table index which will be not be set to null
         factorialFactorsTableIndex: factorialFactorsTableEditIndex,
-        factorialFactorsRowData: previousRowData,
+        factorialFactorsEditModePreviousRowData: previousRowData,
       };
     }
   ),
@@ -204,7 +204,7 @@ const reducer = createReducer(
     ...state,
     isFactorialFactorsTableEditMode: false,
     factorialFactorsTableEditIndex: null,
-    factorialFactorsRowData: null,
+    factorialFactorsEditModePreviousRowData: null,
   })),
   on(
     experimentDesignStepperAction.actionToggleFactorialLevelsTableEditMode,
@@ -219,7 +219,7 @@ const reducer = createReducer(
         ...state,
         isFactorialLevelsTableEditMode: editMode,
         factorialLevelsTableEditIndex: editIndex,
-        factorialLevelsRowData: previousRowData,
+        factorialLevelsEditModePreviousRowData: previousRowData,
       };
     }
   ),
@@ -227,7 +227,7 @@ const reducer = createReducer(
     ...state,
     isFactorialLevelsTableEditMode: false,
     factorialLevelsTableEditIndex: null,
-    factorialLevelsRowData: null,
+    factorialLevelsEditModePreviousRowData: null,
   }))
 );
 

@@ -31,7 +31,7 @@ import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.m
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
   FactorialConditionTableDataFromConditionPayload,
-  SimpleExperimentPayloadTableRow,
+  SimpleExperimentPayloadTableRowData,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 // Used in view-experiment component only
 enum DialogType {
@@ -81,7 +81,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
   displayMetrics: Metrics[] = [];
-  simpleExperimentPayloadTableData: SimpleExperimentPayloadTableRow[] = [];
+  simpleExperimentPayloadTableData: SimpleExperimentPayloadTableRowData[] = [];
 
   constructor(
     private experimentService: ExperimentService,

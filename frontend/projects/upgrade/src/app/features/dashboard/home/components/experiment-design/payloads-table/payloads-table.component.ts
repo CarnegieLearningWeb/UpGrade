@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter
 import { BehaviorSubject, combineLatest, filter, map, Observable, Subscription } from 'rxjs';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
-  SimpleExperimentPayloadTableRow,
+  SimpleExperimentPayloadTableRowData,
   SimpleExperimentDesignData,
 } from '../../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
@@ -25,7 +25,7 @@ export class PayloadsTableComponent implements OnInit, OnDestroy {
   currentPayloadInput$ = new BehaviorSubject<string>('');
   designData$: Observable<SimpleExperimentDesignData>;
 
-  payloadTableData$ = new BehaviorSubject<SimpleExperimentPayloadTableRow[]>([]);
+  payloadTableData$ = new BehaviorSubject<SimpleExperimentPayloadTableRowData[]>([]);
   payloadsDisplayedColumns = ['site', 'target', 'condition', 'payload', 'actions'];
   initialLoad = true;
 
@@ -93,7 +93,7 @@ export class PayloadsTableComponent implements OnInit, OnDestroy {
     const { decisionPoints, conditions } = designData;
     const preexistingConditionPayloadData =
       this.initialLoad && this.experimentInfo ? this.experimentInfo.conditionPayloads : [];
-    const conditionPayloadsRowData: SimpleExperimentPayloadTableRow[] =
+    const conditionPayloadsRowData: SimpleExperimentPayloadTableRowData[] =
       this.experimentDesignStepperService.getExistingConditionPayloadRowData(preexistingConditionPayloadData);
 
     this.experimentDesignStepperService.updateAndStorePayloadTableData(
@@ -108,7 +108,7 @@ export class PayloadsTableComponent implements OnInit, OnDestroy {
     this.hidePayloadTable.emit(true);
   }
 
-  handleEditClick(rowData: SimpleExperimentPayloadTableRow, rowIndex: number) {
+  handleEditClick(rowData: SimpleExperimentPayloadTableRowData, rowIndex: number) {
     const payloadTableData = this.experimentDesignStepperService.getSimpleExperimentPayloadTableData();
     const rowDataCopy = { ...rowData };
     payloadTableData[rowIndex] = rowDataCopy;

@@ -33,6 +33,8 @@ import {
   selectFactorialLevelsTableEditIndex,
   selectFactorialLevelsEditModePreviousRowData,
   selectFactorialFactorsTableIndex,
+  selectFactorialLevelDesignData,
+  selectFactorialFactorDesignData,
 } from './store/experiment-design-stepper.selectors';
 import {
   SimpleExperimentDesignData,
@@ -41,12 +43,12 @@ import {
   FactorialConditionRequestObject,
   DecisionPointsTableRowData,
   ConditionsTableRowData,
-  SimpleExperimentPayloadTableRow,
+  SimpleExperimentPayloadTableRowData,
   FactorialConditionTableRowData,
   FactorialFactorTableRowData,
-  ExperimentLevelFormData,
-  ExperimentFactorData,
+  FactorialLevelTableRowData,
   ExperimentFactorialFormDesignData,
+  ExperimentFactorData,
   ExperimentLevelData,
 } from './store/experiment-design-stepper.model';
 import {
@@ -73,7 +75,7 @@ export class ExperimentDesignStepperService {
   factorialExperimentDesignData$ = this.store$.pipe(select(selectFactorialDesignData), distinctUntilChanged(isEqual));
 
   // Payload table:
-  simpleExperimentPayloadTableDataBehaviorSubject$ = new BehaviorSubject<SimpleExperimentPayloadTableRow[]>([]);
+  simpleExperimentPayloadTableDataBehaviorSubject$ = new BehaviorSubject<SimpleExperimentPayloadTableRowData[]>([]);
   isSimpleExperimentPayloadTableEditMode$ = this.store$.pipe(select(selectIsSimpleExperimentPayloadTableEditMode));
   simpleExperimentPayloadTableEditIndex$ = this.store$.pipe(select(selectSimpleExperimentPayloadTableEditIndex));
   simpleExperimentPayloadTableData$ = this.store$.pipe(
@@ -109,13 +111,14 @@ export class ExperimentDesignStepperService {
   factorialFactorsTableEditIndex$ = this.store$.pipe(select(selectFactorialFactorsTableEditIndex));
   factorialFactorsTableIndex$ = this.store$.pipe(select(selectFactorialFactorsTableIndex));
   factorialFactorsEditModePreviousRowData$ = this.store$.pipe(select(selectFactorialFactorsEditModePreviousRowData));
-  factorialFactorTableData$ = this.store$.pipe(select(selectFactorialDesignData), distinctUntilChanged(isEqual));
+  factorialFactorTableData$ = this.store$.pipe(select(selectFactorialFactorDesignData), distinctUntilChanged(isEqual));
 
   // Level Table
-  factorialLevelTableDataBehaviorSubject$ = new BehaviorSubject<ExperimentLevelFormData[]>([]);
+  factorialLevelTableDataBehaviorSubject$ = new BehaviorSubject<FactorialLevelTableRowData[]>([]);
   isFactorialLevelsTableEditMode$ = this.store$.pipe(select(selectIsFactorialLevelsTableEditMode));
   factorialLevelsTableEditIndex$ = this.store$.pipe(select(selectFactorialLevelsTableEditIndex));
   factorialLevelsEditModePreviousRowData$ = this.store$.pipe(select(selectFactorialLevelsEditModePreviousRowData));
+  factorialLevelsTableData$ = this.store$.pipe(select(selectFactorialLevelDesignData), distinctUntilChanged(isEqual));
 
   constructor(private store$: Store<AppState>) {
     this.hasExperimentStepperDataChanged$.subscribe(
@@ -123,6 +126,8 @@ export class ExperimentDesignStepperService {
     );
     this.factorialConditionTableData$.subscribe(this.factorialConditionTableDataBehaviorSubject$);
     this.simpleExperimentPayloadTableData$.subscribe(this.simpleExperimentPayloadTableDataBehaviorSubject$);
+    this.factorialFactorTableData$.subscribe(this.factorialFactorTableDataBehaviorSubject$);
+    this.factorialLevelsTableData$.subscribe(this.factorialLevelTableDataBehaviorSubject$);
   }
 
   getHasExperimentDesignStepperDataChanged() {
@@ -131,10 +136,6 @@ export class ExperimentDesignStepperService {
 
   getFactorialConditionTableData() {
     return this.factorialConditionTableDataBehaviorSubject$.getValue();
-  }
-
-  getFactorialLevelTableData() {
-    return this.factorialLevelTableDataBehaviorSubject$.getValue();
   }
 
   getSimpleExperimentPayloadTableData() {
@@ -172,7 +173,7 @@ export class ExperimentDesignStepperService {
     return roundedWeight;
   }
 
-  setNewSimpleExperimentPayloadTableData(tableData: SimpleExperimentPayloadTableRow[]) {
+  setNewSimpleExperimentPayloadTableData(tableData: SimpleExperimentPayloadTableRowData[]) {
     this.store$.dispatch(actionUpdateSimpleExperimentPayloadTableData({ tableData }));
   }
 
@@ -197,7 +198,7 @@ export class ExperimentDesignStepperService {
   updateAndStorePayloadTableData(
     decisionPoints: ExperimentDecisionPoint[],
     conditions: ExperimentCondition[],
-    preexistingPayloadRowData: SimpleExperimentPayloadTableRow[]
+    preexistingPayloadRowData: SimpleExperimentPayloadTableRowData[]
   ): void {
     const payloadTableData = this.createPayloadTableData(decisionPoints, conditions, preexistingPayloadRowData);
 
@@ -217,9 +218,9 @@ export class ExperimentDesignStepperService {
   createPayloadTableData(
     decisionPoints: ExperimentDecisionPoint[],
     conditions: ExperimentCondition[],
-    preexistingPayloadRowData: SimpleExperimentPayloadTableRow[]
-  ): SimpleExperimentPayloadTableRow[] {
-    const payloadTableData: SimpleExperimentPayloadTableRow[] = [];
+    preexistingPayloadRowData: SimpleExperimentPayloadTableRowData[]
+  ): SimpleExperimentPayloadTableRowData[] {
+    const payloadTableData: SimpleExperimentPayloadTableRowData[] = [];
     decisionPoints.forEach((decisionPoint, index) => {
       conditions.forEach((condition) => {
         // check if a condition payload exists for this decision point + condition combo
@@ -256,11 +257,11 @@ export class ExperimentDesignStepperService {
     preexistingPayloadRowData,
     decisionPoint,
     condition,
-  }): SimpleExperimentPayloadTableRow {
-    let existingPayload: SimpleExperimentPayloadTableRow = null;
+  }): SimpleExperimentPayloadTableRowData {
+    let existingPayload: SimpleExperimentPayloadTableRowData = null;
 
     existingPayload = preexistingPayloadRowData.find(
-      (payload: SimpleExperimentPayloadTableRow) => payload.designTableCombinationId === decisionPoint.id + condition.id
+      (payload: SimpleExperimentPayloadTableRowData) => payload.designTableCombinationId === decisionPoint.id + condition.id
     );
 
     return existingPayload;
@@ -268,7 +269,7 @@ export class ExperimentDesignStepperService {
 
   getExistingConditionPayloadRowData(
     preexistingConditionPayloadData: ExperimentConditionPayload[]
-  ): SimpleExperimentPayloadTableRow[] {
+  ): SimpleExperimentPayloadTableRowData[] {
     const currentPayloadTableData = this.getSimpleExperimentPayloadTableData();
 
     if (preexistingConditionPayloadData.length) {
@@ -285,7 +286,7 @@ export class ExperimentDesignStepperService {
 
   mapPreexistingConditionPayloadsToTableData(
     conditionPayloads: ExperimentConditionPayload[]
-  ): SimpleExperimentPayloadTableRow[] {
+  ): SimpleExperimentPayloadTableRowData[] {
     return conditionPayloads.map((conditionPayload) => {
       return {
         id: conditionPayload.id,
@@ -306,7 +307,7 @@ export class ExperimentDesignStepperService {
     const conditionPayloads: ExperimentConditionPayloadRequestObject[] = [];
     const payloadTableData = this.getSimpleExperimentPayloadTableData();
 
-    payloadTableData.forEach((payloadRowData: SimpleExperimentPayloadTableRow) => {
+    payloadTableData.forEach((payloadRowData: SimpleExperimentPayloadTableRowData) => {
       // if no custom payload, return early, do not add to array to send to backend
       if (payloadRowData.payload === payloadRowData.condition) {
         return;
@@ -570,7 +571,7 @@ export class ExperimentDesignStepperService {
     );
   }
 
-  setFactorialLevelTableEditModeDetails(rowIndex: number, rowData: ExperimentLevelFormData): void {
+  setFactorialLevelTableEditModeDetails(rowIndex: number, rowData: FactorialLevelTableRowData): void {
     this.store$.dispatch(
       experimentDesignStepperAction.actionToggleFactorialLevelsTableEditMode({
         factorialLevelsTableEditIndex: rowIndex,

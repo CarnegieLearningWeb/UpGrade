@@ -65,8 +65,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   factorialExperimentDesignForm: FormGroup;
   decisionPointDataSource = new BehaviorSubject<AbstractControl[]>([]);
   factorDataSource = new BehaviorSubject<AbstractControl[]>([]);
-  tableData$ = new BehaviorSubject<ExperimentLevelFormData[]>([]);
-  previousRowDataBehaviorSubject$ = new BehaviorSubject<FactorialConditionTableRowData>(null);
+  tableData$ = new BehaviorSubject<FactorialLevelTableRowData[]>([]);
   allDecisionPoints = [];
 
   // Decision Point Errors
@@ -161,6 +160,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       if (this.experimentInfo) {
         this.experimentInfo.partitions = [];
         this.experimentInfo.conditions = [];
+        this.experimentInfo.factors = [];
         this.experimentInfo.conditionPayloads = [];
       }
     }
@@ -192,6 +192,14 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
     this.experimentDesignStepperService.decisionPointsEditModePreviousRowData$.subscribe(
       this.previousDecisionPointTableRowDataBehaviorSubject$
+    );
+
+    this.experimentDesignStepperService.factorialFactorsEditModePreviousRowData$.subscribe(
+      this.previousFactorTableRowDataBehaviorSubject$
+    );
+    
+    this.experimentDesignStepperService.factorialLevelsEditModePreviousRowData$.subscribe(
+      this.previousLevelTableRowDataBehaviorSubject$
     );
 
     // Remove previously added group of decision points
@@ -357,7 +365,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         }
       }
     }
-
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.experimentDesignStepperService.clearDecisionPointTableEditModeDetails();
     this.updateView('decisionPointTable');
@@ -621,7 +628,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return levelsArray;
   }
 
-  handleLevelTableEditClick(rowData: ExperimentLevelFormData, levelRowIndex: number, factorIndex: number) {
+  handleLevelTableEditClick(rowData: FactorialLevelTableRowData, levelRowIndex: number, factorIndex: number) {
     this.experimentDesignStepperService.setFactorialFactorTableIndex(factorIndex);
     this.experimentDesignStepperService.setFactorialLevelTableEditModeDetails(levelRowIndex, rowData);
     this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
@@ -661,6 +668,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.getFactorialLevelsAt(factorRowIndex).controls.length === 1 &&
       this.getFactorialLevelsAt(factorRowIndex).controls.at(0).value.name === ''
     ) {
+      this.expandFactor(factorRowIndex);
       this.experimentDesignStepperService.setFactorialLevelTableEditModeDetails(
         this.getFactorialLevelsAt(factorRowIndex).controls.length - 1,
         null
@@ -793,10 +801,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   // getters:
-  getCurrentTableData(): ExperimentLevelFormData[] {
-    return [...this.tableData$.value];
-  }
-
   get decisionPoints(): FormArray {
     return this.factorialExperimentDesignForm?.get(
       FACTORIAL_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY

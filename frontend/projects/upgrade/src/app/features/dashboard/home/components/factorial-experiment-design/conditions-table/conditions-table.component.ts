@@ -141,7 +141,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   applyEqualWeights(partiallyUpdatedTableData?: FactorialConditionTableRowData[]): FactorialConditionTableRowData[] {
-    const tableData = partiallyUpdatedTableData || this.getCurrentTableData();
+    const tableData = partiallyUpdatedTableData || this.getCurrentFactorialConditionsTableData();
 
     if (this.equalWeightFlag) {
       const includedConditionsCount = this.getIncludedConditionCount(tableData);
@@ -204,7 +204,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   handleRowEditClick(rowData: FactorialConditionTableRowData, rowIndex: number) {
-    const tableData = this.getCurrentTableData();
+    const tableData = this.getCurrentFactorialConditionsTableData();
     const formRow = this.getFactorialConditionsAt(rowIndex);
 
     const payload = formRow.get('payload').value;
@@ -239,7 +239,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     return this.getFactorialConditions().at(rowIndex);
   }
 
-  getCurrentTableData(): FactorialConditionTableRowData[] {
+  getCurrentFactorialConditionsTableData(): FactorialConditionTableRowData[] {
     return [...this.tableData$.value];
   }
 }
