@@ -114,7 +114,7 @@ describe('ExperimentService', () => {
     conditions: [],
     partitions: [],
     factors: [],
-    conditionAliases: [],
+    conditionPayloads: [],
     queries: [],
     stateTimeLogs: [],
     filterMode: FILTER_MODE.INCLUDE_ALL,
