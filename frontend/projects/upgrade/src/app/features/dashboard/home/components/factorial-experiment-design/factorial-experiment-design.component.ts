@@ -247,6 +247,10 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.decisionPoints.controls.forEach((_, index) => {
       this.manageSiteAndTargetControls(index);
     });
+
+    this.factorialExperimentDesignForm.get('factors').valueChanges.subscribe(() => {
+      this.conditionTableDataUpToDate = false;
+    });
   }
 
   manageSiteAndTargetControls(index: number) {
