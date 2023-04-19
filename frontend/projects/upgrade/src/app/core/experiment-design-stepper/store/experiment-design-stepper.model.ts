@@ -1,9 +1,6 @@
 import { PAYLOAD_TYPE } from '../../../../../../../../types/src';
 import { AppState } from '../../core.module';
-import {
-  ExperimentCondition,
-  ExperimentDecisionPoint,
-} from '../../experiments/store/experiments.model';
+import { ExperimentCondition, ExperimentDecisionPoint } from '../../experiments/store/experiments.model';
 
 // in PUT/POST request, parentCondition and decisionPoint are id string
 export interface ExperimentConditionPayloadRequestObject {
@@ -12,7 +9,6 @@ export interface ExperimentConditionPayloadRequestObject {
     type: PAYLOAD_TYPE;
     value: string;
   };
-  // payload: string;
   parentCondition: string;
   decisionPoint?: string;
 }
@@ -32,10 +28,6 @@ export interface SimpleExperimentPayloadTableRowData {
   target: string;
   condition: string;
   payload: string;
-  // payload: {
-  //   type: PAYLOAD_TYPE;
-  //   value: string;
-  // };
   rowStyle?: string;
   useCustom?: boolean;
 }
@@ -86,10 +78,6 @@ export interface FactorialConditionTableRowData {
   conditionPayloadId?: string;
   levels: FactorialLevelTableRowData[];
   condition: string;
-  // payload: {
-  //   type: PAYLOAD_TYPE;
-  //   value: string;
-  // };
   payload: string;
   weight: string;
   include: boolean;

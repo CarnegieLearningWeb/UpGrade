@@ -594,11 +594,11 @@
                   </mat-header-cell>
                   <mat-cell style="justify-content: left" class="ft-12-600" *matCellDef="let data">
                     <span style="padding-left: 5px" *ngIf="data.conditionCode?.length < 50; else conditionCode">
-                      {{ data.conditionCode }}
+                      {{ experimentDesignStepperService.trimFactorialConditionName(data.conditionCode) }}
                     </span>
                     <ng-template #conditionCode>
                       <span [matTooltip]="data.conditionCode" matTooltipPosition="above">
-                        {{ data.conditionCode | truncate : 50 }}
+                        {{ experimentDesignStepperService.trimFactorialConditionName(data.conditionCode) | truncate : 50 }}
                       </span>
                     </ng-template>
                   </mat-cell>
