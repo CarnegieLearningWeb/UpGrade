@@ -24,9 +24,10 @@ import { DecisionPoint } from '../models/DecisionPoint';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { env } from '../../env';
 import { AppRequest, PaginationResponse } from '../../types';
+import { ExperimentDTO } from '../DTO/ExperimentDTO';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
-  nodes: Experiment[];
+  nodes: ExperimentDTO[];
 }
 
 /**
@@ -36,6 +37,7 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *     required:
  *       - id
  *       - name
+ *       - context
  *       - state
  *       - consistencyRule
  *       - assignmentUnit
@@ -44,6 +46,9 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       - group
  *       - conditions
  *       - partitions
+ *       - factors
+ *       - conditionPayload
+ *       - type
  *     properties:
  *       id:
  *         type: string
@@ -54,6 +59,10 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       description:
  *         type: string
  *         example: a simple test experiment
+ *       context:
+ *         type: array
+ *         items:
+ *           type: string
  *       state:
  *         type: string
  *         enum: [inactive, demo, scheduled, enrolling, enrollmentComplete, cancelled]
@@ -87,6 +96,9 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *            type: string
  *       group:
  *         type: string
+ *       filterMode:
+ *         type: string
+ *         enum: [includeAll, excludeAll]
  *       conditions:
  *           type: array
  *           items:
@@ -101,6 +113,9 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *               description:
  *                type: string
  *                example: Control Condition
+ *               conditionCode:
+ *                type: string
+ *                example: control
  *       partitions:
  *         type: array
  *         items:
@@ -118,6 +133,30 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *               type: string
  *             excludeIfReached:
  *                type: boolean
+ *       factors:
+ *         type: array
+ *         items:
+ *           type: object
+ *           properties:
+ *             name:
+ *               type: string
+ *             description:
+ *               type: string
+ *             levels:
+ *               type: object
+ *               properties:
+ *                 name:
+ *                   type: string
+ *                 description:
+ *                   type: string
+ *                 payload:
+ *                   type: object
+ *                   properties:
+ *                     type:
+ *                       type: string
+ *                       enum: [string, json, csv]
+ *                     value:
+ *                       type:string
  *       queries:
  *         type: array
  *         items:
@@ -194,19 +233,23 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *                          type: string
  *                        context:
  *                          type: string
- *       conditionAliases:
+ *       type:
+ *         type: string
+ *       conditionPayloads:
  *         type: array
  *         items:
  *             type: object
  *             properties:
  *               id:
  *                 type: string
- *               aliasName:
- *                 type: string
- *               parentCondition:
+ *               payload:
  *                 type: object
- *               decisionPoint:
- *                 type: object
+ *                 properties:
+ *                   type:
+ *                     type: string
+ *                     enum: [string, json, csv]
+ *                   value:
+ *                     type:string
  *   ExperimentResponse:
  *     description: ''
  *     type: object
@@ -451,15 +494,20 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *                          type: string
  *                        context:
  *                          type: string
- *       conditionAliases:
+ *       conditionPayloads:
  *         type: array
  *         items:
  *             type: object
  *             properties:
  *               id:
  *                 type: string
- *               aliasName:
- *                 type: string
+ *               payload:
+ *                 type: object
+ *                 properties:
+ *                   type:
+ *                     type: enum
+ *                   value:
+ *                     type: enum
  *               parentCondition:
  *                 type: object
  *               decisionPoint:
@@ -551,7 +599,7 @@ export class ExperimentController {
    *            description: AuthorizationRequiredError
    */
   @Get()
-  public find(@Req() request: AppRequest): Promise<Experiment[]> {
+  public find(@Req() request: AppRequest): Promise<ExperimentDTO[]> {
     return this.experimentService.find(request.logger);
   }
 
@@ -756,7 +804,7 @@ export class ExperimentController {
    */
   @Get('/single/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public one(@Param('id') id: string, @Req() request: AppRequest): Promise<Experiment> | undefined {
+  public one(@Param('id') id: string, @Req() request: AppRequest): Promise<ExperimentDTO> | undefined {
     if (!isUUID(id)) {
       return Promise.reject(
         new Error(
@@ -764,7 +812,7 @@ export class ExperimentController {
         )
       );
     }
-    return this.experimentService.findOne(id, request.logger);
+    return this.experimentService.getSingleExperiment(id, request.logger);
   }
 
   /**
@@ -884,10 +932,10 @@ export class ExperimentController {
 
   @Post()
   public create(
-    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment,
+    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: ExperimentDTO,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
-  ): Promise<Experiment> {
+  ): Promise<ExperimentDTO> {
     request.logger.child({ user: currentUser });
     return this.experimentService.create(experiment, currentUser, request.logger);
   }
@@ -925,10 +973,10 @@ export class ExperimentController {
 
   @Post('/batch')
   public createMultipleExperiments(
-    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment[],
+    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: ExperimentDTO[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
-  ): Promise<Experiment[]> {
+  ): Promise<ExperimentDTO[]> {
     request.logger.child({ user: currentUser });
     return this.experimentService.createMultipleExperiments(experiment, currentUser, request.logger);
   }
@@ -1078,10 +1126,10 @@ export class ExperimentController {
   public update(
     @Param('id') id: string,
     @Body({ validate: { validationError: { target: false, value: false }, skipMissingProperties: true } })
-    experiment: Experiment,
+    experiment: ExperimentDTO,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
-  ): Promise<Experiment> {
+  ): Promise<ExperimentDTO> {
     if (!isUUID(id)) {
       return Promise.reject(
         new Error(
@@ -1114,11 +1162,11 @@ export class ExperimentController {
    */
   @Post('/import')
   public importExperiment(
-    @Body({ validate: { validationError: { target: false, value: false } }, type: Experiment })
-    experiments: Experiment[],
+    @Body({ validate: { validationError: { target: false, value: false } }, type: ExperimentDTO })
+    experiments: ExperimentDTO[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
-  ): Promise<Experiment[]> {
+  ): Promise<ExperimentDTO[]> {
     return this.experimentService.importExperiment(experiments, currentUser, request.logger);
   }
 
@@ -1127,7 +1175,7 @@ export class ExperimentController {
     @Body({ validate: { validationError: { target: false, value: false } }, type: String }) ids: string[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
-  ): Promise<Experiment[]> {
+  ): Promise<ExperimentDTO[]> {
     return this.experimentService.exportExperiment(ids, currentUser, request.logger);
   }
 

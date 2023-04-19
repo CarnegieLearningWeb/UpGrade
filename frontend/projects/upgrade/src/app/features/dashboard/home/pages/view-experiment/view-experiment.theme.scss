@@ -80,7 +80,7 @@
     border-bottom: 1px solid mat.get-color-from-palette($background, shadow-color);
   }
 
-  .alias-table-overview .mat-row.odd {
+  .payload-table-overview .mat-row.odd {
     background-color: mat.get-color-from-palette($background, table-shading);
   }
 }

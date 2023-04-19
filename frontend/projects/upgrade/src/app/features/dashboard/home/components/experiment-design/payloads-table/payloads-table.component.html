@@ -1,24 +1,24 @@
-<section class="aliases-table-component">
-  <div class="aliases-header-container">
-    <span class="title">{{ 'home.new-experiment.design.aliases.header.text' | translate }}</span>
+<section class="payloads-table-component">
+  <div class="payloads-header-container">
+    <span class="title">{{ 'home.new-experiment.design.payloads.header.text' | translate }}</span>
     <button
       type="button"
       mat-flat-button
       color="primary"
       class="ft-14-600 toggle-button"
       (click)="handleHideClick()"
-      [disabled]="isSimpleExperimentAliasTableEditMode$ | async"
+      [disabled]="isSimpleExperimentPayloadTableEditMode$ | async"
     >
       <mat-icon class="icon icon-bump-left">expand_less</mat-icon>
       <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.conditions' | translate }}</span>
     </button>
   </div>
 
-  <mat-table [dataSource]="aliasTableData$" class="alias-table-design-stepper">
+  <mat-table [dataSource]="payloadTableData$" class="payload-table-design-stepper">
     <!-- Site Column -->
     <ng-container matColumnDef="site">
       <mat-header-cell *matHeaderCellDef class="ft-14-700">
-        {{ 'home.new-experiment.design.aliases.column-header.site.text' | translate }}
+        {{ 'home.new-experiment.design.payloads.column-header.site.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.site" matTooltipPosition="above">
@@ -30,7 +30,7 @@
     <!-- Target Column -->
     <ng-container matColumnDef="target">
       <mat-header-cell *matHeaderCellDef class="ft-14-700">
-        {{ 'home.new-experiment.design.aliases.column-header.target.text' | translate }}
+        {{ 'home.new-experiment.design.payloads.column-header.target.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.target" matTooltipPosition="above">
@@ -42,7 +42,7 @@
     <!-- Condition Column -->
     <ng-container matColumnDef="condition">
       <mat-header-cell *matHeaderCellDef class="ft-14-700">
-        {{ 'home.new-experiment.design.aliases.column-header.condition.text' | translate }}
+        {{ 'home.new-experiment.design.payloads.column-header.condition.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.condition" matTooltipPosition="above">
@@ -51,29 +51,29 @@
       </mat-cell>
     </ng-container>
 
-    <!-- Alias Column -->
-    <ng-container matColumnDef="alias">
+    <!-- Payload Column -->
+    <ng-container matColumnDef="payload">
       <mat-header-cell *matHeaderCellDef class="ft-14-700">
-        {{ 'home.new-experiment.design.aliases.column-header.payload.text' | translate }}
+        {{ 'home.new-experiment.design.payloads.column-header.payload.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData; let rowIndex = index">
-        <ng-container *ngIf="(simpleExperimentAliasTableEditIndex$ | async) !== rowIndex">
-          <span [matTooltip]="rowData.alias" matTooltipPosition="above">
-            {{ rowData.alias | truncate : 15 }}
+        <ng-container *ngIf="(simpleExperimentPayloadTableEditIndex$ | async) !== rowIndex">
+          <span [matTooltip]="rowData.payload" matTooltipPosition="above">
+            {{ rowData.payload | truncate : 15 }}
           </span>
         </ng-container>
-        <ng-container *ngIf="(simpleExperimentAliasTableEditIndex$ | async) === rowIndex">
+        <ng-container *ngIf="(simpleExperimentPayloadTableEditIndex$ | async) === rowIndex">
           <mat-form-field floatLabel="never">
             <input
               [type]="text"
               matInput
-              [(ngModel)]="rowData.alias"
-              [placeholder]="'home.new-experiment.design.aliases.column-header.payload.text' | translate"
+              [(ngModel)]="rowData.payload"
+              [placeholder]="'home.new-experiment.design.payloads.column-header.payload.text' | translate"
               required
-              [matAutocomplete]="aliasRowAutoCompleteConditionCodes"
-              (keyup)="handleFilterContextMetaDataConditions(rowData.alias, $event)"
+              [matAutocomplete]="payloadRowAutoCompleteConditionCodes"
+              (keyup)="handleFilterContextMetaDataConditions(rowData.payload, $event)"
             />
-            <mat-autocomplete #aliasRowAutoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
+            <mat-autocomplete #payloadRowAutoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
               <mat-option
                 *ngFor="let conditionCode of filteredContextMetaDataConditions$ | async"
                 [value]="conditionCode"
@@ -99,27 +99,27 @@
           class="row-action-btn"
           (click)="handleEditClick(rowData, rowIndex)"
           [disabled]="
-            (isSimpleExperimentAliasTableEditMode$ | async) &&
-            (simpleExperimentAliasTableEditIndex$ | async) !== rowIndex
+            (isSimpleExperimentPayloadTableEditMode$ | async) &&
+            (simpleExperimentPayloadTableEditIndex$ | async) !== rowIndex
           "
         >
-          <ng-container *ngIf="(simpleExperimentAliasTableEditIndex$ | async) !== rowIndex">
+          <ng-container *ngIf="(simpleExperimentPayloadTableEditIndex$ | async) !== rowIndex">
             <mat-icon class="icon">create</mat-icon>
           </ng-container>
-          <ng-container *ngIf="(simpleExperimentAliasTableEditIndex$ | async) === rowIndex">
+          <ng-container *ngIf="(simpleExperimentPayloadTableEditIndex$ | async) === rowIndex">
             <mat-icon class="icon">done</mat-icon>
           </ng-container>
         </button>
       </mat-cell>
     </ng-container>
 
-    <mat-header-row *matHeaderRowDef="aliasesDisplayedColumns"></mat-header-row>
+    <mat-header-row *matHeaderRowDef="payloadsDisplayedColumns"></mat-header-row>
     <mat-row
-      *matRowDef="let row; let rowIndex = index; columns: aliasesDisplayedColumns"
+      *matRowDef="let row; let rowIndex = index; columns: payloadsDisplayedColumns"
       [ngClass]="{
         'row-is-locked':
-          (isSimpleExperimentAliasTableEditMode$ | async) &&
-          (simpleExperimentAliasTableEditIndex$ | async) !== rowIndex,
+          (isSimpleExperimentPayloadTableEditMode$ | async) &&
+          (simpleExperimentPayloadTableEditIndex$ | async) !== rowIndex,
         odd: row?.rowStyle === 'odd'
       }"
     ></mat-row>

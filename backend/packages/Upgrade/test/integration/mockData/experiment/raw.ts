@@ -1,4 +1,4 @@
-import { FILTER_MODE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 
 export const revertToExperiment = {
   id: 'be3ae74f-370a-4015-93f3-7761d16f8b11',
@@ -114,7 +114,7 @@ export const experiment = {
       excludedIfReached: true,
     },
   ],
-  conditionAliases: [],
+  conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
@@ -169,7 +169,7 @@ export const experimentSecond = {
       excludedIfReached: true,
     },
   ],
-  conditionAliases: [],
+  conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
@@ -224,7 +224,7 @@ export const experimentThird = {
       excludedIfReached: true,
     },
   ],
-  conditionAliases: [],
+  conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
@@ -279,7 +279,7 @@ export const experimentFourth = {
       excludedIfReached: true,
     },
   ],
-  conditionAliases: [],
+  conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
@@ -298,6 +298,7 @@ export const experimentFifth = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
+  type: EXPERIMENT_TYPE.SIMPLE,
   experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
@@ -343,16 +344,22 @@ export const experimentFifth = {
       excludedIfReached: true,
     },
   ],
-  conditionAliases: [
+  conditionPayloads: [
     {
       id: '9d753b90-1111-44b5-8acc-2483c0507ea0',
-      aliasName: 'ConditionA_W1',
+      payload: {
+        type: 'string',
+        value: 'ConditionA_W1',
+      },
       parentCondition: 'c22467b1-f0e9-4444-9517-cc03037bc079',
       decisionPoint: 'd22467b1-f0e9-4444-9517-cc03037bc079',
     },
     {
       id: '9d753b90-1111-44b5-8acc-2483c0507ea1',
-      aliasName: 'ConditionA_W2',
+      payload: {
+        type: 'string',
+        value: 'ConditionA_W2',
+      },
       parentCondition: 'c22467b1-f0e9-4444-9517-cc03037bc079',
       decisionPoint: 'e22467b1-f0e9-4444-9517-cc03037bc079',
     },
@@ -413,7 +420,7 @@ export const experimentSixth = {
       excludedIfReached: true,
     },
   ],
-  conditionAliases: [],
+  conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
@@ -452,7 +459,10 @@ export const factorialExperimentFirst = {
           id: '44444444-2222-4a52-a058-90fac2d03679',
           name: 'Blue',
           description: 'description of level2',
-          alias: 'Dark blue - Blue color Alias',
+          payload: {
+            type: 'string',
+            value: 'Dark blue - Blue color Alias',
+          },
           order: 2,
         },
       ],
@@ -471,7 +481,10 @@ export const factorialExperimentFirst = {
           id: '22222222-2222-4a52-a058-90fac2d03679',
           name: 'Rectangle',
           description: 'description of level2',
-          alias: 'Square - rectangle alias',
+          payload: {
+            type: 'string',
+            value: 'Square - rectangle alias',
+          },
           order: 2,
         },
       ],
@@ -569,10 +582,13 @@ export const factorialExperimentFirst = {
       subSegments: [],
     },
   },
-  conditionAliases: [
+  conditionPayloads: [
     {
       id: '9d753b90-1111-44b5-8acc-2483c0507ea1',
-      aliasName: 'Red-Circle alias name',
+      payload: {
+        type: 'string',
+        value: 'Red-Circle alias name',
+      },
       parentCondition: '6dd63ad9-f121-4d95-8d27-08a80e9560a4',
     },
   ],
@@ -615,7 +631,10 @@ export const factorialExperimentSecond = {
           id: '44444444-4444-4a52-a058-90fac2d03679',
           name: 'Concrete',
           description: 'description of level2',
-          alias: 'Concrete Alias',
+          payload: {
+            type: 'string',
+            value: 'Concrete Alias',
+          },
           order: 2,
         },
       ],
@@ -634,7 +653,10 @@ export const factorialExperimentSecond = {
           id: '44444444-6666-4a52-a058-90fac2d03679',
           name: 'Mindset',
           description: 'description of level2',
-          alias: 'Mindset Alias',
+          payload: {
+            type: 'string',
+            value: 'Mindset Alias',
+          },
           order: 2,
         },
       ],
@@ -796,7 +818,7 @@ export const factorialExperimentSecond = {
       subSegments: [],
     },
   },
-  conditionAliases: [],
+  conditionPayloads: [],
 };
 
 export function getRevertToExperiment() {
