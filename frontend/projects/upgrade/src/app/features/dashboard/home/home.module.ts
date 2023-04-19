@@ -34,7 +34,7 @@ import { ImportExperimentComponent } from './components/modal/import-experiment/
 import { StateTimeLogsComponent } from './components/modal/state-time-logs/state-time-logs.component';
 import { ExperimentParticipantsComponent } from './components/experiment-participants/experiment-participants.component';
 import { ExportModalComponent } from './components/modal/export-experiment/export-experiment.component';
-import { AliasesTableComponent } from './components/experiment-design/aliases-table/aliases-table.component';
+import { PayloadsTableComponent } from './components/experiment-design/payloads-table/payloads-table.component';
 import { FactorialExperimentDesignComponent } from './components/factorial-experiment-design/factorial-experiment-design.component';
 import { ConditionsTableComponent } from './components/factorial-experiment-design/conditions-table/conditions-table.component';
 @NgModule({
@@ -63,7 +63,7 @@ import { ConditionsTableComponent } from './components/factorial-experiment-desi
     StateTimeLogsComponent,
     ExperimentParticipantsComponent,
     ExportModalComponent,
-    AliasesTableComponent,
+    PayloadsTableComponent,
     FactorialExperimentDesignComponent,
     ConditionsTableComponent,
   ],

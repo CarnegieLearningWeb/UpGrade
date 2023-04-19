@@ -1,23 +1,19 @@
 import { IFeatureFlag } from 'upgrade_types';
 
 export default function getFeatureFlag(featureFlagsData: IFeatureFlag[], key: string): IFeatureFlag {
-  try {
-    if (featureFlagsData) {
-      const result = featureFlagsData.filter((data) => data.key === key);
-      if (result.length) {
-        const activeVariation = getActiveVariation(result[0]) as any;
-        return {
-          ...result[0],
-          variations: activeVariation,
-        };
-      } else {
-        throw new Error('Feature flag with given key not found');
-      }
+  if (featureFlagsData) {
+    const result = featureFlagsData.find((data) => data.key === key);
+    if (result) {
+      const activeVariation = getActiveVariation(result) as any;
+      return {
+        ...result,
+        variations: activeVariation,
+      };
     } else {
-      return null;
+      throw new Error('Feature flag with given key not found');
     }
-  } catch (error) {
-    throw new Error(error.message);
+  } else {
+    return null;
   }
 }
 

@@ -1,24 +1,107 @@
 .factorial-experiment-form {
   .factorial-experiment-factors-levels-view {
     height: 515px;
+    overflow-y: auto;
 
     .title {
       font-size: 18px;
       font-weight: bold;
     }
 
+    .no-decision-point-message-container,
+    .no-factor-message-container {
+      color: var(--grey-message);
+    }
+
+    .header-container,
     .factors-header-container {
       display: flex;
       justify-content: space-between;
 
-      .toggle-button {
-        margin-top: -5px;
-        .icon-bump-left {
-          margin-left: -5px;
+      // .toggle-button {
+      //   margin-top: -5px;
+      //   .icon-bump-left {
+      //     margin-left: -5px;
+      //   }
+      //   .toggle-text {
+      //     margin-left: 5px;
+      //   }
+      // }
+    }
+
+    .decision-point-table {
+      max-height: 135px;
+      overflow: auto;
+      mat-header-row {
+        min-height: 35px;
+        justify-content: space-between;
+      }
+    
+      mat-row {
+        min-height: 46px;
+        max-height: 46px;
+        justify-content: space-between;
+      }
+    
+      mat-header-cell {
+        justify-content: left;
+        color: var(--grey-6);
+      }
+    
+      mat-cell {
+        justify-content: left;
+        margin-bottom: -5px;
+      }
+    
+      .cdk-column-site {
+        width: 100%;
+      }
+    
+      .cdk-column-target {
+        margin-left: 30px;
+        width: 100%;
+      }
+    
+      .cdk-column-excludeIfReached {
+        margin-left: 30px;
+        width: 100%;
+        max-width: 150px;
+        justify-content: center;
+        mat-checkbox {
+          margin-top: -5px;
         }
-        .toggle-text {
-          margin-left: 5px;
+      }
+    
+      .cdk-column-actions {
+        margin-left: 30px;
+        flex: 0 0 78px;
+        width: 78px;
+        .row-action-btn {
+          border: none;
+          background-color: transparent;
+          .icon {
+            margin-top: -5px;
+            margin-left: -3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--text-size-x-large);
+            color: gray;
+          }
         }
+      }
+    
+      mat-form-field {
+        width: 100%;
+        text-align: left;
+      }
+    
+      .align-right {
+        text-align: right;
+      }
+    
+      .row-is-locked {
+        opacity: 0.4;
       }
     }
 
@@ -59,26 +142,15 @@
         padding-left: 0px;
       }
 
-      .cdk-column-removeFactor {
-        flex: 0 0 60px;
-        width: 60px;
-      }
-
       .cdk-column-factor {
         flex: 0 0 220px;
         width: 150px;
       }
 
-      .cdk-column-site {
+      .cdk-column-description {
         flex: 0 0 220px;
         width: 170px;
         margin-left: 30px;
-      }
-
-      .cdk-column-target {
-        margin-left: 30px;
-        width: 100%;
-        max-width: 250px;
       }
 
       .cdk-column-expandedDetail {
@@ -86,6 +158,27 @@
         border-width: 1px;
         border-radius: 10%;
         padding: 10px 0px;
+      }
+
+      .cdk-column-actions {
+        margin-left: 15px;
+        padding-right: 10px;
+        justify-content: flex-end;
+  
+        .row-action-btn {
+          border: none;
+          background-color: transparent;
+  
+          .icon {
+            margin-top: -5px;
+            margin-left: -3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--text-size-x-large);
+            color: gray;
+          }
+        }
       }
 
       .expandable-row {
@@ -121,6 +214,10 @@
         width: 100%;
         text-align: left;
       }
+
+      .row-is-locked {
+        opacity: 0.4;
+      }
     }
 
     .level-table {
@@ -151,19 +248,36 @@
         width: 180px;
       }
 
-      .cdk-column-alias {
+      .cdk-column-payload {
         flex: 0 0 220px;
         width: 100%;
         min-width: 320px;
         margin-left: 30px;
       }
 
-      .cdk-column-removeLevel {
-        flex: 0 0 60px;
-        width: 60px;
+      .cdk-column-actions {
+        margin-left: 15px;
+        padding-right: 10px;
+        justify-content: flex-end;
+  
+        .row-action-btn {
+          border: none;
+          background-color: transparent;
+  
+          .icon {
+            margin-top: -5px;
+            margin-left: -3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--text-size-x-large);
+            color: gray;
+          }
+        }
       }
     }
 
+    .add-decision-point,
     .add-factor,
     .add-level {
       margin: 10px 0px;
@@ -191,7 +305,7 @@
   .validation-container {
     min-height: 30px;
     margin-top: 5px;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
   }
 
   // This rule is pretty invasive, we should reconsider how and why we are refusing underlines
@@ -215,4 +329,5 @@
   input[type='number'] {
     -moz-appearance: textfield;
   }
+  
 }

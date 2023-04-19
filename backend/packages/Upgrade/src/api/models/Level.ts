@@ -3,6 +3,7 @@ import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { BaseModel } from './base/BaseModel';
 import { Factor } from './Factor';
 import { LevelCombinationElement } from './LevelCombinationElement';
+import { PAYLOAD_TYPE } from 'upgrade_types';
 
 @Entity()
 export class Level extends BaseModel {
@@ -20,7 +21,14 @@ export class Level extends BaseModel {
 
   @Column({ nullable: true })
   @IsString()
-  public alias: string;
+  public payloadValue: string;
+
+  @Column({
+    type: 'enum',
+    enum: PAYLOAD_TYPE,
+    default: PAYLOAD_TYPE.STRING,
+  })
+  public payloadType: PAYLOAD_TYPE;
 
   @Column({ nullable: true })
   @IsNumber()

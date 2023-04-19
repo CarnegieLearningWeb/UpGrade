@@ -22,6 +22,7 @@ export {
   INCLUSION_CRITERIA,
   EXPORT_METHOD,
   EXPERIMENT_TYPE,
+  PAYLOAD_TYPE,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,
@@ -42,4 +43,6 @@ export {
   IWorkingGroup,
   IGroupMembership,
   IUserAliases,
+  IPayload,
+  IExperimentAssignmentv4,
 } from './Experiment/interfaces';
