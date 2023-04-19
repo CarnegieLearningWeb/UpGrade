@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, EventEmitter, Output, Input } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, Input } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { BehaviorSubject, filter, Subscription } from 'rxjs';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
@@ -25,7 +25,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   tableData$ = new BehaviorSubject<FactorialConditionTableRowData[]>([]);
   previousRowDataBehaviorSubject$ = new BehaviorSubject<FactorialConditionTableRowData>(null);
 
-  factorialDesignData$ = this.experimentDesignStepperService.factorialDesignData$;
+  factorialExperimentDesignData$ = this.experimentDesignStepperService.factorialExperimentDesignData$;
   tableEditIndex$ = this.experimentDesignStepperService.factorialConditionsTableEditIndex$;
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
 
@@ -76,7 +76,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
       const formControls = this._formBuilder.group({
         condition: [tableDataRow.condition],
         levels: [tableDataRow.levels],
-        alias: [tableDataRow.alias],
+        payload: [tableDataRow.payload],
         weight: [this.experimentDesignStepperService.formatDisplayWeight(tableDataRow.weight)],
         include: [tableDataRow.include],
       });
@@ -86,7 +86,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   registerDesignDataChanges() {
-    this.subscriptions = this.factorialDesignData$
+    this.subscriptions = this.factorialExperimentDesignData$
       .pipe(
         filter((designData) => {
           return designData && designData?.factors.length === 2;
@@ -141,7 +141,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   applyEqualWeights(partiallyUpdatedTableData?: FactorialConditionTableRowData[]): FactorialConditionTableRowData[] {
-    const tableData = partiallyUpdatedTableData || this.getCurrentTableData();
+    const tableData = partiallyUpdatedTableData || this.getCurrentFactorialConditionsTableData();
 
     if (this.equalWeightFlag) {
       const includedConditionsCount = this.getIncludedConditionCount(tableData);
@@ -204,14 +204,14 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   handleRowEditClick(rowData: FactorialConditionTableRowData, rowIndex: number) {
-    const tableData = this.getCurrentTableData();
+    const tableData = this.getCurrentFactorialConditionsTableData();
     const formRow = this.getFactorialConditionsAt(rowIndex);
 
-    const alias = formRow.get('alias').value;
+    const payload = formRow.get('payload').value;
     const weight = formRow.get('weight').value;
     const include = formRow.get('include').value;
 
-    tableData[rowIndex] = { ...tableData[rowIndex], alias, weight, include };
+    tableData[rowIndex] = { ...tableData[rowIndex], payload, weight, include };
     const newTableData = this.applyEqualWeights(tableData);
 
     this.experimentDesignStepperService.updateFactorialConditionTableData(newTableData);
@@ -222,7 +222,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     const previousRowData = this.previousRowDataBehaviorSubject$.value;
     const formRow = this.getFactorialConditionsAt(rowIndex);
 
-    formRow.get('alias').setValue(previousRowData.alias, { emitEvent: false });
+    formRow.get('payload').setValue(previousRowData.payload, { emitEvent: false });
     formRow.get('weight').setValue(previousRowData.weight, { emitEvent: false });
     formRow.get('include').setValue(previousRowData.include, { emitEvent: false });
 
@@ -239,7 +239,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     return this.getFactorialConditions().at(rowIndex);
   }
 
-  getCurrentTableData(): FactorialConditionTableRowData[] {
+  getCurrentFactorialConditionsTableData(): FactorialConditionTableRowData[] {
     return [...this.tableData$.value];
   }
 }
