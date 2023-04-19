@@ -23,7 +23,7 @@
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData">
           <span [matTooltip]="rowData.condition" matTooltipPosition="above">
-            {{ rowData.condition }}
+            {{ experimentDesignStepperService.trimFactorialConditionName(rowData.condition) }}
           </span>
         </mat-cell>
       </ng-container>

@@ -197,7 +197,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.experimentDesignStepperService.factorialFactorsEditModePreviousRowData$.subscribe(
       this.previousFactorTableRowDataBehaviorSubject$
     );
-    
+
     this.experimentDesignStepperService.factorialLevelsEditModePreviousRowData$.subscribe(
       this.previousLevelTableRowDataBehaviorSubject$
     );

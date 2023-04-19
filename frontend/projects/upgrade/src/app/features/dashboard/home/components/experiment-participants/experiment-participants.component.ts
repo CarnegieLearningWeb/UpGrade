@@ -193,15 +193,6 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   bindParticipantsData() {
     const participantsForm1Control = this.participantsForm?.get('members1') as FormArray;
-<<<<<<< HEAD
-    participantsForm1Control?.controls.forEach((_, index) => {
-      this.manageSegmentIdsControl(index, 1);
-    });
-
-    const participantsForm2Control = this.participantsForm2?.get('members2') as FormArray;
-    participantsForm2Control?.controls.forEach((_, index) => {
-      this.manageSegmentIdsControl(index, 2);
-=======
     participantsForm1Control?.controls.forEach((_, groupindex) => {
       this.manageSegmentIdsControl(groupindex, 1);
     });
@@ -209,7 +200,6 @@ export class ExperimentParticipantsComponent implements OnInit {
     const participantsForm2Control = this.participantsForm2?.get('members2') as FormArray;
     participantsForm2Control?.controls.forEach((_, groupindex) => {
       this.manageSegmentIdsControl(groupindex, 2);
->>>>>>> 767e08f55e516e7169c3196632343be8aacc114b
     });
   }
 

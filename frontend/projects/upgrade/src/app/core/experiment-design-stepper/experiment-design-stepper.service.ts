@@ -261,7 +261,8 @@ export class ExperimentDesignStepperService {
     let existingPayload: SimpleExperimentPayloadTableRowData = null;
 
     existingPayload = preexistingPayloadRowData.find(
-      (payload: SimpleExperimentPayloadTableRowData) => payload.designTableCombinationId === decisionPoint.id + condition.id
+      (payload: SimpleExperimentPayloadTableRowData) =>
+        payload.designTableCombinationId === decisionPoint.id + condition.id
     );
 
     return existingPayload;
@@ -367,12 +368,13 @@ export class ExperimentDesignStepperService {
               payload: factorTwoLevel.payload,
             },
           ],
-          condition: factorOneLevel.name + '; ' + factorTwoLevel.name,
+          condition: this.createFactorialPayloadString(
+            factorOne.name,
+            factorOneLevel.name,
+            factorTwo.name,
+            factorTwoLevel.name
+          ),
           payload: '',
-          // payload: {
-          //   type: PAYLOAD_TYPE.STRING,
-          //   value: '',
-          // },
           weight: '0.0',
           include: true,
         };
@@ -424,10 +426,6 @@ export class ExperimentDesignStepperService {
         }),
         condition: factorialCondition.conditionCode,
         payload: payloadValue,
-        // payload: {
-        //   type: PAYLOAD_TYPE.STRING,
-        //   value: payloadValue,
-        // },
         weight: factorialCondition.assignmentWeight.toString(),
         include: factorialCondition.assignmentWeight > 0,
       };
@@ -436,7 +434,7 @@ export class ExperimentDesignStepperService {
     return tableData;
   }
 
-  createFactorialAliasString(
+  createFactorialPayloadString(
     factorOneName: string,
     factorOneLevel: string,
     factorTwoName: string,
