@@ -36,32 +36,32 @@
         min-height: 35px;
         justify-content: space-between;
       }
-    
+
       mat-row {
         min-height: 46px;
         max-height: 46px;
         justify-content: space-between;
       }
-    
+
       mat-header-cell {
         justify-content: left;
         color: var(--grey-6);
       }
-    
+
       mat-cell {
         justify-content: left;
         margin-bottom: -5px;
       }
-    
+
       .cdk-column-site {
         width: 100%;
       }
-    
+
       .cdk-column-target {
         margin-left: 30px;
         width: 100%;
       }
-    
+
       .cdk-column-excludeIfReached {
         margin-left: 30px;
         width: 100%;
@@ -71,7 +71,7 @@
           margin-top: -5px;
         }
       }
-    
+
       .cdk-column-actions {
         margin-left: 30px;
         flex: 0 0 78px;
@@ -90,16 +90,16 @@
           }
         }
       }
-    
+
       mat-form-field {
         width: 100%;
         text-align: left;
       }
-    
+
       .align-right {
         text-align: right;
       }
-    
+
       .row-is-locked {
         opacity: 0.4;
       }
@@ -164,11 +164,11 @@
         margin-left: 15px;
         padding-right: 10px;
         justify-content: flex-end;
-  
+
         .row-action-btn {
           border: none;
           background-color: transparent;
-  
+
           .icon {
             margin-top: -5px;
             margin-left: -3px;
@@ -259,11 +259,11 @@
         margin-left: 15px;
         padding-right: 10px;
         justify-content: flex-end;
-  
+
         .row-action-btn {
           border: none;
           background-color: transparent;
-  
+
           .icon {
             margin-top: -5px;
             margin-left: -3px;
@@ -329,5 +329,4 @@
   input[type='number'] {
     -moz-appearance: textfield;
   }
-  
 }

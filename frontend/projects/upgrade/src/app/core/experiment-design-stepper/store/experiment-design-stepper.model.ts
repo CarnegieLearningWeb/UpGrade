@@ -83,6 +83,21 @@ export interface FactorialConditionTableRowData {
   include: boolean;
 }
 
+export interface ForConditionTableRowData {
+  levels: FactorialLevelTableRowData[];
+  payload: string;
+}
+
+export interface FactorLevelData {
+  factor: string;
+  id: string;
+  name: string;
+  payload: {
+    type: PAYLOAD_TYPE;
+    value: string;
+  };
+}
+
 export interface FactorialConditionTableDataFromConditionPayload {
   id: string;
   conditionCode: string;
