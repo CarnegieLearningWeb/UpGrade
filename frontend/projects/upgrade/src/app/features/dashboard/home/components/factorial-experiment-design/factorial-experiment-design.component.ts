@@ -547,7 +547,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.factorCountError === null &&
       this.levelCountError === null &&
       this.conditionCountError === null &&
-      this.factorialExperimentDesignForm.value.factors.length <= 2 &&
       !this.experimentDesignStepperService.checkConditionTableValidity()
     );
   }
