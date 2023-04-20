@@ -40,23 +40,11 @@ export interface IExperimentEnrollmentDetailStats {
 }
 
 // TODO Delete this after changing in clientSDK
-export type INewExperimentAssignment = Pick<IExperimentAssignment, 'assignedCondition'> & {
+export type INewExperimentAssignment = Pick<IExperimentAssignmentv4, 'assignedCondition'> & {
   target: string;
   site: string;
   experimentId: string;
 };
-
-export interface IExperimentAssignment {
-  site: string;
-  target: string;
-  assignedCondition: {
-    conditionCode: string;
-    conditionAlias: string;
-    experimentId: string;
-    id: string;
-  };
-  assignedFactor?: Record<string, { level: string; levelAlias: string }>;
-}
 
 export interface IExperimentAssignmentv4 {
   site: string;
@@ -65,6 +53,7 @@ export interface IExperimentAssignmentv4 {
     conditionCode: string;
     payload: { type: PAYLOAD_TYPE; value: string };
     experimentId: string;
+    id?: string;
   };
   assignedFactor?: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }>;
 }

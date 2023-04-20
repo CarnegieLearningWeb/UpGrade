@@ -15,7 +15,7 @@ export class FactorRepository extends Repository<Factor> {
       });
   }
 
-  public async insertFactor(factorDoc: Factor[], entityManager: EntityManager): Promise<Factor[]> {
+  public async insertFactor(factorDoc: Array<Partial<Factor>>, entityManager: EntityManager): Promise<Factor[]> {
     const result = await entityManager
       .createQueryBuilder()
       .insert()
