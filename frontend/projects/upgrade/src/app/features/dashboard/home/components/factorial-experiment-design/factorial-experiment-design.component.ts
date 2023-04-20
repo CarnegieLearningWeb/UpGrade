@@ -472,7 +472,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   isFactorTableRowValid(factorRowIndex: number): boolean {
-    const factors = this.factorialExperimentDesignForm.value.factors;
+    const factors = this.factor.value;
     const factorRow = factors[factorRowIndex];
     this.factorPointErrors = [];
     if (!factorRow.name?.trim()) {
@@ -485,7 +485,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   isLevelTableRowValid(levelRowIndex: number, factorIndex: number): boolean {
-    const levels = this.factorialExperimentDesignForm.value.factors[factorIndex].levels;
+    const levels = this.factor.value[factorIndex].levels;
     const levelRow = levels[levelRowIndex];
     this.levelPointErrors = [];
     if (!levelRow.name?.trim()) {
