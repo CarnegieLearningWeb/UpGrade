@@ -485,7 +485,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   isLevelTableRowValid(levelRowIndex: number, factorIndex: number): boolean {
-    const levels = this.factor.value[factorIndex].levels;
+    const levels = this.getFactorialLevelsAt(factorIndex).value;
     const levelRow = levels[levelRowIndex];
     this.levelPointErrors = [];
     if (!levelRow.name?.trim()) {
