@@ -45,6 +45,7 @@ import {
   ConditionsTableRowData,
   SimpleExperimentPayloadTableRowData,
   FactorialConditionTableRowData,
+  FactorLevelData,
   FactorialFactorTableRowData,
   FactorialLevelTableRowData,
   ExperimentFactorialFormDesignData,
@@ -155,9 +156,14 @@ export class ExperimentDesignStepperService {
   }
 
   trimFactorialConditionName(factorialConditionName: string) {
-    const level1 = factorialConditionName.split(';')[0].split('=')[1];
-    const level2 = factorialConditionName.split(';')[1].split('=')[1];
-    const trimmedFactorialConditionName = `${level1}; ${level2}`;
+    let trimmedFactorialConditionName = '';
+    if (factorialConditionName) {
+      trimmedFactorialConditionName = factorialConditionName.split(';')[0].split('=')[1];
+      for (let i = 1; i < factorialConditionName.split(';').length; i++) {
+        const levelName = factorialConditionName.split(';')[i].split('=')[1];
+        trimmedFactorialConditionName = `${trimmedFactorialConditionName}; ${levelName}`;
+      }
+    }
     return trimmedFactorialConditionName;
   }
 
@@ -345,45 +351,69 @@ export class ExperimentDesignStepperService {
 
   createNewFactorialConditionTableData(designData: ExperimentFactorialDesignData): FactorialConditionTableRowData[] {
     const tableData: FactorialConditionTableRowData[] = [];
+    const requiredFactorialTableData = this.factorDataToConditions(designData.factors);
 
-    // currently this table will only support 2 factors due to design constraints
-    // this will need revisited to support more factors in this table
+    requiredFactorialTableData.map((conditionData) => {
+      const conditionLevelsData = this.filterLevelsData(conditionData);
+      const conditions = this.createConditionString(conditionData);
 
-    const factorOne = designData.factors[0];
-    const factorTwo = designData.factors[1];
-
-    factorOne.levels.forEach((factorOneLevel) => {
-      factorTwo.levels.forEach((factorTwoLevel) => {
-        const tableRow: FactorialConditionTableRowData = {
-          id: uuidv4(), // TODO: maybe not the right place?
-          levels: [
-            {
-              id: factorOneLevel.id,
-              name: factorOneLevel.name,
-              payload: factorOneLevel.payload,
-            },
-            {
-              id: factorTwoLevel.id,
-              name: factorTwoLevel.name,
-              payload: factorTwoLevel.payload,
-            },
-          ],
-          condition: this.createFactorialPayloadString(
-            factorOne.name,
-            factorOneLevel.name,
-            factorTwo.name,
-            factorTwoLevel.name
-          ),
-          payload: '',
-          weight: '0.0',
-          include: true,
-        };
-
-        tableData.push(tableRow);
-      });
+      const tableRow: FactorialConditionTableRowData = {
+        id: uuidv4(), // TODO: maybe not the right place?
+        levels: conditionLevelsData,
+        condition: conditions,
+        payload: '',
+        weight: '0.0',
+        include: true,
+      };
+      tableData.push(tableRow);
     });
 
     return tableData;
+  }
+
+  factorDataToConditions(factorsData: ExperimentFactorData[], levelsCombinationData: FactorLevelData[] = []) {
+    // return if no data in factors
+    if (factorsData.length === 0) {
+      return [levelsCombinationData];
+    } else {
+      // taking the 1st factor
+      const currentFactor = factorsData[0];
+      const levelPermutations = [];
+
+      for (let i = 0; i < currentFactor.levels.length; i++) {
+        const levelId = currentFactor.levels[i].id;
+        const levelName = currentFactor.levels[i].name;
+        const payloadObj = currentFactor.levels[i].payload;
+
+        // taking level of current factor and processing on other factors
+        const remainingLevelsPermutations = this.factorDataToConditions(factorsData.slice(1), [
+          ...levelsCombinationData,
+          { factor: currentFactor.name, id: levelId, name: levelName, payload: payloadObj },
+        ]);
+        levelPermutations.push(...remainingLevelsPermutations);
+      }
+      return levelPermutations;
+    }
+  }
+
+  filterLevelsData(conditionData: FactorLevelData[]) {
+    const levels: FactorialLevelTableRowData[] = [];
+    conditionData.forEach((level) => {
+      levels.push({ id: level.id, name: level.name, payload: level.payload });
+    });
+    return levels;
+  }
+
+  createConditionString(conditionData: FactorLevelData[]) {
+    let alias = '';
+    conditionData.forEach((level, index) => {
+      if (index == 0) {
+        alias = `${level.factor}=${level.name}`;
+      } else {
+        alias = `${alias}; ${level.factor}=${level.name}`;
+      }
+    });
+    return alias;
   }
 
   mergeExistingConditionsTableData(experimentInfo: ExperimentVM): FactorialConditionTableRowData[] {
