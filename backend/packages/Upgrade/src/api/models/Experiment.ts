@@ -22,7 +22,8 @@ import { Query } from './Query';
 import { StateTimeLog } from './StateTimeLogs';
 import { ExperimentSegmentInclusion } from './ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
-import { ConditionAlias } from 'src/api/models/ConditionAlias';
+import { ConditionPayload } from 'src/api/models/ConditionPayload';
+import { Factor } from './Factor';
 
 export {
   EXPERIMENT_SEARCH_KEY,
@@ -115,13 +116,18 @@ export class Experiment extends BaseModel {
   @Type(() => ExperimentCondition)
   public conditions: ExperimentCondition[];
 
+  @OneToMany(() => Factor, (factor) => factor.experiment)
+  @ValidateNested()
+  @Type(() => Factor)
+  public factors: Factor[];
+
   @OneToMany(() => DecisionPoint, (decisionPoint) => decisionPoint.experiment)
   @ValidateNested()
   @Type(() => DecisionPoint)
   public partitions: DecisionPoint[];
 
   @ValidateNested()
-  public conditionAliases: ConditionAlias[];
+  public conditionPayloads: ConditionPayload[];
 
   @OneToMany(() => Query, (query) => query.experiment)
   public queries: Query[];

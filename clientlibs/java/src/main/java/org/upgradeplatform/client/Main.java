@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
+import org.upgradeplatform.requestbeans.MarkExperimentRequestData;
 import org.upgradeplatform.responsebeans.UserAliasResponse;
 import org.upgradeplatform.responsebeans.Condition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
@@ -25,9 +26,9 @@ public class Main {
 	{
 		final String baseUrl = "http://localhost:3030";
 		final String userId = UUID.randomUUID().toString();
-		final String site = "add-point1";
+		final String site = "SelectSection";
 
-		String target = args.length > 0 ? args[0] : "add-id1";
+		String target = args.length > 0 ? args[0] : "absolute_value_plot_equality";
 
 		try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl, Collections.emptyMap())){
 		    CompletableFuture<String> result = new CompletableFuture<>();
@@ -36,7 +37,7 @@ public class Main {
             experimentClient.init(new ResponseCallback<InitializeUser>() {
                 @Override
                 public void onSuccess(@NonNull InitializeUser t){
-
+                    System.out.println("init " + t);
                     List<String> schools = new ArrayList<String>();
                     schools.add("school1");
                     Map<String, List<String>> group = new HashMap<String, List<String>>();
@@ -46,6 +47,7 @@ public class Main {
                     experimentClient.setGroupMembership(group, new ResponseCallback<ExperimentUser>(){
                         @Override
                         public void onSuccess(@NonNull ExperimentUser expResult){
+                            System.out.println("group membership " + expResult);
                             System.out.println("success updating groups");
                         }
                         @Override
@@ -61,6 +63,7 @@ public class Main {
                     experimentClient.setWorkingGroup(workingGroup, new ResponseCallback<ExperimentUser>(){
                         @Override
                         public void onSuccess(@NonNull ExperimentUser expResult){
+                            System.out.println("working group " + expResult);
                             System.out.println("success updating working groups");
                         }
                         @Override
@@ -76,6 +79,7 @@ public class Main {
                     experimentClient.setAltUserIds(altIds, new ResponseCallback<UserAliasResponse>(){
                         @Override
                         public void onSuccess(@NonNull UserAliasResponse t) {
+                            System.out.println("aliases " + t);
                             System.out.println("success updating user aliases");
                         }
                         @Override
@@ -86,12 +90,14 @@ public class Main {
                     });
 
                     System.out.println(prefix() + "getting conditions");
-                    experimentClient.getExperimentCondition("add", site, target, new ResponseCallback<ExperimentsResponse>(){
+                    experimentClient.getExperimentCondition("assign-prog", site, target, new ResponseCallback<ExperimentsResponse>(){
                         @Override
                         public void onSuccess(@NonNull ExperimentsResponse expResult){
+                            System.out.println("condition " + expResult);
                             Condition condition = expResult.getAssignedCondition();
-                            String code = condition == null ? null : condition.getCondition();
-                            experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED, new ResponseCallback<MarkExperimentPoint>(){
+                            String code = condition == null ? null : condition.getConditionCode();
+                            MarkExperimentRequestData data = new MarkExperimentRequestData(site, target, condition);
+                            experimentClient.markExperimentPoint(MarkedDecisionPointStatus.CONDITION_APPLIED, data, new ResponseCallback<MarkExperimentPoint>(){
                                 @Override
                                 public void onSuccess(@NonNull MarkExperimentPoint markResult){
                                     result.complete("marked " + code + ": " + markResult.toString());

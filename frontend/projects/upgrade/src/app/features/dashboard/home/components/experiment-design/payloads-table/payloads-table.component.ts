@@ -2,31 +2,31 @@ import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter
 import { BehaviorSubject, combineLatest, filter, map, Observable, Subscription } from 'rxjs';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
-  SimpleExperimentAliasTableRow,
+  SimpleExperimentPayloadTableRowData,
   SimpleExperimentDesignData,
 } from '../../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 @Component({
-  selector: 'app-aliases-table',
-  templateUrl: './aliases-table.component.html',
-  styleUrls: ['./aliases-table.component.scss'],
+  selector: 'app-payloads-table',
+  templateUrl: './payloads-table.component.html',
+  styleUrls: ['./payloads-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AliasesTableComponent implements OnInit, OnDestroy {
-  @Output() hideAliasTable = new EventEmitter<boolean>();
+export class PayloadsTableComponent implements OnInit, OnDestroy {
+  @Output() hidePayloadTable = new EventEmitter<boolean>();
   @Input() experimentInfo: ExperimentVM;
 
   subscriptions: Subscription;
-  isSimpleExperimentAliasTableEditMode$: Observable<boolean>;
-  simpleExperimentAliasTableEditIndex$: Observable<number>;
+  isSimpleExperimentPayloadTableEditMode$: Observable<boolean>;
+  simpleExperimentPayloadTableEditIndex$: Observable<number>;
   currentContextMetaDataConditions$: Observable<string[]>;
   filteredContextMetaDataConditions$ = new BehaviorSubject<string[]>(['']);
-  currentAliasInput$ = new BehaviorSubject<string>('');
+  currentPayloadInput$ = new BehaviorSubject<string>('');
   designData$: Observable<SimpleExperimentDesignData>;
 
-  aliasTableData$ = new BehaviorSubject<SimpleExperimentAliasTableRow[]>([]);
-  aliasesDisplayedColumns = ['site', 'target', 'condition', 'alias', 'actions'];
+  payloadTableData$ = new BehaviorSubject<SimpleExperimentPayloadTableRowData[]>([]);
+  payloadsDisplayedColumns = ['site', 'target', 'condition', 'payload', 'actions'];
   initialLoad = true;
 
   constructor(
@@ -35,39 +35,39 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.isSimpleExperimentAliasTableEditMode$ =
-      this.experimentDesignStepperService.isSimpleExperimentAliasTableEditMode$;
-    this.simpleExperimentAliasTableEditIndex$ =
-      this.experimentDesignStepperService.simpleExperimentAliasTableEditIndex$;
+    this.isSimpleExperimentPayloadTableEditMode$ =
+      this.experimentDesignStepperService.isSimpleExperimentPayloadTableEditMode$;
+    this.simpleExperimentPayloadTableEditIndex$ =
+      this.experimentDesignStepperService.simpleExperimentPayloadTableEditIndex$;
     this.currentContextMetaDataConditions$ = this.experimentService.currentContextMetaDataConditions$;
     this.designData$ = this.experimentDesignStepperService.simpleExperimentDesignData$;
   }
 
   ngAfterViewInit(): void {
-    this.listenToAliasTableDataChanges();
+    this.listenToPayloadTableDataChanges();
     this.listenToContextMetadataAndInputChanges();
     this.listenToDesignDataChanges();
   }
 
   ngOnDestroy(): void {
-    this.experimentDesignStepperService.setUpdateAliasTableEditModeDetails(null);
+    this.experimentDesignStepperService.setUpdatePayloadTableEditModeDetails(null);
     this.subscriptions.unsubscribe();
   }
 
-  listenToAliasTableDataChanges(): void {
-    this.subscriptions = this.experimentDesignStepperService.simpleExperimentAliasTableData$
+  listenToPayloadTableDataChanges(): void {
+    this.subscriptions = this.experimentDesignStepperService.simpleExperimentPayloadTableData$
       .pipe(
-        map((aliasTableData) => {
+        map((payloadTableData) => {
           // data from ngrx store is immutable
-          // this ensures that a mutable clone of alias table data is emitted
+          // this ensures that a mutable clone of payload table data is emitted
           return [
-            ...aliasTableData.map((rowData) => {
+            ...payloadTableData.map((rowData) => {
               return { ...rowData };
             }),
           ];
         })
       )
-      .subscribe(this.aliasTableData$);
+      .subscribe(this.payloadTableData$);
   }
 
   listenToDesignDataChanges() {
@@ -79,7 +79,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   }
 
   listenToContextMetadataAndInputChanges() {
-    this.subscriptions = combineLatest([this.currentContextMetaDataConditions$, this.currentAliasInput$])
+    this.subscriptions = combineLatest([this.currentContextMetaDataConditions$, this.currentPayloadInput$])
       .pipe(
         filter(([conditions, input]) => !!conditions && !!this.experimentDesignStepperService.isValidString(input)),
         map(([conditions, input]) =>
@@ -91,38 +91,38 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
 
   handleDesignDataChanges(designData: SimpleExperimentDesignData) {
     const { decisionPoints, conditions } = designData;
-    const preexistingConditionAliasData =
-      this.initialLoad && this.experimentInfo ? this.experimentInfo.conditionAliases : [];
-    const conditionAliasesRowData: SimpleExperimentAliasTableRow[] =
-      this.experimentDesignStepperService.getExistingConditionAliasRowData(preexistingConditionAliasData);
+    const preexistingConditionPayloadData =
+      this.initialLoad && this.experimentInfo ? this.experimentInfo.conditionPayloads : [];
+    const conditionPayloadsRowData: SimpleExperimentPayloadTableRowData[] =
+      this.experimentDesignStepperService.getExistingConditionPayloadRowData(preexistingConditionPayloadData);
 
-    this.experimentDesignStepperService.updateAndStoreAliasTableData(
+    this.experimentDesignStepperService.updateAndStorePayloadTableData(
       decisionPoints,
       conditions,
-      conditionAliasesRowData
+      conditionPayloadsRowData
     );
     this.initialLoad = false;
   }
 
   handleHideClick() {
-    this.hideAliasTable.emit(true);
+    this.hidePayloadTable.emit(true);
   }
 
-  handleEditClick(rowData: SimpleExperimentAliasTableRow, rowIndex: number) {
-    const aliasTableData = this.experimentDesignStepperService.getSimpleExperimentAliasTableData();
+  handleEditClick(rowData: SimpleExperimentPayloadTableRowData, rowIndex: number) {
+    const payloadTableData = this.experimentDesignStepperService.getSimpleExperimentPayloadTableData();
     const rowDataCopy = { ...rowData };
-    aliasTableData[rowIndex] = rowDataCopy;
+    payloadTableData[rowIndex] = rowDataCopy;
 
-    if (this.currentAliasInput$.value !== rowData.alias) {
-      aliasTableData[rowIndex].useCustom = true;
+    if (this.currentPayloadInput$.value !== rowData.payload) {
+      payloadTableData[rowIndex].useCustom = true;
     }
 
-    this.currentAliasInput$.next(rowData.alias);
-    this.experimentDesignStepperService.setUpdateAliasTableEditModeDetails(rowIndex);
-    this.experimentDesignStepperService.setNewSimpleExperimentAliasTableData(aliasTableData);
+    this.currentPayloadInput$.next(rowData.payload);
+    this.experimentDesignStepperService.setUpdatePayloadTableEditModeDetails(rowIndex);
+    this.experimentDesignStepperService.setNewSimpleExperimentPayloadTableData(payloadTableData);
   }
 
   handleFilterContextMetaDataConditions(value: string) {
-    this.currentAliasInput$.next(value);
+    this.currentPayloadInput$.next(value);
   }
 }

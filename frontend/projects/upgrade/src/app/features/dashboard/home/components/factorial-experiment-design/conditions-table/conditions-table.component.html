@@ -1,17 +1,6 @@
 <section class="conditions-table-component">
   <div class="conditions-header-container">
     <span class="title">{{ 'home.new-experiment.design.condition.text' | translate }}</span>
-    <button
-      type="button"
-      mat-flat-button
-      color="primary"
-      class="ft-14-600 toggle-button"
-      (click)="handleHideClick()"
-      [disabled]="isFormLockedForEdit$ | async"
-    >
-      <mat-icon class="icon icon-bump-left">expand_less</mat-icon>
-      <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.factors' | translate }}</span>
-    </button>
   </div>
 
   <div class="conditions-weight-checkbox">
@@ -27,48 +16,36 @@
   </div>
   <form [formGroup]="factorialConditionTableForm">
     <mat-table [dataSource]="tableData$" class="conditions-table" formArrayName="factorialConditions">
-      <!-- Factor 1 Levels Column -->
-      <ng-container matColumnDef="factorOne">
+      <!-- Condition Column -->
+      <ng-container matColumnDef="condition">
         <mat-header-cell *matHeaderCellDef class="ft-14-700">
-          {{ factorHeaders[0] | uppercase }}
+          {{  'home.new-experiment.design.payloads.column-header.condition.text' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData">
-          <span [matTooltip]="rowData.levels[0].name" matTooltipPosition="above">
-            {{ rowData.levels[0].name | truncate : 20 }}
+          <span [matTooltip]="rowData.condition" matTooltipPosition="above">
+            {{ experimentDesignStepperService.trimFactorialConditionName(rowData.condition) }}
           </span>
         </mat-cell>
       </ng-container>
 
-      <!-- Factor 2 Levels Column -->
-      <ng-container matColumnDef="factorTwo">
+      <!-- Payload Column -->
+      <ng-container matColumnDef="payload">
         <mat-header-cell *matHeaderCellDef class="ft-14-700">
-          {{ factorHeaders[1] | uppercase }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let rowData">
-          <span [matTooltip]="rowData.levels[1].name" matTooltipPosition="above">
-            {{ rowData.levels[1].name | truncate : 20 }}
-          </span>
-        </mat-cell>
-      </ng-container>
-
-      <!-- Alias Column -->
-      <ng-container matColumnDef="alias">
-        <mat-header-cell *matHeaderCellDef class="ft-14-700">
-          {{ 'ALIAS' | translate }}
+          {{ 'home.new-experiment.design.payloads.column-header.payload.text' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
           <ng-container *ngIf="(tableEditIndex$ | async) !== rowIndex">
-            <span [matTooltip]="rowData.alias" matTooltipPosition="above">
-              {{ rowData.alias | truncate : 25 }}
+            <span [matTooltip]="rowData.payload" matTooltipPosition="above">
+              {{ rowData.payload | truncate : 25 }}
             </span>
           </ng-container>
           <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
             <mat-form-field floatLabel="never">
               <input
-                class="input-alias"
+                class="input-payload"
                 type="text"
                 matInput
-                formControlName="alias"
+                formControlName="payload"
                 [disabled]="!isExperimentEditable"
                 autocomplete="off"
               />
@@ -137,10 +114,10 @@
 
             <!-- Done Icon -->
             <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
-              <mat-icon class="icon" (click)="handleRowEditDoneClick(rowIndex)">done</mat-icon>
+              <mat-icon class="icon">done</mat-icon>
             </ng-container>
           </button>
-
+          <!-- Clear Icon -->
           <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
             <button
               type="button"

@@ -98,9 +98,26 @@
                       'home.new-experiment.metrics.repeatedmeasure.placeholder.text' | translate | titlecase
                     }}</mat-label>
                     <mat-select class="ft-14-400" formControlName="repeatedMeasure">
-                      <mat-option *ngFor="let measure of RepeatedMeasure" [value]="measure">
-                        {{ measure | titlecase }}
-                      </mat-option>
+                      <div
+                        *ngIf="
+                          selectedNode[queryIndex] &&
+                          selectedNode[queryIndex]?.metadata?.type === IMetricMetadata.CONTINUOUS
+                        "
+                      >
+                        <mat-option *ngFor="let measure of ContinuousRepeatedMeasure" [value]="measure">
+                          {{ measure | titlecase }}
+                        </mat-option>
+                      </div>
+                      <div
+                        *ngIf="
+                          selectedNode[queryIndex] &&
+                          selectedNode[queryIndex]?.metadata?.type === IMetricMetadata.CATEGORICAL
+                        "
+                      >
+                        <mat-option *ngFor="let measure of CategoricalRepeatedMeasure" [value]="measure">
+                          {{ measure | titlecase }}
+                        </mat-option>
+                      </div>
                     </mat-select>
                   </mat-form-field>
                   <!-- comparison function -->

@@ -17,7 +17,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
-import { ISingleMetric, IGroupMetric, SERVER_ERROR } from 'upgrade_types';
+import { ISingleMetric, IGroupMetric, SERVER_ERROR, PAYLOAD_TYPE } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -35,12 +35,11 @@ import { env } from '../../env';
 interface IExperimentAssignment {
   expId: string;
   expPoint: string;
-  twoCharacterId: string;
-  description: string;
   assignedCondition: {
     conditionCode: string;
-    twoCharacterId: string;
-    description: string;
+    payload: { type: PAYLOAD_TYPE; value: string };
+    experimentId: string;
+    id?: string;
   };
 }
 
@@ -553,11 +552,12 @@ export class ExperimentClientController {
       }
     );
 
-    return assignedData.map(({ site, target, ...rest }) => {
+    return assignedData.map(({ site, target, assignedCondition }) => {
+      const conditionCode = assignedCondition.payload?.value || assignedCondition.conditionCode;
       return {
         expPoint: site,
         expId: target,
-        ...rest,
+        assignedCondition: { ...assignedCondition, conditionCode: conditionCode },
       };
     });
   }

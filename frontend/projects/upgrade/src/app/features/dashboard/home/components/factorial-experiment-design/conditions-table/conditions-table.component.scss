@@ -53,15 +53,14 @@
       justify-content: left;
     }
 
-    .cdk-column-levelNameOne,
-    .cdk-column-levelNameTwo {
-      flex: 0 0 calc(22% - 15px);
-      width: calc(22% - 15px);
-    }
-
-    .cdk-column-alias {
+    .cdk-column-condition {
       flex: 0 0 calc(30% - 15px);
       width: calc(30% - 15px);
+    }
+
+    .cdk-column-payload {
+      flex: 0 0 calc(40% - 15px);
+      width: calc(40% - 15px);
     }
 
     .mat-header-cell.cdk-column-weight,

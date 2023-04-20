@@ -17,7 +17,7 @@
 @import './app/features/dashboard/home/components/modal/experiment-status/experiment-status.theme.scss';
 @import './app/features/dashboard/home/components/modal/post-experiment-rule/post-experiment-rule.theme.scss';
 @import './app/features/dashboard/home/components/experiment-design/experiment-design.theme.scss';
-@import './app/features/dashboard/home/components/experiment-design/aliases-table/aliases-table.theme.scss';
+@import './app/features/dashboard/home/components/experiment-design/payloads-table/payloads-table.theme.scss';
 @import './app/features/dashboard/home/components/enrollment-over-time/enrollment-over-time.theme.scss';
 @import './app/features/dashboard/home/components/modal/new-experiment/new-experiment.theme.scss';
 @import './app/features/dashboard/profile/components/profile-info/profile-info.theme.scss';
@@ -55,7 +55,7 @@
   @include experiment-status-component-theme($theme);
   @include post-experiment-rule-component-theme($theme);
   @include experiment-design-component-theme($theme);
-  @include aliases-table-component-theme($theme);
+  @include payloads-table-component-theme($theme);
   @include enrollment-over-time-component-theme($theme);
   @include new-experiment-component-theme($theme);
   @include experiment-users-component-theme($theme);
