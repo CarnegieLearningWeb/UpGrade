@@ -139,7 +139,7 @@ describe('Experiments Selectors', () => {
           },
         ],
         factors: [],
-        conditionAliases: [],
+        conditionPayloads: [],
         queries: [],
         stateTimeLogs: [
           {

@@ -6,6 +6,7 @@ import {
   NewExperimentDialogData,
   NewExperimentPaths,
   ExperimentVM,
+  POST_EXPERIMENT_RULE,
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -100,8 +101,20 @@ export class NewExperimentComponent implements OnInit {
           ...formData,
         };
         this.openSnackBar();
+        this.checkPostExperimentRule();
         this.experimentService.updateExperiment(this.newExperimentData);
         break;
+    }
+  }
+
+  checkPostExperimentRule() {
+    if (this.newExperimentData.postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN) {
+      const conditionToSet = this.newExperimentData.conditions.filter((condition) => {
+        condition.id === this.newExperimentData.revertTo;
+      });
+      if (!conditionToSet.length) {
+        this.newExperimentData.postExperimentRule = POST_EXPERIMENT_RULE.CONTINUE;
+      }
     }
   }
 

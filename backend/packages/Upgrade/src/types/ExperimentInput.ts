@@ -12,7 +12,7 @@ import {
 } from 'upgrade_types';
 import { Query } from '../api/models/Query';
 import { SegmentInputValidator } from 'src/api/controllers/validators/SegmentInputValidator';
-import { ConditionAlias } from 'src/api/models/ConditionAlias';
+import { ConditionPayload } from 'src/api/models/ConditionPayload';
 
 export class ExperimentInput {
   public id: string;
@@ -59,7 +59,7 @@ export class ExperimentInput {
   public partitions: DecisionPoint[];
 
   @ValidateNested()
-  public conditionAliases: ConditionAlias[];
+  public conditionPayloads: ConditionPayload[];
 
   @ValidateNested()
   public stateTimeLogs: StateTimeLog[];

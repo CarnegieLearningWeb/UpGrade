@@ -64,8 +64,8 @@ import DecimalAssignmentWeight from './Experiment/createWithDecimal/DecimalAssig
 import {
   ConditionOrder,
   PartitionOrder,
-  ConditionAlias,
-  EnrollmentWithConditionAlias,
+  ConditionPayload,
+  EnrollmentWithConditionPayload,
 } from './Experiment/conditionAndPartition';
 import { UserNotDefined } from './UserNotDefined';
 import {
@@ -492,13 +492,13 @@ describe('Integration Tests', () => {
     done();
   });
 
-  test('ConditionAliases', async (done) => {
-    await ConditionAlias();
+  test('ConditionPayloads', async (done) => {
+    await ConditionPayload();
     done();
   });
 
-  test('Enrollment With ConditionAliases', async (done) => {
-    await EnrollmentWithConditionAlias();
+  test('Enrollment With ConditionPayloads', async (done) => {
+    await EnrollmentWithConditionPayload();
     done();
   });
 

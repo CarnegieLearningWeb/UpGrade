@@ -68,7 +68,7 @@ export type ExperimentRequestResponseBody = {
     order: number;
     excludeIfReached: boolean;
   }[];
-  conditionAliases: [];
+  conditionPayloads: [];
   experimentSegmentInclusion: {
     userIds: string[];
     groups: string[];
@@ -81,12 +81,12 @@ export type ExperimentRequestResponseBody = {
     subSegmentIds: string[];
     type: string;
   };
-  filterMode: "includeAll" | "excludeAll";
+  filterMode: 'includeAll' | 'excludeAll';
   queries: string[];
   endOn: null;
   enrollmentCompleteCondition: null;
   startOn: null;
-  state: "inactive";
-  postExperimentRule: "continue";
+  state: 'inactive';
+  postExperimentRule: 'continue';
   revertTo: null;
 };

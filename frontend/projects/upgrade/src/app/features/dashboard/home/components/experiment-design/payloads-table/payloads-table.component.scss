@@ -1,7 +1,7 @@
-.aliases-table-component {
+.payloads-table-component {
   height: 515px;
 
-  .aliases-header-container {
+  .payloads-header-container {
     display: flex;
     justify-content: space-between;
 
@@ -21,7 +21,7 @@
     }
   }
 
-  .alias-table-design-stepper {
+  .payload-table-design-stepper {
     height: 475px;
     overflow: auto;
 
@@ -65,7 +65,7 @@
       width: calc(25% - 15px);
     }
 
-    .cdk-column-alias {
+    .cdk-column-payload {
       flex: 0 0 calc(25% - 15px);
       width: calc(25% - 15px);
     }

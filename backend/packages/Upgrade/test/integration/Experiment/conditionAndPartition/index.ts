@@ -4,8 +4,8 @@ import { CheckService } from '../../../../src/api/services/CheckService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import TestCase1 from './Condition';
 import TestCase2 from './Partition';
-import TestCase3 from './ConditionAliases';
-import TestCase4 from './EnrollmentWithConditionAlias';
+import TestCase3 from './ConditionPayloads';
+import TestCase4 from './EnrollmentWithConditionPayload';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 const initialChecks = async () => {
@@ -52,12 +52,12 @@ export const PartitionOrder = async () => {
   await TestCase2();
 };
 
-export const ConditionAlias = async () => {
+export const ConditionPayload = async () => {
   await initialChecks();
   await TestCase3();
 };
 
-export const EnrollmentWithConditionAlias = async () => {
+export const EnrollmentWithConditionPayload = async () => {
   await initialChecks();
   await TestCase4();
 };
