@@ -136,7 +136,7 @@ export class ExperimentDesignStepperService {
   }
 
   getFactorialConditionTableData() {
-    return this.factorialConditionTableDataBehaviorSubject$.getValue();
+    return [...this.factorialConditionTableDataBehaviorSubject$.getValue()];
   }
 
   getSimpleExperimentPayloadTableData() {
