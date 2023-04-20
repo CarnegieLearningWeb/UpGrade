@@ -65,6 +65,7 @@ export interface IExperimentAssignmentv4 {
     conditionCode: string;
     payload: { type: PAYLOAD_TYPE; value: string };
     experimentId: string;
+    id?: string;
   };
   assignedFactor?: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }>;
 }

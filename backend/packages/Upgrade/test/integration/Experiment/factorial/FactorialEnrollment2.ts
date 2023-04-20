@@ -76,7 +76,7 @@ export default async function FactorialExperimentEnrollment2(): Promise<void> {
   expect(experimentConditionAssignments.length).toEqual(2);
   experimentConditionAssignments.sort((a, b) => (a.site > b.site ? 1 : b.site > a.site ? -1 : 0));
 
-  // checking levelAlias name for conditionCode
+  // checking level payload name for conditionCode
   expect(experimentConditionAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

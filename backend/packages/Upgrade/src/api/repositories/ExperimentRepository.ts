@@ -16,10 +16,10 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('experiment.factors', 'factors')
       .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('partitions.conditionAliases', 'conditionAliases')
-      .leftJoinAndSelect('conditionAliases.parentCondition', 'parentCondition')
+      .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')
+      .leftJoinAndSelect('conditionPayloads.parentCondition', 'parentCondition')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
-      .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
+      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
       .leftJoinAndSelect('levelCombinationElements.level', 'level');
 
     const experimentSegment = this.createQueryBuilder('experiment')
@@ -76,10 +76,10 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('experiment.factors', 'factors')
       .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('partitions.conditionAliases', 'conditionAliases')
-      .leftJoinAndSelect('conditionAliases.parentCondition', 'parentCondition')
+      .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')
+      .leftJoinAndSelect('conditionPayloads.parentCondition', 'parentCondition')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
-      .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
+      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
       .where(
         new Brackets((qb) => {
@@ -151,10 +151,10 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('experiment.factors', 'factors')
       .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('partitions.conditionAliases', 'conditionAliases')
-      .leftJoinAndSelect('conditionAliases.parentCondition', 'parentCondition')
+      .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')
+      .leftJoinAndSelect('conditionPayloads.parentCondition', 'parentCondition')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
-      .leftJoinAndSelect('conditions.conditionAliases', 'conditionAlias')
+      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
       .where(
         new Brackets((qb) => {
