@@ -33,13 +33,13 @@ jobs:
         git config --global user.email 'github@github.com'
 
     - name: bump version
-      run: npm version minor --git-tag-version=false
-        cd types && npm version minor --git-tag-version=false 
-        cd ../frontend && npm version minor --git-tag-version=false
-        cd ../backend && npm version minor --git-tag-version=false
-        cd packages/Scheduler && npm version minor --git-tag-version=false
-        cd ../Upgrade && npm version minor --git-tag-version=false
-        cd ../../../clientlibs/js && npm version minor --git-tag-version=false
+      run: npm version ${{ github.event.inputs.version }} --git-tag-version=false
+        cd types && npm version ${{ github.event.inputs.version }} --git-tag-version=false 
+        cd ../frontend && npm version ${{ github.event.inputs.version }} --git-tag-version=false
+        cd ../backend && npm version ${{ github.event.inputs.version }} --git-tag-version=false
+        cd packages/Scheduler && npm version ${{ github.event.inputs.version }} --git-tag-version=false
+        cd ../Upgrade && npm version ${{ github.event.inputs.version }} --git-tag-version=false
+        cd ../../../clientlibs/js && npm version ${{ github.event.inputs.version }} --git-tag-version=false
         NEW_VERSION=$(jq -r '.version' package.json)
         cd ../java && mvn versions:set -DnewVersion=${NEW_VERSION}
         cd ../../
