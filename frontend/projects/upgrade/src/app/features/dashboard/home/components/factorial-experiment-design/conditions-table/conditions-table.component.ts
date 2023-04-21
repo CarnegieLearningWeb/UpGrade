@@ -89,7 +89,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     this.subscriptions = this.factorialExperimentDesignData$
       .pipe(
         filter((designData) => {
-          return designData && designData?.factors.length === 2;
+          return designData && designData?.factors.length >= 2;
         })
       )
       .subscribe((designData) => {

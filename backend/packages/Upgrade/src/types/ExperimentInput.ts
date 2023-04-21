@@ -59,7 +59,7 @@ export class ExperimentInput {
   public partitions: DecisionPoint[];
 
   @ValidateNested()
-  public conditionAliases: ConditionPayload[];
+  public conditionPayloads: ConditionPayload[];
 
   @ValidateNested()
   public stateTimeLogs: StateTimeLog[];

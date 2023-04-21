@@ -22,7 +22,7 @@
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.site" matTooltipPosition="above">
-          {{ rowData.site | truncate : 15 }}
+          {{ rowData.site | truncate: 15 }}
         </span>
       </mat-cell>
     </ng-container>
@@ -34,7 +34,7 @@
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.target" matTooltipPosition="above">
-          {{ rowData.target | truncate : 15 }}
+          {{ rowData.target | truncate: 15 }}
         </span>
       </mat-cell>
     </ng-container>
@@ -46,7 +46,7 @@
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.condition" matTooltipPosition="above">
-          {{ rowData.condition | truncate : 15 }}
+          {{ rowData.condition | truncate: 15 }}
         </span>
       </mat-cell>
     </ng-container>
@@ -59,7 +59,7 @@
       <mat-cell *matCellDef="let rowData; let rowIndex = index">
         <ng-container *ngIf="(simpleExperimentPayloadTableEditIndex$ | async) !== rowIndex">
           <span [matTooltip]="rowData.payload" matTooltipPosition="above">
-            {{ rowData.payload | truncate : 15 }}
+            {{ rowData.payload | truncate: 15 }}
           </span>
         </ng-container>
         <ng-container *ngIf="(simpleExperimentPayloadTableEditIndex$ | async) === rowIndex">
