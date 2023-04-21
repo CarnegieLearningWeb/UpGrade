@@ -34,7 +34,7 @@ jobs:
 
     - name: bump version
       run: echo "root:" && npm version ${{ github.event.inputs.version }} --git-tag-version=false
-        echo "types:" && cd types && npm version ${{ github.event.inputs.version }} --git-tag-version=false | 
+        echo "types:" && cd types && npm version ${{ github.event.inputs.version }} --git-tag-version=false 
         echo "frontend:" && cd ../frontend && npm version ${{ github.event.inputs.version }} --git-tag-version=false
         echo "backend-root:" && cd ../backend && npm version ${{ github.event.inputs.version }} --git-tag-version=false
         echo "scheduler:" && cd packages/Scheduler && npm version ${{ github.event.inputs.version }} --git-tag-version=false
