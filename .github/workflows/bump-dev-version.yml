@@ -45,4 +45,6 @@ jobs:
         cd ../../
 
     - name: Push latest version
-      run: git push origin dev --follow-tags
+      run: |
+        git commit -m 'Bump dev to version ${NEW_VERSION}' -a
+        git push origin dev --follow-tags
