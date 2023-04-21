@@ -5,7 +5,7 @@
         <section class="simple-experiment-decision-point-conditions-view">
           <div class="decision-point-header-container">
             <span class="title">{{ 'home.new-experiment.design.decision-point.text' | translate }}</span>
-            <button
+            <!-- <button
               type="button"
               mat-flat-button
               color="primary"
@@ -16,7 +16,7 @@
             >
               <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
               <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.payloads' | translate }}</span>
-            </button>
+            </button> -->
           </div>
           <br />
           <!-- Decision Point Table -->
@@ -427,8 +427,10 @@
         <div>
           <br />
           <br />
-          <app-payloads-table [experimentInfo]="experimentInfo" (hidePayloadTable)="scrollToConditionsTable()">
+          <app-payloads-table 
+            [experimentInfo]="experimentInfo">
           </app-payloads-table>
+            <!-- (hidePayloadTable)="scrollToConditionsTable()" -->
           <br />
         </div>
       </form>

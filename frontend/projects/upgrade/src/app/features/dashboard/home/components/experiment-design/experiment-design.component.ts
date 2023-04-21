@@ -56,6 +56,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.STEP_CONTAINER, { read: ElementRef }) stepContainer: ElementRef;
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.DECISION_POINTS, { read: ElementRef }) decisionPointTable: ElementRef;
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.CONDITIONS, { read: ElementRef }) conditionTable: ElementRef;
+  @ViewChild('payloadTable', { read: ElementRef }) payloadTable: ElementRef;
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.CONDITION_CODE) conditionCode: ElementRef;
 
   subscriptionHandler: Subscription;
@@ -734,7 +735,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.experimentDesignForm.markAsPristine();
       }
       // scroll back to the conditions table
-      this.scrollToConditionsTable();
+      // this.scrollToConditionsTable();
     }
   }
 
@@ -775,23 +776,23 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.applyEqualWeight();
   }
 
-  scrollToPayloadsTable(): void {
-    this.stepContainer.nativeElement.scroll({
-      top: this.stepContainer.nativeElement.scrollHeight / 2,
-      behavior: 'smooth',
-      duration: 500,
-      easing: 'easeOutCubic',
-    });
-  }
+  // scrollToPayloadsTable(): void {
+  //   this.stepContainer.nativeElement.scroll({
+  //     top: this.stepContainer.nativeElement.scrollHeight / 2,
+  //     behavior: 'smooth',
+  //     duration: 500,
+  //     easing: 'easeOutCubic',
+  //   });
+  // }
 
-  scrollToConditionsTable(): void {
-    this.stepContainer.nativeElement.scroll({
-      top: 0,
-      behavior: 'smooth',
-      duration: 500,
-      easing: 'easeOutCubic',
-    });
-  }
+  // scrollToConditionsTable(): void {
+  //   this.conditionTable.nativeElement.scroll({
+  //     top: 0,
+  //     behavior: 'smooth',
+  //     duration: 500,
+  //     easing: 'easeOutCubic',
+  //   });
+  // }
 
   get conditions(): FormArray {
     return this.experimentDesignForm?.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITIONS_ARRAY) as FormArray;

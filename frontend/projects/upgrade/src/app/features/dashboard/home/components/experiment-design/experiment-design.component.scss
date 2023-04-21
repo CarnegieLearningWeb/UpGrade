@@ -1,6 +1,7 @@
 .simple-experiment-form {
   .simple-experiment-decision-point-conditions-view {
-    height: 515px;
+    max-height: 515px;
+    overflow: auto;
 
     .title {
       font-size: 18px;
