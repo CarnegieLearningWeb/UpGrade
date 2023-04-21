@@ -1,0 +1,46 @@
+name: Bump Dev Version
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Semver type of new version (major / minor)'
+        required: true
+        type: choice
+        options: 
+        - minor
+        - major
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out source
+      uses: actions/checkout@v2
+      with:
+        ssh-key: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+        cache: 'npm'
+
+    - name: Install npm packages
+      run: npm ci
+
+    - name: Setup Git
+      run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'github@github.com'
+
+    - name: bump version
+      run: npm version minor --git-tag-version=false |
+        cd types && npm version minor --git-tag-version=false |
+        cd ../frontend && npm version minor --git-tag-version=false |
+        cd ../backend && npm version minor --git-tag-version=false |
+        cd packages/Scheduler && npm version minor --git-tag-version=false |
+        cd ../Upgrade && npm version minor --git-tag-version=false |
+        cd ../../../clientlibs/js && npm version minor --git-tag-version=false
+
+    - name: Push latest version
+      run: git push origin dev --follow-tags
