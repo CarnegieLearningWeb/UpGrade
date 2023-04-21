@@ -22,7 +22,7 @@ import { Query } from './Query';
 import { StateTimeLog } from './StateTimeLogs';
 import { ExperimentSegmentInclusion } from './ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
-import { ConditionAlias } from 'src/api/models/ConditionAlias';
+import { ConditionPayload } from 'src/api/models/ConditionPayload';
 import { Factor } from './Factor';
 
 export {
@@ -127,7 +127,7 @@ export class Experiment extends BaseModel {
   public partitions: DecisionPoint[];
 
   @ValidateNested()
-  public conditionAliases: ConditionAlias[];
+  public conditionPayloads: ConditionPayload[];
 
   @OneToMany(() => Query, (query) => query.experiment)
   public queries: Query[];

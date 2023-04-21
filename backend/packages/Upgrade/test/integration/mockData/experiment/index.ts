@@ -210,7 +210,7 @@ export const decimalWeightExperiment = {
   ...getFourthExperiment(),
 };
 
-export const aliasConditionExperiment = {
+export const payloadConditionExperiment = {
   ...getFifthExperiment(),
 };
 

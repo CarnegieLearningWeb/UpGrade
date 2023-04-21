@@ -16,6 +16,7 @@ import {
   IExperimentEnrollmentDetailDateStats,
   FILTER_MODE,
   EXPERIMENT_TYPE,
+  PAYLOAD_TYPE,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
 
@@ -167,7 +168,11 @@ export interface LevelsMap {
 export interface ExperimentLevel {
   id: string;
   name: string;
-  alias: string;
+  // payload: string;
+  payload: {
+    type: PAYLOAD_TYPE;
+    value: string;
+  };
   order: number;
 }
 
@@ -216,7 +221,7 @@ export interface Experiment {
   conditions: ExperimentCondition[];
   partitions: ExperimentDecisionPoint[];
   factors: ExperimentFactor[];
-  conditionAliases: ExperimentConditionAlias[];
+  conditionPayloads: ExperimentConditionPayload[];
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
   filterMode: FILTER_MODE;
@@ -231,9 +236,13 @@ export interface ParticipantsMember {
   type: string;
 }
 
-export interface ExperimentConditionAlias {
+export interface ExperimentConditionPayload {
   id?: string;
-  aliasName: string;
+  payload: {
+    type: PAYLOAD_TYPE;
+    value: string;
+  };
+  // payload: string;
   parentCondition: ExperimentCondition;
   decisionPoint: ExperimentDecisionPoint;
 }

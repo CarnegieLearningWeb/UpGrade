@@ -1,0 +1,130 @@
+
+    "name + version" {    //assign-prog-1.0
+        "name": "assign-prog",
+        "description": "",
+        "version": "1.0",
+        "supportedGroupTypes": [
+            {
+                "name": "Individual",
+                "description": ""
+            },
+            {
+                "name": "School",
+                "description": ""
+            }
+        ],
+        "decisionPoints": [
+            {
+                "site": {
+                    "name": "selectSection",
+                    "description": ""
+                },
+                "targets": [
+                    {
+                        "id": "calculating_area_various_figures",
+                        "description": "",
+                        "conditions": [
+                            {
+                                "id": "conditionA",
+                                
+                            },
+                            {
+                                "id": "conditionB",
+                                "description": ""
+                            }
+                        ],
+                        "unsupportedGroupTypes": [
+                            "Individual",
+                            "School"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "assign-prog",
+        "description": "",
+        "version": "1.1",
+        "supportedGroupTypes": [
+            {
+                "name": "Individual",
+                "description": ""
+            },
+            {
+                "name": "School",
+                "description": ""
+            }
+        ],
+        "decisionPoints": [
+            {
+                "site": {
+                    "name": "selectSection",
+                    "description": ""
+                },
+                "targets": [
+                    {
+                        "id": "calculating_area_various_figures",
+                        "description": "",
+                        "conditions": [
+                            {
+                                "id": "conditionA",
+                                "description": ""
+                            },
+                            {
+                                "id": "conditionB",
+                                "description": ""
+                            }
+                        ],
+                        "unsupportedGroupTypes": [
+                            "Individual",
+                            "School"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "assign-prog",
+        "description": "",
+        "version": "1.3",
+        "supportedGroupTypes": [
+            {
+                "name": "Individual",
+                "description": ""
+            },
+            {
+                "name": "School",
+                "description": ""
+            }
+        ],
+        "decisionPoints": [
+            {
+                "site": {
+                    "name": "selectSection",
+                    "description": ""
+                },
+                "targets": [
+                    {
+                        "id": "calculating_area_various_figures",
+                        "description": "",
+                        "conditions": [
+                            {
+                                "id": "conditionA",
+                                "description": ""
+                            },
+                            {
+                                "id": "conditionB",
+                                "description": ""
+                            }
+                        ],
+                        "unsupportedGroupTypes": [
+                            "Individual",
+                            "School"
+                        ]
+                    }
+                ]
+            }
+        ]
+    }

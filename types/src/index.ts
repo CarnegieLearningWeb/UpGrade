@@ -31,7 +31,6 @@ export {
   IExperimentEnrollmentStats,
   IExperimentEnrollmentDetailStats,
   IExperimentEnrollmentDetailDateStats,
-  IExperimentAssignment,
   INewExperimentAssignment,
   IExperimentSearchParams,
   IExperimentSortParams,
