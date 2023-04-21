@@ -11,18 +11,14 @@
               color="primary"
               class="ft-14-600 default-button toggle-button"
               (click)="scrollToPayloadsTable()"
-              [class.default-button--disabled]="
-                (isFormLockedForEdit$ | async) || !(payloadTableData$ | async).length 
-              "
-              [disabled]="
-                (isFormLockedForEdit$ | async) || !(payloadTableData$ | async).length 
-              "
+              [class.default-button--disabled]="(isFormLockedForEdit$ | async) || !(payloadTableData$ | async).length"
+              [disabled]="(isFormLockedForEdit$ | async) || !(payloadTableData$ | async).length"
             >
               <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
               <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.payloads' | translate }}</span>
             </button>
           </div>
-          <br/>
+          <br />
           <!-- Decision Point Table -->
           <ng-container>
             <mat-table
@@ -46,7 +42,7 @@
                     >
                       {{
                         decisionPoints.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.SITE).value
-                          | truncate : 35
+                          | truncate: 35
                       }}
                     </span>
                   </ng-container>
@@ -90,7 +86,7 @@
                     >
                       {{
                         decisionPoints.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.TARGET).value
-                          | truncate : 35
+                          | truncate: 35
                       }}
                     </span>
                   </ng-container>
@@ -251,7 +247,7 @@
                     >
                       {{
                         conditions.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITION_CODE).value
-                          | truncate : 35
+                          | truncate: 35
                       }}
                     </span>
                   </ng-container>
@@ -297,7 +293,7 @@
                     <div class="assignment-weight-readonly align-right">
                       {{
                         conditions.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.ASSIGNMENT_WEIGHT).value
-                          | truncate : 35
+                          | truncate: 35
                       }}
                     </div>
                   </ng-container>
@@ -330,7 +326,7 @@
                     >
                       {{
                         conditions.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DESCRIPTION).value
-                          | truncate : 35
+                          | truncate: 35
                       }}
                     </span>
                   </ng-container>

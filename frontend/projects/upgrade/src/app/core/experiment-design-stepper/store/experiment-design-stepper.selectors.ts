@@ -21,7 +21,7 @@ export const selectIsFormLockedForEdit = createSelector(selectExperimentDesignSt
     // Factorial Experiment:
     state.isFactorialConditionsTableEditMode,
     state.isFactorialFactorsTableEditMode,
-    state.isFactorialLevelsTableEditMode
+    state.isFactorialLevelsTableEditMode,
   ];
   return lockSources.some((lockSource) => !!lockSource);
 });
