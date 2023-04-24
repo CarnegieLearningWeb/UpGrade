@@ -168,7 +168,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   // Used to add tags or contexts
   addChip(event: MatChipInputEvent, type: string): void {
-    const input = event.input;
+    const input = event.chipInput;
     const value = event.value.toLowerCase();
 
     // Add chip
@@ -185,7 +185,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
     // Reset the input value
     if (input) {
-      input.value = '';
+      input.clear();
     }
   }
 
