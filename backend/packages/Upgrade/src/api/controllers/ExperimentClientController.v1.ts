@@ -40,6 +40,8 @@ import { AppRequest } from '../../types';
 import { env } from '../../env';
 import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { Log } from '../models/Log';
+import flatten from 'lodash.flatten';
+import { CaliperLogEnvelope } from './validators/CaliperLogEnvelope';
 
 interface IMonitoredDeciosionPoint {
   id: string;
@@ -614,6 +616,53 @@ export class ExperimentClientController {
     return logs.map(({ createdAt, updatedAt, versionNumber, ...rest }) => {
       return rest;
     });
+  }
+
+   /**
+   * @swagger
+   * /log/caliper:
+   *    post:
+   *       description: Post Caliper format log data
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *          - in: body
+   *            name: data
+   *            required: true
+   *            description: User Document
+   *       tags:
+   *         - Client Side SDK
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Log data
+   *          '500':
+   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
+   */
+  @Post('log/caliper')
+  public async caliperLog(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
+    envelope: CaliperLogEnvelope
+  ): Promise<Log[]> {
+    let result = envelope.data.map(async log => {
+      // getOriginalUserDoc call for alias
+      const experimentUserDoc = await this.getUserDoc(log.object.assignee.id, request.logger);
+      if (experimentUserDoc) {
+        // append userDoc in logger
+        request.logger.child({ userDoc: experimentUserDoc });
+        request.logger.info({ message: 'Got the original user doc' });
+      }
+      return this.experimentAssignmentService.caliperDataLog(log, {
+        logger: request.logger,
+        userDoc: experimentUserDoc,
+      });
+    });
+
+    const logsToReturn = await Promise.all(result);
+    return flatten(logsToReturn);
   }
 
   /**
