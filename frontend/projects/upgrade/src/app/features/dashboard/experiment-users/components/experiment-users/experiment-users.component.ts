@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { ExcludeEntity, EntityTypes } from '../../../../../core/experiment-users/store/experiment-users.model';
 import { Subscription, Observable } from 'rxjs';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentUsersService } from '../../../../../core/experiment-users/experiment-users.service';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
@@ -24,7 +24,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
   allExcludedEntities: MatTableDataSource<ExcludeEntity>;
   allExcludedEntitiesSub: Subscription;
 
-  excludeEntitiesForm: FormGroup;
+  excludeEntitiesForm: UntypedFormGroup;
   entityTypes = [{ value: EntityTypes.PARTICIPANT_ID }, { value: EntityTypes.GROUP_ID }];
   groupTypes = new Set();
   groupTypeClass = 'class';
@@ -47,7 +47,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
   }
 
   constructor(
-    private _formBuilder: FormBuilder,
+    private _formBuilder: UntypedFormBuilder,
     private experimentUserService: ExperimentUsersService,
     private authService: AuthService,
     private experimentService: ExperimentService

@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, OnInit, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { first } from 'rxjs/operators';
 import { EXPORT_METHOD } from 'upgrade_types';
@@ -17,10 +17,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 export class ExportModalComponent implements OnInit {
   exportMethod = [];
   emailId: string;
-  exportForm: FormGroup;
+  exportForm: UntypedFormGroup;
   experiments: ExperimentVM[];
   constructor(
-    private _formBuilder: FormBuilder,
+    private _formBuilder: UntypedFormBuilder,
     private experimentService: ExperimentService,
     private authService: AuthService,
     private _snackBar: MatSnackBar,

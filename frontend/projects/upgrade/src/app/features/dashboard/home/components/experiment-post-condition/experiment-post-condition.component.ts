@@ -8,7 +8,7 @@ import {
   EventEmitter,
   OnChanges,
 } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import {
   ExperimentVM,
   POST_EXPERIMENT_RULE,
@@ -32,7 +32,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
   @Input() experimentInfo: ExperimentVM;
   @Input() newExperimentData: Partial<ExperimentVM>;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
-  postExperimentRuleForm: FormGroup;
+  postExperimentRuleForm: UntypedFormGroup;
   postExperimentRules = [{ value: POST_EXPERIMENT_RULE.CONTINUE }, { value: POST_EXPERIMENT_RULE.ASSIGN }];
   experimentConditions = [{ value: 'default', id: 'default' }];
   experimentSub: Subscription;
@@ -41,7 +41,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
     private experimentService: ExperimentService,
     private dialogService: DialogService,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private _formBuilder: FormBuilder,
+    private _formBuilder: UntypedFormBuilder,
     private experimentDesignStepperService: ExperimentDesignStepperService
   ) {}
 

@@ -19,7 +19,7 @@ import {
   ExperimentDesignTypes,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
-import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray } from '@angular/forms';
 import * as find from 'lodash.find';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Observable, Subscription } from 'rxjs';
@@ -36,7 +36,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('contextInput') contextInput: ElementRef<HTMLInputElement>;
-  overviewForm: FormGroup;
+  overviewForm: UntypedFormGroup;
   unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
 
   groupTypes = [];
@@ -60,7 +60,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
   constructor(
-    private _formBuilder: FormBuilder,
+    private _formBuilder: UntypedFormBuilder,
     private experimentService: ExperimentService,
     private experimentDesignStepperService: ExperimentDesignStepperService,
     private dialogService: DialogService
@@ -130,7 +130,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           this.isExperimentEditable = false;
         }
         this.currentContext = this.experimentInfo.context[0];
-        const { groupType } = this.setGroupTypeControlValue();
+
         this.overviewForm.setValue({
           experimentName: this.experimentInfo.name,
           description: this.experimentInfo.description,
@@ -294,12 +294,12 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     return this.overviewForm.get('unitOfAssignment').value === ASSIGNMENT_UNIT.GROUP;
   }
 
-  get contexts(): FormArray {
-    return this.overviewForm.get('context') as FormArray;
+  get contexts(): UntypedFormArray {
+    return this.overviewForm.get('context') as UntypedFormArray;
   }
 
-  get tags(): FormArray {
-    return this.overviewForm.get('tags') as FormArray;
+  get tags(): UntypedFormArray {
+    return this.overviewForm.get('tags') as UntypedFormArray;
   }
 
   get ExperimentState() {

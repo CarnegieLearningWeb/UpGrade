@@ -15,7 +15,7 @@
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "module": "es2020",
-    "target": "es2015",
+    "target": "es2020",
     "typeRoots": ["./node_modules/@types"],
     "lib": ["es2018", "dom"],
     "paths": {
