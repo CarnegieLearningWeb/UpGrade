@@ -9,11 +9,13 @@ import {
   ILogInput,
   MARKED_DECISION_POINT_STATUS,
   IExperimentAssignmentv4,
+  CaliperEnvelope
 } from 'upgrade_types';
 import getExperimentCondition, { Assignment } from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
 import getAllFeatureFlags from './functions/getAllfeatureFlags';
 import log from './functions/log';
+import logCaliper from './functions/logCaliper';
 import setAltUserIds from './functions/setAltUserIds';
 import addMetrics from './functions/addMetrics';
 import getFeatureFlag from './functions/getFeatureFlag';
@@ -31,6 +33,7 @@ export default class UpgradeClient {
     failedExperimentPoint: '',
     getAllFeatureFlag: '',
     log: '',
+    logCaliper: '',
     altUserIds: '',
     addMetrics: '',
   };
@@ -66,6 +69,7 @@ export default class UpgradeClient {
       failedExperimentPoint: `${hostUrl}/api/v4/failed`,
       getAllFeatureFlag: `${hostUrl}/api/v4/featureflag`,
       log: `${hostUrl}/api/v4/log`,
+      logCaliper: `${hostUrl}/api/v4/logCaliper`,
       altUserIds: `${hostUrl}/api/v4/useraliases`,
       addMetrics: `${hostUrl}/api/v4/metric`,
     };
@@ -186,6 +190,12 @@ export default class UpgradeClient {
   async log(value: ILogInput[], sendAsAnalytics = false): Promise<Interfaces.ILog[]> {
     this.validateClient();
     return await log(this.api.log, this.userId, this.token, this.clientSessionId, value, sendAsAnalytics);
+  }
+
+
+  async logCaliper(value: CaliperEnvelope, sendAsAnalytics = false): Promise<Interfaces.ILog[]> {
+    this.validateClient();
+    return await logCaliper(this.api.logCaliper, this.userId, this.token, this.clientSessionId, value, sendAsAnalytics);
   }
 
   async setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUserAliases[]> {
