@@ -1,0 +1,51 @@
+name: Bump Dev Version
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Semver type of new version (major / minor / patch)'
+        required: true
+        type: choice
+        options: 
+        - minor
+        - major
+        - patch
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out source
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+        cache: 'npm'
+
+    - name: Install npm packages
+      run: npm ci
+
+    - name: Setup Git
+      run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'github@github.com'
+
+    - name: bump version
+      run: |
+        echo "root:" && npm version ${{ github.event.inputs.version }} --git-tag-version=false &&
+        echo "types:" && cd types && npm version ${{ github.event.inputs.version }} --git-tag-version=false && 
+        echo "frontend:" && cd ../frontend && npm version ${{ github.event.inputs.version }} --git-tag-version=false &&
+        echo "backend-root:" && cd ../backend && npm version ${{ github.event.inputs.version }} --git-tag-version=false &&
+        echo "scheduler:" && cd packages/Scheduler && npm version ${{ github.event.inputs.version }} --git-tag-version=false &&
+        echo "backend:" && cd ../Upgrade && npm version ${{ github.event.inputs.version }} --git-tag-version=false &&
+        echo "js clientlib:" && cd ../../../clientlibs/js && npm version ${{ github.event.inputs.version }} --git-tag-version=false &&
+        NEW_VERSION=$(jq -r '.version' package.json) &&
+        echo "java clientlib:" && cd ../java && mvn versions:set -DnewVersion=${NEW_VERSION} &&
+        cd ../../
+
+    - name: Push latest version
+      run: |
+        git commit -m 'Bump dev to version ${NEW_VERSION}' -a
+        git push origin dev --follow-tags
