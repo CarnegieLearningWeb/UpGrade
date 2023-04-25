@@ -48,7 +48,7 @@
     "@ngrx/effects": "~14.3.3",
     "@ngrx/entity": "~14.3.3",
     "@ngrx/router-store": "~14.3.3",
-    "@ngrx/store": "~14.3.3",
+    "@ngrx/store": "^15.4.0",
     "@ngrx/store-devtools": "~14.3.3",
     "@ngx-translate/core": "^11.0.1",
     "@ngx-translate/http-loader": "^4.0.0",

@@ -1,7 +1,7 @@
 @use '@angular/material' as mat;
+@use 'node_modules/ng-pick-datetime-ex/assets/style/picker.min.css';
 @import url('https://fonts.googleapis.com/css?family=Roboto:400,700|Material+Icons');
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800&display=swap');
-@import '~ng-pick-datetime-ex/assets/style/picker.min.css';
 
 // TODO(v15): As of v15 mat.legacy-core no longer includes default typography styles.
 //  The following line adds:
@@ -10,7 +10,7 @@
 //  If you specify typography styles for the components you use elsewhere, you should delete this line.
 //  If you don't need the default component typographies but still want the hierarchy styles,
 //  you can delete this line and instead use:
-//    `@include mat.legacy-typography-hierarchy(mat.define-legacy-typography-config());`
+//    `@include mat.legacy-typography-hierarchy(mat.define-legacy-typography-config());
 @include mat.all-legacy-component-typographies();
 @include mat.legacy-core();
 
