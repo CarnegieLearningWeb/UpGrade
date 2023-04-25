@@ -51,12 +51,12 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
       this.experimentSub = this.experimentService
         .selectExperimentById(this.experimentInfo.id)
         .subscribe((experimentData) => {
-          this.newExperimentData = experimentData;
+          this.newExperimentData = this.newExperimentData || experimentData;
           this.experimentInfo = experimentData;
         });
     } else if (this.data && this.data.experiment) {
       this.experimentInfo = this.data.experiment;
-      this.newExperimentData = this.data.experiment;
+      this.newExperimentData = this.newExperimentData || this.data.experiment;
     }
 
     if (this.newExperimentData && this.newExperimentData.conditions && this.newExperimentData.conditions.length) {
@@ -140,7 +140,6 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
       type: this.experimentInfo ? NewExperimentDialogEvents.UPDATE_EXPERIMENT : eventType,
       formData: {
         postExperimentRule,
-        conditions: this.newExperimentData.conditions,
         revertTo: revertTo !== 'default' ? revertTo : null,
       },
       path: NewExperimentPaths.POST_EXPERIMENT_RULE,

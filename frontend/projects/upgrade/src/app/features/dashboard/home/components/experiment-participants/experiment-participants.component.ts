@@ -99,6 +99,8 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.members2.clear();
       this.members1DataSource.next(this.members1.controls);
       this.members2DataSource.next(this.members2.controls);
+      // Bind predefined values of experiment participants from backend
+      this.bindParticipantsData();
     }
   }
 
@@ -172,6 +174,9 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.updateView1();
     this.updateView2();
 
+    // Bind predefined values of experiment participants from backend
+    this.bindParticipantsData();
+
     this.participantsForm.get('members1').valueChanges.subscribe((newValues) => {
       this.checkSegmentValidity(newValues, 1);
     });
@@ -184,9 +189,6 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.members1.controls.at(0).get('id').disable();
       this.includeAll = true;
     }
-
-    // Bind predefined values of experiment participants from backend
-    this.bindParticipantsData();
   }
 
   bindParticipantsData() {

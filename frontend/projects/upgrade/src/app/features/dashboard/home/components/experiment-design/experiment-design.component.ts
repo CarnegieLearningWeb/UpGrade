@@ -54,8 +54,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.STEP_CONTAINER, { read: ElementRef }) stepContainer: ElementRef;
-  @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.CONDITIONS, { read: ElementRef }) conditionTable: ElementRef;
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.DECISION_POINTS, { read: ElementRef }) decisionPointTable: ElementRef;
+  @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.CONDITIONS, { read: ElementRef }) conditionTable: ElementRef;
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.CONDITION_CODE) conditionCode: ElementRef;
 
   subscriptionHandler: Subscription;
@@ -155,7 +155,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       if (this.experimentInfo) {
         this.experimentInfo.partitions = [];
         this.experimentInfo.conditions = [];
-        this.experimentInfo.conditionAliases = [];
+        this.experimentInfo.conditionPayloads = [];
       }
     }
 
@@ -719,8 +719,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           ? { ...decisionPoint, order: order++ }
           : { ...this.removeDecisionPointName(decisionPoint), order: order++ };
       });
-      experimentDesignFormData.conditionAliases =
-        this.experimentDesignStepperService.createExperimentConditionAliasRequestObject({
+      experimentDesignFormData.conditionPayloads =
+        this.experimentDesignStepperService.createExperimentConditionPayloadRequestObject({
           decisionPoints: experimentDesignFormData.decisionPoints,
           conditions: experimentDesignFormData.conditions,
         });
@@ -775,7 +775,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.applyEqualWeight();
   }
 
-  scrollToAliasesTable(): void {
+  scrollToPayloadsTable(): void {
     this.stepContainer.nativeElement.scroll({
       top: this.stepContainer.nativeElement.scrollHeight / 2,
       behavior: 'smooth',
@@ -813,8 +813,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return EXPERIMENT_STATE;
   }
 
-  get aliasTableData$() {
-    return this.experimentDesignStepperService.simpleExperimentAliasTableData$;
+  get payloadTableData$() {
+    return this.experimentDesignStepperService.simpleExperimentPayloadTableData$;
   }
 
   ngOnDestroy() {

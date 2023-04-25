@@ -19,7 +19,6 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import {
-  IExperimentAssignment,
   ISingleMetric,
   IGroupMetric,
   SERVER_ERROR,
@@ -40,15 +39,9 @@ import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
 import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
-
-interface ILog {
-  id: string;
-  uniquifier: string;
-  timeStamp: Date;
-  data: any;
-  metrics: Metric[];
-  user: ExperimentUser;
-}
+import { Log } from '../models/Log';
+import flatten from 'lodash.flatten';
+import { CaliperLogEnvelope } from './validators/CaliperLogEnvelope';
 
 interface IMonitoredDeciosionPoint {
   id: string;
@@ -58,6 +51,14 @@ interface IMonitoredDeciosionPoint {
   experimentId: string;
   condition: string;
   monitoredPointLogs: MonitoredDecisionPointLog[];
+}
+
+interface IExperimentAssignment {
+  site: string;
+  target: string;
+  assignedCondition: {
+    condition: string;
+  };
 }
 /**
  * @swagger
@@ -521,7 +522,7 @@ export class ExperimentClientController {
       return {
         site,
         target,
-        assignedCondition: { condition: assignedCondition.conditionCode },
+        assignedCondition: { condition: assignedCondition.payload?.value || assignedCondition.conditionCode },
       };
     });
   }
@@ -599,7 +600,7 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     logData: LogValidator
-  ): Promise<ILog[]> {
+  ): Promise<Omit<Log, 'createdAt' | 'updatedAt' | 'versionNumber'>[]> {
     request.logger.info({ message: 'Starting the log call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.getUserDoc(logData.userId, request.logger);
@@ -615,6 +616,53 @@ export class ExperimentClientController {
     return logs.map(({ createdAt, updatedAt, versionNumber, ...rest }) => {
       return rest;
     });
+  }
+
+   /**
+   * @swagger
+   * /log/caliper:
+   *    post:
+   *       description: Post Caliper format log data
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *          - in: body
+   *            name: data
+   *            required: true
+   *            description: User Document
+   *       tags:
+   *         - Client Side SDK
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Log data
+   *          '500':
+   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
+   */
+  @Post('log/caliper')
+  public async caliperLog(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
+    envelope: CaliperLogEnvelope
+  ): Promise<Log[]> {
+    let result = envelope.data.map(async log => {
+      // getOriginalUserDoc call for alias
+      const experimentUserDoc = await this.getUserDoc(log.object.assignee.id, request.logger);
+      if (experimentUserDoc) {
+        // append userDoc in logger
+        request.logger.child({ userDoc: experimentUserDoc });
+        request.logger.info({ message: 'Got the original user doc' });
+      }
+      return this.experimentAssignmentService.caliperDataLog(log, {
+        logger: request.logger,
+        userDoc: experimentUserDoc,
+      });
+    });
+
+    const logsToReturn = await Promise.all(result);
+    return flatten(logsToReturn);
   }
 
   /**

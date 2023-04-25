@@ -2,14 +2,14 @@ import Container from 'typedi';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
-import { aliasConditionExperiment } from '../../mockData/experiment/index';
+import { payloadConditionExperiment } from '../../mockData/experiment/index';
 import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
-export default async function EnrollmentWithConditionAlias(): Promise<void> {
+export default async function EnrollmentWithConditionPayload(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const userService = Container.get<UserService>(UserService);
 
@@ -17,7 +17,7 @@ export default async function EnrollmentWithConditionAlias(): Promise<void> {
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
-  const experimentObject: any = aliasConditionExperiment;
+  const experimentObject: any = payloadConditionExperiment;
 
   // remove 1 condition
   experimentObject.conditions.sort((a, b) => {
@@ -27,7 +27,7 @@ export default async function EnrollmentWithConditionAlias(): Promise<void> {
 
   const experimentName = experimentObject.partitions[0].target;
   const experimentPoint = experimentObject.partitions[0].site;
-  const aliasCondition = experimentObject.conditionAliases[0].aliasName;
+  const payloadCondition = experimentObject.conditionPayloads[0].payload.value;
 
   // create experiment 1
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -66,13 +66,27 @@ export default async function EnrollmentWithConditionAlias(): Promise<void> {
   const experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
   expect(experimentConditionAssignments).toHaveLength(3);
+  experimentConditionAssignments.sort((a, b) => {
+    return a.assignedCondition.conditionCode > b.assignedCondition.conditionCode
+      ? 1
+      : a.assignedCondition.conditionCode < b.assignedCondition.conditionCode
+      ? -1
+      : 0;
+  });
+  // expecting response from Service
   expect(experimentConditionAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        assignedCondition: expect.objectContaining({ conditionCode: 'ConditionA_W1' }),
+        assignedCondition: expect.objectContaining({
+          payload: { type: 'string', value: 'ConditionA_W2' },
+          conditionCode: 'ConditionA',
+        }),
       }),
       expect.objectContaining({
-        assignedCondition: expect.objectContaining({ conditionCode: 'ConditionA_W2' }),
+        assignedCondition: expect.objectContaining({
+          payload: { type: 'string', value: 'ConditionA_W1' },
+          conditionCode: 'ConditionA',
+        }),
       }),
       expect.objectContaining({
         assignedCondition: expect.objectContaining({ conditionCode: 'ConditionA' }),
@@ -85,7 +99,7 @@ export default async function EnrollmentWithConditionAlias(): Promise<void> {
     experimentUsers[0].id,
     experimentName,
     experimentPoint,
-    aliasCondition,
+    payloadCondition,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);

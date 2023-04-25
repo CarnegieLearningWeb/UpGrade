@@ -4,6 +4,9 @@ import {
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
   IMetricMetaData,
+  PAYLOAD_TYPE,
+  SUPPORTED_CALIPER_EVENTS,
+  SUPPORTED_CALIPER_PROFILES,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -39,28 +42,24 @@ export interface IExperimentEnrollmentDetailStats {
 }
 
 // TODO Delete this after changing in clientSDK
-export interface INewExperimentAssignment {
+export type INewExperimentAssignment = Pick<IExperimentAssignmentv4, 'assignedCondition'> & {
   target: string;
   site: string;
   experimentId: string;
-  twoCharacterId: string;
-  description: string;
-  assignedCondition: {
-    conditionCode: string;
-    twoCharacterId: string;
-    description: string;
-  };
-}
+};
 
-export interface IExperimentAssignment {
+export interface IExperimentAssignmentv4 {
   site: string;
   target: string;
-  assignedCondition: AssignedCondition;
+  assignedCondition: {
+    conditionCode: string;
+    payload: { type: PAYLOAD_TYPE; value: string };
+    experimentId: string;
+    id?: string;
+  };
+  assignedFactor?: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }>;
 }
 
-interface AssignedCondition {
-  condition: string;
-}
 interface ExperimentCreatedData {
   experimentId: string;
   experimentName: string;
@@ -175,4 +174,51 @@ export interface IWorkingGroup {
 export interface IUserAliases {
   userId: string;
   aliases: string[];
+}
+
+export interface IPayload {
+  type: PAYLOAD_TYPE;
+  value: string;
+}
+
+
+export interface ScoreObject {
+  id: string;
+  type: string;
+  attempt: Attempt;
+  extensions?: object;
+  scoreGiven?: number;
+}
+
+export interface CaliperActor {
+  id: string;
+  type: string;
+}
+
+export interface Attempt {
+  id?: string;
+  type: string;
+  assignee?: CaliperActor;
+  assignable?: CaliperActor;
+  duration?: string;
+  extensions?: ILogInput;
+}
+
+export interface CaliperGradingProfile {
+  id: string,
+  type: SUPPORTED_CALIPER_EVENTS,
+  profile: SUPPORTED_CALIPER_PROFILES,
+  actor: CaliperActor,
+  action: string,
+  object: Attempt,
+  generated: ScoreObject,
+  extensions: Record<string, unknown>,
+  eventTime: string,
+}
+
+export interface CaliperEnvelope {
+  sensor: string,
+  sendTime: string,
+  dataVersion: string,
+  data: CaliperGradingProfile[]
 }

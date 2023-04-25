@@ -17,7 +17,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
-import { ISingleMetric, IGroupMetric, SERVER_ERROR } from 'upgrade_types';
+import { ISingleMetric, IGroupMetric, SERVER_ERROR, PAYLOAD_TYPE } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -31,16 +31,17 @@ import { Metric } from '../models/Metric';
 import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
+import flatten from 'lodash.flatten';
+import { CaliperLogEnvelope } from './validators/CaliperLogEnvelope';
 
 interface IExperimentAssignment {
   expId: string;
   expPoint: string;
-  twoCharacterId: string;
-  description: string;
   assignedCondition: {
     conditionCode: string;
-    twoCharacterId: string;
-    description: string;
+    payload: { type: PAYLOAD_TYPE; value: string };
+    experimentId: string;
+    id?: string;
   };
 }
 
@@ -553,11 +554,12 @@ export class ExperimentClientController {
       }
     );
 
-    return assignedData.map(({ site, target, ...rest }) => {
+    return assignedData.map(({ site, target, assignedCondition }) => {
+      const conditionCode = assignedCondition.payload?.value || assignedCondition.conditionCode;
       return {
         expPoint: site,
         expId: target,
-        ...rest,
+        assignedCondition: { ...assignedCondition, conditionCode: conditionCode },
       };
     });
   }
@@ -648,6 +650,54 @@ export class ExperimentClientController {
       logger: request.logger,
       userDoc: experimentUserDoc,
     });
+  }
+
+
+   /**
+   * @swagger
+   * /log/caliper:
+   *    post:
+   *       description: Post Caliper format log data
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *          - in: body
+   *            name: data
+   *            required: true
+   *            description: User Document
+   *       tags:
+   *         - Client Side SDK
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Log data
+   *          '500':
+   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
+   */
+  @Post('log/caliper')
+  public async caliperLog(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
+    envelope: CaliperLogEnvelope
+  ): Promise<Log[]> {
+    let result = envelope.data.map(async log => {
+      // getOriginalUserDoc call for alias
+      const experimentUserDoc = await this.getUserDoc(log.object.assignee.id, request.logger);
+      if (experimentUserDoc) {
+        // append userDoc in logger
+        request.logger.child({ userDoc: experimentUserDoc });
+        request.logger.info({ message: 'Got the original user doc' });
+      }
+      return this.experimentAssignmentService.caliperDataLog(log, {
+        logger: request.logger,
+        userDoc: experimentUserDoc,
+      });
+    });
+
+    const logsToReturn = await Promise.all(result);
+    return flatten(logsToReturn);
   }
 
   /**

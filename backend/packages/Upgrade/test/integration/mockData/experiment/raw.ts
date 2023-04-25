@@ -1,4 +1,4 @@
-import { FILTER_MODE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 
 export const revertToExperiment = {
   id: 'be3ae74f-370a-4015-93f3-7761d16f8b11',
@@ -114,7 +114,7 @@ export const experiment = {
       excludedIfReached: true,
     },
   ],
-  conditionAliases: [],
+  conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
@@ -169,7 +169,7 @@ export const experimentSecond = {
       excludedIfReached: true,
     },
   ],
-  conditionAliases: [],
+  conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
@@ -224,7 +224,7 @@ export const experimentThird = {
       excludedIfReached: true,
     },
   ],
-  conditionAliases: [],
+  conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
@@ -279,7 +279,7 @@ export const experimentFourth = {
       excludedIfReached: true,
     },
   ],
-  conditionAliases: [],
+  conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
@@ -298,6 +298,7 @@ export const experimentFifth = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
+  type: EXPERIMENT_TYPE.SIMPLE,
   experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
@@ -343,16 +344,22 @@ export const experimentFifth = {
       excludedIfReached: true,
     },
   ],
-  conditionAliases: [
+  conditionPayloads: [
     {
       id: '9d753b90-1111-44b5-8acc-2483c0507ea0',
-      aliasName: 'ConditionA_W1',
+      payload: {
+        type: 'string',
+        value: 'ConditionA_W1',
+      },
       parentCondition: 'c22467b1-f0e9-4444-9517-cc03037bc079',
       decisionPoint: 'd22467b1-f0e9-4444-9517-cc03037bc079',
     },
     {
       id: '9d753b90-1111-44b5-8acc-2483c0507ea1',
-      aliasName: 'ConditionA_W2',
+      payload: {
+        type: 'string',
+        value: 'ConditionA_W2',
+      },
       parentCondition: 'c22467b1-f0e9-4444-9517-cc03037bc079',
       decisionPoint: 'e22467b1-f0e9-4444-9517-cc03037bc079',
     },
@@ -413,7 +420,7 @@ export const experimentSixth = {
       excludedIfReached: true,
     },
   ],
-  conditionAliases: [],
+  conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
@@ -437,6 +444,52 @@ export const factorialExperimentFirst = {
   filterMode: 'includeAll',
   backendVersion: '1.0.0',
   type: 'Factorial',
+  factors: [
+    {
+      name: 'Color',
+      description: '',
+      order: 1,
+      levels: [
+        {
+          id: '33333333-1111-4a52-a058-90fac2d03679',
+          name: 'Red',
+          order: 1,
+        },
+        {
+          id: '44444444-2222-4a52-a058-90fac2d03679',
+          name: 'Blue',
+          description: 'description of level2',
+          payload: {
+            type: 'string',
+            value: 'Dark blue - Blue color Alias',
+          },
+          order: 2,
+        },
+      ],
+    },
+    {
+      name: 'Shape',
+      description: '',
+      order: 2,
+      levels: [
+        {
+          id: '11111111-1111-4a52-a058-90fac2d03679',
+          name: 'Circle',
+          order: 1,
+        },
+        {
+          id: '22222222-2222-4a52-a058-90fac2d03679',
+          name: 'Rectangle',
+          description: 'description of level2',
+          payload: {
+            type: 'string',
+            value: 'Square - rectangle alias',
+          },
+          order: 2,
+        },
+      ],
+    },
+  ],
   partitions: [
     {
       id: '5e335ac8-28df-463d-86bb-837dcd8240c4',
@@ -446,44 +499,6 @@ export const factorialExperimentFirst = {
       description: '',
       order: 1,
       excludeIfReached: false,
-      factors: [
-        {
-          name: 'Color',
-          order: 1,
-          levels: [
-            {
-              id: '33333333-1111-4a52-a058-90fac2d03679',
-              name: 'Red',
-              order: 1,
-            },
-            {
-              id: '44444444-2222-4a52-a058-90fac2d03679',
-              name: 'Blue',
-              description: 'description of level2',
-              alias: 'Dark blue - Blue color Alias',
-              order: 2,
-            },
-          ],
-        },
-        {
-          name: 'Shape',
-          order: 2,
-          levels: [
-            {
-              id: '11111111-1111-4a52-a058-90fac2d03679',
-              name: 'Circle',
-              order: 1,
-            },
-            {
-              id: '22222222-2222-4a52-a058-90fac2d03679',
-              name: 'Rectangle',
-              description: 'description of level2',
-              alias: 'Square - rectangle alias',
-              order: 2,
-            },
-          ],
-        },
-      ],
     },
   ],
   conditions: [
@@ -492,7 +507,7 @@ export const factorialExperimentFirst = {
       twoCharacterId: '5H',
       name: '',
       description: null,
-      conditionCode: null,
+      conditionCode: 'Shape=Circle; Color=Red',
       assignmentWeight: 50,
       order: 1,
       levelCombinationElements: [
@@ -512,7 +527,7 @@ export const factorialExperimentFirst = {
       twoCharacterId: '6Y',
       name: '',
       description: null,
-      conditionCode: null,
+      conditionCode: 'Shape=Rectangle; Color=Blue',
       assignmentWeight: 50,
       order: 2,
       levelCombinationElements: [
@@ -567,10 +582,13 @@ export const factorialExperimentFirst = {
       subSegments: [],
     },
   },
-  conditionAliases: [
+  conditionPayloads: [
     {
       id: '9d753b90-1111-44b5-8acc-2483c0507ea1',
-      aliasName: 'Red-Circle alias name',
+      payload: {
+        type: 'string',
+        value: 'Red-Circle alias name',
+      },
       parentCondition: '6dd63ad9-f121-4d95-8d27-08a80e9560a4',
     },
   ],
@@ -598,6 +616,52 @@ export const factorialExperimentSecond = {
   filterMode: 'includeAll',
   backendVersion: '1.0.0',
   type: 'Factorial',
+  factors: [
+    {
+      name: 'Question Type',
+      description: '',
+      order: 1,
+      levels: [
+        {
+          id: '33333333-3333-4a52-a058-90fac2d03679',
+          name: 'Abstract',
+          order: 1,
+        },
+        {
+          id: '44444444-4444-4a52-a058-90fac2d03679',
+          name: 'Concrete',
+          description: 'description of level2',
+          payload: {
+            type: 'string',
+            value: 'Concrete Alias',
+          },
+          order: 2,
+        },
+      ],
+    },
+    {
+      name: 'Motivation',
+      description: '',
+      order: 2,
+      levels: [
+        {
+          id: '33333333-5555-4a52-a058-90fac2d03679',
+          name: 'No support',
+          order: 1,
+        },
+        {
+          id: '44444444-6666-4a52-a058-90fac2d03679',
+          name: 'Mindset',
+          description: 'description of level2',
+          payload: {
+            type: 'string',
+            value: 'Mindset Alias',
+          },
+          order: 2,
+        },
+      ],
+    },
+  ],
   partitions: [
     {
       createdAt: '2022-10-07T05:44:43.162Z',
@@ -610,26 +674,6 @@ export const factorialExperimentSecond = {
       description: '',
       order: 1,
       excludeIfReached: false,
-      factors: [
-        {
-          name: 'Question Type',
-          order: 1,
-          levels: [
-            {
-              id: '33333333-3333-4a52-a058-90fac2d03679',
-              name: 'Abstract',
-              order: 1,
-            },
-            {
-              id: '44444444-4444-4a52-a058-90fac2d03679',
-              name: 'Concrete',
-              description: 'description of level2',
-              alias: 'Concrete Alias',
-              order: 2,
-            },
-          ],
-        },
-      ],
     },
     {
       createdAt: '2022-10-07T05:44:43.162Z',
@@ -642,26 +686,6 @@ export const factorialExperimentSecond = {
       description: '',
       order: 2,
       excludeIfReached: false,
-      factors: [
-        {
-          name: 'Motivation',
-          order: 1,
-          levels: [
-            {
-              id: '33333333-5555-4a52-a058-90fac2d03679',
-              name: 'No support',
-              order: 1,
-            },
-            {
-              id: '44444444-6666-4a52-a058-90fac2d03679',
-              name: 'Mindset',
-              description: 'description of level2',
-              alias: 'Mindset Alias',
-              order: 2,
-            },
-          ],
-        },
-      ],
     },
   ],
   conditions: [
@@ -673,7 +697,7 @@ export const factorialExperimentSecond = {
       twoCharacterId: '5H',
       name: '',
       description: null,
-      conditionCode: null,
+      conditionCode: 'Question Type=Abstract; Motivation=No support',
       assignmentWeight: 25,
       order: 1,
       levelCombinationElements: [
@@ -693,7 +717,7 @@ export const factorialExperimentSecond = {
       twoCharacterId: '6Y',
       name: '',
       description: null,
-      conditionCode: null,
+      conditionCode: 'Question Type=Concrete; Motivation=Mindset',
       assignmentWeight: 25,
       order: 2,
       levelCombinationElements: [
@@ -713,7 +737,7 @@ export const factorialExperimentSecond = {
       twoCharacterId: '5H',
       name: '',
       description: null,
-      conditionCode: null,
+      conditionCode: 'Question Type=Abstract; Motivation=Mindset',
       assignmentWeight: 25,
       order: 3,
       levelCombinationElements: [
@@ -733,7 +757,7 @@ export const factorialExperimentSecond = {
       twoCharacterId: '6Y',
       name: '',
       description: null,
-      conditionCode: null,
+      conditionCode: 'Question Type=Concrete; Motivation=No support',
       assignmentWeight: 25,
       order: 4,
       levelCombinationElements: [
@@ -794,7 +818,7 @@ export const factorialExperimentSecond = {
       subSegments: [],
     },
   },
-  conditionAliases: [],
+  conditionPayloads: [],
 };
 
 export function getRevertToExperiment() {

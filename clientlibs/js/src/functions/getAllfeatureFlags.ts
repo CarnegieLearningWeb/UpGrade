@@ -1,36 +1,27 @@
 import fetchDataService from '../common/fetchDataService';
 import { Types } from '../identifiers';
-import { IFeatureFlag } from 'upgrade_types';
+import { IFeatureFlag, IFlagVariation } from 'upgrade_types';
 
 export default async function getAllFeatureFlags(
   url: string,
   token: string,
   clientSessionId: string
 ): Promise<IFeatureFlag[]> {
-  try {
-    const featureFlagResponse = await fetchDataService(url, token, clientSessionId, {}, Types.REQUEST_TYPES.GET);
-    if (featureFlagResponse.status) {
-      return featureFlagResponse.data.map((flag) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { createdAt, updatedAt, versionNumber, variations, ...rest } = flag;
-        const updatedVariations = variations.map((variation) => {
-          const {
-            createdAt: createdDate,
-            updatedAt: updatedDate,
-            versionNumber: vNumber,
-            ...restVariation
-          } = variation;
-          return restVariation;
-        });
-        return {
-          ...rest,
-          variations: updatedVariations,
-        };
+  const featureFlagResponse = await fetchDataService(url, token, clientSessionId, {}, Types.REQUEST_TYPES.GET);
+  if (featureFlagResponse.status) {
+    return featureFlagResponse.data.map((flag: IFeatureFlag) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { variations, ...rest } = flag;
+      const updatedVariations = variations.map((variation: IFlagVariation) => {
+        const { ...restVariation } = variation;
+        return restVariation;
       });
-    } else {
-      throw new Error(JSON.stringify(featureFlagResponse.message));
-    }
-  } catch (error) {
-    throw new Error(error.message);
+      return {
+        ...rest,
+        variations: updatedVariations,
+      };
+    });
+  } else {
+    throw new Error(JSON.stringify(featureFlagResponse.message));
   }
 }
