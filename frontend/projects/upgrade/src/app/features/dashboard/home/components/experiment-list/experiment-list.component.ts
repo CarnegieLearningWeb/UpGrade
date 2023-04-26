@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, OnDestroy, ElementRef, AfterViewInit } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
 import {
   Experiment,
@@ -8,7 +8,7 @@ import {
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Subscription, fromEvent, Observable } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { NewExperimentComponent } from '../modal/new-experiment/new-experiment.component';
 import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
 import { debounceTime } from 'rxjs/operators';
