@@ -50,8 +50,7 @@ export class PayloadsTableComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.experimentDesignStepperService.clearSimpleExperimentDesignStepperData();
-    this.experimentDesignStepperService.setUpdatePayloadTableEditModeDetails(null, true);
+    this.experimentDesignStepperService.setUpdatePayloadTableEditModeDetails(null);
     this.subscriptions.unsubscribe();
   }
 
@@ -119,7 +118,7 @@ export class PayloadsTableComponent implements OnInit, OnDestroy {
     }
 
     this.currentPayloadInput$.next(rowData.payload);
-    this.experimentDesignStepperService.setUpdatePayloadTableEditModeDetails(rowIndex, false);
+    this.experimentDesignStepperService.setUpdatePayloadTableEditModeDetails(rowIndex);
     this.experimentDesignStepperService.setNewSimpleExperimentPayloadTableData(payloadTableData);
   }
 
