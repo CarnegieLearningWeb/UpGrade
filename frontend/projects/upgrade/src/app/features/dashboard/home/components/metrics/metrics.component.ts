@@ -317,6 +317,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     }
     this.experimentDesignStepperService.experimentStepperDataChanged();
     // reset options for metric keys:
+    this.filteredStatistic$[queryIndex] = [];
     this.firstSelectedNode[queryIndex] = null;
     this.optionsSub();
     this.setQueryIndex(this.queryIndex - 1);
