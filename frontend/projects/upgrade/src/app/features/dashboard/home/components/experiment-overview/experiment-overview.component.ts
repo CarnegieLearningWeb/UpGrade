@@ -19,11 +19,11 @@ import {
   ExperimentDesignTypes,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
-import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray } from '@angular/forms';
-import find from 'lodash.find';
+import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
+import * as find from 'lodash.find';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Observable, Subscription } from 'rxjs';
-import { MatLegacyChipInputEvent as MatChipInputEvent } from '@angular/material/legacy-chips';
+import { MatChipInputEvent } from '@angular/material/chips';
 import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 @Component({
@@ -36,7 +36,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('contextInput') contextInput: ElementRef<HTMLInputElement>;
-  overviewForm: UntypedFormGroup;
+  overviewForm: FormGroup;
   unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
 
   groupTypes = [];
@@ -60,7 +60,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
   constructor(
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
     private experimentDesignStepperService: ExperimentDesignStepperService,
     private dialogService: DialogService
@@ -130,7 +130,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           this.isExperimentEditable = false;
         }
         this.currentContext = this.experimentInfo.context[0];
-
+        const { groupType } = this.setGroupTypeControlValue();
         this.overviewForm.setValue({
           experimentName: this.experimentInfo.name,
           description: this.experimentInfo.description,
@@ -168,7 +168,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   // Used to add tags or contexts
   addChip(event: MatChipInputEvent, type: string): void {
-    const input = event.chipInput;
+    const input = event.input;
     const value = event.value.toLowerCase();
 
     // Add chip
@@ -185,7 +185,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
     // Reset the input value
     if (input) {
-      input.clear();
+      input.value = '';
     }
   }
 
@@ -294,12 +294,12 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     return this.overviewForm.get('unitOfAssignment').value === ASSIGNMENT_UNIT.GROUP;
   }
 
-  get contexts(): UntypedFormArray {
-    return this.overviewForm.get('context') as UntypedFormArray;
+  get contexts(): FormArray {
+    return this.overviewForm.get('context') as FormArray;
   }
 
-  get tags(): UntypedFormArray {
-    return this.overviewForm.get('tags') as UntypedFormArray;
+  get tags(): FormArray {
+    return this.overviewForm.get('tags') as FormArray;
   }
 
   get ExperimentState() {

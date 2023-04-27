@@ -10,7 +10,7 @@ import {
   OnChanges,
   OnDestroy,
 } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators, UntypedFormArray, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
@@ -31,7 +31,9 @@ import { ExperimentDesignStepperService } from '../../../../../core/experiment-d
 import {
   DecisionPointsTableRowData,
   ExperimentConditionPayloadRequestObject,
+  ExperimentFactorFormData,
   ExperimentFactorialFormDesignData,
+  ExperimentLevelFormData,
   FactorialConditionRequestObject,
   FactorialConditionTableRowData,
   FactorialFactorTableRowData,
@@ -60,7 +62,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   subscriptionHandler: Subscription;
 
-  factorialExperimentDesignForm: UntypedFormGroup;
+  factorialExperimentDesignForm: FormGroup;
   decisionPointDataSource = new BehaviorSubject<AbstractControl[]>([]);
   factorDataSource = new BehaviorSubject<AbstractControl[]>([]);
   tableData$ = new BehaviorSubject<FactorialLevelTableRowData[]>([]);
@@ -122,7 +124,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   factorialConditions: FactorialConditionRequestObject[] = [];
 
   constructor(
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
     private translate: TranslateService,
     private dialogService: DialogService,
@@ -602,7 +604,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   // level table
   getFactorialLevelsAt(factorIndex: number) {
-    const levelsArray = this.factor?.at(factorIndex).get('levels') as UntypedFormArray;
+    const levelsArray = this.factor?.at(factorIndex).get('levels') as FormArray;
     return levelsArray;
   }
 
@@ -640,7 +642,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   // factor table
   getFactorialFactorsAt(factorIndex: number) {
-    const factorsArray = this.factor?.at(factorIndex) as UntypedFormArray;
+    const factorsArray = this.factor?.at(factorIndex) as FormArray;
     return factorsArray;
   }
 
@@ -785,18 +787,18 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   // getters:
-  get decisionPoints(): UntypedFormArray {
+  get decisionPoints(): FormArray {
     return this.factorialExperimentDesignForm?.get(
       FACTORIAL_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY
-    ) as UntypedFormArray;
+    ) as FormArray;
   }
 
-  get factor(): UntypedFormArray {
-    return this.factorialExperimentDesignForm?.get('factors') as UntypedFormArray;
+  get factor(): FormArray {
+    return this.factorialExperimentDesignForm?.get('factors') as FormArray;
   }
 
-  get level(): UntypedFormArray {
-    return this.factorialExperimentDesignForm?.get('factors').get('levels') as UntypedFormArray;
+  get level(): FormArray {
+    return this.factorialExperimentDesignForm?.get('factors').get('levels') as FormArray;
   }
 
   get NewExperimentDialogEvents() {

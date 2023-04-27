@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, Input } from '@angular/core';
-import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -20,11 +20,11 @@ export class ExperimentScheduleComponent implements OnInit {
   @Input() groupType: string;
   @Input() experimentInfo: ExperimentVM;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
-  experimentScheduleForm: UntypedFormGroup;
+  experimentScheduleForm: FormGroup;
   minDate = new Date();
 
   constructor(
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private dialogService: DialogService,
     private experimentDesignStepperService: ExperimentDesignStepperService
   ) {}

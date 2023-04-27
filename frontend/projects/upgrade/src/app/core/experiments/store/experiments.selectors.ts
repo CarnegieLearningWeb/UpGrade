@@ -3,7 +3,7 @@ import { selectAll } from './experiments.reducer';
 import { State, ExperimentState } from './experiments.model';
 import { selectRouterState } from '../../core.state';
 
-export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
+export const selectExperimentState = createFeatureSelector<State, ExperimentState>('experiments');
 
 export const selectAllExperimentFromState = createSelector(selectExperimentState, selectAll);
 

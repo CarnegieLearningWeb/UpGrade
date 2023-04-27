@@ -9,7 +9,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { AbstractControl, UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
@@ -37,7 +37,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   @Output() emitSegmentDialogEvent = new EventEmitter<NewSegmentDialogData>();
   @ViewChild('membersTable', { static: false, read: ElementRef }) membersTable: ElementRef;
 
-  segmentMembersForm: UntypedFormGroup;
+  segmentMembersForm: FormGroup;
   membersDataSource = new BehaviorSubject<AbstractControl[]>([]);
   contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
@@ -55,14 +55,14 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
 
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
   constructor(
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private segmentsService: SegmentsService,
     private experimentService: ExperimentService,
     private translate: TranslateService
   ) {}
 
-  get members(): UntypedFormArray {
-    return this.segmentMembersForm.get('members') as UntypedFormArray;
+  get members(): FormArray {
+    return this.segmentMembersForm.get('members') as FormArray;
   }
 
   get NewSegmentDialogEvents() {

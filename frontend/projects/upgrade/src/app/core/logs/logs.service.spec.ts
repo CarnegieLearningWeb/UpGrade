@@ -16,7 +16,7 @@ describe('LogsService', () => {
     id: 'log1',
     createdAt: 'test',
     updatedAt: 'test',
-    versionNumber: 2,
+    versionNUmber: 2,
     type: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
     data: {},
   };

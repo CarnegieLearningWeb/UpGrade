@@ -1,8 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/core';
 import { POST_EXPERIMENT_RULE, ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
-import { UntypedFormGroup, UntypedFormBuilder, Validators, AbstractControl } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ExperimentStatusComponent } from '../experiment-status/experiment-status.component';
 
 @Component({
@@ -13,11 +13,11 @@ import { ExperimentStatusComponent } from '../experiment-status/experiment-statu
 })
 export class PostExperimentRuleComponent implements OnInit {
   experimentInfo: ExperimentVM;
-  postExperimentRuleForm: UntypedFormGroup;
+  postExperimentRuleForm: FormGroup;
   postExperimentRules = [{ value: POST_EXPERIMENT_RULE.CONTINUE }, { value: POST_EXPERIMENT_RULE.ASSIGN }];
   experimentConditions = [{ value: 'default', id: 'default' }];
   constructor(
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
     private dialogRef: MatDialogRef<ExperimentStatusComponent>,
     @Inject(MAT_DIALOG_DATA) private data: any

@@ -43,7 +43,7 @@ import {
 } from './experiments.selectors';
 import { interval } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ENV, Environment } from '../../../../environments/environment-types';
 import JSZip from 'jszip';
 

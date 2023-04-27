@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
-import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { UserRole } from 'upgrade_types';
 import { UsersService } from '../../../../../../core/users/users.service';
 
@@ -11,12 +11,12 @@ import { UsersService } from '../../../../../../core/users/users.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NewUserComponent implements OnInit {
-  newUserForm: UntypedFormGroup;
+  newUserForm: FormGroup;
   userRole = [UserRole.ADMIN, UserRole.CREATOR, UserRole.USER_MANAGER, UserRole.READER];
   isUserExist = false;
   constructor(
     public dialogRef: MatDialogRef<NewUserComponent>,
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private usersService: UsersService,
     @Inject(MAT_DIALOG_DATA) private data: any
   ) {}

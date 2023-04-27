@@ -58,7 +58,7 @@ import {
 } from './store/experiment-design-stepper.actions';
 import { BehaviorSubject, distinctUntilChanged } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
-import isEqual from 'lodash.isequal';
+import * as isEqual from 'lodash.isequal';
 import { PAYLOAD_TYPE } from '../../../../../../../types/src';
 
 @Injectable({

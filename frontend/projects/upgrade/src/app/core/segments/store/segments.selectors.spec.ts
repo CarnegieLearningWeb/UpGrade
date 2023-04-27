@@ -50,10 +50,7 @@ describe('SegmentSelectors', () => {
             params: {
               segmentId: 'abc123',
             },
-            url: 'test',
-            queryParams: {},
           },
-          navigationId: 0,
         },
         previousState
       );
@@ -87,10 +84,7 @@ describe('SegmentSelectors', () => {
             params: {
               segmentId: 'abc123',
             },
-            url: 'test',
-            queryParams: {},
           },
-          navigationId: 0,
         },
         previousState
       );

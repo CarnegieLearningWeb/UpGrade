@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ExperimentVM, EndExperimentCondition } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 
@@ -12,13 +12,13 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
 })
 export class ExperimentEndCriteriaComponent implements OnInit {
   experiment: ExperimentVM;
-  experimentEndForm: UntypedFormGroup;
+  experimentEndForm: FormGroup;
   minDate = new Date();
   groupSatisfied: number;
 
   constructor(
     private dialogRef: MatDialogRef<ExperimentEndCriteriaComponent>,
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
     @Inject(MAT_DIALOG_DATA) private data: any
   ) {

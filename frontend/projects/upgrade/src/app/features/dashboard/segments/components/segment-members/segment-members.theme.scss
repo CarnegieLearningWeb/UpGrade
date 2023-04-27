@@ -1,4 +1,4 @@
-@import '@angular/material/theming';
+@import '~@angular/material/theming';
 
 @mixin segment-members-component-theme($theme) {
   $foreground: map-get($theme, foreground);

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
-import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray } from '@angular/forms';
+import { MatTableDataSource } from '@angular/material/table';
+import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { PreviewUsersService } from '../../../../../core/preview-users/preview-users.service';
 import { Subscription } from 'rxjs';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
@@ -24,8 +24,8 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
   // Used for displaying preview users
   allPreviewUsers: any;
   allPreviewUsersSub: Subscription;
-  previewUsersForm: UntypedFormGroup;
-  previewUserAssignConditionForm: UntypedFormGroup;
+  previewUsersForm: FormGroup;
+  previewUserAssignConditionForm: FormGroup;
   isPreviewUserLoading$ = this.previewUserService.isPreviewUserLoading$;
 
   experimentConditions: any[] = [];
@@ -43,7 +43,7 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('assignCondition', { read: ElementRef }) assignCondition: ElementRef;
 
   constructor(
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private previewUserService: PreviewUsersService,
     private experimentService: ExperimentService,
     private authService: AuthService
@@ -191,8 +191,8 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  get assignedConditions(): UntypedFormArray {
-    return this.previewUserAssignConditionForm.get('assignedConditions') as UntypedFormArray;
+  get assignedConditions(): FormArray {
+    return this.previewUserAssignConditionForm.get('assignedConditions') as FormArray;
   }
 
   get userRole() {

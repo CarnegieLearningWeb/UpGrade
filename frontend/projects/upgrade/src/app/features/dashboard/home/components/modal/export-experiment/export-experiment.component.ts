@@ -1,12 +1,12 @@
 import { Component, ChangeDetectionStrategy, OnInit, Inject } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { first } from 'rxjs/operators';
 import { EXPORT_METHOD } from 'upgrade_types';
 import { AuthService } from '../../../../../../core/auth/auth.service';
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'experiment-export',
@@ -17,10 +17,10 @@ import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack
 export class ExportModalComponent implements OnInit {
   exportMethod = [];
   emailId: string;
-  exportForm: UntypedFormGroup;
+  exportForm: FormGroup;
   experiments: ExperimentVM[];
   constructor(
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
     private authService: AuthService,
     private _snackBar: MatSnackBar,

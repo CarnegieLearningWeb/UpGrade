@@ -2,7 +2,7 @@ import { selectAll } from './users.reducer';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { UserState, State } from './users.model';
 
-export const selectUsersState = createFeatureSelector<UserState>('users');
+export const selectUsersState = createFeatureSelector<State, UserState>('users');
 
 export const selectAllUsers = createSelector(selectUsersState, selectAll);
 

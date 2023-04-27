@@ -558,35 +558,25 @@ describe('Experiments Selectors', () => {
   // mock router state
   describe('#selectSelectedExperiment', () => {
     it('should return selected experiment with stats mapped if stats id exists', () => {
-      const previousState = {
+      const state = {
         ...mockState,
       };
       const params = {
         experimentId: '1f12cd8f-7ff9-4731-a4eb-7104918ed252',
       };
 
-      const result = selectSelectedExperiment.projector(
-        {
-          state: {
-            params,
-            url: 'test',
-            queryParams: {},
-          },
-          navigationId: 0,
-        },
-        previousState
-      );
+      const result = selectSelectedExperiment.projector({ state: { params } }, state);
 
       expect(result).toEqual({
-        ...previousState.entities[params.experimentId],
+        ...state.entities[params.experimentId],
         stat: {
-          ...previousState.stats[params.experimentId],
+          ...state.stats[params.experimentId],
         },
       });
     });
 
     it('should return selected experiment with null stats mapped if stats id is missing', () => {
-      const previousState = {
+      const state = {
         ...mockState,
         stats: {},
       };
@@ -594,20 +584,10 @@ describe('Experiments Selectors', () => {
         experimentId: '1f12cd8f-7ff9-4731-a4eb-7104918ed252',
       };
 
-      const result = selectSelectedExperiment.projector(
-        {
-          state: {
-            params,
-            url: 'test',
-            queryParams: {},
-          },
-          navigationId: 0,
-        },
-        previousState
-      );
+      const result = selectSelectedExperiment.projector({ state: { params } }, state);
 
       expect(result).toEqual({
-        ...previousState.entities[params.experimentId],
+        ...state.entities[params.experimentId],
         stat: null,
       });
     });

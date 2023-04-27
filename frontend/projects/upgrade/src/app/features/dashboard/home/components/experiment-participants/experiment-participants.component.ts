@@ -8,7 +8,7 @@ import {
   ViewChild,
   ElementRef,
 } from '@angular/core';
-import { UntypedFormGroup, AbstractControl, UntypedFormBuilder, Validators, UntypedFormArray } from '@angular/forms';
+import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { BehaviorSubject, map, Observable, startWith, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
@@ -42,8 +42,8 @@ export class ExperimentParticipantsComponent implements OnInit {
   @ViewChild('members1Table', { static: false, read: ElementRef }) members1Table: ElementRef;
   @ViewChild('members2Table', { static: false, read: ElementRef }) members2Table: ElementRef;
 
-  participantsForm: UntypedFormGroup;
-  participantsForm2: UntypedFormGroup;
+  participantsForm: FormGroup;
+  participantsForm2: FormGroup;
   members1DataSource = new BehaviorSubject<AbstractControl[]>([]);
   members2DataSource = new BehaviorSubject<AbstractControl[]>([]);
 
@@ -70,8 +70,8 @@ export class ExperimentParticipantsComponent implements OnInit {
   segmentNotValid2 = false;
 
   constructor(
-    private _formBuilder: UntypedFormBuilder,
-    private _formBuilder2: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
+    private _formBuilder2: FormBuilder,
     private segmentsService: SegmentsService,
     private experimentService: ExperimentService,
     private dialogService: DialogService,
@@ -192,12 +192,12 @@ export class ExperimentParticipantsComponent implements OnInit {
   }
 
   bindParticipantsData() {
-    const participantsForm1Control = this.participantsForm?.get('members1') as UntypedFormArray;
+    const participantsForm1Control = this.participantsForm?.get('members1') as FormArray;
     participantsForm1Control?.controls.forEach((_, groupindex) => {
       this.manageSegmentIdsControl(groupindex, 1);
     });
 
-    const participantsForm2Control = this.participantsForm2?.get('members2') as UntypedFormArray;
+    const participantsForm2Control = this.participantsForm2?.get('members2') as FormArray;
     participantsForm2Control?.controls.forEach((_, groupindex) => {
       this.manageSegmentIdsControl(groupindex, 2);
     });
@@ -205,7 +205,7 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   manageSegmentIdsControl(index: number, form: number) {
     if (form === 1) {
-      const participantsForm = this.members1 as UntypedFormArray;
+      const participantsForm = this.members1 as FormArray;
 
       this.filteredSegmentIds$[index] = participantsForm
         .at(index)
@@ -215,7 +215,7 @@ export class ExperimentParticipantsComponent implements OnInit {
           map((id) => this.filterSegmentNameId(id))
         );
     } else {
-      const participantsForm = this.members2 as UntypedFormArray;
+      const participantsForm = this.members2 as FormArray;
 
       this.filteredSegmentIds2$[index] = participantsForm
         .at(index)
@@ -486,12 +486,12 @@ export class ExperimentParticipantsComponent implements OnInit {
     }
   }
 
-  get members1(): UntypedFormArray {
-    return this.participantsForm.get('members1') as UntypedFormArray;
+  get members1(): FormArray {
+    return this.participantsForm.get('members1') as FormArray;
   }
 
-  get members2(): UntypedFormArray {
-    return this.participantsForm2.get('members2') as UntypedFormArray;
+  get members2(): FormArray {
+    return this.participantsForm2.get('members2') as FormArray;
   }
 
   get getMemberTypes() {

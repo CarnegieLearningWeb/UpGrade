@@ -10,7 +10,7 @@ import {
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { startWith, map } from 'rxjs/operators';
 
 @Component({
@@ -32,7 +32,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
     { value: '=', viewValue: 'equal' },
     { value: '<>', viewValue: 'not equal' },
   ];
-  queryForm: UntypedFormGroup;
+  queryForm: FormGroup;
   filteredOptions: Observable<any[]>[] = [];
   options: any[] = [];
   selectedNode = null;
@@ -42,7 +42,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   constructor(
     private analysisService: AnalysisService,
     private experimentService: ExperimentService,
-    private fb: UntypedFormBuilder
+    private fb: FormBuilder
   ) {}
 
   ngOnInit() {
@@ -86,7 +86,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   }
 
   get keys() {
-    return this.queryForm.get('keys') as UntypedFormArray;
+    return this.queryForm.get('keys') as FormArray;
   }
 
   addKey() {
@@ -100,7 +100,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   }
 
   ManageKeysControl(index: number) {
-    const arrayControl = this.queryForm.get('keys') as UntypedFormArray;
+    const arrayControl = this.queryForm.get('keys') as FormArray;
     this.filteredOptions[index] = arrayControl
       .at(index)
       .get('metricKey')

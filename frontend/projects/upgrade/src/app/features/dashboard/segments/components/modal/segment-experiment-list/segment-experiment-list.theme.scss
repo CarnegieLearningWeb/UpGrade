@@ -1,4 +1,4 @@
-@import '@angular/material/theming';
+@import '~@angular/material/theming';
 
 @mixin segment-experiment-list-modal-component-theme($theme) {
   $background: map-get($theme, background);

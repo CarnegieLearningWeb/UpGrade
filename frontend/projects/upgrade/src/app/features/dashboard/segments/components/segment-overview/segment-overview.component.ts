@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
-import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import {
   Segment,
   NewSegmentDialogEvents,
@@ -21,14 +21,14 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
   @Input() segmentInfo: Segment;
   @Output() emitSegmentDialogEvent = new EventEmitter<NewSegmentDialogData>();
 
-  overviewForm: UntypedFormGroup;
+  overviewForm: FormGroup;
   allContexts = [];
   currentContext = null;
 
   contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
 
-  constructor(private _formBuilder: UntypedFormBuilder, private experimentService: ExperimentService) {}
+  constructor(private _formBuilder: FormBuilder, private experimentService: ExperimentService) {}
 
   get NewSegmentDialogEvents() {
     return NewSegmentDialogEvents;

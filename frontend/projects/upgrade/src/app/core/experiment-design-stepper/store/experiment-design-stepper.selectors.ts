@@ -2,8 +2,9 @@ import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { ExperimentDesignStepperState, State } from './experiment-design-stepper.model';
 
 // Generic Selectors:
-export const selectExperimentDesignStepperState =
-  createFeatureSelector<ExperimentDesignStepperState>('experimentDesignStepper');
+export const selectExperimentDesignStepperState = createFeatureSelector<State, ExperimentDesignStepperState>(
+  'experimentDesignStepper'
+);
 
 export const selecthasExperimentStepperDataChanged = createSelector(
   selectExperimentDesignStepperState,

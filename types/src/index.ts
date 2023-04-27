@@ -22,8 +22,6 @@ export {
   INCLUSION_CRITERIA,
   EXPORT_METHOD,
   EXPERIMENT_TYPE,
-  SUPPORTED_CALIPER_PROFILES,
-  SUPPORTED_CALIPER_EVENTS,
   PAYLOAD_TYPE,
 } from './Experiment/enums';
 export {
@@ -44,11 +42,6 @@ export {
   IWorkingGroup,
   IGroupMembership,
   IUserAliases,
-  ScoreObject,
-  CaliperActor,
-  Attempt,
-  CaliperGradingProfile,
-  CaliperEnvelope,
   IPayload,
   IExperimentAssignmentv4,
 } from './Experiment/interfaces';

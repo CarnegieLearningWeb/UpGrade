@@ -1,13 +1,13 @@
 import { Component, OnInit, ViewChild, ElementRef, OnDestroy, AfterViewInit } from '@angular/core';
 import { Observable, Subscription, fromEvent } from 'rxjs';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
-import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { UserRole } from 'upgrade_types';
 import { User, USER_SEARCH_SORT_KEY } from '../../../../../core/users/store/users.model';
 import { debounceTime } from 'rxjs/operators';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { UsersService } from '../../../../../core/users/users.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { SettingsService } from '../../../../../core/settings/settings.service';
@@ -27,7 +27,7 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions$: Observable<UserPermission>;
   theme$ = this.settingsService.theme$;
   displayedUsersColumns: string[] = ['firstName', 'lastName', 'email', 'role', 'edit', 'deleteUser'];
-  userDetailsForm: UntypedFormGroup;
+  userDetailsForm: FormGroup;
   editMode = null;
   userRoles = [UserRole.ADMIN, UserRole.CREATOR, UserRole.USER_MANAGER, UserRole.READER];
   allUsers: any;
@@ -55,7 +55,7 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor(
     private usersService: UsersService,
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private authService: AuthService,
     private _matDialog: MatDialog,
     private settingsService: SettingsService

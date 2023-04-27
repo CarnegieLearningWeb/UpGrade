@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, Input } from '@angular/core';
-import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { BehaviorSubject, filter, Subscription } from 'rxjs';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
@@ -21,7 +21,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   @Input() isExperimentEditable: boolean;
 
   subscriptions: Subscription;
-  factorialConditionTableForm: UntypedFormGroup;
+  factorialConditionTableForm: FormGroup;
   tableData$ = new BehaviorSubject<FactorialConditionTableRowData[]>([]);
   previousRowDataBehaviorSubject$ = new BehaviorSubject<FactorialConditionTableRowData>(null);
 
@@ -40,7 +40,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   constructor(
     private experimentDesignStepperService: ExperimentDesignStepperService,
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private translate: TranslateService
   ) {}
 
@@ -231,8 +231,8 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   /* -- convenience accessors --*/
 
-  getFactorialConditions(): UntypedFormArray {
-    return this.factorialConditionTableForm.get('factorialConditions') as UntypedFormArray;
+  getFactorialConditions(): FormArray {
+    return this.factorialConditionTableForm.get('factorialConditions') as FormArray;
   }
 
   getFactorialConditionsAt(rowIndex: number) {

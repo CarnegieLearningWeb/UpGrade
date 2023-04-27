@@ -11,7 +11,7 @@ import {
   SimpleChanges,
   OnDestroy,
 } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators, UntypedFormArray, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
@@ -60,7 +60,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   subscriptionHandler: Subscription;
 
-  experimentDesignForm: UntypedFormGroup;
+  experimentDesignForm: FormGroup;
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   decisionPointDataSource = new BehaviorSubject<AbstractControl[]>([]);
   allDecisionPoints = [];
@@ -112,7 +112,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   conditionsTableEditIndex$ = this.experimentDesignStepperService.conditionsTableEditIndex$;
 
   constructor(
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
     private translate: TranslateService,
     private dialogService: DialogService,
@@ -793,14 +793,12 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
-  get conditions(): UntypedFormArray {
-    return this.experimentDesignForm?.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITIONS_ARRAY) as UntypedFormArray;
+  get conditions(): FormArray {
+    return this.experimentDesignForm?.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITIONS_ARRAY) as FormArray;
   }
 
-  get decisionPoints(): UntypedFormArray {
-    return this.experimentDesignForm?.get(
-      SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY
-    ) as UntypedFormArray;
+  get decisionPoints(): FormArray {
+    return this.experimentDesignForm?.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY) as FormArray;
   }
 
   get NewExperimentDialogEvents() {

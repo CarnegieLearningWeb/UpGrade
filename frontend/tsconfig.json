@@ -15,19 +15,11 @@
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "module": "es2020",
-    "target": "ES2022",
-    "typeRoots": [
-      "./node_modules/@types"
-    ],
-    "lib": [
-      "es2018",
-      "dom"
-    ],
+    "target": "es2015",
+    "typeRoots": ["./node_modules/@types"],
+    "lib": ["es2018", "dom"],
     "paths": {
-      "upgrade_types": [
-        "../../types"
-      ]
-    },
-    "useDefineForClassFields": false
+      "upgrade_types": ["../../types"]
+    }
   }
 }

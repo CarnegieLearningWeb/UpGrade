@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { ExperimentVM, ExperimentStateInfo } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
@@ -13,14 +13,14 @@ import { ExperimentFormValidators } from '../../../validators/experiment-form.va
 })
 export class ExperimentStatusComponent implements OnInit {
   experimentInfo: ExperimentVM;
-  statusForm: UntypedFormGroup;
+  statusForm: FormGroup;
   experimentStatus = [];
   minDate = new Date();
   showInfoMsg = false;
   showConditionCountErrorMsg = false;
 
   constructor(
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
     private dialogRef: MatDialogRef<ExperimentStatusComponent>,
     @Inject(MAT_DIALOG_DATA) private data: any
