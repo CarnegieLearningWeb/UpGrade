@@ -213,7 +213,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   }
 
   loadParticipants() {
-    if (this.experiment) {
+    if (this.experiment && this.experiment.experimentSegmentInclusion && this.experiment.experimentSegmentExclusion) {
       this.includeParticipants = [];
       this.excludeParticipants = [];
       this.experiment.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {

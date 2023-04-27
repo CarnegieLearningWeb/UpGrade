@@ -17,7 +17,7 @@ import { filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
-import { EXPERIMENT_TYPE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 
 interface ImportExperimentJSON {
   schema:
@@ -54,7 +54,7 @@ export class ImportExperimentComponent implements OnInit {
   importFileErrorsDataSource = new MatTableDataSource<{ filename: string; error: string }>();
   importFileErrors: { filename: string; error: string }[] = [];
   displayedColumns: string[] = ['File Name', 'Error'];
-  uploadedFileCount: any;
+  uploadedFileCount = 0;
 
   constructor(
     private experimentService: ExperimentService,
@@ -83,11 +83,23 @@ export class ImportExperimentComponent implements OnInit {
     this.dialogRef.close();
   }
 
+  /* Check if string is valid UUID */
+  checkIfValidUUID(str: string) {
+    // Regular expression to check if string is a valid UUID
+    const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+    return regexExp.test(str);
+  }
+
   importExperiment() {
     this.allExperiments.forEach((exp) => {
       exp.id = uuidv4();
       exp.conditions.map((condition) => {
         condition.id = condition.id || uuidv4();
+      });
+    });
+    this.allExperiments.forEach((exp) => {
+      exp.partitions.map((decisionPoint) => {
+        decisionPoint.id = this.checkIfValidUUID(decisionPoint.id) ? decisionPoint.id : uuidv4();
       });
     });
     this.experimentService.importExperiment(this.allExperiments);
@@ -140,7 +152,7 @@ export class ImportExperimentComponent implements OnInit {
     }
   }
 
-  validateExperimentJSON(experiment: Experiment) {
+  async validateExperimentJSON(experiment: Experiment) {
     // TODO remove this any after typescript version updation
     const experimentSchema: any = {
       id: 'string',
@@ -231,7 +243,24 @@ export class ImportExperimentComponent implements OnInit {
       level: 'interface',
     };
 
-    const missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
+    let missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
+    const missingPropertiesList = missingProperties.split(', ');
+    if (missingPropertiesList.includes('backendVersion')) {
+      const currentBackendVersion = await this.versionService.getVersion();
+      experiment = { ...experiment, backendVersion: currentBackendVersion.toString() };
+      const index = missingPropertiesList.indexOf('filtebackendVersionrMode');
+      if (index > -1) {
+        missingPropertiesList.splice(index, 1);
+      }
+    }
+    if (missingPropertiesList.includes('filterMode')) {
+      experiment = { ...experiment, filterMode: FILTER_MODE.INCLUDE_ALL };
+      const index = missingPropertiesList.indexOf('filterMode');
+      if (index > -1) {
+        missingPropertiesList.splice(index, 1);
+      }
+    }
+    missingProperties = missingPropertiesList.join(', ');
     const isFactorialExperiment = experiment.type === EXPERIMENT_TYPE.FACTORIAL;
     let missingPropertiesFlag = true;
     this.missingAllProperties =
@@ -242,7 +271,7 @@ export class ImportExperimentComponent implements OnInit {
     let missingLevelProperties;
     let missingLevelCombinationElementProperties;
 
-    missingPropertiesFlag = missingPropertiesFlag && missingProperties.length === 0;
+    missingPropertiesFlag = missingPropertiesFlag && missingPropertiesList.length === 0;
     experiment.conditions.map((condition) => {
       missingConditionProperties = this.checkForMissingProperties({
         schema: isFactorialExperiment ? conditionSchema : conditionSchemaForSimpleExp,
@@ -281,9 +310,20 @@ export class ImportExperimentComponent implements OnInit {
         schema: partitionSchema,
         data: partition,
       });
-
-      //
     });
+    const missingPartitionPropertiesList = missingPartitionProperties.split(', ');
+    if (missingPartitionPropertiesList.length > 0) {
+      if (missingPartitionPropertiesList.includes('excludeIfReached')) {
+        experiment.partitions = experiment.partitions.map((decisionPoint) => {
+          return { ...decisionPoint, excludeIfReached: false };
+        });
+        const index = missingPartitionPropertiesList.indexOf('excludeIfReached');
+        if (index > -1) {
+          missingPartitionPropertiesList.splice(index, 1);
+        }
+      }
+    }
+    missingPartitionProperties = missingPartitionPropertiesList.join(', ');
     if (missingPartitionProperties.length > 0) {
       this.missingAllProperties =
         this.missingAllProperties +
@@ -360,8 +400,56 @@ export class ImportExperimentComponent implements OnInit {
       'load',
       async function () {
         const result = JSON.parse(reader.result as any);
+        // adding missing fields:
+        if (!result.factors) {
+          result.factors = [];
+        }
+        // replacing old fields with new field names:
+        if (result.conditionAliases) {
+          result.conditionPayloads = result.conditionAliases;
+          result.conditionAliases.forEach((payload, payloadIndex) => {
+            result.conditionPayloads[payloadIndex].payload = {};
+            result.conditionPayloads[payloadIndex].payload.type = 'string';
+            result.conditionPayloads[payloadIndex].payload.value = payload.aliasName;
+          });
+          delete result.conditionAliases;
+        }
+
+        result.partitions.forEach((decisionPoint, decisionPointIndex) => {
+          if (decisionPoint.expPoint) {
+            result.partitions[decisionPointIndex].site = decisionPoint.expPoint;
+            delete result.partitions[decisionPointIndex].expPoint;
+          }
+
+          if (decisionPoint.expId) {
+            result.partitions[decisionPointIndex].target = decisionPoint.expId;
+            delete result.partitions[decisionPointIndex].expId;
+          }
+
+          if (decisionPoint.factors) {
+            result.partitions[decisionPointIndex].factors.forEach((factor) => {
+              result.factors.push(factor);
+            });
+            delete result.partitions[decisionPointIndex].factors;
+          }
+        });
+
+        result.factors.forEach((factor, factorIndex) => {
+          factor.levels.forEach((level, levelIndex) => {
+            if (level.alias) {
+              result.factors[factorIndex].levels[levelIndex].payload = {};
+              result.factors[factorIndex].levels[levelIndex].payload.type = 'string';
+              result.factors[factorIndex].levels[levelIndex].payload.value = level.alias;
+              delete result.factors[factorIndex].levels[levelIndex].alias;
+            }
+          });
+        });
+
         this.experimentInfo = result;
-        this.experimentJSONVersionStatus = await this.validateExperimentJSONVersion(this.experimentInfo);
+
+        if (this.experimentInfo.backendVersion) {
+          this.experimentJSONVersionStatus = await this.validateExperimentJSONVersion(this.experimentInfo);
+        }
         this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
         if (this.experimentJSONVersionStatus === 0 && this.isExperimentJSONValid) {
           this.allExperiments.push(this.experimentInfo);
