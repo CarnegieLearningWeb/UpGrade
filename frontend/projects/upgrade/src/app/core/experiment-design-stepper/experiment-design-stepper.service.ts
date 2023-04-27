@@ -547,10 +547,11 @@ export class ExperimentDesignStepperService {
     this.store$.dispatch(actionUpdateFactorialConditionTableData({ tableData }));
   }
 
-  setUpdatePayloadTableEditModeDetails(rowIndex: number | null): void {
+  setUpdatePayloadTableEditModeDetails(rowIndex: number | null, isNgDestroyCall: boolean): void {
     this.store$.dispatch(
       experimentDesignStepperAction.actionToggleSimpleExperimentPayloadTableEditMode({
         simpleExperimentPayloadTableEditIndex: rowIndex,
+        isNgDestroyCall: isNgDestroyCall,
       })
     );
   }
