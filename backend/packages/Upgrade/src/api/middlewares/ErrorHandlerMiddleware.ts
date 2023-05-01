@@ -91,6 +91,10 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
             message = error.message;
             type = SERVER_ERROR.QUERY_FAILED;
             break;
+          case 422:
+            message = error.message;
+            type = SERVER_ERROR.UNSUPPORTED_CALIPER
+            break;
           default:
             message = error.message;
             break;
