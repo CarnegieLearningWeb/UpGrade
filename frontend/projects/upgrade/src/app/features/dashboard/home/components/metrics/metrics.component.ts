@@ -71,6 +71,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   queryNameError = [];
   queryStatisticError = [];
   queryComparisonStatisticError = [];
+  queryMetricDropDownError = [];
 
   constructor(
     private analysisService: AnalysisService,
@@ -376,6 +377,12 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  checkMetricFromDropDownError(type: any) {
+    if (!type) {
+      this.queryMetricDropDownError.push(true);
+    }
+  }
+
   filteredMetricKeys(queryIndex: number, keyIndex: number) {
     // Prepare filteredMetrics for each query and its keys for new experiment and for experimentInfo while in edit Mode
     const keysArray = this.queries.at(queryIndex).get('keys') as UntypedFormArray;
@@ -584,6 +591,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     this.queryMetricKeyError = [];
     this.queryStatisticError = [];
     this.queryComparisonStatisticError = [];
+    this.queryMetricDropDownError = [];
     this.queryNameError = [];
     const monitoredMetricsFormData = this.queryForm.getRawValue();
     monitoredMetricsFormData.queries = monitoredMetricsFormData.queries.map((query, index) => {
@@ -602,12 +610,16 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         if (keys.length) {
           this.checkQueryNameRequiredError(queryName);
           this.checkStatisticRequiredError(operationType);
-          const {
-            metadata: { type },
-          } = metrics[keys.length - 1].metricKey;
+          this.checkMetricFromDropDownError(metrics[keys.length - 1].metricKey['metadata']);
 
-          if (type === IMetricMetaData.CATEGORICAL) {
-            this.checkComparisonStatisticRequiredError(compareFn, compareValue);
+          if (metrics[keys.length - 1].metricKey['metadata']) {
+            const {
+              metadata: { type },
+            } = metrics[keys.length - 1].metricKey;
+
+            if (type === IMetricMetaData.CATEGORICAL) {
+              this.checkComparisonStatisticRequiredError(compareFn, compareValue);
+            }
           }
           let queryObj: Query = {
             name: queryName,
@@ -642,6 +654,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       this.queryMetricKeyError.length === 0 &&
       this.queryStatisticError.length === 0 &&
       this.queryComparisonStatisticError.length === 0 &&
+      this.queryMetricDropDownError.length === 0 &&
       this.queryNameError.length === 0
     ) {
       this.emitExperimentDialogEvent.emit({

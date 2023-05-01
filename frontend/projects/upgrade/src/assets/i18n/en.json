@@ -184,6 +184,7 @@
   "home.new-experiment.metrics.statistics-exist.validation.text": "Statistic is required",
   "home.new-experiment.metrics.comparison-statistics-exist.validation.text": "Comparison Statistics are required",
   "home.new-experiment.metrics.description-exist.validation.text": "Query Name/Description is required",
+  "home.new-experiment.metrics.metric-name-exist.validation.text": "Metric must be selected from the menu. Please choose an option.",
   "home.new-experiment.metrics.unvalid-metric.text":"Metric must be selected from the menu. Please choose an option.",
   "home.new-experiment.metrics.no-available-metrics.text": "Currently no metrics available to select. Metrics can be added later when available. You can continue to next step.",
   "home.new-experiment.schedule.start-automatically.text": "Start Automatically",
