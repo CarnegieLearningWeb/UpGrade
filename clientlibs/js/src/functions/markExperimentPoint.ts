@@ -24,7 +24,7 @@ export default async function markExperimentPoint(
   target?: string,
   clientError?: string
 ): Promise<Interfaces.IMarkExperimentPoint> {
-  let data: markData = {
+  let requestBody: markData = {
     userId,
     status,
     data: {
@@ -35,18 +35,18 @@ export default async function markExperimentPoint(
     }
   };
   if (target) {
-    data.data = {
-      ...data.data,
+    requestBody.data = {
+      ...requestBody.data,
       target,
     };
   }
   if (clientError) {
-    data = {
-      ...data,
+    requestBody = {
+      ...requestBody,
       clientError,
     };
   }
-  const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
+  const response = await fetchDataService(url, token, clientSessionId, requestBody, Types.REQUEST_TYPES.POST);
   if (response.status) {
     return response.data;
   } else {
