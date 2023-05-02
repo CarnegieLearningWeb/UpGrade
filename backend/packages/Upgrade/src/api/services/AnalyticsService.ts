@@ -296,7 +296,12 @@ export class AnalyticsService {
             ExperimentId: row.experimentId,
             ExperimentName: row.experimentName,
             UserId: row.userId,
+            AppContext: row.context[0],
+            UnitOfAssignment: row.assignmentUnit,
+            GroupType: row.group,
             GroupId: row.groupId,
+            Site: row.site,
+            Target: row.target,
             ConditionName: row.conditionName,
             FirstDecisionPointReachedOn: new Date(row.firstDecisionPointReachedOn).toISOString(),
             FirstDecisionPointReachedOn_LocalTime: moment(row.firstDecisionPointReachedOn)
