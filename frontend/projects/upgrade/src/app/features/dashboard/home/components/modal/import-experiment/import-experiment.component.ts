@@ -257,7 +257,7 @@ export class ImportExperimentComponent implements OnInit {
     if (missingPropertiesList.includes('backendVersion')) {
       const currentBackendVersion = await this.versionService.getVersion();
       experiment = { ...experiment, backendVersion: currentBackendVersion.toString() };
-      const index = missingPropertiesList.indexOf('filtebackendVersionrMode');
+      const index = missingPropertiesList.indexOf('backendVersion');
       if (index > -1) {
         missingPropertiesList.splice(index, 1);
       }
