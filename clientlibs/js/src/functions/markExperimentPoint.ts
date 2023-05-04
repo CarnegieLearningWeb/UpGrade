@@ -1,6 +1,6 @@
 import { Interfaces, Types } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
-import { MARKED_DECISION_POINT_STATUS, PAYLOAD_TYPE } from 'upgrade_types';
+import { IPayload, MARKED_DECISION_POINT_STATUS, PAYLOAD_TYPE } from 'upgrade_types';
 
 interface markData {
   userId: string;
@@ -9,9 +9,7 @@ interface markData {
     site: string;
     target: string | undefined;
     assignedCondition: { conditionCode: string; experimentId: string };
-    assignedFactor:
-      | Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } | null }>
-      | undefined;
+    assignedFactor: Record<string, { level: string; payload: IPayload | null }> | undefined;
   };
   clientError?: string;
 }

@@ -11,6 +11,7 @@ import {
   IExperimentAssignmentv4,
   CaliperEnvelope,
   PAYLOAD_TYPE,
+  IPayload,
 } from 'upgrade_types';
 import getExperimentCondition, { Assignment } from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
@@ -158,9 +159,7 @@ export default class UpgradeClient {
       site: string;
       target: string | undefined;
       assignedCondition: { conditionCode: string; experimentId: string };
-      assignedFactor:
-        | Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } | null }>
-        | undefined;
+      assignedFactor: Record<string, { level: string; payload: IPayload | null }> | undefined;
     },
     status: MARKED_DECISION_POINT_STATUS,
     clientError?: string

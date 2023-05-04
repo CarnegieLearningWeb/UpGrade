@@ -53,11 +53,11 @@ export interface IExperimentAssignmentv4 {
   target: string;
   assignedCondition: {
     conditionCode: string;
-    payload: null | { type: PAYLOAD_TYPE; value: string };
+    payload: IPayload | null;
     experimentId: string;
     id?: string;
   };
-  assignedFactor?: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }>;
+  assignedFactor?: Record<string, { level: string; payload: IPayload | null }>;
 }
 
 interface ExperimentCreatedData {
