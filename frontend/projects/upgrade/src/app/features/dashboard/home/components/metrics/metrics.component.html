@@ -215,6 +215,11 @@
           *ngIf="queryNameError.length > 0"
           [innerHTML]="'home.new-experiment.metrics.description-exist.validation.text' | translate"
         ></span>
+        <span
+          class="ft-14-600 validation-message"
+          *ngIf="queryMetricDropDownError.length > 0"
+          [innerHTML]="'home.new-experiment.metrics.metric-name-exist.validation.text' | translate"
+        ></span>
       </ng-container>
       <ng-template #noAvailableMetricsMessage>
         <br />
