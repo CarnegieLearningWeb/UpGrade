@@ -29,6 +29,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   };
 
   queryResults = {};
+  queryFactorResults = []
   queryFactorResults1 = {};
   queryFactorResults2 = {};
   interactionEffectQueryFactorResults1 = {};
@@ -95,43 +96,53 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
 
   populateMainEffectGraphData(result: QueryResult[]) {
     result.forEach((res) => {
-      let resultData: MainEffectGraphData[] = [];
-      let resultData1: MainEffectGraphData[] = [];
-      let resultData2: MainEffectGraphData[] = [];
+      let simpleExperimentResultData: MainEffectGraphData[] = [];
+      let factorialExperimentResultData: MainEffectGraphData[][] = [];
+      let factorIndex;
+      this.experiment.factors.forEach((factor, factorIndex) => {
+        factorialExperimentResultData[factorIndex] = [];
+      });
       if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
         res.mainEffect.forEach((data) => {
-          const factorIndex = this.getFactorIndex(data.levelId);
+          factorIndex = this.getFactorIndex(data.levelId);
           const resData = {
             name: this.getLevelName(data.levelId),
             value: Math.round(Number(data.result) * 100) / 100,
             extra: Number(data.participantsLogged),
           };
-          factorIndex === 0 ? resultData1.push(resData) : resultData2.push(resData);
+          factorialExperimentResultData[factorIndex].push(resData);
         });
-        resultData1 = this.formatEmptyBar(resultData1);
-        this.queryFactorResults1 = {
-          ...this.queryFactorResults1,
-          [res.id]: resultData1,
+        
+        factorialExperimentResultData.forEach((factorialExperimentResData, index) => {
+          factorialExperimentResultData[index] = this.formatEmptyBar(factorialExperimentResData);
+        })
+        this.queryFactorResults[0] = {
+          ...this.queryFactorResults[0],
+          [res.id]: factorialExperimentResultData[0],
         };
-        resultData2 = this.formatEmptyBar(resultData2);
-        this.queryFactorResults2 = {
-          ...this.queryFactorResults2,
-          [res.id]: resultData2,
+
+        this.queryFactorResults[1] = {
+          ...this.queryFactorResults[1],
+          [res.id]: factorialExperimentResultData[1],
+        };
+        this.queryFactorResults[2] = {
+          ...this.queryFactorResults[2],
+          [res.id]: factorialExperimentResultData[2],
         };
       } else {
-        resultData = res.mainEffect.map((data) => ({
+        simpleExperimentResultData = res.mainEffect.map((data) => ({
           name: this.getConditionCode(data.conditionId),
           value: Math.round(Number(data.result) * 100) / 100,
           extra: Number(data.participantsLogged),
         }));
-        resultData = this.formatEmptyBar(resultData);
+        simpleExperimentResultData = this.formatEmptyBar(simpleExperimentResultData);
         this.queryResults = {
           ...this.queryResults,
-          [res.id]: resultData,
+          [res.id]: simpleExperimentResultData,
         };
       }
       return {
-        [res.id]: resultData,
+        [res.id]: simpleExperimentResultData,
       };
     });
   }
@@ -235,6 +246,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
 
   getFactorIndex(levelId: string): number {
     let factorIndex;
+    this.experiment.factors = this.sortFactorsByOrderAscending(this.experiment.factors);
     this.experiment.factors.forEach((factor, index) => {
       factor.levels.forEach((level) => {
         if (level.id === levelId) {
