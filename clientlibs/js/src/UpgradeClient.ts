@@ -9,7 +9,8 @@ import {
   ILogInput,
   MARKED_DECISION_POINT_STATUS,
   IExperimentAssignmentv4,
-  CaliperEnvelope
+  CaliperEnvelope,
+  PAYLOAD_TYPE,
 } from 'upgrade_types';
 import getExperimentCondition, { Assignment } from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
@@ -153,10 +154,15 @@ export default class UpgradeClient {
   }
 
   async markExperimentPoint(
-    site: string,
-    condition: string = null,
+    data: {
+      site: string;
+      target: string | undefined;
+      assignedCondition: { conditionCode: string; experimentId: string };
+      assignedFactor:
+        | Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } | null }>
+        | undefined;
+    },
     status: MARKED_DECISION_POINT_STATUS,
-    target?: string,
     clientError?: string
   ): Promise<Interfaces.IMarkExperimentPoint> {
     this.validateClient();
@@ -165,10 +171,8 @@ export default class UpgradeClient {
       this.userId,
       this.token,
       this.clientSessionId,
-      site,
-      condition,
+      data,
       status,
-      target,
       clientError
     );
   }
@@ -191,7 +195,6 @@ export default class UpgradeClient {
     this.validateClient();
     return await log(this.api.log, this.userId, this.token, this.clientSessionId, value, sendAsAnalytics);
   }
-
 
   async logCaliper(value: CaliperEnvelope, sendAsAnalytics = false): Promise<Interfaces.ILog[]> {
     this.validateClient();

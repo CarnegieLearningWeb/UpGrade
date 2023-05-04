@@ -9,12 +9,12 @@ export class Assignment {
 
   constructor(
     conditionCode: string,
-    payload: { type: PAYLOAD_TYPE; value: string },
-    assignedFactor?: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }>
+    payload: { type: PAYLOAD_TYPE; value: string } | null,
+    assignedFactor?: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } | null }>
   ) {
     this._conditionCode = conditionCode;
-    this._payloadType = payload.type;
-    this._payloadValue = payload.value;
+    this._payloadType = payload ? payload.type : PAYLOAD_TYPE.STRING;
+    this._payloadValue = payload ? payload.value : null;
     this._experimentType = assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE;
     this._assignedFactor = assignedFactor;
   }
