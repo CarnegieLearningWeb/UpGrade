@@ -1,16 +1,11 @@
 import { Interfaces, Types } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
-import { IPayload, MARKED_DECISION_POINT_STATUS, PAYLOAD_TYPE } from 'upgrade_types';
+import { IExperimentAssignmentv4, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 
 interface markData {
   userId: string;
   status: MARKED_DECISION_POINT_STATUS;
-  data: {
-    site: string;
-    target: string | undefined;
-    assignedCondition: { conditionCode: string; experimentId: string };
-    assignedFactor: Record<string, { level: string; payload: IPayload | null }> | undefined;
-  };
+  data: IExperimentAssignmentv4;
   clientError?: string;
 }
 
@@ -19,17 +14,16 @@ export default async function markExperimentPoint(
   userId: string,
   token: string,
   clientSessionId: string,
-  data: {
-    site: string;
-    target: string | undefined;
-    assignedCondition: { conditionCode: string; experimentId: string };
-    assignedFactor:
-      | Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } | null }>
-      | undefined;
-  },
+  site: string,
+  target: string,
+  condition: string,
   status: MARKED_DECISION_POINT_STATUS,
+  getAllData: IExperimentAssignmentv4[],
   clientError?: string
 ): Promise<Interfaces.IMarkExperimentPoint> {
+  const data = getAllData.find(
+    (data) => data.site === site && data.target === target && data.assignedCondition.conditionCode === condition
+  );
   let requestBody: markData = {
     userId,
     status,

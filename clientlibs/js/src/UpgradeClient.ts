@@ -155,23 +155,26 @@ export default class UpgradeClient {
   }
 
   async markExperimentPoint(
-    data: {
-      site: string;
-      target: string | undefined;
-      assignedCondition: { conditionCode: string; experimentId: string };
-      assignedFactor: Record<string, { level: string; payload: IPayload | null }> | undefined;
-    },
+    site: string,
+    target: string,
+    condition: string = null,
     status: MARKED_DECISION_POINT_STATUS,
     clientError?: string
   ): Promise<Interfaces.IMarkExperimentPoint> {
     this.validateClient();
+    if (this.experimentConditionData == null) {
+      await this.getAllExperimentConditions();
+    }
     return await markExperimentPoint(
       this.api.markExperimentPoint,
       this.userId,
       this.token,
       this.clientSessionId,
-      data,
+      site,
+      target,
+      condition,
       status,
+      this.experimentConditionData,
       clientError
     );
   }
