@@ -24,6 +24,7 @@ public class Payload {
         this.type = type;
     }
 
+    /** {@see Condition#getConditionCode()} */
     public String getValue() {
         return this.value;
     }
