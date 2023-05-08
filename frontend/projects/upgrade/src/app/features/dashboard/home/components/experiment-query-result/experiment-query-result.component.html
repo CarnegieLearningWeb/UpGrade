@@ -13,16 +13,16 @@
     </span>
     <br />
     <div *ngIf="experimentType === 'Factorial'">
-      <table>
-        <tr>
-          <td class="ft-14-600 factor-name1" *ngFor="let factor of factors">{{ factor | uppercase }}</td>
-        </tr>
-      </table>
-      <br />
       <ng-container *ngIf="!(isQueryExecuting$ | async); else spinnerTemplate">
         <ng-container *ngIf="!isResultExist(query.id); else noResultTemplate">
-          <div style="display: flex">
-            <div *ngFor="let factor of factors; let i = index;" style="margin-right: 100px; height: 250px; width: 28%">
+          <div style="display: flex; overflow-x: scroll">
+            <br />
+            <div *ngFor="let factor of factors; let i = index" style="margin-right: 100px; height: 320px; width: 28%">
+              <table>
+                <tr>
+                  <td class="ft-14-600 factor-name1">{{ factor | uppercase }}</td>
+                </tr>
+              </table>
               <ngx-charts-bar-vertical
                 [view]="[300, 250]"
                 [scheme]="colorScheme"
@@ -45,6 +45,7 @@
                   <span>( n = {{ model.extra }} )</span>
                 </ng-template>
               </ngx-charts-bar-vertical>
+              <br />
             </div>
           </div>
         </ng-container>
@@ -55,7 +56,7 @@
         <ng-container *ngIf="!isResultExist(query.id); else noResultTemplate">
           <div style="height: 250px; width: 30%">
             <ngx-charts-bar-vertical
-              [view]="[300, 250]"
+              [view]="[400, 250]"
               [scheme]="colorScheme"
               [results]="queryResults[query?.id]"
               [xAxis]="true"
@@ -96,64 +97,50 @@
         <br />
         <ng-container *ngIf="!(isQueryExecuting$ | async); else spinnerTemplate">
           <ng-container *ngIf="!isResultExist(query.id); else noResultTemplate">
-            <table>
-              <tr>
-                <td class="ft-14-600 factor-name1" *ngFor="let factor of factors">{{ factor | uppercase }}</td>
-              </tr>
-            </table>
-            <table>
-              <tr>
-                <td class="ft-14-600 factor-name2" *ngFor="let factor of factors.slice().reverse()">
-                  ({{ factor | uppercase }})
-                </td>
-              </tr>
-            </table>
-            <div style="display: flex">
-              <div style="margin-right: 150px; height: 250px; width: 28%">
-                <ngx-charts-line-chart
-                  [view]="[400, 250]"
-                  [scheme]="colorScheme"
-                  [xAxis]="true"
-                  [yAxis]="true"
-                  [legend]="true"
-                  [showXAxisLabel]="true"
-                  [showYAxisLabel]="true"
-                  [yAxisTickFormatting]="formateYAxisLabel"
-                  [results]="interactionEffectQueryFactorResults1[query?.id]"
-                  [legendTitle]="null"
-                  [legendPosition]="'below'"
-                >
-                  <ng-template #tooltipTemplate let-model="model">
-                    <span>{{ model.series }}</span>
-                    <br />
-                    <span>{{ model.value }}</span>
-                    <br />
-                    <span>( n = {{ model.participantsLogged }} )</span>
-                  </ng-template>
-                </ngx-charts-line-chart>
+            <div style="display: table; overflow-x: scroll">
+              <br />
+              <div style="display: block; margin-right: 100px; width: 28%">
+                <table>
+                  <tr>
+                    <td class="ft-14-600 factor-name1" *ngFor="let factor of factors">{{ factor | uppercase }}</td>
+                  </tr>
+                </table>
+                <table>
+                  <tr>
+                    <td class="ft-14-600 factor-name2" *ngFor="let factor of factors.slice().reverse()">
+                      ({{ factor | uppercase }})
+                    </td>
+                  </tr>
+                </table>
               </div>
-              <div style="margin-right: 150px; height: 250px; width: 28%">
-                <ngx-charts-line-chart
-                  [view]="[420, 250]"
-                  [scheme]="colorScheme"
-                  [xAxis]="true"
-                  [yAxis]="true"
-                  [legend]="true"
-                  [showXAxisLabel]="true"
-                  [showYAxisLabel]="true"
-                  [yAxisTickFormatting]="formateYAxisLabel"
-                  [results]="interactionEffectQueryFactorResults2[query?.id]"
-                  [legendTitle]="null"
-                  [legendPosition]="'below'"
+              <br />
+              <div style="display: flex">
+                <div
+                  *ngFor="let factor of factors; let i = index"
+                  style="margin-right: 150px; height: 320px; width: 28%"
                 >
-                  <ng-template #tooltipTemplate let-model="model">
-                    <span>{{ model.series }}</span>
-                    <br />
-                    <span>{{ model.value }}</span>
-                    <br />
-                    <span>( n = {{ model.participantsLogged }} )</span>
-                  </ng-template>
-                </ngx-charts-line-chart>
+                  <ngx-charts-line-chart
+                    [view]="[350, 250]"
+                    [scheme]="colorScheme"
+                    [xAxis]="true"
+                    [yAxis]="true"
+                    [legend]="true"
+                    [showXAxisLabel]="true"
+                    [showYAxisLabel]="true"
+                    [yAxisTickFormatting]="formateYAxisLabel"
+                    [results]="interactionEffectQueryFactorResults[i][query?.id]"
+                    [legendTitle]="null"
+                    [legendPosition]="'below'"
+                  >
+                    <ng-template #tooltipTemplate let-model="model">
+                      <span>{{ model.series }}</span>
+                      <br />
+                      <span>{{ model.value }}</span>
+                      <br />
+                      <span>( n = {{ model.participantsLogged }} )</span>
+                    </ng-template>
+                  </ngx-charts-line-chart>
+                </div>
               </div>
             </div>
           </ng-container>
@@ -162,14 +149,36 @@
         <br />
       </div>
     </div>
-  </div>
-  <ng-template #noResultTemplate>
-    <span class="zero-state" [innerHTML]="'query.result.empty-result.text' | translate"> </span>
-  </ng-template>
-  <ng-template #spinnerTemplate>
-    <div class="loading-container">
-      <mat-spinner diameter="60"></mat-spinner>
+    <div class="table-container table-container-query" *ngIf="factors?.length >= 3">
+      <!-- Interaction Effect Table -->
+      <mat-table style="overflow-x: scroll" [dataSource]="dataSource" class="table query-table">
+        <!-- Factor columns -->
+        <ng-container *ngFor="let column of factorColumnDefs" [matColumnDef]="column.name">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>{{ column.label | uppercase }}</mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let row">{{ row[column.name] }}</mat-cell>
+        </ng-container>
+
+        <!-- Query columns -->
+        <ng-container *ngFor="let column of queryColumnDefs" [matColumnDef]="column.name">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>{{ column.label | uppercase }}</mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let row">{{ row[column.name] }}</mat-cell>
+        </ng-container>
+
+        <!-- Header row -->
+        <mat-header-row *matHeaderRowDef="headerColumns"></mat-header-row>
+
+        <!-- Data rows -->
+        <mat-row *matRowDef="let row; columns: dataColumns"></mat-row>
+      </mat-table>
     </div>
-  </ng-template>
-  <br />
+    <ng-template #noResultTemplate>
+      <span class="zero-state" [innerHTML]="'query.result.empty-result.text' | translate"> </span>
+    </ng-template>
+    <ng-template #spinnerTemplate>
+      <div class="loading-container">
+        <mat-spinner diameter="60"></mat-spinner>
+      </div>
+    </ng-template>
+    <br />
+  </div>
 </div>

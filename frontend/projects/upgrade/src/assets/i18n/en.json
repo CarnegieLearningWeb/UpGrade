@@ -237,7 +237,7 @@
   "home.view-experiment.experiment-payloads.column-label.site": "SITE",
   "home.view-experiment.experiment-payloads.column-label.target": "TARGET",
   "home.view-experiment.experiment-payloads.column-label.condition": "CONDITION",
-  "home.view-experiment.experiment-payloads.column-label.payload": "Payload",
+  "home.view-experiment.experiment-payloads.column-label.payload": "PAYLOAD",
   "home.view-experiment.graph-type.text": "Type",
   "home.view-experiment.graph-conditions.text": "Conditions",
   "home.view-experiment.graph-decision-point.text": "Sites",
