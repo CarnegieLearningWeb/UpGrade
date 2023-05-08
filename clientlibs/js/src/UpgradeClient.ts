@@ -146,7 +146,7 @@ export default class UpgradeClient {
     return response;
   }
 
-  async getDecisionPointAssignment(site: string, target?: string): Promise<Assignment> {
+  async getDecisionPointAssignment(site: string, target: string): Promise<Assignment> {
     this.validateClient();
     if (this.experimentConditionData == null) {
       await this.getAllExperimentConditions();
