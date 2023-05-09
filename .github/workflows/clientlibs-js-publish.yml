@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - clientlibs/js/**
+  workflow_dispatch:
 jobs:
   clientlibs-js-publish:
     name: UpGrade Client Libs JS Publish

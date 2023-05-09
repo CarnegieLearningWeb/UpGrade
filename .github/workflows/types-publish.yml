@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - types/**
+  workflow_dispatch:
 jobs:
   types-publish:
     name: UpGrade Types Publish
