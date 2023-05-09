@@ -12,7 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          ref: 'main'
       - name: Build Types Package
         uses: ./.github/actions/generic-npm-build
         with:
