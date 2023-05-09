@@ -17,7 +17,7 @@ import { filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
-import { EXPERIMENT_TYPE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 
 interface ImportExperimentJSON {
   schema:
@@ -45,16 +45,114 @@ interface ImportExperimentJSON {
 })
 export class ImportExperimentComponent implements OnInit {
   experimentInfo: Experiment;
-  isExperimentJSONValid = true;
-  experimentJSONVersionStatus = 0;
+  isExperimentJSONValid: boolean = true;
+  experimentJSONVersionStatus: number = 0;
   missingAllProperties: string;
-  allPartitions = [];
+  allPartitions: ExperimentDecisionPoint[] = [];
   allPartitionsSub: Subscription;
   allExperiments: Experiment[] = [];
   importFileErrorsDataSource = new MatTableDataSource<{ filename: string; error: string }>();
   importFileErrors: { filename: string; error: string }[] = [];
   displayedColumns: string[] = ['File Name', 'Error'];
-  uploadedFileCount: any;
+  uploadedFileCount: number = 0;
+
+  missingConditionProperties: string = '';
+  missingPartitionProperties: string = '';
+  missingFactorProperties: string = '';
+  missingLevelProperties: string = '';
+  missingLevelCombinationElementProperties: string = '';
+  missingPropertiesFlag: boolean = false;
+  isFactorialExperiment: boolean;
+
+  // TODO remove this any after typescript version updation
+  experimentSchema: any = {
+    id: 'string',
+    name: 'string',
+    description: 'string',
+    createdAt: 'string',
+    updatedAt: 'string',
+    versionNumber: 'number',
+    state: 'enum',
+    context: 'array',
+    startOn: 'string',
+    consistencyRule: 'enum',
+    assignmentUnit: 'enum',
+    postExperimentRule: 'enum',
+    enrollmentCompleteCondition: 'enum',
+    endOn: 'string',
+    revertTo: 'string',
+    tags: 'array',
+    logging: 'boolean',
+    group: 'string',
+    conditions: 'interface',
+    partitions: 'interface',
+    factors: 'interface',
+    queries: 'array',
+    stateTimeLogs: 'interface',
+    filterMode: 'string',
+    experimentSegmentInclusion: 'interface',
+    experimentSegmentExclusion: 'interface',
+    backendVersion: 'string',
+  };
+
+  conditionSchema: Record<keyof ExperimentCondition, string> = {
+    id: 'string',
+    name: 'string',
+    description: 'string',
+    conditionCode: 'string',
+    assignmentWeight: 'number',
+    twoCharacterId: 'string',
+    order: 'number',
+    createdAt: 'string',
+    updatedAt: 'string',
+    versionNumber: 'number',
+    levelCombinationElements: 'interface',
+  };
+
+  conditionSchemaForSimpleExp: Record<keyof ExperimentConditionForSimpleExp, string> = {
+    id: 'string',
+    name: 'string',
+    description: 'string',
+    conditionCode: 'string',
+    assignmentWeight: 'number',
+    twoCharacterId: 'string',
+    order: 'number',
+    createdAt: 'string',
+    updatedAt: 'string',
+    versionNumber: 'number',
+  };
+
+  levelCombinationElementSchema: Record<keyof LevelCombinationElement, string> = {
+    id: 'string',
+    level: 'interface',
+  };
+
+  partitionSchema: Record<keyof ExperimentDecisionPoint, string> = {
+    id: 'string',
+    site: 'string',
+    target: 'string',
+    description: 'string',
+    twoCharacterId: 'string',
+    order: 'number',
+    createdAt: 'string',
+    updatedAt: 'string',
+    versionNumber: 'number',
+    excludeIfReached: 'boolean',
+  };
+
+  factorSchema: Record<keyof ExperimentFactor, string> = {
+    name: 'string',
+    description: 'string',
+    order: 'number',
+    levels: 'interface',
+  };
+
+  levelSchema: Record<keyof ExperimentLevel, string> = {
+    id: 'string',
+    name: 'string',
+    payload: 'string',
+    order: 'number',
+  };
 
   constructor(
     private experimentService: ExperimentService,
@@ -83,11 +181,23 @@ export class ImportExperimentComponent implements OnInit {
     this.dialogRef.close();
   }
 
+  /* Check if string is valid UUID */
+  checkIfValidUUID(str: string) {
+    // Regular expression to check if string is a valid UUID
+    const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+    return regexExp.test(str);
+  }
+
   importExperiment() {
     this.allExperiments.forEach((exp) => {
       exp.id = uuidv4();
       exp.conditions.map((condition) => {
         condition.id = condition.id || uuidv4();
+      });
+    });
+    this.allExperiments.forEach((exp) => {
+      exp.partitions.map((decisionPoint) => {
+        decisionPoint.id = this.checkIfValidUUID(decisionPoint.id) ? decisionPoint.id : uuidv4();
       });
     });
     this.experimentService.importExperiment(this.allExperiments);
@@ -140,186 +250,156 @@ export class ImportExperimentComponent implements OnInit {
     }
   }
 
-  validateExperimentJSON(experiment: Experiment) {
-    // TODO remove this any after typescript version updation
-    const experimentSchema: any = {
-      id: 'string',
-      name: 'string',
-      description: 'string',
-      createdAt: 'string',
-      updatedAt: 'string',
-      versionNumber: 'number',
-      state: 'enum',
-      context: 'array',
-      startOn: 'string',
-      consistencyRule: 'enum',
-      assignmentUnit: 'enum',
-      postExperimentRule: 'enum',
-      enrollmentCompleteCondition: 'enum',
-      endOn: 'string',
-      revertTo: 'string',
-      tags: 'array',
-      logging: 'boolean',
-      group: 'string',
-      conditions: 'interface',
-      partitions: 'interface',
-      factors: 'interface',
-      queries: 'array',
-      stateTimeLogs: 'interface',
-      filterMode: 'string',
-      experimentSegmentInclusion: 'interface',
-      experimentSegmentExclusion: 'interface',
-      backendVersion: 'string',
-    };
+  async validateExperimentJSON(experiment: Experiment) {
+    let missingProperties = this.checkForMissingProperties({ schema: this.experimentSchema, data: experiment });
+    const missingPropertiesList = missingProperties !== '' ? missingProperties.split(', ') : [];
 
-    const conditionSchema: Record<keyof ExperimentCondition, string> = {
-      id: 'string',
-      name: 'string',
-      description: 'string',
-      conditionCode: 'string',
-      assignmentWeight: 'number',
-      twoCharacterId: 'string',
-      order: 'number',
-      createdAt: 'string',
-      updatedAt: 'string',
-      versionNumber: 'number',
-      levelCombinationElements: 'interface',
-    };
+    if (missingPropertiesList.includes('backendVersion')) {
+      const currentBackendVersion = await this.versionService.getVersion();
+      experiment = { ...experiment, backendVersion: currentBackendVersion.toString() };
+      const index = missingPropertiesList.indexOf('backendVersion');
+      if (index > -1) {
+        missingPropertiesList.splice(index, 1);
+      }
+    }
 
-    const conditionSchemaForSimpleExp: Record<keyof ExperimentConditionForSimpleExp, string> = {
-      id: 'string',
-      name: 'string',
-      description: 'string',
-      conditionCode: 'string',
-      assignmentWeight: 'number',
-      twoCharacterId: 'string',
-      order: 'number',
-      createdAt: 'string',
-      updatedAt: 'string',
-      versionNumber: 'number',
-    };
+    if (missingPropertiesList.includes('filterMode')) {
+      experiment = { ...experiment, filterMode: FILTER_MODE.INCLUDE_ALL };
+      const index = missingPropertiesList.indexOf('filterMode');
+      if (index > -1) {
+        missingPropertiesList.splice(index, 1);
+      }
+    }
 
-    const partitionSchema: Record<keyof ExperimentDecisionPoint, string> = {
-      id: 'string',
-      site: 'string',
-      target: 'string',
-      description: 'string',
-      twoCharacterId: 'string',
-      order: 'number',
-      createdAt: 'string',
-      updatedAt: 'string',
-      versionNumber: 'number',
-      excludeIfReached: 'boolean',
-    };
+    missingProperties = missingPropertiesList.join(', ');
 
-    const factorSchema: Record<keyof ExperimentFactor, string> = {
-      name: 'string',
-      description: 'string',
-      order: 'number',
-      levels: 'interface',
-    };
+    this.isFactorialExperiment = experiment.type === EXPERIMENT_TYPE.FACTORIAL;
 
-    const levelSchema: Record<keyof ExperimentLevel, string> = {
-      id: 'string',
-      name: 'string',
-      payload: 'string',
-      order: 'number',
-    };
-
-    const levelCombinationElementSchema: Record<keyof LevelCombinationElement, string> = {
-      id: 'string',
-      level: 'interface',
-    };
-
-    const missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
-    const isFactorialExperiment = experiment.type === EXPERIMENT_TYPE.FACTORIAL;
-    let missingPropertiesFlag = true;
     this.missingAllProperties =
       this.translate.instant('home.import-experiment.missing-properties.message.text') + missingProperties;
-    let missingConditionProperties;
-    let missingPartitionProperties;
-    let missingFactorProperties;
-    let missingLevelProperties;
-    let missingLevelCombinationElementProperties;
 
-    missingPropertiesFlag = missingPropertiesFlag && missingProperties.length === 0;
-    experiment.conditions.map((condition) => {
-      missingConditionProperties = this.checkForMissingProperties({
-        schema: isFactorialExperiment ? conditionSchema : conditionSchemaForSimpleExp,
-        data: condition,
-      });
+    this.missingPropertiesFlag = this.updateMissingPropertiesFlag(missingProperties);
+    
 
-      if (isFactorialExperiment) {
-        condition.levelCombinationElements.map((element) => {
-          missingLevelCombinationElementProperties = this.checkForMissingProperties({
-            schema: levelCombinationElementSchema,
-            data: element,
-          });
-        });
-        if (missingLevelCombinationElementProperties.length > 0) {
-          this.missingAllProperties =
-            this.missingAllProperties +
-            ', ' +
-            this.translate.instant('global.level.text') +
-            ': ' +
-            missingLevelCombinationElementProperties;
-        }
-        missingPropertiesFlag = missingPropertiesFlag && missingLevelCombinationElementProperties.length === 0;
-      }
-    });
-    if (missingConditionProperties.length > 0) {
+    this.checkMissingConditionProperties(experiment.conditions);
+    
+    if (this.missingConditionProperties.length > 0) {
       this.missingAllProperties =
         this.missingAllProperties +
         ', ' +
         this.translate.instant('global.condition.text') +
         ': ' +
-        missingConditionProperties;
+        this.missingConditionProperties;
     }
-    missingPropertiesFlag = missingPropertiesFlag && missingConditionProperties.length === 0;
-    experiment.partitions.map((partition) => {
-      missingPartitionProperties = this.checkForMissingProperties({
-        schema: partitionSchema,
-        data: partition,
-      });
 
-      //
-    });
-    if (missingPartitionProperties.length > 0) {
+    this.missingPropertiesFlag = this.updateMissingPropertiesFlag(this.missingConditionProperties);
+
+    this.checkMissingPartitionProperties(experiment.partitions);
+
+    const missingPartitionPropertiesList = this.missingPartitionProperties.split(', ');
+
+    if (missingPartitionPropertiesList.length > 0) {
+      if (missingPartitionPropertiesList.includes('excludeIfReached')) {
+        experiment.partitions = this.addMissingExcludeIfReachedProperty(experiment.partitions);
+
+        const index = missingPartitionPropertiesList.indexOf('excludeIfReached');
+        if (index > -1) {
+          missingPartitionPropertiesList.splice(index, 1);
+        }
+      }
+    }
+    this.missingPartitionProperties = missingPartitionPropertiesList.join(', ');
+
+    if (this.missingPartitionProperties.length > 0) {
       this.missingAllProperties =
         this.missingAllProperties +
         ', ' +
         this.translate.instant('global.decision-points.text') +
         ': ' +
-        missingPartitionProperties;
+        this.missingPartitionProperties;
     }
-    if (isFactorialExperiment) {
-      experiment.factors.map((factor) => {
-        missingFactorProperties = this.checkForMissingProperties({ schema: factorSchema, data: factor });
-        factor.levels.map((level) => {
-          missingLevelProperties = this.checkForMissingProperties({ schema: levelSchema, data: level });
-        });
-        if (missingLevelProperties.length > 0) {
-          this.missingAllProperties =
-            this.missingAllProperties +
-            ', ' +
-            this.translate.instant('global.levelCombinationElement.text') +
-            ': ' +
-            missingLevelProperties;
-        }
-        missingPropertiesFlag = missingPropertiesFlag && missingLevelProperties.length === 0;
-      });
-      if (missingFactorProperties.length > 0) {
+
+    if (this.isFactorialExperiment) {
+      this.checkMissingFactorAndLevelProperties(experiment.factors);
+      
+      if (this.missingFactorProperties.length > 0) {
         this.missingAllProperties =
           this.missingAllProperties +
           ', ' +
           this.translate.instant('global.factor.text') +
           ': ' +
-          missingFactorProperties;
+          this.missingFactorProperties;
       }
-      missingPropertiesFlag = missingPropertiesFlag && missingFactorProperties.length === 0;
+      this.missingPropertiesFlag = this.updateMissingPropertiesFlag(this.missingFactorProperties);
     }
-    missingPropertiesFlag = missingPropertiesFlag && missingPartitionProperties.length === 0;
-    return missingPropertiesFlag;
+
+    this.missingPropertiesFlag = this.updateMissingPropertiesFlag(this.missingPartitionProperties);
+    
+    return !this.missingPropertiesFlag;
+  }
+  updateMissingPropertiesFlag(missingPropertiesList: string): boolean {
+    return this.missingPropertiesFlag && missingPropertiesList.length !== 0;
+  }
+
+  addMissingExcludeIfReachedProperty(partitions: ExperimentDecisionPoint[]): ExperimentDecisionPoint[] {
+    return partitions.map((decisionPoint) => {
+      return { ...decisionPoint, excludeIfReached: false };
+    });
+  }
+
+  checkMissingFactorAndLevelProperties(factors: ExperimentFactor[]) {
+    factors.map((factor) => {
+        this.missingFactorProperties = this.checkForMissingProperties({ schema: this.factorSchema, data: factor });
+        factor.levels.map((level) => {
+          this.missingLevelProperties = this.checkForMissingProperties({ schema: this.levelSchema, data: level });
+        });
+
+        if (this.missingLevelProperties.length > 0) {
+          this.missingAllProperties =
+            this.missingAllProperties +
+            ', ' +
+            this.translate.instant('global.levelCombinationElement.text') +
+            ': ' +
+            this.missingLevelProperties;
+        }
+        this.missingPropertiesFlag = this.missingPropertiesFlag && this.missingLevelProperties.length !== 0;
+      });
+  }
+
+  checkMissingPartitionProperties(partitions: ExperimentDecisionPoint[]) {
+    partitions.map((partition) => {
+      this.missingPartitionProperties = this.checkForMissingProperties({
+        schema: this.partitionSchema,
+        data: partition,
+      });
+    });
+  }
+
+  checkMissingConditionProperties(conditions: ExperimentCondition[]) {
+    conditions.map((condition) => {
+      this.missingConditionProperties = this.checkForMissingProperties({
+        schema: this.isFactorialExperiment ? this.conditionSchema : this.conditionSchemaForSimpleExp,
+        data: condition,
+      });
+
+      if (this.isFactorialExperiment) {
+        condition.levelCombinationElements.map((element) => {
+          this.missingLevelCombinationElementProperties = this.checkForMissingProperties({
+            schema: this.levelCombinationElementSchema,
+            data: element,
+          });
+        });
+        if (this.missingLevelCombinationElementProperties.length > 0) {
+          this.missingAllProperties =
+            this.missingAllProperties +
+            ', ' +
+            this.translate.instant('global.level.text') +
+            ': ' +
+            this.missingLevelCombinationElementProperties;
+        }
+        this.missingPropertiesFlag = this.missingPropertiesFlag && this.missingLevelCombinationElementProperties.length !== 0;
+      }
+    });
   }
 
   private checkForMissingProperties(experimentJson: ImportExperimentJSON) {
@@ -342,6 +422,102 @@ export class ImportExperimentComponent implements OnInit {
     return missingProperty.join(', ');
   }
 
+  deduceConditionPayload(result) {
+    if (result.conditionAliases) {
+      result.conditionPayloads = result.conditionAliases;
+      result.conditionAliases.forEach((payload, payloadIndex) => {
+        result.conditionPayloads[payloadIndex].payload = {};
+        result.conditionPayloads[payloadIndex].payload.type = 'string';
+        result.conditionPayloads[payloadIndex].payload.value = payload.aliasName;
+      });
+      delete result.conditionAliases;
+    }
+
+    return result;
+  }
+
+  deducePartition(result) {
+    result.partitions.forEach((decisionPoint, decisionPointIndex) => {
+      if (decisionPoint.expPoint) {
+        result.partitions[decisionPointIndex].site = decisionPoint.expPoint;
+        delete result.partitions[decisionPointIndex].expPoint;
+      }
+
+      if (decisionPoint.expId) {
+        result.partitions[decisionPointIndex].target = decisionPoint.expId;
+        delete result.partitions[decisionPointIndex].expId;
+      }
+
+      if (decisionPoint.factors) {
+        result.partitions[decisionPointIndex].factors.forEach((factor) => {
+          result.factors.push(factor);
+        });
+        delete result.partitions[decisionPointIndex].factors;
+      }
+    });
+
+    return result;
+  }
+
+  deduceFactors(result) {
+    result.factors.forEach((factor, factorIndex) => {
+      factor.levels.forEach((level, levelIndex) => {
+        if (level.alias) {
+          result.factors[factorIndex].levels[levelIndex].payload = {};
+          result.factors[factorIndex].levels[levelIndex].payload.type = 'string';
+          result.factors[factorIndex].levels[levelIndex].payload.value = level.alias;
+          delete result.factors[factorIndex].levels[levelIndex].alias;
+        }
+      });
+    });
+    return result;
+  }
+
+  updateExperimentJSON(result) {
+    // adding missing fields:
+    if (!result.factors) {
+      result.factors = [];
+    }
+    // replacing old fields with new field names:
+    result = this.deduceConditionPayload(result);
+    result = this.deducePartition(result);
+    result = this.deduceFactors(result);
+    
+    return result;
+  }
+
+  async validateExperiment(experimentInfo, fileName, experimentJSONVersionStatus) {
+    if (experimentInfo.backendVersion) {
+      experimentJSONVersionStatus = await this.validateExperimentJSONVersion(experimentInfo);
+    }
+
+    let isExperimentJSONValid = await this.validateExperimentJSON(experimentInfo);
+
+    if (experimentJSONVersionStatus === 0 && isExperimentJSONValid) {
+      this.allExperiments.push(experimentInfo);
+    } else if (!isExperimentJSONValid) {
+      this.importFileErrors.push({
+        filename: fileName,
+        error:
+          this.translate.instant('home.import-experiment.error.message.text') + ' ' + this.missingAllProperties,
+      });
+    } else {
+      if (experimentJSONVersionStatus === 1) {
+        this.importFileErrors.push({
+          filename: fileName,
+          error: this.translate.instant('home.import-experiment.old-version-error.message.text'),
+        });
+      } else {
+        this.importFileErrors.push({
+          filename: fileName,
+          error: this.translate.instant('home.import-experiment.new-version-error.message.text'),
+        });
+      }
+      this.allExperiments.push(experimentInfo);
+    }
+    return this.importFileErrors;
+  }
+
   async uploadFile(event) {
     let index = 0;
     let fileName = '';
@@ -359,34 +535,10 @@ export class ImportExperimentComponent implements OnInit {
     reader.addEventListener(
       'load',
       async function () {
-        const result = JSON.parse(reader.result as any);
+        let result = JSON.parse(reader.result as any);
+        result = this.updateExperimentJSON(result);
         this.experimentInfo = result;
-        this.experimentJSONVersionStatus = await this.validateExperimentJSONVersion(this.experimentInfo);
-        this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
-        if (this.experimentJSONVersionStatus === 0 && this.isExperimentJSONValid) {
-          this.allExperiments.push(this.experimentInfo);
-        } else if (!this.isExperimentJSONValid) {
-          this.importFileErrors.push({
-            fileName: fileName,
-            error:
-              this.translate.instant('home.import-experiment.error.message.text') + ' ' + this.missingAllProperties,
-          });
-        } else {
-          if (this.experimentJSONVersionStatus === 1) {
-            this.importFileErrors.push({
-              fileName: fileName,
-              error: this.translate.instant('home.import-experiment.old-version-error.message.text'),
-            });
-          } else {
-            this.importFileErrors.push({
-              fileName: fileName,
-              error: this.translate.instant('home.import-experiment.new-version-error.message.text'),
-            });
-          }
-          this.allExperiments.push(this.experimentInfo);
-        }
-
-        this.importFileErrorsDataSource.data = this.importFileErrors;
+        this.importFileErrorsDataSource.data = await this.validateExperiment(this.experimentInfo, fileName, this.experimentJSONVersionStatus);
         readFile(++index);
       }.bind(this)
     );

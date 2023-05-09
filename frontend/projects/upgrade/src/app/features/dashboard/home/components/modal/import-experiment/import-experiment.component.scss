@@ -8,6 +8,8 @@
   .import-experiment-body {
     margin: 20px 0;
     padding: 0 40px;
+    height: 265px;
+    overflow-y: auto;
 
     .file-input {
       &:hover {

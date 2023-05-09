@@ -13,13 +13,13 @@
         <ng-container matColumnDef="File Name">
           <mat-header-cell class="ft-12-700" *matHeaderCellDef> File Name </mat-header-cell>
           <mat-cell class="ft-12-600" *matCellDef="let element">
-            {{ element.fileName }}
+            {{ element.filename }}
           </mat-cell>
         </ng-container>
 
         <!-- Error -->
         <ng-container matColumnDef="Error">
-          <mat-header-cell class="ft-12-700" *matHeaderCellDef> Error </mat-header-cell>
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef> Error/Warning </mat-header-cell>
           <mat-cell class="ft-12-600" *matCellDef="let element">
             {{ element.error }}
           </mat-cell>
@@ -42,8 +42,11 @@
     <button
       mat-raised-button
       class="shared-modal--modal-btn default-button"
-      [ngClass]="{ 'default-button--disabled': uploadedFileCount === 1 && (!experimentInfo || !isExperimentJSONValid) }"
-      [disabled]="uploadedFileCount === 1 && (!experimentInfo || !isExperimentJSONValid)"
+      [ngClass]="{
+        'default-button--disabled':
+          uploadedFileCount === 0 || (uploadedFileCount === 1 && (!experimentInfo || !isExperimentJSONValid))
+      }"
+      [disabled]="uploadedFileCount === 0 || (uploadedFileCount === 1 && (!experimentInfo || !isExperimentJSONValid))"
       (click)="importExperiment()"
     >
       {{ 'global.import.text' | translate }}
