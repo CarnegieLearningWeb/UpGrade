@@ -46,6 +46,7 @@ export const actionToggleSimpleExperimentPayloadTableEditMode = createAction(
   '[Experiment-Design-Stepper] Update Simple Experiment Payload Table Edit Mode Details',
   props<{
     simpleExperimentPayloadTableEditIndex: number | null;
+    isNgDestroyCall: boolean;
   }>()
 );
 

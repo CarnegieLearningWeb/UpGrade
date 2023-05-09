@@ -24,7 +24,12 @@ import { UserRepository } from '../repositories/UserRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { METRICS_JOIN_TEXT } from './MetricService';
 import { getCustomRepository } from 'typeorm';
-import moment from 'moment-timezone';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 interface IEnrollmentStatByDate {
   date: string;
@@ -296,12 +301,17 @@ export class AnalyticsService {
             ExperimentId: row.experimentId,
             ExperimentName: row.experimentName,
             UserId: row.userId,
+            AppContext: row.context[0],
+            UnitOfAssignment: row.assignmentUnit,
+            GroupType: row.group,
             GroupId: row.groupId,
+            Site: row.site,
+            Target: row.target,
             ConditionName: row.conditionName,
             FirstDecisionPointReachedOn: new Date(row.firstDecisionPointReachedOn).toISOString(),
-            FirstDecisionPointReachedOn_LocalTime: moment(row.firstDecisionPointReachedOn)
+            FirstDecisionPointReachedOn_LocalTime: dayjs(row.firstDecisionPointReachedOn)
               .tz(localTimeZone)
-              .toISOString(true),
+              .format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
             UniqueDecisionPointsMarked: row.decisionPointReachedCount,
             ...queryDataToAdd,
           };

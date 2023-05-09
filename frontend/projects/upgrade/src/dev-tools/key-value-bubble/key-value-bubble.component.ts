@@ -1,4 +1,4 @@
-import { CdkDragEnd, CdkDragStart } from '@angular/cdk/drag-drop/drag-events';
+import { CdkDragEnd, CdkDragStart } from '@angular/cdk/drag-drop';
 import { Component, OnInit, ChangeDetectionStrategy, Input } from '@angular/core';
 import { IKeyValueBubbleStyles } from './key-value-bubble.model';
 import { KeyValueBubbleService } from './key-value-bubble.service';

@@ -61,7 +61,7 @@ jobs:
           echo "::set-output name=function_name::$STAGING_LAMBDA_FUNCTION_NAME"
       - id: get-major-minor-version
         run: |
-          VERSION=$(jq -r '.version' package.json)
+          VERSION=$(jq -r '.version' package.json | awk '{split($0, num, "."); print num[1] "." num[2]}')
           echo "::set-output name=version::$VERSION"
       - id: get-version
         uses: actions/github-script@v6
