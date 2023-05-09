@@ -17,7 +17,7 @@ import { filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
-import { EXPERIMENT_TYPE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 
 interface ImportExperimentJSON {
   schema:
