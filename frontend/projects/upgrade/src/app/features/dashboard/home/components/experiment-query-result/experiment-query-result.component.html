@@ -17,10 +17,10 @@
         <ng-container *ngIf="!isResultExist(query.id); else noResultTemplate">
           <div style="display: flex; overflow-x: scroll">
             <br />
-            <div *ngFor="let factor of factors; let i = index" style="margin-right: 100px; height: 320px; width: 28%">
-              <table>
+            <div *ngFor="let factor of factors; let i = index" style="margin-right: 100px; height: 320px; width: 40%">
+              <table style="width: 100%">
                 <tr>
-                  <td class="ft-14-600 factor-name1">{{ factor | uppercase }}</td>
+                  <td class="ft-14-600 factor-name-main">{{ factor | uppercase }}</td>
                 </tr>
               </table>
               <ngx-charts-bar-vertical
@@ -99,14 +99,14 @@
           <ng-container *ngIf="!isResultExist(query.id); else noResultTemplate">
             <div style="display: table; overflow-x: scroll">
               <br />
-              <div style="display: block; margin-right: 100px; width: 28%">
-                <table>
-                  <tr>
-                    <td class="ft-14-600 factor-name1" *ngFor="let factor of factors">{{ factor | uppercase }}</td>
+              <div style="display: block; margin-right: 100px">
+                <table style="width: 100%">
+                  <tr style="white-space: nowrap">
+                    <td class="ft-14-600 factor-name1" *ngFor="let factor of factors">
+                      {{ factor | uppercase }}
+                    </td>
                   </tr>
-                </table>
-                <table>
-                  <tr>
+                  <tr style="white-space: nowrap">
                     <td class="ft-14-600 factor-name2" *ngFor="let factor of factors.slice().reverse()">
                       ({{ factor | uppercase }})
                     </td>
@@ -117,10 +117,10 @@
               <div style="display: flex">
                 <div
                   *ngFor="let factor of factors; let i = index"
-                  style="margin-right: 150px; height: 320px; width: 28%"
+                  style="margin-left: 30px; margin-right: 180px; height: 320px; width: 30%"
                 >
                   <ngx-charts-line-chart
-                    [view]="[350, 250]"
+                    [view]="[270, 250]"
                     [scheme]="colorScheme"
                     [xAxis]="true"
                     [yAxis]="true"

@@ -61,11 +61,6 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   queryColumnDefs: QueryColumnDef[] = [];
   dataSource: RowData[] = [];
 
-  // dataSource = [
-  //   { Factor1: 'a', Factor2: 'b', totaltime1: 1, totaltime2: 2 },
-  //   { Factor1: 'c', Factor2: 'd', totaltime1: 3, totaltime2: 4 },
-  // ];
-
   /**
    * What we want is a flat map of "id: Level":
    * {
