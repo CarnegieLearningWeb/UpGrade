@@ -5,13 +5,16 @@ on:
       - main
     paths:
       - types/**
+  workflow_dispatch:
 jobs:
   types-publish:
     name: UpGrade Types Publish
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          ref: 'temp/main-3.0.18-clone'
       - name: Build Types Package
         uses: ./.github/actions/generic-npm-build
         with:

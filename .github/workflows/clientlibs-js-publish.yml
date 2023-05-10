@@ -5,13 +5,16 @@ on:
       - main
     paths:
       - clientlibs/js/**
+  workflow_dispatch:
 jobs:
   clientlibs-js-publish:
     name: UpGrade Client Libs JS Publish
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          ref: 'temp/main-3.0.18-clone'
       - name: Build Types Package
         uses: ./.github/actions/generic-npm-build
         with:
