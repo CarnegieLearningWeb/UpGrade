@@ -298,31 +298,32 @@ export class ExperimentService {
           deleteAuditLogData,
           currentUser
         );
-
-        try {
-          await transactionalEntityManager
-            .getRepository(Segment)
-            .delete(experiment.experimentSegmentInclusion.segment.id);
-        } catch (err) {
-          const error = err as ErrorWithType;
-          error.details = 'Error in deleting Include Segment fron DB';
-          error.type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-          throw error;
+        if (experiment.experimentSegmentInclusion) {
+          try {
+            await transactionalEntityManager
+              .getRepository(Segment)
+              .delete(experiment.experimentSegmentInclusion.segment.id);
+          } catch (err) {
+            const error = err as ErrorWithType;
+            error.details = 'Error in deleting Include Segment fron DB';
+            error.type = SERVER_ERROR.QUERY_FAILED;
+            logger.error(error);
+            throw error;
+          }
         }
-
-        try {
-          await transactionalEntityManager
-            .getRepository(Segment)
-            .delete(experiment.experimentSegmentExclusion.segment.id);
-        } catch (err) {
-          const error = err as ErrorWithType;
-          error.details = 'Error in deleting Exclude Segment fron DB';
-          error.type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-          throw error;
+        if (experiment.experimentSegmentExclusion) {
+          try {
+            await transactionalEntityManager
+              .getRepository(Segment)
+              .delete(experiment.experimentSegmentExclusion.segment.id);
+          } catch (err) {
+            const error = err as ErrorWithType;
+            error.details = 'Error in deleting Exclude Segment fron DB';
+            error.type = SERVER_ERROR.QUERY_FAILED;
+            logger.error(error);
+            throw error;
+          }
         }
-
         return deletedExperiment;
       }
 
@@ -1141,79 +1142,100 @@ export class ExperimentService {
         logger.error(error);
         throw error;
       }
-
-      // creating Include Segment
-      experimentDoc.experimentSegmentInclusion = experimentSegmentInclusion;
-      let segmentInclude;
-      if (experimentDoc.experimentSegmentInclusion.segment) {
-        const includeSegment = experimentDoc.experimentSegmentInclusion.segment;
-        segmentInclude = {
-          ...experimentSegmentInclusion,
-          type: includeSegment.type,
-          userIds: includeSegment.individualForSegment.map((x) => x.userId),
-          groups: includeSegment.groupForSegment.map((x) => {
-            return { type: x.type, groupId: x.groupId };
-          }),
-          subSegmentIds: includeSegment.subSegments.map((x) => x.id),
-        };
-      } else {
-        segmentInclude = experimentDoc.experimentSegmentInclusion;
-      }
-
-      const segmentIncludeData: SegmentInputValidator = {
-        ...segmentInclude,
-        id: uuid(),
-        name: experiment.id + ' Inclusion Segment',
-        description: experiment.id + ' Inclusion Segment',
-        context: experiment.context[0],
-        type: SEGMENT_TYPE.PRIVATE,
-      };
+      let includeSegmentExists = true;
       let segmentIncludeDoc: Segment;
-      try {
-        segmentIncludeDoc = await this.segmentService.upsertSegment(segmentIncludeData, logger);
-      } catch (err) {
-        const error = err as ErrorWithType;
-        error.details = 'Error in adding segment in DB';
-        error.type = SERVER_ERROR.QUERY_FAILED;
-        logger.error(error);
-        throw error;
-      }
+      let segmentIncludeDocToSave: Partial<ExperimentSegmentInclusion> = {};
+      experimentDoc.experimentSegmentInclusion = experimentSegmentInclusion;
+      if (experimentDoc.experimentSegmentInclusion) {
+        // creating Include Segment
+        let segmentInclude;
+        if (experimentDoc.experimentSegmentInclusion.segment) {
+          const includeSegment = experimentDoc.experimentSegmentInclusion.segment;
+          segmentInclude = {
+            ...experimentSegmentInclusion,
+            type: includeSegment.type,
+            userIds: includeSegment.individualForSegment.map((x) => x.userId),
+            groups: includeSegment.groupForSegment.map((x) => {
+              return { type: x.type, groupId: x.groupId };
+            }),
+            subSegmentIds: includeSegment.subSegments.map((x) => x.id),
+          };
+        } else {
+          segmentInclude = experimentDoc.experimentSegmentInclusion;
+        }
 
-      // creating Exclude Segment
-      experimentDoc.experimentSegmentExclusion = experimentSegmentExclusion;
-      let segmentExclude;
-      if (experimentDoc.experimentSegmentExclusion.segment) {
-        const excludeSegment = experimentDoc.experimentSegmentExclusion.segment;
-        segmentExclude = {
-          ...experimentSegmentExclusion,
-          type: excludeSegment.type,
-          userIds: excludeSegment.individualForSegment.map((x) => x.userId),
-          groups: excludeSegment.groupForSegment.map((x) => {
-            return { type: x.type, groupId: x.groupId };
-          }),
-          subSegmentIds: excludeSegment.subSegments.map((x) => x.id),
+        const segmentIncludeData: SegmentInputValidator = {
+          ...segmentInclude,
+          id: uuid(),
+          name: experiment.id + ' Inclusion Segment',
+          description: experiment.id + ' Inclusion Segment',
+          context: experiment.context[0],
+          type: SEGMENT_TYPE.PRIVATE,
         };
+        try {
+          segmentIncludeDoc = await this.segmentService.upsertSegment(segmentIncludeData, logger);
+        } catch (err) {
+          const error = err as ErrorWithType;
+          error.details = 'Error in adding segment in DB';
+          error.type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
+        // creating segmentInclude doc
+        const includeTempDoc = new ExperimentSegmentInclusion();
+        includeTempDoc.segment = segmentIncludeDoc;
+        includeTempDoc.experiment = experimentDoc;
+        segmentIncludeDocToSave = this.getSegmentDoc(includeTempDoc);
       } else {
-        segmentExclude = experimentDoc.experimentSegmentExclusion;
+        includeSegmentExists = false;
       }
 
-      const segmentExcludeData: SegmentInputValidator = {
-        ...segmentExclude,
-        id: uuid(),
-        name: experiment.id + ' Exclusion Segment',
-        description: experiment.id + ' Exclusion Segment',
-        context: experiment.context[0],
-        type: SEGMENT_TYPE.PRIVATE,
-      };
+      let excludeSegmentExists = true;
       let segmentExcludeDoc: Segment;
-      try {
-        segmentExcludeDoc = await this.segmentService.upsertSegment(segmentExcludeData, logger);
-      } catch (err) {
-        const error = err as ErrorWithType;
-        error.details = 'Error in adding segment in DB';
-        error.type = SERVER_ERROR.QUERY_FAILED;
-        logger.error(error);
-        throw error;
+      let segmentExcludeDocToSave: Partial<ExperimentSegmentExclusion> = {};
+      experimentDoc.experimentSegmentExclusion = experimentSegmentExclusion;
+      if (experimentDoc.experimentSegmentExclusion) {
+        // creating Exclude Segment
+        let segmentExclude;
+        if (experimentDoc.experimentSegmentExclusion.segment) {
+          const excludeSegment = experimentDoc.experimentSegmentExclusion.segment;
+          segmentExclude = {
+            ...experimentSegmentExclusion,
+            type: excludeSegment.type,
+            userIds: excludeSegment.individualForSegment.map((x) => x.userId),
+            groups: excludeSegment.groupForSegment.map((x) => {
+              return { type: x.type, groupId: x.groupId };
+            }),
+            subSegmentIds: excludeSegment.subSegments.map((x) => x.id),
+          };
+        } else {
+          segmentExclude = experimentDoc.experimentSegmentExclusion;
+        }
+
+        const segmentExcludeData: SegmentInputValidator = {
+          ...segmentExclude,
+          id: uuid(),
+          name: experiment.id + ' Exclusion Segment',
+          description: experiment.id + ' Exclusion Segment',
+          context: experiment.context[0],
+          type: SEGMENT_TYPE.PRIVATE,
+        };
+        try {
+          segmentExcludeDoc = await this.segmentService.upsertSegment(segmentExcludeData, logger);
+        } catch (err) {
+          const error = err as ErrorWithType;
+          error.details = 'Error in adding segment in DB';
+          error.type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
+        // creating segmentExclude doc
+        const excludeTempDoc = new ExperimentSegmentExclusion();
+        excludeTempDoc.segment = segmentExcludeDoc;
+        excludeTempDoc.experiment = experimentDoc;
+        segmentExcludeDocToSave = this.getSegmentDoc(excludeTempDoc);
+      } else {
+        excludeSegmentExists = false;
       }
 
       // creating condition docs
@@ -1236,6 +1258,9 @@ export class ExperimentService {
           return decisionPoint;
         });
 
+      if (!conditionPayloads) {
+        experiment = { ...experiment, conditionPayloads: [] };
+      }
       // update conditionPayloads condition uuids:
       if (conditionPayloads) {
         conditionPayloads.map((conditionPayload) => {
@@ -1247,7 +1272,6 @@ export class ExperimentService {
           }
         });
       }
-
       const conditionPayloadDocToSave: Array<Partial<ConditionPayload>> =
         (conditionPayloads &&
           conditionPayloads.length > 0 &&
@@ -1263,22 +1287,12 @@ export class ExperimentService {
           })) ||
         [];
 
-      // creating segmentInclude doc
-      const includeTempDoc = new ExperimentSegmentInclusion();
-      includeTempDoc.segment = segmentIncludeDoc;
-      includeTempDoc.experiment = experimentDoc;
-      const segmentIncludeDocToSave = this.getSegmentDoc(includeTempDoc);
-
-      // creating segmentExclude doc
-      const excludeTempDoc = new ExperimentSegmentExclusion();
-      excludeTempDoc.segment = segmentExcludeDoc;
-      excludeTempDoc.experiment = experimentDoc;
-      const segmentExcludeDocToSave = this.getSegmentDoc(excludeTempDoc);
       // creating queries docs
       const promiseArray = [];
       let queryDocsToSave =
-        (queries[0] &&
+        (queries &&
           queries.length > 0 &&
+          queries[0] &&
           queries.map((query: any) => {
             promiseArray.push(this.metricRepository.findOne(query.metric.key));
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1317,17 +1331,26 @@ export class ExperimentService {
         ] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
           this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager),
-          this.experimentSegmentInclusionRepository.insertData(
-            segmentIncludeDocToSave,
-            logger,
-            transactionalEntityManager
-          ),
-          this.experimentSegmentExclusionRepository.insertData(
-            segmentExcludeDocToSave,
-            logger,
-            transactionalEntityManager
-          ),
-          this.conditionPayloadRepository.insertConditionPayload(conditionPayloadDocToSave, transactionalEntityManager),
+          includeSegmentExists
+            ? this.experimentSegmentInclusionRepository.insertData(
+                segmentIncludeDocToSave,
+                logger,
+                transactionalEntityManager
+              )
+            : (Promise.resolve([]) as any),
+          excludeSegmentExists
+            ? this.experimentSegmentExclusionRepository.insertData(
+                segmentExcludeDocToSave,
+                logger,
+                transactionalEntityManager
+              )
+            : (Promise.resolve([]) as any),
+          conditionPayloadDocToSave.length > 0
+            ? this.conditionPayloadRepository.insertConditionPayload(
+                conditionPayloadDocToSave,
+                transactionalEntityManager
+              )
+            : (Promise.resolve([]) as any),
           queryDocsToSave.length > 0
             ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
             : (Promise.resolve([]) as any),
@@ -1371,17 +1394,29 @@ export class ExperimentService {
         factorDocToReturn = this.formatingFactorAndLevels(factorDoc, levelDoc);
         conditionDocToReturn = this.formatingElements(conditionDocToReturn, levelCombinationElementDoc, levelDoc);
       }
-
-      const newExperiment = {
-        ...experimentDoc,
-        conditions: conditionDocToReturn as any,
-        partitions: decisionPointDocToReturn as any,
-        factors: factorDocToReturn as any,
-        experimentSegmentInclusion: { ...experimentSegmentInclusionDoc, segment: segmentIncludeDoc } as any,
-        experimentSegmentExclusion: { ...experimentSegmentExclusionDoc, segment: segmentExcludeDoc } as any,
-        conditionPayloads: conditionPayloadDocToReturn as any,
-        queries: (queryDocToReturn as any) || [],
-      };
+      let newExperimentObject;
+      if (experimentDoc.experimentSegmentInclusion && experimentDoc.experimentSegmentExclusion) {
+        newExperimentObject = {
+          ...experimentDoc,
+          conditions: conditionDocToReturn as any,
+          partitions: decisionPointDocToReturn as any,
+          factors: factorDocToReturn as any,
+          experimentSegmentInclusion: { ...experimentSegmentInclusionDoc, segment: segmentIncludeDoc } as any,
+          experimentSegmentExclusion: { ...experimentSegmentExclusionDoc, segment: segmentExcludeDoc } as any,
+          conditionPayloads: conditionPayloadDocToReturn as any,
+          queries: (queryDocToReturn as any) || [],
+        };
+      } else {
+        newExperimentObject = {
+          ...experimentDoc,
+          conditions: conditionDocToReturn as any,
+          partitions: decisionPointDocToReturn as any,
+          factors: factorDocToReturn as any,
+          conditionPayloads: conditionPayloadDocToReturn as any,
+          queries: (queryDocToReturn as any) || [],
+        };
+      }
+      const newExperiment = newExperimentObject;
       return newExperiment;
     });
     // create schedules to start experiment and end experiment
