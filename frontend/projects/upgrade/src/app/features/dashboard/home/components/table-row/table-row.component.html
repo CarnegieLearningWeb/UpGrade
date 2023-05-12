@@ -10,7 +10,7 @@
         <span *ngIf="!key.includes('Icon'); else icon" style="padding-left: -5px;">{{ element.data[key] }}</span>
         <ng-template #icon>
           <mat-icon
-            style="margin-left: -20px;"
+            style="margin-left: -17.5px;"
             *ngIf="element.partitions && key === 'expandIcon'"
             [class.active]="element.data[referenceId] === expandedId"
             (click)="toggleExpandableSymbol(element.data[referenceId])"
