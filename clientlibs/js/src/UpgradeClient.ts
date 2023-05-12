@@ -9,7 +9,7 @@ import {
   ILogInput,
   MARKED_DECISION_POINT_STATUS,
   IExperimentAssignmentv4,
-  CaliperEnvelope
+  CaliperEnvelope,
 } from 'upgrade_types';
 import getExperimentCondition, { Assignment } from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
@@ -191,7 +191,6 @@ export default class UpgradeClient {
     this.validateClient();
     return await log(this.api.log, this.userId, this.token, this.clientSessionId, value, sendAsAnalytics);
   }
-
 
   async logCaliper(value: CaliperEnvelope, sendAsAnalytics = false): Promise<Interfaces.ILog[]> {
     this.validateClient();

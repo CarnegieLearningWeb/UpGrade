@@ -733,8 +733,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.experimentDesignStepperService.experimentStepperDataReset();
         this.experimentDesignForm.markAsPristine();
       }
-      // scroll back to the conditions table
-      this.scrollToConditionsTable();
     }
   }
 
@@ -773,24 +771,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   changeEqualWeightFlag(event) {
     event.checked ? (this.equalWeightFlag = true) : (this.equalWeightFlag = false);
     this.applyEqualWeight();
-  }
-
-  scrollToPayloadsTable(): void {
-    this.stepContainer.nativeElement.scroll({
-      top: this.stepContainer.nativeElement.scrollHeight / 2,
-      behavior: 'smooth',
-      duration: 500,
-      easing: 'easeOutCubic',
-    });
-  }
-
-  scrollToConditionsTable(): void {
-    this.stepContainer.nativeElement.scroll({
-      top: 0,
-      behavior: 'smooth',
-      duration: 500,
-      easing: 'easeOutCubic',
-    });
   }
 
   get conditions(): UntypedFormArray {

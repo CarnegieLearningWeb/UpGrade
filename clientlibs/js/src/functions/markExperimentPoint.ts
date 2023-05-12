@@ -3,11 +3,13 @@ import fetchDataService from '../common/fetchDataService';
 import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 
 interface markData {
-  site: string;
-  condition: string;
   userId: string;
   status: MARKED_DECISION_POINT_STATUS;
-  target?: string;
+  data: {
+    site: string;
+    assignedCondition: { conditionCode: string; experimentId?: string };
+    target?: string;
+  };
   clientError?: string;
 }
 
@@ -22,25 +24,29 @@ export default async function markExperimentPoint(
   target?: string,
   clientError?: string
 ): Promise<Interfaces.IMarkExperimentPoint> {
-  let data: markData = {
-    site,
-    condition,
+  let requestBody: markData = {
     userId,
     status,
+    data: {
+      site: site,
+      assignedCondition: {
+        conditionCode: condition,
+      },
+    },
   };
   if (target) {
-    data = {
-      ...data,
+    requestBody.data = {
+      ...requestBody.data,
       target,
     };
   }
   if (clientError) {
-    data = {
-      ...data,
+    requestBody = {
+      ...requestBody,
       clientError,
     };
   }
-  const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
+  const response = await fetchDataService(url, token, clientSessionId, requestBody, Types.REQUEST_TYPES.POST);
   if (response.status) {
     return response.data;
   } else {
