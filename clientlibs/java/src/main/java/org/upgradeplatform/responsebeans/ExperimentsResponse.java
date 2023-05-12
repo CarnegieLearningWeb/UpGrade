@@ -4,61 +4,56 @@ package org.upgradeplatform.responsebeans;
 
 public class ExperimentsResponse {
 	
-	private Object expId;
-	private String expPoint;
-	private String twoCharacterId;
-	private AssignedCondition assignedCondition;
+	private Object target;
+	private String site;
+	private Condition assignedCondition;
 	
 	public ExperimentsResponse() {}
 	
 	
 
-	public ExperimentsResponse(Object expId, String expPoint, String twoCharacterId,
-			AssignedCondition assignedCondition) {
+	public ExperimentsResponse(Object target, String site, Condition assignedCondition) {
 		super();
-		this.expId = expId;
-		this.expPoint = expPoint;
-		this.twoCharacterId = twoCharacterId;
+		this.target = target;
+		this.site = site;
 		this.assignedCondition = assignedCondition;
 	}
 
-
-
-	public Object getExpId() {
-		return expId;
+	public ExperimentsResponse(Object target, String site, Condition assignedCondition, String id) {
+		super();
+		this.target = target;
+		this.site = site;
+		this.assignedCondition = assignedCondition;
 	}
 
-	public void setExpId(Object expId) {
-		this.expId = expId;
+	public Object getTarget() {
+		return target;
 	}
 
-	public String getExpPoint() {
-		return expPoint;
+	public void setTarget(Object target) {
+		this.target = target;
 	}
 
-	public void setExpPoint(String expPoint) {
-		this.expPoint = expPoint;
+	public String getSite() {
+		return site;
 	}
 
-	public String getTwoCharacterId() {
-		return twoCharacterId;
+	public void setSite(String site) {
+		this.site = site;
 	}
 
-	public void setTwoCharacterId(String twoCharacterId) {
-		this.twoCharacterId = twoCharacterId;
-	}
 
-	public AssignedCondition getAssignedCondition() {
+	public Condition getAssignedCondition() {
 		return assignedCondition;
 	}
 
-	public void setAssignedCondition(AssignedCondition assignedCondition) {
+	public void setAssignedCondition(Condition assignedCondition) {
 		this.assignedCondition = assignedCondition;
 	}
 
     @Override
     public String toString(){
-        return "ExperimentsResponse [expId=" + expId + ", expPoint=" + expPoint + ", twoCharacterId=" + twoCharacterId
+        return "ExperimentsResponse [target=" + target + ", site=" + site 
                + ", assignedCondition=" + assignedCondition + "]";
     }
 }
