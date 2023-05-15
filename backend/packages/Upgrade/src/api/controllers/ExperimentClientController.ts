@@ -430,7 +430,7 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    return this.experimentAssignmentService.markExperimentPoint(
+    const response = await this.experimentAssignmentService.markExperimentPoint(
       experiment.userId,
       experiment.experimentPoint,
       experiment.status,
@@ -442,6 +442,12 @@ export class ExperimentClientController {
       experiment.partitionId,
       experiment.experimentId ? experiment.experimentId : null
     );
+    response['experimentId'] = response.site;
+    response['decisionPoint'] = response.target;
+    delete response.site;
+    delete response.target;
+    return response;
+
   }
 
   /**

@@ -17,4 +17,6 @@ export class ExperimentAssignmentValidator {
 
   @IsEnum(EXPERIMENT_STATE)
   public state: EXPERIMENT_STATE;
+
+  public context: string;
 }
