@@ -38,5 +38,8 @@ export {
   IFlagVariation,
   ILogInput,
   IGroupMetric,
-  ISingleMetric
+  ISingleMetric,
+  IWorkingGroup,
+  IGroupMembership,
+  IUserAliases,
 } from './Experiment/interfaces';

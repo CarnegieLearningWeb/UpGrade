@@ -1,11 +1,20 @@
-import { IsNotEmpty, IsDefined } from 'class-validator';
+import { IsNotEmpty, IsUUID, IsObject, IsEnum } from 'class-validator';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 
 export class ExperimentAssignmentValidator {
   @IsNotEmpty()
-  @IsDefined()
-  public userId: string;
+  @IsUUID()
+  public experimentId: string;
 
   @IsNotEmpty()
-  @IsDefined()
-  public context: string;
+  public site: string;
+
+  @IsNotEmpty()
+  public userId: string;
+
+  @IsObject()
+  public userEnvironment: object;
+
+  @IsEnum(EXPERIMENT_STATE)
+  public state: EXPERIMENT_STATE;
 }

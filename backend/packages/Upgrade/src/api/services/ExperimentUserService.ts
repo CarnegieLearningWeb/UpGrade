@@ -5,7 +5,7 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
-import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
+import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, IUserAliases, SERVER_ERROR } from 'upgrade_types';
 import { getConnection, In, Not } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -35,7 +35,9 @@ export class ExperimentUserService {
 
   public async create(users: Array<Partial<ExperimentUser>>, logger: UpgradeLogger): Promise<ExperimentUser[]> {
     logger.info({ message: 'Create a new User. Metadata of the user =>', details: users });
+    // TODO: Pratik please review this eslint error, is this working as intended?
     const multipleUsers = users.map((user) => {
+      // eslint-disable-next-line no-self-assign
       user.id = user.id;
       return user;
     });
@@ -63,7 +65,7 @@ export class ExperimentUserService {
     userId: string,
     aliases: string[],
     requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<ExperimentUser[]> {
+  ): Promise<IUserAliases> {
     const { logger, userDoc } = requestContext;
     const userExist = userDoc;
     logger.info({ message: 'Set aliases for experiment user => ' + userId, details: aliases });
@@ -71,14 +73,15 @@ export class ExperimentUserService {
     // throw error if user not defined
     if (!userExist) {
       logger.error({ message: 'User not defined setAliasesForUser' + userId, details: aliases });
-      
-      let error = new Error(
+
+      const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined setAliasesForUser: ${userId}`,
-        }));
+        })
+      );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404
+      (error as any).httpCode = 404;
       throw error;
     }
     const promiseArray = [];
@@ -145,6 +148,7 @@ export class ExperimentUserService {
       logger.error(error);
       throw error;
     }
+
     const userAliasesDocs = aliasesUserIds.map((aliasId) => {
       const aliasUser: any = {
         id: aliasId,
@@ -156,15 +160,18 @@ export class ExperimentUserService {
       const { originalUser, ...rest } = user;
       return { ...rest, originalUser: originalUser.id };
     });
+
+    let aliasesToReturn = alreadyLinkedAliases.map((alias) => alias.id);
+
     if (userAliasesDocs.length) {
       let aliasesUsers = await this.userRepository.save(userAliasesDocs);
       aliasesUsers = aliasesUsers.map((user) => {
         const { originalUser, ...rest } = user;
         return { ...rest, originalUser: originalUser.id };
       });
-      return [...aliasesUsers, ...alreadyLinkedAliases];
+      aliasesToReturn = [...aliasesToReturn, ...aliasesUsers.map((alias) => alias.id)];
     }
-    return alreadyLinkedAliases;
+    return { userId, aliases: aliasesToReturn };
   }
 
   public async updateWorkingGroup(
@@ -173,17 +180,18 @@ export class ExperimentUserService {
     requestContext: { logger: UpgradeLogger; userDoc: any }
   ): Promise<ExperimentUser> {
     const { logger, userDoc } = requestContext;
-    let userExist = userDoc;
+    const userExist = userDoc;
     logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
     if (!userExist) {
       logger.error({ message: 'User not defined updateWorkingGroup', details: userId });
-      let error =  new Error(
+      const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined updateWorkingGroup: ${userId}`,
-        }));
+        })
+      );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404
+      (error as any).httpCode = 404;
       throw error;
     }
     // TODO check if workingGroup is the subset of group membership
@@ -204,20 +212,21 @@ export class ExperimentUserService {
     requestContext: { logger: UpgradeLogger; userDoc: any }
   ): Promise<ExperimentUser> {
     const { logger, userDoc } = requestContext;
-    let userExist = userDoc;
+    const userExist = userDoc;
     logger.info({
       message: `Set Group Membership for userId: ${userId} with Group membership details as below:`,
       details: groupMembership,
     });
     if (!userExist) {
       logger.error({ message: 'User not defined updateGroupMembership', details: userId });
-      let error = new Error(
+      const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined updateGroupMembership: ${userId}`,
-        }));
+        })
+      );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404
+      (error as any).httpCode = 404;
       throw error;
     }
 
@@ -247,6 +256,7 @@ export class ExperimentUserService {
           return userDoc[0].originalUser;
         } else {
           // If user is original user
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { originalUser, ...rest } = userDoc[0];
           return rest as any;
         }
@@ -265,11 +275,10 @@ export class ExperimentUserService {
     }
   }
 
-  public async clearDB(logger: UpgradeLogger): Promise<string> {
+  public async clearDB(logger: UpgradeLogger): Promise<void> {
     await getConnection().transaction(async (transactionalEntityManager) => {
       await this.experimentRepository.clearDB(transactionalEntityManager, logger);
     });
-    return Promise.resolve('Cleared DB');
   }
 
   private async removeEnrollments(userId: string, groupMembership: any, oldGroupMembership: any): Promise<void> {
