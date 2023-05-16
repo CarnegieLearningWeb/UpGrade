@@ -170,10 +170,11 @@ export class ExperimentParticipantsComponent implements OnInit {
           this.members2.push(this.addMembers2(MemberTypes.SEGMENT, id.name));
         });
       }
-    } else {
-      this.members1.removeAt(0);
-      this.members2.removeAt(0);
-    }
+    } 
+    
+    this.members1.removeAt(0);
+    this.members2.removeAt(0);
+
 
     this.updateView1();
     this.updateView2();
