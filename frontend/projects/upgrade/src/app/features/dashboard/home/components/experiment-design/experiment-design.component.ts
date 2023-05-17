@@ -11,7 +11,7 @@ import {
   SimpleChanges,
   OnDestroy,
 } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators, UntypedFormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
@@ -60,7 +60,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   subscriptionHandler: Subscription;
 
-  experimentDesignForm: FormGroup;
+  experimentDesignForm: UntypedFormGroup;
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   decisionPointDataSource = new BehaviorSubject<AbstractControl[]>([]);
   allDecisionPoints = [];
@@ -112,7 +112,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   conditionsTableEditIndex$ = this.experimentDesignStepperService.conditionsTableEditIndex$;
 
   constructor(
-    private _formBuilder: FormBuilder,
+    private _formBuilder: UntypedFormBuilder,
     private experimentService: ExperimentService,
     private translate: TranslateService,
     private dialogService: DialogService,
@@ -733,8 +733,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.experimentDesignStepperService.experimentStepperDataReset();
         this.experimentDesignForm.markAsPristine();
       }
-      // scroll back to the conditions table
-      this.scrollToConditionsTable();
     }
   }
 
@@ -775,30 +773,14 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.applyEqualWeight();
   }
 
-  scrollToPayloadsTable(): void {
-    this.stepContainer.nativeElement.scroll({
-      top: this.stepContainer.nativeElement.scrollHeight / 2,
-      behavior: 'smooth',
-      duration: 500,
-      easing: 'easeOutCubic',
-    });
+  get conditions(): UntypedFormArray {
+    return this.experimentDesignForm?.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITIONS_ARRAY) as UntypedFormArray;
   }
 
-  scrollToConditionsTable(): void {
-    this.stepContainer.nativeElement.scroll({
-      top: 0,
-      behavior: 'smooth',
-      duration: 500,
-      easing: 'easeOutCubic',
-    });
-  }
-
-  get conditions(): FormArray {
-    return this.experimentDesignForm?.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITIONS_ARRAY) as FormArray;
-  }
-
-  get decisionPoints(): FormArray {
-    return this.experimentDesignForm?.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY) as FormArray;
+  get decisionPoints(): UntypedFormArray {
+    return this.experimentDesignForm?.get(
+      SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY
+    ) as UntypedFormArray;
   }
 
   get NewExperimentDialogEvents() {
