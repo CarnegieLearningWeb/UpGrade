@@ -893,7 +893,7 @@ export class ExperimentService {
         let queryDocs: Query[];
         let conditionPayloadDocs: ConditionPayloadDTO[];
         try {
-          [conditionDocs, decisionPointDocs, conditionPayloadDocs, queryDocs] = await Promise.all([
+          [conditionDocs, decisionPointDocs, queryDocs] = await Promise.all([
             Promise.all(
               conditionDocToSave.map(async (conditionDoc) => {
                 return this.experimentConditionRepository.upsertExperimentCondition(
@@ -911,14 +911,6 @@ export class ExperimentService {
               })
             ) as any,
             Promise.all(
-              conditionPayloadDocToSave.map(async (conditionPayload) => {
-                return this.conditionPayloadRepository.upsertConditionPayload(
-                  conditionPayload,
-                  transactionalEntityManager
-                );
-              })
-            ) as any,
-            Promise.all(
               queriesDocToSave.map(async (queryDoc) => {
                 return this.queryRepository.upsertQuery(queryDoc, transactionalEntityManager);
               })
@@ -926,10 +918,28 @@ export class ExperimentService {
           ]);
         } catch (err) {
           const error = err as Error;
-          error.message = `Error in creating conditions, decision points, conditionPayloads, queries "updateExperimentInDB"`;
+          error.message = `Error in creating conditions, decision points, queries "updateExperimentInDB"`;
           logger.error(error);
           throw error;
         }
+
+        try {
+          [conditionPayloadDocs] = await Promise.all([
+            Promise.all(
+              conditionPayloadDocToSave.map(async (conditionPayload) => {
+                return this.conditionPayloadRepository.upsertConditionPayload(
+                  conditionPayload,
+                  transactionalEntityManager
+                );
+              })
+            ) as any,
+          ]);
+        } catch (err) {
+          const error = err as Error;
+          error.message = `Error in creating conditionPayloads "updateExperimentInDB"`;
+          logger.error(error);
+          throw error;
+        }   
 
         let conditionDocToReturn = conditionDocs.map((conditionDoc) => {
           return { ...conditionDoc, experiment: conditionDoc.experiment };
