@@ -617,7 +617,7 @@ export class ExperimentAssignmentService {
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
         // const { state, logging, name, id } = experiment;
-        const { state, logging, name, conditionAliases, type } = experiment;
+        const { state, logging, name, conditionAliases } = experiment;
         const decisionPoints = experiment.partitions.map((decisionPoint) => {
           const { target, site, twoCharacterId } = decisionPoint;
           const conditionAssigned = assignment;
