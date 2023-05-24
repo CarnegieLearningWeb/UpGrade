@@ -16,6 +16,7 @@ import {
   IExperimentSearchParams,
   IExperimentSortParams,
   EXPERIMENT_TYPE,
+  WITHING_SUBJECT_ALGORITHM,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { Query } from './Query';
@@ -98,6 +99,13 @@ export class Experiment extends BaseModel {
 
   @Column('text', { nullable: true })
   public group: string;
+
+  @Column({
+    type: 'enum',
+    enum: WITHING_SUBJECT_ALGORITHM,
+    nullable: true,
+  })
+  public algorithm: WITHING_SUBJECT_ALGORITHM;
 
   @Column({
     default: false,

@@ -7,6 +7,13 @@ export enum CONSISTENCY_RULE {
 export enum ASSIGNMENT_UNIT {
   INDIVIDUAL = 'individual',
   GROUP = 'group',
+  WITHIN_SUBJECT = 'withinSubject',
+}
+
+export enum WITHING_SUBJECT_ALGORITHM {
+  RANDOM = 'random',
+  ROUND_ROBIN_RANDOM = 'roundRobinRandom',
+  ROUND_ROBIN_ORDERED = 'roundRobinOrdered',
 }
 
 export enum POST_EXPERIMENT_RULE {
