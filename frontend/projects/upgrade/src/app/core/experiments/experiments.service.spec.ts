@@ -36,7 +36,7 @@ import {
 } from './store/experiments.actions';
 import { Environment } from '../../../environments/environment-types';
 import { environment } from '../../../environments/environment';
-import { EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { CONDITION_ORDER, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { segmentNew } from './store/experiments.model';
 import { Segment } from '../segments/store/segments.model';
 // import { SEGMENT_TYPE } from 'upgrade_types';
@@ -101,6 +101,7 @@ describe('ExperimentService', () => {
     startOn: 'test',
     consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
     assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
+    conditionOrder: CONDITION_ORDER.RANDOM,
     postExperimentRule: POST_EXPERIMENT_RULE.ASSIGN,
     enrollmentCompleteCondition: {
       userCount: 1,

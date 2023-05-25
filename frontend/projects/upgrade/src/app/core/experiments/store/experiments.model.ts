@@ -24,6 +24,7 @@ import { Segment } from '../../segments/store/segments.model';
 export {
   CONSISTENCY_RULE,
   ASSIGNMENT_UNIT,
+  CONDITION_ORDER,
   POST_EXPERIMENT_RULE,
   EXPERIMENT_STATE,
   IExperimentEnrollmentStats,
