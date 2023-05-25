@@ -17,6 +17,7 @@ import {
   FILTER_MODE,
   EXPERIMENT_TYPE,
   PAYLOAD_TYPE,
+  CONDITION_ORDER,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
 
@@ -209,6 +210,7 @@ export interface Experiment {
   context: string[];
   startOn: string;
   consistencyRule: CONSISTENCY_RULE;
+  conditionOrder: CONDITION_ORDER;
   assignmentUnit: ASSIGNMENT_UNIT;
   postExperimentRule: POST_EXPERIMENT_RULE;
   enrollmentCompleteCondition: EnrollmentCompleteCondition;

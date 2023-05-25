@@ -7,13 +7,13 @@ export enum CONSISTENCY_RULE {
 export enum ASSIGNMENT_UNIT {
   INDIVIDUAL = 'individual',
   GROUP = 'group',
-  WITHIN_SUBJECT = 'withinSubject',
+  WITHIN_SUBJECTS = 'within-subjects',
 }
 
-export enum WITHING_SUBJECT_ALGORITHM {
+export enum CONDITION_ORDER {
   RANDOM = 'random',
-  ROUND_ROBIN_RANDOM = 'roundRobinRandom',
-  ROUND_ROBIN_ORDERED = 'roundRobinOrdered',
+  RANDOM_ROUND_ROBIN = 'random round robin',
+  ORDERED_ROUND_ROBIN = 'ordered round robin',
 }
 
 export enum POST_EXPERIMENT_RULE {
@@ -51,7 +51,7 @@ export enum SERVER_ERROR {
   CONDITION_NOT_FOUND = 'Condition not found',
   EXPERIMENT_ID_MISSING_FOR_SHARED_DECISIONPOINT = 'Experiment ID not provided for shared Decision Point',
   INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT = 'Experiment ID provided is invalid for shared Decision Point',
-  UNSUPPORTED_CALIPER = 'Caliper profile or event not supported'
+  UNSUPPORTED_CALIPER = 'Caliper profile or event not supported',
 }
 
 export enum MARKED_DECISION_POINT_STATUS {
@@ -185,9 +185,9 @@ export enum PAYLOAD_TYPE {
 }
 
 export enum SUPPORTED_CALIPER_PROFILES {
-  GRADING = "GradingProfile"
+  GRADING = 'GradingProfile',
 }
 
 export enum SUPPORTED_CALIPER_EVENTS {
-  GRADE = "GradeEvent"
+  GRADE = 'GradeEvent',
 }

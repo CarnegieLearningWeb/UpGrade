@@ -61,6 +61,7 @@
   "home-global.status.text": "STATUS",
   "home-global.unit-of-assignment.text": "Unit of Assignment",
   "home-global.consistency-rule.text": "Consistency Rule",
+  "home-global.condition-order.text": "Condition Order",
   "home-global.design-type.text": "Design Type",
   "home-global.inclusion-criteria.text": "Inclusion Criteria",
   "home-global.post-experiment-rule.text": "Post Rule",
@@ -185,7 +186,7 @@
   "home.new-experiment.metrics.comparison-statistics-exist.validation.text": "Comparison Statistics are required",
   "home.new-experiment.metrics.description-exist.validation.text": "Query Name/Description is required",
   "home.new-experiment.metrics.metric-name-exist.validation.text": "Metric must be selected from the menu. Please choose an option.",
-  "home.new-experiment.metrics.unvalid-metric.text":"Metric must be selected from the menu. Please choose an option.",
+  "home.new-experiment.metrics.unvalid-metric.text": "Metric must be selected from the menu. Please choose an option.",
   "home.new-experiment.metrics.no-available-metrics.text": "Currently no metrics available to select. Metrics can be added later when available. You can continue to next step.",
   "home.new-experiment.schedule.start-automatically.text": "Start Automatically",
   "home.new-experiment.schedule.end-automatically.text": "End Automatically",
@@ -257,7 +258,7 @@
   "home.import-experiment.error.message.text": "Invalid Experiment JSON data",
   "home.import-experiment.old-version-error.message.text": "Warning: this experiment file is incompatible(older) with the current version of UpGrade. Some features may not import or function as intended. Continue with import?",
   "home.import-experiment.new-version-error.message.text": "Warning: this experiment file is incompatible(newer) with the current version of UpGrade. Some features may not import or function as intended. Continue with import?",
-  
+
   "home.import-experiment.missing-properties.message.text": "The document is missing the following properties: ",
   "home.import-experiment.multiple-files-import.warning.message.text": "Non-error experiments will be imported",
   "home.change-experiment-status.title.text": "Change Experiment Status",

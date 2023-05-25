@@ -9,7 +9,7 @@ import {
   ElementRef,
   OnDestroy,
 } from '@angular/core';
-import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE } from 'upgrade_types';
+import { ASSIGNMENT_UNIT, CONDITION_ORDER, CONSISTENCY_RULE, EXPERIMENT_STATE } from 'upgrade_types';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -37,13 +37,23 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('contextInput') contextInput: ElementRef<HTMLInputElement>;
   overviewForm: UntypedFormGroup;
-  unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
+  unitOfAssignments = [
+    { value: ASSIGNMENT_UNIT.INDIVIDUAL },
+    { value: ASSIGNMENT_UNIT.GROUP },
+    { value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS },
+  ];
+  public ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
 
   groupTypes = [];
   enableSave = true;
   allContexts = [];
   currentContext = null;
   consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
+  conditionOrders = [
+    { value: CONDITION_ORDER.RANDOM },
+    { value: CONDITION_ORDER.RANDOM_ROUND_ROBIN },
+    { value: CONDITION_ORDER.ORDERED_ROUND_ROBIN },
+  ];
   designTypes = [{ value: ExperimentDesignTypes.SIMPLE }, { value: ExperimentDesignTypes.FACTORIAL }];
 
   // Used to control chips
@@ -86,6 +96,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         unitOfAssignment: [null, Validators.required],
         groupType: [null],
         consistencyRule: [null, Validators.required],
+        conditionOrder: [null],
         designType: [ExperimentDesignTypes.SIMPLE, Validators.required],
         context: [null, Validators.required],
         tags: [[]],
@@ -93,12 +104,16 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       });
 
       this.overviewForm.get('unitOfAssignment').valueChanges.subscribe((assignmentUnit) => {
+        this.experimentDesignStepperService.changeAssignmentUnit(assignmentUnit);
         this.overviewForm.get('consistencyRule').reset();
+        this.overviewForm.get('conditionOrder').reset();
         switch (assignmentUnit) {
           case ASSIGNMENT_UNIT.INDIVIDUAL:
             this.overviewForm.get('groupType').disable();
             this.overviewForm.get('groupType').reset();
             this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }];
+            this.overviewForm.get('consistencyRule').enable();
+            this.overviewForm.get('conditionOrder').disable();
             break;
           case ASSIGNMENT_UNIT.GROUP:
             if (this.overviewForm.get('context')) {
@@ -106,10 +121,20 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
               this.overviewForm.get('groupType').setValidators(Validators.required);
               this.setGroupTypes();
               this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
+              this.overviewForm.get('consistencyRule').enable();
             } else {
               this.overviewForm.get('groupType').reset();
               this.overviewForm.get('groupType').disable();
             }
+            this.overviewForm.get('conditionOrder').disable();
+            break;
+          case ASSIGNMENT_UNIT.WITHIN_SUBJECTS:
+            this.overviewForm.get('groupType').disable();
+            this.overviewForm.get('groupType').reset();
+            this.consistencyRules = [];
+            this.overviewForm.get('consistencyRule').disable();
+            this.overviewForm.get('conditionOrder').enable();
+            this.overviewForm.get('conditionOrder').setValidators(Validators.required);
             break;
         }
       });
@@ -137,6 +162,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           unitOfAssignment: this.experimentInfo.assignmentUnit,
           groupType: this.experimentInfo.group,
           consistencyRule: this.experimentInfo.consistencyRule,
+          conditionOrder: this.experimentInfo.conditionOrder,
           designType: this.experimentInfo.type,
           context: this.currentContext,
           tags: this.experimentInfo.tags,
@@ -253,6 +279,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         unitOfAssignment,
         groupType,
         consistencyRule,
+        conditionOrder,
         context,
         designType,
         tags,
@@ -262,6 +289,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         name: experimentName,
         description: description || '',
         consistencyRule: consistencyRule,
+        conditionOrder: conditionOrder,
         assignmentUnit: unitOfAssignment,
         group: groupType,
         type: designType,
@@ -291,7 +319,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   }
 
   get unitOfAssignmentValue() {
-    return this.overviewForm.get('unitOfAssignment').value === ASSIGNMENT_UNIT.GROUP;
+    return this.overviewForm.get('unitOfAssignment').value;
   }
 
   get contexts(): UntypedFormArray {

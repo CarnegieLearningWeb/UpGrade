@@ -4,7 +4,7 @@ import { Container } from 'typedi';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
-import { ASSIGNMENT_UNIT, WITHING_SUBJECT_ALGORITHM } from 'upgrade_types';
+import { ASSIGNMENT_UNIT, CONDITION_ORDER } from 'upgrade_types';
 
 export default async function AlgorithmCheck(): Promise<void> {
   // Testing for Factorial Experiment with different Decision Point
@@ -26,8 +26,8 @@ export default async function AlgorithmCheck(): Promise<void> {
         name: experimentObject.name,
         state: experimentObject.state,
         postExperimentRule: experimentObject.postExperimentRule,
-        assignmentUnit: ASSIGNMENT_UNIT.WITHIN_SUBJECT,
-        algorithm: WITHING_SUBJECT_ALGORITHM.RANDOM,
+        assignmentUnit: ASSIGNMENT_UNIT.WITHIN_SUBJECTS,
+        conditionOrder: CONDITION_ORDER.RANDOM,
         consistencyRule: experimentObject.consistencyRule,
       }),
     ])
