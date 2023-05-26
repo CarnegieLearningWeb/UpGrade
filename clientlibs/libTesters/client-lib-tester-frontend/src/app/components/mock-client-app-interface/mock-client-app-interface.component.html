@@ -1,0 +1,45 @@
+<div class="mock-client-app-interface-container">
+  <div class="left-side">
+    <mat-card class="interface-properties-container">
+      <mat-card-header class="header">
+        <mat-card-title>
+          {{ model.name }}
+        </mat-card-title>
+        <mat-card-subtitle>
+          {{ model.description }}
+        </mat-card-subtitle>
+      </mat-card-header>
+      <!-- <mat-card-content class="interface-properties-content">
+        <mat-card-header>
+          <mat-card-title class="hooks-title"> Hooks </mat-card-title>
+          <mat-card-subtitle>
+            ("Hooks" are event names that map to methods that simulate UpgradeClient code usage in the mock client app).
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-list>
+          <mat-list-item *ngFor="let hook of model.hooks">
+            <div class="hook-name" matListItemTitle>"{{ hook.name }}"</div>
+            <div class="hook-description" matListItemLine>{{ hook.description }}</div>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content> -->
+    </mat-card>
+
+    <mat-divider></mat-divider>
+
+    <div class="buttons-container">
+      <mat-list>
+        <div class="buttons-list" *ngFor="let button of model.buttons">
+          <button mat-raised-button (click)="dispatch(button.hookName)">{{ button.label }}</button>
+          <div class="button-header" matSubheader>{{ button.description }}</div>
+          <mat-divider></mat-divider>
+        </div>
+      </mat-list>
+    </div>
+  </div>
+
+  <div class="right-side">
+    <!-- logger Component -->
+    <p>hello</p>
+  </div>
+</div>

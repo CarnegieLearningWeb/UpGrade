@@ -1,0 +1,79 @@
+<div class="config-container">
+  <form class="config-form" [formGroup]="configForm">
+    <div class="config-form-column mock-app">
+      <mat-form-field class="config-form-field" [style.width.px]="400">
+        <mat-label>Mock Client App / Component</mat-label>
+        <mat-select formControlName="mockClientApp">
+          <mat-option *ngFor="let mockClient of mockClientAppSelectOptions" [value]="mockClient.value">
+            {{ mockClient.viewValue }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <div class="validated-server-connection-field" *ngIf="selectedMockClientAppInterface">
+        <span class="validated-server-connection" *ngIf="selectedMockClientAppInterface.type === 'frontend'">
+          <div class="status-dot success"></div>
+          <span>This mock app type is frontend, no server to connect.</span>
+        </span>
+        <span class="validated-server-connection" *ngIf="mockServerConnection === 'pending'">
+          <div class="status-dot pending"></div>
+          <span>Checking Client Lib Server Connection...</span>
+        </span>
+        <span class="validated-server-connection" *ngIf="mockServerConnection && mockServerConnection !== 'pending'">
+          <div class="status-dot success"></div>
+          <span>Connected to Test Server</span>
+        </span>
+        <span
+          class="validated-server-connection"
+          *ngIf="selectedMockClientAppInterface.type !== 'frontend' && !mockServerConnection"
+        >
+          <div class="status-dot fail"></div>
+          <span>Couldn't connect. Please start server or check configuration.</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="config-form-column version">
+      <mat-form-field class="config-form-field" [style.width.px]="400">
+        <mat-label>Client Lib Version</mat-label>
+        <mat-select formControlName="clientLibVersion">
+          <mat-option *ngFor="let version of clientLibVersionSelectOptions" [value]="version.value">
+            {{ version.viewValue }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="config-form-column version">
+      <mat-form-field class="config-form-field" [style.width.px]="400">
+        <mat-label>API Host URL</mat-label>
+        <input type="text" matInput formControlName="apiHostUrl" [matAutocomplete]="auto" />
+        <mat-autocomplete #auto="matAutocomplete">
+          <mat-option *ngFor="let url of apiHostUrls" [value]="url.value">
+            {{ url.viewValue }}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+      <div class="validated-api-version-field" *ngIf="selectedApiHostUrl">
+        <span class="validated-api-version" *ngIf="apiValidatedVersion === 'pending'">
+          <div class="status-dot pending"></div>
+          <span>Getting API Host Version...</span>
+        </span>
+        <span class="validated-api-version" *ngIf="apiValidatedVersion && apiValidatedVersion !== 'pending'">
+          <div class="status-dot success"></div>
+          <span>API Host Version: {{ apiValidatedVersion }}</span>
+        </span>
+        <span class="validated-api-version" *ngIf="!apiValidatedVersion">
+          <div class="status-dot fail"></div>
+          <span>Couldn't connect to API host. Start server or try another url.</span>
+        </span>
+      </div>
+    </div>
+  </form>
+
+  <br />
+  <mat-divider></mat-divider>
+
+  <div class="mock-client-app-actions-container" *ngIf="selectedMockClientAppInterface?.name">
+    <app-mock-client-app-interface [model]="selectedMockClientAppInterface"> </app-mock-client-app-interface>
+  </div>
+</div>

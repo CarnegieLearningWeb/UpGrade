@@ -1,0 +1,35 @@
+.mock-client-app-interface-container {
+  display: flex;
+  flex-direction: row;
+
+  .left-side,
+  .right-side {
+    width: 50%;
+  }
+
+  .header {
+    padding: 10px 0;
+    background-color: tomato;
+    border-radius: 5px;
+  }
+
+  .interface-properties-content {
+    padding: 10px 0;
+  }
+
+  .hook-name {
+    font-weight: bold;
+    margin-right: 10px;
+  }
+
+  .hooks-title {
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+  .hook-description {
+    font-style: italic;
+    color: rgba(0, 0, 0, 0.54);
+    font-size: 14px;
+  }
+}
