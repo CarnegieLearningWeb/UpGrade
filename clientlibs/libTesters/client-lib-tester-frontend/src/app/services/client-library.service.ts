@@ -6,22 +6,35 @@ import { UpgradeClient, ClientLibraryRef, availableClientLibraries } from '../cl
 })
 export class ClientLibraryService {
   private clientLibraries: ClientLibraryRef[] = [];
+  private selectedClientLibraryVersion = '';
+  private selectedAPIHostUrl = '';
 
   constructor() {
     this.clientLibraries = availableClientLibraries;
   }
 
-  // createClientLibraryInstance(version: string, params: UpgradeClientOptions): UpgradeClient {
-  //   const clientLibrary = this.clientLibraries.find((clientLibrary) => clientLibrary.version === version);
-  //   if (!clientLibrary) {
-  //     throw new Error(`Client library version ${version} not found`);
-  //   }
+  getSelectedClientLibraryVersion(): string {
+    return this.selectedClientLibraryVersion;
+  }
 
-  //   return new clientLibrary.client(params.userId, params.hostURL);
-  // }
+  setSelectedClientLibraryVersion(version: string): void {
+    console.log('setting version', version);
+    this.selectedClientLibraryVersion = version;
+  }
 
-  getClientConstructorByVersion(version: string): new (...args: any[]) => UpgradeClient {
-    const clientLibrary = this.clientLibraries.find((clientLibrary) => clientLibrary.version === version);
+  getSelectedAPIHostUrl(): string {
+    return this.selectedAPIHostUrl;
+  }
+
+  setSelectedAPIHostUrl(url: string): void {
+    this.selectedAPIHostUrl = url;
+  }
+
+  getUpgradeClientConstructor(): new (...args: any[]) => UpgradeClient {
+    const version = this.getSelectedClientLibraryVersion();
+    const clientLibrary = this.clientLibraries.find(
+      (clientLibrary) => clientLibrary.version === this.getSelectedClientLibraryVersion()
+    );
     if (!clientLibrary) {
       throw new Error(`Client library version ${version} not found`);
     }
