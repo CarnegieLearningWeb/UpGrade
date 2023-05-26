@@ -61,7 +61,8 @@ export function orderedRoundRobinCondition( experiment, userID: string, monitore
 
 export function rotateElements( conditionArray: ExperimentCondition[], monitoredDecisionPointLogsLength: number ) : ExperimentCondition[] {
     if ( monitoredDecisionPointLogsLength > 0 && conditionArray.length >= 2 ) {
-        for ( let i = 0; i < monitoredDecisionPointLogsLength; i++ ) {
+        const totalloopIteration = monitoredDecisionPointLogsLength % conditionArray.length ;
+        for ( let i = 0; i <  totalloopIteration; i++ ) {
             const element = conditionArray.shift();
             conditionArray.push(element);
         }
