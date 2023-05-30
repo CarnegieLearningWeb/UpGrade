@@ -830,11 +830,14 @@ export class ExperimentAssignmentService {
     return flatten(logsToReturn);
   }
 
-  public async caliperDataLog(log: CaliperLogData, requestContext: { logger: UpgradeLogger; userDoc: any }): Promise<Log[]>{
+  public async caliperDataLog(
+    log: CaliperLogData,
+    requestContext: { logger: UpgradeLogger; userDoc: any }
+  ): Promise<Log[]> {
     if (log.profile === SUPPORTED_CALIPER_PROFILES.GRADING && log.type === SUPPORTED_CALIPER_EVENTS.GRADE) {
       requestContext.logger.info({ message: 'Starting the Caliper log call for user' });
-      const userId = log.object.assignee.id
-      
+      const userId = log.object.assignee.id;
+
       const logs: ILogInput = log.generated.attempt.extensions;
 
       logs.metrics.attributes['duration'] = toSeconds(parse(log.generated.attempt.duration));
@@ -843,15 +846,13 @@ export class ExperimentAssignmentService {
       return this.dataLog(userId, [logs], {
         logger: requestContext.logger,
         userDoc: requestContext.userDoc,
-      })
-    }
-    else {
-      let error = new Error(`Unsupported Caliper profile: ${log.profile} or type: ${log.type}`);
+      });
+    } else {
+      const error = new Error(`Unsupported Caliper profile: ${log.profile} or type: ${log.type}`);
       (error as any).type = SERVER_ERROR.UNSUPPORTED_CALIPER;
       (error as any).httpCode = 422;
       throw error;
     }
-
   }
 
   public async dataLog(
