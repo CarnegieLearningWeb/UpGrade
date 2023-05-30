@@ -16,6 +16,7 @@ import {
   IExperimentSearchParams,
   IExperimentSortParams,
   EXPERIMENT_TYPE,
+  CONDITION_ORDER,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { Query } from './Query';
@@ -98,6 +99,13 @@ export class Experiment extends BaseModel {
 
   @Column('text', { nullable: true })
   public group: string;
+
+  @Column({
+    type: 'enum',
+    enum: CONDITION_ORDER,
+    nullable: true,
+  })
+  public conditionOrder: CONDITION_ORDER;
 
   @Column({
     default: false,

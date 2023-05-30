@@ -79,6 +79,7 @@ import {
 import { UpgradeLogger } from '../../src/lib/logger/UpgradeLogger';
 import { CompetingExperiment } from './Experiment/competingExperiment';
 import { FactorialExperimentCRUD, FactorialEnrollment, FactorialEnrollment2 } from './Experiment/factorial';
+import { AlgorithmCheck } from './Experiment/withinSubject/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -514,6 +515,11 @@ describe('Integration Tests', () => {
 
   test('Factorial Enrollment with different Decision Point', async (done) => {
     await FactorialEnrollment2();
+    done();
+  });
+
+  test('Within Subject algorithmCRUD', async (done) => {
+    await AlgorithmCheck();
     done();
   });
   // test('Monitored Point for Export', async (done) => {

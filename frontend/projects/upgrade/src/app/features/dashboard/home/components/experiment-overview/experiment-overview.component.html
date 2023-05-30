@@ -41,7 +41,7 @@
           </mat-select>
         </mat-form-field>
 
-        <mat-form-field class="ft-14-600 group-type" *ngIf="unitOfAssignmentValue">
+        <mat-form-field class="ft-14-600 group-type" *ngIf="unitOfAssignmentValue === ASSIGNMENT_UNIT.GROUP">
           <mat-label>{{ 'home.new-experiment.overview.group-type.placeHolder' | translate }}</mat-label>
           <mat-select class="ft-14-400" formControlName="groupType" [disabled]="!isExperimentEditable">
             <mat-option *ngFor="let group of groupTypes" [value]="group.value">{{ group.value }}</mat-option>
@@ -49,11 +49,26 @@
         </mat-form-field>
       </div>
 
-      <mat-form-field class="ft-14-600 consistency-rule">
+      <mat-form-field
+        class="ft-14-600 consistency-rule"
+        *ngIf="unitOfAssignmentValue !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS"
+      >
         <mat-label>{{ 'home-global.consistency-rule.text' | translate }}</mat-label>
         <mat-select class="ft-14-400" formControlName="consistencyRule">
           <mat-option *ngFor="let consistencyRule of consistencyRules" [value]="consistencyRule.value">
             {{ consistencyRule.value | titlecase }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field
+        class="ft-14-600 condition-order"
+        *ngIf="unitOfAssignmentValue === ASSIGNMENT_UNIT.WITHIN_SUBJECTS"
+      >
+        <mat-label>{{ 'home-global.condition-order.text' | translate }}</mat-label>
+        <mat-select class="ft-14-400" formControlName="conditionOrder">
+          <mat-option *ngFor="let conditionOrder of conditionOrders" [value]="conditionOrder.value">
+            {{ conditionOrder.value | titlecase }}
           </mat-option>
         </mat-select>
       </mat-form-field>
@@ -95,7 +110,7 @@
 
   <section class="shared-modal--buttons-container">
     <span class="shared-modal--buttons-left">
-      <!-- 
+      <!--
         empty left-side spacer for flex-box;
         first modal step has no left side / back btn
       -->

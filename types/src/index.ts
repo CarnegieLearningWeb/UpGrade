@@ -25,6 +25,7 @@ export {
   SUPPORTED_CALIPER_PROFILES,
   SUPPORTED_CALIPER_EVENTS,
   PAYLOAD_TYPE,
+  CONDITION_ORDER,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,

@@ -9,7 +9,13 @@ import {
   getFirstFactorialExperiment,
   getSecondFactorialExperiment,
 } from './raw';
-import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'upgrade_types';
+import {
+  CONSISTENCY_RULE,
+  ASSIGNMENT_UNIT,
+  POST_EXPERIMENT_RULE,
+  EXPERIMENT_STATE,
+  CONDITION_ORDER,
+} from 'upgrade_types';
 
 export const individualAssignmentExperiment = {
   ...getExperiment(),
@@ -102,6 +108,12 @@ export const secondFactorialExperiment = {
   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
+};
+
+export const withinSubjectExperiment = {
+  ...getExperiment(),
+  assignmentUnit: ASSIGNMENT_UNIT.WITHIN_SUBJECTS,
+  conditionOrder: CONDITION_ORDER.RANDOM,
 };
 
 export const individualExperimentWithMetric = {
