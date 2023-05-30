@@ -64,6 +64,7 @@ export class Experiment extends BaseModel {
 
   @IsNotEmpty()
   @Column({
+    nullable: true,
     type: 'enum',
     enum: CONSISTENCY_RULE,
   })
