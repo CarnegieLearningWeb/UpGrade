@@ -3,8 +3,10 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "preinstall": "npm run copy-local-js-build",
     "start": "ng serve --port 4201",
-    "build": "ng build",
+    "start:install": "npm install && npm run start",
+    "copy-local-js-build": "mkdir -p node_modules/upgrade_client_local && cd ../../js/ && npm run build && cp -r ./{dist,package.json,README.md} ../libTesters/client-lib-tester-frontend/node_modules/upgrade_client_local",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

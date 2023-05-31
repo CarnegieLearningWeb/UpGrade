@@ -1,0 +1,17 @@
+ok so:
+
+It sort of works, demo-able.
+
+There are a lot of hard-coded things.
+
+1. It needs to load in local branch client libs when doing npm install via preinstall npm script <-- this second
+2. It needs to have a user-creation interface, and a user service to emit latest user details via event bus. <-- this first
+3. It maybe doesn't really need logging in interface, dev console is pretty good...
+4. The app needs to emit it's own interfaceModel details so it is not hard-coded. <-- this third
+5. Need to make sure it can switch between apps (not all that important for now, but could be buggy)
+6. Needs cleaned up.
+7. The apps need to also have a selection for passing the scenario OR need to clone the app for different versions? <-- this fourth
+8. Keep mindful that it needs to be workable for a backend Java server version.
+
+Event-bus is for de-coupled communicating tester and test-app selections to the mock-app.
+

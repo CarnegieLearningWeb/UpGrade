@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { UpgradeClient, ClientLibraryRef, availableClientLibraries } from '../client-library-data';
+import { UpgradeClient, ClientLibraryRef } from '../app-config';
+import { availableClientLibraries } from '../app-config';
 
 @Injectable({
   providedIn: 'root',

@@ -1,0 +1,15 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>User Details</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content class="user-form-container">
+    <form [formGroup]="userForm">
+      <mat-form-field class="user-form-field">
+        <mat-label>User Id</mat-label>
+        <input type="text" matInput formControlName="userId" />
+      </mat-form-field>
+    </form>
+  </mat-card-content>
+  <!-- add the working group and other things later -->
+</mat-card>

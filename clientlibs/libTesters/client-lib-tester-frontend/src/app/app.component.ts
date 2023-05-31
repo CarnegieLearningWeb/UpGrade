@@ -2,13 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, NonNullableFormBuilder, Validators } from '@angular/forms';
 import { BehaviorSubject, catchError, of } from 'rxjs';
 import { DataFetchService } from './services/data-fetch.service';
-import {
-  MockClientAppInterfaceModel,
-  availableApiHostUrls,
-  availableClientLibraries,
-  availableMockClientAppInterfaceModels,
-} from './client-library-data';
+import { MockClientAppInterfaceModel } from './app-models';
 import { ClientLibraryService } from './services/client-library.service';
+import { availableClientLibraries, availableApiHostUrls, availableMockApps } from './app-config';
+import { MockClientAppService } from './services/mock-client-app.service';
 
 @Component({
   selector: 'app-root',
@@ -17,12 +14,7 @@ import { ClientLibraryService } from './services/client-library.service';
 })
 export class AppComponent implements OnInit {
   public availableClientVersions = availableClientLibraries;
-  public mockClientAppSelectOptions = availableMockClientAppInterfaceModels.map((mockClientApp) => {
-    return {
-      value: mockClientApp,
-      viewValue: mockClientApp.name,
-    };
-  });
+  public mockClientAppSelectOptions: { value: MockClientAppInterfaceModel; viewValue: string }[] = [];
   public clientLibVersionSelectOptions = availableClientLibraries.map((clientLibrary) => {
     return {
       value: clientLibrary.version,
@@ -39,12 +31,21 @@ export class AppComponent implements OnInit {
   constructor(
     private readonly fb: NonNullableFormBuilder,
     public dataFetchService: DataFetchService,
-    public clientLibraryService: ClientLibraryService
+    public clientLibraryService: ClientLibraryService,
+    public mockClientAppService: MockClientAppService
   ) {
     this.configForm = this.fb.group({
       clientLibVersion: this.fb.control('', Validators.required),
       apiHostUrl: this.fb.control('', Validators.required),
       mockClientApp: this.fb.control('', Validators.required),
+    });
+    Object.values(availableMockApps).forEach((mockAppName) => {
+      const mockAppInterfaceModel = this.mockClientAppService.getMockAppInterfaceModelByName(mockAppName);
+
+      this.mockClientAppSelectOptions.push({
+        value: mockAppInterfaceModel,
+        viewValue: mockAppName,
+      });
     });
   }
 
@@ -62,8 +63,8 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.listenForAPIHostUrlChanges();
+    this.listenForClientLibVersionChanges();
   }
-
   getAPIVersion(url: string): void {
     this.apiValidatedVersion = 'pending';
     this.dataFetchService
@@ -89,8 +90,8 @@ export class AppComponent implements OnInit {
   }
 
   listenForClientLibVersionChanges() {
-    this.configForm.get('clientLibVersion')?.valueChanges.subscribe(({ version }) => {
-      this.connectToBackendTestServer();
+    this.configForm.get('clientLibVersion')?.valueChanges.subscribe((version) => {
+      this.clientLibraryService.setSelectedClientLibraryVersion(version);
     });
   }
 
@@ -98,6 +99,7 @@ export class AppComponent implements OnInit {
     this.configForm.get('apiHostUrl')?.valueChanges.subscribe((url) => {
       if (url) {
         this.getAPIVersion(url);
+        this.clientLibraryService.setSelectedAPIHostUrl(url);
       }
     });
   }

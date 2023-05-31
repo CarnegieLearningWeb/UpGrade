@@ -27,11 +27,14 @@
 
     <mat-divider></mat-divider>
 
+    <app-user-form></app-user-form>
+
+    <mat-divider></mat-divider>
+
     <div class="buttons-container">
       <mat-list>
         <div class="buttons-list" *ngFor="let button of model.buttons">
-          <button mat-raised-button (click)="dispatch(button.hookName)">{{ button.label }}</button>
-          <div class="button-header" matSubheader>{{ button.description }}</div>
+          <button mat-raised-button (click)="dispatch(button.hookName, button.props)">{{ button.label }}</button>
           <mat-divider></mat-divider>
         </div>
       </mat-list>

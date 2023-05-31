@@ -17,9 +17,10 @@ import { MatDividerModule } from '@angular/material/divider';
 
 import { HttpClientModule } from '@angular/common/http';
 import { MockClientAppInterfaceComponent } from './components/mock-client-app-interface/mock-client-app-interface.component';
+import { AppUserFormComponent } from './components/app-user-form/app-user-form.component';
 
 @NgModule({
-  declarations: [AppComponent, MockClientAppInterfaceComponent],
+  declarations: [AppComponent, MockClientAppInterfaceComponent, AppUserFormComponent],
   imports: [
     BrowserAnimationsModule,
     BrowserModule,

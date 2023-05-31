@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { MockClientAppInterfaceModel } from 'src/app/client-library-data';
+import { MockClientAppInterfaceModel, MockClientAppUser } from 'src/app/app-models';
+import { EventBusService } from 'src/app/services/event-bus.service';
 
 @Component({
   selector: 'app-mock-client-app-interface',
@@ -9,11 +10,22 @@ import { MockClientAppInterfaceModel } from 'src/app/client-library-data';
 export class MockClientAppInterfaceComponent implements OnInit {
   @Input() public model!: MockClientAppInterfaceModel;
 
-  constructor() {}
+  // TODO: how to load in mock clients dynamically?
+  constructor(public eventBus: EventBusService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // use?
+  }
 
-  dispatch(hookName: string): void {
-    console.log('dispatching:', hookName);
+  getUser(): MockClientAppUser {
+    return this.eventBus.mockAppUser$.value;
+  }
+
+  dispatch(hookName: string, payload: any): void {
+    this.eventBus.dispatchHookEvent({
+      name: hookName,
+      payload,
+      user: this.getUser(),
+    });
   }
 }
