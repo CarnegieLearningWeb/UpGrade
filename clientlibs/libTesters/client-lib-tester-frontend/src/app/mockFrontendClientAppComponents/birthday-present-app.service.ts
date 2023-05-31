@@ -3,11 +3,18 @@ import { ClientLibraryService } from '../services/client-library.service';
 import { EventBusService } from '../services/event-bus.service';
 import { ClientAppHook, MockAppType, MockClientAppInterfaceModel } from '../app-models';
 
+// There's probably a clever way to do this, but getting the right types automatically is tricky
+
+// import { UpgradeClient } from 'upgrade_client_local';
+// import { UpgradeClient } from 'upgrade_client_1_1_17';
+// import { UpgradeClient } from 'upgrade_client_3_0_18';
+import { UpgradeClient } from 'upgrade_client_4_2_0';
+
 @Injectable({
   providedIn: 'root',
 })
 export class BirthdayPresentAppService {
-  private upgradeClient: any;
+  private upgradeClient!: UpgradeClient;
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
 
@@ -22,10 +29,11 @@ export class BirthdayPresentAppService {
     PURPLE_PRESENT: 'purple_present',
     GREEN_PRESENT: 'green_present',
   };
-  private CONTEXT = 'test-bday';
+  private CONTEXT = 'add'; // what should this be really?
   public HOOKNAMES = {
     LOGIN: 'login',
     VISIT_DP: 'visit_dp',
+    LOG: 'log',
   };
   public DECISION_POINTS = [
     { site: this.SITES.GET_PRESENT, target: this.TARGETS.ORANGE_PRESENT },
@@ -53,7 +61,12 @@ export class BirthdayPresentAppService {
         },
         {
           name: this.HOOKNAMES.VISIT_DP,
-          description: 'Will dispatch MARK event',
+          description:
+            'Will dispatch MARK event and receive either a good or bad present, depending on condition received.',
+        },
+        {
+          name: this.HOOKNAMES.LOG,
+          description: 'will log the user metrics!',
         },
       ],
       decisionPoints: this.DECISION_POINTS,
@@ -77,6 +90,10 @@ export class BirthdayPresentAppService {
           hookName: this.HOOKNAMES.VISIT_DP,
           props: this.DECISION_POINTS[2],
         },
+        {
+          label: 'Log some stuff',
+          hookName: this.HOOKNAMES.LOG,
+        },
       ],
     };
   }
@@ -95,6 +112,9 @@ export class BirthdayPresentAppService {
     } else if (name === this.HOOKNAMES.VISIT_DP) {
       const { site, target } = hookEvent.payload;
       this.visitDP({ site, target });
+    } else if (name === this.HOOKNAMES.LOG) {
+      console.log(hookEvent.payload);
+      this.sendMetrics();
     } else {
       throw new Error(`No hook found for hookName: ${name}`);
     }
@@ -104,8 +124,10 @@ export class BirthdayPresentAppService {
 
   private constructUpgradeClient(userId: string): any {
     const apiHostUrl = this.clientLibraryService.getSelectedAPIHostUrl();
-    const UpgradeClient = this.clientLibraryService.getUpgradeClientConstructor();
-    return new UpgradeClient(userId, apiHostUrl);
+    const UpgradeClient: new (...args: any[]) => UpgradeClient =
+      this.clientLibraryService.getUpgradeClientConstructor();
+    const upgradeClient = new UpgradeClient(userId, apiHostUrl, this.CONTEXT);
+    return upgradeClient;
   }
 
   private async login(userId: string) {
@@ -114,7 +136,7 @@ export class BirthdayPresentAppService {
 
     try {
       const initResponse = await this.upgradeClient.init();
-      const assignResponse = await this.upgradeClient.getAllExperimentConditions(this.CONTEXT);
+      const assignResponse = await this.upgradeClient.getAllExperimentConditions();
       console.log({ initResponse });
       console.log({ assignResponse });
     } catch (err) {
@@ -130,18 +152,24 @@ export class BirthdayPresentAppService {
 
     const { site, target } = options;
 
-    const condition = await this.upgradeClient.getDecisionPointAssignment(site, target);
-    console.log({ condition });
+    // this version should work with v4 and v4 endpoints
+
+    const assignment = await this.upgradeClient.getDecisionPointAssignment(site, target);
+    console.log({ assignment });
     try {
       const markResponse = await this.upgradeClient.markExperimentPoint(
         site,
-        this.CONTEXT,
-        condition?.assignedCondition?.conditionCode,
+        assignment?.getCondition(),
+        'applied',
         target
       );
       console.log({ markResponse });
     } catch (err) {
       console.error(err);
     }
+  }
+
+  private async sendMetrics() {
+    console.log('sending metrics');
   }
 }

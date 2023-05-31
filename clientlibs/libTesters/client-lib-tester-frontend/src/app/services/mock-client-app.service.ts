@@ -15,8 +15,6 @@ export class MockClientAppService {
     };
   }
 
-  // make all known apps available as services by app-name
-  // for each available app name, inject those services
   getMockAppInterfaceModelByName(mockAppName: string): any {
     const model = this.mockClientAppInterfaceMap[mockAppName];
 

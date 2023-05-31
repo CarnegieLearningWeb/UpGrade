@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
-import { UpgradeClient, ClientLibraryRef } from '../app-config';
 import { availableClientLibraries } from '../app-config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ClientLibraryService {
-  private clientLibraries: ClientLibraryRef[] = [];
+  private clientLibraries: any[] = [];
   private selectedClientLibraryVersion = '';
   private selectedAPIHostUrl = '';
 
@@ -31,7 +30,7 @@ export class ClientLibraryService {
     this.selectedAPIHostUrl = url;
   }
 
-  getUpgradeClientConstructor(): new (...args: any[]) => UpgradeClient {
+  getUpgradeClientConstructor(): any {
     const version = this.getSelectedClientLibraryVersion();
     const clientLibrary = this.clientLibraries.find(
       (clientLibrary) => clientLibrary.version === this.getSelectedClientLibraryVersion()
