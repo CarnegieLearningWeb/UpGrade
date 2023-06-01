@@ -59,7 +59,7 @@ export class MockPortalService {
         },
       ],
       decisionPoints: this.DECISION_POINTS,
-      groups: ['schoolId', 'classId', 'instructorId'],
+      groups: this.GROUPS,
       buttons: [
         {
           label: 'Login',

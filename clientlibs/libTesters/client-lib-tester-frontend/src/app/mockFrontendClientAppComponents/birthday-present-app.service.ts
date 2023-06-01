@@ -8,14 +8,15 @@ import { ClientAppHook, MockAppType, MockClientAppInterfaceModel } from '../app-
 // import { UpgradeClient } from 'upgrade_client_local';
 // import { UpgradeClient } from 'upgrade_client_1_1_17';
 // import { UpgradeClient } from 'upgrade_client_3_0_18';
-import { UpgradeClient } from 'upgrade_client_4_2_0';
+// import { UpgradeClient } from 'upgrade_client_4_2_0';
 import { Subscription } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BirthdayPresentAppService {
-  private upgradeClient!: UpgradeClient;
+  private upgradeClient!: any;
+  // private upgradeClient!: UpgradeClient;
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
 
@@ -132,7 +133,7 @@ export class BirthdayPresentAppService {
 
   private constructUpgradeClient(userId: string): any {
     const apiHostUrl = this.clientLibraryService.getSelectedAPIHostUrl();
-    const UpgradeClient: new (...args: any[]) => UpgradeClient =
+    const UpgradeClient: new (...args: any[]) => typeof UpgradeClient =
       this.clientLibraryService.getUpgradeClientConstructor();
     const upgradeClient = new UpgradeClient(userId, apiHostUrl, this.CONTEXT);
     return upgradeClient;
