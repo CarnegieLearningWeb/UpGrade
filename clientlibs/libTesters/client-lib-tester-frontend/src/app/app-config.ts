@@ -43,4 +43,5 @@ export const availableApiHostUrls = [
 
 export const availableMockApps = {
   BDAY_APP: 'Birthday App',
+  PORTAL_APP: 'Mock Portal',
 };

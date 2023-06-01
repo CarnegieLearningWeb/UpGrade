@@ -21,6 +21,7 @@ export interface MockClientAppInterfaceModel {
   type: 'frontend' | 'backend';
   hooks: ClientAppHook[];
   decisionPoints: DecisionPoint[];
+  groups: string[];
   buttons: UserEventButton[];
 }
 

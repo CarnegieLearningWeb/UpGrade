@@ -10,11 +10,11 @@ import { EventBusService } from 'src/app/services/event-bus.service';
 export class MockClientAppInterfaceComponent implements OnInit {
   @Input() public model!: MockClientAppInterfaceModel;
 
-  // TODO: how to load in mock clients dynamically?
   constructor(public eventBus: EventBusService) {}
 
   ngOnInit(): void {
-    // use?
+    console.log('model', this.model);
+    console.log('groups', this.model.groups);
   }
 
   getUser(): MockClientAppUser {

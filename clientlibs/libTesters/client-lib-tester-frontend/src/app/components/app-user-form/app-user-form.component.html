@@ -9,6 +9,25 @@
         <mat-label>User Id</mat-label>
         <input type="text" matInput formControlName="userId" />
       </mat-form-field>
+
+      <mat-form-field
+        class="user-form-field"
+        hintLabel="Use comma-separated list for multiple, leave blank for none."
+        [style.width.px]="400"
+        [style.marginLeft.px]="10"
+      >
+        <mat-label>User Aliases</mat-label>
+        <input type="text" matInput formControlName="userAliases" />
+      </mat-form-field>
+
+      <!-- groups -->
+      <!-- for each group string, a mat-input for comma separated values -->
+
+      <!-- workinggroups -->
+      <!-- for each working group string, a mat-input for one value -->
+
+      <!-- useraliases -->
+      <!-- a mat-input for comma separated values -->
     </form>
   </mat-card-content>
   <!-- add the working group and other things later -->

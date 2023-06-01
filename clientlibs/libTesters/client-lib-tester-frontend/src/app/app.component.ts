@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, NonNullableFormBuilder, Validators } from '@angular/forms';
-import { BehaviorSubject, catchError, of } from 'rxjs';
+import { BehaviorSubject, catchError, debounceTime, of } from 'rxjs';
 import { DataFetchService } from './services/data-fetch.service';
 import { MockClientAppInterfaceModel } from './app-models';
 import { ClientLibraryService } from './services/client-library.service';
 import { availableClientLibraries, availableApiHostUrls, availableMockApps } from './app-config';
 import { MockClientAppService } from './services/mock-client-app.service';
+import { EventBusService } from './services/event-bus.service';
 
 @Component({
   selector: 'app-root',
@@ -32,21 +33,16 @@ export class AppComponent implements OnInit {
     private readonly fb: NonNullableFormBuilder,
     public dataFetchService: DataFetchService,
     public clientLibraryService: ClientLibraryService,
-    public mockClientAppService: MockClientAppService
+    public mockClientAppService: MockClientAppService,
+    public eventBus: EventBusService
   ) {
     this.configForm = this.fb.group({
       clientLibVersion: this.fb.control('', Validators.required),
       apiHostUrl: this.fb.control('', Validators.required),
       mockClientApp: this.fb.control('', Validators.required),
     });
-    Object.values(availableMockApps).forEach((mockAppName) => {
-      const mockAppInterfaceModel = this.mockClientAppService.getMockAppInterfaceModelByName(mockAppName);
 
-      this.mockClientAppSelectOptions.push({
-        value: mockAppInterfaceModel,
-        viewValue: mockAppName,
-      });
-    });
+    this.createMockAppSelectOption();
   }
 
   get selectedApiHostUrl(): string {
@@ -62,9 +58,22 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.listenForAPIHostUrlChanges();
+    this.listenForMockClientAppChanges();
     this.listenForClientLibVersionChanges();
+    this.listenForAPIHostUrlChanges();
   }
+
+  createMockAppSelectOption() {
+    Object.values(availableMockApps).forEach((mockAppName) => {
+      const mockAppInterfaceModel = this.mockClientAppService.getMockAppInterfaceModelByName(mockAppName);
+
+      this.mockClientAppSelectOptions.push({
+        value: mockAppInterfaceModel,
+        viewValue: mockAppName,
+      });
+    });
+  }
+
   getAPIVersion(url: string): void {
     this.apiValidatedVersion = 'pending';
     this.dataFetchService
@@ -96,17 +105,21 @@ export class AppComponent implements OnInit {
   }
 
   listenForAPIHostUrlChanges() {
-    this.configForm.get('apiHostUrl')?.valueChanges.subscribe((url) => {
-      if (url) {
-        this.getAPIVersion(url);
-        this.clientLibraryService.setSelectedAPIHostUrl(url);
-      }
-    });
+    this.configForm
+      .get('apiHostUrl')
+      ?.valueChanges.pipe(debounceTime(400))
+      .subscribe((url) => {
+        if (url) {
+          this.getAPIVersion(url);
+          this.clientLibraryService.setSelectedAPIHostUrl(url);
+        }
+      });
   }
 
-  // listenForMockClientAppChanges() {
-  //   this.configForm.get('mockClientApp')?.valueChanges.subscribe((mockClientApp) => {
-
-  //   });
-  // }
+  listenForMockClientAppChanges() {
+    this.configForm.get('mockClientApp')?.valueChanges.subscribe((mockClientApp) => {
+      this.mockClientAppService.setSelectedMockApp(mockClientApp.name);
+      this.eventBus.dispatchMockAppChange(mockClientApp.name);
+    });
+  }
 }

@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, Input, OnInit } from '@angular/core';
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { debounceTime } from 'rxjs';
 import { EventBusService } from 'src/app/services/event-bus.service';
 
@@ -10,18 +10,31 @@ import { EventBusService } from 'src/app/services/event-bus.service';
 })
 export class AppUserFormComponent implements OnInit {
   userForm: FormGroup;
+  @Input() allowedGroups!: string[];
 
   constructor(private fb: FormBuilder, private eventBusService: EventBusService) {
     this.userForm = this.fb.group({
       userId: this.fb.control('', Validators.required),
-      group: this.fb.control(''),
-      workingGroup: this.fb.control(''),
+      groups: this.fb.array([]),
+      workingGroup: this.fb.array([]),
       userAliases: this.fb.control(''),
     });
+    // this.createGroupsArray(this.allowedGroups);
+    console.log('allowedGroups: ', this.allowedGroups);
+    console.log(this.userForm.value);
   }
 
   ngOnInit(): void {
     this.listenForUserIdChanges();
+    this.listenForUserAliasesChanges();
+  }
+
+  createGroupsArray(allowedGroups: string[]): FormArray {
+    const groupControls: FormControl[] = [];
+    allowedGroups.forEach((group) => {
+      groupControls.push(this.fb.control(group));
+    });
+    return this.fb.array(groupControls);
   }
 
   listenForUserIdChanges(): void {
@@ -32,6 +45,18 @@ export class AppUserFormComponent implements OnInit {
         console.log('userId', userId);
         const user = { ...this.eventBusService.mockAppUser$.value };
         user.id = userId;
+        this.eventBusService.dispatchMockUserChange(user);
+      });
+  }
+
+  listenForUserAliasesChanges(): void {
+    this.userForm
+      .get('userAliases')
+      ?.valueChanges.pipe(debounceTime(400))
+      .subscribe((userAliases) => {
+        console.log('userAliases', userAliases);
+        const user = { ...this.eventBusService.mockAppUser$.value };
+        user.userAliases = userAliases.split(',');
         this.eventBusService.dispatchMockUserChange(user);
       });
   }

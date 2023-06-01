@@ -9,6 +9,7 @@ import { ClientAppHook, MockAppType, MockClientAppInterfaceModel } from '../app-
 // import { UpgradeClient } from 'upgrade_client_1_1_17';
 // import { UpgradeClient } from 'upgrade_client_3_0_18';
 import { UpgradeClient } from 'upgrade_client_4_2_0';
+import { Subscription } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -29,6 +30,7 @@ export class BirthdayPresentAppService {
     PURPLE_PRESENT: 'purple_present',
     GREEN_PRESENT: 'green_present',
   };
+  private GROUPS = ['schoolId', 'classId', 'instructorId'];
   private CONTEXT = 'add'; // what should this be really?
   public HOOKNAMES = {
     LOGIN: 'login',
@@ -40,10 +42,17 @@ export class BirthdayPresentAppService {
     { site: this.SITES.GET_PRESENT, target: this.TARGETS.PURPLE_PRESENT },
     { site: this.SITES.GET_PRESENT, target: this.TARGETS.GREEN_PRESENT },
   ];
+  private mockAppDispatcherSub: Subscription = new Subscription();
 
   constructor(private clientLibraryService: ClientLibraryService, private eventBus: EventBusService) {
-    this.eventBus.mockClientAppHookDispatcher$.subscribe((hookEvent) => {
-      this.routeHook(hookEvent);
+    this.eventBus.mockApp$.subscribe((mockAppName) => {
+      if (mockAppName === this.NAME) {
+        this.mockAppDispatcherSub = this.eventBus.mockClientAppHookDispatcher$.subscribe((hookEvent) => {
+          this.routeHook(hookEvent);
+        });
+      } else {
+        this.mockAppDispatcherSub.unsubscribe();
+      }
     });
   }
 
@@ -70,6 +79,7 @@ export class BirthdayPresentAppService {
         },
       ],
       decisionPoints: this.DECISION_POINTS,
+      groups: this.GROUPS,
       buttons: [
         {
           label: 'Login',
@@ -120,8 +130,6 @@ export class BirthdayPresentAppService {
     }
   }
 
-  /******************* simulated client app code ****************************************************/
-
   private constructUpgradeClient(userId: string): any {
     const apiHostUrl = this.clientLibraryService.getSelectedAPIHostUrl();
     const UpgradeClient: new (...args: any[]) => UpgradeClient =
@@ -129,6 +137,7 @@ export class BirthdayPresentAppService {
     const upgradeClient = new UpgradeClient(userId, apiHostUrl, this.CONTEXT);
     return upgradeClient;
   }
+  /******************* simulated client app code ****************************************************/
 
   private async login(userId: string) {
     this.upgradeClient = this.constructUpgradeClient(userId);
@@ -151,8 +160,6 @@ export class BirthdayPresentAppService {
     }
 
     const { site, target } = options;
-
-    // this version should work with v4 and v4 endpoints
 
     const assignment = await this.upgradeClient.getDecisionPointAssignment(site, target);
     console.log({ assignment });

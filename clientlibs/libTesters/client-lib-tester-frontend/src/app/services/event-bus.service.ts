@@ -21,6 +21,7 @@ export class EventBusService {
     workingGroup: {},
     userAliases: [],
   });
+  public mockApp$ = new BehaviorSubject<string>('');
 
   dispatchHookEvent(hookEvent: ClientAppHook): void {
     console.log('[Dispatching]:', hookEvent);
@@ -30,6 +31,11 @@ export class EventBusService {
   dispatchMockUserChange(mockUser: any): void {
     console.log('[Dispatching]:', mockUser);
     this.mockAppUser$.next(mockUser);
+  }
+
+  dispatchMockAppChange(mockAppName: string): void {
+    console.log('[Dispatching]:', mockAppName);
+    this.mockApp$.next(mockAppName);
   }
 
   getCurrentClientAppMockUser(): MockClientAppUser {
