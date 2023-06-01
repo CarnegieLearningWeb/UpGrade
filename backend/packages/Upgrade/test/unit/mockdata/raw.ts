@@ -59,51 +59,131 @@ export const revertToExperiment = {
 };
 
 export const experiment = {
-  id: 'be3ae74f-370a-4015-93f3-7761d16f8b17',
-  name: 'Test Experiment',
-  description: 'Test Experiment Description',
-  consistencyRule: 'individual',
-  assignmentUnit: 'individual',
-  postExperimentRule: 'continue',
-  state: 'scheduled',
-  startOn: new Date().toISOString(),
-  group: 'teacher',
-  context: ['home'],
+  createdAt: "2023-06-01T18:44:41.153Z",
+  updatedAt: "2023-06-01T18:45:36.499Z",
+  versionNumber: 3,
+  id: "be3ae74f-370a-4015-93f3-7761d16f8b17",
+  name: "Test Experiment",
+  description: "Test Experiment Description",
+  context: [
+    "add"
+  ],
+  state: "enrolling",
+  startOn: null,
+  consistencyRule: "individual",
+  assignmentUnit: "individual",
+  postExperimentRule: "continue",
+  enrollmentCompleteCondition: null,
+  endOn: null,
+  revertTo: null,
   tags: [],
-  queries: [],
-  filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  group: "teacher",
+  logging: false,
+  filterMode: "includeAll",
+  backendVersion: "4.3.0",
+  type: "Simple",
   conditions: [
     {
-      id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
-      name: 'Condition A',
-      description: 'Condition A',
+      createdAt: "2023-06-01T18:44:41.153Z",
+      updatedAt: "2023-06-01T18:44:41.153Z",
+      versionNumber: 1,
+      id: "c22467b1-f0e9-4444-9517-cc03037bc079",
+      twoCharacterId: "CA",
+      name: "Condition A",
+      description: "Condition A",
+      conditionCode: "ConditionA",
       assignmentWeight: 40,
-      conditionCode: 'ConditionA',
-      twoCharacterId: 'CA',
+      order: 1,
+      levelCombinationElements: [],
+      conditionPayloads: []
     },
     {
-      id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
-      name: 'Condition B',
-      description: 'Condition B',
+      createdAt: "2023-06-01T18:44:41.153Z",
+      updatedAt: "2023-06-01T18:44:41.153Z",
+      versionNumber: 1,
+      id: "d2702d3c-5e04-41a7-8766-1da8a95b72ce",
+      twoCharacterId: "CB",
+      name: "Condition B",
+      description: "Condition B",
+      conditionCode: "ConditionB",
       assignmentWeight: 60,
-      conditionCode: 'ConditionB',
-      twoCharacterId: 'CB',
-    },
+      order: 2,
+      levelCombinationElements: [],
+      conditionPayloads: []
+    }
   ],
   partitions: [
     {
-      site: 'CurriculumSequence',
-      target: 'W1',
-      description: 'Decision Point on Workspace 1',
-      twoCharacterId: 'W1',
-      excludedIfReached: true,
+      createdAt: "2023-06-01T18:44:41.153Z",
+      updatedAt: "2023-06-01T18:44:41.153Z",
+      versionNumber: 1,
+      id: "20ebe3bc-6301-4eb0-adfb-3306f5326b8e",
+      twoCharacterId: "W1",
+      site: "CurriculumSequence",
+      target: "W1",
+      description: "Decision Point on Workspace 1",
+      order: 1,
+      excludeIfReached: false,
+      conditionPayloads: []
     }
   ],
-  conditionPayloads: [],
-  backendVersion: '1.0.0',
-  groupSatisfied: 0,
+  queries: [],
+  stateTimeLogs: [
+    {
+      createdAt: "2023-06-01T18:45:36.501Z",
+      updatedAt: "2023-06-01T18:45:36.501Z",
+      versionNumber: 1,
+      id: "2c271f64-a2cd-4048-8c8d-f037add0088d",
+      fromState: "inactive",
+      toState: "enrolling",
+      timeLog: "2023-06-01T18:45:36.491Z"
+    }
+  ],
+  factors: [],
+  experimentSegmentInclusion: {
+    createdAt: "2023-06-01T18:44:41.153Z",
+    updatedAt: "2023-06-01T18:44:41.153Z",
+    versionNumber: 1,
+    segment: {
+      createdAt: "2023-06-01T18:44:41.245Z",
+      updatedAt: "2023-06-01T18:44:41.245Z",
+      versionNumber: 1,
+      id: "89246cff-c81f-4515-91f3-c033341e45b9",
+      name: "be3ae74f-370a-4015-93f3-7761d16f8b17 Inclusion Segment",
+      description: "be3ae74f-370a-4015-93f3-7761d16f8b17 Inclusion Segment",
+      context: "add",
+      type: "private",
+      individualForSegment: [],
+      groupForSegment: [
+        {
+          createdAt: "2023-06-01T18:45:12.479Z",
+          updatedAt: "2023-06-01T18:45:12.479Z",
+          versionNumber: 1,
+          groupId: "All",
+          type: "All"
+        }
+      ],
+      subSegments: []
+    }
+  },
+  experimentSegmentExclusion: {
+    createdAt: "2023-06-01T18:44:41.153Z",
+    updatedAt: "2023-06-01T18:44:41.153Z",
+    versionNumber: 1,
+    segment: {
+      createdAt: "2023-06-01T18:44:41.267Z",
+      updatedAt: "2023-06-01T18:44:41.267Z",
+      versionNumber: 1,
+      id: "d958bf52-7066-4594-ad8a-baf2e75324cf",
+      name: "be3ae74f-370a-4015-93f3-7761d16f8b17 Exclusion Segment",
+      description: "be3ae74f-370a-4015-93f3-7761d16f8b17 Exclusion Segment",
+      context: "add",
+      type: "private",
+      individualForSegment: [],
+      groupForSegment: [],
+      subSegments: []
+    }
+  }
 };
 
 export const experimentSecond = {
@@ -413,172 +493,259 @@ export const experimentSixth = {
 };
 
 export const factorialExperimentFirst = {
-  id: 'edf54471-5266-4a52-a058-90fac2d03678',
-  name: 'Factors with same Decision Points',
-  description: '',
-  context: ['div'],
-  state: 'enrolling',
+  createdAt: "2023-06-01T14:59:53.935Z",
+  updatedAt: "2023-06-01T14:59:53.935Z",
+  versionNumber: 1,
+  id: "edf54471-5266-4a52-a058-90fac2d03678",
+  name: "Factors with same Decision Points",
+  description: "",
+  context: [
+    "add"
+  ],
+  state: "enrolling",
   startOn: null,
-  consistencyRule: 'individual',
-  assignmentUnit: 'individual',
-  postExperimentRule: 'continue',
+  consistencyRule: "individual",
+  assignmentUnit: "individual",
+  postExperimentRule: "continue",
   enrollmentCompleteCondition: null,
   endOn: null,
   revertTo: null,
   tags: [],
   group: null,
   logging: false,
-  filterMode: 'includeAll',
-  backendVersion: '1.0.0',
-  type: 'Factorial',
-  factors: [
+  filterMode: "includeAll",
+  backendVersion: "4.3.0",
+  type: "Factorial",
+  conditions: [
     {
-      name: 'Color',
-      description: '',
+      createdAt: "2023-06-01T14:59:53.935Z",
+      updatedAt: "2023-06-01T14:59:53.935Z",
+      versionNumber: 1,
+      id: "6dd63ad9-f121-4d95-8d27-08a80e9560a4",
+      twoCharacterId: "5H",
+      name: "",
+      description: null,
+      conditionCode: "Shape=Circle; Color=Red",
+      assignmentWeight: 50,
       order: 1,
-      levels: [
+      levelCombinationElements: [
         {
-          id: '33333333-1111-4a52-a058-90fac2d03679',
-          name: 'Red',
-          order: 1,
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "e9a7923f-8c66-466c-a34c-a07f3d781b23",
+          level: {
+            createdAt: "2023-06-01T14:59:53.935Z",
+            updatedAt: "2023-06-01T14:59:53.935Z",
+            versionNumber: 1,
+            id: "11111111-1111-4a52-a058-90fac2d03679",
+            name: "Circle",
+            description: null,
+            payloadValue: null,
+            payloadType: "string",
+            order: 1
+          }
         },
         {
-          id: '44444444-2222-4a52-a058-90fac2d03679',
-          name: 'Blue',
-          description: 'description of level2',
-          payload: {
-            type: 'string',
-            value: 'Dark blue - Blue color Alias',
-          },
-          order: 2,
-        },
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "3be0fcc2-20c7-46e2-ac84-7d85104a2b57",
+          level: {
+            createdAt: "2023-06-01T14:59:53.935Z",
+            updatedAt: "2023-06-01T14:59:53.935Z",
+            versionNumber: 1,
+            id: "33333333-1111-4a52-a058-90fac2d03679",
+            name: "Red",
+            description: null,
+            payloadValue: null,
+            payloadType: "string",
+            order: 1
+          }
+        }
       ],
+      conditionPayloads: [
+        {
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "9d753b90-1111-44b5-8acc-2483c0507ea1",
+          payloadValue: "Red-Circle alias name",
+          payloadType: "string"
+        }
+      ]
     },
     {
-      name: 'Shape',
-      description: '',
+      createdAt: "2022-10-07T05:44:43.162Z",
+      updatedAt: "2022-10-07T05:44:43.162Z",
+      versionNumber: 1,
+      id: "b6bdc056-34a2-4c96-8304-5f5105885211",
+      twoCharacterId: "6Y",
+      name: "",
+      description: null,
+      conditionCode: "Shape=Rectangle; Color=Blue",
+      assignmentWeight: 50,
       order: 2,
-      levels: [
+      levelCombinationElements: [
         {
-          id: '11111111-1111-4a52-a058-90fac2d03679',
-          name: 'Circle',
-          order: 1,
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "92ea9738-679a-4f20-88fd-8b553a181944",
+          level: {
+            createdAt: "2023-06-01T14:59:53.935Z",
+            updatedAt: "2023-06-01T14:59:53.935Z",
+            versionNumber: 1,
+            id: "22222222-2222-4a52-a058-90fac2d03679",
+            name: "Rectangle",
+            description: "description of level2",
+            payloadValue: "Square - rectangle alias",
+            payloadType: "string",
+            order: 2
+          }
         },
         {
-          id: '22222222-2222-4a52-a058-90fac2d03679',
-          name: 'Rectangle',
-          description: 'description of level2',
-          payload: {
-            type: 'string',
-            value: 'Square - rectangle alias',
-          },
-          order: 2,
-        },
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "78c8afa0-6668-41c8-9419-d9139e004536",
+          level: {
+            createdAt: "2023-06-01T14:59:53.935Z",
+            updatedAt: "2023-06-01T14:59:53.935Z",
+            versionNumber: 1,
+            id: "44444444-2222-4a52-a058-90fac2d03679",
+            name: "Blue",
+            description: "description of level2",
+            payloadValue: "Dark blue - Blue color Alias",
+            payloadType: "string",
+            order: 2
+          }
+        }
       ],
-    },
+      conditionPayloads: []
+    }
   ],
   partitions: [
     {
-      id: '5e335ac8-28df-463d-86bb-837dcd8240c4',
-      twoCharacterId: 'JU',
-      site: 'geometry',
-      target: 'color_shape',
-      description: '',
+      createdAt: "2023-06-01T14:59:53.935Z",
+      updatedAt: "2023-06-01T14:59:53.935Z",
+      versionNumber: 1,
+      id: "5e335ac8-28df-463d-86bb-837dcd8240c4",
+      twoCharacterId: "JU",
+      site: "geometry",
+      target: "color_shape",
+      description: "",
       order: 1,
       excludeIfReached: false,
-    },
-  ],
-  conditions: [
-    {
-      id: '6dd63ad9-f121-4d95-8d27-08a80e9560a4',
-      twoCharacterId: '5H',
-      name: '',
-      description: null,
-      conditionCode: 'Shape=Circle; Color=Red',
-      assignmentWeight: 50,
-      order: 1,
-      levelCombinationElements: [
-        {
-          level: '11111111-1111-4a52-a058-90fac2d03679',
-        },
-        {
-          level: '33333333-1111-4a52-a058-90fac2d03679',
-        },
-      ],
-    },
-    {
-      createdAt: '2022-10-07T05:44:43.162Z',
-      updatedAt: '2022-10-07T05:44:43.162Z',
-      versionNumber: 1,
-      id: 'b6bdc056-34a2-4c96-8304-5f5105885211',
-      twoCharacterId: '6Y',
-      name: '',
-      description: null,
-      conditionCode: 'Shape=Rectangle; Color=Blue',
-      assignmentWeight: 50,
-      order: 2,
-      levelCombinationElements: [
-        {
-          level: '22222222-2222-4a52-a058-90fac2d03679',
-        },
-        {
-          level: '44444444-2222-4a52-a058-90fac2d03679',
-        },
-      ],
-    },
-  ],
-  stateTimeLogs: [
-    {
-      createdAt: '2022-10-07T05:44:57.680Z',
-      updatedAt: '2022-10-07T05:44:57.680Z',
-      versionNumber: 1,
-      id: '49dd73c2-c68a-4e46-bd2a-5473edb0da22',
-      fromState: 'inactive',
-      toState: 'enrolling',
-      timeLog: '2022-10-07T05:44:57.673Z',
-    },
+      conditionPayloads: []
+    }
   ],
   queries: [],
-  experimentSegmentInclusion: {
-    segment: {
-      createdAt: '2022-10-07T05:44:43.184Z',
-      updatedAt: '2022-10-07T05:44:43.184Z',
+  stateTimeLogs: [],
+  factors: [
+    {
+      createdAt: "2023-06-01T14:59:53.935Z",
+      updatedAt: "2023-06-01T14:59:53.935Z",
       versionNumber: 1,
-      id: 'ba189e98-b6a9-4516-9da0-484fc61c44d6',
-      name: 'edf54471-5266-4a52-a058-90fac2d03679 Inclusion Segment',
-      description: 'edf54471-5266-4a52-a058-90fac2d03679 Inclusion Segment',
-      context: 'add',
-      type: 'private',
+      id: "d24f90ec-8126-4c20-a121-135dba12ba03",
+      name: "Shape",
+      order: 2,
+      description: "",
+      levels: [
+        {
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "22222222-2222-4a52-a058-90fac2d03679",
+          name: "Rectangle",
+          description: "description of level2",
+          payloadValue: "Square - rectangle alias",
+          payloadType: "string",
+          order: 2
+        },
+        {
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "11111111-1111-4a52-a058-90fac2d03679",
+          name: "Circle",
+          description: null,
+          payloadValue: null,
+          payloadType: "string",
+          order: 1
+        }
+      ]
+    },
+    {
+      createdAt: "2023-06-01T14:59:53.935Z",
+      updatedAt: "2023-06-01T14:59:53.935Z",
+      versionNumber: 1,
+      id: "7fb8a214-a394-4ac1-9a65-4afeb77054e7",
+      name: "Color",
+      order: 1,
+      description: "",
+      levels: [
+        {
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "44444444-2222-4a52-a058-90fac2d03679",
+          name: "Blue",
+          description: "description of level2",
+          payloadValue: "Dark blue - Blue color Alias",
+          payloadType: "string",
+          order: 2
+        },
+        {
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "33333333-1111-4a52-a058-90fac2d03679",
+          name: "Red",
+          description: null,
+          payloadValue: null,
+          payloadType: "string",
+          order: 1
+        }
+      ]
+    }
+  ],
+  experimentSegmentInclusion: {
+    createdAt: "2023-06-01T14:59:53.935Z",
+    updatedAt: "2023-06-01T14:59:53.935Z",
+    versionNumber: 1,
+    segment: {
+      createdAt: "2023-06-01T14:59:53.945Z",
+      updatedAt: "2023-06-01T14:59:53.945Z",
+      versionNumber: 1,
+      id: "89246cff-c81f-4515-91f3-c033341e45b9",
+      name: "edf54471-5266-4a52-a058-90fac2d03678 Inclusion Segment",
+      description: "edf54471-5266-4a52-a058-90fac2d03678 Inclusion Segment",
+      context: "add",
+      type: "private",
       individualForSegment: [],
       groupForSegment: [],
-      subSegments: [],
-    },
+      subSegments: []
+    }
   },
   experimentSegmentExclusion: {
+    createdAt: "2023-06-01T14:59:53.935Z",
+    updatedAt: "2023-06-01T14:59:53.935Z",
+    versionNumber: 1,
     segment: {
-      createdAt: '2022-10-07T05:44:43.210Z',
-      updatedAt: '2022-10-07T05:44:43.210Z',
+      createdAt: "2023-06-01T14:59:53.956Z",
+      updatedAt: "2023-06-01T14:59:53.956Z",
       versionNumber: 1,
-      id: '7c698b1e-74ed-4429-8c73-90b86c95ca33',
-      name: 'edf54471-5266-4a52-a058-90fac2d03679 Exclusion Segment',
-      description: 'edf54471-5266-4a52-a058-90fac2d03679 Exclusion Segment',
-      context: 'add',
-      type: 'private',
+      id: "d958bf52-7066-4594-ad8a-baf2e75324cf",
+      name: "edf54471-5266-4a52-a058-90fac2d03678 Exclusion Segment",
+      description: "edf54471-5266-4a52-a058-90fac2d03678 Exclusion Segment",
+      context: "add",
+      type: "private",
       individualForSegment: [],
       groupForSegment: [],
-      subSegments: [],
-    },
-  },
-  conditionPayloads: [
-    {
-      id: '9d753b90-1111-44b5-8acc-2483c0507ea1',
-      payload: {
-        type: 'string',
-        value: 'Red-Circle alias name',
-      },
-      parentCondition: '6dd63ad9-f121-4d95-8d27-08a80e9560a4',
-    },
-  ],
+      subSegments: []
+    }
+  }
 };
 
 export const factorialExperimentSecond = {
