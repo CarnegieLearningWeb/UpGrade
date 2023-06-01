@@ -511,7 +511,9 @@ export class ExperimentClientController {
       }
     );
 
-    return assignedData.map(({ assignedFactor, assignedCondition, ...rest }) => {
+    return assignedData;
+
+    /*return assignedData.map(({ assignedFactor, assignedCondition, ...rest }) => {
       const updatedAssignedFactor: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }> =
         {};
       if (assignedFactor) {
@@ -539,7 +541,7 @@ export class ExperimentClientController {
         },
         assignedFactor: assignedFactor ? updatedAssignedFactor : undefined,
       };
-    });
+    });*/
   }
 
   /**

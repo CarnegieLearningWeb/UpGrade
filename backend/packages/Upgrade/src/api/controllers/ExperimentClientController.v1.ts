@@ -522,7 +522,7 @@ export class ExperimentClientController {
       return {
         site,
         target,
-        assignedCondition: { condition: assignedCondition.payload?.value || assignedCondition.conditionCode },
+        assignedCondition: { condition: assignedCondition[0].payload.value || assignedCondition[0].conditionCode },
       };
     });
   }
@@ -618,7 +618,7 @@ export class ExperimentClientController {
     });
   }
 
-   /**
+  /**
    * @swagger
    * /log/caliper:
    *    post:
@@ -647,7 +647,7 @@ export class ExperimentClientController {
     request: AppRequest,
     envelope: CaliperLogEnvelope
   ): Promise<Log[]> {
-    let result = envelope.data.map(async log => {
+    const result = envelope.data.map(async (log) => {
       // getOriginalUserDoc call for alias
       const experimentUserDoc = await this.getUserDoc(log.object.assignee.id, request.logger);
       if (experimentUserDoc) {

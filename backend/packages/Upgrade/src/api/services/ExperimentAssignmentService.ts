@@ -64,6 +64,7 @@ import { CaliperLogData } from '../controllers/validators/CaliperLogData';
 import { parse, toSeconds } from 'iso8601-duration';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
+import { withInSubjectType } from '../Algorithms';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -637,6 +638,12 @@ export class ExperimentAssignmentService {
         const decisionPoints = experiment.partitions.map((decisionPoint) => {
           const { target, site } = decisionPoint;
           const conditionAssigned = assignment;
+          // const count = await this.monitoredDecisionPointLogRepository.getAllMonitoredDecisionPointLog(
+          //   userId,
+          //   site,
+          //   target,
+          //   logger
+          // );
           let factorialObject;
 
           let payloadFound: ConditionPayloadDTO;
@@ -666,23 +673,29 @@ export class ExperimentAssignmentService {
             });
           }
 
-          const assignedFactor = factorialObject ? factorialObject['assignedFactor'] : null;
+          const assignedFactors = factorialObject ? factorialObject['assignedFactor'] : null;
           const factorialCondition = factorialObject ? factorialObject['factorialCondition'] : null;
           const assignedConditionToReturn = factorialCondition ||
             conditionAssigned || {
               conditionCode: null,
             };
 
-          return {
-            target,
-            site,
-            assignedCondition: {
-              ...assignedConditionToReturn,
-              payload: payloadFound?.payload,
-              experimentId: id,
-            },
-            assignedFactor,
-          };
+          if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+            return withInSubjectType(experiment, conditionPayloads, site, target, factors, userId, 0);
+          } else {
+            return {
+              target,
+              site,
+              assignedCondition: [
+                {
+                  ...assignedConditionToReturn,
+                  payload: payloadFound?.payload,
+                  experimentId: id,
+                },
+              ],
+              assignedFactor: [assignedFactors],
+            };
+          }
         });
         return assignment ? [...accumulator, ...decisionPoints] : accumulator;
       }, []);

@@ -51,5 +51,6 @@ export {
   CaliperGradingProfile,
   CaliperEnvelope,
   IPayload,
+  AssignedCondition,
   IExperimentAssignmentv4,
 } from './Experiment/interfaces';
