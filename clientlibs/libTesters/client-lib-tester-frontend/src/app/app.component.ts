@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, NonNullableFormBuilder, Validators } from '@angular/forms';
 import { BehaviorSubject, catchError, debounceTime, of } from 'rxjs';
 import { DataFetchService } from './services/data-fetch.service';
-import { MockClientAppInterfaceModel } from './app-models';
+import { MockClientAppInterfaceModel } from '../../../shared/models';
 import { ClientLibraryService } from './services/client-library.service';
 import { availableClientLibraries, availableApiHostUrls, availableMockApps } from './app-config';
 import { MockClientAppService } from './services/mock-client-app.service';
@@ -61,6 +61,9 @@ export class AppComponent implements OnInit {
     this.listenForMockClientAppChanges();
     this.listenForClientLibVersionChanges();
     this.listenForAPIHostUrlChanges();
+
+    // try to connect to servers?
+    // this.connectToBackendTestServer();
   }
 
   createMockAppSelectOption() {

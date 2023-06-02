@@ -54,9 +54,9 @@ export interface DecisionPoint {
 
 export interface MockClientAppUser {
   id: string;
-  group: Record<string, Array<string>>;
+  groups: Record<string, Array<string>>;
   workingGroup: Record<string, string>;
-  userAliases?: Array<string>;
+  userAliases: Array<string>;
 }
 
 export type MockAppType = 'frontend' | 'backend';

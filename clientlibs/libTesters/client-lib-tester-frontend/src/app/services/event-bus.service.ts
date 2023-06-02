@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { ClientAppHook, MockClientAppUser } from '../app-models';
+import { ClientAppHook, MockClientAppUser } from '../../../../shared/models';
 
 @Injectable({
   providedIn: 'root',
@@ -8,7 +8,7 @@ import { ClientAppHook, MockClientAppUser } from '../app-models';
 export class EventBusService {
   private blankMockUser: MockClientAppUser = {
     id: '',
-    group: {},
+    groups: {},
     workingGroup: {},
     userAliases: [],
   };
@@ -17,7 +17,7 @@ export class EventBusService {
   public mockClientAppHookDispatcher$ = new BehaviorSubject<ClientAppHook>(this.blankHookEvent);
   public mockAppUser$ = new BehaviorSubject<MockClientAppUser>({
     id: '',
-    group: {},
+    groups: {},
     workingGroup: {},
     userAliases: [],
   });

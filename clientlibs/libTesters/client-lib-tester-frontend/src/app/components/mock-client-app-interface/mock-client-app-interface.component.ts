@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { MockClientAppInterfaceModel, MockClientAppUser } from 'src/app/app-models';
+import { MockClientAppInterfaceModel, MockClientAppUser } from '../../../../../shared/models';
 import { EventBusService } from 'src/app/services/event-bus.service';
 
 @Component({
@@ -9,10 +9,12 @@ import { EventBusService } from 'src/app/services/event-bus.service';
 })
 export class MockClientAppInterfaceComponent implements OnInit {
   @Input() public model!: MockClientAppInterfaceModel;
+  allowedGroups: string[] = [];
 
   constructor(public eventBus: EventBusService) {}
 
   ngOnInit(): void {
+    this.allowedGroups = this.model.groups;
     console.log('model', this.model);
     console.log('groups', this.model.groups);
   }

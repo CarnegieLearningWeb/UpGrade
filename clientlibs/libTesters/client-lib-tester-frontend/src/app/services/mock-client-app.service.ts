@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { availableMockApps } from '../app-config';
 import { BirthdayPresentAppService } from '../mockFrontendClientAppComponents/birthday-present-app.service';
-import { MockClientAppInterfaceModel } from '../app-models';
+import { MockClientAppInterfaceModel } from '../../../../shared/models';
 import { MockPortalService } from '../mockFrontendClientAppComponents/mock-portal.service';
 
 @Injectable({
@@ -30,7 +30,7 @@ export class MockClientAppService {
     const model = this.mockClientAppInterfaceMap[mockAppName];
 
     if (!model) {
-      throw new Error(`Mock app service not found for ${mockAppName}`);
+      console.error(`Mock app service not found for ${mockAppName}`);
     }
 
     return model;

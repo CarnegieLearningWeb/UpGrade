@@ -1,34 +1,64 @@
 <mat-card class="user-details-container">
-  <mat-card-header>
-    <mat-card-title>User Details</mat-card-title>
-  </mat-card-header>
+  <div class="header">
+    <h3 class="form-title">User Details</h3>
 
-  <mat-card-content class="user-form-container">
-    <form [formGroup]="userForm">
-      <mat-form-field class="user-form-field">
-        <mat-label>User Id</mat-label>
-        <input type="text" matInput formControlName="userId" />
-      </mat-form-field>
+    <div class="toggle-user-details">
+      <button mat-stroked-button *ngIf="openUserDetails" (click)="openUserDetails = false">
+        Click to see less [-]
+      </button>
+      <button mat-stroked-button *ngIf="!openUserDetails" (click)="openUserDetails = true">
+        Click to see more [+].
+      </button>
+    </div>
+  </div>
 
-      <mat-form-field
-        class="user-form-field"
-        hintLabel="Use comma-separated list for multiple, leave blank for none."
-        [style.width.px]="400"
-        [style.marginLeft.px]="10"
-      >
-        <mat-label>User Aliases</mat-label>
-        <input type="text" matInput formControlName="userAliases" />
-      </mat-form-field>
+  <div class="user-form-container">
+    <form class="flex-wrapper" [formGroup]="userForm">
+      <div class="user-block">
+        <mat-form-field class="user-form-field">
+          <mat-label>User Id</mat-label>
+          <input type="text" matInput formControlName="userId" />
+        </mat-form-field>
+      </div>
 
-      <!-- groups -->
-      <!-- for each group string, a mat-input for comma separated values -->
+      <div class="collapsible-block" *ngIf="openUserDetails">
+        <div class="useraliases-block">
+          <mat-form-field
+            class="user-form-field"
+            hintLabel="Comma-separated list. Leave blank for none."
+            [style.width.px]="400"
+          >
+            <mat-label>User Aliases</mat-label>
+            <input type="text" matInput formControlName="userAliases" />
+          </mat-form-field>
+        </div>
 
-      <!-- workinggroups -->
-      <!-- for each working group string, a mat-input for one value -->
+        <br />
 
-      <!-- useraliases -->
-      <!-- a mat-input for comma separated values -->
+        <div class="form-block-bottom">
+          <span class="groups-block" formArrayName="groups">
+            <h4>Groups</h4>
+            <div *ngFor="let group of groups.controls; let allowedGroupIndex = index">
+              <mat-form-field hintLabel="Comma-separated list. Leave blank for none." [style.width.px]="400">
+                <mat-label>{{ allowedGroups[allowedGroupIndex] }}</mat-label>
+                <input type="text" matInput [formControlName]="allowedGroupIndex" />
+              </mat-form-field>
+            </div>
+          </span>
+
+          <span class="groups-block" formArrayName="workingGroup">
+            <h4>Working Group</h4>
+            <div *ngFor="let group of workingGroup.controls; let allowedGroupIndex = index">
+              <mat-form-field [style.width.px]="150">
+                <mat-label>{{ allowedGroups[allowedGroupIndex] }}</mat-label>
+                <input type="text" matInput [formControlName]="allowedGroupIndex" />
+              </mat-form-field>
+            </div>
+          </span>
+        </div>
+      </div>
     </form>
-  </mat-card-content>
+    <br />
+  </div>
   <!-- add the working group and other things later -->
 </mat-card>
