@@ -60,15 +60,3 @@ export interface MockClientAppUser {
 }
 
 export type MockAppType = 'frontend' | 'backend';
-
-// export const fakeUsers: Record<string, MockClientAppUser> = {
-//   chet: {
-//     id: 'chet',
-//     group: {
-//       schoolId: ['1234'],
-//     },
-//     workingGroup: {
-//       schoolId: '1234',
-//     },
-//   },
-// };

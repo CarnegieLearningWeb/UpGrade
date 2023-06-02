@@ -1,4 +1,4 @@
-import UpgradeClient from 'upgrade_client_local';
+// import UpgradeClient from 'upgrade_client_local';
 import * as UpgradeClient_1_1_17 from 'upgrade_client_1_1_17';
 import * as UpgradeClient_3_0_18 from 'upgrade_client_3_0_18';
 import * as UpgradeClient_4_2_0 from 'upgrade_client_4_2_0';
@@ -19,7 +19,7 @@ import * as UpgradeClient_4_2_0 from 'upgrade_client_4_2_0';
 export const availableClientLibraries: any[] = [
   {
     version: 'local',
-    client: UpgradeClient,
+    client: {},
   },
   // {
   //   version: '1.1.7',

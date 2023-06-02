@@ -9,26 +9,31 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <div class="validated-server-connection-field" *ngIf="selectedMockClientAppInterface">
-        <span class="validated-server-connection" *ngIf="selectedMockClientAppInterface.type === 'frontend'">
-          <div class="status-dot success"></div>
-          <span>This mock app type is frontend, no server to connect.</span>
-        </span>
-        <span class="validated-server-connection" *ngIf="mockServerConnection === 'pending'">
-          <div class="status-dot pending"></div>
-          <span>Checking Client Lib Server Connection...</span>
-        </span>
-        <span class="validated-server-connection" *ngIf="mockServerConnection && mockServerConnection !== 'pending'">
-          <div class="status-dot success"></div>
-          <span>Connected to Test Server</span>
-        </span>
-        <span
-          class="validated-server-connection"
-          *ngIf="selectedMockClientAppInterface.type !== 'frontend' && !mockServerConnection"
-        >
-          <div class="status-dot fail"></div>
-          <span>Couldn't connect. Please start server or check configuration.</span>
-        </span>
+      <div class="validated-server-connection-field">
+        <div class="validated-server-connection" *ngIf="serverConnections.includes('ts')">
+          <span class="server-msg"
+            ><div class="status-dot success"></div>
+            TypeScript Mock App Server connected.</span
+          >
+        </div>
+        <div class="validated-server-connection" *ngIf="!serverConnections.includes('ts')">
+          <span class="server-msg offline-text"
+            ><div class="status-dot offline"></div>
+            TypeScript Mock App Server offline.</span
+          >
+        </div>
+        <div class="validated-server-connection" *ngIf="serverConnections.includes('java')">
+          <span class="server-msg"
+            ><div class="status-dot success"></div>
+            Java Mock App Server connected.</span
+          >
+        </div>
+        <div class="validated-server-connection" *ngIf="!serverConnections.includes('java')">
+          <span class="server-msg offline-text"
+            ><div class="status-dot offline"></div>
+            Java Mock App Server offline.</span
+          >
+        </div>
       </div>
     </div>
 
@@ -55,16 +60,22 @@
       </mat-form-field>
       <div class="validated-api-version-field" *ngIf="selectedApiHostUrl">
         <span class="validated-api-version" *ngIf="apiValidatedVersion === 'pending'">
-          <div class="status-dot pending"></div>
-          <span>Getting API Host Version...</span>
+          <span class="server-msg"
+            ><div class="status-dot pending"></div>
+            Getting API Host Version...</span
+          >
         </span>
         <span class="validated-api-version" *ngIf="apiValidatedVersion && apiValidatedVersion !== 'pending'">
-          <div class="status-dot success"></div>
-          <span>API Host Version: {{ apiValidatedVersion }}</span>
+          <span class="server-msg"
+            ><div class="status-dot success"></div>
+            API Host Version: {{ apiValidatedVersion }}</span
+          >
         </span>
         <span class="validated-api-version" *ngIf="!apiValidatedVersion">
-          <div class="status-dot fail"></div>
-          <span>Couldn't connect to API host. Start server or try another url.</span>
+          <span class="server-msg"
+            ><div class="status-dot fail"></div>
+            Couldn't connect to API host. Start server or try another url.</span
+          >
         </span>
       </div>
     </div>

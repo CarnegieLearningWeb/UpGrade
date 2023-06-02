@@ -39,4 +39,4 @@ import { AppUserFormComponent } from './components/app-user-form/app-user-form.c
   providers: [],
   bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

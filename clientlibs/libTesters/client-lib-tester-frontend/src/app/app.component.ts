@@ -28,6 +28,7 @@ export class AppComponent implements OnInit {
   public mockServerConnection = null;
   public configForm: FormGroup;
   public configComplete$ = new BehaviorSubject<boolean>(false);
+  public serverConnections: string[] = [];
 
   constructor(
     private readonly fb: NonNullableFormBuilder,
@@ -61,20 +62,27 @@ export class AppComponent implements OnInit {
     this.listenForMockClientAppChanges();
     this.listenForClientLibVersionChanges();
     this.listenForAPIHostUrlChanges();
-
-    // try to connect to servers?
-    // this.connectToBackendTestServer();
+    this.listenForServerConnectionChanges();
   }
 
+  setServerConnections(connections: string[]) {
+    this.serverConnections = connections;
+  }
+
+  // maybe this needs to wait a second
   createMockAppSelectOption() {
-    Object.values(availableMockApps).forEach((mockAppName) => {
+    const newMockClientAppSelectOptions: { value: MockClientAppInterfaceModel; viewValue: string }[] = [];
+    const availableMockApps = this.mockClientAppService.getAvailableMockApps();
+    availableMockApps.forEach((mockAppName) => {
       const mockAppInterfaceModel = this.mockClientAppService.getMockAppInterfaceModelByName(mockAppName);
 
-      this.mockClientAppSelectOptions.push({
+      newMockClientAppSelectOptions.push({
         value: mockAppInterfaceModel,
         viewValue: mockAppName,
       });
     });
+
+    this.mockClientAppSelectOptions = newMockClientAppSelectOptions;
   }
 
   getAPIVersion(url: string): void {
@@ -99,6 +107,15 @@ export class AppComponent implements OnInit {
 
   connectToBackendTestServer(): void {
     console.log('connectToBackendTestServer');
+  }
+
+  listenForServerConnectionChanges() {
+    this.eventBus.serverConnections$.subscribe((mockServerConnections: string[]) => {
+      if (mockServerConnections.length > 0) {
+        this.createMockAppSelectOption();
+      }
+      this.setServerConnections(mockServerConnections);
+    });
   }
 
   listenForClientLibVersionChanges() {
