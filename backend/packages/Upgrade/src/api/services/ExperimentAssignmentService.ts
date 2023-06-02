@@ -630,6 +630,21 @@ export class ExperimentAssignmentService {
         })
       );
 
+      const allSites = [],
+        allTargets = [];
+      filteredExperiments.forEach((exp) => {
+        exp.partitions.forEach((partition) => {
+          allSites.push(partition.site);
+          allTargets.push(partition.target);
+        });
+      });
+      const monitoredLogCounts = await this.monitoredDecisionPointLogRepository.getAllMonitoredDecisionPointLog(
+        userId,
+        allSites,
+        allTargets,
+        logger
+      );
+
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
         // const { state, logging, name, id } = experiment;
@@ -681,7 +696,8 @@ export class ExperimentAssignmentService {
             };
 
           if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
-            return withInSubjectType(experiment, conditionPayloads, site, target, factors, userId, 0);
+            const count = monitoredLogCounts.find((log) => log.site === site && log.target === target)?.count || 0;
+            return withInSubjectType(experiment, conditionPayloads, site, target, factors, userId, count);
           } else {
             return {
               target,
