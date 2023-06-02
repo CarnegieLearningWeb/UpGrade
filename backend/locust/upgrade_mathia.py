@@ -13,21 +13,23 @@ students = {}
 
 allExperimentPartitionIDConditionPair = []
 
-# clear all existing experiments:
-
 # Setting host URL's:
 protocol = "http"
 host = "localhost:3030"
 
-option = int(input("Enter 1 for delete a single random experiment and 2 to delete all experiments: "))
+
+# clear existing experiments:
+option = int(input("Enter 1 for delete a single random experiment and 2 to delete all experiments, else Enter 0 for not deleting any experiment: "))
 expIds = deleteExperiment.getExperimentIds(protocol, host)
 
 if option == 1:
-    deleteExperiment.deleteExperiment(protocol, host,expIds)
-else:
+    deleteExperiment.deleteExperiment(protocol, host, expIds)
+elif option == 2:
     for i in range(len(expIds)):
         expIds = deleteExperiment.getExperimentIds(protocol, host)
         deleteExperiment.deleteExperiment(protocol, host, expIds)
+else:
+    pass
 
 # create new experiments:
 # set groupExp to True for creating a group level experiment or False for a individual level experiment:
@@ -35,8 +37,10 @@ groupExp = False
 experimentCount = int(input("Enter the number of experiments to be created: "))
 
 for i in range(experimentCount):
+    experimentType = int(input("Enter the experiment type: Enter 1 for Simple and 2 for Factorial:"))
     # returning the updated partionconditionpair list:
-    allExperimentPartitionIDConditionPair = createExperiment.createExperiment(protocol, host, groupExp, allExperimentPartitionIDConditionPair)
+    experimentType = "Simple" if experimentType == 1 else "Factorial"
+    allExperimentPartitionIDConditionPair = createExperiment.createExperiment(protocol, host, allExperimentPartitionIDConditionPair, experimentType)
 
 ### Start enrolling students in the newly created experiment: ###
 #Return a new or existing Student
@@ -307,14 +311,18 @@ class UpgradeUserTask(SequentialTaskSet):
             with student["lock"]:
                 url = protocol + f"://{host}/api/mark"
                 print("/mark for userid: " + student["studentId"])
-
+                if(len(allExperimentPartitionIDConditionPair) == 0):
+                    print("No assigned conditions found")
+                    return
+                else:
+                    print("allExperimentPartitionIDConditionPair: ", allExperimentPartitionIDConditionPair)
                 # pick a random pair of PartitionIdConditionId from allExperimentPartitionIDConditionPair
                 markPartitionIDConditionPair = random.choice(allExperimentPartitionIDConditionPair)
 
                 data = {
                     "userId": student["studentId"],
-                    "experimentPoint": markPartitionIDConditionPair['experimentPoint'],
-                    "partitionId": markPartitionIDConditionPair['partitionId'],
+                    "experimentPoint": markPartitionIDConditionPair['site'],
+                    "partitionId": markPartitionIDConditionPair['target'],
                     "condition": markPartitionIDConditionPair['condition']
                 }
 
