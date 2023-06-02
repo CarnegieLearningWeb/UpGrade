@@ -3,6 +3,7 @@ import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@ang
 import { debounceTime } from 'rxjs';
 import { MockClientAppUser } from '../../../../../shared/models';
 import { EventBusService } from 'src/app/services/event-bus.service';
+import { MockClientAppService } from 'src/app/services/mock-client-app.service';
 
 @Component({
   selector: 'app-user-form',
@@ -11,16 +12,15 @@ import { EventBusService } from 'src/app/services/event-bus.service';
 })
 export class AppUserFormComponent implements OnInit {
   @Input() allowedGroups!: string[];
-  userForm: FormGroup;
+  userForm!: FormGroup;
   openUserDetails = false;
 
-  constructor(private fb: FormBuilder, private eventBusService: EventBusService) {
-    this.userForm = this.fb.group({
-      userId: this.fb.control('', Validators.required),
-      groups: this.fb.array([]),
-      workingGroup: this.fb.array([]),
-      userAliases: this.fb.control(''),
-    });
+  constructor(
+    private fb: FormBuilder,
+    private eventBusService: EventBusService,
+    private mockClientAppService: MockClientAppService
+  ) {
+    this.createForm();
   }
 
   ngOnInit(): void {
@@ -32,6 +32,16 @@ export class AppUserFormComponent implements OnInit {
     this.listenForUserAliasesChanges();
     this.listenForGroupsChanges();
     this.listenForWorkingGroupChanges();
+    this.listenForMockAppChanges();
+  }
+
+  createForm() {
+    this.userForm = this.fb.group({
+      userId: this.fb.control('', Validators.required),
+      groups: this.fb.array([]),
+      workingGroup: this.fb.array([]),
+      userAliases: this.fb.control(''),
+    });
   }
 
   get userId(): FormControl {
@@ -123,6 +133,18 @@ export class AppUserFormComponent implements OnInit {
         user.workingGroup[this.allowedGroups[index]] = workingGroup;
       });
       this.dispatchUserUpdate(user);
+    });
+  }
+
+  listenForMockAppChanges(): void {
+    this.eventBusService.mockApp$.subscribe((mockAppName) => {
+      const model = this.mockClientAppService.getMockAppInterfaceModelByName(mockAppName);
+      this.allowedGroups = model.groups;
+      // clear the form, but shouldn't it do this already?
+      console.log('i fired');
+      console.log('model: ', model);
+      this.createForm();
+      this.createGroupsArrays(this.allowedGroups);
     });
   }
 }
