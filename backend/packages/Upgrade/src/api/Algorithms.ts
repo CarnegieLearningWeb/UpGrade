@@ -27,12 +27,7 @@ export function withInSubjectType(
         monitoredDecisionPointLogsLength
       );
     } else if (experiment.conditionOrder === CONDITION_ORDER.ORDERED_ROUND_ROBIN) {
-      assignedConditionsArray = orderedRoundRobinCondition(
-        experiment,
-        assignedData,
-        userID,
-        monitoredDecisionPointLogsLength
-      );
+      assignedConditionsArray = rotateElements(assignedData, monitoredDecisionPointLogsLength);
     }
   }
   return assignedConditionsArray;
@@ -143,8 +138,10 @@ export function rotateElements(
     for (let i = 0; i < totalloopIteration; i++) {
       const assignedCondition = assignedData.assignedCondition.shift();
       assignedData.assignedCondition.push(assignedCondition);
-      const assignedFactor = assignedData.assignedFactor.shift();
-      assignedData.assignedFactor.push(assignedFactor);
+      if (assignedData.assignedFactor) {
+        const assignedFactor = assignedData.assignedFactor.shift();
+        assignedData.assignedFactor.push(assignedFactor);
+      }
     }
   }
   return assignedData;

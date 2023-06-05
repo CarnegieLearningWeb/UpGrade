@@ -653,12 +653,6 @@ export class ExperimentAssignmentService {
         const decisionPoints = experiment.partitions.map((decisionPoint) => {
           const { target, site } = decisionPoint;
           const conditionAssigned = assignment;
-          // const count = await this.monitoredDecisionPointLogRepository.getAllMonitoredDecisionPointLog(
-          //   userId,
-          //   site,
-          //   target,
-          //   logger
-          // );
           let factorialObject;
 
           let payloadFound: ConditionPayloadDTO;
