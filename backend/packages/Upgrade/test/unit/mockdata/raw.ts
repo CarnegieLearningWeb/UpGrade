@@ -58,7 +58,7 @@ export const revertToExperiment = {
   groupSatisfied: 0,
 };
 
-export const experiment = {
+export const simpleIndividualExperiment = {
   createdAt: "2023-06-01T18:44:41.153Z",
   updatedAt: "2023-06-01T18:45:36.499Z",
   versionNumber: 3,
@@ -81,7 +81,7 @@ export const experiment = {
   logging: false,
   filterMode: "includeAll",
   backendVersion: "4.3.0",
-  type: "Simple",
+  type: EXPERIMENT_TYPE.SIMPLE,
   conditions: [
     {
       createdAt: "2023-06-01T18:44:41.153Z",
@@ -186,313 +186,137 @@ export const experiment = {
   }
 };
 
-export const experimentSecond = {
-  id: '8b0e562a-029e-4680-836c-7de6b2ef6ac9',
-  name: 'Test Experiment',
-  description: 'Test Experiment Description',
-  consistencyRule: 'individual',
-  assignmentUnit: 'individual',
-  postExperimentRule: 'continue',
-  state: 'scheduled',
-  startOn: new Date().toISOString(),
-  group: 'teacher',
-  context: ['home'],
+export const simpleGroupExperiment = {
+  createdAt: "2023-06-02T15:03:46.960Z",
+  updatedAt: "2023-06-02T15:03:55.312Z",
+  versionNumber: 2,
+  id: "2606ad3c-5c4a-423b-8383-1c778fd07601",
+  name: "GroupTest",
+  description: "",
+  context: [
+    "add"
+  ],
+  state: "enrolling",
+  startOn: null,
+  consistencyRule: "group",
+  assignmentUnit: "group",
+  postExperimentRule: "continue",
+  enrollmentCompleteCondition: null,
+  endOn: null,
+  revertTo: null,
   tags: [],
-  queries: [],
-  filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
-  conditions: [
-    {
-      id: 'bb8844a9-085b-4ceb-b893-eaaea3b739af',
-      name: 'Condition A',
-      description: 'Condition A',
-      assignmentWeight: 40,
-      conditionCode: 'ConditionA',
-      twoCharacterId: 'BA',
-    },
-    {
-      id: '439a6fef-901d-4f0c-bca8-25f06e9e6262',
-      name: 'Condition B',
-      description: 'Condition B',
-      assignmentWeight: 60,
-      conditionCode: 'ConditionB',
-      twoCharacterId: 'BB',
-    },
-  ],
-  partitions: [
-    {
-      site: 'CurriculumSequence2',
-      target: 'W1',
-      description: 'Decision Point on Workspace 1',
-      twoCharacterId: 'X1',
-      excludedIfReached: true,
-    },
-    {
-      site: 'CurriculumSequence2',
-      target: 'W2',
-      description: 'Decision Point on Workspace 2',
-      twoCharacterId: 'X2',
-      excludedIfReached: true,
-    },
-  ],
-  conditionPayloads: [],
-  backendVersion: '1.0.0',
-  groupSatisfied: 0,
-};
-
-export const experimentThird = {
-  id: '3711346b-49d4-4f49-92b9-0d0ce7fa6e07',
-  name: 'Test Experiment',
-  description: 'Test Experiment Description',
-  consistencyRule: 'individual',
-  assignmentUnit: 'individual',
-  postExperimentRule: 'continue',
-  state: 'scheduled',
-  startOn: new Date().toISOString(),
-  group: 'teacher',
-  context: ['home'],
-  tags: [],
-  queries: [],
-  filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
-  conditions: [
-    {
-      id: '74684fa9-fcd8-44ef-a2d1-b5bdf96076e1',
-      name: 'Condition A',
-      description: 'Condition A',
-      assignmentWeight: 40,
-      conditionCode: 'ConditionA',
-      twoCharacterId: 'AA',
-    },
-    {
-      id: '8c7b2951-f9a7-4d2e-a1ed-0572e1ede879',
-      name: 'Condition B',
-      description: 'Condition B',
-      assignmentWeight: 60,
-      conditionCode: 'ConditionB',
-      twoCharacterId: 'AB',
-    },
-  ],
-  partitions: [
-    {
-      site: 'CurriculumSequence3',
-      target: 'W1',
-      description: 'Decision Point on Workspace 1',
-      twoCharacterId: 'Y1',
-      excludedIfReached: true,
-    },
-    {
-      site: 'CurriculumSequence3',
-      target: 'W2',
-      description: 'Decision Point on Workspace 2',
-      twoCharacterId: 'Y2',
-      excludedIfReached: true,
-    },
-  ],
-  conditionPayloads: [],
-  backendVersion: '1.0.0',
-  groupSatisfied: 0,
-};
-
-export const experimentFourth = {
-  id: '3711346b-49d4-4f49-92b9-0d0ce7fa6e08',
-  name: 'Test Experiment 4',
-  description: 'Test Experiment Description',
-  consistencyRule: 'individual',
-  assignmentUnit: 'individual',
-  postExperimentRule: 'continue',
-  state: 'scheduled',
-  startOn: new Date().toISOString(),
-  group: 'teacher',
-  context: ['home'],
-  tags: [],
-  queries: [],
-  filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
-  conditions: [
-    {
-      id: '74684fa9-fcd8-44ef-a2d1-b5bdf96076e2',
-      name: 'Condition A',
-      description: 'Condition A',
-      assignmentWeight: 55.5,
-      conditionCode: 'ConditionA',
-      twoCharacterId: 'AA',
-    },
-    {
-      id: '8c7b2951-f9a7-4d2e-a1ed-0572e1ede878',
-      name: 'Condition B',
-      description: 'Condition B',
-      assignmentWeight: 44.5,
-      conditionCode: 'ConditionB',
-      twoCharacterId: 'AB',
-    },
-  ],
-  partitions: [
-    {
-      site: 'CurriculumSequence3',
-      target: 'W1',
-      description: 'Decision Point on Workspace 1',
-      twoCharacterId: 'Y1',
-      excludedIfReached: true,
-    },
-    {
-      site: 'CurriculumSequence3',
-      target: 'W2',
-      description: 'Decision Point on Workspace 2',
-      twoCharacterId: 'Y2',
-      excludedIfReached: true,
-    },
-  ],
-  conditionPayloads: [],
-  backendVersion: '1.0.0',
-  groupSatisfied: 0,
-};
-
-export const experimentFifth = {
-  id: 'be3ae74f-370a-4015-93f3-7761d16f8b18',
-  name: 'Test Experiment',
-  description: 'Test Experiment Description',
-  consistencyRule: 'individual',
-  assignmentUnit: 'individual',
-  postExperimentRule: 'continue',
-  state: 'inactive',
-  startOn: new Date().toISOString(),
-  group: 'teacher',
-  context: ['home'],
-  tags: [],
-  queries: [],
-  filterMode: FILTER_MODE.INCLUDE_ALL,
+  group: "add-group1",
+  logging: false,
+  filterMode: "includeAll",
+  backendVersion: "4.3.0",
   type: EXPERIMENT_TYPE.SIMPLE,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
-      id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
-      name: 'Condition A',
-      description: 'Condition A',
-      assignmentWeight: 40,
-      conditionCode: 'ConditionA',
-      twoCharacterId: 'CA',
+      createdAt: "2023-06-02T15:03:46.960Z",
+      updatedAt: "2023-06-02T15:03:46.960Z",
+      versionNumber: 1,
+      id: "bb14689d-3613-45fb-be69-bac5206eda78",
+      twoCharacterId: "J8",
+      name: "",
+      description: null,
+      conditionCode: "add-con2",
+      assignmentWeight: 50,
+      order: 2,
+      levelCombinationElements: [],
+      conditionPayloads: []
     },
     {
-      id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
-      name: 'Condition B',
-      description: 'Condition B',
-      assignmentWeight: 60,
-      conditionCode: 'ConditionB',
-      twoCharacterId: 'CB',
-    },
+      createdAt: "2023-06-02T15:03:46.960Z",
+      updatedAt: "2023-06-02T15:03:46.960Z",
+      versionNumber: 1,
+      id: "6ac66195-db5d-4ed2-b001-3c94c7c16d64",
+      twoCharacterId: "8D",
+      name: "",
+      description: null,
+      conditionCode: "add-con1",
+      assignmentWeight: 50,
+      order: 1,
+      levelCombinationElements: [],
+      conditionPayloads: []
+    }
   ],
   partitions: [
     {
-      id: 'd22467b1-f0e9-4444-9517-cc03037bc079',
-      site: 'CurriculumSequence',
-      target: 'W1',
-      description: 'Decision Point on Workspace 1',
-      twoCharacterId: 'W1',
-      excludedIfReached: true,
-    },
-    {
-      id: 'e22467b1-f0e9-4444-9517-cc03037bc079',
-      site: 'CurriculumSequence',
-      target: 'W2',
-      description: 'Decision Point on Workspace 2',
-      twoCharacterId: 'W2',
-      excludedIfReached: true,
-    },
-    {
-      id: 'f22467b1-f0e9-4444-9517-cc03037bc079',
-      site: 'CurriculumSequence',
-      description: 'No Decision Point',
-      twoCharacterId: 'NP',
-      excludedIfReached: true,
-    },
+      createdAt: "2023-06-02T15:03:46.960Z",
+      updatedAt: "2023-06-02T15:03:46.960Z",
+      versionNumber: 1,
+      id: "9059fb4b-361f-45a3-b5ae-982981366f95",
+      twoCharacterId: "XH",
+      site: "add-point1",
+      target: "add-id1",
+      description: "",
+      order: 1,
+      excludeIfReached: false,
+      conditionPayloads: []
+    }
   ],
-  conditionPayloads: [
-    {
-      id: '9d753b90-1111-44b5-8acc-2483c0507ea0',
-      payload: {
-        type: 'string',
-        value: 'ConditionA_W1',
-      },
-      parentCondition: 'c22467b1-f0e9-4444-9517-cc03037bc079',
-      decisionPoint: 'd22467b1-f0e9-4444-9517-cc03037bc079',
-    },
-    {
-      id: '9d753b90-1111-44b5-8acc-2483c0507ea1',
-      payload: {
-        type: 'string',
-        value: 'ConditionA_W2',
-      },
-      parentCondition: 'c22467b1-f0e9-4444-9517-cc03037bc079',
-      decisionPoint: 'e22467b1-f0e9-4444-9517-cc03037bc079',
-    },
-  ],
-  backendVersion: '1.0.0',
-  groupSatisfied: 0,
-};
-
-export const experimentSixth = {
-  id: 'be3ae74f-370a-4015-93f3-7761d16f8b15',
-  name: 'Competing Test Experiment',
-  description: 'Overlapping Experiments with Shared DPs',
-  consistencyRule: 'individual',
-  assignmentUnit: 'individual',
-  postExperimentRule: 'continue',
-  state: 'inactive',
-  startOn: new Date().toISOString(),
-  group: 'teacher',
-  context: ['home'],
-  tags: [],
   queries: [],
-  filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
-  conditions: [
+  stateTimeLogs: [
     {
-      id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
-      name: 'Condition A',
-      description: 'Condition A',
-      assignmentWeight: 40,
-      conditionCode: 'ConditionA',
-      twoCharacterId: 'CA',
-    },
-    {
-      id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
-      name: 'Condition B',
-      description: 'Condition B',
-      assignmentWeight: 60,
-      conditionCode: 'ConditionB',
-      twoCharacterId: 'CB',
-    },
+      createdAt: "2023-06-02T15:03:55.317Z",
+      updatedAt: "2023-06-02T15:03:55.317Z",
+      versionNumber: 1,
+      id: "e0801754-bf26-48d5-a1f0-b4d07f16ddb3",
+      fromState: "inactive",
+      toState: "enrolling",
+      timeLog: "2023-06-02T15:03:55.300Z"
+    }
   ],
-  partitions: [
-    {
-      id: 'd22467b1-f0e9-4444-9517-cc03037bc079',
-      site: 'CurriculumSequence2',
-      target: 'W1',
-      description: 'Decision Point on Workspace 1',
-      twoCharacterId: 'W1',
-      excludedIfReached: true,
-    },
-    {
-      id: 'e22467b1-f0e9-4444-9517-cc03037bc079',
-      site: 'CurriculumSequence3',
-      target: 'W2',
-      description: 'Decision Point on Workspace 2',
-      twoCharacterId: 'W2',
-      excludedIfReached: true,
-    },
-  ],
-  conditionPayloads: [],
-  backendVersion: '1.0.0',
-  groupSatisfied: 0,
-};
+  factors: [],
+  experimentSegmentInclusion: {
+    createdAt: "2023-06-02T15:03:46.960Z",
+    updatedAt: "2023-06-02T15:03:46.960Z",
+    versionNumber: 1,
+    segment: {
+      createdAt: "2023-06-02T15:03:47.066Z",
+      updatedAt: "2023-06-02T15:03:47.066Z",
+      versionNumber: 1,
+      id: "89246cff-c81f-4515-91f3-c033341e45b9",
+      name: "2606ad3c-5c4a-423b-8383-1c778fd07601 Inclusion Segment",
+      description: "2606ad3c-5c4a-423b-8383-1c778fd07601 Inclusion Segment",
+      context: "add",
+      type: "private",
+      individualForSegment: [],
+      groupForSegment: [
+        {
+          createdAt: "2023-06-02T15:03:47.066Z",
+          updatedAt: "2023-06-02T15:03:47.066Z",
+          versionNumber: 1,
+          groupId: "All",
+          type: "All"
+        }
+      ],
+      subSegments: []
+    }
+  },
+  experimentSegmentExclusion: {
+    createdAt: "2023-06-02T15:03:46.960Z",
+    updatedAt: "2023-06-02T15:03:46.960Z",
+    versionNumber: 1,
+    segment: {
+      createdAt: "2023-06-02T15:03:47.095Z",
+      updatedAt: "2023-06-02T15:03:47.095Z",
+      versionNumber: 1,
+      id: "d958bf52-7066-4594-ad8a-baf2e75324cf",
+      name: "2606ad3c-5c4a-423b-8383-1c778fd07601 Exclusion Segment",
+      description: "2606ad3c-5c4a-423b-8383-1c778fd07601 Exclusion Segment",
+      context: "add",
+      type: "private",
+      individualForSegment: [],
+      groupForSegment: [],
+      subSegments: []
+    }
+  }
+}
 
-export const factorialExperimentFirst = {
+
+
+export const factorialIndividualExperiment = {
   createdAt: "2023-06-01T14:59:53.935Z",
   updatedAt: "2023-06-01T14:59:53.935Z",
   versionNumber: 1,
@@ -515,7 +339,7 @@ export const factorialExperimentFirst = {
   logging: false,
   filterMode: "includeAll",
   backendVersion: "4.3.0",
-  type: "Factorial",
+  type: EXPERIMENT_TYPE.FACTORIAL,
   conditions: [
     {
       createdAt: "2023-06-01T14:59:53.935Z",
@@ -748,264 +572,277 @@ export const factorialExperimentFirst = {
   }
 };
 
-export const factorialExperimentSecond = {
-  createdAt: '2022-10-07T05:44:43.162Z',
-  updatedAt: '2022-10-07T05:44:57.678Z',
+export const factorialGroupExperiment = {
+  createdAt: "2023-06-05T19:27:30.011Z",
+  updatedAt: "2023-06-05T19:27:36.139Z",
   versionNumber: 2,
-  id: 'fdf54471-5266-4a52-a058-90fac2d03678',
-  name: 'Factors example using diff Decision Points',
-  description: '',
-  context: ['mul'],
-  state: 'enrolling',
+  id: "eb7c6a0d-4b3a-4426-a135-1c56c53d3b88",
+  name: "Factorial Group Test",
+  description: "",
+  context: [
+    "add"
+  ],
+  state: "enrolling",
   startOn: null,
-  consistencyRule: 'individual',
-  assignmentUnit: 'individual',
-  postExperimentRule: 'continue',
+  consistencyRule: "group",
+  assignmentUnit: "group",
+  postExperimentRule: "continue",
   enrollmentCompleteCondition: null,
   endOn: null,
   revertTo: null,
   tags: [],
-  group: null,
+  group: "add-group1",
   logging: false,
-  filterMode: 'includeAll',
-  backendVersion: '1.0.0',
-  type: 'Factorial',
-  factors: [
+  filterMode: "includeAll",
+  backendVersion: "4.3.0",
+  type: EXPERIMENT_TYPE.FACTORIAL,
+  conditions: [
     {
-      name: 'Question Type',
-      description: '',
+      createdAt: "2023-06-01T14:59:53.935Z",
+      updatedAt: "2023-06-01T14:59:53.935Z",
+      versionNumber: 1,
+      id: "6dd63ad9-f121-4d95-8d27-08a80e9560a4",
+      twoCharacterId: "5H",
+      name: "",
+      description: null,
+      conditionCode: "Shape=Circle; Color=Red",
+      assignmentWeight: 50,
       order: 1,
-      levels: [
+      levelCombinationElements: [
         {
-          id: '33333333-3333-4a52-a058-90fac2d03679',
-          name: 'Abstract',
-          order: 1,
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "e9a7923f-8c66-466c-a34c-a07f3d781b23",
+          level: {
+            createdAt: "2023-06-01T14:59:53.935Z",
+            updatedAt: "2023-06-01T14:59:53.935Z",
+            versionNumber: 1,
+            id: "11111111-1111-4a52-a058-90fac2d03679",
+            name: "Circle",
+            description: null,
+            payloadValue: null,
+            payloadType: "string",
+            order: 1
+          }
         },
         {
-          id: '44444444-4444-4a52-a058-90fac2d03679',
-          name: 'Concrete',
-          description: 'description of level2',
-          payload: {
-            type: 'string',
-            value: 'Concrete Alias',
-          },
-          order: 2,
-        },
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "3be0fcc2-20c7-46e2-ac84-7d85104a2b57",
+          level: {
+            createdAt: "2023-06-01T14:59:53.935Z",
+            updatedAt: "2023-06-01T14:59:53.935Z",
+            versionNumber: 1,
+            id: "33333333-1111-4a52-a058-90fac2d03679",
+            name: "Red",
+            description: null,
+            payloadValue: null,
+            payloadType: "string",
+            order: 1
+          }
+        }
       ],
+      conditionPayloads: [
+        {
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "9d753b90-1111-44b5-8acc-2483c0507ea1",
+          payloadValue: "Red-Circle alias name",
+          payloadType: "string"
+        }
+      ]
     },
     {
-      name: 'Motivation',
-      description: '',
+      createdAt: "2022-10-07T05:44:43.162Z",
+      updatedAt: "2022-10-07T05:44:43.162Z",
+      versionNumber: 1,
+      id: "b6bdc056-34a2-4c96-8304-5f5105885211",
+      twoCharacterId: "6Y",
+      name: "",
+      description: null,
+      conditionCode: "Shape=Rectangle; Color=Blue",
+      assignmentWeight: 50,
       order: 2,
-      levels: [
+      levelCombinationElements: [
         {
-          id: '33333333-5555-4a52-a058-90fac2d03679',
-          name: 'No support',
-          order: 1,
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "92ea9738-679a-4f20-88fd-8b553a181944",
+          level: {
+            createdAt: "2023-06-01T14:59:53.935Z",
+            updatedAt: "2023-06-01T14:59:53.935Z",
+            versionNumber: 1,
+            id: "22222222-2222-4a52-a058-90fac2d03679",
+            name: "Rectangle",
+            description: "description of level2",
+            payloadValue: "Square - rectangle alias",
+            payloadType: "string",
+            order: 2
+          }
         },
         {
-          id: '44444444-6666-4a52-a058-90fac2d03679',
-          name: 'Mindset',
-          description: 'description of level2',
-          payload: {
-            type: 'string',
-            value: 'Mindset Alias',
-          },
-          order: 2,
-        },
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "78c8afa0-6668-41c8-9419-d9139e004536",
+          level: {
+            createdAt: "2023-06-01T14:59:53.935Z",
+            updatedAt: "2023-06-01T14:59:53.935Z",
+            versionNumber: 1,
+            id: "44444444-2222-4a52-a058-90fac2d03679",
+            name: "Blue",
+            description: "description of level2",
+            payloadValue: "Dark blue - Blue color Alias",
+            payloadType: "string",
+            order: 2
+          }
+        }
       ],
-    },
+      conditionPayloads: []
+    }
   ],
   partitions: [
     {
-      createdAt: '2022-10-07T05:44:43.162Z',
-      updatedAt: '2022-10-07T05:44:43.162Z',
+      createdAt: "2023-06-01T14:59:53.935Z",
+      updatedAt: "2023-06-01T14:59:53.935Z",
       versionNumber: 1,
-      id: '5e335ac8-28df-463d-86bb-837dcd8240c6',
-      twoCharacterId: 'JU',
-      site: 'area',
-      target: 'question_type',
-      description: '',
+      id: "5e335ac8-28df-463d-86bb-837dcd8240c4",
+      twoCharacterId: "JU",
+      site: "geometry",
+      target: "color_shape",
+      description: "",
       order: 1,
       excludeIfReached: false,
-    },
-    {
-      createdAt: '2022-10-07T05:44:43.162Z',
-      updatedAt: '2022-10-07T05:44:43.162Z',
-      versionNumber: 1,
-      id: '6e335ac8-28df-463d-86bb-837dcd824046',
-      twoCharacterId: 'JA',
-      site: 'login',
-      target: 'motivation_support_type',
-      description: '',
-      order: 2,
-      excludeIfReached: false,
-    },
-  ],
-  conditions: [
-    {
-      createdAt: '2022-10-07T05:44:43.162Z',
-      updatedAt: '2022-10-07T05:44:43.162Z',
-      versionNumber: 1,
-      id: '6dd63ad9-f121-4d95-8d27-08a80e9560a7',
-      twoCharacterId: '5H',
-      name: '',
-      description: null,
-      conditionCode: 'Question Type=Abstract; Motivation=No support',
-      assignmentWeight: 25,
-      order: 1,
-      levelCombinationElements: [
-        {
-          level: '33333333-3333-4a52-a058-90fac2d03679',
-        },
-        {
-          level: '33333333-5555-4a52-a058-90fac2d03679',
-        },
-      ],
-    },
-    {
-      createdAt: '2022-10-07T05:44:43.162Z',
-      updatedAt: '2022-10-07T05:44:43.162Z',
-      versionNumber: 1,
-      id: 'b6bdc056-34a2-4c96-8304-5f5105885215',
-      twoCharacterId: '6Y',
-      name: '',
-      description: null,
-      conditionCode: 'Question Type=Concrete; Motivation=Mindset',
-      assignmentWeight: 25,
-      order: 2,
-      levelCombinationElements: [
-        {
-          level: '44444444-4444-4a52-a058-90fac2d03679',
-        },
-        {
-          level: '44444444-6666-4a52-a058-90fac2d03679',
-        },
-      ],
-    },
-    {
-      createdAt: '2022-10-07T05:44:43.162Z',
-      updatedAt: '2022-10-07T05:44:43.162Z',
-      versionNumber: 1,
-      id: '7dd63ad9-f121-4d95-8d27-08a80e9560a7',
-      twoCharacterId: '5H',
-      name: '',
-      description: null,
-      conditionCode: 'Question Type=Abstract; Motivation=Mindset',
-      assignmentWeight: 25,
-      order: 3,
-      levelCombinationElements: [
-        {
-          level: '33333333-3333-4a52-a058-90fac2d03679',
-        },
-        {
-          level: '44444444-6666-4a52-a058-90fac2d03679',
-        },
-      ],
-    },
-    {
-      createdAt: '2022-10-07T05:44:43.162Z',
-      updatedAt: '2022-10-07T05:44:43.162Z',
-      versionNumber: 1,
-      id: 'c6bdc056-34a2-4c96-8304-5f5105885215',
-      twoCharacterId: '6Y',
-      name: '',
-      description: null,
-      conditionCode: 'Question Type=Concrete; Motivation=No support',
-      assignmentWeight: 25,
-      order: 4,
-      levelCombinationElements: [
-        {
-          level: '44444444-4444-4a52-a058-90fac2d03679',
-        },
-        {
-          level: '33333333-5555-4a52-a058-90fac2d03679',
-        },
-      ],
-    },
-  ],
-  stateTimeLogs: [
-    {
-      createdAt: '2022-10-07T05:44:57.680Z',
-      updatedAt: '2022-10-07T05:44:57.680Z',
-      versionNumber: 1,
-      id: '49dd73c2-c68a-4e46-bd2a-5473edb0da22',
-      fromState: 'inactive',
-      toState: 'enrolling',
-      timeLog: '2022-10-07T05:44:57.673Z',
-    },
+      conditionPayloads: []
+    }
   ],
   queries: [],
+  stateTimeLogs: [],
+  factors: [
+    {
+      createdAt: "2023-06-01T14:59:53.935Z",
+      updatedAt: "2023-06-01T14:59:53.935Z",
+      versionNumber: 1,
+      id: "d24f90ec-8126-4c20-a121-135dba12ba03",
+      name: "Shape",
+      order: 2,
+      description: "",
+      levels: [
+        {
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "22222222-2222-4a52-a058-90fac2d03679",
+          name: "Rectangle",
+          description: "description of level2",
+          payloadValue: "Square - rectangle alias",
+          payloadType: "string",
+          order: 2
+        },
+        {
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "11111111-1111-4a52-a058-90fac2d03679",
+          name: "Circle",
+          description: null,
+          payloadValue: null,
+          payloadType: "string",
+          order: 1
+        }
+      ]
+    },
+    {
+      createdAt: "2023-06-01T14:59:53.935Z",
+      updatedAt: "2023-06-01T14:59:53.935Z",
+      versionNumber: 1,
+      id: "7fb8a214-a394-4ac1-9a65-4afeb77054e7",
+      name: "Color",
+      order: 1,
+      description: "",
+      levels: [
+        {
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "44444444-2222-4a52-a058-90fac2d03679",
+          name: "Blue",
+          description: "description of level2",
+          payloadValue: "Dark blue - Blue color Alias",
+          payloadType: "string",
+          order: 2
+        },
+        {
+          createdAt: "2023-06-01T14:59:53.935Z",
+          updatedAt: "2023-06-01T14:59:53.935Z",
+          versionNumber: 1,
+          id: "33333333-1111-4a52-a058-90fac2d03679",
+          name: "Red",
+          description: null,
+          payloadValue: null,
+          payloadType: "string",
+          order: 1
+        }
+      ]
+    }
+  ],
   experimentSegmentInclusion: {
-    createdAt: '2022-10-07T05:44:43.162Z',
-    updatedAt: '2022-10-07T05:44:43.162Z',
+    createdAt: "2023-06-01T14:59:53.935Z",
+    updatedAt: "2023-06-01T14:59:53.935Z",
     versionNumber: 1,
     segment: {
-      createdAt: '2022-10-07T05:44:43.184Z',
-      updatedAt: '2022-10-07T05:44:43.184Z',
+      createdAt: "2023-06-01T14:59:53.945Z",
+      updatedAt: "2023-06-01T14:59:53.945Z",
       versionNumber: 1,
-      id: 'ba189e98-b6a9-4516-9da0-484fc61c44d6',
-      name: 'edf54471-5266-4a52-a058-90fac2d03679 Inclusion Segment',
-      description: 'edf54471-5266-4a52-a058-90fac2d03679 Inclusion Segment',
-      context: 'add',
-      type: 'private',
+      id: "89246cff-c81f-4515-91f3-c033341e45b9",
+      name: "edf54471-5266-4a52-a058-90fac2d03678 Inclusion Segment",
+      description: "edf54471-5266-4a52-a058-90fac2d03678 Inclusion Segment",
+      context: "add",
+      type: "private",
       individualForSegment: [],
       groupForSegment: [],
-      subSegments: [],
-    },
+      subSegments: []
+    }
   },
   experimentSegmentExclusion: {
-    createdAt: '2022-10-07T05:44:43.162Z',
-    updatedAt: '2022-10-07T05:44:43.162Z',
+    createdAt: "2023-06-01T14:59:53.935Z",
+    updatedAt: "2023-06-01T14:59:53.935Z",
     versionNumber: 1,
     segment: {
-      createdAt: '2022-10-07T05:44:43.210Z',
-      updatedAt: '2022-10-07T05:44:43.210Z',
+      createdAt: "2023-06-01T14:59:53.956Z",
+      updatedAt: "2023-06-01T14:59:53.956Z",
       versionNumber: 1,
-      id: '7c698b1e-74ed-4429-8c73-90b86c95ca33',
-      name: 'edf54471-5266-4a52-a058-90fac2d03679 Exclusion Segment',
-      description: 'edf54471-5266-4a52-a058-90fac2d03679 Exclusion Segment',
-      context: 'add',
-      type: 'private',
+      id: "d958bf52-7066-4594-ad8a-baf2e75324cf",
+      name: "edf54471-5266-4a52-a058-90fac2d03678 Exclusion Segment",
+      description: "edf54471-5266-4a52-a058-90fac2d03678 Exclusion Segment",
+      context: "add",
+      type: "private",
       individualForSegment: [],
       groupForSegment: [],
-      subSegments: [],
-    },
-  },
-  conditionPayloads: [],
+      subSegments: []
+    }
+  }
 };
 
 export function getRevertToExperiment() {
   return JSON.parse(JSON.stringify(revertToExperiment));
 }
-export function getExperiment() {
-  return JSON.parse(JSON.stringify(experiment));
+export function getSimpleIndividualExperiment() {
+  return JSON.parse(JSON.stringify(simpleIndividualExperiment));
 }
 
-export function getSecondExperiment() {
-  return JSON.parse(JSON.stringify(experimentSecond));
+export function getSimpleGroupExperiment() {
+  return JSON.parse(JSON.stringify(simpleGroupExperiment));
 }
 
-export function getThirdExperiment() {
-  return JSON.parse(JSON.stringify(experimentThird));
+export function getFactorialIndividualExperiment() {
+  return JSON.parse(JSON.stringify(factorialIndividualExperiment));
 }
 
-export function getFourthExperiment() {
-  return JSON.parse(JSON.stringify(experimentFourth));
-}
-
-export function getFifthExperiment() {
-  return JSON.parse(JSON.stringify(experimentFifth));
-}
-
-export function getSixthExperiment() {
-  return JSON.parse(JSON.stringify(experimentSixth));
-}
-
-export function getFirstFactorialExperiment() {
-  return JSON.parse(JSON.stringify(factorialExperimentFirst));
-}
-
-export function getSecondFactorialExperiment() {
-  return JSON.parse(JSON.stringify(factorialExperimentSecond));
+export function getFactorialGroupExperiment() {
+  return JSON.parse(JSON.stringify(factorialGroupExperiment));
 }
