@@ -4,7 +4,7 @@ import { BehaviorSubject, catchError, debounceTime, of } from 'rxjs';
 import { DataFetchService } from './services/data-fetch.service';
 import { MockClientAppInterfaceModel } from '../../../shared/models';
 import { ClientLibraryService } from './services/client-library.service';
-import { availableClientLibraries, availableApiHostUrls, availableMockApps } from './app-config';
+import { availableClientLibraries, availableApiHostUrls } from './app-config';
 import { MockClientAppService } from './services/mock-client-app.service';
 import { EventBusService } from './services/event-bus.service';
 
@@ -17,9 +17,11 @@ export class AppComponent implements OnInit {
   public availableClientVersions = availableClientLibraries;
   public mockClientAppSelectOptions: { value: MockClientAppInterfaceModel; viewValue: string }[] = [];
   public clientLibVersionSelectOptions = availableClientLibraries.map((clientLibrary) => {
+    const languageLabel = this.getLanguageLabel(clientLibrary.language);
+
     return {
       value: clientLibrary.version,
-      viewValue: 'TypeScript: ' + clientLibrary.version,
+      viewValue: `${languageLabel}: ${clientLibrary.version}`,
     };
   });
 
@@ -63,6 +65,16 @@ export class AppComponent implements OnInit {
     this.listenForClientLibVersionChanges();
     this.listenForAPIHostUrlChanges();
     this.listenForServerConnectionChanges();
+  }
+
+  getLanguageLabel(language: string): string {
+    if (language === 'ts') {
+      return 'TypeScript';
+    } else if (language === 'java') {
+      return 'Java';
+    } else {
+      return '';
+    }
   }
 
   setServerConnections(connections: string[]) {

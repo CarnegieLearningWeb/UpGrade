@@ -18,7 +18,7 @@ export class ClientLibraryService {
   }
 
   setSelectedClientLibraryVersion(version: string): void {
-    console.log('setting version', version);
+    console.log('[Setting Library version]', version);
     this.selectedClientLibraryVersion = version;
   }
 
@@ -27,6 +27,7 @@ export class ClientLibraryService {
   }
 
   setSelectedAPIHostUrl(url: string): void {
+    console.log('[Setting API Host Url]', url);
     this.selectedAPIHostUrl = url;
   }
 

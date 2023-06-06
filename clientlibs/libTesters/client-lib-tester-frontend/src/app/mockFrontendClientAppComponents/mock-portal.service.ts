@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { ClientLibraryService } from '../services/client-library.service';
 import { EventBusService } from '../services/event-bus.service';
-import { ClientAppHook, MockAppType, MockClientAppInterfaceModel } from '../../../../shared/models';
-import { Subscription } from 'rxjs';
+import { ClientAppHook, CodeLanguage, MockAppType, MockClientAppInterfaceModel } from '../../../../shared/models';
+import { MOCK_APP_NAMES } from '../app-config';
+import { AbstractMockAppService } from './abstract-mock-app.service';
 
 // There's probably a clever way to do this, but getting the right types automatically is tricky
 
@@ -14,35 +15,27 @@ import { Subscription } from 'rxjs';
 @Injectable({
   providedIn: 'root',
 })
-export class MockPortalService {
-  // private upgradeClient!: UpgradeClient;
-  private upgradeClient!: any;
+export class MockPortalService extends AbstractMockAppService {
+  // public upgradeClient!: UpgradeClient;
+  public upgradeClient!: any;
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
 
-  private NAME = 'Mock Portal';
-  private DESCRIPTION = 'Mimics current usage of library in Portal';
-  private TYPE: MockAppType = 'frontend';
-  private SITES = {};
-  private TARGETS = {};
-  private CONTEXT = 'portal';
-  private GROUPS = ['schoolId', 'classId', 'instructorId'];
+  public NAME = MOCK_APP_NAMES.PORTAL_APP;
+  public DESCRIPTION = 'Mimics current usage of library in Portal';
+  public TYPE: MockAppType = 'frontend';
+  public LANGUAGE: CodeLanguage = 'ts';
+  public SITES = {};
+  public TARGETS = {};
+  public CONTEXT = 'portal';
+  public GROUPS = ['schoolId', 'classId', 'instructorId'];
   public HOOKNAMES = {
     LOGIN: 'login',
   };
   public DECISION_POINTS = [];
-  private mockAppDispatcherSub = new Subscription();
 
-  constructor(private clientLibraryService: ClientLibraryService, private eventBus: EventBusService) {
-    this.eventBus.mockApp$.subscribe((mockAppName) => {
-      if (mockAppName === this.NAME) {
-        this.mockAppDispatcherSub = this.eventBus.mockClientAppHookDispatcher$.subscribe((hookEvent) => {
-          this.routeHook(hookEvent);
-        });
-      } else {
-        this.mockAppDispatcherSub.unsubscribe();
-      }
-    });
+  constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
+    super(MOCK_APP_NAMES.PORTAL_APP, eventBus, clientLibraryService);
   }
 
   /******************* "getAppInterfaceModel" required to give tester app a model to construct an interface to use this 'app' ********************/
@@ -52,6 +45,7 @@ export class MockPortalService {
       name: this.NAME,
       description: this.DESCRIPTION,
       type: this.TYPE,
+      language: this.LANGUAGE,
       hooks: [
         {
           name: this.HOOKNAMES.LOGIN,
@@ -83,14 +77,6 @@ export class MockPortalService {
     } else {
       throw new Error(`No hook found for hookName: ${name}`);
     }
-  }
-
-  private constructUpgradeClient(userId: string): any {
-    const apiHostUrl = this.clientLibraryService.getSelectedAPIHostUrl();
-    const UpgradeClient: new (...args: any[]) => typeof UpgradeClient =
-      this.clientLibraryService.getUpgradeClientConstructor();
-    const upgradeClient = new UpgradeClient(userId, apiHostUrl);
-    return upgradeClient;
   }
 
   /******************* simulated client app code ****************************************************/

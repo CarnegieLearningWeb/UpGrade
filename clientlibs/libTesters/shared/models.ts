@@ -27,7 +27,8 @@ export interface UpgradeExperimentContextMetadata {
 export interface MockClientAppInterfaceModel {
   name: string;
   description: string;
-  type: 'frontend' | 'backend';
+  type: MockAppType;
+  language: CodeLanguage;
   hooks: ClientAppHook[];
   decisionPoints: DecisionPoint[];
   groups: string[];
@@ -60,3 +61,4 @@ export interface MockClientAppUser {
 }
 
 export type MockAppType = 'frontend' | 'backend';
+export type CodeLanguage = 'ts' | 'java';

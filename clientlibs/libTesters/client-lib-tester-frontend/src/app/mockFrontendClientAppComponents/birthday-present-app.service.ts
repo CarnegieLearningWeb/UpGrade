@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ClientLibraryService } from '../services/client-library.service';
 import { EventBusService } from '../services/event-bus.service';
-import { ClientAppHook, MockAppType, MockClientAppInterfaceModel } from '../../../../shared/models';
+import { ClientAppHook, CodeLanguage, MockAppType, MockClientAppInterfaceModel } from '../../../../shared/models';
 
 // There's probably a clever way to do this, but getting the right types automatically is tricky
 
@@ -11,41 +11,42 @@ import { ClientAppHook, MockAppType, MockClientAppInterfaceModel } from '../../.
 // import { UpgradeClient } from 'upgrade_client_4_2_0';
 
 import { AbstractMockAppService } from './abstract-mock-app.service';
+import { MOCK_APP_NAMES } from '../app-config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BirthdayPresentAppService extends AbstractMockAppService {
   // public override upgradeClient!: UpgradeClient;
-  public override upgradeClient: any;
+  public upgradeClient: any;
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
-  public override NAME = 'Birthday App';
-  public override DESCRIPTION = 'Use this app to get presents.';
-  public override TYPE: MockAppType = 'frontend';
-  public override SITES = {
+  public NAME = MOCK_APP_NAMES.BDAY_APP;
+  public DESCRIPTION = 'Use this app to get presents.';
+  public TYPE: MockAppType = 'frontend';
+  public LANGUAGE: CodeLanguage = 'ts';
+  public SITES = {
     GET_PRESENT: 'get_present',
   };
-  public override TARGETS = {
+  public TARGETS = {
     ORANGE_PRESENT: 'orange_present',
     PURPLE_PRESENT: 'purple_present',
     GREEN_PRESENT: 'green_present',
   };
-  public override GROUPS = ['schoolId', 'classId', 'instructorId'];
-  public override CONTEXT = 'add'; // what should this be really?
-  public override HOOKNAMES = {
+  public GROUPS = ['schoolId', 'classId', 'instructorId'];
+  public CONTEXT = 'add'; // what should this be really?
+  public HOOKNAMES = {
     LOGIN: 'login',
     VISIT_DP: 'visit_dp',
-    LOG: 'log',
   };
-  public override DECISION_POINTS = [
+  public DECISION_POINTS = [
     { site: this.SITES.GET_PRESENT, target: this.TARGETS.ORANGE_PRESENT },
     { site: this.SITES.GET_PRESENT, target: this.TARGETS.PURPLE_PRESENT },
     { site: this.SITES.GET_PRESENT, target: this.TARGETS.GREEN_PRESENT },
   ];
 
   constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
-    super('Birthday App', eventBus, clientLibraryService);
+    super(MOCK_APP_NAMES.BDAY_APP, eventBus, clientLibraryService);
   }
 
   /******************* "getAppInterfaceModel" required to give tester app a model to construct an interface to use this 'app' ********************/
@@ -55,6 +56,7 @@ export class BirthdayPresentAppService extends AbstractMockAppService {
       name: this.NAME,
       description: this.DESCRIPTION,
       type: this.TYPE,
+      language: this.LANGUAGE,
       hooks: [
         {
           name: this.HOOKNAMES.LOGIN,
@@ -64,10 +66,6 @@ export class BirthdayPresentAppService extends AbstractMockAppService {
           name: this.HOOKNAMES.VISIT_DP,
           description:
             'Will dispatch MARK event and receive either a good or bad present, depending on condition received.',
-        },
-        {
-          name: this.HOOKNAMES.LOG,
-          description: 'will log the user metrics!',
         },
       ],
       decisionPoints: this.DECISION_POINTS,
@@ -92,10 +90,6 @@ export class BirthdayPresentAppService extends AbstractMockAppService {
           hookName: this.HOOKNAMES.VISIT_DP,
           props: this.DECISION_POINTS[2],
         },
-        {
-          label: 'Log some stuff',
-          hookName: this.HOOKNAMES.LOG,
-        },
       ],
     };
   }
@@ -114,9 +108,6 @@ export class BirthdayPresentAppService extends AbstractMockAppService {
     } else if (name === this.HOOKNAMES.VISIT_DP) {
       const { site, target } = hookEvent.payload;
       this.visitDP({ site, target });
-    } else if (name === this.HOOKNAMES.LOG) {
-      console.log(hookEvent.payload);
-      this.sendMetrics();
     } else {
       throw new Error(`No hook found for hookName: ${name}`);
     }
@@ -160,9 +151,5 @@ export class BirthdayPresentAppService extends AbstractMockAppService {
     } catch (err) {
       console.error(err);
     }
-  }
-
-  private async sendMetrics() {
-    console.log('sending metrics');
   }
 }

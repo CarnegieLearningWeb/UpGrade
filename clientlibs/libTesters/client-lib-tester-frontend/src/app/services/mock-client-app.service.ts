@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { availableMockApps } from '../app-config';
+import { MOCK_APP_NAMES } from '../app-config';
 import { BirthdayPresentAppService } from '../mockFrontendClientAppComponents/birthday-present-app.service';
 import { MockClientAppInterfaceModel } from '../../../../shared/models';
 import { MockPortalService } from '../mockFrontendClientAppComponents/mock-portal.service';
@@ -16,7 +16,7 @@ export class MockClientAppService {
   private selectedMockApp = '';
 
   // Just the frontend mock apps get loaded initially, others will be loaded from the backend
-  private availableMockApps = ['Birthday App', 'Mock Portal'];
+  private availableMockApps = [MOCK_APP_NAMES.BDAY_APP, MOCK_APP_NAMES.PORTAL_APP];
 
   constructor(
     public bdayAppService: BirthdayPresentAppService,
@@ -26,8 +26,8 @@ export class MockClientAppService {
   ) {
     this.getTSBackendModels();
     this.mockClientAppInterfaceMap = {
-      [availableMockApps.BDAY_APP]: bdayAppService.getAppInterfaceModel(),
-      [availableMockApps.PORTAL_APP]: portalAppService.getAppInterfaceModel(),
+      [MOCK_APP_NAMES.BDAY_APP]: bdayAppService.getAppInterfaceModel(),
+      [MOCK_APP_NAMES.PORTAL_APP]: portalAppService.getAppInterfaceModel(),
     };
   }
 

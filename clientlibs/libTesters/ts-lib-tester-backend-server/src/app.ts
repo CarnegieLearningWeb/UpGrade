@@ -26,9 +26,10 @@ app.get('/api/mock-app-models', (req: Request, res: Response) => {
   res.json({
     models: [
       {
-        name: 'Birthday Present App',
+        name: 'Birthday Present Backend App',
         description: 'I came from the backend',
         type: 'backend',
+        language: 'ts',
         hooks: [
           {
             name: 'nuthin',

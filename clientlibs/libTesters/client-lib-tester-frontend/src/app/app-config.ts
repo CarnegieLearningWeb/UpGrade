@@ -16,21 +16,31 @@ import { UpgradeClient as UpgradeClient_4_2_0 } from 'upgrade_client_4_2_0';
 //   client: new (...args: any[]) => GenericUpgradeClient;
 // }
 
-export const availableClientLibraries: any[] = [
+export interface ClientLibraryRef {
+  version: string;
+  language: 'ts' | 'java';
+  client: any;
+}
+
+export const availableClientLibraries: ClientLibraryRef[] = [
   {
     version: 'local',
+    language: 'ts',
     client: UpgradeClient_Local,
   },
   {
     version: '1.1.7',
+    language: 'ts',
     client: UpgradeClient_1_1_17,
   },
   {
     version: '3.0.18',
+    language: 'ts',
     client: UpgradeClient_3_0_18,
   },
   {
     version: '4.2.0',
+    language: 'ts',
     client: UpgradeClient_4_2_0,
   },
 ];
@@ -41,8 +51,8 @@ export const availableApiHostUrls = [
   { value: 'https://upgradeapi.qa-cli.com', viewValue: 'STAGING: https://upgradeapi.qa-cli.com' },
 ];
 
-export const availableMockApps = {
-  BDAY_APP: 'Birthday App',
+export const MOCK_APP_NAMES = {
+  BDAY_APP: 'Birthday App Frontend',
   BDAY_APP_BACKEND: 'Birthday App Backend',
   PORTAL_APP: 'Mock Portal',
 };

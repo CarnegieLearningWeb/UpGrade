@@ -1,5 +1,5 @@
 import { Subscription } from 'rxjs';
-import { ClientAppHook, MockAppType, MockClientAppInterfaceModel } from '../../../../shared/models';
+import { ClientAppHook, CodeLanguage, MockAppType, MockClientAppInterfaceModel } from '../../../../shared/models';
 import { EventBusService } from '../services/event-bus.service';
 import { InjectionToken } from '@angular/core';
 import { ClientLibraryService } from '../services/client-library.service';
@@ -28,6 +28,7 @@ export abstract class AbstractMockAppService {
   public abstract NAME: string;
   public abstract DESCRIPTION: string;
   public abstract TYPE: MockAppType;
+  public abstract LANGUAGE: CodeLanguage;
   public abstract SITES: Record<string, string>;
   public abstract TARGETS: Record<string, string>;
   public abstract GROUPS: string[];
