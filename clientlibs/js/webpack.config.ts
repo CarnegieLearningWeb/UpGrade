@@ -27,4 +27,5 @@ module.exports = {
     libraryTarget: "umd",
     library: "upgrade-client-lib",
   },
+  target: "node"
 };

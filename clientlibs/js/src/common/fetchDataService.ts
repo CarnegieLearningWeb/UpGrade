@@ -1,5 +1,7 @@
 import { Interfaces, Types } from '../identifiers';
-import * as fetch from 'isomorphic-fetch';
+// import * as fetch from 'isomorphic-fetch';
+import fetch from 'node-fetch';
+import { RequestInit } from 'node-fetch';
 import * as uuid from 'uuid';
 
 // Call this function with url and data which is used in body of request

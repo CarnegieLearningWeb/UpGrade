@@ -22,7 +22,7 @@ export default async function markExperimentPoint(
   clientError?: string
 ): Promise<Interfaces.IMarkExperimentPoint> {
   const data = getAllData.find(
-    (data) => data.site === site && data.target === target && data.assignedCondition.conditionCode === condition
+    (data) => data.site === site && data.target === status && data.assignedCondition.conditionCode === target
   );
   let requestBody: markData = {
     userId,
