@@ -15,8 +15,6 @@ export class MockClientAppInterfaceComponent implements OnInit {
 
   ngOnInit(): void {
     this.allowedGroups = this.model.groups;
-    console.log('model', this.model);
-    console.log('groups', this.model.groups);
   }
 
   getUser(): MockClientAppUser {

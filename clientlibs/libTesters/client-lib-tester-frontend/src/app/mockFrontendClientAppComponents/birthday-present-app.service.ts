@@ -9,52 +9,43 @@ import { ClientAppHook, MockAppType, MockClientAppInterfaceModel } from '../../.
 // import { UpgradeClient } from 'upgrade_client_1_1_17';
 // import { UpgradeClient } from 'upgrade_client_3_0_18';
 // import { UpgradeClient } from 'upgrade_client_4_2_0';
-import { Subscription } from 'rxjs';
+
+import { AbstractMockAppService } from './abstract-mock-app.service';
 
 @Injectable({
   providedIn: 'root',
 })
-export class BirthdayPresentAppService {
-  private upgradeClient!: any;
-  // private upgradeClient!: UpgradeClient;
+export class BirthdayPresentAppService extends AbstractMockAppService {
+  // public override upgradeClient!: UpgradeClient;
+  public override upgradeClient: any;
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
-
-  private NAME = 'Birthday App';
-  private DESCRIPTION = 'Use this app to get presents.';
-  private TYPE: MockAppType = 'frontend';
-  private SITES = {
+  public override NAME = 'Birthday App';
+  public override DESCRIPTION = 'Use this app to get presents.';
+  public override TYPE: MockAppType = 'frontend';
+  public override SITES = {
     GET_PRESENT: 'get_present',
   };
-  private TARGETS = {
+  public override TARGETS = {
     ORANGE_PRESENT: 'orange_present',
     PURPLE_PRESENT: 'purple_present',
     GREEN_PRESENT: 'green_present',
   };
-  private GROUPS = ['schoolId', 'classId', 'instructorId'];
-  private CONTEXT = 'add'; // what should this be really?
-  public HOOKNAMES = {
+  public override GROUPS = ['schoolId', 'classId', 'instructorId'];
+  public override CONTEXT = 'add'; // what should this be really?
+  public override HOOKNAMES = {
     LOGIN: 'login',
     VISIT_DP: 'visit_dp',
     LOG: 'log',
   };
-  public DECISION_POINTS = [
+  public override DECISION_POINTS = [
     { site: this.SITES.GET_PRESENT, target: this.TARGETS.ORANGE_PRESENT },
     { site: this.SITES.GET_PRESENT, target: this.TARGETS.PURPLE_PRESENT },
     { site: this.SITES.GET_PRESENT, target: this.TARGETS.GREEN_PRESENT },
   ];
-  private mockAppDispatcherSub: Subscription = new Subscription();
 
-  constructor(private clientLibraryService: ClientLibraryService, private eventBus: EventBusService) {
-    this.eventBus.mockApp$.subscribe((mockAppName) => {
-      if (mockAppName === this.NAME) {
-        this.mockAppDispatcherSub = this.eventBus.mockClientAppHookDispatcher$.subscribe((hookEvent) => {
-          this.routeHook(hookEvent);
-        });
-      } else {
-        this.mockAppDispatcherSub.unsubscribe();
-      }
-    });
+  constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
+    super('Birthday App', eventBus, clientLibraryService);
   }
 
   /******************* "getAppInterfaceModel" required to give tester app a model to construct an interface to use this 'app' ********************/
@@ -114,7 +105,7 @@ export class BirthdayPresentAppService {
     const { name, user } = hookEvent;
     if (name === '') return;
 
-    if (!user) {
+    if (!user || !user.id) {
       throw new Error('No user found in hookEvent');
     }
 
@@ -131,16 +122,10 @@ export class BirthdayPresentAppService {
     }
   }
 
-  private constructUpgradeClient(userId: string): any {
-    const apiHostUrl = this.clientLibraryService.getSelectedAPIHostUrl();
-    const UpgradeClient: new (...args: any[]) => typeof UpgradeClient =
-      this.clientLibraryService.getUpgradeClientConstructor();
-    const upgradeClient = new UpgradeClient(userId, apiHostUrl, this.CONTEXT);
-    return upgradeClient;
-  }
   /******************* simulated client app code ****************************************************/
 
   private async login(userId: string) {
+    console.log('login hook called:', userId)
     this.upgradeClient = this.constructUpgradeClient(userId);
     console.log({ upgradeClient: this.upgradeClient });
 

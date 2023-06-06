@@ -28,10 +28,7 @@ export class AppUserFormComponent implements OnInit {
     console.log('allowedGroups: ', this.allowedGroups);
     console.log(this.userForm.value);
 
-    this.listenForUserIdChanges();
-    this.listenForUserAliasesChanges();
-    this.listenForGroupsChanges();
-    this.listenForWorkingGroupChanges();
+    this.registerFormListeners();
     this.listenForMockAppChanges();
   }
 
@@ -86,12 +83,33 @@ export class AppUserFormComponent implements OnInit {
     this.dispatchUserUpdate(user);
   }
 
+  resetForm(): void {
+    this.userId.patchValue('');
+    this.userAliases.patchValue('');
+    this.groups.patchValue([]);
+    this.workingGroup.patchValue([]);
+  }
+
+  resetUserDetailsForModelChange(): void {
+    this.eventBusService.resetMockUser();
+    this.resetForm();
+    this.createGroupsArrays(this.allowedGroups);
+  }
+
   dispatchUserUpdate(user: MockClientAppUser) {
+    console.log('dispatchUserUpdate', user)
     this.eventBusService.dispatchMockUserChange(user);
   }
 
   splitAndTrim(values: string): string[] {
     return values.split(',').map((value) => value.trim());
+  }
+
+  registerFormListeners(): void {
+    this.listenForUserIdChanges();
+    this.listenForUserAliasesChanges();
+    this.listenForGroupsChanges();
+    this.listenForWorkingGroupChanges();
   }
 
   listenForUserIdChanges(): void {
@@ -140,11 +158,9 @@ export class AppUserFormComponent implements OnInit {
     this.eventBusService.mockApp$.subscribe((mockAppName) => {
       const model = this.mockClientAppService.getMockAppInterfaceModelByName(mockAppName);
       this.allowedGroups = model.groups;
-      // clear the form, but shouldn't it do this already?
-      console.log('i fired');
-      console.log('model: ', model);
-      this.createForm();
-      this.createGroupsArrays(this.allowedGroups);
+
+      // may need to check that the model has changed
+      this.resetUserDetailsForModelChange();
     });
   }
 }

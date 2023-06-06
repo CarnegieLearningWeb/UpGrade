@@ -74,7 +74,7 @@ export class MockPortalService {
     const { name, user } = hookEvent;
     if (name === '') return;
 
-    if (!user) {
+    if (!user || !user.id) {
       throw new Error('No user found in hookEvent');
     }
 
