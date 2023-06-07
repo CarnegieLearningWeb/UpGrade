@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { availableClientLibraries } from '../app-config';
+import { ClientLibraryRef, availableClientLibraries } from '../app-config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ClientLibraryService {
-  private clientLibraries: any[] = [];
+  private clientLibraries: ClientLibraryRef[] = [];
   private selectedClientLibraryVersion = '';
   private selectedAPIHostUrl = '';
 

@@ -14,7 +14,7 @@ export class EventBusService {
   };
   private blankHookEvent: ClientAppHook = { name: '', payload: null };
 
-  public mockClientAppHookDispatcher$ = new BehaviorSubject<ClientAppHook>(this.blankHookEvent);
+  public mockClientAppHook$ = new BehaviorSubject<ClientAppHook>(this.blankHookEvent);
   public mockAppUser$ = new BehaviorSubject<MockClientAppUser>({
     id: '',
     groups: {},
@@ -26,7 +26,7 @@ export class EventBusService {
 
   dispatchHookEvent(hookEvent: ClientAppHook): void {
     console.log('[Dispatching hook]:', hookEvent);
-    this.mockClientAppHookDispatcher$.next(hookEvent);
+    this.mockClientAppHook$.next(hookEvent);
   }
 
   dispatchMockUserChange(mockUser: any): void {

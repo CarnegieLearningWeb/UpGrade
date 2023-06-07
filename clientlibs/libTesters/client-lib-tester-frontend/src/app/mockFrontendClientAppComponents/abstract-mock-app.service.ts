@@ -44,7 +44,7 @@ export abstract class AbstractMockAppService {
   ) {
     this.eventBus.mockApp$.subscribe((mockAppName) => {
       if (mockAppName === instanceMockAppName) {
-        this.mockAppDispatcherSub = this.eventBus.mockClientAppHookDispatcher$.subscribe((hookEvent) => {
+        this.mockAppDispatcherSub = this.eventBus.mockClientAppHook$.subscribe((hookEvent) => {
           this.routeHook(hookEvent);
         });
       } else {
@@ -65,7 +65,6 @@ export abstract class AbstractMockAppService {
   public abstract routeHook(hookEvent: ClientAppHook): void;
 
   public constructUpgradeClient(userId: string): any {
-    console.log('userId:', userId)
     const apiHostUrl = this.clientLibraryService.getSelectedAPIHostUrl();
     const UpgradeClient: new (...args: any[]) => typeof UpgradeClient =
       this.clientLibraryService.getUpgradeClientConstructor();

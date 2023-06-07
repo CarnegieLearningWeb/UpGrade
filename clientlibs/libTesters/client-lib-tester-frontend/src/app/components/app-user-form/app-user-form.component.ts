@@ -97,7 +97,6 @@ export class AppUserFormComponent implements OnInit {
   }
 
   dispatchUserUpdate(user: MockClientAppUser) {
-    console.log('dispatchUserUpdate', user)
     this.eventBusService.dispatchMockUserChange(user);
   }
 

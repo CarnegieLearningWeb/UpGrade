@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { MOCK_APP_NAMES } from '../app-config';
 import { BirthdayPresentAppService } from '../mockFrontendClientAppComponents/birthday-present-app.service';
-import { MockClientAppInterfaceModel } from '../../../../shared/models';
+import { ClientAppHook, HookRequestBody, MockClientAppInterfaceModel } from '../../../../shared/models';
 import { MockPortalService } from '../mockFrontendClientAppComponents/mock-portal.service';
 import { DataFetchService } from './data-fetch.service';
 import { catchError } from 'rxjs/internal/operators/catchError';
 import { of } from 'rxjs/internal/observable/of';
 import { EventBusService } from './event-bus.service';
+import { ClientLibraryService } from './client-library.service';
 
 @Injectable({
   providedIn: 'root',
@@ -22,9 +23,10 @@ export class MockClientAppService {
     public bdayAppService: BirthdayPresentAppService,
     public portalAppService: MockPortalService,
     public dataFetchService: DataFetchService,
-    public eventBus: EventBusService
+    public eventBus: EventBusService,
+    public clientLibraryService: ClientLibraryService
   ) {
-    this.getTSBackendModels();
+    this.getTSBackendModels(); // look here
     this.mockClientAppInterfaceMap = {
       [MOCK_APP_NAMES.BDAY_APP]: bdayAppService.getAppInterfaceModel(),
       [MOCK_APP_NAMES.PORTAL_APP]: portalAppService.getAppInterfaceModel(),
@@ -36,7 +38,7 @@ export class MockClientAppService {
       .getAppInterfaceModelsFromTSBackend()
       .pipe(
         catchError((error) => {
-          console.error(error);
+          console.log('ts server could not connect', error);
           return of('');
         })
       )
@@ -49,6 +51,9 @@ export class MockClientAppService {
             this.pushNewAvailableMockApp(model.name);
             this.eventBus.dispatchServerConnection('ts');
           });
+
+          // this is our success case, so sub to hooks here
+          this.listenForHooksToTSServer();
         }
         console.log('mockClientAppInterfaceMap:', this.mockClientAppInterfaceMap);
       });
@@ -79,5 +84,31 @@ export class MockClientAppService {
     }
 
     return model;
+  }
+
+  listenForHooksToTSServer(): void {
+    this.eventBus.mockClientAppHook$.subscribe((hook: ClientAppHook) => {
+      console.log('hook received for ts backend:', hook);
+
+      // if hook is valid, then dispatch it to the mock app
+      if (!hook.user) {
+        console.error('user is missing from hook');
+        return;
+      }
+
+      const requestHook: HookRequestBody = {
+        hook: hook.name,
+        libVersion: this.clientLibraryService.getSelectedClientLibraryVersion(),
+        user: hook.user,
+        mockApp: this.getSelectedMockApp(),
+        apiHostUrl: this.clientLibraryService.getSelectedAPIHostUrl(),
+        payload: hook.payload,
+      };
+
+      this.dataFetchService.postHookToTSBackend(requestHook).subscribe((response: any) => {
+        // we should have the backend always send back some kind of logging about what happened in snippet
+        console.log('response from ts backend:', response);
+      });
+    });
   }
 }

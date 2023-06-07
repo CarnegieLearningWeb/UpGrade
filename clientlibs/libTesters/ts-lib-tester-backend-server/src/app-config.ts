@@ -1,7 +1,7 @@
-// import UpgradeClient from 'upgrade_client_local';
-import * as UpgradeClient_1_1_17 from 'upgrade_client_1_1_17';
-import * as UpgradeClient_3_0_18 from 'upgrade_client_3_0_18';
-import * as UpgradeClient_4_2_0 from 'upgrade_client_4_2_0';
+// import * as UpgradeClient_Local from 'upgrade_client_local';
+// import * as UpgradeClient_1_1_17 from 'upgrade_client_1_1_17';
+// import * as UpgradeClient_3_0_18 from 'upgrade_client_3_0_18';
+// import * as UpgradeClient_4_2_0 from 'upgrade_client_4_2_0';
 
 // export declare type GenericUpgradeClient =
 //   | UpgradeClient_Local
@@ -19,24 +19,24 @@ import * as UpgradeClient_4_2_0 from 'upgrade_client_4_2_0';
 export const availableClientLibraries: any[] = [
   {
     version: 'local',
+    // client: UpgradeClient_Local,
     client: {},
   },
-  // {
-  //   version: '1.1.7',
-  //   client: UpgradeClient_1_1_17,
-  // },
-  // {
-  //   version: '3.0.18',
-  //   client: UpgradeClient_3_0_18,
-  // },
-  // {
-  //   version: '4.2.0',
-  //   client: UpgradeClient_4_2_0,
-  // },
-  // {
-  //   version: '1.1.7',
-  //   client: {},
-  // },
+  {
+    version: '1.1.7',
+    // client: UpgradeClient_1_1_17,
+    client: {},
+  },
+  {
+    version: '3.0.18',
+    // client: UpgradeClient_3_0_18,
+    client: {},
+  },
+  {
+    version: '4.2.0',
+    // client: UpgradeClient_4_2_0,
+    client: {},
+  },
 ];
 
 export const availableApiHostUrls = [
@@ -46,7 +46,7 @@ export const availableApiHostUrls = [
 ];
 
 export const availableMockApps = {
-  BDAY_APP: 'Birthday App',
+  BDAY_APP: 'Birthday App Frontend',
   BDAY_APP_BACKEND: 'Birthday App Backend',
   PORTAL_APP: 'Mock Portal',
 };
