@@ -10,8 +10,6 @@ import {
   MARKED_DECISION_POINT_STATUS,
   IExperimentAssignmentv4,
   CaliperEnvelope,
-  PAYLOAD_TYPE,
-  IPayload,
 } from 'upgrade_types';
 import getExperimentCondition, { Assignment } from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';

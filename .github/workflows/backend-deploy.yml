@@ -65,7 +65,7 @@ jobs:
       # Otherwise, build the artifact
       - name: Git Checkout
         if: steps.check-tag.outputs.exists == 'false'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Load Environment Variables
         if: steps.check-tag.outputs.exists == 'false'
         uses: tw3lveparsecs/github-actions-setvars@v0.1

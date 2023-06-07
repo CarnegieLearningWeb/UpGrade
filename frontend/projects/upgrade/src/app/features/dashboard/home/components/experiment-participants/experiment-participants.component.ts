@@ -124,8 +124,11 @@ export class ExperimentParticipantsComponent implements OnInit {
     });
 
     this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
-
-    if (this.experimentInfo) {
+    if (
+      this.experimentInfo &&
+      this.experimentInfo.experimentSegmentInclusion &&
+      this.experimentInfo.experimentSegmentExclusion
+    ) {
       if (this.experimentInfo.filterMode === FILTER_MODE.EXCLUDE_ALL) {
         this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
         this.experimentInfo.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
@@ -167,9 +170,11 @@ export class ExperimentParticipantsComponent implements OnInit {
           this.members2.push(this.addMembers2(MemberTypes.SEGMENT, id.name));
         });
       }
-      this.members1.removeAt(0);
-      this.members2.removeAt(0);
-    }
+    } 
+    
+    this.members1.removeAt(0);
+    this.members2.removeAt(0);
+
 
     this.updateView1();
     this.updateView2();
