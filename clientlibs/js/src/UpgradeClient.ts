@@ -2,7 +2,7 @@ import setGroupMembership from './functions/setGroupMembership';
 import { Interfaces } from './identifiers';
 import setWorkingGroup from './functions/setWorkingGroup';
 import getAllExperimentConditions from './functions/getAllExperimentConditions';
-import { IExperimentAssignment, IFeatureFlag, ISingleMetric, IGroupMetric, ILogInput } from 'upgrade_types';
+import { INewExperimentAssignment, IFeatureFlag, ISingleMetric, IGroupMetric, ILogInput } from 'upgrade_types';
 import getExperimentCondition from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
 import { MARKED_DECISION_POINT_STATUS } from "upgrade_types";
@@ -36,7 +36,7 @@ export default class UpgradeClient {
 
     private group: Map<string, Array<string>> = null;
     private workingGroup: Map<string, string> = null;
-    private experimentConditionData: IExperimentAssignment[] = null;
+    private experimentConditionData: INewExperimentAssignment[] = null;
     private featureFlags: IFeatureFlag[] = null;
 
     constructor(userId: string, hostUrl: string, options?: {token?: string, clientSessionId?: string}) {
@@ -100,7 +100,7 @@ export default class UpgradeClient {
         return response;
     }
 
-    async getAllExperimentConditions(context: string): Promise<IExperimentAssignment[]> {
+    async getAllExperimentConditions(context: string): Promise<INewExperimentAssignment[]> {
         this.validateClient();
         const response = await getAllExperimentConditions(this.api.getAllExperimentConditions, this.userId, this.token, this.clientSessionId, context);
         if (Array.isArray(response)) {
@@ -109,7 +109,7 @@ export default class UpgradeClient {
         return response;
     }
 
-    async getExperimentCondition(context: string, experimentPoint: string, partitionId?: string): Promise<IExperimentAssignment> {
+    async getExperimentCondition(context: string, experimentPoint: string, partitionId?: string): Promise<INewExperimentAssignment> {
         this.validateClient();
         if (this.experimentConditionData == null) {
             await this.getAllExperimentConditions(context);

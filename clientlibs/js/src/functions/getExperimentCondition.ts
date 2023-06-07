@@ -1,16 +1,16 @@
-import { IExperimentAssignment } from 'upgrade_types';
+import { INewExperimentAssignment } from 'upgrade_types';
 
 export default function getExperimentCondition(
-  experimentConditionData: IExperimentAssignment[],
+  experimentConditionData: INewExperimentAssignment[],
   experimentPoint: string,
   partitionId?: string
-): IExperimentAssignment {
+): INewExperimentAssignment {
   try {
     if (experimentConditionData) {
       const result = experimentConditionData.filter((data) =>
         partitionId
-          ? data.expId === partitionId && data.expPoint === experimentPoint
-          : data.expPoint === experimentPoint && !data.expId
+          ? data.target === partitionId && data.site === experimentPoint
+          : data.site === experimentPoint && !data.target
       );
 
       return result.length ? result[0] : null;

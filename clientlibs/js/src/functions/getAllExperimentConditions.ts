@@ -1,5 +1,5 @@
 import fetchDataService from '../common/fetchDataService';
-import { IExperimentAssignment } from 'upgrade_types';
+import { INewExperimentAssignment } from 'upgrade_types';
 import { Types } from '../identifiers';
 
 export default async function getAllExperimentConditions(
@@ -8,7 +8,7 @@ export default async function getAllExperimentConditions(
   token: string,
   clientSessionId: string,
   context: string
-): Promise<IExperimentAssignment[]> {
+): Promise<INewExperimentAssignment[]> {
   try {
     const params: any = {
       userId,
