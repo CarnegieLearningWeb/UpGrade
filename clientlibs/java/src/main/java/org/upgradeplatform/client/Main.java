@@ -46,69 +46,66 @@ public class Main {
                     experimentClient.setGroupMembership(group, new ResponseCallback<ExperimentUser>(){
                         @Override
                         public void onSuccess(@NonNull ExperimentUser expResult){
-                            System.out.println("success updating groups");
-                        }
-                        @Override
-                        public void onError(@NonNull ErrorResponse error){
-                            System.out.println("error updating groups " + error);
-                        }
-                    });
+                            System.out.println(prefix() + "success updating groups; setting working group");
 
-
-                    System.out.println(prefix() + "setting working group");
-                    Map<String, String> workingGroup = new HashMap<>();
-                    workingGroup.put("schoolId", "school1");
-                    experimentClient.setWorkingGroup(workingGroup, new ResponseCallback<ExperimentUser>(){
-                        @Override
-                        public void onSuccess(@NonNull ExperimentUser expResult){
-                            System.out.println("success updating working groups");
-                        }
-                        @Override
-                        public void onError(@NonNull ErrorResponse error){
-                            System.out.println("error updating working groups " + error);
-                        }
-                    });
-
-
-                    System.out.println(prefix() + "setting user aliases");
-                    List<String> altIds = new ArrayList<>();
-                    altIds.add(UUID.randomUUID().toString());
-                    experimentClient.setAltUserIds(altIds, new ResponseCallback<UserAliasResponse>(){
-                        @Override
-                        public void onSuccess(@NonNull UserAliasResponse uar) {
-                            System.out.println("success updating user aliases");
-                        }
-                        @Override
-                        public void onError(@NonNull ErrorResponse error){
-                            System.out.println("error updating user aliases " + error);
-                        }
-
-                    });
-
-                    System.out.println(prefix() + "getting conditions");
-                    experimentClient.getExperimentCondition("assign-prog", site, target, new ResponseCallback<ExperimentsResponse>(){
-                        @Override
-                        public void onSuccess(@NonNull ExperimentsResponse expResult){
-                            Condition condition = expResult.getAssignedCondition();
-                            String code = condition == null ? null : condition.getCondition();
-                            experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED, new ResponseCallback<MarkExperimentPoint>(){
+                            Map<String, String> workingGroup = new HashMap<>();
+                            workingGroup.put("schoolId", "school1");
+                            experimentClient.setWorkingGroup(workingGroup, new ResponseCallback<ExperimentUser>(){
                                 @Override
-                                public void onSuccess(@NonNull MarkExperimentPoint markResult){
-                                    result.complete("marked " + code + ": " + markResult.toString());
-                                }
+                                public void onSuccess(@NonNull ExperimentUser expResult){
+                                    System.out.println(prefix() + "success updating working groups; setting user aliases");
 
+                                    List<String> altIds = new ArrayList<>();
+                                    altIds.add(UUID.randomUUID().toString());
+                                    experimentClient.setAltUserIds(altIds, new ResponseCallback<UserAliasResponse>(){
+                                        @Override
+                                        public void onSuccess(@NonNull UserAliasResponse uar) {
+                                            System.out.println(prefix() + "success updating user aliases; getting conditions");
+
+                                            experimentClient.getExperimentCondition("assign-prog", site, target, new ResponseCallback<ExperimentsResponse>(){
+                                                @Override
+                                                public void onSuccess(@NonNull ExperimentsResponse expResult){
+                                                    System.out.println(prefix() + "success getting condition; marking");
+
+                                                    Condition condition = expResult.getAssignedCondition();
+                                                    String code = condition == null ? null : condition.getCondition();
+                                                    experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED, new ResponseCallback<MarkExperimentPoint>(){
+                                                        @Override
+                                                        public void onSuccess(@NonNull MarkExperimentPoint markResult){
+                                                            result.complete("marked " + code + ": " + markResult.toString());
+                                                        }
+
+                                                        @Override
+                                                        public void onError(@NonNull ErrorResponse error){
+                                                            result.complete("error marking " + code + ": " + error.toString());
+                                                        }
+                                                    });
+                                                }
+
+                                                @Override
+                                                public void onError(@NonNull ErrorResponse error){
+                                                    result.complete(error.toString());
+                                                }
+
+                                            });
+                                        }
+                                        @Override
+                                        public void onError(@NonNull ErrorResponse error){
+                                            result.complete(error.toString());
+                                        }
+
+                                    });
+                                }
                                 @Override
                                 public void onError(@NonNull ErrorResponse error){
-                                    result.complete("error marking " + code + ": " + error.toString());
+                                    result.complete(error.toString());
                                 }
                             });
                         }
-
                         @Override
                         public void onError(@NonNull ErrorResponse error){
                             result.complete(error.toString());
                         }
-
                     });
                 }
 
