@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
 import java.util.function.UnaryOperator;
 
 import javax.ws.rs.ProcessingException;
@@ -51,23 +50,21 @@ public class ExperimentClient implements AutoCloseable {
 	/** @param properties
      *            Properties to permit users to control how the underlying JAX-RS
      *            client behaves. These are passed through to
-     *            {@link javax.ws.rs.core.Configurable#property(String, Object)}. 
-	 * @param execSvc */
-	public ExperimentClient(String userId, String authToken, String baseUrl, Map<String, Object> properties, ExecutorService execSvc) {
-		this(userId, authToken, UUID.randomUUID().toString(), baseUrl, properties, execSvc);
+     *            {@link javax.ws.rs.core.Configurable#property(String, Object)}. */
+	public ExperimentClient(String userId, String authToken, String baseUrl, Map<String, Object> properties) {
+		this(userId, authToken, UUID.randomUUID().toString(), baseUrl, properties);
 	}
 
     /** @param properties
      *            Properties to permit users to control how the underlying JAX-RS
      *            client behaves. These are passed through to
-     *            {@link javax.ws.rs.core.Configurable#property(String, Object)}. 
-     * @param execSvc */
-	public ExperimentClient(String userId, String authToken, String sessionId, String baseUrl, Map<String, Object> properties, ExecutorService execSvc) {
+     *            {@link javax.ws.rs.core.Configurable#property(String, Object)}. */
+	public ExperimentClient(String userId, String authToken, String sessionId, String baseUrl, Map<String, Object> properties) {
 		if (isStringNull(userId)) {
 			throw new IllegalArgumentException(INVALID_STUDENT_ID);
 		}
 		this.userId = userId;
-		this.apiService = new APIService(baseUrl, authToken, sessionId, properties, execSvc);
+		this.apiService = new APIService(baseUrl, authToken, sessionId, properties);
 	}
 
 	// To close jax-rs client connection open when calling ExperimentClient constructor;
