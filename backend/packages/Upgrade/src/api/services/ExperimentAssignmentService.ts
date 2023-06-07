@@ -17,7 +17,7 @@ import {
   EXPERIMENT_TYPE,
   SUPPORTED_CALIPER_PROFILES,
   SUPPORTED_CALIPER_EVENTS,
-  IExperimentAssignmentv4,
+  IExperimentAssignmentv5,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -115,6 +115,7 @@ export class ExperimentAssignmentService {
     requestContext: { logger: UpgradeLogger; userDoc: any },
     target?: string,
     experimentId?: string,
+    uniquifier?: string,
     clientError?: string
   ): Promise<Omit<MonitoredDecisionPoint, 'createdAt | updatedAt | versionNumber'>> {
     // find working group for user
@@ -379,6 +380,7 @@ export class ExperimentAssignmentService {
         user: userDoc,
         site: site,
         target: target,
+        uniquifier: uniquifier,
       });
 
       // save monitored log document
@@ -392,6 +394,7 @@ export class ExperimentAssignmentService {
         user: userDoc,
         site: site,
         target: target,
+        uniquifier: uniquifier,
       });
 
       // save monitored log document
@@ -404,7 +407,7 @@ export class ExperimentAssignmentService {
     userId: string,
     context: string,
     requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<IExperimentAssignmentv4[]> {
+  ): Promise<IExperimentAssignmentv5[]> {
     const { logger, userDoc } = requestContext;
     logger.info({ message: `getAllExperimentConditions: User: ${userId}` });
 
@@ -703,7 +706,7 @@ export class ExperimentAssignmentService {
                   experimentId: id,
                 },
               ],
-              assignedFactor: [assignedFactors],
+              assignedFactor: assignedFactors ? [assignedFactors] : null,
             };
           }
         });

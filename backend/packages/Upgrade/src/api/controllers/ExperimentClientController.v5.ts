@@ -18,15 +18,15 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import {
-  IExperimentAssignmentv4,
+  IExperimentAssignmentv5,
   ISingleMetric,
   IGroupMetric,
   SERVER_ERROR,
   IGroupMembership,
   IUserAliases,
   IWorkingGroup,
-  PAYLOAD_TYPE,
   EXPERIMENT_TYPE,
+  PAYLOAD_TYPE,
   IPayload,
 } from 'upgrade_types';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -101,7 +101,7 @@ interface IMonitoredDecisionPoint {
  *     description: CRUD operations related to experiments points
  */
 
-@JsonController('/v4/')
+@JsonController('/v5/')
 @UseBefore(ClientLibMiddleware)
 export class ExperimentClientController {
   constructor(
@@ -501,7 +501,7 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     experiment: ExperimentAssignmentValidator
-  ): Promise<IExperimentAssignmentv4[]> {
+  ): Promise<IExperimentAssignmentv5[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
     const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
       experiment.userId,
@@ -513,31 +513,36 @@ export class ExperimentClientController {
     );
 
     return assignedData.map(({ assignedFactor, assignedCondition, ...rest }) => {
-      const updatedAssignedFactor: Record<string, { level: string; payload: IPayload }> = {};
-      if (assignedFactor) {
-        Object.keys(assignedFactor[0]).forEach((key) => {
+      const finalFactorData = assignedFactor.map((factor) => {
+        const updatedAssignedFactor: Record<string, { level: string; payload: IPayload }> = {};
+        Object.keys(factor).forEach((key) => {
           updatedAssignedFactor[key] = {
-            level: assignedFactor[0][key].level,
+            level: factor[key].level,
             payload:
-              assignedFactor[0][key].payload && assignedFactor[0][key].payload.value
-                ? { type: PAYLOAD_TYPE.STRING, value: assignedFactor[0][key].payload.value }
+              factor[key].payload && factor[key].payload.value
+                ? { type: PAYLOAD_TYPE.STRING, value: factor[key].payload.value }
                 : null,
           };
         });
-      }
+        return updatedAssignedFactor;
+      });
+
+      const finalConditionData = assignedCondition.map((condition) => {
+        return {
+          id: condition.id,
+          conditionCode: condition.conditionCode,
+          payload:
+            condition.payload && condition.payload.value
+              ? { type: condition.payload.type, value: condition.payload.value }
+              : null,
+          experimentId: condition.experimentId,
+        };
+      });
       return {
         ...rest,
         experimentType: assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE,
-        assignedCondition: {
-          id: assignedCondition[0].id,
-          conditionCode: assignedCondition[0].conditionCode,
-          payload:
-            assignedCondition[0].payload && assignedCondition[0].payload.value
-              ? { type: assignedCondition[0].payload.type, value: assignedCondition[0].payload.value }
-              : null,
-          experimentId: assignedCondition[0].experimentId,
-        },
-        assignedFactor: assignedFactor ? updatedAssignedFactor : undefined,
+        assignedCondition: finalConditionData,
+        assignedFactor: assignedFactor ? finalFactorData : undefined,
       };
     });
   }

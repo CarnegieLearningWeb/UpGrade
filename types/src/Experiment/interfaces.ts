@@ -51,6 +51,13 @@ export type INewExperimentAssignment = Pick<IExperimentAssignmentv4, 'assignedCo
 export interface IExperimentAssignmentv4 {
   site: string;
   target: string;
+  assignedCondition: AssignedCondition;
+  assignedFactor?: Record<string, { level: string; payload: IPayload }>;
+}
+
+export interface IExperimentAssignmentv5 {
+  site: string;
+  target: string;
   assignedCondition: AssignedCondition[];
   assignedFactor?: Record<string, { level: string; payload: IPayload }>[];
 }
