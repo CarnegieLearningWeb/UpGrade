@@ -38,20 +38,20 @@ public class PublishingRetryCallback<T> implements InvocationCallback<Response> 
 		if (SUCCESSFUL.equals(response.getStatusInfo().getFamily()) || retries <= 0) {
 			callback.completed(response);
 		} else {
-			retry();
+			retry(new IllegalStateException("unexpected response status " + response.getStatusInfo().getStatusCode()));
 		}
 	}
 
 	@Override
 	public void failed(Throwable throwable) {
 		if (retries > 0) {
-			retry();
+			retry(throwable);
 		} else {
 			callback.failed(throwable);
 		}
 	}
 
-	private void retry() {
+	private void retry(Throwable throwable) {
 		retries--;
 		switch(this.type) {
 			case POST:
@@ -61,10 +61,8 @@ public class PublishingRetryCallback<T> implements InvocationCallback<Response> 
 				invoker.get(this);
 				break;
 			default:
-				break;
+			    callback.failed(throwable);
+			    break;
 		}
-		
 	}
-
-
 }
