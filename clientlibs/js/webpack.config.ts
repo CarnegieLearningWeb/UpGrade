@@ -27,6 +27,7 @@ const browser = {
     path: path.resolve(__dirname, 'dist/browser'),
     libraryTarget: 'umd',
     library: 'upgrade-client-lib',
+    libraryExport: 'default',
   },
 };
 
