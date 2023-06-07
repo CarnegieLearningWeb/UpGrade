@@ -1,5 +1,6 @@
 import { Interfaces, Types } from '../identifiers';
-import * as fetch from 'isomorphic-fetch';
+// import * as fetch from 'isomorphic-fetch';
+import fetch from 'node-fetch';
 import * as uuid  from 'uuid';
 
 // Call this function with url and data which is used in body of request
@@ -28,10 +29,10 @@ async function fetchData(
 ): Promise<Interfaces.IResponse> {
   try {
 
-    let headers: object = {
+    let headers: {[key: string]: string} = {
       'Content-Type': 'application/json',
       'Session-Id': clientSessionId || uuid.v4(),
-      'CurrentRetry': retries,
+      'CurrentRetry': String(retries),
       'URL': url,
     }
     if (!!token) {
@@ -57,9 +58,12 @@ async function fetchData(
         body: JSON.stringify(data)
       }
     }
-
+    console.log('url:', url);
+    console.log('options:', options);
     const response = await fetch(url, options);
     const responseData = await response.json();
+    console.log('responseData:', responseData);
+
     // If value of ok is false then it's error
     if (response.ok) {
       return {
