@@ -21,9 +21,8 @@ export default async function markExperimentPoint(
   getAllData: IExperimentAssignmentv4[],
   clientError?: string
 ): Promise<Interfaces.IMarkExperimentPoint> {
-  const data = getAllData.find(
-    (data) => data.site === site && data.target === target && data.assignedCondition.conditionCode === condition
-  );
+  const data = getAllData.find((data) => data.site === site && data.target === target);
+  data.assignedCondition.conditionCode = condition;
   let requestBody: markData = {
     userId,
     status,
