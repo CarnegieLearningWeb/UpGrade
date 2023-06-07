@@ -37,9 +37,9 @@ public class Main {
                 @Override
                 public void onSuccess(@NonNull InitializeUser t){
 
-                    List<String> schools = new ArrayList<String>();
+                    List<String> schools = new ArrayList<>();
                     schools.add("school1");
-                    Map<String, List<String>> group = new HashMap<String, List<String>>();
+                    Map<String, List<String>> group = new HashMap<>();
                     group.put("schoolid", schools);
 
                     System.out.println(prefix() + "setting group membership");
@@ -56,7 +56,7 @@ public class Main {
 
 
                     System.out.println(prefix() + "setting working group");
-                    Map<String, String> workingGroup = new HashMap<String, String>();
+                    Map<String, String> workingGroup = new HashMap<>();
                     workingGroup.put("schoolId", "school1");
                     experimentClient.setWorkingGroup(workingGroup, new ResponseCallback<ExperimentUser>(){
                         @Override
@@ -71,11 +71,11 @@ public class Main {
 
 
                     System.out.println(prefix() + "setting user aliases");
-                    List<String> altIds = new ArrayList<String>();
+                    List<String> altIds = new ArrayList<>();
                     altIds.add(UUID.randomUUID().toString());
                     experimentClient.setAltUserIds(altIds, new ResponseCallback<UserAliasResponse>(){
                         @Override
-                        public void onSuccess(@NonNull UserAliasResponse t) {
+                        public void onSuccess(@NonNull UserAliasResponse uar) {
                             System.out.println("success updating user aliases");
                         }
                         @Override
