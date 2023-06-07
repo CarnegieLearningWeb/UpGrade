@@ -15,7 +15,7 @@ export namespace Interfaces {
   }
 
   export interface IRequestOptions {
-    headers: object;
+    headers: {[key: string]: string};
     method: Types.REQUEST_TYPES;
     keepalive: boolean;
     body?: string;

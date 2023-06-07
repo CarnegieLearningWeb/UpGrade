@@ -1,5 +1,6 @@
 import { Interfaces, Types } from '../identifiers';
-import * as fetch from 'isomorphic-fetch';
+// import * as fetch from 'isomorphic-fetch';
+import fetch from 'node-fetch';
 
 // Call this function with url and data which is used in body of request
 export default async function fetchDataService(
@@ -25,7 +26,7 @@ async function fetchData(
 ): Promise<Interfaces.IResponse> {
   try {
 
-    let headers: object = {
+    let headers: {[key: string]: string} = {
       'Content-Type': 'application/json'
     }
     if (!!token) {
@@ -35,6 +36,9 @@ async function fetchData(
       }
     }
 
+    typeof window !== 'undefined'
+      ? headers = {...headers, 'Client-source': 'Browser'} 
+      : headers = {...headers, 'Client-source': 'Node'};
 
     let options: Interfaces.IRequestOptions = {
       headers,
