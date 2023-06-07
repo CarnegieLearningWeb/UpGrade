@@ -21,16 +21,16 @@ import org.upgradeplatform.responsebeans.UserAliasResponse;
 import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 
 public class Main {
-	public static void main(String[] args) throws InterruptedException, ExecutionException
-	{
-		final String baseUrl = "https://upgradeapi.qa-cli.com";
-		final String userId = UUID.randomUUID().toString();
-		final String site = "SelectSection";
+    public static void main(String[] args) throws InterruptedException, ExecutionException
+    {
+        final String baseUrl = "https://upgradeapi.qa-cli.com";
+        final String userId = UUID.randomUUID().toString();
+        final String site = "SelectSection";
 
-		String target = args.length > 0 ? args[0] : "graph_setup_linear_equation-1";
+        String target = args.length > 0 ? args[0] : "graph_setup_linear_equation-1";
 
-		try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl, Collections.emptyMap())){
-		    CompletableFuture<String> result = new CompletableFuture<>();
+        try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl, Collections.emptyMap())){
+            CompletableFuture<String> result = new CompletableFuture<>();
 
             System.out.println(prefix() + "initiating requests");
             experimentClient.init(new ResponseCallback<InitializeUser>() {
@@ -121,10 +121,10 @@ public class Main {
             System.out.println(prefix() + result.getNow("not complete yet"));
             String rs = result.get();
             System.out.println(prefix() + rs);
-		}
-	}
+        }
+    }
 
-	private static final String prefix() {
-	    return "on thread " + Thread.currentThread().getName() + " at " + System.currentTimeMillis() + ": ";
-	}
+    private static final String prefix() {
+        return "on thread " + Thread.currentThread().getName() + " at " + System.currentTimeMillis() + ": ";
+    }
 }
