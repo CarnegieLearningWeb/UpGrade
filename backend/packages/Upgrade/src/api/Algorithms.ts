@@ -71,7 +71,8 @@ export function randomRoundRobinCondition(
   const totalLoopsInQueue = Math.ceil(100 / assignedData.assignedCondition.length);
   for (let i = 0; i < totalLoopsInQueue; i++) {
     const tempConditionArray: AssignedCondition[] = [...assignedData.assignedCondition];
-    const tempFactorArray = EXPERIMENT_TYPE.FACTORIAL ? [...assignedData.assignedFactor] : undefined;
+    const tempFactorArray =
+      experiment.type === EXPERIMENT_TYPE.FACTORIAL ? [...assignedData.assignedFactor] : undefined;
     for (let j = 0; j < assignedData.assignedCondition.length; j++) {
       const uniqueIdentifier: string = experiment.id + userID + i + j;
       const randomConditionIndex = Math.floor(seedrandom(uniqueIdentifier)() * tempConditionArray.length);
@@ -105,7 +106,7 @@ export function orderedRoundRobinCondition(
   const orderedRoundRobinConditionArray: AssignedCondition[] = [];
   const assignedFactorsArray: Record<string, { level: string; payload: IPayload }>[] = [];
   const tempConditionArray: AssignedCondition[] = [...assignedData.assignedCondition];
-  const tempFactorArray = EXPERIMENT_TYPE.FACTORIAL ? [...assignedData.assignedFactor] : undefined;
+  const tempFactorArray = experiment.type === EXPERIMENT_TYPE.FACTORIAL ? [...assignedData.assignedFactor] : undefined;
   for (let i = 0; i < assignedData.assignedCondition.length; i++) {
     const uniqueIdentifier: string = experiment.id + userID + i;
     const randomConditionIndex = Math.floor(seedrandom(uniqueIdentifier)() * tempConditionArray.length);
