@@ -144,7 +144,7 @@ export default class UpgradeClient {
     return response;
   }
 
-  async getDecisionPointAssignment(site: string, target?: string): Promise<Assignment> {
+  async getDecisionPointAssignment(site: string, target: string): Promise<Assignment> {
     this.validateClient();
     if (this.experimentConditionData == null) {
       await this.getAllExperimentConditions();
@@ -154,21 +154,25 @@ export default class UpgradeClient {
 
   async markExperimentPoint(
     site: string,
+    target: string,
     condition: string = null,
     status: MARKED_DECISION_POINT_STATUS,
-    target?: string,
     clientError?: string
   ): Promise<Interfaces.IMarkExperimentPoint> {
     this.validateClient();
+    if (this.experimentConditionData == null) {
+      await this.getAllExperimentConditions();
+    }
     return await markExperimentPoint(
       this.api.markExperimentPoint,
       this.userId,
       this.token,
       this.clientSessionId,
       site,
+      target,
       condition,
       status,
-      target,
+      this.experimentConditionData,
       clientError
     );
   }
