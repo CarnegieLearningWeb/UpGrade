@@ -4,6 +4,7 @@ import uuid
 from  upgrade_mathia_data import modules, workspaces
 from locust import HttpUser, SequentialTaskSet, task, tag, between
 import createExperiment
+import deleteExperiment
 
 schools = {}
 students = {}
@@ -14,12 +15,27 @@ allExperimentPartitionIDConditionPair = []
 protocol = "http"
 host = "localhost:3030"
 
+# clear existing experiments:
+option = int(input("Enter 1 for delete a single random experiment and 2 to delete all experiments, else Enter 0 for not deleting any experiment: "))
+
+if option == 1:
+    expIds = deleteExperiment.getExperimentIds(protocol, host)
+    deleteExperiment.deleteExperiment(protocol, host, expIds)
+elif option == 2:
+    expIds = deleteExperiment.getExperimentIds(protocol, host)
+    for i in range(len(expIds)):
+        expIds = deleteExperiment.getExperimentIds(protocol, host)
+        deleteExperiment.deleteExperiment(protocol, host, expIds)
+else:
+    pass
+
 # create new experiments:
 experimentCount = int(input("Enter the number of experiments to be created: "))
-
 for i in range(experimentCount):
+    experimentType = int(input("Enter the experiment type: Enter 1 for Simple and 2 for Factorial:"))
     # returning the updated partionconditionpair list:
-    allExperimentPartitionIDConditionPair = createExperiment.createExperiment(protocol, host, allExperimentPartitionIDConditionPair)
+    experimentType = "Simple" if experimentType == 1 else "Factorial"
+    allExperimentPartitionIDConditionPair = createExperiment.createExperiment(protocol, host, allExperimentPartitionIDConditionPair, experimentType)
 
 ### Start enrolling students in the newly created experiment: ###
 #Return a new Student
@@ -276,14 +292,17 @@ class UpgradeUserTask(SequentialTaskSet):
     def markExperimentPoint(self):
         url = protocol + f"://{host}/api/mark"
         print("/mark for userid: " + self.student["studentId"])
-
+        if(len(allExperimentPartitionIDConditionPair) == 0):
+            print("No assigned conditions found")
+            return
+        else:
+            print("allExperimentPartitionIDConditionPair: ", allExperimentPartitionIDConditionPair)
         # pick a random pair of PartitionIdConditionId from allExperimentPartitionIDConditionPair
         markPartitionIDConditionPair = random.choice(allExperimentPartitionIDConditionPair)
-
         data = {
             "userId": self.student["studentId"],
-            "experimentPoint": markPartitionIDConditionPair['experimentPoint'],
-            "partitionId": markPartitionIDConditionPair['partitionId'],
+            "experimentPoint": markPartitionIDConditionPair['site'],
+            "partitionId": markPartitionIDConditionPair['target'],
             "condition": markPartitionIDConditionPair['condition']
         }
 
@@ -307,14 +326,18 @@ class UpgradeUserTask(SequentialTaskSet):
     def failedExperimentPoint(self):
         url = protocol + f"://{host}/api/failed"
         print("/failed for userid: " + self.student["studentId"])
-
+        if(len(allExperimentPartitionIDConditionPair) == 0):
+            print("No assigned conditions found")
+            return
+        else:
+            print("allExperimentPartitionIDConditionPair: ", allExperimentPartitionIDConditionPair)
         # pick a random pair of PartitionIdConditionId from allExperimentPartitionIDConditionPair
         markPartitionIDConditionPair = random.choice(allExperimentPartitionIDConditionPair)
 
         data = {
             "userId": self.student["studentId"],
-            "experimentPoint": markPartitionIDConditionPair['experimentPoint'],
-            "partitionId": markPartitionIDConditionPair['partitionId'],
+            "experimentPoint": markPartitionIDConditionPair['site'],
+            "partitionId": markPartitionIDConditionPair['target'],
             "condition": markPartitionIDConditionPair['condition']
         }
 
