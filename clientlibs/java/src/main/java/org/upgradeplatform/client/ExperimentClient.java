@@ -144,6 +144,7 @@ public class ExperimentClient implements AutoCloseable {
 
 			@Override
 			public void failed(Throwable throwable) {
+			    throwable.printStackTrace();
 				callbacks.onError(new ErrorResponse(throwable.getMessage()));
 			}
 		}));
