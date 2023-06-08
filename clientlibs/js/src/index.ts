@@ -1,1 +1,2 @@
-export { default as UpgradeClient } from './UpgradeClient';
+import UpgradeClient from './UpgradeClient';
+export default UpgradeClient;
