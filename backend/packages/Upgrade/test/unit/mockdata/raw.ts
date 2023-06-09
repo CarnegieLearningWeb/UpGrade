@@ -828,6 +828,160 @@ export const factorialGroupExperiment = {
   }
 };
 
+const simpleDPExperiment = 
+  {
+    createdAt: "2023-06-09T17:37:38.216Z",
+    updatedAt: "2023-06-09T17:37:38.216Z",
+    versionNumber: 1,
+    id: "c4410cc0-c458-45c5-9da5-8b6fea500dd2",
+    twoCharacterId: "55",
+    site: "add-point1",
+    target: "add-id1",
+    description: "",
+    order: 1,
+    excludeIfReached: false,
+    experiment: {
+      createdAt: "2023-06-09T17:37:38.216Z",
+      updatedAt: "2023-06-09T18:11:10.092Z",
+      versionNumber: 3,
+      id: "1c7fe9c1-d43a-4ec7-8a42-16d4bc9d1d6c",
+      name: "test",
+      description: "",
+      context: [
+        "add"
+      ],
+      state: "enrolling",
+      startOn: null,
+      consistencyRule: "individual",
+      assignmentUnit: "individual",
+      postExperimentRule: "continue",
+      enrollmentCompleteCondition: null,
+      endOn: null,
+      revertTo: null,
+      tags: [],
+      group: null,
+      logging: false,
+      filterMode: "includeAll",
+      backendVersion: "4.3.0",
+      type: "Simple"
+    }
+  };
+
+const simpleExperimentDecisionPoint = {
+  createdAt: "2023-06-09T17:37:38.216Z",
+  updatedAt: "2023-06-09T17:37:38.216Z",
+  versionNumber: 1,
+  id: "c4410cc0-c458-45c5-9da5-8b6fea500dd2",
+  twoCharacterId: "55",
+  site: "add-point1",
+  target: "add-id1",
+  description: "",
+  order: 1,
+  excludeIfReached: false,
+  experiment: {
+    createdAt: "2023-06-09T17:37:38.216Z",
+    updatedAt: "2023-06-09T18:11:10.092Z",
+    versionNumber: 3,
+    id: "1c7fe9c1-d43a-4ec7-8a42-16d4bc9d1d6c",
+    name: "test",
+    description: "",
+    context: [
+      "add"
+    ],
+    state: "enrolling",
+    startOn: null,
+    consistencyRule: "individual",
+    assignmentUnit: "individual",
+    postExperimentRule: "continue",
+    enrollmentCompleteCondition: null,
+    endOn: null,
+    revertTo: null,
+    tags: [],
+    group: null,
+    logging: false,
+    filterMode: "includeAll",
+    backendVersion: "4.3.0",
+    type: "Simple",
+    partitions: [
+      {
+        createdAt: "2023-06-09T17:37:38.216Z",
+        updatedAt: "2023-06-09T17:37:38.216Z",
+        versionNumber: 1,
+        id: "c4410cc0-c458-45c5-9da5-8b6fea500dd2",
+        twoCharacterId: "55",
+        site: "add-point1",
+        target: "add-id1",
+        description: "",
+        order: 1,
+        excludeIfReached: false
+      }
+    ],
+    conditions: [
+      {
+        createdAt: "2023-06-09T17:37:38.216Z",
+        updatedAt: "2023-06-09T17:37:38.216Z",
+        versionNumber: 1,
+        id: "d245b723-3f0c-432b-bd8e-1f44d100eae4",
+        twoCharacterId: "81",
+        name: "",
+        description: null,
+        conditionCode: "add-con1",
+        assignmentWeight: 50,
+        order: 2,
+        levelCombinationElements: [],
+        conditionPayloads: []
+      },
+      {
+        createdAt: "2023-06-09T17:37:38.216Z",
+        updatedAt: "2023-06-09T17:37:38.216Z",
+        versionNumber: 1,
+        id: "da0ec977-fb23-4d7d-8d34-f3c379ef5184",
+        twoCharacterId: "NQ",
+        name: "",
+        description: null,
+        conditionCode: "add-con2",
+        assignmentWeight: 50,
+        order: 1,
+        levelCombinationElements: [],
+        conditionPayloads: []
+      }
+    ],
+    factors: [],
+    experimentSegmentInclusion: {
+      createdAt: "2023-06-09T18:11:05.245Z",
+      updatedAt: "2023-06-09T18:11:05.245Z",
+      versionNumber: 1,
+      segment: {
+        createdAt: "2023-06-09T18:11:05.304Z",
+        updatedAt: "2023-06-09T18:11:05.304Z",
+        versionNumber: 1,
+        id: "9eeb0404-8fe8-4cd4-9cdd-71cf21502d9d",
+        name: "1c7fe9c1-d43a-4ec7-8a42-16d4bc9d1d6c Inclusion Segment",
+        description: "1c7fe9c1-d43a-4ec7-8a42-16d4bc9d1d6c Inclusion Segment",
+        context: "add",
+        type: "private",
+        subSegments: []
+      }
+    },
+    experimentSegmentExclusion: {
+      createdAt: "2023-06-09T18:11:05.245Z",
+      updatedAt: "2023-06-09T18:11:05.245Z",
+      versionNumber: 1,
+      segment: {
+        createdAt: "2023-06-09T18:11:05.324Z",
+        updatedAt: "2023-06-09T18:11:05.324Z",
+        versionNumber: 1,
+        id: "50d01f94-b73c-4d61-ba50-dec72721e82a",
+        name: "1c7fe9c1-d43a-4ec7-8a42-16d4bc9d1d6c Exclusion Segment",
+        description: "1c7fe9c1-d43a-4ec7-8a42-16d4bc9d1d6c Exclusion Segment",
+        context: "add",
+        type: "private",
+        subSegments: []
+      }
+    }
+  }
+};
+
 export function getRevertToExperiment() {
   return JSON.parse(JSON.stringify(revertToExperiment));
 }
@@ -845,4 +999,12 @@ export function getFactorialIndividualExperiment() {
 
 export function getFactorialGroupExperiment() {
   return JSON.parse(JSON.stringify(factorialGroupExperiment));
+}
+
+export function getSimpleDPExperiment() {
+  return JSON.parse(JSON.stringify(simpleDPExperiment));
+}
+
+export function getSimpleExperimentDecisionPoint() {
+  return JSON.parse(JSON.stringify(simpleExperimentDecisionPoint));
 }

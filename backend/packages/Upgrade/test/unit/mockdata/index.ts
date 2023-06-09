@@ -1,5 +1,5 @@
 import {
-  getSimpleIndividualExperiment, getSimpleGroupExperiment, getFactorialIndividualExperiment, getFactorialGroupExperiment
+  getSimpleIndividualExperiment, getSimpleGroupExperiment, getFactorialIndividualExperiment, getFactorialGroupExperiment, getSimpleDPExperiment, getSimpleExperimentDecisionPoint
 } from './raw';
 import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'upgrade_types';
 
@@ -34,3 +34,11 @@ export const factorialGroupAssignmentExperiment = {
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.ENROLLING,
 };
+
+export const simpleDPExperiment = {
+  ...getSimpleDPExperiment()
+};
+
+export const simpleExperimentDecisionPoint = {
+  ...getSimpleExperimentDecisionPoint()
+}
