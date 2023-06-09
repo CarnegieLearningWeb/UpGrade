@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
-@use 'node_modules/ng-pick-datetime-ex/assets/style/picker.min.css';
+
+@import '@danielmoncada/angular-datetime-picker/assets/style/picker.min.css';
 @import url('https://fonts.googleapis.com/css?family=Roboto:400,700|Material+Icons');
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800&display=swap');
 
