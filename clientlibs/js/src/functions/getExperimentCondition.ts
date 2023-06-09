@@ -3,18 +3,18 @@ import { IExperimentAssignmentv4, EXPERIMENT_TYPE, PAYLOAD_TYPE, IPayload } from
 export class Assignment {
   private _conditionCode: string;
   private _payloadType: PAYLOAD_TYPE;
-  private _payloadValue: string;
+  private _payloadValue: string | null;
   private _experimentType: EXPERIMENT_TYPE;
-  private _assignedFactor: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }>;
+  private _assignedFactor: Record<string, { level: string; payload: IPayload | null }>;
 
   constructor(
     conditionCode: string,
-    payload: { type: PAYLOAD_TYPE; value: string },
-    assignedFactor?: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }>
+    payload: IPayload | null,
+    assignedFactor?: Record<string, { level: string; payload: IPayload | null }>
   ) {
     this._conditionCode = conditionCode;
-    this._payloadType = payload.type;
-    this._payloadValue = payload.value;
+    this._payloadType = payload ? payload.type : PAYLOAD_TYPE.STRING;
+    this._payloadValue = payload ? payload.value : null;
     this._experimentType = assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE;
     this._assignedFactor = assignedFactor;
   }
@@ -23,7 +23,7 @@ export class Assignment {
     return this._conditionCode;
   }
 
-  public getPayload(): IPayload {
+  public getPayload(): IPayload | null {
     return this._payloadValue ? { type: this._payloadType, value: this._payloadValue } : null;
   }
 
@@ -43,7 +43,7 @@ export class Assignment {
     }
   }
 
-  public getFactorPayload(factor: string): IPayload {
+  public getFactorPayload(factor: string): IPayload | null {
     if (this._experimentType === EXPERIMENT_TYPE.FACTORIAL) {
       return this._assignedFactor[factor] && this._assignedFactor[factor].payload.value
         ? { type: this._assignedFactor[factor].payload.type, value: this._assignedFactor[factor].payload.value }
@@ -57,12 +57,10 @@ export class Assignment {
 export default function getExperimentCondition(
   experimentConditionData: IExperimentAssignmentv4[],
   site: string,
-  target?: string
+  target: string
 ): Assignment {
   if (experimentConditionData) {
-    const result = experimentConditionData.find((data) =>
-      target ? data.target === target && data.site === site : data.site === site && !data.target
-    );
+    const result = experimentConditionData.find((data) => data.target === target && data.site === site);
 
     if (result) {
       const assignment = new Assignment(
