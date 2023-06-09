@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ClientLibraryService } from '../services/client-library.service';
 import { EventBusService } from '../services/event-bus.service';
 import { ClientAppHook, CodeLanguage, MockAppType, MockClientAppInterfaceModel } from '../../../../shared/models';
-import { MOCK_APP_NAMES } from '../app-config';
+import { MOCK_APP_NAMES } from '../../../../shared/constants';
 import { AbstractMockAppService } from './abstract-mock-app.service';
 
 // There's probably a clever way to do this, but getting the right types automatically is tricky
