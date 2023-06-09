@@ -445,7 +445,7 @@ export class ExperimentDesignStepperService {
       const payloadValue = conditionPayload ? conditionPayload.payload.value : '';
       const existingConditionPayloadId = conditionPayload?.id;
 
-      factorialCondition.levelCombinationElements.sort((a, b) =>
+      [...factorialCondition.levelCombinationElements].sort((a, b) =>
         levelOrder[a.level?.id] > levelOrder[b.level?.id]
           ? 1
           : levelOrder[b.level?.id] > levelOrder[a.level?.id]
