@@ -36,7 +36,7 @@ export namespace Interfaces {
   export interface IMarkExperimentPoint {
     id: string;
     site: string;
-    target?: string;
+    target: string;
     userId: string;
     experimentId: string;
   }
