@@ -82,16 +82,20 @@ export default async function FactorialExperimentEnrollment2(): Promise<void> {
       expect.objectContaining({
         target: partitions[0].target,
         site: partitions[0].site,
-        assignedCondition: expect.objectContaining({
-          conditionCode: 'Question Type=Concrete; Motivation=Mindset',
-        }),
+        assignedCondition: expect.arrayContaining([
+          expect.objectContaining({
+            conditionCode: 'Question Type=Concrete; Motivation=Mindset',
+          }),
+        ]),
       }),
       expect.objectContaining({
         target: partitions[1].target,
         site: partitions[1].site,
-        assignedCondition: expect.objectContaining({
-          conditionCode: 'Question Type=Concrete; Motivation=Mindset',
-        }),
+        assignedCondition: expect.arrayContaining([
+          expect.objectContaining({
+            conditionCode: 'Question Type=Concrete; Motivation=Mindset',
+          }),
+        ]),
       }),
     ])
   );
@@ -132,16 +136,20 @@ export default async function FactorialExperimentEnrollment2(): Promise<void> {
       expect.objectContaining({
         target: partitions[0].target,
         site: partitions[0].site,
-        assignedCondition: expect.objectContaining({
-          conditionCode: 'Question Type=Abstract; Motivation=No support',
-        }),
+        assignedCondition: expect.arrayContaining([
+          expect.objectContaining({
+            conditionCode: 'Question Type=Abstract; Motivation=No support',
+          }),
+        ]),
       }),
       expect.objectContaining({
         target: partitions[1].target,
         site: partitions[1].site,
-        assignedCondition: expect.objectContaining({
-          conditionCode: 'Question Type=Abstract; Motivation=No support',
-        }),
+        assignedCondition: expect.arrayContaining([
+          expect.objectContaining({
+            conditionCode: 'Question Type=Abstract; Motivation=No support',
+          }),
+        ]),
       }),
     ])
   );

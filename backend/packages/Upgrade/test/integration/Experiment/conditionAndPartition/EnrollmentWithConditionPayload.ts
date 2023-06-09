@@ -77,19 +77,23 @@ export default async function EnrollmentWithConditionPayload(): Promise<void> {
   expect(experimentConditionAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        assignedCondition: expect.objectContaining({
-          payload: { type: 'string', value: 'ConditionA_W2' },
-          conditionCode: 'ConditionA',
-        }),
+        assignedCondition: expect.arrayContaining([
+          expect.objectContaining({
+            payload: { type: 'string', value: 'ConditionA_W2' },
+            conditionCode: 'ConditionA',
+          }),
+        ]),
       }),
       expect.objectContaining({
-        assignedCondition: expect.objectContaining({
-          payload: { type: 'string', value: 'ConditionA_W1' },
-          conditionCode: 'ConditionA',
-        }),
+        assignedCondition: expect.arrayContaining([
+          expect.objectContaining({
+            payload: { type: 'string', value: 'ConditionA_W1' },
+            conditionCode: 'ConditionA',
+          }),
+        ]),
       }),
       expect.objectContaining({
-        assignedCondition: expect.objectContaining({ conditionCode: 'ConditionA' }),
+        assignedCondition: expect.arrayContaining([expect.objectContaining({ conditionCode: 'ConditionA' })]),
       }),
     ])
   );
