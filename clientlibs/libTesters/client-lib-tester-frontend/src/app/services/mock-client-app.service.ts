@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { MOCK_APP_NAMES } from '../app-config';
+import { MOCK_APP_NAMES } from '../../../../shared/constants';
+import { availableFrontendMockApps } from '../app-config';
 import { BirthdayPresentAppService } from '../mockFrontendClientAppComponents/birthday-present-app.service';
 import { ClientAppHook, HookRequestBody, MockClientAppInterfaceModel } from '../../../../shared/models';
 import { MockPortalService } from '../mockFrontendClientAppComponents/mock-portal.service';
@@ -15,9 +16,7 @@ import { ClientLibraryService } from './client-library.service';
 export class MockClientAppService {
   private mockClientAppInterfaceMap: Record<string, MockClientAppInterfaceModel> = {};
   private selectedMockApp = '';
-
-  // Just the frontend mock apps get loaded initially, others will be loaded from the backend
-  private availableMockApps = [MOCK_APP_NAMES.BDAY_APP, MOCK_APP_NAMES.PORTAL_APP];
+  private availableMockApps: string[] = availableFrontendMockApps;
 
   constructor(
     public bdayAppService: BirthdayPresentAppService,

@@ -11,7 +11,7 @@ import { ClientAppHook, CodeLanguage, MockAppType, MockClientAppInterfaceModel }
 // import { UpgradeClient } from 'upgrade_client_4_2_0';
 
 import { AbstractMockAppService } from './abstract-mock-app.service';
-import { MOCK_APP_NAMES } from '../app-config';
+import { MOCK_APP_NAMES } from '../../../../shared/constants';
 
 @Injectable({
   providedIn: 'root',
