@@ -175,7 +175,6 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.members1.removeAt(0);
     this.members2.removeAt(0);
 
-
     this.updateView1();
     this.updateView2();
 

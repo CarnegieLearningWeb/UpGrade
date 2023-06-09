@@ -4,7 +4,7 @@ import { ExperimentEndCriteriaComponent } from './experiment-end-criteria.compon
 import { TestingModule } from '../../../../../../../testing/testing.module';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { OwlNativeDateTimeModule, OwlDateTimeModule } from 'ng-pick-datetime-ex';
+import { OwlNativeDateTimeModule, OwlDateTimeModule } from '@danielmoncada/angular-datetime-picker';
 import { TestMockData } from '../../../../../../../testing/test.mock.data';
 
 xdescribe('ExperimentEndCriteriaComponent', () => {
