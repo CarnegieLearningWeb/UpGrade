@@ -34,7 +34,8 @@ export class GeneralTestForVersion3Service extends AbstractMockAppService {
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
   public NAME = MOCK_APP_NAMES.GEN_TEST_3_0;
-  public DESCRIPTION = 'Regression testing for lib version 1x, API target versions 3 and old unversioned api';
+  public DESCRIPTION =
+    'Regression testing for lib version 3x, API target version: 3 and old unversioned api routes "/api/**"';
   public TYPE: MockAppType = 'frontend';
   public LANGUAGE: CodeLanguage = 'ts';
   public SITES = {
