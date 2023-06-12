@@ -18,18 +18,47 @@
     margin-bottom: 10px;
   }
 
+  .factor-name-main {
+    color: var(--grey-3);
+    margin-top: 10px;
+    padding-left: 150px;
+  }
+
   .factor-name1 {
     color: var(--grey-3);
     margin-top: 10px;
-    padding-left: 190px;
-    padding-right: 280px;
+    padding-left: 150px;
+    padding-right: 330px;
   }
 
   .factor-name2 {
     color: var(--grey-3);
     margin-bottom: -50px;
-    padding-left: 185px;
-    padding-right: 275px;
+    padding-left: 150px;
+    padding-right: 330px;
+  }
+
+  .table-container {
+    padding: 24px 34px;
+
+    .table {
+      mat-cell,
+      mat-header-cell {
+        justify-content: flex-start !important;
+      }
+    }
+
+    &-query .query-table {
+      justify-content: space-between;
+
+      .mat-header-cell {
+        justify-content: left;
+      }
+
+      .mat-cell {
+        justify-content: left;
+      }
+    }
   }
 
   ::ng-deep .ngx-charts {
@@ -41,14 +70,9 @@
     }
   }
 
-  ::ng-deep .ngx-charts
-    g.line-chart
-    > g:last-of-type
-    > g:nth-child(n)
-    g.line-series
-    > path {
+  ::ng-deep .ngx-charts g.line-chart > g:last-of-type > g:nth-child(n) g.line-series > path {
     stroke-width: 5px;
-    }
+  }
 
   ::ng-deep {
     .legend-labels {

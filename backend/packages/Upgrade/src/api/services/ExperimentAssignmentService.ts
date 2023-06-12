@@ -1685,7 +1685,8 @@ export class ExperimentAssignmentService {
 
   private assignRandom(experiment: Experiment, user: ExperimentUser): ExperimentCondition {
     const randomSeed =
-      experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
+      experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
+      experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
         ? `${experiment.id}_${user.id}`
         : `${experiment.id}_${user.workingGroup[experiment.group]}`;
 
