@@ -34,8 +34,8 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
   // public upgradeClient: any;
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
-  public NAME = MOCK_APP_NAMES.GEN_TEST_4_1;
-  public DESCRIPTION = 'Regression testing for version 4.1.';
+  public NAME = MOCK_APP_NAMES.GEN_TEST_5_0;
+  public DESCRIPTION = 'Regression testing for version 5';
   public TYPE: MockAppType = 'frontend';
   public LANGUAGE: CodeLanguage = 'ts';
   public SITES = {
