@@ -69,7 +69,7 @@ export default class UpgradeClient {
       failedExperimentPoint: `${hostUrl}/api/v4/failed`,
       getAllFeatureFlag: `${hostUrl}/api/v4/featureflag`,
       log: `${hostUrl}/api/v4/log`,
-      logCaliper: `${hostUrl}/api/v4/logCaliper`,
+      logCaliper: `${hostUrl}/api/v4/log/caliper`,
       altUserIds: `${hostUrl}/api/v4/useraliases`,
       addMetrics: `${hostUrl}/api/v4/metric`,
     };
