@@ -9,6 +9,7 @@ import { catchError } from 'rxjs/internal/operators/catchError';
 import { of } from 'rxjs/internal/observable/of';
 import { EventBusService } from './event-bus.service';
 import { ClientLibraryService } from './client-library.service';
+import { GeneralTestForVersion41Service } from '../mockFrontendClientAppComponents/general-test-for-version-4-1.service';
 
 @Injectable({
   providedIn: 'root',
@@ -21,6 +22,7 @@ export class MockClientAppService {
   constructor(
     public bdayAppService: BirthdayPresentAppService,
     public portalAppService: MockPortalService,
+    public generalTest_4_1: GeneralTestForVersion41Service,
     public dataFetchService: DataFetchService,
     public eventBus: EventBusService,
     public clientLibraryService: ClientLibraryService
@@ -29,6 +31,7 @@ export class MockClientAppService {
     this.mockClientAppInterfaceMap = {
       [MOCK_APP_NAMES.BDAY_APP]: bdayAppService.getAppInterfaceModel(),
       [MOCK_APP_NAMES.PORTAL_APP]: portalAppService.getAppInterfaceModel(),
+      [MOCK_APP_NAMES.GEN_TEST_4_1]: generalTest_4_1.getAppInterfaceModel(),
     };
   }
 
