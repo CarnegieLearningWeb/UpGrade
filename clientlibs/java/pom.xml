@@ -9,8 +9,8 @@
 		at the same time that happen to rev to the same new version will be caught 
 		by a merge conflict. -->
 
-	<!-- 4.3.0 -> 4.3.1: add javadoc for condition code vs. payload value -->
-	<version>4.3.1</version>
+	<!-- 4.3.0 -> 4.3.2: use apache connector provider -->
+	<version>4.3.2</version>
 	<build>
 		<plugins>
 			<plugin>
