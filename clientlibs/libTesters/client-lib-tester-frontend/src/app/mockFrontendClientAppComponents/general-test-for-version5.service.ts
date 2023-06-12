@@ -8,10 +8,11 @@ import {
   MockClientAppInterfaceModel,
   MockClientAppUser,
 } from '../../../../shared/models';
+import { CaliperEnvelope } from '../../../../../../types/src';
 
 // There's probably a clever way to do this, but getting the right types automatically is tricky
 
-// import UpgradeClient from 'upgrade_client_local/dist/browser';
+import UpgradeClient from 'upgrade_client_local/dist/browser';
 // import { UpgradeClient } from 'upgrade_client_1_1_17';
 // import { UpgradeClient } from 'upgrade_client_3_0_18';
 // import { UpgradeClient } from 'upgrade_client_4_2_0';
@@ -28,9 +29,9 @@ export enum MARKED_DECISION_POINT_STATUS {
 @Injectable({
   providedIn: 'root',
 })
-export class GeneralTestForVersion41Service extends AbstractMockAppService {
-  // public override upgradeClient!: UpgradeClient;
-  public upgradeClient: any;
+export class GeneralTestForVersion5Service extends AbstractMockAppService {
+  public override upgradeClient!: UpgradeClient;
+  // public upgradeClient: any;
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
   public NAME = MOCK_APP_NAMES.GEN_TEST_4_1;
@@ -62,7 +63,7 @@ export class GeneralTestForVersion41Service extends AbstractMockAppService {
   ];
 
   constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
-    super(MOCK_APP_NAMES.GEN_TEST_4_1, eventBus, clientLibraryService);
+    super(MOCK_APP_NAMES.GEN_TEST_5_0, eventBus, clientLibraryService);
   }
 
   /******************* "getAppInterfaceModel" required to give tester app a model to construct an interface to use this 'app' ********************/
@@ -98,6 +99,14 @@ export class GeneralTestForVersion41Service extends AbstractMockAppService {
           name: this.HOOKNAMES.WORKING_GROUPS,
           description: 'Dispatches .setWorkingGroup() for user',
         },
+        {
+          name: this.HOOKNAMES.LOG,
+          description: 'Dispatches .log() for user',
+        },
+        {
+          name: this.HOOKNAMES.LOG_CALIPER,
+          description: 'Dispatches .logCaliper() for user',
+        },
       ],
       decisionPoints: this.DECISION_POINTS,
       groups: this.GROUPS,
@@ -126,6 +135,14 @@ export class GeneralTestForVersion41Service extends AbstractMockAppService {
           label: 'setGroupMemberhip',
           hookName: this.HOOKNAMES.GROUP_MEMBERSHIP,
         },
+        {
+          label: 'log',
+          hookName: this.HOOKNAMES.LOG,
+        },
+        {
+          label: 'logCaliper',
+          hookName: this.HOOKNAMES.LOG_CALIPER,
+        },
       ],
     };
   }
@@ -151,6 +168,10 @@ export class GeneralTestForVersion41Service extends AbstractMockAppService {
       this.doGroupMembership(user);
     } else if (name === this.HOOKNAMES.WORKING_GROUPS) {
       this.doWorkingGroupMembership(user);
+    } else if (name === this.HOOKNAMES.LOG) {
+      this.doLog(user);
+    } else if (name === this.HOOKNAMES.LOG_CALIPER) {
+      this.doLogCaliper(user);
     } else {
       throw new Error(`No hook found for hookName: ${name}`);
     }
@@ -190,9 +211,9 @@ export class GeneralTestForVersion41Service extends AbstractMockAppService {
     try {
       const markResponse = await this.upgradeClient.markExperimentPoint(
         this.SITES.TEST,
-        'control', // mock apps may need conditions
-        MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
-        this.TARGETS.TARGET_1
+        this.TARGETS.TARGET_1,
+        'control',
+        MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED
       );
       console.log({ markResponse });
     } catch (err) {
@@ -208,8 +229,8 @@ export class GeneralTestForVersion41Service extends AbstractMockAppService {
       console.error('User info is missing userAliases:', user);
     }
     try {
-      const useraliesesResponse = await this.upgradeClient.setAltUserIds(user.userAliases);
-      console.log({ useraliesesResponse });
+      const useraliasesResponse = await this.upgradeClient.setAltUserIds(user.userAliases);
+      console.log({ useraliasesResponse });
     } catch (err) {
       console.error(err);
     }
@@ -240,6 +261,73 @@ export class GeneralTestForVersion41Service extends AbstractMockAppService {
     try {
       const workingGroupMembershipResponse = await this.upgradeClient.setWorkingGroup(user.workingGroup);
       console.log({ workingGroupMembershipResponse });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  private async doLog(user: MockClientAppUser) {
+    if (!this.upgradeClient) {
+      console.error('No upgradeClient found. Maybe you need to run login hook first?');
+    }
+    if (!user || !user.id) {
+      console.error('User info is missing id:', user);
+    }
+    const logRequest = [
+      {
+        userId: user.id,
+        timestamp: '2022-03-03T19:49:00.496',
+        metrics: {
+          attributes: {
+            totalTimeSeconds: 41834,
+            totalMasteryWorkspacesCompleted: 15,
+            totalConceptBuildersCompleted: 17,
+            totalMasteryWorkspacesGraduated: 15,
+            totalSessions: 50,
+            totalProblemsCompleted: 249,
+          },
+          groupedMetrics: [
+            {
+              groupClass: 'conceptBuilderWorkspace',
+              groupKey: 'graphs_of_functions',
+              groupUniquifier: '2022-02-03T19:48:53.861Z',
+              attributes: {
+                timeSeconds: 488,
+                hintCount: 2,
+                errorCount: 15,
+                completionCount: 1,
+                workspaceCompletionStatus: 'GRADUATED',
+                problemsCompleted: 4,
+              },
+            },
+          ],
+        },
+      },
+    ];
+    try {
+      const logResponse = await this.upgradeClient.log(logRequest);
+      console.log({ logResponse });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  private async doLogCaliper(user: MockClientAppUser) {
+    if (!this.upgradeClient) {
+      console.error('No upgradeClient found. Maybe you need to run login hook first?');
+    }
+    if (!user || !user.id) {
+      console.error('User info is missing id:', user);
+    }
+    const logRequest: CaliperEnvelope = {
+      sensor: 'test',
+      sendTime: 'test',
+      dataVersion: 'test',
+      data: [],
+    };
+    try {
+      const logResponse = await this.upgradeClient.logCaliper(logRequest);
+      console.log({ logResponse });
     } catch (err) {
       console.error(err);
     }
