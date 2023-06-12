@@ -10,6 +10,7 @@ import {
   MARKED_DECISION_POINT_STATUS,
   IExperimentAssignmentv4,
   CaliperEnvelope,
+  IExperimentAssignmentv5,
 } from 'upgrade_types';
 import getExperimentCondition, { Assignment } from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
@@ -46,7 +47,7 @@ export default class UpgradeClient {
 
   private group: Record<string, Array<string>> = null;
   private workingGroup: Record<string, string> = null;
-  private experimentConditionData: IExperimentAssignmentv4[] = null;
+  private experimentConditionData: IExperimentAssignmentv5[] = null;
   private featureFlags: IFeatureFlag[] = null;
 
   constructor(
@@ -61,14 +62,14 @@ export default class UpgradeClient {
     this.token = options?.token;
     this.clientSessionId = options?.clientSessionId || uuid.v4();
     this.api = {
-      init: `${hostUrl}/api/v4/init`,
-      getAllExperimentConditions: `${hostUrl}/api/v4/assign`,
-      markExperimentPoint: `${hostUrl}/api/v4/mark`,
-      setGroupMemberShip: `${hostUrl}/api/v4/groupmembership`,
-      setWorkingGroup: `${hostUrl}/api/v4/workinggroup`,
-      failedExperimentPoint: `${hostUrl}/api/v4/failed`,
-      getAllFeatureFlag: `${hostUrl}/api/v4/featureflag`,
-      log: `${hostUrl}/api/v4/log`,
+      init: `${hostUrl}/api/v5/init`,
+      getAllExperimentConditions: `${hostUrl}/api/v5/assign`,
+      markExperimentPoint: `${hostUrl}/api/v5/mark`,
+      setGroupMemberShip: `${hostUrl}/api/v5/groupmembership`,
+      setWorkingGroup: `${hostUrl}/api/v5/workinggroup`,
+      failedExperimentPoint: `${hostUrl}/api/v5/failed`,
+      getAllFeatureFlag: `${hostUrl}/api/v5/featureflag`,
+      log: `${hostUrl}/api/v5/log`,
       logCaliper: `${hostUrl}/api/v4/logCaliper`,
       altUserIds: `${hostUrl}/api/v4/useraliases`,
       addMetrics: `${hostUrl}/api/v4/metric`,
@@ -141,34 +142,54 @@ export default class UpgradeClient {
     if (Array.isArray(response)) {
       this.experimentConditionData = response;
     }
-    return response;
+
+    // returns the first element of the queue
+    return response.map(({ assignedFactor, assignedCondition, ...rest }) => {
+      return {
+        ...rest,
+        assignedCondition: assignedCondition[0],
+        assignedFactor: assignedFactor ? assignedFactor[0] : undefined,
+      };
+    });
   }
 
-  async getDecisionPointAssignment(site: string, target?: string): Promise<Assignment> {
+  async getDecisionPointAssignment(site: string, target: string): Promise<Assignment> {
     this.validateClient();
     if (this.experimentConditionData == null) {
       await this.getAllExperimentConditions();
     }
-    return getExperimentCondition(this.experimentConditionData, site, target);
+    const markObject = {
+      url: this.api.markExperimentPoint,
+      userId: this.userId,
+      token: this.token,
+      clientSessionId: this.clientSessionId,
+    };
+    return getExperimentCondition(this.experimentConditionData, site, target, markObject);
   }
 
   async markExperimentPoint(
     site: string,
+    target: string,
     condition: string = null,
     status: MARKED_DECISION_POINT_STATUS,
-    target?: string,
+    uniquifier?: string,
     clientError?: string
   ): Promise<Interfaces.IMarkExperimentPoint> {
     this.validateClient();
+    if (this.experimentConditionData == null) {
+      await this.getAllExperimentConditions();
+    }
     return await markExperimentPoint(
       this.api.markExperimentPoint,
       this.userId,
       this.token,
       this.clientSessionId,
       site,
+      target,
       condition,
       status,
-      target,
+      this.experimentConditionData,
+      uniquifier,
       clientError
     );
   }
