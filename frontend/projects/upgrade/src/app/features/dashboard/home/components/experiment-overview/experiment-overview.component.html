@@ -54,7 +54,7 @@
         *ngIf="unitOfAssignmentValue !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS"
       >
         <mat-label>{{ 'home-global.consistency-rule.text' | translate }}</mat-label>
-        <mat-select class="ft-14-400" formControlName="consistencyRule">
+        <mat-select class="ft-14-400" formControlName="consistencyRule" [disabled]="!isExperimentEditable">
           <mat-option *ngFor="let consistencyRule of consistencyRules" [value]="consistencyRule.value">
             {{ consistencyRule.value | titlecase }}
           </mat-option>
@@ -66,7 +66,7 @@
         *ngIf="unitOfAssignmentValue === ASSIGNMENT_UNIT.WITHIN_SUBJECTS"
       >
         <mat-label>{{ 'home-global.condition-order.text' | translate }}</mat-label>
-        <mat-select class="ft-14-400" formControlName="conditionOrder">
+        <mat-select class="ft-14-400" formControlName="conditionOrder" [disabled]="!isExperimentEditable">
           <mat-option *ngFor="let conditionOrder of conditionOrders" [value]="conditionOrder.value">
             {{ conditionOrder.value | titlecase }}
           </mat-option>

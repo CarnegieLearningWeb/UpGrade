@@ -2,7 +2,7 @@ import { MonitoredDecisionPoint } from '../../../src/api/models/MonitoredDecisio
 import { Container } from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { CheckService } from '../../../src/api/services/CheckService';
-import { IExperimentAssignmentv4, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { IExperimentAssignmentv4, IExperimentAssignmentv5, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { User } from '../../../src/api/models/User';
 import { getRepository } from 'typeorm';
@@ -79,7 +79,7 @@ export async function getAllExperimentCondition(
   userId: string,
   logger: UpgradeLogger,
   context = 'home'
-): Promise<IExperimentAssignmentv4[]> {
+): Promise<IExperimentAssignmentv5[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   // getOriginalUserDoc

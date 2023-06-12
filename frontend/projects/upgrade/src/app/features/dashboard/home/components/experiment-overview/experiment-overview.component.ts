@@ -112,7 +112,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
             this.overviewForm.get('groupType').disable();
             this.overviewForm.get('groupType').reset();
             this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }];
-            this.overviewForm.get('consistencyRule').enable();
+            this.isExperimentEditable ? this.overviewForm.get('consistencyRule').enable() : false;
             this.overviewForm.get('conditionOrder').disable();
             break;
           case ASSIGNMENT_UNIT.GROUP:
@@ -133,7 +133,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
             this.overviewForm.get('groupType').reset();
             this.consistencyRules = [];
             this.overviewForm.get('consistencyRule').disable();
-            this.overviewForm.get('conditionOrder').enable();
+            this.isExperimentEditable ? this.overviewForm.get('conditionOrder').enable() : false;
             this.overviewForm.get('conditionOrder').setValidators(Validators.required);
             break;
         }

@@ -1,6 +1,9 @@
 import { Container } from 'typedi';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 import TestCase1 from './AlgorithmCheck';
+import TestCase2 from './RandomAlgoCheck';
+import TestCase3 from './RandomRoundRobinAlgoCheck';
+import TestCase4 from './OrderedRoundRobinAlgoCheck';
 import { CheckService } from '../../../../src/api/services/CheckService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
@@ -42,4 +45,19 @@ const initialChecks = async () => {
 export const AlgorithmCheck = async () => {
   await initialChecks();
   await TestCase1();
+};
+
+export const RandomAlgoCheck = async () => {
+  await initialChecks();
+  await TestCase2();
+};
+
+export const RandomRoundRobinAlgoCheck = async () => {
+  await initialChecks();
+  await TestCase3();
+};
+
+export const OrderedRoundRobinAlgoCheck = async () => {
+  await initialChecks();
+  await TestCase4();
 };

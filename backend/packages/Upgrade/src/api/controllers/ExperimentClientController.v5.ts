@@ -513,21 +513,19 @@ export class ExperimentClientController {
     );
 
     return assignedData.map(({ assignedFactor, assignedCondition, ...rest }) => {
-      const finalFactorData = assignedFactor
-        ? assignedFactor.map((factor) => {
-            const updatedAssignedFactor: Record<string, { level: string; payload: IPayload }> = {};
-            Object.keys(factor).forEach((key) => {
-              updatedAssignedFactor[key] = {
-                level: factor[key].level,
-                payload:
-                  factor[key].payload && factor[key].payload.value
-                    ? { type: PAYLOAD_TYPE.STRING, value: factor[key].payload.value }
-                    : null,
-              };
-            });
-            return updatedAssignedFactor;
-          })
-        : null;
+      const finalFactorData = assignedFactor?.map((factor) => {
+        const updatedAssignedFactor: Record<string, { level: string; payload: IPayload }> = {};
+        Object.keys(factor).forEach((key) => {
+          updatedAssignedFactor[key] = {
+            level: factor[key].level,
+            payload:
+              factor[key].payload && factor[key].payload.value
+                ? { type: PAYLOAD_TYPE.STRING, value: factor[key].payload.value }
+                : null,
+          };
+        });
+        return updatedAssignedFactor;
+      });
 
       const finalConditionData = assignedCondition.map((condition) => {
         return {

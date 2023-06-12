@@ -79,7 +79,12 @@ import {
 import { UpgradeLogger } from '../../src/lib/logger/UpgradeLogger';
 import { CompetingExperiment } from './Experiment/competingExperiment';
 import { FactorialExperimentCRUD, FactorialEnrollment, FactorialEnrollment2 } from './Experiment/factorial';
-import { AlgorithmCheck } from './Experiment/withinSubject/index';
+import {
+  AlgorithmCheck,
+  OrderedRoundRobinAlgoCheck,
+  RandomAlgoCheck,
+  RandomRoundRobinAlgoCheck,
+} from './Experiment/withinSubject/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -498,13 +503,13 @@ describe('Integration Tests', () => {
     done();
   });
 
-  test('Enrollment With ConditionPayloads', async (done) => {
-    await EnrollmentWithConditionPayload();
+  test('Factorial CRUD', async (done) => {
+    await FactorialExperimentCRUD();
     done();
   });
 
-  test('Factorial CRUD', async (done) => {
-    await FactorialExperimentCRUD();
+  test('Enrollment With ConditionPayloads', async (done) => {
+    await EnrollmentWithConditionPayload();
     done();
   });
 
@@ -522,6 +527,22 @@ describe('Integration Tests', () => {
     await AlgorithmCheck();
     done();
   });
+
+  test('Within Subject Random Algorithm', async (done) => {
+    await RandomAlgoCheck();
+    done();
+  });
+
+  test('Within Subject Random Round Round Algorithm', async (done) => {
+    await RandomRoundRobinAlgoCheck();
+    done();
+  });
+
+  test('Within Subject Ordered Round Round algorithmCRUD', async (done) => {
+    await OrderedRoundRobinAlgoCheck();
+    done();
+  });
+
   // test('Monitored Point for Export', async (done) => {
   //   await MonitoredPointForExport();
   //   done();
