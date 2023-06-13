@@ -1,15 +1,16 @@
 import { Interfaces, Types } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
-import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { IExperimentAssignmentv5, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 
 interface markData {
   userId: string;
   status: MARKED_DECISION_POINT_STATUS;
   data: {
     site: string;
+    target: string;
     assignedCondition: { conditionCode: string; experimentId?: string };
-    target?: string;
   };
+  uniquifier?: string;
   clientError?: string;
 }
 
@@ -19,25 +20,25 @@ export default async function markExperimentPoint(
   token: string,
   clientSessionId: string,
   site: string,
+  target: string,
   condition: string,
   status: MARKED_DECISION_POINT_STATUS,
-  target?: string,
+  getAllData: IExperimentAssignmentv5[],
+  uniquifier?: string,
   clientError?: string
 ): Promise<Interfaces.IMarkExperimentPoint> {
+  const dataFetched = getAllData.find((data) => data.site === site && data.target === target);
+  dataFetched.assignedCondition[0].conditionCode = condition;
+  const data = { ...dataFetched, assignedCondition: dataFetched.assignedCondition[0] };
   let requestBody: markData = {
     userId,
     status,
-    data: {
-      site: site,
-      assignedCondition: {
-        conditionCode: condition,
-      },
-    },
+    data,
   };
-  if (target) {
-    requestBody.data = {
-      ...requestBody.data,
-      target,
+  if (uniquifier) {
+    requestBody = {
+      ...requestBody,
+      uniquifier,
     };
   }
   if (clientError) {

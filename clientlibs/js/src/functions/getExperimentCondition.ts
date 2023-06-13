@@ -1,20 +1,44 @@
-import { IExperimentAssignmentv4, EXPERIMENT_TYPE, PAYLOAD_TYPE, IPayload } from 'upgrade_types';
+import {
+  EXPERIMENT_TYPE,
+  PAYLOAD_TYPE,
+  IPayload,
+  IExperimentAssignmentv5,
+  MARKED_DECISION_POINT_STATUS,
+} from 'upgrade_types';
+import markExperimentPoint from './markExperimentPoint';
+
+interface markObejectType {
+  url: string;
+  userId: string;
+  token: string;
+  clientSessionId: string;
+  getAllExperimentData: IExperimentAssignmentv5[];
+}
 
 export class Assignment {
+  private _site: string;
+  private _target: string;
+  private _markObject: markObejectType;
   private _conditionCode: string;
   private _payloadType: PAYLOAD_TYPE;
-  private _payloadValue: string;
+  private _payloadValue: string | null;
   private _experimentType: EXPERIMENT_TYPE;
-  private _assignedFactor: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }>;
+  private _assignedFactor: Record<string, { level: string; payload: IPayload | null }>;
 
   constructor(
+    site: string,
+    target: string,
+    markObject: markObejectType,
     conditionCode: string,
-    payload: { type: PAYLOAD_TYPE; value: string },
-    assignedFactor?: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }>
+    payload: IPayload | null,
+    assignedFactor?: Record<string, { level: string; payload: IPayload | null }>
   ) {
+    this._site = site;
+    this._target = target;
+    this._markObject = markObject;
     this._conditionCode = conditionCode;
-    this._payloadType = payload.type;
-    this._payloadValue = payload.value;
+    this._payloadType = payload ? payload.type : PAYLOAD_TYPE.STRING;
+    this._payloadValue = payload ? payload.value : null;
     this._experimentType = assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE;
     this._assignedFactor = assignedFactor;
   }
@@ -23,7 +47,7 @@ export class Assignment {
     return this._conditionCode;
   }
 
-  public getPayload(): IPayload {
+  public getPayload(): IPayload | null {
     return this._payloadValue ? { type: this._payloadType, value: this._payloadValue } : null;
   }
 
@@ -43,7 +67,7 @@ export class Assignment {
     }
   }
 
-  public getFactorPayload(factor: string): IPayload {
+  public getFactorPayload(factor: string): IPayload | null {
     if (this._experimentType === EXPERIMENT_TYPE.FACTORIAL) {
       return this._assignedFactor[factor] && this._assignedFactor[factor].payload.value
         ? { type: this._assignedFactor[factor].payload.type, value: this._assignedFactor[factor].payload.value }
@@ -52,24 +76,48 @@ export class Assignment {
       return null;
     }
   }
+
+  public markDecisionPoint(status: MARKED_DECISION_POINT_STATUS, uniquifier?: string, clientError?: string) {
+    return markExperimentPoint(
+      this._markObject.url,
+      this._markObject.userId,
+      this._markObject.token,
+      this._markObject.clientSessionId,
+      this._site,
+      this._target,
+      this._conditionCode,
+      status,
+      this._markObject.getAllExperimentData,
+      uniquifier,
+      clientError
+    );
+  }
 }
 
 export default function getExperimentCondition(
-  experimentConditionData: IExperimentAssignmentv4[],
+  experimentConditionData: IExperimentAssignmentv5[],
   site: string,
-  target?: string
+  target: string,
+  markObject: markObejectType
 ): Assignment {
   if (experimentConditionData) {
-    const result = experimentConditionData.find((data) =>
-      target ? data.target === target && data.site === site : data.site === site && !data.target
-    );
+    const result = experimentConditionData.find((data) => data.target === target && data.site === site);
 
     if (result) {
       const assignment = new Assignment(
-        result.assignedCondition.conditionCode,
-        result.assignedCondition.payload,
-        result.assignedFactor
+        result.site,
+        result.target,
+        markObject,
+        result.assignedCondition[0].conditionCode,
+        result.assignedCondition[0].payload,
+        result.assignedFactor ? result.assignedFactor[0] : null
       );
+
+      // rotate the condition queue
+      result.assignedCondition.push(result.assignedCondition.shift());
+      if (result.assignedFactor) {
+        result.assignedFactor.push(result.assignedFactor.shift());
+      }
       return assignment;
     } else {
       return null;

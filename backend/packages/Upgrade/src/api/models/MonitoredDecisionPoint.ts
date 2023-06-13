@@ -28,11 +28,6 @@ export class MonitoredDecisionPoint extends BaseModel {
   })
   public condition: string;
 
-  @Column({
-    nullable: true,
-  })
-  public uniquifier: string;
-
   @Index()
   @ManyToOne(() => ExperimentUser, { onDelete: 'CASCADE' })
   public user: ExperimentUser;

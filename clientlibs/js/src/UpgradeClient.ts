@@ -163,6 +163,7 @@ export default class UpgradeClient {
       userId: this.userId,
       token: this.token,
       clientSessionId: this.clientSessionId,
+      getAllExperimentData: this.experimentConditionData,
     };
     return getExperimentCondition(this.experimentConditionData, site, target, markObject);
   }
