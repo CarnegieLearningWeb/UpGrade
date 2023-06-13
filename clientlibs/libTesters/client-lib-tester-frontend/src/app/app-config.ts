@@ -1,4 +1,5 @@
-import { UpgradeClient as UpgradeClient_Local } from 'upgrade_client_local';
+import * as UpgradeClient_Local from 'upgrade_client_local/dist/browser';
+// import { UpgradeClient as UpgradeClient_Local } from 'upgrade_client_1_1_17';
 import { UpgradeClient as UpgradeClient_1_1_17 } from 'upgrade_client_1_1_17';
 import { UpgradeClient as UpgradeClient_3_0_18 } from 'upgrade_client_3_0_18';
 import { UpgradeClient as UpgradeClient_4_2_0 } from 'upgrade_client_4_2_0';
@@ -42,4 +43,11 @@ export const availableApiHostUrls = [
   { value: 'https://upgradeapi.qa-cli.com', viewValue: 'STAGING: https://upgradeapi.qa-cli.com' },
 ];
 
-export const availableFrontendMockApps = [MOCK_APP_NAMES.BDAY_APP, MOCK_APP_NAMES.PORTAL_APP];
+export const availableFrontendMockApps = [
+  MOCK_APP_NAMES.GEN_TEST_1_1,
+  MOCK_APP_NAMES.GEN_TEST_3_0,
+  MOCK_APP_NAMES.GEN_TEST_4_1,
+  MOCK_APP_NAMES.GEN_TEST_5_0,
+  // MOCK_APP_NAMES.BDAY_APP,
+  MOCK_APP_NAMES.PORTAL_APP,
+];

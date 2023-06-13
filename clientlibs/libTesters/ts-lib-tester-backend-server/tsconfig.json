@@ -19,6 +19,9 @@
           ],
           "shared": [
               "../shared/*"
+          ],
+          "types": [
+              "../types/*"
           ]
       },
       "skipLibCheck": true
