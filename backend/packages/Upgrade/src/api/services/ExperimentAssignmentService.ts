@@ -380,11 +380,14 @@ export class ExperimentAssignmentService {
         user: userDoc,
         site: site,
         target: target,
-        uniquifier: uniquifier,
       });
 
       // save monitored log document
-      await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
+      await this.monitoredDecisionPointLogRepository.save({
+        monitoredDecisionPoint: monitoredDocument,
+        condition: condition,
+        uniquifier: uniquifier,
+      });
       return monitoredDocument;
     } else {
       const monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
@@ -394,11 +397,14 @@ export class ExperimentAssignmentService {
         user: userDoc,
         site: site,
         target: target,
-        uniquifier: uniquifier,
       });
 
       // save monitored log document
-      await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
+      await this.monitoredDecisionPointLogRepository.save({
+        monitoredDecisionPoint: monitoredDocument,
+        condition: condition,
+        uniquifier: uniquifier,
+      });
       return monitoredDocument;
     }
   }
