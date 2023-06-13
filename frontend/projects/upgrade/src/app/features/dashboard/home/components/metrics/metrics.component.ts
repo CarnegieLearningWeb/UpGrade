@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ViewChild, ElementRef, OnChanges } from '@angular/core';
-
+import { ASSIGNMENT_UNIT } from 'upgrade_types';
 import { AbstractControl } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import {
@@ -73,6 +73,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   queryComparisonStatisticError = [];
   queryMetricDropDownError = [];
 
+  currentAssignmentUnit: ASSIGNMENT_UNIT;
+
   constructor(
     private analysisService: AnalysisService,
     private _formBuilder: UntypedFormBuilder,
@@ -84,11 +86,15 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   optionsSub() {
     this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics) => {
       this.allMetrics = metrics;
-      this.options = this.allMetrics;
+      this.options =
+        this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
+          ? this.allMetrics.filter((metric) => metric.children.length > 0)
+          : this.allMetrics;
     });
   }
 
   ngOnInit() {
+    this.experimentDesignStepperService.currentAssignmentUnit$.subscribe((unit) => (this.currentAssignmentUnit = unit));
     this.optionsSub();
     this.queryForm = this._formBuilder.group({
       queries: this._formBuilder.array([
@@ -208,12 +214,22 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get ContinuousRepeatedMeasure() {
-    const repeatedMeasure = Object.values(REPEATED_MEASURE);
+    const repeatedMeasure =
+      this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
+        ? Object.values(REPEATED_MEASURE).filter(
+            (value) => value !== REPEATED_MEASURE.earliest && value !== REPEATED_MEASURE.mostRecent
+          )
+        : Object.values(REPEATED_MEASURE);
     return repeatedMeasure;
   }
 
   get CategoricalRepeatedMeasure() {
-    const repeatedMeasure = Object.values(REPEATED_MEASURE);
+    const repeatedMeasure =
+      this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
+        ? Object.values(REPEATED_MEASURE).filter(
+            (value) => value !== REPEATED_MEASURE.earliest && value !== REPEATED_MEASURE.mostRecent
+          )
+        : Object.values(REPEATED_MEASURE);
     repeatedMeasure.shift();
     return repeatedMeasure;
   }

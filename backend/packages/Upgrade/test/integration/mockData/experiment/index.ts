@@ -14,7 +14,7 @@ import {
   ASSIGNMENT_UNIT,
   POST_EXPERIMENT_RULE,
   EXPERIMENT_STATE,
-  WITHING_SUBJECT_ALGORITHM,
+  CONDITION_ORDER,
 } from 'upgrade_types';
 
 export const individualAssignmentExperiment = {
@@ -112,8 +112,8 @@ export const secondFactorialExperiment = {
 
 export const withinSubjectExperiment = {
   ...getExperiment(),
-  assignmentUnit: ASSIGNMENT_UNIT.WITHIN_SUBJECT,
-  algorithm: WITHING_SUBJECT_ALGORITHM.RANDOM,
+  assignmentUnit: ASSIGNMENT_UNIT.WITHIN_SUBJECTS,
+  conditionOrder: CONDITION_ORDER.RANDOM,
 };
 
 export const individualExperimentWithMetric = {

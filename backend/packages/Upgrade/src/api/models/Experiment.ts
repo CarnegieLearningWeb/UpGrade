@@ -16,7 +16,7 @@ import {
   IExperimentSearchParams,
   IExperimentSortParams,
   EXPERIMENT_TYPE,
-  WITHING_SUBJECT_ALGORITHM,
+  CONDITION_ORDER,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { Query } from './Query';
@@ -64,6 +64,7 @@ export class Experiment extends BaseModel {
 
   @IsNotEmpty()
   @Column({
+    nullable: true,
     type: 'enum',
     enum: CONSISTENCY_RULE,
   })
@@ -102,10 +103,10 @@ export class Experiment extends BaseModel {
 
   @Column({
     type: 'enum',
-    enum: WITHING_SUBJECT_ALGORITHM,
+    enum: CONDITION_ORDER,
     nullable: true,
   })
-  public algorithm: WITHING_SUBJECT_ALGORITHM;
+  public conditionOrder: CONDITION_ORDER;
 
   @Column({
     default: false,
