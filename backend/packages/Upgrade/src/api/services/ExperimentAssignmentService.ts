@@ -373,10 +373,12 @@ export class ExperimentAssignmentService {
       }
       // adding in monitored experiment point table
 
+      const assignmentUnit =
+        experiments.find((exp) => exp.id === experimentId).assignmentUnit || experiments[0].assignmentUnit;
       monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
         id: monitoredDocument?.id || uuid(),
         experimentId: experimentId,
-        condition: condition,
+        condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? null : condition,
         user: userDoc,
         site: site,
         target: target,
@@ -390,10 +392,12 @@ export class ExperimentAssignmentService {
       });
       return monitoredDocument;
     } else {
+      const assignmentUnit =
+        experiments.find((exp) => exp.id === experimentId).assignmentUnit || experiments[0].assignmentUnit;
       const monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
         id: uuid(),
         experimentId: experimentId,
-        condition: condition,
+        condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? null : condition,
         user: userDoc,
         site: site,
         target: target,
@@ -1583,6 +1587,16 @@ export class ExperimentAssignmentService {
           promiseArray.push(this.individualExclusionRepository.saveRawJson([individualExclusionDocument]));
         }
         await Promise.all(promiseArray);
+      } else if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+        const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> = {
+          id: uuid(),
+          experiment,
+          partition: decisionPoint,
+          user,
+          condition: null,
+          enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
+        };
+        await this.individualEnrollmentRepository.save(individualEnrollmentDocument);
       } else {
         const conditionAssigned = this.assignExperiment(
           user,
