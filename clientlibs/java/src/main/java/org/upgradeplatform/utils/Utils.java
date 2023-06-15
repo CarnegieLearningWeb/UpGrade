@@ -21,15 +21,15 @@ public class Utils
 	public static final String INVALID_METRIC_META_DATA= "Invalid metadata type provided. It should be of MetricMetaData enum type";
 
 
-	public static final String INITIALIZE_USER= "api/v4/init";
-	public static final String SET_GROUP_MEMBERSHIP= "api/v4/groupmembership";
-	public static final String SET_WORKING_GROUP= "api/v4/workinggroup";
-	public static final String GET_ALL_EXPERIMENTS= "api/v4/assign";
-	public static final String MARK_EXPERIMENT_POINT= "api/v4/mark";
-	public static final String GET_ALL_FEATURE_FLAGS= "api/v4/featureflag";
-	public static final String LOG_EVENT= "api/v4/log";
-	public static final String SET_ALT_USER_IDS= "api/v4/useraliases";
-	public static final String ADD_MATRIC= "api/v4/metric";
+	public static final String INITIALIZE_USER= "api/v5/init";
+	public static final String SET_GROUP_MEMBERSHIP= "api/v5/groupmembership";
+	public static final String SET_WORKING_GROUP= "api/v5/workinggroup";
+	public static final String GET_ALL_EXPERIMENTS= "api/v5/assign";
+	public static final String MARK_EXPERIMENT_POINT= "api/v5/mark";
+	public static final String GET_ALL_FEATURE_FLAGS= "api/v5/featureflag";
+	public static final String LOG_EVENT= "api/v5/log";
+	public static final String SET_ALT_USER_IDS= "api/v5/useraliases";
+	public static final String ADD_MATRIC= "api/v5/metric";
 
 	public static final String PATCH = "PATCH";
 

@@ -3,6 +3,7 @@ package org.upgradeplatform.client;
 import static org.upgradeplatform.utils.Utils.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,10 +29,12 @@ import org.upgradeplatform.requestbeans.MetricUnitBody;
 import org.upgradeplatform.requestbeans.SingleMetric;
 import org.upgradeplatform.requestbeans.UserAlias;
 import org.upgradeplatform.responsebeans.UserAliasResponse;
+import org.upgradeplatform.responsebeans.Assignment;
 import org.upgradeplatform.responsebeans.Condition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUser;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
+import org.upgradeplatform.responsebeans.Factor;
 import org.upgradeplatform.responsebeans.FeatureFlag;
 import org.upgradeplatform.responsebeans.InitializeUser;
 import org.upgradeplatform.responsebeans.LogEventResponse;
@@ -208,13 +211,58 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
     /**@param site This is matched case-insensitively*/
-	public void getExperimentCondition(String context, String site, final ResponseCallback<ExperimentsResponse> callbacks) {
+	public void getExperimentCondition(String context, String site, final ResponseCallback<Assignment> callbacks) {
 		getExperimentCondition(context, site, null, callbacks);
+	}
+
+	/**@param site This is matched case-insensitively
+     * @param target This is matched case-insensitively*/
+	public void getExperimentCondition(String context, String site, String target,
+			final ResponseCallback<Assignment> callbacks) {
+
+				if (this.allExperiments != null) {
+
+					ExperimentsResponse resultExperimentsResponse = findExperimentResponse(site, target, allExperiments);
+					Map<String, Factor> assignedFactor = resultExperimentsResponse.getAssignedFactor() != null ? resultExperimentsResponse.getAssignedFactor()[0] : null;
+					Assignment resultAssignment = new Assignment(target, site, resultExperimentsResponse.getExperimentType(), resultExperimentsResponse.getAssignedCondition()[0], assignedFactor);
+
+					if (callbacks != null) {
+						callbacks.onSuccess(resultAssignment);
+					}
+				} else {
+
+					getAllExperimentCondition(context, new ResponseCallback<List<ExperimentsResponse>>() {
+						@Override
+						public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
+
+							ExperimentsResponse resultExperimentsResponse = findExperimentResponse(site, target, experiments);
+							Map<String, Factor> assignedFactor = resultExperimentsResponse.getAssignedFactor() != null ? resultExperimentsResponse.getAssignedFactor()[0] : null;
+							Assignment resultAssignment = new Assignment(target, site, resultExperimentsResponse.getExperimentType(), resultExperimentsResponse.getAssignedCondition()[0], assignedFactor);
+							
+							if (callbacks != null) {
+								callbacks.onSuccess(resultAssignment);
+							}
+						}
+		
+						@Override
+						public void onError(@NonNull ErrorResponse error) {
+							if (callbacks != null)
+								callbacks.onError(error);
+		
+						}
+					});
+				}
+
+	}
+
+    /**@param site This is matched case-insensitively*/
+	public void getAllExperimentConditions(String context, String site, final ResponseCallback<ExperimentsResponse> callbacks) {
+		getAllExperimentConditions(context, site, null, callbacks);
 	}
 
     /**@param site This is matched case-insensitively
      * @param target This is matched case-insensitively*/
-	public void getExperimentCondition(String context, String site, String target,
+	public void getAllExperimentConditions(String context, String site, String target,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
 		if (this.allExperiments != null) {
 
@@ -257,10 +305,8 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	private static ExperimentsResponse copyExperimentResponse(ExperimentsResponse experimentsResponse) {
-		Condition assignedCondition = new Condition(experimentsResponse.getAssignedCondition().getId(),
-				experimentsResponse.getAssignedCondition().getConditionCode(), experimentsResponse.getAssignedCondition().getExperimentId(),
-				experimentsResponse.getAssignedCondition().getPayload());
-
+		Condition[] assignedCondition = Arrays.copyOf(experimentsResponse.getAssignedCondition(),
+				experimentsResponse.getAssignedCondition().length);
 		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getTarget().toString(),
 				experimentsResponse.getSite(), experimentsResponse.getExperimentType(), assignedCondition, experimentsResponse.getAssignedFactor());
 		return resultCondition;
