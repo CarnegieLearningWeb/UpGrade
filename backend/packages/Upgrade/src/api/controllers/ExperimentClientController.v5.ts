@@ -436,6 +436,7 @@ export class ExperimentClientController {
       },
       experiment.data.target,
       experiment.data.assignedCondition.experimentId ? experiment.data.assignedCondition.experimentId : null,
+      experiment.uniquifier ? experiment.uniquifier : null,
       experiment.clientError ? experiment.clientError : null
     );
     return rest;
