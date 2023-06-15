@@ -37,11 +37,10 @@ export class MockClientAppService {
     this.mockClientAppInterfaceMap = {
       [MOCK_APP_NAMES.BDAY_APP]: bdayAppService.getAppInterfaceModel(),
       [MOCK_APP_NAMES.PORTAL_APP]: portalAppService.getAppInterfaceModel(),
-      [MOCK_APP_NAMES.GEN_TEST_1_1]: generalTest_1_1.getAppInterfaceModel(),
-      [MOCK_APP_NAMES.GEN_TEST_3_0]: generalTest_3.getAppInterfaceModel(),
-      [MOCK_APP_NAMES.GEN_TEST_4_1]: generalTest_4_1.getAppInterfaceModel(),
-      [MOCK_APP_NAMES.GEN_TEST_5_0]: generalTest_5.getAppInterfaceModel(),
-
+      [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_1_1]: generalTest_1_1.getAppInterfaceModel(),
+      [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_3_0]: generalTest_3.getAppInterfaceModel(),
+      [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_4_1]: generalTest_4_1.getAppInterfaceModel(),
+      [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_5_0]: generalTest_5.getAppInterfaceModel(),
     };
   }
 
@@ -109,7 +108,7 @@ export class MockClientAppService {
       }
 
       const requestHook: HookRequestBody = {
-        hook: hook.name,
+        name: hook.name,
         libVersion: this.clientLibraryService.getSelectedClientLibraryVersion(),
         user: hook.user,
         mockApp: this.getSelectedMockApp(),

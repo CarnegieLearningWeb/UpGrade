@@ -27,7 +27,7 @@ export class GeneralTestForVersion1Service extends AbstractMockAppService {
   // public upgradeClient: any;
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
-  public NAME = MOCK_APP_NAMES.GEN_TEST_1_1;
+  public NAME = MOCK_APP_NAMES.GENERAL_TS_FRONTEND_1_1;
   public DESCRIPTION = 'Regression testing for lib version 1x, API target versions 3 and old unversioned api';
   public TYPE: MockAppType = 'frontend';
   public LANGUAGE: CodeLanguage = 'ts';
@@ -55,7 +55,7 @@ export class GeneralTestForVersion1Service extends AbstractMockAppService {
   ];
 
   constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
-    super(MOCK_APP_NAMES.GEN_TEST_1_1, eventBus, clientLibraryService);
+    super(MOCK_APP_NAMES.GENERAL_TS_FRONTEND_1_1, eventBus, clientLibraryService);
   }
 
   /******************* "getAppInterfaceModel" required to give tester app a model to construct an interface to use this 'app' ********************/
