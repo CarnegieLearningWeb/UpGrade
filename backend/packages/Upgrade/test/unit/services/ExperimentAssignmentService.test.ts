@@ -21,7 +21,7 @@ import { ScheduledJobService } from '../../../src/api/services/ScheduledJobServi
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { SettingService } from '../../../src/api/services/SettingService';
 import { SERVER_ERROR } from 'upgrade_types';
-import { simpleIndividualAssignmentExperiment, simpleGroupAssignmentExperiment, factorialGroupAssignmentExperiment, factorialIndividualAssignmentExperiment, simpleDPExperiment, simpleWithinSubjectOrderedRoundRobinExperiment, simpleWithinSubjectRandomRoundRobinExperiment } from '../mockdata';
+import { simpleIndividualAssignmentExperiment, simpleGroupAssignmentExperiment, factorialGroupAssignmentExperiment, factorialIndividualAssignmentExperiment, simpleDPExperiment, simpleWithinSubjectOrderedRoundRobinExperiment, simpleWithinSubjectRandomRoundRobinExperiment, withinSubjectDPExperiment } from '../mockdata';
 import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
 import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
@@ -463,7 +463,7 @@ describe('Expeirment Assignment Service Test', () => {
     testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
     testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
 
-    const result = await testedModule.markExperimentPoint(userId, site, MARKED_DECISION_POINT_STATUS.NO_CONDITION_ASSIGNED, condition, { logger: loggerMock, userDoc: {id: userId}}, target, undefined, undefined);
+    const result = await testedModule.markExperimentPoint(userId, site, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED, condition, { logger: loggerMock, userDoc: {id: userId}}, target, undefined, undefined);
     expect(result).toMatchObject(monitoredDocument);
 
   });
@@ -498,7 +498,42 @@ describe('Expeirment Assignment Service Test', () => {
     testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
     testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
 
-    const result = await testedModule.markExperimentPoint(userId, site, MARKED_DECISION_POINT_STATUS.NO_CONDITION_ASSIGNED, condition, { logger: loggerMock, userDoc: {id: userId}}, target, undefined, undefined);
+    const result = await testedModule.markExperimentPoint(userId, site, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED, condition, { logger: loggerMock, userDoc: {id: userId}}, target, undefined, undefined);
+    expect(result).toMatchObject(monitoredDocument);
+
+  });
+
+  it('should return monitored document for an enrolling within-subject individual experiment', async () => { 
+    const userId = 'testUser';
+    const site = 'testSite';
+    const target = 'testTarget';
+    const condition = 'testCondition';
+    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
+    const decisionPointRespositoryMock = { find: sandbox.stub().resolves([withinSubjectDPExperiment]) };
+    const experimentRespositoryMock = { getValidExperiments: sandbox.stub().resolves([]) };
+    const individualEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) }
+    const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) }
+    const groupEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) }
+    const groupExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) }
+    const monitoredDocument = {
+      site: site,
+      target: target,
+      condition: condition,
+      user: {
+        id: userId,
+      }
+    }
+    const monitoredDecisionPointRepositoryMock = { saveRawJson: sandbox.stub().callsFake((args) => {return args}), findOne: sandbox.stub().resolves(monitoredDocument)};
+
+    testedModule.decisionPointRepository = decisionPointRespositoryMock;
+    testedModule.experimentRepository = experimentRespositoryMock;
+    testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
+    testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
+    testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
+    testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
+    testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
+
+    const result = await testedModule.markExperimentPoint(userId, site, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED, condition, { logger: loggerMock, userDoc: {id: userId}}, target, undefined, undefined);
     expect(result).toMatchObject(monitoredDocument);
 
   });

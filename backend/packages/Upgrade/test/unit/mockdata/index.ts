@@ -1,5 +1,5 @@
 import {
-  getSimpleIndividualExperiment, getSimpleGroupExperiment, getFactorialIndividualExperiment, getFactorialGroupExperiment, getSimpleDPExperiment, getSimpleExperimentDecisionPoint
+  getSimpleIndividualExperiment, getSimpleGroupExperiment, getFactorialIndividualExperiment, getFactorialGroupExperiment, getSimpleDPExperiment, getSimpleExperimentDecisionPoint, getWithinSubjectDPExperiment
 } from './raw';
 import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE, CONDITION_ORDER } from 'upgrade_types';
 
@@ -53,4 +53,8 @@ export const simpleDPExperiment = {
 
 export const simpleExperimentDecisionPoint = {
   ...getSimpleExperimentDecisionPoint()
+}
+
+export const withinSubjectDPExperiment = {
+  ...getWithinSubjectDPExperiment()
 }

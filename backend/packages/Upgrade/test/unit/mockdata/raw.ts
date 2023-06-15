@@ -867,6 +867,45 @@ const simpleDPExperiment =
     }
   };
 
+const withinSubjectDPExperiment = {
+  createdAt: "2023-06-15T17:59:08.165Z",
+  updatedAt: "2023-06-15T17:59:08.165Z",
+  versionNumber: 1,
+  id: "e8f72624-0cba-4b9b-92c4-ef68bef56086",
+  twoCharacterId: "XR",
+  site: "SelectSection",
+  target: "absolute_value_plot_equality",
+  description: "",
+  order: 1,
+  excludeIfReached: false,
+  experiment: {
+    createdAt: "2023-06-15T17:59:08.165Z",
+    updatedAt: "2023-06-15T17:59:13.314Z",
+    versionNumber: 2,
+    id: "afcbc570-2137-4585-b890-6e96b03c2504",
+    name: "test",
+    description: "",
+    context: [
+      "assign-prog"
+    ],
+    state: "enrolling",
+    startOn: null,
+    consistencyRule: null,
+    assignmentUnit: "within-subjects",
+    postExperimentRule: "continue",
+    enrollmentCompleteCondition: null,
+    endOn: null,
+    revertTo: null,
+    tags: [],
+    group: null,
+    conditionOrder: "random",
+    logging: false,
+    filterMode: "includeAll",
+    backendVersion: "4.3.0",
+    type: "Simple"
+  }
+}
+
 const simpleExperimentDecisionPoint = {
   createdAt: "2023-06-09T17:37:38.216Z",
   updatedAt: "2023-06-09T17:37:38.216Z",
@@ -1007,4 +1046,8 @@ export function getSimpleDPExperiment() {
 
 export function getSimpleExperimentDecisionPoint() {
   return JSON.parse(JSON.stringify(simpleExperimentDecisionPoint));
+}
+
+export function getWithinSubjectDPExperiment() {
+  return JSON.parse(JSON.stringify(withinSubjectDPExperiment));
 }
