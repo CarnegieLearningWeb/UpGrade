@@ -14,22 +14,32 @@ export function withInSubjectType(
   userID: string,
   monitoredDecisionPointLogsLength: number
 ): IExperimentAssignmentv5 {
-  const assignedData = convertToAssignedCondition(experiment, conditionPayloads, site, target, factors);
+  let assignedData = convertToAssignedCondition(experiment, conditionPayloads, site, target, factors);
   let assignedConditionsArray = assignedData;
 
   // passing assigned conditions data converted into queue based on selected algorithm
   if (assignedData.assignedCondition.length > 1) {
-    if (experiment.conditionOrder === CONDITION_ORDER.RANDOM) {
-      assignedConditionsArray = randomCondition(experiment, assignedData, userID, monitoredDecisionPointLogsLength);
-    } else if (experiment.conditionOrder === CONDITION_ORDER.RANDOM_ROUND_ROBIN) {
-      assignedConditionsArray = randomRoundRobinCondition(
-        experiment,
-        assignedData,
-        userID,
-        monitoredDecisionPointLogsLength
-      );
-    } else if (experiment.conditionOrder === CONDITION_ORDER.ORDERED_ROUND_ROBIN) {
-      assignedConditionsArray = rotateElements(assignedData, monitoredDecisionPointLogsLength);
+    switch (experiment.conditionOrder) {
+      case CONDITION_ORDER.RANDOM: {
+        assignedConditionsArray = randomCondition(experiment, assignedData, userID, monitoredDecisionPointLogsLength);
+        break;
+      }
+      case CONDITION_ORDER.RANDOM_ROUND_ROBIN: {
+        assignedConditionsArray = randomRoundRobinCondition(
+          experiment,
+          assignedData,
+          userID,
+          monitoredDecisionPointLogsLength
+        );
+        break;
+      }
+      case CONDITION_ORDER.ORDERED_ROUND_ROBIN: {
+        assignedConditionsArray = rotateElements(assignedData, monitoredDecisionPointLogsLength);
+        break;
+      }
+      default: {
+        break;
+      }
     }
   }
 
@@ -174,7 +184,10 @@ function convertToAssignedCondition(
   };
 }
 
-function getAssignedFactor(conditionAssigned: ExperimentCondition, factors: FactorDTO[]): object {
+function getAssignedFactor(
+  conditionAssigned: ExperimentCondition,
+  factors: FactorDTO[]
+): Record<string, { level: string; payload: IPayload }>[] {
   const levelsForCondition: string[] = [];
   conditionAssigned.levelCombinationElements.forEach((element) => {
     levelsForCondition.push(element.level.id);
