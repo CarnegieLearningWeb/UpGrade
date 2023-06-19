@@ -373,8 +373,9 @@ export class ExperimentAssignmentService {
       }
       // adding in monitored experiment point table
 
-      const assignmentUnit =
-        experiments.find((exp) => exp.id === experimentId).assignmentUnit || experiments[0].assignmentUnit;
+      const assignmentUnit = experiments
+        ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0]?.assignmentUnit
+        : null;
       monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
         id: monitoredDocument?.id || uuid(),
         experimentId: experimentId,
@@ -392,8 +393,9 @@ export class ExperimentAssignmentService {
       });
       return monitoredDocument;
     } else {
-      const assignmentUnit =
-        experiments.find((exp) => exp.id === experimentId).assignmentUnit || experiments[0].assignmentUnit;
+      const assignmentUnit = experiments
+        ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0]?.assignmentUnit
+        : null;
       const monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
         id: uuid(),
         experimentId: experimentId,
