@@ -1,7 +1,7 @@
 import seedrandom from 'seedrandom';
 import { ConditionPayloadDTO } from './DTO/ConditionPayloadDTO';
 import { Experiment } from './models/Experiment';
-import { CONDITION_ORDER, EXPERIMENT_TYPE, IExperimentAssignmentv5, AssignedCondition, IPayload } from 'upgrade_types';
+import { CONDITION_ORDER, EXPERIMENT_TYPE, IExperimentAssignmentv5, IPayload } from 'upgrade_types';
 import { FactorDTO } from './DTO/FactorDTO';
 import { ExperimentCondition } from './models/ExperimentCondition';
 
@@ -14,26 +14,30 @@ export function withInSubjectType(
   userID: string,
   monitoredDecisionPointLogsLength: number
 ): IExperimentAssignmentv5 {
-  const assignedData = convertToAssignedCondition(experiment, conditionPayloads, site, target, factors);
-  let assignedConditionsArray = assignedData;
+  let assignedData = convertToAssignedCondition(experiment, conditionPayloads, site, target, factors);
 
   // passing assigned conditions data converted into queue based on selected algorithm
   if (assignedData.assignedCondition.length > 1) {
-    if (experiment.conditionOrder === CONDITION_ORDER.RANDOM) {
-      assignedConditionsArray = randomCondition(experiment, assignedData, userID, monitoredDecisionPointLogsLength);
-    } else if (experiment.conditionOrder === CONDITION_ORDER.RANDOM_ROUND_ROBIN) {
-      assignedConditionsArray = randomRoundRobinCondition(
-        experiment,
-        assignedData,
-        userID,
-        monitoredDecisionPointLogsLength
-      );
-    } else if (experiment.conditionOrder === CONDITION_ORDER.ORDERED_ROUND_ROBIN) {
-      assignedConditionsArray = rotateElements(assignedData, monitoredDecisionPointLogsLength);
+    switch (experiment.conditionOrder) {
+      case CONDITION_ORDER.RANDOM: {
+        assignedData = randomCondition(experiment, assignedData, userID, monitoredDecisionPointLogsLength);
+        break;
+      }
+      case CONDITION_ORDER.RANDOM_ROUND_ROBIN: {
+        assignedData = randomRoundRobinCondition(experiment, assignedData, userID, monitoredDecisionPointLogsLength);
+        break;
+      }
+      case CONDITION_ORDER.ORDERED_ROUND_ROBIN: {
+        assignedData = rotateElements(assignedData, monitoredDecisionPointLogsLength);
+        break;
+      }
+      default: {
+        break;
+      }
     }
   }
 
-  return assignedConditionsArray;
+  return assignedData;
 }
 
 export function randomCondition(
@@ -42,7 +46,7 @@ export function randomCondition(
   userID: string,
   monitoredDecisionPointLogsLength: number
 ): IExperimentAssignmentv5 {
-  const randomConditionArray: AssignedCondition[] = [];
+  const randomConditionArray: IExperimentAssignmentv5['assignedCondition'] = [];
   const assignedFactorsArray: Record<string, { level: string; payload: IPayload }>[] = [];
 
   // create 100 elements array of random condition
@@ -74,13 +78,13 @@ export function randomRoundRobinCondition(
   userID: string,
   monitoredDecisionPointLogsLength: number
 ): IExperimentAssignmentv5 {
-  const randomRoundRobinConditionArray: AssignedCondition[] = [];
+  const randomRoundRobinConditionArray: IExperimentAssignmentv5['assignedCondition'] = [];
   const assignedFactorsArray: Record<string, { level: string; payload: IPayload }>[] = [];
   const totalLoopsInQueue = Math.ceil(100 / assignedData.assignedCondition.length);
 
   // create array of random ordered conditions pairs
   for (let i = 0; i < totalLoopsInQueue; i++) {
-    const tempConditionArray: AssignedCondition[] = [...assignedData.assignedCondition];
+    const tempConditionArray: IExperimentAssignmentv5['assignedCondition'] = [...assignedData.assignedCondition];
     const tempFactorArray: Record<string, { level: string; payload: IPayload }>[] =
       experiment.type === EXPERIMENT_TYPE.FACTORIAL ? [...assignedData.assignedFactor] : [];
 
@@ -137,7 +141,7 @@ function convertToAssignedCondition(
   target: string,
   factors: FactorDTO[]
 ): IExperimentAssignmentv5 {
-  const assignedConditionArray: AssignedCondition[] = [];
+  const assignedConditionArray: IExperimentAssignmentv5['assignedCondition'] = [];
   const assignedFactorsArray: Record<string, { level: string; payload: IPayload }>[] = [];
 
   experiment.conditions.forEach((condition) => {
@@ -174,7 +178,10 @@ function convertToAssignedCondition(
   };
 }
 
-function getAssignedFactor(conditionAssigned: ExperimentCondition, factors: FactorDTO[]): object {
+function getAssignedFactor(
+  conditionAssigned: ExperimentCondition,
+  factors: FactorDTO[]
+): Record<string, { level: string; payload: IPayload }> {
   const levelsForCondition: string[] = [];
   conditionAssigned.levelCombinationElements.forEach((element) => {
     levelsForCondition.push(element.level.id);

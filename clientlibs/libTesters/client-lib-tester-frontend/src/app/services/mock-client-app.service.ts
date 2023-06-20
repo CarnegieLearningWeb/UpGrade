@@ -9,6 +9,10 @@ import { catchError } from 'rxjs/internal/operators/catchError';
 import { of } from 'rxjs/internal/observable/of';
 import { EventBusService } from './event-bus.service';
 import { ClientLibraryService } from './client-library.service';
+import { GeneralTestForVersion41Service } from '../mockFrontendClientAppComponents/general-test-for-version4-1.service';
+import { GeneralTestForVersion1Service } from '../mockFrontendClientAppComponents/general-test-for-version1.service';
+import { GeneralTestForVersion3Service } from '../mockFrontendClientAppComponents/general-test-for-version3.service';
+import { GeneralTestForVersion5Service } from '../mockFrontendClientAppComponents/general-test-for-version5.service';
 
 @Injectable({
   providedIn: 'root',
@@ -21,6 +25,10 @@ export class MockClientAppService {
   constructor(
     public bdayAppService: BirthdayPresentAppService,
     public portalAppService: MockPortalService,
+    public generalTest_1_1: GeneralTestForVersion1Service,
+    public generalTest_3: GeneralTestForVersion3Service,
+    public generalTest_4_1: GeneralTestForVersion41Service,
+    public generalTest_5: GeneralTestForVersion5Service,
     public dataFetchService: DataFetchService,
     public eventBus: EventBusService,
     public clientLibraryService: ClientLibraryService
@@ -29,6 +37,11 @@ export class MockClientAppService {
     this.mockClientAppInterfaceMap = {
       [MOCK_APP_NAMES.BDAY_APP]: bdayAppService.getAppInterfaceModel(),
       [MOCK_APP_NAMES.PORTAL_APP]: portalAppService.getAppInterfaceModel(),
+      [MOCK_APP_NAMES.GEN_TEST_1_1]: generalTest_1_1.getAppInterfaceModel(),
+      [MOCK_APP_NAMES.GEN_TEST_3_0]: generalTest_3.getAppInterfaceModel(),
+      [MOCK_APP_NAMES.GEN_TEST_4_1]: generalTest_4_1.getAppInterfaceModel(),
+      [MOCK_APP_NAMES.GEN_TEST_5_0]: generalTest_5.getAppInterfaceModel(),
+
     };
   }
 

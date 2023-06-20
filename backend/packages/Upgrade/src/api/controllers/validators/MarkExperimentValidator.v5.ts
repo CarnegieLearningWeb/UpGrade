@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsDefined } from 'class-validator';
 import { MARKED_DECISION_POINT_STATUS, PAYLOAD_TYPE } from 'upgrade_types';
 
-export class MarkExperimentValidatorv4 {
+export class MarkExperimentValidatorv5 {
   @IsNotEmpty()
   @IsDefined()
   public userId: string;
@@ -16,5 +16,6 @@ export class MarkExperimentValidatorv4 {
   };
 
   public status?: MARKED_DECISION_POINT_STATUS;
+  public uniquifier?: string;
   public clientError?: string;
 }
