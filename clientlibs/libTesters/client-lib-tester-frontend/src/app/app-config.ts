@@ -50,4 +50,5 @@ export const availableFrontendMockApps = [
   MOCK_APP_NAMES.GENERAL_TS_FRONTEND_5_0,
   // MOCK_APP_NAMES.BDAY_APP,
   MOCK_APP_NAMES.PORTAL_APP,
+  MOCK_APP_NAMES.MATHSTREAM_AdaptiveSegmentSwapExperiment,
 ];

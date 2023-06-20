@@ -87,8 +87,17 @@ export class MockPortalService extends AbstractMockAppService {
     this.upgradeClient = this.constructUpgradeClient(userId);
     this.upgradeClient
       .init()
-      .then(() => this.upgradeClient.setGroupMembership(memberships))
-      .then(() => this.upgradeClient.getAllExperimentConditions('portal'))
+      .then((initResponse: any) => { 
+        console.log('initResponse', initResponse);
+        return this.upgradeClient.setGroupMembership(memberships)
+      })
+      .then((groupResponse: any) => {
+        console.log('groupResponse', groupResponse);
+        return this.upgradeClient.getAllExperimentConditions(this.CONTEXT);
+      })
+      .then((assignmentResponse: any) => {
+        console.log('assignmentResponse', assignmentResponse);
+      })
       .catch((err: any) => console.error(err));
   }
 }
