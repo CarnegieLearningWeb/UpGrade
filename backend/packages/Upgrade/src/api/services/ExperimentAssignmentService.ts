@@ -408,8 +408,8 @@ export class ExperimentAssignmentService {
       // save monitored log document
       await this.monitoredDecisionPointLogRepository.save({
         monitoredDecisionPoint: monitoredDocument,
-        condition: condition,
-        uniquifier: uniquifier,
+        condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? condition : null,
+        uniquifier: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? uniquifier : null,
       });
       return monitoredDocument;
     }
