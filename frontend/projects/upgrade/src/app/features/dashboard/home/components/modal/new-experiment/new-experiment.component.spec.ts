@@ -7,7 +7,7 @@ import { ExperimentOverviewComponent } from '../../experiment-overview/experimen
 import { ExperimentDesignComponent } from '../../experiment-design/experiment-design.component';
 import { ExperimentScheduleComponent } from '../../experiment-schedule/experiment-schedule.component';
 import { ExperimentPostConditionComponent } from '../../experiment-post-condition/experiment-post-condition.component';
-import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime-ex';
+import { OwlDateTimeModule, OwlNativeDateTimeModule } from '@danielmoncada/angular-datetime-picker';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 xdescribe('NewExperimentComponent', () => {

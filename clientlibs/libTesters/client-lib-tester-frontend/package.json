@@ -1,0 +1,42 @@
+{
+  "name": "client-lib-tester-frontend",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "preinstall": "npm run copy-local-js-build",
+    "start": "ng serve --port 4201",
+    "start:install": "npm install && npm run start",
+    "start:ts": "concurrently \"npm run start:install\" \"(cd ../ts-lib-tester-backend-server && npm run start:build)\"",
+    "copy-local-js-build": "mkdir -p node_modules/upgrade_client_local && cd ../../js/ && npm install && npm run build && cp -r ./{dist,package.json,README.md} ../libTesters/client-lib-tester-frontend/node_modules/upgrade_client_local",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^14.1.0",
+    "@angular/common": "^14.1.0",
+    "@angular/compiler": "^14.1.0",
+    "@angular/core": "^14.1.0",
+    "@angular/forms": "^14.1.0",
+    "@angular/material": "^7.0.0",
+    "@angular/platform-browser": "^14.1.0",
+    "@angular/platform-browser-dynamic": "^14.1.0",
+    "@angular/router": "^14.1.0",
+    "rxjs": "~7.5.0",
+    "tslib": "^2.3.0",
+    "upgrade_client_1_1_17": "npm:upgrade_client_lib@1.1.7",
+    "upgrade_client_3_0_18": "npm:upgrade_client_lib@3.0.18",
+    "upgrade_client_4_2_0": "npm:upgrade_client_lib@4.2.0",
+    "upgrade_types_1_0_5": "npm:upgrade_types@1.0.5",
+    "upgrade_types_3_0_18": "npm:upgrade_types@3.0.18",
+    "upgrade_types_4_2_0": "npm:upgrade_types@4.2.0",
+    "zone.js": "~0.11.4"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^14.1.3",
+    "@angular/cli": "~14.1.3",
+    "@angular/compiler-cli": "^14.1.0",
+    "concurrently": "^8.2.0",
+    "typescript": "~4.7.2"
+  }
+}
