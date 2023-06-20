@@ -1,10 +1,5 @@
 import { EntityRepository, Repository, In, DeleteResult } from 'typeorm';
 import { IndividualEnrollment } from '../models/IndividualEnrollment';
-import { DecisionPoint } from '../models/DecisionPoint';
-import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
-import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
-import { ExperimentCondition } from '../models/ExperimentCondition';
-
 @EntityRepository(IndividualEnrollment)
 export class IndividualEnrollmentRepository extends Repository<IndividualEnrollment> {
   public findEnrollments(userId: string, experimentIds: string[]): Promise<IndividualEnrollment[]> {
