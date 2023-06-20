@@ -1,5 +1,9 @@
 import { EntityRepository, Repository, In, DeleteResult } from 'typeorm';
 import { IndividualEnrollment } from '../models/IndividualEnrollment';
+import { DecisionPoint } from '../models/DecisionPoint';
+import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
+import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
+import { ExperimentCondition } from '../models/ExperimentCondition';
 
 @EntityRepository(IndividualEnrollment)
 export class IndividualEnrollmentRepository extends Repository<IndividualEnrollment> {
@@ -24,13 +28,5 @@ export class IndividualEnrollmentRepository extends Repository<IndividualEnrollm
       .execute();
 
     return data[0].count;
-  }
-
-  public getEnrollmentCountByCondition(experimentId: string): Promise<Array<{ conditionId: string; count: number }>> {
-    return this.createQueryBuilder('enrollment')
-      .select(['COUNT(DISTINCT("userId"))::int as count', '"conditionId"'])
-      .where('"experimentId" = :experimentId', { experimentId })
-      .groupBy('conditionId')
-      .execute();
   }
 }

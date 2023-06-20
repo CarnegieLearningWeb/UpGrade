@@ -1,5 +1,9 @@
 import { EntityRepository, In, Repository } from 'typeorm';
 import { GroupEnrollment } from '../models/GroupEnrollment';
+import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
+import { DecisionPoint } from '../models/DecisionPoint';
+import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
+import { ExperimentCondition } from '../models/ExperimentCondition';
 
 @EntityRepository(GroupEnrollment)
 export class GroupEnrollmentRepository extends Repository<GroupEnrollment> {
@@ -8,13 +12,5 @@ export class GroupEnrollmentRepository extends Repository<GroupEnrollment> {
       where: { experiment: { id: In(experimentIds) }, groupId: In(groupIds) },
       relations: ['experiment', 'condition'],
     });
-  }
-
-  public getEnrollmentCountByCondition(experimentId: string): Promise<Array<{ conditionId: string; count: number }>> {
-    return this.createQueryBuilder('enrollment')
-      .select(['COUNT(DISTINCT("userId"))::int as count', '"conditionId"'])
-      .where('"experimentId" = :experimentId', { experimentId })
-      .groupBy('conditionId')
-      .execute();
   }
 }
