@@ -16,7 +16,7 @@ runs:
   using: composite
   steps:
     - uses: tw3lveparsecs/github-actions-setvars@v0.1
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v3
       with:
         node-version: 16
     - name: Set Version
