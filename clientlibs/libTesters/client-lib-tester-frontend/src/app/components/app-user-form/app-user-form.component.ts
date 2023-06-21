@@ -61,9 +61,15 @@ export class AppUserFormComponent implements OnInit {
     const groupControls: FormControl[] = [];
     const workingGroupControls: FormControl[] = [];
 
-    allowedGroups.forEach(() => {
-      groupControls.push(this.fb.control(''));
-      workingGroupControls.push(this.fb.control(''));
+    allowedGroups.forEach((group, index) => {
+      const groupControl = this.fb.control('');
+      const workingGroupControl = this.fb.control('');
+
+      this.listenForGroupChanges(groupControl, index);
+      this.listenForWorkingGroupChanges(workingGroupControl, index);
+  
+      groupControls.push(groupControl);
+      workingGroupControls.push(workingGroupControl);
     });
 
     const groupControlsArray = this.fb.array(groupControls);
@@ -107,8 +113,6 @@ export class AppUserFormComponent implements OnInit {
   registerFormListeners(): void {
     this.listenForUserIdChanges();
     this.listenForUserAliasesChanges();
-    this.listenForGroupsChanges();
-    this.listenForWorkingGroupChanges();
   }
 
   listenForUserIdChanges(): void {
@@ -129,26 +133,26 @@ export class AppUserFormComponent implements OnInit {
     });
   }
 
-  listenForGroupsChanges(): void {
-    this.groups.valueChanges.pipe(debounceTime(400)).subscribe((groups) => {
-      console.log('groups', groups);
+  listenForGroupChanges(groupControl: FormControl, index: number): void {
+    groupControl.valueChanges.pipe(debounceTime(400)).subscribe((groupInputString) => {
+      console.log('groupInputString', groupInputString);
+      if (groupInputString === null) return;
+  
       const user = { ...this.eventBusService.mockAppUser$.value };
-
-      groups.forEach((group: string, index: number) => {
-        user.groups[this.allowedGroups[index]] = this.splitAndTrim(group);
-      });
+      user.groups[this.allowedGroups[index]] = this.splitAndTrim(groupInputString);
 
       this.dispatchUserUpdate(user);
     });
   }
 
-  listenForWorkingGroupChanges(): void {
-    this.workingGroup.valueChanges.pipe(debounceTime(400)).subscribe((workingGroup) => {
-      console.log('workingGroup', workingGroup);
+  listenForWorkingGroupChanges(workingGroupControl: FormControl, index: number): void {
+    workingGroupControl.valueChanges.pipe(debounceTime(400)).subscribe((workingGroupInputString) => {
+      console.log('workingGroupInputString', workingGroupInputString);
+      if (workingGroupInputString === null) return;
+  
       const user = { ...this.eventBusService.mockAppUser$.value };
-      workingGroup.forEach((workingGroup: string, index: number) => {
-        user.workingGroup[this.allowedGroups[index]] = workingGroup;
-      });
+      user.workingGroup[this.allowedGroups[index]] = workingGroupInputString;
+
       this.dispatchUserUpdate(user);
     });
   }
