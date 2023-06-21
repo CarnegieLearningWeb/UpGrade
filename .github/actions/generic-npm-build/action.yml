@@ -18,7 +18,7 @@ runs:
     - uses: tw3lveparsecs/github-actions-setvars@v0.1
     - uses: actions/setup-node@v2
       with:
-        node-version: ${{ env.NODE_VERSION }}
+        node-version: 16
     - name: Set Version
       shell: bash
       working-directory: ${{ inputs.working_directory }}
