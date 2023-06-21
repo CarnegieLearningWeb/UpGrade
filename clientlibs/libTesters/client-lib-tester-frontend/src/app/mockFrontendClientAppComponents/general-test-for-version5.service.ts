@@ -13,7 +13,8 @@ import { CaliperEnvelope } from '../../../../../../types/src';
 // There's probably a clever way to do this, but getting the right types automatically is tricky
 
 import UpgradeClient from 'upgrade_client_local/dist/browser';
-// import { UpgradeClient } from 'upgrade_client_1_1_17';
+// import { UpgradeClient } from 'upgrade_client_1_1_7';
+// import * as UpgradeClient_1_1_8 from "upgrade_client_1_1_8/dist/browser"
 // import { UpgradeClient } from 'upgrade_client_3_0_18';
 // import { UpgradeClient } from 'upgrade_client_4_2_0';
 
@@ -30,8 +31,8 @@ export enum MARKED_DECISION_POINT_STATUS {
   providedIn: 'root',
 })
 export class GeneralTestForVersion5Service extends AbstractMockAppService {
-  public override upgradeClient!: UpgradeClient;
-  // public upgradeClient: any;
+  // public override upgradeClient!: UpgradeClient;
+  public upgradeClient: any;
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
   public NAME = MOCK_APP_NAMES.GENERAL_TS_FRONTEND_5_0;

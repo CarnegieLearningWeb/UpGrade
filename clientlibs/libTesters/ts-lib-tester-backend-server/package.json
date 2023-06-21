@@ -19,7 +19,8 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "upgrade_client_1_1_17": "npm:upgrade_client_lib@1.1.7",
+    "upgrade_client_1_1_7": "npm:upgrade_client_lib@1.1.7",
+    "upgrade_client_1_1_8": "npm:upgrade_client_lib@1.1.8",
     "upgrade_client_3_0_18": "npm:upgrade_client_lib@3.0.18",
     "upgrade_client_4_2_0": "npm:upgrade_client_lib@4.2.0",
     "upgrade_types_1_0_5": "npm:upgrade_types@1.0.5",
