@@ -71,7 +71,7 @@ jobs:
         uses: tw3lveparsecs/github-actions-setvars@v0.1
       - name: Setup NodeJS ${{ env.NODE_VERSION }}
         if: steps.check-tag.outputs.exists == 'false'
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Build Backend
