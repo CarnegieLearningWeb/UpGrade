@@ -13,7 +13,7 @@ export default async function setWorkingGroup(
     token,
     clientSessionId,
     { id: userId, workingGroup: workingGroup },
-    Types.REQUEST_TYPES.POST
+    Types.REQUEST_TYPES.PATCH
   );
   if (response.status) {
     return response.data;
