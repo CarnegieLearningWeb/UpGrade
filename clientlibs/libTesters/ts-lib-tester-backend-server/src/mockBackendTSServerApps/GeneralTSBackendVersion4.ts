@@ -1,5 +1,5 @@
 import { AbstractTSBackendMockApp } from './AbstractTSBackendMockApp';
-import UpgradeClient from 'upgrade_client_4_1_5/dist/node';
+import UpgradeClient from 'upgrade_client_4_1_6/dist/node';
 
 import { MOCK_APP_NAMES } from '../../../shared/constants';
 
