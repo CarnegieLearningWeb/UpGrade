@@ -49,6 +49,10 @@ export default class UpgradeClient {
   private experimentConditionData: IExperimentAssignmentv4[] = null;
   private featureFlags: IFeatureFlag[] = null;
 
+  // allow MARKED_DECISION_POINT_STATUS to be exposed on the client a la UpgradeClient.MARKED_DECISION_POINT_STATUS
+  // this will allow users who are not using the upgrade types package to use this enum for markExperimentPoint()
+  public static MARKED_DECISION_POINT_STATUS = MARKED_DECISION_POINT_STATUS;
+
   constructor(
     userId: string,
     hostUrl: string,
