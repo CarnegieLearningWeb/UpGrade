@@ -27,7 +27,7 @@ public class Main {
         final String userId = UUID.randomUUID().toString();
         final String site = "SelectSection";
 
-        String target = args.length > 0 ? args[0] : "absolute_value_plot_equality";
+        String target = args.length > 0 ? args[0] : "analyzing_step_functions";
 
         try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl, Collections.emptyMap())){
             CompletableFuture<String> result = new CompletableFuture<>();
@@ -74,12 +74,40 @@ public class Main {
                                                     experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED, new ResponseCallback<MarkExperimentPoint>(){
                                                         @Override
                                                         public void onSuccess(@NonNull MarkExperimentPoint markResult){
-                                                            result.complete("marked " + code + ": " + markResult.toString());
+                                                            System.out.println("marked " + code + ": " + markResult.toString());
+                                                            System.out.println("getting second condition");
+                                            experimentClient.getExperimentCondition("assign-prog", site, target, new ResponseCallback<Assignment>(){
+                                                @Override
+                                                public void onSuccess(@NonNull Assignment expResult){
+                                                    System.out.println(prefix() + "success getting second condition; marking");
+
+                                                    Condition condition = expResult.getAssignedCondition();
+                                                    String code = condition == null ? null : condition.getConditionCode();
+                                                    System.out.println(condition);
+                                                    System.out.println(code);
+                                                    experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED, new ResponseCallback<MarkExperimentPoint>(){
+                                                        @Override
+                                                        public void onSuccess(@NonNull MarkExperimentPoint markResult){
+                                                            System.out.println("marked second " + code + ": " + markResult.toString());
+                                                            System.out.println("getting third condition");
+                                            experimentClient.getExperimentCondition("assign-prog", site, target, new ResponseCallback<Assignment>(){
+                                                @Override
+                                                public void onSuccess(@NonNull Assignment expResult){
+                                                    System.out.println(prefix() + "success getting third condition; marking");
+
+                                                    Condition condition = expResult.getAssignedCondition();
+                                                    String code = condition == null ? null : condition.getConditionCode();
+                                                    System.out.println(condition);
+                                                    System.out.println(code);
+                                                    experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED, new ResponseCallback<MarkExperimentPoint>(){
+                                                        @Override
+                                                        public void onSuccess(@NonNull MarkExperimentPoint markResult){
+                                                            result.complete("marked third " + code + ": " + markResult.toString());
                                                         }
 
                                                         @Override
                                                         public void onError(@NonNull ErrorResponse error){
-                                                            result.complete("error marking " + code + ": " + error.toString());
+                                                            result.complete("error marking third " + code + ": " + error.toString());
                                                         }
                                                     });
                                                 }
@@ -90,6 +118,38 @@ public class Main {
                                                 }
 
                                             });
+                                                        }
+
+                                                        @Override
+                                                        public void onError(@NonNull ErrorResponse error){
+                                                            System.out.println("error marking second " + code + ": " + error.toString());
+                                                        }
+                                                    });
+                                                }
+
+                                                @Override
+                                                public void onError(@NonNull ErrorResponse error){
+                                                    result.complete(error.toString());
+                                                }
+
+                                            });
+                                                        }
+
+                                                        @Override
+                                                        public void onError(@NonNull ErrorResponse error){
+                                                            System.out.println("error marking " + code + ": " + error.toString());
+                                                        }
+                                                    });
+                                                }
+
+                                                @Override
+                                                public void onError(@NonNull ErrorResponse error){
+                                                    result.complete(error.toString());
+                                                }
+
+                                            });
+                                            
+                                            
                                         }
                                         @Override
                                         public void onError(@NonNull ErrorResponse error){

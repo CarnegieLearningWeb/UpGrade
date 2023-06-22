@@ -4,6 +4,7 @@ import static org.upgradeplatform.utils.Utils.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -180,7 +181,7 @@ public class ExperimentClient implements AutoCloseable {
 		}));
 	}
 
-	public void getAllExperimentCondition(String context, final ResponseCallback<List<ExperimentsResponse>> callbacks) {
+	public void getAllExperimentConditions(String context, final ResponseCallback<List<ExperimentsResponse>> callbacks) {
 		ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context);
 		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
@@ -210,6 +211,37 @@ public class ExperimentClient implements AutoCloseable {
 		}));
 	}
 
+	public void getAllExperimentCondition(String site, String target, String context, final ResponseCallback<List<ExperimentsResponse>> callbacks) {
+		ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context);
+		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
+		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
+
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+				new InvocationCallback<Response>() {
+
+			@Override
+			public void completed(Response response) {
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+					// Cache allExperiment data for future requests
+				    readResponseToCallback(response, callbacks, new GenericType<List<ExperimentsResponse>>() {})
+				        .ifPresent(ae -> allExperiments = ae);
+					rotateConditions(site, target);
+				} else {
+					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
+					if (callbacks != null)
+						callbacks.onError(error);
+				}
+			}
+
+			@Override
+			public void failed(Throwable throwable) {
+				callbacks.onError(new ErrorResponse(throwable.getMessage()));
+			}
+
+		}));
+	}
+
     /**@param site This is matched case-insensitively*/
 	public void getExperimentCondition(String context, String site, final ResponseCallback<Assignment> callbacks) {
 		getExperimentCondition(context, site, null, callbacks);
@@ -221,17 +253,16 @@ public class ExperimentClient implements AutoCloseable {
 			final ResponseCallback<Assignment> callbacks) {
 
 				if (this.allExperiments != null) {
-
 					ExperimentsResponse resultExperimentsResponse = findExperimentResponse(site, target, allExperiments);
 					Map<String, Factor> assignedFactor = resultExperimentsResponse.getAssignedFactor() != null ? resultExperimentsResponse.getAssignedFactor()[0] : null;
 					Assignment resultAssignment = new Assignment(target, site, resultExperimentsResponse.getExperimentType(), resultExperimentsResponse.getAssignedCondition()[0], assignedFactor);
 
 					if (callbacks != null) {
 						callbacks.onSuccess(resultAssignment);
+						rotateConditions(site, target);
 					}
 				} else {
-
-					getAllExperimentCondition(context, new ResponseCallback<List<ExperimentsResponse>>() {
+					getAllExperimentCondition(site, target, context, new ResponseCallback<List<ExperimentsResponse>>() {
 						@Override
 						public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
@@ -272,7 +303,7 @@ public class ExperimentClient implements AutoCloseable {
 				callbacks.onSuccess(resultCondition);
 			}
 		} else {
-			getAllExperimentCondition(context, new ResponseCallback<List<ExperimentsResponse>>() {
+			getAllExperimentConditions(context, new ResponseCallback<List<ExperimentsResponse>>() {
 				@Override
 				public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
@@ -304,11 +335,27 @@ public class ExperimentClient implements AutoCloseable {
 				.orElse(new ExperimentsResponse());
 	}
 
+	private void rotateConditions(String site, String target) {
+		if (this.allExperiments != null) {
+			ExperimentsResponse result = this.allExperiments.stream().filter(t -> t.getSite().equalsIgnoreCase(site) &&
+					(isStringNull(target) ? isStringNull(t.getTarget().toString())
+					: t.getTarget().toString().equalsIgnoreCase(target))).findFirst().orElse(null);
+			if (result != null) {
+				Condition[] rotatedCondition = Arrays.copyOf(result.getAssignedCondition(),
+						result.getAssignedCondition().length);
+				List<Condition> rotatedList = Arrays.asList(rotatedCondition);
+				Collections.rotate(rotatedList, -1);
+				rotatedCondition = rotatedList.toArray(rotatedCondition);
+				result.setAssignedCondition(rotatedCondition);
+				result.setAssignedFactor(result.getAssignedFactor());
+			}
+		}
+	}
+
 	private static ExperimentsResponse copyExperimentResponse(ExperimentsResponse experimentsResponse) {
-		Condition[] assignedCondition = Arrays.copyOf(experimentsResponse.getAssignedCondition(),
-				experimentsResponse.getAssignedCondition().length);
 		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getTarget().toString(),
-				experimentsResponse.getSite(), experimentsResponse.getExperimentType(), assignedCondition, experimentsResponse.getAssignedFactor());
+				experimentsResponse.getSite(), experimentsResponse.getExperimentType(), Arrays.copyOf(experimentsResponse.getAssignedCondition(),
+				experimentsResponse.getAssignedCondition().length), experimentsResponse.getAssignedFactor());
 		return resultCondition;
 	}
 

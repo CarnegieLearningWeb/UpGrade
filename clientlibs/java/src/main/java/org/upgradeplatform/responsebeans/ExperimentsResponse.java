@@ -6,7 +6,7 @@ import org.upgradeplatform.utils.Utils.ExperimentType;
 
 public class ExperimentsResponse {
 	
-	private Object target;
+	private String target;
 	private String site;
 	private ExperimentType experimentType;
 	private Condition[] assignedCondition;
@@ -16,7 +16,7 @@ public class ExperimentsResponse {
 		super();
 	}
 
-	public ExperimentsResponse(Object target, String site, ExperimentType experimentType, Condition[] assignedCondition, Map<String,Factor>[] assignedFactor) {
+	public ExperimentsResponse(String target, String site, ExperimentType experimentType, Condition[] assignedCondition, Map<String,Factor>[] assignedFactor) {
 		this.target = target;
 		this.site = site;
 		this.experimentType = experimentType;
@@ -32,11 +32,11 @@ public class ExperimentsResponse {
 		this.assignedFactor = assignedFactor;
 	}
 
-	public Object getTarget() {
+	public String getTarget() {
 		return target;
 	}
 
-	public void setTarget(Object target) {
+	public void setTarget(String target) {
 		this.target = target;
 	}
 
