@@ -3,6 +3,7 @@ import { HookRequestBody } from '../../shared/models.js';
 import { getUpgradeClientConstructor, validateHook } from './utils.js';
 import routeHookToMockApp from './routeHookToMockApp.js';
 import cors from 'cors';
+import { GeneralTSBackendVersion5 } from './mockBackendTSServerApps/GeneralTSBackendVersion5.js';
 // import dotenv from 'dotenv';
 
 // dotenv.config();
@@ -23,36 +24,20 @@ app.get('/api', (req: Request, res: Response) => {
 
 app.get('/api/mock-app-models', (req: Request, res: Response) => {
   // get the models from the mock apps themselves
-  res.json({
-    models: [
-      {
-        name: 'Birthday App Backend',
-        description: 'I came from the backend',
-        type: 'backend',
-        language: 'ts',
-        hooks: [
-          {
-            name: 'nuthin',
-            description: 'Will dispatch nuthin',
-          },
-        ],
-        decisionPoints: [],
-        groups: [],
-        buttons: [
-          {
-            label: 'Nuthin',
-            hookName: 'nuthin',
-          },
-        ],
-      },
-    ],
-  });
+  const models = [new GeneralTSBackendVersion5().getAppInterfaceModel()];
+
+  res.json({ models });
 });
 
-app.post('/api/hook', (req: Request, res: Response) => {
+app.post('/api/hook', async (req: Request, res: Response) => {
   // if all is valid
   if (!req.body && !validateHook(req.body) === false) {
-    res.send('Invalid hook request');
+    res.json({
+      hookRecieved: req.body,
+      response: {
+        error: 'Invalid hook request',
+      },
+    });
     return;
   }
 
@@ -60,14 +45,26 @@ app.post('/api/hook', (req: Request, res: Response) => {
 
   const hookRequest: HookRequestBody = req.body;
 
-  const ClientLibConstructor = getUpgradeClientConstructor(hookRequest.libVersion);
+  try {
+    const ClientLibConstructor = getUpgradeClientConstructor(hookRequest.libVersion);
 
-  // route to mock app with the client constructor, payload, and hook
-  console.log('hookRequest', hookRequest);
+    console.log('ClientLibConstructor', ClientLibConstructor);
 
-  const response = routeHookToMockApp(ClientLibConstructor, hookRequest);
+    // route to mock app with the client constructor, payload, and hook
+    console.log('hookRequest', hookRequest);
 
-  console.log('response', response);
+    const response = await routeHookToMockApp(ClientLibConstructor, hookRequest);
 
-  // res.send('I got a hook: ' + JSON.stringify(response));
+    console.log('response', response);
+
+    res.json(response);
+  } catch (_) {
+    res.json({
+      hookRecieved: req.body,
+      response: {
+        error: `Invalid client library version for backend: ${hookRequest.libVersion}`,
+      },
+    });
+    return;
+  }
 });

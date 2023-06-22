@@ -34,19 +34,18 @@ export class GeneralTestForVersion41Service extends AbstractMockAppService {
   // public upgradeClient: any;
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
-  public NAME = MOCK_APP_NAMES.GEN_TEST_4_1;
+  public NAME = MOCK_APP_NAMES.GENERAL_TS_FRONTEND_4_1;
   public DESCRIPTION = 'Regression testing for version 4.1., targets API version 4.1 and api routes "/api/v4/**"';
   public TYPE: MockAppType = 'frontend';
   public LANGUAGE: CodeLanguage = 'ts';
   public SITES = {
-    TEST: 'test',
+    SelectSection: 'SelectSection',
   };
   public TARGETS = {
-    TARGET_1: 'target_1',
-    TARGET_2: 'target_2',
+    TARGET_1: 'absolute_value_plot_equality',
   };
   public GROUPS = ['schoolId', 'classId', 'instructorId'];
-  public CONTEXT = 'add'; // what should this be really?
+  public CONTEXT = 'assign-prog'; // what should this be really?
   public HOOKNAMES = {
     INIT: 'init',
     ASSIGN: 'assign',
@@ -55,15 +54,14 @@ export class GeneralTestForVersion41Service extends AbstractMockAppService {
     WORKING_GROUPS: 'update_working_group',
     SET_ALT_USER_IDS: 'setAltUserIds',
     LOG: 'log',
-    LOG_CALIPER: 'log_caliper',
+    LOG_CALIPER: 'logCaliper'
   };
   public DECISION_POINTS = [
-    { site: this.SITES.TEST, target: this.TARGETS.TARGET_1 },
-    { site: this.SITES.TEST, target: this.TARGETS.TARGET_2 },
+    { site: this.SITES.SelectSection, target: this.TARGETS.TARGET_1 },
   ];
 
   constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
-    super(MOCK_APP_NAMES.GEN_TEST_4_1, eventBus, clientLibraryService);
+    super(MOCK_APP_NAMES.GENERAL_TS_FRONTEND_4_1, eventBus, clientLibraryService);
   }
 
   /******************* "getAppInterfaceModel" required to give tester app a model to construct an interface to use this 'app' ********************/
@@ -210,7 +208,7 @@ export class GeneralTestForVersion41Service extends AbstractMockAppService {
     }
     try {
       const markResponse = await this.upgradeClient.markExperimentPoint(
-        this.SITES.TEST,
+        this.SITES.SelectSection,
         'control', // mock apps may need conditions
         MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
         this.TARGETS.TARGET_1

@@ -72,8 +72,8 @@ export class MockPortalService extends AbstractMockAppService {
       throw new Error('No user found in hookEvent');
     }
 
-    if (name === this.HOOKNAMES.LOGIN && user?.id) {
-      this.login(user.id);
+    if (name === this.HOOKNAMES.LOGIN && user?.id && user?.groups) {
+      this.login(user.id, user.groups);
     } else {
       throw new Error(`No hook found for hookName: ${name}`);
     }
@@ -81,14 +81,30 @@ export class MockPortalService extends AbstractMockAppService {
 
   /******************* simulated client app code ****************************************************/
 
-  private async login(userId: string) {
+  private async login(userId: string, userGroups: Record<string, string[]>) {
+    console.log({ userGroups });
     const memberships = new Map<string, string[]>();
+
+    for (const group in userGroups) {
+      memberships.set(group, userGroups[group]);
+    }
+
+    console.log({ memberships });
 
     this.upgradeClient = this.constructUpgradeClient(userId);
     this.upgradeClient
       .init()
-      .then(() => this.upgradeClient.setGroupMembership(memberships))
-      .then(() => this.upgradeClient.getAllExperimentConditions('portal'))
+      .then((initResponse: any) => { 
+        console.log('initResponse', initResponse);
+        return this.upgradeClient.setGroupMembership(memberships)
+      })
+      .then((groupResponse: any) => {
+        console.log('groupResponse', groupResponse);
+        return this.upgradeClient.getAllExperimentConditions(this.CONTEXT);
+      })
+      .then((assignmentResponse: any) => {
+        console.log('assignmentResponse', assignmentResponse);
+      })
       .catch((err: any) => console.error(err));
   }
 }
