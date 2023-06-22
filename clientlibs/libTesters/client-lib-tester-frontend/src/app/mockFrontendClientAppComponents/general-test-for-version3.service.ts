@@ -39,14 +39,13 @@ export class GeneralTestForVersion3Service extends AbstractMockAppService {
   public TYPE: MockAppType = 'frontend';
   public LANGUAGE: CodeLanguage = 'ts';
   public SITES = {
-    TEST: 'test',
+    SelectSection: 'SelectSection',
   };
   public TARGETS = {
-    TARGET_1: 'target_1',
-    TARGET_2: 'target_2',
+    TARGET_1: 'absolute_value_plot_equality',
   };
   public GROUPS = ['schoolId', 'classId', 'instructorId'];
-  public CONTEXT = 'add'; // what should this be really?
+  public CONTEXT = 'assign-prog'; // what should this be really?
   public HOOKNAMES = {
     INIT: 'init',
     ASSIGN: 'assign',
@@ -57,8 +56,7 @@ export class GeneralTestForVersion3Service extends AbstractMockAppService {
     LOG: 'log',
   };
   public DECISION_POINTS = [
-    { site: this.SITES.TEST, target: this.TARGETS.TARGET_1 },
-    { site: this.SITES.TEST, target: this.TARGETS.TARGET_2 },
+    { site: this.SITES.SelectSection, target: this.TARGETS.TARGET_1 },
   ];
 
   constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
@@ -199,8 +197,8 @@ export class GeneralTestForVersion3Service extends AbstractMockAppService {
     }
     try {
       const markResponse = await this.upgradeClient.markExperimentPoint(
-        this.SITES.TEST,
-        'control', // mock apps may need conditions
+        this.SITES.SelectSection,
+        'asdf=orange; fdfasdfs=green', // mock apps may need conditions
         MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
         this.TARGETS.TARGET_1
       );
