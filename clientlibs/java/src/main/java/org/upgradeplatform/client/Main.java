@@ -2,6 +2,7 @@ package org.upgradeplatform.client;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +72,7 @@ public class Main {
                                                     String code = condition == null ? null : condition.getConditionCode();
                                                     System.out.println(condition);
                                                     System.out.println(code);
-                                                    experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED, new ResponseCallback<MarkExperimentPoint>(){
+                                                    experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED,"", new Date().toString(), new ResponseCallback<MarkExperimentPoint>(){
                                                         @Override
                                                         public void onSuccess(@NonNull MarkExperimentPoint markResult){
                                                             System.out.println("marked " + code + ": " + markResult.toString());
@@ -85,7 +86,7 @@ public class Main {
                                                     String code = condition == null ? null : condition.getConditionCode();
                                                     System.out.println(condition);
                                                     System.out.println(code);
-                                                    experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED, new ResponseCallback<MarkExperimentPoint>(){
+                                                    experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED, "", new Date().toString(), new ResponseCallback<MarkExperimentPoint>(){
                                                         @Override
                                                         public void onSuccess(@NonNull MarkExperimentPoint markResult){
                                                             System.out.println("marked second " + code + ": " + markResult.toString());
@@ -99,7 +100,7 @@ public class Main {
                                                     String code = condition == null ? null : condition.getConditionCode();
                                                     System.out.println(condition);
                                                     System.out.println(code);
-                                                    experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED, new ResponseCallback<MarkExperimentPoint>(){
+                                                    experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED, "", new Date().toString(), new ResponseCallback<MarkExperimentPoint>(){
                                                         @Override
                                                         public void onSuccess(@NonNull MarkExperimentPoint markResult){
                                                             result.complete("marked third " + code + ": " + markResult.toString());
