@@ -1,5 +1,6 @@
 import IndividualEnrollment from './IndividualEnrollment';
 import GroupEnrollment from './GroupEnrollment';
+import WithinSubjectEnrollment from './WithinSubjectEnrollment';
 import DetailIndividualExperiment from './DetailIndividualExperiment';
 import DetailGroupExperiment from './DetailGroupExperiment';
 import { Container } from 'typedi';
@@ -60,4 +61,9 @@ export const StatsIndividualEnrollment = async () => {
 export const StatsGroupEnrollment = async () => {
   await initialChecks();
   await GroupEnrollment();
+};
+
+export const StatsWithinSubjectEnrollment = async () => {
+  await initialChecks();
+  await WithinSubjectEnrollment();
 };
