@@ -1,6 +1,7 @@
 import * as UpgradeClient_Local from 'upgrade_client_local/dist/browser';
-// import { UpgradeClient as UpgradeClient_Local } from 'upgrade_client_1_1_17';
-import { UpgradeClient as UpgradeClient_1_1_17 } from 'upgrade_client_1_1_17';
+// import { UpgradeClient as UpgradeClient_Local } from 'upgrade_client_1_1_7';
+import { UpgradeClient as UpgradeClient_1_1_7 } from 'upgrade_client_1_1_7';
+import * as UpgradeClient_1_1_8 from "upgrade_client_1_1_8/dist/browser"
 import { UpgradeClient as UpgradeClient_3_0_18 } from 'upgrade_client_3_0_18';
 import { UpgradeClient as UpgradeClient_4_2_0 } from 'upgrade_client_4_2_0';
 import { MOCK_APP_NAMES } from '../../../shared/constants';
@@ -23,7 +24,12 @@ export const availableClientLibraries: ClientLibraryRef[] = [
   {
     version: '1.1.7',
     language: 'ts',
-    client: UpgradeClient_1_1_17,
+    client: UpgradeClient_1_1_7,
+  },
+  {
+    version: '1.1.8',
+    language: 'ts',
+    client: UpgradeClient_1_1_8,
   },
   {
     version: '3.0.18',

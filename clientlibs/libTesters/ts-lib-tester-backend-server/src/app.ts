@@ -4,6 +4,7 @@ import { getUpgradeClientConstructor, validateHook } from './utils.js';
 import routeHookToMockApp from './routeHookToMockApp.js';
 import cors from 'cors';
 import { GeneralTSBackendVersion5 } from './mockBackendTSServerApps/GeneralTSBackendVersion5.js';
+import { GeneralTSBackendVersion1 } from './mockBackendTSServerApps/GeneralTSBackendVersion1.js';
 // import dotenv from 'dotenv';
 
 // dotenv.config();
@@ -24,7 +25,10 @@ app.get('/api', (req: Request, res: Response) => {
 
 app.get('/api/mock-app-models', (req: Request, res: Response) => {
   // get the models from the mock apps themselves
-  const models = [new GeneralTSBackendVersion5().getAppInterfaceModel()];
+  const models = [ 
+    new GeneralTSBackendVersion1().getAppInterfaceModel(),
+    new GeneralTSBackendVersion5().getAppInterfaceModel(),
+  ];
 
   res.json({ models });
 });

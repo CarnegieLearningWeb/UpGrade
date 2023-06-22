@@ -1,23 +1,15 @@
-import { Injectable } from '@angular/core';
-import { ClientLibraryService } from '../services/client-library.service';
-import { EventBusService } from '../services/event-bus.service';
+import { AbstractTSBackendMockApp } from './AbstractTSBackendMockApp';
+import UpgradeClient from 'upgrade_client_1_1_8/dist/node';
+
+import { MOCK_APP_NAMES } from '../../../shared/constants';
+
 import {
-  ClientAppHook,
-  CodeLanguage,
   MockAppType,
+  CodeLanguage,
   MockClientAppInterfaceModel,
-  MockClientAppUser,
-} from '../../../../shared/models';
-
-// There's probably a clever way to do this, but getting the right types automatically is tricky
-
-// import UpgradeClient from 'upgrade_client_local/dist/browser';
-// import { UpgradeClient } from 'upgrade_client_1_1_7';
-import { UpgradeClient } from 'upgrade_client_3_0_18';
-// import { UpgradeClient } from 'upgrade_client_4_2_0';
-
-import { AbstractMockAppService } from './abstract-mock-app.service';
-import { MOCK_APP_NAMES } from '../../../../shared/constants';
+  HookRequestBody,
+  HookResponse,
+} from '../../../shared/models.js';
 
 export enum MARKED_DECISION_POINT_STATUS {
   CONDITION_APPLIED = 'condition applied',
@@ -25,24 +17,22 @@ export enum MARKED_DECISION_POINT_STATUS {
   NO_CONDITION_ASSIGNED = 'no condition assigned',
 }
 
-@Injectable({
-  providedIn: 'root',
-})
-export class GeneralTestForVersion3Service extends AbstractMockAppService {
+export class GeneralTSBackendVersion1 extends AbstractTSBackendMockApp {
+  // implement required abstract properties
   public override upgradeClient!: UpgradeClient;
   // public upgradeClient: any;
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
-  public NAME = MOCK_APP_NAMES.GENERAL_TS_FRONTEND_3_0;
-  public DESCRIPTION =
-    'Regression testing for lib version 3x, API target version: 3 and old unversioned api routes "/api/**"';
+  public NAME = MOCK_APP_NAMES.GENERAL_TS_BACKEND_1;
+  public DESCRIPTION = 'Regression testing for lib version 1';
   public TYPE: MockAppType = 'frontend';
   public LANGUAGE: CodeLanguage = 'ts';
   public SITES = {
-    SelectSection: 'SelectSection',
+    TEST: 'test',
   };
   public TARGETS = {
-    TARGET_1: 'absolute_value_plot_equality',
+    TARGET_1: 'target_1',
+    TARGET_2: 'target_2',
   };
   public GROUPS = ['schoolId', 'classId', 'instructorId'];
   public CONTEXT = 'assign-prog'; // what should this be really?
@@ -50,20 +40,19 @@ export class GeneralTestForVersion3Service extends AbstractMockAppService {
     INIT: 'init',
     ASSIGN: 'assign',
     MARK_EXPERIMENT_POINT: 'markExperimentPoint',
-    GROUP_MEMBERSHIP: 'update_group',
-    WORKING_GROUPS: 'update_working_group',
+    GROUP_MEMBERSHIP: 'setGroupMembership',
+    WORKING_GROUPS: 'setWorkingGroup',
     SET_ALT_USER_IDS: 'setAltUserIds',
     LOG: 'log',
   };
   public DECISION_POINTS = [
-    { site: this.SITES.SelectSection, target: this.TARGETS.TARGET_1 },
+    { site: this.SITES.TEST, target: this.TARGETS.TARGET_1 },
+    { site: this.SITES.TEST, target: this.TARGETS.TARGET_2 },
   ];
 
-  constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
-    super(MOCK_APP_NAMES.GENERAL_TS_FRONTEND_3_0, eventBus, clientLibraryService);
+  constructor(UpgradeClientConstructor?: any) {
+    super(UpgradeClientConstructor);
   }
-
-  /******************* "getAppInterfaceModel" required to give tester app a model to construct an interface to use this 'app' ********************/
 
   public getAppInterfaceModel(): MockClientAppInterfaceModel {
     return {
@@ -105,31 +94,31 @@ export class GeneralTestForVersion3Service extends AbstractMockAppService {
       groups: this.GROUPS,
       buttons: [
         {
-          label: 'init',
+          label: this.HOOKNAMES.INIT,
           hookName: this.HOOKNAMES.INIT,
         },
         {
-          label: 'getAllExperimentConditions',
+          label: this.HOOKNAMES.ASSIGN,
           hookName: this.HOOKNAMES.ASSIGN,
         },
         {
-          label: 'markExperimentPoint',
+          label: this.HOOKNAMES.MARK_EXPERIMENT_POINT,
           hookName: this.HOOKNAMES.MARK_EXPERIMENT_POINT,
         },
         {
-          label: 'setAltUserIds',
+          label: this.HOOKNAMES.SET_ALT_USER_IDS,
           hookName: this.HOOKNAMES.SET_ALT_USER_IDS,
         },
         {
-          label: 'setWorkingGroup',
+          label: this.HOOKNAMES.WORKING_GROUPS,
           hookName: this.HOOKNAMES.WORKING_GROUPS,
         },
         {
-          label: 'setGroupMemberhip',
+          label: this.HOOKNAMES.GROUP_MEMBERSHIP,
           hookName: this.HOOKNAMES.GROUP_MEMBERSHIP,
         },
         {
-          label: 'log',
+          label: this.HOOKNAMES.LOG,
           hookName: this.HOOKNAMES.LOG,
         },
       ],
@@ -137,140 +126,198 @@ export class GeneralTestForVersion3Service extends AbstractMockAppService {
   }
 
   /******************* "routeHook" required to route requests from tester-app to simulated client code snippets ********************/
-  public routeHook(hookEvent: ClientAppHook) {
+  public async routeHook(hookEvent: HookRequestBody): Promise<HookResponse> {
     const { name, user } = hookEvent;
-    if (name === '') return;
+    if (name === '')
+      return {
+        hookReceived: hookEvent,
+        response: {
+          error: 'No hook name provided',
+        },
+      };
 
     if (!user || !user.id) {
-      throw new Error('No user found in hookEvent');
+      return {
+        hookReceived: hookEvent,
+        response: {
+          error: 'No user id provided',
+        },
+      };
     }
 
     if (name === this.HOOKNAMES.INIT && user?.id) {
-      this.doInit(user.id);
+      return await this.doInit(hookEvent);
     } else if (name === this.HOOKNAMES.ASSIGN) {
-      this.doAssign();
+      return await this.doAssign(hookEvent);
     } else if (name === this.HOOKNAMES.MARK_EXPERIMENT_POINT) {
-      this.doMark();
+      return await this.doMark(hookEvent);
     } else if (name === this.HOOKNAMES.SET_ALT_USER_IDS) {
-      this.doUserAliases(user);
+      return await this.doUserAliases(hookEvent);
     } else if (name === this.HOOKNAMES.GROUP_MEMBERSHIP) {
-      this.doGroupMembership(user);
+      return await this.doGroupMembership(hookEvent);
     } else if (name === this.HOOKNAMES.WORKING_GROUPS) {
-      this.doWorkingGroupMembership(user);
+      return await this.doWorkingGroupMembership(hookEvent);
     } else if (name === this.HOOKNAMES.LOG) {
-      this.doLog(user);
+      return await this.doLog(hookEvent);
     } else {
-      throw new Error(`No hook found for hookName: ${name}`);
+      return {
+        hookReceived: hookEvent,
+        response: {
+          error: `No hook found for hookName: ${name}`,
+        },
+      };
     }
   }
 
   /******************* simulated client app code ****************************************************/
 
-  private async doInit(userId: string) {
-    console.log('login hook called:', userId);
-    this.upgradeClient = this.constructUpgradeClient(userId);
+  private async doInit(hookEvent: HookRequestBody): Promise<HookResponse> {
+    console.log(`'doInit called:'`, hookEvent);
+    this.upgradeClient = this.constructUpgradeClient(hookEvent.user.id, hookEvent.apiHostUrl);
     console.log({ upgradeClient: this.upgradeClient });
 
     try {
       const initResponse = await this.upgradeClient.init();
       console.log({ initResponse });
+      return {
+        hookReceived: hookEvent,
+        response: initResponse,
+      };
     } catch (err) {
       console.error(err);
+      return {
+        hookReceived: hookEvent,
+        response: err,
+      };
     }
   }
 
-  private async doAssign() {
-    if (!this.upgradeClient) {
-      throw new Error('No upgradeClient found. Maybe you need to run login hook first?');
-    }
+  private async doAssign(hookEvent: HookRequestBody): Promise<HookResponse> {
+    console.log('doAssign called:', hookEvent);
+    this.upgradeClient = this.constructUpgradeClient(hookEvent.user.id, hookEvent.apiHostUrl);
+
     try {
       const assignmentsResponse = await this.upgradeClient.getAllExperimentConditions(this.CONTEXT);
       console.log({ assignmentsResponse });
+      return {
+        hookReceived: hookEvent,
+        response: assignmentsResponse,
+      };
     } catch (err) {
       console.error(err);
+      return {
+        hookReceived: hookEvent,
+        response: err,
+      };
     }
   }
 
-  private async doMark() {
-    if (!this.upgradeClient) {
-      console.error('No upgradeClient found. Maybe you need to run login hook first?');
-    }
+  private async doMark(hookEvent: HookRequestBody): Promise<HookResponse> {
+    console.log('doMark called:', hookEvent);
+    this.upgradeClient = this.constructUpgradeClient(hookEvent.user.id, hookEvent.apiHostUrl);
+
     try {
       const markResponse = await this.upgradeClient.markExperimentPoint(
-        this.SITES.SelectSection,
-        'asdf=orange; fdfasdfs=green', // mock apps may need conditions
-        MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
-        this.TARGETS.TARGET_1
+        this.SITES.TEST,
+        'control',
+        this.TARGETS.TARGET_1,
       );
       console.log({ markResponse });
+      return {
+        hookReceived: hookEvent,
+        response: markResponse,
+      };
     } catch (err) {
       console.error(err);
+      return {
+        hookReceived: hookEvent,
+        response: err,
+      };
     }
   }
 
-  private async doUserAliases(user: MockClientAppUser) {
-    if (!this.upgradeClient) {
-      console.error('No upgradeClient found. Maybe you need to run login hook first?');
-    }
-    if (!user || !user.userAliases) {
-      console.error('User info is missing userAliases:', user);
-    }
+  private async doUserAliases(hookEvent: HookRequestBody): Promise<HookResponse> {
+    console.log('doUserAliases called:', hookEvent);
+
+    this.upgradeClient = this.constructUpgradeClient(hookEvent.user.id, hookEvent.apiHostUrl);
+
     try {
-      const useraliasesResponse = await this.upgradeClient.setAltUserIds(user.userAliases);
+      const useraliasesResponse = await this.upgradeClient.setAltUserIds(hookEvent.user.userAliases);
       console.log({ useraliasesResponse });
+      return {
+        hookReceived: hookEvent,
+        response: useraliasesResponse,
+      };
     } catch (err) {
       console.error(err);
+      return {
+        hookReceived: hookEvent,
+        response: err,
+      };
     }
   }
 
-  private async doGroupMembership(user: MockClientAppUser) {
-    if (!this.upgradeClient) {
-      console.error('No upgradeClient found. Maybe you need to run login hook first?');
-    }
-    if (!user || !user.groups) {
-      console.error('User info is missing groups:', user);
+  private async doGroupMembership(hookEvent: HookRequestBody): Promise<HookResponse> {
+    console.log('doGroupMembership called:', hookEvent);
+
+    this.upgradeClient = this.constructUpgradeClient(hookEvent.user.id, hookEvent.apiHostUrl);
+
+    if (!hookEvent.user || !hookEvent.user.groups) {
+      console.error('User info is missing groups:', hookEvent.user);
     }
 
     const groupMap = new Map<string, Array<string>>();
-    for (const group in user.groups) {
-      groupMap.set(group, user.groups[group]);
+    for (const group in hookEvent.user.groups) {
+      groupMap.set(group, hookEvent.user.groups[group]);
     }
 
     try {
       const groupMembershipResponse = await this.upgradeClient.setGroupMembership(groupMap);
       console.log({ groupMembershipResponse });
+      return {
+        hookReceived: hookEvent,
+        response: groupMembershipResponse,
+      };
     } catch (err) {
       console.error(err);
+      return {
+        hookReceived: hookEvent,
+        response: err,
+      };
     }
   }
 
-  private async doWorkingGroupMembership(user: MockClientAppUser) {
-    if (!this.upgradeClient) {
-      console.error('No upgradeClient found. Maybe you need to run login hook first?');
-    }
-    if (!user || !user.groups) {
-      console.error('User info is missing working groups:', user);
-    }
+  private async doWorkingGroupMembership(hookEvent: HookRequestBody): Promise<HookResponse> {
+    console.log('doWorkingGroupMembership', hookEvent);
+
+    this.upgradeClient = this.constructUpgradeClient(hookEvent.user.id, hookEvent.apiHostUrl);
+
     const workingGroupMap = new Map<string, string>();
+
 
     try {
       const workingGroupMembershipResponse = await this.upgradeClient.setWorkingGroup(workingGroupMap);
       console.log({ workingGroupMembershipResponse });
+      return {
+        hookReceived: hookEvent,
+        response: workingGroupMembershipResponse,
+      };
     } catch (err) {
       console.error(err);
+      return {
+        hookReceived: hookEvent,
+        response: err,
+      };
     }
   }
 
-  private async doLog(user: MockClientAppUser) {
-    if (!this.upgradeClient) {
-      console.error('No upgradeClient found. Maybe you need to run login hook first?');
-    }
-    if (!user || !user.id) {
-      console.error('User info is missing id:', user);
-    }
+  private async doLog(hookEvent: HookRequestBody): Promise<HookResponse> {
+    console.log('doLog', hookEvent);
+    this.upgradeClient = this.constructUpgradeClient(hookEvent.user.id, hookEvent.apiHostUrl);
+
     const logRequest = [
       {
-        userId: user.id,
+        userId: hookEvent.user.id,
         timestamp: '2022-03-03T19:49:00.496',
         metrics: {
           attributes: {
@@ -302,8 +349,16 @@ export class GeneralTestForVersion3Service extends AbstractMockAppService {
     try {
       const logResponse = await this.upgradeClient.log(logRequest);
       console.log({ logResponse });
+      return {
+        hookReceived: hookEvent,
+        response: logResponse,
+      };
     } catch (err) {
       console.error(err);
+      return {
+        hookReceived: hookEvent,
+        response: err,
+      };
     }
   }
 }
