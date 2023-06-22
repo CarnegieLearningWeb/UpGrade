@@ -13,7 +13,7 @@ import { CaliperEnvelope } from '../../../../../../types/src';
 // There's probably a clever way to do this, but getting the right types automatically is tricky
 
 // import UpgradeClient from 'upgrade_client_local/dist/browser';
-// import { UpgradeClient } from 'upgrade_client_1_1_17';
+// import { UpgradeClient } from 'upgrade_client_1_1_7';
 // import { UpgradeClient } from 'upgrade_client_3_0_18';
 import { UpgradeClient } from 'upgrade_client_4_2_0';
 
