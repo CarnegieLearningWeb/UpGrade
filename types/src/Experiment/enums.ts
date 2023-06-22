@@ -142,6 +142,8 @@ export enum REPEATED_MEASURE {
   mean = 'MEAN',
   earliest = 'EARLIEST',
   mostRecent = 'MOST RECENT',
+  count = 'COUNT',
+  percentage = 'PERCENTAGE',
 }
 
 export enum FILTER_MODE {
