@@ -450,6 +450,7 @@ export class AnalyticsRepository {
     dateRange: DATE_RANGE,
     clientOffset: number
   ): Promise<[IEnrollmentConditionAndPartitionDate[], IEnrollmentConditionAndPartitionDate[]]> {
+    const experimentRepository = this.manager.getCustomRepository(ExperimentRepository);
     const individualEnrollmentRepository = this.manager.getCustomRepository(IndividualEnrollmentRepository);
     const groupEnrollmentRepository = this.manager.getCustomRepository(GroupEnrollmentRepository);
 
@@ -459,30 +460,54 @@ export class AnalyticsRepository {
       clientOffset,
       'individualEnrollment'
     );
-    const individualEnrollmentConditionAndDecisionPoint = individualEnrollmentRepository
-      .createQueryBuilder('individualEnrollment')
-      .select([
-        'count(distinct("individualEnrollment"."userId"))::int',
-        '"expCond"."id" as "conditionId"',
-        '"individualEnrollment"."partitionId"',
-        individualSelectRange,
-      ])
-      .leftJoin(MonitoredDecisionPoint, 'mdp', 'individualEnrollment.userId = mdp.userId')
-      .leftJoin(DecisionPoint, 'dp', 'dp.id = individualEnrollment.partitionId')
-      .where('mdp.site = dp.site')
-      .andWhere('mdp.target = dp.target')
-      .andWhere('"individualEnrollment"."experimentId" = :id', { id: experimentId })
-      .andWhere(individualWhereDate)
-      .andWhere((qb) => {
-        const subQuery = qb.subQuery().select('user.id').from(PreviewUser, 'user').getQuery();
-        return '"individualEnrollment"."userId" NOT IN ' + subQuery;
-      })
-      .leftJoin(MonitoredDecisionPointLog, 'mdpl', 'mdp.id = mdpl.monitoredDecisionPointId')
-      .leftJoin(ExperimentCondition, 'expCond', 'expCond.conditionCode = mdpl.condition')
-      .groupBy('"expCond"."id"')
-      .addGroupBy('"individualEnrollment"."partitionId"')
-      .addGroupBy(groupByRange)
-      .execute();
+
+    const experiment = await experimentRepository.findOne(experimentId);
+    let individualEnrollmentConditionAndDecisionPoint: Promise<any>;
+    if (experiment && experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+      individualEnrollmentConditionAndDecisionPoint = individualEnrollmentRepository
+        .createQueryBuilder('individualEnrollment')
+        .select([
+          'count(distinct("individualEnrollment"."userId"))::int',
+          '"expCond"."id" as "conditionId"',
+          '"individualEnrollment"."partitionId"',
+          individualSelectRange,
+        ])
+        .leftJoin(MonitoredDecisionPoint, 'mdp', 'individualEnrollment.userId = mdp.userId')
+        .leftJoin(DecisionPoint, 'dp', 'dp.id = individualEnrollment.partitionId')
+        .where('mdp.site = dp.site')
+        .andWhere('mdp.target = dp.target')
+        .andWhere('"individualEnrollment"."experimentId" = :id', { id: experimentId })
+        .andWhere(individualWhereDate)
+        .andWhere((qb) => {
+          const subQuery = qb.subQuery().select('user.id').from(PreviewUser, 'user').getQuery();
+          return '"individualEnrollment"."userId" NOT IN ' + subQuery;
+        })
+        .leftJoin(MonitoredDecisionPointLog, 'mdpl', 'mdp.id = mdpl.monitoredDecisionPointId')
+        .leftJoin(ExperimentCondition, 'expCond', 'expCond.conditionCode = mdpl.condition')
+        .groupBy('"expCond"."id"')
+        .addGroupBy('"individualEnrollment"."partitionId"')
+        .addGroupBy(groupByRange)
+        .execute();
+    } else {
+      individualEnrollmentConditionAndDecisionPoint = individualEnrollmentRepository
+        .createQueryBuilder('individualEnrollment')
+        .select([
+          'count(distinct("individualEnrollment"."userId"))::int',
+          '"individualEnrollment"."conditionId"',
+          '"individualEnrollment"."partitionId"',
+          individualSelectRange,
+        ])
+        .where('"individualEnrollment"."experimentId" = :id', { id: experimentId })
+        .andWhere(individualWhereDate)
+        .andWhere((qb) => {
+          const subQuery = qb.subQuery().select('user.id').from(PreviewUser, 'user').getQuery();
+          return '"individualEnrollment"."userId" NOT IN ' + subQuery;
+        })
+        .groupBy('"individualEnrollment"."conditionId"')
+        .addGroupBy('"individualEnrollment"."partitionId"')
+        .addGroupBy(groupByRange)
+        .execute();
+    }
 
     const { whereDate: groupWhereDate, selectRange: groupSelectRange } = this.getDateVariables(
       dateRange,
