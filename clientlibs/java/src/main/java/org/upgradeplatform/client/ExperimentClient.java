@@ -211,36 +211,6 @@ public class ExperimentClient implements AutoCloseable {
 		}));
 	}
 
-	public void getAllExperimentCondition(String site, String target, String context, final ResponseCallback<List<ExperimentsResponse>> callbacks) {
-		ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context);
-		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
-		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
-
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
-				new InvocationCallback<Response>() {
-
-			@Override
-			public void completed(Response response) {
-				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-					// Cache allExperiment data for future requests
-				    readResponseToCallback(response, callbacks, new GenericType<List<ExperimentsResponse>>() {})
-				        .ifPresent(ae -> allExperiments = ae);
-					rotateConditions(site, target);
-				} else {
-					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
-					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
-					if (callbacks != null)
-						callbacks.onError(error);
-				}
-			}
-
-			@Override
-			public void failed(Throwable throwable) {
-				callbacks.onError(new ErrorResponse(throwable.getMessage()));
-			}
-
-		}));
-	}
 
     /**@param site This is matched case-insensitively*/
 	public void getExperimentCondition(String context, String site, final ResponseCallback<Assignment> callbacks) {
@@ -259,10 +229,9 @@ public class ExperimentClient implements AutoCloseable {
 
 					if (callbacks != null) {
 						callbacks.onSuccess(resultAssignment);
-						rotateConditions(site, target);
 					}
 				} else {
-					getAllExperimentCondition(site, target, context, new ResponseCallback<List<ExperimentsResponse>>() {
+					getAllExperimentConditions(context, new ResponseCallback<List<ExperimentsResponse>>() {
 						@Override
 						public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
@@ -416,6 +385,7 @@ public class ExperimentClient implements AutoCloseable {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 
 				    readResponseToCallback(response, callbacks, MarkExperimentPoint.class);
+					rotateConditions(data.getSite(), data.getTarget());
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
