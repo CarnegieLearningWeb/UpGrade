@@ -468,7 +468,11 @@ describe('AnalyticsRepository Testing', () => {
     const groupEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(GroupEnrollmentRepository)
       .returns(GroupEnrollmentRepository.prototype);
+    const experimentRepoStub = getCustomRepositoryStub
+      .withArgs(ExperimentRepository)
+      .returns(ExperimentRepository.prototype);
 
+    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
     createQueryBuilderStub = sandbox
       .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
@@ -494,6 +498,8 @@ describe('AnalyticsRepository Testing', () => {
     const res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_SEVEN_DAYS, 3);
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(groupEnrollmentRepoStub);
+    sinon.assert.calledOnce(experimentRepoStub);
+    sinon.assert.calledOnce(findOneStub);
 
     expect(res).toEqual([[result], [result]]);
   });
@@ -506,7 +512,11 @@ describe('AnalyticsRepository Testing', () => {
     const groupEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(GroupEnrollmentRepository)
       .returns(GroupEnrollmentRepository.prototype);
+    const experimentRepoStub = getCustomRepositoryStub
+      .withArgs(ExperimentRepository)
+      .returns(ExperimentRepository.prototype);
 
+    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
     createQueryBuilderStub = sandbox
       .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
@@ -532,6 +542,8 @@ describe('AnalyticsRepository Testing', () => {
     const res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_SIX_MONTHS, 3);
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(groupEnrollmentRepoStub);
+    sinon.assert.calledOnce(experimentRepoStub);
+    sinon.assert.calledOnce(findOneStub);
 
     expect(res).toEqual([[result], [result]]);
   });
@@ -544,7 +556,11 @@ describe('AnalyticsRepository Testing', () => {
     const groupEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(GroupEnrollmentRepository)
       .returns(GroupEnrollmentRepository.prototype);
+    const experimentRepoStub = getCustomRepositoryStub
+      .withArgs(ExperimentRepository)
+      .returns(ExperimentRepository.prototype);
 
+    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
     createQueryBuilderStub = sandbox
       .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
@@ -570,6 +586,8 @@ describe('AnalyticsRepository Testing', () => {
     const res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_THREE_MONTHS, 3);
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(groupEnrollmentRepoStub);
+    sinon.assert.calledOnce(experimentRepoStub);
+    sinon.assert.calledOnce(findOneStub);
 
     expect(res).toEqual([[result], [result]]);
   });
@@ -582,6 +600,11 @@ describe('AnalyticsRepository Testing', () => {
     const groupEnrollmentRepoStub = getCustomRepositoryStub
       .withArgs(GroupEnrollmentRepository)
       .returns(GroupEnrollmentRepository.prototype);
+    const experimentRepoStub = getCustomRepositoryStub
+      .withArgs(ExperimentRepository)
+      .returns(ExperimentRepository.prototype);
+
+    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
 
     createQueryBuilderStub = sandbox
       .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
@@ -608,6 +631,8 @@ describe('AnalyticsRepository Testing', () => {
     const res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_TWELVE_MONTHS, 3);
     sinon.assert.calledOnce(individualEnrollmentRepoStub);
     sinon.assert.calledOnce(groupEnrollmentRepoStub);
+    sinon.assert.calledOnce(experimentRepoStub);
+    sinon.assert.calledOnce(findOneStub);
 
     expect(res).toEqual([[result], [result]]);
   });
