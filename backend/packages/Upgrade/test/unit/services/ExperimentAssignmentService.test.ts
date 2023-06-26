@@ -380,7 +380,9 @@ describe('Expeirment Assignment Service Test', () => {
   it('should log an error when clientError is provided', async () => { 
     const userId = 'testUser';
     const site = 'testSite';
-    const clientError = 'Client error message';
+    const target = undefined;
+    const condition = 'testCondition';
+    const clientError = 'clientError';
     const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
     const decisionPointRespositoryMock = { find: sandbox.stub().resolves([]) };
     const experimentRespositoryMock = { getValidExperiments: sandbox.stub().resolves([]) };
@@ -388,16 +390,22 @@ describe('Expeirment Assignment Service Test', () => {
     const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) }
     const groupEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) }
     const groupExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) }
+    const monitoredDecisionPointRepositoryMock = { saveRawJson: sandbox.stub().callsFake((args) => {return args}) };
+
     testedModule.decisionPointRepository = decisionPointRespositoryMock;
     testedModule.experimentRepository = experimentRespositoryMock;
     testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
     testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
     testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
     testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
+    testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
 
-    const result = await testedModule.markExperimentPoint(userId, site, undefined, 'testCondition', { logger: loggerMock, userDoc: {}}, undefined, undefined, undefined, clientError);
-    expect(result).toBeUndefined();
-    sinon.assert.calledOnce(loggerMock.error);
+    const result = await testedModule.markExperimentPoint(userId, site, target, condition, { logger: loggerMock, userDoc: {}}, undefined, undefined, undefined, clientError);
+    expect(result).toMatchObject({
+      condition: condition,
+      site: site,
+      target: target,
+    });    sinon.assert.calledOnce(loggerMock.error);
 
   });
 
@@ -424,7 +432,6 @@ describe('Expeirment Assignment Service Test', () => {
     testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
 
     const result = await testedModule.markExperimentPoint(userId, site, MARKED_DECISION_POINT_STATUS.NO_CONDITION_ASSIGNED, condition, { logger: loggerMock, userDoc: {}}, target, undefined, undefined);
-    console.log(result)
     expect(result).toMatchObject({
       condition: condition,
       site: site,
