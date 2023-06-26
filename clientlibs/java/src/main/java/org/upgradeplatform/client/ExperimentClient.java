@@ -225,7 +225,8 @@ public class ExperimentClient implements AutoCloseable {
 				if (this.allExperiments != null) {
 					ExperimentsResponse resultExperimentsResponse = findExperimentResponse(site, target, allExperiments);
 					Map<String, Factor> assignedFactor = resultExperimentsResponse.getAssignedFactor() != null ? resultExperimentsResponse.getAssignedFactor()[0] : null;
-					Assignment resultAssignment = new Assignment(target, site, resultExperimentsResponse.getExperimentType(), resultExperimentsResponse.getAssignedCondition()[0], assignedFactor);
+					Condition assignedCondition = resultExperimentsResponse.getAssignedCondition() != null ? resultExperimentsResponse.getAssignedCondition()[0] : null;
+					Assignment resultAssignment = new Assignment(target, site, resultExperimentsResponse.getExperimentType(), assignedCondition, assignedFactor);
 
 					if (callbacks != null) {
 						callbacks.onSuccess(resultAssignment);
@@ -237,7 +238,8 @@ public class ExperimentClient implements AutoCloseable {
 
 							ExperimentsResponse resultExperimentsResponse = findExperimentResponse(site, target, experiments);
 							Map<String, Factor> assignedFactor = resultExperimentsResponse.getAssignedFactor() != null ? resultExperimentsResponse.getAssignedFactor()[0] : null;
-							Assignment resultAssignment = new Assignment(target, site, resultExperimentsResponse.getExperimentType(), resultExperimentsResponse.getAssignedCondition()[0], assignedFactor);
+							Condition assignedCondition = resultExperimentsResponse.getAssignedCondition() != null ? resultExperimentsResponse.getAssignedCondition()[0] : null;
+							Assignment resultAssignment = new Assignment(target, site, resultExperimentsResponse.getExperimentType(), assignedCondition, assignedFactor);
 							
 							if (callbacks != null) {
 								callbacks.onSuccess(resultAssignment);
