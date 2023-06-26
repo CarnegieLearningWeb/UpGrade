@@ -386,12 +386,15 @@ export class ExperimentAssignmentService {
       });
 
       // save monitored log document
-      await this.monitoredDecisionPointLogRepository.save({
+      const logDocument = await this.monitoredDecisionPointLogRepository.save({
         monitoredDecisionPoint: monitoredDocument,
         condition: condition,
         uniquifier: uniquifier,
       });
-      return monitoredDocument;
+      return {
+        ...monitoredDocument,
+        condition: monitoredDocument.condition || logDocument.condition,
+      };
     } else {
       const assignmentUnit = experiments
         ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0]?.assignmentUnit
@@ -406,12 +409,15 @@ export class ExperimentAssignmentService {
       });
 
       // save monitored log document
-      await this.monitoredDecisionPointLogRepository.save({
+      const logDocument = await this.monitoredDecisionPointLogRepository.save({
         monitoredDecisionPoint: monitoredDocument,
         condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? condition : null,
         uniquifier: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? uniquifier : null,
       });
-      return monitoredDocument;
+      return {
+        ...monitoredDocument,
+        condition: monitoredDocument.condition || logDocument.condition,
+      };
     }
   }
 

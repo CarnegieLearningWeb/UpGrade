@@ -130,7 +130,7 @@ export default class UpgradeClient {
     return response;
   }
 
-  async getAllExperimentConditions(): Promise<IExperimentAssignmentv4[]> {
+  async getAllExperimentConditions(): Promise<IExperimentAssignmentv5[]> {
     this.validateClient();
     const response = await getAllExperimentConditions(
       this.api.getAllExperimentConditions,
@@ -144,13 +144,7 @@ export default class UpgradeClient {
     }
 
     // returns the first element of the queue
-    return response.map(({ assignedFactor, assignedCondition, ...rest }) => {
-      return {
-        ...rest,
-        assignedCondition: assignedCondition[0],
-        assignedFactor: assignedFactor ? assignedFactor[0] : undefined,
-      };
-    });
+    return response;
   }
 
   async getDecisionPointAssignment(site: string, target: string): Promise<Assignment> {

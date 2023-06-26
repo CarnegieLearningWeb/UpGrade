@@ -1,9 +1,11 @@
 export const MOCK_APP_NAMES = {
-  BDAY_APP: 'Birthday App Frontend',
-  BDAY_APP_BACKEND: 'Birthday App Backend',
+  GENERAL_TS_BACKEND_1: 'General TS Node v1.0',
+  GENERAL_TS_BACKEND_5: 'General TS Node v5.0',
+  GENERAL_TS_FRONTEND_1_1: 'General TS Browser v1.1',
+  GENERAL_TS_FRONTEND_3_0: 'General TS Browser v3.0',
+  GENERAL_TS_FRONTEND_4_1: 'General TS Browser v4.1',
+  GENERAL_TS_FRONTEND_5_0: 'General TS Browser v5.0',
+  BDAY_APP: 'Birthday App Browser',
   PORTAL_APP: 'Mock Portal',
-  GEN_TEST_1_1: 'General Test for Version 1.1',
-  GEN_TEST_3_0: 'General Test for Version 3.0',
-  GEN_TEST_4_1: 'General Test for Version 4.1',
-  GEN_TEST_5_0: 'General Test for Version 5.0',
+  MATHSTREAM_AdaptiveSegmentSwapExperiment: 'Mathstream: AdaptiveSegmentSwapExperiment',
 };

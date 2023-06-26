@@ -54,7 +54,7 @@ import {
 import { NoExperimentUserOnAssignment } from './ExperimentUser';
 import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
 import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalStateChange/index';
-import { StatsIndividualEnrollment, StatsGroupEnrollment } from './ExperimentStats/index';
+import { StatsIndividualEnrollment, StatsGroupEnrollment, StatsWithinSubjectEnrollment } from './ExperimentStats/index';
 import { MetricCRUD } from './Experiment/metric';
 import { CreateLog, LogOperations, RepeatedMeasure } from './Experiment/dataLog';
 import { QueryCRUD } from './Experiment/query';
@@ -335,6 +335,11 @@ describe('Integration Tests', () => {
 
   test('Stats for Group Enrollment', async (done) => {
     await StatsGroupEnrollment();
+    done();
+  });
+
+  test('Stats for Within-Subject Enrollment', async (done) => {
+    await StatsWithinSubjectEnrollment();
     done();
   });
 

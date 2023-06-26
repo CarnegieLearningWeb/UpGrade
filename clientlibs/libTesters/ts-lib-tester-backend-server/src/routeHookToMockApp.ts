@@ -1,13 +1,21 @@
-import { HookRequestBody } from '../../shared/models.js';
-import { availableMockApps } from './app-config.js';
-import BirthdayApp from './mockBackendTSServerApps/BirthdayApp.js';
+import { MOCK_APP_NAMES } from '../../shared/constants.js';
+import { HookRequestBody, HookResponse } from '../../shared/models.js';
+import { GeneralTSBackendVersion1 } from './mockBackendTSServerApps/GeneralTSBackendVersion1.js';
+import { GeneralTSBackendVersion5 } from './mockBackendTSServerApps/GeneralTSBackendVersion5.js';
 
-export default function (clientConstructor: any, hookRequest: HookRequestBody) {
+export default async function (clientConstructor: any, hookRequest: HookRequestBody): Promise<HookResponse> {
   const { mockApp } = hookRequest;
 
-  if (mockApp === availableMockApps.BDAY_APP_BACKEND) {
-    return BirthdayApp();
+  if (mockApp === MOCK_APP_NAMES.GENERAL_TS_BACKEND_1) {
+    return new GeneralTSBackendVersion1(clientConstructor).routeHook(hookRequest);
+  } else if (mockApp === MOCK_APP_NAMES.GENERAL_TS_BACKEND_5) {
+    return new GeneralTSBackendVersion5(clientConstructor).routeHook(hookRequest);
   } else {
-    return `No mock app found with the name ${mockApp}`;
+    return {
+      hookReceived: hookRequest,
+      response: {
+        error: `No mock app found for ${mockApp}`,
+      },
+    };
   }
 }

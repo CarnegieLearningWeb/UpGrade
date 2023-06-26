@@ -46,7 +46,7 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
       - run: npm install semver
@@ -86,7 +86,7 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
       - name: Set Backend App Version
@@ -111,7 +111,7 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
       - name: Build Frontend
@@ -136,7 +136,7 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
       - name: Build Lambda

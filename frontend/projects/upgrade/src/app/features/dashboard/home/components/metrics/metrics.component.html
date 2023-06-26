@@ -76,15 +76,6 @@
               </mat-header-cell>
               <mat-cell *matCellDef="let element; let queryIndex = index" [formGroupName]="queryIndex">
                 <div class="secondary-form">
-                  <!-- statistic -->
-                  <mat-form-field class="ft-14-400 form-control" floatLabel="never">
-                    <mat-label>{{ 'monitor.statistic.text' | translate | titlecase }}</mat-label>
-                    <mat-select class="ft-14-400" formControlName="operationType">
-                      <mat-option *ngFor="let operation of filteredStatistic$[queryIndex]" [value]="operation.value">
-                        {{ operation.viewValue | titlecase }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
                   <!-- repeated measure -->
                   <mat-form-field
                     class="ft-14-400 form-control"
@@ -118,6 +109,15 @@
                           {{ measure | titlecase }}
                         </mat-option>
                       </div>
+                    </mat-select>
+                  </mat-form-field>
+                  <!-- statistic -->
+                  <mat-form-field class="ft-14-400 form-control" floatLabel="never">
+                    <mat-label>{{ 'home.new-experiment.metrics.statistics.placeholder.text' | translate | titlecase }}</mat-label>
+                    <mat-select class="ft-14-400" formControlName="operationType">
+                      <mat-option *ngFor="let operation of filteredStatistic$[queryIndex]" [value]="operation.value">
+                        {{ operation.viewValue | titlecase }}
+                      </mat-option>
                     </mat-select>
                   </mat-form-field>
                   <!-- comparison function -->

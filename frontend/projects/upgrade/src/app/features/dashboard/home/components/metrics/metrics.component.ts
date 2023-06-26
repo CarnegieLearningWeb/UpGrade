@@ -43,6 +43,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   // Used for displaying metrics
   allMetricsSub: Subscription;
   allMetrics = [];
+  private repeatedMeasureSubscriptions: Subscription[] = [];
 
   queryOperations = [];
   comparisonFns = [
@@ -86,6 +87,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   optionsSub() {
     this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics) => {
       this.allMetrics = metrics;
+      // Hide global metrics options if Within-subjects is selected
       this.options =
         this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
           ? this.allMetrics.filter((metric) => metric.children.length > 0)
@@ -94,7 +96,13 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit() {
-    this.experimentDesignStepperService.currentAssignmentUnit$.subscribe((unit) => (this.currentAssignmentUnit = unit));
+    // TODO: Invalidate the global metric rows whenever the unit of assignment updates to Within-subjects
+    this.experimentDesignStepperService.currentAssignmentUnit$.subscribe((unit) => {
+      if (unit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+        // console.log('this.queries:', this.queries);
+      }
+      this.currentAssignmentUnit = unit;
+    });
     this.optionsSub();
     this.queryForm = this._formBuilder.group({
       queries: this._formBuilder.array([
@@ -104,7 +112,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
           operationType: [null, Validators.required],
           compareFn: [null, Validators.required],
           compareValue: [null, Validators.required],
-          repeatedMeasure: [REPEATED_MEASURE.mostRecent, Validators.required],
+          repeatedMeasure: [null, Validators.required],
         }),
       ]),
     });
@@ -214,24 +222,13 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get ContinuousRepeatedMeasure() {
-    const repeatedMeasure =
-      this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
-        ? Object.values(REPEATED_MEASURE).filter(
-            (value) => value !== REPEATED_MEASURE.earliest && value !== REPEATED_MEASURE.mostRecent
-          )
-        : Object.values(REPEATED_MEASURE);
-    return repeatedMeasure;
+    const repeatedMeasure = Object.values(REPEATED_MEASURE);
+    return repeatedMeasure.slice(0, 3);
   }
 
   get CategoricalRepeatedMeasure() {
-    const repeatedMeasure =
-      this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
-        ? Object.values(REPEATED_MEASURE).filter(
-            (value) => value !== REPEATED_MEASURE.earliest && value !== REPEATED_MEASURE.mostRecent
-          )
-        : Object.values(REPEATED_MEASURE);
-    repeatedMeasure.shift();
-    return repeatedMeasure;
+    const repeatedMeasure = Object.values(REPEATED_MEASURE);
+    return repeatedMeasure.slice(1, 3); // This should update to "repeatedMeasure.slice(1)" later to return all four options
   }
 
   get experimentInfoQueriesLength() {
@@ -272,7 +269,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   setFilteredStatistic(type: string) {
-    if (type && type === IMetricMetaData.CONTINUOUS) {
+    if (type === IMetricMetaData.CONTINUOUS) {
       this.queryOperations = [
         { value: OPERATION_TYPES.SUM, viewValue: 'Sum' },
         { value: OPERATION_TYPES.MIN, viewValue: 'Min' },
@@ -283,7 +280,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         { value: OPERATION_TYPES.MEDIAN, viewValue: 'Median' },
         { value: OPERATION_TYPES.STDEV, viewValue: 'Standard Deviation' },
       ];
-    } else if (type && type === IMetricMetaData.CATEGORICAL) {
+    } else if (type === IMetricMetaData.CATEGORICAL) {
       this.queryOperations = [
         { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
         { value: OPERATION_TYPES.PERCENTAGE, viewValue: 'Percentage' },
@@ -302,7 +299,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     operationType = null,
     compareFn = null,
     compareValue = null,
-    repeatedMeasure = REPEATED_MEASURE.mostRecent
+    repeatedMeasure = null
   ) {
     return this._formBuilder.group({
       keys: this._formBuilder.array([this.addKey(key)]),
@@ -317,14 +314,40 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   addMetrics() {
     const form = this.addMetric();
     this.queries.push(form);
+
+    // Get the last index
+    const lastIndex = this.queries.length - 1;
+
+    // Subscribe to the value changes of the 'repeatedMeasure' form control of the new row
+    this.repeatedMeasureSubscriptions[lastIndex] = (<UntypedFormArray>this.queryForm.get('queries'))
+      .at(lastIndex)
+      .get('repeatedMeasure')
+      .valueChanges.subscribe((selectedValue) => {
+        // set fileredStats for the repeated metrics:
+        let {
+          metadata: { type },
+        } = this.selectedNode[lastIndex];
+        if (
+          type === IMetricMetaData.CATEGORICAL &&
+          (selectedValue === REPEATED_MEASURE.count || selectedValue === REPEATED_MEASURE.percentage)
+        ) {
+          type = IMetricMetaData.CONTINUOUS;
+        }
+        this.filteredStatistic$[lastIndex] = this.setFilteredStatistic(type);
+      });
     const scrollTableType = 'metricTable';
     this.updateView(scrollTableType);
-    const index = this.queries.length;
-    this.setQueryIndex(index - 1);
+    this.setQueryIndex(lastIndex);
     this.ManageKeysControl(this.queryIndex, 0);
   }
 
   removeMetric(queryIndex: number) {
+    // unsubscribe from the 'repeatedMeasure' value changes for the query at this index
+    if (this.repeatedMeasureSubscriptions[queryIndex]) {
+      this.repeatedMeasureSubscriptions[queryIndex].unsubscribe();
+      // remove the subscription from the array
+      this.repeatedMeasureSubscriptions.splice(queryIndex, 1);
+    }
     this.queries.removeAt(queryIndex);
     if (this.experimentInfo) {
       const deletedQuery = this.experimentInfo.queries[queryIndex];

@@ -1,10 +1,15 @@
 export interface HookRequestBody {
-  hook: string;
+  name: string;
   user: MockClientAppUser;
   libVersion: string;
   mockApp: string;
   apiHostUrl: string;
   payload?: any;
+}
+
+export interface HookResponse {
+  hookReceived: HookRequestBody;
+  response: any;
 }
 
 export interface ClientConstructorParams {

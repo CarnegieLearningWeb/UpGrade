@@ -67,9 +67,9 @@ export default async function EnrollmentWithConditionPayload(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
   expect(experimentConditionAssignments).toHaveLength(3);
   experimentConditionAssignments.sort((a, b) => {
-    return a.assignedCondition.conditionCode > b.assignedCondition.conditionCode
+    return a.assignedCondition[0].conditionCode > b.assignedCondition[0].conditionCode
       ? 1
-      : a.assignedCondition.conditionCode < b.assignedCondition.conditionCode
+      : a.assignedCondition[0].conditionCode < b.assignedCondition[0].conditionCode
       ? -1
       : 0;
   });

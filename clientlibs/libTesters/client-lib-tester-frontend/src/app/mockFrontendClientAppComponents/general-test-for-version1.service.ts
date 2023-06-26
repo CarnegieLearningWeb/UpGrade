@@ -12,7 +12,8 @@ import {
 // There's probably a clever way to do this, but getting the right types automatically is tricky
 
 // import UpgradeClient from 'upgrade_client_local/dist/browser';
-import { UpgradeClient } from 'upgrade_client_1_1_17';
+// import { UpgradeClient } from 'upgrade_client_1_1_7';
+import UpgradeClient from "upgrade_client_1_1_8/dist/browser"
 // import { UpgradeClient } from 'upgrade_client_3_0_18';
 // import { UpgradeClient } from 'upgrade_client_4_2_0';
 
@@ -27,19 +28,18 @@ export class GeneralTestForVersion1Service extends AbstractMockAppService {
   // public upgradeClient: any;
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
-  public NAME = MOCK_APP_NAMES.GEN_TEST_1_1;
+  public NAME = MOCK_APP_NAMES.GENERAL_TS_FRONTEND_1_1;
   public DESCRIPTION = 'Regression testing for lib version 1x, API target versions 3 and old unversioned api';
   public TYPE: MockAppType = 'frontend';
   public LANGUAGE: CodeLanguage = 'ts';
   public SITES = {
-    TEST: 'test',
+    SelectSection: 'SelectSection',
   };
   public TARGETS = {
-    TARGET_1: 'target_1',
-    TARGET_2: 'target_2',
+    TARGET_1: 'absolute_value_plot_equality',
   };
   public GROUPS = ['schoolId', 'classId', 'instructorId'];
-  public CONTEXT = 'add'; // what should this be really?
+  public CONTEXT = 'assign-prog'; // what should this be really?
   public HOOKNAMES = {
     INIT: 'init',
     ASSIGN: 'assign',
@@ -50,12 +50,11 @@ export class GeneralTestForVersion1Service extends AbstractMockAppService {
     LOG: 'log',
   };
   public DECISION_POINTS = [
-    { site: this.SITES.TEST, target: this.TARGETS.TARGET_1 },
-    { site: this.SITES.TEST, target: this.TARGETS.TARGET_2 },
+    { site: this.SITES.SelectSection, target: this.TARGETS.TARGET_1 },
   ];
 
   constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
-    super(MOCK_APP_NAMES.GEN_TEST_1_1, eventBus, clientLibraryService);
+    super(MOCK_APP_NAMES.GENERAL_TS_FRONTEND_1_1, eventBus, clientLibraryService);
   }
 
   /******************* "getAppInterfaceModel" required to give tester app a model to construct an interface to use this 'app' ********************/
@@ -191,7 +190,7 @@ export class GeneralTestForVersion1Service extends AbstractMockAppService {
       console.error('No upgradeClient found. Maybe you need to run login hook first?');
     }
     try {
-      const markResponse = await this.upgradeClient.markExperimentPoint(this.SITES.TEST, 'control');
+      const markResponse = await this.upgradeClient.markExperimentPoint(this.SITES.SelectSection, 'asdf=orange; fdfasdfs=green', this.TARGETS.TARGET_1);
       console.log({ markResponse });
     } catch (err) {
       console.error(err);
