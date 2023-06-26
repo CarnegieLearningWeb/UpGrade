@@ -228,7 +228,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   get CategoricalRepeatedMeasure() {
     const repeatedMeasure = Object.values(REPEATED_MEASURE);
-    return repeatedMeasure.slice(1);
+    return repeatedMeasure.slice(1, 3); // This should update to "repeatedMeasure.slice(1)" later to return all four options
   }
 
   get experimentInfoQueriesLength() {
