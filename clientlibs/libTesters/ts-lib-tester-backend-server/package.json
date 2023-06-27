@@ -11,7 +11,7 @@
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/ts-lib-tester-backend-server/src/app.js\"",
     "preinstall": "npm run copy-local-js-build",
     "start:install": "npm install && npm run start",
-    "copy-local-js-build": "mkdir -p node_modules/upgrade_client_local && cd ../../js/ && npm run build && cp -r ./{dist,package.json,README.md} ../libTesters/ts-lib-tester-backend-server/node_modules/upgrade_client_local",
+    "copy-local-js-build": "mkdir -p node_modules/upgrade_client_local && cd ../../js/ && npm install && npm run build && cp -r ./{dist,package.json,README.md} ../libTesters/client-lib-tester-frontend/node_modules/upgrade_client_local",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
