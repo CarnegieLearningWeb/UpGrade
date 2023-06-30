@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "preinstall": "npm run copy-local-js-build",
+    "preinstall": "rm -f -r .angular && npm run copy-local-js-build",
     "start": "ng serve --port 4201",
     "start:install": "npm install && npm run start",
     "start:ts": "concurrently \"npm run start:install\" \"(cd ../ts-lib-tester-backend-server && npm run start:build)\"",

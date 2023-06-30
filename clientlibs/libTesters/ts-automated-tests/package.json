@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "pretest": "cd ../ts-lib-tester-backend-server && npm install",
-    "test": "jest"
+    "preinstall": "cd ../ts-lib-tester-backend-server && npm install",
+    "test": "jest",
+    "test:install": "npm install && npm run test"
   },
   "author": "",
   "license": "ISC",

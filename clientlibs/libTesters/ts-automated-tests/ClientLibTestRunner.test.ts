@@ -1,14 +1,14 @@
-import { MOCK_APP_NAMES } from '../../shared/constants.js';
-import { HookRequestBody } from '../../shared/models.js';
-import routeHookToMockApp from '../../ts-lib-tester-backend-server/src/routeHookToMockApp';
-import { getUpgradeClientConstructor, validateHook } from '../../ts-lib-tester-backend-server/src/utils.js';
+import { MOCK_APP_NAMES } from '../shared/constants';
+import { HookRequestBody } from '../shared/models';
+import routeHookToMockApp from '../ts-lib-tester-backend-server/src/routeHookToMockApp';
+import { getUpgradeClientConstructor, validateHook } from '../ts-lib-tester-backend-server/src/utils';
 
 describe('ClientLibTestRunner', () => {
   it('can load the test runner', () => {
     expect(true).toBe(true);
   });
 
-  it('can find the v4 test spec via routehook', () => {
+  it('can find the v4 test spec via routehook', async () => {
     const hookRequest: HookRequestBody = {
       mockApp: MOCK_APP_NAMES.GENERAL_TS_BACKEND_4,
       libVersion: '4.1.6',
@@ -21,7 +21,7 @@ describe('ClientLibTestRunner', () => {
         },
         userAliases: ['alias1'],
       },
-      apiHostUrl: 'http://localhost:3000',
+      apiHostUrl: 'http://localhost:3030',
     };
 
     const ClientLibConstructor = getUpgradeClientConstructor(hookRequest.libVersion);

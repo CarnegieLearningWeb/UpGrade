@@ -13,21 +13,7 @@
       "lib": [
         "esnext",
       ],
-      "paths": {
-          "*": [
-              "node_modules/*"
-          ],
-          "shared": [
-              "../shared/*"
-          ],
-          "types": [
-              "../types/*"
-          ],
-          "ts-backend": [
-            "../ts-lib-tester-backend-server/src/*"
-          ]
-      },
       "skipLibCheck": true
   },
-  "include": ["tests/**/*"]
+  "include": ["../shared/**/*"]
 }

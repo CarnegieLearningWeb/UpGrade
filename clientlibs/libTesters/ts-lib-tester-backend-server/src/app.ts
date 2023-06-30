@@ -1,11 +1,11 @@
 import express, { Express, Request, Response } from 'express';
-import { HookRequestBody } from '../../shared/models.js';
-import { getUpgradeClientConstructor, validateHook } from './utils.js';
-import routeHookToMockApp from './routeHookToMockApp.js';
+import { HookRequestBody } from '../../shared/models';
+import { getUpgradeClientConstructor, validateHook } from './utils';
+import routeHookToMockApp from './routeHookToMockApp';
 import cors from 'cors';
-import { GeneralTSBackendVersion5 } from './mockBackendTSServerApps/GeneralTSBackendVersion5.js';
-import { GeneralTSBackendVersion1 } from './mockBackendTSServerApps/GeneralTSBackendVersion1.js';
-import { GeneralTSBackendVersion4 } from './mockBackendTSServerApps/GeneralTSBackendVersion4.js';
+import { GeneralTSBackendVersion5 } from './mockBackendTSServerApps/GeneralTSBackendVersion5';
+import { GeneralTSBackendVersion1 } from './mockBackendTSServerApps/GeneralTSBackendVersion1';
+import { GeneralTSBackendVersion4 } from './mockBackendTSServerApps/GeneralTSBackendVersion4';
 // import dotenv from 'dotenv';
 
 // dotenv.config();

@@ -1,4 +1,4 @@
-import { MOCK_APP_NAMES } from '../../shared/constants.js';
+import { MOCK_APP_NAMES } from '../../shared/constants';
 import UpgradeClient_Local from 'upgrade_client_local/dist/node';
 import UpgradeClient_1_1_8 from 'upgrade_client_1_1_8/dist/node';
 import UpgradeClient_4_1_6 from 'upgrade_client_4_1_6/dist/node';
