@@ -137,7 +137,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     });
 
     // Define data rows dynamically
-    levelCombinationTable.forEach((levels, levelIndex) => {
+    levelCombinationTable.forEach((levels) => {
       const rowData: RowData = {};
       this.factorColumnDefs.forEach((factorColumnDef, factorColumnDefIndex) => {
         rowData[factorColumnDef.name] = levels[factorColumnDefIndex].level;
