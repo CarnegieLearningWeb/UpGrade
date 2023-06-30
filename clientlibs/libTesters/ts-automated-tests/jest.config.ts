@@ -12,5 +12,4 @@ const config: Config.InitialOptions = {
   moduleDirectories: ['node_modules', '<rootDir>/shared'],
 };
 
-console.log(config);
 export default config;
