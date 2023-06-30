@@ -2,6 +2,7 @@ import { Interfaces, Types } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
 
 export default async function setWorkingGroup(
+  customHttpClient: Interfaces.ICustomHttpClient,
   url: string,
   userId: string,
   token: string,
@@ -9,6 +10,7 @@ export default async function setWorkingGroup(
   workingGroup: Record<string, string>
 ): Promise<Interfaces.IUser> {
   const response = await fetchDataService(
+    customHttpClient,
     url,
     token,
     clientSessionId,

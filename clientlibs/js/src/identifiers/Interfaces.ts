@@ -71,4 +71,10 @@ export namespace Interfaces {
     userId: string;
     aliases: string[];
   }
+
+  export interface ICustomHttpClient {
+    [Types.REQUEST_TYPES.GET](url: string, options?: any): Promise<Interfaces.IResponse>;
+    [Types.REQUEST_TYPES.POST](url: string, data: any, options?: any): Promise<Interfaces.IResponse>;
+    [Types.REQUEST_TYPES.PATCH](url: string, data: any, options?: any): Promise<Interfaces.IResponse>;
+  }
 }

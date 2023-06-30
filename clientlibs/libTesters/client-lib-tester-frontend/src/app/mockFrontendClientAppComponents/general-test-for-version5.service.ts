@@ -20,10 +20,81 @@ import UpgradeClient from 'upgrade_client_local/dist/browser';
 import { AbstractMockAppService } from './abstract-mock-app.service';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
 
+// not sure why this import isn't working:
+// import { Types, Interfaces } from 'upgrade_client_local/dist/clientlibs/js/src/identifiers';
+export namespace Types {
+  export enum REQUEST_TYPES {
+    GET = 'GET',
+    POST = 'POST',
+    PATCH = 'PATCH',
+  }
+}
+
+export namespace Interfaces {
+  export interface IConfig {
+    hostURL: string;
+    userId: string;
+    api: any;
+  }
+
+  export interface IResponse {
+    status: boolean;
+    data?: any;
+    message?: any;
+  }
+
+  export interface ICustomHttpClient {
+    [Types.REQUEST_TYPES.GET](url: string, options?: any): Promise<Interfaces.IResponse>;
+    [Types.REQUEST_TYPES.POST](url: string, data: any, options?: any): Promise<Interfaces.IResponse>;
+    [Types.REQUEST_TYPES.PATCH](url: string, data: any, options?: any): Promise<Interfaces.IResponse>;
+  }
+}
+
 export enum MARKED_DECISION_POINT_STATUS {
   CONDITION_APPLIED = 'condition applied',
   CONDITION_FAILED_TO_APPLY = 'condition not applied',
   NO_CONDITION_ASSIGNED = 'no condition assigned',
+}
+
+const customHttpClient: Interfaces.ICustomHttpClient = {
+  [Types.REQUEST_TYPES.GET]: async (url: string, options?: any) => {
+    const requestInit: RequestInit = {
+      method: Types.REQUEST_TYPES.GET,
+      headers: options.headers,
+      keepalive: options.keepalive,
+    }
+    return await fetch(url, requestInit).then(async (response) => {
+      return await response.json();
+    }); 
+  },
+  [Types.REQUEST_TYPES.POST]: async (url: string, data: any, options?: any) => {
+    const requestInit: RequestInit = {
+      method: Types.REQUEST_TYPES.POST,
+      body: JSON.stringify(data),
+      headers: options.headers,
+      keepalive: options.keepalive,
+    }
+    return await fetch(url, requestInit).then(async (response) => {
+      console.log('post in fetch:', response)
+      const json = await response.json();
+      console.log({ json })
+      return {
+        status: true,
+        data: json,
+      };
+    });
+  },
+  [Types.REQUEST_TYPES.PATCH]: async (url: string, data: any, options?: any) => {
+    const requestInit: RequestInit = {
+      method: Types.REQUEST_TYPES.PATCH,
+      body: JSON.stringify(data),
+      headers: options.headers,
+      keepalive: options.keepalive,
+    }
+    return await fetch(url, requestInit).then(async (response) => {
+      return await response.json();
+    });
+  },
 }
 
 @Injectable({
@@ -63,7 +134,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
   ];
 
   constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
-    super(MOCK_APP_NAMES.GENERAL_TS_FRONTEND_5_0, eventBus, clientLibraryService);
+    super(MOCK_APP_NAMES.GENERAL_TS_FRONTEND_5_0, eventBus, clientLibraryService, customHttpClient);
   }
 
   /******************* "getAppInterfaceModel" required to give tester app a model to construct an interface to use this 'app' ********************/

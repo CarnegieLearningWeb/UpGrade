@@ -22,31 +22,31 @@ export const availableClientLibraries: ClientLibraryRef[] = [
     language: 'ts',
     client: UpgradeClient_Local,
   },
-  {
-    version: '1.1.7',
-    language: 'ts',
-    client: UpgradeClient_1_1_7,
-  },
-  {
-    version: '1.1.8',
-    language: 'ts',
-    client: UpgradeClient_1_1_8,
-  },
-  {
-    version: '3.0.18',
-    language: 'ts',
-    client: UpgradeClient_3_0_18,
-  },
-  {
-    version: '4.1.6',
-    language: 'ts',
-    client: UpgradeClient_4_1_6,
-  },
-  {
-    version: '4.2.0',
-    language: 'ts',
-    client: UpgradeClient_4_2_0,
-  },
+  // {
+  //   version: '1.1.7',
+  //   language: 'ts',
+  //   client: UpgradeClient_1_1_7,
+  // },
+  // {
+  //   version: '1.1.8',
+  //   language: 'ts',
+  //   client: UpgradeClient_1_1_8,
+  // },
+  // {
+  //   version: '3.0.18',
+  //   language: 'ts',
+  //   client: UpgradeClient_3_0_18,
+  // },
+  // {
+  //   version: '4.1.6',
+  //   language: 'ts',
+  //   client: UpgradeClient_4_1_6,
+  // },
+  // {
+  //   version: '4.2.0',
+  //   language: 'ts',
+  //   client: UpgradeClient_4_2_0,
+  // },
 ];
 
 export const availableApiHostUrls = [
@@ -56,11 +56,11 @@ export const availableApiHostUrls = [
 ];
 
 export const availableFrontendMockApps = [
-  MOCK_APP_NAMES.GENERAL_TS_FRONTEND_1_1,
-  MOCK_APP_NAMES.GENERAL_TS_FRONTEND_3_0,
-  MOCK_APP_NAMES.GENERAL_TS_FRONTEND_4_1,
+  // MOCK_APP_NAMES.GENERAL_TS_FRONTEND_1_1,
+  // MOCK_APP_NAMES.GENERAL_TS_FRONTEND_3_0,
+  // MOCK_APP_NAMES.GENERAL_TS_FRONTEND_4_1,
   MOCK_APP_NAMES.GENERAL_TS_FRONTEND_5_0,
   // MOCK_APP_NAMES.BDAY_APP,
-  MOCK_APP_NAMES.PORTAL_APP,
-  MOCK_APP_NAMES.MATHSTREAM_AdaptiveSegmentSwapExperiment,
+  // MOCK_APP_NAMES.PORTAL_APP,
+  // MOCK_APP_NAMES.MATHSTREAM_AdaptiveSegmentSwapExperiment,
 ];

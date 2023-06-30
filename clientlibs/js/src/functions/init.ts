@@ -2,6 +2,7 @@ import { Interfaces, Types } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
 
 export default async function init(
+  customHttpClient: Interfaces.ICustomHttpClient,
   url: string,
   userId: string,
   token: string,
@@ -27,7 +28,7 @@ export default async function init(
     };
   }
 
-  const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
+  const response = await fetchDataService(customHttpClient, url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
   if (response.status) {
     return response.data;
   } else {

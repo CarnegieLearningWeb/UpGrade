@@ -14,6 +14,7 @@ interface markData {
 }
 
 export default async function markExperimentPoint(
+  customHttpClient: Interfaces.ICustomHttpClient,
   url: string,
   userId: string,
   token: string,
@@ -47,7 +48,7 @@ export default async function markExperimentPoint(
       clientError,
     };
   }
-  const response = await fetchDataService(url, token, clientSessionId, requestBody, Types.REQUEST_TYPES.POST);
+  const response = await fetchDataService(customHttpClient, url, token, clientSessionId, requestBody, Types.REQUEST_TYPES.POST);
   if (response.status) {
     return response.data;
   } else {

@@ -3,12 +3,14 @@ import fetchDataService from '../common/fetchDataService';
 import { ISingleMetric, IGroupMetric } from 'upgrade_types';
 
 export default async function addMetrics(
+  customHttpClient: Interfaces.ICustomHttpClient,
   url: string,
   token: string,
   clientSessionId: string,
   metrics: (ISingleMetric | IGroupMetric)[]
 ): Promise<Interfaces.IMetric[]> {
   const response = await fetchDataService(
+    customHttpClient,
     url,
     token,
     clientSessionId,

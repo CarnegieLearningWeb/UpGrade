@@ -3,8 +3,7 @@ import { ClientAppHook, CodeLanguage, MockAppType, MockClientAppInterfaceModel }
 import { EventBusService } from '../services/event-bus.service';
 import { InjectionToken } from '@angular/core';
 import { ClientLibraryService } from '../services/client-library.service';
-
-export const ABSTRACT_MOCK_APP_SERVICE_TOKEN = new InjectionToken<AbstractMockAppService>('Abstract Mock App Service');
+// import { Types, Interfaces } from 'upgrade_client_local/dist/clientlibs/js/src/identifiers';
 
 /**
  * This Abstract service is base class for all Mock App instances.
@@ -40,7 +39,8 @@ export abstract class AbstractMockAppService {
   constructor(
     public instanceMockAppName: string,
     public eventBus: EventBusService,
-    public clientLibraryService: ClientLibraryService
+    public clientLibraryService: ClientLibraryService,
+    public customHttpClient?: any // hard to give type to this in this context
   ) {
     this.eventBus.mockApp$.subscribe((mockAppName) => {
       if (mockAppName === instanceMockAppName) {
@@ -64,11 +64,11 @@ export abstract class AbstractMockAppService {
 
   public abstract routeHook(hookEvent: ClientAppHook): void;
 
-  public constructUpgradeClient(userId: string): any {
+  public constructUpgradeClient(userId: string, customHttpClient?: any): any {
     const apiHostUrl = this.clientLibraryService.getSelectedAPIHostUrl();
     const UpgradeClient: new (...args: any[]) => typeof UpgradeClient =
       this.clientLibraryService.getUpgradeClientConstructor();
-    const upgradeClient = new UpgradeClient(userId, apiHostUrl, this.CONTEXT);
+    const upgradeClient = new UpgradeClient(userId, apiHostUrl, this.CONTEXT, { customHttpClient });
     return upgradeClient;
   }
 }

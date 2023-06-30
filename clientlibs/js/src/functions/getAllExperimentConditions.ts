@@ -1,8 +1,9 @@
 import fetchDataService from '../common/fetchDataService';
 import { IExperimentAssignmentv4 } from 'upgrade_types';
-import { Types } from '../identifiers';
+import { Interfaces, Types } from '../identifiers';
 
 export default async function getAllExperimentConditions(
+  customHttpClient: Interfaces.ICustomHttpClient,
   url: string,
   userId: string,
   token: string,
@@ -14,6 +15,7 @@ export default async function getAllExperimentConditions(
     context,
   };
   const experimentConditionResponse = await fetchDataService(
+    customHttpClient,
     url,
     token,
     clientSessionId,

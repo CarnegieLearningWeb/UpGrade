@@ -4,6 +4,7 @@ import * as uuid from 'uuid';
 
 // Call this function with url and data which is used in body of request
 export default async function fetchDataService(
+  customHttpClient: Interfaces.ICustomHttpClient,
   url: string,
   token: string,
   clientSessionId: string,
@@ -12,10 +13,11 @@ export default async function fetchDataService(
   sendAsAnalytics = false,
   skipRetryOnStatusCodes: number[] = []
 ): Promise<Interfaces.IResponse> {
-  return await fetchData(url, token, clientSessionId, data, requestType, sendAsAnalytics, skipRetryOnStatusCodes);
+  return await fetchData(customHttpClient, url, token, clientSessionId, data, requestType, sendAsAnalytics, skipRetryOnStatusCodes);
 }
 
 async function fetchData(
+  customHttpClient: Interfaces.ICustomHttpClient,
   url: string,
   token: string,
   clientSessionId: string,
@@ -72,6 +74,11 @@ async function fetchData(
       };
     }
 
+    // if custom ICustomHttpClient is passed in, use their implementation
+    if (customHttpClient) {
+      return await useCustomHttpClient(customHttpClient, requestType, url, options, data);
+    }
+
     const response = await axios({
       url,
       ...options,
@@ -95,6 +102,7 @@ async function fetchData(
         // Do retry after the backOff time
         await wait(backOff);
         return await fetchData(
+          customHttpClient,
           url,
           token,
           clientSessionId,
@@ -123,6 +131,18 @@ async function fetchData(
       message: error,
     };
   }
+}
+
+async function useCustomHttpClient(customHttpClient: Interfaces.ICustomHttpClient, requestType: Types.REQUEST_TYPES, url: string, options: any, data: any): Promise<Interfaces.IResponse> {
+  console.log('using custom http client:', customHttpClient)
+  let response: Interfaces.IResponse;
+  if (requestType === Types.REQUEST_TYPES.GET) {
+    response = await customHttpClient[requestType](url, options);
+  } else if (requestType === Types.REQUEST_TYPES.POST || requestType === Types.REQUEST_TYPES.PATCH) {
+    response = await customHttpClient[requestType](url, data, options);
+  }
+
+  return response;
 }
 
 async function wait(ms: number) {
