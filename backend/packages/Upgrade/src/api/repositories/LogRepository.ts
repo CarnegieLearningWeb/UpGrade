@@ -142,7 +142,7 @@ export class LogRepository extends Repository<Log> {
       name: string;
       repeatedMeasure: REPEATED_MEASURE;
       userId: string;
-      createdAt: string;
+      updatedAt: string;
       key: string;
       type: IMetricMetaData;
     }>
@@ -156,7 +156,7 @@ export class LogRepository extends Repository<Log> {
         'queries.name as name',
         'queries."repeatedMeasure" as "repeatedMeasure"',
         'logs."userId" as "userId"',
-        'logs."createdAt" as "createdAt"',
+        'logs."updatedAt" as "updatedAt"',
         'metric.key as key',
         'metric.type as type',
       ])
@@ -209,6 +209,7 @@ export class LogRepository extends Repository<Log> {
     let valueToUse;
     let andQuery;
     let operation;
+    let queryFunction;
 
     if (query.metric.type == 'continuous') {
       andQuery = `jsonb_typeof(${jsonDataValueLog}) = 'number'`;
@@ -313,26 +314,26 @@ export class LogRepository extends Repository<Log> {
           ? executeQuery.select([
               '"levelCombinationElement"."levelId"',
               `count(cast(${valueToUse} as text)) as result`,
-              `${operation}("logs"."createdAt")`,
+              `${operation}("logs"."updatedAt")`,
               `"monitoredDecisionPoint"."userId" as "userId"`,
             ])
           : executeQuery.select([
               '"experimentCondition"."conditionId"',
               `count(cast(${valueToUse} as text)) as result`,
-              `${operation}("logs"."createdAt")`,
+              `${operation}("logs"."updatedAt")`,
               `"monitoredDecisionPoint"."userId" as "userId"`,
             ]);
         percentQuery = isFactorialExperiment
           ? percentQuery.select([
               '"levelCombinationElement"."levelId"',
               `${operation}(cast(${valueToUse} as text)) as result`,
-              `${operation}("logs"."createdAt")`,
+              `${operation}("logs"."updatedAt")`,
               `"monitoredDecisionPoint"."userId" as "userId"`,
             ])
           : percentQuery.select([
               '"experimentCondition"."conditionId"',
               `${operation}(cast(${valueToUse} as text)) as result`,
-              `${operation}("logs"."createdAt")`,
+              `${operation}("logs"."updatedAt")`,
               `"monitoredDecisionPoint"."userId" as "userId"`,
             ]);
       }
@@ -386,7 +387,7 @@ export class LogRepository extends Repository<Log> {
     } else {
       // For Median, Mode, Count, Sum, Min, Max, Average/Mean, Standard Deviation
       if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
-        const queryFunction = operationType === OPERATION_TYPES.MEDIAN ? 'percentile_cont(0.5)' : 'mode()';
+        queryFunction = operationType === OPERATION_TYPES.MEDIAN ? 'percentile_cont(0.5)' : 'mode()';
         if (unitOfAssignment !== 'within-subjects') {
           executeQuery = isFactorialExperiment
             ? executeQuery.select([
@@ -402,13 +403,13 @@ export class LogRepository extends Repository<Log> {
             ? executeQuery.select([
                 '"levelCombinationElement"."levelId"',
                 `${queryFunction} within group (order by (cast(${valueToUse} as decimal))) as result`,
-                `${operation}"logs"."createdAt"`,
+                `${operation}("logs"."updatedAt")`,
                 `"monitoredDecisionPoint"."userId" as "userId"`,
               ])
             : executeQuery.select([
                 '"experimentCondition"."conditionId"',
                 `${queryFunction} within group (order by (cast(${valueToUse} as decimal))) as result`,
-                `${operation}"logs"."createdAt"`,
+                `${operation}("logs"."updatedAt")`,
                 `"monitoredDecisionPoint"."userId" as "userId"`,
               ]);
         }
@@ -428,13 +429,13 @@ export class LogRepository extends Repository<Log> {
             ? executeQuery.select([
                 '"levelCombinationElement"."levelId"',
                 `${operationType}(cast(${valueToUse} as text)) as result`,
-                `${operation}"logs"."createdAt"`,
+                `${operation}"logs"."updatedAt"`,
                 `"monitoredDecisionPoint"."userId" as "userId"`,
               ])
             : executeQuery.select([
                 '"experimentCondition"."conditionId"',
                 `${operationType}(cast(${valueToUse} as text)) as result`,
-                `${operation}"logs"."createdAt"`,
+                `${operation}"logs"."updatedAt"`,
                 `"monitoredDecisionPoint"."userId" as "userId"`,
               ]);
         }
@@ -455,13 +456,13 @@ export class LogRepository extends Repository<Log> {
             ? executeQuery.select([
                 '"levelCombinationElement"."levelId"',
                 `${operationType}(cast(${valueToUse} as decimal)) as result`,
-                `${operation}("logs"."createdAt")`,
+                `${operation}("logs"."updatedAt")`,
                 `"monitoredDecisionPoint"."userId" as "userId"`,
               ])
             : executeQuery.select([
                 '"experimentCondition"."conditionId"',
                 `${operationType}(cast(${valueToUse} as decimal)) as result`,
-                `${operation}("logs"."createdAt")`,
+                `${operation}("logs"."updatedAt")`,
                 `"monitoredDecisionPoint"."userId" as "userId"`,
               ]);
         }
@@ -470,17 +471,30 @@ export class LogRepository extends Repository<Log> {
       executeQuery.addSelect('COUNT(DISTINCT "individualEnrollment"."userId") as "participantsLogged"');
 
       if (unitOfAssignment === 'within-subjects') {
-        const withinSubjectExecuteQuery = getManager()
-          .createQueryBuilder()
-          .select([
-            `subquery."conditionId"`,
-            `${operationType}(subquery."result") as "result"`,
-            `COUNT(DISTINCT subquery."userId") as "participantsLogged"`,
-          ])
-          .addFrom('(' + executeQuery.getQuery() + ')', 'subquery')
-          .groupBy(`subquery."conditionId"`)
-          .setParameters(executeQuery.getParameters());
-
+        let withinSubjectExecuteQuery;
+        if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
+          withinSubjectExecuteQuery = getManager()
+            .createQueryBuilder()
+            .select([
+              `subquery."conditionId"`,
+              `${queryFunction} within group (order by (subquery."result")) as "result"`,
+              `COUNT(DISTINCT subquery."userId") as "participantsLogged"`,
+            ])
+            .addFrom('(' + executeQuery.getQuery() + ')', 'subquery')
+            .groupBy(`subquery."conditionId"`)
+            .setParameters(executeQuery.getParameters());
+        } else {
+          withinSubjectExecuteQuery = getManager()
+            .createQueryBuilder()
+            .select([
+              `subquery."conditionId"`,
+              `${operationType}(subquery."result") as "result"`,
+              `COUNT(DISTINCT subquery."userId") as "participantsLogged"`,
+            ])
+            .addFrom('(' + executeQuery.getQuery() + ')', 'subquery')
+            .groupBy(`subquery."conditionId"`)
+            .setParameters(executeQuery.getParameters());
+        }
         return withinSubjectExecuteQuery.getRawMany();
       } else {
         return executeQuery.getRawMany();
@@ -614,12 +628,17 @@ export class LogRepository extends Repository<Log> {
           (qb) => {
             return qb
               .subQuery()
-              .select([`avg(cast(${jsonDataValue} as decimal)) as avgval`, 'logs."userId" as "userId"'])
+              .select([
+                `avg(cast(${jsonDataValue} as decimal)) as avgval`,
+                'logs."userId" as "userId", "expCond"."id" as "conditionId"',
+              ])
               .from(Log, 'logs')
-              .groupBy('logs."userId"');
+              .innerJoin(MonitoredDecisionPointLog, 'mdpLog', '"mdpLog"."uniquifier" = "logs"."uniquifier"')
+              .innerJoin(ExperimentCondition, 'expCond', '"expCond"."conditionCode" = "mdpLog"."condition"')
+              .groupBy('"expCond"."id", logs."userId"');
           },
           'avg',
-          'avg."userId" = logs."userId"'
+          'avg."userId" = logs."userId" AND avg."conditionId" = "experimentCondition"."conditionId"'
         )
         .andWhere((qb) => {
           const subQuery = qb
