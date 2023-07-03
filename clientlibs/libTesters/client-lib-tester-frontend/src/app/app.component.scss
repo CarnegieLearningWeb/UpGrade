@@ -1,0 +1,45 @@
+.config-container {
+  .config-form {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 100%;
+
+    .config-form-row {
+      width: 800px;
+    }
+
+    .server-msg {
+      font-size: 12px;
+      display: inline-block;
+      &.offline-text {
+        color: #999;
+      }
+    }
+
+    .status-dot {
+      height: 8px;
+      width: 8px;
+      margin-left: 10px;
+      margin-right: 10px;
+      border-radius: 50%;
+      display: inline-block;
+
+      &.success {
+        background-color: green;
+      }
+
+      &.fail {
+        background-color: red;
+      }
+
+      &.pending {
+        background-color: orange;
+      }
+
+      &.offline {
+        background-color: #999;
+      }
+    }
+  }
+}

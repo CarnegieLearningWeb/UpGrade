@@ -14,6 +14,21 @@ import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { EXPERIMENT_TYPE } from 'upgrade_types';
+import { ExperimentFactorData } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+
+interface FactorColumnDef {
+  name: string;
+  label: string;
+}
+
+interface QueryColumnDef {
+  name: string;
+  label: string;
+}
+
+interface RowData {
+  [key: string]: any;
+}
 
 @Component({
   selector: 'home-experiment-query-result',
@@ -29,13 +44,12 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   };
 
   queryResults = {};
-  queryFactorResults1 = {};
-  queryFactorResults2 = {};
-  interactionEffectQueryFactorResults1 = {};
-  interactionEffectQueryFactorResults2 = {};
+  queryFactorResults = [];
+  interactionEffectQueryFactorResults = [];
   queryResultsSub: Subscription;
   isQueryExecuting$ = this.analysisService.isQueryExecuting$;
-  factors = [];
+  factors: string[] = [];
+  queries: string[] = [];
   displayedColumns: string[] = [];
   factorialData = {};
   experimentType: string = null;
@@ -43,6 +57,9 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   meanData2: { name: string; value: number }[];
   meanData1: { name: string; value: number }[];
   maxLevelCount = 0;
+  factorColumnDefs: FactorColumnDef[] = [];
+  queryColumnDefs: QueryColumnDef[] = [];
+  dataSource: RowData[] = [];
 
   /**
    * What we want is a flat map of "id: Level":
@@ -66,6 +83,11 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
       this.experiment.factors = this.sortFactorsByOrderAscending(this.experiment.factors);
       this.experiment.factors.map((factor) => {
         this.factors.push(factor?.name);
+        this.displayedColumns.push(factor?.name);
+      });
+      this.experiment.queries.forEach((query) => {
+        this.queries.push(query?.name);
+        this.displayedColumns.push(query?.name);
       });
       this.levels = this.createLevelsMap(this.experiment.factors); // make a flat lookup map one time
     } else {
@@ -83,8 +105,67 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
       this.populateMainEffectGraphData(result);
 
       // interactive effect graph data
-      this.populateInteractionGraphData(result);
+      if (this.factors.length <= 2) {
+        this.populateInteractionGraphData(result);
+      } else {
+        this.createMultiFactorQueryTableData(result);
+      }
     });
+  }
+
+  createMultiFactorQueryTableData(result) {
+    const levelCombinationTable = this.factorDataToConditions(this.experiment.factors);
+    result.forEach((res) => {
+      // fill the result values for each query:
+      res.interactionEffect.forEach((data) => {
+        // levels of the condition:
+        const levels: LevelCombinationElement[] = this.getLevels(data.conditionId);
+      });
+    });
+    // Define factor columns dynamically
+    this.factors.forEach((factor, factorIndex) => {
+      const columnName = `factor${factorIndex + 1}`;
+      const columnLabel = factor;
+      this.factorColumnDefs.push({ name: columnName, label: columnLabel });
+    });
+
+    // Define query columns dynamically
+    this.queries.forEach((query, queryIndex) => {
+      const columnName = `query${queryIndex + 1}`;
+      const columnLabel = query;
+      this.queryColumnDefs.push({ name: columnName, label: columnLabel });
+    });
+
+    // Define data rows dynamically
+    levelCombinationTable.forEach((levels, levelIndex) => {
+      const rowData: RowData = {};
+      this.factorColumnDefs.forEach((factorColumnDef, factorColumnDefIndex) => {
+        rowData[factorColumnDef.name] = levels[factorColumnDefIndex].level;
+      });
+      this.dataSource.push(rowData);
+    });
+
+    result.forEach((res) => {
+      res.interactionEffect.forEach((data, dataIndex) => {
+        const rowData: RowData = {};
+        this.queryColumnDefs.forEach((queryColumnDef) => {
+          rowData[queryColumnDef.name] = data.result;
+        });
+        this.dataSource[dataIndex] = { ...this.dataSource[dataIndex], ...rowData };
+      });
+    });
+  }
+
+  // Get an array of all columns for the table header
+  get headerColumns(): string[] {
+    const factorColumnNames = this.factorColumnDefs.map((column) => column.name);
+    const queryColumnNames = this.queryColumnDefs.map((column) => column.name);
+    return [...factorColumnNames, ...queryColumnNames];
+  }
+
+  // Get an array of all columns for the data rows
+  get dataColumns(): string[] {
+    return this.headerColumns;
   }
 
   sortFactorsByOrderAscending(factors: ExperimentFactor[]): ExperimentFactor[] {
@@ -95,43 +176,47 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
 
   populateMainEffectGraphData(result: QueryResult[]) {
     result.forEach((res) => {
-      let resultData: MainEffectGraphData[] = [];
-      let resultData1: MainEffectGraphData[] = [];
-      let resultData2: MainEffectGraphData[] = [];
+      let simpleExperimentResultData: MainEffectGraphData[] = [];
+      const factorialExperimentResultData: MainEffectGraphData[][] = [];
+      let factorIndex;
+      this.experiment.factors.forEach((factor, factorIndex) => {
+        factorialExperimentResultData[factorIndex] = [];
+      });
       if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
         res.mainEffect.forEach((data) => {
-          const factorIndex = this.getFactorIndex(data.levelId);
+          factorIndex = this.getFactorIndex(data.levelId);
           const resData = {
             name: this.getLevelName(data.levelId),
             value: Math.round(Number(data.result) * 100) / 100,
             extra: Number(data.participantsLogged),
           };
-          factorIndex === 0 ? resultData1.push(resData) : resultData2.push(resData);
+          factorialExperimentResultData[factorIndex].push(resData);
         });
-        resultData1 = this.formatEmptyBar(resultData1);
-        this.queryFactorResults1 = {
-          ...this.queryFactorResults1,
-          [res.id]: resultData1,
-        };
-        resultData2 = this.formatEmptyBar(resultData2);
-        this.queryFactorResults2 = {
-          ...this.queryFactorResults2,
-          [res.id]: resultData2,
-        };
+
+        factorialExperimentResultData.forEach((factorialExperimentResData, index) => {
+          factorialExperimentResultData[index] = this.formatEmptyBar(factorialExperimentResData);
+        });
+
+        this.factors.forEach((factor, factorIndex) => {
+          this.queryFactorResults[factorIndex] = {
+            ...this.queryFactorResults[factorIndex],
+            [res.id]: factorialExperimentResultData[factorIndex],
+          };
+        });
       } else {
-        resultData = res.mainEffect.map((data) => ({
+        simpleExperimentResultData = res.mainEffect.map((data) => ({
           name: this.getConditionCode(data.conditionId),
           value: Math.round(Number(data.result) * 100) / 100,
           extra: Number(data.participantsLogged),
         }));
-        resultData = this.formatEmptyBar(resultData);
+        simpleExperimentResultData = this.formatEmptyBar(simpleExperimentResultData);
         this.queryResults = {
           ...this.queryResults,
-          [res.id]: resultData,
+          [res.id]: simpleExperimentResultData,
         };
       }
       return {
-        [res.id]: resultData,
+        [res.id]: simpleExperimentResultData,
       };
     });
   }
@@ -160,22 +245,21 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
         emptySeries2 = this.prepareEmptySeriesInteractionGraphData(resultData2, resultData1);
 
         // fill the result values for each query:
-        let resData1 = emptySeries1;
-        let resData2 = emptySeries2;
+        const resData = [];
         res.interactionEffect.forEach((data) => {
           // levels of the condition:
           const levels: LevelCombinationElement[] = this.getLevels(data.conditionId);
-          resData1 = this.populateLineChartSeries(resData1, data, levels, 1);
-          resData2 = this.populateLineChartSeries(resData2, data, levels, 0);
+          resData[0] = emptySeries1;
+          resData[1] = emptySeries2;
+          resData[0] = this.populateLineChartSeries(emptySeries1, data, levels, 1);
+          resData[1] = this.populateLineChartSeries(emptySeries2, data, levels, 0);
         });
-        this.interactionEffectQueryFactorResults1 = {
-          ...this.interactionEffectQueryFactorResults1,
-          [res.id]: resData1,
-        };
-        this.interactionEffectQueryFactorResults2 = {
-          ...this.interactionEffectQueryFactorResults2,
-          [res.id]: resData2,
-        };
+        this.factors.forEach((factor, factorIndex) => {
+          this.interactionEffectQueryFactorResults[factorIndex] = {
+            ...this.interactionEffectQueryFactorResults[factorIndex],
+            [res.id]: resData[factorIndex],
+          };
+        });
       }
     });
   }
@@ -235,6 +319,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
 
   getFactorIndex(levelId: string): number {
     let factorIndex;
+    this.experiment.factors = this.sortFactorsByOrderAscending(this.experiment.factors);
     this.experiment.factors.forEach((factor, index) => {
       factor.levels.forEach((level) => {
         if (level.id === levelId) {
@@ -302,6 +387,28 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
       });
     }
     return [...data, ...emptyBars];
+  }
+
+  factorDataToConditions(factorsData: ExperimentFactorData[], levelsCombinationData: any[] = []) {
+    // return if no data in factors
+    if (factorsData.length === 0) {
+      return [levelsCombinationData];
+    } else {
+      // taking the 1st factor
+      const currentFactor = factorsData[0];
+      const levelPermutations = [];
+
+      for (let i = 0; i < currentFactor.levels.length; i++) {
+        const levelName = currentFactor.levels[i].name;
+        // taking level of current factor and processing on other factors
+        const remainingLevelsPermutations = this.factorDataToConditions(factorsData.slice(1), [
+          ...levelsCombinationData,
+          { level: levelName },
+        ]);
+        levelPermutations.push(...remainingLevelsPermutations);
+      }
+      return levelPermutations;
+    }
   }
 
   ngOnDestroy() {
