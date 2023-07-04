@@ -4,6 +4,7 @@ import TestCase1 from './AlgorithmCheck';
 import TestCase2 from './RandomAlgoCheck';
 import TestCase3 from './RandomRoundRobinAlgoCheck';
 import TestCase4 from './OrderedRoundRobinAlgoCheck';
+import TestCase5 from './MetricQueriesCheck';
 import { CheckService } from '../../../../src/api/services/CheckService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
@@ -60,4 +61,9 @@ export const RandomRoundRobinAlgoCheck = async () => {
 export const OrderedRoundRobinAlgoCheck = async () => {
   await initialChecks();
   await TestCase4();
+};
+
+export const MetricQueriesCheck = async () => {
+  await initialChecks();
+  await TestCase5();
 };
