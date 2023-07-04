@@ -272,7 +272,7 @@ export class ExperimentAssignmentService {
       if (!experimentId) {
         if (filteredExperiments.length > 1) {
           const random = seedrandom(userId)();
-          experimentId = filteredExperiments[Math.floor(random * experiments.length)].id;
+          experimentId = filteredExperiments[Math.floor(random * filteredExperiments.length)].id;
         } else {
           experimentId = filteredExperiments[0]?.id;
         }

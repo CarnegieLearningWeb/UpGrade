@@ -15,7 +15,8 @@ import { CaliperEnvelope } from '../../../../../../types/src';
 // import UpgradeClient from 'upgrade_client_local/dist/browser';
 // import { UpgradeClient } from 'upgrade_client_1_1_7';
 // import { UpgradeClient } from 'upgrade_client_3_0_18';
-import { UpgradeClient } from 'upgrade_client_4_2_0';
+import UpgradeClient from 'upgrade_client_4_1_6/dist/browser';
+// import { UpgradeClient } from 'upgrade_client_4_2_0';
 
 import { AbstractMockAppService } from './abstract-mock-app.service';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
@@ -54,11 +55,9 @@ export class GeneralTestForVersion41Service extends AbstractMockAppService {
     WORKING_GROUPS: 'update_working_group',
     SET_ALT_USER_IDS: 'setAltUserIds',
     LOG: 'log',
-    LOG_CALIPER: 'logCaliper'
+    LOG_CALIPER: 'logCaliper',
   };
-  public DECISION_POINTS = [
-    { site: this.SITES.SelectSection, target: this.TARGETS.TARGET_1 },
-  ];
+  public DECISION_POINTS = [{ site: this.SITES.SelectSection, target: this.TARGETS.TARGET_1 }];
 
   constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
     super(MOCK_APP_NAMES.GENERAL_TS_FRONTEND_4_1, eventBus, clientLibraryService);

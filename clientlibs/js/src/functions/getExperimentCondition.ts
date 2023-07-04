@@ -94,6 +94,9 @@ export class Assignment {
   }
 }
 
+/**
+ * @hidden
+ */
 export default function getExperimentCondition(
   experimentConditionData: IExperimentAssignmentv5[],
   site: string,

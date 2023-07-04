@@ -18,7 +18,7 @@ export default async function setAltUserIds(
     token,
     clientSessionId,
     data,
-    Types.REQUEST_TYPES.POST,
+    Types.REQUEST_TYPES.PATCH,
     false,
     skipRetryOnStatusCodes
   );
