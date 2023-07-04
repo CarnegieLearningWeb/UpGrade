@@ -478,7 +478,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
   const experimentObject = { ...withinSubjectExperiment, queries: metricsQueries };
   await experimentService.update(experimentObject as any, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
-  const experimentName = experimentObject.partitions[0].target;
+  const experimentTarget = experimentObject.partitions[0].target;
   const experimentPoint = experimentObject.partitions[0].site;
 
   // change experiment status to Enrolling
@@ -491,14 +491,14 @@ export default async function MetricQueriesCheck(): Promise<void> {
   // user 1 mark experiment point
   let markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
-    experimentName,
+    experimentTarget,
     experimentPoint,
     condition,
     new UpgradeLogger(),
     experimentId,
     '1'
   );
-  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
 
   // getOriginalUserDoc
   let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
@@ -530,14 +530,14 @@ export default async function MetricQueriesCheck(): Promise<void> {
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
-    experimentName,
+    experimentTarget,
     experimentPoint,
     condition,
     new UpgradeLogger(),
     experimentId,
     '2'
   );
-  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
 
   // getOriginalUserDoc
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
@@ -568,14 +568,14 @@ export default async function MetricQueriesCheck(): Promise<void> {
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
-    experimentName,
+    experimentTarget,
     experimentPoint,
     condition,
     new UpgradeLogger(),
     experimentId,
     '3'
   );
-  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
 
   // getOriginalUserDoc
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
@@ -606,14 +606,14 @@ export default async function MetricQueriesCheck(): Promise<void> {
   // user 2 mark experiment point
   /*markedExperimentPoint = await markExperimentPoint(
     experimentUsers[1].id,
-    experimentName,
+    experimentTarget,
     experimentPoint,
     condition,
     new UpgradeLogger(),
     experimentId,
     '4'
   );
-  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentTarget, experimentPoint);
 
   // getOriginalUserDoc
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[1].id, new UpgradeLogger());
@@ -645,14 +645,14 @@ export default async function MetricQueriesCheck(): Promise<void> {
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(
     experimentUsers[1].id,
-    experimentName,
+    experimentTarget,
     experimentPoint,
     condition,
     new UpgradeLogger(),
     experimentId,
     '5'
   );
-  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentTarget, experimentPoint);
 
   // getOriginalUserDoc
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[1].id, new UpgradeLogger());
@@ -935,7 +935,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
             return condition;
           }
         });
