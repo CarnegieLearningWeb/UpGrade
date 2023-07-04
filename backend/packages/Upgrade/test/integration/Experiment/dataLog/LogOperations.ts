@@ -53,7 +53,7 @@ export default async function LogOperations(): Promise<void> {
   await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
 
   const findMetric = await metricRepository.find();
-  expect(findMetric.length).toEqual(32);
+  expect(findMetric.length).toEqual(36);
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;

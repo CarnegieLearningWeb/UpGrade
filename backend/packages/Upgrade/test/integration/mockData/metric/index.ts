@@ -62,6 +62,21 @@ export const metrics: Array<Partial<ISingleMetric | IGroupMetric>> = [
     ],
   },
   {
+    groupClass: 'addWorkspace',
+    allowedKeys: ['level1', 'level2'],
+    attributes: [
+      {
+        metric: 'timeSpent',
+        datatype: IMetricMetaData.CONTINUOUS,
+      },
+      {
+        metric: 'workspaceCompletionStatus',
+        datatype: IMetricMetaData.CATEGORICAL,
+        allowedValues: ['GRADUATED', 'PROMOTED'],
+      },
+    ],
+  },
+  {
     groupClass: 'conceptBuilderWorkspace',
     allowedKeys: ['calculating_area_figures', 'calculating_area_various_figures', 'adding_and_subtracting_decimals'],
     attributes: [

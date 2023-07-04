@@ -14,13 +14,12 @@ export default async function MetricCRUD(): Promise<void> {
   await settingService.setClientCheck(false, true, new UpgradeLogger());
 
   // create metrics service
-
   await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
 
   let findMetric = await metricRepository.find();
-  expect(findMetric.length).toEqual(32);
+  expect(findMetric.length).toEqual(36);
 
   await metricService.deleteMetric('totalProblemsCompleted', new UpgradeLogger());
   findMetric = await metricRepository.find();
-  expect(findMetric.length).toEqual(31);
+  expect(findMetric.length).toEqual(35);
 }

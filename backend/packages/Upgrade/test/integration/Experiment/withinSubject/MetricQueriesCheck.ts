@@ -11,6 +11,9 @@ import { ExperimentAssignmentService } from '../../../../src/api/services/Experi
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 import { METRICS_JOIN_TEXT } from '../../../../src/api/services/MetricService';
 import { QueryService } from '../../../../src/api/services/QueryService';
+import { MetricService } from '../../../../src/api/services/MetricService';
+import { SettingService } from '../../../../src/api/services/SettingService';
+import { metrics } from '../../mockData/metric';
 
 export default async function MetricQueriesCheck(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
@@ -18,6 +21,12 @@ export default async function MetricQueriesCheck(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+  const metricService = Container.get<MetricService>(MetricService);
+  const settingService = Container.get<SettingService>(SettingService);
+
+  await settingService.setClientCheck(false, true, new UpgradeLogger());
+  // create metrics service
+  await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
 
   // creating new user
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
@@ -676,13 +685,6 @@ export default async function MetricQueriesCheck(): Promise<void> {
     const query = allQuery[i];
     const queryResult = await queryService.analyze([query.id], new UpgradeLogger());
     let expectedValue;
-    console.log('queryResult');
-    console.log(queryResult);
-    // Used for console output
-    // const consoleString =
-    //   query.metric.key === 'totalProblemsCompleted'
-    //     ? query.query.operationType + ' '
-    //     : query.query.operationType + ' deep';
     switch (query.query.operationType) {
       case OPERATION_TYPES.SUM: {
         switch (query.repeatedMeasure) {
@@ -917,6 +919,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         expect(Count).toEqual(expectedValue);
         break;
       }
+
       case OPERATION_TYPES.PERCENTAGE: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
@@ -931,7 +934,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.map((condition) => {
+        const condition = queryResult[0].mainEffect.find((condition) => {
           if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
             return condition;
           }
@@ -946,21 +949,21 @@ export default async function MetricQueriesCheck(): Promise<void> {
   }
 }
 
-function makeQuery(
-  metric: string,
-  operationType: OPERATION_TYPES,
-  experimentId: string,
-  repeatedMeasure: REPEATED_MEASURE = REPEATED_MEASURE.mostRecent
-): any {
-  return {
-    name: 'query',
-    query: {
-      operationType,
-    },
-    metric: {
-      key: metric,
-    },
-    experimentId,
-    repeatedMeasure,
-  };
-}
+// function makeQuery(
+//   metric: string,
+//   operationType: OPERATION_TYPES,
+//   experimentId: string,
+//   repeatedMeasure: REPEATED_MEASURE = REPEATED_MEASURE.mostRecent
+// ): any {
+//   return {
+//     name: 'query',
+//     query: {
+//       operationType,
+//     },
+//     metric: {
+//       key: metric,
+//     },
+//     experimentId,
+//     repeatedMeasure,
+//   };
+// }
