@@ -534,7 +534,7 @@ describe('LogRepository Testing', () => {
     selectMock.expects('innerJoin').exactly(4).returns(selectQueryBuilder);
     selectMock.expects('innerJoinAndSelect').exactly(6).returns(selectQueryBuilder);
     selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').exactly(7).returns(selectQueryBuilder);
+    selectMock.expects('andWhere').exactly(8).returns(selectQueryBuilder);
     selectMock.expects('addGroupBy').once().returns(selectQueryBuilder);
     selectMock
       .expects('getRawMany')
