@@ -21,10 +21,12 @@ module.exports = {
     'plugins': [
       "@typescript-eslint",
       '@angular-eslint/eslint-plugin',
+      'eslint-plugin-tsdoc',
       'prettier'
     ],
     'root': true,
     'rules': {
+        'tsdoc/syntax': 'warn',
         '@angular-eslint/component-class-suffix': 'error',
         '@angular-eslint/directive-class-suffix': 'error',
         '@angular-eslint/no-input-rename': 'error',

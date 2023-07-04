@@ -230,7 +230,7 @@ export class AnalyticsService {
                   const jsonLog = groupedUser[userId][queryId].reduce(
                     (accumulator: queryDataType | undefined, doc: queryDataType) => {
                       if (accumulator) {
-                        return new Date(accumulator.createdAt) > new Date(doc.createdAt) ? doc : accumulator;
+                        return new Date(accumulator.updatedAt) > new Date(doc.updatedAt) ? doc : accumulator;
                       }
                       return doc;
                     },
@@ -253,7 +253,7 @@ export class AnalyticsService {
                   const jsonLog = groupedUser[userId][queryId].reduce(
                     (accumulator: queryDataType | undefined, doc: queryDataType) => {
                       if (accumulator) {
-                        return new Date(accumulator.createdAt) < new Date(doc.createdAt) ? doc : accumulator;
+                        return new Date(accumulator.updatedAt) < new Date(doc.updatedAt) ? doc : accumulator;
                       }
                       return doc;
                     },
