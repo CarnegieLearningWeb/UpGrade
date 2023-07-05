@@ -24,7 +24,7 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 public class Main {
     public static void main(String[] args) throws InterruptedException, ExecutionException
     {
-        final String baseUrl = "https://upgradeapi.qa-cli.net";
+        final String baseUrl = "http://localhost:3030";
         final String userId = UUID.randomUUID().toString();
         final String site = "SelectSection";
 
