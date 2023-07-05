@@ -299,7 +299,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     operationType = null,
     compareFn = null,
     compareValue = null,
-    repeatedMeasure = null
+    repeatedMeasure = REPEATED_MEASURE.mostRecent
   ) {
     return this._formBuilder.group({
       keys: this._formBuilder.array([this.addKey(key)]),

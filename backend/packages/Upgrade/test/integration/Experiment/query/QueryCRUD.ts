@@ -45,11 +45,10 @@ export default async function QueryCRUD(): Promise<void> {
   );
 
   // create metrics service
-
   await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
 
   const findMetric = await metricRepository.find();
-  expect(findMetric.length).toEqual(32);
+  expect(findMetric.length).toEqual(36);
 
   // three query need to be generated
   const query = {

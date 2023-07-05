@@ -17,10 +17,7 @@ export default async function RamdomAlgoCheck(): Promise<void> {
   // creating new user
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
-  //   const partitions = experimentObject.partitions;
-  // const experimentSite = experimentObject.partitions[0].site;
   const conditions = experimentObject.conditions;
-  //    const experimentID = experimentObject.id;
   const context = experimentObject.context[0];
 
   // setting condition-2 weight as 100%
