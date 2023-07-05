@@ -13,7 +13,7 @@ export default async function setGroupMembership(
     token,
     clientSessionId,
     { id: userId, group: group },
-    Types.REQUEST_TYPES.POST
+    Types.REQUEST_TYPES.PATCH
   );
   if (response.status) {
     return response.data;

@@ -97,7 +97,8 @@ export async function markExperimentPoint(
   site: string,
   condition: string | null,
   logger: UpgradeLogger,
-  experimentId?: string
+  experimentId?: string,
+  uniquifier?: string
 ): Promise<MonitoredDecisionPoint[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
@@ -112,7 +113,8 @@ export async function markExperimentPoint(
     condition,
     { logger, userDoc: experimentUserDoc },
     target,
-    experimentId
+    experimentId,
+    uniquifier
   );
   return checkService.getAllMarkedExperimentPoints();
 }

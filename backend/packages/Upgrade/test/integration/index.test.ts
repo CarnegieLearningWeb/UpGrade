@@ -81,6 +81,7 @@ import { CompetingExperiment } from './Experiment/competingExperiment';
 import { FactorialExperimentCRUD, FactorialEnrollment, FactorialEnrollment2 } from './Experiment/factorial';
 import {
   AlgorithmCheck,
+  MetricQueriesCheck,
   OrderedRoundRobinAlgoCheck,
   RandomAlgoCheck,
   RandomRoundRobinAlgoCheck,
@@ -552,4 +553,9 @@ describe('Integration Tests', () => {
   //   await MonitoredPointForExport();
   //   done();
   // });
+
+  test('Within Subject metrics query check', async (done) => {
+    await MetricQueriesCheck();
+    done();
+  });
 });
