@@ -58,7 +58,7 @@ import {
 } from './store/experiment-design-stepper.actions';
 import { BehaviorSubject, distinctUntilChanged } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
-import * as isEqual from 'lodash.isequal';
+import isEqual from 'lodash.isequal';
 import { PAYLOAD_TYPE } from '../../../../../../../types/src';
 
 @Injectable({
@@ -547,10 +547,11 @@ export class ExperimentDesignStepperService {
     this.store$.dispatch(actionUpdateFactorialConditionTableData({ tableData }));
   }
 
-  setUpdatePayloadTableEditModeDetails(rowIndex: number | null): void {
+  setUpdatePayloadTableEditModeDetails(rowIndex: number | null, isNgDestroyCall: boolean): void {
     this.store$.dispatch(
       experimentDesignStepperAction.actionToggleSimpleExperimentPayloadTableEditMode({
         simpleExperimentPayloadTableEditIndex: rowIndex,
+        isNgDestroyCall: isNgDestroyCall,
       })
     );
   }

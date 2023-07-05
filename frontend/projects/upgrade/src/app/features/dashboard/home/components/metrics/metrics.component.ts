@@ -18,7 +18,7 @@ import {
 } from '../../../../../core/analysis/store/analysis.models';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
-import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray } from '@angular/forms';
 import { startWith, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { DialogService } from '../../../../../shared/services/dialog.service';
@@ -38,7 +38,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('metricTable', { static: false, read: ElementRef }) metricTable: ElementRef;
 
-  queryForm: FormGroup;
+  queryForm: UntypedFormGroup;
 
   // Used for displaying metrics
   allMetricsSub: Subscription;
@@ -74,7 +74,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     private analysisService: AnalysisService,
-    private _formBuilder: FormBuilder,
+    private _formBuilder: UntypedFormBuilder,
     private translate: TranslateService,
     private dialogService: DialogService,
     private experimentDesignStepperService: ExperimentDesignStepperService
@@ -115,7 +115,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       // Remove the default empty row
       this.queries.removeAt(0);
       this.experimentInfo.queries.forEach((query, queryIndex) => {
-        let key = query.metric.key ? query.metric.key : query.metric;
+        const key = query.metric.key ? query.metric.key : query.metric;
         // separating keys from metric
         const rootKey = key.split(METRICS_JOIN_TEXT);
         // set selectedNode for first key of simple/repeated metrics
@@ -194,8 +194,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   // getters
-  get queries(): FormArray {
-    return this.queryForm.get('queries') as FormArray;
+  get queries(): UntypedFormArray {
+    return this.queryForm.get('queries') as UntypedFormArray;
   }
 
   get NewExperimentDialogEvents() {
@@ -207,12 +207,12 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get ContinuousRepeatedMeasure() {
-    let repeatedMeasure = Object.values(REPEATED_MEASURE);
+    const repeatedMeasure = Object.values(REPEATED_MEASURE);
     return repeatedMeasure;
   }
 
   get CategoricalRepeatedMeasure() {
-    let repeatedMeasure = Object.values(REPEATED_MEASURE);
+    const repeatedMeasure = Object.values(REPEATED_MEASURE);
     repeatedMeasure.shift();
     return repeatedMeasure;
   }
@@ -222,7 +222,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   getKeys(queryIndex: number) {
-    const keysArray = this.queries.at(queryIndex).get('keys') as FormArray;
+    const keysArray = this.queries.at(queryIndex).get('keys') as UntypedFormArray;
     return keysArray;
   }
 
@@ -377,7 +377,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   filteredMetricKeys(queryIndex: number, keyIndex: number) {
     // Prepare filteredMetrics for each query and its keys for new experiment and for experimentInfo while in edit Mode
-    const keysArray = this.queries.at(queryIndex).get('keys') as FormArray;
+    const keysArray = this.queries.at(queryIndex).get('keys') as UntypedFormArray;
     const filteredMetric = keysArray
       .at(keyIndex)
       .get('metricKey')
@@ -594,7 +594,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         if (keys[0].metricKey || operationType || queryName || compareFn || compareValue) {
           this.checkMetricKeyRequiredError(keys);
         }
-        let metrics = keys;
+        const metrics = [...keys];
         keys = keys
           .filter((key) => key.metricKey !== null)
           .map((key) => (key.metricKey.key ? key.metricKey.key : key.metricKey));
@@ -603,8 +603,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
           this.checkStatisticRequiredError(operationType);
           const {
             metadata: { type },
-          } = metrics[keys.length-1].metricKey;
-          
+          } = metrics[keys.length - 1].metricKey;
+
           if (type === IMetricMetaData.CATEGORICAL) {
             this.checkComparisonStatisticRequiredError(compareFn, compareValue);
           }

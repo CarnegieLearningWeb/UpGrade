@@ -1,5 +1,8 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import {
   Experiment,
   ExperimentCondition,
@@ -15,8 +18,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 
 interface ImportExperimentJSON {
@@ -45,8 +48,8 @@ interface ImportExperimentJSON {
 })
 export class ImportExperimentComponent implements OnInit {
   experimentInfo: Experiment;
-  isExperimentJSONValid: boolean = true;
-  experimentJSONVersionStatus: number = 0;
+  isExperimentJSONValid = true;
+  experimentJSONVersionStatus = 0;
   missingAllProperties: string;
   allPartitions: ExperimentDecisionPoint[] = [];
   allPartitionsSub: Subscription;
@@ -54,14 +57,14 @@ export class ImportExperimentComponent implements OnInit {
   importFileErrorsDataSource = new MatTableDataSource<{ filename: string; error: string }>();
   importFileErrors: { filename: string; error: string }[] = [];
   displayedColumns: string[] = ['File Name', 'Error'];
-  uploadedFileCount: number = 0;
+  uploadedFileCount = 0;
 
-  missingConditionProperties: string = '';
-  missingPartitionProperties: string = '';
-  missingFactorProperties: string = '';
-  missingLevelProperties: string = '';
-  missingLevelCombinationElementProperties: string = '';
-  missingPropertiesFlag: boolean = false;
+  missingConditionProperties = '';
+  missingPartitionProperties = '';
+  missingFactorProperties = '';
+  missingLevelProperties = '';
+  missingLevelCombinationElementProperties = '';
+  missingPropertiesFlag = false;
   isFactorialExperiment: boolean;
 
   // TODO remove this any after typescript version updation
@@ -279,10 +282,9 @@ export class ImportExperimentComponent implements OnInit {
       this.translate.instant('home.import-experiment.missing-properties.message.text') + missingProperties;
 
     this.missingPropertiesFlag = this.updateMissingPropertiesFlag(missingProperties);
-    
 
     this.checkMissingConditionProperties(experiment.conditions);
-    
+
     if (this.missingConditionProperties.length > 0) {
       this.missingAllProperties =
         this.missingAllProperties +
@@ -321,7 +323,7 @@ export class ImportExperimentComponent implements OnInit {
 
     if (this.isFactorialExperiment) {
       this.checkMissingFactorAndLevelProperties(experiment.factors);
-      
+
       if (this.missingFactorProperties.length > 0) {
         this.missingAllProperties =
           this.missingAllProperties +
@@ -334,7 +336,7 @@ export class ImportExperimentComponent implements OnInit {
     }
 
     this.missingPropertiesFlag = this.updateMissingPropertiesFlag(this.missingPartitionProperties);
-    
+
     return !this.missingPropertiesFlag;
   }
   updateMissingPropertiesFlag(missingPropertiesList: string): boolean {
@@ -349,21 +351,21 @@ export class ImportExperimentComponent implements OnInit {
 
   checkMissingFactorAndLevelProperties(factors: ExperimentFactor[]) {
     factors.map((factor) => {
-        this.missingFactorProperties = this.checkForMissingProperties({ schema: this.factorSchema, data: factor });
-        factor.levels.map((level) => {
-          this.missingLevelProperties = this.checkForMissingProperties({ schema: this.levelSchema, data: level });
-        });
-
-        if (this.missingLevelProperties.length > 0) {
-          this.missingAllProperties =
-            this.missingAllProperties +
-            ', ' +
-            this.translate.instant('global.levelCombinationElement.text') +
-            ': ' +
-            this.missingLevelProperties;
-        }
-        this.missingPropertiesFlag = this.missingPropertiesFlag && this.missingLevelProperties.length !== 0;
+      this.missingFactorProperties = this.checkForMissingProperties({ schema: this.factorSchema, data: factor });
+      factor.levels.map((level) => {
+        this.missingLevelProperties = this.checkForMissingProperties({ schema: this.levelSchema, data: level });
       });
+
+      if (this.missingLevelProperties.length > 0) {
+        this.missingAllProperties =
+          this.missingAllProperties +
+          ', ' +
+          this.translate.instant('global.levelCombinationElement.text') +
+          ': ' +
+          this.missingLevelProperties;
+      }
+      this.missingPropertiesFlag = this.missingPropertiesFlag && this.missingLevelProperties.length !== 0;
+    });
   }
 
   checkMissingPartitionProperties(partitions: ExperimentDecisionPoint[]) {
@@ -397,7 +399,8 @@ export class ImportExperimentComponent implements OnInit {
             ': ' +
             this.missingLevelCombinationElementProperties;
         }
-        this.missingPropertiesFlag = this.missingPropertiesFlag && this.missingLevelCombinationElementProperties.length !== 0;
+        this.missingPropertiesFlag =
+          this.missingPropertiesFlag && this.missingLevelCombinationElementProperties.length !== 0;
       }
     });
   }
@@ -482,7 +485,7 @@ export class ImportExperimentComponent implements OnInit {
     result = this.deduceConditionPayload(result);
     result = this.deducePartition(result);
     result = this.deduceFactors(result);
-    
+
     return result;
   }
 
@@ -491,15 +494,14 @@ export class ImportExperimentComponent implements OnInit {
       experimentJSONVersionStatus = await this.validateExperimentJSONVersion(experimentInfo);
     }
 
-    let isExperimentJSONValid = await this.validateExperimentJSON(experimentInfo);
+    const isExperimentJSONValid = await this.validateExperimentJSON(experimentInfo);
 
     if (experimentJSONVersionStatus === 0 && isExperimentJSONValid) {
       this.allExperiments.push(experimentInfo);
     } else if (!isExperimentJSONValid) {
       this.importFileErrors.push({
         filename: fileName,
-        error:
-          this.translate.instant('home.import-experiment.error.message.text') + ' ' + this.missingAllProperties,
+        error: this.translate.instant('home.import-experiment.error.message.text') + ' ' + this.missingAllProperties,
       });
     } else {
       if (experimentJSONVersionStatus === 1) {
@@ -538,7 +540,11 @@ export class ImportExperimentComponent implements OnInit {
         let result = JSON.parse(reader.result as any);
         result = this.updateExperimentJSON(result);
         this.experimentInfo = result;
-        this.importFileErrorsDataSource.data = await this.validateExperiment(this.experimentInfo, fileName, this.experimentJSONVersionStatus);
+        this.importFileErrorsDataSource.data = await this.validateExperiment(
+          this.experimentInfo,
+          fileName,
+          this.experimentJSONVersionStatus
+        );
         readFile(++index);
       }.bind(this)
     );
