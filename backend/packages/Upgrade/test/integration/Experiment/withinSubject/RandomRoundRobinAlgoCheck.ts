@@ -18,10 +18,7 @@ export default async function RamdomRoundRobinAlgoCheck(): Promise<void> {
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   experimentObject = { ...experimentObject, conditionOrder: CONDITION_ORDER.RANDOM_ROUND_ROBIN };
-  //   const partitions = experimentObject.partitions;
-  // const experimentSite = experimentObject.partitions[0].site;
   const conditions = experimentObject.conditions;
-  //    const experimentID = experimentObject.id;
   const context = experimentObject.context[0];
 
   // setting condition-2 weight as 100%

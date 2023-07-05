@@ -614,22 +614,53 @@ export default async function LogOperations(): Promise<void> {
       }
       // Can not check exact values for below operations
       case OPERATION_TYPES.COUNT:
-        console.log(consoleString, queryResult);
+        const countValue = res.reduce((accu, data) => {
+          return accu + data;
+        }, 0);
+        expectedValue = 4;
+        if(query.metric.type === 'categorical'){
+          expectedValue = 5; // For completion metric
+        }
+        expect(countValue).toEqual(expectedValue);
         break;
       case OPERATION_TYPES.AVERAGE:
-        console.log(consoleString, queryResult);
+        const aveValue = (res.reduce((accu, data) => {
+          return accu + data;
+        }, 0))/res.length;
+        expectedValue = 128;
+        if (query.metric.key !== 'totalProblemsCompleted') {
+          expectedValue = 250; // For completion metric
+        }
+        expect(aveValue).toEqual(expectedValue);
         break;
       case OPERATION_TYPES.MODE:
-        console.log(consoleString, queryResult);
+        const modeValue = res[1];
+        expectedValue = 20;
+        if (query.metric.key !== 'totalProblemsCompleted') {
+          expectedValue = 100; // For completion metric
+        }
+        expect(modeValue).toEqual(expectedValue);
         break;
       case OPERATION_TYPES.MEDIAN:
-        console.log(consoleString, queryResult);
+        const medianValue = res[1];
+        expectedValue = 50;
+        if (query.metric.key !== 'totalProblemsCompleted') {
+          expectedValue = 300; // For completion metric
+        }
+        expect(medianValue).toEqual(expectedValue);
         break;
       case OPERATION_TYPES.STDEV:
-        console.log(consoleString, queryResult);
+        const stdValue = res[1];
+        expectedValue = 40;
+        if (query.metric.key !== 'totalProblemsCompleted') {
+          expectedValue = 200; // For completion metric
+        }
+        expect(stdValue).toEqual(expectedValue);
         break;
       case OPERATION_TYPES.PERCENTAGE:
-        console.log(consoleString, queryResult);
+        const perValue = res[1];
+        expectedValue = 33;
+        expect(perValue).toEqual(expectedValue);
         break;
       default:
         break;

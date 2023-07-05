@@ -5,8 +5,8 @@ import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
-import { EXPERIMENT_STATE, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
-import { checkMarkExperimentPointForUser, getAllExperimentCondition, markExperimentPoint } from '../../utils';
+import { CONDITION_ORDER, EXPERIMENT_STATE, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
+import { checkMarkExperimentPointForUser, markExperimentPoint } from '../../utils';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 import { METRICS_JOIN_TEXT } from '../../../../src/api/services/MetricService';
@@ -412,7 +412,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
   ];
 
   // experiment object
-  const experimentObject = { ...withinSubjectExperiment, queries: metricsQueries };
+  const experimentObject = { ...withinSubjectExperiment, queries: metricsQueries, conditionOrder: CONDITION_ORDER.ORDERED_ROUND_ROBIN };
   await experimentService.update(experimentObject as any, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
   const experimentTarget = experimentObject.partitions[0].target;
@@ -420,10 +420,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
 
   // change experiment status to Enrolling
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
-
-  // get all experiment condition for user 1
-  const experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
-  const condition = experimentConditionAssignments[0].assignedCondition[0].conditionCode;
+  const condition = experimentObject.conditions[0].conditionCode;
 
   // user 1 mark experiment point
   let markedExperimentPoint = await markExperimentPoint(
@@ -644,7 +641,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         }
 
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
+          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
             return condition;
           }
         });
@@ -672,7 +669,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
+          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
             return condition;
           }
         });
@@ -701,7 +698,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
+          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
             return condition;
           }
         });
@@ -729,7 +726,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
+          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
             return condition;
           }
         });
@@ -757,7 +754,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
+          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
             return condition;
           }
         });
@@ -785,7 +782,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
+          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
             return condition;
           }
         });
@@ -813,7 +810,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
+          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
             return condition;
           }
         });
@@ -858,11 +855,10 @@ export default async function MetricQueriesCheck(): Promise<void> {
         }
 
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
+          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
             return condition;
           }
         });
-        
         const Count = parseInt(condition.result, 10);
         expect(Count).toEqual(expectedValue);
         break;
@@ -883,7 +879,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
+          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
             return condition;
           }
         });
