@@ -290,9 +290,17 @@ export class LogRepository extends Repository<Log> {
         : executeQuery.groupBy('"individualEnrollment"."conditionId"');
     } else {
       operation = repeatedMeasure === REPEATED_MEASURE.earliest ? 'min' : 'max';
-      executeQuery = isFactorialExperiment
+      if (operationType === OPERATION_TYPES.STDEV) {
+        executeQuery = isFactorialExperiment
         ? executeQuery.groupBy('"levelCombinationElement"."levelId"')
-        : executeQuery.groupBy('"experimentCondition"."conditionId", "monitoredDecisionPoint"."userId"');
+        : executeQuery.groupBy(`"experimentCondition"."conditionId", "monitoredDecisionPoint"."userId", ${valueToUse}`);
+      } else {
+        if (operationType !== OPERATION_TYPES.PERCENTAGE) {
+          executeQuery = isFactorialExperiment
+            ? executeQuery.groupBy('"levelCombinationElement"."levelId"')
+            : executeQuery.groupBy('"experimentCondition"."conditionId", "monitoredDecisionPoint"."userId"');
+        }
+        }
     }
 
     if (operationType === OPERATION_TYPES.PERCENTAGE) {
@@ -311,17 +319,18 @@ export class LogRepository extends Repository<Log> {
             ]);
       } else {
         executeQuery = isFactorialExperiment
+            ? executeQuery.groupBy('"levelCombinationElement"."levelId"')
+            : executeQuery.groupBy('"experimentCondition"."conditionId"');
+        executeQuery = isFactorialExperiment
           ? executeQuery.select([
               '"levelCombinationElement"."levelId"',
               `count(cast(${valueToUse} as text)) as result`,
               `${operation}("logs"."updatedAt")`,
-              `"monitoredDecisionPoint"."userId" as "userId"`,
             ])
           : executeQuery.select([
               '"experimentCondition"."conditionId"',
               `count(cast(${valueToUse} as text)) as result`,
               `${operation}("logs"."updatedAt")`,
-              `"monitoredDecisionPoint"."userId" as "userId"`,
             ]);
         percentQuery = isFactorialExperiment
           ? percentQuery.select([
@@ -429,13 +438,13 @@ export class LogRepository extends Repository<Log> {
             ? executeQuery.select([
                 '"levelCombinationElement"."levelId"',
                 `${operationType}(cast(${valueToUse} as text)) as result`,
-                `${operation}"logs"."updatedAt"`,
+                `${operation}("logs"."updatedAt")`,
                 `"monitoredDecisionPoint"."userId" as "userId"`,
               ])
             : executeQuery.select([
                 '"experimentCondition"."conditionId"',
                 `${operationType}(cast(${valueToUse} as text)) as result`,
-                `${operation}"logs"."updatedAt"`,
+                `${operation}("logs"."updatedAt")`,
                 `"monitoredDecisionPoint"."userId" as "userId"`,
               ]);
         }
@@ -452,19 +461,35 @@ export class LogRepository extends Repository<Log> {
                 `${operationType}(cast(${valueToUse} as decimal)) as result`,
               ]);
         } else {
-          executeQuery = isFactorialExperiment
-            ? executeQuery.select([
-                '"levelCombinationElement"."levelId"',
-                `${operationType}(cast(${valueToUse} as decimal)) as result`,
-                `${operation}("logs"."updatedAt")`,
-                `"monitoredDecisionPoint"."userId" as "userId"`,
-              ])
-            : executeQuery.select([
-                '"experimentCondition"."conditionId"',
-                `${operationType}(cast(${valueToUse} as decimal)) as result`,
-                `${operation}("logs"."updatedAt")`,
-                `"monitoredDecisionPoint"."userId" as "userId"`,
-              ]);
+          if (operationType !== OPERATION_TYPES.STDEV) {
+            executeQuery = isFactorialExperiment
+              ? executeQuery.select([
+                  '"levelCombinationElement"."levelId"',
+                  `${operationType}(cast(${valueToUse} as decimal)) as result`,
+                  `${operation}("logs"."updatedAt")`,
+                  `"monitoredDecisionPoint"."userId" as "userId"`,
+                ])
+              : executeQuery.select([
+                  '"experimentCondition"."conditionId"',
+                  `${operationType}(cast(${valueToUse} as decimal)) as result`,
+                  `${operation}("logs"."updatedAt")`,
+                  `"monitoredDecisionPoint"."userId" as "userId"`,
+                ]);
+          } else { // for stdev dont have operationType in subquery
+            executeQuery = isFactorialExperiment
+              ? executeQuery.select([
+                  '"levelCombinationElement"."levelId"',
+                  `cast(${valueToUse} as decimal) as result`,
+                  `${operation}("logs"."updatedAt")`,
+                  `"monitoredDecisionPoint"."userId" as "userId"`,
+                ])
+              : executeQuery.select([
+                  '"experimentCondition"."conditionId"',
+                  `cast(${valueToUse} as decimal) as result`,
+                  `${operation}("logs"."updatedAt")`,
+                  `"monitoredDecisionPoint"."userId" as "userId"`,
+                ]);
+          }
         }
       }
 

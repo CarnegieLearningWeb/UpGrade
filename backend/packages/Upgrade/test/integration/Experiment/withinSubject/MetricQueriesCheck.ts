@@ -77,69 +77,6 @@ export default async function MetricQueriesCheck(): Promise<void> {
       repeatedMeasure: REPEATED_MEASURE.mostRecent,
       metric: {
         key: `addWorkspace${METRICS_JOIN_TEXT}level1${METRICS_JOIN_TEXT}workspaceCompletionStatus`,
-        // type: 'categorical',
-        // allowedData: ['GRADUATED', 'PROMOTED'],
-      },
-      experimentId: experiments[0].id,
-    },
-    {
-      name: 'Count of times the Earliest workspaceCompletionStatus=GRADUATED for level1 (addWorkspace)',
-      query: {
-        operationType: OPERATION_TYPES.COUNT,
-        compareFn: '=',
-        compareValue: 'GRADUATED',
-      },
-      repeatedMeasure: REPEATED_MEASURE.earliest,
-      metric: {
-        key: `addWorkspace@__@level1@__@workspaceCompletionStatus`,
-        // type: 'categorical',
-        // allowedData: ['GRADUATED', 'PROMOTED'],
-      },
-      experimentId: experiments[0].id,
-    },
-  ];
-
-  /*const metricsQueries = [
-    {
-      name: 'Percent of times the Most Recent workspaceCompletionStatus=GRADUATED for level1 (addWorkspace)',
-      query: {
-        operationType: OPERATION_TYPES.PERCENTAGE,
-        compareFn: '=',
-        compareValue: 'GRADUATED',
-      },
-      repeatedMeasure: REPEATED_MEASURE.mostRecent,
-      metric: {
-        key: `addWorkspace${METRICS_JOIN_TEXT}level1${METRICS_JOIN_TEXT}workspaceCompletionStatus`,
-        type: 'categorical',
-        allowedData: ['GRADUATED', 'PROMOTED'],
-      },
-      experimentId: experiments[0].id,
-    },
-    {
-      name: 'Percent of times the Earliest workspaceCompletionStatus=GRADUATED for level1 (addWorkspace)',
-      query: {
-        operationType: OPERATION_TYPES.PERCENTAGE,
-        compareFn: '=',
-        compareValue: 'GRADUATED',
-      },
-      repeatedMeasure: REPEATED_MEASURE.earliest,
-      metric: {
-        key: `addWorkspace${METRICS_JOIN_TEXT}level1${METRICS_JOIN_TEXT}workspaceCompletionStatus`,
-        type: 'categorical',
-        allowedData: ['GRADUATED', 'PROMOTED'],
-      },
-      experimentId: experiments[0].id,
-    },
-    {
-      name: 'Count of times the Most Recent workspaceCompletionStatus=GRADUATED for level1 (addWorkspace)',
-      query: {
-        operationType: OPERATION_TYPES.COUNT,
-        compareFn: '=',
-        compareValue: 'GRADUATED',
-      },
-      repeatedMeasure: REPEATED_MEASURE.mostRecent,
-      metric: {
-        key: `addWorkspace${METRICS_JOIN_TEXT}level1${METRICS_JOIN_TEXT}workspaceCompletionStatus`,
         type: 'categorical',
         allowedData: ['GRADUATED', 'PROMOTED'],
       },
@@ -472,7 +409,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
       },
       experimentId: experiments[0].id,
     },
-  ];*/
+  ];
 
   // experiment object
   const experimentObject = { ...withinSubjectExperiment, queries: metricsQueries };
@@ -604,7 +541,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
   );
 
   // user 2 mark experiment point
-  /*markedExperimentPoint = await markExperimentPoint(
+  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[1].id,
     experimentTarget,
     experimentPoint,
@@ -678,7 +615,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
       },
     ],
     { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
-  );*/
+  );
 
   const allQuery = await queryService.find(new UpgradeLogger());
   for (let i = 0; i < allQuery.length; i++) {
@@ -686,26 +623,28 @@ export default async function MetricQueriesCheck(): Promise<void> {
     const queryResult = await queryService.analyze([query.id], new UpgradeLogger());
     let expectedValue;
     switch (query.query.operationType) {
+
       case OPERATION_TYPES.SUM: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
-            expectedValue = 300;
+            expectedValue = 800;
             break;
           }
           case REPEATED_MEASURE.earliest: {
-            expectedValue = 400;
+            expectedValue = 700;
             break;
           }
           case REPEATED_MEASURE.mean: {
-            expectedValue = 300;
+            expectedValue = 700;
             break;
           }
           default: {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.map((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+
+        const condition = queryResult[0].mainEffect.find((condition) => {
+          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
             return condition;
           }
         });
@@ -713,6 +652,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         expect(sum).toEqual(expectedValue);
         break;
       }
+
       case OPERATION_TYPES.MIN: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
@@ -720,7 +660,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
           case REPEATED_MEASURE.earliest: {
-            expectedValue = 400;
+            expectedValue = 300;
             break;
           }
           case REPEATED_MEASURE.mean: {
@@ -731,8 +671,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.map((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+        const condition = queryResult[0].mainEffect.find((condition) => {
+          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
             return condition;
           }
         });
@@ -741,10 +681,11 @@ export default async function MetricQueriesCheck(): Promise<void> {
         expect(minValue).toEqual(expectedValue);
         break;
       }
+
       case OPERATION_TYPES.MAX: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
-            expectedValue = 300;
+            expectedValue = 500;
             break;
           }
           case REPEATED_MEASURE.earliest: {
@@ -752,15 +693,15 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
           case REPEATED_MEASURE.mean: {
-            expectedValue = 300;
+            expectedValue = 400;
             break;
           }
           default: {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.map((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+        const condition = queryResult[0].mainEffect.find((condition) => {
+          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
             return condition;
           }
         });
@@ -768,26 +709,27 @@ export default async function MetricQueriesCheck(): Promise<void> {
         expect(maxValue).toEqual(expectedValue);
         break;
       }
+
       case OPERATION_TYPES.AVERAGE: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
-            expectedValue = 300;
-            break;
-          }
-          case REPEATED_MEASURE.earliest: {
             expectedValue = 400;
             break;
           }
+          case REPEATED_MEASURE.earliest: {
+            expectedValue = 350;
+            break;
+          }
           case REPEATED_MEASURE.mean: {
-            expectedValue = 300;
+            expectedValue = 350;
             break;
           }
           default: {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.map((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+        const condition = queryResult[0].mainEffect.find((condition) => {
+          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
             return condition;
           }
         });
@@ -795,6 +737,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         expect(Average).toEqual(expectedValue);
         break;
       }
+
       case OPERATION_TYPES.MODE: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
@@ -802,7 +745,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
           case REPEATED_MEASURE.earliest: {
-            expectedValue = 400;
+            expectedValue = 300;
             break;
           }
           case REPEATED_MEASURE.mean: {
@@ -813,8 +756,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.map((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+        const condition = queryResult[0].mainEffect.find((condition) => {
+          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
             return condition;
           }
         });
@@ -822,26 +765,27 @@ export default async function MetricQueriesCheck(): Promise<void> {
         expect(Mode).toEqual(expectedValue);
         break;
       }
+
       case OPERATION_TYPES.MEDIAN: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
-            expectedValue = 300;
-            break;
-          }
-          case REPEATED_MEASURE.earliest: {
             expectedValue = 400;
             break;
           }
+          case REPEATED_MEASURE.earliest: {
+            expectedValue = 350;
+            break;
+          }
           case REPEATED_MEASURE.mean: {
-            expectedValue = 300;
+            expectedValue = 350;
             break;
           }
           default: {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.map((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+        const condition = queryResult[0].mainEffect.find((condition) => {
+          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
             return condition;
           }
         });
@@ -849,26 +793,27 @@ export default async function MetricQueriesCheck(): Promise<void> {
         expect(Median).toEqual(expectedValue);
         break;
       }
+
       case OPERATION_TYPES.STDEV: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
-            expectedValue = 0;
+            expectedValue = 141;
             break;
           }
           case REPEATED_MEASURE.earliest: {
-            expectedValue = 0;
+            expectedValue = 70;
             break;
           }
           case REPEATED_MEASURE.mean: {
-            expectedValue = 0;
+            expectedValue = 70;
             break;
           }
           default: {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.map((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+        const condition = queryResult[0].mainEffect.find((condition) => {
+          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
             return condition;
           }
         });
@@ -876,11 +821,12 @@ export default async function MetricQueriesCheck(): Promise<void> {
         expect(StdDev).toEqual(expectedValue);
         break;
       }
+
       case OPERATION_TYPES.COUNT: {
         if (query.metric.type === 'categorical') {
           switch (query.repeatedMeasure) {
             case REPEATED_MEASURE.mostRecent: {
-              expectedValue = 1;
+              expectedValue = 2;
               break;
             }
             case REPEATED_MEASURE.earliest: {
@@ -894,15 +840,15 @@ export default async function MetricQueriesCheck(): Promise<void> {
         } else {
           switch (query.repeatedMeasure) {
             case REPEATED_MEASURE.mostRecent: {
-              expectedValue = 1;
+              expectedValue = 2;
               break;
             }
             case REPEATED_MEASURE.earliest: {
-              expectedValue = 1;
+              expectedValue = 2;
               break;
             }
             case REPEATED_MEASURE.mean: {
-              expectedValue = 1;
+              expectedValue = 2;
               break;
             }
             default: {
@@ -910,11 +856,13 @@ export default async function MetricQueriesCheck(): Promise<void> {
             }
           }
         }
-        const condition = queryResult[0].mainEffect.map((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+
+        const condition = queryResult[0].mainEffect.find((condition) => {
+          if (condition.conditionId === 'd2702d3c-5e04-41a7-8766-1da8a95b72ce') {
             return condition;
           }
         });
+        
         const Count = parseInt(condition.result, 10);
         expect(Count).toEqual(expectedValue);
         break;
@@ -927,7 +875,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
           case REPEATED_MEASURE.earliest: {
-            expectedValue = 100;
+            expectedValue = 50;
             break;
           }
           default: {
@@ -948,22 +896,3 @@ export default async function MetricQueriesCheck(): Promise<void> {
     }
   }
 }
-
-// function makeQuery(
-//   metric: string,
-//   operationType: OPERATION_TYPES,
-//   experimentId: string,
-//   repeatedMeasure: REPEATED_MEASURE = REPEATED_MEASURE.mostRecent
-// ): any {
-//   return {
-//     name: 'query',
-//     query: {
-//       operationType,
-//     },
-//     metric: {
-//       key: metric,
-//     },
-//     experimentId,
-//     repeatedMeasure,
-//   };
-// }
