@@ -99,7 +99,7 @@ $background: map_merge(
     card: $card-dialog-color,
     dialog: $card-dialog-color,
     shadow-color: $shadow-color,
-    table-shading: $table-shading
+    table-shading: $table-shading,
   )
 );
 $foreground: map_merge(

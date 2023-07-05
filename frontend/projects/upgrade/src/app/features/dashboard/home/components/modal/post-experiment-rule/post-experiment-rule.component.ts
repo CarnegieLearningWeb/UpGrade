@@ -2,7 +2,10 @@ import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/cor
 import { POST_EXPERIMENT_RULE, ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 import { UntypedFormGroup, UntypedFormBuilder, Validators, AbstractControl } from '@angular/forms';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import { ExperimentStatusComponent } from '../experiment-status/experiment-status.component';
 
 @Component({

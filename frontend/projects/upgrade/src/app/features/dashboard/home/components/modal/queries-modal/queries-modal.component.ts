@@ -1,5 +1,8 @@
 import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
-import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import {
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialog as MatDialog,
+} from '@angular/material/legacy-dialog';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';

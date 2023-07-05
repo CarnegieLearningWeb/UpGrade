@@ -1,20 +1,21 @@
 {
   "name": "upgrade_client_lib",
-  "version": "4.2.0",
+  "version": "4.1.7",
   "description": "Client library to communicate with the Upgrade server",
-  "main": "dist/bundle.js",
-  "types": "dist/clientlibs/js/src/index.d.ts",
   "files": [
     "dist/*"
   ],
   "scripts": {
-    "build": "npm run clean && webpack",
+    "build:bundler": "webpack",
+    "build:types": "./node_modules/.bin/dts-bundle-generator -o dist/browser/index.d.ts src/index.ts && ./node_modules/.bin/dts-bundle-generator -o dist/node/index.d.ts src/index.ts",
+    "build": "npm run clean && npm run build:bundler && npm run build:types",
     "build:watch": "tsc -w",
     "clean": "rm -rf dist",
     "lint": "eslint -c ../../.eslintrc.js --ext .ts './{src, test}/**/*.ts' && npm run prettier:check",
     "lint:fix": "eslint -c ../../.eslintrc.js --ext .ts './{src, test}/**/*.ts' --fix && npm run prettier:write",
     "prettier:write": "prettier --config ../../.prettierrc './{src, test}/**/*.ts' --write",
     "prettier:check": "prettier --config ../../.prettierrc './{src, test}/**/*.ts' --check",
+    "docs:markdown": "typedoc --options typedoc.json",
     "test": "jest"
   },
   "keywords": [],
@@ -25,18 +26,23 @@
     "@types/jest": "^29.2.1",
     "@types/node": "^18.11.9",
     "@types/uuid": "^9.0.1",
+    "dts-bundle-generator": "^8.0.1",
     "jest": "^29.2.2",
     "ts-jest": "^29.0.3",
     "ts-loader": "^9.4.1",
     "ts-node": "^10.9.1",
     "tslib": "^2.4.1",
+    "typedoc-plugin-rename-defaults": "^0.6.5",
     "typescript": "^4.8.4",
     "webpack": "^5.74.0",
     "webpack-cli": "^4.10.0"
   },
   "dependencies": {
+    "axios": "^1.4.0",
     "es6-promise": "^4.2.8",
-    "isomorphic-fetch": "^3.0.0",
+    "eslint-plugin-tsdoc": "^0.2.17",
+    "typedoc": "^0.24.8",
+    "typedoc-plugin-markdown": "^3.15.3",
     "uuid": "^8.3.2"
   }
 }

@@ -1,5 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import { UserRole } from 'upgrade_types';
 import { UsersService } from '../../../../../../core/users/users.service';
