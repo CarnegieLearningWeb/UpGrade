@@ -577,10 +577,6 @@ export default async function LogOperations(): Promise<void> {
     const res = reduceResult(queryResult[0].mainEffect);
     let expectedValue;
     // Used for console output
-    const consoleString =
-      query.metric.key === 'totalProblemsCompleted'
-        ? query.query.operationType + ' '
-        : query.query.operationType + ' deep';
 
     switch (query.query.operationType) {
       case OPERATION_TYPES.SUM: {

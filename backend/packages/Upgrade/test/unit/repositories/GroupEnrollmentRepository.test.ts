@@ -6,7 +6,6 @@ import { Experiment } from '../../../src/api/models/Experiment';
 
 let sandbox;
 let createQueryBuilderStub;
-let selectMock;
 const selectQueryBuilder = new SelectQueryBuilder<GroupEnrollmentRepository>(null);
 const repo = new GroupEnrollmentRepository();
 const err = new Error('test error');
@@ -20,7 +19,7 @@ group.experiment = exp;
 beforeEach(() => {
   sandbox = sinon.createSandbox();
 
-  selectMock = sandbox.mock(selectQueryBuilder);
+  // selectMock = sandbox.mock(selectQueryBuilder);
 });
 
 afterEach(() => {

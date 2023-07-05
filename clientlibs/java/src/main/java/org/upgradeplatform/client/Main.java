@@ -24,11 +24,11 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 public class Main {
     public static void main(String[] args) throws InterruptedException, ExecutionException
     {
-        final String baseUrl = "http://localhost:3030";
+        final String baseUrl = "https://upgradeapi.qa-cli.net";
         final String userId = UUID.randomUUID().toString();
         final String site = "SelectSection";
 
-        String target = args.length > 0 ? args[0] : "analyzing_step_functions";
+        String target = args.length > 0 ? args[0] : "volume_surface_area_cone_vol";
 
         try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl, Collections.emptyMap())){
             CompletableFuture<String> result = new CompletableFuture<>();
