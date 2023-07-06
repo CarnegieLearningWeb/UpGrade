@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "noImplicitAny": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,  
@@ -11,7 +10,7 @@
     "target": "esnext",
     "module": "esnext",
       "lib": [
-        "esnext",
+        "esnext", "DOM"
       ],
       "skipLibCheck": true
   },
