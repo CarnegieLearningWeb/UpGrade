@@ -1,0 +1,13 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["./src/UpgradeClient.ts", "./src/identifiers", "./src/functions/getExperimentCondition.ts"],
+  "out": "docs",
+  "exclude": ["**/*+(index|.spec).ts", "**/fetchDataService.ts", "**/enums.ts"],
+  "excludePrivate": true,
+  "entryPointStrategy": "expand",
+  "plugin": [
+    "typedoc-plugin-rename-defaults",
+    "typedoc-plugin-markdown"
+  ],
+  "hideBreadcrumbs": true
+}

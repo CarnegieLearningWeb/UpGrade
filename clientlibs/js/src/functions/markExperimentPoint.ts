@@ -5,7 +5,11 @@ import { IExperimentAssignmentv4, MARKED_DECISION_POINT_STATUS } from 'upgrade_t
 interface markData {
   userId: string;
   status: MARKED_DECISION_POINT_STATUS;
-  data: IExperimentAssignmentv4;
+  data: {
+    site: string;
+    assignedCondition: { conditionCode: string; experimentId?: string };
+    target?: string;
+  };
   clientError?: string;
 }
 
@@ -21,13 +25,22 @@ export default async function markExperimentPoint(
   getAllData: IExperimentAssignmentv4[],
   clientError?: string
 ): Promise<Interfaces.IMarkExperimentPoint> {
-  const data = getAllData.find((data) => data.site === site && data.target === target);
-  data.assignedCondition.conditionCode = condition;
   let requestBody: markData = {
     userId,
     status,
-    data,
+    data: {
+      site: site,
+      assignedCondition: {
+        conditionCode: condition,
+      },
+    },
   };
+  if (target) {
+    requestBody.data = {
+      ...requestBody.data,
+      target,
+    };
+  }
   if (clientError) {
     requestBody = {
       ...requestBody,
