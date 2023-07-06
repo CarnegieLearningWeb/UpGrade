@@ -292,12 +292,12 @@ export class LogRepository extends Repository<Log> {
       operation = repeatedMeasure === REPEATED_MEASURE.earliest ? 'min' : 'max';
       if (operationType === OPERATION_TYPES.STDEV) {
         executeQuery = isFactorialExperiment
-        ? executeQuery.groupBy('"levelCombinationElement"."levelId"')
+        ? executeQuery.groupBy('"levelCombinationElement"."levelId", "monitoredDecisionPoint"."userId"')
         : executeQuery.groupBy(`"experimentCondition"."conditionId", "monitoredDecisionPoint"."userId", ${valueToUse}`);
       } else {
         if (operationType !== OPERATION_TYPES.PERCENTAGE) {
           executeQuery = isFactorialExperiment
-            ? executeQuery.groupBy('"levelCombinationElement"."levelId"')
+            ? executeQuery.groupBy('"levelCombinationElement"."levelId", "monitoredDecisionPoint"."userId"')
             : executeQuery.groupBy('"experimentCondition"."conditionId", "monitoredDecisionPoint"."userId"');
         }
         }
@@ -350,10 +350,11 @@ export class LogRepository extends Repository<Log> {
       percentQuery.addSelect('COUNT(DISTINCT "individualEnrollment"."userId") as "participantsLogged"');
 
       if (unitOfAssignment === 'within-subjects') {
+        let conditionOrLevelId = isFactorialExperiment ? "levelId" : "conditionId"; 
         const withinSubjectPercentQuery = getManager()
           .createQueryBuilder()
           .select([
-            `subquery."conditionId"`,
+            `subquery."${conditionOrLevelId}"`,
             `COUNT(subquery."result") as "result"`,
             `COUNT(DISTINCT subquery."userId") as "participantsLogged"`,
           ])
@@ -361,7 +362,7 @@ export class LogRepository extends Repository<Log> {
           .andWhere(`subquery."result" In (:...allowedData)`, {
             allowedData: query.metric.allowedData,
           })
-          .groupBy(`subquery."conditionId"`)
+          .groupBy(`subquery."${conditionOrLevelId}"`)
           .setParameters(percentQuery.getParameters());
         percentQuery = withinSubjectPercentQuery;
       }
@@ -497,27 +498,28 @@ export class LogRepository extends Repository<Log> {
 
       if (unitOfAssignment === 'within-subjects') {
         let withinSubjectExecuteQuery;
+        let conditionOrLevelId = isFactorialExperiment ? "levelId" : "conditionId"; 
         if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
           withinSubjectExecuteQuery = getManager()
             .createQueryBuilder()
             .select([
-              `subquery."conditionId"`,
+              `subquery."${conditionOrLevelId}"`,
               `${queryFunction} within group (order by (subquery."result")) as "result"`,
               `COUNT(DISTINCT subquery."userId") as "participantsLogged"`,
             ])
             .addFrom('(' + executeQuery.getQuery() + ')', 'subquery')
-            .groupBy(`subquery."conditionId"`)
+            .groupBy(`subquery."${conditionOrLevelId}"`)
             .setParameters(executeQuery.getParameters());
         } else {
           withinSubjectExecuteQuery = getManager()
             .createQueryBuilder()
             .select([
-              `subquery."conditionId"`,
+              `subquery."${conditionOrLevelId}"`,
               `${operationType}(subquery."result") as "result"`,
               `COUNT(DISTINCT subquery."userId") as "participantsLogged"`,
             ])
             .addFrom('(' + executeQuery.getQuery() + ')', 'subquery')
-            .groupBy(`subquery."conditionId"`)
+            .groupBy(`subquery."${conditionOrLevelId}"`)
             .setParameters(executeQuery.getParameters());
         }
         return withinSubjectExecuteQuery.getRawMany();
