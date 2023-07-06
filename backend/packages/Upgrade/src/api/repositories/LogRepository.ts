@@ -510,6 +510,17 @@ export class LogRepository extends Repository<Log> {
             .addFrom('(' + executeQuery.getQuery() + ')', 'subquery')
             .groupBy(`subquery."${conditionOrLevelId}"`)
             .setParameters(executeQuery.getParameters());
+        } else if (operationType === OPERATION_TYPES.STDEV) {
+          withinSubjectExecuteQuery = getManager()
+            .createQueryBuilder()
+            .select([
+              `subquery."${conditionOrLevelId}"`,
+              `coalesce(${operationType}(subquery."result"),0) as "result"`,
+              `COUNT(DISTINCT subquery."userId") as "participantsLogged"`,
+            ])
+            .addFrom('(' + executeQuery.getQuery() + ')', 'subquery')
+            .groupBy(`subquery."${conditionOrLevelId}"`)
+            .setParameters(executeQuery.getParameters());
         } else {
           withinSubjectExecuteQuery = getManager()
             .createQueryBuilder()
