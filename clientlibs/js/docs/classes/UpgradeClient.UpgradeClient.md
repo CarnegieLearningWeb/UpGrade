@@ -1,12 +1,8 @@
-# JavaScript / TypeScript SDK for use with the Upgrade A/B Testing platform.
-Please see https://upgrade-platform.gitbook.io/docs/developer-guide/reference/client-libraries/typescript-js for more documentation.
+# Class: UpgradeClient
 
+[UpgradeClient](../modules/UpgradeClient.md).UpgradeClient
 
-## Installation
-
-`npm i upgrade_client_lib@4.1.7`
-
-## Usage
+UpGradeClient is the main class for interacting with the UpGrade API.
 
 **`Example`**
 
@@ -29,9 +25,6 @@ import { Interfaces } from 'upgrade_client_lib/dist/clientlibs/js/src/identifier
 
 const initResponse: Interfaces.IUser = await upgradeClient.init();
 ```
-# Class: UpgradeClient
-
-[UpgradeClient](../modules/UpgradeClient.md).UpgradeClient
 
 ## Table of contents
 
