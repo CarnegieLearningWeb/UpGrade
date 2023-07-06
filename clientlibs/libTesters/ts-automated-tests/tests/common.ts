@@ -30,13 +30,14 @@ export class TSAutomatedTestUtils {
     return routeHookToMockApp(ClientLibConstructor, hookRequest);
   }
 
-  async dispatchHook(hookname: string, user: TestUser) {
+  async dispatchHook(hookname: string, user: TestUser, payload?: Record<string, any>) {
     const hookRequest: HookRequestBody = new TestHookRequest(
       this.mockApp.NAME,
       this.clientLibraryVersion,
       hookname,
       user,
-      this.apiHostUrl
+      this.apiHostUrl,
+      payload,
     );
 
     const ClientLibConstructor = getUpgradeClientConstructor(hookRequest.libVersion);
@@ -81,7 +82,8 @@ export class TestHookRequest implements HookRequestBody {
     public libVersion: string,
     public name: string,
     public user: MockClientAppUser,
-    public apiHostUrl: string
+    public apiHostUrl: string,
+    public payload?: Record<string, any>
   ) {}
 
   getMockApp() {

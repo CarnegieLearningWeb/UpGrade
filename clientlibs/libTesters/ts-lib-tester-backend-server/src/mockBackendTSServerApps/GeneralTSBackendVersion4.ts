@@ -29,7 +29,7 @@ export class GeneralTSBackendVersion4 extends AbstractTSBackendMockApp {
     TARGET_1: 'target_1',
   };
   public GROUPS = ['schoolId', 'classId', 'instructorId'];
-  public CONTEXT = 'lib-tester-ts-backend-v4';
+  public CONTEXT = 'lib-tester';
   public HOOKNAMES = {
     INIT: 'init',
     ASSIGN: 'assign',
@@ -244,7 +244,7 @@ export class GeneralTSBackendVersion4 extends AbstractTSBackendMockApp {
     try {
       const markResponse = await this.upgradeClient.markExperimentPoint(
         this.SITES.TEST,
-        'control',
+        hookEvent.payload?.condition || 'control',
         MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
         this.TARGETS.TARGET_1
       );

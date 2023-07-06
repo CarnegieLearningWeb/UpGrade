@@ -6,8 +6,9 @@ import { IExperimentAssignmentv4, MARKED_DECISION_POINT_STATUS } from '../../../
 
 describe('GeneralTSBackendVersion4 automated hook tests', () => {
   const mockApp: GeneralTSBackendVersion4 = new GeneralTSBackendVersion4();
-  const clientLibraryVersion = 'local';
-  const apiHostUrl = 'http://localhost:3030';
+  const clientLibraryVersion = '4.1.6';
+  // const apiHostUrl = 'http://localhost:3030';
+  const apiHostUrl = 'https://upgradeapi.qa-cli.com';
   let TestUtils: TSAutomatedTestUtils;
   let experiment: any; // Experiment type isn't exposed?
 
@@ -88,18 +89,18 @@ describe('GeneralTSBackendVersion4 automated hook tests', () => {
       expect(assignments).toEqual([
         {
           assignedCondition: {
-            conditionCode: 'asdf=orange; fdfasdfs=yellow',
-            experimentId: '716edbbd-eecf-43b6-82a8-bd3f3b20e095',
-            id: '5546de01-5ed0-4f93-b9dc-dc5d8daf17c9',
+            conditionCode: 'banana=red; apple=red',
+            experimentId: '03aa828a-97a5-4e35-a8aa-8b2c494548da',
+            id: 'f76826f8-ab6a-4425-a45f-0b11cd38e193',
             payload: null,
           },
           assignedFactor: {
-            asdf: {
-              level: 'orange',
+            banana: {
+              level: 'red',
               payload: null,
             },
-            fdfasdfs: {
-              level: 'yellow',
+            apple: {
+              level: 'red',
               payload: null,
             },
           },
@@ -108,25 +109,31 @@ describe('GeneralTSBackendVersion4 automated hook tests', () => {
           target: 'target_1',
         },
       ]);
+    });
+  });
 
-      it('should successfully access all Assignment property getters', async () => {
-        // test out the Assignment class, need to expose this object type
-        const decisionPointAssignment: HookResponse = await TestUtils.dispatchHook(
-          mockApp.HOOKNAMES.GET_ASSIGNMENT,
-          testUser
-        );
+  describe('#getExperimentCondition', () => {
+    it('should successfully access all Assignment property getters', async () => {
+      const testUser: TestUser = new TestUser('123', { group1: ['group1id'] }, { group1: 'group1id' }, ['alias1']);
 
-        const assignment = decisionPointAssignment?.response;
-        console.log({ assignment });
+      // initialize user make sure we are not depending on #init test to execute this one
+      await TestUtils.initTestUser(testUser);
+      // test out the Assignment class, need to expose this object type
+      const decisionPointAssignment: HookResponse = await TestUtils.dispatchHook(
+        mockApp.HOOKNAMES.GET_ASSIGNMENT,
+        testUser
+      );
 
-        expect(assignment?.getCondition()).toEqual('asdf=orange; fdfasdfs=yellow');
-        expect(assignment?.getPayload()).toEqual(null);
-        expect(assignment?.getExperimentType()).toEqual('Factorial');
-        expect(assignment?.factors).toEqual(['asdf', 'fdfasdfs']);
-        expect(assignment?.getFactorLevel('asdf')).toEqual('orange');
-        // is this a bug?
-        // expect(assignment?.getFactorPayload('asdf')).toEqual('test');
-      });
+      const assignment = decisionPointAssignment?.response;
+      console.log('assignment', assignment);
+
+      expect(assignment?.getCondition()).toEqual('banana=red; apple=red');
+      expect(assignment?.getPayload()).toEqual(null);
+      expect(assignment?.getExperimentType()).toEqual('Factorial');
+      expect(assignment?.factors).toEqual(['banana', 'apple']);
+      expect(assignment?.getFactorLevel('banana')).toEqual('red');
+      // is this a bug?
+      // expect(assignment?.getFactorPayload('banana')).toEqual(null);
     });
   });
 
@@ -138,7 +145,10 @@ describe('GeneralTSBackendVersion4 automated hook tests', () => {
       await TestUtils.initTestUser(testUser);
       const markExperimentPointResponse: HookResponse = await TestUtils.dispatchHook(
         mockApp.HOOKNAMES.MARK_EXPERIMENT_POINT,
-        testUser
+        testUser,
+        {
+          condition: 'banana=red; apple=red',
+        }
       );
 
       expect(markExperimentPointResponse?.response).toEqual({
@@ -146,7 +156,7 @@ describe('GeneralTSBackendVersion4 automated hook tests', () => {
         experimentId: null,
         id: mockV4FactorialExperiment.id,
         site: 'test_site',
-        target: 'asdf=orange; fdfasdfs=green',
+        target: 'banana=red; apple=red',
         userId: '123',
       });
     });
@@ -154,13 +164,13 @@ describe('GeneralTSBackendVersion4 automated hook tests', () => {
 });
 
 export const mockV4FactorialExperiment = {
-  createdAt: '2023-06-20T15:27:33.077Z',
-  updatedAt: '2023-06-20T15:27:42.652Z',
-  versionNumber: 2,
-  id: '716edbbd-eecf-43b6-82a8-bd3f3b20e095',
-  name: 'ts-v4-client-factorial',
+  createdAt: '2023-07-06T16:34:44.912Z',
+  updatedAt: '2023-07-06T16:34:44.912Z',
+  versionNumber: 1,
+  id: '03aa828a-97a5-4e35-a8aa-8b2c494548da',
+  name: 'ts-lib-test',
   description: '',
-  context: ['lib-tester-ts-backend-v4'],
+  context: ['lib-tester'],
   state: 'enrolling',
   startOn: null,
   consistencyRule: 'individual',
@@ -177,11 +187,11 @@ export const mockV4FactorialExperiment = {
   type: 'Factorial',
   partitions: [
     {
-      createdAt: '2023-06-20T15:27:33.077Z',
-      updatedAt: '2023-06-20T15:27:33.077Z',
+      createdAt: '2023-07-06T16:34:44.912Z',
+      updatedAt: '2023-07-06T16:34:44.912Z',
       versionNumber: 1,
-      id: 'de7651a2-994c-441d-a149-3914aab4ab8f',
-      twoCharacterId: '38',
+      id: '49e27287-c468-4248-83ce-2d1a3b0deb0c',
+      twoCharacterId: 'LS',
       site: 'test_site',
       target: 'target_1',
       description: '',
@@ -192,172 +202,28 @@ export const mockV4FactorialExperiment = {
   ],
   conditions: [
     {
-      createdAt: '2023-06-20T15:27:33.077Z',
-      updatedAt: '2023-06-20T15:27:33.077Z',
+      createdAt: '2023-07-06T16:34:44.912Z',
+      updatedAt: '2023-07-06T16:34:44.912Z',
       versionNumber: 1,
-      id: '1974eb8d-8a57-46e1-9ae9-0c2e96d3954b',
-      twoCharacterId: 'GS',
-      name: 'asdf=purple; fdfasdfs=yellow',
+      id: 'f76826f8-ab6a-4425-a45f-0b11cd38e193',
+      twoCharacterId: '9C',
+      name: 'banana=red; apple=red',
       description: null,
-      conditionCode: 'asdf=purple; fdfasdfs=yellow',
-      assignmentWeight: 25,
-      order: 4,
-      levelCombinationElements: [
-        {
-          createdAt: '2023-06-20T15:27:33.077Z',
-          updatedAt: '2023-06-20T15:27:33.077Z',
-          versionNumber: 1,
-          id: 'fa488b24-522a-4bb2-8f1a-f3251020c6c4',
-          level: {
-            createdAt: '2023-06-20T15:27:33.077Z',
-            updatedAt: '2023-06-20T15:27:33.077Z',
-            versionNumber: 1,
-            id: '8f891c26-7496-4674-88e1-e73e6ff625fe',
-            name: 'yellow',
-            description: null,
-            payloadValue: '',
-            payloadType: 'string',
-            order: null,
-          },
-        },
-        {
-          createdAt: '2023-06-20T15:27:33.077Z',
-          updatedAt: '2023-06-20T15:27:33.077Z',
-          versionNumber: 1,
-          id: 'c5b83b95-5fba-4f67-8df6-72a4e3e52e3c',
-          level: {
-            createdAt: '2023-06-20T15:27:33.077Z',
-            updatedAt: '2023-06-20T15:27:33.077Z',
-            versionNumber: 1,
-            id: '3c6cdc23-3d1f-42b0-a57b-e22315b07f70',
-            name: 'purple',
-            description: null,
-            payloadValue: '',
-            payloadType: 'string',
-            order: null,
-          },
-        },
-      ],
-    },
-    {
-      createdAt: '2023-06-20T15:27:33.077Z',
-      updatedAt: '2023-06-20T15:27:33.077Z',
-      versionNumber: 1,
-      id: '842e3b71-ccc4-492c-ba15-b3a3adedf830',
-      twoCharacterId: 'EL',
-      name: 'asdf=purple; fdfasdfs=green',
-      description: null,
-      conditionCode: 'asdf=purple; fdfasdfs=green',
-      assignmentWeight: 25,
-      order: 3,
-      levelCombinationElements: [
-        {
-          createdAt: '2023-06-20T15:27:33.077Z',
-          updatedAt: '2023-06-20T15:27:33.077Z',
-          versionNumber: 1,
-          id: '52f7880d-dfca-45a7-8603-b8c67b5e036c',
-          level: {
-            createdAt: '2023-06-20T15:27:33.077Z',
-            updatedAt: '2023-06-20T15:27:33.077Z',
-            versionNumber: 1,
-            id: 'fcd21f24-5e1c-4b68-b320-a00262b1ca63',
-            name: 'green',
-            description: null,
-            payloadValue: '',
-            payloadType: 'string',
-            order: null,
-          },
-        },
-        {
-          createdAt: '2023-06-20T15:27:33.077Z',
-          updatedAt: '2023-06-20T15:27:33.077Z',
-          versionNumber: 1,
-          id: 'd0a2761c-729f-4175-9a19-82ff61889f10',
-          level: {
-            createdAt: '2023-06-20T15:27:33.077Z',
-            updatedAt: '2023-06-20T15:27:33.077Z',
-            versionNumber: 1,
-            id: '3c6cdc23-3d1f-42b0-a57b-e22315b07f70',
-            name: 'purple',
-            description: null,
-            payloadValue: '',
-            payloadType: 'string',
-            order: null,
-          },
-        },
-      ],
-    },
-    {
-      createdAt: '2023-06-20T15:27:33.077Z',
-      updatedAt: '2023-06-20T15:27:33.077Z',
-      versionNumber: 1,
-      id: '5546de01-5ed0-4f93-b9dc-dc5d8daf17c9',
-      twoCharacterId: 'W0',
-      name: 'asdf=orange; fdfasdfs=yellow',
-      description: null,
-      conditionCode: 'asdf=orange; fdfasdfs=yellow',
-      assignmentWeight: 25,
-      order: 2,
-      levelCombinationElements: [
-        {
-          createdAt: '2023-06-20T15:27:33.077Z',
-          updatedAt: '2023-06-20T15:27:33.077Z',
-          versionNumber: 1,
-          id: 'a3581b0d-6769-4b1e-9907-b4cf80d650c1',
-          level: {
-            createdAt: '2023-06-20T15:27:33.077Z',
-            updatedAt: '2023-06-20T15:27:33.077Z',
-            versionNumber: 1,
-            id: '8f891c26-7496-4674-88e1-e73e6ff625fe',
-            name: 'yellow',
-            description: null,
-            payloadValue: '',
-            payloadType: 'string',
-            order: null,
-          },
-        },
-        {
-          createdAt: '2023-06-20T15:27:33.077Z',
-          updatedAt: '2023-06-20T15:27:33.077Z',
-          versionNumber: 1,
-          id: '57ec20b3-c19f-46bc-b8b4-c3764146487d',
-          level: {
-            createdAt: '2023-06-20T15:27:33.077Z',
-            updatedAt: '2023-06-20T15:27:33.077Z',
-            versionNumber: 1,
-            id: 'e44c0691-6812-45ec-a2e9-e79963179c9c',
-            name: 'orange',
-            description: null,
-            payloadValue: '',
-            payloadType: 'string',
-            order: null,
-          },
-        },
-      ],
-    },
-    {
-      createdAt: '2023-06-20T15:27:33.077Z',
-      updatedAt: '2023-06-20T15:27:33.077Z',
-      versionNumber: 1,
-      id: 'f3e9b7c6-c6fa-4a25-bae4-a1263943f162',
-      twoCharacterId: 'ZO',
-      name: 'asdf=orange; fdfasdfs=green',
-      description: null,
-      conditionCode: 'asdf=orange; fdfasdfs=green',
+      conditionCode: 'banana=red; apple=red',
       assignmentWeight: 25,
       order: 1,
       levelCombinationElements: [
         {
-          createdAt: '2023-06-20T15:27:33.077Z',
-          updatedAt: '2023-06-20T15:27:33.077Z',
+          createdAt: '2023-07-06T16:34:44.912Z',
+          updatedAt: '2023-07-06T16:34:44.912Z',
           versionNumber: 1,
-          id: '39d113a3-2c3c-423f-98d0-ec6c0ad65f42',
+          id: '529cc697-f277-42c6-86ab-5ab003218b52',
           level: {
-            createdAt: '2023-06-20T15:27:33.077Z',
-            updatedAt: '2023-06-20T15:27:33.077Z',
+            createdAt: '2023-07-06T16:34:44.912Z',
+            updatedAt: '2023-07-06T16:34:44.912Z',
             versionNumber: 1,
-            id: 'fcd21f24-5e1c-4b68-b320-a00262b1ca63',
-            name: 'green',
+            id: 'a7c05a87-3aee-47c3-b203-ae2b88a25ea3',
+            name: 'red',
             description: null,
             payloadValue: '',
             payloadType: 'string',
@@ -365,16 +231,160 @@ export const mockV4FactorialExperiment = {
           },
         },
         {
-          createdAt: '2023-06-20T15:27:33.077Z',
-          updatedAt: '2023-06-20T15:27:33.077Z',
+          createdAt: '2023-07-06T16:34:44.912Z',
+          updatedAt: '2023-07-06T16:34:44.912Z',
           versionNumber: 1,
-          id: '3fc32f04-1350-4ead-aef7-c1155d46531f',
+          id: '804ccbcb-0896-4c42-8c89-f317205720a0',
           level: {
-            createdAt: '2023-06-20T15:27:33.077Z',
-            updatedAt: '2023-06-20T15:27:33.077Z',
+            createdAt: '2023-07-06T16:34:44.912Z',
+            updatedAt: '2023-07-06T16:34:44.912Z',
             versionNumber: 1,
-            id: 'e44c0691-6812-45ec-a2e9-e79963179c9c',
-            name: 'orange',
+            id: 'a4cb3ff7-1fb9-491f-9e42-0b1644657471',
+            name: 'red',
+            description: null,
+            payloadValue: '',
+            payloadType: 'string',
+            order: null,
+          },
+        },
+      ],
+    },
+    {
+      createdAt: '2023-07-06T16:34:44.912Z',
+      updatedAt: '2023-07-06T16:34:44.912Z',
+      versionNumber: 1,
+      id: 'e72dc305-6672-43a2-becc-506316939feb',
+      twoCharacterId: '8K',
+      name: 'banana=red; apple=yellow',
+      description: null,
+      conditionCode: 'banana=red; apple=yellow',
+      assignmentWeight: 25,
+      order: 2,
+      levelCombinationElements: [
+        {
+          createdAt: '2023-07-06T16:34:44.912Z',
+          updatedAt: '2023-07-06T16:34:44.912Z',
+          versionNumber: 1,
+          id: '9ddfd917-2a4c-42cb-af20-b20311c2cd5c',
+          level: {
+            createdAt: '2023-07-06T16:34:44.912Z',
+            updatedAt: '2023-07-06T16:34:44.912Z',
+            versionNumber: 1,
+            id: 'a7c05a87-3aee-47c3-b203-ae2b88a25ea3',
+            name: 'red',
+            description: null,
+            payloadValue: '',
+            payloadType: 'string',
+            order: null,
+          },
+        },
+        {
+          createdAt: '2023-07-06T16:34:44.912Z',
+          updatedAt: '2023-07-06T16:34:44.912Z',
+          versionNumber: 1,
+          id: '5394291c-3f4c-4223-bb39-29d8184b4e61',
+          level: {
+            createdAt: '2023-07-06T16:34:44.912Z',
+            updatedAt: '2023-07-06T16:34:44.912Z',
+            versionNumber: 1,
+            id: 'bf8ffb44-4a77-45bb-97f1-6aa931e5eac5',
+            name: 'yellow',
+            description: null,
+            payloadValue: '',
+            payloadType: 'string',
+            order: null,
+          },
+        },
+      ],
+    },
+    {
+      createdAt: '2023-07-06T16:34:44.912Z',
+      updatedAt: '2023-07-06T16:34:44.912Z',
+      versionNumber: 1,
+      id: 'aa704d33-ecd7-423d-bf9f-ef723eaa57c2',
+      twoCharacterId: '79',
+      name: 'banana=yellow; apple=red',
+      description: null,
+      conditionCode: 'banana=yellow; apple=red',
+      assignmentWeight: 25,
+      order: 3,
+      levelCombinationElements: [
+        {
+          createdAt: '2023-07-06T16:34:44.912Z',
+          updatedAt: '2023-07-06T16:34:44.912Z',
+          versionNumber: 1,
+          id: '196f9635-a755-4f77-80c5-e29bd0268668',
+          level: {
+            createdAt: '2023-07-06T16:34:44.912Z',
+            updatedAt: '2023-07-06T16:34:44.912Z',
+            versionNumber: 1,
+            id: '0a7ab700-97ab-4084-89ca-145eaefc88b1',
+            name: 'yellow',
+            description: null,
+            payloadValue: '',
+            payloadType: 'string',
+            order: null,
+          },
+        },
+        {
+          createdAt: '2023-07-06T16:34:44.912Z',
+          updatedAt: '2023-07-06T16:34:44.912Z',
+          versionNumber: 1,
+          id: 'fe4e8ad3-2cb9-45f4-9bf1-eceebe7175c0',
+          level: {
+            createdAt: '2023-07-06T16:34:44.912Z',
+            updatedAt: '2023-07-06T16:34:44.912Z',
+            versionNumber: 1,
+            id: 'a4cb3ff7-1fb9-491f-9e42-0b1644657471',
+            name: 'red',
+            description: null,
+            payloadValue: '',
+            payloadType: 'string',
+            order: null,
+          },
+        },
+      ],
+    },
+    {
+      createdAt: '2023-07-06T16:34:44.912Z',
+      updatedAt: '2023-07-06T16:34:44.912Z',
+      versionNumber: 1,
+      id: '88ff6228-e823-4e3b-91a4-61f8e97de286',
+      twoCharacterId: 'EV',
+      name: 'banana=yellow; apple=yellow',
+      description: null,
+      conditionCode: 'banana=yellow; apple=yellow',
+      assignmentWeight: 25,
+      order: 4,
+      levelCombinationElements: [
+        {
+          createdAt: '2023-07-06T16:34:44.912Z',
+          updatedAt: '2023-07-06T16:34:44.912Z',
+          versionNumber: 1,
+          id: 'e7bcd92c-3013-4d67-9cb3-58c4df881682',
+          level: {
+            createdAt: '2023-07-06T16:34:44.912Z',
+            updatedAt: '2023-07-06T16:34:44.912Z',
+            versionNumber: 1,
+            id: '0a7ab700-97ab-4084-89ca-145eaefc88b1',
+            name: 'yellow',
+            description: null,
+            payloadValue: '',
+            payloadType: 'string',
+            order: null,
+          },
+        },
+        {
+          createdAt: '2023-07-06T16:34:44.912Z',
+          updatedAt: '2023-07-06T16:34:44.912Z',
+          versionNumber: 1,
+          id: '920f8c02-98b0-434e-b709-476ad56b3c91',
+          level: {
+            createdAt: '2023-07-06T16:34:44.912Z',
+            updatedAt: '2023-07-06T16:34:44.912Z',
+            versionNumber: 1,
+            id: 'bf8ffb44-4a77-45bb-97f1-6aa931e5eac5',
+            name: 'yellow',
             description: null,
             payloadValue: '',
             payloadType: 'string',
@@ -384,36 +394,26 @@ export const mockV4FactorialExperiment = {
       ],
     },
   ],
-  stateTimeLogs: [
-    {
-      createdAt: '2023-06-20T15:27:42.659Z',
-      updatedAt: '2023-06-20T15:27:42.659Z',
-      versionNumber: 1,
-      id: '1e443164-9408-4a7e-9692-b0c6fc47965c',
-      fromState: 'inactive',
-      toState: 'enrolling',
-      timeLog: '2023-06-20T15:27:42.645Z',
-    },
-  ],
+  stateTimeLogs: [],
   queries: [],
   experimentSegmentInclusion: {
-    createdAt: '2023-06-20T15:27:33.077Z',
-    updatedAt: '2023-06-20T15:27:33.077Z',
+    createdAt: '2023-07-06T16:34:44.912Z',
+    updatedAt: '2023-07-06T16:34:44.912Z',
     versionNumber: 1,
     segment: {
-      createdAt: '2023-06-20T15:27:33.139Z',
-      updatedAt: '2023-06-20T15:27:33.139Z',
+      createdAt: '2023-07-06T16:34:44.945Z',
+      updatedAt: '2023-07-06T16:34:44.945Z',
       versionNumber: 1,
-      id: 'd073022c-2731-4bd4-90f1-bc2ed800415c',
-      name: '716edbbd-eecf-43b6-82a8-bd3f3b20e095 Inclusion Segment',
-      description: '716edbbd-eecf-43b6-82a8-bd3f3b20e095 Inclusion Segment',
-      context: 'lib-tester-ts-backend-v4',
+      id: '60f53a01-73b4-41d5-b9c4-14d89993e98d',
+      name: '03aa828a-97a5-4e35-a8aa-8b2c494548da Inclusion Segment',
+      description: '03aa828a-97a5-4e35-a8aa-8b2c494548da Inclusion Segment',
+      context: 'assign-prog',
       type: 'private',
       individualForSegment: [],
       groupForSegment: [
         {
-          createdAt: '2023-06-20T15:27:33.139Z',
-          updatedAt: '2023-06-20T15:27:33.139Z',
+          createdAt: '2023-07-06T16:34:44.945Z',
+          updatedAt: '2023-07-06T16:34:44.945Z',
           versionNumber: 1,
           groupId: 'All',
           type: 'All',
@@ -423,17 +423,17 @@ export const mockV4FactorialExperiment = {
     },
   },
   experimentSegmentExclusion: {
-    createdAt: '2023-06-20T15:27:33.077Z',
-    updatedAt: '2023-06-20T15:27:33.077Z',
+    createdAt: '2023-07-06T16:34:44.912Z',
+    updatedAt: '2023-07-06T16:34:44.912Z',
     versionNumber: 1,
     segment: {
-      createdAt: '2023-06-20T15:27:33.229Z',
-      updatedAt: '2023-06-20T15:27:33.229Z',
+      createdAt: '2023-07-06T16:34:45.013Z',
+      updatedAt: '2023-07-06T16:34:45.013Z',
       versionNumber: 1,
-      id: '4866704b-f582-4d11-846c-e6cc0ac4d6dd',
-      name: '716edbbd-eecf-43b6-82a8-bd3f3b20e095 Exclusion Segment',
-      description: '716edbbd-eecf-43b6-82a8-bd3f3b20e095 Exclusion Segment',
-      context: 'lib-tester-ts-backend-v4',
+      id: 'a8e35c17-d506-40c9-bcf4-b4f51bd911b5',
+      name: '03aa828a-97a5-4e35-a8aa-8b2c494548da Exclusion Segment',
+      description: '03aa828a-97a5-4e35-a8aa-8b2c494548da Exclusion Segment',
+      context: 'assign-prog',
       type: 'private',
       individualForSegment: [],
       groupForSegment: [],
@@ -442,27 +442,27 @@ export const mockV4FactorialExperiment = {
   },
   factors: [
     {
-      id: '03ded09c-39e6-4af2-891a-46181c0b8bb9',
-      name: 'fdfasdfs',
+      id: '6980ed6e-5134-458c-be52-2193406c4423',
+      name: 'apple',
       order: 2,
       description: '',
       levels: [
         {
-          createdAt: '2023-06-20T15:27:33.077Z',
-          updatedAt: '2023-06-20T15:27:33.077Z',
+          createdAt: '2023-07-06T16:34:44.912Z',
+          updatedAt: '2023-07-06T16:34:44.912Z',
           versionNumber: 1,
-          id: '8f891c26-7496-4674-88e1-e73e6ff625fe',
+          id: 'bf8ffb44-4a77-45bb-97f1-6aa931e5eac5',
           name: 'yellow',
           description: null,
           order: null,
           payload: { type: 'string', value: '' },
         },
         {
-          createdAt: '2023-06-20T15:27:33.077Z',
-          updatedAt: '2023-06-20T15:27:33.077Z',
+          createdAt: '2023-07-06T16:34:44.912Z',
+          updatedAt: '2023-07-06T16:34:44.912Z',
           versionNumber: 1,
-          id: 'fcd21f24-5e1c-4b68-b320-a00262b1ca63',
-          name: 'green',
+          id: 'a4cb3ff7-1fb9-491f-9e42-0b1644657471',
+          name: 'red',
           description: null,
           order: null,
           payload: { type: 'string', value: '' },
@@ -470,27 +470,27 @@ export const mockV4FactorialExperiment = {
       ],
     },
     {
-      id: 'ae17c161-1a25-49b7-a836-3f1641224d29',
-      name: 'asdf',
+      id: '855907c9-2f23-4223-8c63-e59545537aba',
+      name: 'banana',
       order: 1,
       description: '',
       levels: [
         {
-          createdAt: '2023-06-20T15:27:33.077Z',
-          updatedAt: '2023-06-20T15:27:33.077Z',
+          createdAt: '2023-07-06T16:34:44.912Z',
+          updatedAt: '2023-07-06T16:34:44.912Z',
           versionNumber: 1,
-          id: '3c6cdc23-3d1f-42b0-a57b-e22315b07f70',
-          name: 'purple',
+          id: '0a7ab700-97ab-4084-89ca-145eaefc88b1',
+          name: 'yellow',
           description: null,
           order: null,
           payload: { type: 'string', value: '' },
         },
         {
-          createdAt: '2023-06-20T15:27:33.077Z',
-          updatedAt: '2023-06-20T15:27:33.077Z',
+          createdAt: '2023-07-06T16:34:44.912Z',
+          updatedAt: '2023-07-06T16:34:44.912Z',
           versionNumber: 1,
-          id: 'e44c0691-6812-45ec-a2e9-e79963179c9c',
-          name: 'orange',
+          id: 'a7c05a87-3aee-47c3-b203-ae2b88a25ea3',
+          name: 'red',
           description: null,
           order: null,
           payload: { type: 'string', value: '' },
