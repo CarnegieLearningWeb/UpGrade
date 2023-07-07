@@ -28,8 +28,7 @@ export default async function markExperimentPoint(
   clientError?: string
 ): Promise<Interfaces.IMarkExperimentPoint> {
   const dataFetched = getAllData.find((data) => data.site === site && data.target === target);
-  dataFetched.assignedCondition[0].conditionCode = condition;
-  const data = { ...dataFetched, assignedCondition: dataFetched.assignedCondition[0] };
+  const data = { ...dataFetched, assignedCondition: { ...dataFetched.assignedCondition[0], conditionCode : condition} };
   let requestBody: markData = {
     userId,
     status,
