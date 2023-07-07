@@ -292,7 +292,7 @@ export class LogRepository extends Repository<Log> {
       operation = repeatedMeasure === REPEATED_MEASURE.earliest ? 'min' : 'max';
       if (operationType === OPERATION_TYPES.STDEV) {
         executeQuery = isFactorialExperiment
-        ? executeQuery.groupBy('"levelCombinationElement"."levelId", "monitoredDecisionPoint"."userId"')
+        ? executeQuery.groupBy(`"levelCombinationElement"."levelId", "monitoredDecisionPoint"."userId", ${valueToUse}`)
         : executeQuery.groupBy(`"experimentCondition"."conditionId", "monitoredDecisionPoint"."userId", ${valueToUse}`);
       } else {
         if (operationType !== OPERATION_TYPES.PERCENTAGE) {
