@@ -421,6 +421,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
   // change experiment status to Enrolling
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
   const condition = experimentObject.conditions[0].conditionCode;
+  const conditionId = experimentObject.conditions[0].id;
 
   // user 1 mark experiment point
   let markedExperimentPoint = await markExperimentPoint(
@@ -719,7 +720,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         }
 
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -747,7 +748,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -776,7 +777,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -804,7 +805,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -832,7 +833,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -860,7 +861,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -888,7 +889,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -933,7 +934,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         }
 
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -957,7 +958,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
