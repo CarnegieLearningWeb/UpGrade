@@ -16,6 +16,7 @@ interface markObejectType {
 }
 
 export class Assignment {
+  private _stack: IExperimentAssignmentv5;
   private _site: string;
   private _target: string;
   private _markObject: markObejectType;
@@ -26,21 +27,22 @@ export class Assignment {
   private _assignedFactor: Record<string, { level: string; payload: IPayload | null }>;
 
   constructor(
-    site: string,
-    target: string,
+    getAllDataPerDecisionPoint: IExperimentAssignmentv5,
     markObject: markObejectType,
-    conditionCode: string,
-    payload: IPayload | null,
-    assignedFactor?: Record<string, { level: string; payload: IPayload | null }>
   ) {
-    this._site = site;
-    this._target = target;
+    this._stack = getAllDataPerDecisionPoint;
+    this._site = getAllDataPerDecisionPoint.site;
+    this._target = getAllDataPerDecisionPoint.target;
     this._markObject = markObject;
-    this._conditionCode = conditionCode;
-    this._payloadType = payload ? payload.type : PAYLOAD_TYPE.STRING;
-    this._payloadValue = payload ? payload.value : null;
-    this._experimentType = assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE;
-    this._assignedFactor = assignedFactor;
+    this._conditionCode = getAllDataPerDecisionPoint.assignedCondition[0].conditionCode;
+    this._payloadType = getAllDataPerDecisionPoint.assignedCondition[0].payload
+      ? getAllDataPerDecisionPoint.assignedCondition[0].payload.type
+      : PAYLOAD_TYPE.STRING;
+    this._payloadValue = getAllDataPerDecisionPoint.assignedCondition[0].payload
+      ? getAllDataPerDecisionPoint.assignedCondition[0].payload.value 
+      : null;
+    this._experimentType = getAllDataPerDecisionPoint.assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE;
+    this._assignedFactor = getAllDataPerDecisionPoint.assignedFactor ? getAllDataPerDecisionPoint.assignedFactor[0] : null;
   }
 
   public getCondition(): string {
@@ -78,6 +80,10 @@ export class Assignment {
   }
 
   public markDecisionPoint(status: MARKED_DECISION_POINT_STATUS, uniquifier?: string, clientError?: string) {
+    this._stack.assignedCondition.push(this._stack.assignedCondition.shift());
+    if (this._stack.assignedFactor) {
+      this._stack.assignedFactor.push(this._stack.assignedFactor.shift());
+    }
     return markExperimentPoint(
       this._markObject.url,
       this._markObject.userId,
@@ -97,7 +103,7 @@ export class Assignment {
 /**
  * @hidden
  */
-export default function getExperimentCondition(
+export default function getDecisionPointAssignment(
   experimentConditionData: IExperimentAssignmentv5[],
   site: string,
   target: string,
@@ -108,19 +114,10 @@ export default function getExperimentCondition(
 
     if (result) {
       const assignment = new Assignment(
-        result.site,
-        result.target,
+        result,
         markObject,
-        result.assignedCondition[0].conditionCode,
-        result.assignedCondition[0].payload,
-        result.assignedFactor ? result.assignedFactor[0] : null
       );
 
-      // rotate the condition queue
-      result.assignedCondition.push(result.assignedCondition.shift());
-      if (result.assignedFactor) {
-        result.assignedFactor.push(result.assignedFactor.shift());
-      }
       return assignment;
     } else {
       return null;

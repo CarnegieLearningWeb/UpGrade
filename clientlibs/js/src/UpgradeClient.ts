@@ -7,13 +7,10 @@ import {
   ISingleMetric,
   IGroupMetric,
   ILogInput,
-  MARKED_DECISION_POINT_STATUS,
-  IExperimentAssignmentv4,
   CaliperEnvelope,
   IExperimentAssignmentv5,
 } from 'upgrade_types';
-import getExperimentCondition, { Assignment } from './functions/getExperimentCondition';
-import markExperimentPoint from './functions/markExperimentPoint';
+import getDecisionPointAssignment, { Assignment } from './functions/getExperimentCondition';
 import getAllFeatureFlags from './functions/getAllfeatureFlags';
 import log from './functions/log';
 import logCaliper from './functions/logCaliper';
@@ -117,9 +114,9 @@ export default class UpgradeClient {
       failedExperimentPoint: `${hostUrl}/api/v5/failed`,
       getAllFeatureFlag: `${hostUrl}/api/v5/featureflag`,
       log: `${hostUrl}/api/v5/log`,
-      logCaliper: `${hostUrl}/api/v4/logCaliper`,
-      altUserIds: `${hostUrl}/api/v4/useraliases`,
-      addMetrics: `${hostUrl}/api/v4/metric`,
+      logCaliper: `${hostUrl}/api/v5/logCaliper`,
+      altUserIds: `${hostUrl}/api/v5/useraliases`,
+      addMetrics: `${hostUrl}/api/v5/metric`,
     };
   }
 
@@ -226,6 +223,22 @@ export default class UpgradeClient {
     return response;
   }
 
+  /**
+ * This will return all the assignment for the given context.
+ * The return object contains site, target, experimentType, assignedCondition array and assignedFactor array(optional)
+ * Here assignedCondition and assignedFactors(For Factorial-experiment) are arrays
+ *    They will return a stack of condition user will be assigned in that order
+ * For With-in subjects these stacks will be contain all conditions according to the chosen `Condition-Order`
+ * For Between subjects experiment both stack will return array containing single condition.
+ * 
+ * @example
+ * ```typescript
+ * const userId = User1
+ * const context = mathia
+ * 
+ * const getAllResponse: IExperimentAssignmentv5[] = await upgradeClient.getAllExperimentConditions();
+ * ```
+ */
   async getAllExperimentConditions(): Promise<IExperimentAssignmentv5[]> {
     this.validateClient();
     const response = await getAllExperimentConditions(
@@ -266,7 +279,7 @@ export default class UpgradeClient {
       clientSessionId: this.clientSessionId,
       getAllExperimentData: this.experimentConditionData,
     };
-    return getExperimentCondition(this.experimentConditionData, site, target, markObject);
+    return getDecisionPointAssignment(this.experimentConditionData, site, target, markObject);
   }
 
   /**
@@ -301,32 +314,7 @@ export default class UpgradeClient {
    * ```
    */
 
-  async markExperimentPoint(
-    site: string,
-    target: string,
-    condition: string = null,
-    status: MARKED_DECISION_POINT_STATUS,
-    uniquifier?: string,
-    clientError?: string
-  ): Promise<Interfaces.IMarkExperimentPoint> {
-    this.validateClient();
-    if (this.experimentConditionData == null) {
-      await this.getAllExperimentConditions();
-    }
-    return await markExperimentPoint(
-      this.api.markExperimentPoint,
-      this.userId,
-      this.token,
-      this.clientSessionId,
-      site,
-      target,
-      condition,
-      status,
-      this.experimentConditionData,
-      uniquifier,
-      clientError
-    );
-  }
+    // For v5 Mark experiment is called from Assignment.markDecisionPoint()
 
   /**
    * This feature is available but not recommended for use as it is not fully regression tested in recent releases.
