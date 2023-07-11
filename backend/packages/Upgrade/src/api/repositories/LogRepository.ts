@@ -763,12 +763,13 @@ export class LogRepository extends Repository<Log> {
               .select([
                 `"monitoredDecisionPoint"."userId" as "userId"`,
                 `"monitoredDecisionPoint"."id" as "monitoredDecisionPointId"`,
+                `"monitoredDecisionPoint"."experimentId" as "experimentId"`,
               ])
               .distinct()
               .from(MonitoredDecisionPoint, 'monitoredDecisionPoint');
           },
           'monitoredDecisionPoint',
-          '"individualEnrollment"."userId" = "monitoredDecisionPoint"."userId"'
+          '"individualEnrollment"."userId" = "monitoredDecisionPoint"."userId" AND "experiment"."id"::text = "monitoredDecisionPoint"."experimentId"'
         )
         .innerJoinAndSelect(
           (qb) => {
