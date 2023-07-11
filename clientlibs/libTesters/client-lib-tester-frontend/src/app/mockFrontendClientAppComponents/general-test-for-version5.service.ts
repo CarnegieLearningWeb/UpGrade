@@ -45,11 +45,23 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
     TARGET_1: 'target_1',
     TARGET_2: 'target_2',
   };
+  public CONDITIONS = {
+    CONDITION_1: 'condition1',
+    CONDITION_2: 'condition2',
+    CONDITION_3: 'condition3',
+    CONDITION_4: 'condition4',
+  }
   public GROUPS = ['schoolId', 'classId', 'instructorId'];
-  public CONTEXT = 'add'; // what should this be really?
+  public CONTEXT = 'assign-prog'; // what should this be really?
   public HOOKNAMES = {
     INIT: 'init',
     ASSIGN: 'assign',
+    DP_ASSIGNMENT_TARGET_1: 'getDecisionPointAssignment1',
+    DP_ASSIGNMENT_TARGET_2: 'getDecisionPointAssignment2',
+    MARK_TARGET_1_CONDITION_1: 'markTarget1Condition1',
+    MARK_TARGET_1_CONDITION_2: 'markTarget1Condition2',
+    MARK_TARGET_1_CONDITION_3: 'markTarget1Condition3',
+    MARK_TARGET_1_CONDITION_4: 'markTarget1Condition4',
     MARK_EXPERIMENT_POINT: 'markExperimentPoint',
     GROUP_MEMBERSHIP: 'update_group',
     WORKING_GROUPS: 'update_working_group',
@@ -84,8 +96,32 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
           description: 'Dispatches .getAllExperimentConditions()',
         },
         {
-          name: this.HOOKNAMES.MARK_EXPERIMENT_POINT,
-          description: 'Dispatches .markExperimentPoint() for target 1, control condition',
+          name: this.HOOKNAMES.DP_ASSIGNMENT_TARGET_1,
+          description: 'Dispatches .getDecisionPointAssignment() for target_1',
+        },
+        {
+          name: this.HOOKNAMES.DP_ASSIGNMENT_TARGET_2,
+          description: 'Dispatches .getDecisionPointAssignment() for target_2',
+        },
+        // {
+        //   name: this.HOOKNAMES.MARK_EXPERIMENT_POINT,
+        //   description: 'Dispatches .markExperimentPoint() for target 1, control condition',
+        // },
+        {
+          name: this.HOOKNAMES.MARK_TARGET_1_CONDITION_1,
+          description: 'Dispatches .markExperimentPoint() for target 1, condition 1',
+        },
+        {
+          name: this.HOOKNAMES.MARK_TARGET_1_CONDITION_2,
+          description: 'Dispatches .markExperimentPoint() for target 1, condition 2',
+        },
+        {
+          name: this.HOOKNAMES.MARK_TARGET_1_CONDITION_3,
+          description: 'Dispatches .markExperimentPoint() for target 1, condition 3',
+        },
+        {
+          name: this.HOOKNAMES.MARK_TARGET_1_CONDITION_4,
+          description: 'Dispatches .markExperimentPoint() for target 1, condition 4',
         },
         {
           name: this.HOOKNAMES.SET_ALT_USER_IDS,
@@ -120,9 +156,33 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
           hookName: this.HOOKNAMES.ASSIGN,
         },
         {
-          label: 'markExperimentPoint',
-          hookName: this.HOOKNAMES.MARK_EXPERIMENT_POINT,
+          label: 'getAssignment: target1',
+          hookName: this.HOOKNAMES.DP_ASSIGNMENT_TARGET_1,
         },
+        {
+          label: 'getAssignment: target2',
+          hookName: this.HOOKNAMES.DP_ASSIGNMENT_TARGET_2,
+        },
+        {
+          label: 'mark: target1, condition1',
+          hookName: this.HOOKNAMES.MARK_TARGET_1_CONDITION_1,
+        },
+        {
+          label: 'mark: target1, condition2',
+          hookName: this.HOOKNAMES.MARK_TARGET_1_CONDITION_2,
+        },
+        {
+          label: 'mark: target1, condition3',
+          hookName: this.HOOKNAMES.MARK_TARGET_1_CONDITION_3,
+        },
+        {
+          label: 'mark: target1, condition4',
+          hookName: this.HOOKNAMES.MARK_TARGET_1_CONDITION_4,
+        },
+        // {
+        //   label: 'markExperimentPoint',
+        //   hookName: this.HOOKNAMES.MARK_EXPERIMENT_POINT,
+        // },
         {
           label: 'setAltUserIds',
           hookName: this.HOOKNAMES.SET_ALT_USER_IDS,
@@ -160,8 +220,18 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       this.doInit(user.id);
     } else if (name === this.HOOKNAMES.ASSIGN) {
       this.doAssign();
-    } else if (name === this.HOOKNAMES.MARK_EXPERIMENT_POINT) {
-      this.doMark();
+    } else if (name === this.HOOKNAMES.DP_ASSIGNMENT_TARGET_1) {
+      this.doGetDecisionPointAssignment(this.TARGETS.TARGET_1);
+    } else if (name === this.HOOKNAMES.DP_ASSIGNMENT_TARGET_2) {
+      this.doGetDecisionPointAssignment(this.TARGETS.TARGET_2);
+    } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_1) {
+      this.doMark(this.CONDITIONS.CONDITION_1);
+    } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_2) {
+      this.doMark(this.CONDITIONS.CONDITION_2);
+    } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_3) {
+      this.doMark(this.CONDITIONS.CONDITION_3);
+    } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_4) {
+      this.doMark(this.CONDITIONS.CONDITION_4);
     } else if (name === this.HOOKNAMES.SET_ALT_USER_IDS) {
       this.doUserAliases(user);
     } else if (name === this.HOOKNAMES.GROUP_MEMBERSHIP) {
@@ -204,7 +274,21 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
     }
   }
 
-  private async doMark() {
+  private async doGetDecisionPointAssignment(target: string) {
+    if (!this.upgradeClient) {
+      console.error('No upgradeClient found. Maybe you need to run login hook first?');
+    }
+    try {
+      const dpAssignmentsResponse = await this.upgradeClient.getDecisionPointAssignment(this.SITES.TEST, target);
+      console.log({ dpAssignmentsResponse });
+      console.log('condition:', dpAssignmentsResponse.getCondition());
+
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  private async doMark(condition: string) {
     if (!this.upgradeClient) {
       console.error('No upgradeClient found. Maybe you need to run login hook first?');
     }
@@ -212,8 +296,9 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       const markResponse = await this.upgradeClient.markExperimentPoint(
         this.SITES.TEST,
         this.TARGETS.TARGET_1,
-        'control',
-        MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED
+        condition,
+        MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+        String(Math.floor(Math.random() * 1000000)) 
       );
       console.log({ markResponse });
     } catch (err) {

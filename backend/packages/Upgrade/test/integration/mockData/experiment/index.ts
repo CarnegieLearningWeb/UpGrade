@@ -132,6 +132,7 @@ export const withinSubjectExperiment = {
   ],
   assignmentUnit: ASSIGNMENT_UNIT.WITHIN_SUBJECTS,
   conditionOrder: CONDITION_ORDER.RANDOM,
+  consistencyRule: null,
 };
 
 export const individualExperimentWithMetric = {

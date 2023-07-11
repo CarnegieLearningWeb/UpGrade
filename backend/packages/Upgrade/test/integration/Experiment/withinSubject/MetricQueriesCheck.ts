@@ -421,6 +421,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
   // change experiment status to Enrolling
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
   const condition = experimentObject.conditions[0].conditionCode;
+  const conditionId = experimentObject.conditions[0].id;
 
   // user 1 mark experiment point
   let markedExperimentPoint = await markExperimentPoint(
@@ -536,25 +537,26 @@ export default async function MetricQueriesCheck(): Promise<void> {
     ],
     { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
   );
-
-  // user 2 mark experiment point
+  
+  const condition2 = experimentObject.conditions[1].conditionCode;
+  // user 1 mark experiment point on condition2
   markedExperimentPoint = await markExperimentPoint(
-    experimentUsers[1].id,
+    experimentUsers[0].id,
     experimentTarget,
     experimentPoint,
-    condition,
+    condition2,
     new UpgradeLogger(),
     experimentId,
     '4'
   );
-  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentTarget, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
 
   // getOriginalUserDoc
-  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[1].id, new UpgradeLogger());
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
 
   // log data here
   await experimentAssignmentService.dataLog(
-    experimentUsers[1].id,
+    experimentUsers[0].id,
     [
       {
         timestamp: new Date().toISOString(),
@@ -578,13 +580,90 @@ export default async function MetricQueriesCheck(): Promise<void> {
 
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[0].id,
+    experimentTarget,
+    experimentPoint,
+    condition2,
+    new UpgradeLogger(),
+    experimentId,
+    '5'
+  );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
+
+  // getOriginalUserDoc
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
+
+  await experimentAssignmentService.dataLog(
+    experimentUsers[0].id,
+    [
+      {
+        timestamp: new Date().toISOString(),
+        metrics: {
+          groupedMetrics: [
+            {
+              groupClass: 'addWorkspace',
+              groupKey: 'level1',
+              groupUniquifier: '5',
+              attributes: {
+                timeSpent: 500,
+                workspaceCompletionStatus: 'GRADUATED',
+              },
+            },
+          ],
+        },
+      },
+    ],
+    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+  );
+
+  // user 2 mark experiment point on condition1
+  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[1].id,
     experimentTarget,
     experimentPoint,
     condition,
     new UpgradeLogger(),
     experimentId,
-    '5'
+    '6'
+  );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentTarget, experimentPoint);
+
+  // getOriginalUserDoc
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[1].id, new UpgradeLogger());
+
+  // log data here
+  await experimentAssignmentService.dataLog(
+    experimentUsers[1].id,
+    [
+      {
+        timestamp: new Date().toISOString(),
+        metrics: {
+          groupedMetrics: [
+            {
+              groupClass: 'addWorkspace',
+              groupKey: 'level1',
+              groupUniquifier: '6',
+              attributes: {
+                timeSpent: 300,
+                workspaceCompletionStatus: 'PROMOTED',
+              },
+            },
+          ],
+        },
+      },
+    ],
+    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+  );
+
+  // mark experiment point
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[1].id,
+    experimentTarget,
+    experimentPoint,
+    condition2,
+    new UpgradeLogger(),
+    experimentId,
+    '7'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentTarget, experimentPoint);
 
@@ -601,7 +680,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             {
               groupClass: 'addWorkspace',
               groupKey: 'level1',
-              groupUniquifier: '5',
+              groupUniquifier: '7',
               attributes: {
                 timeSpent: 500,
                 workspaceCompletionStatus: 'GRADUATED',
@@ -624,7 +703,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
       case OPERATION_TYPES.SUM: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
-            expectedValue = 800;
+            expectedValue = 600;
             break;
           }
           case REPEATED_MEASURE.earliest: {
@@ -632,7 +711,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
           case REPEATED_MEASURE.mean: {
-            expectedValue = 700;
+            expectedValue = 600;
             break;
           }
           default: {
@@ -641,7 +720,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         }
 
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -669,7 +748,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -682,7 +761,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
       case OPERATION_TYPES.MAX: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
-            expectedValue = 500;
+            expectedValue = 300;
             break;
           }
           case REPEATED_MEASURE.earliest: {
@@ -690,7 +769,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
           case REPEATED_MEASURE.mean: {
-            expectedValue = 400;
+            expectedValue = 300;
             break;
           }
           default: {
@@ -698,7 +777,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -710,7 +789,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
       case OPERATION_TYPES.AVERAGE: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
-            expectedValue = 400;
+            expectedValue = 300;
             break;
           }
           case REPEATED_MEASURE.earliest: {
@@ -718,7 +797,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
           case REPEATED_MEASURE.mean: {
-            expectedValue = 350;
+            expectedValue = 300;
             break;
           }
           default: {
@@ -726,7 +805,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -754,7 +833,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -766,7 +845,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
       case OPERATION_TYPES.MEDIAN: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
-            expectedValue = 400;
+            expectedValue = 300;
             break;
           }
           case REPEATED_MEASURE.earliest: {
@@ -774,7 +853,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
           case REPEATED_MEASURE.mean: {
-            expectedValue = 350;
+            expectedValue = 300;
             break;
           }
           default: {
@@ -782,7 +861,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -794,7 +873,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
       case OPERATION_TYPES.STDEV: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
-            expectedValue = 141;
+            expectedValue = 0;
             break;
           }
           case REPEATED_MEASURE.earliest: {
@@ -802,7 +881,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
           case REPEATED_MEASURE.mean: {
-            expectedValue = 70;
+            expectedValue = 0;
             break;
           }
           default: {
@@ -810,7 +889,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -823,7 +902,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         if (query.metric.type === 'categorical') {
           switch (query.repeatedMeasure) {
             case REPEATED_MEASURE.mostRecent: {
-              expectedValue = 2;
+              expectedValue = 1;
               break;
             }
             case REPEATED_MEASURE.earliest: {
@@ -855,7 +934,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         }
 
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
@@ -867,7 +946,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
       case OPERATION_TYPES.PERCENTAGE: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
-            expectedValue = 100;
+            expectedValue = 50;
             break;
           }
           case REPEATED_MEASURE.earliest: {
@@ -879,7 +958,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
         const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === 'c22467b1-f0e9-4444-9517-cc03037bc079') {
+          if (condition.conditionId === conditionId) {
             return condition;
           }
         });
