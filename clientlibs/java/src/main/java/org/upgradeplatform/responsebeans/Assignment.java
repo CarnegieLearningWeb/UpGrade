@@ -15,21 +15,24 @@ public class Assignment {
     private ExperimentType experimentType;
     private Condition assignedCondition;
     private Map<String, Factor> assignedFactor;
+    private ExperimentClient experimentClient;
 
-    public Assignment(String target, String site, ExperimentType experimentType, Condition assignedCondition) {
+    public Assignment(ExperimentClient experimentClient, String target, String site, ExperimentType experimentType, Condition assignedCondition) {
         this.target = target;
         this.site = site;
         this.experimentType = experimentType;
         this.assignedCondition = assignedCondition;
+        this.experimentClient = experimentClient;
     }
 
-    public Assignment(String target, String site, ExperimentType experimentType, Condition assignedCondition,
+    public Assignment(ExperimentClient experimentClient, String target, String site, ExperimentType experimentType, Condition assignedCondition,
             Map<String, Factor> assignedFactor) {
         this.target = target;
         this.site = site;
         this.experimentType = experimentType;
         this.assignedCondition = assignedCondition;
         this.assignedFactor = assignedFactor;
+        this.experimentClient = experimentClient;
     }
 
     public String getTarget() {
@@ -90,15 +93,15 @@ public class Assignment {
 		}
 	}
 
-    public void markExperimentPoint(ExperimentClient experimentClient, MarkedDecisionPointStatus status, ResponseCallback<MarkExperimentPoint> callbacks){
-        this.markExperimentPoint(experimentClient, status, "", "", callbacks);
+    public void markExperimentPoint(MarkedDecisionPointStatus status, ResponseCallback<MarkExperimentPoint> callbacks){
+        this.markExperimentPoint(status, "", "", callbacks);
     }
 
-    public void markExperimentPoint(ExperimentClient experimentClient, MarkedDecisionPointStatus status, String uniquifier, ResponseCallback<MarkExperimentPoint> callbacks){
-        this.markExperimentPoint(experimentClient, status, "", uniquifier, callbacks);
+    public void markExperimentPoint(MarkedDecisionPointStatus status, String uniquifier, ResponseCallback<MarkExperimentPoint> callbacks){
+        this.markExperimentPoint(status, "", uniquifier, callbacks);
     }
 
-    public void markExperimentPoint(ExperimentClient experimentClient, MarkedDecisionPointStatus status, String clientError, String uniquifier, ResponseCallback<MarkExperimentPoint> callbacks){
+    public void markExperimentPoint(MarkedDecisionPointStatus status, String clientError, String uniquifier, ResponseCallback<MarkExperimentPoint> callbacks){
         String code = assignedCondition == null  ? null : assignedCondition.getConditionCode();
         MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(code));
         experimentClient.markExperimentPoint(status, markExperimentRequestData, clientError, uniquifier, callbacks);
