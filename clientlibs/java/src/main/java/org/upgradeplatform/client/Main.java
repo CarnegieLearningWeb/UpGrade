@@ -28,7 +28,7 @@ public class Main {
         final String userId = UUID.randomUUID().toString();
         final String site = "SelectSection";
 
-        String target = args.length > 0 ? args[0] : "volume_surface_area_cone_vol";
+        String target = args.length > 0 ? args[0] : "absolute_value_plot_equality";
 
         try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl, Collections.emptyMap())){
             CompletableFuture<String> result = new CompletableFuture<>();
@@ -72,7 +72,7 @@ public class Main {
                                                     String code = condition == null ? null : condition.getConditionCode();
                                                     System.out.println(condition);
                                                     System.out.println(code);
-                                                    experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED,"", new Date().toString(), new ResponseCallback<MarkExperimentPoint>(){
+                                                    expResult.markExperimentPoint(experimentClient, MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED, new Date().toString(), new ResponseCallback<MarkExperimentPoint>(){
                                                         @Override
                                                         public void onSuccess(@NonNull MarkExperimentPoint markResult){
                                                             result.complete("marked " + code + ": " + markResult.toString());

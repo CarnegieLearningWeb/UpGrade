@@ -2,7 +2,11 @@ package org.upgradeplatform.responsebeans;
 
 import java.util.Map;
 
+import org.upgradeplatform.client.ExperimentClient;
+import org.upgradeplatform.interfaces.ResponseCallback;
+import org.upgradeplatform.requestbeans.MarkExperimentRequestData;
 import org.upgradeplatform.utils.Utils.ExperimentType;
+import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 
 public class Assignment {
 
@@ -85,6 +89,20 @@ public class Assignment {
 			return null;
 		}
 	}
+
+    public void markExperimentPoint(ExperimentClient experimentClient, MarkedDecisionPointStatus status, ResponseCallback<MarkExperimentPoint> callbacks){
+        this.markExperimentPoint(experimentClient, status, "", "", callbacks);
+    }
+
+    public void markExperimentPoint(ExperimentClient experimentClient, MarkedDecisionPointStatus status, String uniquifier, ResponseCallback<MarkExperimentPoint> callbacks){
+        this.markExperimentPoint(experimentClient, status, "", uniquifier, callbacks);
+    }
+
+    public void markExperimentPoint(ExperimentClient experimentClient, MarkedDecisionPointStatus status, String clientError, String uniquifier, ResponseCallback<MarkExperimentPoint> callbacks){
+        String code = assignedCondition == null  ? null : assignedCondition.getConditionCode();
+        MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(code));
+        experimentClient.markExperimentPoint(status, markExperimentRequestData, clientError, uniquifier, callbacks);
+    }
 
     @Override
     public String toString() {

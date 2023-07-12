@@ -330,47 +330,6 @@ public class ExperimentClient implements AutoCloseable {
 		return resultCondition;
 	}
 
-	public void markExperimentPoint(final String site, String condition, MarkedDecisionPointStatus status,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, "", new Condition(condition));
-		markExperimentPoint(status, markExperimentRequestData, "", "", callbacks);
-	}
-
-	public void markExperimentPoint(final String site, String target, String condition, MarkedDecisionPointStatus status,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(condition));
-		markExperimentPoint(status, markExperimentRequestData, "", "", callbacks);
-	}
-
-	public void markExperimentPoint(final String site, String condition, MarkedDecisionPointStatus status, String clientError,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, "", new Condition(condition));
-		markExperimentPoint(status, markExperimentRequestData, clientError, "", callbacks);
-	}
-
-	public void markExperimentPoint(final String site, String target, String condition, MarkedDecisionPointStatus status, String clientError,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(condition));
-		markExperimentPoint(status, markExperimentRequestData, clientError, "", callbacks);
-	}
-
-	public void markExperimentPoint(final String site, String condition, MarkedDecisionPointStatus status, String clientError, String uniquifier,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, "", new Condition(condition));
-		markExperimentPoint(status, markExperimentRequestData, clientError, uniquifier, callbacks);
-	}
-
-	public void markExperimentPoint(final String site, String target, String condition, MarkedDecisionPointStatus status, String clientError, String uniquifier,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(condition));
-		markExperimentPoint(status, markExperimentRequestData, clientError, uniquifier, callbacks);
-	}
-
-	public void markExperimentPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		markExperimentPoint(status, data, "", "", callbacks);
-	}
-
 	public void markExperimentPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data, String clientError, String uniquifier,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
 		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, status, data, clientError, uniquifier);
