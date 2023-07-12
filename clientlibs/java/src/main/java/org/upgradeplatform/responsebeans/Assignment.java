@@ -93,18 +93,18 @@ public class Assignment {
 		}
 	}
 
-    public void markExperimentPoint(MarkedDecisionPointStatus status, ResponseCallback<MarkExperimentPoint> callbacks){
-        this.markExperimentPoint(status, "", "", callbacks);
+    public void markDecisionPoint(MarkedDecisionPointStatus status, ResponseCallback<MarkDecisionPoint> callbacks){
+        this.markDecisionPoint(status, "", "", callbacks);
     }
 
-    public void markExperimentPoint(MarkedDecisionPointStatus status, String uniquifier, ResponseCallback<MarkExperimentPoint> callbacks){
-        this.markExperimentPoint(status, "", uniquifier, callbacks);
+    public void markDecisionPoint(MarkedDecisionPointStatus status, String uniquifier, ResponseCallback<MarkDecisionPoint> callbacks){
+        this.markDecisionPoint(status, "", uniquifier, callbacks);
     }
 
-    public void markExperimentPoint(MarkedDecisionPointStatus status, String clientError, String uniquifier, ResponseCallback<MarkExperimentPoint> callbacks){
+    public void markDecisionPoint(MarkedDecisionPointStatus status, String clientError, String uniquifier, ResponseCallback<MarkDecisionPoint> callbacks){
         String code = assignedCondition == null  ? null : assignedCondition.getConditionCode();
         MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(code));
-        experimentClient.markExperimentPoint(status, markExperimentRequestData, clientError, uniquifier, callbacks);
+        experimentClient.markDecisionPoint(status, markExperimentRequestData, clientError, uniquifier, callbacks);
     }
 
     @Override

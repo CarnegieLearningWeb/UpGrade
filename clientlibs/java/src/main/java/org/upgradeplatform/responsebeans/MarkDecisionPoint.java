@@ -1,6 +1,6 @@
 package org.upgradeplatform.responsebeans;
 
-public class MarkExperimentPoint {
+public class MarkDecisionPoint {
 	
 
 	private String userId;
@@ -18,9 +18,9 @@ public class MarkExperimentPoint {
 		this.id = id;
 	}
 
-	public MarkExperimentPoint() {}
+	public MarkDecisionPoint() {}
 	
-	public MarkExperimentPoint(String userId, String experimentId, String site, String target) {
+	public MarkDecisionPoint(String userId, String experimentId, String site, String target) {
 		super();
 		this.userId = userId;
 		this.experimentId = experimentId;
@@ -28,14 +28,14 @@ public class MarkExperimentPoint {
 		this.target = target;
 	}
 
-	public MarkExperimentPoint(String userId, String site, String target) {
+	public MarkDecisionPoint(String userId, String site, String target) {
 		super();
 		this.userId = userId;
 		this.site = site;
 		this.target = target;
 	}
 
-	public MarkExperimentPoint(String userId, String site, String target, String condition, String experimentId, String id) {
+	public MarkDecisionPoint(String userId, String site, String target, String condition, String experimentId, String id) {
 		super();
 		this.userId = userId;
 		this.site = site;

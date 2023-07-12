@@ -39,7 +39,7 @@ import org.upgradeplatform.responsebeans.Factor;
 import org.upgradeplatform.responsebeans.FeatureFlag;
 import org.upgradeplatform.responsebeans.InitializeUser;
 import org.upgradeplatform.responsebeans.LogEventResponse;
-import org.upgradeplatform.responsebeans.MarkExperimentPoint;
+import org.upgradeplatform.responsebeans.MarkDecisionPoint;
 import org.upgradeplatform.responsebeans.Metric;
 import org.upgradeplatform.responsebeans.Variation;
 import org.upgradeplatform.utils.APIService;
@@ -307,7 +307,9 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	private void rotateConditions(String site, String target) {
+		System.out.println("rotate conditions");
 		if (this.allExperiments != null) {
+			System.out.println("actually rotating");
 			ExperimentsResponse result = this.allExperiments.stream().filter(t -> t.getSite().equalsIgnoreCase(site) &&
 					(isStringNull(target) ? isStringNull(t.getTarget().toString())
 					: t.getTarget().toString().equalsIgnoreCase(target))).findFirst().orElse(null);
@@ -330,8 +332,8 @@ public class ExperimentClient implements AutoCloseable {
 		return resultCondition;
 	}
 
-	public void markExperimentPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data, String clientError, String uniquifier,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
+	public void markDecisionPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data, String clientError, String uniquifier,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
 		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, status, data, clientError, uniquifier);
 		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
 
@@ -345,7 +347,7 @@ public class ExperimentClient implements AutoCloseable {
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 
-				    readResponseToCallback(response, callbacks, MarkExperimentPoint.class);
+				    readResponseToCallback(response, callbacks, MarkDecisionPoint.class);
 					rotateConditions(data.getSite(), data.getTarget());
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();

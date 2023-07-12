@@ -17,7 +17,7 @@ import org.upgradeplatform.responsebeans.Condition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUser;
 import org.upgradeplatform.responsebeans.InitializeUser;
-import org.upgradeplatform.responsebeans.MarkExperimentPoint;
+import org.upgradeplatform.responsebeans.MarkDecisionPoint;
 import org.upgradeplatform.responsebeans.UserAliasResponse;
 import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 
@@ -72,11 +72,10 @@ public class Main {
                                                     String code = condition == null ? null : condition.getConditionCode();
                                                     System.out.println(condition);
                                                     System.out.println(code);
-                                                    expResult.markExperimentPoint(experimentClient, MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED, new Date().toString(), new ResponseCallback<MarkExperimentPoint>(){
+                                                    expResult.markDecisionPoint(MarkedDecisionPointStatus.CONDITION_APPLIED, new Date().toString(), new ResponseCallback<MarkDecisionPoint>(){
                                                         @Override
-                                                        public void onSuccess(@NonNull MarkExperimentPoint markResult){
+                                                        public void onSuccess(@NonNull MarkDecisionPoint markResult){
                                                             result.complete("marked " + code + ": " + markResult.toString());
-                                                           
                                                         }
 
                                                         @Override
@@ -92,8 +91,6 @@ public class Main {
                                                 }
 
                                             });
-                                            
-                                            
                                         }
                                         @Override
                                         public void onError(@NonNull ErrorResponse error){
