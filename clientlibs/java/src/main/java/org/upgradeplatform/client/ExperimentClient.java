@@ -44,6 +44,8 @@ import org.upgradeplatform.responsebeans.Metric;
 import org.upgradeplatform.responsebeans.Variation;
 import org.upgradeplatform.utils.APIService;
 import org.upgradeplatform.utils.PublishingRetryCallback;
+import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
+import org.upgradeplatform.utils.Utils.RequestType;
 
 public class ExperimentClient implements AutoCloseable {
 
@@ -307,9 +309,7 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	private void rotateConditions(String site, String target) {
-		System.out.println("rotate conditions");
 		if (this.allExperiments != null) {
-			System.out.println("actually rotating");
 			ExperimentsResponse result = this.allExperiments.stream().filter(t -> t.getSite().equalsIgnoreCase(site) &&
 					(isStringNull(target) ? isStringNull(t.getTarget().toString())
 					: t.getTarget().toString().equalsIgnoreCase(target))).findFirst().orElse(null);
@@ -330,6 +330,47 @@ public class ExperimentClient implements AutoCloseable {
 				experimentsResponse.getSite(), experimentsResponse.getExperimentType(), Arrays.copyOf(experimentsResponse.getAssignedCondition(),
 				experimentsResponse.getAssignedCondition().length), experimentsResponse.getAssignedFactor());
 		return resultCondition;
+	}
+
+	public void markDecisionPoint(final String site, String condition, MarkedDecisionPointStatus status,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
+		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, "", new Condition(condition));
+		markDecisionPoint(status, markExperimentRequestData, "", "", callbacks);
+	}
+
+	public void markDecisionPoint(final String site, String target, String condition, MarkedDecisionPointStatus status,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
+		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(condition));
+		markDecisionPoint(status, markExperimentRequestData, "", "", callbacks);
+	}
+
+	public void markDecisionPoint(final String site, String condition, MarkedDecisionPointStatus status, String clientError,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
+		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, "", new Condition(condition));
+		markDecisionPoint(status, markExperimentRequestData, clientError, "", callbacks);
+	}
+
+	public void markDecisionPoint(final String site, String target, String condition, MarkedDecisionPointStatus status, String clientError,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
+		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(condition));
+		markDecisionPoint(status, markExperimentRequestData, clientError, "", callbacks);
+	}
+
+	public void markDecisionPoint(final String site, String condition, MarkedDecisionPointStatus status, String clientError, String uniquifier,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
+		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, "", new Condition(condition));
+		markDecisionPoint(status, markExperimentRequestData, clientError, uniquifier, callbacks);
+	}
+
+	public void markDecisionPoint(final String site, String target, String condition, MarkedDecisionPointStatus status, String clientError, String uniquifier,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
+		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(condition));
+		markDecisionPoint(status, markExperimentRequestData, clientError, uniquifier, callbacks);
+	}
+
+	public void markDecisionPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
+		markDecisionPoint(status, data, "", "", callbacks);
 	}
 
 	public void markDecisionPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data, String clientError, String uniquifier,
