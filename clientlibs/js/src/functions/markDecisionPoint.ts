@@ -1,20 +1,9 @@
 import { Interfaces, Types } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
 import { IExperimentAssignmentv5, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { findExperimentAssignmentBySiteAndTarget, rotateAssignmentList } from '../common';
 
-interface markData {
-  userId: string;
-  status: MARKED_DECISION_POINT_STATUS;
-  data: {
-    site: string;
-    target: string;
-    assignedCondition: { conditionCode: string; experimentId?: string };
-  };
-  uniquifier?: string;
-  clientError?: string;
-}
-
-export default async function markExperimentPoint(
+export default async function markDecisionPoint(
   url: string,
   userId: string,
   token: string,
@@ -23,17 +12,26 @@ export default async function markExperimentPoint(
   target: string,
   condition: string,
   status: MARKED_DECISION_POINT_STATUS,
-  getAllData: IExperimentAssignmentv5[],
+  experimentAssignmentData: IExperimentAssignmentv5[],
   uniquifier?: string,
   clientError?: string
 ): Promise<Interfaces.IMarkExperimentPoint> {
-  const dataFetched = getAllData.find((data) => data.site === site && data.target === target);
-  const data = { ...dataFetched, assignedCondition: { ...dataFetched.assignedCondition[0], conditionCode : condition} };
-  let requestBody: markData = {
+  const assignment = findExperimentAssignmentBySiteAndTarget(site, target, experimentAssignmentData)
+
+  if (!assignment) {
+    throw new Error('No assignment found');
+  }
+
+  rotateAssignmentList(assignment);
+
+  const data = { ...assignment, assignedCondition: { ...assignment.assignedCondition[0], conditionCode : condition} };
+
+  let requestBody: Interfaces.IMarkDecisionPointRequestBody = {
     userId,
     status,
     data,
   };
+
   if (uniquifier) {
     requestBody = {
       ...requestBody,

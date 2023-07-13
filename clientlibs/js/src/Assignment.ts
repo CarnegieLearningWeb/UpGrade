@@ -1,25 +1,11 @@
-import {
-  EXPERIMENT_TYPE,
-  PAYLOAD_TYPE,
-  IPayload,
-  IExperimentAssignmentv5,
-  MARKED_DECISION_POINT_STATUS,
-} from 'upgrade_types';
-import markExperimentPoint from './markExperimentPoint';
+import markDecisionPoint from "./functions/markDecisionPoint";
+import { IExperimentAssignmentv5, PAYLOAD_TYPE, EXPERIMENT_TYPE, IPayload, MARKED_DECISION_POINT_STATUS } from "../../../types/src";
+import { Interfaces } from "identifiers/Interfaces";
 
-interface markObejectType {
-  url: string;
-  userId: string;
-  token: string;
-  clientSessionId: string;
-  getAllExperimentData: IExperimentAssignmentv5[];
-}
-
-export class Assignment {
-  private _stack: IExperimentAssignmentv5;
+export default class Assignment {
   private _site: string;
   private _target: string;
-  private _markObject: markObejectType;
+  private _clientState: Interfaces.IClientState;
   private _conditionCode: string;
   private _payloadType: PAYLOAD_TYPE;
   private _payloadValue: string | null;
@@ -28,12 +14,11 @@ export class Assignment {
 
   constructor(
     getAllDataPerDecisionPoint: IExperimentAssignmentv5,
-    markObject: markObejectType,
+    clientState: Interfaces.IClientState,
   ) {
-    this._stack = getAllDataPerDecisionPoint;
     this._site = getAllDataPerDecisionPoint.site;
     this._target = getAllDataPerDecisionPoint.target;
-    this._markObject = markObject;
+    this._clientState = clientState;
     this._conditionCode = getAllDataPerDecisionPoint.assignedCondition[0].conditionCode;
     this._payloadType = getAllDataPerDecisionPoint.assignedCondition[0].payload
       ? getAllDataPerDecisionPoint.assignedCondition[0].payload.type
@@ -80,49 +65,18 @@ export class Assignment {
   }
 
   public markDecisionPoint(status: MARKED_DECISION_POINT_STATUS, uniquifier?: string, clientError?: string) {
-    this._stack.assignedCondition.push(this._stack.assignedCondition.shift());
-    if (this._stack.assignedFactor) {
-      this._stack.assignedFactor.push(this._stack.assignedFactor.shift());
-    }
-    return markExperimentPoint(
-      this._markObject.url,
-      this._markObject.userId,
-      this._markObject.token,
-      this._markObject.clientSessionId,
+    return markDecisionPoint(
+      this._clientState.config.api.markDecisionPoint,
+      this._clientState.config.userId,
+      this._clientState.config.token,
+      this._clientState.config.clientSessionId,
       this._site,
       this._target,
       this._conditionCode,
       status,
-      this._markObject.getAllExperimentData,
+      this._clientState.allExperimentAssignmentData,
       uniquifier,
       clientError
     );
-  }
-}
-
-/**
- * @hidden
- */
-export default function getDecisionPointAssignment(
-  experimentConditionData: IExperimentAssignmentv5[],
-  site: string,
-  target: string,
-  markObject: markObejectType
-): Assignment {
-  if (experimentConditionData) {
-    const result = experimentConditionData.find((data) => data.target === target && data.site === site);
-
-    if (result) {
-      const assignment = new Assignment(
-        result,
-        markObject,
-      );
-
-      return assignment;
-    } else {
-      return null;
-    }
-  } else {
-    return null;
   }
 }

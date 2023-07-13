@@ -1,3 +1,4 @@
+import markDecisionPoint from './functions/markDecisionPoint';
 import setGroupMembership from './functions/setGroupMembership';
 import { Interfaces } from './identifiers';
 import setWorkingGroup from './functions/setWorkingGroup';
@@ -9,8 +10,9 @@ import {
   ILogInput,
   CaliperEnvelope,
   IExperimentAssignmentv5,
+  MARKED_DECISION_POINT_STATUS,
 } from 'upgrade_types';
-import getDecisionPointAssignment, { Assignment } from './functions/getExperimentCondition';
+import getDecisionPointAssignment from './functions/getDecisionPointAssignment';
 import getAllFeatureFlags from './functions/getAllfeatureFlags';
 import log from './functions/log';
 import logCaliper from './functions/logCaliper';
@@ -19,6 +21,7 @@ import addMetrics from './functions/addMetrics';
 import getFeatureFlag from './functions/getFeatureFlag';
 import init from './functions/init';
 import * as uuid from 'uuid';
+import Assignment from './Assignment';
 
 /**
  * UpGradeClient is the main class for interacting with the UpGrade API.
@@ -47,10 +50,10 @@ import * as uuid from 'uuid';
 
 export default class UpgradeClient {
   // Endpoints URLs
-  private api = {
+  private api: Interfaces.IEndpoints = {
     init: '',
     getAllExperimentConditions: '',
-    markExperimentPoint: '',
+    markDecisionPoint: '',
     setGroupMemberShip: '',
     setWorkingGroup: '',
     failedExperimentPoint: '',
@@ -108,7 +111,7 @@ export default class UpgradeClient {
     this.api = {
       init: `${hostUrl}/api/v5/init`,
       getAllExperimentConditions: `${hostUrl}/api/v5/assign`,
-      markExperimentPoint: `${hostUrl}/api/v5/mark`,
+      markDecisionPoint: `${hostUrl}/api/v5/mark`,
       setGroupMemberShip: `${hostUrl}/api/v5/groupmembership`,
       setWorkingGroup: `${hostUrl}/api/v5/workinggroup`,
       failedExperimentPoint: `${hostUrl}/api/v5/failed`,
@@ -272,17 +275,71 @@ export default class UpgradeClient {
     if (this.experimentConditionData == null) {
       await this.getAllExperimentConditions();
     }
-    const markObject = {
-      url: this.api.markExperimentPoint,
-      userId: this.userId,
-      token: this.token,
-      clientSessionId: this.clientSessionId,
-      getAllExperimentData: this.experimentConditionData,
-    };
-    return getDecisionPointAssignment(this.experimentConditionData, site, target, markObject);
+    const clientState: Interfaces.IClientState = this.getClientState();
+    return getDecisionPointAssignment(site, target, clientState);
   }
 
   /**
+   * Will record ("mark") that a user has "seen" a decision point.
+   * 
+   * Marking the decision point will record the user's condition assignment and the time of the decision point, regardless of whether the user is enrolled in an experiment.
+   * 
+   * `status` signifies a client application's note on what it did in the code with condition assignment that Upgrade provided.
+   *  Status can be one of the following:
+   * 
+   * ```ts
+   * export enum MARKED_DECISION_POINT_STATUS {
+   *   CONDITION_APPLIED = 'condition applied',
+   *   CONDITION_FAILED_TO_APPLY = 'condition not applied',
+   *   NO_CONDITION_ASSIGNED = 'no condition assigned',
+   * }
+   * ```
+   * 
+   * The client can also send along an additional `clientError` string to log context as to why a condition was not applied.
+   * 
+   * @example
+   * ```ts
+   * import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+   * 
+   * const site = 'dashboard';
+   * const condition = 'variant_x'; // send null if no condition / no experiment is running / error
+   * const status: MARKED_DECISION_POINT_STATUS = MARKED_DECISION_POINT_STATUS.CONDITION_FAILED_TO_APPLY
+   * const target = 'experimental button'; // optional
+   * const clientError = 'variant not recognized'; //optional
+   * 
+   * const allExperimentConditionsResponse: IExperimentAssignmentv4[] = await upgradeClient.markDecisionPoint(site, condition, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED, target, clientError);
+   * ```
+   */
+
+  async markDecisionPoint(
+    site: string,
+    target: string,
+    condition: string = null,
+    status: MARKED_DECISION_POINT_STATUS,
+    clientError?: string
+  ): Promise<Interfaces.IMarkExperimentPoint> {
+    this.validateClient();
+    if (this.experimentConditionData == null) {
+      await this.getAllExperimentConditions();
+    }
+    return await markDecisionPoint(
+      this.api.markDecisionPoint,
+      this.userId,
+      this.token,
+      this.clientSessionId,
+      site,
+      target,
+      condition,
+      status,
+      this.experimentConditionData,
+      clientError
+    );
+  }
+
+  /**
+   * @deprecated
+   * Please use "markDecisionPoint" instead. This is just a name change, the functionality is the same, but could be removed in future.
+   * 
    * Will record ("mark") that a user has "seen" a decision point.
    * 
    * Marking the decision point will record the user's condition assignment and the time of the decision point, regardless of whether the user is enrolled in an experiment.
@@ -314,7 +371,7 @@ export default class UpgradeClient {
    * ```
    */
 
-    // For v5 Mark experiment is called from Assignment.markDecisionPoint()
+  markExperimentPoint = this.markDecisionPoint;
 
   /**
    * This feature is available but not recommended for use as it is not fully regression tested in recent releases.
@@ -455,5 +512,19 @@ export default class UpgradeClient {
   async addMetrics(metrics: (ISingleMetric | IGroupMetric)[]): Promise<Interfaces.IMetric[]> {
     this.validateClient();
     return await addMetrics(this.api.addMetrics, this.token, this.clientSessionId, metrics);
+  }
+
+  private getClientState(): Interfaces.IClientState {
+    const clientState: Interfaces.IClientState = {
+      config: {
+        hostURL: this.hostUrl,
+        userId: this.userId,
+        api: this.api,
+        clientSessionId: this.clientSessionId,
+        token: this.token,
+      },
+      allExperimentAssignmentData: this.experimentConditionData,
+    }
+    return clientState;
   }
 }

@@ -39,15 +39,15 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
   public TYPE: MockAppType = 'frontend';
   public LANGUAGE: CodeLanguage = 'ts';
   public SITES = {
-    TEST: 'test',
+    TEST: 'SelectSection',
   };
   public TARGETS = {
-    TARGET_1: 'target_1',
+    TARGET_1: 'targetC',
     TARGET_2: 'target_2',
   };
   public CONDITIONS = {
-    CONDITION_1: 'condition1',
-    CONDITION_2: 'condition2',
+    CONDITION_1: 'control',
+    CONDITION_2: 'variant_X',
     CONDITION_3: 'condition3',
     CONDITION_4: 'condition4',
   }
