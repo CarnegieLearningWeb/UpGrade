@@ -1,4 +1,4 @@
-import { Interfaces, Types } from '../identifiers';
+import { UpGradeClientInterfaces, UpGradeClientEnums } from '../types';
 import fetchDataService from '../common/fetchDataService';
 import { IExperimentAssignmentv5, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { findExperimentAssignmentBySiteAndTarget, rotateAssignmentList } from '../common';
@@ -15,7 +15,7 @@ export default async function markDecisionPoint(
   experimentAssignmentData: IExperimentAssignmentv5[],
   uniquifier?: string,
   clientError?: string
-): Promise<Interfaces.IMarkExperimentPoint> {
+): Promise<UpGradeClientInterfaces.IMarkExperimentPoint> {
   const assignment = findExperimentAssignmentBySiteAndTarget(site, target, experimentAssignmentData)
 
   if (!assignment) {
@@ -26,7 +26,7 @@ export default async function markDecisionPoint(
 
   const data = { ...assignment, assignedCondition: { ...assignment.assignedCondition[0], conditionCode : condition} };
 
-  let requestBody: Interfaces.IMarkDecisionPointRequestBody = {
+  let requestBody: UpGradeClientInterfaces.IMarkDecisionPointRequestBody = {
     userId,
     status,
     data,
@@ -44,7 +44,7 @@ export default async function markDecisionPoint(
       clientError,
     };
   }
-  const response = await fetchDataService(url, token, clientSessionId, requestBody, Types.REQUEST_TYPES.POST);
+  const response = await fetchDataService(url, token, clientSessionId, requestBody, UpGradeClientEnums.REQUEST_TYPES.POST);
   if (response.status) {
     return response.data;
   } else {

@@ -10,21 +10,9 @@ import {
 } from '../../../../shared/models';
 import { CaliperEnvelope } from '../../../../../../types/src';
 
-// There's probably a clever way to do this, but getting the right types automatically is tricky
-
-import UpgradeClient from 'upgrade_client_local/dist/browser';
-// import { UpgradeClient } from 'upgrade_client_1_1_7';
-// import * as UpgradeClient_1_1_8 from "upgrade_client_1_1_8/dist/browser"
-// import { UpgradeClient } from 'upgrade_client_3_0_18';
-
+import { UpgradeClient, Assignment, UpGradeClientInterfaces, UpGradeClientEnums, MARKED_DECISION_POINT_STATUS } from 'upgrade_client_local/dist/browser';
 import { AbstractMockAppService } from './abstract-mock-app.service';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
-
-export enum MARKED_DECISION_POINT_STATUS {
-  CONDITION_APPLIED = 'condition applied',
-  CONDITION_FAILED_TO_APPLY = 'condition not applied',
-  NO_CONDITION_ASSIGNED = 'no condition assigned',
-}
 
 @Injectable({
   providedIn: 'root',
@@ -225,13 +213,13 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
     } else if (name === this.HOOKNAMES.DP_ASSIGNMENT_TARGET_2) {
       this.doGetDecisionPointAssignment(this.TARGETS.TARGET_2);
     } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_1) {
-      this.doMark(this.CONDITIONS.CONDITION_1);
+      this.doClientMark(this.CONDITIONS.CONDITION_1);
     } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_2) {
-      this.doMark(this.CONDITIONS.CONDITION_2);
+      this.doClientMark(this.CONDITIONS.CONDITION_2);
     } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_3) {
-      this.doMark(this.CONDITIONS.CONDITION_3);
+      this.doClientMark(this.CONDITIONS.CONDITION_3);
     } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_4) {
-      this.doMark(this.CONDITIONS.CONDITION_4);
+      this.doClientMark(this.CONDITIONS.CONDITION_4);
     } else if (name === this.HOOKNAMES.SET_ALT_USER_IDS) {
       this.doUserAliases(user);
     } else if (name === this.HOOKNAMES.GROUP_MEMBERSHIP) {
@@ -288,17 +276,33 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
     }
   }
 
-  private async doMark(condition: string) {
+  private async doClientMark(condition: string, uniquifier?: string) {
     if (!this.upgradeClient) {
       console.error('No upgradeClient found. Maybe you need to run login hook first?');
     }
     try {
-      const markResponse = await this.upgradeClient.markExperimentPoint(
+      const markResponse = await this.upgradeClient.markDecisionPoint(
         this.SITES.TEST,
         this.TARGETS.TARGET_1,
         condition,
         MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
-        String(Math.floor(Math.random() * 1000000)) 
+        uniquifier
+      );
+      console.log({ markResponse });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  private async doAssignmentMark(uniquifier?: string) {
+    if (!this.upgradeClient) {
+      console.error('No upgradeClient found. Maybe you need to run login hook first?');
+    }
+    try {
+      const assignment: Assignment = await this.upgradeClient.getDecisionPointAssignment(this.SITES.TEST, this.TARGETS.TARGET_1);
+      const markResponse = await assignment.markDecisionPoint(
+        MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+        uniquifier
       );
       console.log({ markResponse });
     } catch (err) {

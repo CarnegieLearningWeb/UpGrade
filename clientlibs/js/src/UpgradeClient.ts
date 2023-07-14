@@ -1,6 +1,6 @@
 import markDecisionPoint from './functions/markDecisionPoint';
 import setGroupMembership from './functions/setGroupMembership';
-import { Interfaces } from './identifiers';
+import { UpGradeClientInterfaces } from './types';
 import setWorkingGroup from './functions/setWorkingGroup';
 import getAllExperimentConditions from './functions/getAllExperimentConditions';
 import {
@@ -42,15 +42,15 @@ import Assignment from './Assignment';
 *
 * SDK-Specific types can be accessed also:
 * ```typescript
-* import { Interfaces } from 'upgrade_client_lib/dist/clientlibs/js/src/identifiers';
+* import { UpGradeClientInterfaces } from 'upgrade_client_lib/dist/clientlibs/js/src/identifiers';
 * 
-* const initResponse: Interfaces.IUser = await upgradeClient.init();
+* const initResponse: UpGradeClientInterfaces.IUser = await upgradeClient.init();
 * ```
 */
 
 export default class UpgradeClient {
   // Endpoints URLs
-  private api: Interfaces.IEndpoints = {
+  private api: UpGradeClientInterfaces.IEndpoints = {
     init: '',
     getAllExperimentConditions: '',
     markDecisionPoint: '',
@@ -132,6 +132,20 @@ export default class UpgradeClient {
     }
   }
 
+  private getClientState(): UpGradeClientInterfaces.IClientState {
+    const clientState: UpGradeClientInterfaces.IClientState = {
+      config: {
+        hostURL: this.hostUrl,
+        userId: this.userId,
+        api: this.api,
+        clientSessionId: this.clientSessionId,
+        token: this.token,
+      },
+      allExperimentAssignmentData: this.experimentConditionData,
+    }
+    return clientState;
+  }
+
 /**
  * This will initialize user and metadata for the user. It will return the user object with id, group, and working group.
  * NOTE: A user must be initialized at least once before calling any other methods.
@@ -149,13 +163,13 @@ export default class UpgradeClient {
  *  districtId: 'district2',
  * }
  * 
- * const initResponse: Interfaces.IUser[] = await upgradeClient.init();
- * const initResponse: Interfaces.IUser[] = await upgradeClient.init(group);
- * const initResponse: Interfaces.IUser[] = await upgradeClient.init(group, workingGroup);
+ * const initResponse: UpGradeClientInterfaces.IUser[] = await upgradeClient.init();
+ * const initResponse: UpGradeClientInterfaces.IUser[] = await upgradeClient.init(group);
+ * const initResponse: UpGradeClientInterfaces.IUser[] = await upgradeClient.init(group, workingGroup);
  * 
  * ```
  */
-  async init(group?: Record<string, Array<string>>, workingGroup?: Record<string, string>): Promise<Interfaces.IUser> {
+  async init(group?: Record<string, Array<string>>, workingGroup?: Record<string, string>): Promise<UpGradeClientInterfaces.IUser> {
     this.validateClient();
     return await init(this.api.init, this.userId, this.token, this.clientSessionId, group, workingGroup);
   }
@@ -170,12 +184,12 @@ export default class UpgradeClient {
  *   districtId: ['district1', 'district2'],
  * }
  * 
- * const groupMembershipResponse: Interfaces.IUser[] = await upgradeClient.setGroupMembership(group);
+ * const groupMembershipResponse: UpGradeClientInterfaces.IUser[] = await upgradeClient.setGroupMembership(group);
  * ```
  */
-  async setGroupMembership(group: Record<string, Array<string>>): Promise<Interfaces.IUser> {
+  async setGroupMembership(group: Record<string, Array<string>>): Promise<UpGradeClientInterfaces.IUser> {
     this.validateClient();
-    let response: Interfaces.IUser = await setGroupMembership(
+    let response: UpGradeClientInterfaces.IUser = await setGroupMembership(
       this.api.setGroupMemberShip,
       this.userId,
       this.token,
@@ -203,12 +217,12 @@ export default class UpgradeClient {
  *  districtId: 'district2',
  * }
  * 
- * const workingGroupResponse: Interfaces.IUser[] = await upgradeClient.setWorkingGroup(workingGroup);
+ * const workingGroupResponse: UpGradeClientInterfaces.IUser[] = await upgradeClient.setWorkingGroup(workingGroup);
  * ```
  */
-  async setWorkingGroup(workingGroup: Record<string, string>): Promise<Interfaces.IUser> {
+  async setWorkingGroup(workingGroup: Record<string, string>): Promise<UpGradeClientInterfaces.IUser> {
     this.validateClient();
-    let response: Interfaces.IUser = await setWorkingGroup(
+    let response: UpGradeClientInterfaces.IUser = await setWorkingGroup(
       this.api.setWorkingGroup,
       this.userId,
       this.token,
@@ -236,8 +250,8 @@ export default class UpgradeClient {
  * 
  * @example
  * ```typescript
- * const userId = User1
- * const context = mathia
+ * const userId = "User1"
+ * const context = "mathia"
  * 
  * const getAllResponse: IExperimentAssignmentv5[] = await upgradeClient.getAllExperimentConditions();
  * ```
@@ -260,13 +274,13 @@ export default class UpgradeClient {
   }
 
 /**
- * Given a site and optional target, return the condition assignment at this decision point
+ * Given a site and optional target, return the Assignment this decision point
  * NOTE: If getAllExperimentConditions() has not been called, this will call it first.
  * NOTE ALSO: If getAllExperimentConditions() has been called, this will return the cached result and not make a network call.
  *  
  * @example
  * ```typescript
- * const allExperimentConditionsResponse: IExperimentAssignmentv4[] = await upgradeClient.getAllExperimentConditions(workingGroup);
+ * const assignmentResponse: Assignment = await upgradeClient.getDecisionPointAssignment(site, target);
  * ```
  */
 
@@ -275,16 +289,22 @@ export default class UpgradeClient {
     if (this.experimentConditionData == null) {
       await this.getAllExperimentConditions();
     }
-    const clientState: Interfaces.IClientState = this.getClientState();
+    const clientState: UpGradeClientInterfaces.IClientState = this.getClientState();
     return getDecisionPointAssignment(site, target, clientState);
   }
 
   /**
-   * Will record ("mark") that a user has "seen" a decision point.
+   * Will record ("mark") that a user has "seen" a condition at the given decision point (site + target).
    * 
-   * Marking the decision point will record the user's condition assignment and the time of the decision point, regardless of whether the user is enrolled in an experiment.
+   * NOTE: This method may be deprecated in favor of Assignment.markDecisionPoint() in a future release.
    * 
-   * `status` signifies a client application's note on what it did in the code with condition assignment that Upgrade provided.
+   * Marking the decision point will record the user's condition assignment, regardless of whether the user is enrolled in an experiment.
+   * 
+   * @param site
+   * @param target
+   * @param condition `condition` is the string identifier that the user was assigned to. If none is provided, the condition will be default (null)
+   * 
+   * @param status `status` signifies a client application's note on what it did in the code with condition assignment that Upgrade provided.
    *  Status can be one of the following:
    * 
    * ```ts
@@ -295,19 +315,29 @@ export default class UpgradeClient {
    * }
    * ```
    * 
-   * The client can also send along an additional `clientError` string to log context as to why a condition was not applied.
+   * @param uniquifier A `uniquifier` unique string can be sent along to help tie a user's logged metrics to a specific marked condition.
+   * This identifier will also need to be sent when calling `upgradeClient.log()`
+   * This is required for 'within-subjects' experiments.
+   * 
+   * @param clientError The client can also send along an additional `clientError` string to log context as to why a condition was not applied.
    * 
    * @example
    * ```ts
    * import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
    * 
    * const site = 'dashboard';
+   * const target = 'experimental button';
    * const condition = 'variant_x'; // send null if no condition / no experiment is running / error
    * const status: MARKED_DECISION_POINT_STATUS = MARKED_DECISION_POINT_STATUS.CONDITION_FAILED_TO_APPLY
-   * const target = 'experimental button'; // optional
    * const clientError = 'variant not recognized'; //optional
    * 
-   * const allExperimentConditionsResponse: IExperimentAssignmentv4[] = await upgradeClient.markDecisionPoint(site, condition, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED, target, clientError);
+   * const markResponse = await upgradeClient.markDecisionPoint(site, target, condition, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
+   * ```
+   * 
+   * Note*: mark can also be called via `Assignment.markDecisionPoint()` when returning an assignment from `getDecisionPointAssignment()`:
+   * ```ts
+   * const assignment: Assignment[] = await upgradeClient.getDecisionPointAssignment(site, target);
+   * const markResponse = await assignment.markDecisionPoint(MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
    * ```
    */
 
@@ -316,8 +346,9 @@ export default class UpgradeClient {
     target: string,
     condition: string = null,
     status: MARKED_DECISION_POINT_STATUS,
+    uniquifier?: string,
     clientError?: string
-  ): Promise<Interfaces.IMarkExperimentPoint> {
+  ): Promise<UpGradeClientInterfaces.IMarkExperimentPoint> {
     this.validateClient();
     if (this.experimentConditionData == null) {
       await this.getAllExperimentConditions();
@@ -332,6 +363,7 @@ export default class UpgradeClient {
       condition,
       status,
       this.experimentConditionData,
+      uniquifier,
       clientError
     );
   }
@@ -339,12 +371,18 @@ export default class UpgradeClient {
   /**
    * @deprecated
    * Please use "markDecisionPoint" instead. This is just a name change, the functionality is the same, but could be removed in future.
+   *
+   * Will record ("mark") that a user has "seen" a condition at the given decision point (site + target).
    * 
-   * Will record ("mark") that a user has "seen" a decision point.
+   * NOTE: This method may be deprecated in favor of Assignment.markDecisionPoint() in a future release.
    * 
-   * Marking the decision point will record the user's condition assignment and the time of the decision point, regardless of whether the user is enrolled in an experiment.
+   * Marking the decision point will record the user's condition assignment, regardless of whether the user is enrolled in an experiment.
    * 
-   * `status` signifies a client application's note on what it did in the code with condition assignment that Upgrade provided.
+   * @param site
+   * @param target
+   * @param condition `condition` is the string identifier that the user was assigned to. If none is provided, the condition will be default (null)
+   * 
+   * @param status `status` signifies a client application's note on what it did in the code with condition assignment that Upgrade provided.
    *  Status can be one of the following:
    * 
    * ```ts
@@ -355,19 +393,29 @@ export default class UpgradeClient {
    * }
    * ```
    * 
-   * The client can also send along an additional `clientError` string to log context as to why a condition was not applied.
+   * @param uniquifier A `uniquifier` unique string can be sent along to help tie a user's logged metrics to a specific marked condition.
+   * This identifier will also need to be sent when calling `upgradeClient.log()`
+   * This is required for 'within-subjects' experiments.
+   * 
+   * @param clientError The client can also send along an additional `clientError` string to log context as to why a condition was not applied.
    * 
    * @example
    * ```ts
    * import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
    * 
    * const site = 'dashboard';
+   * const target = 'experimental button';
    * const condition = 'variant_x'; // send null if no condition / no experiment is running / error
    * const status: MARKED_DECISION_POINT_STATUS = MARKED_DECISION_POINT_STATUS.CONDITION_FAILED_TO_APPLY
-   * const target = 'experimental button'; // optional
    * const clientError = 'variant not recognized'; //optional
    * 
-   * const allExperimentConditionsResponse: IExperimentAssignmentv4[] = await upgradeClient.markExperimentPoint(site, condition, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED, target, clientError);
+   * const markResponse = await upgradeClient.markExperimentPoint(site, target, condition, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
+   * ```
+   * 
+   * Note*: mark can also be called via `Assignment.markDecisionPoint()` when returning an assignment from `getDecisionPointAssignment()`:
+   * ```ts
+   * const assignment: Assignment[] = await upgradeClient.getDecisionPointAssignment(site, target);
+   * const markResponse = await assignment.markDecisionPoint(MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
    * ```
    */
 
@@ -463,7 +511,7 @@ export default class UpgradeClient {
    * const logResponse: ILog[] = await upgradeClient.metrics(metrics);
    * ```
    */
-  async log(value: ILogInput[], sendAsAnalytics = false): Promise<Interfaces.ILog[]> {
+  async log(value: ILogInput[], sendAsAnalytics = false): Promise<UpGradeClientInterfaces.ILog[]> {
     this.validateClient();
     return await log(this.api.log, this.userId, this.token, this.clientSessionId, value, sendAsAnalytics);
   }
@@ -485,7 +533,7 @@ export default class UpgradeClient {
  * 
  * ```
  */
-  async logCaliper(value: CaliperEnvelope, sendAsAnalytics = false): Promise<Interfaces.ILog[]> {
+  async logCaliper(value: CaliperEnvelope, sendAsAnalytics = false): Promise<UpGradeClientInterfaces.ILog[]> {
     this.validateClient();
     return await logCaliper(this.api.logCaliper, this.userId, this.token, this.clientSessionId, value, sendAsAnalytics);
   }
@@ -500,7 +548,7 @@ export default class UpgradeClient {
    * const setAltUserIdsResponse: IExperimentUserAliases[] = await upgradeClient.setAltUserIds(aliases);
    * ```
    */
-  async setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUserAliases[]> {
+  async setAltUserIds(altUserIds: string[]): Promise<UpGradeClientInterfaces.IExperimentUserAliases[]> {
     this.validateClient();
     return await setAltUserIds(this.api.altUserIds, this.userId, this.token, this.clientSessionId, altUserIds);
   }
@@ -509,22 +557,8 @@ export default class UpgradeClient {
    * This feature is available but not recommended for use as it is not fully regression tested in recent releases.
    * @ignore
    */
-  async addMetrics(metrics: (ISingleMetric | IGroupMetric)[]): Promise<Interfaces.IMetric[]> {
+  async addMetrics(metrics: (ISingleMetric | IGroupMetric)[]): Promise<UpGradeClientInterfaces.IMetric[]> {
     this.validateClient();
     return await addMetrics(this.api.addMetrics, this.token, this.clientSessionId, metrics);
-  }
-
-  private getClientState(): Interfaces.IClientState {
-    const clientState: Interfaces.IClientState = {
-      config: {
-        hostURL: this.hostUrl,
-        userId: this.userId,
-        api: this.api,
-        clientSessionId: this.clientSessionId,
-        token: this.token,
-      },
-      allExperimentAssignmentData: this.experimentConditionData,
-    }
-    return clientState;
   }
 }

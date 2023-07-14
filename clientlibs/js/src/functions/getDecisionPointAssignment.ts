@@ -1,11 +1,11 @@
 import Assignment from '../Assignment';
 import { findExperimentAssignmentBySiteAndTarget } from '../common';
-import { Interfaces } from 'identifiers/Interfaces';
+import { UpGradeClientInterfaces } from 'types/Interfaces';
 
 export default function getDecisionPointAssignment(
   site: string,
   target: string,
-  clientState: Interfaces.IClientState
+  clientState: UpGradeClientInterfaces.IClientState
 ): Assignment {
   if (clientState?.allExperimentAssignmentData) {
     const experimentAssignment = findExperimentAssignmentBySiteAndTarget(site, target, clientState.allExperimentAssignmentData)

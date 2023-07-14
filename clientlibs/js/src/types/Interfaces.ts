@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { SERVER_ERROR, IMetricMetaData, MARKED_DECISION_POINT_STATUS, IExperimentAssignmentv5 } from 'upgrade_types';
-import { Types } from './enums';
+import { UpGradeClientEnums } from './enums';
 
-export namespace Interfaces {
+export namespace UpGradeClientInterfaces {
   export interface IConfig {
     hostURL: string;
     userId: string;
@@ -37,7 +37,7 @@ export namespace Interfaces {
 
   export interface IRequestOptions {
     headers: object;
-    method: Types.REQUEST_TYPES;
+    method: UpGradeClientEnums.REQUEST_TYPES;
     keepalive: boolean;
     body?: string;
   }
