@@ -9,6 +9,7 @@ import {
   ILogInput,
   CaliperEnvelope,
   IExperimentAssignmentv5,
+  MARKED_DECISION_POINT_STATUS,
 } from 'upgrade_types';
 import getDecisionPointAssignment, { Assignment } from './functions/getExperimentCondition';
 import getAllFeatureFlags from './functions/getAllfeatureFlags';
@@ -19,6 +20,7 @@ import addMetrics from './functions/addMetrics';
 import getFeatureFlag from './functions/getFeatureFlag';
 import init from './functions/init';
 import * as uuid from 'uuid';
+import markExperimentPoint from './functions/markExperimentPoint';
 
 /**
  * UpGradeClient is the main class for interacting with the UpGrade API.
@@ -314,7 +316,36 @@ export default class UpgradeClient {
    * ```
    */
 
-    // For v5 Mark experiment is called from Assignment.markDecisionPoint()
+  async markExperimentPoint(
+    site: string,
+    target: string,
+    condition: string = null,
+    status: MARKED_DECISION_POINT_STATUS,
+    clientError?: string
+  ): Promise<Interfaces.IMarkExperimentPoint> {
+    this.validateClient();
+    if (this.experimentConditionData == null) {
+      await this.getAllExperimentConditions();
+    }
+    // rotation
+    const stack = this.experimentConditionData.find(data => data.site === site && data.target === target)
+    stack.assignedCondition.push(stack.assignedCondition.shift());
+    if (stack.assignedFactor) {
+      stack.assignedFactor.push(stack.assignedFactor.shift());
+    }
+    return await markExperimentPoint(
+      this.api.markExperimentPoint,
+      this.userId,
+      this.token,
+      this.clientSessionId,
+      site,
+      target,
+      condition,
+      status,
+      this.experimentConditionData,
+      clientError
+    );
+  }
 
   /**
    * This feature is available but not recommended for use as it is not fully regression tested in recent releases.
