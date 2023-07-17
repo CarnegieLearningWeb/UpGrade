@@ -206,7 +206,7 @@ export class LogRepository extends Repository<Log> {
       unitOfAssignment
     );
 
-    let valueToUse;
+    let valueToUse = 'extracted.value';
     let andQuery;
     let operation;
     let queryFunction;
@@ -216,15 +216,16 @@ export class LogRepository extends Repository<Log> {
     } else {
       andQuery = `${jsonDataValueLog} IS NOT NULL`;
     }
-
-    valueToUse = this.addRepeatedMeasureQuery(
-      repeatedMeasure,
-      executeQuery,
-      andQuery,
-      jsonDataValue,
-      valueToUse,
-      unitOfAssignment
-    );
+    if (operationType !== OPERATION_TYPES.STDEV) {
+      valueToUse = this.addRepeatedMeasureQuery(
+        repeatedMeasure,
+        executeQuery,
+        andQuery,
+        jsonDataValue,
+        valueToUse,
+        unitOfAssignment
+      );
+    }
 
     let percentQuery; // Used for percentage query
 
