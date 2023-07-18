@@ -216,7 +216,7 @@ export class LogRepository extends Repository<Log> {
     } else {
       andQuery = `${jsonDataValueLog} IS NOT NULL`;
     }
-
+    
     valueToUse = this.addRepeatedMeasureQuery(
       repeatedMeasure,
       executeQuery,
