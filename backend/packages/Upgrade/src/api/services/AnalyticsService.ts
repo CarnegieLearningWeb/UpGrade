@@ -11,6 +11,8 @@ import {
   EXPERIMENT_LOG_TYPE,
   REPEATED_MEASURE,
   IMetricMetaData,
+  ASSIGNMENT_UNIT,
+  EXPERIMENT_TYPE,
 } from 'upgrade_types';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
@@ -183,7 +185,12 @@ export class AnalyticsService {
       let skip = 0;
       const take = 50;
       do {
-        const data = await this.analyticsRepository.getCSVDataForSimpleExport(experimentId, skip, take);
+        let data: any[];
+        if(experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+          data = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentId, skip, take);
+        }else {
+          data = await this.analyticsRepository.getCSVDataForSimpleExport(experimentId, skip, take);
+        }
         const userIds = data.map(({ userId }) => userId);
         // don't query if no data
         if (!experimentId || (userIds && userIds.length === 0)) {
@@ -320,6 +327,7 @@ export class AnalyticsService {
         // write in the file
         const csv = new ObjectsToCsv(csvRows);
         try {
+          experiment.type === EXPERIMENT_TYPE.FACTORIAL? csv.delimiter = ',' : false;
           await csv.toDisk(`${folderPath}${simpleExportCSV}`, { append: true });
         } catch (err) {
           console.log(err);
