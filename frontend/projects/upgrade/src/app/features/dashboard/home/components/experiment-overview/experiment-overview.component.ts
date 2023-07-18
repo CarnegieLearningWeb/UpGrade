@@ -117,13 +117,11 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
             break;
           case ASSIGNMENT_UNIT.GROUP:
             if (this.overviewForm.get('context')) {
-              if (this.isExperimentEditable) {
-                this.overviewForm.get('groupType').enable();
-                this.overviewForm.get('consistencyRule').enable();
-              }
+              this.overviewForm.get('groupType').enable();
               this.overviewForm.get('groupType').setValidators(Validators.required);
               this.setGroupTypes();
               this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
+              this.overviewForm.get('consistencyRule').enable();
             } else {
               this.overviewForm.get('groupType').reset();
               this.overviewForm.get('groupType').disable();
