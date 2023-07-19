@@ -46,6 +46,22 @@ export interface IEnrollmentConditionAndPartitionDate {
   date_range: string;
 }
 
+export interface CSVExportDataRow {
+  experimentId: string;
+  experimentName: string;
+  userId: string;
+  groupId: string;
+  partition: string;
+  conditionName: string;
+  firstDecisionPointReachedOn: string;
+  decisionPointReachedCount: number;
+  context: string[];
+  assignmentUnit: string;
+  group: string;
+  site: string;
+  target: string;
+}
+
 @EntityRepository()
 export class AnalyticsRepository {
   constructor(private manager: EntityManager) {}
@@ -386,23 +402,7 @@ export class AnalyticsRepository {
     experimentId: string,
     skip: number,
     take: number
-  ): Promise<
-    Array<{
-      experimentId: string;
-      experimentName: string;
-      userId: string;
-      groupId: string;
-      partition: string;
-      conditionName: string;
-      firstDecisionPointReachedOn: string;
-      decisionPointReachedCount: number;
-      context: string[];
-      assignmentUnit: string;
-      group: string;
-      site: string;
-      target: string;
-    }>
-  > {
+  ): Promise<CSVExportDataRow[]> {
     const individualEnrollmentRepository = getCustomRepository(IndividualEnrollmentRepository, 'export');
     return individualEnrollmentRepository
       .createQueryBuilder('individualEnrollment')
@@ -449,23 +449,7 @@ export class AnalyticsRepository {
     experimentId: string,
     skip: number,
     take: number
-  ): Promise<
-    Array<{
-      experimentId: string;
-      experimentName: string;
-      userId: string;
-      groupId: string;
-      partition: string;
-      conditionName: string;
-      firstDecisionPointReachedOn: string;
-      decisionPointReachedCount: number;
-      context: string[];
-      assignmentUnit: string;
-      group: string;
-      site: string;
-      target: string;
-    }>
-  > {
+  ): Promise<CSVExportDataRow[]> {
     const individualEnrollmentRepository = getCustomRepository(IndividualEnrollmentRepository, 'export');
     return individualEnrollmentRepository
       .createQueryBuilder('individualEnrollment')
