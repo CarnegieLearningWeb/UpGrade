@@ -46,6 +46,22 @@ export interface IEnrollmentConditionAndPartitionDate {
   date_range: string;
 }
 
+export interface CSVExportDataRow {
+  experimentId: string;
+  experimentName: string;
+  userId: string;
+  groupId: string;
+  partition: string;
+  conditionName: string;
+  firstDecisionPointReachedOn: string;
+  decisionPointReachedCount: number;
+  context: string[];
+  assignmentUnit: string;
+  group: string;
+  site: string;
+  target: string;
+}
+
 @EntityRepository()
 export class AnalyticsRepository {
   constructor(private manager: EntityManager) {}
@@ -386,23 +402,7 @@ export class AnalyticsRepository {
     experimentId: string,
     skip: number,
     take: number
-  ): Promise<
-    Array<{
-      experimentId: string;
-      experimentName: string;
-      userId: string;
-      groupId: string;
-      partition: string;
-      conditionName: string;
-      firstDecisionPointReachedOn: string;
-      decisionPointReachedCount: number;
-      context: string[];
-      assignmentUnit: string;
-      group: string;
-      site: string;
-      target: string;
-    }>
-  > {
+  ): Promise<CSVExportDataRow[]> {
     const individualEnrollmentRepository = getCustomRepository(IndividualEnrollmentRepository, 'export');
     return individualEnrollmentRepository
       .createQueryBuilder('individualEnrollment')
@@ -438,6 +438,53 @@ export class AnalyticsRepository {
       .addGroupBy('"individualEnrollment"."partitionId"')
       .addGroupBy('"individualEnrollment"."groupId"')
       .addGroupBy('condition."conditionCode"')
+      .orderBy('"individualEnrollment"."userId"', 'ASC')
+      .skip(skip)
+      .take(take)
+      .where('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
+      .execute();
+  }
+
+  public async getCSVDataForWithInSubExport(
+    experimentId: string,
+    skip: number,
+    take: number
+  ): Promise<CSVExportDataRow[]> {
+    const individualEnrollmentRepository = getCustomRepository(IndividualEnrollmentRepository, 'export');
+    return individualEnrollmentRepository
+      .createQueryBuilder('individualEnrollment')
+      .select([
+        'experiment.id as "experimentId"',
+        'experiment.name as "experimentName"',
+        'experiment.context as "context"',
+        'experiment.assignmentUnit as "assignmentUnit"',
+        'experiment.group as "group"',
+        'monitored.site as "site"',
+        'monitored.target as "target"',
+        '"individualEnrollment"."userId" as "userId"',
+        '"individualEnrollment"."partitionId" as "decisionPointId"',
+        '"individualEnrollment"."groupId" as "groupId"',
+        '"monitoredPointLogs"."condition" as "conditionName"',
+        'MIN("monitoredPointLogs"."createdAt") as "firstDecisionPointReachedOn"',
+        'CAST(COUNT("monitoredPointLogs"."id") as int) as "decisionPointReachedCount"',
+      ])
+      .leftJoin('individualEnrollment.condition', 'condition')
+      .innerJoin(Experiment, 'experiment', 'experiment.id = "individualEnrollment"."experimentId"')
+      .leftJoin('individualEnrollment.partition', 'decisionPoint')
+      .innerJoin(
+        MonitoredDecisionPoint,
+        'monitored',
+        'monitored.userId = individualEnrollment.userId AND monitored.site = decisionPoint.site AND monitored.target = decisionPoint.target'
+      )
+      .leftJoin('monitored.monitoredPointLogs', 'monitoredPointLogs')
+      .groupBy('experiment.id')
+      .addGroupBy('experiment.name')
+      .addGroupBy('"monitored"."site"')
+      .addGroupBy('"monitored"."target"')
+      .addGroupBy('"individualEnrollment"."userId"')
+      .addGroupBy('"individualEnrollment"."partitionId"')
+      .addGroupBy('"individualEnrollment"."groupId"')
+      .addGroupBy('"monitoredPointLogs"."condition"')
       .orderBy('"individualEnrollment"."userId"', 'ASC')
       .skip(skip)
       .take(take)
