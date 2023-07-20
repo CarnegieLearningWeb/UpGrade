@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
+import { ASSIGNMENT_UNIT } from 'upgrade_types';
 import {
   ExperimentDecisionPoint,
   ExperimentCondition,
@@ -75,6 +76,10 @@ export class ExperimentDesignStepperService {
   );
   factorialExperimentDesignData$ = this.store$.pipe(select(selectFactorialDesignData), distinctUntilChanged(isEqual));
 
+  // Unit of Assignment:
+  private assignmentUnitSource = new BehaviorSubject<ASSIGNMENT_UNIT>(ASSIGNMENT_UNIT.INDIVIDUAL);
+  currentAssignmentUnit$ = this.assignmentUnitSource.asObservable();
+
   // Payload table:
   simpleExperimentPayloadTableDataBehaviorSubject$ = new BehaviorSubject<SimpleExperimentPayloadTableRowData[]>([]);
   isSimpleExperimentPayloadTableEditMode$ = this.store$.pipe(select(selectIsSimpleExperimentPayloadTableEditMode));
@@ -129,6 +134,10 @@ export class ExperimentDesignStepperService {
     this.simpleExperimentPayloadTableData$.subscribe(this.simpleExperimentPayloadTableDataBehaviorSubject$);
     this.factorialFactorTableData$.subscribe(this.factorialFactorTableDataBehaviorSubject$);
     this.factorialLevelsTableData$.subscribe(this.factorialLevelTableDataBehaviorSubject$);
+  }
+
+  changeAssignmentUnit(unit: ASSIGNMENT_UNIT) {
+    this.assignmentUnitSource.next(unit);
   }
 
   getHasExperimentDesignStepperDataChanged() {
@@ -436,7 +445,7 @@ export class ExperimentDesignStepperService {
       const payloadValue = conditionPayload ? conditionPayload.payload.value : '';
       const existingConditionPayloadId = conditionPayload?.id;
 
-      factorialCondition.levelCombinationElements.sort((a, b) =>
+      [...factorialCondition.levelCombinationElements].sort((a, b) =>
         levelOrder[a.level?.id] > levelOrder[b.level?.id]
           ? 1
           : levelOrder[b.level?.id] > levelOrder[a.level?.id]

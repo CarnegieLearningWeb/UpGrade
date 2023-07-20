@@ -67,9 +67,9 @@ export default async function EnrollmentWithConditionPayload(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
   expect(experimentConditionAssignments).toHaveLength(3);
   experimentConditionAssignments.sort((a, b) => {
-    return a.assignedCondition.conditionCode > b.assignedCondition.conditionCode
+    return a.assignedCondition[0].conditionCode > b.assignedCondition[0].conditionCode
       ? 1
-      : a.assignedCondition.conditionCode < b.assignedCondition.conditionCode
+      : a.assignedCondition[0].conditionCode < b.assignedCondition[0].conditionCode
       ? -1
       : 0;
   });
@@ -77,19 +77,23 @@ export default async function EnrollmentWithConditionPayload(): Promise<void> {
   expect(experimentConditionAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        assignedCondition: expect.objectContaining({
-          payload: { type: 'string', value: 'ConditionA_W2' },
-          conditionCode: 'ConditionA',
-        }),
+        assignedCondition: expect.arrayContaining([
+          expect.objectContaining({
+            payload: { type: 'string', value: 'ConditionA_W2' },
+            conditionCode: 'ConditionA',
+          }),
+        ]),
       }),
       expect.objectContaining({
-        assignedCondition: expect.objectContaining({
-          payload: { type: 'string', value: 'ConditionA_W1' },
-          conditionCode: 'ConditionA',
-        }),
+        assignedCondition: expect.arrayContaining([
+          expect.objectContaining({
+            payload: { type: 'string', value: 'ConditionA_W1' },
+            conditionCode: 'ConditionA',
+          }),
+        ]),
       }),
       expect.objectContaining({
-        assignedCondition: expect.objectContaining({ conditionCode: 'ConditionA' }),
+        assignedCondition: expect.arrayContaining([expect.objectContaining({ conditionCode: 'ConditionA' })]),
       }),
     ])
   );

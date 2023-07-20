@@ -54,7 +54,7 @@ import {
 import { NoExperimentUserOnAssignment } from './ExperimentUser';
 import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
 import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalStateChange/index';
-import { StatsIndividualEnrollment, StatsGroupEnrollment } from './ExperimentStats/index';
+import { StatsIndividualEnrollment, StatsGroupEnrollment, StatsWithinSubjectEnrollment } from './ExperimentStats/index';
 import { MetricCRUD } from './Experiment/metric';
 import { CreateLog, LogOperations, RepeatedMeasure } from './Experiment/dataLog';
 import { QueryCRUD } from './Experiment/query';
@@ -79,6 +79,13 @@ import {
 import { UpgradeLogger } from '../../src/lib/logger/UpgradeLogger';
 import { CompetingExperiment } from './Experiment/competingExperiment';
 import { FactorialExperimentCRUD, FactorialEnrollment, FactorialEnrollment2 } from './Experiment/factorial';
+import {
+  AlgorithmCheck,
+  MetricQueriesCheck,
+  OrderedRoundRobinAlgoCheck,
+  RandomAlgoCheck,
+  RandomRoundRobinAlgoCheck,
+} from './Experiment/withinSubject/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -332,6 +339,11 @@ describe('Integration Tests', () => {
     done();
   });
 
+  test('Stats for Within-Subject Enrollment', async (done) => {
+    await StatsWithinSubjectEnrollment();
+    done();
+  });
+
   test('Stats from Individual Experiment for table', async (done) => {
     await StatsDetailIndividualExperiment();
     done();
@@ -497,13 +509,13 @@ describe('Integration Tests', () => {
     done();
   });
 
-  test('Enrollment With ConditionPayloads', async (done) => {
-    await EnrollmentWithConditionPayload();
+  test('Factorial CRUD', async (done) => {
+    await FactorialExperimentCRUD();
     done();
   });
 
-  test('Factorial CRUD', async (done) => {
-    await FactorialExperimentCRUD();
+  test('Enrollment With ConditionPayloads', async (done) => {
+    await EnrollmentWithConditionPayload();
     done();
   });
 
@@ -516,8 +528,34 @@ describe('Integration Tests', () => {
     await FactorialEnrollment2();
     done();
   });
+
+  test('Within Subject algorithmCRUD', async (done) => {
+    await AlgorithmCheck();
+    done();
+  });
+
+  test('Within Subject Random Algorithm', async (done) => {
+    await RandomAlgoCheck();
+    done();
+  });
+
+  test('Within Subject Random Round Round Algorithm', async (done) => {
+    await RandomRoundRobinAlgoCheck();
+    done();
+  });
+
+  test('Within Subject Ordered Round Round algorithmCRUD', async (done) => {
+    await OrderedRoundRobinAlgoCheck();
+    done();
+  });
+
   // test('Monitored Point for Export', async (done) => {
   //   await MonitoredPointForExport();
   //   done();
   // });
+
+  test('Within Subject metrics query check', async (done) => {
+    await MetricQueriesCheck();
+    done();
+  });
 });

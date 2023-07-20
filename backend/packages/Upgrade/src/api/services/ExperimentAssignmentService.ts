@@ -17,7 +17,7 @@ import {
   EXPERIMENT_TYPE,
   SUPPORTED_CALIPER_PROFILES,
   SUPPORTED_CALIPER_EVENTS,
-  IExperimentAssignmentv4,
+  IExperimentAssignmentv5,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -64,6 +64,7 @@ import { CaliperLogData } from '../controllers/validators/CaliperLogData';
 import { parse, toSeconds } from 'iso8601-duration';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
+import { withInSubjectType } from '../Algorithms';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -114,6 +115,7 @@ export class ExperimentAssignmentService {
     requestContext: { logger: UpgradeLogger; userDoc: any },
     target?: string,
     experimentId?: string,
+    uniquifier?: string,
     clientError?: string
   ): Promise<Omit<MonitoredDecisionPoint, 'createdAt | updatedAt | versionNumber'>> {
     // find working group for user
@@ -371,31 +373,51 @@ export class ExperimentAssignmentService {
       }
       // adding in monitored experiment point table
 
+      const assignmentUnit = experiments
+        ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0]?.assignmentUnit
+        : null;
       monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
         id: monitoredDocument?.id || uuid(),
         experimentId: experimentId,
-        condition: condition,
+        condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? null : condition,
         user: userDoc,
         site: site,
         target: target,
       });
 
       // save monitored log document
-      await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
-      return monitoredDocument;
+      const logDocument = await this.monitoredDecisionPointLogRepository.save({
+        monitoredDecisionPoint: monitoredDocument,
+        condition: condition,
+        uniquifier: uniquifier,
+      });
+      return {
+        ...monitoredDocument,
+        condition: monitoredDocument.condition || logDocument.condition,
+      };
     } else {
+      const assignmentUnit = experiments
+        ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0]?.assignmentUnit
+        : null;
       const monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
         id: uuid(),
         experimentId: experimentId,
-        condition: condition,
+        condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? null : condition,
         user: userDoc,
         site: site,
         target: target,
       });
 
       // save monitored log document
-      await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
-      return monitoredDocument;
+      const logDocument = await this.monitoredDecisionPointLogRepository.save({
+        monitoredDecisionPoint: monitoredDocument,
+        condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? condition : null,
+        uniquifier: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? uniquifier : null,
+      });
+      return {
+        ...monitoredDocument,
+        condition: monitoredDocument.condition || logDocument.condition,
+      };
     }
   }
 
@@ -403,7 +425,7 @@ export class ExperimentAssignmentService {
     userId: string,
     context: string,
     requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<IExperimentAssignmentv4[]> {
+  ): Promise<IExperimentAssignmentv5[]> {
     const { logger, userDoc } = requestContext;
     logger.info({ message: `getAllExperimentConditions: User: ${userId}` });
 
@@ -629,6 +651,21 @@ export class ExperimentAssignmentService {
         })
       );
 
+      const allSites = [],
+        allTargets = [];
+      filteredExperiments.forEach((exp) => {
+        exp.partitions.forEach((partition) => {
+          allSites.push(partition.site);
+          allTargets.push(partition.target);
+        });
+      });
+      const monitoredLogCounts = await this.monitoredDecisionPointLogRepository.getAllMonitoredDecisionPointLog(
+        userId,
+        allSites,
+        allTargets,
+        logger
+      );
+
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
         // const { state, logging, name, id } = experiment;
@@ -666,23 +703,30 @@ export class ExperimentAssignmentService {
             });
           }
 
-          const assignedFactor = factorialObject ? factorialObject['assignedFactor'] : null;
+          const assignedFactors = factorialObject ? factorialObject['assignedFactor'] : null;
           const factorialCondition = factorialObject ? factorialObject['factorialCondition'] : null;
           const assignedConditionToReturn = factorialCondition ||
             conditionAssigned || {
               conditionCode: null,
             };
 
-          return {
-            target,
-            site,
-            assignedCondition: {
-              ...assignedConditionToReturn,
-              payload: payloadFound?.payload,
-              experimentId: id,
-            },
-            assignedFactor,
-          };
+          if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+            const count = monitoredLogCounts.find((log) => log.site === site && log.target === target)?.count || 0;
+            return withInSubjectType(experiment, conditionPayloads, site, target, factors, userId, count);
+          } else {
+            return {
+              target,
+              site,
+              assignedCondition: [
+                {
+                  ...assignedConditionToReturn,
+                  payload: payloadFound?.payload,
+                  experimentId: id,
+                },
+              ],
+              assignedFactor: assignedFactors ? [assignedFactors] : null,
+            };
+          }
         });
         return assignment ? [...accumulator, ...decisionPoints] : accumulator;
       }, []);
@@ -830,11 +874,14 @@ export class ExperimentAssignmentService {
     return flatten(logsToReturn);
   }
 
-  public async caliperDataLog(log: CaliperLogData, requestContext: { logger: UpgradeLogger; userDoc: any }): Promise<Log[]>{
+  public async caliperDataLog(
+    log: CaliperLogData,
+    requestContext: { logger: UpgradeLogger; userDoc: any }
+  ): Promise<Log[]> {
     if (log.profile === SUPPORTED_CALIPER_PROFILES.GRADING && log.type === SUPPORTED_CALIPER_EVENTS.GRADE) {
       requestContext.logger.info({ message: 'Starting the Caliper log call for user' });
-      const userId = log.object.assignee.id
-      
+      const userId = log.object.assignee.id;
+
       const logs: ILogInput = log.generated.attempt.extensions;
 
       logs.metrics.attributes['duration'] = toSeconds(parse(log.generated.attempt.duration));
@@ -843,15 +890,13 @@ export class ExperimentAssignmentService {
       return this.dataLog(userId, [logs], {
         logger: requestContext.logger,
         userDoc: requestContext.userDoc,
-      })
-    }
-    else {
-      let error = new Error(`Unsupported Caliper profile: ${log.profile} or type: ${log.type}`);
+      });
+    } else {
+      const error = new Error(`Unsupported Caliper profile: ${log.profile} or type: ${log.type}`);
       (error as any).type = SERVER_ERROR.UNSUPPORTED_CALIPER;
       (error as any).httpCode = 422;
       throw error;
     }
-
   }
 
   public async dataLog(
@@ -1550,6 +1595,16 @@ export class ExperimentAssignmentService {
           promiseArray.push(this.individualExclusionRepository.saveRawJson([individualExclusionDocument]));
         }
         await Promise.all(promiseArray);
+      } else if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+        const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> = {
+          id: uuid(),
+          experiment,
+          partition: decisionPoint,
+          user,
+          condition: null,
+          enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
+        };
+        await this.individualEnrollmentRepository.save(individualEnrollmentDocument);
       } else {
         const conditionAssigned = this.assignExperiment(
           user,
@@ -1658,7 +1713,8 @@ export class ExperimentAssignmentService {
 
   private assignRandom(experiment: Experiment, user: ExperimentUser): ExperimentCondition {
     const randomSeed =
-      experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
+      experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
+      experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
         ? `${experiment.id}_${user.id}`
         : `${experiment.id}_${user.workingGroup[experiment.group]}`;
 

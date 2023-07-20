@@ -1,4 +1,4 @@
-import { Types, Interfaces } from '../identifiers';
+import { UpGradeClientEnums, UpGradeClientInterfaces } from '../types';
 import fetchDataService from '../common/fetchDataService';
 import { ILogInput } from 'upgrade_types';
 
@@ -9,7 +9,7 @@ export default async function log(
   clientSessionId: string,
   value: ILogInput[],
   sendAsAnalytics = false
-): Promise<Interfaces.ILog[]> {
+): Promise<UpGradeClientInterfaces.ILog[]> {
   const data = {
     userId,
     value,
@@ -19,7 +19,7 @@ export default async function log(
     token,
     clientSessionId,
     data,
-    Types.REQUEST_TYPES.POST,
+    UpGradeClientEnums.REQUEST_TYPES.POST,
     sendAsAnalytics
   );
   if (logResponse.status) {

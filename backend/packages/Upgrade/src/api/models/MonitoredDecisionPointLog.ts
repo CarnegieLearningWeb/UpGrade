@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { MonitoredDecisionPoint } from './MonitoredDecisionPoint';
 
@@ -6,6 +6,16 @@ import { MonitoredDecisionPoint } from './MonitoredDecisionPoint';
 export class MonitoredDecisionPointLog extends BaseModel {
   @PrimaryGeneratedColumn()
   public id: string;
+
+  @Column({
+    nullable: true,
+  })
+  public condition: string;
+
+  @Column({
+    nullable: true,
+  })
+  public uniquifier: string;
 
   @ManyToOne(() => MonitoredDecisionPoint, { onDelete: 'CASCADE' })
   public monitoredDecisionPoint: MonitoredDecisionPoint;

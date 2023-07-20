@@ -201,7 +201,7 @@ function checkConditionAssigned(
       expect.objectContaining({
         target: experimentName,
         site: experimentPoint,
-        assignedCondition: expect.objectContaining({ id: conditionAssigned }),
+        assignedCondition: expect.arrayContaining([expect.objectContaining({ id: conditionAssigned })]),
       }),
     ])
   );
