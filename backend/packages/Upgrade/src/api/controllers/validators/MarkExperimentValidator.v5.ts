@@ -1,21 +1,140 @@
-import { IsNotEmpty, IsDefined } from 'class-validator';
-import { MARKED_DECISION_POINT_STATUS, PAYLOAD_TYPE } from 'upgrade_types';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsDefined, IsString, IsOptional, IsEnum, IsObject, ValidateNested, ValidateIf, ValidationOptions, registerDecorator } from 'class-validator';
+import { EXPERIMENT_TYPE, MARKED_DECISION_POINT_STATUS, PAYLOAD_TYPE } from 'upgrade_types';
+
+export const IsAssignedFactorRecord = (validationOptions?: ValidationOptions) => {
+  return function (object: unknown, propertyName: string) {
+    registerDecorator({
+      name: 'IsAssignedFactorRecord',
+      target: object.constructor,
+      propertyName: propertyName,
+      constraints: [],
+      options: {
+        message: 'The assignedFactor is not a valid Record<string, AssignedFactor>',
+        ...validationOptions,
+      },
+      validator: {
+        validate(value: any) {
+          return validateAssignedFactorData(value)
+        },
+      },
+    });
+  };
+};
+
+function validateAssignedFactorData(
+  data: any
+): boolean {
+  const keys = Object.keys(data);
+  for (const key of keys) {
+    const factor = data[key];
+    if (!isValidAssignedFactor(factor)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function isValidAssignedFactor(value: any): value is AssignedFactor {
+  return (
+    typeof value === 'object' &&
+    typeof value.level === 'string' &&
+    (value.payload === null || isValidPayload(value.payload))
+  );
+}
+
+function isValidPayload(value: any): value is Payload {
+  return (
+    typeof value === 'object' &&
+    Object.values(PAYLOAD_TYPE).includes(value.type) &&
+    typeof value.value === 'string'
+  );
+}
+
+class Payload {
+  @IsEnum(PAYLOAD_TYPE)
+  type: PAYLOAD_TYPE;
+
+  @IsString()
+  value: string;
+}
+
+class AssignedFactor {
+  @IsDefined()
+  @IsString()
+  level: string;
+
+  @ValidateIf((object, value) => value !== null)
+  @IsObject()
+  @ValidateNested()
+  @Type(() => Payload)
+  payload: Payload | null;
+}
+
+class AssignedCondition {
+  @IsNotEmpty()
+  @IsString()
+  id: string;
+
+  @IsDefined()
+  @IsNotEmpty()
+  @IsString()
+  conditionCode: string;
+
+  @IsObject()
+  @ValidateNested()
+  @ValidateIf((object, value) => value !== null)
+  @Type(() => Payload)
+  payload: Payload | null;
+
+  @IsOptional()
+  @IsString()
+  experimentId?: string;
+}
+
+class Data {
+  @IsString()
+  @IsNotEmpty()
+  @IsDefined()
+  site: string;
+
+  @IsString()
+  target: string;
+
+  @IsEnum(EXPERIMENT_TYPE)
+  @IsDefined()
+  @IsNotEmpty()
+  experimentType: EXPERIMENT_TYPE;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AssignedCondition)
+  assignedCondition: AssignedCondition;
+
+  @IsOptional()
+  @IsAssignedFactorRecord()
+  assignedFactor?: Record<string, AssignedFactor>;
+}
 
 export class MarkExperimentValidatorv5 {
   @IsNotEmpty()
   @IsDefined()
   public userId: string;
 
-  public data: {
-    site: string;
-    target: string | undefined;
-    assignedCondition: { conditionCode: string; experimentId: string };
-    assignedFactor:
-      | Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } | null }>
-      | undefined;
-  };
+  @IsDefined()
+  @ValidateNested()
+  @Type(() => Data)
+  public data: Data;
 
+  @IsEnum(MARKED_DECISION_POINT_STATUS)
+  @IsOptional()
   public status?: MARKED_DECISION_POINT_STATUS;
+
+  @IsString()
+  @IsOptional()
   public uniquifier?: string;
+
+  @IsString()
+  @IsOptional()
   public clientError?: string;
 }

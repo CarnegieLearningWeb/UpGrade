@@ -65,8 +65,8 @@ export interface IExperimentAssignmentv5 {
 export interface AssignedCondition {
   conditionCode: string;
   payload: IPayload;
-  experimentId: string;
-  id?: string;
+  experimentId?: string;
+  id: string;
 }
 
 interface ExperimentCreatedData {
