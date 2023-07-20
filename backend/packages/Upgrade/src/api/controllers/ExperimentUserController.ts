@@ -141,7 +141,7 @@ export class UserController {
   @Put('/:id')
   public update(
     @Param('id') id: string,
-    @Body({ validate: { validationError: { target: false, value: false } } }) user: ExperimentUser,
+    @Body({ validate: false }) user: ExperimentUser,
     @Req() request: AppRequest
   ): Promise<ExperimentUser> {
     return this.userService.update(id, user, request.logger);

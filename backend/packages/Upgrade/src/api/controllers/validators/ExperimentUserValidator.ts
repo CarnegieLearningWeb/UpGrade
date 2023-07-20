@@ -1,0 +1,76 @@
+import { IsNotEmpty, IsOptional, IsString, ValidationOptions, isObject, registerDecorator } from 'class-validator';
+
+export const IsRecord = (validationOptions?: ValidationOptions) => {
+  return function (object: unknown, propertyName: string) {
+    registerDecorator({
+      name: 'IsRecord',
+      target: object.constructor,
+      propertyName: propertyName,
+      constraints: [],
+      options: {
+        message: 'The Group is not a valid Record<string, string[]>',
+        ...validationOptions,
+      },
+      validator: {
+        validate(value: unknown) {
+          if (!isObject(value)) return false;
+          if (Object.keys(value).length === 0) return true;
+
+          const keys = Object.keys(value);
+
+          return keys.every((key) => {
+            if (typeof key !== 'string' || key === '') return false;
+            if (!Array.isArray(value[key])) return false;
+            if (!value[key].every((val) => typeof val === 'string' && val !== '')) return false;
+
+            return true;
+          });
+        },
+      },
+    });
+  };
+};
+
+export const IsStringRecord = (validationOptions?: ValidationOptions) => {
+  return function (object: unknown, propertyName: string) {
+    registerDecorator({
+      name: 'IsStringRecord',
+      target: object.constructor,
+      propertyName: propertyName,
+      constraints: [],
+      options: {
+        message: 'The WorkingGroup is not a valid Record<string, string>',
+        ...validationOptions,
+      },
+      validator: {
+        validate(value: unknown) {
+          if (!isObject(value)) return false;
+          if (Object.keys(value).length === 0) return true;
+
+          const keys = Object.keys(value);
+
+          return keys.every((key) => {
+            if (typeof key !== 'string' || key === '') return false;
+            if (typeof value[key] !== 'string' || value[key] === '') return false;
+
+            return true;
+          });
+        },
+      },
+    });
+  };
+};
+
+export class ExperimentUserValidator {
+  @IsNotEmpty()
+  @IsString()
+  public id: string;
+
+  @IsOptional()
+  @IsRecord()
+  public group: Record<string, string[]>;
+
+  @IsOptional()
+  @IsStringRecord()
+  public workingGroup: Record<string, string>;
+}

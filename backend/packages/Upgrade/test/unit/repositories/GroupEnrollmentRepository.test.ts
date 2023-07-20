@@ -1,4 +1,3 @@
-import { SelectQueryBuilder } from 'typeorm';
 import * as sinon from 'sinon';
 import { GroupEnrollmentRepository } from '../../../src/api/repositories/GroupEnrollmentRepository';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
@@ -6,7 +5,7 @@ import { Experiment } from '../../../src/api/models/Experiment';
 
 let sandbox;
 let createQueryBuilderStub;
-const selectQueryBuilder = new SelectQueryBuilder<GroupEnrollmentRepository>(null);
+//const selectQueryBuilder = new SelectQueryBuilder<GroupEnrollmentRepository>(null);
 const repo = new GroupEnrollmentRepository();
 const err = new Error('test error');
 

@@ -79,7 +79,7 @@ export class PreviewUserController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: PaginatedParamsValidator,
+    @Body({ validate: false }) paginatedParams: PaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<PreviewUserPaginationInfo> {
     if (!paginatedParams) {
@@ -196,7 +196,7 @@ export class PreviewUserController {
   @Put('/:id')
   public update(
     @Param('id') id: string,
-    @Body({ validate: { validationError: { target: false, value: false } } }) user: PreviewUser,
+    @Body({ validate: false }) user: PreviewUser,
     @Req() request: AppRequest
   ): Promise<PreviewUser> {
     return this.previewUserService.update(id, user, request.logger);

@@ -703,7 +703,7 @@ export class ExperimentController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: { validationError: { target: true, value: true } } })
+    @Body({ validate: false })
     @Req()
     request: AppRequest,
     paginatedParams: ExperimentPaginatedParamsValidator
@@ -932,7 +932,7 @@ export class ExperimentController {
 
   @Post()
   public create(
-    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: ExperimentDTO,
+    @Body({ validate: false }) experiment: ExperimentDTO,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
@@ -973,7 +973,7 @@ export class ExperimentController {
 
   @Post('/batch')
   public createMultipleExperiments(
-    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: ExperimentDTO[],
+    @Body({ validate: false }) experiment: ExperimentDTO[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO[]> {
@@ -1061,7 +1061,7 @@ export class ExperimentController {
    */
   @Post('/state')
   public async updateState(
-    @Body({ validate: { validationError: { target: false, value: false } } })
+    @Body({ validate: false })
     experiment: AssignmentStateUpdateValidator,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
@@ -1125,7 +1125,7 @@ export class ExperimentController {
   @Put('/:id')
   public update(
     @Param('id') id: string,
-    @Body({ validate: { validationError: { target: false, value: false }, skipMissingProperties: true } })
+    @Body({ validate: false })
     experiment: ExperimentDTO,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
@@ -1162,7 +1162,7 @@ export class ExperimentController {
    */
   @Post('/import')
   public importExperiment(
-    @Body({ validate: { validationError: { target: false, value: false } }, type: ExperimentDTO })
+    @Body({ validate: false, type: ExperimentDTO })
     experiments: ExperimentDTO[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
@@ -1172,7 +1172,7 @@ export class ExperimentController {
 
   @Post('/export')
   public exportExperiment(
-    @Body({ validate: { validationError: { target: false, value: false } }, type: String }) ids: string[],
+    @Body({ validate: false, type: String }) ids: string[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO[]> {
