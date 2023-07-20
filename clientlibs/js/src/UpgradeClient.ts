@@ -75,6 +75,10 @@ export default class UpgradeClient {
   private featureFlags: IFeatureFlag[] = null;
   private customHttpClient: Interfaces.ICustomHttpClient;
 
+  // allow MARKED_DECISION_POINT_STATUS to be exposed on the client a la UpgradeClient.MARKED_DECISION_POINT_STATUS
+  // this will allow users who are not using the upgrade types package to use this enum for markExperimentPoint()
+  public static MARKED_DECISION_POINT_STATUS = MARKED_DECISION_POINT_STATUS;
+
 /**
  * When constructing UpgradeClient, the user id, api host url, and "context" identifier are required.
  * These will be attached to various API calls for this instance of the client.
@@ -97,6 +101,7 @@ export default class UpgradeClient {
  * const upgradeClient: UpgradeClient[] = new UpgradeClient(hostURL, userId, context, options);
  * ```
  */
+ 
   constructor(
     userId: string,
     hostUrl: string,

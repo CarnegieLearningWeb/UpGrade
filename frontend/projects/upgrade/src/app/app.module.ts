@@ -28,7 +28,7 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
       .toPromise()
       .then((config: RuntimeEnvironmentConfig) => {
         env.apiBaseUrl = config.endpointApi || config.apiBaseUrl;
-        env.googleClientId = config.googleClientId || config.googleClientId;
+        env.googleClientId = config.gapiClientId || config.googleClientId;
       })
       .catch((error) => {
         console.log({ error });
