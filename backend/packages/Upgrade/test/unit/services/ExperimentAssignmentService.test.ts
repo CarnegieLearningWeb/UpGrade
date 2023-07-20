@@ -21,7 +21,7 @@ import { ScheduledJobService } from '../../../src/api/services/ScheduledJobServi
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { SettingService } from '../../../src/api/services/SettingService';
 import { SERVER_ERROR } from 'upgrade_types';
-import { simpleIndividualAssignmentExperiment, simpleGroupAssignmentExperiment, factorialGroupAssignmentExperiment, factorialIndividualAssignmentExperiment, simpleDPExperiment, simpleWithinSubjectOrderedRoundRobinExperiment, simpleWithinSubjectRandomRoundRobinExperiment, withinSubjectDPExperiment } from '../mockdata';
+import { simpleIndividualAssignmentExperiment, simpleGroupAssignmentExperiment, factorialGroupAssignmentExperiment, factorialIndividualAssignmentExperiment, simpleDPExperiment, simpleWithinSubjectOrderedRoundRobinExperiment, withinSubjectDPExperiment } from '../mockdata';
 import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
 import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';

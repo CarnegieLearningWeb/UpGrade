@@ -1,4 +1,4 @@
-import { Interfaces, Types } from '../identifiers';
+import { UpGradeClientInterfaces, UpGradeClientEnums } from '../types';
 import fetchDataService from '../common/fetchDataService';
 
 export default async function setGroupMembership(
@@ -7,13 +7,13 @@ export default async function setGroupMembership(
   token: string,
   clientSessionId: string,
   group: Record<string, Array<string>>
-): Promise<Interfaces.IUser> {
+): Promise<UpGradeClientInterfaces.IUser> {
   const response = await fetchDataService(
     url,
     token,
     clientSessionId,
     { id: userId, group: group },
-    Types.REQUEST_TYPES.PATCH
+    UpGradeClientEnums.REQUEST_TYPES.PATCH
   );
   if (response.status) {
     return response.data;
