@@ -331,14 +331,14 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    selectMock.expects('innerJoin').thrice().returns(selectQueryBuilder);
-    selectMock.expects('innerJoinAndSelect').thrice().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').exactly(4).returns(selectQueryBuilder);
+    selectMock.expects('innerJoin').exactly(6).returns(selectQueryBuilder);
+    selectMock.expects('innerJoinAndSelect').exactly(6).returns(selectQueryBuilder);
+    selectMock.expects('where').twice().returns(selectQueryBuilder);
+    selectMock.expects('andWhere').exactly(8).returns(selectQueryBuilder);
     selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
     const res = await repo.analysis(q);
 
-    sinon.assert.calledOnce(experimentStub);
+    sinon.assert.calledTwice(experimentStub);
     selectMock.verify();
 
     expect(res).toEqual(result);
@@ -370,14 +370,14 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    selectMock.expects('innerJoin').thrice().returns(selectQueryBuilder);
-    selectMock.expects('innerJoinAndSelect').thrice().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').exactly(4).returns(selectQueryBuilder);
+    selectMock.expects('innerJoin').exactly(6).returns(selectQueryBuilder);
+    selectMock.expects('innerJoinAndSelect').exactly(6).returns(selectQueryBuilder);
+    selectMock.expects('where').twice().returns(selectQueryBuilder);
+    selectMock.expects('andWhere').exactly(8).returns(selectQueryBuilder);
     selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
     const res = await repo.analysis(q);
 
-    sinon.assert.calledOnce(experimentStub);
+    sinon.assert.calledTwice(experimentStub);
     selectMock.verify();
 
     expect(res).toEqual(result);
@@ -409,14 +409,14 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    selectMock.expects('innerJoin').thrice().returns(selectQueryBuilder);
-    selectMock.expects('innerJoinAndSelect').thrice().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').exactly(4).returns(selectQueryBuilder);
+    selectMock.expects('innerJoin').exactly(6).returns(selectQueryBuilder);
+    selectMock.expects('innerJoinAndSelect').exactly(6).returns(selectQueryBuilder);
+    selectMock.expects('where').twice().returns(selectQueryBuilder);
+    selectMock.expects('andWhere').exactly(8).returns(selectQueryBuilder);
     selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
     const res = await repo.analysis(q);
 
-    sinon.assert.calledOnce(experimentStub);
+    sinon.assert.calledTwice(experimentStub);
     selectMock.verify();
 
     expect(res).toEqual(result);
@@ -448,14 +448,14 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    selectMock.expects('innerJoin').thrice().returns(selectQueryBuilder);
-    selectMock.expects('innerJoinAndSelect').thrice().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').exactly(4).returns(selectQueryBuilder);
+    selectMock.expects('innerJoin').exactly(6).returns(selectQueryBuilder);
+    selectMock.expects('innerJoinAndSelect').exactly(6).returns(selectQueryBuilder);
+    selectMock.expects('where').twice().returns(selectQueryBuilder);
+    selectMock.expects('andWhere').exactly(8).returns(selectQueryBuilder);
     selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
     const res = await repo.analysis(q);
 
-    sinon.assert.calledOnce(experimentStub);
+    sinon.assert.calledTwice(experimentStub);
     selectMock.verify();
 
     expect(res).toEqual(result);
@@ -488,14 +488,14 @@ describe('LogRepository Testing', () => {
     };
     q.repeatedMeasure = REPEATED_MEASURE.mostRecent;
 
-    selectMock.expects('innerJoin').twice().returns(selectQueryBuilder);
-    selectMock.expects('innerJoinAndSelect').thrice().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').exactly(4).returns(selectQueryBuilder);
+    selectMock.expects('innerJoin').exactly(4).returns(selectQueryBuilder);
+    selectMock.expects('innerJoinAndSelect').exactly(6).returns(selectQueryBuilder);
+    selectMock.expects('where').twice().returns(selectQueryBuilder);
+    selectMock.expects('andWhere').exactly(8).returns(selectQueryBuilder);
     selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
     const res = await repo.analysis(q);
 
-    sinon.assert.calledOnce(experimentStub);
+    sinon.assert.calledTwice(experimentStub);
     selectMock.verify();
 
     expect(res).toEqual(result);
