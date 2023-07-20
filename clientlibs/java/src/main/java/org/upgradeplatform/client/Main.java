@@ -2,6 +2,7 @@ package org.upgradeplatform.client;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,12 +12,12 @@ import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
+import org.upgradeplatform.responsebeans.Assignment;
 import org.upgradeplatform.responsebeans.Condition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUser;
-import org.upgradeplatform.responsebeans.ExperimentsResponse;
 import org.upgradeplatform.responsebeans.InitializeUser;
-import org.upgradeplatform.responsebeans.MarkExperimentPoint;
+import org.upgradeplatform.responsebeans.MarkDecisionPoint;
 import org.upgradeplatform.responsebeans.UserAliasResponse;
 import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 
@@ -27,7 +28,7 @@ public class Main {
         final String userId = UUID.randomUUID().toString();
         final String site = "SelectSection";
 
-        String target = args.length > 0 ? args[0] : "volume_surface_area_cone_vol";
+        String target = args.length > 0 ? args[0] : "absolute_value_plot_equality";
 
         try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl, Collections.emptyMap())){
             CompletableFuture<String> result = new CompletableFuture<>();
@@ -62,16 +63,18 @@ public class Main {
                                         public void onSuccess(@NonNull UserAliasResponse uar) {
                                             System.out.println(prefix() + "success updating user aliases; getting conditions");
 
-                                            experimentClient.getExperimentCondition("assign-prog", site, target, new ResponseCallback<ExperimentsResponse>(){
+                                            experimentClient.getExperimentCondition("assign-prog", site, target, new ResponseCallback<Assignment>(){
                                                 @Override
-                                                public void onSuccess(@NonNull ExperimentsResponse expResult){
+                                                public void onSuccess(@NonNull Assignment expResult){
                                                     System.out.println(prefix() + "success getting condition; marking");
 
                                                     Condition condition = expResult.getAssignedCondition();
                                                     String code = condition == null ? null : condition.getConditionCode();
-                                                    experimentClient.markExperimentPoint(site, target, code, MarkedDecisionPointStatus.CONDITION_APPLIED, new ResponseCallback<MarkExperimentPoint>(){
+                                                    System.out.println(condition);
+                                                    System.out.println(code);
+                                                    expResult.markDecisionPoint(MarkedDecisionPointStatus.CONDITION_APPLIED, new Date().toString(), new ResponseCallback<MarkDecisionPoint>(){
                                                         @Override
-                                                        public void onSuccess(@NonNull MarkExperimentPoint markResult){
+                                                        public void onSuccess(@NonNull MarkDecisionPoint markResult){
                                                             result.complete("marked " + code + ": " + markResult.toString());
                                                         }
 
