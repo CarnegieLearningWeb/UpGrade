@@ -5,7 +5,7 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "build": "npx tsc",
+    "build": "rm -rf ./dist && npx tsc",
     "start:build": "npm run build && npm run start",
     "start": "node --es-module-specifier-resolution=node dist/ts-lib-tester-backend-server/src/app.js",
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/ts-lib-tester-backend-server/src/app.js\"",
