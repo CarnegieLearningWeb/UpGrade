@@ -2,7 +2,7 @@ import { MonitoredDecisionPoint } from '../../../src/api/models/MonitoredDecisio
 import { Container } from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { CheckService } from '../../../src/api/services/CheckService';
-import { IExperimentAssignmentv4, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { IExperimentAssignmentv5, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { User } from '../../../src/api/models/User';
 import { getRepository } from 'typeorm';
@@ -25,7 +25,7 @@ export function checkExperimentAssignedIsNull(experimentConditionAssignments: an
 }
 
 export function checkExperimentAssignedIsNotDefault(
-  experimentConditionAssignments: IExperimentAssignmentv4[],
+  experimentConditionAssignments: IExperimentAssignmentv5[],
   target: string,
   site: string
 ): void {
@@ -33,7 +33,7 @@ export function checkExperimentAssignedIsNotDefault(
   const experimentObject = experimentConditionAssignments.find((experiment) => {
     return experiment.target === target && experiment.site === site;
   });
-  expect(experimentObject.assignedCondition.conditionCode).not.toEqual('default');
+  expect(experimentObject.assignedCondition[0].conditionCode).not.toEqual('default');
 }
 
 export function checkMarkExperimentPointForUser(
@@ -79,7 +79,7 @@ export async function getAllExperimentCondition(
   userId: string,
   logger: UpgradeLogger,
   context = 'home'
-): Promise<IExperimentAssignmentv4[]> {
+): Promise<IExperimentAssignmentv5[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   // getOriginalUserDoc
@@ -97,7 +97,8 @@ export async function markExperimentPoint(
   site: string,
   condition: string | null,
   logger: UpgradeLogger,
-  experimentId?: string
+  experimentId?: string,
+  uniquifier?: string
 ): Promise<MonitoredDecisionPoint[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
@@ -112,7 +113,8 @@ export async function markExperimentPoint(
     condition,
     { logger, userDoc: experimentUserDoc },
     target,
-    experimentId
+    experimentId,
+    uniquifier
   );
   return checkService.getAllMarkedExperimentPoints();
 }

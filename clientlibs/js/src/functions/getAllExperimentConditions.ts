@@ -1,6 +1,6 @@
 import fetchDataService from '../common/fetchDataService';
-import { IExperimentAssignmentv4 } from 'upgrade_types';
-import { Types } from '../identifiers';
+import { IExperimentAssignmentv5 } from 'upgrade_types';
+import { UpGradeClientEnums } from '../types';
 
 export default async function getAllExperimentConditions(
   url: string,
@@ -8,7 +8,7 @@ export default async function getAllExperimentConditions(
   token: string,
   clientSessionId: string,
   context: string
-): Promise<IExperimentAssignmentv4[]> {
+): Promise<IExperimentAssignmentv5[]> {
   const params: any = {
     userId,
     context,
@@ -18,10 +18,10 @@ export default async function getAllExperimentConditions(
     token,
     clientSessionId,
     params,
-    Types.REQUEST_TYPES.POST
+    UpGradeClientEnums.REQUEST_TYPES.POST
   );
   if (experimentConditionResponse.status) {
-    experimentConditionResponse.data = experimentConditionResponse.data.map((data: IExperimentAssignmentv4) => {
+    experimentConditionResponse.data = experimentConditionResponse.data.map((data: IExperimentAssignmentv5) => {
       return data;
     });
     return experimentConditionResponse.data;

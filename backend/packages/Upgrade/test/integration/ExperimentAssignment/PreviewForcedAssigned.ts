@@ -131,7 +131,7 @@ export default async function testCase(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
 
   // check assignment is the one assigned
-  expect(experimentConditionAssignments[0].assignedCondition.conditionCode).toEqual(
+  expect(experimentConditionAssignments[0].assignedCondition[0].conditionCode).toEqual(
     assignedConditionUser1.conditionCode
   );
 
@@ -208,7 +208,7 @@ export default async function testCase(): Promise<void> {
   );
 
   // check assignment is the one assigned
-  expect(experimentConditionAssignments[0].assignedCondition.conditionCode).toEqual(
+  expect(experimentConditionAssignments[0].assignedCondition[0].conditionCode).toEqual(
     assignedConditionUser2.conditionCode
   );
 
@@ -230,7 +230,7 @@ export default async function testCase(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
 
   // check assignment is the one assigned
-  expect(experimentConditionAssignments[0].assignedCondition.conditionCode).toEqual(
+  expect(experimentConditionAssignments[0].assignedCondition[0].conditionCode).toEqual(
     assignedConditionUser1.conditionCode
   );
 
