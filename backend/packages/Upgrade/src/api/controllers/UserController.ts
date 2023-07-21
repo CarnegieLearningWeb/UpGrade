@@ -171,7 +171,8 @@ export class UserController {
    *            description: New User is created
    */
   @Post()
-  public create(@Body() user: User, @Req() request: AppRequest): Promise<User> {
+  public create(
+    @Body({ validate: false}) user: User, @Req() request: AppRequest): Promise<User> {
     return this.userService.upsertUser(user, request.logger);
   }
 

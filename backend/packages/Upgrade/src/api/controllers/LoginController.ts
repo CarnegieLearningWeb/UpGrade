@@ -59,7 +59,7 @@ export class LoginController {
    *            description: User will be created if doesn't exist in the DB
    */
   @Post('/user')
-  public upsertUser(@Body() user: User, @Req() request: AppRequest): Promise<User> {
+  public upsertUser(@Body({ validate: false }) user: User, @Req() request: AppRequest): Promise<User> {
     if (user.role) {
       // Create a user with default role reader if user doesn't exist as anyone with accepted google account domain can login
       // Role can be updated later by admin users only

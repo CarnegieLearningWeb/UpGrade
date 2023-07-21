@@ -105,7 +105,11 @@ export class UserController {
    *            description: New ExperimentUser is created
    */
   @Post()
-  public create(@Body() users: ExperimentUser[], @Req() request: AppRequest): Promise<ExperimentUser[]> {
+  public create(
+    @Body({ validate: false })
+    users: ExperimentUser[],
+    @Req() request: AppRequest
+  ): Promise<ExperimentUser[]> {
     return this.userService.create(users, request.logger);
   }
 

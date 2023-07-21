@@ -160,7 +160,7 @@ export class PreviewUserController {
    *            description: New ExperimentUser is created
    */
   @Post()
-  public create(@Body() users: PreviewUser, @Req() request: AppRequest): Promise<PreviewUser> {
+  public create(@Body({ validate: false }) users: PreviewUser, @Req() request: AppRequest): Promise<PreviewUser> {
     return this.previewUserService.create(users, request.logger);
   }
 
@@ -251,7 +251,7 @@ export class PreviewUserController {
    *            description: Assignment is created
    */
   @Post('/assign')
-  public assign(@Body() user: PreviewUser, @Req() request: AppRequest): Promise<PreviewUser> {
+  public assign(@Body({ validate: false }) user: PreviewUser, @Req() request: AppRequest): Promise<PreviewUser> {
     return this.previewUserService.upsertExperimentConditionAssignment(user, request.logger);
   }
 }
