@@ -1,5 +1,5 @@
 import fetchDataService from '../common/fetchDataService';
-import { Types } from '../identifiers';
+import { UpGradeClientEnums } from '../types';
 import { IFeatureFlag, IFlagVariation } from 'upgrade_types';
 
 export default async function getAllFeatureFlags(
@@ -7,7 +7,7 @@ export default async function getAllFeatureFlags(
   token: string,
   clientSessionId: string
 ): Promise<IFeatureFlag[]> {
-  const featureFlagResponse = await fetchDataService(url, token, clientSessionId, {}, Types.REQUEST_TYPES.GET);
+  const featureFlagResponse = await fetchDataService(url, token, clientSessionId, {}, UpGradeClientEnums.REQUEST_TYPES.GET);
   if (featureFlagResponse.status) {
     return featureFlagResponse.data.map((flag: IFeatureFlag) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -8,23 +8,11 @@ import {
   MockClientAppInterfaceModel,
   MockClientAppUser,
 } from '../../../../shared/models';
-import { CaliperEnvelope } from '../../../../../../types/src';
 
-// There's probably a clever way to do this, but getting the right types automatically is tricky
-
-import UpgradeClient from 'upgrade_client_local/dist/browser';
-// import { UpgradeClient } from 'upgrade_client_1_1_7';
-// import * as UpgradeClient_1_1_8 from "upgrade_client_1_1_8/dist/browser"
-// import { UpgradeClient } from 'upgrade_client_3_0_18';
-
+import UpgradeClient, { Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser';
+import { CaliperEnvelope, IExperimentAssignmentv5 } from 'upgrade_client_local/dist/types/src'
 import { AbstractMockAppService } from './abstract-mock-app.service';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
-
-export enum MARKED_DECISION_POINT_STATUS {
-  CONDITION_APPLIED = 'condition applied',
-  CONDITION_FAILED_TO_APPLY = 'condition not applied',
-  NO_CONDITION_ASSIGNED = 'no condition assigned',
-}
 
 @Injectable({
   providedIn: 'root',
@@ -39,15 +27,15 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
   public TYPE: MockAppType = 'frontend';
   public LANGUAGE: CodeLanguage = 'ts';
   public SITES = {
-    TEST: 'test',
+    TEST: 'SelectSection',
   };
   public TARGETS = {
-    TARGET_1: 'target_1',
+    TARGET_1: 'targetC',
     TARGET_2: 'target_2',
   };
   public CONDITIONS = {
-    CONDITION_1: 'condition1',
-    CONDITION_2: 'condition2',
+    CONDITION_1: 'control',
+    CONDITION_2: 'variant_X',
     CONDITION_3: 'condition3',
     CONDITION_4: 'condition4',
   }
@@ -58,11 +46,11 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
     ASSIGN: 'assign',
     DP_ASSIGNMENT_TARGET_1: 'getDecisionPointAssignment1',
     DP_ASSIGNMENT_TARGET_2: 'getDecisionPointAssignment2',
-    MARK_TARGET_1_CONDITION_1: 'markTarget1Condition1',
-    MARK_TARGET_1_CONDITION_2: 'markTarget1Condition2',
-    MARK_TARGET_1_CONDITION_3: 'markTarget1Condition3',
-    MARK_TARGET_1_CONDITION_4: 'markTarget1Condition4',
-    MARK_EXPERIMENT_POINT: 'markExperimentPoint',
+    MARK_ASSIGNMENT_TARGET_1_CONDITION_1: 'doAssignmentMark',
+    MARK_CLIENT_TARGET_1_CONDITION_1: 'doClientMark',
+    // MARK_TARGET_1_CONDITION_3: 'markTarget1Condition3',
+    // MARK_TARGET_1_CONDITION_4: 'markTarget1Condition4',
+    // MARK_EXPERIMENT_POINT: 'markExperimentPoint',
     GROUP_MEMBERSHIP: 'update_group',
     WORKING_GROUPS: 'update_working_group',
     SET_ALT_USER_IDS: 'setAltUserIds',
@@ -108,21 +96,21 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
         //   description: 'Dispatches .markExperimentPoint() for target 1, control condition',
         // },
         {
-          name: this.HOOKNAMES.MARK_TARGET_1_CONDITION_1,
+          name: this.HOOKNAMES.MARK_ASSIGNMENT_TARGET_1_CONDITION_1,
           description: 'Dispatches .markExperimentPoint() for target 1, condition 1',
         },
         {
-          name: this.HOOKNAMES.MARK_TARGET_1_CONDITION_2,
+          name: this.HOOKNAMES.MARK_CLIENT_TARGET_1_CONDITION_1,
           description: 'Dispatches .markExperimentPoint() for target 1, condition 2',
         },
-        {
-          name: this.HOOKNAMES.MARK_TARGET_1_CONDITION_3,
-          description: 'Dispatches .markExperimentPoint() for target 1, condition 3',
-        },
-        {
-          name: this.HOOKNAMES.MARK_TARGET_1_CONDITION_4,
-          description: 'Dispatches .markExperimentPoint() for target 1, condition 4',
-        },
+        // {
+        //   name: this.HOOKNAMES.MARK_TARGET_1_CONDITION_3,
+        //   description: 'Dispatches .markExperimentPoint() for target 1, condition 3',
+        // },
+        // {
+        //   name: this.HOOKNAMES.MARK_TARGET_1_CONDITION_4,
+        //   description: 'Dispatches .markExperimentPoint() for target 1, condition 4',
+        // },
         {
           name: this.HOOKNAMES.SET_ALT_USER_IDS,
           description: 'Dispatches .setAltUserIds() for user',
@@ -165,20 +153,20 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
         },
         {
           label: 'mark: target1, condition1',
-          hookName: this.HOOKNAMES.MARK_TARGET_1_CONDITION_1,
+          hookName: this.HOOKNAMES.MARK_ASSIGNMENT_TARGET_1_CONDITION_1,
         },
         {
           label: 'mark: target1, condition2',
-          hookName: this.HOOKNAMES.MARK_TARGET_1_CONDITION_2,
+          hookName: this.HOOKNAMES.MARK_CLIENT_TARGET_1_CONDITION_1,
         },
-        {
-          label: 'mark: target1, condition3',
-          hookName: this.HOOKNAMES.MARK_TARGET_1_CONDITION_3,
-        },
-        {
-          label: 'mark: target1, condition4',
-          hookName: this.HOOKNAMES.MARK_TARGET_1_CONDITION_4,
-        },
+        // {
+        //   label: 'mark: target1, condition3',
+        //   hookName: this.HOOKNAMES.MARK_TARGET_1_CONDITION_3,
+        // },
+        // {
+        //   label: 'mark: target1, condition4',
+        //   hookName: this.HOOKNAMES.MARK_TARGET_1_CONDITION_4,
+        // },
         // {
         //   label: 'markExperimentPoint',
         //   hookName: this.HOOKNAMES.MARK_EXPERIMENT_POINT,
@@ -224,14 +212,14 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       this.doGetDecisionPointAssignment(this.TARGETS.TARGET_1);
     } else if (name === this.HOOKNAMES.DP_ASSIGNMENT_TARGET_2) {
       this.doGetDecisionPointAssignment(this.TARGETS.TARGET_2);
-    } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_1) {
-      this.doMark(this.CONDITIONS.CONDITION_1);
-    } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_2) {
-      this.doMark(this.CONDITIONS.CONDITION_2);
-    } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_3) {
-      this.doMark(this.CONDITIONS.CONDITION_3);
-    } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_4) {
-      this.doMark(this.CONDITIONS.CONDITION_4);
+    } else if (name === this.HOOKNAMES.MARK_ASSIGNMENT_TARGET_1_CONDITION_1) {
+      this.doAssignmentMark();
+    } else if (name === this.HOOKNAMES.MARK_CLIENT_TARGET_1_CONDITION_1) {
+      this.doClientMark(this.CONDITIONS.CONDITION_1);
+    // } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_3) {
+    //   this.doClientMark(this.CONDITIONS.CONDITION_3);
+    // } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_4) {
+    //   this.doClientMark(this.CONDITIONS.CONDITION_4);
     } else if (name === this.HOOKNAMES.SET_ALT_USER_IDS) {
       this.doUserAliases(user);
     } else if (name === this.HOOKNAMES.GROUP_MEMBERSHIP) {
@@ -267,7 +255,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       throw new Error('No upgradeClient found. Maybe you need to run login hook first?');
     }
     try {
-      const assignmentsResponse = await this.upgradeClient.getAllExperimentConditions();
+      const assignmentsResponse: IExperimentAssignmentv5[] = await this.upgradeClient.getAllExperimentConditions();
       console.log({ assignmentsResponse });
     } catch (err) {
       console.error(err);
@@ -279,7 +267,31 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('No upgradeClient found. Maybe you need to run login hook first?');
     }
     try {
-      const dpAssignmentsResponse = await this.upgradeClient.getDecisionPointAssignment(this.SITES.TEST, target);
+      const dpAssignmentsResponse: Assignment = await this.upgradeClient.getDecisionPointAssignment(this.SITES.TEST, target);
+
+      if (!dpAssignmentsResponse) {
+        console.log({ dpAssignmentsResponse });
+        return;
+      }
+  
+      const condition = dpAssignmentsResponse.getCondition();
+      const payload = dpAssignmentsResponse.getPayload();
+      const getExperimentType = dpAssignmentsResponse.getExperimentType();
+      const factors = dpAssignmentsResponse.factors;
+
+      if (factors) {
+        const factorLevel = dpAssignmentsResponse.getFactorLevel(factors[0]);
+        const getFactorPayload = dpAssignmentsResponse.getFactorPayload(factors[0]);
+        console.log({ factorLevel });
+        console.log({ getFactorPayload });
+      }
+
+      console.log({ condition });
+      console.log({ payload });
+      console.log({ getExperimentType });
+      console.log({ factors });
+    
+
       console.log({ dpAssignmentsResponse });
       console.log('condition:', dpAssignmentsResponse.getCondition());
 
@@ -288,17 +300,33 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
     }
   }
 
-  private async doMark(condition: string) {
+  private async doClientMark(condition: string, uniquifier?: string) {
     if (!this.upgradeClient) {
       console.error('No upgradeClient found. Maybe you need to run login hook first?');
     }
     try {
-      const markResponse = await this.upgradeClient.markExperimentPoint(
+      const markResponse: UpGradeClientInterfaces.IMarkExperimentPoint = await this.upgradeClient.markDecisionPoint(
         this.SITES.TEST,
         this.TARGETS.TARGET_1,
         condition,
-        MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
-        String(Math.floor(Math.random() * 1000000)) 
+        UpgradeClient.MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+        uniquifier
+      );
+      console.log({ markResponse });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  private async doAssignmentMark(uniquifier?: string) {
+    if (!this.upgradeClient) {
+      console.error('No upgradeClient found. Maybe you need to run login hook first?');
+    }
+    try {
+      const assignment: Assignment = await this.upgradeClient.getDecisionPointAssignment(this.SITES.TEST, this.TARGETS.TARGET_1);
+      const markResponse = await assignment.markDecisionPoint(
+        UpgradeClient.MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+        uniquifier
       );
       console.log({ markResponse });
     } catch (err) {
@@ -314,7 +342,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('User info is missing userAliases:', user);
     }
     try {
-      const useraliasesResponse = await this.upgradeClient.setAltUserIds(user.userAliases);
+      const useraliasesResponse: UpGradeClientInterfaces.IExperimentUserAliases[] = await this.upgradeClient.setAltUserIds(user.userAliases);
       console.log({ useraliasesResponse });
     } catch (err) {
       console.error(err);
@@ -329,7 +357,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('User info is missing groups:', user);
     }
     try {
-      const groupMembershipResponse = await this.upgradeClient.setGroupMembership(user.groups);
+      const groupMembershipResponse: UpGradeClientInterfaces.IUser = await this.upgradeClient.setGroupMembership(user.groups);
       console.log({ groupMembershipResponse });
     } catch (err) {
       console.error(err);
@@ -344,7 +372,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('User info is missing working groups:', user);
     }
     try {
-      const workingGroupMembershipResponse = await this.upgradeClient.setWorkingGroup(user.workingGroup);
+      const workingGroupMembershipResponse: UpGradeClientInterfaces.IUser = await this.upgradeClient.setWorkingGroup(user.workingGroup);
       console.log({ workingGroupMembershipResponse });
     } catch (err) {
       console.error(err);
@@ -390,7 +418,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       },
     ];
     try {
-      const logResponse = await this.upgradeClient.log(logRequest);
+      const logResponse: UpGradeClientInterfaces.ILog[] = await this.upgradeClient.log(logRequest);
       console.log({ logResponse });
     } catch (err) {
       console.error(err);
