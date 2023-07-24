@@ -3,6 +3,8 @@ package org.upgradeplatform.client;
 import static org.upgradeplatform.utils.Utils.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,18 +30,22 @@ import org.upgradeplatform.requestbeans.MetricUnitBody;
 import org.upgradeplatform.requestbeans.SingleMetric;
 import org.upgradeplatform.requestbeans.UserAlias;
 import org.upgradeplatform.responsebeans.UserAliasResponse;
+import org.upgradeplatform.responsebeans.Assignment;
 import org.upgradeplatform.responsebeans.Condition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUser;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
+import org.upgradeplatform.responsebeans.Factor;
 import org.upgradeplatform.responsebeans.FeatureFlag;
 import org.upgradeplatform.responsebeans.InitializeUser;
 import org.upgradeplatform.responsebeans.LogEventResponse;
-import org.upgradeplatform.responsebeans.MarkExperimentPoint;
+import org.upgradeplatform.responsebeans.MarkDecisionPoint;
 import org.upgradeplatform.responsebeans.Metric;
 import org.upgradeplatform.responsebeans.Variation;
 import org.upgradeplatform.utils.APIService;
 import org.upgradeplatform.utils.PublishingRetryCallback;
+import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
+import org.upgradeplatform.utils.Utils.RequestType;
 
 public class ExperimentClient implements AutoCloseable {
 
@@ -177,7 +183,7 @@ public class ExperimentClient implements AutoCloseable {
 		}));
 	}
 
-	public void getAllExperimentCondition(String context, final ResponseCallback<List<ExperimentsResponse>> callbacks) {
+	public void getAllExperimentConditions(String context, final ResponseCallback<List<ExperimentsResponse>> callbacks) {
 		ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context);
 		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
@@ -207,14 +213,60 @@ public class ExperimentClient implements AutoCloseable {
 		}));
 	}
 
+
     /**@param site This is matched case-insensitively*/
-	public void getExperimentCondition(String context, String site, final ResponseCallback<ExperimentsResponse> callbacks) {
+	public void getExperimentCondition(String context, String site, final ResponseCallback<Assignment> callbacks) {
 		getExperimentCondition(context, site, null, callbacks);
+	}
+
+	/**@param site This is matched case-insensitively
+     * @param target This is matched case-insensitively*/
+	public void getExperimentCondition(String context, String site, String target,
+			final ResponseCallback<Assignment> callbacks) {
+
+				if (this.allExperiments != null) {
+					ExperimentsResponse resultExperimentsResponse = findExperimentResponse(site, target, allExperiments);
+					Map<String, Factor> assignedFactor = resultExperimentsResponse.getAssignedFactor() != null ? resultExperimentsResponse.getAssignedFactor()[0] : null;
+					Condition assignedCondition = resultExperimentsResponse.getAssignedCondition() != null ? resultExperimentsResponse.getAssignedCondition()[0] : null;
+					Assignment resultAssignment = new Assignment(this, target, site, resultExperimentsResponse.getExperimentType(), assignedCondition, assignedFactor);
+
+					if (callbacks != null) {
+						callbacks.onSuccess(resultAssignment);
+					}
+				} else {
+					getAllExperimentConditions(context, new ResponseCallback<List<ExperimentsResponse>>() {
+						@Override
+						public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
+
+							ExperimentsResponse resultExperimentsResponse = findExperimentResponse(site, target, experiments);
+							Map<String, Factor> assignedFactor = resultExperimentsResponse.getAssignedFactor() != null ? resultExperimentsResponse.getAssignedFactor()[0] : null;
+							Condition assignedCondition = resultExperimentsResponse.getAssignedCondition() != null ? resultExperimentsResponse.getAssignedCondition()[0] : null;
+							Assignment resultAssignment = new Assignment(ExperimentClient.this, target, site, resultExperimentsResponse.getExperimentType(), assignedCondition, assignedFactor);
+							
+							if (callbacks != null) {
+								callbacks.onSuccess(resultAssignment);
+							}
+						}
+		
+						@Override
+						public void onError(@NonNull ErrorResponse error) {
+							if (callbacks != null)
+								callbacks.onError(error);
+		
+						}
+					});
+				}
+
+	}
+
+    /**@param site This is matched case-insensitively*/
+	public void getAllExperimentConditions(String context, String site, final ResponseCallback<ExperimentsResponse> callbacks) {
+		getAllExperimentConditions(context, site, null, callbacks);
 	}
 
     /**@param site This is matched case-insensitively
      * @param target This is matched case-insensitively*/
-	public void getExperimentCondition(String context, String site, String target,
+	public void getAllExperimentConditions(String context, String site, String target,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
 		if (this.allExperiments != null) {
 
@@ -224,7 +276,7 @@ public class ExperimentClient implements AutoCloseable {
 				callbacks.onSuccess(resultCondition);
 			}
 		} else {
-			getAllExperimentCondition(context, new ResponseCallback<List<ExperimentsResponse>>() {
+			getAllExperimentConditions(context, new ResponseCallback<List<ExperimentsResponse>>() {
 				@Override
 				public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
@@ -256,48 +308,74 @@ public class ExperimentClient implements AutoCloseable {
 				.orElse(new ExperimentsResponse());
 	}
 
-	private static ExperimentsResponse copyExperimentResponse(ExperimentsResponse experimentsResponse) {
-		Condition assignedCondition = new Condition(experimentsResponse.getAssignedCondition().getId(),
-				experimentsResponse.getAssignedCondition().getConditionCode(), experimentsResponse.getAssignedCondition().getExperimentId(),
-				experimentsResponse.getAssignedCondition().getPayload());
+	private void rotateConditions(String site, String target) {
+		if (this.allExperiments != null) {
+			ExperimentsResponse result = this.allExperiments.stream().filter(t -> t.getSite().equalsIgnoreCase(site) &&
+					(isStringNull(target) ? isStringNull(t.getTarget().toString())
+					: t.getTarget().toString().equalsIgnoreCase(target))).findFirst().orElse(null);
+			if (result != null) {
+				Condition[] rotatedCondition = Arrays.copyOf(result.getAssignedCondition(),
+						result.getAssignedCondition().length);
+				List<Condition> rotatedList = Arrays.asList(rotatedCondition);
+				Collections.rotate(rotatedList, -1);
+				rotatedCondition = rotatedList.toArray(rotatedCondition);
+				result.setAssignedCondition(rotatedCondition);
+				result.setAssignedFactor(result.getAssignedFactor());
+			}
+		}
+	}
 
+	private static ExperimentsResponse copyExperimentResponse(ExperimentsResponse experimentsResponse) {
 		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getTarget().toString(),
-				experimentsResponse.getSite(), experimentsResponse.getExperimentType(), assignedCondition, experimentsResponse.getAssignedFactor());
+				experimentsResponse.getSite(), experimentsResponse.getExperimentType(), Arrays.copyOf(experimentsResponse.getAssignedCondition(),
+				experimentsResponse.getAssignedCondition().length), experimentsResponse.getAssignedFactor());
 		return resultCondition;
 	}
 
-	public void markExperimentPoint(final String site, String condition, MarkedDecisionPointStatus status,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
+	public void markDecisionPoint(final String site, String condition, MarkedDecisionPointStatus status,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
 		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, "", new Condition(condition));
-		markExperimentPoint(status, markExperimentRequestData, "", callbacks);
+		markDecisionPoint(status, markExperimentRequestData, "", "", callbacks);
 	}
 
-	public void markExperimentPoint(final String site, String target, String condition, MarkedDecisionPointStatus status,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
+	public void markDecisionPoint(final String site, String target, String condition, MarkedDecisionPointStatus status,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
 		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(condition));
-		markExperimentPoint(status, markExperimentRequestData, "", callbacks);
+		markDecisionPoint(status, markExperimentRequestData, "", "", callbacks);
 	}
 
-	public void markExperimentPoint(final String site, String condition, MarkedDecisionPointStatus status, String clientError,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
+	public void markDecisionPoint(final String site, String condition, MarkedDecisionPointStatus status, String clientError,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
 		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, "", new Condition(condition));
-		markExperimentPoint(status, markExperimentRequestData, clientError, callbacks);
+		markDecisionPoint(status, markExperimentRequestData, clientError, "", callbacks);
 	}
 
-	public void markExperimentPoint(final String site, String target, String condition, MarkedDecisionPointStatus status, String clientError,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
+	public void markDecisionPoint(final String site, String target, String condition, MarkedDecisionPointStatus status, String clientError,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
 		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(condition));
-		markExperimentPoint(status, markExperimentRequestData, clientError, callbacks);
+		markDecisionPoint(status, markExperimentRequestData, clientError, "", callbacks);
 	}
 
-	public void markExperimentPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		markExperimentPoint(status, data, "", callbacks);
+	public void markDecisionPoint(final String site, String condition, MarkedDecisionPointStatus status, String clientError, String uniquifier,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
+		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, "", new Condition(condition));
+		markDecisionPoint(status, markExperimentRequestData, clientError, uniquifier, callbacks);
 	}
 
-	public void markExperimentPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data, String clientError,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, status, data, clientError);
+	public void markDecisionPoint(final String site, String target, String condition, MarkedDecisionPointStatus status, String clientError, String uniquifier,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
+		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(condition));
+		markDecisionPoint(status, markExperimentRequestData, clientError, uniquifier, callbacks);
+	}
+
+	public void markDecisionPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
+		markDecisionPoint(status, data, "", "", callbacks);
+	}
+
+	public void markDecisionPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data, String clientError, String uniquifier,
+			final ResponseCallback<MarkDecisionPoint> callbacks) {
+		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, status, data, clientError, uniquifier);
 		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
 
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
@@ -310,7 +388,8 @@ public class ExperimentClient implements AutoCloseable {
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 
-				    readResponseToCallback(response, callbacks, MarkExperimentPoint.class);
+				    readResponseToCallback(response, callbacks, MarkDecisionPoint.class);
+					rotateConditions(data.getSite(), data.getTarget());
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );

@@ -323,7 +323,7 @@ export class GeneralTestForVersion41Service extends AbstractMockAppService {
       data: [],
     };
     try {
-      const logResponse = await this.upgradeClient.logCaliper(logRequest);
+      const logResponse = await this.upgradeClient.logCaliper(logRequest as any);
       console.log({ logResponse });
     } catch (err) {
       console.error(err);

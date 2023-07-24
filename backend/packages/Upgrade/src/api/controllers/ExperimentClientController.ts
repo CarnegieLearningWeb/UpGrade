@@ -555,11 +555,11 @@ export class ExperimentClientController {
     );
 
     return assignedData.map(({ site, target, assignedCondition }) => {
-      const conditionCode = assignedCondition.payload?.value || assignedCondition.conditionCode;
+      const conditionCode = assignedCondition[0].payload?.value || assignedCondition[0].conditionCode;
       return {
         expPoint: site,
         expId: target,
-        assignedCondition: { ...assignedCondition, conditionCode: conditionCode },
+        assignedCondition: { ...assignedCondition[0], conditionCode: conditionCode },
       };
     });
   }
@@ -652,8 +652,7 @@ export class ExperimentClientController {
     });
   }
 
-
-   /**
+  /**
    * @swagger
    * /log/caliper:
    *    post:
@@ -682,7 +681,7 @@ export class ExperimentClientController {
     request: AppRequest,
     envelope: CaliperLogEnvelope
   ): Promise<Log[]> {
-    let result = envelope.data.map(async log => {
+    const result = envelope.data.map(async (log) => {
       // getOriginalUserDoc call for alias
       const experimentUserDoc = await this.getUserDoc(log.object.assignee.id, request.logger);
       if (experimentUserDoc) {

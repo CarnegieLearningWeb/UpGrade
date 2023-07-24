@@ -202,12 +202,20 @@
                 </ng-container>
               </div>
 
-              <!-- Experiment consistency rule -->
+              <!-- Experiment consistency rule OR Experiment condition Order -->
               <div class="section-data">
-                <span class="ft-16-600 section-data-title">{{
-                  'home-global.consistency-rule.text' | translate | uppercase
-                }}</span>
-                <span class="ft-18-700 section-data-value">{{ experiment.consistencyRule | titlecase }}</span>
+                <span 
+                  class="ft-16-600 section-data-title"
+                  *ngIf="experiment.consistencyRule; else withinSubject"
+                >
+                  {{ 'home-global.consistency-rule.text' | translate | uppercase }}
+                </span>
+                <ng-template #withinSubject>
+                  <span class="ft-16-600 section-data-title">
+                    {{ 'home-global.condition-order.text' | translate | uppercase }}
+                  </span>
+                </ng-template>
+                <span class="ft-18-700 section-data-value">{{ experiment.consistencyRule || experiment.conditionOrder | titlecase }}</span>
               </div>
             </div>
 

@@ -9,6 +9,7 @@ public class MarkExperimentRequest {
 	private MarkedDecisionPointStatus status;
 	private MarkExperimentRequestData data;
 	private String clientError;
+	private String uniquifier;
 
 	public MarkExperimentRequest() {}
 
@@ -25,6 +26,15 @@ public class MarkExperimentRequest {
 		this.status = status;
 		this.data = data;
 		this.clientError = clientError;
+	}
+
+	public MarkExperimentRequest(String userId, MarkedDecisionPointStatus status, MarkExperimentRequestData data,
+			String clientError, String uniquifier) {
+		this.userId = userId;
+		this.status = status;
+		this.data = data;
+		this.clientError = clientError;
+		this.uniquifier = uniquifier;
 	}
 
 	public String getUserId() {
@@ -57,6 +67,14 @@ public class MarkExperimentRequest {
 
 	public void setClientError(String clientError) {
 		this.clientError = clientError;
+	}
+
+	public String getUniquifier() {
+		return uniquifier;
+	}
+
+	public void setUniquifier(String uniquifier) {
+		this.uniquifier = uniquifier;
 	}
 	
 }

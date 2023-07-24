@@ -131,7 +131,7 @@ export default async function RepeatedMeasure(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
 
   const findMetric = await metricRepository.find();
-  expect(findMetric.length).toEqual(32);
+  expect(findMetric.length).toEqual(36);
   expect(findMetric).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

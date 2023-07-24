@@ -1,4 +1,4 @@
-import { Interfaces, Types } from '../identifiers';
+import { UpGradeClientInterfaces, UpGradeClientEnums } from '../types';
 import axios, { AxiosRequestConfig } from 'axios';
 import * as uuid from 'uuid';
 
@@ -8,10 +8,10 @@ export default async function fetchDataService(
   token: string,
   clientSessionId: string,
   data: any,
-  requestType: Types.REQUEST_TYPES,
+  requestType: UpGradeClientEnums.REQUEST_TYPES,
   sendAsAnalytics = false,
   skipRetryOnStatusCodes: number[] = []
-): Promise<Interfaces.IResponse> {
+): Promise<UpGradeClientInterfaces.IResponse> {
   return await fetchData(url, token, clientSessionId, data, requestType, sendAsAnalytics, skipRetryOnStatusCodes);
 }
 
@@ -20,12 +20,12 @@ async function fetchData(
   token: string,
   clientSessionId: string,
   data: any,
-  requestType: Types.REQUEST_TYPES,
+  requestType: UpGradeClientEnums.REQUEST_TYPES,
   sendAsAnalytics = false,
   skipRetryOnStatusCodes: number[],
   retries = 3, // Retry request 3 times on failure
   backOff = 300
-): Promise<Interfaces.IResponse> {
+): Promise<UpGradeClientInterfaces.IResponse> {
   try {
     let headers: object = {
       'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ async function fetchData(
       }
     }
 
-    if (requestType === Types.REQUEST_TYPES.POST || requestType === Types.REQUEST_TYPES.PATCH) {
+    if (requestType === UpGradeClientEnums.REQUEST_TYPES.POST || requestType === UpGradeClientEnums.REQUEST_TYPES.PATCH) {
       options = {
         ...options,
         data,

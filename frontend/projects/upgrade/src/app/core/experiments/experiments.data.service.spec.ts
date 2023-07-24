@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
-import { EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { CONDITION_ORDER, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { environment } from '../../../environments/environment';
 import { Environment } from '../../../environments/environment-types';
 import { Segment } from '../segments/store/segments.model';
@@ -84,6 +84,7 @@ describe('ExperimentDataService', () => {
       startOn: 'test',
       consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
       assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
+      conditionOrder: CONDITION_ORDER.RANDOM,
       postExperimentRule: POST_EXPERIMENT_RULE.ASSIGN,
       enrollmentCompleteCondition: {
         userCount: 1,
