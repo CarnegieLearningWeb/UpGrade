@@ -1,5 +1,36 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsDefined, IsString, ValidateNested, IsArray, IsOptional, IsObject } from 'class-validator';
+import { IsNotEmpty, IsDefined, IsString, ValidateNested, IsArray, IsOptional, IsObject, ValidationOptions, isObject, registerDecorator } from 'class-validator';
+
+const IsLogAttributesRecord = (validationOptions?: ValidationOptions) => {
+  return function (object: unknown, propertyName: string) {
+    registerDecorator({
+      name: 'IsLogAttributesRecord',
+      target: object.constructor,
+      propertyName: propertyName,
+      constraints: [],
+      options: {
+        message: 'The Attributes is not a valid Record<string, string>',
+        ...validationOptions,
+      },
+      validator: {
+        validate(value: unknown) {
+          if (!isObject(value)) return false;
+          if (Object.keys(value).length === 0) return true;
+
+          const keys = Object.keys(value);
+
+          return keys.every((key) => {
+            if (typeof key !== 'string' || key === '') return false;
+            if (value[key] === '') return false;
+            if (typeof value[key] !== 'string' && typeof value[key] !== 'number') return false;
+
+            return true;
+          });
+        },
+      },
+    });
+  };
+};
 
 class ILogGroupMetrics {
   @IsString()
@@ -14,14 +45,15 @@ class ILogGroupMetrics {
   @IsNotEmpty()
   groupUniquifier: string;
 
-  @IsObject()
-  attributes: any;
+  @IsOptional()
+  @IsLogAttributesRecord()
+  attributes?: Record<string, string | number>;
 }
 
 class ILogMetrics {
   @IsOptional()
-  @IsObject()
-  attributes: any;
+  @IsLogAttributesRecord()
+  attributes?: Record<string, string | number>;
 
   @IsOptional()
   @IsArray()

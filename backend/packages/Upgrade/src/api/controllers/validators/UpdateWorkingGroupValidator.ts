@@ -1,11 +1,11 @@
 import { IsNotEmpty, IsString } from 'class-validator';
-import { IsStringRecord } from './ExperimentUserValidator';
+import { IsWorkingGroupRecord } from './ExperimentUserValidator';
 export class UpdateWorkingGroupValidator {
   @IsString()
   @IsNotEmpty()
   public id: string;
 
-  @IsStringRecord()
+  @IsWorkingGroupRecord()
   @IsNotEmpty()
   public workingGroup: any;
 }

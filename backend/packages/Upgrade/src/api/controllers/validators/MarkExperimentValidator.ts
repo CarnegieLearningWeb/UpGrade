@@ -17,11 +17,11 @@ export class MarkExperimentValidator {
 
   @IsOptional()
   @IsString()
-  public condition: string | null;
+  public condition?: string | null;
 
   @IsUUID()
   @IsOptional()
-  public experimentId: string | null;
+  public experimentId?: string | null;
 
   @IsEnum(MARKED_DECISION_POINT_STATUS)
   @IsOptional()
