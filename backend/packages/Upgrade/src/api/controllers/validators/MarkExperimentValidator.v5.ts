@@ -2,7 +2,7 @@ import { Type } from 'class-transformer';
 import { IsNotEmpty, IsDefined, IsString, IsOptional, IsEnum, IsObject, ValidateNested, ValidateIf, ValidationOptions, registerDecorator } from 'class-validator';
 import { EXPERIMENT_TYPE, MARKED_DECISION_POINT_STATUS, PAYLOAD_TYPE } from 'upgrade_types';
 
-export const IsAssignedFactorRecord = (validationOptions?: ValidationOptions) => {
+const IsAssignedFactorRecord = (validationOptions?: ValidationOptions) => {
   return function (object: unknown, propertyName: string) {
     registerDecorator({
       name: 'IsAssignedFactorRecord',

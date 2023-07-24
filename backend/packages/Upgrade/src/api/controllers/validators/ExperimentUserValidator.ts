@@ -1,9 +1,9 @@
 import { IsNotEmpty, IsOptional, IsString, ValidationOptions, isObject, registerDecorator } from 'class-validator';
 
-export const IsRecord = (validationOptions?: ValidationOptions) => {
+export const IsGroupRecord = (validationOptions?: ValidationOptions) => {
   return function (object: unknown, propertyName: string) {
     registerDecorator({
-      name: 'IsRecord',
+      name: 'IsGroupRecord',
       target: object.constructor,
       propertyName: propertyName,
       constraints: [],
@@ -31,10 +31,10 @@ export const IsRecord = (validationOptions?: ValidationOptions) => {
   };
 };
 
-export const IsStringRecord = (validationOptions?: ValidationOptions) => {
+export const IsWorkingGroupRecord = (validationOptions?: ValidationOptions) => {
   return function (object: unknown, propertyName: string) {
     registerDecorator({
-      name: 'IsStringRecord',
+      name: 'IsWorkingGroupRecord',
       target: object.constructor,
       propertyName: propertyName,
       constraints: [],
@@ -67,10 +67,10 @@ export class ExperimentUserValidator {
   public id: string;
 
   @IsOptional()
-  @IsRecord()
+  @IsGroupRecord()
   public group: Record<string, string[]>;
 
   @IsOptional()
-  @IsStringRecord()
+  @IsWorkingGroupRecord()
   public workingGroup: Record<string, string>;
 }

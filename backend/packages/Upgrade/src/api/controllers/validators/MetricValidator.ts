@@ -21,7 +21,7 @@ const IsMetricUnit = (validationOptions?: ValidationOptions) => {
   };
 };
 
-function validateMetricUnit(data: any) {
+function validateMetricUnit(data: unknown) {
   if (Array.isArray(data) && data.every(isValidMetric)) {
     return true
   } else {
