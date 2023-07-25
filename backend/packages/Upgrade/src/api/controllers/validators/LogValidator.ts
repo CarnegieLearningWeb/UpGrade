@@ -9,7 +9,7 @@ const IsLogAttributesRecord = (validationOptions?: ValidationOptions) => {
       propertyName: propertyName,
       constraints: [],
       options: {
-        message: 'The Attributes is not a valid Record<string, string>',
+        message: 'The Attributes is not a valid Record<string, string | number>',
         ...validationOptions,
       },
       validator: {
