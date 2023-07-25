@@ -144,7 +144,7 @@ export interface IExperimentEnrollmentDetailDateStats {
 }
 
 interface ILogMetrics {
-  attributes?: any;
+  attributes?: Record<string, string | number>;
   groupedMetrics: ILogGroupMetrics[];
 }
 
@@ -152,7 +152,7 @@ interface ILogGroupMetrics {
   groupClass: string;
   groupKey: string;
   groupUniquifier: string;
-  attributes: any;
+  attributes?: Record<string, string | number>;
 }
 export interface ILogInput {
   timestamp: string;
