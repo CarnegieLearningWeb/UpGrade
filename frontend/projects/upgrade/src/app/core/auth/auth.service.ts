@@ -68,7 +68,7 @@ export class AuthService {
   renderGoogleSignInButton(btnRef: ElementRef): void {
     const buttonConfig: google.accounts.id.GsiButtonConfiguration = {
       theme: 'filled_blue',
-      width: '300',
+      width: '300px',
       type: 'standard',
       click_listener: () => this.authLoginStart(),
     };
