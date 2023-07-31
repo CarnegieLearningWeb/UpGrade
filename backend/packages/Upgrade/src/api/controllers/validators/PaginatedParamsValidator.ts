@@ -1,6 +1,25 @@
-import { IsNotEmpty, IsDefined, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsDefined, IsNumber, IsString, IsEnum, IsOptional, ValidateNested } from 'class-validator';
 import { EXPERIMENT_SORT_AS } from 'upgrade_types';
+class SortParamsValidator {
+  @IsNotEmpty()
+  @IsString()
+  key: string;
 
+  @IsNotEmpty()
+  @IsEnum(EXPERIMENT_SORT_AS)
+  sortAs: EXPERIMENT_SORT_AS;
+}
+
+class SearchParamsValidator {
+  @IsNotEmpty()
+  @IsString()
+  key: string;
+
+  @IsNotEmpty()
+  @IsString()
+  string: string;
+}
 export class PaginatedParamsValidator {
   @IsNotEmpty()
   @IsNumber()
@@ -12,7 +31,13 @@ export class PaginatedParamsValidator {
   @IsDefined()
   public take: number;
 
-  public searchParams: { key: string; string: string };
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SearchParamsValidator)
+  public searchParams: SearchParamsValidator;
 
-  public sortParams: { key: string; sortAs: EXPERIMENT_SORT_AS };
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SortParamsValidator)
+  public sortParams: SortParamsValidator;
 }

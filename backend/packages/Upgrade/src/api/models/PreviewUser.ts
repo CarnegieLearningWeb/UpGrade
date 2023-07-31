@@ -14,5 +14,5 @@ export class PreviewUser extends BaseModel {
   @OneToMany(() => ExplicitIndividualAssignment, (condition) => condition.previewUser)
   @ValidateNested()
   @Type(() => ExplicitIndividualAssignment)
-  public assignments: ExplicitIndividualAssignment[];
+  public assignments?: ExplicitIndividualAssignment[];
 }

@@ -90,7 +90,7 @@ export class UserController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: false })
+    @Body({ validate: true })
     paginatedParams: UserPaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<UserPaginationInfo> {
@@ -172,7 +172,7 @@ export class UserController {
    */
   @Post()
   public create(
-    @Body({ validate: false}) user: User, @Req() request: AppRequest): Promise<User> {
+    @Body({ validate: true }) user: UserDetailsValidator, @Req() request: AppRequest): Promise<User> {
     return this.userService.upsertUser(user, request.logger);
   }
 
@@ -214,7 +214,7 @@ export class UserController {
    */
   @Post('/details')
   public updateUserDetails(
-    @Body({ validate: false })
+    @Body({ validate: true })
     user: UserDetailsValidator
   ): Promise<User> {
     return this.userService.updateUserDetails(user.firstName, user.lastName, user.email, user.role);
