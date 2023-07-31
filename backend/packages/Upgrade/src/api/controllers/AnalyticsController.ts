@@ -69,7 +69,7 @@ export class AnalyticsController {
    */
   @Post('/enrollment')
   public async analyticsService(
-    @Body({ validate: false }) auditParams: EnrollmentAnalyticsValidator
+    @Body({ validate: true }) auditParams: EnrollmentAnalyticsValidator
   ): Promise<IExperimentEnrollmentStats[]> {
     return this.auditService.getEnrollments(auditParams.experimentIds);
   }
@@ -160,7 +160,7 @@ export class AnalyticsController {
    */
   @Post('/enrollment/detail')
   public async analyticsDetailService(
-    @Body({ validate: false })
+    @Body({ validate: true })
     auditParams: EnrollmentDetailAnalyticsValidator
   ): Promise<IExperimentEnrollmentDetailStats> {
     return this.auditService.getDetailEnrollment(auditParams.experimentId);
@@ -250,7 +250,7 @@ export class AnalyticsController {
    */
   @Post('/enrollment/date')
   public async enrollmentByDate(
-    @Body({ validate: false })
+    @Body({ validate: true })
     auditParams: EnrollmentAnalyticsDateValidator
   ): Promise<any> {
     return this.auditService.getEnrollmentStatsByDate(
@@ -285,7 +285,7 @@ export class AnalyticsController {
    */
   @Post('/csv')
   public async downloadCSV(
-    @Body({ validate: false })
+    @Body({ validate: true })
     csvInfo: DataExportValidator,
     @Req() request: AppRequest
   ): Promise<string> {

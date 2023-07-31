@@ -49,7 +49,7 @@ describe('Analytics Controller Testing', () => {
       .post('/api/stats/enrollment/date')
       .send({
         experimentId: uuid(),
-        dateEnum: 'xyz',
+        dateEnum: 'last_seven_days',
         clientOffset: 330,
       })
       .set('Accept', 'application/json')
