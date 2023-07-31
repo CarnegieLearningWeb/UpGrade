@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString, IsDefined, IsArray } from 'class-validator';
 
 export class DataLogAnalysisValidator {
-  @IsString()
+  @IsString({each: true})
   @IsNotEmpty()
   @IsDefined()
   @IsArray()
