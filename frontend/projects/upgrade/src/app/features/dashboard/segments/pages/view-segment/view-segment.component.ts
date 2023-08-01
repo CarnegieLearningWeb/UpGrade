@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { Subscription } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { filter } from 'rxjs/operators';
 import { SegmentsService } from '../../../../../core/segments/segments.service';

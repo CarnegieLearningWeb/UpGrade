@@ -32,7 +32,7 @@ export interface AuditLogs {
   id: string;
   createdAt: string;
   updatedAt: string;
-  versionNUmber: number;
+  versionNumber: number;
   type: EXPERIMENT_LOG_TYPE;
   data: any;
 }
@@ -41,7 +41,7 @@ export interface ErrorLogs {
   id: string;
   createdAt: string;
   updatedAt: string;
-  versionNUmber: number;
+  versionNumber: number;
   type: SERVER_ERROR;
   endPoint: string;
   errorCode: number | null;
