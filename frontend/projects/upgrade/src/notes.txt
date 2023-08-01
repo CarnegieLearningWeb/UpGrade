@@ -1,0 +1,18 @@
+
+./projects/upgrade/src/styles.scss - Error: Module build failed (from ./node_modules/css-loader/dist/cjs.js):
+Error: Can't resolve 'node_modules/ng-pick-datetime-ex/assets/style/picker.min.css' in '/usr/src/app/frontend/projects/upgrade/src'
+
+./projects/upgrade/src/styles.scss?ngGlobalStyle - Error: Module build failed (from ./node_modules/mini-css-extract-plugin/dist/loader.js):
+HookWebpackError: Module build failed (from ./node_modules/css-loader/dist/cjs.js):
+Error: Package path ./assets/style/picker.min.css is not exported from package /usr/src/app/frontend/node_modules/ng-pick-datetime-ex (see exports field in /usr/src/app/frontend/node_modules/ng-pick-datetime-ex/package.json)
+
+
+
+
+
+./projects/upgrade/src/styles.scss - Error: Module build failed (from ./node_modules/css-loader/dist/cjs.js):
+Error: Package path ./assets/style/picker.min.css is not exported from package /usr/src/app/frontend/node_modules/ng-pick-datetime-ex (see exports field in /usr/src/app/frontend/node_modules/ng-pick-datetime-ex/package.json)
+
+./projects/upgrade/src/styles.scss?ngGlobalStyle - Error: Module build failed (from ./node_modules/mini-css-extract-plugin/dist/loader.js):
+HookWebpackError: Module build failed (from ./node_modules/css-loader/dist/cjs.js):
+Error: Package path ./assets/style/picker.min.css is not exported from package /usr/src/app/frontend/node_modules/ng-pick-datetime-ex (see exports field in /usr/src/app/frontend/node_modules/ng-pick-datetime-ex/package.json)

@@ -36,7 +36,6 @@ export class AuthService {
 
   initializeUserSession(): void {
     const currentUser = this.getUserFromBrowserStorage();
-
     if (currentUser) {
       this.handleAutomaticLogin(currentUser);
     } else {
@@ -93,7 +92,7 @@ export class AuthService {
       lastName: payload.family_name,
       email: payload.email,
       imageUrl: payload.picture,
-      localTimeZone: '',
+      localTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
 
     const googleCredential = googleIdCredentialResponse.credential;

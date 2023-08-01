@@ -1,6 +1,6 @@
 {
   "name": "UpGrade",
-  "version": "4.1",
+  "version": "4.2.0",
   "description": "This is a combined repository for UpGrade, an open-source platform to support large-scale A/B testing in educational applications.  Learn more at www.upgradeplatform.org",
   "main": "index.js",
   "devDependencies": {
@@ -10,6 +10,7 @@
     "eslint": "^8.26.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-tsdoc": "^0.2.17",
     "husky": "^8.0.1",
     "is-ci": "^3.0.0",
     "lint-staged": "^13.0.3",

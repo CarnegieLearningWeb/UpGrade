@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Experiment } from '../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../core/experiments/experiments.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { NewExperimentComponent } from '../components/modal/new-experiment/new-experiment.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { UserPermission } from '../../../../core/auth/store/auth.models';

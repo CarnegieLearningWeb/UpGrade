@@ -3,7 +3,7 @@ import { State, FeatureFlagState } from './feature-flags.model';
 import { selectAll } from './feature-flags.reducer';
 import { selectRouterState } from '../../core.state';
 
-export const selectFeatureFlagsState = createFeatureSelector<State, FeatureFlagState>('featureFlags');
+export const selectFeatureFlagsState = createFeatureSelector<FeatureFlagState>('featureFlags');
 
 export const selectAllFeatureFlags = createSelector(selectFeatureFlagsState, selectAll);
 

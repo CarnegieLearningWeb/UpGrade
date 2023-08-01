@@ -3,7 +3,7 @@ import { State, SegmentState } from './segments.model';
 import { selectAll } from './segments.reducer';
 import { selectRouterState } from '../../core.state';
 
-export const selectSegmentsState = createFeatureSelector<State, SegmentState>('segments');
+export const selectSegmentsState = createFeatureSelector<SegmentState>('segments');
 
 export const selectAllSegments = createSelector(selectSegmentsState, selectAll);
 

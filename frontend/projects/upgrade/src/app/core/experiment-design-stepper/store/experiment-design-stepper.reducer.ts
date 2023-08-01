@@ -73,9 +73,12 @@ const reducer = createReducer(
   })),
   on(
     experimentDesignStepperAction.actionToggleSimpleExperimentPayloadTableEditMode,
-    (state, { simpleExperimentPayloadTableEditIndex }): ExperimentDesignStepperState => {
+    (state, { simpleExperimentPayloadTableEditIndex, isNgDestroyCall }): ExperimentDesignStepperState => {
       // toggle edit mode
-      const editMode = !state.isSimpleExperimentPayloadTableEditMode;
+      let editMode: boolean;
+      if (!isNgDestroyCall) {
+        editMode = !state.isSimpleExperimentPayloadTableEditMode;
+      }
 
       // if not in edit mode, use null for row-index
       const editIndex = editMode ? simpleExperimentPayloadTableEditIndex : null;

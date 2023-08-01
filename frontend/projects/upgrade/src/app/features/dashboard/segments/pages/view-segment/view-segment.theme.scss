@@ -1,4 +1,4 @@
-@import '~@angular/material/theming';
+@import '@angular/material/theming';
 
 @mixin view-segment-component-theme($theme) {
   $background: map-get($theme, background);

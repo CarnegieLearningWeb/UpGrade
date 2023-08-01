@@ -1,4 +1,4 @@
-import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from './logs.model';
+import { AuditLogs, EXPERIMENT_LOG_TYPE, ErrorLogs, SERVER_ERROR } from './logs.model';
 import { initialState } from './logs.reducer';
 import * as LogsSelectors from './logs.selectors';
 
@@ -31,13 +31,21 @@ describe('LogsSelectors', () => {
     it('should return an array of logs that contain the filtertype given', () => {
       const state = { ...mockState };
       state.auditLogFilter = EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED;
+      const mockAuditLog: AuditLogs = {
+        id: 'abc',
+        createdAt: '2020-10-10',
+        updatedAt: '2020-10-10',
+        data: {},
+        versionNumber: 1,
+        type: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
+      };
 
       const result = LogsSelectors.selectAllAuditLogs.projector(state, [
-        { type: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED },
-        { type: EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED },
+        { ...mockAuditLog, type: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED },
+        { ...mockAuditLog, type: EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED },
       ]);
 
-      expect(result).toEqual([{ type: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED }]);
+      expect(result).toEqual([mockAuditLog]);
     });
   });
 
@@ -45,13 +53,24 @@ describe('LogsSelectors', () => {
     it('should return an array of logs that contain the filtertype given', () => {
       const state = { ...mockState };
       state.errorLogFilter = SERVER_ERROR.CONDITION_NOT_FOUND;
+      const mockErrorLog: ErrorLogs = {
+        id: 'abc',
+        createdAt: '2020-10-10',
+        updatedAt: '2020-10-10',
+        versionNumber: 1,
+        type: SERVER_ERROR.CONDITION_NOT_FOUND,
+        endPoint: 'test',
+        errorCode: 500,
+        message: 'test',
+        name: 'test',
+      };
 
       const result = LogsSelectors.selectAllErrorLogs.projector(state, [
-        { type: SERVER_ERROR.CONDITION_NOT_FOUND },
-        { type: SERVER_ERROR.DB_AUTH_FAIL },
+        { ...mockErrorLog, type: SERVER_ERROR.CONDITION_NOT_FOUND },
+        { ...mockErrorLog, type: SERVER_ERROR.DB_AUTH_FAIL },
       ]);
 
-      expect(result).toEqual([{ type: SERVER_ERROR.CONDITION_NOT_FOUND }]);
+      expect(result).toEqual([mockErrorLog]);
     });
   });
 
