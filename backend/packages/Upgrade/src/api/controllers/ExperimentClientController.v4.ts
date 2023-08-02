@@ -664,7 +664,7 @@ export class ExperimentClientController {
     request: AppRequest,
     envelope: CaliperLogEnvelope
   ): Promise<Log[]> {
-    const result = envelope.data.map(async (log) => {
+    let result = envelope.data.map(async log => {
       // getOriginalUserDoc call for alias
       const experimentUserDoc = await this.getUserDoc(log.object.assignee.id, request.logger);
       if (experimentUserDoc) {
