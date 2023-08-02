@@ -151,7 +151,6 @@ describe('Feature Flag Service Testing', () => {
 
   it('should create a feature flag with uuid', async () => {
     const results = await service.create(mockFlag1, logger);
-    console.log(results);
     expect(isUUID(results.variations[0].id)).toBeTruthy();
   });
 
