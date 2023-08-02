@@ -12,10 +12,10 @@ class Group {
   type: string;
 }
 export class SegmentInputValidator {
-  @IsNotEmpty()
+  @IsOptional()
   @IsUUID()
   @IsString()
-  public id: string;
+  public id?: string;
 
   @IsNotEmpty()
   @IsString()
@@ -23,7 +23,7 @@ export class SegmentInputValidator {
 
   @IsString()
   @IsOptional()
-  public description: string;
+  public description?: string;
 
   @IsNotEmpty()
   @IsString()
