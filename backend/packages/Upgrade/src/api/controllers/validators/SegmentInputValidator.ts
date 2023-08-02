@@ -23,7 +23,7 @@ export class SegmentInputValidator {
 
   @IsString()
   @IsOptional()
-  public description: string;
+  public description?: string;
 
   @IsNotEmpty()
   @IsString()
