@@ -178,7 +178,6 @@ export class AnalyticsService {
         }),
         userRepository.findOne({ email }),
       ]);
-      const { localTimeZone } = user;
 
       // make new query here
       let toLoop = true;
@@ -357,7 +356,6 @@ export class AnalyticsService {
             GroupId: '',
             ConditionName: '',
             FirstDecisionPointReachedOn: '',
-            FirstDecisionPointReachedOn_LocalTime: '',
           },
         ];
         const csv = new ObjectsToCsv(csvRows);
