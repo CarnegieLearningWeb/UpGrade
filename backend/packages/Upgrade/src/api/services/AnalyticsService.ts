@@ -315,9 +315,6 @@ export class AnalyticsService {
             Target: row.target,
             ConditionName: row.conditionName,
             FirstDecisionPointReachedOn: new Date(row.firstDecisionPointReachedOn).toISOString(),
-            FirstDecisionPointReachedOn_LocalTime: dayjs(row.firstDecisionPointReachedOn)
-              .tz(localTimeZone)
-              .format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
             UniqueDecisionPointsMarked: row.decisionPointReachedCount,
             ...queryDataToAdd,
           };
