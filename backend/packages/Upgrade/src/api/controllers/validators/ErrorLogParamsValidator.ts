@@ -11,5 +11,5 @@ export class ErrorLogParamsValidator {
 
   @IsEnum(SERVER_ERROR)
   @IsOptional()
-  public filter: SERVER_ERROR;
+  public filter?: SERVER_ERROR;
 }

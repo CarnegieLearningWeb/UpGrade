@@ -11,5 +11,5 @@ export class AuditLogParamsValidator {
 
   @IsOptional()
   @IsEnum(EXPERIMENT_LOG_TYPE)
-  public filter: EXPERIMENT_LOG_TYPE;
+  public filter?: EXPERIMENT_LOG_TYPE;
 }
