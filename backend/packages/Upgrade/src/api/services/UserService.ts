@@ -117,11 +117,11 @@ export class UserService {
     switch (type) {
       case USER_SEARCH_SORT_KEY.FIRST_NAME:
         // TODO: Update column name
-        searchString.push("coalesce(users.firstName::TEXT,'')");
+        searchString.push(`coalesce(users."firstName"::TEXT,'')`);
         break;
       case USER_SEARCH_SORT_KEY.LAST_NAME:
         // TODO: Update column name
-        searchString.push("coalesce(users.lastName::TEXT,'')");
+        searchString.push(`coalesce(users."lastName"::TEXT,'')`);
         break;
       case USER_SEARCH_SORT_KEY.EMAIL:
         searchString.push("coalesce(users.email::TEXT,'')");

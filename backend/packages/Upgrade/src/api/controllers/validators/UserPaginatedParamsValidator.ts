@@ -43,10 +43,10 @@ export class UserPaginatedParamsValidator {
   @IsOptional()
   @ValidateNested()
   @Type(() => UserSearchParamsValidator)
-  public searchParams: UserSearchParamsValidator;
+  public searchParams?: UserSearchParamsValidator;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => UserSortParamsValidator)
-  public sortParams: UserSortParamsValidator;
+  public sortParams?: UserSortParamsValidator;
 }
