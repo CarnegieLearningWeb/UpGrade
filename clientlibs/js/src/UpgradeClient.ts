@@ -43,9 +43,9 @@ import Assignment from './Assignment';
 *
 * SDK-Specific types can be accessed also:
 * ```typescript
-* import { Interfaces } from 'upgrade_client_lib/dist/clientlibs/js/src/identifiers';
+* import { UpGradeClientInterfaces } from 'upgrade_client_lib/dist/clientlibs/js/src/identifiers';
 * 
-* const initResponse: Interfaces.IUser = await upgradeClient.init();
+* const initResponse: UpGradeClientInterfaces.IUser = await upgradeClient.init();
 * ```
 */
 
