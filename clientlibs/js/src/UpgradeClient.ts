@@ -23,7 +23,6 @@ import init from './functions/init';
 import * as uuid from 'uuid';
 import Assignment from './Assignment';
 
-
 /**
  * UpGradeClient is the main class for interacting with the UpGrade API.
  * 
