@@ -27,6 +27,11 @@ export class SegmentsDataService {
     return this.http.post(url, segment);
   }
 
+  exportSegment(segmentId: string) {
+    const url = `${this.environment.api.exportSegment}/${segmentId}`;
+    return this.http.get(url);
+  }
+
   exportSegments(segmentIds: string[]) {
     const url = `${this.environment.api.exportSegments}`;
     return this.http.post(url, segmentIds);

@@ -80,6 +80,23 @@ export class SegmentsEffects {
     )
   );
 
+  exportSegment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionExportSegment),
+      map((action) => ({ segmentId: action.segmentId })),
+      filter(({ segmentId }) => !!segmentId),
+      switchMap(({ segmentId }) =>
+        this.segmentsDataService.exportSegment(segmentId).pipe(
+          map((data: any) => {
+            this.download(data.name + '.json', data,false);
+            return SegmentsActions.actionExportSegmentSuccess();
+          }),
+          catchError(() => [SegmentsActions.actionExportSegmentFailure()])
+        )
+      )
+    )
+  );
+
   exportSegments$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionExportSegments),

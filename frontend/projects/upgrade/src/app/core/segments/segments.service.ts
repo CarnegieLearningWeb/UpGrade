@@ -61,6 +61,10 @@ export class SegmentsService {
     );
   }
 
+  exportSegment(segmentId: string) {
+    this.store$.dispatch(SegmentsActions.actionExportSegment({ segmentId }));
+  }
+
   exportSegments(segmentIds: string[]) {
     this.store$.dispatch(SegmentsActions.actionExportSegments({ segmentIds }));
   }

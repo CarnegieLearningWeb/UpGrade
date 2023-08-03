@@ -49,6 +49,8 @@ export const actionSetIsLoadingSegments = createAction(
   props<{ isLoadingSegments: boolean }>()
 );
 
+export const actionExportSegment = createAction('[Segments] Export Segment', props<{ segmentId: string }>());
+
 export const actionExportSegments = createAction('[Segments] Export Segment', props<{ segmentIds: string[] }>());
 
 export const actionExportSegmentSuccess = createAction('[Segments] Export Segment Success');
