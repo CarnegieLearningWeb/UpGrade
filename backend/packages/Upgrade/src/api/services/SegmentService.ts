@@ -201,8 +201,8 @@ export class SegmentService {
       });
       segmentsDoc.push(segmentDoc);
     }else {
-      segmentsDoc = await this.getAllSegments(logger);
-      // segmentsDoc = segmentsALLDoc.filter((segment) => segmentIds.includes(segment.id));
+      const segmentsALLDoc = await this.getAllSegments(logger);
+      segmentsDoc = segmentsALLDoc.filter((segment) => segmentIds.includes(segment.id));
     }
 
     if (!segmentsDoc) {

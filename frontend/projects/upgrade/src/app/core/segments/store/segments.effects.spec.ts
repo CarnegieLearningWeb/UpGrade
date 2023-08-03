@@ -206,15 +206,15 @@ describe('SegmentsEffects', () => {
     }));
   });
 
-  describe('exportSegment$', () => {
+  describe('exportSegments$', () => {
     it('should do nothing if Segment is id', fakeAsync(() => {
       let neverEmitted = true;
 
-      service.exportSegment$.subscribe(() => {
+      service.exportSegments$.subscribe(() => {
         neverEmitted = false;
       });
 
-      actions$.next(SegmentsActions.actionExportSegment({ segmentId: undefined }));
+      actions$.next(SegmentsActions.actionExportSegments({ segmentIds: [undefined] }));
 
       tick(0);
 
@@ -222,33 +222,33 @@ describe('SegmentsEffects', () => {
     }));
 
     it('should dispatch actionExportSegmentSuccess on success', fakeAsync(() => {
-      segmentsDataService.exportSegment = jest.fn().mockReturnValue(of([{ ...mockSegment }]));
+      segmentsDataService.exportSegments = jest.fn().mockReturnValue(of([{ ...mockSegment }]));
       document.body.removeChild = jest.fn();
 
       const expectedAction = SegmentsActions.actionExportSegmentSuccess();
 
-      service.exportSegment$.subscribe((result) => {
+      service.exportSegments$.subscribe((result) => {
         expect(result).toEqual(expectedAction);
 
         // this assertion tests the last action in the private "download" method to make sure it ran
         expect(document.body.removeChild).toHaveBeenCalled();
       });
 
-      actions$.next(SegmentsActions.actionExportSegment({ segmentId: { ...mockSegment }.id }));
+      actions$.next(SegmentsActions.actionExportSegments({ segmentIds: [{ ...mockSegment }.id] }));
 
       tick(0);
     }));
 
     it('should dispatch actionExportSegmentFailure on failure', fakeAsync(() => {
-      segmentsDataService.exportSegment = jest.fn().mockReturnValue(throwError(() => new Error('test')));
+      segmentsDataService.exportSegments = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
       const expectedAction = SegmentsActions.actionExportSegmentFailure();
 
-      service.exportSegment$.subscribe((result) => {
+      service.exportSegments$.subscribe((result) => {
         expect(result).toEqual(expectedAction);
       });
 
-      actions$.next(SegmentsActions.actionExportSegment({ segmentId: { ...mockSegment }.id }));
+      actions$.next(SegmentsActions.actionExportSegments({ segmentIds: [{ ...mockSegment }.id] } ));
 
       tick(0);
     }));
