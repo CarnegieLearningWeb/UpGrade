@@ -23,30 +23,6 @@ import init from './functions/init';
 import * as uuid from 'uuid';
 import Assignment from './Assignment';
 
-/**
- * UpGradeClient is the main class for interacting with the UpGrade API.
- * 
- * @example
-* ```typescript
-* import UpgradeClient from 'upgrade_client_lib/dist/browser';
-* ```
-*
-* ```typescript
-* import UpgradeClient from 'upgrade_client_lib/dist/node';
-* ```
-*
-* General UpGrade types can also be accessed as named exports:
-* ```typescript
-* import UpgradeClient, { IExperimentAssignment } from 'upgrade_client_lib/dist/browser';
-* ```
-*
-* SDK-Specific types can be accessed also:
-* ```typescript
-* import { UpGradeClientInterfaces } from 'upgrade_client_lib/dist/clientlibs/js/src/identifiers';
-* 
-* const initResponse: UpGradeClientInterfaces.IUser = await upgradeClient.init();
-* ```
-*/
 
 /**
  * UpGradeClient is the main class for interacting with the UpGrade API.
