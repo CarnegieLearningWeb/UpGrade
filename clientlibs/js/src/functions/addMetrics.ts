@@ -3,7 +3,7 @@ import fetchDataService from '../common/fetchDataService';
 import { ISingleMetric, IGroupMetric } from 'upgrade_types';
 
 export default async function addMetrics(
-  customHttpClient: Interfaces.ICustomHttpClient,
+  customHttpClient: UpGradeClientInterfaces.ICustomHttpClient,
   url: string,
   token: string,
   clientSessionId: string,

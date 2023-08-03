@@ -2,7 +2,7 @@ import { UpGradeClientInterfaces, UpGradeClientEnums } from '../types';
 import fetchDataService from '../common/fetchDataService';
 
 export default async function setWorkingGroup(
-  customHttpClient: Interfaces.ICustomHttpClient,
+  customHttpClient: UpGradeClientInterfaces.ICustomHttpClient,
   url: string,
   userId: string,
   token: string,

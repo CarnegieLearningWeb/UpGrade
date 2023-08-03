@@ -22,7 +22,7 @@ export namespace UpGradeClientInterfaces {
     logCaliper: string;
     altUserIds: string;
     addMetrics: string;
-  };
+  }
 
   export interface IClientState {
     config: IConfig;
@@ -105,8 +105,16 @@ export namespace UpGradeClientInterfaces {
   }
 
   export interface ICustomHttpClient {
-    [Types.REQUEST_TYPES.GET](url: string, options?: any): Promise<Interfaces.IResponse>;
-    [Types.REQUEST_TYPES.POST](url: string, data: any, options?: any): Promise<Interfaces.IResponse>;
-    [Types.REQUEST_TYPES.PATCH](url: string, data: any, options?: any): Promise<Interfaces.IResponse>;
+    [UpGradeClientEnums.REQUEST_TYPES.GET](url: string, options?: any): Promise<UpGradeClientInterfaces.IResponse>;
+    [UpGradeClientEnums.REQUEST_TYPES.POST](
+      url: string,
+      data: any,
+      options?: any
+    ): Promise<UpGradeClientInterfaces.IResponse>;
+    [UpGradeClientEnums.REQUEST_TYPES.PATCH](
+      url: string,
+      data: any,
+      options?: any
+    ): Promise<UpGradeClientInterfaces.IResponse>;
   }
 }

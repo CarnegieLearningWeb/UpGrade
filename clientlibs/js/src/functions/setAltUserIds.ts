@@ -2,7 +2,7 @@ import { UpGradeClientEnums, UpGradeClientInterfaces } from '../types';
 import fetchDataService from '../common/fetchDataService';
 
 export default async function setAltUserIds(
-  customHttpClient: Interfaces.ICustomHttpClient,
+  customHttpClient: UpGradeClientInterfaces.ICustomHttpClient,
   url: string,
   userId: string,
   token: string,
