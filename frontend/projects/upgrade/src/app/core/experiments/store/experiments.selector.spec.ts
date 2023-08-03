@@ -8,6 +8,7 @@ import {
   POST_EXPERIMENT_RULE,
   ASSIGNMENT_UNIT,
   CONSISTENCY_RULE,
+  CONDITION_ORDER,
 } from './experiments.model';
 import { initialState } from './experiments.reducer';
 import {
@@ -51,6 +52,7 @@ describe('Experiments Selectors', () => {
         startOn: null,
         consistencyRule: CONSISTENCY_RULE.GROUP,
         assignmentUnit: ASSIGNMENT_UNIT.GROUP,
+        conditionOrder: CONDITION_ORDER.RANDOM,
         postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
         enrollmentCompleteCondition: null,
         endOn: null,

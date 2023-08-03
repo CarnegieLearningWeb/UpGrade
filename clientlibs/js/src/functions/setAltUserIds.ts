@@ -1,4 +1,4 @@
-import { Types, Interfaces } from '../identifiers';
+import { UpGradeClientEnums, UpGradeClientInterfaces } from '../types';
 import fetchDataService from '../common/fetchDataService';
 
 export default async function setAltUserIds(
@@ -8,7 +8,7 @@ export default async function setAltUserIds(
   token: string,
   clientSessionId: string,
   altUserIds: string[]
-): Promise<Interfaces.IExperimentUserAliases[]> {
+): Promise<UpGradeClientInterfaces.IExperimentUserAliases[]> {
   const data = {
     userId,
     aliases: altUserIds,
@@ -20,7 +20,7 @@ export default async function setAltUserIds(
     token,
     clientSessionId,
     data,
-    Types.REQUEST_TYPES.PATCH,
+    UpGradeClientEnums.REQUEST_TYPES.PATCH,
     false,
     skipRetryOnStatusCodes
   );

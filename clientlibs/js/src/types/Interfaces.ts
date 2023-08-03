@@ -1,12 +1,32 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import { SERVER_ERROR, IMetricMetaData } from 'upgrade_types';
-import { Types } from './enums';
+import { SERVER_ERROR, IMetricMetaData, MARKED_DECISION_POINT_STATUS, IExperimentAssignmentv5 } from 'upgrade_types';
+import { UpGradeClientEnums } from './enums';
 
-export namespace Interfaces {
+export namespace UpGradeClientInterfaces {
   export interface IConfig {
     hostURL: string;
     userId: string;
-    api: any;
+    api: IEndpoints;
+    clientSessionId?: string;
+    token?: string;
+  }
+  export interface IEndpoints {
+    init: string;
+    getAllExperimentConditions: string;
+    markDecisionPoint: string;
+    setGroupMemberShip: string;
+    setWorkingGroup: string;
+    failedExperimentPoint: string;
+    getAllFeatureFlag: string;
+    log: string;
+    logCaliper: string;
+    altUserIds: string;
+    addMetrics: string;
+  };
+
+  export interface IClientState {
+    config: IConfig;
+    allExperimentAssignmentData: IExperimentAssignmentv5[];
   }
 
   export interface IResponse {
@@ -17,7 +37,7 @@ export namespace Interfaces {
 
   export interface IRequestOptions {
     headers: object;
-    method: Types.REQUEST_TYPES;
+    method: UpGradeClientEnums.REQUEST_TYPES;
     keepalive: boolean;
     body?: string;
   }
@@ -31,6 +51,18 @@ export namespace Interfaces {
     id: string;
     group?: Record<string, Array<string>>;
     workingGroup?: Record<string, string>;
+  }
+
+  export interface IMarkDecisionPointRequestBody {
+    userId: string;
+    status: MARKED_DECISION_POINT_STATUS;
+    data: {
+      site: string;
+      target: string;
+      assignedCondition: { conditionCode: string; experimentId?: string };
+    };
+    uniquifier?: string;
+    clientError?: string;
   }
 
   export interface IMarkExperimentPoint {

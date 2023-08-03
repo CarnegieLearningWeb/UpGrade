@@ -11,8 +11,10 @@ import {
   EXPERIMENT_LOG_TYPE,
   REPEATED_MEASURE,
   IMetricMetaData,
+  ASSIGNMENT_UNIT,
+  EXPERIMENT_TYPE,
 } from 'upgrade_types';
-import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
+import { AnalyticsRepository, CSVExportDataRow } from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
 import ObjectsToCsv from 'objects-to-csv';
 import fs from 'fs';
@@ -176,15 +178,19 @@ export class AnalyticsService {
         }),
         userRepository.findOne({ email }),
       ]);
-      const { localTimeZone } = user;
 
       // make new query here
       let toLoop = true;
       let skip = 0;
       const take = 50;
       do {
-        const data = await this.analyticsRepository.getCSVDataForSimpleExport(experimentId, skip, take);
-        const userIds = data.map(({ userId }) => userId);
+        let csvExportData: CSVExportDataRow[];
+        if(experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+          csvExportData = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentId, skip, take);
+        }else {
+          csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(experimentId, skip, take);
+        }
+        const userIds = csvExportData.map(({ userId }) => userId);
         // don't query if no data
         if (!experimentId || (userIds && userIds.length === 0)) {
           break;
@@ -230,7 +236,7 @@ export class AnalyticsService {
                   const jsonLog = groupedUser[userId][queryId].reduce(
                     (accumulator: queryDataType | undefined, doc: queryDataType) => {
                       if (accumulator) {
-                        return new Date(accumulator.createdAt) > new Date(doc.createdAt) ? doc : accumulator;
+                        return new Date(accumulator.updatedAt) > new Date(doc.updatedAt) ? doc : accumulator;
                       }
                       return doc;
                     },
@@ -253,7 +259,7 @@ export class AnalyticsService {
                   const jsonLog = groupedUser[userId][queryId].reduce(
                     (accumulator: queryDataType | undefined, doc: queryDataType) => {
                       if (accumulator) {
-                        return new Date(accumulator.createdAt) < new Date(doc.createdAt) ? doc : accumulator;
+                        return new Date(accumulator.updatedAt) < new Date(doc.updatedAt) ? doc : accumulator;
                       }
                       return doc;
                     },
@@ -287,7 +293,7 @@ export class AnalyticsService {
         }
 
         // merge with data
-        const csvRows = data.map((row) => {
+        const csvRows = csvExportData.map((row) => {
           const queryObject = logsUser[row.userId];
           const queryDataToAdd = {};
 
@@ -309,9 +315,6 @@ export class AnalyticsService {
             Target: row.target,
             ConditionName: row.conditionName,
             FirstDecisionPointReachedOn: new Date(row.firstDecisionPointReachedOn).toISOString(),
-            FirstDecisionPointReachedOn_LocalTime: dayjs(row.firstDecisionPointReachedOn)
-              .tz(localTimeZone)
-              .format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
             UniqueDecisionPointsMarked: row.decisionPointReachedCount,
             ...queryDataToAdd,
           };
@@ -320,12 +323,15 @@ export class AnalyticsService {
         // write in the file
         const csv = new ObjectsToCsv(csvRows);
         try {
+          if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+            csv.delimiter = ',';
+          }
           await csv.toDisk(`${folderPath}${simpleExportCSV}`, { append: true });
         } catch (err) {
           console.log(err);
         }
 
-        if (data.length === take) {
+        if (csvExportData.length === take) {
           skip += take;
         } else {
           toLoop = false;
@@ -347,7 +353,6 @@ export class AnalyticsService {
             GroupId: '',
             ConditionName: '',
             FirstDecisionPointReachedOn: '',
-            FirstDecisionPointReachedOn_LocalTime: '',
           },
         ];
         const csv = new ObjectsToCsv(csvRows);

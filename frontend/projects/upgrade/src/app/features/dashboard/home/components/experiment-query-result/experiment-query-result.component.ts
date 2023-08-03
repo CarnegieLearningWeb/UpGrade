@@ -137,7 +137,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     });
 
     // Define data rows dynamically
-    levelCombinationTable.forEach((levels, levelIndex) => {
+    levelCombinationTable.forEach((levels) => {
       const rowData: RowData = {};
       this.factorColumnDefs.forEach((factorColumnDef, factorColumnDefIndex) => {
         rowData[factorColumnDef.name] = levels[factorColumnDefIndex].level;
@@ -290,16 +290,15 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     levels: LevelCombinationElement[],
     factorNumber: number
   ): InteractionEffectGraphData[] {
+    const alternateFactorNumber = factorNumber === 0 ? 1 : 0;
     resData.map((result) => {
-      if (result.name === levels[factorNumber].level.name) {
-        return result.series.map((level) => {
-          const alternateFactorNumber = factorNumber === 0 ? 1 : 0;
-          if (level.name === levels[alternateFactorNumber].level.name) {
+      const factorIndex = result.name === levels[factorNumber].level.name ? alternateFactorNumber : factorNumber;
+      return result.series.map((level) => {
+          if (level.name === levels[factorIndex].level.name) {
             level.value = Math.round(Number(data.result) * 100) / 100;
             level.participantsLogged = Number(data.participantsLogged);
           }
-        });
-      }
+      });
     });
     return resData;
   }

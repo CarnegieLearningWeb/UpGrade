@@ -27,6 +27,7 @@ import {
   IWorkingGroup,
   PAYLOAD_TYPE,
   EXPERIMENT_TYPE,
+  IPayload,
 } from 'upgrade_types';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagService } from '../services/FeatureFlagService';
@@ -514,15 +515,14 @@ export class ExperimentClientController {
     );
 
     return assignedData.map(({ assignedFactor, assignedCondition, ...rest }) => {
-      const updatedAssignedFactor: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }> =
-        {};
+      const updatedAssignedFactor: Record<string, { level: string; payload: IPayload }> = {};
       if (assignedFactor) {
-        Object.keys(assignedFactor).forEach((key) => {
+        Object.keys(assignedFactor[0]).forEach((key) => {
           updatedAssignedFactor[key] = {
-            level: assignedFactor[key].level,
+            level: assignedFactor[0][key].level,
             payload:
-              assignedFactor[key].payload && assignedFactor[key].payload.value
-                ? { type: PAYLOAD_TYPE.STRING, value: assignedFactor[key].payload.value }
+              assignedFactor[0][key].payload && assignedFactor[0][key].payload.value
+                ? { type: PAYLOAD_TYPE.STRING, value: assignedFactor[0][key].payload.value }
                 : null,
           };
         });
@@ -531,13 +531,13 @@ export class ExperimentClientController {
         ...rest,
         experimentType: assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE,
         assignedCondition: {
-          id: assignedCondition.id,
-          conditionCode: assignedCondition.conditionCode,
+          id: assignedCondition[0].id,
+          conditionCode: assignedCondition[0].conditionCode,
           payload:
-            assignedCondition.payload && assignedCondition.payload.value
-              ? { type: assignedCondition.payload.type, value: assignedCondition.payload.value }
+            assignedCondition[0].payload && assignedCondition[0].payload.value
+              ? { type: assignedCondition[0].payload.type, value: assignedCondition[0].payload.value }
               : null,
-          experimentId: assignedCondition.experimentId,
+          experimentId: assignedCondition[0].experimentId,
         },
         assignedFactor: assignedFactor ? updatedAssignedFactor : undefined,
       };
@@ -664,7 +664,7 @@ export class ExperimentClientController {
     request: AppRequest,
     envelope: CaliperLogEnvelope
   ): Promise<Log[]> {
-    const result = envelope.data.map(async (log) => {
+    let result = envelope.data.map(async log => {
       // getOriginalUserDoc call for alias
       const experimentUserDoc = await this.getUserDoc(log.object.assignee.id, request.logger);
       if (experimentUserDoc) {

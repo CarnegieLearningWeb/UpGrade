@@ -939,7 +939,7 @@ export class ExperimentService {
           error.message = `Error in creating conditionPayloads "updateExperimentInDB"`;
           logger.error(error);
           throw error;
-        }   
+        }
 
         let conditionDocToReturn = conditionDocs.map((conditionDoc) => {
           return { ...conditionDoc, experiment: conditionDoc.experiment };

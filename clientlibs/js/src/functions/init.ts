@@ -1,15 +1,15 @@
-import { Interfaces, Types } from '../identifiers';
+import { UpGradeClientInterfaces, UpGradeClientEnums } from '../types';
 import fetchDataService from '../common/fetchDataService';
 
 export default async function init(
-  customHttpClient: Interfaces.ICustomHttpClient,
+  customHttpClient: UpGradeClientInterfaces.ICustomHttpClient,
   url: string,
   userId: string,
   token: string,
   clientSessionId: string,
   group?: Record<string, Array<string>>,
   workingGroup?: Record<string, string>
-): Promise<Interfaces.IUser> {
+): Promise<UpGradeClientInterfaces.IUser> {
   let data: any = {
     id: userId,
   };
@@ -28,7 +28,14 @@ export default async function init(
     };
   }
 
-  const response = await fetchDataService(customHttpClient, url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
+  const response = await fetchDataService(
+    customHttpClient,
+    url,
+    token,
+    clientSessionId,
+    data,
+    UpGradeClientEnums.REQUEST_TYPES.POST
+  );
   if (response.status) {
     return response.data;
   } else {

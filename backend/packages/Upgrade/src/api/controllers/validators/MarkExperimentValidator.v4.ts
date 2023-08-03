@@ -16,6 +16,5 @@ export class MarkExperimentValidatorv4 {
   };
 
   public status?: MARKED_DECISION_POINT_STATUS;
-
   public clientError?: string;
 }

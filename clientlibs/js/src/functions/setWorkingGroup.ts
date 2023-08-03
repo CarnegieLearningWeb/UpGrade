@@ -1,4 +1,4 @@
-import { Interfaces, Types } from '../identifiers';
+import { UpGradeClientInterfaces, UpGradeClientEnums } from '../types';
 import fetchDataService from '../common/fetchDataService';
 
 export default async function setWorkingGroup(
@@ -8,14 +8,14 @@ export default async function setWorkingGroup(
   token: string,
   clientSessionId: string,
   workingGroup: Record<string, string>
-): Promise<Interfaces.IUser> {
+): Promise<UpGradeClientInterfaces.IUser> {
   const response = await fetchDataService(
     customHttpClient,
     url,
     token,
     clientSessionId,
     { id: userId, workingGroup: workingGroup },
-    Types.REQUEST_TYPES.PATCH
+    UpGradeClientEnums.REQUEST_TYPES.PATCH
   );
   if (response.status) {
     return response.data;

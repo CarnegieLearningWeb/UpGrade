@@ -1,4 +1,4 @@
-import { Types, Interfaces } from '../identifiers';
+import { UpGradeClientEnums, UpGradeClientInterfaces } from '../types';
 import fetchDataService from '../common/fetchDataService';
 import { CaliperEnvelope } from 'upgrade_types';
 
@@ -10,14 +10,14 @@ export default async function logCaliper(
   clientSessionId: string,
   value: CaliperEnvelope,
   sendAsAnalytics = false
-): Promise<Interfaces.ILog[]> {
+): Promise<UpGradeClientInterfaces.ILog[]> {
     const logResponse = await fetchDataService(
       customHttpClient,
       url,
       token,
       clientSessionId,
       value,
-      Types.REQUEST_TYPES.POST,
+      UpGradeClientEnums.REQUEST_TYPES.POST,
       sendAsAnalytics
     );
     if (logResponse.status) {

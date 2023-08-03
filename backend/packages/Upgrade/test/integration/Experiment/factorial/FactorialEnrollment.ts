@@ -82,11 +82,13 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
       expect.objectContaining({
         target: experimentTarget,
         site: experimentSite,
-        assignedCondition: expect.objectContaining({
-          id: experimentConditionPayload.parentCondition,
-          conditionCode: 'Color=Red; Shape=Circle',
-          payload: { type: 'string', value: experimentConditionPayload.payload.value },
-        }),
+        assignedCondition: expect.arrayContaining([
+          expect.objectContaining({
+            id: experimentConditionPayload.parentCondition,
+            conditionCode: 'Color=Red; Shape=Circle',
+            payload: { type: 'string', value: experimentConditionPayload.payload.value },
+          }),
+        ]),
       }),
     ])
   );
@@ -121,9 +123,11 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
       expect.objectContaining({
         target: experimentTarget,
         site: experimentSite,
-        assignedCondition: expect.objectContaining({
-          conditionCode: 'Color=Blue; Shape=Rectangle',
-        }),
+        assignedCondition: expect.arrayContaining([
+          expect.objectContaining({
+            conditionCode: 'Color=Blue; Shape=Rectangle',
+          }),
+        ]),
       }),
     ])
   );
