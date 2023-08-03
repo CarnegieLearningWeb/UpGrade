@@ -4,7 +4,7 @@ import { IExperimentAssignmentv5, MARKED_DECISION_POINT_STATUS } from 'upgrade_t
 import { findExperimentAssignmentBySiteAndTarget, rotateAssignmentList } from '../common';
 
 export default async function markDecisionPoint(
-  customHttpClient: UpGradeClientInterfaces.ICustomHttpClient,
+  httpClient: UpGradeClientInterfaces.IHttpClientWrapper,
   url: string,
   userId: string,
   token: string,
@@ -46,7 +46,7 @@ export default async function markDecisionPoint(
     };
   }
   const response = await fetchDataService(
-    customHttpClient,
+    httpClient,
     url,
     token,
     clientSessionId,

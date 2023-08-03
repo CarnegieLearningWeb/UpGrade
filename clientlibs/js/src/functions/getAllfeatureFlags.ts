@@ -3,13 +3,13 @@ import { UpGradeClientEnums, UpGradeClientInterfaces } from '../types';
 import { IFeatureFlag, IFlagVariation } from 'upgrade_types';
 
 export default async function getAllFeatureFlags(
-  customHttpClient: UpGradeClientInterfaces.ICustomHttpClient,
+  httpClient: UpGradeClientInterfaces.IHttpClientWrapper,
   url: string,
   token: string,
   clientSessionId: string
 ): Promise<IFeatureFlag[]> {
   const featureFlagResponse = await fetchDataService(
-    customHttpClient,
+    httpClient,
     url,
     token,
     clientSessionId,

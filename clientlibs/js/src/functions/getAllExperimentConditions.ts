@@ -3,7 +3,7 @@ import { IExperimentAssignmentv5 } from 'upgrade_types';
 import { UpGradeClientEnums, UpGradeClientInterfaces } from '../types';
 
 export default async function getAllExperimentConditions(
-  customHttpClient: UpGradeClientInterfaces.ICustomHttpClient,
+  httpClient: UpGradeClientInterfaces.IHttpClientWrapper,
   url: string,
   userId: string,
   token: string,
@@ -15,7 +15,7 @@ export default async function getAllExperimentConditions(
     context,
   };
   const experimentConditionResponse = await fetchDataService(
-    customHttpClient,
+    httpClient,
     url,
     token,
     clientSessionId,

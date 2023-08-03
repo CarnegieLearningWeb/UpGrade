@@ -6,10 +6,19 @@ export namespace UpGradeClientInterfaces {
   export interface IConfig {
     hostURL: string;
     userId: string;
-    api: IEndpoints;
+    context: string;
+    apiVersion: string;
     clientSessionId?: string;
     token?: string;
+    httpClient?: UpGradeClientInterfaces.IHttpClientWrapper;
   }
+
+  export interface IConfigOptions {
+    token?: string;
+    clientSessionId?: string;
+    httpClient?: UpGradeClientInterfaces.IHttpClientWrapper;
+  }
+
   export interface IEndpoints {
     init: string;
     getAllExperimentConditions: string;
@@ -95,8 +104,8 @@ export namespace UpGradeClientInterfaces {
 
   export interface IExperimentUser {
     id: string;
-    group: object;
-    workingGroup: object;
+    group: Record<string, Array<string>>;
+    workingGroup: Record<string, string>;
   }
 
   export interface IExperimentUserAliases {
@@ -104,17 +113,32 @@ export namespace UpGradeClientInterfaces {
     aliases: string[];
   }
 
-  export interface ICustomHttpClient {
-    [UpGradeClientEnums.REQUEST_TYPES.GET](url: string, options?: any): Promise<UpGradeClientInterfaces.IResponse>;
-    [UpGradeClientEnums.REQUEST_TYPES.POST](
-      url: string,
-      data: any,
-      options?: any
-    ): Promise<UpGradeClientInterfaces.IResponse>;
-    [UpGradeClientEnums.REQUEST_TYPES.PATCH](
-      url: string,
-      data: any,
-      options?: any
-    ): Promise<UpGradeClientInterfaces.IResponse>;
+  export interface IHttpClientWrapperRequestOptions {
+    headers?: object;
   }
+
+  /**
+   * this interface will take generic callbacks for get, post and patch methods
+   *
+   * for example:
+   *
+   * const httpClient: Interfaces.IHttpClientWrapper = {
+   *   get: (url: string, options: Interfaces.IHttpClientWrapperRequestOptions): Observable<IUser> => {
+   *     return this.http.get<IUser>(url, options);
+   *   }
+   * }
+   */
+  export type IHttpClientWrapper = {
+    get: (url: string, options: IHttpClientWrapperRequestOptions) => any;
+    post: <UpgradeRequestBodyType>(
+      url: string,
+      requestBody: UpgradeRequestBodyType,
+      options: IHttpClientWrapperRequestOptions
+    ) => any;
+    patch: <UpgradeRequestBodyType>(
+      url: string,
+      requestBody: UpgradeRequestBodyType,
+      options: IHttpClientWrapperRequestOptions
+    ) => any;
+  };
 }

@@ -3,7 +3,7 @@ import fetchDataService from '../common/fetchDataService';
 import { ILogInput } from 'upgrade_types';
 
 export default async function log(
-  customHttpClient: UpGradeClientInterfaces.ICustomHttpClient,
+  httpClient: UpGradeClientInterfaces.IHttpClientWrapper,
   url: string,
   userId: string,
   token: string,
@@ -16,7 +16,7 @@ export default async function log(
     value,
   };
   const logResponse = await fetchDataService(
-    customHttpClient,
+    httpClient,
     url,
     token,
     clientSessionId,

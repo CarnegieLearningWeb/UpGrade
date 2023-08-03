@@ -3,7 +3,7 @@ import fetchDataService from '../common/fetchDataService';
 import { CaliperEnvelope } from 'upgrade_types';
 
 export default async function logCaliper(
-  customHttpClient: UpGradeClientInterfaces.ICustomHttpClient,
+  httpClient: UpGradeClientInterfaces.IHttpClientWrapper,
   url: string,
   userId: string,
   token: string,
@@ -12,7 +12,7 @@ export default async function logCaliper(
   sendAsAnalytics = false
 ): Promise<UpGradeClientInterfaces.ILog[]> {
   const logResponse = await fetchDataService(
-    customHttpClient,
+    httpClient,
     url,
     token,
     clientSessionId,

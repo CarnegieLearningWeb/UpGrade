@@ -40,7 +40,7 @@ export abstract class AbstractMockAppService {
     public instanceMockAppName: string,
     public eventBus: EventBusService,
     public clientLibraryService: ClientLibraryService,
-    public customHttpClient?: any // hard to give type to this in this context
+    public httpClient?: any // hard to give type to this in this context
   ) {
     this.eventBus.mockApp$.subscribe((mockAppName) => {
       if (mockAppName === instanceMockAppName) {
@@ -64,11 +64,11 @@ export abstract class AbstractMockAppService {
 
   public abstract routeHook(hookEvent: ClientAppHook): void;
 
-  public constructUpgradeClient(userId: string, customHttpClient?: any): any {
+  public constructUpgradeClient(userId: string, httpClient?: any): any {
     const apiHostUrl = this.clientLibraryService.getSelectedAPIHostUrl();
     const UpgradeClient: new (...args: any[]) => typeof UpgradeClient =
       this.clientLibraryService.getUpgradeClientConstructor();
-    const upgradeClient = new UpgradeClient(userId, apiHostUrl, this.CONTEXT, { customHttpClient });
+    const upgradeClient = new UpgradeClient(userId, apiHostUrl, this.CONTEXT, { httpClient });
     return upgradeClient;
   }
 }

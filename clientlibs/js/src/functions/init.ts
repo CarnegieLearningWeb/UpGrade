@@ -2,7 +2,7 @@ import { UpGradeClientInterfaces, UpGradeClientEnums } from '../types';
 import fetchDataService from '../common/fetchDataService';
 
 export default async function init(
-  customHttpClient: UpGradeClientInterfaces.ICustomHttpClient,
+  httpClient: UpGradeClientInterfaces.IHttpClientWrapper,
   url: string,
   userId: string,
   token: string,
@@ -10,7 +10,7 @@ export default async function init(
   group?: Record<string, Array<string>>,
   workingGroup?: Record<string, string>
 ): Promise<UpGradeClientInterfaces.IUser> {
-  let data: any = {
+  let data: UpGradeClientInterfaces.IUser = {
     id: userId,
   };
 
@@ -29,7 +29,7 @@ export default async function init(
   }
 
   const response = await fetchDataService(
-    customHttpClient,
+    httpClient,
     url,
     token,
     clientSessionId,

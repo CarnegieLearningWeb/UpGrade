@@ -2,7 +2,7 @@ import { UpGradeClientInterfaces, UpGradeClientEnums } from '../types';
 import fetchDataService from '../common/fetchDataService';
 
 export default async function setGroupMembership(
-  customHttpClient: UpGradeClientInterfaces.ICustomHttpClient,
+  httpClient: UpGradeClientInterfaces.IHttpClientWrapper,
   url: string,
   userId: string,
   token: string,
@@ -10,7 +10,7 @@ export default async function setGroupMembership(
   group: Record<string, Array<string>>
 ): Promise<UpGradeClientInterfaces.IUser> {
   const response = await fetchDataService(
-    customHttpClient,
+    httpClient,
     url,
     token,
     clientSessionId,

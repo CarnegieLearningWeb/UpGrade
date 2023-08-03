@@ -2,7 +2,7 @@ import { UpGradeClientEnums, UpGradeClientInterfaces } from '../types';
 import fetchDataService from '../common/fetchDataService';
 
 export default async function setAltUserIds(
-  customHttpClient: UpGradeClientInterfaces.ICustomHttpClient,
+  httpClient: UpGradeClientInterfaces.IHttpClientWrapper,
   url: string,
   userId: string,
   token: string,
@@ -15,7 +15,7 @@ export default async function setAltUserIds(
   };
   const skipRetryOnStatusCodes = [500]; // Response status codes for which request retry should be skipped on failure
   const response = await fetchDataService(
-    customHttpClient,
+    httpClient,
     url,
     token,
     clientSessionId,
