@@ -91,7 +91,7 @@ describe('SegmentDataService', () => {
 
       service.exportSegments([segmentId]);
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl, [segmentId]);
     });
   });
 

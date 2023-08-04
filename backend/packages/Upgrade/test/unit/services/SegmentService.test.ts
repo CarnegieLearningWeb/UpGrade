@@ -331,7 +331,7 @@ describe('Segment Service Testing', () => {
 
   it('should export a segment', async () => {
     const segments = await service.exportSegments([seg1.id], logger);
-    expect(segments).toEqual(seg1);
+    expect(segments).toEqual([seg1]);
   });
 
   it('should throw an error when segment not found on export', async () => {

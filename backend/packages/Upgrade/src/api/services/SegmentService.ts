@@ -179,35 +179,23 @@ export class SegmentService {
     return this.addSegmentDataInDB(segment, logger);
   }
 
-  public async exportSegment(segmentId: string, logger: UpgradeLogger): Promise<Segment> {
-    logger.info({ message: `Export segment by id. segmentId: ${segmentId}` });
-    const segmentDoc = await this.segmentRepository.findOne({
-      where: { id: segmentId },
-      relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
-    });
-    if (!segmentDoc) {
-      throw new Error(SERVER_ERROR.QUERY_FAILED);
-    }
-    return segmentDoc;
-  }
-
   public async exportSegments(segmentIds: string[], logger: UpgradeLogger): Promise<Segment[]> {
     logger.info({ message: `Export segment by id. segmentId: ${segmentIds}` });
     let segmentsDoc: Segment[] = [];
-    if (segmentIds.length <= 1) {
+    if (segmentIds.length > 1) {
+      segmentsDoc = await this.getSegmentByIds(segmentIds);
+    }else {
       const segmentDoc = await this.segmentRepository.findOne({
         where: { id: segmentIds[0] },
         relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
       });
-      segmentsDoc.push(segmentDoc);
-    }else {
-      const segmentsALLDoc = await this.getAllSegments(logger);
-      segmentsDoc = segmentsALLDoc.filter((segment) => segmentIds.includes(segment.id));
+      if (!segmentDoc) {
+        throw new Error(SERVER_ERROR.QUERY_FAILED);
+      }else {
+        segmentsDoc.push(segmentDoc);
+      }
     }
 
-    if (!segmentsDoc) {
-      throw new Error(SERVER_ERROR.QUERY_FAILED);
-    }
     return segmentsDoc;
   }
 
