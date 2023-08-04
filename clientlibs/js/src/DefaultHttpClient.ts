@@ -23,6 +23,7 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
     });
   }
 
+  // TODO break this down
   private async fetchData(
     url: string,
     requestType: UpGradeClientEnums.REQUEST_TYPES,

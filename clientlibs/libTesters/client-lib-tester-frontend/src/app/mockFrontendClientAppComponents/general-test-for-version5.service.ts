@@ -10,7 +10,7 @@ import {
 } from '../../../../shared/models';
 
 import UpgradeClient, { Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser';
-import { CaliperEnvelope, IExperimentAssignmentv5 } from 'upgrade_client_local/dist/types/src'
+import { CaliperEnvelope, IExperimentAssignmentv5 } from 'upgrade_client_local/dist/types/src';
 import { AbstractMockAppService } from './abstract-mock-app.service';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
 
@@ -38,7 +38,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
     CONDITION_2: 'variant_X',
     CONDITION_3: 'condition3',
     CONDITION_4: 'condition4',
-  }
+  };
   public GROUPS = ['schoolId', 'classId', 'instructorId'];
   public CONTEXT = 'assign-prog'; // what should this be really?
   public HOOKNAMES = {
@@ -63,7 +63,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
   ];
 
   constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
-    super(MOCK_APP_NAMES.GENERAL_TS_FRONTEND_5_0, eventBus, clientLibraryService, customHttpClient);
+    super(MOCK_APP_NAMES.GENERAL_TS_FRONTEND_5_0, eventBus, clientLibraryService);
   }
 
   /******************* "getAppInterfaceModel" required to give tester app a model to construct an interface to use this 'app' ********************/
@@ -216,10 +216,10 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       this.doAssignmentMark();
     } else if (name === this.HOOKNAMES.MARK_CLIENT_TARGET_1_CONDITION_1) {
       this.doClientMark(this.CONDITIONS.CONDITION_1);
-    // } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_3) {
-    //   this.doClientMark(this.CONDITIONS.CONDITION_3);
-    // } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_4) {
-    //   this.doClientMark(this.CONDITIONS.CONDITION_4);
+      // } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_3) {
+      //   this.doClientMark(this.CONDITIONS.CONDITION_3);
+      // } else if (name === this.HOOKNAMES.MARK_TARGET_1_CONDITION_4) {
+      //   this.doClientMark(this.CONDITIONS.CONDITION_4);
     } else if (name === this.HOOKNAMES.SET_ALT_USER_IDS) {
       this.doUserAliases(user);
     } else if (name === this.HOOKNAMES.GROUP_MEMBERSHIP) {
@@ -267,13 +267,16 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('No upgradeClient found. Maybe you need to run login hook first?');
     }
     try {
-      const dpAssignmentsResponse: Assignment = await this.upgradeClient.getDecisionPointAssignment(this.SITES.TEST, target);
+      const dpAssignmentsResponse: Assignment = await this.upgradeClient.getDecisionPointAssignment(
+        this.SITES.TEST,
+        target
+      );
 
       if (!dpAssignmentsResponse) {
         console.log({ dpAssignmentsResponse });
         return;
       }
-  
+
       const condition = dpAssignmentsResponse.getCondition();
       const payload = dpAssignmentsResponse.getPayload();
       const getExperimentType = dpAssignmentsResponse.getExperimentType();
@@ -290,11 +293,9 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.log({ payload });
       console.log({ getExperimentType });
       console.log({ factors });
-    
 
       console.log({ dpAssignmentsResponse });
       console.log('condition:', dpAssignmentsResponse.getCondition());
-
     } catch (err) {
       console.error(err);
     }
@@ -305,7 +306,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('No upgradeClient found. Maybe you need to run login hook first?');
     }
     try {
-      const markResponse: UpGradeClientInterfaces.IMarkExperimentPoint = await this.upgradeClient.markDecisionPoint(
+      const markResponse: UpGradeClientInterfaces.IMarkDecisionPoint = await this.upgradeClient.markDecisionPoint(
         this.SITES.TEST,
         this.TARGETS.TARGET_1,
         condition,
@@ -323,7 +324,10 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('No upgradeClient found. Maybe you need to run login hook first?');
     }
     try {
-      const assignment: Assignment = await this.upgradeClient.getDecisionPointAssignment(this.SITES.TEST, this.TARGETS.TARGET_1);
+      const assignment: Assignment = await this.upgradeClient.getDecisionPointAssignment(
+        this.SITES.TEST,
+        this.TARGETS.TARGET_1
+      );
       const markResponse = await assignment.markDecisionPoint(
         UpgradeClient.MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
         uniquifier
@@ -342,7 +346,8 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('User info is missing userAliases:', user);
     }
     try {
-      const useraliasesResponse: UpGradeClientInterfaces.IExperimentUserAliases[] = await this.upgradeClient.setAltUserIds(user.userAliases);
+      const useraliasesResponse: UpGradeClientInterfaces.IExperimentUserAliases =
+        await this.upgradeClient.setAltUserIds(user.userAliases);
       console.log({ useraliasesResponse });
     } catch (err) {
       console.error(err);
@@ -357,7 +362,9 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('User info is missing groups:', user);
     }
     try {
-      const groupMembershipResponse: UpGradeClientInterfaces.IUser = await this.upgradeClient.setGroupMembership(user.groups);
+      const groupMembershipResponse: UpGradeClientInterfaces.IUser = await this.upgradeClient.setGroupMembership(
+        user.groups
+      );
       console.log({ groupMembershipResponse });
     } catch (err) {
       console.error(err);
@@ -372,7 +379,9 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('User info is missing working groups:', user);
     }
     try {
-      const workingGroupMembershipResponse: UpGradeClientInterfaces.IUser = await this.upgradeClient.setWorkingGroup(user.workingGroup);
+      const workingGroupMembershipResponse: UpGradeClientInterfaces.IUser = await this.upgradeClient.setWorkingGroup(
+        user.workingGroup
+      );
       console.log({ workingGroupMembershipResponse });
     } catch (err) {
       console.error(err);

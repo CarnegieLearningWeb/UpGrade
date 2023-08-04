@@ -1,4 +1,4 @@
-import { DataService } from 'DataService';
+import { DataService } from './DataService';
 import {
   IExperimentAssignmentv5,
   PAYLOAD_TYPE,
@@ -7,7 +7,7 @@ import {
   MARKED_DECISION_POINT_STATUS,
 } from '../../../types/src';
 import { UpGradeClientInterfaces } from './types';
-import ApiService from 'ApiService';
+import ApiService from './ApiService';
 
 export default class Assignment {
   private _site: string;

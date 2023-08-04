@@ -10,7 +10,7 @@ import {
 } from 'upgrade_types';
 import Assignment from './Assignment';
 import ApiService from './ApiService';
-import { DataService } from 'DataService';
+import { DataService } from './DataService';
 
 /**
  * UpGradeClient is the main class for interacting with the UpGrade API.

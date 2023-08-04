@@ -1,4 +1,4 @@
-import { UpGradeClientInterfaces } from 'types';
+import { UpGradeClientInterfaces } from './types';
 import { IExperimentAssignmentv5, IFeatureFlag } from '../../../types/src';
 
 /**

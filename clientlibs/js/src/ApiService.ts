@@ -1,6 +1,5 @@
-import { UpGradeClientEnums } from 'types';
-import { UpGradeClientInterfaces } from './types/Interfaces';
-import { DefaultHttpClient } from 'DefaultHttpClient';
+import { UpGradeClientEnums, UpGradeClientInterfaces } from './types';
+import { DefaultHttpClient } from './DefaultHttpClient';
 import {
   CaliperEnvelope,
   IExperimentAssignmentv5,
