@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "build:bundler": "webpack",
-    "build:types": "./node_modules/.bin/dts-bundle-generator -o dist/browser/index.d.ts src/index.ts && ./node_modules/.bin/dts-bundle-generator -o dist/node/index.d.ts src/index.ts",
+    "build:types": "./node_modules/.bin/dts-bundle-generator -o dist/browser/index.d.ts src/index.ts && ./node_modules/.bin/dts-bundle-generator -o dist/node/index.d.ts src/index.ts && ./node_modules/.bin/dts-bundle-generator -o dist/browser-lite/index.d.ts src/index.ts && ./node_modules/.bin/dts-bundle-generator -o dist/node-lite/index.d.ts src/index.ts && ./node_modules/.bin/dts-bundle-generator -o dist/defaultHttpClient/index.d.ts src/index.ts",
     "build": "npm run clean && npm run build:bundler && npm run build:types",
     "build:watch": "tsc -w",
     "clean": "rm -rf dist",

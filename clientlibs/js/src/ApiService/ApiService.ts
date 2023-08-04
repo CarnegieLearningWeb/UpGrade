@@ -13,6 +13,9 @@ import { DataService } from 'DataService/DataService';
 import { IApiServiceRequestParams, IEndpoints } from './ApiService.types';
 import { IMarkDecisionPointParams } from 'UpGradeClient/UpGradeClient.types';
 
+// this variable is used be webpack to replace the value of USE_CUSTOM_HTTP_CLIENT with true or false to create two different builds
+declare const USE_CUSTOM_HTTP_CLIENT: boolean;
+
 export default class ApiService {
   private context: string;
   private hostUrl: string;
@@ -28,7 +31,6 @@ export default class ApiService {
     this.hostUrl = config.hostURL;
     this.token = config.token;
     this.clientSessionId = config.clientSessionId;
-    this.httpClient = config.httpClient || new DefaultHttpClient(this.clientSessionId, this.token);
     this.userId = config.userId;
     this.apiVersion = config.apiVersion;
     this.api = {
@@ -44,6 +46,20 @@ export default class ApiService {
       altUserIds: `${this.hostUrl}/api/${this.apiVersion}/useraliases`,
       addMetrics: `${this.hostUrl}/api/${this.apiVersion}/metric`,
     };
+    this.httpClient = this.setHttpClient(config.httpClient);
+  }
+
+  private setHttpClient(httpClient: UpGradeClientInterfaces.IHttpClientWrapper) {
+    console.log({ USE_CUSTOM_HTTP_CLIENT });
+    if (USE_CUSTOM_HTTP_CLIENT) {
+      if (httpClient) {
+        return httpClient;
+      } else {
+        throw new Error('Please provide valid httpClient.');
+      }
+    } else {
+      return new DefaultHttpClient(this.clientSessionId, this.token);
+    }
   }
 
   private validateClient() {

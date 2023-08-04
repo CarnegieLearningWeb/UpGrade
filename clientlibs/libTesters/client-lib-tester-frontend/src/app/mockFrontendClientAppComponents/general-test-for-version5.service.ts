@@ -9,7 +9,9 @@ import {
   MockClientAppUser,
 } from '../../../../shared/models';
 
-import UpgradeClient, { Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser';
+// import UpgradeClient, { Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser';
+import UpgradeClient, { Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser-lite';
+
 import { CaliperEnvelope, IExperimentAssignmentv5 } from 'upgrade_client_local/dist/types/src';
 import { AbstractMockAppService } from './abstract-mock-app.service';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
