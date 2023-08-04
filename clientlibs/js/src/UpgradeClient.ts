@@ -8,10 +8,9 @@ import {
   IExperimentAssignmentv5,
   MARKED_DECISION_POINT_STATUS,
 } from 'upgrade_types';
-import getDecisionPointAssignment from './functions/getDecisionPointAssignment';
-import getFeatureFlag from './functions/getFeatureFlag';
 import Assignment from './Assignment';
 import ApiService from './ApiService';
+import { DataService } from 'DataService';
 
 /**
  * UpGradeClient is the main class for interacting with the UpGrade API.
@@ -39,36 +38,11 @@ import ApiService from './ApiService';
  */
 
 export default class UpgradeClient {
-  // Endpoints URLs
-  // private api: UpGradeClientInterfaces.IEndpoints = {
-  //   init: '',
-  //   getAllExperimentConditions: '',
-  //   markDecisionPoint: '',
-  //   setGroupMemberShip: '',
-  //   setWorkingGroup: '',
-  //   failedExperimentPoint: '',
-  //   getAllFeatureFlag: '',
-  //   log: '',
-  //   logCaliper: '',
-  //   altUserIds: '',
-  //   addMetrics: '',
-  // };
-  // private userId: string;
-  // private hostUrl: string;
-  // private context: string;
-  // // Use token if it is given in constructor
-  // private token: string;
-  // private clientSessionId: string;
-
   private apiService: ApiService;
-  private group: Record<string, Array<string>> = null;
-  private workingGroup: Record<string, string> = null;
-  private experimentConditionData: IExperimentAssignmentv5[] = null;
-  private featureFlags: IFeatureFlag[] = null;
-  // private httpClient: UpGradeClientInterfaces.IHttpClientWrapper;
+  private dataService: DataService;
 
   // allow MARKED_DECISION_POINT_STATUS to be exposed on the client a la UpgradeClient.MARKED_DECISION_POINT_STATUS
-  // this will allow users who are not using the upgrade types package to use this enum for markExperimentPoint()
+  // this will allow js users who are not using the upgrade types package to use this enum for markExperimentPoint()
   public static MARKED_DECISION_POINT_STATUS = MARKED_DECISION_POINT_STATUS;
 
   /**
@@ -105,22 +79,9 @@ export default class UpgradeClient {
       httpClient: options.httpClient,
     };
 
-    this.apiService = new ApiService(config);
+    this.dataService = new DataService();
+    this.apiService = new ApiService(config, this.dataService);
   }
-
-  // private getClientState(): UpGradeClientInterfaces.IClientState {
-  //   const clientState: UpGradeClientInterfaces.IClientState = {
-  //     config: {
-  //       hostURL: this.hostUrl,
-  //       userId: this.userId,
-  //       api: this.api,
-  //       clientSessionId: this.clientSessionId,
-  //       token: this.token,
-  //     },
-  //     allExperimentAssignmentData: this.experimentConditionData,
-  //   };
-  //   return clientState;
-  // }
 
   /**
    * This will initialize user and metadata for the user. It will return the user object with id, group, and working group.
@@ -169,10 +130,10 @@ export default class UpgradeClient {
     let response: UpGradeClientInterfaces.IUser = await this.apiService.setGroupMembership(group);
     if (response.id) {
       // If it does not throw error from setGroupMembership
-      this.group = group;
+      this.dataService.setGroup(group);
       response = {
         ...response,
-        workingGroup: this.workingGroup,
+        workingGroup: this.dataService.getWorkingGroup(),
       };
     }
     return response;
@@ -195,10 +156,10 @@ export default class UpgradeClient {
     let response: UpGradeClientInterfaces.IUser = await this.apiService.setWorkingGroup(workingGroup);
     if (response.id) {
       // If it does not throw error from setWorkingGroup
-      this.workingGroup = workingGroup;
+      this.dataService.setWorkingGroup(workingGroup);
       response = {
         ...response,
-        group: this.group,
+        group: this.dataService.getGroup(),
       };
     }
     return response;
@@ -223,7 +184,7 @@ export default class UpgradeClient {
   async getAllExperimentConditions(): Promise<IExperimentAssignmentv5[]> {
     const response = await this.apiService.getAllExperimentConditions();
     if (Array.isArray(response)) {
-      this.experimentConditionData = response;
+      this.dataService.setExperimentAssignmentData(response);
     }
 
     // returns the first element of the queue
@@ -242,11 +203,23 @@ export default class UpgradeClient {
    */
 
   async getDecisionPointAssignment(site: string, target?: string): Promise<Assignment> {
-    if (this.experimentConditionData == null) {
+    if (this.dataService.getExperimentAssignmentData() == null) {
       await this.getAllExperimentConditions();
     }
     // const clientState: UpGradeClientInterfaces.IClientState = this.getClientState();
-    return getDecisionPointAssignment(site, target);
+    if (this.dataService.getExperimentAssignmentData()) {
+      const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
+
+      if (experimentAssignment) {
+        const assignment = new Assignment(experimentAssignment, this.apiService, this.dataService);
+
+        return assignment;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -304,19 +277,18 @@ export default class UpgradeClient {
     status: MARKED_DECISION_POINT_STATUS,
     uniquifier?: string,
     clientError?: string
-  ): Promise<UpGradeClientInterfaces.IMarkExperimentPoint> {
-    if (this.experimentConditionData == null) {
+  ): Promise<UpGradeClientInterfaces.IMarkDecisionPoint> {
+    if (this.dataService.getExperimentAssignmentData() == null) {
       await this.getAllExperimentConditions();
     }
-    return await this.apiService.markDecisionPoint(
+    return await this.apiService.markDecisionPoint({
       site,
       target,
       condition,
       status,
-      this.experimentConditionData,
       uniquifier,
-      clientError
-    );
+      clientError,
+    });
   }
 
   /**
@@ -380,7 +352,7 @@ export default class UpgradeClient {
   async getAllFeatureFlags(): Promise<IFeatureFlag[]> {
     const response = await this.apiService.getAllFeatureFlags();
     if (response.length) {
-      this.featureFlags = response;
+      this.dataService.setFeatureFlags(response);
     }
     return response;
   }
@@ -389,9 +361,8 @@ export default class UpgradeClient {
    * This feature is available but not recommended for use as it is not fully regression tested in recent releases.
    * @ignore
    */
-
-  getFeatureFlag(key: string): IFeatureFlag {
-    return getFeatureFlag(this.featureFlags, key);
+  public getFeatureFlag(key: string): IFeatureFlag {
+    return this.dataService.getFeatureFlag(key);
   }
 
   /**
@@ -495,7 +466,7 @@ export default class UpgradeClient {
    * const setAltUserIdsResponse: IExperimentUserAliases[] = await upgradeClient.setAltUserIds(aliases);
    * ```
    */
-  async setAltUserIds(altUserIds: string[]): Promise<UpGradeClientInterfaces.IExperimentUserAliases[]> {
+  async setAltUserIds(altUserIds: string[]): Promise<UpGradeClientInterfaces.IExperimentUserAliases> {
     return await this.apiService.setAltUserIds(altUserIds);
   }
 

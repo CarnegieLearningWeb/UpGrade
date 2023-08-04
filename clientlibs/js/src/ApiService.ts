@@ -1,7 +1,23 @@
 import { UpGradeClientEnums } from 'types';
 import { UpGradeClientInterfaces } from './types/Interfaces';
 import { DefaultHttpClient } from 'DefaultHttpClient';
+import {
+  CaliperEnvelope,
+  IExperimentAssignmentv5,
+  IFeatureFlag,
+  IFlagVariation,
+  IGroupMetric,
+  ILogInput,
+  ISingleMetric,
+} from '../../../types/src';
+import { DataService } from 'DataService';
 
+interface ApiServiceRequestParams {
+  url: string;
+  requestType: UpGradeClientEnums.REQUEST_TYPES;
+  requestBody?: any;
+  options?: any;
+}
 export default class ApiService {
   private context: string;
   private hostUrl: string;
@@ -12,13 +28,11 @@ export default class ApiService {
   private httpClient: UpGradeClientInterfaces.IHttpClientWrapper;
   private api: UpGradeClientInterfaces.IEndpoints;
 
-  constructor(config: UpGradeClientInterfaces.IConfig) {
-    console.log(config);
-
+  constructor(config: UpGradeClientInterfaces.IConfig, private dataService: DataService) {
     this.hostUrl = config.hostURL;
     this.token = config.token;
     this.clientSessionId = config.clientSessionId;
-    this.httpClient = config.httpClient || new DefaultHttpClient();
+    this.httpClient = config.httpClient || new DefaultHttpClient(this.clientSessionId, this.token);
     this.userId = config.userId;
     this.apiVersion = config.apiVersion;
     this.api = {
@@ -51,25 +65,29 @@ export default class ApiService {
     }
   }
 
-  public async sendRequest<RequestBodyType>(
-    url: string,
-    requestType: UpGradeClientEnums.REQUEST_TYPES,
-    requestBody: RequestBodyType,
-    options?: UpGradeClientInterfaces.IHttpClientWrapperRequestOptions
-  ): Promise<any> {
+  private async sendRequest<RequestBodyType>(requestParams: ApiServiceRequestParams): Promise<any> {
     this.validateClient();
-    if (requestType === UpGradeClientEnums.REQUEST_TYPES.GET) {
-      const response = await this.httpClient.get(url, options);
+
+    if (requestParams.requestType === UpGradeClientEnums.REQUEST_TYPES.GET) {
+      const response = await this.httpClient.get(requestParams.url, requestParams.options);
       return response;
     }
 
-    if (requestType === UpGradeClientEnums.REQUEST_TYPES.POST) {
-      const response: ResponseType = await this.httpClient.post<RequestBodyType>(url, requestBody, options);
+    if (requestParams.requestType === UpGradeClientEnums.REQUEST_TYPES.POST) {
+      const response: ResponseType = await this.httpClient.post<RequestBodyType>(
+        requestParams.url,
+        requestParams.requestBody,
+        requestParams.options
+      );
       return response;
     }
 
-    if (requestType === UpGradeClientEnums.REQUEST_TYPES.PATCH) {
-      const response: ResponseType = await this.httpClient.patch<RequestBodyType>(url, requestBody, options);
+    if (requestParams.requestType === UpGradeClientEnums.REQUEST_TYPES.PATCH) {
+      const response: ResponseType = await this.httpClient.patch<RequestBodyType>(
+        requestParams.url,
+        requestParams.requestBody,
+        requestParams.options
+      );
       return response;
     }
   }
@@ -78,28 +96,169 @@ export default class ApiService {
     group?: Record<string, Array<string>>,
     workingGroup?: Record<string, string>
   ): Promise<UpGradeClientInterfaces.IUser> {
-    let data: UpGradeClientInterfaces.IUser = {
+    let requestBody: UpGradeClientInterfaces.IUser = {
       id: this.userId,
     };
 
     if (group) {
-      data = {
-        ...data,
+      requestBody = {
+        ...requestBody,
         group,
       };
     }
 
     if (workingGroup) {
-      data = {
-        ...data,
+      requestBody = {
+        ...requestBody,
         workingGroup,
       };
     }
 
-    return await this.sendRequest<UpGradeClientInterfaces.IUser>(
-      this.api.init,
-      UpGradeClientEnums.REQUEST_TYPES.POST,
-      data
-    );
+    return await this.sendRequest<UpGradeClientInterfaces.IUser>({
+      url: this.api.init,
+      requestType: UpGradeClientEnums.REQUEST_TYPES.POST,
+      requestBody,
+    });
+  }
+
+  public async setGroupMembership(group: Record<string, Array<string>>): Promise<UpGradeClientInterfaces.IUser> {
+    const requestBody: UpGradeClientInterfaces.IUserGroup = group;
+
+    return await this.sendRequest<UpGradeClientInterfaces.IUser>({
+      url: this.api.setGroupMemberShip,
+      requestType: UpGradeClientEnums.REQUEST_TYPES.POST,
+      requestBody,
+    });
+  }
+
+  public async setWorkingGroup(workingGroup: Record<string, string>): Promise<UpGradeClientInterfaces.IUser> {
+    const requestBody: UpGradeClientInterfaces.IUserWorkingGroup = workingGroup;
+
+    return await this.sendRequest<UpGradeClientInterfaces.IUser>({
+      url: this.api.setWorkingGroup,
+      requestType: UpGradeClientEnums.REQUEST_TYPES.POST,
+      requestBody,
+    });
+  }
+
+  public async getAllExperimentConditions(): Promise<IExperimentAssignmentv5[]> {
+    const experimentConditionResponse = await this.sendRequest({
+      url: this.api.getAllExperimentConditions,
+      requestType: UpGradeClientEnums.REQUEST_TYPES.GET,
+    });
+
+    return experimentConditionResponse.data.map((data: IExperimentAssignmentv5) => {
+      return data;
+    });
+  }
+
+  public async markDecisionPoint({
+    site,
+    target,
+    condition,
+    status,
+    uniquifier,
+    clientError,
+  }: UpGradeClientInterfaces.MarkDecisionPointParams): Promise<UpGradeClientInterfaces.IMarkDecisionPoint> {
+    const assignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
+
+    if (!assignment) {
+      throw new Error('No assignment found');
+    }
+
+    this.dataService.rotateAssignmentList(assignment);
+
+    const data = { ...assignment, assignedCondition: { ...assignment.assignedCondition[0], conditionCode: condition } };
+
+    let requestBody: UpGradeClientInterfaces.IMarkDecisionPointRequestBody = {
+      userId: this.userId,
+      status,
+      data,
+    };
+
+    if (uniquifier) {
+      requestBody = {
+        ...requestBody,
+        uniquifier,
+      };
+    }
+    if (clientError) {
+      requestBody = {
+        ...requestBody,
+        clientError,
+      };
+    }
+
+    // send request
+    return await this.sendRequest<UpGradeClientInterfaces.IMarkDecisionPoint>({
+      url: this.api.markDecisionPoint,
+      requestType: UpGradeClientEnums.REQUEST_TYPES.POST,
+      requestBody,
+    });
+  }
+
+  public async log(logData: ILogInput[], sendAsAnalytics = false): Promise<UpGradeClientInterfaces.ILog[]> {
+    const requestBody: UpGradeClientInterfaces.ILogRequestBody = {
+      userId: this.userId,
+      value: logData,
+    };
+
+    return await this.sendRequest<UpGradeClientInterfaces.ILog[]>({
+      url: this.api.log,
+      requestType: UpGradeClientEnums.REQUEST_TYPES.POST,
+      requestBody,
+    });
+  }
+
+  public async logCaliper(logData: CaliperEnvelope, sendAsAnalytics = false): Promise<UpGradeClientInterfaces.ILog[]> {
+    const requestBody: CaliperEnvelope = logData;
+
+    return await this.sendRequest<UpGradeClientInterfaces.ILog[]>({
+      url: this.api.logCaliper,
+      requestType: UpGradeClientEnums.REQUEST_TYPES.POST,
+      requestBody,
+    });
+  }
+
+  public async setAltUserIds(
+    altUserIds: UpGradeClientInterfaces.IAltIdsRequestBody
+  ): Promise<UpGradeClientInterfaces.IExperimentUserAliases> {
+    const requestBody: UpGradeClientInterfaces.IAltIdsRequestBody = altUserIds;
+
+    return await this.sendRequest<UpGradeClientInterfaces.IUser>({
+      url: this.api.altUserIds,
+      requestType: UpGradeClientEnums.REQUEST_TYPES.POST,
+      requestBody,
+    });
+  }
+
+  public async addMetrics(metrics: (ISingleMetric | IGroupMetric)[]): Promise<UpGradeClientInterfaces.IMetric[]> {
+    const requestBody = { metricUnit: metrics };
+
+    return await this.sendRequest<UpGradeClientInterfaces.IMetric[]>({
+      url: this.api.addMetrics,
+      requestType: UpGradeClientEnums.REQUEST_TYPES.POST,
+      requestBody,
+    });
+  }
+
+  public async getAllFeatureFlags(): Promise<IFeatureFlag[]> {
+    const response = await this.sendRequest({
+      url: this.api.getAllFeatureFlag,
+      requestType: UpGradeClientEnums.REQUEST_TYPES.GET,
+    });
+
+    return response.data.map((flag: IFeatureFlag) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { variations, ...rest } = flag;
+      const updatedVariations = variations.map((variation: IFlagVariation) => {
+        const { ...restVariation } = variation;
+        return restVariation;
+      });
+      return {
+        ...rest,
+        variations: updatedVariations,
+      };
+    });
   }
 }

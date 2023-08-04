@@ -1,4 +1,4 @@
-import markDecisionPoint from './functions/markDecisionPoint';
+import { DataService } from 'DataService';
 import {
   IExperimentAssignmentv5,
   PAYLOAD_TYPE,
@@ -6,35 +6,30 @@ import {
   IPayload,
   MARKED_DECISION_POINT_STATUS,
 } from '../../../types/src';
-import { UpGradeClientInterfaces } from './types/Interfaces';
+import { UpGradeClientInterfaces } from './types';
+import ApiService from 'ApiService';
 
 export default class Assignment {
   private _site: string;
   private _target: string;
-  private _clientState: UpGradeClientInterfaces.IClientState;
   private _conditionCode: string;
   private _payloadType: PAYLOAD_TYPE;
   private _payloadValue: string | null;
   private _experimentType: EXPERIMENT_TYPE;
   private _assignedFactor: Record<string, { level: string; payload: IPayload | null }>;
 
-  constructor(getAllDataPerDecisionPoint: IExperimentAssignmentv5, clientState: UpGradeClientInterfaces.IClientState) {
-    this._site = getAllDataPerDecisionPoint.site;
-    this._target = getAllDataPerDecisionPoint.target;
-    this._clientState = clientState;
-    this._conditionCode = getAllDataPerDecisionPoint.assignedCondition[0].conditionCode;
-    this._payloadType = getAllDataPerDecisionPoint.assignedCondition[0].payload
-      ? getAllDataPerDecisionPoint.assignedCondition[0].payload.type
-      : PAYLOAD_TYPE.STRING;
-    this._payloadValue = getAllDataPerDecisionPoint.assignedCondition[0].payload
-      ? getAllDataPerDecisionPoint.assignedCondition[0].payload.value
-      : null;
-    this._experimentType = getAllDataPerDecisionPoint.assignedFactor
-      ? EXPERIMENT_TYPE.FACTORIAL
-      : EXPERIMENT_TYPE.SIMPLE;
-    this._assignedFactor = getAllDataPerDecisionPoint.assignedFactor
-      ? getAllDataPerDecisionPoint.assignedFactor[0]
-      : null;
+  constructor(
+    { site, target, assignedCondition, assignedFactor }: IExperimentAssignmentv5,
+    private apiService: ApiService,
+    private dataService: DataService
+  ) {
+    this._site = site;
+    this._target = target;
+    this._conditionCode = assignedCondition[0].conditionCode;
+    this._payloadType = assignedCondition[0].payload ? assignedCondition[0].payload.type : PAYLOAD_TYPE.STRING;
+    this._payloadValue = assignedCondition[0].payload ? assignedCondition[0].payload.value : null;
+    this._experimentType = assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE;
+    this._assignedFactor = assignedFactor ? assignedFactor[0] : null;
   }
 
   public getCondition(): string {
@@ -120,19 +115,16 @@ export default class Assignment {
    * ```
    */
 
-  public markDecisionPoint(status: MARKED_DECISION_POINT_STATUS, uniquifier?: string, clientError?: string) {
-    return markDecisionPoint(
-      this._clientState.config.api.markDecisionPoint,
-      this._clientState.config.userId,
-      this._clientState.config.token,
-      this._clientState.config.clientSessionId,
-      this._site,
-      this._target,
-      this._conditionCode,
+  public async markDecisionPoint(status: MARKED_DECISION_POINT_STATUS, uniquifier?: string, clientError?: string) {
+    const markDecisionPointParams: UpGradeClientInterfaces.MarkDecisionPointParams = {
+      site: this._site,
+      target: this._target,
+      condition: this._conditionCode,
       status,
-      this._clientState.allExperimentAssignmentData,
       uniquifier,
-      clientError
-    );
+      clientError,
+    };
+
+    return await this.apiService.markDecisionPoint(markDecisionPointParams);
   }
 }

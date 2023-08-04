@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import { SERVER_ERROR, IMetricMetaData, MARKED_DECISION_POINT_STATUS, IExperimentAssignmentv5 } from 'upgrade_types';
+import { IMetricMetaData, MARKED_DECISION_POINT_STATUS, IExperimentAssignmentv5, ILogInput } from 'upgrade_types';
 import { UpGradeClientEnums } from './enums';
 
 export namespace UpGradeClientInterfaces {
@@ -51,14 +51,32 @@ export namespace UpGradeClientInterfaces {
     body?: string;
   }
 
-  export interface IUserGroup {
-    group?: Map<string, string[]>;
-    workingGroup?: Map<string, string>;
+  export interface ApiServiceRequestParams {
+    url: string;
+    requestType: UpGradeClientEnums.REQUEST_TYPES;
+    requestBody?: any;
+    options?: any;
+  }
+
+  export interface MarkDecisionPointParams {
+    site: string;
+    target: string;
+    condition: string;
+    status: MARKED_DECISION_POINT_STATUS;
+    uniquifier?: string;
+    clientError?: string;
   }
 
   export interface IUser {
     id: string;
+    group?: IUserGroup;
+    workingGroup?: IUserWorkingGroup;
+  }
+  export interface IUserGroup {
     group?: Record<string, Array<string>>;
+  }
+
+  export interface IUserWorkingGroup {
     workingGroup?: Record<string, string>;
   }
 
@@ -73,8 +91,7 @@ export namespace UpGradeClientInterfaces {
     uniquifier?: string;
     clientError?: string;
   }
-
-  export interface IMarkExperimentPoint {
+  export interface IMarkDecisionPoint {
     id: string;
     site: string;
     target: string;
@@ -82,10 +99,12 @@ export namespace UpGradeClientInterfaces {
     experimentId: string;
   }
 
-  export interface IFailedExperimentPoint {
-    type: SERVER_ERROR;
-    message: string;
+  export interface ILogRequestBody {
+    userId: string;
+    value: ILogInput[];
   }
+
+  export type IAltIdsRequestBody = string[];
 
   export interface ILog {
     id: string;
@@ -117,17 +136,6 @@ export namespace UpGradeClientInterfaces {
     headers?: object;
   }
 
-  /**
-   * this interface will take generic callbacks for get, post and patch methods
-   *
-   * for example:
-   *
-   * const httpClient: Interfaces.IHttpClientWrapper = {
-   *   get: (url: string, options: Interfaces.IHttpClientWrapperRequestOptions): Observable<IUser> => {
-   *     return this.http.get<IUser>(url, options);
-   *   }
-   * }
-   */
   export type IHttpClientWrapper = {
     get: (url: string, options: IHttpClientWrapperRequestOptions) => any;
     post: <UpgradeRequestBodyType>(
