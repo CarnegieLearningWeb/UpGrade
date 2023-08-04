@@ -85,13 +85,13 @@ describe('SegmentDataService', () => {
   });
 
   describe('#exportSegments', () => {
-    it('should get the exportSegments http observable', () => {
+    it('should post the exportSegments http observable', () => {
       const segmentId = mockSegmentId;
       const expectedUrl = `${mockEnvironment.api.exportSegments}`;
 
       service.exportSegments([segmentId]);
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl, [segmentId]);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, [segmentId]);
     });
   });
 

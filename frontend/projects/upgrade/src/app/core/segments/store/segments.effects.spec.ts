@@ -214,7 +214,7 @@ describe('SegmentsEffects', () => {
         neverEmitted = false;
       });
 
-      actions$.next(SegmentsActions.actionExportSegments({ segmentIds: [undefined] }));
+      actions$.next(SegmentsActions.actionExportSegments({ segmentIds: undefined }));
 
       tick(0);
 
