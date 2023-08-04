@@ -1,4 +1,4 @@
-import { UpGradeClientInterfaces } from './types';
+import { UpGradeClientInterfaces } from '../types';
 import {
   IFeatureFlag,
   ISingleMetric,
@@ -8,9 +8,10 @@ import {
   IExperimentAssignmentv5,
   MARKED_DECISION_POINT_STATUS,
 } from 'upgrade_types';
-import Assignment from './Assignment';
-import ApiService from './ApiService';
-import { DataService } from './DataService';
+import Assignment from '../Assignment/Assignment';
+import ApiService from '../ApiService/ApiService';
+import { DataService } from '../DataService/DataService';
+import { IConfigOptions } from './UpGradeClient.types';
 
 /**
  * UpGradeClient is the main class for interacting with the UpGrade API.
@@ -68,7 +69,7 @@ export default class UpgradeClient {
    * ```
    */
 
-  constructor(userId: string, hostUrl: string, context: string, options?: UpGradeClientInterfaces.IConfigOptions) {
+  constructor(userId: string, hostUrl: string, context: string, options?: IConfigOptions) {
     const config: UpGradeClientInterfaces.IConfig = {
       apiVersion: 'v5',
       userId: userId,
@@ -211,7 +212,7 @@ export default class UpgradeClient {
       const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
 
       if (experimentAssignment) {
-        const assignment = new Assignment(experimentAssignment, this.apiService, this.dataService);
+        const assignment = new Assignment(experimentAssignment, this.apiService);
 
         return assignment;
       } else {

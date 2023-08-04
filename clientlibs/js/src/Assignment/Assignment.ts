@@ -1,13 +1,12 @@
-import { DataService } from './DataService';
 import {
   IExperimentAssignmentv5,
   PAYLOAD_TYPE,
   EXPERIMENT_TYPE,
   IPayload,
   MARKED_DECISION_POINT_STATUS,
-} from '../../../types/src';
-import { UpGradeClientInterfaces } from './types';
-import ApiService from './ApiService';
+} from 'upgrade_types';
+import { UpGradeClientInterfaces } from '../types';
+import ApiService from '../ApiService/ApiService';
 
 export default class Assignment {
   private _site: string;
@@ -20,8 +19,7 @@ export default class Assignment {
 
   constructor(
     { site, target, assignedCondition, assignedFactor }: IExperimentAssignmentv5,
-    private apiService: ApiService,
-    private dataService: DataService
+    private apiService: ApiService
   ) {
     this._site = site;
     this._target = target;
@@ -116,7 +114,7 @@ export default class Assignment {
    */
 
   public async markDecisionPoint(status: MARKED_DECISION_POINT_STATUS, uniquifier?: string, clientError?: string) {
-    const markDecisionPointParams: UpGradeClientInterfaces.MarkDecisionPointParams = {
+    const markDecisionPointParams: UpGradeClientInterfaces.IMarkDecisionPointParams = {
       site: this._site,
       target: this._target,
       condition: this._conditionCode,

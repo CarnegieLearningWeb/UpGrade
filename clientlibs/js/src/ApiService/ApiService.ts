@@ -1,5 +1,5 @@
-import { UpGradeClientEnums, UpGradeClientInterfaces } from './types';
-import { DefaultHttpClient } from './DefaultHttpClient';
+import { UpGradeClientEnums, UpGradeClientInterfaces, UpGradeClientRequests } from '../types';
+import { DefaultHttpClient } from '../DefaultHttpClient/DefaultHttpClient';
 import {
   CaliperEnvelope,
   IExperimentAssignmentv5,
@@ -8,15 +8,11 @@ import {
   IGroupMetric,
   ILogInput,
   ISingleMetric,
-} from '../../../types/src';
-import { DataService } from 'DataService';
+} from 'upgrade_types';
+import { DataService } from 'DataService/DataService';
+import { IApiServiceRequestParams, IEndpoints } from './ApiService.types';
+import { IMarkDecisionPointParams } from 'UpGradeClient/UpGradeClient.types';
 
-interface ApiServiceRequestParams {
-  url: string;
-  requestType: UpGradeClientEnums.REQUEST_TYPES;
-  requestBody?: any;
-  options?: any;
-}
 export default class ApiService {
   private context: string;
   private hostUrl: string;
@@ -25,7 +21,7 @@ export default class ApiService {
   private apiVersion: string;
   private clientSessionId: string;
   private httpClient: UpGradeClientInterfaces.IHttpClientWrapper;
-  private api: UpGradeClientInterfaces.IEndpoints;
+  private api: IEndpoints;
 
   constructor(config: UpGradeClientInterfaces.IConfig, private dataService: DataService) {
     this.context = config.context;
@@ -65,15 +61,15 @@ export default class ApiService {
     }
   }
 
-  private async sendRequest<RequestBodyType>(requestParams: ApiServiceRequestParams): Promise<any> {
+  private async sendRequest<RequestBodyType>(requestParams: IApiServiceRequestParams): Promise<any> {
     this.validateClient();
 
-    if (requestParams.requestType === UpGradeClientEnums.REQUEST_TYPES.GET) {
+    if (requestParams.requestType === UpGradeClientEnums.REQUEST_METHOD.GET) {
       const response = await this.httpClient.get(requestParams.url, requestParams.options);
       return response;
     }
 
-    if (requestParams.requestType === UpGradeClientEnums.REQUEST_TYPES.POST) {
+    if (requestParams.requestType === UpGradeClientEnums.REQUEST_METHOD.POST) {
       const response: ResponseType = await this.httpClient.post<RequestBodyType>(
         requestParams.url,
         requestParams.requestBody,
@@ -82,7 +78,7 @@ export default class ApiService {
       return response;
     }
 
-    if (requestParams.requestType === UpGradeClientEnums.REQUEST_TYPES.PATCH) {
+    if (requestParams.requestType === UpGradeClientEnums.REQUEST_METHOD.PATCH) {
       const response: ResponseType = await this.httpClient.patch<RequestBodyType>(
         requestParams.url,
         requestParams.requestBody,
@@ -116,7 +112,7 @@ export default class ApiService {
 
     return await this.sendRequest<UpGradeClientInterfaces.IExperimentUser>({
       url: this.api.init,
-      requestType: UpGradeClientEnums.REQUEST_TYPES.POST,
+      requestType: UpGradeClientEnums.REQUEST_METHOD.POST,
       requestBody,
     });
   }
@@ -124,14 +120,14 @@ export default class ApiService {
   public async setGroupMembership(
     group: UpGradeClientInterfaces.IExperimentUserGroup
   ): Promise<UpGradeClientInterfaces.IExperimentUser> {
-    const requestBody: UpGradeClientInterfaces.ISetGroupMembershipRequestBody = {
+    const requestBody: UpGradeClientRequests.ISetGroupMembershipRequestBody = {
       id: this.userId,
       group,
     };
 
     return await this.sendRequest<UpGradeClientInterfaces.IExperimentUser>({
       url: this.api.setGroupMemberShip,
-      requestType: UpGradeClientEnums.REQUEST_TYPES.PATCH,
+      requestType: UpGradeClientEnums.REQUEST_METHOD.PATCH,
       requestBody,
     });
   }
@@ -139,14 +135,14 @@ export default class ApiService {
   public async setWorkingGroup(
     workingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup
   ): Promise<UpGradeClientInterfaces.IExperimentUser> {
-    const requestBody: UpGradeClientInterfaces.ISetWorkingGroupRequestBody = {
+    const requestBody: UpGradeClientRequests.ISetWorkingGroupRequestBody = {
       id: this.userId,
       workingGroup,
     };
 
     return await this.sendRequest<UpGradeClientInterfaces.IExperimentUser>({
       url: this.api.setWorkingGroup,
-      requestType: UpGradeClientEnums.REQUEST_TYPES.PATCH,
+      requestType: UpGradeClientEnums.REQUEST_METHOD.PATCH,
       requestBody,
     });
   }
@@ -154,27 +150,27 @@ export default class ApiService {
   public async setAltUserIds(
     altUserIds: UpGradeClientInterfaces.IExperimentUserAliases
   ): Promise<UpGradeClientInterfaces.IExperimentUserAliases> {
-    const requestBody: UpGradeClientInterfaces.ISetAltIdsRequestBody = {
+    const requestBody: UpGradeClientRequests.ISetAltIdsRequestBody = {
       userId: this.userId,
       aliases: altUserIds,
     };
 
     return await this.sendRequest<UpGradeClientInterfaces.IExperimentUser>({
       url: this.api.altUserIds,
-      requestType: UpGradeClientEnums.REQUEST_TYPES.PATCH,
+      requestType: UpGradeClientEnums.REQUEST_METHOD.PATCH,
       requestBody,
     });
   }
 
   public async getAllExperimentConditions(): Promise<IExperimentAssignmentv5[]> {
-    const requestBody: UpGradeClientInterfaces.IGetAllExperimentConditionsRequestBody = {
+    const requestBody: UpGradeClientRequests.IGetAllExperimentConditionsRequestBody = {
       userId: this.userId,
       context: this.context,
     };
 
     const experimentConditionResponse = await this.sendRequest({
       url: this.api.getAllExperimentConditions,
-      requestType: UpGradeClientEnums.REQUEST_TYPES.POST,
+      requestType: UpGradeClientEnums.REQUEST_METHOD.POST,
       requestBody,
     });
 
@@ -190,7 +186,7 @@ export default class ApiService {
     status,
     uniquifier,
     clientError,
-  }: UpGradeClientInterfaces.MarkDecisionPointParams): Promise<UpGradeClientInterfaces.IMarkDecisionPoint> {
+  }: IMarkDecisionPointParams): Promise<UpGradeClientInterfaces.IMarkDecisionPoint> {
     const assignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
 
     if (!assignment) {
@@ -201,7 +197,7 @@ export default class ApiService {
 
     const data = { ...assignment, assignedCondition: { ...assignment.assignedCondition[0], conditionCode: condition } };
 
-    let requestBody: UpGradeClientInterfaces.IMarkDecisionPointRequestBody = {
+    let requestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
       userId: this.userId,
       status,
       data,
@@ -223,20 +219,20 @@ export default class ApiService {
     // send request
     return await this.sendRequest<UpGradeClientInterfaces.IMarkDecisionPoint>({
       url: this.api.markDecisionPoint,
-      requestType: UpGradeClientEnums.REQUEST_TYPES.POST,
+      requestType: UpGradeClientEnums.REQUEST_METHOD.POST,
       requestBody,
     });
   }
 
   public async log(logData: ILogInput[], sendAsAnalytics = false): Promise<UpGradeClientInterfaces.ILog[]> {
-    const requestBody: UpGradeClientInterfaces.ILogRequestBody = {
+    const requestBody: UpGradeClientRequests.ILogRequestBody = {
       userId: this.userId,
       value: logData,
     };
 
     return await this.sendRequest<UpGradeClientInterfaces.ILog[]>({
       url: this.api.log,
-      requestType: UpGradeClientEnums.REQUEST_TYPES.POST,
+      requestType: UpGradeClientEnums.REQUEST_METHOD.POST,
       requestBody,
     });
   }
@@ -246,7 +242,7 @@ export default class ApiService {
 
     return await this.sendRequest<UpGradeClientInterfaces.ILog[]>({
       url: this.api.logCaliper,
-      requestType: UpGradeClientEnums.REQUEST_TYPES.POST,
+      requestType: UpGradeClientEnums.REQUEST_METHOD.POST,
       requestBody,
     });
   }
@@ -256,7 +252,7 @@ export default class ApiService {
 
     return await this.sendRequest<UpGradeClientInterfaces.IMetric[]>({
       url: this.api.addMetrics,
-      requestType: UpGradeClientEnums.REQUEST_TYPES.POST,
+      requestType: UpGradeClientEnums.REQUEST_METHOD.POST,
       requestBody,
     });
   }
@@ -264,7 +260,7 @@ export default class ApiService {
   public async getAllFeatureFlags(): Promise<IFeatureFlag[]> {
     const response = await this.sendRequest({
       url: this.api.getAllFeatureFlag,
-      requestType: UpGradeClientEnums.REQUEST_TYPES.GET,
+      requestType: UpGradeClientEnums.REQUEST_METHOD.GET,
     });
 
     return response.data.map((flag: IFeatureFlag) => {

@@ -1,4 +1,4 @@
-import { UpGradeClientInterfaces, UpGradeClientEnums } from './types';
+import { UpGradeClientInterfaces, UpGradeClientEnums } from '../types';
 import axios, { AxiosRequestConfig } from 'axios';
 import * as uuid from 'uuid';
 
@@ -7,14 +7,14 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
 
   constructor(private clientSessionId?: string, private token?: string, private sendAsAnalytics = false) {}
   public async get(url: string): Promise<any> {
-    return this.fetchData(url, UpGradeClientEnums.REQUEST_TYPES.GET);
+    return this.fetchData(url, UpGradeClientEnums.REQUEST_METHOD.GET);
   }
   public async post<RequestBodyType>(url: string, data: RequestBodyType): Promise<any> {
-    return this.fetchData(url, UpGradeClientEnums.REQUEST_TYPES.POST, data);
+    return this.fetchData(url, UpGradeClientEnums.REQUEST_METHOD.POST, data);
   }
 
   public async patch<RequestBodyType>(url: string, data: RequestBodyType): Promise<any> {
-    return this.fetchData(url, UpGradeClientEnums.REQUEST_TYPES.PATCH, data);
+    return this.fetchData(url, UpGradeClientEnums.REQUEST_METHOD.PATCH, data);
   }
 
   private async wait(ms: number) {
@@ -26,7 +26,7 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
   // TODO break this down
   private async fetchData(
     url: string,
-    requestType: UpGradeClientEnums.REQUEST_TYPES,
+    requestType: UpGradeClientEnums.REQUEST_METHOD,
     data?: any,
     // options: UpGradeClientInterfaces.IRequestOptions,
     retries = 3,
@@ -72,8 +72,8 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
       }
 
       if (
-        requestType === UpGradeClientEnums.REQUEST_TYPES.POST ||
-        requestType === UpGradeClientEnums.REQUEST_TYPES.PATCH
+        requestType === UpGradeClientEnums.REQUEST_METHOD.POST ||
+        requestType === UpGradeClientEnums.REQUEST_METHOD.PATCH
       ) {
         options = {
           ...options,
