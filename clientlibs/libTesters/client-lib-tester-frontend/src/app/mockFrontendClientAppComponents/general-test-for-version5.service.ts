@@ -362,9 +362,8 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('User info is missing groups:', user);
     }
     try {
-      const groupMembershipResponse: UpGradeClientInterfaces.IUser = await this.upgradeClient.setGroupMembership(
-        user.groups
-      );
+      const groupMembershipResponse: UpGradeClientInterfaces.IExperimentUser =
+        await this.upgradeClient.setGroupMembership(user.groups);
       console.log({ groupMembershipResponse });
     } catch (err) {
       console.error(err);
@@ -379,9 +378,8 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('User info is missing working groups:', user);
     }
     try {
-      const workingGroupMembershipResponse: UpGradeClientInterfaces.IUser = await this.upgradeClient.setWorkingGroup(
-        user.workingGroup
-      );
+      const workingGroupMembershipResponse: UpGradeClientInterfaces.IExperimentUser =
+        await this.upgradeClient.setWorkingGroup(user.workingGroup);
       console.log({ workingGroupMembershipResponse });
     } catch (err) {
       console.error(err);

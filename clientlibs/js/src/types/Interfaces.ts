@@ -67,18 +67,34 @@ export namespace UpGradeClientInterfaces {
     clientError?: string;
   }
 
-  export interface IUser {
-    id: string;
-    group?: IUserGroup;
-    workingGroup?: IUserWorkingGroup;
-  }
-  export interface IUserGroup {
-    group?: Record<string, Array<string>>;
+  export interface IGetAllExperimentConditionsRequestBody {
+    userId: string;
+    context: string;
   }
 
-  export interface IUserWorkingGroup {
-    workingGroup?: Record<string, string>;
+  export interface ISetGroupMembershipRequestBody {
+    id: string;
+    group: IExperimentUserGroup;
   }
+
+  export interface ISetWorkingGroupRequestBody {
+    id: string;
+    workingGroup: IExperimentUserWorkingGroup;
+  }
+
+  export interface ISetAltIdsRequestBody {
+    userId: string;
+    aliases: IExperimentUserAliases;
+  }
+
+  export interface IExperimentUser {
+    id: string;
+    group?: IExperimentUserGroup;
+    workingGroup?: IExperimentUserWorkingGroup;
+  }
+  export type IExperimentUserGroup = Record<string, Array<string>>;
+  export type IExperimentUserWorkingGroup = Record<string, string>;
+  export type IExperimentUserAliases = string[];
 
   export interface IMarkDecisionPointRequestBody {
     userId: string;
@@ -104,8 +120,6 @@ export namespace UpGradeClientInterfaces {
     value: ILogInput[];
   }
 
-  export type IAltIdsRequestBody = string[];
-
   export interface ILog {
     id: string;
     data: any;
@@ -121,13 +135,7 @@ export namespace UpGradeClientInterfaces {
     allowedData: string[];
   }
 
-  export interface IExperimentUser {
-    id: string;
-    group: Record<string, Array<string>>;
-    workingGroup: Record<string, string>;
-  }
-
-  export interface IExperimentUserAliases {
+  export interface IExperimentUserAliasesResponse {
     userId: string;
     aliases: string[];
   }

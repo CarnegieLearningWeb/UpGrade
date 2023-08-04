@@ -109,7 +109,7 @@ export default class UpgradeClient {
   async init(
     group?: Record<string, Array<string>>,
     workingGroup?: Record<string, string>
-  ): Promise<UpGradeClientInterfaces.IUser> {
+  ): Promise<UpGradeClientInterfaces.IExperimentUser> {
     return await this.apiService.init(group, workingGroup);
   }
 
@@ -126,8 +126,8 @@ export default class UpgradeClient {
    * const groupMembershipResponse: UpGradeClientInterfaces.IUser[] = await upgradeClient.setGroupMembership(group);
    * ```
    */
-  async setGroupMembership(group: Record<string, Array<string>>): Promise<UpGradeClientInterfaces.IUser> {
-    let response: UpGradeClientInterfaces.IUser = await this.apiService.setGroupMembership(group);
+  async setGroupMembership(group: Record<string, Array<string>>): Promise<UpGradeClientInterfaces.IExperimentUser> {
+    let response: UpGradeClientInterfaces.IExperimentUser = await this.apiService.setGroupMembership(group);
     if (response.id) {
       // If it does not throw error from setGroupMembership
       this.dataService.setGroup(group);
@@ -152,8 +152,8 @@ export default class UpgradeClient {
    * const workingGroupResponse: UpGradeClientInterfaces.IUser[] = await upgradeClient.setWorkingGroup(workingGroup);
    * ```
    */
-  async setWorkingGroup(workingGroup: Record<string, string>): Promise<UpGradeClientInterfaces.IUser> {
-    let response: UpGradeClientInterfaces.IUser = await this.apiService.setWorkingGroup(workingGroup);
+  async setWorkingGroup(workingGroup: Record<string, string>): Promise<UpGradeClientInterfaces.IExperimentUser> {
+    let response: UpGradeClientInterfaces.IExperimentUser = await this.apiService.setWorkingGroup(workingGroup);
     if (response.id) {
       // If it does not throw error from setWorkingGroup
       this.dataService.setWorkingGroup(workingGroup);

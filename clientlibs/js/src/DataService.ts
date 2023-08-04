@@ -5,24 +5,24 @@ import { IExperimentAssignmentv5, IFeatureFlag } from '../../../types/src';
  * Synchronous data store
  */
 export class DataService {
-  private group: UpGradeClientInterfaces.IUserGroup = null;
-  private workingGroup: UpGradeClientInterfaces.IUserWorkingGroup = null;
+  private group: UpGradeClientInterfaces.IExperimentUserGroup = null;
+  private workingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup = null;
   private experimentAssignmentData: IExperimentAssignmentv5[] = null;
   private featureFlags: IFeatureFlag[] = null;
 
-  getGroup(): UpGradeClientInterfaces.IUserGroup {
+  getGroup(): UpGradeClientInterfaces.IExperimentUserGroup {
     return this.group;
   }
 
-  setGroup(group: UpGradeClientInterfaces.IUserGroup) {
+  setGroup(group: UpGradeClientInterfaces.IExperimentUserGroup) {
     this.group = group;
   }
 
-  getWorkingGroup(): UpGradeClientInterfaces.IUserWorkingGroup {
+  getWorkingGroup(): UpGradeClientInterfaces.IExperimentUserWorkingGroup {
     return this.workingGroup;
   }
 
-  setWorkingGroup(workingGroup: UpGradeClientInterfaces.IUserWorkingGroup) {
+  setWorkingGroup(workingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup) {
     this.workingGroup = workingGroup;
   }
 
