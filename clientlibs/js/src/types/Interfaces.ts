@@ -18,13 +18,6 @@ export namespace UpGradeClientInterfaces {
     message?: any;
   }
 
-  export interface IRequestOptions {
-    headers: object;
-    method: UpGradeClientEnums.REQUEST_METHOD;
-    keepalive: boolean;
-    body?: string;
-  }
-
   export interface IMarkDecisionPointParams {
     site: string;
     target: string;
@@ -70,10 +63,10 @@ export namespace UpGradeClientInterfaces {
   }
 
   export interface IHttpClientWrapperRequestOptions {
-    headers?: object;
+    headers?: any;
   }
 
-  export type IHttpClientWrapper = {
+  export interface IHttpClientWrapper {
     get: (url: string, options: IHttpClientWrapperRequestOptions) => any;
     post: <UpgradeRequestBodyType>(
       url: string,
@@ -85,5 +78,5 @@ export namespace UpGradeClientInterfaces {
       requestBody: UpgradeRequestBodyType,
       options: IHttpClientWrapperRequestOptions
     ) => any;
-  };
+  }
 }

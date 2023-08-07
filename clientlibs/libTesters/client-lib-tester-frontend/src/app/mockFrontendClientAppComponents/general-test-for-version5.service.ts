@@ -9,12 +9,13 @@ import {
   MockClientAppUser,
 } from '../../../../shared/models';
 
-// import UpgradeClient, { Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser';
-import UpgradeClient, { Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser-lite';
+import UpgradeClient, { Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser';
+// import UpgradeClient, { Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser-lite';
 
 import { CaliperEnvelope, IExperimentAssignmentv5 } from 'upgrade_client_local/dist/types/src';
 import { AbstractMockAppService } from './abstract-mock-app.service';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -64,7 +65,11 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
     { site: this.SITES.TEST, target: this.TARGETS.TARGET_2 },
   ];
 
-  constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
+  constructor(
+    public override clientLibraryService: ClientLibraryService,
+    public override eventBus: EventBusService,
+    private angularHttpClient: HttpClient
+  ) {
     super(MOCK_APP_NAMES.GENERAL_TS_FRONTEND_5_0, eventBus, clientLibraryService);
   }
 
@@ -239,9 +244,27 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
 
   /******************* simulated client app code ****************************************************/
 
+  private createCustomHttpClient(): UpGradeClientInterfaces.IHttpClientWrapper {
+    const customHttpClient: UpGradeClientInterfaces.IHttpClientWrapper = {
+      get: async (url: string, headers?: any) => {
+        return await this.angularHttpClient.get(url, { headers }).toPromise();
+      },
+      post: async (url: string, body: any, headers?: any) => {
+        console.log('Send post in custom client:', url, body, headers);
+        return await this.angularHttpClient.post(url, body, { headers }).toPromise();
+      },
+      patch: async (url: string, body: any, headers?: any) => {
+        return await this.angularHttpClient.patch(url, body, { headers }).toPromise();
+      },
+    };
+    return customHttpClient;
+  }
+
   private async doInit(userId: string) {
     console.log('login hook called:', userId);
-    this.upgradeClient = this.constructUpgradeClient(userId);
+    const httpClient = this.createCustomHttpClient();
+
+    this.upgradeClient = this.constructUpgradeClient(userId, httpClient);
     console.log({ upgradeClient: this.upgradeClient });
 
     try {

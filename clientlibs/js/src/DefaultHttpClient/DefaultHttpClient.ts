@@ -2,19 +2,40 @@ import { UpGradeClientInterfaces, UpGradeClientEnums } from '../types';
 import axios, { AxiosRequestConfig } from 'axios';
 import * as uuid from 'uuid';
 
+interface FetchDataParams {
+  url: string;
+  method: UpGradeClientEnums.REQUEST_METHOD;
+  body?: any;
+  options?: UpGradeClientInterfaces.IHttpClientWrapperRequestOptions;
+  retries?: number;
+  backOff?: number;
+}
+
 export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWrapper {
   private skipRetryOnStatusCodes: number[] = [];
 
   constructor(private clientSessionId?: string, private token?: string, private sendAsAnalytics = false) {}
-  public async get(url: string): Promise<any> {
-    return this.fetchData(url, UpGradeClientEnums.REQUEST_METHOD.GET);
+  public async get(url: string, options: UpGradeClientInterfaces.IHttpClientWrapperRequestOptions): Promise<any> {
+    return this.fetchData({
+      url,
+      method: UpGradeClientEnums.REQUEST_METHOD.GET,
+      options,
+    });
   }
-  public async post<RequestBodyType>(url: string, data: RequestBodyType): Promise<any> {
-    return this.fetchData(url, UpGradeClientEnums.REQUEST_METHOD.POST, data);
+  public async post<RequestBodyType>(
+    url: string,
+    body: RequestBodyType,
+    options: UpGradeClientInterfaces.IHttpClientWrapperRequestOptions
+  ): Promise<any> {
+    return this.fetchData({ url, method: UpGradeClientEnums.REQUEST_METHOD.POST, body, options });
   }
 
-  public async patch<RequestBodyType>(url: string, data: RequestBodyType): Promise<any> {
-    return this.fetchData(url, UpGradeClientEnums.REQUEST_METHOD.PATCH, data);
+  public async patch<RequestBodyType>(
+    url: string,
+    body: RequestBodyType,
+    options: UpGradeClientInterfaces.IHttpClientWrapperRequestOptions
+  ): Promise<any> {
+    return this.fetchData({ url, method: UpGradeClientEnums.REQUEST_METHOD.PATCH, body, options });
   }
 
   private async wait(ms: number) {
@@ -24,14 +45,22 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
   }
 
   // TODO break this down
-  private async fetchData(
-    url: string,
-    requestType: UpGradeClientEnums.REQUEST_METHOD,
-    data?: any,
-    // options: UpGradeClientInterfaces.IRequestOptions,
-    retries = 3,
-    backOff = 300
-  ): Promise<UpGradeClientInterfaces.IResponse> {
+  private async fetchData({
+    url,
+    method,
+    body,
+    options,
+    retries,
+    backOff,
+  }: FetchDataParams): Promise<UpGradeClientInterfaces.IResponse> {
+    if (!retries) {
+      retries = 3;
+    }
+
+    if (!backOff) {
+      backOff = 300;
+    }
+
     try {
       let headers: Record<string, any> = {
         'Content-Type': 'application/json',
@@ -50,9 +79,10 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
         ? (headers = { ...headers, 'Client-source': 'Browser' })
         : (headers = { ...headers, 'Client-source': 'Node' });
 
+      // TODO for default client, options may not need to be passed in?
       let options: AxiosRequestConfig = {
         headers,
-        method: requestType,
+        method,
       };
 
       if (
@@ -71,13 +101,10 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
         }
       }
 
-      if (
-        requestType === UpGradeClientEnums.REQUEST_METHOD.POST ||
-        requestType === UpGradeClientEnums.REQUEST_METHOD.PATCH
-      ) {
+      if (method === UpGradeClientEnums.REQUEST_METHOD.POST || method === UpGradeClientEnums.REQUEST_METHOD.PATCH) {
         options = {
           ...options,
-          data,
+          data: body,
         };
       }
 
@@ -103,14 +130,14 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
         if (retries > 0) {
           // Do retry after the backOff time
           await this.wait(backOff);
-          return await this.fetchData(
+          return await this.fetchData({
             url,
-            requestType,
-            data,
-            // options,
-            retries - 1,
-            backOff * 2
-          );
+            method,
+            body,
+            options,
+            retries: retries - 1,
+            backOff: backOff * 2,
+          });
         } else {
           return {
             status: false,
