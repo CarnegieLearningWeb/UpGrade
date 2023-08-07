@@ -26,51 +26,6 @@ const generalConfiguration = {
   ],
 };
 
-const liteConfiguration = {
-  mode: 'production',
-  entry: './src/index.ts',
-  module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: [/node_modules/, /\.spec.ts$/],
-      },
-    ],
-  },
-  resolve: {
-    alias: {
-      upgrade_types: path.resolve(__dirname, '../../types/src'),
-    },
-    extensions: ['.tsx', '.ts', '.js'],
-  },
-  plugins: [
-    new webpack.DefinePlugin({
-      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(true),
-    }),
-  ],
-};
-
-const httpClientConfiguration = {
-  mode: 'production',
-  entry: './src/defaultHttpClient.ts',
-  module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: [/node_modules/, /\.spec.ts$/],
-      },
-    ],
-  },
-  resolve: {
-    alias: {
-      upgrade_types: path.resolve(__dirname, '../../types/src'),
-    },
-    extensions: ['.tsx', '.ts', '.js'],
-  },
-};
-
 const browser = {
   ...generalConfiguration,
   output: {
@@ -93,28 +48,24 @@ const node = {
   },
 };
 
-const defaultHttpClient = {
-  ...httpClientConfiguration,
-  output: {
-    filename: 'index.js',
-    path: path.resolve(__dirname, 'dist/defaultHttpClient'),
-    libraryTarget: 'umd',
-    library: 'upgrade-client-lib',
-  },
-};
-
 const browserLite = {
-  ...liteConfiguration,
+  ...generalConfiguration,
   output: {
     filename: 'index.js',
-    path: path.resolve(__dirname, 'dist/browser-lite'),
+    path: path.resolve(__dirname, 'dist/browser'),
     libraryTarget: 'umd',
     library: 'upgrade-client-lib',
+    libraryExport: 'default',
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(true),
+    }),
+  ],
 };
 
 const nodeLite = {
-  ...liteConfiguration,
+  ...generalConfiguration,
   target: 'node',
   output: {
     filename: 'index.js',
@@ -122,6 +73,11 @@ const nodeLite = {
     libraryTarget: 'umd',
     library: 'upgrade-client-lib',
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(true),
+    }),
+  ],
 };
 
-module.exports = [browser, node, defaultHttpClient, browserLite, nodeLite];
+module.exports = [browser, node, browserLite, nodeLite];

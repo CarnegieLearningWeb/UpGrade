@@ -1,9 +1,7 @@
 import { Subscription } from 'rxjs';
 import { ClientAppHook, CodeLanguage, MockAppType, MockClientAppInterfaceModel } from '../../../../shared/models';
 import { EventBusService } from '../services/event-bus.service';
-import { InjectionToken } from '@angular/core';
 import { ClientLibraryService } from '../services/client-library.service';
-// import { Types, Interfaces } from 'upgrade_client_local/dist/clientlibs/js/src/identifiers';
 
 /**
  * This Abstract service is base class for all Mock App instances.
@@ -39,8 +37,7 @@ export abstract class AbstractMockAppService {
   constructor(
     public instanceMockAppName: string,
     public eventBus: EventBusService,
-    public clientLibraryService: ClientLibraryService,
-    public httpClient?: any // hard to give type to this in this context
+    public clientLibraryService: ClientLibraryService
   ) {
     this.eventBus.mockApp$.subscribe((mockAppName) => {
       if (mockAppName === instanceMockAppName) {
