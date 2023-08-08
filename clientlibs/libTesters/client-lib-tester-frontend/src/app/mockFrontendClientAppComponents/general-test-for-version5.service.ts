@@ -16,6 +16,7 @@ import { CaliperEnvelope, IExperimentAssignmentv5 } from 'upgrade_client_local/d
 import { AbstractMockAppService } from './abstract-mock-app.service';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
 import { HttpClient } from '@angular/common/http';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -246,15 +247,14 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
 
   private createCustomHttpClient(): UpGradeClientInterfaces.IHttpClientWrapper {
     const customHttpClient: UpGradeClientInterfaces.IHttpClientWrapper = {
-      get: async (url: string, headers?: any) => {
-        return await this.angularHttpClient.get(url, { headers }).toPromise();
+      get: async (url: string): Promise<any> => {
+        return await lastValueFrom(this.angularHttpClient.get(url));
       },
-      post: async (url: string, body: any, headers?: any) => {
-        console.log('Send post in custom client:', url, body, headers);
-        return await this.angularHttpClient.post(url, body, { headers }).toPromise();
+      post: async (url: string, body: any): Promise<any> => {
+        return await lastValueFrom(this.angularHttpClient.post(url, body));
       },
-      patch: async (url: string, body: any, headers?: any) => {
-        return await this.angularHttpClient.patch(url, body, { headers }).toPromise();
+      patch: async (url: string, body: any): Promise<any> => {
+        return await lastValueFrom(this.angularHttpClient.patch(url, body));
       },
     };
     return customHttpClient;
@@ -262,9 +262,9 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
 
   private async doInit(userId: string) {
     console.log('login hook called:', userId);
-    const httpClient = this.createCustomHttpClient();
+    // const httpClient = this.createCustomHttpClient();
 
-    this.upgradeClient = this.constructUpgradeClient(userId, httpClient);
+    this.upgradeClient = this.constructUpgradeClient(userId);
     console.log({ upgradeClient: this.upgradeClient });
 
     try {

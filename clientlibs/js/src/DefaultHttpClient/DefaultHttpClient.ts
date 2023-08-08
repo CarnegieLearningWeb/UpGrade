@@ -1,41 +1,44 @@
 import { UpGradeClientInterfaces, UpGradeClientEnums } from '../types';
-import axios, { AxiosRequestConfig } from 'axios';
-import * as uuid from 'uuid';
+import axios, { AxiosHeaders, AxiosRequestConfig } from 'axios';
 
+declare const IS_BROWSER: boolean;
 interface FetchDataParams {
   url: string;
   method: UpGradeClientEnums.REQUEST_METHOD;
   body?: any;
-  options?: UpGradeClientInterfaces.IHttpClientWrapperRequestOptions;
+  headers?: UpGradeClientInterfaces.IUpgradeApiRequestHeaders;
+  clientSessionId?: string;
+  token?: string;
   retries?: number;
   backOff?: number;
 }
 
 export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWrapper {
   private skipRetryOnStatusCodes: number[] = [];
+  public config: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig = {
+    customHeaders: null,
+    token: null,
+    clientSessionId: null,
+  };
 
-  constructor(private clientSessionId?: string, private token?: string, private sendAsAnalytics = false) {}
-  public async get(url: string, options: UpGradeClientInterfaces.IHttpClientWrapperRequestOptions): Promise<any> {
+  constructor(config?: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig) {
+    if (config) {
+      this.config = config;
+    }
+  }
+
+  public async get(url: string): Promise<any> {
     return this.fetchData({
       url,
       method: UpGradeClientEnums.REQUEST_METHOD.GET,
-      options,
     });
   }
-  public async post<RequestBodyType>(
-    url: string,
-    body: RequestBodyType,
-    options: UpGradeClientInterfaces.IHttpClientWrapperRequestOptions
-  ): Promise<any> {
-    return this.fetchData({ url, method: UpGradeClientEnums.REQUEST_METHOD.POST, body, options });
+  public async post<RequestBodyType>(url: string, body: RequestBodyType): Promise<any> {
+    return this.fetchData({ url, method: UpGradeClientEnums.REQUEST_METHOD.POST, body });
   }
 
-  public async patch<RequestBodyType>(
-    url: string,
-    body: RequestBodyType,
-    options: UpGradeClientInterfaces.IHttpClientWrapperRequestOptions
-  ): Promise<any> {
-    return this.fetchData({ url, method: UpGradeClientEnums.REQUEST_METHOD.PATCH, body, options });
+  public async patch<RequestBodyType>(url: string, body: RequestBodyType): Promise<any> {
+    return this.fetchData({ url, method: UpGradeClientEnums.REQUEST_METHOD.PATCH, body });
   }
 
   private async wait(ms: number) {
@@ -45,74 +48,37 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
   }
 
   // TODO break this down
-  private async fetchData({
+  private async fetchData<ResponseType>({
     url,
     method,
     body,
-    options,
-    retries,
-    backOff,
-  }: FetchDataParams): Promise<UpGradeClientInterfaces.IResponse> {
-    if (!retries) {
-      retries = 3;
-    }
-
-    if (!backOff) {
-      backOff = 300;
-    }
-
+    retries = 3,
+    backOff = 300,
+  }: FetchDataParams): Promise<ResponseType> {
     try {
-      let headers: Record<string, any> = {
-        'Content-Type': 'application/json',
-        'Session-Id': this.clientSessionId || uuid.v4(),
-        CurrentRetry: retries,
-        URL: url,
-      };
-      if (this.token) {
-        headers = {
-          ...headers,
-          Authorization: `Bearer ${this.token}`,
-        };
-      }
+      const headers = { ...this.config.customHeaders };
+      const clientSource = IS_BROWSER ? 'Browser' : 'Node';
+      headers.CurrentRetry = retries.toString();
 
-      typeof window !== 'undefined'
-        ? (headers = { ...headers, 'Client-source': 'Browser' })
-        : (headers = { ...headers, 'Client-source': 'Node' });
+      if (clientSource) headers['Client-source'] = clientSource;
+      if (this.config.clientSessionId) headers['Session-Id'] = this.config.clientSessionId;
+      if (this.config.token) headers.Authorization = `Bearer ${this.config.token}`;
 
-      // TODO for default client, options may not need to be passed in?
-      let options: AxiosRequestConfig = {
+      let axiosRequestConfig: AxiosRequestConfig = {
         headers,
         method,
       };
 
-      if (
-        typeof window === 'undefined' &&
-        typeof process !== 'undefined' &&
-        process.release &&
-        process.release.name === 'node'
-      ) {
-        if (this.sendAsAnalytics) {
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
-          const http = require('http');
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
-          const https = require('https');
-          options.httpAgent = new http.Agent({ keepAlive: true });
-          options.httpsAgent = new https.Agent({ keepAlive: true });
-        }
-      }
-
       if (method === UpGradeClientEnums.REQUEST_METHOD.POST || method === UpGradeClientEnums.REQUEST_METHOD.PATCH) {
-        options = {
-          ...options,
+        axiosRequestConfig = {
+          ...axiosRequestConfig,
           data: body,
         };
       }
 
       const response = await axios({
         url,
-        ...options,
-      }).then((res) => {
-        return res;
+        ...axiosRequestConfig,
       });
 
       const responseData = response.data;
@@ -121,10 +87,7 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
       if (statusCode > 400 && statusCode < 500) {
         // If response status code is in the skipRetryOnStatusCodes, don't attempt retry
         if (this.skipRetryOnStatusCodes.includes(response.status)) {
-          return {
-            status: false,
-            message: responseData,
-          };
+          return responseData;
         }
 
         if (retries > 0) {
@@ -134,27 +97,17 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
             url,
             method,
             body,
-            options,
             retries: retries - 1,
             backOff: backOff * 2,
           });
         } else {
-          return {
-            status: false,
-            message: responseData,
-          };
+          return responseData;
         }
       } else {
-        return {
-          status: true,
-          data: responseData,
-        };
+        return responseData;
       }
     } catch (error) {
-      return {
-        status: false,
-        message: error,
-      };
+      throw new Error(JSON.stringify(error));
     }
   }
 }

@@ -22,7 +22,6 @@
     "@angular/platform-browser": "^14.1.0",
     "@angular/platform-browser-dynamic": "^14.1.0",
     "@angular/router": "^14.1.0",
-    "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
     "upgrade_client_1_1_7": "npm:upgrade_client_lib@1.1.7",
     "upgrade_client_1_1_8": "npm:upgrade_client_lib@1.1.8",
@@ -40,6 +39,7 @@
     "@angular/compiler-cli": "^14.1.0",
     "@types/webpack": "^5.28.1",
     "concurrently": "^8.2.0",
+    "rxjs": "^7.8.1",
     "typescript": "~4.7.2"
   }
 }

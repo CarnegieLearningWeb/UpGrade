@@ -62,21 +62,28 @@ export namespace UpGradeClientInterfaces {
     aliases: string[];
   }
 
-  export interface IHttpClientWrapperRequestOptions {
-    headers?: any;
+  export interface IHttpClientWrapperRequestConfig {
+    customHeaders?: IUpgradeApiRequestHeaders;
+    token?: string;
+    clientSessionId?: string;
+  }
+
+  export interface IUpgradeApiRequestHeaders {
+    [key: string]: string | string[];
   }
 
   export interface IHttpClientWrapper {
-    get: (url: string, options: IHttpClientWrapperRequestOptions) => any;
+    config?: IHttpClientWrapperRequestConfig;
+    get: (url: string, options: IHttpClientWrapperRequestConfig) => any;
     post: <UpgradeRequestBodyType>(
       url: string,
-      requestBody: UpgradeRequestBodyType,
-      options: IHttpClientWrapperRequestOptions
+      body: UpgradeRequestBodyType,
+      options: IHttpClientWrapperRequestConfig
     ) => any;
     patch: <UpgradeRequestBodyType>(
       url: string,
-      requestBody: UpgradeRequestBodyType,
-      options: IHttpClientWrapperRequestOptions
+      body: UpgradeRequestBodyType,
+      options: IHttpClientWrapperRequestConfig
     ) => any;
   }
 }

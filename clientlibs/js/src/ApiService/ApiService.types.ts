@@ -2,9 +2,9 @@ import { UpGradeClientEnums } from 'types';
 
 export interface IApiServiceRequestParams {
   url: string;
-  requestType: UpGradeClientEnums.REQUEST_METHOD;
-  requestBody?: any;
+  method: UpGradeClientEnums.REQUEST_METHOD;
   options?: any;
+  body?: any;
 }
 
 export interface IEndpoints {

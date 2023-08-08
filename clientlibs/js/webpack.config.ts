@@ -19,11 +19,6 @@ const generalConfiguration = {
     },
     extensions: ['.tsx', '.ts', '.js'],
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(false),
-    }),
-  ],
 };
 
 const browser = {
@@ -35,6 +30,12 @@ const browser = {
     library: 'upgrade-client-lib',
     libraryExport: 'default',
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(false),
+      IS_BROWSER: JSON.stringify(true),
+    }),
+  ],
 };
 
 const node = {
@@ -46,13 +47,19 @@ const node = {
     libraryTarget: 'umd',
     library: 'upgrade-client-lib',
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(false),
+      IS_BROWSER: JSON.stringify(false),
+    }),
+  ],
 };
 
 const browserLite = {
   ...generalConfiguration,
   output: {
     filename: 'index.js',
-    path: path.resolve(__dirname, 'dist/browser'),
+    path: path.resolve(__dirname, 'dist/browser-lite'),
     libraryTarget: 'umd',
     library: 'upgrade-client-lib',
     libraryExport: 'default',
@@ -60,6 +67,7 @@ const browserLite = {
   plugins: [
     new webpack.DefinePlugin({
       USE_CUSTOM_HTTP_CLIENT: JSON.stringify(true),
+      IS_BROWSER: JSON.stringify(true),
     }),
   ],
 };
@@ -76,6 +84,7 @@ const nodeLite = {
   plugins: [
     new webpack.DefinePlugin({
       USE_CUSTOM_HTTP_CLIENT: JSON.stringify(true),
+      IS_BROWSER: JSON.stringify(false),
     }),
   ],
 };

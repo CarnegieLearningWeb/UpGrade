@@ -432,8 +432,8 @@ export default class UpgradeClient {
    * const logResponse: ILog[] = await upgradeClient.metrics(metrics);
    * ```
    */
-  async log(value: ILogInput[], sendAsAnalytics = false): Promise<UpGradeClientInterfaces.ILog[]> {
-    return await this.apiService.log(value, sendAsAnalytics);
+  async log(value: ILogInput[]): Promise<UpGradeClientInterfaces.ILog[]> {
+    return await this.apiService.log(value);
   }
 
   /**
@@ -453,8 +453,8 @@ export default class UpgradeClient {
  * 
  * ```
  */
-  async logCaliper(value: CaliperEnvelope, sendAsAnalytics = false): Promise<UpGradeClientInterfaces.ILog[]> {
-    return await this.apiService.logCaliper(value, sendAsAnalytics);
+  async logCaliper(value: CaliperEnvelope): Promise<UpGradeClientInterfaces.ILog[]> {
+    return await this.apiService.logCaliper(value);
   }
 
   /**
