@@ -2,7 +2,7 @@ import { fakeAsync, tick } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 import { SEGMENT_TYPE } from 'upgrade_types';
 import { SegmentsService } from './segments.service';
-import { actionDeleteSegment, actionExportSegment, actionUpsertSegment } from './store/segments.actions';
+import { actionDeleteSegment, actionExportSegments, actionUpsertSegment } from './store/segments.actions';
 import { SegmentInput, UpsertSegmentType } from './store/segments.model';
 import * as SegmentSelectors from './store/segments.selectors';
 const MockStateStore$ = new BehaviorSubject({});
@@ -111,13 +111,13 @@ describe('SegmentService', () => {
       });
     });
 
-    describe('#exportSegment', () => {
-      it('should dispatch exportSegment with the given input', () => {
-        const segmentId = 'abc123';
+    describe('#exportSegments', () => {
+      it('should dispatch exportSegments with the given input', () => {
+        const segmentIds = ['abc123'];
 
-        service.exportSegment(segmentId);
+        service.exportSegments(segmentIds);
 
-        expect(mockStore.dispatch).toHaveBeenCalledWith(actionExportSegment({ segmentId }));
+        expect(mockStore.dispatch).toHaveBeenCalledWith(actionExportSegments({ segmentIds }));
       });
     });
   });

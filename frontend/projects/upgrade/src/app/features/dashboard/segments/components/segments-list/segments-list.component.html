@@ -24,7 +24,7 @@
         mat-flat-button
         color="primary"
         class="ft-14-700 export-segments"
-        (click)="openExportAllSegmentDialog()"
+        (click)="openExportAllSegment()"
         *ngIf="(permissions$ | async)?.segments.create"
       >
         <mat-icon>download</mat-icon>
