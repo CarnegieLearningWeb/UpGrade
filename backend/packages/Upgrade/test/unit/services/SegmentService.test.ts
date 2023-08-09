@@ -330,14 +330,14 @@ describe('Segment Service Testing', () => {
   });
 
   it('should export a segment', async () => {
-    const segments = await service.exportSegment(seg1.id, logger);
-    expect(segments).toEqual(seg1);
+    const segments = await service.exportSegments([seg1.id], logger);
+    expect(segments).toEqual([seg1]);
   });
 
   it('should throw an error when segment not found on export', async () => {
     repo.findOne = jest.fn().mockResolvedValue(null);
     expect(async () => {
-      await service.exportSegment(seg1.id, logger);
+      await service.exportSegments([seg1.id], logger);
     }).rejects.toThrow(new Error(SERVER_ERROR.QUERY_FAILED));
   });
 });

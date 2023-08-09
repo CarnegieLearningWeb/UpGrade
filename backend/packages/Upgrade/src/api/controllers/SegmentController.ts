@@ -369,18 +369,20 @@ export class SegmentController {
     return this.segmentService.importSegment(segment, request.logger);
   }
 
-  @Get('/export/:id')
-  public exportSegment(@Param('id') id: string, @Req() request: AppRequest): Promise<Segment> {
-    if (!id) {
+  @Post('/export')
+  public exportSegments( @Body({ validate: false }) ids: string[], @Req() request: AppRequest): Promise<Segment[]> {
+    if (!ids) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
     }
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
-        )
-      );
+    for (const id of ids) {
+      if (!isUUID(id)) {
+        return Promise.reject(
+          new Error(
+            JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
+          )
+        );
+      }
     }
-    return this.segmentService.exportSegment(id, request.logger);
+    return this.segmentService.exportSegments(ids, request.logger);
   }
 }

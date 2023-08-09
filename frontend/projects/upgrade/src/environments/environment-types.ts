@@ -38,6 +38,7 @@ export interface APIEndpoints {
   segments: string;
   importSegment: string;
   exportSegment: string;
+  exportSegments: string;
   getGroupAssignmentStatus: string;
 }
 
