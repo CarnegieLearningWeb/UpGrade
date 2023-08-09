@@ -11,6 +11,8 @@ const config: Config.InitialOptions = {
       isolatedModules: true,
       diagnostics: false,
     },
+    USE_CUSTOM_HTTP_CLIENT: true,
+    IS_BROWSER: true,
   },
   moduleNameMapper: {
     upgrade_types: '<rootDir>/../../types',

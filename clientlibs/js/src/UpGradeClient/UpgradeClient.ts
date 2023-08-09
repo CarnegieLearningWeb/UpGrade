@@ -75,9 +75,9 @@ export default class UpgradeClient {
       userId: userId,
       hostURL: hostUrl,
       context: context,
-      clientSessionId: options.clientSessionId,
-      token: options.token,
-      httpClient: options.httpClient,
+      clientSessionId: options?.clientSessionId,
+      token: options?.token,
+      httpClient: options?.httpClient,
     };
 
     this.dataService = new DataService();

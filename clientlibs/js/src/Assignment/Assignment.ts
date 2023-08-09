@@ -23,9 +23,11 @@ export default class Assignment {
   ) {
     this._site = site;
     this._target = target;
-    this._conditionCode = assignedCondition[0].conditionCode;
-    this._payloadType = assignedCondition[0].payload ? assignedCondition[0].payload.type : PAYLOAD_TYPE.STRING;
-    this._payloadValue = assignedCondition[0].payload ? assignedCondition[0].payload.value : null;
+    this._conditionCode = assignedCondition[0] && assignedCondition[0].conditionCode;
+    this._payloadType =
+      assignedCondition[0] && assignedCondition[0].payload ? assignedCondition[0].payload.type : PAYLOAD_TYPE.STRING;
+    this._payloadValue =
+      assignedCondition[0] && assignedCondition[0].payload ? assignedCondition[0].payload.value : null;
     this._experimentType = assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE;
     this._assignedFactor = assignedFactor ? assignedFactor[0] : null;
   }
