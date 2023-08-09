@@ -16,7 +16,8 @@
     "prettier:write": "prettier --config ../../.prettierrc './{src, test}/**/*.ts' --write",
     "prettier:check": "prettier --config ../../.prettierrc './{src, test}/**/*.ts' --check",
     "docs:markdown": "typedoc --options typedoc.json",
-    "test": "jest"
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [],
   "author": "",

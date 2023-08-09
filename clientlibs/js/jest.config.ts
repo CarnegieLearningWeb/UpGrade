@@ -17,5 +17,6 @@ const config: Config.InitialOptions = {
   moduleNameMapper: {
     upgrade_types: '<rootDir>/../../types',
   },
+  coverageReporters: ['html'],
 };
 export default config;
