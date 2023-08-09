@@ -1,12 +1,11 @@
 import { UpGradeClientInterfaces, UpGradeClientEnums } from '../types';
-import axios, { AxiosHeaders, AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
-declare const IS_BROWSER: boolean;
 interface FetchDataParams {
   url: string;
   method: UpGradeClientEnums.REQUEST_METHOD;
   body?: any;
-  headers?: UpGradeClientInterfaces.IUpgradeApiRequestHeaders;
+  options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig;
   clientSessionId?: string;
   token?: string;
   retries?: number;
@@ -15,30 +14,29 @@ interface FetchDataParams {
 
 export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWrapper {
   private skipRetryOnStatusCodes: number[] = [];
-  public config: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig = {
-    customHeaders: null,
-    token: null,
-    clientSessionId: null,
-  };
+  public config: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig = null;
 
-  constructor(config?: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig) {
-    if (config) {
-      this.config = config;
-    }
-  }
-
-  public async get(url: string): Promise<any> {
+  public async get(url: string, options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig): Promise<any> {
     return this.fetchData({
       url,
       method: UpGradeClientEnums.REQUEST_METHOD.GET,
+      options,
     });
   }
-  public async post<RequestBodyType>(url: string, body: RequestBodyType): Promise<any> {
-    return this.fetchData({ url, method: UpGradeClientEnums.REQUEST_METHOD.POST, body });
+  public async post<RequestBodyType>(
+    url: string,
+    body: RequestBodyType,
+    options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig
+  ): Promise<any> {
+    return this.fetchData({ url, method: UpGradeClientEnums.REQUEST_METHOD.POST, body, options });
   }
 
-  public async patch<RequestBodyType>(url: string, body: RequestBodyType): Promise<any> {
-    return this.fetchData({ url, method: UpGradeClientEnums.REQUEST_METHOD.PATCH, body });
+  public async patch<RequestBodyType>(
+    url: string,
+    body: RequestBodyType,
+    options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig
+  ): Promise<any> {
+    return this.fetchData({ url, method: UpGradeClientEnums.REQUEST_METHOD.PATCH, body, options });
   }
 
   private async wait(ms: number) {
@@ -47,25 +45,20 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
     });
   }
 
-  // TODO break this down
   private async fetchData<ResponseType>({
     url,
     method,
     body,
+    options,
     retries = 3,
     backOff = 300,
   }: FetchDataParams): Promise<ResponseType> {
     try {
-      const headers = { ...this.config.customHeaders };
-      const clientSource = IS_BROWSER ? 'Browser' : 'Node';
-      headers.CurrentRetry = retries.toString();
-
-      if (clientSource) headers['Client-source'] = clientSource;
-      if (this.config.clientSessionId) headers['Session-Id'] = this.config.clientSessionId;
-      if (this.config.token) headers.Authorization = `Bearer ${this.config.token}`;
+      options.headers['CurrentRetry'] = retries.toString();
 
       let axiosRequestConfig: AxiosRequestConfig = {
-        headers,
+        url,
+        headers: options.headers,
         method,
       };
 
@@ -76,8 +69,9 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
         };
       }
 
+      console.log({ axiosRequestConfig });
+
       const response = await axios({
-        url,
         ...axiosRequestConfig,
       });
 
@@ -97,6 +91,7 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
             url,
             method,
             body,
+            options,
             retries: retries - 1,
             backOff: backOff * 2,
           });

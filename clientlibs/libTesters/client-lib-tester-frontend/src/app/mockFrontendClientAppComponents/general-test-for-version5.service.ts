@@ -247,14 +247,27 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
 
   private createCustomHttpClient(): UpGradeClientInterfaces.IHttpClientWrapper {
     const customHttpClient: UpGradeClientInterfaces.IHttpClientWrapper = {
-      get: async (url: string): Promise<any> => {
-        return await lastValueFrom(this.angularHttpClient.get(url));
+      config: {
+        headers: {
+          XTest: 'test',
+        },
       },
-      post: async (url: string, body: any): Promise<any> => {
-        return await lastValueFrom(this.angularHttpClient.post(url, body));
+      get: async (url: string, options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig): Promise<any> => {
+        return await lastValueFrom(this.angularHttpClient.get(url, options));
       },
-      patch: async (url: string, body: any): Promise<any> => {
-        return await lastValueFrom(this.angularHttpClient.patch(url, body));
+      post: async (
+        url: string,
+        body: any,
+        options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig
+      ): Promise<any> => {
+        return await lastValueFrom(this.angularHttpClient.post(url, body, options));
+      },
+      patch: async (
+        url: string,
+        body: any,
+        options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig
+      ): Promise<any> => {
+        return await lastValueFrom(this.angularHttpClient.patch(url, body, options));
       },
     };
     return customHttpClient;
@@ -262,9 +275,9 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
 
   private async doInit(userId: string) {
     console.log('login hook called:', userId);
-    // const httpClient = this.createCustomHttpClient();
+    const httpClient = this.createCustomHttpClient();
 
-    this.upgradeClient = this.constructUpgradeClient(userId);
+    this.upgradeClient = this.constructUpgradeClient(userId, httpClient);
     console.log({ upgradeClient: this.upgradeClient });
 
     try {

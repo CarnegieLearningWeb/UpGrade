@@ -65,7 +65,11 @@ export abstract class AbstractMockAppService {
     const apiHostUrl = this.clientLibraryService.getSelectedAPIHostUrl();
     const UpgradeClient: new (...args: any[]) => typeof UpgradeClient =
       this.clientLibraryService.getUpgradeClientConstructor();
-    const upgradeClient = new UpgradeClient(userId, apiHostUrl, this.CONTEXT, { httpClient });
+    const upgradeClient = new UpgradeClient(userId, apiHostUrl, this.CONTEXT, {
+      httpClient,
+      token: 'test',
+      clientSessionId: 'test',
+    });
     return upgradeClient;
   }
 }

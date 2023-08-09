@@ -1,4 +1,4 @@
-import * as UpgradeClient_Local from 'upgrade_client_local/dist/browser';
+import * as UpgradeClient_Local from 'upgrade_client_local/dist/browser-lite';
 // import { UpgradeClient as UpgradeClient_Local } from 'upgrade_client_1_1_7';
 import { UpgradeClient as UpgradeClient_1_1_7 } from 'upgrade_client_1_1_7';
 import * as UpgradeClient_1_1_8 from 'upgrade_client_1_1_8/dist/browser';

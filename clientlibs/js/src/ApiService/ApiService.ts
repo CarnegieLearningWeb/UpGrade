@@ -16,6 +16,7 @@ import * as uuid from 'uuid';
 
 // this variable is used by webpack to replace the value of USE_CUSTOM_HTTP_CLIENT with true or false to create two different builds
 declare const USE_CUSTOM_HTTP_CLIENT: boolean;
+declare const IS_BROWSER: boolean;
 
 export default class ApiService {
   private context: string;
@@ -79,27 +80,28 @@ export default class ApiService {
   }
 
   private createOptions(url: string): UpGradeClientInterfaces.IHttpClientWrapperRequestConfig {
-    let options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig = {};
-
-    let defaultHeaders: UpGradeClientInterfaces.IUpgradeApiRequestHeaders = {
-      'Content-Type': 'application/json',
-      'Session-Id': this.clientSessionId || uuid.v4(), // set this here? Do we need to require a clientSessionId?
-      URL: url,
+    const options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig = {
+      headers: {
+        'Content-Type': 'application/json',
+        'Session-Id': this.clientSessionId || uuid.v4(), // set this here? Do we need to require a clientSessionId?
+        'Client-source': IS_BROWSER ? 'browser' : 'node',
+        URL: url,
+      },
     };
 
     if (this.token) {
-      defaultHeaders = {
-        Authorization: `Bearer ${this.token}`,
-        ...defaultHeaders,
+      options.headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    // layer in any custom headers supplied by the user
+    if (this.httpClient.config?.headers) {
+      options.headers = {
+        ...options.headers,
+        ...this.httpClient.config?.headers,
       };
     }
 
-    if (this.httpClient.config?.customHeaders) {
-      options = {
-        ...defaultHeaders,
-        ...this.httpClient.config?.customHeaders,
-      };
-    }
+    console.log('createOptions', options);
 
     return options;
   }
@@ -207,10 +209,6 @@ export default class ApiService {
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,
     });
-
-    // return experimentConditionResponse.data.map((data: IExperimentAssignmentv5) => {
-    //   return data;
-    // });
   }
 
   public async markDecisionPoint({
@@ -297,7 +295,7 @@ export default class ApiService {
       method: UpGradeClientEnums.REQUEST_METHOD.GET,
     });
 
-    return response.data.map((flag: IFeatureFlag) => {
+    return response.map((flag: IFeatureFlag) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { variations, ...rest } = flag;
       const updatedVariations = variations.map((variation: IFlagVariation) => {

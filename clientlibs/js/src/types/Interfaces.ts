@@ -63,15 +63,10 @@ export namespace UpGradeClientInterfaces {
   }
 
   export interface IHttpClientWrapperRequestConfig {
-    customHeaders?: IUpgradeApiRequestHeaders;
-    token?: string;
-    clientSessionId?: string;
+    headers?: {
+      [key: string]: string | string[];
+    };
   }
-
-  export interface IUpgradeApiRequestHeaders {
-    [key: string]: string | string[];
-  }
-
   export interface IHttpClientWrapper {
     config?: IHttpClientWrapperRequestConfig;
     get: (url: string, options: IHttpClientWrapperRequestConfig) => any;
