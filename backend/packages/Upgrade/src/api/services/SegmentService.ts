@@ -152,31 +152,36 @@ export class SegmentService {
     return await this.segmentRepository.deleteSegment(id, logger);
   }
 
-  public async importSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
-    const duplicateSegment = await this.segmentRepository.findOne(segment.id);
-    if (duplicateSegment && segment.id !== undefined) {
-      const error = new Error('Duplicate segment');
-      (error as any).type = SERVER_ERROR.QUERY_FAILED;
-      logger.error(error);
-      throw error;
-    }
-
-    // check for each subSegment to exists
-    const allSegments = await this.segmentRepository.getAllSegments(logger);
-    segment.subSegmentIds.forEach((subSegmentId) => {
-      const subSegment = allSegments.find((segmentId) => subSegmentId === segmentId.id);
-      if (!subSegment) {
-        const error = new Error(
-          'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
-        );
+  public async importSegment(segments: SegmentInputValidator[], logger: UpgradeLogger): Promise<Segment[]> {
+    const allAddedSegments: Segment[] = [];
+    for (const segment of segments) {
+      const duplicateSegment = await this.segmentRepository.findOne(segment.id);
+      if (duplicateSegment && segment.id !== undefined) {
+        const error = new Error('Duplicate segment');
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);
         throw error;
       }
-    });
 
-    logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
-    return this.addSegmentDataInDB(segment, logger);
+      // check for each subSegment to exists
+      const allSegments = await this.segmentRepository.getAllSegments(logger);
+      segment.subSegmentIds.forEach((subSegmentId) => {
+        const subSegment = allSegments.find((segmentId) => subSegmentId === segmentId.id);
+        if (!subSegment) {
+          const error = new Error(
+            'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
+          );
+          (error as any).type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
+      });
+
+      logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
+      const addedSegment = await this.addSegmentDataInDB(segment, logger);
+      allAddedSegments.push(addedSegment);
+    }
+    return allAddedSegments;
   }
 
   public async exportSegments(segmentIds: string[], logger: UpgradeLogger): Promise<Segment[]> {
@@ -184,14 +189,14 @@ export class SegmentService {
     let segmentsDoc: Segment[] = [];
     if (segmentIds.length > 1) {
       segmentsDoc = await this.getSegmentByIds(segmentIds);
-    }else {
+    } else {
       const segmentDoc = await this.segmentRepository.findOne({
         where: { id: segmentIds[0] },
         relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
       });
       if (!segmentDoc) {
         throw new Error(SERVER_ERROR.QUERY_FAILED);
-      }else {
+      } else {
         segmentsDoc.push(segmentDoc);
       }
     }

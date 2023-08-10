@@ -15,10 +15,15 @@ export const initialState: SegmentState = adapter.getInitialState({
 
 const reducer = createReducer(
   initialState,
-  on(SegmentsActions.actionUpsertSegment, SegmentsActions.actionGetSegmentById, (state) => ({
-    ...state,
-    isLoadingSegments: true,
-  })),
+  on(
+    SegmentsActions.actionUpsertSegment,
+    SegmentsActions.actionImportSegment,
+    SegmentsActions.actionGetSegmentById,
+    (state) => ({
+      ...state,
+      isLoadingSegments: true,
+    })
+  ),
   on(
     SegmentsActions.actionFetchSegmentsSuccess,
     (state, { segments, experimentSegmentExclusion, experimentSegmentInclusion }) => {
@@ -34,11 +39,15 @@ const reducer = createReducer(
   on(
     SegmentsActions.actionFetchSegmentsFailure,
     SegmentsActions.actionUpsertSegmentFailure,
+    SegmentsActions.actionImportSegmentFailure,
     SegmentsActions.actionGetSegmentByIdFailure,
     (state) => ({ ...state, isLoadingSegments: false })
   ),
   on(SegmentsActions.actionUpsertSegmentSuccess, (state, { segment }) =>
     adapter.upsertOne(segment, { ...state, isLoadingSegments: false })
+  ),
+  on(SegmentsActions.actionImportSegmentSuccess, (state, { segment }) =>
+    adapter.upsertMany(segment, { ...state, isLoadingSegments: false })
   ),
   on(SegmentsActions.actionGetSegmentByIdSuccess, (state, { segment }) =>
     adapter.upsertOne(segment, { ...state, isLoadingSegments: false })

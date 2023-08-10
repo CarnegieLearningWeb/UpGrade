@@ -2,7 +2,12 @@ import { fakeAsync, tick } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 import { SEGMENT_TYPE } from 'upgrade_types';
 import { SegmentsService } from './segments.service';
-import { actionDeleteSegment, actionExportSegments, actionUpsertSegment } from './store/segments.actions';
+import {
+  actionDeleteSegment,
+  actionExportSegments,
+  actionImportSegment,
+  actionUpsertSegment,
+} from './store/segments.actions';
 import { SegmentInput, UpsertSegmentType } from './store/segments.model';
 import * as SegmentSelectors from './store/segments.selectors';
 const MockStateStore$ = new BehaviorSubject({});
@@ -71,12 +76,11 @@ describe('SegmentService', () => {
     it('should dispatch actionUpsertExperiment with the given input', () => {
       const segment = { ...mockSegment };
 
-      service.importSegment(segment);
+      service.importSegment([segment]);
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
-        actionUpsertSegment({
-          segment,
-          actionType: UpsertSegmentType.IMPORT_SEGMENT,
+        actionImportSegment({
+          segment: [segment],
         })
       );
     });

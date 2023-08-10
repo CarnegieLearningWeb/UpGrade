@@ -26,6 +26,15 @@ export const actionUpsertSegmentSuccess = createAction(
 
 export const actionUpsertSegmentFailure = createAction('[Segments] Upsert Segment Failure');
 
+export const actionImportSegment = createAction('[Segments] Import Segment', props<{ segment: SegmentInput[] }>());
+
+export const actionImportSegmentSuccess = createAction(
+  '[Segments] Import Segment Success',
+  props<{ segment: Segment[] }>()
+);
+
+export const actionImportSegmentFailure = createAction('[Segments] Import Segment Failure');
+
 export const actionGetSegmentById = createAction('[Experiment] Get Segment By Id', props<{ segmentId: string }>());
 
 export const actionGetSegmentByIdSuccess = createAction(

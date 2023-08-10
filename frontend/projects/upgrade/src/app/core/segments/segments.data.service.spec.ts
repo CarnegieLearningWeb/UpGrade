@@ -100,7 +100,7 @@ describe('SegmentDataService', () => {
       const mockUrl = mockEnvironment.api.importSegment;
       const segment = { ...mockSegment };
 
-      service.importSegment(segment);
+      service.importSegment([segment]);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, { ...segment });
     });

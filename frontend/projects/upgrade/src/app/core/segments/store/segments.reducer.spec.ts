@@ -8,6 +8,7 @@ describe('SegmentsReducer', () => {
     const testActions = {
       actionUpsertSegment: SegmentsActions.actionUpsertSegment,
       actionGetSegmentById: SegmentsActions.actionGetSegmentById,
+      actionImportSegment: SegmentsActions.actionImportSegment,
     };
 
     for (const actionKey in testActions) {
@@ -46,6 +47,7 @@ describe('SegmentsReducer', () => {
       actionFetchSegmentsFailure: SegmentsActions.actionFetchSegmentsFailure,
       actionUpsertSegmentFailure: SegmentsActions.actionUpsertSegmentFailure,
       actionGetSegmentByIdFailure: SegmentsActions.actionGetSegmentByIdFailure,
+      actionImportSegmentFailure: SegmentsActions.actionImportSegmentFailure,
     };
 
     for (const actionKey in testActions) {
@@ -85,6 +87,37 @@ describe('SegmentsReducer', () => {
       });
 
       const newState = segmentsReducer(previousState, testAction);
+
+      expect(newState.entities[mockSegment.id]).toEqual(mockSegment);
+      expect(newState.isLoadingSegments).toEqual(false);
+    });
+  });
+
+  describe('actionImportSegmentSuccess', () => {
+    it('should set segments and set isLoadingSegments to false', () => {
+      const previousState = { ...initialState };
+      previousState.entities = {};
+      previousState.isLoadingSegments = true;
+      const mockSegment: Segment = {
+        createdAt: 'test',
+        versionNumber: 0,
+        updatedAt: 'test',
+        id: 'abc123',
+        name: 'abc',
+        context: 'test',
+        description: 'test',
+        individualForSegment: [],
+        groupForSegment: [],
+        subSegments: [],
+        type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
+        status: 'test',
+      };
+
+      const testAction = SegmentsActions.actionImportSegmentSuccess({
+        segment: [mockSegment],
+      });
+
+      const newState = segmentsReducer(previousState, testAction[0]);
 
       expect(newState.entities[mockSegment.id]).toEqual(mockSegment);
       expect(newState.isLoadingSegments).toEqual(false);

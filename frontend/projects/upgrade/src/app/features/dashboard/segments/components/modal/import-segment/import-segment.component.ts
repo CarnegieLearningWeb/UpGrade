@@ -1,7 +1,12 @@
 import { Component, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
+import { TranslateService } from '@ngx-translate/core';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
 import { SegmentInput, Segment } from '../../../../../../core/segments/store/segments.model';
+import { MatTableDataSource } from '@angular/material/table';
 
 interface ImportSegmentJSON {
   schema: Record<keyof SegmentInput, string>;
@@ -18,8 +23,17 @@ export class ImportSegmentComponent {
   segmentInfo: Segment;
   isSegmentJSONValid = true;
   segmentTemp: SegmentInput;
+  allSegments: SegmentInput[] = [];
+  segmentJSONVersionStatus = 0;
+  missingAllProperties: string;
+  importFileErrorsDataSource = new MatTableDataSource<{ filename: string; error: string }>();
+  importFileErrors: { filename: string; error: string }[] = [];
+  displayedColumns: string[] = ['File Name', 'Error'];
+  uploadedFileCount = 0;
+
   constructor(
     private segmentsService: SegmentsService,
+    private translate: TranslateService,
     public dialogRef: MatDialogRef<ImportSegmentComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
@@ -30,31 +44,61 @@ export class ImportSegmentComponent {
 
   importSegment() {
     // TODO: improve the logic here
-    const userIds = this.segmentInfo.individualForSegment.map((individual) => individual.userId);
-    const subSegmentIds = this.segmentInfo.subSegments.map((subSegment) => subSegment.id);
-    const groups = this.segmentInfo.groupForSegment.map((group) => ({ type: group.type, groupId: group.groupId }));
-
-    this.segmentTemp = { ...this.segmentInfo, userIds: userIds, subSegmentIds: subSegmentIds, groups: groups };
-    this.isSegmentJSONValid = this.validateSegmentJSON(this.segmentTemp);
-    if (this.isSegmentJSONValid) {
-      this.segmentsService.importSegment({ ...this.segmentTemp });
+    if (this.importFileErrors.length === 0) {
+      this.segmentsService.importSegment(this.allSegments);
       this.onCancelClick();
     }
   }
 
   uploadFile(event) {
+    let index = 0;
+    let fileName = '';
     const reader = new FileReader();
+    this.uploadedFileCount = event.target.files.length;
+    this.importFileErrors = [];
+
     reader.addEventListener(
       'load',
-      function () {
+      async function () {
         const result = JSON.parse(reader.result as any);
         this.segmentInfo = result;
+        this.importFileErrorsDataSource.data = await this.validateSegment(this.segmentInfo, fileName);
+        readFile(++index);
       }.bind(this)
     );
-    reader.readAsText(event.target.files[0]);
+
+    readFile(index);
+    function readFile(fileIndex: number) {
+      if (fileIndex >= event.target.files.length) return;
+      fileName = event.target.files[fileIndex].name;
+      reader.readAsText(event.target.files[fileIndex]);
+    }
   }
 
-  private validateSegmentJSON(segment: SegmentInput) {
+  async validateSegment(segmentInfo: Segment, fileName) {
+    const userIds = segmentInfo.individualForSegment.map((individual) =>
+      individual.userId ? individual.userId : undefined
+    );
+    const subSegmentIds = segmentInfo.subSegments.map((subSegment) => (subSegment.id ? subSegment.id : undefined));
+    const groups = segmentInfo.groupForSegment.map((group) => {
+      return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
+    });
+
+    this.segmentTemp = { ...this.segmentInfo, userIds: userIds, subSegmentIds: subSegmentIds, groups: groups };
+    this.isSegmentJSONValid = this.validateSegmentJSON(this.segmentTemp);
+    if (this.isSegmentJSONValid) {
+      this.allSegments.push(this.segmentTemp);
+    } else {
+      this.importFileErrors.push({
+        filename: fileName,
+        error: this.translate.instant('segments.import-segment.error.message.text') + ' ' + this.missingAllProperties,
+      });
+      this.allSegments.push(this.segmentTemp);
+    }
+    return this.importFileErrors;
+  }
+
+  validateSegmentJSON(segment: SegmentInput): boolean {
     const segmentSchema: Record<keyof any, string> = {
       id: 'string',
       name: 'string',
@@ -71,14 +115,15 @@ export class ImportSegmentComponent {
     //   type: 'string',
     // }
 
-    const missingProperties = this.checkForMissingProperties({ schema: segmentSchema, data: segment });
-    if (missingProperties.length > 0) {
+    this.missingAllProperties = this.checkForMissingProperties({ schema: segmentSchema, data: segment });
+
+    if (this.missingAllProperties.length > 0) {
       return false;
     } else {
       // segment.groups.map(group => {
-      //   missingProperties = [ ...missingProperties, ...this.checkForMissingProperties({ schema: groupSchema, data: group })];
+      //   missingAllProperties = [ ...missingAllProperties, ...this.checkForMissingProperties({ schema: groupSchema, data: group })];
       // });
-      return missingProperties.length === 0;
+      return this.missingAllProperties.length === 0;
     }
   }
 
@@ -87,7 +132,7 @@ export class ImportSegmentComponent {
     const missingProperties = Object.keys(schema)
       .filter((key) => data[key] === undefined)
       .map((key) => key as keyof SegmentInput)
-      .map((key) => new Error(`Document is missing ${key} ${schema[key]}`));
-    return missingProperties;
+      .map((key) => `${key}`);
+    return missingProperties.join(', ');
   }
 }
