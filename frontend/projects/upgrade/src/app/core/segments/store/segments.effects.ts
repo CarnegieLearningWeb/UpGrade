@@ -8,6 +8,7 @@ import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
 import { Segment, UpsertSegmentType } from './segments.model';
 import { selectAllSegments } from './segments.selectors';
+import JSZip from 'jszip';
 
 @Injectable()
 export class SegmentsEffects {
@@ -79,15 +80,25 @@ export class SegmentsEffects {
     )
   );
 
-  exportSegment$ = createEffect(() =>
+  exportSegments$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(SegmentsActions.actionExportSegment),
-      map((action) => ({ segmentId: action.segmentId })),
-      filter(({ segmentId }) => !!segmentId),
-      switchMap(({ segmentId }) =>
-        this.segmentsDataService.exportSegment(segmentId).pipe(
-          map((data: any) => {
-            this.download(data.name + '.json', data);
+      ofType(SegmentsActions.actionExportSegments),
+      map((action) => ({ segmentIds: action.segmentIds })),
+      filter(({ segmentIds }) => !!segmentIds),
+      switchMap(({ segmentIds }) =>
+        this.segmentsDataService.exportSegments(segmentIds).pipe(
+          map((data: Segment[]) => {
+            if (data.length > 1) {
+              const zip = new JSZip();
+              data.forEach((segment, index) => {
+                zip.file(segment.name + ' (File ' + (index + 1) + ').json', JSON.stringify(segment));
+              });
+              zip.generateAsync({ type: 'base64' }).then((content) => {
+                this.download('Segments.zip', content, true);
+              });
+            } else {
+              this.download(data[0].name + '.json', data[0], false);
+            }
             return SegmentsActions.actionExportSegmentSuccess();
           }),
           catchError(() => [SegmentsActions.actionExportSegmentFailure()])
@@ -96,9 +107,11 @@ export class SegmentsEffects {
     )
   );
 
-  private download(filename, text) {
+  private download(filename, text, isZip: boolean) {
     const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
+    isZip
+      ? element.setAttribute('href', 'data:application/zip;base64,' + text)
+      : element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
     element.setAttribute('download', filename);
     element.style.display = 'none';
     document.body.appendChild(element);
