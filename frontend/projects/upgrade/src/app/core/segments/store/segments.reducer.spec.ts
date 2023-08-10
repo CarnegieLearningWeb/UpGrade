@@ -117,7 +117,7 @@ describe('SegmentsReducer', () => {
         segment: [mockSegment],
       });
 
-      const newState = segmentsReducer(previousState, testAction[0]);
+      const newState = segmentsReducer(previousState, testAction);
 
       expect(newState.entities[mockSegment.id]).toEqual(mockSegment);
       expect(newState.isLoadingSegments).toEqual(false);

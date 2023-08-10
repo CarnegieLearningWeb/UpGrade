@@ -102,7 +102,7 @@ describe('SegmentDataService', () => {
 
       service.importSegment([segment]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, { ...segment });
+      expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, [segment]);
     });
   });
 });
