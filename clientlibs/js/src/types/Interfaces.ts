@@ -69,16 +69,16 @@ export namespace UpGradeClientInterfaces {
   }
   export interface IHttpClientWrapper {
     config?: IHttpClientWrapperRequestConfig;
-    get: (url: string, options: IHttpClientWrapperRequestConfig) => any;
+    get: (url: string, options: IHttpClientWrapperRequestConfig) => unknown;
     post: <UpgradeRequestBodyType>(
       url: string,
       body: UpgradeRequestBodyType,
       options: IHttpClientWrapperRequestConfig
-    ) => any;
+    ) => unknown;
     patch: <UpgradeRequestBodyType>(
       url: string,
       body: UpgradeRequestBodyType,
       options: IHttpClientWrapperRequestConfig
-    ) => any;
+    ) => unknown;
   }
 }
