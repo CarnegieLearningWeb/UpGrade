@@ -26,7 +26,11 @@
             mat-flat-button
             class="ft-14-600 button"
             (click)="openDialog(DialogType.EDIT_EXPERIMENT)"
-            *ngIf="permissions?.experiments.update && experiment.state !== ExperimentState.CANCELLED"
+            *ngIf="
+              permissions?.experiments.update &&
+              experiment.state !== ExperimentState.CANCELLED &&
+              experiment.state !== ExperimentState.ARCHIVED
+            "
           >
             {{ 'home.view-experiment.edit-button.text' | translate }}
           </button>
@@ -105,7 +109,9 @@
                   </ng-template>
                   <ng-container
                     *ngIf="
-                      permissions?.experiments.update && experiment.state !== ExperimentState.CANCELLED;
+                      permissions?.experiments.update &&
+                        experiment.state !== ExperimentState.CANCELLED &&
+                        experiment.state !== ExperimentState.ARCHIVED;
                       else readOnlyStatus
                     "
                   >
@@ -131,7 +137,9 @@
                 <div class="experiment-state-container post-experiment-rule-container">
                   <ng-container
                     *ngIf="
-                      permissions?.experiments.update && experiment.state !== ExperimentState.CANCELLED;
+                      permissions?.experiments.update &&
+                        experiment.state !== ExperimentState.CANCELLED &&
+                        experiment.state !== ExperimentState.ARCHIVED;
                       else readOnlyRule
                     "
                   >
@@ -204,10 +212,7 @@
 
               <!-- Experiment consistency rule OR Experiment condition Order -->
               <div class="section-data">
-                <span 
-                  class="ft-16-600 section-data-title"
-                  *ngIf="experiment.consistencyRule; else withinSubject"
-                >
+                <span class="ft-16-600 section-data-title" *ngIf="experiment.consistencyRule; else withinSubject">
                   {{ 'home-global.consistency-rule.text' | translate | uppercase }}
                 </span>
                 <ng-template #withinSubject>
@@ -215,7 +220,9 @@
                     {{ 'home-global.condition-order.text' | translate | uppercase }}
                   </span>
                 </ng-template>
-                <span class="ft-18-700 section-data-value">{{ experiment.consistencyRule || experiment.conditionOrder | titlecase }}</span>
+                <span class="ft-18-700 section-data-value">{{
+                  experiment.consistencyRule || experiment.conditionOrder | titlecase
+                }}</span>
               </div>
             </div>
 
