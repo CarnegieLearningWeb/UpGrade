@@ -112,15 +112,15 @@ export default class ApiService {
     const options = this.createOptions(url);
 
     if (method === UpGradeClientEnums.REQUEST_METHOD.GET) {
-      return await this.httpClient.get(url, options);
+      return await this.httpClient.doGet(url, options);
     }
 
     if (method === UpGradeClientEnums.REQUEST_METHOD.POST) {
-      return await this.httpClient.post<RequestBodyType>(url, body, options);
+      return await this.httpClient.doPost<RequestBodyType>(url, body, options);
     }
 
     if (method === UpGradeClientEnums.REQUEST_METHOD.PATCH) {
-      return await this.httpClient.patch<RequestBodyType>(url, body, options);
+      return await this.httpClient.doPatch<RequestBodyType>(url, body, options);
     }
   }
 

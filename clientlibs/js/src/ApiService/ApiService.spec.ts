@@ -9,9 +9,9 @@ const MockDataService = {
 };
 
 const mockHttpClient = {
-  get: jest.fn(),
-  post: jest.fn(),
-  patch: jest.fn(),
+  doGet: jest.fn(),
+  doPost: jest.fn(),
+  doPatch: jest.fn(),
 };
 
 const defaultConfig: UpGradeClientInterfaces.IConfig = {
@@ -52,7 +52,7 @@ describe('ApiService', () => {
 
       await apiService.init();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, requestBody, {
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, {
         headers: expectedHeaders,
       });
     });
@@ -68,7 +68,7 @@ describe('ApiService', () => {
 
       await apiService.init(mockGroup);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, requestBody, {
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, {
         headers: expectedHeaders,
       });
     });
@@ -84,7 +84,7 @@ describe('ApiService', () => {
 
       await apiService.init(undefined, mockWorkingGroup);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, requestBody, {
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, {
         headers: expectedHeaders,
       });
     });
@@ -104,7 +104,7 @@ describe('ApiService', () => {
 
       await apiService.init(mockGroup, mockWorkingGroup);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, requestBody, {
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, {
         headers: expectedHeaders,
       });
     });
@@ -131,7 +131,7 @@ describe('ApiService', () => {
 
       await apiService.setGroupMembership(mockGroup);
 
-      expect(mockHttpClient.patch).toHaveBeenCalledWith(expectedUrl, requestBody, {
+      expect(mockHttpClient.doPatch).toHaveBeenCalledWith(expectedUrl, requestBody, {
         headers: expectedHeaders,
       });
     });
@@ -159,7 +159,7 @@ describe('ApiService', () => {
 
       await apiService.setWorkingGroup(mockWorkingGroup);
 
-      expect(mockHttpClient.patch).toHaveBeenCalledWith(expectedUrl, requestBody, {
+      expect(mockHttpClient.doPatch).toHaveBeenCalledWith(expectedUrl, requestBody, {
         headers: expectedHeaders,
       });
     });
@@ -184,7 +184,7 @@ describe('ApiService', () => {
 
       await apiService.setAltUserIds(mockAliases);
 
-      expect(mockHttpClient.patch).toHaveBeenCalledWith(expectedUrl, requestBody, {
+      expect(mockHttpClient.doPatch).toHaveBeenCalledWith(expectedUrl, requestBody, {
         headers: expectedHeaders,
       });
     });
@@ -208,7 +208,7 @@ describe('ApiService', () => {
 
       await apiService.getAllExperimentConditions();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, requestBody, {
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, {
         headers: expectedHeaders,
       });
     });
@@ -250,7 +250,7 @@ describe('ApiService', () => {
 
       await apiService.log(mockLogData);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, mockLogDataInput, {
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, mockLogDataInput, {
         headers: expectedHeaders,
       });
     });
@@ -276,7 +276,7 @@ describe('ApiService', () => {
 
       await apiService.logCaliper(mockLogData);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, mockLogData, {
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, mockLogData, {
         headers: expectedHeaders,
       });
     });

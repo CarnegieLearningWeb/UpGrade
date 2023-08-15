@@ -252,17 +252,17 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
           XTest: 'test',
         },
       },
-      get: async (url: string, options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig): Promise<any> => {
+      doGet: async (url: string, options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig): Promise<any> => {
         return await lastValueFrom(this.angularHttpClient.get(url, options));
       },
-      post: async (
+      doPost: async (
         url: string,
         body: any,
         options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig
       ): Promise<any> => {
         return await lastValueFrom(this.angularHttpClient.post(url, body, options));
       },
-      patch: async (
+      doPatch: async (
         url: string,
         body: any,
         options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig

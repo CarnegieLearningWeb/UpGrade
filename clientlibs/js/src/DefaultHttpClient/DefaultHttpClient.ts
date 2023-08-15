@@ -16,14 +16,14 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
   private skipRetryOnStatusCodes: number[] = [];
   public config: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig = null;
 
-  public async get(url: string, options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig): Promise<any> {
+  public async doGet(url: string, options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig): Promise<any> {
     return this.fetchData({
       url,
       method: UpGradeClientEnums.REQUEST_METHOD.GET,
       options,
     });
   }
-  public async post<RequestBodyType>(
+  public async doPost<RequestBodyType>(
     url: string,
     body: RequestBodyType,
     options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig
@@ -31,7 +31,7 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
     return this.fetchData({ url, method: UpGradeClientEnums.REQUEST_METHOD.POST, body, options });
   }
 
-  public async patch<RequestBodyType>(
+  public async doPatch<RequestBodyType>(
     url: string,
     body: RequestBodyType,
     options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig

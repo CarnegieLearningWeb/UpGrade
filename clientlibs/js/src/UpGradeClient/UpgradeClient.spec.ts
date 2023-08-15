@@ -3,14 +3,13 @@ import ApiService from './../ApiService/ApiService';
 import UpgradeClient from './UpgradeClient';
 
 const mockHttpClient = {
-  get: jest.fn(),
-  post: jest.fn(),
-  patch: jest.fn(),
+  doGet: jest.fn(),
+  doPost: jest.fn(),
+  doPatch: jest.fn(),
 };
 
 describe('UpgradeClient', () => {
   let upgradeClient: UpgradeClient;
-
   beforeEach(() => {
     upgradeClient = new UpgradeClient('1234', 'test.com', 'testContext', { httpClient: mockHttpClient });
   });
