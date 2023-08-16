@@ -20,6 +20,7 @@ import { Experiment } from '../../../src/api/models/Experiment';
 const exp = new Experiment();
 const seg2 = new Segment();
 const seg1 = new Segment();
+const segValSegment = new Segment();
 const logger = new UpgradeLogger();
 const segmentArr = [seg1, seg2];
 const segVal = new SegmentInputValidator();
@@ -67,6 +68,17 @@ describe('Segment Service Testing', () => {
     segVal.subSegmentIds = ['seg1', 'seg2'];
     segVal.userIds = ['user1', 'user2', 'user3'];
     segVal.groups = [{ groupId: 'group1', type: 'type1' }];
+    segValSegment.id = 'segval1';
+    segValSegment.subSegments = [seg1, seg2];
+    const group1 = new GroupForSegment();
+    group1.groupId = 'group1';
+    group1.type = 'type1';
+    segValSegment.groupForSegment = [group1];
+    const user2 = new IndividualForSegment();
+    user2.userId = 'user2';
+    const user3 = new IndividualForSegment();
+    user3.userId = 'user3';
+    segValSegment.individualForSegment = [user, user2, user3];
 
     module = await Test.createTestingModule({
       providers: [
@@ -306,9 +318,9 @@ describe('Segment Service Testing', () => {
   });
 
   it('should import a segment', async () => {
-    repo.findOne = jest.fn().mockResolvedValue(null);
+    service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2]);
     const segments = await service.importSegments([segVal], logger);
-    expect(segments).toEqual([null]);
+    expect(segments).toEqual([segValSegment]);
   });
 
   it('should throw an error when trying to import a duplicate segment', async () => {
@@ -318,8 +330,7 @@ describe('Segment Service Testing', () => {
   });
 
   it('should throw an error when trying to import a segment that includes an unknown subsegment', async () => {
-    repo.findOne = jest.fn().mockResolvedValue(null);
-    repo.getAllSegments = jest.fn().mockResolvedValue([seg1]);
+    service.getSegmentByIds = jest.fn().mockResolvedValue([null]);
     expect(async () => {
       await service.importSegments([segVal], logger);
     }).rejects.toThrow(
