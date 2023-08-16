@@ -183,16 +183,16 @@ describe('SegmentsEffects', () => {
     }));
   });
 
-  describe('importSegment$', () => {
+  describe('importSegments$', () => {
     it('should do nothing if Segment is falsey', fakeAsync(() => {
       let neverEmitted = true;
 
-      service.upsertSegment$.subscribe(() => {
+      service.importSegments$.subscribe(() => {
         neverEmitted = false;
       });
 
       actions$.next(
-        SegmentsActions.actionImportSegment({
+        SegmentsActions.actionImportSegments({
           segment: undefined,
         })
       );
@@ -202,8 +202,8 @@ describe('SegmentsEffects', () => {
       expect(neverEmitted).toEqual(true);
     }));
 
-    it('should call importSegment(), no router nav, and call actionUpsertSegmentSuccess if IMPORT_SEGMENT', fakeAsync(() => {
-      segmentsDataService.importSegment = jest.fn().mockReturnValue(of([mockSegment]));
+    it('should call importSegments(), no router nav, and call actionUpsertSegmentSuccess if IMPORT_SEGMENT', fakeAsync(() => {
+      segmentsDataService.importSegments = jest.fn().mockReturnValue(of([mockSegment]));
 
       const expectedAction = SegmentsActions.actionImportSegmentSuccess({
         segment: [mockSegment],
@@ -211,12 +211,12 @@ describe('SegmentsEffects', () => {
 
       service.upsertSegment$.subscribe((result) => {
         expect(result).toEqual(expectedAction);
-        expect(segmentsDataService.importSegment).toHaveBeenCalled();
+        expect(segmentsDataService.importSegments).toHaveBeenCalled();
         expect(router.navigate).not.toHaveBeenCalledWith(['/segments']);
       });
 
       actions$.next(
-        SegmentsActions.actionImportSegment({
+        SegmentsActions.actionImportSegments({
           segment: [mockSegmentInput],
         })
       );

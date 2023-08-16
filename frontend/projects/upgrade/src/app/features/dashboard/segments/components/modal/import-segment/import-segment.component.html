@@ -48,7 +48,7 @@
         (uploadedFileCount === 1 && (!segmentInfo || !isSegmentJSONValid)) ||
           (uploadedFileCount > 1 && importFileErrors.length !== 0)
       "
-      (click)="importSegment()"
+      (click)="importSegments()"
     >
       {{ 'global.import.text' | translate }}
     </button>

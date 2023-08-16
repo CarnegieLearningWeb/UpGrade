@@ -8,7 +8,7 @@ describe('SegmentsReducer', () => {
     const testActions = {
       actionUpsertSegment: SegmentsActions.actionUpsertSegment,
       actionGetSegmentById: SegmentsActions.actionGetSegmentById,
-      actionImportSegment: SegmentsActions.actionImportSegment,
+      actionImportSegments: SegmentsActions.actionImportSegments,
     };
 
     for (const actionKey in testActions) {

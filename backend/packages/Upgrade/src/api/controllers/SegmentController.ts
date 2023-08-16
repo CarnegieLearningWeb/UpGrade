@@ -362,11 +362,11 @@ export class SegmentController {
    *          description: Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid
    */
   @Post('/import')
-  public importSegment(
+  public importSegments(
     @Body({ validate: false }) segment: SegmentInputValidator[],
     @Req() request: AppRequest
   ): Promise<Segment[]> {
-    return this.segmentService.importSegment(segment, request.logger);
+    return this.segmentService.importSegments(segment, request.logger);
   }
 
   @Post('/export')

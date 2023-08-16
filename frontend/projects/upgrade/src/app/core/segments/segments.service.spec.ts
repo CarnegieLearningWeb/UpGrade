@@ -5,7 +5,7 @@ import { SegmentsService } from './segments.service';
 import {
   actionDeleteSegment,
   actionExportSegments,
-  actionImportSegment,
+  actionImportSegments,
   actionUpsertSegment,
 } from './store/segments.actions';
 import { SegmentInput, UpsertSegmentType } from './store/segments.model';
@@ -72,14 +72,14 @@ describe('SegmentService', () => {
     });
   });
 
-  describe('#importSegment', () => {
+  describe('#importSegments', () => {
     it('should dispatch actionUpsertExperiment with the given input', () => {
       const segment = { ...mockSegment };
 
-      service.importSegment([segment]);
+      service.importSegments([segment]);
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
-        actionImportSegment({
+        actionImportSegments({
           segment: [segment],
         })
       );

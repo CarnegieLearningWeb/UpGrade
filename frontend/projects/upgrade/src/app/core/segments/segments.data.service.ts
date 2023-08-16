@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { Segment, SegmentInput } from './store/segments.model';
+import { SegmentInput } from './store/segments.model';
 import { HttpClient } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
 
@@ -32,8 +32,8 @@ export class SegmentsDataService {
     return this.http.post(url, segmentIds);
   }
 
-  importSegment(segment: SegmentInput[]) {
-    const url = this.environment.api.importSegment;
+  importSegments(segment: SegmentInput[]) {
+    const url = this.environment.api.importSegments;
     return this.http.post(url, segment);
   }
 }

@@ -307,13 +307,13 @@ describe('Segment Service Testing', () => {
 
   it('should import a segment', async () => {
     repo.findOne = jest.fn().mockResolvedValue(null);
-    const segments = await service.importSegment([segVal], logger);
+    const segments = await service.importSegments([segVal], logger);
     expect(segments).toEqual([null]);
   });
 
   it('should throw an error when trying to import a duplicate segment', async () => {
     expect(async () => {
-      await service.importSegment([segVal], logger);
+      await service.importSegments([segVal], logger);
     }).rejects.toThrow(new Error('Duplicate segment'));
   });
 
@@ -321,7 +321,7 @@ describe('Segment Service Testing', () => {
     repo.findOne = jest.fn().mockResolvedValue(null);
     repo.getAllSegments = jest.fn().mockResolvedValue([seg1]);
     expect(async () => {
-      await service.importSegment([segVal], logger);
+      await service.importSegments([segVal], logger);
     }).rejects.toThrow(
       new Error('SubSegment: ' + seg2.id + ' not found. Please import subSegment and link in experiment.')
     );

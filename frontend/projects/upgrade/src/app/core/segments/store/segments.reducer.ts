@@ -17,7 +17,7 @@ const reducer = createReducer(
   initialState,
   on(
     SegmentsActions.actionUpsertSegment,
-    SegmentsActions.actionImportSegment,
+    SegmentsActions.actionImportSegments,
     SegmentsActions.actionGetSegmentById,
     (state) => ({
       ...state,

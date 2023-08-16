@@ -152,7 +152,7 @@ export class SegmentService {
     return await this.segmentRepository.deleteSegment(id, logger);
   }
 
-  public async importSegment(segments: SegmentInputValidator[], logger: UpgradeLogger): Promise<Segment[]> {
+  public async importSegments(segments: SegmentInputValidator[], logger: UpgradeLogger): Promise<Segment[]> {
     const allAddedSegments: Segment[] = [];
     for (const segment of segments) {
       const duplicateSegment = await this.segmentRepository.findOne(segment.id);

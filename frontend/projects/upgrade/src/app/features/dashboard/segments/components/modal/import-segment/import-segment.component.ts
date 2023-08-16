@@ -42,10 +42,10 @@ export class ImportSegmentComponent {
     this.dialogRef.close();
   }
 
-  importSegment() {
+  importSegments() {
     // TODO: improve the logic here
     if (this.importFileErrors.length === 0) {
-      this.segmentsService.importSegment(this.allSegments);
+      this.segmentsService.importSegments(this.allSegments);
       this.onCancelClick();
     }
   }
