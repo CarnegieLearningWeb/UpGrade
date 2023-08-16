@@ -64,6 +64,9 @@ const browserLite = {
     library: 'upgrade-client-lib',
     libraryExport: 'default',
   },
+  externals: {
+    axios: 'axios',
+  },
   plugins: [
     new webpack.DefinePlugin({
       USE_CUSTOM_HTTP_CLIENT: JSON.stringify(true),
@@ -80,6 +83,9 @@ const nodeLite = {
     path: path.resolve(__dirname, 'dist/node-lite'),
     libraryTarget: 'umd',
     library: 'upgrade-client-lib',
+  },
+  externals: {
+    axios: 'axios',
   },
   plugins: [
     new webpack.DefinePlugin({
