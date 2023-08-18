@@ -77,9 +77,9 @@ export class ImportSegmentComponent {
 
   async validateSegment(segmentInfo: Segment, fileName) {
     const userIds = segmentInfo.individualForSegment.map((individual) =>
-      individual.userId ? individual.userId : undefined
+      individual.userId ? individual.userId : null
     );
-    const subSegmentIds = segmentInfo.subSegments.map((subSegment) => (subSegment.id ? subSegment.id : undefined));
+    const subSegmentIds = segmentInfo.subSegments.map((subSegment) => (subSegment.id ? subSegment.id : null));
     const groups = segmentInfo.groupForSegment.map((group) => {
       return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
     });

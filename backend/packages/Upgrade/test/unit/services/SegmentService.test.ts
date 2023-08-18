@@ -319,18 +319,20 @@ describe('Segment Service Testing', () => {
 
   it('should import a segment', async () => {
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2]);
+    service.addSegmentDataInDB = jest.fn().mockResolvedValue(segValSegment);
     const segments = await service.importSegments([segVal], logger);
     expect(segments).toEqual([segValSegment]);
   });
 
   it('should throw an error when trying to import a duplicate segment', async () => {
+    service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2, segVal]);
     expect(async () => {
       await service.importSegments([segVal], logger);
     }).rejects.toThrow(new Error('Duplicate segment'));
   });
 
   it('should throw an error when trying to import a segment that includes an unknown subsegment', async () => {
-    service.getSegmentByIds = jest.fn().mockResolvedValue([null]);
+    service.getSegmentByIds = jest.fn().mockResolvedValue([seg1]);
     expect(async () => {
       await service.importSegments([segVal], logger);
     }).rejects.toThrow(

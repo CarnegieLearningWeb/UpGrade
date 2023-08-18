@@ -163,26 +163,17 @@ export class SegmentService {
     });
     const allSegmentsData = await this.getSegmentByIds(allSegmentIds);
     const duplicateSegmentsIds = allSegmentsData?.map((segment) => segment?.id);
-    console.log('segmentsss');
-    console.log(segments);
 
     for (const segment of segments) {
       const duplicateSegment = duplicateSegmentsIds ? duplicateSegmentsIds.includes(segment.id) : false;
       if (duplicateSegment && segment.id !== undefined) {
-        // const duplicateSegment = await this.segmentRepository.findOne(segment.id);
-        // if (duplicateSegment && segment.id !== undefined) {
         const error = new Error('Duplicate segment');
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);
         throw error;
       }
 
-      // check for each subSegment to exists
-      // const allSegments = await this.segmentRepository.getAllSegments(logger);
       segment.subSegmentIds.forEach((subSegmentId) => {
-        // console.log('allSegmentsData');
-        // console.log(allSegmentsData);
-        // console.log(allSegments);
         const subSegment = allSegmentsData ? allSegmentsData.find((segment) => subSegmentId === segment?.id) : null;
         if (!subSegment) {
           const error = new Error(
@@ -195,11 +186,7 @@ export class SegmentService {
       });
 
       logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
-      console.log('segment value in loop');
-      console.log(segment);
       const addedSegment = await this.addSegmentDataInDB(segment, logger);
-      console.log('segment output value in loop');
-      console.log(addedSegment);
       allAddedSegments.push(addedSegment);
       allSegmentsData.push(addedSegment);
     }
@@ -226,7 +213,7 @@ export class SegmentService {
     return segmentsDoc;
   }
 
-  private async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
+  async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     const createdSegment = await getConnection().transaction(async (transactionalEntityManager) => {
       let segmentDoc: Segment;
 
