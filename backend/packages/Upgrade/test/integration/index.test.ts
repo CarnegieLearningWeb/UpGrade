@@ -125,7 +125,7 @@ describe('Integration Tests', () => {
     done();
   });
 
-  /*test('No Group for Experiment', async (done) => {
+  test('No Group for Experiment', async (done) => {
     await NoGroup();
     done();
   });
@@ -557,5 +557,5 @@ describe('Integration Tests', () => {
   test('Within Subject metrics query check', async (done) => {
     await MetricQueriesCheck();
     done();
-  });*/
+  });
 });

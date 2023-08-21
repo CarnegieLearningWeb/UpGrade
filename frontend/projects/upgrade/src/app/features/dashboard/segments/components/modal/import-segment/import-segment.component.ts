@@ -51,28 +51,25 @@ export class ImportSegmentComponent {
   }
 
   uploadFile(event) {
-    let index = 0;
     let fileName = '';
-    const reader = new FileReader();
-    this.uploadedFileCount = event.target.files.length;
+    const files: any[] = Array.from(event.target.files);
+    this.uploadedFileCount = files.length;
     this.importFileErrors = [];
 
-    reader.addEventListener(
-      'load',
-      async function () {
-        const result = JSON.parse(reader.result as any);
-        this.segmentInfo = result;
-        this.importFileErrorsDataSource.data = await this.validateSegment(this.segmentInfo, fileName);
-        readFile(++index);
-      }.bind(this)
-    );
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.addEventListener(
+        'load',
+        async function () {
+          const result = JSON.parse(reader.result as any);
+          this.segmentInfo = result;
+          this.importFileErrorsDataSource.data = await this.validateSegment(this.segmentInfo, fileName);
+        }.bind(this)
+      );
 
-    readFile(index);
-    function readFile(fileIndex: number) {
-      if (fileIndex >= event.target.files.length) return;
-      fileName = event.target.files[fileIndex].name;
-      reader.readAsText(event.target.files[fileIndex]);
-    }
+      fileName = file.name;
+      reader.readAsText(file);
+    });
   }
 
   async validateSegment(segmentInfo: Segment, fileName) {
