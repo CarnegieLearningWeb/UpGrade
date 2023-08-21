@@ -1,6 +1,21 @@
-import { IsArray, IsBoolean, IsDateString, IsEnum, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-import { ExperimentCondition } from '../models/ExperimentCondition';
-import { DecisionPoint } from '../models/DecisionPoint';
+import {
+  IsAlphanumeric,
+  IsArray,
+  IsBoolean,
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+  ValidateIf,
+  ValidateNested,
+} from 'class-validator';
+
 import {
   CONSISTENCY_RULE,
   ASSIGNMENT_UNIT,
@@ -14,11 +29,11 @@ import {
   IExperimentSearchParams,
   IExperimentSortParams,
   SEGMENT_TYPE,
+  CONDITION_ORDER,
+  PAYLOAD_TYPE,
+  REPEATED_MEASURE,
+  EXPERIMENT_TYPE,
 } from 'upgrade_types';
-import { Query } from '../models/Query';
-import { StateTimeLog } from '../models/StateTimeLogs';
-import { ConditionPayloadDTO } from './ConditionPayloadDTO';
-import { FactorDTO } from './FactorDTO';
 import { Type } from 'class-transformer';
 
 export {
@@ -29,52 +44,287 @@ export {
   IExperimentSortParams,
 };
 
-class Segment {
-  @IsString()
+class PayloadValidator {
   @IsNotEmpty()
+  @IsEnum(PAYLOAD_TYPE)
+  public type: PAYLOAD_TYPE;
+
+  // @IsOptional()
+  @IsString()
+  public value: string;
+}
+
+class LevelValidator {
+  @IsNotEmpty()
+  @IsString()
+  public id: string;
+
+  @IsNotEmpty()
+  @IsString()
+  public name: string;
+
+  @IsOptional()
+  @IsString()
+  public description?: string;
+
+  @IsOptional()
+  @IsInt()
+  public order?: number;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PayloadValidator)
+  public payload: PayloadValidator;
+}
+
+class LevelCombinationElementValidator {
+  @IsNotEmpty()
+  @IsString()
+  public id: string;
+
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => LevelValidator)
+  public level: LevelValidator;
+}
+
+export class FactorValidator {
+  @IsOptional()
+  @IsString()
+  public id?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  public name: string;
+
+  @IsOptional()
+  @IsString()
+  public description?: string;
+
+  @IsNotEmpty()
+  @IsInt()
+  public order: number;
+
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => LevelValidator)
+  public levels: LevelValidator[];
+}
+
+export class ConditionValidator {
+  @IsNotEmpty()
+  @IsString()
+  public id: string;
+
+  @IsAlphanumeric()
+  @IsOptional()
+  @MinLength(2)
+  @MaxLength(2)
+  public twoCharacterId?: string;
+
+  @IsOptional()
+  @IsString()
+  public description?: string;
+
+  @IsOptional()
+  @IsString()
+  public name?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  public conditionCode: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  public assignmentWeight: number;
+
+  @IsNotEmpty()
+  @IsInt()
+  public order: number;
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => LevelCombinationElementValidator)
+  public levelCombinationElements: LevelCombinationElementValidator[];
+}
+export class PartitionValidator {
+  @IsNotEmpty()
+  @IsString()
+  public id: string;
+
+  @IsOptional()
+  @MinLength(2)
+  @MaxLength(2)
+  public twoCharacterId?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  public site: string;
+
+  @IsOptional()
+  @IsString()
+  public target?: string;
+
+  @IsOptional()
+  @IsString()
+  public description?: string;
+
+  @IsNotEmpty()
+  @IsInt()
+  public order: number;
+
+  @IsNotEmpty()
+  @IsBoolean()
+  public excludeIfReached: boolean;
+}
+
+class ConditionPayloadValidator {
+  @IsNotEmpty()
+  @IsString()
+  public id: string;
+
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => PayloadValidator)
+  public payload: PayloadValidator;
+
+  @IsNotEmpty()
+  @IsString()
+  public parentCondition: string;
+
+  @IsOptional()
+  @IsString()
+  public decisionPoint?: string;
+}
+
+class MetricValidator {
+  @IsNotEmpty()
+  @IsString()
+  public key: string;
+}
+
+class QueryValidator {
+  @IsString()
+  @IsOptional()
   public id: string;
 
   @IsString()
   @IsNotEmpty()
   public name: string;
 
-  @IsString()
+  @IsObject()
   @IsNotEmpty()
-  public description: string;
+  public query: object;
+
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => MetricValidator)
+  public metric: MetricValidator;
+
+  @IsNotEmpty()
+  @IsEnum(REPEATED_MEASURE)
+  public repeatedMeasure: REPEATED_MEASURE;
+}
+
+class Users {
+  @IsNotEmpty()
+  @IsString()
+  public userId: string;
+}
+
+class Group {
+  @IsNotEmpty()
+  @IsString()
+  public groupId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  public type: string;
+}
+
+class SubSegments {
+  @IsNotEmpty()
+  @IsString()
+  public id: string;
+}
+
+class SegmentValidator {
+  @IsString()
+  @IsOptional()
+  public id?: string;
 
   @IsString()
-  @IsNotEmpty()
-  public context: string;
+  @IsOptional()
+  public name?: string;
+
+  @IsString()
+  @IsOptional()
+  public description?: string;
+
+  @IsString()
+  @IsOptional()
+  public context?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => Users)
+  public individualForSegment?: Users[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => Group)
+  public groupForSegment?: Group[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SubSegments)
+  public subSegments?: SubSegments[];
 
   @IsString()
   @IsEnum(SEGMENT_TYPE)
   public type: SEGMENT_TYPE;
 }
-
-class ExperimentSegmentInclusion {
+export class ParticipantsValidator {
   @IsNotEmpty()
-  @Type(() => Segment)
-  public segment: Segment;
+  @ValidateNested()
+  @Type(() => SegmentValidator)
+  public segment: SegmentValidator;
 }
 
-class ExperimentSegmentExclusion {
+class StateTimeLogValidator {
   @IsNotEmpty()
-  @Type(() => Segment)
-  public segment: Segment;
+  @IsString()
+  public id: string;
+
+  @IsNotEmpty()
+  @IsEnum(EXPERIMENT_STATE)
+  public fromState: EXPERIMENT_STATE;
+
+  @IsNotEmpty()
+  @IsEnum(EXPERIMENT_STATE)
+  public toState: EXPERIMENT_STATE;
+
+  @IsNotEmpty()
+  @IsDateString()
+  public timeLog: Date;
 }
 
 export class ExperimentDTO {
   @IsString()
-  @IsNotEmpty()
-  public id: string;
+  @IsOptional()
+  public id?: string;
 
   @IsString()
   @IsNotEmpty()
   public name: string;
 
   @IsString()
-  @IsNotEmpty()
-  public description: string;
+  @IsOptional()
+  public description?: string;
 
   @IsNotEmpty()
   @IsArray()
@@ -85,10 +335,11 @@ export class ExperimentDTO {
   @IsEnum(EXPERIMENT_STATE)
   public state: EXPERIMENT_STATE;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsDateString()
-  public startOn: Date;
+  public startOn?: Date;
 
+  @ValidateIf((o) => o.assignmentUnit !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS)
   @IsNotEmpty()
   @IsEnum(CONSISTENCY_RULE)
   public consistencyRule: CONSISTENCY_RULE;
@@ -102,25 +353,30 @@ export class ExperimentDTO {
   public postExperimentRule: POST_EXPERIMENT_RULE;
 
   // TODO add conditional validity here ie endOn is null
-  public enrollmentCompleteCondition: Partial<IEnrollmentCompleteCondition>;
+  @IsOptional()
+  public enrollmentCompleteCondition?: Partial<IEnrollmentCompleteCondition>;
 
-  // TODO add conditional validity here ie enrollmentCompleteCondition is null
-  @IsNotEmpty()
+  @IsOptional()
   @IsDateString()
-  public endOn: Date;
+  public endOn?: Date;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  public revertTo: string;
+  public revertTo?: string;
 
   @IsNotEmpty()
   @IsArray()
   @IsString({ each: true })
   public tags: string[];
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  public group: string;
+  public group?: string;
+
+  @ValidateIf((o) => o.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS)
+  @IsNotEmpty()
+  @IsEnum(CONDITION_ORDER)
+  public conditionOrder?: CONDITION_ORDER;
 
   @IsNotEmpty()
   @IsBoolean()
@@ -130,33 +386,57 @@ export class ExperimentDTO {
   @IsEnum(FILTER_MODE)
   public filterMode: FILTER_MODE;
 
-  public conditions: ExperimentCondition[];
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ConditionValidator)
+  public conditions: ConditionValidator[];
 
-  public factors: FactorDTO[];
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FactorValidator)
+  public factors?: FactorValidator[];
 
-  public partitions: DecisionPoint[];
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PartitionValidator)
+  public partitions: PartitionValidator[];
 
-  public conditionPayloads: ConditionPayloadDTO[];
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ConditionPayloadValidator)
+  public conditionPayloads?: ConditionPayloadValidator[];
 
-  public queries: Query[];
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => QueryValidator)
+  public queries?: QueryValidator[];
 
-  public stateTimeLogs: StateTimeLog[];
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => StateTimeLogValidator)
+  public stateTimeLogs?: StateTimeLogValidator[];
 
   @IsNotEmpty()
   @ValidateNested()
-  @Type(() => ExperimentSegmentInclusion)
-  public experimentSegmentInclusion: ExperimentSegmentInclusion;
+  @Type(() => ParticipantsValidator)
+  public experimentSegmentInclusion: ParticipantsValidator;
 
   @IsNotEmpty()
   @ValidateNested()
-  @Type(() => ExperimentSegmentExclusion)
-  public experimentSegmentExclusion: ExperimentSegmentExclusion;
+  @Type(() => ParticipantsValidator)
+  public experimentSegmentExclusion: ParticipantsValidator;
+
+  @IsOptional()
+  @IsString()
+  public backendVersion?: string;
 
   @IsNotEmpty()
-  @IsString()
-  public backendVersion: string;
-
-  @IsNotEmpty()
-  @IsString()
-  public type: string;
+  @IsEnum(EXPERIMENT_TYPE)
+  public type: EXPERIMENT_TYPE;
 }

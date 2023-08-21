@@ -706,6 +706,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       experimentDesignFormData.conditions = experimentDesignFormData.conditions.map((condition, index) => {
         if (isNaN(condition.assignmentWeight)) {
           condition.assignmentWeight = Number(condition.assignmentWeight.slice(0, -1));
+        } else {
+          condition.assignmentWeight = Number(condition.assignmentWeight);
         }
         return this.experimentInfo
           ? { ...this.experimentInfo.conditions[index], ...condition, order: order++ }
