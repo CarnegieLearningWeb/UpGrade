@@ -8,6 +8,7 @@ import AuditServiceMock from './mocks/AuditServiceMock';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 
 import { useContainer as classValidatorUseContainer } from 'class-validator';
+import { DATE_RANGE } from '../../../../../../types/src';
 
 describe('Analytics Controller Testing', () => {
   beforeAll(() => {
@@ -49,7 +50,7 @@ describe('Analytics Controller Testing', () => {
       .post('/api/stats/enrollment/date')
       .send({
         experimentId: uuid(),
-        dateEnum: 'last_seven_days',
+        dateEnum: DATE_RANGE.LAST_SEVEN_DAYS,
         clientOffset: 330,
       })
       .set('Accept', 'application/json')
