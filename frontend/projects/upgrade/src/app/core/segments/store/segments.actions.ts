@@ -26,11 +26,11 @@ export const actionUpsertSegmentSuccess = createAction(
 
 export const actionUpsertSegmentFailure = createAction('[Segments] Upsert Segment Failure');
 
-export const actionImportSegments = createAction('[Segments] Import Segment', props<{ segment: SegmentInput[] }>());
+export const actionImportSegments = createAction('[Segments] Import Segment', props<{ segments: SegmentInput[] }>());
 
 export const actionImportSegmentSuccess = createAction(
   '[Segments] Import Segment Success',
-  props<{ segment: Segment[] }>()
+  props<{ segments: Segment[] }>()
 );
 
 export const actionImportSegmentFailure = createAction('[Segments] Import Segment Failure');

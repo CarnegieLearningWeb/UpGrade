@@ -32,8 +32,8 @@ export class SegmentsDataService {
     return this.http.post(url, segmentIds);
   }
 
-  importSegments(segment: SegmentInput[]) {
+  importSegments(segments: SegmentInput[]) {
     const url = this.environment.api.importSegments;
-    return this.http.post(url, segment);
+    return this.http.post(url, segments);
   }
 }

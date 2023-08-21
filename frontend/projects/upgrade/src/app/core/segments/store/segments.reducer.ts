@@ -46,8 +46,8 @@ const reducer = createReducer(
   on(SegmentsActions.actionUpsertSegmentSuccess, (state, { segment }) =>
     adapter.upsertOne(segment, { ...state, isLoadingSegments: false })
   ),
-  on(SegmentsActions.actionImportSegmentSuccess, (state, { segment }) =>
-    adapter.upsertMany(segment, { ...state, isLoadingSegments: false })
+  on(SegmentsActions.actionImportSegmentSuccess, (state, { segments }) =>
+    adapter.upsertMany(segments, { ...state, isLoadingSegments: false })
   ),
   on(SegmentsActions.actionGetSegmentByIdSuccess, (state, { segment }) =>
     adapter.upsertOne(segment, { ...state, isLoadingSegments: false })

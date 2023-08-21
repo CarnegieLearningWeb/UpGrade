@@ -80,7 +80,7 @@ describe('SegmentService', () => {
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
         actionImportSegments({
-          segment: [segment],
+          segments: [segment],
         })
       );
     });

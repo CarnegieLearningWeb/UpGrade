@@ -66,12 +66,12 @@ export class SegmentsEffects {
   importSegments$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionImportSegments),
-      map((action) => ({ segments: action.segment })),
+      map((action) => ({ segments: action.segments })),
       filter(({ segments }) => !!segments),
       switchMap(({ segments }) => {
         return this.segmentsDataService.importSegments(segments).pipe(
           map((data: Segment[]) => {
-            return SegmentsActions.actionImportSegmentSuccess({ segment: data });
+            return SegmentsActions.actionImportSegmentSuccess({ segments: data });
           }),
           catchError(() => [SegmentsActions.actionImportSegmentFailure()])
         );

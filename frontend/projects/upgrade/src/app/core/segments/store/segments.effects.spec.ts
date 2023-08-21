@@ -193,7 +193,7 @@ describe('SegmentsEffects', () => {
 
       actions$.next(
         SegmentsActions.actionImportSegments({
-          segment: undefined,
+          segments: undefined,
         })
       );
 
@@ -206,7 +206,7 @@ describe('SegmentsEffects', () => {
       segmentsDataService.importSegments = jest.fn().mockReturnValue(of([mockSegment]));
 
       const expectedAction = SegmentsActions.actionImportSegmentSuccess({
-        segment: [mockSegment],
+        segments: [mockSegment],
       });
 
       service.upsertSegment$.subscribe((result) => {
@@ -217,7 +217,7 @@ describe('SegmentsEffects', () => {
 
       actions$.next(
         SegmentsActions.actionImportSegments({
-          segment: [mockSegmentInput],
+          segments: [mockSegmentInput],
         })
       );
 

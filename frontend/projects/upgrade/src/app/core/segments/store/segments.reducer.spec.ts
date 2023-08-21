@@ -114,7 +114,7 @@ describe('SegmentsReducer', () => {
       };
 
       const testAction = SegmentsActions.actionImportSegmentSuccess({
-        segment: [mockSegment],
+        segments: [mockSegment],
       });
 
       const newState = segmentsReducer(previousState, testAction);
