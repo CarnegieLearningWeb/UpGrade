@@ -6,9 +6,28 @@
       {{ 'segments.import-segmemt.message.text' | translate }}
     </p>
     <input accept=".json" type="file" multiple class="ft-14-400 file-input" (change)="uploadFile($event)" />
-    <span class="error-msg" *ngIf="!isSegmentJSONValid">
-      {{ 'segments.import-segment.error.message.text' | translate }}
-    </span>
+    <ng-container *ngIf="importFileErrors.length">
+      <mat-table class="table" [dataSource]="importFileErrorsDataSource">
+        <!-- File Name -->
+        <ng-container matColumnDef="File Name">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef> File Name </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let element">
+            {{ element.filename }}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Error -->
+        <ng-container matColumnDef="Error">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef> Error/Warning </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let element">
+            {{ element.error }}
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      </mat-table>
+    </ng-container>
   </div>
 
   <div class="button-container">
@@ -18,9 +37,18 @@
     <button
       mat-raised-button
       class="shared-modal--modal-btn default-button"
-      [ngClass]="{ 'default-button--disabled': !segmentInfo }"
-      [disabled]="!segmentInfo"
-      (click)="importSegment()"
+      [ngClass]="{
+        'default-button--disabled':
+          uploadedFileCount === 0 ||
+          (uploadedFileCount === 1 && (!segmentInfo || !isSegmentJSONValid)) ||
+          (uploadedFileCount > 1 && importFileErrors.length !== 0)
+      }"
+      [disabled]="
+        uploadedFileCount === 0 ||
+        (uploadedFileCount === 1 && (!segmentInfo || !isSegmentJSONValid)) ||
+          (uploadedFileCount > 1 && importFileErrors.length !== 0)
+      "
+      (click)="importSegments()"
     >
       {{ 'global.import.text' | translate }}
     </button>

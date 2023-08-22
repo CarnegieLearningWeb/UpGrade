@@ -48,7 +48,7 @@ export class SegmentsEffects {
           actionType === UpsertSegmentType.CREATE_NEW_SEGMENT
             ? this.segmentsDataService.createNewSegment(Segment)
             : actionType === UpsertSegmentType.IMPORT_SEGMENT
-            ? this.segmentsDataService.importSegment(Segment)
+            ? this.segmentsDataService.importSegments([])
             : this.segmentsDataService.updateSegment(Segment);
         return action.pipe(
           map((data: Segment) => {
@@ -58,6 +58,22 @@ export class SegmentsEffects {
             return SegmentsActions.actionUpsertSegmentSuccess({ segment: data });
           }),
           catchError(() => [SegmentsActions.actionUpsertSegmentFailure()])
+        );
+      })
+    )
+  );
+
+  importSegments$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionImportSegments),
+      map((action) => ({ segments: action.segments })),
+      filter(({ segments }) => !!segments),
+      switchMap(({ segments }) => {
+        return this.segmentsDataService.importSegments(segments).pipe(
+          map((data: Segment[]) => {
+            return SegmentsActions.actionImportSegmentSuccess({ segments: data });
+          }),
+          catchError(() => [SegmentsActions.actionImportSegmentFailure()])
         );
       })
     )

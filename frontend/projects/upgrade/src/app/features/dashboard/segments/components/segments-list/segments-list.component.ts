@@ -83,9 +83,9 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   openExportAllSegment() {
-    const segmentIds = this.allSegments.data.map(segment => {
+    const segmentIds = this.allSegments.data.map((segment) => {
       return segment.id;
-    })
+    });
     this.segmentsService.exportSegments(segmentIds);
   }
 

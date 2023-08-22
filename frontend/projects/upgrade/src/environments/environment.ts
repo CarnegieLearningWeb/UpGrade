@@ -49,7 +49,7 @@ export const environment = {
     getVersion: '/version',
     contextMetaData: '/experiments/contextMetaData',
     segments: '/segments',
-    importSegment: '/segments/import',
+    importSegments: '/segments/import',
     exportSegment: '/segments/export',
     exportSegments: '/segments/export',
     getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
