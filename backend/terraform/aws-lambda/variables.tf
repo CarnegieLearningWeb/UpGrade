@@ -52,7 +52,7 @@ variable "function_handler" {
 
 variable "runtime" {
   description = "Lambda function runtime"
-  default     = "nodejs16.x"
+  default     = "nodejs18.x"
 }
 
 variable "TOKEN_SECRET_KEY" { 

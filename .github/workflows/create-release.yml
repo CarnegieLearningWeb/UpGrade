@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
       - run: npm install semver
       - name: Load Env Vars
         uses: tw3lveparsecs/github-actions-setvars@v0.1
@@ -88,7 +88,7 @@ jobs:
         uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
       - name: Set Backend App Version
         working-directory: backend/packages/Upgrade
         run: npm version ${{ needs.init.outputs.version }} --git-tag-version=false
@@ -97,7 +97,7 @@ jobs:
         run: |
           npm version ${{ needs.init.outputs.version }} --git-tag-version=false
           cp -R ../types packages/Upgrade
-          npm ci
+          npm ci --legacy-peer-deps
           zip -qq -r upgrade-backend-${{ needs.init.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json
       - uses: actions/upload-artifact@v2
         with:
@@ -113,7 +113,7 @@ jobs:
         uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
       - name: Build Frontend
         working-directory: frontend
         run: |
@@ -138,7 +138,7 @@ jobs:
         uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
       - name: Build Lambda
         working-directory: backend/packages/Scheduler
         run: |

@@ -18,7 +18,7 @@ runs:
     - uses: tw3lveparsecs/github-actions-setvars@v0.1
     - uses: actions/setup-node@v3
       with:
-        node-version: 16
+        node-version: 18
         check-latest: true
     - name: Set Version
       shell: bash
