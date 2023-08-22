@@ -64,6 +64,7 @@ jobs:
         with:
           working_directory: backend/packages/Scheduler
           version: ${{ steps.set-vars.outputs.version }}
+          node_version: 16
       - name: Copy Files
         if: steps.check-tag.outputs.exists == 'false'
         working-directory: backend/packages/Scheduler
