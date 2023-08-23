@@ -66,6 +66,7 @@ export namespace UpGradeClientInterfaces {
     headers?: {
       [key: string]: string | string[];
     };
+    withCredentials?: boolean;
   }
   export interface IHttpClientWrapper {
     config?: IHttpClientWrapperRequestConfig;

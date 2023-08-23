@@ -65,7 +65,7 @@ export default class ApiService {
   }
 
   private validateClient() {
-    if (!this.hostUrl) {
+    if (!USE_CUSTOM_HTTP_CLIENT && !this.hostUrl) {
       throw new Error('Please set application host URL first.');
     }
     if (!this.userId) {
@@ -100,6 +100,8 @@ export default class ApiService {
         ...this.httpClient.config?.headers,
       };
     }
+
+    options.withCredentials = Boolean(this.httpClient.config?.withCredentials);
 
     console.log('createOptions', options);
 
