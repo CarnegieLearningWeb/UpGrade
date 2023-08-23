@@ -28,7 +28,6 @@ const browser = {
     path: path.resolve(__dirname, 'dist/browser'),
     libraryTarget: 'umd',
     library: 'upgrade-client-lib',
-    libraryExport: 'default',
   },
   plugins: [
     new webpack.DefinePlugin({
@@ -62,7 +61,6 @@ const browserLite = {
     path: path.resolve(__dirname, 'dist/browser-lite'),
     libraryTarget: 'umd',
     library: 'upgrade-client-lib',
-    libraryExport: 'default',
   },
   externals: {
     axios: 'axios',

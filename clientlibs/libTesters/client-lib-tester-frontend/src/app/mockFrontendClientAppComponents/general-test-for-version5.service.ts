@@ -10,7 +10,7 @@ import {
 } from '../../../../shared/models';
 
 // import UpgradeClient, { Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser';
-import UpgradeClient, { Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser-lite';
+import { UpgradeClient, Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser-lite';
 
 import { CaliperEnvelope, IExperimentAssignmentv5 } from 'upgrade_client_local/dist/types/src';
 import { AbstractMockAppService } from './abstract-mock-app.service';
@@ -275,9 +275,9 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
 
   private async doInit(userId: string) {
     console.log('login hook called:', userId);
-    // const httpClient = this.createCustomHttpClient();
+    const httpClient = this.createCustomHttpClient();
 
-    this.upgradeClient = this.constructUpgradeClient(userId);
+    this.upgradeClient = this.constructUpgradeClient(userId, httpClient);
     console.log({ upgradeClient: this.upgradeClient });
 
     try {
