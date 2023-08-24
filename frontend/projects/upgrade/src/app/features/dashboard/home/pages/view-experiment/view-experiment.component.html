@@ -316,7 +316,7 @@
                   <span
                     class="ft-18-700 end-criteria"
                     *ngIf="
-                      permissions?.experiments.update && !isExperimentStateCancelled;
+                      permissions?.experiments.update && !isExperimentStateCancelled  && experiment.state !== ExperimentState.ARCHIVED;
                       else noCriteriaTemplateReadOnly
                     "
                   >
