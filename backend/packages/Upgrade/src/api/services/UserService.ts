@@ -4,9 +4,7 @@ import { UserRepository } from '../repositories/UserRepository';
 import { User } from '../models/User';
 import { SERVER_ERROR, UserRole } from 'upgrade_types';
 import {
-  IUserSearchParams,
-  IUserSortParams,
-  USER_SEARCH_SORT_KEY,
+  USER_SEARCH_SORT_KEY, UserSearchParamsValidator, UserSortParamsValidator,
 } from '../controllers/validators/UserPaginatedParamsValidator';
 import { systemUserDoc } from '../../init/seed/systemUser';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
@@ -14,6 +12,8 @@ import { AWSService } from './AWSService';
 import { env } from '../../env';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { Emails } from '../../templates/email';
+import { UserDetailsValidator } from '../controllers/validators/UserDetailsValidator';
+import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 
 @Service()
 export class UserService {
@@ -24,7 +24,22 @@ export class UserService {
     public emails: Emails
   ) {}
 
-  public async upsertUser(user: User, logger: UpgradeLogger): Promise<User> {
+  public async upsertUser(userDTO: UserDetailsValidator, logger: UpgradeLogger): Promise<User> {
+    const user = new User();
+    user.email = userDTO.email;
+    user.firstName = userDTO.firstName;
+    user.lastName = userDTO.lastName
+    user.role = userDTO.role;
+    user.imageUrl = userDTO.imageUrl
+    user.localTimeZone = userDTO.localTimeZone;
+    user.auditLogs = userDTO.auditLogs?.map(auditLogDTO => {
+      const auditLog = new ExperimentAuditLog()
+      auditLog.data = auditLogDTO.data;
+      auditLog.id = auditLogDTO.id;
+      auditLog.type = auditLogDTO.type;
+      return auditLog;
+    });
+  
     logger.info({ message: `Upsert a new user => ${JSON.stringify(user, undefined, 2)}` });
 
     const isUserExists = await this.userRepository.find({ where: { email: user.email } });
@@ -56,8 +71,8 @@ export class UserService {
     skip: number,
     take: number,
     logger: UpgradeLogger,
-    searchParams?: IUserSearchParams,
-    sortParams?: IUserSortParams
+    searchParams?: UserSearchParamsValidator,
+    sortParams?: UserSortParamsValidator
   ): Promise<any[]> {
     logger.info({ message: `Find paginated Users` });
     let queryBuilder = this.userRepository.createQueryBuilder('users');
@@ -102,11 +117,11 @@ export class UserService {
     switch (type) {
       case USER_SEARCH_SORT_KEY.FIRST_NAME:
         // TODO: Update column name
-        searchString.push("coalesce(users.firstName::TEXT,'')");
+        searchString.push(`coalesce(users."firstName"::TEXT,'')`);
         break;
       case USER_SEARCH_SORT_KEY.LAST_NAME:
         // TODO: Update column name
-        searchString.push("coalesce(users.lastName::TEXT,'')");
+        searchString.push(`coalesce(users."lastName"::TEXT,'')`);
         break;
       case USER_SEARCH_SORT_KEY.EMAIL:
         searchString.push("coalesce(users.email::TEXT,'')");

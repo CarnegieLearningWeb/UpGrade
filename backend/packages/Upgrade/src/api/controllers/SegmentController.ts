@@ -287,7 +287,7 @@ export class SegmentController {
    */
   @Post()
   public upsertSegment(
-    @Body({ validate: { validationError: { target: false, value: false } } }) segment: SegmentInputValidator,
+    @Body({ validate: true }) segment: SegmentInputValidator,
     @Req() request: AppRequest
   ): Promise<Segment> {
     return this.segmentService.upsertSegment(segment, request.logger);
@@ -362,15 +362,15 @@ export class SegmentController {
    *          description: Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid
    */
   @Post('/import')
-  public importSegment(
-    @Body({ validate: { validationError: { target: false, value: false } } }) segment: SegmentInputValidator,
+  public importSegments(
+    @Body({ validate: false }) segments: SegmentInputValidator[],
     @Req() request: AppRequest
-  ): Promise<Segment> {
-    return this.segmentService.importSegment(segment, request.logger);
+  ): Promise<Segment[]> {
+    return this.segmentService.importSegments(segments, request.logger);
   }
 
   @Post('/export')
-  public exportSegments( @Body({ validate: false }) ids: string[], @Req() request: AppRequest): Promise<Segment[]> {
+  public exportSegments(@Body({ validate: false }) ids: string[], @Req() request: AppRequest): Promise<Segment[]> {
     if (!ids) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
     }
@@ -378,7 +378,10 @@ export class SegmentController {
       if (!isUUID(id)) {
         return Promise.reject(
           new Error(
-            JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
+            JSON.stringify({
+              type: SERVER_ERROR.INCORRECT_PARAM_FORMAT,
+              message: ' : segmentId should be of type UUID.',
+            })
           )
         );
       }

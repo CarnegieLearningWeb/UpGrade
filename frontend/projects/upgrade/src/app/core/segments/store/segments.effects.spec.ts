@@ -138,29 +138,6 @@ describe('SegmentsEffects', () => {
       tick(0);
     }));
 
-    it('should call importSegment(), no router nav, and call actionUpsertSegmentSuccess if IMPORT_SEGMENT', fakeAsync(() => {
-      segmentsDataService.importSegment = jest.fn().mockReturnValue(of({ ...mockSegment }));
-
-      const expectedAction = SegmentsActions.actionUpsertSegmentSuccess({
-        segment: { ...mockSegment },
-      });
-
-      service.upsertSegment$.subscribe((result) => {
-        expect(result).toEqual(expectedAction);
-        expect(segmentsDataService.importSegment).toHaveBeenCalled();
-        expect(router.navigate).not.toHaveBeenCalledWith(['/segments']);
-      });
-
-      actions$.next(
-        SegmentsActions.actionUpsertSegment({
-          segment: { ...mockSegmentInput },
-          actionType: UpsertSegmentType.IMPORT_SEGMENT,
-        })
-      );
-
-      tick(0);
-    }));
-
     it('should call updateSegment(), no router nav, and call actionUpsertSegmentSuccess if UPDATE_SEGMENT', fakeAsync(() => {
       segmentsDataService.updateSegment = jest.fn().mockReturnValue(of({ ...mockSegment }));
 
@@ -199,6 +176,48 @@ describe('SegmentsEffects', () => {
         SegmentsActions.actionUpsertSegment({
           segment: { ...mockSegmentInput },
           actionType: UpsertSegmentType.UPDATE_SEGMENT,
+        })
+      );
+
+      tick(0);
+    }));
+  });
+
+  describe('importSegments$', () => {
+    it('should do nothing if Segment is falsey', fakeAsync(() => {
+      let neverEmitted = true;
+
+      service.importSegments$.subscribe(() => {
+        neverEmitted = false;
+      });
+
+      actions$.next(
+        SegmentsActions.actionImportSegments({
+          segments: undefined,
+        })
+      );
+
+      tick(0);
+
+      expect(neverEmitted).toEqual(true);
+    }));
+
+    it('should call importSegments(), no router nav, and call actionUpsertSegmentSuccess if IMPORT_SEGMENT', fakeAsync(() => {
+      segmentsDataService.importSegments = jest.fn().mockReturnValue(of([mockSegment]));
+
+      const expectedAction = SegmentsActions.actionImportSegmentSuccess({
+        segments: [mockSegment],
+      });
+
+      service.upsertSegment$.subscribe((result) => {
+        expect(result).toEqual(expectedAction);
+        expect(segmentsDataService.importSegments).toHaveBeenCalled();
+        expect(router.navigate).not.toHaveBeenCalledWith(['/segments']);
+      });
+
+      actions$.next(
+        SegmentsActions.actionImportSegments({
+          segments: [mockSegmentInput],
         })
       );
 
@@ -248,7 +267,7 @@ describe('SegmentsEffects', () => {
         expect(result).toEqual(expectedAction);
       });
 
-      actions$.next(SegmentsActions.actionExportSegments({ segmentIds: [{ ...mockSegment }.id] } ));
+      actions$.next(SegmentsActions.actionExportSegments({ segmentIds: [{ ...mockSegment }.id] }));
 
       tick(0);
     }));

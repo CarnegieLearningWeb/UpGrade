@@ -124,7 +124,7 @@ describe('User Service Testing', () => {
     expect(skipSpy).toBeCalledWith(0);
     expect(takeSpy).toBeCalledWith(0);
     expect(addSelectSpy).toBeCalledWith(
-      "ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users.firstName::TEXT,''))), to_tsquery(:query))",
+      `ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users."firstName"::TEXT,''))), to_tsquery(:query))`,
       'rank'
     );
     expect(setParamaterSpy).toBeCalledWith('query', `${params.string}:*`);
@@ -145,7 +145,7 @@ describe('User Service Testing', () => {
     expect(skipSpy).toBeCalledWith(0);
     expect(takeSpy).toBeCalledWith(0);
     expect(addSelectSpy).toBeCalledWith(
-      "ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users.lastName::TEXT,''))), to_tsquery(:query))",
+      `ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users."lastName"::TEXT,''))), to_tsquery(:query))`,
       'rank'
     );
     expect(setParamaterSpy).toBeCalledWith('query', `${searchParams.string}:*`);
@@ -170,7 +170,7 @@ describe('User Service Testing', () => {
     };
     await service.findPaginated(0, 0, logger, params);
     expect(addSelectSpy).toBeCalledWith(
-      "ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users.firstName::TEXT,''))), to_tsquery(:query))",
+      `ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users."firstName"::TEXT,''))), to_tsquery(:query))`,
       'rank'
     );
   });
@@ -182,7 +182,7 @@ describe('User Service Testing', () => {
     };
     await service.findPaginated(0, 0, logger, params);
     expect(addSelectSpy).toBeCalledWith(
-      "ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users.lastName::TEXT,''))), to_tsquery(:query))",
+      `ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users."lastName"::TEXT,''))), to_tsquery(:query))`,
       'rank'
     );
   });

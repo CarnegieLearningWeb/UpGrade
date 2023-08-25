@@ -65,9 +65,7 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionExportSegments({ segmentIds }));
   }
 
-  importSegment(segment: SegmentInput) {
-    this.store$.dispatch(
-      SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.IMPORT_SEGMENT })
-    );
+  importSegments(segments: SegmentInput[]) {
+    this.store$.dispatch(SegmentsActions.actionImportSegments({ segments }));
   }
 }

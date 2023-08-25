@@ -26,12 +26,11 @@ describe('Login Controller Testing', () => {
     await request(app)
       .post('/api/login/user')
       .send({
-        id: 'string',
-        email: 'string',
+        email: 'string@email.com',
         firstName: 'string',
         lastName: 'string',
-        imageUrl: 'string',
-        role: 'string',
+        imageUrl: 'https://image.com',
+        role: 'reader',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -43,11 +42,10 @@ describe('Login Controller Testing', () => {
     await request(app)
       .post('/api/login/user')
       .send({
-        id: 'string',
-        email: 'string',
+        email: 'string@email.com',
         firstName: 'string',
         lastName: 'string',
-        imageUrl: 'string',
+        imageUrl: 'https://image.com',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)

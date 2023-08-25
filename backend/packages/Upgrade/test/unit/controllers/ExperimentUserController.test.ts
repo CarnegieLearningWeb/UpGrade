@@ -54,18 +54,20 @@ describe('Experiment User Controller Testing', () => {
   test('Post request for /api/experimentusers/', async (done) => {
     await request(app)
       .post('/api/experimentusers/')
-      .send({
-        id: 'u21',
-        group: {
-          school: 'testschool',
-          class: 'testclass',
-          instructor: 'testteacher',
-        },
-        workingGroup: {
-          school: 'testschool',
-          class: 'testclass',
-          instructor: 'testteacher',
-        },
+      .send( {
+        users: [{
+          id: 'u21',
+          group: {
+            school: ['testschool'],
+            class: ['testclass'],
+            instructor: ['testteacher'],
+          },
+          workingGroup: {
+            school: 'testschool',
+            class: 'testclass',
+            instructor: 'testteacher',
+          },
+        }]
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -79,9 +81,9 @@ describe('Experiment User Controller Testing', () => {
       .send({
         id: 'u21',
         group: {
-          school: 'testschool',
-          class: 'testclass',
-          instructor: 'testteacher',
+          school: ['testschool'],
+          class: ['testclass'],
+          instructor: ['testteacher'],
         },
         workingGroup: {
           school: 'testschool',

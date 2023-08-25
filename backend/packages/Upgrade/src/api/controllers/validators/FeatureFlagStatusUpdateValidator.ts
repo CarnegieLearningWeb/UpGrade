@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsDefined, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsDefined, IsUUID, IsBoolean } from 'class-validator';
 
 export class FeatureFlagStatusUpdateValidator {
   @IsNotEmpty()
@@ -7,5 +7,6 @@ export class FeatureFlagStatusUpdateValidator {
   public flagId: string;
 
   @IsDefined()
+  @IsBoolean()
   public status: boolean;
 }

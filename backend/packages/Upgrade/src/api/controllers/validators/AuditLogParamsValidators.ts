@@ -1,4 +1,4 @@
-import { IsNumber, IsNotEmpty } from 'class-validator';
+import { IsNumber, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
 import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
 export class AuditLogParamsValidator {
   @IsNumber()
@@ -9,5 +9,7 @@ export class AuditLogParamsValidator {
   @IsNotEmpty()
   public take: number;
 
-  public filter: EXPERIMENT_LOG_TYPE;
+  @IsOptional()
+  @IsEnum(EXPERIMENT_LOG_TYPE)
+  public filter?: EXPERIMENT_LOG_TYPE;
 }

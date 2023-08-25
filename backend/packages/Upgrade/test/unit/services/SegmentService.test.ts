@@ -20,6 +20,7 @@ import { Experiment } from '../../../src/api/models/Experiment';
 const exp = new Experiment();
 const seg2 = new Segment();
 const seg1 = new Segment();
+const segValSegment = new Segment();
 const logger = new UpgradeLogger();
 const segmentArr = [seg1, seg2];
 const segVal = new SegmentInputValidator();
@@ -67,6 +68,17 @@ describe('Segment Service Testing', () => {
     segVal.subSegmentIds = ['seg1', 'seg2'];
     segVal.userIds = ['user1', 'user2', 'user3'];
     segVal.groups = [{ groupId: 'group1', type: 'type1' }];
+    segValSegment.id = 'segval1';
+    segValSegment.subSegments = [seg1, seg2];
+    const group1 = new GroupForSegment();
+    group1.groupId = 'group1';
+    group1.type = 'type1';
+    segValSegment.groupForSegment = [group1];
+    const user2 = new IndividualForSegment();
+    user2.userId = 'user2';
+    const user3 = new IndividualForSegment();
+    user3.userId = 'user3';
+    segValSegment.individualForSegment = [user, user2, user3];
 
     module = await Test.createTestingModule({
       providers: [
@@ -271,9 +283,7 @@ describe('Segment Service Testing', () => {
     segment.userIds = [];
     segment.groups = [];
     repo.findOne = jest.fn().mockResolvedValue(seg2);
-    const indivRepo = module.get<IndividualForSegmentRepository>(
-      getRepositoryToken(IndividualForSegmentRepository)
-    );
+    const indivRepo = module.get<IndividualForSegmentRepository>(getRepositoryToken(IndividualForSegmentRepository));
     indivRepo.insertIndividualForSegment = jest.fn().mockImplementation(() => {
       throw err;
     });
@@ -308,22 +318,23 @@ describe('Segment Service Testing', () => {
   });
 
   it('should import a segment', async () => {
-    repo.findOne = jest.fn().mockResolvedValue(null);
-    const segments = await service.importSegment(segVal, logger);
-    expect(segments).toEqual(null);
+    service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2]);
+    service.addSegmentDataInDB = jest.fn().mockResolvedValue(segValSegment);
+    const segments = await service.importSegments([segVal], logger);
+    expect(segments).toEqual([segValSegment]);
   });
 
   it('should throw an error when trying to import a duplicate segment', async () => {
+    service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2, segVal]);
     expect(async () => {
-      await service.importSegment(segVal, logger);
+      await service.importSegments([segVal], logger);
     }).rejects.toThrow(new Error('Duplicate segment'));
   });
 
   it('should throw an error when trying to import a segment that includes an unknown subsegment', async () => {
-    repo.findOne = jest.fn().mockResolvedValue(null);
-    repo.getAllSegments = jest.fn().mockResolvedValue([seg1]);
+    service.getSegmentByIds = jest.fn().mockResolvedValue([seg1]);
     expect(async () => {
-      await service.importSegment(segVal, logger);
+      await service.importSegments([segVal], logger);
     }).rejects.toThrow(
       new Error('SubSegment: ' + seg2.id + ' not found. Please import subSegment and link in experiment.')
     );

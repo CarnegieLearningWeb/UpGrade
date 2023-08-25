@@ -1,12 +1,12 @@
 let
     bootstrapPkgs = import <nixpkgs> {};
 
-    # nixos-21.11 ~ 2021-11-30
+    # nixos-22.11 ~ 2023-06-29
     pinnedPkgs = bootstrapPkgs.pkgs.fetchFromGitHub {
         owner = "NixOS";
         repo = "nixpkgs";
-        rev = "a7ecde854aee5c4c7cd6177f54a99d2c1ff28a31";
-        sha256 = "162dywda2dvfj1248afxc45kcrg83appjd0nmdb541hl7rnncf02";
+        rev = "1732ee9120e43c1df33a33004315741d0173d0b2";
+        sha256 = "sha256-BWXwhyT6a5b+SxnFhB8ktQGwnuDTq2RcKd3oD8SyimU=";
     };
 
     nixpkgs = import pinnedPkgs {};
@@ -16,7 +16,7 @@ stdenv.mkDerivation {
     name = "upgrade-shell";
     buildInputs = 
         # packages everyone gets
-        [ bash nodejs-16_x python38 cacert ]
+        [ bash nodejs-18_x python38 cacert ]
         ++ lib.optional stdenv.isDarwin
         [ darwin.apple_sdk.frameworks.CoreServices ];
 }
