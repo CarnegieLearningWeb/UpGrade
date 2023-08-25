@@ -1,81 +1,45 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import { SERVER_ERROR, IMetricMetaData, MARKED_DECISION_POINT_STATUS, IExperimentAssignmentv5 } from 'upgrade_types';
+import { IMetricMetaData, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { UpGradeClientEnums } from './enums';
 
 export namespace UpGradeClientInterfaces {
   export interface IConfig {
     hostURL: string;
     userId: string;
-    api: IEndpoints;
+    context: string;
+    apiVersion: string;
     clientSessionId?: string;
     token?: string;
+    httpClient?: UpGradeClientInterfaces.IHttpClientWrapper;
   }
-  export interface IEndpoints {
-    init: string;
-    getAllExperimentConditions: string;
-    markDecisionPoint: string;
-    setGroupMemberShip: string;
-    setWorkingGroup: string;
-    failedExperimentPoint: string;
-    getAllFeatureFlag: string;
-    log: string;
-    logCaliper: string;
-    altUserIds: string;
-    addMetrics: string;
-  };
-
-  export interface IClientState {
-    config: IConfig;
-    allExperimentAssignmentData: IExperimentAssignmentv5[];
-  }
-
   export interface IResponse {
     status: boolean;
     data?: any;
     message?: any;
   }
 
-  export interface IRequestOptions {
-    headers: object;
-    method: UpGradeClientEnums.REQUEST_TYPES;
-    keepalive: boolean;
-    body?: string;
-  }
-
-  export interface IUserGroup {
-    group?: Map<string, string[]>;
-    workingGroup?: Map<string, string>;
-  }
-
-  export interface IUser {
-    id: string;
-    group?: Record<string, Array<string>>;
-    workingGroup?: Record<string, string>;
-  }
-
-  export interface IMarkDecisionPointRequestBody {
-    userId: string;
+  export interface IMarkDecisionPointParams {
+    site: string;
+    target: string;
+    condition: string;
     status: MARKED_DECISION_POINT_STATUS;
-    data: {
-      site: string;
-      target: string;
-      assignedCondition: { conditionCode: string; experimentId?: string };
-    };
     uniquifier?: string;
     clientError?: string;
   }
-
-  export interface IMarkExperimentPoint {
+  export interface IExperimentUser {
+    id: string;
+    group?: IExperimentUserGroup;
+    workingGroup?: IExperimentUserWorkingGroup;
+  }
+  export type IExperimentUserGroup = Record<string, Array<string>>;
+  export type IExperimentUserWorkingGroup = Record<string, string>;
+  export type IExperimentUserAliases = string[];
+  export interface IMarkDecisionPoint {
     id: string;
     site: string;
     target: string;
     userId: string;
     experimentId: string;
-  }
-
-  export interface IFailedExperimentPoint {
-    type: SERVER_ERROR;
-    message: string;
   }
 
   export interface ILog {
@@ -93,14 +57,29 @@ export namespace UpGradeClientInterfaces {
     allowedData: string[];
   }
 
-  export interface IExperimentUser {
-    id: string;
-    group: object;
-    workingGroup: object;
-  }
-
-  export interface IExperimentUserAliases {
+  export interface IExperimentUserAliasesResponse {
     userId: string;
     aliases: string[];
+  }
+
+  export interface IHttpClientWrapperRequestConfig {
+    headers?: {
+      [key: string]: string | string[];
+    };
+    withCredentials?: boolean;
+  }
+  export interface IHttpClientWrapper {
+    config?: IHttpClientWrapperRequestConfig;
+    doGet: (url: string, options: IHttpClientWrapperRequestConfig) => unknown;
+    doPost: <UpgradeRequestBodyType>(
+      url: string,
+      body: UpgradeRequestBodyType,
+      options: IHttpClientWrapperRequestConfig
+    ) => unknown;
+    doPatch: <UpgradeRequestBodyType>(
+      url: string,
+      body: UpgradeRequestBodyType,
+      options: IHttpClientWrapperRequestConfig
+    ) => unknown;
   }
 }

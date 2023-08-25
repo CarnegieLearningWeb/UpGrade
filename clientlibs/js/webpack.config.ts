@@ -1,4 +1,5 @@
-const path = require("path");
+import path = require('path');
+import webpack = require('webpack');
 
 const generalConfiguration = {
   mode: 'production',
@@ -27,8 +28,13 @@ const browser = {
     path: path.resolve(__dirname, 'dist/browser'),
     libraryTarget: 'umd',
     library: 'upgrade-client-lib',
-    libraryExport: 'default',
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(false),
+      IS_BROWSER: JSON.stringify(true),
+    }),
+  ],
 };
 
 const node = {
@@ -40,6 +46,51 @@ const node = {
     libraryTarget: 'umd',
     library: 'upgrade-client-lib',
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(false),
+      IS_BROWSER: JSON.stringify(false),
+    }),
+  ],
 };
 
-module.exports = [browser, node];
+const browserLite = {
+  ...generalConfiguration,
+  output: {
+    filename: 'index.js',
+    path: path.resolve(__dirname, 'dist/browser-lite'),
+    libraryTarget: 'umd',
+    library: 'upgrade-client-lib',
+  },
+  externals: {
+    axios: 'axios',
+  },
+  plugins: [
+    new webpack.DefinePlugin({
+      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(true),
+      IS_BROWSER: JSON.stringify(true),
+    }),
+  ],
+};
+
+const nodeLite = {
+  ...generalConfiguration,
+  target: 'node',
+  output: {
+    filename: 'index.js',
+    path: path.resolve(__dirname, 'dist/node-lite'),
+    libraryTarget: 'umd',
+    library: 'upgrade-client-lib',
+  },
+  externals: {
+    axios: 'axios',
+  },
+  plugins: [
+    new webpack.DefinePlugin({
+      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(true),
+      IS_BROWSER: JSON.stringify(false),
+    }),
+  ],
+};
+
+module.exports = [browser, node, browserLite, nodeLite];
