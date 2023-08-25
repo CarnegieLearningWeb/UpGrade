@@ -5,6 +5,7 @@ import { UserNotFoundError } from '../errors/UserNotFoundError';
 import { SERVER_ERROR } from 'upgrade_types';
 import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
+import { ExperimentUserArrayValidator, ExperimentUserValidator } from './validators/ExperimentUserValidator';
 
 // TODO delete this from experiment system
 /**
@@ -106,11 +107,11 @@ export class UserController {
    */
   @Post()
   public create(
-    @Body({ validate: false })
-    users: ExperimentUser[],
+    @Body({ validate: true })
+    users: ExperimentUserArrayValidator,
     @Req() request: AppRequest
   ): Promise<ExperimentUser[]> {
-    return this.userService.create(users, request.logger);
+    return this.userService.create(users.users, request.logger);
   }
 
   /**
@@ -145,7 +146,7 @@ export class UserController {
   @Put('/:id')
   public update(
     @Param('id') id: string,
-    @Body({ validate: false }) user: ExperimentUser,
+    @Body({ validate: true }) user: ExperimentUserValidator,
     @Req() request: AppRequest
   ): Promise<ExperimentUser> {
     return this.userService.update(id, user, request.logger);

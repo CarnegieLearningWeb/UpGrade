@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString, ValidationOptions, isObject, registerDecorator } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString, ValidateNested, ValidationOptions, isObject, registerDecorator } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export const IsGroupRecord = (validationOptions?: ValidationOptions) => {
   return function (object: unknown, propertyName: string) {
@@ -73,4 +74,12 @@ export class ExperimentUserValidator {
   @IsOptional()
   @IsWorkingGroupRecord()
   public workingGroup: Record<string, string>;
+}
+
+export class ExperimentUserArrayValidator {
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ExperimentUserValidator)
+  public users: ExperimentUserValidator[];
 }
