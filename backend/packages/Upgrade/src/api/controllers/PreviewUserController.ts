@@ -6,6 +6,7 @@ import { PreviewUser } from '../models/PreviewUser';
 import { isString } from 'class-validator';
 import { PaginatedParamsValidator } from './validators/PaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
+import { PreviewUserValidator } from './validators/PreviewUserValidator';
 
 interface PreviewUserPaginationInfo extends PaginationResponse {
   nodes: PreviewUser[];
@@ -79,7 +80,7 @@ export class PreviewUserController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: false }) paginatedParams: PaginatedParamsValidator,
+    @Body({ validate: true }) paginatedParams: PaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<PreviewUserPaginationInfo> {
     if (!paginatedParams) {
@@ -160,7 +161,7 @@ export class PreviewUserController {
    *            description: New ExperimentUser is created
    */
   @Post()
-  public create(@Body({ validate: false }) users: PreviewUser, @Req() request: AppRequest): Promise<PreviewUser> {
+  public create(@Body({ validate: true }) users: PreviewUserValidator, @Req() request: AppRequest): Promise<PreviewUser> {
     return this.previewUserService.create(users, request.logger);
   }
 
@@ -196,7 +197,7 @@ export class PreviewUserController {
   @Put('/:id')
   public update(
     @Param('id') id: string,
-    @Body({ validate: false }) user: PreviewUser,
+    @Body({ validate: true }) user: PreviewUserValidator,
     @Req() request: AppRequest
   ): Promise<PreviewUser> {
     return this.previewUserService.update(id, user, request.logger);
@@ -251,7 +252,7 @@ export class PreviewUserController {
    *            description: Assignment is created
    */
   @Post('/assign')
-  public assign(@Body({ validate: false }) user: PreviewUser, @Req() request: AppRequest): Promise<PreviewUser> {
+  public assign(@Body({ validate: true }) user: PreviewUserValidator, @Req() request: AppRequest): Promise<PreviewUser> {
     return this.previewUserService.upsertExperimentConditionAssignment(user, request.logger);
   }
 }
