@@ -62,7 +62,7 @@ import { Level } from '../models/Level';
 import { LevelRepository } from '../repositories/LevelRepository';
 import { LevelCombinationElement } from '../models/LevelCombinationElement';
 import { LevelCombinationElementRepository } from '../repositories/LevelCombinationElements';
-import { ExperimentDTO } from '../DTO/ExperimentDTO';
+import { ConditionValidator, ExperimentDTO, FactorValidator, PartitionValidator, ParticipantsValidator } from '../DTO/ExperimentDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
@@ -640,7 +640,7 @@ export class ExperimentService {
     }
   }
 
-  private checkConditionCodeDefault(conditions: ExperimentCondition[]): any {
+  private checkConditionCodeDefault(conditions: ConditionValidator[]): any {
     // Check for conditionCode is 'default' then return error:
     const hasDefaultConditionCode = conditions.filter(
       (condition) => condition.conditionCode?.toUpperCase() === 'DEFAULT'
@@ -757,22 +757,19 @@ export class ExperimentService {
         this.checkConditionCodeDefault(conditions);
 
         // creating condition docs
-        const conditionDocToSave: Array<Partial<ExperimentCondition>> =
+        const conditionDocToSave: Array<Partial<Omit <ExperimentCondition, 'levelCombinationElements'>>> =
           (conditions &&
             conditions.length > 0 &&
-            conditions.map((condition: ExperimentCondition) => {
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const { createdAt, updatedAt, versionNumber, ...rest } = condition;
-              rest.experiment = experimentDoc;
-              rest.id = rest.id || uuid();
-              return rest;
+            conditions.map((condition: ConditionValidator) => {
+              condition.id = condition.id || uuid();
+              return { ...condition, experiment: experimentDoc };
             })) ||
           [];
 
-        const conditionPayloadDocToSave: Array<Partial<ConditionPayload>> =
+        const conditionPayloadDocToSave: Array<Partial<Omit<ConditionPayload, 'parentCondition' | 'decisionPoint'>>> =
           (conditionPayloads &&
             conditionPayloads.length > 0 &&
-            conditionPayloads.map((conditionPayload: ConditionPayloadDTO) => {
+            conditionPayloads.map((conditionPayload) => {
               const conditionPayloadToReturn = {
                 id: conditionPayload.id,
                 payloadType: conditionPayload.payload.type,
@@ -789,7 +786,7 @@ export class ExperimentService {
         const decisionPointDocToSave =
           (decisionPoints &&
             decisionPoints.length > 0 &&
-            decisionPoints.map((decisionPoint: any) => {
+            decisionPoints.map((decisionPoint: PartitionValidator) => {
               promiseArray.push(
                 this.decisionPointRepository.findOne({
                   where: {
@@ -798,11 +795,8 @@ export class ExperimentService {
                   },
                 })
               );
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const { createdAt, updatedAt, versionNumber, ...rest } = decisionPoint;
-              rest.experiment = experimentDoc;
-              rest.id = rest.id || uuid();
-              return rest;
+              decisionPoint.id = decisionPoint.id || uuid();
+              return { ...decisionPoint, experiment: experimentDoc }
             })) ||
           [];
 
@@ -1082,7 +1076,7 @@ export class ExperimentService {
   }
 
   private setConditionOrPartitionIdentifiers(
-    data: ExperimentCondition[] | DecisionPoint[],
+    data: ConditionValidator[] | PartitionValidator[],
     uniqueIdentifiers: string[]
   ): any[] {
     const updatedData = (data as any).map((conditionOrDecisionPoint) => {
@@ -1145,14 +1139,13 @@ export class ExperimentService {
       let includeSegmentExists = true;
       let segmentIncludeDoc: Segment;
       let segmentIncludeDocToSave: Partial<ExperimentSegmentInclusion> = {};
-      experimentDoc.experimentSegmentInclusion = experimentSegmentInclusion;
-      if (experimentDoc.experimentSegmentInclusion) {
+      if (experimentSegmentInclusion) {
         // creating Include Segment
         let segmentInclude;
-        if (experimentDoc.experimentSegmentInclusion.segment) {
-          const includeSegment = experimentDoc.experimentSegmentInclusion.segment;
+        if (experimentSegmentInclusion?.segment) {
+          const includeSegment = experimentSegmentInclusion.segment;
           segmentInclude = {
-            ...experimentSegmentInclusion,
+            ...experimentSegmentInclusion.segment,
             type: includeSegment.type,
             userIds: includeSegment.individualForSegment.map((x) => x.userId),
             groups: includeSegment.groupForSegment.map((x) => {
@@ -1161,12 +1154,12 @@ export class ExperimentService {
             subSegmentIds: includeSegment.subSegments.map((x) => x.id),
           };
         } else {
-          segmentInclude = experimentDoc.experimentSegmentInclusion;
+          segmentInclude = experimentSegmentInclusion;
         }
 
         const segmentIncludeData: SegmentInputValidator = {
           ...segmentInclude,
-          id: uuid(),
+          id: segmentInclude.id || uuid(),
           name: experiment.id + ' Inclusion Segment',
           description: experiment.id + ' Inclusion Segment',
           context: experiment.context[0],
@@ -1193,14 +1186,13 @@ export class ExperimentService {
       let excludeSegmentExists = true;
       let segmentExcludeDoc: Segment;
       let segmentExcludeDocToSave: Partial<ExperimentSegmentExclusion> = {};
-      experimentDoc.experimentSegmentExclusion = experimentSegmentExclusion;
-      if (experimentDoc.experimentSegmentExclusion) {
+      if (experimentSegmentExclusion) {
         // creating Exclude Segment
         let segmentExclude;
-        if (experimentDoc.experimentSegmentExclusion.segment) {
-          const excludeSegment = experimentDoc.experimentSegmentExclusion.segment;
+        if (experimentSegmentExclusion?.segment) {
+          const excludeSegment = experimentSegmentExclusion.segment;
           segmentExclude = {
-            ...experimentSegmentExclusion,
+            ...experimentSegmentExclusion.segment,
             type: excludeSegment.type,
             userIds: excludeSegment.individualForSegment.map((x) => x.userId),
             groups: excludeSegment.groupForSegment.map((x) => {
@@ -1209,12 +1201,12 @@ export class ExperimentService {
             subSegmentIds: excludeSegment.subSegments.map((x) => x.id),
           };
         } else {
-          segmentExclude = experimentDoc.experimentSegmentExclusion;
+          segmentExclude = experimentSegmentExclusion;
         }
 
         const segmentExcludeData: SegmentInputValidator = {
           ...segmentExclude,
-          id: uuid(),
+          id: segmentExclude.id || uuid(),
           name: experiment.id + ' Exclusion Segment',
           description: experiment.id + ' Exclusion Segment',
           context: experiment.context[0],
@@ -1239,49 +1231,36 @@ export class ExperimentService {
       }
 
       // creating condition docs
-      const conditionDocsToSave =
+      const conditionDocsToSave: Array<Partial<Omit<ExperimentCondition, 'levelCombinationElements'>>> =
         conditions &&
         conditions.length > 0 &&
-        conditions.map((condition: ExperimentCondition) => {
+        conditions.map((condition: ConditionValidator) => {
           condition.id = condition.id || uuid();
-          condition.experiment = experimentDoc;
-          return condition;
+          return { ...condition, experiment: experimentDoc };
         });
 
       // creating decision point docs
-      const decisionPointDocsToSave =
+      const decisionPointDocsToSave: Array<Partial<DecisionPoint>> =
         partitions &&
         partitions.length > 0 &&
         partitions.map((decisionPoint) => {
           decisionPoint.id = decisionPoint.id || uuid();
-          decisionPoint.experiment = experimentDoc;
-          return decisionPoint;
+          return { ...decisionPoint, experiment: experimentDoc };
         });
 
       if (!conditionPayloads) {
         experiment = { ...experiment, conditionPayloads: [] };
       }
-      // update conditionPayloads condition uuids:
-      if (conditionPayloads) {
-        conditionPayloads.map((conditionPayload) => {
-          const condition = conditions.find((doc) => {
-            return doc.conditionCode === conditionPayload.parentCondition.conditionCode;
-          });
-          if (condition) {
-            conditionPayload.parentCondition.id = condition.id;
-          }
-        });
-      }
-      const conditionPayloadDocToSave: Array<Partial<ConditionPayload>> =
+      const conditionPayloadDocToSave: Array<Partial<Omit<ConditionPayload, 'parentCondition' | 'decisionPoint'>>> =
         (conditionPayloads &&
           conditionPayloads.length > 0 &&
-          conditionPayloads.map((conditionPayload: ConditionPayloadDTO) => {
+          conditionPayloads.map((conditionPayload) => {
             const conditionPayloadToReturn = {
               id: conditionPayload.id,
               payloadType: conditionPayload.payload.type,
               payloadValue: conditionPayload.payload.value,
-              parentCondition: conditionPayload.parentCondition,
-              decisionPoint: conditionPayload.decisionPoint,
+              parentCondition: conditions.find((doc) => doc.id === conditionPayload.parentCondition),
+              decisionPoint: partitions.find((doc) => doc.id === conditionPayload.decisionPoint),
             };
             return conditionPayloadToReturn;
           })) ||
@@ -1517,10 +1496,13 @@ export class ExperimentService {
     return { ...experiment, conditionPayloads: conditionPayload };
   }
 
-  public formatingPayload(experiment: Experiment): ExperimentDTO {
+  public formatingPayload(experiment: Experiment): any {
     const updatedConditionPayloads = experiment.conditionPayloads.map((conditionPayload) => {
       const { payloadType, payloadValue, ...rest } = conditionPayload;
-      return { ...rest, payload: { type: payloadType, value: payloadValue } };
+      return {
+        ...rest,
+        payload: { type: payloadType, value: payloadValue },
+      };
     });
 
     const updatedFactors: FactorDTO[] = experiment.factors.map((factor) => {
@@ -1535,8 +1517,8 @@ export class ExperimentService {
     return { ...experiment, factors: updatedFactors, conditionPayloads: updatedConditionPayloads };
   }
 
-  private includeExcludeSegmentCreation(
-    experimentSegment: ExperimentSegmentInclusion | ExperimentSegmentExclusion,
+  private includeExcludeSegmentCreation (
+    experimentSegment: ParticipantsValidator,
     experimentDocSegmentData: ExperimentSegmentInclusion | ExperimentSegmentExclusion,
     experimentId: string,
     context: string[],
@@ -1586,14 +1568,14 @@ export class ExperimentService {
   }
 
   private async addFactorialDataInDB(
-    factors: FactorDTO[],
-    conditions: ExperimentCondition[],
+    factors: FactorValidator[],
+    conditions: ConditionValidator[],
     experimentDoc: Experiment,
     transactionalEntityManager: EntityManager,
     logger: UpgradeLogger
   ) {
     const allLevels: Level[] = [];
-    const allLevelCombinationElements: LevelCombinationElement[] = [];
+    const allLevelCombinationElements: Partial<Omit<LevelCombinationElement, 'condition' | 'level'>>[] = [];
 
     //converting factorDTO to factor
     const normalFactors = factors.map((factor) => {
@@ -1633,11 +1615,12 @@ export class ExperimentService {
       });
 
     conditions.forEach((condition) => {
-      condition.levelCombinationElements.map((elements) => {
+      const array = condition.levelCombinationElements.map((elements) => {
         elements.id = elements.id || uuid();
-        elements.condition = condition;
+        // elements.condition = condition;
+        return { ...elements, condition: condition }
       });
-      allLevelCombinationElements.push(...condition.levelCombinationElements);
+      allLevelCombinationElements.push(...array);
     });
 
     let factorDoc: Factor[];
