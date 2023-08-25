@@ -129,6 +129,7 @@
 .delete-modal,
 .import-experiment-modal,
 .import-segment-modal,
+.import-stratification-modal,
 .experiment-general-modal,
 .new-experiment-modal,
 .new-flag-modal,
@@ -175,7 +176,8 @@
 }
 
 .import-segment-modal,
-.import-experiment-modal {
+.import-experiment-modal,
+.import-stratification-modal {
   width: 500px;
 }
 

@@ -1,0 +1,72 @@
+<div class="stratification-factors-list-container">
+  <div class="header">
+    <div>
+        <h3 class="ft-22-700">{{ 'users.stratification-users-title.text' | translate }}</h3>
+    </div>
+    <div>
+      <button
+        (click)="openImportStratificationsDialog()"
+        mat-flat-button
+        color="primary"
+        class="ft-14-700 import-stratifications-csv"
+      >
+        <mat-icon>add</mat-icon>
+        <span>{{ 'users.stratification-users-import-csv.text' | translate }}</span>
+      </button>
+    </div>
+  </div>
+  <div class="table-container">
+    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingStratifications$ | async"></mat-progress-bar>
+    <mat-table [dataSource]="stratifications" class="table">
+      <!-- Factor Column -->
+      <ng-container matColumnDef="factor">
+        <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+          <span [matTooltip]="'stratifications.global-members-factor.text' | translate" matTooltipPosition="above">
+            {{ 'stratifications.global-members-factor.text' | translate | uppercase }}
+          </span>
+        </mat-header-cell>
+        <mat-cell class="ft-12-600" *matCellDef="let rowData; let rowIndex = index"> {{ rowData.factor }} </mat-cell>
+      </ng-container>
+
+      <!-- Summary Column -->
+      <ng-container matColumnDef="summary">
+        <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+          <span [matTooltip]="'stratifications.global-members-summary.text' | translate" matTooltipPosition="above">
+            {{ 'stratifications.global-members-summary.text' | translate | uppercase }}
+          </span>
+        </mat-header-cell>
+        <mat-cell class="ft-12-600" *matCellDef="let rowData; let rowIndex = index"> {{ rowData.summary }} </mat-cell>
+      </ng-container>
+
+      <!-- Action buttons Column-->>
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
+        <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell">
+          <!-- Download Icon -->
+          <button
+            type="button"
+            class="row-action-btn"
+            (click)="handleDownload(rowData, rowIndex)"
+          >
+            <ng-container>
+              <mat-icon class="icon">download</mat-icon>
+            </ng-container>
+          </button>
+          <!-- Delete Icon -->
+          <button
+            type="button"
+            class="row-action-btn"
+            (click)="handleDelete(rowIndex)"
+          >
+            <ng-container>
+              <mat-icon class="icon">delete</mat-icon>
+            </ng-container>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+    </mat-table>
+  </div>
+</div>
