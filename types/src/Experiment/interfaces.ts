@@ -65,8 +65,8 @@ export interface IExperimentAssignmentv5 {
 export interface AssignedCondition {
   conditionCode: string;
   payload: IPayload;
-  experimentId: string;
-  id?: string;
+  experimentId?: string;
+  id: string;
 }
 
 interface ExperimentCreatedData {
@@ -144,7 +144,7 @@ export interface IExperimentEnrollmentDetailDateStats {
 }
 
 interface ILogMetrics {
-  attributes?: any;
+  attributes?: Record<string, string | number>;
   groupedMetrics: ILogGroupMetrics[];
 }
 
@@ -152,7 +152,7 @@ interface ILogGroupMetrics {
   groupClass: string;
   groupKey: string;
   groupUniquifier: string;
-  attributes: any;
+  attributes?: Record<string, string | number>;
 }
 export interface ILogInput {
   timestamp: string;

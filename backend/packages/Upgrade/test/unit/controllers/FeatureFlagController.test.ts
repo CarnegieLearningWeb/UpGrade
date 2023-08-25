@@ -53,10 +53,11 @@ describe('Feature Flag Controller Testing', () => {
         status: true,
         variations: [
           {
+            id: 'string',
             value: 'string',
             name: 'string',
             description: 'string',
-            defaultVariation: 'Unknown Type: boolean[]',
+            defaultVariation: [],
           },
         ],
       })
@@ -69,7 +70,10 @@ describe('Feature Flag Controller Testing', () => {
   test('Post request for /api/flags/status', async (done) => {
     await request(app)
       .post('/api/flags/status')
-      .send('flagid')
+      .send({
+        flagId: uuid(),
+        status: true
+      })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -87,8 +91,24 @@ describe('Feature Flag Controller Testing', () => {
 
   test('Put request for /api/flags/id', async (done) => {
     await request(app)
-      .put('/api/flags/flagid')
-      .send('flagid')
+      .put('/api/flags/' + uuid())
+      .send({
+        id: 'string',
+        name: 'string',
+        key: 'string',
+        description: 'string',
+        variationType: 'string',
+        status: true,
+        variations: [
+          {
+            id: 'string',
+            value: 'string',
+            name: 'string',
+            description: 'string',
+            defaultVariation: [],
+          },
+        ],
+      })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

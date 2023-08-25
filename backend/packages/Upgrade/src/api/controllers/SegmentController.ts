@@ -287,7 +287,7 @@ export class SegmentController {
    */
   @Post()
   public upsertSegment(
-    @Body({ validate: { validationError: { target: false, value: false } } }) segment: SegmentInputValidator,
+    @Body({ validate: true }) segment: SegmentInputValidator,
     @Req() request: AppRequest
   ): Promise<Segment> {
     return this.segmentService.upsertSegment(segment, request.logger);
@@ -363,10 +363,10 @@ export class SegmentController {
    */
   @Post('/import')
   public importSegments(
-    @Body({ validate: false }) segment: SegmentInputValidator[],
+    @Body({ validate: false }) segments: SegmentInputValidator[],
     @Req() request: AppRequest
   ): Promise<Segment[]> {
-    return this.segmentService.importSegments(segment, request.logger);
+    return this.segmentService.importSegments(segments, request.logger);
   }
 
   @Post('/export')

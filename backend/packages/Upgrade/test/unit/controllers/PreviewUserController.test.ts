@@ -61,6 +61,7 @@ describe('Preview User Controller Testing', () => {
         id: 'string',
         assignments: [
           {
+            id: 'string',
             experiment: {
               id: 'string',
             },
@@ -83,6 +84,7 @@ describe('Preview User Controller Testing', () => {
         id: 'string',
         assignments: [
           {
+            id: 'string',
             experiment: {
               id: 'string',
             },
@@ -114,6 +116,7 @@ describe('Preview User Controller Testing', () => {
         id: 'string',
         assignments: [
           {
+            id: 'string',
             experiment: {
               id: 'string',
             },
