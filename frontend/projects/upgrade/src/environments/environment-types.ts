@@ -33,6 +33,7 @@ export interface APIEndpoints {
   metrics: string;
   metricsSave: string;
   queryResult: string;
+  archiveResult: string;
   getVersion: string;
   contextMetaData: string;
   segments: string;

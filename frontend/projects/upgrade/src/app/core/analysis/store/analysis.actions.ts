@@ -1,5 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 import { MetricUnit, UpsertMetrics } from './analysis.models';
+import { EXPERIMENT_STATE } from '../../experiments/store/experiments.model';
 
 export const actionFetchMetrics = createAction('[Analysis] Fetch Metrics');
 
@@ -33,7 +34,10 @@ export const actionUpsertMetricsSuccess = createAction(
 
 export const actionUpsertMetricsFailure = createAction('[Analysis] Upsert Metrics Failure');
 
-export const actionExecuteQuery = createAction('[Analysis] Execute Query', props<{ queryIds: string[] }>());
+export const actionExecuteQuery = createAction(
+  '[Analysis] Execute Query',
+  props<{ queryIds: string[]; state?: EXPERIMENT_STATE }>()
+);
 
 export const actionExecuteQuerySuccess = createAction(
   '[Analysis] Execute Query Success',

@@ -6,6 +6,7 @@ import { AnalysisDataService } from '../analysis.data.service';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../../core.state';
 import { selectQueryResult } from './analysis.selectors';
+import { EXPERIMENT_STATE } from '../../experiments/store/experiments.model';
 
 @Injectable()
 export class AnalysisEffects {
@@ -66,11 +67,15 @@ export class AnalysisEffects {
   executeQuery$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AnalysisActions.actionExecuteQuery),
-      map((action) => action.queryIds),
-      filter((queryIds) => !!queryIds.length),
+      map((action) => ({ queryIds: action.queryIds, state: action.state })),
+      filter(({ queryIds }) => !!queryIds.length),
       withLatestFrom(this.store$.pipe(select(selectQueryResult))),
-      switchMap(([queryIds, queryResult]) =>
-        this.analysisDataService.executeQuery(queryIds).pipe(
+      switchMap(([{ queryIds, state }, queryResult]) => {
+        const analysisData =
+          (state && state === EXPERIMENT_STATE.ARCHIVED)
+            ? this.analysisDataService.archiveQuery(queryIds)
+            : this.analysisDataService.executeQuery(queryIds);
+        return analysisData.pipe(
           map((data: any) => {
             let newResults = queryResult && queryResult.length ? queryResult : [];
             if (data.length) {
@@ -86,8 +91,8 @@ export class AnalysisEffects {
             return AnalysisActions.actionExecuteQuerySuccess({ queryResult: newResults });
           }),
           catchError(() => [AnalysisActions.actionExecuteQueryFailure()])
-        )
-      )
+        );
+      })
     )
   );
 }

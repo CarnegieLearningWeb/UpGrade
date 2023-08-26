@@ -13,7 +13,7 @@ import {
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { EXPERIMENT_TYPE } from 'upgrade_types';
+import { EXPERIMENT_STATE, EXPERIMENT_TYPE } from 'upgrade_types';
 import { ExperimentFactorData } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 
 interface FactorColumnDef {
@@ -53,6 +53,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [];
   factorialData = {};
   experimentType: string = null;
+  experimentState: EXPERIMENT_STATE;
   data: { name: string; series: { name: string; value: number }[]; dot: boolean }[];
   meanData2: { name: string; value: number }[];
   meanData1: { name: string; value: number }[];
@@ -76,6 +77,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   ngOnInit() {
     const queryIds = [];
     this.experimentType = this.experiment.type;
+    this.experimentState = this.experiment.state
 
     if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
       this.setMaxLevelsCount();
@@ -99,7 +101,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
         [query.id]: [],
       };
     });
-    this.analysisService.executeQuery(queryIds);
+    this.analysisService.executeQuery(queryIds, this.experimentState);
     this.queryResultsSub = this.analysisService.queryResult$.pipe(filter((result) => !!result)).subscribe((result) => {
       // main effect graph data
       this.populateMainEffectGraphData(result);

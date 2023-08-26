@@ -163,7 +163,10 @@ export class ExperimentEffects {
                   experimentAction.actionFetchExperimentStatsSuccess({ stats }),
                   experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
                   experimentAction.actionFetchAllDecisionPoints(),
-                  analysisAction.actionExecuteQuery({ queryIds }),
+                  analysisAction.actionExecuteQuery({
+                    queryIds,
+                    state: data.state,
+                  }),
                 ];
               })
             )

@@ -8,6 +8,8 @@ import { ErrorService } from './ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { Experiment } from '../models/Experiment';
+import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
+import { In } from 'typeorm';
 
 interface queryResult {
   conditionId?: string;
@@ -21,6 +23,7 @@ export class QueryService {
   constructor(
     @OrmRepository() private queryRepository: QueryRepository,
     @OrmRepository() private logRepository: LogRepository,
+    @OrmRepository() private archivedStatsRepository: ArchivedStatsRepository,
     public errorService: ErrorService
   ) {}
 
@@ -32,6 +35,17 @@ export class QueryService {
     return queries.map((query) => {
       const { experiment, ...rest } = query;
       return { ...rest, experiment: { id: experiment.id, name: experiment.name } } as any;
+    });
+  }
+
+  public async getArchivedStats(queryIds: string[], logger: UpgradeLogger): Promise<any> {
+    logger.info({ message: `Get archivedStats of query with queryIds ${queryIds}` });
+    const archiveData = await this.archivedStatsRepository.find({
+      relations: ['query'],
+      where: { query: In(queryIds) },
+    });
+    return archiveData.map((data) => {
+      return { ...data.result, id: data.query.id };
     });
   }
 

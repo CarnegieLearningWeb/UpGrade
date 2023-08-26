@@ -66,6 +66,9 @@ import { ExperimentDTO } from '../DTO/ExperimentDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
+import { QueryService } from './QueryService';
+import { ArchivedStats } from '../models/ArchivedStats';
+import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
 
 @Service()
 export class ExperimentService {
@@ -87,10 +90,12 @@ export class ExperimentService {
     @OrmRepository() private factorRepository: FactorRepository,
     @OrmRepository() private levelRepository: LevelRepository,
     @OrmRepository() private levelCombinationElementsRepository: LevelCombinationElementRepository,
+    @OrmRepository() private archivedStatsRepository: ArchivedStatsRepository,
     public previewUserService: PreviewUserService,
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
-    public errorService: ErrorService
+    public errorService: ErrorService,
+    public queryService: QueryService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
@@ -378,7 +383,7 @@ export class ExperimentService {
   ): Promise<Experiment> {
     const oldExperiment = await this.experimentRepository.findOne(
       { id: experimentId },
-      { relations: ['stateTimeLogs'] }
+      { relations: ['stateTimeLogs', 'queries', 'queries.metric'] }
     );
 
     if (
@@ -386,6 +391,24 @@ export class ExperimentService {
       oldExperiment.state !== EXPERIMENT_STATE.ENROLLMENT_COMPLETE
     ) {
       await this.populateExclusionTable(experimentId, state, logger);
+    }
+
+    if (state === EXPERIMENT_STATE.ARCHIVED) {
+      const queryIds = oldExperiment.queries.map((query) => query.id);
+      const results = await this.queryService.analyze(queryIds, logger);
+      const archivedStatsData: Array<Omit<ArchivedStats, 'createdAt' | 'updatedAt' | 'versionNumber'>> = results.map(
+        (result) => {
+          const queryId = result.id;
+          delete result.id;
+          const archivedStats: Partial<ArchivedStats> = {
+            id: uuid(),
+            result: result,
+            query: queryId,
+          };
+          return archivedStats;
+        }
+      );
+      await this.archivedStatsRepository.saveRawJson(archivedStatsData);
     }
 
     let data: AuditLogData = {
