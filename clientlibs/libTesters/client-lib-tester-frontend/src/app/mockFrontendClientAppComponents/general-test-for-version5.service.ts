@@ -10,7 +10,7 @@ import {
 } from '../../../../shared/models';
 
 // import UpgradeClient, { Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser';
-import { UpgradeClient, Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser-lite';
+import { UpgradeClient, Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser';
 
 import { CaliperEnvelope, IExperimentAssignmentv5 } from 'upgrade_client_local/dist/types/src';
 import { AbstractMockAppService } from './abstract-mock-app.service';
