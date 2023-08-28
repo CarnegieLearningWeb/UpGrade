@@ -35,7 +35,7 @@ export class MetricRepository extends Repository<Metric> {
       .innerJoin('metrics.queries', 'queries')
       .innerJoin('queries.experiment', 'experiment')
       .where('key IN (:...ids)', { ids })
-      .andWhere('experiment.state NOT IN (:...archivedAndInactive)', { archivedAndInactive : [EXPERIMENT_STATE.ARCHIVED, EXPERIMENT_STATE.INACTIVE ]})
+      .andWhere('experiment.state NOT IN (:...archived)', { archived: [EXPERIMENT_STATE.ARCHIVED] })
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'findMetricsWithQueries', { ids }, errorMsg);
