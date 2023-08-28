@@ -69,8 +69,6 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
         };
       }
 
-      console.log({ axiosRequestConfig });
-
       const response = await axios({
         ...axiosRequestConfig,
       });

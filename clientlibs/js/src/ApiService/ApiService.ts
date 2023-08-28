@@ -103,8 +103,6 @@ export default class ApiService {
 
     options.withCredentials = Boolean(this.httpClient.config?.withCredentials);
 
-    console.log('createOptions', options);
-
     return options;
   }
 
