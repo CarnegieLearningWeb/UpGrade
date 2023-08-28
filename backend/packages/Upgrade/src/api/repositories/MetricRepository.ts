@@ -1,7 +1,7 @@
 import { Metric } from '../models/Metric';
 import { EntityRepository, Repository } from 'typeorm';
 import repositoryError from './utils/repositoryError';
-import { EXPERIMENT_STATE } from '../../../../../../types/src';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 
 @EntityRepository(Metric)
 export class MetricRepository extends Repository<Metric> {
