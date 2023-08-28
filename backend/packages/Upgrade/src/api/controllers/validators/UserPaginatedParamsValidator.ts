@@ -1,15 +1,6 @@
-import { IsNotEmpty, IsDefined, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsDefined, IsNumber, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { EXPERIMENT_SORT_AS } from 'upgrade_types';
-
-// TODO: Move to upgrade types
-export interface IUserSearchParams {
-  key: USER_SEARCH_SORT_KEY;
-  string: string;
-}
-export interface IUserSortParams {
-  key: USER_SEARCH_SORT_KEY;
-  sortAs: EXPERIMENT_SORT_AS;
-}
 
 export enum USER_SEARCH_SORT_KEY {
   ALL = 'all',
@@ -19,6 +10,25 @@ export enum USER_SEARCH_SORT_KEY {
   ROLE = 'role',
 }
 
+export class UserSortParamsValidator {
+  @IsNotEmpty()
+  @IsEnum(USER_SEARCH_SORT_KEY)
+  key: USER_SEARCH_SORT_KEY;
+
+  @IsNotEmpty()
+  @IsEnum(EXPERIMENT_SORT_AS)
+  sortAs: EXPERIMENT_SORT_AS;
+}
+
+export class UserSearchParamsValidator {
+  @IsNotEmpty()
+  @IsEnum(USER_SEARCH_SORT_KEY)
+  key: USER_SEARCH_SORT_KEY;
+
+  @IsNotEmpty()
+  @IsString()
+  string: string;
+}
 export class UserPaginatedParamsValidator {
   @IsNotEmpty()
   @IsNumber()
@@ -30,7 +40,13 @@ export class UserPaginatedParamsValidator {
   @IsDefined()
   public take: number;
 
-  public searchParams: IUserSearchParams;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UserSearchParamsValidator)
+  public searchParams?: UserSearchParamsValidator;
 
-  public sortParams: IUserSortParams;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UserSortParamsValidator)
+  public sortParams?: UserSortParamsValidator;
 }

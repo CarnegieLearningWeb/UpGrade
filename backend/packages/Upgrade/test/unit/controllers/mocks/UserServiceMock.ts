@@ -3,8 +3,8 @@ import { User } from '../../../../src/api/models/User';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { UserRole } from 'upgrade_types';
 import {
-  IUserSearchParams,
-  IUserSortParams,
+  UserSearchParamsValidator,
+  UserSortParamsValidator,
 } from '../../../../src/api/controllers/validators/UserPaginatedParamsValidator';
 
 @Service()
@@ -29,8 +29,8 @@ export default class UserServiceMock {
     skip: number,
     take: number,
     logger: UpgradeLogger,
-    searchParams?: IUserSearchParams,
-    sortParams?: IUserSortParams
+    searchParams?: UserSearchParamsValidator,
+    sortParams?: UserSortParamsValidator
   ): Promise<[]> {
     return Promise.resolve([]);
   }

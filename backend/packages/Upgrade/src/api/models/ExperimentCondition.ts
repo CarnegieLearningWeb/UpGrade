@@ -47,5 +47,5 @@ export class ExperimentCondition extends BaseModel {
   public conditionPayloads: ConditionPayload[];
 
   @OneToMany(() => LevelCombinationElement, (levelCombinationElement) => levelCombinationElement.condition)
-  public levelCombinationElements: LevelCombinationElement[];
+  public levelCombinationElements?: LevelCombinationElement[];
 }

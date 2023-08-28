@@ -706,6 +706,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       experimentDesignFormData.conditions = experimentDesignFormData.conditions.map((condition, index) => {
         if (isNaN(condition.assignmentWeight)) {
           condition.assignmentWeight = Number(condition.assignmentWeight.slice(0, -1));
+        } else {
+          condition.assignmentWeight = Number(condition.assignmentWeight);
         }
         return this.experimentInfo
           ? { ...this.experimentInfo.conditions[index], ...condition, order: order++ }
@@ -758,7 +760,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.conditions.controls.forEach((control, index) => {
           const assignmentWeightFormControl = control.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.ASSIGNMENT_WEIGHT);
           assignmentWeightFormControl.setValue(
-            control.value.assignmentWeight ? control.value.assignmentWeight : this.previousAssignmentWeightValues[index]
+            control.value.assignmentWeight ? control.value.assignmentWeight : 0
           );
           if (this.isExperimentEditable) {
             assignmentWeightFormControl.enable();

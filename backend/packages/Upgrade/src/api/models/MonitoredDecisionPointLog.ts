@@ -10,12 +10,12 @@ export class MonitoredDecisionPointLog extends BaseModel {
   @Column({
     nullable: true,
   })
-  public condition: string;
+  public condition?: string | null;
 
   @Column({
     nullable: true,
   })
-  public uniquifier: string;
+  public uniquifier: string | null;
 
   @ManyToOne(() => MonitoredDecisionPoint, { onDelete: 'CASCADE' })
   public monitoredDecisionPoint: MonitoredDecisionPoint;

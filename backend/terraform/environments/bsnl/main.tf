@@ -32,7 +32,7 @@ module "aws_lambda_function" {
   output_path           = "../environments/${var.current_directory}/.terraform" 
   function_name         = "Schedule" 
   function_handler      = "schedule.schedule"
-  runtime               =  "nodejs16.x"
+  runtime               =  "nodejs18.x"
 }
 
 output "lambda"{

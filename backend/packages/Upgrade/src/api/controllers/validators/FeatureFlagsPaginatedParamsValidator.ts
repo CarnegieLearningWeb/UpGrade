@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsDefined, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsDefined, IsNumber, IsOptional, ValidateNested, IsEnum, IsString } from 'class-validator';
 import { EXPERIMENT_SORT_AS } from 'upgrade_types';
 
 // TODO: Move to upgrade types
@@ -19,6 +20,25 @@ export enum FLAG_SEARCH_SORT_KEY {
   VARIATION_TYPE = 'variationType',
 }
 
+class IFeatureFlagSortParamsValidator {
+  @IsNotEmpty()
+  @IsEnum(FLAG_SEARCH_SORT_KEY)
+  key: FLAG_SEARCH_SORT_KEY;
+
+  @IsNotEmpty()
+  @IsEnum(EXPERIMENT_SORT_AS)
+  sortAs: EXPERIMENT_SORT_AS;
+}
+
+class IFeatureFlagSearchParamsValidator {
+  @IsNotEmpty()
+  @IsEnum(FLAG_SEARCH_SORT_KEY)
+  key: FLAG_SEARCH_SORT_KEY;
+
+  @IsNotEmpty()
+  @IsString()
+  string: string;
+}
 export class FeatureFlagPaginatedParamsValidator {
   @IsNotEmpty()
   @IsNumber()
@@ -30,7 +50,13 @@ export class FeatureFlagPaginatedParamsValidator {
   @IsDefined()
   public take: number;
 
-  public searchParams: IFeatureFlagSearchParams;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => IFeatureFlagSearchParamsValidator)
+  public searchParams: IFeatureFlagSearchParamsValidator;
 
-  public sortParams: IFeatureFlagSortParams;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => IFeatureFlagSortParamsValidator)
+  public sortParams: IFeatureFlagSortParamsValidator;
 }

@@ -41,7 +41,6 @@ describe('Experiment Client Controller Testing', () => {
     userId: 'u22',
     value: [
       {
-        userId: 'u22',
         timestamp: '1970-01-01T00:00:00Z',
         metrics: {
           groupedMetrics: [
@@ -156,10 +155,7 @@ describe('Experiment Client Controller Testing', () => {
   test('Post request for /api/log', async (done) => {
     await request(app)
       .post('/api/log')
-      .send({
-        userId: 'u21',
-        logData,
-      })
+      .send(logData)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -190,7 +186,7 @@ describe('Experiment Client Controller Testing', () => {
     await request(app)
       .post('/api/metric')
       .send({
-        metricUnit: {},
+        metricUnit: [],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)

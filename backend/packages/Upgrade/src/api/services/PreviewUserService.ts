@@ -6,6 +6,7 @@ import { PreviewUserRepository } from '../repositories/PreviewUserRepository';
 import { ExplicitIndividualAssignmentRepository } from '../repositories/ExplicitIndividualAssignmentRepository';
 import { ExplicitIndividualAssignment } from '../models/ExplicitIndividualAssignment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+import { PreviewUserValidator } from '../controllers/validators/PreviewUserValidator';
 
 @Service()
 export class PreviewUserService {
@@ -56,17 +57,16 @@ export class PreviewUserService {
     });
   }
 
-  public create(user: Partial<PreviewUser>, logger: UpgradeLogger): Promise<PreviewUser> {
-    logger.info({ message: `Create a new preview user => ${user}` });
-    user.id = user.id || uuid();
-
-    return this.userRepository.save(user);
+  public create(userDTO: PreviewUserValidator, logger: UpgradeLogger): Promise<PreviewUser> {
+    logger.info({ message: `Create a new preview user => ${userDTO}` });   
+    userDTO.id = userDTO.id || uuid();
+    return this.userRepository.save(this.previewUserValidatorToUser(userDTO));
   }
 
-  public update(id: string, user: PreviewUser, logger: UpgradeLogger): Promise<PreviewUser> {
-    logger.info({ message: `Update a preview user => ${user.toString()}` });
-    user.id = id;
-    return this.userRepository.save(user);
+  public update(id: string, userDTO: PreviewUserValidator, logger: UpgradeLogger): Promise<PreviewUser> {
+    logger.info({ message: `Update a preview user => ${userDTO.toString()}` });
+    userDTO.id = id;
+    return this.userRepository.save(this.previewUserValidatorToUser(userDTO));
   }
 
   public async delete(id: string, logger: UpgradeLogger): Promise<PreviewUser | undefined> {
@@ -76,11 +76,12 @@ export class PreviewUserService {
   }
 
   public async upsertExperimentConditionAssignment(
-    previewUser: PreviewUser,
+    previewUserDTO: PreviewUserValidator,
     logger: UpgradeLogger
   ): Promise<PreviewUser | undefined> {
-    logger.info({ message: `Upsert Experiment Condition Assignment ${JSON.stringify(previewUser, undefined, 1)}` });
+    logger.info({ message: `Upsert Experiment Condition Assignment ${JSON.stringify(previewUserDTO, undefined, 1)}` });
 
+    const previewUser = this.previewUserValidatorToUser(previewUserDTO);
     const previewDocumentWithOldAssignments = await this.findOne(previewUser.id, logger);
     const newAssignments = previewUser.assignments;
 
@@ -123,5 +124,18 @@ export class PreviewUserService {
     }
     const getDocument = await this.findOne(previewUser.id, logger);
     return getDocument;
+  }
+
+  private previewUserValidatorToUser(userDTO: PreviewUserValidator): PreviewUser {
+    const user = new PreviewUser();
+    user.id = userDTO.id;
+    user.assignments = userDTO.assignments?.map((assignmentDTO) => {
+      const assignment = new ExplicitIndividualAssignment();
+      assignment.id = assignmentDTO.id;
+      assignment.experiment = assignmentDTO.experiment;
+      assignment.experimentCondition = assignmentDTO.experimentCondition;
+      return assignment;
+    })
+    return user;
   }
 }
