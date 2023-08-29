@@ -3,7 +3,6 @@ import { UpGradeClientEnums } from 'types';
 export interface IApiServiceRequestParams {
   path: string;
   method: UpGradeClientEnums.REQUEST_METHOD;
-  options?: any;
   body?: any;
 }
 

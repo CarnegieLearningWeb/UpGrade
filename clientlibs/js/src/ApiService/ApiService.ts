@@ -52,14 +52,21 @@ export default class ApiService {
   }
 
   private setHttpClient(httpClient: UpGradeClientInterfaces.IHttpClientWrapper) {
-    console.log({ USE_CUSTOM_HTTP_CLIENT });
-    if (USE_CUSTOM_HTTP_CLIENT) {
-      if (httpClient) {
-        return httpClient;
-      } else {
-        throw new Error('Please provide valid httpClient.');
-      }
-    } else {
+    if (USE_CUSTOM_HTTP_CLIENT && !httpClient) {
+      throw new Error(
+        'Please provide valid httpClient, or use the default (non-"lite") version of the library to our default httpClient.'
+      );
+    }
+
+    if (!USE_CUSTOM_HTTP_CLIENT && httpClient) {
+      throw new Error('Please import "lite" version of the to use custom httpClient.');
+    }
+
+    if (USE_CUSTOM_HTTP_CLIENT && httpClient) {
+      return httpClient;
+    }
+
+    if (!USE_CUSTOM_HTTP_CLIENT && !httpClient) {
       return new DefaultHttpClient();
     }
   }
