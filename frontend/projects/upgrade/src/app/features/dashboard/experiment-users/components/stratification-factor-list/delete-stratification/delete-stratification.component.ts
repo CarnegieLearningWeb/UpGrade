@@ -5,15 +5,17 @@ import {
 } from '@angular/material/legacy-dialog';
 
 @Component({
-  selector: 'app-delete',
-  templateUrl: './delete.component.html',
-  styleUrls: ['./delete.component.scss'],
+  selector: 'app-delete-stratification',
+  templateUrl: './delete-stratification.component.html',
+  styleUrls: ['./delete-stratification.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DeleteComponent {
-  isDeleteButtonClicked: string;
+export class DeleteStratificationComponent {
   message: boolean;
-  constructor(public dialogRef: MatDialogRef<DeleteComponent>, @Inject(MAT_DIALOG_DATA) public data: any) {}
+  constructor(
+    public dialogRef: MatDialogRef<DeleteStratificationComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {}
 
   onCancelClick(): void {
     this.message = false;

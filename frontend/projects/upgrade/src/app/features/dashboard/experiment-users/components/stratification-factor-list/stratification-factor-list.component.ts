@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ImportStratificationsComponent } from './import-stratifications/import-stratifications.component';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import * as clonedeep from 'lodash.clonedeep';
+import { DeleteStratificationComponent } from './delete-stratification/delete-stratification.component';
 
 @Component({
   selector: 'users-stratification-factor-list',
@@ -26,16 +28,28 @@ export class StratificationComponent implements OnInit {
 
   openImportStratificationsDialog() {
     this.dialog.open(ImportStratificationsComponent, {
-      panelClass: 'import-segment-modal',
+      panelClass: 'import-stratification-modal',
     });
   }
 
   handleDownload(rowData, rowIndex) {
     console.log('handle download:' + rowIndex);
     console.log(rowData);
+    // Add code of further actions after downloading strata factor details
   }
 
-  handleDelete(rowIndex) {
-    console.log('handle delete:' + rowIndex);
+  handleDelete(rowData, rowIndex) {
+    console.log(rowData);
+    const dialogRef = this.dialog.open(DeleteStratificationComponent, {
+      panelClass: 'import-stratification-modal',
+      data: { factor: clonedeep(rowData.factor) },
+    });
+
+    dialogRef.afterClosed().subscribe((isDeleteButtonClicked) => {
+      if (isDeleteButtonClicked) {
+        console.log('handle delete:' + rowIndex);
+        // Add code of further actions after deleting strata factor details
+      }
+    });
   }
 }

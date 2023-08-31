@@ -55,6 +55,8 @@
 @import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
 @import './app/features/dashboard/home/components/modal/state-time-logs/state-time-logs.theme.scss';
 @import './app/features/dashboard/segments/components/modal/import-segment/import-segment.theme.scss';
+@import './app/features/dashboard/experiment-users/components/stratification-factor-list/import-stratifications/import-stratifications.theme.scss';
+@import './app/features/dashboard/experiment-users/components/stratification-factor-list/delete-stratification/delete-stratification.theme.scss';
 @import './app/features/dashboard/segments/components/modal/segment-experiment-list/segment-experiment-list.theme.scss';
 
 @mixin custom-components-theme($theme) {
@@ -93,6 +95,8 @@
   @include import-experiment-component-theme($theme);
   @include state-time-logs-modal-component-theme($theme);
   @include import-segment-component-theme($theme);
+  @include import-stratifications-component-theme($theme);
+  @include delete-stratifications-component-theme($theme);
   @include segment-experiment-list-modal-component-theme($theme);
 }
 
@@ -145,6 +149,7 @@
 
   .mat-dialog-container {
     padding: 0px;
+    overflow: hidden !important;
   }
 }
 

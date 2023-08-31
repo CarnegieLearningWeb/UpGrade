@@ -8,6 +8,7 @@ import { PreviewUserComponent } from './components/preview-user/preview-user.com
 import { ExperimentUsersComponent } from './components/experiment-users/experiment-users.component';
 import { StratificationComponent } from './components/stratification-factor-list/stratification-factor-list.component';
 import { ImportStratificationsComponent } from './components/stratification-factor-list/import-stratifications/import-stratifications.component';
+import { DeleteStratificationComponent } from './components/stratification-factor-list/delete-stratification/delete-stratification.component';
 
 @NgModule({
   declarations: [
@@ -16,6 +17,7 @@ import { ImportStratificationsComponent } from './components/stratification-fact
     StratificationComponent,
     ExperimentUsersComponent,
     ImportStratificationsComponent,
+    DeleteStratificationComponent,
   ],
   imports: [CommonModule, SharedModule, UserRoutingModule],
 })

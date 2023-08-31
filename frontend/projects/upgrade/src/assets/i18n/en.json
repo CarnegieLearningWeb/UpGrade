@@ -402,6 +402,8 @@
   "stratifications.import-stratification.text": "Import Stratification(s)",
   "stratifications.import-stratification.message.text": "Select the CSV file(s) to Import Stratification.",
   "stratifications.import-stratification.error.message.text": "Invalid Stratification CSV data",
+  "stratifications.delete-stratification.text": "Delete Stratification",
+  "stratifications.delete-stratification.message.text": "Are you sure you want to delete the Stratification",
   "metrics.subtitle.text": "Manage metrics here",
   "metric.delete-metric.message.text": "Type the metric path separated by space to confirm deletion:",
   "metric.delete-metric.input-placeholder.text": "Metric path",
