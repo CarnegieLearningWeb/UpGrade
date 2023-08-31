@@ -58,11 +58,10 @@ describe('User Controller Testing', () => {
     await request(app)
       .post('/api/users/')
       .send({
-        id: 'string',
         email: 'email@email.com',
         firstName: 'firstname',
         lastName: 'lastname',
-        imageUrl: 'imgurl',
+        imageUrl: 'https://image.com',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -74,7 +73,7 @@ describe('User Controller Testing', () => {
     await request(app)
       .post('/api/users/details')
       .send({
-        firstNamr: 'firstname',
+        firstName: 'firstname',
         lastName: 'lastname',
         email: 'email@email.com',
         role: 'admin',

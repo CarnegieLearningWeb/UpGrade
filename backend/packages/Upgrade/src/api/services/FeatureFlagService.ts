@@ -13,6 +13,7 @@ import {
 } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { SERVER_ERROR } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
 
 @Service()
 export class FeatureFlagService {
@@ -26,9 +27,9 @@ export class FeatureFlagService {
     return this.featureFlagRepository.find({ relations: ['variations'] });
   }
 
-  public create(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
+  public create(flagDTO: FeatureFlagValidation, logger: UpgradeLogger): Promise<FeatureFlag> {
     logger.info({ message: 'Create a new feature flag' });
-    return this.addFeatureFlagInDB(flag, logger);
+    return this.addFeatureFlagInDB(this.featureFlagValidatorToFlag(flagDTO), logger);
   }
 
   public getTotalCount(): Promise<number> {
@@ -86,10 +87,10 @@ export class FeatureFlagService {
     return updatedState;
   }
 
-  public update(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
-    logger.info({ message: `Update a Feature Flag => ${flag.toString()}` });
+  public update(flagDTO: FeatureFlagValidation, logger: UpgradeLogger): Promise<FeatureFlag> {
+    logger.info({ message: `Update a Feature Flag => ${flagDTO.toString()}` });
     // TODO add entry in log of updating feature flag
-    return this.updateFeatureFlagInDB(flag, logger);
+    return this.updateFeatureFlagInDB(this.featureFlagValidatorToFlag(flagDTO), logger);
   }
 
   private async addFeatureFlagInDB(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
@@ -256,5 +257,26 @@ export class FeatureFlagService {
     const stringConcat = searchString.join(',');
     const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
     return searchStringConcatenated;
+  }
+
+  private featureFlagValidatorToFlag(flagDTO: FeatureFlagValidation) {
+    const featureFlag = new FeatureFlag();
+    featureFlag.name = flagDTO.name;
+    featureFlag.description = flagDTO.description;
+    featureFlag.id = flagDTO.id;
+    featureFlag.key = flagDTO.key;
+    featureFlag.status = flagDTO.status;
+    featureFlag.variationType = flagDTO.variationType;
+    featureFlag.variations = flagDTO.variations?.map(variationDTO => {
+      const featureFlagVariation = new FlagVariation();
+      featureFlagVariation.name = variationDTO.name;
+      featureFlagVariation.id = variationDTO.id;
+      featureFlagVariation.defaultVariation = variationDTO.defaultVariation;
+      featureFlagVariation.value = variationDTO.value;
+      featureFlagVariation.description = variationDTO.description;
+      featureFlagVariation.featureFlag = featureFlag;
+      return featureFlagVariation;
+    });
+    return featureFlag
   }
 }

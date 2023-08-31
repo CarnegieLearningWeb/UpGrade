@@ -40,7 +40,7 @@ export class ScheduledJobsController {
    */
   @Post('/start')
   public async startExperiment(
-    @Body({ validate: { validationError: { target: true, value: true } } })
+    @Body({ validate: true })
     scheduledParams: ScheduledJobsParamsValidator,
     @Req() request: AppRequest
   ): Promise<any> {
@@ -76,7 +76,7 @@ export class ScheduledJobsController {
    */
   @Post('/end')
   public async endExperiment(
-    @Body({ validate: { validationError: { target: true, value: true } } })
+    @Body({ validate: true })
     scheduledParams: ScheduledJobsParamsValidator,
     @Req() request: AppRequest
   ): Promise<any> {
