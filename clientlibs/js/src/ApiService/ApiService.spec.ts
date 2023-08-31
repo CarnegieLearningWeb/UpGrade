@@ -37,12 +37,15 @@ describe('ApiService', () => {
 
   describe('#init', () => {
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/init`;
-    const expectedHeaders = {
-      'Client-source': 'browser',
-      'Content-Type': 'application/json',
-      'Session-Id': 'testClientSessionId',
-      URL: expectedUrl,
-      Authorization: 'Bearer testToken',
+    const expectedOptions = {
+      headers: {
+        'Client-source': 'browser',
+        'Content-Type': 'application/json',
+        'Session-Id': 'testClientSessionId',
+        URL: expectedUrl,
+        Authorization: 'Bearer testToken',
+      },
+      withCredentials: false,
     };
 
     it('should call sendRequest with just id', async () => {
@@ -52,9 +55,7 @@ describe('ApiService', () => {
 
       await apiService.init();
 
-      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, {
-        headers: expectedHeaders,
-      });
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, expectedOptions);
     });
 
     it('should call sendRequest with id and group', async () => {
@@ -68,9 +69,7 @@ describe('ApiService', () => {
 
       await apiService.init(mockGroup);
 
-      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, {
-        headers: expectedHeaders,
-      });
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, expectedOptions);
     });
 
     it('should call sendRequest with id and workingGroup', async () => {
@@ -84,9 +83,7 @@ describe('ApiService', () => {
 
       await apiService.init(undefined, mockWorkingGroup);
 
-      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, {
-        headers: expectedHeaders,
-      });
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, expectedOptions);
     });
 
     it('should call sendRequest with id, group, and workingGroup', async () => {
@@ -104,20 +101,21 @@ describe('ApiService', () => {
 
       await apiService.init(mockGroup, mockWorkingGroup);
 
-      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, {
-        headers: expectedHeaders,
-      });
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, expectedOptions);
     });
   });
 
   describe('#setGroupMembership', () => {
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/groupmembership`;
-    const expectedHeaders = {
-      'Client-source': 'browser',
-      'Content-Type': 'application/json',
-      'Session-Id': 'testClientSessionId',
-      URL: expectedUrl,
-      Authorization: 'Bearer testToken',
+    const expectedOptions = {
+      headers: {
+        'Client-source': 'browser',
+        'Content-Type': 'application/json',
+        'Session-Id': 'testClientSessionId',
+        URL: expectedUrl,
+        Authorization: 'Bearer testToken',
+      },
+      withCredentials: false,
     };
 
     it('should call sendRequest with id and group', async () => {
@@ -131,21 +129,22 @@ describe('ApiService', () => {
 
       await apiService.setGroupMembership(mockGroup);
 
-      expect(mockHttpClient.doPatch).toHaveBeenCalledWith(expectedUrl, requestBody, {
-        headers: expectedHeaders,
-      });
+      expect(mockHttpClient.doPatch).toHaveBeenCalledWith(expectedUrl, requestBody, expectedOptions);
     });
   });
 
   describe('#setWorkingGroup', () => {
     //mimic setGroupMembership tests
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/workinggroup`;
-    const expectedHeaders = {
-      'Client-source': 'browser',
-      'Content-Type': 'application/json',
-      'Session-Id': 'testClientSessionId',
-      URL: expectedUrl,
-      Authorization: 'Bearer testToken',
+    const expectedOptions = {
+      headers: {
+        'Client-source': 'browser',
+        'Content-Type': 'application/json',
+        'Session-Id': 'testClientSessionId',
+        URL: expectedUrl,
+        Authorization: 'Bearer testToken',
+      },
+      withCredentials: false,
     };
 
     it('should call sendRequest with id and workingGroup', async () => {
@@ -159,20 +158,21 @@ describe('ApiService', () => {
 
       await apiService.setWorkingGroup(mockWorkingGroup);
 
-      expect(mockHttpClient.doPatch).toHaveBeenCalledWith(expectedUrl, requestBody, {
-        headers: expectedHeaders,
-      });
+      expect(mockHttpClient.doPatch).toHaveBeenCalledWith(expectedUrl, requestBody, expectedOptions);
     });
   });
 
   describe('#setAltUserIds', () => {
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/useraliases`;
-    const expectedHeaders = {
-      'Client-source': 'browser',
-      'Content-Type': 'application/json',
-      'Session-Id': 'testClientSessionId',
-      URL: expectedUrl,
-      Authorization: 'Bearer testToken',
+    const expectedOptions = {
+      headers: {
+        'Client-source': 'browser',
+        'Content-Type': 'application/json',
+        'Session-Id': 'testClientSessionId',
+        URL: expectedUrl,
+        Authorization: 'Bearer testToken',
+      },
+      withCredentials: false,
     };
 
     it('should call sendRequest with id and altUserIds', async () => {
@@ -184,20 +184,21 @@ describe('ApiService', () => {
 
       await apiService.setAltUserIds(mockAliases);
 
-      expect(mockHttpClient.doPatch).toHaveBeenCalledWith(expectedUrl, requestBody, {
-        headers: expectedHeaders,
-      });
+      expect(mockHttpClient.doPatch).toHaveBeenCalledWith(expectedUrl, requestBody, expectedOptions);
     });
   });
 
   describe('#getAllExperimentConditions', () => {
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/assign`;
-    const expectedHeaders = {
-      'Client-source': 'browser',
-      'Content-Type': 'application/json',
-      'Session-Id': 'testClientSessionId',
-      URL: expectedUrl,
-      Authorization: 'Bearer testToken',
+    const expectedOptions = {
+      headers: {
+        'Client-source': 'browser',
+        'Content-Type': 'application/json',
+        'Session-Id': 'testClientSessionId',
+        URL: expectedUrl,
+        Authorization: 'Bearer testToken',
+      },
+      withCredentials: false,
     };
 
     it('should call sendRequest with id and context', async () => {
@@ -208,20 +209,21 @@ describe('ApiService', () => {
 
       await apiService.getAllExperimentConditions();
 
-      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, {
-        headers: expectedHeaders,
-      });
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, expectedOptions);
     });
   });
 
   describe('#log', () => {
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/log`;
-    const expectedHeaders = {
-      'Client-source': 'browser',
-      'Content-Type': 'application/json',
-      'Session-Id': 'testClientSessionId',
-      URL: expectedUrl,
-      Authorization: 'Bearer testToken',
+    const expectedOptions = {
+      headers: {
+        'Client-source': 'browser',
+        'Content-Type': 'application/json',
+        'Session-Id': 'testClientSessionId',
+        URL: expectedUrl,
+        Authorization: 'Bearer testToken',
+      },
+      withCredentials: false,
     };
 
     it('should call sendRequest with userId and logDataInput value', async () => {
@@ -250,20 +252,21 @@ describe('ApiService', () => {
 
       await apiService.log(mockLogData);
 
-      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, mockLogDataInput, {
-        headers: expectedHeaders,
-      });
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, mockLogDataInput, expectedOptions);
     });
   });
 
   describe('#logCaliper', () => {
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/log/caliper`;
-    const expectedHeaders = {
-      'Client-source': 'browser',
-      'Content-Type': 'application/json',
-      'Session-Id': 'testClientSessionId',
-      URL: expectedUrl,
-      Authorization: 'Bearer testToken',
+    const expectedOptions = {
+      headers: {
+        'Client-source': 'browser',
+        'Content-Type': 'application/json',
+        'Session-Id': 'testClientSessionId',
+        URL: expectedUrl,
+        Authorization: 'Bearer testToken',
+      },
+      withCredentials: false,
     };
 
     it('should call sendRequest with caliper envelope value', async () => {
@@ -276,9 +279,7 @@ describe('ApiService', () => {
 
       await apiService.logCaliper(mockLogData);
 
-      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, mockLogData, {
-        headers: expectedHeaders,
-      });
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, mockLogData, expectedOptions);
     });
   });
 });

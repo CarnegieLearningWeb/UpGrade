@@ -12,6 +12,7 @@ import Assignment from '../Assignment/Assignment';
 import ApiService from '../ApiService/ApiService';
 import { DataService } from '../DataService/DataService';
 import { IConfigOptions } from './UpGradeClient.types';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * UpGradeClient is the main class for interacting with the UpGrade API.
@@ -75,7 +76,7 @@ export default class UpgradeClient {
       userId: userId,
       hostURL: hostUrl,
       context: context,
-      clientSessionId: options?.clientSessionId,
+      clientSessionId: options?.clientSessionId || uuidv4(),
       token: options?.token,
       httpClient: options?.httpClient,
     };

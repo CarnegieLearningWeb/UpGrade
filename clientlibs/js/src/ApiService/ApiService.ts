@@ -12,7 +12,6 @@ import {
 import { DataService } from 'DataService/DataService';
 import { IApiServiceRequestParams, IEndpoints } from './ApiService.types';
 import { IMarkDecisionPointParams } from 'UpGradeClient/UpGradeClient.types';
-import { v4 as uuidv4 } from 'uuid';
 
 // this variable is used by webpack to replace the value of USE_CUSTOM_HTTP_CLIENT with true or false to create two different builds
 declare const USE_CUSTOM_HTTP_CLIENT: boolean;
@@ -32,7 +31,7 @@ export default class ApiService {
     this.context = config.context;
     this.hostUrl = config.hostURL;
     this.token = config.token;
-    this.clientSessionId = config.clientSessionId || uuidv4();
+    this.clientSessionId = config.clientSessionId;
     this.userId = config.userId;
     this.apiVersion = config.apiVersion;
     this.api = {
