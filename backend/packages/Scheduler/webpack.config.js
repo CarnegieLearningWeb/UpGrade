@@ -8,7 +8,7 @@ module.exports = {
   context: __dirname,
   mode: env,
   entry: { schedule: './src/schedule/index.ts' },
-  devtool: env ? 'cheap-module-eval-source-map' : 'source-map',
+  devtool: env ? 'eval-cheap-module-source-map' : 'source-map',
   resolve: {
     extensions: ['.mjs', '.json', '.ts'],
     symlinks: false,
