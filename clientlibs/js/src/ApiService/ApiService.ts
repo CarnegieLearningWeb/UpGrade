@@ -12,7 +12,7 @@ import {
 import { DataService } from 'DataService/DataService';
 import { IApiServiceRequestParams, IEndpoints } from './ApiService.types';
 import { IMarkDecisionPointParams } from 'UpGradeClient/UpGradeClient.types';
-import * as uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 // this variable is used by webpack to replace the value of USE_CUSTOM_HTTP_CLIENT with true or false to create two different builds
 declare const USE_CUSTOM_HTTP_CLIENT: boolean;
@@ -32,7 +32,7 @@ export default class ApiService {
     this.context = config.context;
     this.hostUrl = config.hostURL;
     this.token = config.token;
-    this.clientSessionId = config.clientSessionId;
+    this.clientSessionId = config.clientSessionId || uuidv4();
     this.userId = config.userId;
     this.apiVersion = config.apiVersion;
     this.api = {
@@ -90,7 +90,7 @@ export default class ApiService {
     const options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig = {
       headers: {
         'Content-Type': 'application/json',
-        'Session-Id': this.clientSessionId || uuid.v4(), // set this here? Do we need to require a clientSessionId?
+        'Session-Id': this.clientSessionId,
         'Client-source': IS_BROWSER ? 'browser' : 'node',
         URL: url,
       },
