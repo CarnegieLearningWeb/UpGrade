@@ -62,7 +62,13 @@ import { Level } from '../models/Level';
 import { LevelRepository } from '../repositories/LevelRepository';
 import { LevelCombinationElement } from '../models/LevelCombinationElement';
 import { LevelCombinationElementRepository } from '../repositories/LevelCombinationElements';
-import { ConditionValidator, ExperimentDTO, FactorValidator, PartitionValidator, ParticipantsValidator } from '../DTO/ExperimentDTO';
+import {
+  ConditionValidator,
+  ExperimentDTO,
+  FactorValidator,
+  PartitionValidator,
+  ParticipantsValidator,
+} from '../DTO/ExperimentDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
@@ -170,7 +176,7 @@ export class ExperimentService {
       .whereInIds(expIds);
 
     if (sortParams) {
-      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
+      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(`LOWER(experiment.${sortParams.key})`, sortParams.sortAs);
     }
     const experiments = await queryBuilderToReturn.getMany();
     return experiments.map((experiment) => {
@@ -780,7 +786,7 @@ export class ExperimentService {
         this.checkConditionCodeDefault(conditions);
 
         // creating condition docs
-        const conditionDocToSave: Array<Partial<Omit <ExperimentCondition, 'levelCombinationElements'>>> =
+        const conditionDocToSave: Array<Partial<Omit<ExperimentCondition, 'levelCombinationElements'>>> =
           (conditions &&
             conditions.length > 0 &&
             conditions.map((condition: ConditionValidator) => {
@@ -819,7 +825,7 @@ export class ExperimentService {
                 })
               );
               decisionPoint.id = decisionPoint.id || uuid();
-              return { ...decisionPoint, experiment: experimentDoc }
+              return { ...decisionPoint, experiment: experimentDoc };
             })) ||
           [];
 
@@ -1540,7 +1546,7 @@ export class ExperimentService {
     return { ...experiment, factors: updatedFactors, conditionPayloads: updatedConditionPayloads };
   }
 
-  private includeExcludeSegmentCreation (
+  private includeExcludeSegmentCreation(
     experimentSegment: ParticipantsValidator,
     experimentDocSegmentData: ExperimentSegmentInclusion | ExperimentSegmentExclusion,
     experimentId: string,
@@ -1641,7 +1647,7 @@ export class ExperimentService {
       const array = condition.levelCombinationElements.map((elements) => {
         elements.id = elements.id || uuid();
         // elements.condition = condition;
-        return { ...elements, condition: condition }
+        return { ...elements, condition: condition };
       });
       allLevelCombinationElements.push(...array);
     });
