@@ -314,6 +314,16 @@ class StateTimeLogValidator {
   public timeLog: Date;
 }
 
+class StratificationFactor {
+  @IsOptional()
+  @IsString()
+  public id?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  public stratificationFactor: string;
+}
+
 export class ExperimentDTO {
   @IsString()
   @IsOptional()
@@ -353,6 +363,10 @@ export class ExperimentDTO {
   @IsEnum(POST_EXPERIMENT_RULE)
   public postExperimentRule: POST_EXPERIMENT_RULE;
 
+  @IsOptional()
+  @IsEnum(ASSIGNMENT_ALGORITHM)
+  public assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
+
   // TODO add conditional validity here ie endOn is null
   @IsOptional()
   public enrollmentCompleteCondition?: Partial<IEnrollmentCompleteCondition>;
@@ -384,16 +398,13 @@ export class ExperimentDTO {
   public logging: boolean;
 
   @IsNotEmpty()
-  @IsEnum(ASSIGNMENT_ALGORITHM)
-  public assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
-
-  @IsOptional()
-  @IsString()
-  public stratificationFactor?: string;
-
-  @IsNotEmpty()
   @IsEnum(FILTER_MODE)
   public filterMode: FILTER_MODE;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => StratificationFactor)
+  public stratificationFactor?: StratificationFactor;
 
   @IsNotEmpty()
   @IsArray()

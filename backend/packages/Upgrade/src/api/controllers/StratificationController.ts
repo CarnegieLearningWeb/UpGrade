@@ -4,6 +4,8 @@ import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { StratificationService } from '../services/StratificationService';
+import { FactorStrata, StratificationInputValidator } from './validators/StratificationValidator';
+import { StratificationFactor } from '../models/StratificationFactor';
 
 const fs = require("fs");
 const { parse } = require("csv-parse");
@@ -205,7 +207,7 @@ export class StratificationController {
    *            description: Authorization Required Error
    */
   @Get()
-  public async getAllStratification(@Req() request: AppRequest): Promise<StratificationResult[]> {
+  public async getAllStratification(@Req() request: AppRequest): Promise<FactorStrata[]> {
     return this.stratificatonService.getAllStratification(request.logger);
   }
 
@@ -238,10 +240,10 @@ export class StratificationController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Get('/download/:factor')
-  public getStratificationById(
+  public getStratificationByFactorId(
     @Param('factor') factor: string,
     @Req() request: AppRequest
-  ): Promise<StratificationResult> {
+  ): Promise<FactorStrata> {
     if (!factor) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : stratification Factor should not be null.'));
     }
@@ -287,18 +289,18 @@ export class StratificationController {
    */
   @Post()
   public insertStratification(
-    @Body() temp: any,
+    @Body({ validate: false }) temp: StratificationInputValidator[],
     @Req() request: AppRequest,
   ): Promise<UserStratificationFactor[]> {
 
     // read csv file
-    const { file } = request;
-    fs.createReadStream(file)
-      .pipe(parse({ delimiter: ",", from_line: 2 }))
-      .on("data", function (row) {
-      console.log(row);
-    })
-    return this.stratificatonService.insertStratification(request.logger);
+    // const { file } = request;
+    // fs.createReadStream(file)
+    //   .pipe(parse({ delimiter: ",", from_line: 2 }))
+    //   .on("data", function (row) {
+    //   console.log(row); 
+    // })
+    return this.stratificatonService.insertStratification(temp, request.logger);
   }
 
   /**
@@ -331,7 +333,7 @@ export class StratificationController {
   public deleteStratification(
     @Param('factor') stratificationFactor: string,
     @Req() request: AppRequest
-  ): Promise<StratificationResult> {
+  ): Promise<StratificationFactor> {
     if (!stratificationFactor) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : stratification Factor should not be null.'));
     }
