@@ -64,6 +64,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     this.allExperimentsSub = this.experimentService.experiments$.subscribe((allExperiments) => {
       this.allExperiments = new MatTableDataSource();
       this.allExperiments.data = [...allExperiments];
+      this.allExperiments.sortingDataAccessor = (item, property) =>
+        property === 'name' ? item.name.toLowerCase() : item[property];
       this.allExperiments.sort = this.sort;
       this.applyFilter(this.searchValue);
     });
