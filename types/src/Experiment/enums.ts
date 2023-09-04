@@ -16,6 +16,11 @@ export enum CONDITION_ORDER {
   ORDERED_ROUND_ROBIN = 'ordered round robin',
 }
 
+export enum ASSIGNMENT_ALGORITHM {
+  RANDOM = 'random',
+  STRATIFIED_RANDOM_SAMPLING = 'stratified random sampling',
+}
+
 export enum POST_EXPERIMENT_RULE {
   CONTINUE = 'continue',
   // TO DO : Remove revert when frontend and backend integrated with assign
