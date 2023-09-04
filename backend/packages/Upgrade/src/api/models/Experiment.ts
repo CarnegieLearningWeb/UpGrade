@@ -112,7 +112,7 @@ export class Experiment extends BaseModel {
 
   @Column({
     type: 'enum',
-    enum: ASSIGNMENT_ALGORITHM
+    enum: ASSIGNMENT_ALGORITHM,
   })
   public assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
 
@@ -127,8 +127,10 @@ export class Experiment extends BaseModel {
     default: FILTER_MODE.INCLUDE_ALL,
   })
   public filterMode: FILTER_MODE;
-  
-  @ManyToOne(() => StratificationFactor, (stratificationFactor) => stratificationFactor.experiment, { onDelete: 'CASCADE' })
+
+  @ManyToOne(() => StratificationFactor, (stratificationFactor) => stratificationFactor.experiment, {
+    onDelete: 'CASCADE',
+  })
   public stratificationFactor: StratificationFactor;
 
   @OneToMany(() => ExperimentCondition, (condition) => condition.experiment)

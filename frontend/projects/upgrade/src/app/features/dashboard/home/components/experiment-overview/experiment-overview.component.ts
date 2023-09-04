@@ -9,7 +9,13 @@ import {
   ElementRef,
   OnDestroy,
 } from '@angular/core';
-import { ASSIGNMENT_UNIT, CONDITION_ORDER, CONSISTENCY_RULE, EXPERIMENT_STATE } from 'upgrade_types';
+import {
+  ASSIGNMENT_ALGORITHM,
+  ASSIGNMENT_UNIT,
+  CONDITION_ORDER,
+  CONSISTENCY_RULE,
+  EXPERIMENT_STATE,
+} from 'upgrade_types';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -55,6 +61,11 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     { value: CONDITION_ORDER.ORDERED_ROUND_ROBIN },
   ];
   designTypes = [{ value: ExperimentDesignTypes.SIMPLE }, { value: ExperimentDesignTypes.FACTORIAL }];
+  assignmentAlgorithms = [
+    { value: ASSIGNMENT_ALGORITHM.RANDOM },
+    { value: ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING },
+  ];
+  stratificationFactors = [{ value: 'factor1' }, { value: 'factor2' }];
 
   // Used to control chips
   isChipSelectable = true;
@@ -98,6 +109,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         consistencyRule: [null, Validators.required],
         conditionOrder: [null],
         designType: [ExperimentDesignTypes.SIMPLE, Validators.required],
+        assignmentAlgorithm: [null, Validators.required],
+        stratificationFactor: [null],
         context: [null, Validators.required],
         tags: [[]],
         logging: [false],
@@ -166,6 +179,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           consistencyRule: this.experimentInfo.consistencyRule,
           conditionOrder: this.experimentInfo.conditionOrder,
           designType: this.experimentInfo.type,
+          assignmentAlgorithm: this.experimentInfo.assignmentAlgorithm,
+          stratificationFactor: this.experimentInfo.stratificationFactor,
           context: this.currentContext,
           tags: this.experimentInfo.tags,
           logging: this.experimentInfo.logging,
@@ -284,6 +299,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         conditionOrder,
         context,
         designType,
+        assignmentAlgorithm,
+        stratificationFactor,
         tags,
         logging,
       } = this.overviewForm.value;
@@ -296,6 +313,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         group: groupType,
         type: designType,
         context: [context],
+        assignmentAlgorithm: assignmentAlgorithm,
+        stratificationFactor: stratificationFactor,
         tags,
         logging,
       };
@@ -322,6 +341,10 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   get unitOfAssignmentValue() {
     return this.overviewForm.get('unitOfAssignment').value;
+  }
+
+  get assignmentAlgorithmValue() {
+    return this.overviewForm.get('assignmentAlgorithm').value;
   }
 
   get contexts(): UntypedFormArray {

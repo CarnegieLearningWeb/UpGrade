@@ -63,6 +63,8 @@
   "home-global.consistency-rule.text": "Consistency Rule",
   "home-global.condition-order.text": "Condition Order",
   "home-global.design-type.text": "Design Type",
+  "home-global.assignment-algorithm.text": "Assignment Algorithm",
+  "home-global.stratification-factor.text": "Stratification Factor",
   "home-global.inclusion-criteria.text": "Inclusion Criteria",
   "home-global.post-experiment-rule.text": "Post Rule",
   "home-global.post-experiment-rule.default.text": "default",

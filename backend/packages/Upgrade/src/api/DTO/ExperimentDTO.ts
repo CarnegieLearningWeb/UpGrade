@@ -33,6 +33,7 @@ import {
   PAYLOAD_TYPE,
   REPEATED_MEASURE,
   EXPERIMENT_TYPE,
+  ASSIGNMENT_ALGORITHM,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 
@@ -381,6 +382,14 @@ export class ExperimentDTO {
   @IsNotEmpty()
   @IsBoolean()
   public logging: boolean;
+
+  @IsNotEmpty()
+  @IsEnum(ASSIGNMENT_ALGORITHM)
+  public assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
+
+  @IsOptional()
+  @IsString()
+  public stratificationFactor?: string;
 
   @IsNotEmpty()
   @IsEnum(FILTER_MODE)

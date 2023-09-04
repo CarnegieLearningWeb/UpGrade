@@ -30,3 +30,10 @@ export interface PreviewUsersState extends EntityState<PreviewUsers> {
 export interface State extends AppState {
   previewUsers: PreviewUsersState;
 }
+
+export interface StratificationFactors {
+  userId: string;
+  factor: string;
+  value: Record<string, number>;
+  nonApplicable: number;
+}

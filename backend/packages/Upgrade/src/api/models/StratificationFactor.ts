@@ -12,7 +12,10 @@ export class StratificationFactor extends BaseModel {
   @Column()
   public stratificationFactorName: string;
 
-  @OneToMany(() => UserStratificationFactor, (userStratificationFactor) => userStratificationFactor.stratificationFactor)
+  @OneToMany(
+    () => UserStratificationFactor,
+    (userStratificationFactor) => userStratificationFactor.stratificationFactor
+  )
   @Type(() => UserStratificationFactor)
   public userStratificationFactor: UserStratificationFactor[];
 
