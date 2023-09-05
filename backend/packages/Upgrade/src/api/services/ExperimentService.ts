@@ -703,8 +703,17 @@ export class ExperimentService {
           // updatedAt,
           experimentSegmentInclusion,
           experimentSegmentExclusion,
+          stratificationFactor,
           ...expDoc
         } = experiment;
+
+        // create stratificationFactor is not found
+        if (!stratificationFactor.id) {
+          stratificationFactor.id = uuid()
+          await transactionalEntityManager
+            .getRepository(StratificationFactor)
+            .save(stratificationFactor);
+        }
 
         let experimentDoc: Experiment;
         try {
@@ -1133,11 +1142,12 @@ export class ExperimentService {
       // Check for conditionCode is 'default' then return error:
       this.checkConditionCodeDefault(conditions);
 
-      // create stratificationFactor is now found
+      // create stratificationFactor is not found
       if (!stratificationFactor.id) {
+        stratificationFactor.id = uuid()
         await transactionalEntityManager
           .getRepository(StratificationFactor)
-          .save({ ...stratificationFactor, id: uuid() });
+          .save(stratificationFactor);
       }
 
       // saving experiment docs
