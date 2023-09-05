@@ -154,6 +154,7 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.factors', 'factors')
       .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('queries.metric', 'metric')
+      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
@@ -198,6 +199,7 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experiment.factors', 'factors')
       .leftJoinAndSelect('factors.levels', 'levels')
+      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
@@ -703,16 +705,15 @@ export class ExperimentService {
           // updatedAt,
           experimentSegmentInclusion,
           experimentSegmentExclusion,
-          stratificationFactor,
           ...expDoc
         } = experiment;
 
         // create stratificationFactor is not found
-        if (!stratificationFactor.id) {
-          stratificationFactor.id = uuid()
+        if (!expDoc.stratificationFactor.id) {
+          expDoc.stratificationFactor.id = uuid()
           await transactionalEntityManager
             .getRepository(StratificationFactor)
-            .save(stratificationFactor);
+            .save(expDoc.stratificationFactor);
         }
 
         let experimentDoc: Experiment;
@@ -1136,18 +1137,17 @@ export class ExperimentService {
         experimentSegmentInclusion,
         experimentSegmentExclusion,
         conditionPayloads,
-        stratificationFactor,
         ...expDoc
       } = experiment;
       // Check for conditionCode is 'default' then return error:
       this.checkConditionCodeDefault(conditions);
 
       // create stratificationFactor is not found
-      if (!stratificationFactor.id) {
-        stratificationFactor.id = uuid()
+      if (!expDoc.stratificationFactor.id) {
+        expDoc.stratificationFactor.id = uuid();
         await transactionalEntityManager
           .getRepository(StratificationFactor)
-          .save(stratificationFactor);
+          .save(expDoc.stratificationFactor);
       }
 
       // saving experiment docs
