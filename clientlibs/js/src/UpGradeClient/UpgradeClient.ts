@@ -7,6 +7,7 @@ import {
   CaliperEnvelope,
   IExperimentAssignmentv5,
   MARKED_DECISION_POINT_STATUS,
+  IUserAliases,
 } from 'upgrade_types';
 import Assignment from '../Assignment/Assignment';
 import ApiService from '../ApiService/ApiService';
@@ -433,7 +434,7 @@ export default class UpgradeClient {
    * const logResponse: ILog[] = await upgradeClient.metrics(metrics);
    * ```
    */
-  async log(value: ILogInput[]): Promise<UpGradeClientInterfaces.ILog[]> {
+  async log(value: ILogInput[]): Promise<UpGradeClientInterfaces.ILogResponse[]> {
     return await this.apiService.log(value);
   }
 
@@ -454,7 +455,7 @@ export default class UpgradeClient {
  * 
  * ```
  */
-  async logCaliper(value: CaliperEnvelope): Promise<UpGradeClientInterfaces.ILog[]> {
+  async logCaliper(value: CaliperEnvelope): Promise<UpGradeClientInterfaces.ILogResponse[]> {
     return await this.apiService.logCaliper(value);
   }
 
@@ -468,7 +469,7 @@ export default class UpgradeClient {
    * const setAltUserIdsResponse: IExperimentUserAliases[] = await upgradeClient.setAltUserIds(aliases);
    * ```
    */
-  async setAltUserIds(altUserIds: string[]): Promise<UpGradeClientInterfaces.IExperimentUserAliases> {
+  async setAltUserIds(altUserIds: string[]): Promise<IUserAliases> {
     return await this.apiService.setAltUserIds(altUserIds);
   }
 
