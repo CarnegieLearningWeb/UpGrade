@@ -12,7 +12,6 @@ export interface IEndpoints {
   markDecisionPoint: string;
   setGroupMemberShip: string;
   setWorkingGroup: string;
-  failedExperimentPoint: string;
   getAllFeatureFlag: string;
   log: string;
   logCaliper: string;

@@ -41,7 +41,6 @@ export default class ApiService {
       markDecisionPoint: `${this.hostUrl}/api/${this.apiVersion}/mark`,
       setGroupMemberShip: `${this.hostUrl}/api/${this.apiVersion}/groupmembership`,
       setWorkingGroup: `${this.hostUrl}/api/${this.apiVersion}/workinggroup`,
-      failedExperimentPoint: `${this.hostUrl}/api/${this.apiVersion}/failed`,
       getAllFeatureFlag: `${this.hostUrl}/api/${this.apiVersion}/featureflag`,
       log: `${this.hostUrl}/api/${this.apiVersion}/log`,
       logCaliper: `${this.hostUrl}/api/${this.apiVersion}/log/caliper`,

@@ -80,9 +80,14 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
       const statusCode = response.status;
 
       if (statusCode > 400 && statusCode < 500) {
-        // If response status code is in the skipRetryOnStatusCodes, don't attempt retry
-        if (this.skipRetryOnStatusCodes.includes(statusCode)) {
-          return responseData; // TODO: error
+        // If response status code is in the skipRetryOnStatusCodes, or we've run out of retries, don't attempt retry
+        if (this.skipRetryOnStatusCodes.includes(statusCode) || retries <= 0) {
+          throw new Error(
+            JSON.stringify({
+              statusCode: statusCode,
+              response: responseData,
+            })
+          );
         }
 
         if (retries > 0) {
@@ -96,8 +101,6 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
             retries: retries - 1,
             backOff: backOff * 2,
           });
-        } else {
-          return responseData;
         }
       } else {
         return responseData;
