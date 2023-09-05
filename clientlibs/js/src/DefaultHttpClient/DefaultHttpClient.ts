@@ -16,27 +16,30 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
   private skipRetryOnStatusCodes: number[] = [];
   public config: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig = null;
 
-  public async doGet(url: string, options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig): Promise<any> {
-    return this.fetchData({
+  public async doGet<ResponseType>(
+    url: string,
+    options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig
+  ): Promise<ResponseType> {
+    return await this.fetchData<ResponseType>({
       url,
       method: UpGradeClientEnums.REQUEST_METHOD.GET,
       options,
     });
   }
-  public async doPost<RequestBodyType>(
+  public async doPost<ResponseType, RequestBodyType>(
     url: string,
     body: RequestBodyType,
     options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig
-  ): Promise<any> {
-    return this.fetchData({ url, method: UpGradeClientEnums.REQUEST_METHOD.POST, body, options });
+  ): Promise<ResponseType> {
+    return await this.fetchData<ResponseType>({ url, method: UpGradeClientEnums.REQUEST_METHOD.POST, body, options });
   }
 
-  public async doPatch<RequestBodyType>(
+  public async doPatch<ResponseType, RequestBodyType>(
     url: string,
     body: RequestBodyType,
     options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig
-  ): Promise<any> {
-    return this.fetchData({ url, method: UpGradeClientEnums.REQUEST_METHOD.PATCH, body, options });
+  ): Promise<ResponseType> {
+    return await this.fetchData<ResponseType>({ url, method: UpGradeClientEnums.REQUEST_METHOD.PATCH, body, options });
   }
 
   private async wait(ms: number) {
@@ -78,8 +81,8 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
 
       if (statusCode > 400 && statusCode < 500) {
         // If response status code is in the skipRetryOnStatusCodes, don't attempt retry
-        if (this.skipRetryOnStatusCodes.includes(response.status)) {
-          return responseData;
+        if (this.skipRetryOnStatusCodes.includes(statusCode)) {
+          return responseData; // TODO: error
         }
 
         if (retries > 0) {

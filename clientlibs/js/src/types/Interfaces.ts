@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { IMetricMetaData, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
-import { UpGradeClientEnums } from './enums';
 
 export namespace UpGradeClientInterfaces {
   export interface IConfig {
@@ -51,6 +50,17 @@ export namespace UpGradeClientInterfaces {
     uniquifier: string;
   }
 
+  export interface ILogResponse {
+    createdAt?: string;
+    updatedAt?: string;
+    versionNumber?: number;
+    id: string;
+    uniquifier: string;
+    timeStamp: string;
+    data: any;
+    userId: string;
+  }
+
   export interface IMetric {
     key: string;
     type: IMetricMetaData;
@@ -59,7 +69,7 @@ export namespace UpGradeClientInterfaces {
 
   export interface IExperimentUserAliasesResponse {
     userId: string;
-    aliases: string[];
+    aliases: IExperimentUserAliases;
   }
 
   export interface IHttpClientWrapperRequestConfig {
@@ -70,16 +80,16 @@ export namespace UpGradeClientInterfaces {
   }
   export interface IHttpClientWrapper {
     config?: IHttpClientWrapperRequestConfig;
-    doGet: (url: string, options: IHttpClientWrapperRequestConfig) => unknown;
-    doPost: <UpgradeRequestBodyType>(
+    doGet: <ResponseType>(url: string, options: IHttpClientWrapperRequestConfig) => Promise<ResponseType>;
+    doPost: <ResponseType, RequestBodyType>(
       url: string,
-      body: UpgradeRequestBodyType,
+      body: RequestBodyType,
       options: IHttpClientWrapperRequestConfig
-    ) => unknown;
-    doPatch: <UpgradeRequestBodyType>(
+    ) => Promise<ResponseType>;
+    doPatch: <ResponseType, RequestBodyType>(
       url: string,
-      body: UpgradeRequestBodyType,
+      body: RequestBodyType,
       options: IHttpClientWrapperRequestConfig
-    ) => unknown;
+    ) => Promise<ResponseType>;
   }
 }
