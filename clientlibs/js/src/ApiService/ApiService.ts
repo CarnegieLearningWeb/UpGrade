@@ -112,7 +112,7 @@ export default class ApiService {
     return options;
   }
 
-  private async sendRequest<ResponseType, RequestBodyType>({
+  private sendRequest<ResponseType, RequestBodyType>({
     path,
     method,
     body,
@@ -122,19 +122,19 @@ export default class ApiService {
     const options = this.createOptions(path);
 
     if (method === UpGradeClientEnums.REQUEST_METHOD.GET) {
-      return await this.httpClient.doGet<ResponseType>(path, options);
+      return this.httpClient.doGet<ResponseType>(path, options);
     }
 
     if (method === UpGradeClientEnums.REQUEST_METHOD.POST) {
-      return await this.httpClient.doPost<ResponseType, RequestBodyType>(path, body, options);
+      return this.httpClient.doPost<ResponseType, RequestBodyType>(path, body, options);
     }
 
     if (method === UpGradeClientEnums.REQUEST_METHOD.PATCH) {
-      return await this.httpClient.doPatch<ResponseType, RequestBodyType>(path, body, options);
+      return this.httpClient.doPatch<ResponseType, RequestBodyType>(path, body, options);
     }
   }
 
-  public async init(
+  public init(
     group?: Record<string, Array<string>>,
     workingGroup?: Record<string, string>
   ): Promise<UpGradeClientInterfaces.IExperimentUser> {
@@ -156,14 +156,14 @@ export default class ApiService {
       };
     }
 
-    return await this.sendRequest<UpGradeClientInterfaces.IExperimentUser, UpGradeClientInterfaces.IExperimentUser>({
+    return this.sendRequest<UpGradeClientInterfaces.IExperimentUser, UpGradeClientInterfaces.IExperimentUser>({
       path: this.api.init,
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,
     });
   }
 
-  public async setGroupMembership(
+  public setGroupMembership(
     group: UpGradeClientInterfaces.IExperimentUserGroup
   ): Promise<UpGradeClientInterfaces.IExperimentUser> {
     const requestBody: UpGradeClientRequests.ISetGroupMembershipRequestBody = {
@@ -171,14 +171,14 @@ export default class ApiService {
       group,
     };
 
-    return await this.sendRequest<UpGradeClientInterfaces.IExperimentUser, UpGradeClientInterfaces.IExperimentUser>({
+    return this.sendRequest<UpGradeClientInterfaces.IExperimentUser, UpGradeClientInterfaces.IExperimentUser>({
       path: this.api.setGroupMemberShip,
       method: UpGradeClientEnums.REQUEST_METHOD.PATCH,
       body: requestBody,
     });
   }
 
-  public async setWorkingGroup(
+  public setWorkingGroup(
     workingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup
   ): Promise<UpGradeClientInterfaces.IExperimentUser> {
     const requestBody: UpGradeClientRequests.ISetWorkingGroupRequestBody = {
@@ -186,46 +186,42 @@ export default class ApiService {
       workingGroup,
     };
 
-    return await this.sendRequest<
-      UpGradeClientRequests.ISetWorkingGroupRequestBody,
-      UpGradeClientInterfaces.IExperimentUser
-    >({
-      path: this.api.setWorkingGroup,
-      method: UpGradeClientEnums.REQUEST_METHOD.PATCH,
-      body: requestBody,
-    });
+    return this.sendRequest<UpGradeClientRequests.ISetWorkingGroupRequestBody, UpGradeClientInterfaces.IExperimentUser>(
+      {
+        path: this.api.setWorkingGroup,
+        method: UpGradeClientEnums.REQUEST_METHOD.PATCH,
+        body: requestBody,
+      }
+    );
   }
 
-  public async setAltUserIds(altUserIds: UpGradeClientInterfaces.IExperimentUserAliases): Promise<IUserAliases> {
+  public setAltUserIds(altUserIds: UpGradeClientInterfaces.IExperimentUserAliases): Promise<IUserAliases> {
     const requestBody: UpGradeClientRequests.ISetAltIdsRequestBody = {
       userId: this.userId,
       aliases: altUserIds,
     };
 
-    return await this.sendRequest<IUserAliases, UpGradeClientRequests.ISetAltIdsRequestBody>({
+    return this.sendRequest<IUserAliases, UpGradeClientRequests.ISetAltIdsRequestBody>({
       path: this.api.altUserIds,
       method: UpGradeClientEnums.REQUEST_METHOD.PATCH,
       body: requestBody,
     });
   }
 
-  public async getAllExperimentConditions(): Promise<IExperimentAssignmentv5[]> {
+  public getAllExperimentConditions(): Promise<IExperimentAssignmentv5[]> {
     const requestBody: UpGradeClientRequests.IGetAllExperimentConditionsRequestBody = {
       userId: this.userId,
       context: this.context,
     };
 
-    return await this.sendRequest<
-      IExperimentAssignmentv5[],
-      UpGradeClientRequests.IGetAllExperimentConditionsRequestBody
-    >({
+    return this.sendRequest<IExperimentAssignmentv5[], UpGradeClientRequests.IGetAllExperimentConditionsRequestBody>({
       path: this.api.getAllExperimentConditions,
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,
     });
   }
 
-  public async markDecisionPoint({
+  public markDecisionPoint({
     site,
     target,
     condition,
@@ -263,7 +259,7 @@ export default class ApiService {
     }
 
     // send request
-    return await this.sendRequest<
+    return this.sendRequest<
       UpGradeClientInterfaces.IMarkDecisionPoint,
       UpGradeClientRequests.IMarkDecisionPointRequestBody
     >({
@@ -273,33 +269,33 @@ export default class ApiService {
     });
   }
 
-  public async log(logData: ILogInput[]): Promise<UpGradeClientInterfaces.ILogResponse[]> {
+  public log(logData: ILogInput[]): Promise<UpGradeClientInterfaces.ILogResponse[]> {
     const requestBody: UpGradeClientRequests.ILogRequestBody = {
       userId: this.userId,
       value: logData,
     };
 
-    return await this.sendRequest<UpGradeClientInterfaces.ILogResponse[], UpGradeClientInterfaces.ILog[]>({
+    return this.sendRequest<UpGradeClientInterfaces.ILogResponse[], UpGradeClientInterfaces.ILog[]>({
       path: this.api.log,
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,
     });
   }
 
-  public async logCaliper(logData: CaliperEnvelope): Promise<UpGradeClientInterfaces.ILogResponse[]> {
+  public logCaliper(logData: CaliperEnvelope): Promise<UpGradeClientInterfaces.ILogResponse[]> {
     const requestBody: CaliperEnvelope = logData;
 
-    return await this.sendRequest<UpGradeClientInterfaces.ILogResponse[], UpGradeClientInterfaces.ILog[]>({
+    return this.sendRequest<UpGradeClientInterfaces.ILogResponse[], UpGradeClientInterfaces.ILog[]>({
       path: this.api.logCaliper,
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,
     });
   }
 
-  public async addMetrics(metrics: (ISingleMetric | IGroupMetric)[]): Promise<UpGradeClientInterfaces.IMetric[]> {
+  public addMetrics(metrics: (ISingleMetric | IGroupMetric)[]): Promise<UpGradeClientInterfaces.IMetric[]> {
     const requestBody = { metricUnit: metrics };
 
-    return await this.sendRequest<UpGradeClientInterfaces.IMetric[], UpGradeClientInterfaces.IMetric[]>({
+    return this.sendRequest<UpGradeClientInterfaces.IMetric[], UpGradeClientInterfaces.IMetric[]>({
       path: this.api.addMetrics,
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,

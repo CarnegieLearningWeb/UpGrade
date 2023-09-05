@@ -9,8 +9,7 @@ import {
   MockClientAppUser,
 } from '../../../../shared/models';
 
-// import UpgradeClient, { Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser';
-import { UpgradeClient, Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser';
+import { UpgradeClient, Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser-lite';
 
 import { CaliperEnvelope, IExperimentAssignmentv5 } from 'upgrade_client_local/dist/types/src';
 import { AbstractMockAppService } from './abstract-mock-app.service';
@@ -252,22 +251,22 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
           XTest: 'test',
         },
       },
-      doGet: async (url: string, options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig): Promise<any> => {
-        return await lastValueFrom(this.angularHttpClient.get(url, options));
+      doGet: (url: string, options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig): Promise<any> => {
+        return lastValueFrom(this.angularHttpClient.get(url, options));
       },
-      doPost: async (
+      doPost: (
         url: string,
         body: any,
         options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig
       ): Promise<any> => {
-        return await lastValueFrom(this.angularHttpClient.post(url, body, options));
+        return lastValueFrom(this.angularHttpClient.post(url, body, options));
       },
-      doPatch: async (
+      doPatch: (
         url: string,
         body: any,
         options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig
       ): Promise<any> => {
-        return await lastValueFrom(this.angularHttpClient.patch(url, body, options));
+        return lastValueFrom(this.angularHttpClient.patch(url, body, options));
       },
     };
     return customHttpClient;
@@ -384,7 +383,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('User info is missing userAliases:', user);
     }
     try {
-      const useraliasesResponse: UpGradeClientInterfaces.IExperimentUserAliases =
+      const useraliasesResponse: UpGradeClientInterfaces.IExperimentUserAliasesResponse =
         await this.upgradeClient.setAltUserIds(user.userAliases);
       console.log({ useraliasesResponse });
     } catch (err) {
@@ -463,7 +462,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       },
     ];
     try {
-      const logResponse: UpGradeClientInterfaces.ILog[] = await this.upgradeClient.log(logRequest);
+      const logResponse: UpGradeClientInterfaces.ILogResponse[] = await this.upgradeClient.log(logRequest);
       console.log({ logResponse });
     } catch (err) {
       console.error(err);
