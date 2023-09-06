@@ -35,6 +35,7 @@ export const environment = {
     getAllUsers: '/users/paginated',
     userDetails: '/users/details',
     previewUsers: '/previewUsers',
+    stratification: '/stratification',
     getAllPreviewUsers: '/previewUsers/paginated',
     previewUsersAssignCondition: '/previewUsers/assign',
     allPartitions: '/experiments/partitions',

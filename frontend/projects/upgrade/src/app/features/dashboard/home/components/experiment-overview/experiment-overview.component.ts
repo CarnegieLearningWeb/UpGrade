@@ -65,7 +65,10 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     { value: ASSIGNMENT_ALGORITHM.RANDOM },
     { value: ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING },
   ];
-  stratificationFactors = [{ value: 'factor1' }, { value: 'factor2' }];
+  stratificationFactors = [
+    { id: '9bdf13e6-42c7-4f0b-9c9e-0c935219208c', stratificationFactorName: 'factor1' },
+    { id: '15811fae-f0dc-4dbc-a798-40f7bdc589cc', stratificationFactorName: 'factor2' },
+  ];
 
   // Used to control chips
   isChipSelectable = true;
@@ -180,7 +183,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           conditionOrder: this.experimentInfo.conditionOrder,
           designType: this.experimentInfo.type,
           assignmentAlgorithm: this.experimentInfo.assignmentAlgorithm,
-          stratificationFactor: this.experimentInfo.stratificationFactor,
+          stratificationFactor: this.experimentInfo.stratificationFactor?.stratificationFactorName || null,
           context: this.currentContext,
           tags: this.experimentInfo.tags,
           logging: this.experimentInfo.logging,
@@ -249,6 +252,17 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     }
   }
 
+  findStratificationFactorId(stratificationFactorName: string) {
+    let stratificationFactorId: string;
+    this.stratificationFactors.forEach((staratificationFactor) => {
+      stratificationFactorId =
+        staratificationFactor.stratificationFactorName === stratificationFactorName
+          ? staratificationFactor.id
+          : stratificationFactorId;
+    });
+    return stratificationFactorId;
+  }
+
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
@@ -304,6 +318,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         tags,
         logging,
       } = this.overviewForm.value;
+      const stratificationFactorid = this.findStratificationFactorId(stratificationFactor);
       const overviewFormData = {
         name: experimentName,
         description: description || '',
@@ -314,7 +329,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         type: designType,
         context: [context],
         assignmentAlgorithm: assignmentAlgorithm,
-        stratificationFactor: stratificationFactor,
+        stratificationFactor: { id: stratificationFactorid, stratificationFactorName: stratificationFactor },
         tags,
         logging,
       };

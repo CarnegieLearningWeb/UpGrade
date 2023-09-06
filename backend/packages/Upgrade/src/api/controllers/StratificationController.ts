@@ -7,8 +7,8 @@ import { StratificationService } from '../services/StratificationService';
 import { FactorStrata, StratificationInputValidator } from './validators/StratificationValidator';
 import { StratificationFactor } from '../models/StratificationFactor';
 
-const fs = require("fs");
-const { parse } = require("csv-parse");
+// const fs = require("fs");
+// const { parse } = require("csv-parse");
 
 /**
  * @swagger
@@ -290,15 +290,14 @@ export class StratificationController {
   @Post()
   public insertStratification(
     @Body({ validate: false }) temp: StratificationInputValidator[],
-    @Req() request: AppRequest,
+    @Req() request: AppRequest
   ): Promise<UserStratificationFactor[]> {
-
     // read csv file
     // const { file } = request;
     // fs.createReadStream(file)
     //   .pipe(parse({ delimiter: ",", from_line: 2 }))
     //   .on("data", function (row) {
-    //   console.log(row); 
+    //   console.log(row);
     // })
     return this.stratificatonService.insertStratification(temp, request.logger);
   }

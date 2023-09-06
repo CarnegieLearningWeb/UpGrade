@@ -85,7 +85,6 @@ export class StratificationService {
     logger.info({ message: `Insert stratification => ${JSON.stringify(userStratificationData, undefined, 2)}` });
 
     const createdStratificationData = await getConnection().transaction(async (transactionalEntityManager) => {
-
       const userDetails = await transactionalEntityManager.getRepository(ExperimentUser).find({
         where: { id: In(userStratificationData.map((userData) => userData.userId)) },
       });

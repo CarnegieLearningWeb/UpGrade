@@ -321,7 +321,7 @@ class StratificationFactor {
 
   @IsString()
   @IsNotEmpty()
-  public stratificationFactor: string;
+  public stratificationFactorName: string;
 }
 
 export class ExperimentDTO {

@@ -710,10 +710,8 @@ export class ExperimentService {
 
         // create stratificationFactor is not found
         if (!expDoc.stratificationFactor.id) {
-          expDoc.stratificationFactor.id = uuid()
-          await transactionalEntityManager
-            .getRepository(StratificationFactor)
-            .save(expDoc.stratificationFactor);
+          expDoc.stratificationFactor.id = uuid();
+          await transactionalEntityManager.getRepository(StratificationFactor).save(expDoc.stratificationFactor);
         }
 
         let experimentDoc: Experiment;
@@ -1145,9 +1143,7 @@ export class ExperimentService {
       // create stratificationFactor is not found
       if (!expDoc.stratificationFactor.id) {
         expDoc.stratificationFactor.id = uuid();
-        await transactionalEntityManager
-          .getRepository(StratificationFactor)
-          .save(expDoc.stratificationFactor);
+        await transactionalEntityManager.getRepository(StratificationFactor).save(expDoc.stratificationFactor);
       }
 
       // saving experiment docs
