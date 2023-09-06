@@ -14,16 +14,56 @@ export class StratificationComponent implements OnInit {
   isLoadingStratifications$ = false;
   stratifications: { factor: string; summary: string }[] = [];
   displayedColumns: string[] = ['factor', 'summary', 'actions'];
-  data = [
-    { factor: 'f1', summary: 'f1 summary' },
-    { factor: 'f2', summary: 'f2 summary' },
-    { factor: 'f3', summary: 'f3 summary' },
+  // data = [
+  //   { factor: 'f1', summary: 'f1 summary' },
+  //   { factor: 'f2', summary: 'f2 summary' },
+  //   { factor: 'f3', summary: 'f3 summary' },
+  // ];
+  dataSource = [
+    {
+      factorId: '9bdf13e6-42c7-4f0b-9c9e-0c935219208c',
+      factor: 'factor1',
+      value: {
+        yes: 100,
+        no: 50,
+      },
+      nonApplicable: 50,
+    },
+    {
+      factorId: '15811fae-f0dc-4dbc-a798-40f7bdc589cc',
+      factor: 'factor2',
+      value: {
+        yes: 75,
+        no: 50,
+      },
+      nonApplicable: 25,
+    },
   ];
 
   constructor(private dialog: MatDialog) {}
 
   ngOnInit(): void {
-    this.stratifications = this.data;
+    this.stratifications = this.convertToTableformat();
+  }
+
+  convertToTableformat() {
+    const stratificationFactors = this.dataSource.map((element) => {
+      let factorSummary = 'UUIDs';
+      const allkeys = Object.keys(element.value);
+      let totalUsers = 0;
+      let tempSummary: string;
+      allkeys.forEach((key) => {
+        tempSummary = tempSummary
+          ? tempSummary + '; ' + key + '=' + element.value[key]
+          : key + '=' + element.value[key];
+        totalUsers += element.value[key];
+      });
+      tempSummary = tempSummary ? tempSummary + '; N/A=' + element.nonApplicable : 'N/A=' + element.nonApplicable;
+      totalUsers += element.nonApplicable;
+      factorSummary = totalUsers.toString() + ' ' + factorSummary + ' (' + tempSummary + ')';
+      return { factor: element.factor, summary: factorSummary };
+    });
+    return stratificationFactors;
   }
 
   openImportStratificationsDialog() {
