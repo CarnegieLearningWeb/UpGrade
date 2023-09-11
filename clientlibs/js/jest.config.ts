@@ -13,6 +13,7 @@ const config: Config.InitialOptions = {
     },
     USE_CUSTOM_HTTP_CLIENT: true,
     IS_BROWSER: true,
+    API_VERSION: 5,
   },
   moduleNameMapper: {
     upgrade_types: '<rootDir>/../../types',
