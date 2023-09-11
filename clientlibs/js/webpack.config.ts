@@ -1,5 +1,8 @@
 import path = require('path');
 import webpack = require('webpack');
+import packageJson = require('./package.json');
+
+const version = packageJson.version.split('.')[0];
 
 const generalConfiguration = {
   mode: 'production',
@@ -19,6 +22,11 @@ const generalConfiguration = {
     },
     extensions: ['.tsx', '.ts', '.js'],
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      API_VERSION: version,
+    }),
+  ],
 };
 
 const browser = {
@@ -31,6 +39,7 @@ const browser = {
   },
   plugins: [
     new webpack.DefinePlugin({
+      API_VERSION: version,
       USE_CUSTOM_HTTP_CLIENT: JSON.stringify(false),
       IS_BROWSER: JSON.stringify(true),
     }),
@@ -48,6 +57,7 @@ const node = {
   },
   plugins: [
     new webpack.DefinePlugin({
+      API_VERSION: version,
       USE_CUSTOM_HTTP_CLIENT: JSON.stringify(false),
       IS_BROWSER: JSON.stringify(false),
     }),
@@ -67,6 +77,7 @@ const browserLite = {
   },
   plugins: [
     new webpack.DefinePlugin({
+      API_VERSION: version,
       USE_CUSTOM_HTTP_CLIENT: JSON.stringify(true),
       IS_BROWSER: JSON.stringify(true),
     }),
@@ -87,6 +98,7 @@ const nodeLite = {
   },
   plugins: [
     new webpack.DefinePlugin({
+      API_VERSION: version,
       USE_CUSTOM_HTTP_CLIENT: JSON.stringify(true),
       IS_BROWSER: JSON.stringify(false),
     }),

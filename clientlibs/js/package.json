@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "build:bundler": "webpack",
-    "build:types": "concurrently \"npm run build:types-browser\" \"npm run build:types-node\" \"npm run build:types-browser-lite\" \"npm run build:types-node-lite\"",
+    "build:types": "concurrently \"npm:build:types-*\"",
     "build:types-browser": "./node_modules/.bin/dts-bundle-generator -o dist/browser/index.d.ts src/index.ts",
     "build:types-node": "./node_modules/.bin/dts-bundle-generator -o dist/node/index.d.ts src/index.ts",
     "build:types-browser-lite": "./node_modules/.bin/dts-bundle-generator -o dist/browser-lite/index.d.ts src/index.ts",

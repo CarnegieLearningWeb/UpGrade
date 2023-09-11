@@ -15,6 +15,8 @@ import { DataService } from '../DataService/DataService';
 import { IConfigOptions } from './UpGradeClient.types';
 import { v4 as uuidv4 } from 'uuid';
 
+declare const API_VERSION: string;
+
 /**
  * UpGradeClient is the main class for interacting with the UpGrade API.
  *
@@ -73,7 +75,7 @@ export default class UpgradeClient {
 
   constructor(userId: string, hostUrl: string, context: string, options?: IConfigOptions) {
     const config: UpGradeClientInterfaces.IConfig = {
-      apiVersion: 'v5',
+      apiVersion: 'v' + API_VERSION,
       userId: userId,
       hostURL: hostUrl,
       context: context,
