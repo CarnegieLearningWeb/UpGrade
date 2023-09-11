@@ -26,9 +26,4 @@ export class AnalysisDataService {
     const url = this.environment.api.queryResult;
     return this.http.post(url, { queryIds });
   }
-
-  archiveQuery(queryIds: string[]) {
-    const url = this.environment.api.archiveResult;
-    return this.http.post(url, { queryIds });
-  }
 }

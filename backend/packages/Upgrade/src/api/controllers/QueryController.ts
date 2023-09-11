@@ -50,40 +50,4 @@ export class QueryController {
   ): Promise<any> {
     return this.queryService.analyze(dataLogParams.queryIds, request.logger);
   }
-
-  /**
-   * @swagger
-   * /query/archive:
-   *    post:
-   *       description: Data log analysis
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *         - in: body
-   *           name: params
-   *           required: true
-   *           schema:
-   *             type: object
-   *             properties:
-   *               queryIds:
-   *                 type: array
-   *                 items:
-   *                  type: string
-   *           description: Data analysis
-   *       tags:
-   *         - Query
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: Get data analysis
-   */
-  @Post('/archive')
-  public archive(
-    @Body()
-    dataLogParams: DataLogAnalysisValidator,
-    @Req() request: AppRequest
-  ): Promise<any> {
-    return this.queryService.getArchivedStats(dataLogParams.queryIds, request.logger);
-  }
 }

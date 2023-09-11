@@ -3,7 +3,7 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
-import { EXPERIMENT_TYPE, SERVER_ERROR } from 'upgrade_types';
+import { EXPERIMENT_STATE, EXPERIMENT_TYPE, SERVER_ERROR } from 'upgrade_types';
 import { ErrorService } from './ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
@@ -66,6 +66,12 @@ export class QueryService {
 
     const promiseResult = await Promise.all(promiseArray);
     const experiments: Experiment[] = [];
+
+    // checks for archieve state experiment
+    if (promiseResult[0].experiment?.state === EXPERIMENT_STATE.ARCHIVED) {
+      return await this.getArchivedStats(queryIds, logger);
+    }
+
     const analyzePromise = promiseResult.map((query) => {
       experiments.push(query.experiment);
       if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {

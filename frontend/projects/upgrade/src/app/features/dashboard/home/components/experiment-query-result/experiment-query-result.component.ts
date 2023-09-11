@@ -77,7 +77,6 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   ngOnInit() {
     const queryIds = [];
     this.experimentType = this.experiment.type;
-    this.experimentState = this.experiment.state
 
     if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
       this.setMaxLevelsCount();
@@ -101,7 +100,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
         [query.id]: [],
       };
     });
-    this.analysisService.executeQuery(queryIds, this.experimentState);
+    this.analysisService.executeQuery(queryIds);
     this.queryResultsSub = this.analysisService.queryResult$.pipe(filter((result) => !!result)).subscribe((result) => {
       // main effect graph data
       this.populateMainEffectGraphData(result);

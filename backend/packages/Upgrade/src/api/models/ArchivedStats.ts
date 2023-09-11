@@ -10,7 +10,7 @@ export class ArchivedStats extends BaseModel {
 
   @IsNotEmpty()
   @Column('jsonb')
-  public result: any;
+  public result: object;
 
   @OneToOne(() => Query, (query) => query.archivedStats, { onDelete: 'CASCADE' })
   @JoinColumn()

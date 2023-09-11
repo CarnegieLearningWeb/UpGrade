@@ -46,7 +46,6 @@ export const environment = {
     metrics: '/metric',
     metricsSave: '/metric/save',
     queryResult: '/query/analyse',
-    archiveResult: '/query/archive',
     getVersion: '/version',
     contextMetaData: '/experiments/contextMetaData',
     segments: '/segments',

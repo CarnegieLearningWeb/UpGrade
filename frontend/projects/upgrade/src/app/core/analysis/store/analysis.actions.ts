@@ -34,10 +34,7 @@ export const actionUpsertMetricsSuccess = createAction(
 
 export const actionUpsertMetricsFailure = createAction('[Analysis] Upsert Metrics Failure');
 
-export const actionExecuteQuery = createAction(
-  '[Analysis] Execute Query',
-  props<{ queryIds: string[]; state?: EXPERIMENT_STATE }>()
-);
+export const actionExecuteQuery = createAction('[Analysis] Execute Query', props<{ queryIds: string[] }>());
 
 export const actionExecuteQuerySuccess = createAction(
   '[Analysis] Execute Query Success',

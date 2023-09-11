@@ -34,8 +34,8 @@ export class AnalysisService {
     this.store$.dispatch(AnalysisActions.actionDeleteMetric({ key }));
   }
 
-  executeQuery(queryIds: string[], state?: EXPERIMENT_STATE) {
-    this.store$.dispatch(AnalysisActions.actionExecuteQuery({ queryIds, state }));
+  executeQuery(queryIds: string[]) {
+    this.store$.dispatch(AnalysisActions.actionExecuteQuery({ queryIds }));
   }
 
   setQueryResult(queryResult: any) {
