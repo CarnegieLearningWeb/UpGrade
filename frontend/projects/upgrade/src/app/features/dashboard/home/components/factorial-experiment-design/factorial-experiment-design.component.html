@@ -480,18 +480,19 @@
                                 [matTooltip]="
                                   factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
                                     levelPayloadIndex
-                                  ]?.payload
+                                  ]?.payload?.value
                                 "
                                 matTooltipPosition="above"
                               >
                                 {{
                                   factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
                                     levelPayloadIndex
-                                  ]?.payload | truncate: 35
+                                  ]?.payload?.value | truncate: 35
                                 }}
                               </span>
                             </ng-container>
                             <ng-container
+                              formGroupName="payload"
                               *ngIf="
                                 (levelsTableEditIndex$ | async) === levelPayloadIndex &&
                                 (factorsTableIndex$ | async) === factorIndex
@@ -502,15 +503,22 @@
                                   [matTooltip]="
                                     factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
                                       levelPayloadIndex
-                                    ]?.payload
+                                    ]?.payload?.value
                                   "
                                   matTooltipPosition="above"
                                 >
+                                  <app-key-value-bubble
+                                    key="payload"
+                                    [value]="factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
+                                      levelPayloadIndex
+                                    ]?.payload?.value"
+                                  >
+                                  </app-key-value-bubble>
                                   <input
                                     matInput
                                     [placeholder]="'home.new-experiment.design.payload.placeholder.text' | translate"
-                                    formControlName="payload"
-                                    [value]="payload"
+                                    formControlName="value"
+                                    [value]="payload?.value"
                                     autocomplete="off"
                                   />
                                 </span>
@@ -518,7 +526,6 @@
                             </ng-container>
                           </mat-cell>
                         </ng-container>
-
                         <!-- Actions Column -->
                         <ng-container matColumnDef="actions">
                           <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
