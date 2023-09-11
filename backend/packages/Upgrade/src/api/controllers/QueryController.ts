@@ -44,7 +44,7 @@ export class QueryController {
    */
   @Post('/analyse')
   public analyse(
-    @Body({ validate: { validationError: { target: true, value: true } } })
+    @Body({ validate: true })
     dataLogParams: DataLogAnalysisValidator,
     @Req() request: AppRequest
   ): Promise<any> {

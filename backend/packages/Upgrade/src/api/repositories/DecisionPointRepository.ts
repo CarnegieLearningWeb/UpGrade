@@ -51,7 +51,7 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
   }
 
   public async insertDecisionPoint(
-    decisionPointDoc: DecisionPoint[],
+    decisionPointDoc: Array<Partial<DecisionPoint>>,
     entityManager: EntityManager
   ): Promise<DecisionPoint[]> {
     const result = await entityManager

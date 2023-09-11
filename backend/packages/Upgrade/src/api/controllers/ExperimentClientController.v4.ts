@@ -4,7 +4,6 @@ import {
   Body,
   UseBefore,
   Get,
-  BodyParam,
   Req,
   InternalServerError,
   Delete,
@@ -19,8 +18,6 @@ import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import {
   IExperimentAssignmentv4,
-  ISingleMetric,
-  IGroupMetric,
   SERVER_ERROR,
   IGroupMembership,
   IUserAliases,
@@ -44,6 +41,8 @@ import { MarkExperimentValidatorv4 } from './validators/MarkExperimentValidator.
 import { Log } from '../models/Log';
 import { flatten } from '@nestjs/common';
 import { CaliperLogEnvelope } from './validators/CaliperLogEnvelope';
+import { ExperimentUserValidator } from './validators/ExperimentUserValidator';
+import { MetricValidator } from './validators/MetricValidator';
 
 interface IMonitoredDecisionPoint {
   id: string;
@@ -174,10 +173,10 @@ export class ExperimentClientController {
    */
   @Post('init')
   public async init(
-    @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
-    experimentUser: ExperimentUser
+    @Body({ validate: true })
+    experimentUser: ExperimentUserValidator
   ): Promise<Pick<ExperimentUser, 'id' | 'group' | 'workingGroup'>> {
     request.logger.info({ message: 'Starting the init call for user' });
     // getOriginalUserDoc call for alias
@@ -251,10 +250,10 @@ export class ExperimentClientController {
    */
   @Patch('groupmembership')
   public async setGroupMemberShip(
-    @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
-    experimentUser: ExperimentUser
+    @Body({ validate: true })
+    experimentUser: ExperimentUserValidator
   ): Promise<IGroupMembership> {
     request.logger.info({ message: 'Starting the groupmembership call for user' });
     // getOriginalUserDoc call for alias
@@ -319,9 +318,9 @@ export class ExperimentClientController {
    */
   @Patch('workinggroup')
   public async setWorkingGroup(
-    @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
+    @Body({ validate: true })
     workingGroupParams: UpdateWorkingGroupValidator
   ): Promise<IWorkingGroup> {
     request.logger.info({ message: 'Starting the workinggroup call for user' });
@@ -414,9 +413,9 @@ export class ExperimentClientController {
    */
   @Post('mark')
   public async markExperimentPoint(
-    @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
+    @Body({ validate: true })
     experiment: MarkExperimentValidatorv4
   ): Promise<IMonitoredDecisionPoint> {
     request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
@@ -499,9 +498,9 @@ export class ExperimentClientController {
    */
   @Post('assign')
   public async getAllExperimentConditions(
-    @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
+    @Body({ validate: true })
     experiment: ExperimentAssignmentValidator
   ): Promise<IExperimentAssignmentv4[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
@@ -613,9 +612,9 @@ export class ExperimentClientController {
    */
   @Post('log')
   public async log(
-    @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
+    @Body({ validate: true })
     logData: LogValidator
   ): Promise<Omit<Log, 'createdAt' | 'updatedAt' | 'versionNumber'>[]> {
     request.logger.info({ message: 'Starting the log call for user' });
@@ -659,10 +658,10 @@ export class ExperimentClientController {
    */
   @Post('log/caliper')
   public async caliperLog(
-    @Body({ validate: { validationError: { target: false, value: false } } })
+    @Body({ validate: true })
+    envelope: CaliperLogEnvelope,
     @Req()
-    request: AppRequest,
-    envelope: CaliperLogEnvelope
+    request: AppRequest
   ): Promise<Log[]> {
     let result = envelope.data.map(async log => {
       // getOriginalUserDoc call for alias
@@ -794,12 +793,13 @@ export class ExperimentClientController {
    *            description: Insert error in database
    */
   @Post('metric')
-  public filterMetrics(
-    @BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>,
+  public async filterMetrics(
     @Req()
-    request: AppRequest
+    request: AppRequest,
+    @Body({ validate: true })
+    metric: MetricValidator
   ): Promise<Metric[]> {
-    return this.metricService.saveAllMetrics(metricUnit, request.logger);
+    return await this.metricService.saveAllMetrics(metric.metricUnit, request.logger);
   }
 
   /**

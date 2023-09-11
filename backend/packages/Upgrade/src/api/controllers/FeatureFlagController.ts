@@ -6,6 +6,7 @@ import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatus
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { SERVER_ERROR } from 'upgrade_types';
+import { FeatureFlagValidation } from './validators/FeatureFlagValidator';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -111,7 +112,7 @@ export class FeatureFlagsController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: { validationError: { target: true, value: true } } })
+    @Body({ validate: true })
     paginatedParams: FeatureFlagPaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<FeatureFlagsPaginationInfo> {
@@ -165,7 +166,7 @@ export class FeatureFlagsController {
    */
   @Post()
   public create(
-    @Body({ validate: { validationError: { target: false, value: false } } }) flag: FeatureFlag,
+    @Body({ validate: true }) flag: FeatureFlagValidation,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
@@ -202,7 +203,7 @@ export class FeatureFlagsController {
    */
   @Post('/status')
   public async updateState(
-    @Body({ validate: { validationError: { target: false, value: false } } })
+    @Body({ validate: true })
     flag: FeatureFlagStatusUpdateValidator
   ): Promise<FeatureFlag> {
     return this.featureFlagService.updateState(flag.flagId, flag.status);
@@ -274,8 +275,8 @@ export class FeatureFlagsController {
   @Put('/:id')
   public update(
     @Param('id') id: string,
-    @Body({ validate: { validationError: { target: false, value: false }, skipMissingProperties: true } })
-    flag: FeatureFlag,
+    @Body({ validate: true })
+    flag: FeatureFlagValidation,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
