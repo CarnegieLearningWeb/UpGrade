@@ -56,7 +56,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   searchControl = new FormControl();
 
   get filteredStatusOptions(): string[] {
-    if (this.searchValue !== undefined) {
+    if (typeof this.searchValue === 'string') {
       const filterValue = this.searchValue.toLowerCase();
       return this.statusFilterOptions.filter((option) => option.toLowerCase().includes(filterValue));
     } else {
@@ -144,7 +144,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
 
   applyFilter(filterValue: string) {
     this.filterExperimentPredicate(this.selectedExperimentFilterOption);
-    if (filterValue !== undefined) {
+    if (typeof filterValue === 'string') {
       if (this.selectedExperimentFilterOption === EXPERIMENT_SEARCH_KEY.STATUS) {
         this.allExperiments.filter = filterValue.trim().toLowerCase();
       } else {
