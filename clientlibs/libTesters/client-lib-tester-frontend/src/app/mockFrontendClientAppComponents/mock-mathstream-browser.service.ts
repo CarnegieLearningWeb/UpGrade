@@ -1,30 +1,19 @@
 import { Injectable } from '@angular/core';
 import { ClientLibraryService } from '../services/client-library.service';
 import { EventBusService } from '../services/event-bus.service';
-import {
-  ClientAppHook,
-  CodeLanguage,
-  MockAppType,
-  MockClientAppInterfaceModel,
-  MockClientAppUser,
-} from '../../../../shared/models';
+import { ClientAppHook, CodeLanguage, MockAppType, MockClientAppInterfaceModel } from '../../../../shared/models';
 
 // There's probably a clever way to do this, but getting the right types automatically is tricky
 
-// import UpgradeClient from 'upgrade_client_local/dist/browser';
-// import { UpgradeClient } from 'upgrade_client_1_1_7';
-import UpgradeClient from "upgrade_client_1_1_8/dist/browser"
-// import { UpgradeClient } from 'upgrade_client_3_0_18';
-// import { UpgradeClient } from 'upgrade_client_4_2_0';
+import UpgradeClient, { IExperimentAssignment } from 'upgrade_client_1_1_8/dist/browser';
 
 import { AbstractMockAppService } from './abstract-mock-app.service';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
-import { IExperimentAssignment } from 'upgrade_types_1_0_5';
 
 export const QUESTION_SWAP_EXPERIMENT = {
   CONTEXT: 'mathstream',
   SITE: 'DisplayQuestion',
-  CONTROL: 'learnosity-item-control'
+  CONTROL: 'learnosity-item-control',
 };
 
 export interface ActiveExperiment {
@@ -34,10 +23,9 @@ export interface ActiveExperiment {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MockMathstreamBrowserService extends AbstractMockAppService {
-
   public override upgradeClient!: UpgradeClient;
   // public upgradeClient: any;
 
@@ -53,7 +41,6 @@ export class MockMathstreamBrowserService extends AbstractMockAppService {
     TARGET_1: 'AR-VST-0150-6.NS.8-1_SP_008',
     TARGET_2: 'AR-VST-0150-6.NS.8-1_SP_004',
     TARGET_3: 'AR-VST-0150-6.NS.8-1_SP_014',
-
   };
   public GROUPS = ['schoolId', 'classId', 'instructorId'];
   public CONTEXT = 'mathstream';
@@ -87,7 +74,7 @@ export class MockMathstreamBrowserService extends AbstractMockAppService {
       hooks: [
         {
           name: this.HOOKNAMES.init,
-          description: 'REQUIRED TO RUN FIRST. runs init(), needs userId string as payload.'
+          description: 'REQUIRED TO RUN FIRST. runs init(), needs userId string as payload.',
         },
         {
           name: this.HOOKNAMES.getExperimentalQuestionIfExists,
@@ -95,11 +82,11 @@ export class MockMathstreamBrowserService extends AbstractMockAppService {
         },
         {
           name: this.HOOKNAMES.markExperimentBeginning,
-          description: 'mark experiment point with given activityId payload'
+          description: 'mark experiment point with given activityId payload',
         },
         {
           name: this.HOOKNAMES.logExperimentConcluding,
-          description: 'log metric for percent correct for given question'
+          description: 'log metric for percent correct for given question',
         },
       ],
       decisionPoints: this.DECISION_POINTS,
@@ -113,71 +100,71 @@ export class MockMathstreamBrowserService extends AbstractMockAppService {
           hookName: this.HOOKNAMES.getExperimentalQuestionIfExists,
           label: `Get assignment for: ${this.TARGETS.TARGET_1}`,
           props: {
-            activityId: this.TARGETS.TARGET_1
-          }
+            activityId: this.TARGETS.TARGET_1,
+          },
         },
         {
           hookName: this.HOOKNAMES.getExperimentalQuestionIfExists,
-          label:  `Get assignment for:  ${this.TARGETS.TARGET_2}`,
+          label: `Get assignment for:  ${this.TARGETS.TARGET_2}`,
           props: {
-            activityId: this.TARGETS.TARGET_2
-          }
+            activityId: this.TARGETS.TARGET_2,
+          },
         },
         {
           hookName: this.HOOKNAMES.getExperimentalQuestionIfExists,
-          label:  `Get assignment for:  ${this.TARGETS.TARGET_3}`,
+          label: `Get assignment for:  ${this.TARGETS.TARGET_3}`,
           props: {
-            activityId: this.TARGETS.TARGET_3
-          }
+            activityId: this.TARGETS.TARGET_3,
+          },
         },
         {
           hookName: this.HOOKNAMES.getExperimentalQuestionIfExists,
-          label:  `Get assignment for: no activity id`,
+          label: `Get assignment for: no activity id`,
           props: {
-            activityId: 'no activity id'
-          }
+            activityId: 'no activity id',
+          },
         },
         {
           hookName: this.HOOKNAMES.markExperimentBeginning,
-          label:  `Mark condition for:  ${this.TARGETS.TARGET_1}`,
+          label: `Mark condition for:  ${this.TARGETS.TARGET_1}`,
           props: {
-            activityId: this.TARGETS.TARGET_1
-          }
+            activityId: this.TARGETS.TARGET_1,
+          },
         },
         {
           hookName: this.HOOKNAMES.markExperimentBeginning,
-          label:  `Mark condition for:  ${this.TARGETS.TARGET_2}`,
+          label: `Mark condition for:  ${this.TARGETS.TARGET_2}`,
           props: {
-            activityId: this.TARGETS.TARGET_2
-          }
+            activityId: this.TARGETS.TARGET_2,
+          },
         },
         {
           hookName: this.HOOKNAMES.markExperimentBeginning,
-          label:  `Mark condition for:  ${this.TARGETS.TARGET_3}`,
+          label: `Mark condition for:  ${this.TARGETS.TARGET_3}`,
           props: {
-            activityId: this.TARGETS.TARGET_3
-          }
+            activityId: this.TARGETS.TARGET_3,
+          },
         },
         {
           hookName: this.HOOKNAMES.markExperimentBeginning,
-          label:  `Mark condition for: no activity id`,
+          label: `Mark condition for: no activity id`,
           props: {
-            activityId: 'no activity id'
-          }
+            activityId: 'no activity id',
+          },
         },
         {
           hookName: this.HOOKNAMES.logExperimentConcluding,
-          label:  `Log question answered correctly`,
+          label: `Log question answered correctly`,
           props: {
-            questionAnsweredCorrectly: true
-          }
+            questionAnsweredCorrectly: true,
+          },
         },
         {
           hookName: this.HOOKNAMES.logExperimentConcluding,
-          label:  `Log question answered incorrectly`,
+          label: `Log question answered incorrectly`,
           props: {
-            questionAnsweredCorrectly: false
-          }
+            questionAnsweredCorrectly: false,
+          },
         },
       ],
     };
@@ -198,7 +185,10 @@ export class MockMathstreamBrowserService extends AbstractMockAppService {
       this.getExperimentalQuestionIfExists(hookEvent.payload.activityId);
     } else if (name === this.HOOKNAMES.markExperimentBeginning && hookEvent?.payload?.activityId) {
       this.markExperimentBeginning(hookEvent.payload.activityId);
-    } else if (name === this.HOOKNAMES.logExperimentConcluding && typeof hookEvent?.payload?.questionAnsweredCorrectly === 'boolean') {
+    } else if (
+      name === this.HOOKNAMES.logExperimentConcluding &&
+      typeof hookEvent?.payload?.questionAnsweredCorrectly === 'boolean'
+    ) {
       this.logExperimentConcluding(hookEvent.payload.questionAnsweredCorrectly);
     } else {
       throw new Error(`No hook found for hookName: ${name}`);
@@ -211,26 +201,21 @@ export class MockMathstreamBrowserService extends AbstractMockAppService {
     this.upgradeClient = this.constructUpgradeClient(userId);
     const initResponse = await this.upgradeClient.init();
     console.log('upgradeClient', this.upgradeClient);
-    console.log({ initResponse })
+    console.log({ initResponse });
   }
 
   async getExperimentalQuestionIfExists(activityId: string): Promise<string> {
     let selectedActivityId = activityId;
     try {
-      const experimentAssignment = await this.getExperimentAssignment(
-        activityId
-      );
+      const experimentAssignment = await this.getExperimentAssignment(activityId);
 
-      console.log('[getExperimentalQuestionIfExists] assignment:', experimentAssignment)
-      selectedActivityId = this.determineActivityToUse(
-        experimentAssignment,
-        activityId
-      );
+      console.log('[getExperimentalQuestionIfExists] assignment:', experimentAssignment);
+      selectedActivityId = this.determineActivityToUse(experimentAssignment, activityId);
     } catch (err) {
       console.log('upgradeClient error', err);
     }
 
-    console.log('[getExperimentalQuestionIfExists] selectedActivityId:', selectedActivityId)
+    console.log('[getExperimentalQuestionIfExists] selectedActivityId:', selectedActivityId);
 
     return selectedActivityId;
   }
@@ -251,7 +236,7 @@ export class MockMathstreamBrowserService extends AbstractMockAppService {
     this.addActiveExperimentToCache({
       originalActivityId: originalActivityId,
       selectedActivityId: selectedActivityId,
-      conditionCode: conditionCode
+      conditionCode: conditionCode,
     });
     console.log('Active Experiments', this.activeExperiments);
     return selectedActivityId;
@@ -264,7 +249,7 @@ export class MockMathstreamBrowserService extends AbstractMockAppService {
   async markExperimentBeginning(activityId: string): Promise<void> {
     try {
       const foundExperiment = this.popActiveExperiment(activityId);
-      console.log({ foundExperiment })
+      console.log({ foundExperiment });
       if (!foundExperiment) return;
       const markResponse = await this.upgradeClient.markExperimentPoint(
         QUESTION_SWAP_EXPERIMENT.SITE,
@@ -278,9 +263,7 @@ export class MockMathstreamBrowserService extends AbstractMockAppService {
     }
   }
 
-  async logExperimentConcluding(
-    questionAnsweredCorrectly: boolean
-  ): Promise<void> {
+  async logExperimentConcluding(questionAnsweredCorrectly: boolean): Promise<void> {
     try {
       let percentCorrect = 0;
       if (questionAnsweredCorrectly) percentCorrect = 100;
@@ -289,11 +272,11 @@ export class MockMathstreamBrowserService extends AbstractMockAppService {
           timestamp: new Date().toISOString(),
           metrics: {
             attributes: {
-              percentCorrect: percentCorrect
+              percentCorrect: percentCorrect,
             },
-            groupedMetrics: [] as any[]
-          }
-        }
+            groupedMetrics: [] as any[],
+          },
+        },
       ]);
 
       console.log({ logResponse });
@@ -302,21 +285,15 @@ export class MockMathstreamBrowserService extends AbstractMockAppService {
     }
   }
 
-  private popActiveExperiment(
-    activityId: string
-  ): ActiveExperiment | undefined {
-    const foundIndex = this.activeExperiments.findIndex(
-      (x) => x.selectedActivityId === activityId
-    );
+  private popActiveExperiment(activityId: string): ActiveExperiment | undefined {
+    const foundIndex = this.activeExperiments.findIndex((x) => x.selectedActivityId === activityId);
     if (foundIndex < 0) return undefined;
     const foundExperiment = this.activeExperiments[foundIndex];
     this.activeExperiments.splice(foundIndex, 1);
     return foundExperiment;
   }
 
-  private async getExperimentAssignment(
-    activityId: string
-  ): Promise<IExperimentAssignment | null> {
+  private async getExperimentAssignment(activityId: string): Promise<IExperimentAssignment | null> {
     const upgradeCondition = await this.upgradeClient.getExperimentCondition(
       QUESTION_SWAP_EXPERIMENT.CONTEXT,
       QUESTION_SWAP_EXPERIMENT.SITE,
