@@ -144,28 +144,6 @@ export interface ExperimentLevelData {
   };
 }
 
-//Form data with payload as string
-export interface ExperimentFactorialFormDesignData {
-  factors: ExperimentFactorData[];
-}
-
-export interface ExperimentFactorialLevelDesignData {
-  levels: FactorialLevelTableRowData[];
-}
-
-// export interface ExperimentFactorFormData {
-//   name: string;
-//   description: string;
-//   order: number;
-//   levels: ExperimentLevelData[];
-// }
-
-// export interface ExperimentLevelFormData {
-//   id: string;
-//   name: string;
-//   payload: string;
-// }
-
 export interface ExperimentDesignStepperState {
   hasExperimentStepperDataChanged: boolean;
 

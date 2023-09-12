@@ -49,9 +49,7 @@ import {
   FactorLevelData,
   FactorialFactorTableRowData,
   FactorialLevelTableRowData,
-  ExperimentFactorialFormDesignData,
   ExperimentFactorData,
-  ExperimentLevelData,
 } from './store/experiment-design-stepper.model';
 import {
   actionUpdateFactorialConditionTableData,
@@ -346,18 +344,6 @@ export class ExperimentDesignStepperService {
     return conditionPayloads;
   }
 
-  // createFactorialDesignDataFromForm(
-  //   factorialFormDesignData: ExperimentFactorialFormDesignData
-  // ): ExperimentFactorData[] {
-  //   const factorsData: ExperimentFactorData[] = factorialFormDesignData.factors.map((factor) => {
-  //     const levelsData: ExperimentLevelData[] = factor.levels.map((level) => {
-  //       return { ...level, payload: { type: PAYLOAD_TYPE.STRING, value: level.payload } };
-  //     });
-  //     return { ...factor, levels: levelsData };
-  //   });
-  //   return factorsData;
-  // }
-
   createNewFactorialConditionTableData(designData: ExperimentFactorialDesignData): FactorialConditionTableRowData[] {
     const tableData: FactorialConditionTableRowData[] = [];
     const requiredFactorialTableData = this.factorDataToConditions(designData.factors);
@@ -504,26 +490,6 @@ export class ExperimentDesignStepperService {
 
     return factorialConditionsRequestObject;
   }
-
-  // createFactorialConditionEmitObject() {
-  //   let factorialConditionObjectArray = this.createFactorialConditionRequestObject();
-
-  //   factorialConditionObjectArray = factorialConditionObjectArray.map((factorialConditionTableRow) => {
-  //     const levelElementArray = factorialConditionTableRow.levelCombinationElements.map((levelElement) => {
-  //       const payload = levelElement.level.payload;
-  //       if (typeof payload === 'string') {
-  //         return {
-  //           ...levelElement,
-  //           level: { ...levelElement.level, payload: { type: PAYLOAD_TYPE.STRING, value: payload } },
-  //         };
-  //       } else {
-  //         return levelElement;
-  //       }
-  //     });
-  //     return { ...factorialConditionTableRow, levelCombinationElements: levelElementArray };
-  //   });
-  //   return factorialConditionObjectArray;
-  // }
 
   checkConditionTableValidity() {
     const tableData = this.getFactorialConditionTableData();

@@ -31,7 +31,7 @@ import { ExperimentDesignStepperService } from '../../../../../core/experiment-d
 import {
   DecisionPointsTableRowData,
   ExperimentConditionPayloadRequestObject,
-  ExperimentFactorialFormDesignData,
+  ExperimentFactorialDesignData,
   FactorialConditionRequestObject,
   FactorialConditionTableRowData,
   FactorialFactorTableRowData,
@@ -304,7 +304,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       name: [name, Validators.required],
       description: [description],
       order: [order],
-      levels: this._formBuilder.array([this.addLevels(null, level, payload)]),
+      levels: this._formBuilder.array([this.addLevels(level, payload)]),
     });
   }
 
@@ -315,7 +315,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       payload: this._formBuilder.group({ type: PAYLOAD_TYPE.STRING, value: [payload] }),
     });
   }
-  // [{ type: PAYLOAD_TYPE.STRING, value: payload }]
+
   addDecisionPoint() {
     this.decisionPoints.push(this.addDecisionPoints());
     const scrollTableType = 'decisionPointTable';
@@ -496,7 +496,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return !this.levelPointErrors.length;
   }
 
-  validateFactorCount(factorialExperimentDesignFormData: ExperimentFactorialFormDesignData) {
+  validateFactorCount(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
     this.factorCountError = null;
     this.levelCountError = null;
     this.expandedId = 0;
@@ -753,9 +753,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
       order = 1;
       const factorsDesignFormData = this.factorialExperimentDesignForm.value.factors;
-      // this.experimentDesignStepperService.createFactorialDesignDataFromForm(
-      //   this.factorialExperimentDesignForm.value
-      // );
       factorialExperimentDesignFormData.factors = factorsDesignFormData.map((factor, index) => {
         return this.experimentInfo
           ? { ...this.experimentInfo.factors[index], ...factor, order: order++ }
