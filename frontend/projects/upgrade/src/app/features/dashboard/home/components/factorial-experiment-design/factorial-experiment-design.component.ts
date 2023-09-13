@@ -31,13 +31,14 @@ import { ExperimentDesignStepperService } from '../../../../../core/experiment-d
 import {
   DecisionPointsTableRowData,
   ExperimentConditionPayloadRequestObject,
-  ExperimentFactorialFormDesignData,
+  ExperimentFactorialDesignData,
   FactorialConditionRequestObject,
   FactorialConditionTableRowData,
   FactorialFactorTableRowData,
   FactorialLevelTableRowData,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { FACTORIAL_EXP_CONSTANTS } from './factorial-experiment-design.constants';
+import { PAYLOAD_TYPE } from '../../../../../../../../../../types/src';
 
 @Component({
   selector: 'home-factorial-experiment-design',
@@ -311,7 +312,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return this._formBuilder.group({
       id: [id || uuidv4()],
       name: [name, Validators.required],
-      payload: [payload],
+      payload: this._formBuilder.group({ type: PAYLOAD_TYPE.STRING, value: [payload] }),
     });
   }
 
@@ -495,7 +496,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return !this.levelPointErrors.length;
   }
 
-  validateFactorCount(factorialExperimentDesignFormData: ExperimentFactorialFormDesignData) {
+  validateFactorCount(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
     this.factorCountError = null;
     this.levelCountError = null;
     this.expandedId = 0;
@@ -524,7 +525,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     } else {
       this.factorCountError = factorCountErrorMsg;
     }
-    this.expandedId--;
+    this.expandedId;
   }
 
   validateConditionCount() {
@@ -751,9 +752,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       );
 
       order = 1;
-      const factorsDesignFormData = this.experimentDesignStepperService.createFactorialDesignDataFromForm(
-        this.factorialExperimentDesignForm.value
-      );
+      const factorsDesignFormData = this.factorialExperimentDesignForm.value.factors;
       factorialExperimentDesignFormData.factors = factorsDesignFormData.map((factor, index) => {
         return this.experimentInfo
           ? { ...this.experimentInfo.factors[index], ...factor, order: order++ }
