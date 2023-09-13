@@ -168,7 +168,7 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "**/upgrade-*.zip"
-          commit: main
+          commit: ${{ github.ref }}
           generateReleaseNotes: true
           tag: ${{ needs.init.outputs.version }}
           token: ${{ secrets.GITHUB_TOKEN }}
