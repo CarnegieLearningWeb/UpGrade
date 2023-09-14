@@ -87,12 +87,6 @@ class AssignedCondition {
   @IsString()
   conditionCode?: string;
 
-  @IsObject()
-  @ValidateNested()
-  @ValidateIf((object, value) => value !== null)
-  @Type(() => Payload)
-  payload: Payload | null;
-
   @IsOptional()
   @IsString()
   experimentId?: string;
