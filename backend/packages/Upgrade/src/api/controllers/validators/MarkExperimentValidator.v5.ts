@@ -1,17 +1,6 @@
 import { Type } from 'class-transformer';
-import {
-  IsNotEmpty,
-  IsDefined,
-  IsString,
-  IsOptional,
-  IsEnum,
-  IsObject,
-  ValidateNested,
-  ValidateIf,
-  ValidationOptions,
-  registerDecorator,
-} from 'class-validator';
-import { MARKED_DECISION_POINT_STATUS, PAYLOAD_TYPE } from 'upgrade_types';
+import { IsNotEmpty, IsDefined, IsString, IsOptional, IsEnum, IsObject, ValidateNested, ValidateIf, ValidationOptions, registerDecorator } from 'class-validator';
+import { EXPERIMENT_TYPE, MARKED_DECISION_POINT_STATUS, PAYLOAD_TYPE } from 'upgrade_types';
 
 const IsAssignedFactorRecord = (validationOptions?: ValidationOptions) => {
   return function (object: unknown, propertyName: string) {
@@ -26,14 +15,16 @@ const IsAssignedFactorRecord = (validationOptions?: ValidationOptions) => {
       },
       validator: {
         validate(value: any) {
-          return validateAssignedFactorData(value);
+          return validateAssignedFactorData(value)
         },
       },
     });
   };
 };
 
-function validateAssignedFactorData(data: any): boolean {
+function validateAssignedFactorData(
+  data: any
+): boolean {
   const keys = Object.keys(data);
   for (const key of keys) {
     const factor = data[key];
@@ -54,7 +45,9 @@ function isValidAssignedFactor(value: any): value is AssignedFactor {
 
 function isValidPayload(value: any): value is Payload {
   return (
-    typeof value === 'object' && Object.values(PAYLOAD_TYPE).includes(value.type) && typeof value.value === 'string'
+    typeof value === 'object' &&
+    Object.values(PAYLOAD_TYPE).includes(value.type) &&
+    typeof value.value === 'string'
   );
 }
 
@@ -79,13 +72,14 @@ class AssignedFactor {
 }
 
 class AssignedCondition {
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  id?: string;
+  id: string;
 
-  @IsOptional()
+  @IsDefined()
+  @IsNotEmpty()
   @IsString()
-  conditionCode?: string;
+  conditionCode: string;
 
   @IsObject()
   @ValidateNested()
@@ -106,6 +100,11 @@ class Data {
 
   @IsString()
   target: string;
+
+  @IsEnum(EXPERIMENT_TYPE)
+  @IsDefined()
+  @IsNotEmpty()
+  experimentType: EXPERIMENT_TYPE;
 
   @IsOptional()
   @ValidateNested()

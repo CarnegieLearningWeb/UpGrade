@@ -16,11 +16,15 @@ export default async function markDecisionPoint(
   uniquifier?: string,
   clientError?: string
 ): Promise<UpGradeClientInterfaces.IMarkExperimentPoint> {
-  const assignment = findExperimentAssignmentBySiteAndTarget(site, target, experimentAssignmentData);
+  const assignment = findExperimentAssignmentBySiteAndTarget(site, target, experimentAssignmentData)
+
+  if (!assignment) {
+    throw new Error('No assignment found');
+  }
 
   rotateAssignmentList(assignment);
 
-  const data = { ...assignment, assignedCondition: { ...assignment.assignedCondition[0], conditionCode: condition } };
+  const data = { ...assignment, assignedCondition: { ...assignment.assignedCondition[0], conditionCode : condition} };
 
   let requestBody: UpGradeClientInterfaces.IMarkDecisionPointRequestBody = {
     userId,
@@ -40,13 +44,7 @@ export default async function markDecisionPoint(
       clientError,
     };
   }
-  const response = await fetchDataService(
-    url,
-    token,
-    clientSessionId,
-    requestBody,
-    UpGradeClientEnums.REQUEST_TYPES.POST
-  );
+  const response = await fetchDataService(url, token, clientSessionId, requestBody, UpGradeClientEnums.REQUEST_TYPES.POST);
   if (response.status) {
     return response.data;
   } else {

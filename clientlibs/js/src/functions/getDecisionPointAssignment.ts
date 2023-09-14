@@ -8,14 +8,18 @@ export default function getDecisionPointAssignment(
   clientState: UpGradeClientInterfaces.IClientState
 ): Assignment {
   if (clientState?.allExperimentAssignmentData) {
-    const experimentAssignment = findExperimentAssignmentBySiteAndTarget(
-      site,
-      target,
-      clientState.allExperimentAssignmentData
-    );
+    const experimentAssignment = findExperimentAssignmentBySiteAndTarget(site, target, clientState.allExperimentAssignmentData)
 
-    const assignment = new Assignment(experimentAssignment, clientState);
-    return assignment;
+    if (experimentAssignment) {
+      const assignment = new Assignment(
+        experimentAssignment,
+        clientState,
+      );
+
+      return assignment;
+    } else {
+      return null;
+    }
   } else {
     return null;
   }

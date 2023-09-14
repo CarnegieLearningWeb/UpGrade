@@ -22,6 +22,7 @@ import {
   IGroupMembership,
   IUserAliases,
   IWorkingGroup,
+  EXPERIMENT_TYPE,
   PAYLOAD_TYPE,
   IPayload,
 } from 'upgrade_types';
@@ -539,6 +540,7 @@ export class ExperimentClientController {
       });
       return {
         ...rest,
+        experimentType: assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE,
         assignedCondition: finalConditionData,
         assignedFactor: assignedFactor ? finalFactorData : undefined,
       };
