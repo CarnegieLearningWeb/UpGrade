@@ -23,7 +23,6 @@ import {
   IUserAliases,
   IWorkingGroup,
   PAYLOAD_TYPE,
-  EXPERIMENT_TYPE,
   IPayload,
 } from 'upgrade_types';
 import { FeatureFlag } from '../models/FeatureFlag';
