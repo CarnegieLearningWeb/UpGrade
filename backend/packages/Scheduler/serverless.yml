@@ -15,7 +15,7 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs16.x
+  runtime: nodejs18.x
   apiGateway:
     minimumCompressionSize: 1024 # Enable gzip compression for responses > 1 KB
   environment:
