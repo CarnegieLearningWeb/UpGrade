@@ -274,7 +274,7 @@ export default class UpgradeClient {
   async markDecisionPoint(
     site: string,
     target: string,
-    condition: string = null,
+    condition: string | null = null,
     status: MARKED_DECISION_POINT_STATUS,
     uniquifier?: string,
     clientError?: string

@@ -56,7 +56,20 @@ export class DataService {
     const assignment = this.experimentAssignmentData.find(
       (assignment) => assignment.site === site && assignment.target === target
     );
-    return assignment;
+
+    const emptyAssignment: IExperimentAssignmentv5 = {
+      site: site,
+      target: target,
+      assignedCondition: [
+        {
+          payload: null,
+          conditionCode: null,
+          id: null,
+        },
+      ],
+    };
+
+    return assignment || emptyAssignment;
   }
 
   public getFeatureFlag(key: string): IFeatureFlag {
