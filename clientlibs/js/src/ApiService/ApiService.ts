@@ -231,10 +231,6 @@ export default class ApiService {
   }: IMarkDecisionPointParams): Promise<UpGradeClientInterfaces.IMarkDecisionPoint> {
     const assignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
 
-    if (!assignment) {
-      throw new Error('No assignment found');
-    }
-
     this.dataService.rotateAssignmentList(assignment);
 
     const data = { ...assignment, assignedCondition: { ...assignment.assignedCondition[0], conditionCode: condition } };

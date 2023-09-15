@@ -215,13 +215,9 @@ export default class UpgradeClient {
     if (this.dataService.getExperimentAssignmentData()) {
       const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
 
-      if (experimentAssignment) {
-        const assignment = new Assignment(experimentAssignment, this.apiService);
+      const assignment = new Assignment(experimentAssignment, this.apiService);
 
-        return assignment;
-      } else {
-        return null;
-      }
+      return assignment;
     } else {
       return null;
     }
