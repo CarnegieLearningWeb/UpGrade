@@ -23,7 +23,6 @@ import {
   IUserAliases,
   IWorkingGroup,
   PAYLOAD_TYPE,
-  EXPERIMENT_TYPE,
   IPayload,
 } from 'upgrade_types';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -528,7 +527,6 @@ export class ExperimentClientController {
       }
       return {
         ...rest,
-        experimentType: assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE,
         assignedCondition: {
           id: assignedCondition[0].id,
           conditionCode: assignedCondition[0].conditionCode,
@@ -663,7 +661,7 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest
   ): Promise<Log[]> {
-    let result = envelope.data.map(async log => {
+    const result = envelope.data.map(async (log) => {
       // getOriginalUserDoc call for alias
       const experimentUserDoc = await this.getUserDoc(log.object.assignee.id, request.logger);
       if (experimentUserDoc) {
