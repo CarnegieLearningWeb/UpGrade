@@ -4,20 +4,13 @@ import { EventBusService } from '../services/event-bus.service';
 import { ClientAppHook, CodeLanguage, MockAppType, MockClientAppInterfaceModel } from '../../../../shared/models';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
 import { AbstractMockAppService } from './abstract-mock-app.service';
-
-// There's probably a clever way to do this, but getting the right types automatically is tricky
-
-// import { UpgradeClient } from 'upgrade_client_local';
-// import { UpgradeClient } from 'upgrade_client_1_1_7';
-// import { UpgradeClient } from 'upgrade_client_3_0_18';
-// import { UpgradeClient } from 'upgrade_client_4_2_0';
+import { UpgradeClient } from 'upgrade_client_1_1_7';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MockPortalService extends AbstractMockAppService {
-  // public upgradeClient!: UpgradeClient;
-  public upgradeClient!: any;
+  public upgradeClient!: UpgradeClient;
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
 
@@ -96,7 +89,7 @@ export class MockPortalService extends AbstractMockAppService {
       .init()
       .then((initResponse: any) => { 
         console.log('initResponse', initResponse);
-        return this.upgradeClient.setGroupMembership(memberships)
+        return this.upgradeClient.setGroupMembership(memberships);
       })
       .then((groupResponse: any) => {
         console.log('groupResponse', groupResponse);
