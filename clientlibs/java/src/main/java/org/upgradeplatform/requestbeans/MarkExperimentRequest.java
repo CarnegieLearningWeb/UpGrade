@@ -31,7 +31,7 @@ public class MarkExperimentRequest {
 	public MarkExperimentRequest(String userId, MarkedDecisionPointStatus status, MarkExperimentRequestData data,
 			String clientError, String uniquifier) {
 		this.userId = userId;
-		this.status = status;
+		this.status = status.toString();
 		this.data = data;
 		this.clientError = clientError;
 		this.uniquifier = uniquifier;
