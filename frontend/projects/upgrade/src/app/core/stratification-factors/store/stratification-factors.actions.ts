@@ -3,7 +3,7 @@ import { StratificationFactors } from './stratification-factors.model';
 
 export const actionFetchStratificationFactors = createAction(
   '[Stratification Factors] Fetch Stratification Factors',
-  props<{ fromStarting?: boolean }>
+  props<{ isLoading: boolean }>()
 );
 
 export const actionFetchStratificationFactorsSuccess = createAction(

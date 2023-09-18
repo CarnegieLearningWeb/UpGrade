@@ -12,7 +12,7 @@ import { StratificationFactorsEffects } from './store/stratification-factors.eff
   imports: [
     CommonModule,
     EffectsModule.forFeature([StratificationFactorsEffects]),
-    StoreModule.forFeature('segments', stratificationFactorsReducer),
+    StoreModule.forFeature('stratificationFactors', stratificationFactorsReducer)
   ],
   providers: [StratificationFactorsService, StratificationFactorsDataService],
 })

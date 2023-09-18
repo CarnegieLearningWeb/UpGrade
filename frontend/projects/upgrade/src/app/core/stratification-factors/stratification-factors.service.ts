@@ -16,7 +16,7 @@ export class StratificationFactorsService {
 
   constructor(private store$: Store<AppState>) {}
 
-  fetchStratificationFactors() {
-    this.store$.dispatch(StratificationFactorsActions.actionFetchStratificationFactors());
+  fetchStratificationFactors(isLoading?: boolean) {
+    this.store$.dispatch(StratificationFactorsActions.actionFetchStratificationFactors({ isLoading }));
   }
 }
