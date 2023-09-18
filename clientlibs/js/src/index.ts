@@ -1,6 +1,12 @@
-import UpgradeClient from './UpgradeClient';
-import Assignment from './Assignment';
-import { UpGradeClientEnums, UpGradeClientInterfaces } from './types';
-import { MARKED_DECISION_POINT_STATUS } from '../../../types/src';
-export default UpgradeClient;
-export { Assignment, UpGradeClientEnums, UpGradeClientInterfaces, MARKED_DECISION_POINT_STATUS };
+import UpgradeClient from './UpGradeClient/UpgradeClient';
+import Assignment from './Assignment/Assignment';
+import { UpGradeClientEnums, UpGradeClientInterfaces, UpGradeClientRequests } from './types';
+import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+export {
+  UpgradeClient,
+  Assignment,
+  UpGradeClientEnums,
+  UpGradeClientInterfaces,
+  UpGradeClientRequests,
+  MARKED_DECISION_POINT_STATUS,
+};

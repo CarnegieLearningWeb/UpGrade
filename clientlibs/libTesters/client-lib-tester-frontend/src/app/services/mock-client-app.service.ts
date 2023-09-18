@@ -24,26 +24,26 @@ export class MockClientAppService {
   private availableMockApps: string[] = availableFrontendMockApps;
 
   constructor(
-    public bdayAppService: BirthdayPresentAppService,
-    public portalAppService: MockPortalService,
-    public generalTest_1_1: GeneralTestForVersion1Service,
-    public generalTest_3: GeneralTestForVersion3Service,
-    public generalTest_4_1: GeneralTestForVersion41Service,
+    // public bdayAppService: BirthdayPresentAppService,
+    // public portalAppService: MockPortalService,
+    // public generalTest_1_1: GeneralTestForVersion1Service,
+    // public generalTest_3: GeneralTestForVersion3Service,
+    // public generalTest_4_1: GeneralTestForVersion41Service,
     public generalTest_5: GeneralTestForVersion5Service,
-    public mathstream_AdaptiveSegmentSwapExperiment: MockMathstreamBrowserService,
+    // public mathstream_AdaptiveSegmentSwapExperiment: MockMathstreamBrowserService,
     public dataFetchService: DataFetchService,
     public eventBus: EventBusService,
     public clientLibraryService: ClientLibraryService
   ) {
     this.getTSBackendModels(); // look here
     this.mockClientAppInterfaceMap = {
-      [MOCK_APP_NAMES.BDAY_APP]: bdayAppService.getAppInterfaceModel(),
-      [MOCK_APP_NAMES.PORTAL_APP]: portalAppService.getAppInterfaceModel(),
-      [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_1_1]: generalTest_1_1.getAppInterfaceModel(),
-      [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_3_0]: generalTest_3.getAppInterfaceModel(),
-      [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_4_1]: generalTest_4_1.getAppInterfaceModel(),
+    //   [MOCK_APP_NAMES.BDAY_APP]: bdayAppService.getAppInterfaceModel(),
+    //   [MOCK_APP_NAMES.PORTAL_APP]: portalAppService.getAppInterfaceModel(),
+    //   [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_1_1]: generalTest_1_1.getAppInterfaceModel(),
+    //   [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_3_0]: generalTest_3.getAppInterfaceModel(),
+    //   [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_4_1]: generalTest_4_1.getAppInterfaceModel(),
       [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_5_0]: generalTest_5.getAppInterfaceModel(),
-      [MOCK_APP_NAMES.MATHSTREAM_AdaptiveSegmentSwapExperiment]: mathstream_AdaptiveSegmentSwapExperiment.getAppInterfaceModel(),
+      // [MOCK_APP_NAMES.MATHSTREAM_AdaptiveSegmentSwapExperiment]: mathstream_AdaptiveSegmentSwapExperiment.getAppInterfaceModel(),
     };
   }
 
