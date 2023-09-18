@@ -9,9 +9,9 @@
 		at the same time that happen to rev to the same new version will be caught 
 		by a merge conflict. -->
 
-	<!-- 4.1.1 -> 4.1.2: revert apachec connector provider -->
+	<!-- 4.1.12 -> 4.1.13: make 'status' a string in mark payload  -->
 
-	<version>4.1.12</version>
+	<version>4.1.13</version>
 	<build>
 		<plugins>
 			<plugin>
