@@ -9,6 +9,8 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { StratificationFactor } from '../models/StratificationFactor';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
+import uuid from 'uuid';
+import { ErrorWithType } from '../errors/ErrorWithType';
 @Service()
 export class StratificationService {
   constructor(
@@ -72,6 +74,18 @@ export class StratificationService {
     return this.calculateStratificationResult(queryBuilder)[0];
   }
 
+  public async getCSVDataByFactor(factor: string, logger: UpgradeLogger): Promise<any> {
+    logger.info({ message: `Download CSV stratification by factor. factorId: ${factor}` });
+
+    return await this.userStratificationRepository
+      .createQueryBuilder('usf')
+      .select(['user.id AS user', 'usf.stratificationFactorValue AS value'])
+      .innerJoin('usf.user', 'user')
+      .innerJoin('usf.stratificationFactor', 'sf')
+      .where('sf.id = :factor', { factor })
+      .getRawMany();
+  }
+
   public async deleteStratification(factor: string, logger: UpgradeLogger): Promise<StratificationFactor> {
     logger.info({ message: `Delete stratification by factor. factorId: ${factor}` });
 
@@ -88,32 +102,81 @@ export class StratificationService {
       const userDetails = await transactionalEntityManager.getRepository(ExperimentUser).find({
         where: { id: In(userStratificationData.map((userData) => userData.userId)) },
       });
+      const usersRemaining = userStratificationData
+        .filter((userData) => {
+          return !userDetails.some((user) => user.id === userData.userId);
+        })
+        .map((x) => {
+          return {
+            id: x.userId,
+          };
+        });
+      const usersDocToSave = [...new Set(usersRemaining)];
 
       const stratificationFactorDetials = await transactionalEntityManager.getRepository(StratificationFactor).find({
         where: { stratificationFactorName: In(userStratificationData.map((factorData) => factorData.factor)) },
       });
+      const stratificationFactorRemaining = userStratificationData.filter((factorData) => {
+        return !stratificationFactorDetials.some((factor) => factor.id === factorData.factor);
+      });
+      const stratificationFactorToSave = [...new Set(stratificationFactorRemaining)].map((x) => {
+        return { id: uuid(), stratificationFactorName: x.factor };
+      });
 
-      const userStratificationDataToSave = userStratificationData.map((data) => {
-        const userFound = userDetails.find((user) => user.id === data.userId);
-        const stratificationFactorFound = stratificationFactorDetials.find(
+      let userDocCreated: ExperimentUser[], stratificationFactorDocCreated: StratificationFactor[];
+      try {
+        [userDocCreated, stratificationFactorDocCreated] = await Promise.all([
+          transactionalEntityManager.getRepository(ExperimentUser).save(usersDocToSave),
+          transactionalEntityManager.getRepository(StratificationFactor).save(stratificationFactorToSave),
+        ]);
+      } catch (err) {
+        const error = err as ErrorWithType;
+        error.details = 'Error in creating not-founded Experiment User & Stratification factors';
+        error.type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
+
+      userDetails.push(...userDocCreated);
+      stratificationFactorDetials.push(...stratificationFactorDocCreated);
+
+      const userStratificationDataToSave: Partial<UserStratificationFactor>[] = userStratificationData.map((data) => {
+        let userFound: ExperimentUser = userDetails.find((user) => user.id === data.userId);
+        let stratificationFactorFound: StratificationFactor = stratificationFactorDetials.find(
           (factor) => factor.stratificationFactorName === data.factor
         );
 
-        if (!userFound) {
-          const error = new Error('User: ' + data.userId + ' not found.');
-          (error as any).type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-        } else if (!stratificationFactorFound) {
-          const error = new Error('StratificationFactor: ' + data.factor + ' not found. ');
-          (error as any).type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-        } else {
-          return {
-            user: userFound,
-            stratificationFactor: stratificationFactorFound,
-            stratificationFactorValue: data.value,
-          };
-        }
+        // if (!userFound) {
+        //   try {
+        //     userFound = await transactionalEntityManager.getRepository(ExperimentUser).save({ id: data.userId });
+        //     userDetails.push(userFound);
+        //   } catch (err) {
+        //     const error = err as ErrorWithType;
+        //     error.details = 'Error in creating not-founded Experiment User';
+        //     error.type = SERVER_ERROR.QUERY_FAILED;
+        //     logger.error(error);
+        //     throw error;
+        //   }
+        // }
+        // if (!stratificationFactorFound) {
+        //   try {
+        //     stratificationFactorFound = await transactionalEntityManager
+        //       .getRepository(StratificationFactor)
+        //       .save({ id: uuid(), stratificationFactorName: data.factor });
+        //     stratificationFactorDetials.push(stratificationFactorFound);
+        //   } catch (err) {
+        //     const error = err as ErrorWithType;
+        //     error.details = 'Error in creating not-founded Stratification Factor';
+        //     error.type = SERVER_ERROR.QUERY_FAILED;
+        //     logger.error(error);
+        //     throw error;
+        //   }
+        // }
+        return {
+          user: userFound,
+          stratificationFactor: stratificationFactorFound,
+          stratificationFactorValue: data.value,
+        };
       });
 
       return await transactionalEntityManager
