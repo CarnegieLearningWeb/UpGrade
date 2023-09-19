@@ -1,6 +1,7 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-// const { args } = require('nps-utils');
-// const versionCommand = `npm version ${args.type} --git-tag-version=false`;
+/**
+ * Version bump will bump the version of all packages in the monorepo
+ * It also will tag the commit with the new version
+ */
 
 function versionBump(bumpType) {
   return `
