@@ -49,9 +49,7 @@ import {
   FactorLevelData,
   FactorialFactorTableRowData,
   FactorialLevelTableRowData,
-  ExperimentFactorialFormDesignData,
   ExperimentFactorData,
-  ExperimentLevelData,
 } from './store/experiment-design-stepper.model';
 import {
   actionUpdateFactorialConditionTableData,
@@ -344,18 +342,6 @@ export class ExperimentDesignStepperService {
     });
 
     return conditionPayloads;
-  }
-
-  createFactorialDesignDataFromForm(
-    factorialFormDesignData: ExperimentFactorialFormDesignData
-  ): ExperimentFactorData[] {
-    const factorsData: ExperimentFactorData[] = factorialFormDesignData.factors.map((factor) => {
-      const levelsData: ExperimentLevelData[] = factor.levels.map((level) => {
-        return { ...level, payload: { type: PAYLOAD_TYPE.STRING, value: level.payload } };
-      });
-      return { ...factor, levels: levelsData };
-    });
-    return factorsData;
   }
 
   createNewFactorialConditionTableData(designData: ExperimentFactorialDesignData): FactorialConditionTableRowData[] {
