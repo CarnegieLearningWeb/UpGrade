@@ -9,10 +9,13 @@ import {
   MockClientAppUser,
 } from '../../../../shared/models';
 
-import UpgradeClient, { Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser';
-import { CaliperEnvelope, IExperimentAssignmentv5 } from 'upgrade_client_local/dist/types/src'
+import { UpgradeClient, Assignment, UpGradeClientInterfaces } from 'upgrade_client_local/dist/browser-lite';
+
+import { CaliperEnvelope, IExperimentAssignmentv5 } from 'upgrade_client_local/dist/types/src';
 import { AbstractMockAppService } from './abstract-mock-app.service';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
+import { HttpClient } from '@angular/common/http';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -37,7 +40,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
     CONDITION_2: 'variant_X',
     CONDITION_3: 'condition3',
     CONDITION_4: 'condition4',
-  }
+  };
   public GROUPS = ['schoolId', 'classId', 'instructorId'];
   public CONTEXT = 'assign-prog'; // what should this be really?
   public HOOKNAMES = {
@@ -61,7 +64,11 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
     { site: this.SITES.TEST, target: this.TARGETS.TARGET_2 },
   ];
 
-  constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
+  constructor(
+    public override clientLibraryService: ClientLibraryService,
+    public override eventBus: EventBusService,
+    private angularHttpClient: HttpClient
+  ) {
     super(MOCK_APP_NAMES.GENERAL_TS_FRONTEND_5_0, eventBus, clientLibraryService);
   }
 
@@ -236,9 +243,39 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
 
   /******************* simulated client app code ****************************************************/
 
+  private createCustomHttpClient(): UpGradeClientInterfaces.IHttpClientWrapper {
+    const customHttpClient: UpGradeClientInterfaces.IHttpClientWrapper = {
+      config: {
+        headers: {
+          XTest: 'test',
+        },
+      },
+      doGet: (url: string, options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig): Promise<any> => {
+        return lastValueFrom(this.angularHttpClient.get(url, options));
+      },
+      doPost: (
+        url: string,
+        body: any,
+        options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig
+      ): Promise<any> => {
+        return lastValueFrom(this.angularHttpClient.post(url, body, options));
+      },
+      doPatch: (
+        url: string,
+        body: any,
+        options: UpGradeClientInterfaces.IHttpClientWrapperRequestConfig
+      ): Promise<any> => {
+        return lastValueFrom(this.angularHttpClient.patch(url, body, options));
+      },
+    };
+    return customHttpClient;
+  }
+
   private async doInit(userId: string) {
     console.log('login hook called:', userId);
-    this.upgradeClient = this.constructUpgradeClient(userId);
+    const httpClient = this.createCustomHttpClient();
+
+    this.upgradeClient = this.constructUpgradeClient(userId, httpClient);
     console.log({ upgradeClient: this.upgradeClient });
 
     try {
@@ -304,7 +341,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('No upgradeClient found. Maybe you need to run login hook first?');
     }
     try {
-      const markResponse: UpGradeClientInterfaces.IMarkExperimentPoint = await this.upgradeClient.markDecisionPoint(
+      const markResponse: UpGradeClientInterfaces.IMarkDecisionPoint = await this.upgradeClient.markDecisionPoint(
         this.SITES.TEST,
         this.TARGETS.TARGET_1,
         'condition',
@@ -361,7 +398,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('User info is missing groups:', user);
     }
     try {
-      const groupMembershipResponse: UpGradeClientInterfaces.IUser = await this.upgradeClient.setGroupMembership(
+      const groupMembershipResponse: UpGradeClientInterfaces.IExperimentUser = await this.upgradeClient.setGroupMembership(
         user.groups
       );
       console.log({ groupMembershipResponse });
@@ -378,7 +415,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('User info is missing working groups:', user);
     }
     try {
-      const workingGroupMembershipResponse: UpGradeClientInterfaces.IUser = await this.upgradeClient.setWorkingGroup(
+      const workingGroupMembershipResponse: UpGradeClientInterfaces.IExperimentUser = await this.upgradeClient.setWorkingGroup(
         user.workingGroup
       );
       console.log({ workingGroupMembershipResponse });
@@ -426,7 +463,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       },
     ];
     try {
-      const logResponse: UpGradeClientInterfaces.ILog[] = await this.upgradeClient.log(logRequest);
+      const logResponse: UpGradeClientInterfaces.ILogResponse[] = await this.upgradeClient.log(logRequest);
       console.log({ logResponse });
     } catch (err) {
       console.error(err);
