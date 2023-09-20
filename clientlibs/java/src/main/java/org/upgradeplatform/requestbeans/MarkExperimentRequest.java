@@ -9,7 +9,7 @@ public class MarkExperimentRequest {
 	private String site;
 	private String target;
 	private String condition;
-	private MarkedDecisionPointStatus status;
+	private String status;
 	
 	public MarkExperimentRequest() {}
 
@@ -27,7 +27,7 @@ public class MarkExperimentRequest {
 		this.site = site;
 		this.target = target;
 		this.condition = condition;
-		this.status = status;
+		this.status = status.toString();
 	}
 
 	public String getUserId() {
@@ -62,11 +62,11 @@ public class MarkExperimentRequest {
 		this.condition = condition;
 	}
 
-	public MarkedDecisionPointStatus getStatus() {
+	public String getStatus() {
 		return status;
 	}
 
 	public void setStatus(MarkedDecisionPointStatus status){
-		this.status = status;
+		this.status = status.toString();
 	}
 }
