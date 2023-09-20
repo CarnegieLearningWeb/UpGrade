@@ -3,6 +3,9 @@ import { ImportStratificationsComponent } from './import-stratifications/import-
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import * as clonedeep from 'lodash.clonedeep';
 import { DeleteStratificationComponent } from './delete-stratification/delete-stratification.component';
+import { StratificationFactor } from '../../../../../core/stratification-factors/store/stratification-factors.model';
+import { Subscription } from 'rxjs';
+import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
 
 @Component({
   selector: 'users-stratification-factor-list',
@@ -11,8 +14,10 @@ import { DeleteStratificationComponent } from './delete-stratification/delete-st
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StratificationComponent implements OnInit {
-  isLoadingStratifications$ = false;
-  stratifications: { factor: string; summary: string }[] = [];
+  allStratificationFactors: StratificationFactor[];
+  allStratificationFactorsSub: Subscription;
+  isLoadingStratificationFactors$ = this.stratificationFactorsService.isLoadingStratificationFactors$;
+  stratificationFactorsForTable: { id: string; factor: string; summary: string }[] = [];
   displayedColumns: string[] = ['factor', 'summary', 'actions'];
   // data = [
   //   { factor: 'f1', summary: 'f1 summary' },
@@ -40,28 +45,36 @@ export class StratificationComponent implements OnInit {
     },
   ];
 
-  constructor(private dialog: MatDialog) {}
+  constructor(private dialog: MatDialog, private stratificationFactorsService: StratificationFactorsService) {}
 
   ngOnInit(): void {
-    this.stratifications = this.convertToTableformat();
+    this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(
+      (allStratificationFactors) => {
+        this.allStratificationFactors = allStratificationFactors.map((stratificationFactor) => ({
+          ...stratificationFactor,
+          notApplicable: stratificationFactor.notApplicable || 0,
+        }));
+      }
+    );
+    this.stratificationFactorsForTable = this.convertToTableformat();
   }
 
   convertToTableformat() {
-    const stratificationFactors = this.dataSource.map((element) => {
+    const stratificationFactors = this.allStratificationFactors.map((element) => {
       let factorSummary = 'UUIDs';
-      const allkeys = Object.keys(element.value);
+      const allkeys = Object.keys(element.values);
       let totalUsers = 0;
       let tempSummary: string;
       allkeys.forEach((key) => {
         tempSummary = tempSummary
-          ? tempSummary + '; ' + key + '=' + element.value[key]
-          : key + '=' + element.value[key];
-        totalUsers += element.value[key];
+          ? tempSummary + '; ' + key + '=' + element.values[key]
+          : key + '=' + element.values[key];
+        totalUsers += element.values[key];
       });
-      tempSummary = tempSummary ? tempSummary + '; N/A=' + element.nonApplicable : 'N/A=' + element.nonApplicable;
-      totalUsers += element.nonApplicable;
+      tempSummary = tempSummary ? tempSummary + '; N/A=' + element.notApplicable : 'N/A=' + element.notApplicable;
+      totalUsers += element.notApplicable;
       factorSummary = totalUsers.toString() + ' ' + factorSummary + ' (' + tempSummary + ')';
-      return { factor: element.factor, summary: factorSummary };
+      return { id: element.factorId, factor: element.factor, summary: factorSummary };
     });
     return stratificationFactors;
   }
@@ -87,9 +100,14 @@ export class StratificationComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((isDeleteButtonClicked) => {
       if (isDeleteButtonClicked) {
+        this.stratificationFactorsService.deleteStratificationFactors(rowData.id);
         console.log('handle delete:' + rowIndex);
         // Add code of further actions after deleting strata factor details
       }
     });
+  }
+
+  ngOnDestroy() {
+    this.allStratificationFactorsSub.unsubscribe();
   }
 }

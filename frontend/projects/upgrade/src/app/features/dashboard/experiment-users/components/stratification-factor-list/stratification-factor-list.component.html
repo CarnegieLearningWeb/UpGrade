@@ -16,8 +16,8 @@
     </div>
   </div>
   <div class="table-container">
-    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingStratifications$ | async"></mat-progress-bar>
-    <mat-table [dataSource]="stratifications" class="table">
+    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingStratificationFactors$ | async"></mat-progress-bar>
+    <mat-table [dataSource]="stratificationFactorsForTable" class="table">
       <!-- Factor Column -->
       <ng-container matColumnDef="factor">
         <mat-header-cell class="ft-12-700" *matHeaderCellDef>

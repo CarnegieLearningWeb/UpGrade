@@ -10,4 +10,9 @@ export class StratificationFactorsDataService {
     const url = this.environment.api.stratification;
     return this.http.get(url);
   }
+
+  deleteStratificationFactor(id: string) {
+    const url = `${this.environment.api.stratification}/${id}`;
+    return this.http.delete(url);
+  }
 }

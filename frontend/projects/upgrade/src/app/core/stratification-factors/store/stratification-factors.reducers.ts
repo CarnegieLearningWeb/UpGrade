@@ -1,9 +1,9 @@
-import { StratificationFactorsState, StratificationFactors } from './stratification-factors.model';
+import { StratificationFactorsState, StratificationFactor } from './stratification-factors.model';
 import { Action, createReducer, on } from '@ngrx/store';
 import { EntityAdapter, createEntityAdapter } from '@ngrx/entity';
 import * as StratificationFactorsActions from '../store/stratification-factors.actions';
 
-export const adapter: EntityAdapter<StratificationFactors> = createEntityAdapter<StratificationFactors>();
+export const adapter: EntityAdapter<StratificationFactor> = createEntityAdapter<StratificationFactor>();
 
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
@@ -22,7 +22,18 @@ const reducer = createReducer(
     };
     return adapter.upsertMany(stratificationFactors, { ...newState, isLoading: false });
   }),
-  on(StratificationFactorsActions.actionFetchStratificationFactorsFailure, (state) => ({ ...state, isLoading: false }))
+  on(StratificationFactorsActions.actionDeleteStratificationFactorSuccess, (state, { stratificationFactor }) =>
+    adapter.removeOne(stratificationFactor.factorId, state)
+  ),
+  on(
+    StratificationFactorsActions.actionFetchStratificationFactorsFailure,
+    StratificationFactorsActions.actionDeleteStratificationFactorFailure,
+    (state) => ({ ...state, isLoading: false })
+  ),
+  on(
+    StratificationFactorsActions.actionSetIsLoadingStratificationFactors,
+    (state, { isLoadingStratificationFactors }) => ({ ...state, isLoadingStratificationFactors })
+  )
 );
 
 export function stratificationFactorsReducer(state: StratificationFactorsState | undefined, action: Action) {

@@ -7,7 +7,7 @@ export const selectStratificationFactorsState =
 
 export const selectAllStratificationFactors = createSelector(selectStratificationFactorsState, selectAll);
 
-export const selectIsStratificationFactorsLoading = createSelector(
+export const selectIsLoadingStratificationFactors = createSelector(
   selectStratificationFactorsState,
   (state) => state.isLoading
 );

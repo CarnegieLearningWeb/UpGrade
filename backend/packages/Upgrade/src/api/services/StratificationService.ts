@@ -52,7 +52,8 @@ export class StratificationService {
       .groupBy('sf.id, sf.stratificationFactorName, value')
       .getRawMany();
 
-    return this.calculateStratificationResult(queryBuilder);
+    const allStratificationFactors = this.calculateStratificationResult(queryBuilder);
+    return allStratificationFactors;
   }
 
   public async getStratificationByFactor(factor: string, logger: UpgradeLogger): Promise<FactorStrata> {
