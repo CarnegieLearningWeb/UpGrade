@@ -36,7 +36,12 @@ export class StratificationFactorRepository extends Repository<StratificationFac
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('stratificationFactorRepository', 'deleteStratificationFactorById', { id }, errorMsg);
+        const errorMsgString = repositoryError(
+          'stratificationFactorRepository',
+          'deleteStratificationFactorById',
+          { id },
+          errorMsg
+        );
         logger.error(errorMsg);
         throw errorMsgString;
       });

@@ -1,4 +1,4 @@
-import { JsonController, Get, Delete, Param, Authorized, Post, Req, UseBefore, Res, Body, UploadedFile } from 'routing-controllers';
+import { JsonController, Get, Delete, Param, Authorized, Post, Req, UseBefore, Res } from 'routing-controllers';
 import { SERVER_ERROR } from 'upgrade_types';
 import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
@@ -8,25 +8,9 @@ import { FactorStrata, StratificationInputValidator } from './validators/Stratif
 import { StratificationFactor } from '../models/StratificationFactor';
 import * as express from 'express';
 import { Parser } from 'json2csv';
-
-import formidable, { errors as formidableErrors } from 'formidable';
-import { CSVMiddleware } from '../middlewares/BodyParserMiddleware copy';
 import multer from 'multer';
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-const fs = require('fs');
-const { parse } = require('csv-parse');
-
-
-// import { CSVMiddleware } from '../middlewares/BodyParserMiddleware copy';
-// import multer from 'multer';
-import { createObjectCsvWriter } from 'csv-writer';
-
-// //const multer = require('multer');
-// let storage = multer.memoryStorage();
-// let upload = multer({ storage: storage });
-// const fs = require('fs');
-// const { parse } = require('csv-parse');
 
 /**
  * @swagger
@@ -258,12 +242,11 @@ export class StratificationController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Get('/download/:factor')
-  // @UseBefore(CSVMiddleware)
   public async getStratificationByFactorId(
     @Param('factor') factor: string,
     @Req() request: AppRequest,
     @Res() res: express.Response
-  ): Promise<any> {
+  ): Promise<void> {
     if (!factor) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : stratification Factor should not be null.'));
     }
@@ -278,53 +261,13 @@ export class StratificationController {
       );
     }
 
-    // const csv = JSONToCSV(req.body, { fields: ["Customer Name", "Business Name", "Customer Email", "Customer ID", "School ID", "Student Count", "Admin Count", "Courses Count" ]})
-
-    // res.attachment('customers.csv').send(csv)
-
-    /*const data = [
-      { name: 'Alice', age: 25, city: 'New York' },
-      { name: 'Bob', age: 30, city: 'Los Angeles' },
-      { name: 'Charlie', age: 22, city: 'Chicago' },
-    ];
-
-    // Create a CSV writer
-    const csvWriter = createObjectCsvWriter({
-      path: 'data.csv',
-      header: [
-        { id: 'name', title: 'Name' },
-        { id: 'age', title: 'Age' },
-        { id: 'city', title: 'City' },
-      ],
-    });
-
-    // Write the data to the CSV file
-    csvWriter
-      .writeRecords(data)
-      .then(() => {
-        // Set the response headers to specify a CSV content type and trigger download
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', 'attachment; filename=data.csv');
-        res.set('Content-Type', 'text/csv; charset=UTF-8');
-
-        // Pipe the CSV file to the response
-        const fileStream = fs.createReadStream('data.csv');
-        fileStream.pipe(res);
-      })
-      .catch((error) => {
-        console.error('Error writing CSV:', error);
-        res.status(500).send('Internal Server Error');
-      });*/
-
     const data = await this.stratificatonService.getCSVDataByFactor(factor, request.logger);
-    const parser = new Parser();
+
     // Convert JSON data to CSV
+    const parser = new Parser();
     const csv = parser.parse(data);
 
     // return csv file with appropriate headers to request;
-
-
-    console.log(csv);
     res.setHeader('Content-Type', 'text/csv; charset=UTF-8');
     res.setHeader('Content-Disposition', 'attachment; filename="data.csv"');
     res.send(csv);
@@ -362,7 +305,6 @@ export class StratificationController {
   @UseBefore(upload.single('file'))
   public insertStratification(@Req() request: AppRequest): Promise<UserStratificationFactor[]> {
     const csvData = request.file['buffer'].toString();
-    console.log(csvData.toString()); // TODO: remove this
 
     const rows = csvData.split('\n');
     const columnNames = rows[0].split(',');

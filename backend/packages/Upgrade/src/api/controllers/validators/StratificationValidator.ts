@@ -3,7 +3,7 @@ import { IsInt, IsNotEmpty, IsObject, IsOptional, IsString, IsUUID } from 'class
 export class FactorStrata {
   @IsUUID()
   @IsString()
-  public id: string;
+  public factorId: string;
 
   @IsNotEmpty()
   @IsString()
