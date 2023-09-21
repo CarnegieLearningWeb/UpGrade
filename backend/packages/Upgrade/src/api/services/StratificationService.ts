@@ -131,8 +131,12 @@ export class StratificationService {
       const stratificationFactorRemaining = userStratificationData.filter((factorData) => {
         return !stratificationFactorDetials.some((factor) => factor.stratificationFactorName === factorData.factor);
       });
-      const stratificationFactorToSave = [...new Set(stratificationFactorRemaining)].map((stratificationFactor) => {
-        return { id: uuid(), stratificationFactorName: stratificationFactor.factor };
+
+      // create a SET of stratificationFactors not found in DB
+      const stratificationFactorToSave = [
+        ...new Set(stratificationFactorRemaining.map((stratificationFactor) => stratificationFactor.factor)),
+      ].map((factor) => {
+        return { id: uuid(), stratificationFactorName: factor };
       });
 
       let userDocCreated: ExperimentUser[], stratificationFactorDocCreated: StratificationFactor[];
