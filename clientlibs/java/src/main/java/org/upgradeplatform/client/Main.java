@@ -69,8 +69,7 @@ public class Main {
                                                     System.out.println(prefix() + "success getting condition; marking");
 
                                                     Condition condition = expResult.getAssignedCondition();
-                                                    // String code = condition == null ? null : condition.getConditionCode();
-                                                    String code = null;
+                                                    String code = condition == null ? null : condition.getConditionCode();
 
                                                     System.out.println(condition);
                                                     System.out.println(code);
