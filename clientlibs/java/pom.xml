@@ -9,8 +9,9 @@
 		at the same time that happen to rev to the same new version will be caught 
 		by a merge conflict. -->
 
-	<!-- 4.3.0 -> 4.3.1: add javadoc for condition code vs. payload value -->
-	<version>5.0.6</version>
+  <!-- 5.0.6 -> 5.0.7: turn off v1 mark validation -->
+
+	<version>5.0.7</version>
 	<build>
 		<plugins>
 			<plugin>

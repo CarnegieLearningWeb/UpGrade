@@ -69,7 +69,9 @@ public class Main {
                                                     System.out.println(prefix() + "success getting condition; marking");
 
                                                     Condition condition = expResult.getAssignedCondition();
-                                                    String code = condition == null ? null : condition.getConditionCode();
+                                                    // String code = condition == null ? null : condition.getConditionCode();
+                                                    String code = null;
+
                                                     System.out.println(condition);
                                                     System.out.println(code);
                                                     expResult.markDecisionPoint(MarkedDecisionPointStatus.CONDITION_APPLIED, new Date().toString(), new ResponseCallback<MarkDecisionPoint>(){

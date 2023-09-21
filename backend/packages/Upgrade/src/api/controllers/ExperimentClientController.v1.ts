@@ -17,12 +17,7 @@ import { ExperimentAssignmentValidator } from './validators/ExperimentAssignment
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
-import {
-  SERVER_ERROR,
-  IGroupMembership,
-  IUserAliases,
-  IWorkingGroup,
-} from 'upgrade_types';
+import { SERVER_ERROR, IGroupMembership, IUserAliases, IWorkingGroup } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator.v1';
 import { ExperimentError } from '../models/ExperimentError';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -420,7 +415,7 @@ export class ExperimentClientController {
   public async markExperimentPoint(
     @Req()
     request: AppRequest,
-    @Body({ validate: true })
+    @Body({ validate: false })
     experiment: MarkExperimentValidator
   ): Promise<IMonitoredDeciosionPoint> {
     request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
