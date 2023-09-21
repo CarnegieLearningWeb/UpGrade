@@ -67,9 +67,9 @@ public class Main {
                                                 @Override
                                                 public void onSuccess(@NonNull Assignment expResult){
                                                     System.out.println(prefix() + "success getting condition; marking");
+                   
                                                     Condition condition = expResult.getAssignedCondition();
                                                     String code = condition == null ? null : condition.getConditionCode();
-
                                                     System.out.println(condition);
                                                     System.out.println(code);
                                                     expResult.markDecisionPoint(MarkedDecisionPointStatus.CONDITION_APPLIED, new Date().toString(), new ResponseCallback<MarkDecisionPoint>(){
