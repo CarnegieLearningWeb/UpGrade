@@ -303,8 +303,7 @@ export class StratificationController {
   @Post()
   @UseBefore(upload.single('file'))
   public insertStratification(@Req() request: AppRequest): Promise<UserStratificationFactor[]> {
-    const csvData = request.file['buffer'].toString();
-
+    const csvData = request.body[0].file
     const rows = csvData.split('\n');
     const columnNames = rows[0].split(',');
 

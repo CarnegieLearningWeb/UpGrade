@@ -54,6 +54,22 @@ export class StratificationFactorsEffects {
     )
   );
 
+  importStratificationFactor$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(StratificationFactorsActions.actionImportStratificationFactor),
+      map((action) => ({ csvData: action.csvData })),
+      filter(({ csvData }) => !!csvData),
+      switchMap(({ csvData }) =>
+        this.stratificationFactorsDataService.importStratificationFactors(csvData).pipe(
+          map((data) => {
+            return StratificationFactorsActions.actionImportStratificationFactorSuccess();
+          }),
+          catchError(() => [StratificationFactorsActions.actionImportStratificationFactorFailure()])
+        )
+      )
+    )
+  );
+
   exportStratificationFactor$ = createEffect(() =>
     this.actions$.pipe(
       ofType(StratificationFactorsActions.actionExportStratificationFactor),

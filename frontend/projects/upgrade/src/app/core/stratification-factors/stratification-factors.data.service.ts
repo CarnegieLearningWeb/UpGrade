@@ -11,6 +11,11 @@ export class StratificationFactorsDataService {
     return this.http.get(url);
   }
 
+  importStratificationFactors(stratificationFactors) {
+    const url = this.environment.api.stratification;
+    return this.http.post(url, stratificationFactors);
+  }
+
   deleteStratificationFactor(id: string) {
     const url = `${this.environment.api.stratification}/${id}`;
     return this.http.delete(url);
