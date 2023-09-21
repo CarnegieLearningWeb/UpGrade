@@ -89,6 +89,7 @@ export class StratificationComponent implements OnInit {
     console.log('handle download:' + rowIndex);
     console.log(rowData);
     // Add code of further actions after downloading strata factor details
+    this.stratificationFactorsService.exportStratificationFactors(rowData.id);
   }
 
   handleDelete(rowData, rowIndex) {

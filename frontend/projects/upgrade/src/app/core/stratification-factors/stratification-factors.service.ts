@@ -23,4 +23,8 @@ export class StratificationFactorsService {
   deleteStratificationFactors(factorId: string) {
     this.store$.dispatch(StratificationFactorsActions.actionDeleteStratificationFactor({ factorId }));
   }
+
+  exportStratificationFactors(factorId: string) {
+    this.store$.dispatch(StratificationFactorsActions.actionExportStratificationFactor({ factorId }));
+  }
 }

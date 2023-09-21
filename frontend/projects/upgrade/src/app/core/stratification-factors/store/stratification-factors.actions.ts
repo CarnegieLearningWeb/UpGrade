@@ -29,6 +29,19 @@ export const actionDeleteStratificationFactorFailure = createAction(
   '[Stratification Factors] Delete Stratification Factor Failure'
 );
 
+export const actionExportStratificationFactor = createAction(
+  '[Stratification Factors] Export Stratification Factor',
+  props<{ factorId: string }>()
+);
+
+export const actionExportStratificationFactorSuccess = createAction(
+  '[Stratification Factors] Export Stratification Factor Success'
+);
+
+export const actionExportStratificationFactorFailure = createAction(
+  '[Stratification Factors] Export Stratification Factor Failure'
+);
+
 export const actionSetIsLoadingStratificationFactors = createAction(
   '[Segments] Set Is Loading Stratification Factors',
   props<{ isLoadingStratificationFactors: boolean }>()

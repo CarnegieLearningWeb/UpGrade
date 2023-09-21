@@ -52,4 +52,39 @@ export class StratificationFactorsEffects {
       )
     )
   );
+
+  exportStratificationFactor$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(StratificationFactorsActions.actionExportStratificationFactor),
+      map((action) => ({ factorId: action.factorId })),
+      filter(({ factorId }) => !!factorId),
+      switchMap(({ factorId }) =>
+        this.stratificationFactorsDataService.exportStratificationFactor(factorId).pipe(
+          map((data) => {
+            this.download('factor1', data);
+            return StratificationFactorsActions.actionExportStratificationFactorSuccess();
+          }),
+          catchError(() => [StratificationFactorsActions.actionExportStratificationFactorFailure()])
+        )
+      )
+    )
+  );
+
+  private download(filename, data) {
+    // const element = document.createElement('a');
+    // isZip
+    //   ? element.setAttribute('href', 'data:application/zip;base64,' + text)
+    //   : element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
+    // element.setAttribute('download', filename);
+    // element.style.display = 'none';
+    // document.body.appendChild(element);
+    // element.click();
+    // document.body.removeChild(element);
+
+    const hiddenElement = document.createElement('a');
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(data); // experimentData is the text response of the http request.
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'experiment.csv';
+    hiddenElement.click();
+  }
 }

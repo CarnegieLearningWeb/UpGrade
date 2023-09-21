@@ -15,4 +15,9 @@ export class StratificationFactorsDataService {
     const url = `${this.environment.api.stratification}/${id}`;
     return this.http.delete(url);
   }
+
+  exportStratificationFactor(id: string) {
+    const url = `${this.environment.api.stratification}/download/${id}`;
+    return this.http.get(url);
+  }
 }
