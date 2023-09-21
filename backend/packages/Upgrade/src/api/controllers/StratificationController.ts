@@ -246,7 +246,7 @@ export class StratificationController {
     @Param('factor') factor: string,
     @Req() request: AppRequest,
     @Res() res: express.Response
-  ): Promise<void> {
+  ): Promise<any> {
     if (!factor) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : stratification Factor should not be null.'));
     }
@@ -270,8 +270,7 @@ export class StratificationController {
     // return csv file with appropriate headers to request;
     res.setHeader('Content-Type', 'text/csv; charset=UTF-8');
     res.setHeader('Content-Disposition', 'attachment; filename="data.csv"');
-    res.send(csv);
-    return;
+    return res.send(csv);
   }
 
   /**

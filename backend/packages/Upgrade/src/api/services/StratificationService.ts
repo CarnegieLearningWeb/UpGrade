@@ -93,7 +93,7 @@ export class StratificationService {
     return await this.stratificationFactorRepository
       .createQueryBuilder('sf')
       .select(['usf.user AS uuid', `usf.stratificationFactorValue AS "${factorName}"`])
-      .innerJoin('sf.userStratificationFactor', 'usf')
+      .leftJoin('sf.userStratificationFactor', 'usf')
       .where('sf.id = :factor', { factor })
       .getRawMany();
   }
