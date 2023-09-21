@@ -3,7 +3,9 @@ import { Action, createReducer, on } from '@ngrx/store';
 import { EntityAdapter, createEntityAdapter } from '@ngrx/entity';
 import * as StratificationFactorsActions from '../store/stratification-factors.actions';
 
-export const adapter: EntityAdapter<StratificationFactor> = createEntityAdapter<StratificationFactor>();
+export const adapter: EntityAdapter<StratificationFactor> = createEntityAdapter<StratificationFactor>({
+  selectId: (factor) => factor.factorId,
+});
 
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 

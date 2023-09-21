@@ -42,9 +42,10 @@ export class StratificationFactorsEffects {
       switchMap((id) =>
         this.stratificationFactorsDataService.deleteStratificationFactor(id).pipe(
           map((data: any) => {
-            this.router.navigate(['/home']);
+            this.router.navigate(['/participants']);
+            const stratificationFactor = { ...data[0], factorId: data[0].id, factor: data[0].stratificationFactorName };
             return StratificationFactorsActions.actionDeleteStratificationFactorSuccess({
-              stratificationFactor: data[0],
+              stratificationFactor: stratificationFactor,
             });
           }),
           catchError(() => [StratificationFactorsActions.actionDeleteStratificationFactorFailure()])
@@ -61,7 +62,7 @@ export class StratificationFactorsEffects {
       switchMap(({ factorId }) =>
         this.stratificationFactorsDataService.exportStratificationFactor(factorId).pipe(
           map((data) => {
-            this.download('factor1', data);
+            this.download(data);
             return StratificationFactorsActions.actionExportStratificationFactorSuccess();
           }),
           catchError(() => [StratificationFactorsActions.actionExportStratificationFactorFailure()])
@@ -70,21 +71,16 @@ export class StratificationFactorsEffects {
     )
   );
 
-  private download(filename, data) {
-    // const element = document.createElement('a');
-    // isZip
-    //   ? element.setAttribute('href', 'data:application/zip;base64,' + text)
-    //   : element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
-    // element.setAttribute('download', filename);
-    // element.style.display = 'none';
-    // document.body.appendChild(element);
-    // element.click();
-    // document.body.removeChild(element);
+  private download(csvData) {
+    const rows = csvData.trim().split('\n');
+    const firstRowColumns = rows[0].split(',');
 
+    // Access the second column of the first row
+    const value = firstRowColumns[1].replace(/["']/g, '');
     const hiddenElement = document.createElement('a');
-    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(data); // experimentData is the text response of the http request.
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvData); // data is the text response of the http request.
     hiddenElement.target = '_blank';
-    hiddenElement.download = 'experiment.csv';
+    hiddenElement.download = value + '.csv';
     hiddenElement.click();
   }
 }

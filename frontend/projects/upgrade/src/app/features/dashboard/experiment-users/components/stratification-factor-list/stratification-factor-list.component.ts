@@ -19,31 +19,6 @@ export class StratificationComponent implements OnInit {
   isLoadingStratificationFactors$ = this.stratificationFactorsService.isLoadingStratificationFactors$;
   stratificationFactorsForTable: { id: string; factor: string; summary: string }[] = [];
   displayedColumns: string[] = ['factor', 'summary', 'actions'];
-  // data = [
-  //   { factor: 'f1', summary: 'f1 summary' },
-  //   { factor: 'f2', summary: 'f2 summary' },
-  //   { factor: 'f3', summary: 'f3 summary' },
-  // ];
-  dataSource = [
-    {
-      factorId: '9bdf13e6-42c7-4f0b-9c9e-0c935219208c',
-      factor: 'factor1',
-      value: {
-        yes: 100,
-        no: 50,
-      },
-      nonApplicable: 50,
-    },
-    {
-      factorId: '15811fae-f0dc-4dbc-a798-40f7bdc589cc',
-      factor: 'factor2',
-      value: {
-        yes: 75,
-        no: 50,
-      },
-      nonApplicable: 25,
-    },
-  ];
 
   constructor(private dialog: MatDialog, private stratificationFactorsService: StratificationFactorsService) {}
 
@@ -54,9 +29,9 @@ export class StratificationComponent implements OnInit {
           ...stratificationFactor,
           notApplicable: stratificationFactor.notApplicable || 0,
         }));
+        this.stratificationFactorsForTable = this.convertToTableformat();
       }
     );
-    this.stratificationFactorsForTable = this.convertToTableformat();
   }
 
   convertToTableformat() {
@@ -85,15 +60,12 @@ export class StratificationComponent implements OnInit {
     });
   }
 
-  handleDownload(rowData, rowIndex) {
-    console.log('handle download:' + rowIndex);
-    console.log(rowData);
+  handleDownload(rowData) {
     // Add code of further actions after downloading strata factor details
     this.stratificationFactorsService.exportStratificationFactors(rowData.id);
   }
 
-  handleDelete(rowData, rowIndex) {
-    console.log(rowData);
+  handleDelete(rowData) {
     const dialogRef = this.dialog.open(DeleteStratificationComponent, {
       panelClass: 'import-stratification-modal',
       data: { factor: clonedeep(rowData.factor) },
@@ -102,8 +74,8 @@ export class StratificationComponent implements OnInit {
     dialogRef.afterClosed().subscribe((isDeleteButtonClicked) => {
       if (isDeleteButtonClicked) {
         this.stratificationFactorsService.deleteStratificationFactors(rowData.id);
-        console.log('handle delete:' + rowIndex);
         // Add code of further actions after deleting strata factor details
+        this.stratificationFactorsService.fetchStratificationFactors();
       }
     });
   }

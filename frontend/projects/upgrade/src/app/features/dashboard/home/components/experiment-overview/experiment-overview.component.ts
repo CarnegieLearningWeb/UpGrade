@@ -32,6 +32,8 @@ import { Observable, Subscription } from 'rxjs';
 import { MatLegacyChipInputEvent as MatChipInputEvent } from '@angular/material/legacy-chips';
 import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
+import { StratificationFactorSimple } from '../../../../../core/stratification-factors/store/stratification-factors.model';
+import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
 @Component({
   selector: 'home-experiment-overview',
   templateUrl: './experiment-overview.component.html',
@@ -65,10 +67,9 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     { value: ASSIGNMENT_ALGORITHM.RANDOM },
     { value: ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING },
   ];
-  stratificationFactors = [
-    { id: '9bdf13e6-42c7-4f0b-9c9e-0c935219208c', stratificationFactorName: 'factor1' },
-    { id: '15811fae-f0dc-4dbc-a798-40f7bdc589cc', stratificationFactorName: 'factor2' },
-  ];
+  allStratificationFactors: StratificationFactorSimple[];
+  isLoadingStratificationFactors$ = this.stratificationFactorsService.isLoadingStratificationFactors$;
+  allStratificationFactorsSub: Subscription;
 
   // Used to control chips
   isChipSelectable = true;
@@ -87,10 +88,19 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     private _formBuilder: UntypedFormBuilder,
     private experimentService: ExperimentService,
     private experimentDesignStepperService: ExperimentDesignStepperService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private stratificationFactorsService: StratificationFactorsService
   ) {}
 
   ngOnInit() {
+    this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(
+      (StratificationFactors) => {
+        this.allStratificationFactors = StratificationFactors.map((stratificationFactor) => ({
+          factorId: stratificationFactor.factorId,
+          factor: stratificationFactor.factor,
+        }));
+      }
+    );
     this.isLoadingContextMetaData$ = this.experimentService.isLoadingContextMetaData$;
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
       this.contextMetaData = contextMetaData;
@@ -253,11 +263,11 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   }
 
   findStratificationFactorId(stratificationFactorName: string) {
-    let stratificationFactorId: string;
-    this.stratificationFactors.forEach((staratificationFactor) => {
+    let stratificationFactorId: string = null;
+    this.allStratificationFactors.forEach((staratificationFactor) => {
       stratificationFactorId =
-        staratificationFactor.stratificationFactorName === stratificationFactorName
-          ? staratificationFactor.id
+        staratificationFactor.factor === stratificationFactorName
+          ? staratificationFactor.factorId
           : stratificationFactorId;
     });
     return stratificationFactorId;

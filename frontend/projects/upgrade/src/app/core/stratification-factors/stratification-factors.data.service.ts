@@ -18,6 +18,6 @@ export class StratificationFactorsDataService {
 
   exportStratificationFactor(id: string) {
     const url = `${this.environment.api.stratification}/download/${id}`;
-    return this.http.get(url);
+    return this.http.get(url, { responseType: 'text' });
   }
 }

@@ -93,22 +93,10 @@
         </mat-form-field>
 
         <mat-form-field class="ft-14-600 stratification-factor" *ngIf="assignmentAlgorithmValue === 'stratified random sampling'">
-          <!-- <input
-            matInput
-            class="ft-14-400"
-            [placeholder]="'home-global.stratification-factor.text' | translate"
-            formControlName = "stratificationFactor"
-            [matAutocomplete]="autoCompleteStratificationFactor"
-          />
-          <mat-autocomplete #autoCompleteStratificationFactor="matAutocomplete" panelWidth="fit-content">
-            <mat-option *ngFor="let stratificationFactor of stratificationFactors" [value]="stratificationFactor.stratificationFactorName">
-              {{ stratificationFactor.stratificationFactorName }}
-            </mat-option>
-          </mat-autocomplete> -->
           <mat-label>{{ 'home-global.stratification-factor.text' | translate }}</mat-label>
           <mat-select class="ft-14-400" formControlName="stratificationFactor" [disabled]="!isExperimentEditable">
-            <mat-option *ngFor="let stratificationFactor of stratificationFactors" [value]="stratificationFactor.stratificationFactorName">
-              {{ stratificationFactor.stratificationFactorName }}
+            <mat-option *ngFor="let stratificationFactor of allStratificationFactors" [value]="stratificationFactor.factor">
+              {{ stratificationFactor.factor }}
             </mat-option>
           </mat-select>
         </mat-form-field>

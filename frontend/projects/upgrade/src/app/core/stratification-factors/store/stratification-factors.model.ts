@@ -12,6 +12,11 @@ export interface StratificationFactor {
   notApplicable: number;
 }
 
+export interface StratificationFactorSimple {
+  factorId: string;
+  factor: string;
+}
+
 export interface StratificationFactorsState extends EntityState<StratificationFactor> {
   isLoading: boolean;
   totalStratificationFactors: any;
