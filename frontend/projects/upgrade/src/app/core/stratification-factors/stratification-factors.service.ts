@@ -24,6 +24,10 @@ export class StratificationFactorsService {
     this.store$.dispatch(StratificationFactorsActions.actionDeleteStratificationFactor({ factorId }));
   }
 
+  importStratificationFactors(csvData: string) {
+    this.store$.dispatch(StratificationFactorsActions.actionImportStratificationFactor({ csvData }));
+  }
+
   exportStratificationFactors(factorId: string) {
     this.store$.dispatch(StratificationFactorsActions.actionExportStratificationFactor({ factorId }));
   }

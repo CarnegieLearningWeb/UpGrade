@@ -29,6 +29,19 @@ export const actionDeleteStratificationFactorFailure = createAction(
   '[Stratification Factors] Delete Stratification Factor Failure'
 );
 
+export const actionImportStratificationFactor = createAction(
+  '[Stratification Factors] Import Stratification Factor',
+  props<{ csvData: string }>()
+);
+
+export const actionImportStratificationFactorSuccess = createAction(
+  '[Stratification Factors] Import Stratification Factor Success'
+);
+
+export const actionImportStratificationFactorFailure = createAction(
+  '[Stratification Factors] Import Stratification Factor Failure'
+);
+
 export const actionExportStratificationFactor = createAction(
   '[Stratification Factors] Export Stratification Factor',
   props<{ factorId: string }>()
