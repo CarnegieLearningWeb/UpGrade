@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { Type } from 'class-transformer';
 import { UserStratificationFactor } from './UserStratificationFactor';
