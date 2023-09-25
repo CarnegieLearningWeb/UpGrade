@@ -25,12 +25,12 @@ export class ImportStratificationsComponent {
   ) {}
 
   onCancelClick() {
-    this.dialogRef.close();
+    this.dialogRef.close(false);
   }
 
   importStratification() {
     this.stratificationFactorsService.importStratificationFactors(this.csvData);
-    this.onCancelClick();
+    this.dialogRef.close(true);
   }
 
   uploadFile(event: Event) {
@@ -51,7 +51,7 @@ export class ImportStratificationsComponent {
           reader.onload = (e) => {
             const fileContent = e.target?.result as string;
             console.log(fileContent); // Log the content of the file
-            this.csvData.push({ "file": fileContent});
+            this.csvData.push({ file: fileContent });
           };
           reader.readAsText(file);
         }

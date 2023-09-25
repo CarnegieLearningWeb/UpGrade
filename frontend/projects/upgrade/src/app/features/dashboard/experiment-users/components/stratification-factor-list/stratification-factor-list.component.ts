@@ -55,8 +55,13 @@ export class StratificationComponent implements OnInit {
   }
 
   openImportStratificationsDialog() {
-    this.dialog.open(ImportStratificationsComponent, {
+    const dialogRef = this.dialog.open(ImportStratificationsComponent, {
       panelClass: 'import-stratification-modal',
+    });
+    dialogRef.afterClosed().subscribe((isImportButtonClicked) => {
+      if (isImportButtonClicked) {
+        this.stratificationFactorsService.fetchStratificationFactors();
+      }
     });
   }
 
