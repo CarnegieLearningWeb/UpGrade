@@ -302,7 +302,7 @@ export default class UpgradeClient {
 
   async markExperimentPoint(
     site: string,
-    condition: string = null,
+    condition: string | null,
     status: MARKED_DECISION_POINT_STATUS,
     target?: string,
     clientError?: string
