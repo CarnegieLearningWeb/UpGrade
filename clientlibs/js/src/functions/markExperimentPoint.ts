@@ -7,7 +7,7 @@ interface markData {
   status: MARKED_DECISION_POINT_STATUS;
   data: {
     site: string;
-    assignedCondition: { conditionCode: string; experimentId?: string },
+    assignedCondition: { conditionCode: string | null; experimentId?: string },
     target?: string;
   }
   clientError?: string;
@@ -19,7 +19,7 @@ export default async function markExperimentPoint(
   token: string,
   clientSessionId: string,
   site: string,
-  condition: string,
+  condition: string | null,
   status: MARKED_DECISION_POINT_STATUS,
   target?: string,
   clientError?: string
