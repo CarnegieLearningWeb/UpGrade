@@ -1,10 +1,7 @@
 import { Subscription } from 'rxjs';
 import { ClientAppHook, CodeLanguage, MockAppType, MockClientAppInterfaceModel } from '../../../../shared/models';
 import { EventBusService } from '../services/event-bus.service';
-import { InjectionToken } from '@angular/core';
 import { ClientLibraryService } from '../services/client-library.service';
-
-export const ABSTRACT_MOCK_APP_SERVICE_TOKEN = new InjectionToken<AbstractMockAppService>('Abstract Mock App Service');
 
 /**
  * This Abstract service is base class for all Mock App instances.
@@ -64,11 +61,15 @@ export abstract class AbstractMockAppService {
 
   public abstract routeHook(hookEvent: ClientAppHook): void;
 
-  public constructUpgradeClient(userId: string): any {
+  public constructUpgradeClient(userId: string, httpClient?: any): any {
     const apiHostUrl = this.clientLibraryService.getSelectedAPIHostUrl();
     const UpgradeClient: new (...args: any[]) => typeof UpgradeClient =
       this.clientLibraryService.getUpgradeClientConstructor();
-    const upgradeClient = new UpgradeClient(userId, apiHostUrl, this.CONTEXT);
+    const upgradeClient = new UpgradeClient(userId, apiHostUrl, this.CONTEXT, {
+      httpClient,
+      token: 'test',
+      clientSessionId: 'test',
+    });
     return upgradeClient;
   }
 }
