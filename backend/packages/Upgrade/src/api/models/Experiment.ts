@@ -130,6 +130,7 @@ export class Experiment extends BaseModel {
 
   @ManyToOne(() => StratificationFactor, (stratificationFactor) => stratificationFactor.experiment, {
     onDelete: 'CASCADE',
+    nullable: true,
   })
   public stratificationFactor: StratificationFactor;
 

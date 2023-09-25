@@ -709,7 +709,7 @@ export class ExperimentService {
         } = experiment;
 
         // create stratificationFactor is not found
-        if (!expDoc.stratificationFactor.id) {
+        if (expDoc.stratificationFactor.id) {
           expDoc.stratificationFactor.id = uuid();
           await transactionalEntityManager.getRepository(StratificationFactor).save(expDoc.stratificationFactor);
         }
@@ -1141,7 +1141,7 @@ export class ExperimentService {
       this.checkConditionCodeDefault(conditions);
 
       // create stratificationFactor is not found
-      if (!expDoc.stratificationFactor.id) {
+      if (expDoc.stratificationFactor.id) {
         expDoc.stratificationFactor.id = uuid();
         await transactionalEntityManager.getRepository(StratificationFactor).save(expDoc.stratificationFactor);
       }
