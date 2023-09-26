@@ -520,6 +520,7 @@ export class ExperimentService {
         'conditions.conditionPayloads',
         'conditions.levelCombinationElements',
         'conditions.levelCombinationElements.level',
+        'stratificationFactor',
       ],
     });
     const formatedExperiments = experimentDetails.map((experiment) => {

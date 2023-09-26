@@ -122,7 +122,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         consistencyRule: [null, Validators.required],
         conditionOrder: [null],
         designType: [ExperimentDesignTypes.SIMPLE, Validators.required],
-        assignmentAlgorithm: [null, Validators.required],
+        assignmentAlgorithm: [ASSIGNMENT_ALGORITHM.RANDOM, Validators.required],
         stratificationFactor: [null],
         context: [null, Validators.required],
         tags: [[]],
