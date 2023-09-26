@@ -72,7 +72,6 @@ import {
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
-import { StratificationFactor } from '../models/StratificationFactor';
 
 @Service()
 export class ExperimentService {
@@ -708,12 +707,6 @@ export class ExperimentService {
           ...expDoc
         } = experiment;
 
-        // create stratificationFactor is not found
-        if (expDoc.stratificationFactor.id) {
-          expDoc.stratificationFactor.id = uuid();
-          await transactionalEntityManager.getRepository(StratificationFactor).save(expDoc.stratificationFactor);
-        }
-
         let experimentDoc: Experiment;
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
@@ -1139,12 +1132,6 @@ export class ExperimentService {
       } = experiment;
       // Check for conditionCode is 'default' then return error:
       this.checkConditionCodeDefault(conditions);
-
-      // create stratificationFactor is not found
-      if (expDoc.stratificationFactor.id) {
-        expDoc.stratificationFactor.id = uuid();
-        await transactionalEntityManager.getRepository(StratificationFactor).save(expDoc.stratificationFactor);
-      }
 
       // saving experiment docs
       let experimentDoc: Experiment;

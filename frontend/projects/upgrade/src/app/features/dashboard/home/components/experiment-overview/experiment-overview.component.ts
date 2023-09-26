@@ -339,7 +339,9 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         type: designType,
         context: [context],
         assignmentAlgorithm: assignmentAlgorithm,
-        stratificationFactor: { id: stratificationFactorid, stratificationFactorName: stratificationFactor },
+        stratificationFactor: stratificationFactorid
+          ? { id: stratificationFactorid, stratificationFactorName: stratificationFactor }
+          : null,
         tags,
         logging,
       };
