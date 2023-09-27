@@ -1,6 +1,6 @@
 @import '../../common/table-view.scss';
 
-.stratification-factors-list-container{
+.stratification-factors-list-container {
   border-radius: 10px;
   box-shadow: unset !important;
   padding: 0;
@@ -66,14 +66,44 @@
         width: calc(40% - 15px);
       }
 
+      .cdk-column-status {
+        .status-circle {
+          display: inline-block;
+          margin-right: 6px;
+          border-radius: 50%;
+          width: 15px;
+          height: 15px;
+        }
+      }
+
       .cdk-column-actions {
         margin-left: 15px;
         padding-right: 10px;
         justify-content: flex-end;
 
-        .row-action-btn {
+        .row-download-btn {
           border: none;
           background-color: transparent;
+
+          .icon {
+            margin-top: -5px;
+            margin-left: -3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--text-size-x-large);
+            color: gray;
+          }
+        }
+
+        .row-delete-btn {
+          border: none;
+          background-color: transparent;
+          &--disabled {
+            opacity: 0.7;
+            pointer-events: none;
+            color: var(--light-grey);
+          }
 
           .icon {
             margin-top: -5px;

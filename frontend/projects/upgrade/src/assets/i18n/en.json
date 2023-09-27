@@ -405,6 +405,8 @@
   "segments.segment-experiment-list-zeroState.text": "No Data",
   "stratifications.global-members-factor.text": "FACTOR",
   "stratifications.global-members-summary.text": "SUMMARY",
+  "stratifications.global-members-status.text": "STATUS",
+  "stratifications.global-members-status-tooltip.text": "Stratification factor is used/unsed in any experiment",
   "stratifications.import-stratification.text": "Import Stratification(s)",
   "stratifications.import-stratification.message.text": "Select the CSV file(s) to Import Stratification.",
   "stratifications.import-stratification.error.message.text": "Invalid Stratification CSV data",

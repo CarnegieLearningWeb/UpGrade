@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsObject, IsOptional, IsString, IsArray } from 'class-validator';
 
 export class FactorStrata {
   @IsNotEmpty()
@@ -7,6 +7,11 @@ export class FactorStrata {
 
   @IsObject()
   public value: Record<string, number>;
+
+  @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  public experimentIds: string[];
 }
 
 export class StratificationInputValidator {

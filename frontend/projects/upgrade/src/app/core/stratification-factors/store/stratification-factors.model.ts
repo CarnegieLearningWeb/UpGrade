@@ -8,6 +8,7 @@ export interface State extends AppState {
 export interface StratificationFactor {
   factor: string;
   values: Record<string, number>;
+  experimentIds: string[];
 }
 
 export interface StratificationFactorSimple {

@@ -18,9 +18,9 @@ export class StratificationService {
 
   private calculateStratificationResult(results: any[]): FactorStrata[] {
     const formattedResults = results.reduce((formatted, result) => {
-      const { factor, value, count } = result;
+      const { factor, value, count, experimentIds } = result;
       if (!formatted[factor]) {
-        formatted[factor] = { factor, values: {} };
+        formatted[factor] = { factor, values: {}, experimentIds};
       }
       if (value !== 'N/A') {
         formatted[factor].values[value] = parseInt(count);
@@ -40,13 +40,15 @@ export class StratificationService {
         'sf.stratificationFactorName AS factor',
         `COALESCE(usf.stratificationFactorValue, 'N/A') AS value`,
         'COUNT(*) AS count',
+        'ARRAY_AGG(experiments.id) AS "experimentIds"', // Aggregate experiment ids into an array
       ])
       .innerJoin('sf.userStratificationFactor', 'usf')
+      .leftJoin('sf.experiment', 'experiments') // Left join with the Experiment entity
       .groupBy('sf.stratificationFactorName, value')
       .getRawMany();
 
     const allStratificaitonFactors = await this.stratificationFactorRepository.find();
-
+    console.log('allStratificaitonFactors: ', allStratificaitonFactors);
     const remainingFactors = allStratificaitonFactors
       .filter((factor) => {
         return !queryBuilder.some((result) => result.factor === factor.stratificationFactorName);
@@ -56,10 +58,13 @@ export class StratificationService {
           factor: factors.stratificationFactorName,
           value: 'N/A',
           count: 0,
+          experimetIds: factors.experiment[0].id,
         };
       });
 
-    return this.calculateStratificationResult([...queryBuilder, ...remainingFactors]);
+    const temp = this.calculateStratificationResult([...queryBuilder, ...remainingFactors]);
+    console.log('temp: ', temp);
+    return temp;
   }
 
   public async getStratificationByFactor(factor: string, logger: UpgradeLogger): Promise<FactorStrata> {
@@ -71,8 +76,10 @@ export class StratificationService {
         'sf.stratificationFactorName AS factor',
         `COALESCE(usf.stratificationFactorValue, 'N/A') AS value`,
         'COUNT(*) AS count',
+        'ARRAY_AGG(experiments.id) AS "experimentIds"', // Aggregate experiment ids into an array
       ])
       .innerJoin('sf.userStratificationFactor', 'usf')
+      .leftJoin('sf.experiment', 'experiments') // Left join with the Experiment entity
       .where('sf.stratificationFactorName = :factor', { factor })
       .groupBy('sf.stratificationFactorName, value')
       .getRawMany();
