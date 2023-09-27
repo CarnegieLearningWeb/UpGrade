@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsObject, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsInt, IsNotEmpty, IsObject, IsOptional, IsString, IsUUID, IsArray } from 'class-validator';
 
 export class FactorStrata {
   @IsUUID()
@@ -16,6 +16,11 @@ export class FactorStrata {
   @IsInt()
   @IsNotEmpty()
   public notApplicable?: number;
+
+  @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  public experimentIds: string[];
 }
 
 export class StratificationInputValidator {

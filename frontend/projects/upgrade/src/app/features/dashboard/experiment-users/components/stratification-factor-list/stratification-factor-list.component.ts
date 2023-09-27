@@ -6,6 +6,7 @@ import { DeleteStratificationComponent } from './delete-stratification/delete-st
 import { StratificationFactor } from '../../../../../core/stratification-factors/store/stratification-factors.model';
 import { Subscription } from 'rxjs';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
+import { STRATIFICATION_FACTOR_STATUS } from '../../../../../../../../../../types/src/Experiment/enums';
 
 @Component({
   selector: 'users-stratification-factor-list',
@@ -17,8 +18,14 @@ export class StratificationComponent implements OnInit {
   allStratificationFactors: StratificationFactor[];
   allStratificationFactorsSub: Subscription;
   isLoadingStratificationFactors$ = this.stratificationFactorsService.isLoadingStratificationFactors$;
-  stratificationFactorsForTable: { id: string; factor: string; summary: string }[] = [];
-  displayedColumns: string[] = ['factor', 'summary', 'actions'];
+  stratificationFactorsForTable: {
+    id: string;
+    factor: string;
+    summary: string;
+    status: string;
+    experimentIds: string[];
+  }[] = [];
+  displayedColumns: string[] = ['factor', 'status', 'summary', 'actions'];
 
   constructor(private dialog: MatDialog, private stratificationFactorsService: StratificationFactorsService) {}
 
@@ -49,7 +56,15 @@ export class StratificationComponent implements OnInit {
       tempSummary = tempSummary ? tempSummary + '; N/A=' + element.notApplicable : 'N/A=' + element.notApplicable;
       totalUsers += element.notApplicable;
       factorSummary = totalUsers.toString() + ' ' + factorSummary + ' (' + tempSummary + ')';
-      return { id: element.factorId, factor: element.factor, summary: factorSummary };
+      const status =
+        element.experimentIds[0] !== null ? STRATIFICATION_FACTOR_STATUS.USED : STRATIFICATION_FACTOR_STATUS.UNUSED;
+      return {
+        id: element.factorId,
+        factor: element.factor,
+        summary: factorSummary,
+        status: status,
+        experimentIds: element.experimentIds,
+      };
     });
     return stratificationFactors;
   }
@@ -83,6 +98,14 @@ export class StratificationComponent implements OnInit {
         this.stratificationFactorsService.fetchStratificationFactors();
       }
     });
+  }
+
+  getExperimentIdsTooltip(experimentIds: any[]): string {
+    return 'Experiment IDs: [' + experimentIds.join(', ') + ']';
+  }
+
+  checkStratificationFactorUsageStatus(status: string): boolean {
+    return status === STRATIFICATION_FACTOR_STATUS.USED ? true : false;
   }
 
   ngOnDestroy() {

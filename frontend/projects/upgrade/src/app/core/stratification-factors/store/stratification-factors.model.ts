@@ -10,6 +10,7 @@ export interface StratificationFactor {
   factor: string;
   values: Record<string, number>;
   notApplicable: number;
+  experimentIds: string[];
 }
 
 export interface StratificationFactorSimple {
