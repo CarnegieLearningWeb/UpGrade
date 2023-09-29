@@ -14,6 +14,6 @@ export class UserStratificationFactor extends BaseModel {
   })
   public stratificationFactor: StratificationFactor;
 
-  @Column({ nullable: true })
+  @Column()
   public stratificationFactorValue: string;
 }
