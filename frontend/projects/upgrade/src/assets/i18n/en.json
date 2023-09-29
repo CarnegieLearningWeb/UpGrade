@@ -117,6 +117,8 @@
   "home.new-experiment.overview.custom-group-name.error.text": "Please enter custom group name",
   "home.new-experiment.overview.consistency-rule.error.text": "Please choose consistency rule",
   "home.new-experiment.overview.context.error.text": "Please enter at least one context",
+  "home.new-experiment.overview.stratification-factor.error.text": "Please select stratification factor",
+  "home.new-experiment.overview.no-stratification-factor.error.text": "Please import the stratification factor you require from Participants Menu > Stratification Tab",
   "home.new-experiment.design.design-type.label": "Design Type",
   "home.new-experiment.design.decision-point.inital.include-message": "Experiments require at least one decision point",
   "home.new-experiment.design.factors.inital.include-message": "Factorial experiments require factors",

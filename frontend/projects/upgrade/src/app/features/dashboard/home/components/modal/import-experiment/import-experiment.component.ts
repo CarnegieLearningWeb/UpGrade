@@ -21,6 +21,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
+import { StratificationFactorsService } from '../../../../../../core/stratification-factors/stratification-factors.service';
+import { StratificationFactorSimple } from '../../../../../../core/stratification-factors/store/stratification-factors.model';
 
 interface ImportExperimentJSON {
   schema:
@@ -59,12 +61,17 @@ export class ImportExperimentComponent implements OnInit {
   displayedColumns: string[] = ['File Name', 'Error'];
   uploadedFileCount = 0;
 
+  allStratificationFactors: StratificationFactorSimple[];
+  isLoadingStratificationFactors$ = this.stratificationFactorsService.isLoadingStratificationFactors$;
+  allStratificationFactorsSub: Subscription;
+
   missingConditionProperties = '';
   missingPartitionProperties = '';
   missingFactorProperties = '';
   missingLevelProperties = '';
   missingLevelCombinationElementProperties = '';
   missingPropertiesFlag = false;
+  isStratificationFactorValid = false;
   isFactorialExperiment: boolean;
 
   // TODO remove this any after typescript version updation
@@ -161,12 +168,22 @@ export class ImportExperimentComponent implements OnInit {
     private experimentService: ExperimentService,
     public dialogRef: MatDialogRef<ImportExperimentComponent>,
     private versionService: VersionService,
+    private stratificationFactorsService: StratificationFactorsService,
     private translate: TranslateService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private _snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
+    this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(
+      (StratificationFactors) => {
+        this.allStratificationFactors = StratificationFactors.map((stratificationFactor) => ({
+          factorId: stratificationFactor.factorId,
+          factor: stratificationFactor.factor,
+        }));
+      }
+    );
+
     this.allPartitionsSub = this.experimentService.allDecisionPoints$
       .pipe(filter((partitions) => !!partitions))
       .subscribe((partitions: any) => {

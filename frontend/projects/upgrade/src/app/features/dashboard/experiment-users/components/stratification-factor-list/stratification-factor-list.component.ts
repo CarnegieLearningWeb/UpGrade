@@ -60,7 +60,9 @@ export class StratificationComponent implements OnInit {
     });
     dialogRef.afterClosed().subscribe((isImportButtonClicked) => {
       if (isImportButtonClicked) {
-        this.stratificationFactorsService.fetchStratificationFactors();
+        setTimeout(() => {
+          this.stratificationFactorsService.fetchStratificationFactors();
+        }, 1);
       }
     });
   }
@@ -80,7 +82,9 @@ export class StratificationComponent implements OnInit {
       if (isDeleteButtonClicked) {
         this.stratificationFactorsService.deleteStratificationFactors(rowData.id);
         // Add code of further actions after deleting strata factor details
-        this.stratificationFactorsService.fetchStratificationFactors();
+        setTimeout(() => {
+          this.stratificationFactorsService.fetchStratificationFactors();
+        }, 1);
       }
     });
   }
