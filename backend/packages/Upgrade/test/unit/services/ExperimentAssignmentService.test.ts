@@ -25,6 +25,7 @@ import { simpleIndividualAssignmentExperiment, simpleGroupAssignmentExperiment, 
 import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
 import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
 
 describe('Expeirment Assignment Service Test', () => {
   let sandbox;
@@ -43,6 +44,7 @@ describe('Expeirment Assignment Service Test', () => {
     const stateTimeLogsRepositoryMock = sinon.createStubInstance(StateTimeLogsRepository);
     const analyticsRepositoryMock = sinon.createStubInstance(AnalyticsRepository);
     const conditionPayloadRepositoryMock = sinon.createStubInstance(ConditionPayloadRepository);
+    const userStratificationFactorRepository = sinon.createStubInstance(UserStratificationFactorRepository);
     const previewUserServiceMock = sinon.createStubInstance(PreviewUserService);
     const experimentUserServiceMock = sinon.createStubInstance(ExperimentUserService);
     const scheduledJobServiceMock = sinon.createStubInstance(ScheduledJobService);
@@ -71,12 +73,13 @@ describe('Expeirment Assignment Service Test', () => {
          stateTimeLogsRepositoryMock, 
          analyticsRepositoryMock, 
          conditionPayloadRepositoryMock, 
+         userStratificationFactorRepository,
          previewUserServiceMock, 
          experimentUserServiceMock, 
          scheduledJobServiceMock, 
          errorServiceMock, 
          settingServiceMock, 
-         segmentServiceMock, 
+         segmentServiceMock,
          experimentServiceMock
       );
       testedModule.segmentService.getSegmentByIds.withArgs([ '77777777-7777-7777-7777-777777777777' ]).resolves([

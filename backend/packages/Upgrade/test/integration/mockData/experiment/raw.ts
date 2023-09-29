@@ -56,6 +56,7 @@ export const revertToExperiment = {
   ],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
+  assignmentAlgorithm: 'random',
 };
 
 export const experiment = {
@@ -117,6 +118,7 @@ export const experiment = {
   conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
+  assignmentAlgorithm: 'random',
 };
 
 export const experimentSecond = {
@@ -172,6 +174,7 @@ export const experimentSecond = {
   conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
+  assignmentAlgorithm: 'random',
 };
 
 export const experimentThird = {
@@ -227,6 +230,7 @@ export const experimentThird = {
   conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
+  assignmentAlgorithm: 'random',
 };
 
 export const experimentFourth = {
@@ -282,6 +286,7 @@ export const experimentFourth = {
   conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
+  assignmentAlgorithm: 'random',
 };
 
 export const experimentFifth = {
@@ -366,6 +371,7 @@ export const experimentFifth = {
   ],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
+  assignmentAlgorithm: 'random',
 };
 
 export const experimentSixth = {
@@ -423,6 +429,7 @@ export const experimentSixth = {
   conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
+  assignmentAlgorithm: 'random',
 };
 
 export const factorialExperimentFirst = {
@@ -592,6 +599,7 @@ export const factorialExperimentFirst = {
       parentCondition: '6dd63ad9-f121-4d95-8d27-08a80e9560a4',
     },
   ],
+  assignmentAlgorithm: 'random',
 };
 
 export const factorialExperimentSecond = {
@@ -819,6 +827,7 @@ export const factorialExperimentSecond = {
     },
   },
   conditionPayloads: [],
+  assignmentAlgorithm: 'random',
 };
 
 export function getRevertToExperiment() {
