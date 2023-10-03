@@ -113,6 +113,7 @@ export class Experiment extends BaseModel {
   @Column({
     type: 'enum',
     enum: ASSIGNMENT_ALGORITHM,
+    default: ASSIGNMENT_ALGORITHM.RANDOM,
   })
   public assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
 

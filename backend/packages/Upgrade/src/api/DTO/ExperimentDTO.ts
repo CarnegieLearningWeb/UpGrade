@@ -361,7 +361,7 @@ export class ExperimentDTO {
 
   @IsOptional()
   @IsEnum(ASSIGNMENT_ALGORITHM)
-  public assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
+  public assignmentAlgorithm?: ASSIGNMENT_ALGORITHM;
 
   // TODO add conditional validity here ie endOn is null
   @IsOptional()
