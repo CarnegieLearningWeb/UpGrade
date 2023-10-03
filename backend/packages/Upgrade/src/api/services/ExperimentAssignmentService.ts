@@ -2043,13 +2043,12 @@ export class ExperimentAssignmentService {
     userId: string
   ): Promise<{ conditionId: string; userCount: number }[]> {
     if (experiment.stratificationFactor) {
-      console.log(experiment.stratificationFactor.id);
       const factorValue = await this.userStratificationFactorRepository
         .createQueryBuilder('srsUser')
         .select('usf.stratificationFactorValue')
         .from(UserStratificationFactor, 'usf')
-        .where('usf.stratificationFactorId = :factorIdX', {
-          factorIdX: experiment.stratificationFactor.id,
+        .where('usf.stratificationFactorStratificationFactorName = :factor', {
+          factor: experiment.stratificationFactor.stratificationFactorName,
         })
         .andWhere('usf.userId = :userIdX', { userIdX: userId })
         .getOne();
@@ -2058,11 +2057,11 @@ export class ExperimentAssignmentService {
         .createQueryBuilder('srsUser')
         .select(['CAST(COUNT(srsUser.user) AS INTEGER) as "userCount", enrollment.conditionId'])
         .innerJoin(IndividualEnrollment, 'enrollment', 'enrollment.userId = srsUser.userId')
-        .where('srsUser.stratificationFactorValue = :factorValueX', {
+        .where('srsUser.stratificationFactorValue = :factorValue', {
           factorValueX: factorValue?.stratificationFactorValue,
         })
-        .andWhere('srsUser.stratificationFactorId = :factorIdX', {
-          factorIdX: experiment.stratificationFactor.id,
+        .andWhere('srsUser.stratificationFactorStratificationFactorName = :factor', {
+          factorIdX: experiment.stratificationFactor.stratificationFactorName,
         })
         .groupBy('enrollment.conditionId')
         .execute();

@@ -8,7 +8,6 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { StratificationFactor } from '../models/StratificationFactor';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
-import uuid from 'uuid';
 import { ErrorWithType } from '../errors/ErrorWithType';
 @Service()
 export class StratificationService {
@@ -19,14 +18,12 @@ export class StratificationService {
 
   private calculateStratificationResult(results: any[]): FactorStrata[] {
     const formattedResults = results.reduce((formatted, result) => {
-      const { factorId, factor, value, count } = result;
-      if (!formatted[factorId]) {
-        formatted[factorId] = { factorId, factor, values: {}, notApplicable: 0 };
+      const { factor, value, count } = result;
+      if (!formatted[factor]) {
+        formatted[factor] = { factor, values: {} };
       }
-      if (value === 'N/A') {
-        formatted[factorId].notApplicable = parseInt(count);
-      } else {
-        formatted[factorId].values[value] = parseInt(count);
+      if (value !== 'N/A') {
+        formatted[factor].values[value] = parseInt(count);
       }
       return formatted;
     }, {});
@@ -40,24 +37,22 @@ export class StratificationService {
     const queryBuilder = await this.stratificationFactorRepository
       .createQueryBuilder('sf')
       .select([
-        'sf.id AS "factorId"',
         'sf.stratificationFactorName AS factor',
         `COALESCE(usf.stratificationFactorValue, 'N/A') AS value`,
         'COUNT(*) AS count',
       ])
       .innerJoin('sf.userStratificationFactor', 'usf')
-      .groupBy('sf.id, value')
+      .groupBy('sf.stratificationFactorName, value')
       .getRawMany();
 
     const allStratificaitonFactors = await this.stratificationFactorRepository.find();
 
     const remainingFactors = allStratificaitonFactors
       .filter((factor) => {
-        return !queryBuilder.some((result) => result.factorId === factor.id);
+        return !queryBuilder.some((result) => result.factor === factor.stratificationFactorName);
       })
       .map((factors) => {
         return {
-          factorId: factors.id,
           factor: factors.stratificationFactorName,
           value: 'N/A',
           count: 0,
@@ -73,35 +68,33 @@ export class StratificationService {
     const queryBuilder = await this.stratificationFactorRepository
       .createQueryBuilder('sf')
       .select([
-        'sf.id AS "factorId"',
         'sf.stratificationFactorName AS factor',
         `COALESCE(usf.stratificationFactorValue, 'N/A') AS value`,
         'COUNT(*) AS count',
       ])
       .innerJoin('sf.userStratificationFactor', 'usf')
-      .where('sf.id = :factor', { factor })
-      .groupBy('sf.id, value')
+      .where('sf.stratificationFactorName = :factor', { factor })
+      .groupBy('sf.stratificationFactorName, value')
       .getRawMany();
 
     return this.calculateStratificationResult(queryBuilder)[0];
   }
 
   public async getCSVDataByFactor(factor: string, logger: UpgradeLogger): Promise<any> {
-    logger.info({ message: `Download CSV stratification by factor. factorId: ${factor}` });
+    logger.info({ message: `Download CSV stratification by factor. Factor: ${factor}` });
 
-    const factorName = (await this.stratificationFactorRepository.findOne(factor)).stratificationFactorName;
     return await this.stratificationFactorRepository
       .createQueryBuilder('sf')
-      .select(['usf.user AS uuid', `usf.stratificationFactorValue AS "${factorName}"`])
+      .select(['usf.user AS uuid', `usf.stratificationFactorValue AS "${factor}"`])
       .leftJoin('sf.userStratificationFactor', 'usf')
-      .where('sf.id = :factor', { factor })
+      .where('sf.stratificationFactorName = :factor', { factor })
       .getRawMany();
   }
 
   public async deleteStratification(factor: string, logger: UpgradeLogger): Promise<StratificationFactor> {
-    logger.info({ message: `Delete stratification by factor. factorId: ${factor}` });
+    logger.info({ message: `Delete stratification by factor. Factor: ${factor}` });
 
-    return await this.stratificationFactorRepository.deleteStratificationFactorById(factor, logger);
+    return await this.stratificationFactorRepository.deleteStratificationFactorByName(factor, logger);
   }
 
   public async insertStratification(
@@ -111,6 +104,27 @@ export class StratificationService {
     logger.info({ message: `Insert stratification => ${JSON.stringify(userStratificationData, undefined, 2)}` });
 
     const createdStratificationData = await getConnection().transaction(async (transactionalEntityManager) => {
+      try {
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .delete()
+          .from(UserStratificationFactor)
+          .where('userId IN (:...userIds)', { userIds: userStratificationData.map((data) => data.userId) })
+          .andWhere('stratificationFactorStratificationFactorName IN (:...stratificationFactorNames)', {
+            stratificationFactorNames: userStratificationData.map((data) => data.factor),
+          })
+          .execute();
+      } catch (err) {
+        const error = err as ErrorWithType;
+        error.details = 'Error in deleting existing UserStratificationFactor';
+        error.type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
+
+      // filter out the data with empty value
+      userStratificationData = userStratificationData.filter((data) => data.value != null);
+
       const userDetails = await transactionalEntityManager.getRepository(ExperimentUser).find({
         where: { id: In(userStratificationData.map((userData) => userData.userId)) },
       });
@@ -136,7 +150,9 @@ export class StratificationService {
       const stratificationFactorToSave = [
         ...new Set(stratificationFactorRemaining.map((stratificationFactor) => stratificationFactor.factor)),
       ].map((factor) => {
-        return { id: uuid(), stratificationFactorName: factor };
+        return {
+          stratificationFactorName: factor,
+        };
       });
 
       let userDocCreated: ExperimentUser[], stratificationFactorDocCreated: StratificationFactor[];
@@ -156,17 +172,19 @@ export class StratificationService {
       userDetails.push(...userDocCreated);
       stratificationFactorDetials.push(...stratificationFactorDocCreated);
 
-      const userStratificationDataToSave: Partial<UserStratificationFactor>[] = userStratificationData.map((data) => {
-        const userFound: ExperimentUser = userDetails.find((user) => user.id === data.userId);
-        const stratificationFactorFound: StratificationFactor = stratificationFactorDetials.find(
-          (factor) => factor.stratificationFactorName === data.factor
-        );
-        return {
-          user: userFound,
-          stratificationFactor: stratificationFactorFound,
-          stratificationFactorValue: data.value,
-        };
-      });
+      const userStratificationDataToSave: Partial<UserStratificationFactor>[] = userStratificationData
+        .filter((data) => data.value != null)
+        .map((data) => {
+          const userFound: ExperimentUser = userDetails.find((user) => user.id === data.userId);
+          const stratificationFactorFound: StratificationFactor = stratificationFactorDetials.find(
+            (factor) => factor.stratificationFactorName === data.factor
+          );
+          return {
+            user: userFound,
+            stratificationFactor: stratificationFactorFound,
+            stratificationFactorValue: data.value,
+          };
+        });
 
       return await transactionalEntityManager
         .getRepository(UserStratificationFactor)

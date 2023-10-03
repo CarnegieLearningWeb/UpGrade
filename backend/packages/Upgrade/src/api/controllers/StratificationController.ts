@@ -1,6 +1,5 @@
 import { JsonController, Get, Delete, Param, Authorized, Post, Req, UseBefore, Res } from 'routing-controllers';
 import { SERVER_ERROR } from 'upgrade_types';
-import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { StratificationService } from '../services/StratificationService';
@@ -242,23 +241,13 @@ export class StratificationController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Get('/download/:factor')
-  public async getStratificationByFactorId(
+  public async getStratificationByFactor(
     @Param('factor') factor: string,
     @Req() request: AppRequest,
     @Res() res: express.Response
   ): Promise<any> {
     if (!factor) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : stratification Factor should not be null.'));
-    }
-    if (!isUUID(factor)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({
-            type: SERVER_ERROR.INCORRECT_PARAM_FORMAT,
-            message: ' : stratification Factor should be of type UUID.',
-          })
-        )
-      );
     }
 
     const data = await this.stratificatonService.getCSVDataByFactor(factor, request.logger);
@@ -372,16 +361,6 @@ export class StratificationController {
   ): Promise<StratificationFactor> {
     if (!stratificationFactor) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : stratification Factor should not be null.'));
-    }
-    if (!isUUID(stratificationFactor)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({
-            type: SERVER_ERROR.INCORRECT_PARAM_FORMAT,
-            message: ' : stratification Factor should be of type UUID.',
-          })
-        )
-      );
     }
     return this.stratificatonService.deleteStratification(stratificationFactor, request.logger);
   }

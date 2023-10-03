@@ -315,10 +315,6 @@ class StateTimeLogValidator {
 }
 
 class StratificationFactor {
-  @IsNotEmpty()
-  @IsString()
-  public id: string;
-
   @IsString()
   @IsNotEmpty()
   public stratificationFactorName: string;

@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, OneToMany } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { Type } from 'class-transformer';
 import { UserStratificationFactor } from './UserStratificationFactor';
@@ -6,10 +6,7 @@ import { Experiment } from './Experiment';
 
 @Entity()
 export class StratificationFactor extends BaseModel {
-  @PrimaryColumn('uuid')
-  public id: string;
-
-  @Column()
+  @PrimaryColumn()
   public stratificationFactorName: string;
 
   @OneToMany(

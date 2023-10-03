@@ -1,21 +1,12 @@
-import { IsInt, IsNotEmpty, IsObject, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class FactorStrata {
-  @IsUUID()
-  @IsString()
-  public factorId: string;
-
   @IsNotEmpty()
   @IsString()
   public factor: string;
 
   @IsObject()
   public value: Record<string, number>;
-
-  @IsOptional()
-  @IsInt()
-  @IsNotEmpty()
-  public notApplicable?: number;
 }
 
 export class StratificationInputValidator {
