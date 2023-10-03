@@ -95,8 +95,8 @@
         <mat-form-field class="ft-14-600 stratification-factor" *ngIf="assignmentAlgorithmValue === 'stratified random sampling'">
           <mat-label>{{ 'home-global.stratification-factor.text' | translate }}</mat-label>
           <mat-select class="ft-14-400" formControlName="stratificationFactor" [disabled]="!isExperimentEditable">
-            <mat-option *ngFor="let stratificationFactor of allStratificationFactors" [value]="stratificationFactor.factor">
-              {{ stratificationFactor.factor }}
+            <mat-option *ngFor="let stratificationFactor of allStratificationFactors" [value]="stratificationFactor.factorName">
+              {{ stratificationFactor.factorName }}
             </mat-option>
           </mat-select>
         </mat-form-field>

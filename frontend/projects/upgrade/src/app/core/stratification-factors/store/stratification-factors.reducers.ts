@@ -4,7 +4,7 @@ import { EntityAdapter, createEntityAdapter } from '@ngrx/entity';
 import * as StratificationFactorsActions from '../store/stratification-factors.actions';
 
 export const adapter: EntityAdapter<StratificationFactor> = createEntityAdapter<StratificationFactor>({
-  selectId: (factor) => factor.factorId,
+  selectId: (factor) => factor.factor,
 });
 
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
@@ -25,7 +25,7 @@ const reducer = createReducer(
     return adapter.upsertMany(stratificationFactors, { ...newState, isLoading: false });
   }),
   on(StratificationFactorsActions.actionDeleteStratificationFactorSuccess, (state, { stratificationFactor }) =>
-    adapter.removeOne(stratificationFactor.factorId, state)
+    adapter.removeOne(stratificationFactor.factor, state)
   ),
   on(
     StratificationFactorsActions.actionFetchStratificationFactorsFailure,

@@ -6,15 +6,12 @@ export interface State extends AppState {
 }
 
 export interface StratificationFactor {
-  factorId: string;
   factor: string;
   values: Record<string, number>;
-  notApplicable: number;
 }
 
 export interface StratificationFactorSimple {
-  factorId: string;
-  factor: string;
+  factorName: string;
 }
 
 export interface StratificationFactorsState extends EntityState<StratificationFactor> {

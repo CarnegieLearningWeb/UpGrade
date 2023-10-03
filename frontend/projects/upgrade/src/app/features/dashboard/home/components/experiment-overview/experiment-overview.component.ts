@@ -98,8 +98,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(
       (StratificationFactors) => {
         this.allStratificationFactors = StratificationFactors.map((stratificationFactor) => ({
-          factorId: stratificationFactor.factorId,
-          factor: stratificationFactor.factor,
+          factorName: stratificationFactor.factor,
         }));
       }
     );
@@ -264,19 +263,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     }
   }
 
-  findStratificationFactorId(stratificationFactorName: string, assignmentAlgorithm) {
-    let stratificationFactorId: string = null;
-    if (assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
-      this.allStratificationFactors.forEach((staratificationFactor) => {
-        stratificationFactorId =
-          staratificationFactor.factor === stratificationFactorName
-            ? staratificationFactor.factorId
-            : stratificationFactorId;
-      });
-    }
-    return stratificationFactorId;
-  }
-
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
@@ -332,7 +318,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         tags,
         logging,
       } = this.overviewForm.value;
-      if (assignmentAlgorithm == ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+      let stratificationFactorValueToSend = stratificationFactor;
+      if (assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
         if (!stratificationFactor) {
           this.isStratificationFactorSelected = false;
           if (this.allStratificationFactors.length == 0) {
@@ -344,9 +331,10 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         } else {
           this.isStratificationFactorSelected = true;
         }
+      } else {
+        stratificationFactorValueToSend = null;
       }
       if (this.isStratificationFactorSelected) {
-        const stratificationFactorid = this.findStratificationFactorId(stratificationFactor, assignmentAlgorithm);
         const overviewFormData = {
           name: experimentName,
           description: description || '',
@@ -357,8 +345,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           type: designType,
           context: [context],
           assignmentAlgorithm: assignmentAlgorithm,
-          stratificationFactor: stratificationFactorid
-            ? { id: stratificationFactorid, stratificationFactorName: stratificationFactor }
+          stratificationFactor: stratificationFactorValueToSend
+            ? { stratificationFactorName: stratificationFactorValueToSend }
             : null,
           tags,
           logging,

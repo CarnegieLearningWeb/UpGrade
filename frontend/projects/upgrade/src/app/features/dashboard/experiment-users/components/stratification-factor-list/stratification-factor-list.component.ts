@@ -17,7 +17,7 @@ export class StratificationComponent implements OnInit {
   allStratificationFactors: StratificationFactor[];
   allStratificationFactorsSub: Subscription;
   isLoadingStratificationFactors$ = this.stratificationFactorsService.isLoadingStratificationFactors$;
-  stratificationFactorsForTable: { id: string; factor: string; summary: string }[] = [];
+  stratificationFactorsForTable: { factor: string; summary: string }[] = [];
   displayedColumns: string[] = ['factor', 'summary', 'actions'];
 
   constructor(private dialog: MatDialog, private stratificationFactorsService: StratificationFactorsService) {}
@@ -25,10 +25,7 @@ export class StratificationComponent implements OnInit {
   ngOnInit(): void {
     this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(
       (allStratificationFactors) => {
-        this.allStratificationFactors = allStratificationFactors.map((stratificationFactor) => ({
-          ...stratificationFactor,
-          notApplicable: stratificationFactor.notApplicable || 0,
-        }));
+        this.allStratificationFactors = allStratificationFactors;
         this.stratificationFactorsForTable = this.convertToTableformat();
       }
     );
@@ -46,10 +43,8 @@ export class StratificationComponent implements OnInit {
           : key + '=' + element.values[key];
         totalUsers += element.values[key];
       });
-      tempSummary = tempSummary ? tempSummary + '; N/A=' + element.notApplicable : 'N/A=' + element.notApplicable;
-      totalUsers += element.notApplicable;
       factorSummary = totalUsers.toString() + ' ' + factorSummary + ' (' + tempSummary + ')';
-      return { id: element.factorId, factor: element.factor, summary: factorSummary };
+      return { factor: element.factor, summary: factorSummary };
     });
     return stratificationFactors;
   }
@@ -69,7 +64,7 @@ export class StratificationComponent implements OnInit {
 
   handleDownload(rowData) {
     // Add code of further actions after downloading strata factor details
-    this.stratificationFactorsService.exportStratificationFactors(rowData.id);
+    this.stratificationFactorsService.exportStratificationFactors(rowData.factor);
   }
 
   handleDelete(rowData) {
@@ -80,7 +75,7 @@ export class StratificationComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((isDeleteButtonClicked) => {
       if (isDeleteButtonClicked) {
-        this.stratificationFactorsService.deleteStratificationFactors(rowData.id);
+        this.stratificationFactorsService.deleteStratificationFactors(rowData.factor);
         // Add code of further actions after deleting strata factor details
         setTimeout(() => {
           this.stratificationFactorsService.fetchStratificationFactors();

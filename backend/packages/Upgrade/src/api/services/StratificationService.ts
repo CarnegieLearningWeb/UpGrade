@@ -63,7 +63,7 @@ export class StratificationService {
   }
 
   public async getStratificationByFactor(factor: string, logger: UpgradeLogger): Promise<FactorStrata> {
-    logger.info({ message: `Find stratification by factor. factorId: ${factor}` });
+    logger.info({ message: `Find stratification by factor: ${factor}` });
 
     const queryBuilder = await this.stratificationFactorRepository
       .createQueryBuilder('sf')

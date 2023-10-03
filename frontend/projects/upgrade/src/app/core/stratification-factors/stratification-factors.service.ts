@@ -20,15 +20,15 @@ export class StratificationFactorsService {
     this.store$.dispatch(StratificationFactorsActions.actionFetchStratificationFactors({ isLoading }));
   }
 
-  deleteStratificationFactors(factorId: string) {
-    this.store$.dispatch(StratificationFactorsActions.actionDeleteStratificationFactor({ factorId }));
+  deleteStratificationFactors(factor: string) {
+    this.store$.dispatch(StratificationFactorsActions.actionDeleteStratificationFactor({ factor }));
   }
 
   importStratificationFactors(csvData: string) {
     this.store$.dispatch(StratificationFactorsActions.actionImportStratificationFactor({ csvData }));
   }
 
-  exportStratificationFactors(factorId: string) {
-    this.store$.dispatch(StratificationFactorsActions.actionExportStratificationFactor({ factorId }));
+  exportStratificationFactors(factor: string) {
+    this.store$.dispatch(StratificationFactorsActions.actionExportStratificationFactor({ factor }));
   }
 }

@@ -37,13 +37,16 @@ export class StratificationFactorsEffects {
   deleteStratificationFactor$ = createEffect(() =>
     this.actions$.pipe(
       ofType(StratificationFactorsActions.actionDeleteStratificationFactor),
-      map((action) => action.factorId),
-      filter((id) => !!id),
-      switchMap((id) =>
-        this.stratificationFactorsDataService.deleteStratificationFactor(id).pipe(
+      map((action) => action.factor),
+      filter((factor) => !!factor),
+      switchMap((factor) =>
+        this.stratificationFactorsDataService.deleteStratificationFactor(factor).pipe(
           map((data: any) => {
             this.router.navigate(['/participants']);
-            const stratificationFactor = { ...data[0], factorId: data[0].id, factor: data[0].stratificationFactorName };
+            const stratificationFactor = {
+              ...data[0],
+              factor: data[0].stratificationFactorName,
+            };
             return StratificationFactorsActions.actionDeleteStratificationFactorSuccess({
               stratificationFactor: stratificationFactor,
             });
@@ -73,10 +76,10 @@ export class StratificationFactorsEffects {
   exportStratificationFactor$ = createEffect(() =>
     this.actions$.pipe(
       ofType(StratificationFactorsActions.actionExportStratificationFactor),
-      map((action) => ({ factorId: action.factorId })),
-      filter(({ factorId }) => !!factorId),
-      switchMap(({ factorId }) =>
-        this.stratificationFactorsDataService.exportStratificationFactor(factorId).pipe(
+      map((action) => ({ factor: action.factor })),
+      filter(({ factor }) => !!factor),
+      switchMap(({ factor }) =>
+        this.stratificationFactorsDataService.exportStratificationFactor(factor).pipe(
           map((data) => {
             this.download(data);
             return StratificationFactorsActions.actionExportStratificationFactorSuccess();
