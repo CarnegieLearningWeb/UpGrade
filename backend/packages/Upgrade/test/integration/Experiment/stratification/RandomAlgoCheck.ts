@@ -1,17 +1,17 @@
-import { withinSubjectExperiment } from '../../mockData/experiment/index';
+import { stratificationRandomExperimentAssignmentExperiment2 } from '../../mockData/experiment/index';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user';
 import { experimentUsers } from '../../mockData/experimentUsers';
-import { EXPERIMENT_STATE } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, EXPERIMENT_STATE } from 'upgrade_types';
 import { getAllExperimentCondition } from '../../utils';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function RamdomAlgoCheck(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // experiment object
-  const experimentObject = withinSubjectExperiment;
+  const experimentObject = stratificationRandomExperimentAssignmentExperiment2;
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
@@ -41,6 +41,7 @@ export default async function RamdomAlgoCheck(): Promise<void> {
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM
       }),
     ])
   );
@@ -58,6 +59,7 @@ export default async function RamdomAlgoCheck(): Promise<void> {
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM
       }),
     ])
   );
@@ -68,6 +70,5 @@ export default async function RamdomAlgoCheck(): Promise<void> {
     new UpgradeLogger(),
     context
   );
-  console.log("experimentConditionAssignments[0].assignedCondition: ", experimentConditionAssignments[0].assignedCondition)
-  expect(experimentConditionAssignments[0].assignedCondition.length).toEqual(100);
+  expect(experimentConditionAssignments[0].assignedCondition.length).toEqual(1);
 }
