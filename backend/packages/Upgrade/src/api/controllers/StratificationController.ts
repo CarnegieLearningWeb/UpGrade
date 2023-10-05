@@ -14,167 +14,41 @@ const upload = multer({ storage: storage });
 /**
  * @swagger
  * definitions:
- *   Segment:
- *     required:
- *       - name
- *       - description
- *       - context
- *       - type
- *       - userIds
- *       - groups
- *       - subSegmentIds
- *     properties:
- *       name:
- *         type: string
- *       description:
- *         type: string
- *       context:
- *         type: string
- *       type:
- *         type: string
- *         enum: [public, private]
- *       userIds:
- *         type: array
- *         items:
- *           type: string
- *       groups:
- *         type: array
- *         items:
- *           type: object
- *           properties:
- *             groupId:
- *               type: string
- *             type:
- *               type: string
- *       subSegmentIds:
- *         type: array
- *         items:
- *           type: string
- *   segmentResponse:
+ *   FactorStrata:
  *     description: ''
  *     type: object
  *     required:
- *       - createdAt
- *       - updatedAt
- *        - versionNumber
- *       - id
- *       - name
- *       - description
- *       - context
- *       - type
- *       - individualForSegment
- *       - groupForSegment
- *       - subSegments
+ *       - factor
+ *       - value
  *     properties:
- *       createdAt:
+ *       factor:
  *         type: string
- *         minLength: 1
- *       updatedAt:
+ *       value:
+ *         type: object
+ *   UserStratificationFactor:
+ *     description: ''
+ *     type: object
+ *     properties:
+ *       user:
+ *         type: object
+ *         required:
+ *           - id
+ *         properties:
+ *           id:
+ *             type: string
+ *           group:
+ *             type: object
+ *           workingGroup:
+ *             type: object
+ *       stratificationFactor:
+ *         type: object
+ *         required:
+ *           - stratificationFactorName
+ *         properties:
+ *           stratificationFactorName:
+ *             type: string
+ *       stratificationFactorValue:
  *         type: string
- *         minLength: 1
- *       versionNumber:
- *         type: number
- *       id:
- *         type: string
- *         minLength: 1
- *       name:
- *         type: string
- *         minLength: 1
- *       description:
- *         type: string
- *         minLength: 1
- *       context:
- *         type: string
- *         minLength: 1
- *       type:
- *         type: string
- *         minLength: 1
- *       individualForSegment:
- *         type: array
- *         uniqueItems: true
- *         items:
- *           type: object
- *           required:
- *             - createdAt
- *             - updatedAt
- *             - versionNumber
- *             - userId
- *           properties:
- *             createdAt:
- *               type: string
- *               minLength: 1
- *             updatedAt:
- *               type: string
- *               minLength: 1
- *             versionNumber:
- *               type: number
- *             userId:
- *               type: string
- *               minLength: 1
- *       groupForSegment:
- *         type: array
- *         uniqueItems: true
- *         items:
- *           type: object
- *           required:
- *             - createdAt
- *             - updatedAt
- *             - versionNumber
- *             - groupId
- *             - type
- *           properties:
- *             createdAt:
- *               type: string
- *               minLength: 1
- *             updatedAt:
- *               type: string
- *               minLength: 1
- *             versionNumber:
- *               type: number
- *             groupId:
- *               type: string
- *               minLength: 1
- *             type:
- *               type: string
- *               minLength: 1
- *       subSegments:
- *         type: array
- *         uniqueItems: true
- *         items:
- *           type: object
- *           required:
- *             - createdAt
- *             - updatedAt
- *             - versionNumber
- *             - id
- *             - name
- *             - description
- *             - context
- *             - type
- *           properties:
- *             createdAt:
- *               type: string
- *               minLength: 1
- *             updatedAt:
- *               type: string
- *               minLength: 1
- *             versionNumber:
- *               type: number
- *             id:
- *               type: string
- *               minLength: 1
- *             name:
- *               type: string
- *               minLength: 1
- *             description:
- *               type: string
- *               minLength: 1
- *             context:
- *               type: string
- *               minLength: 1
- *             type:
- *               type: string
- *               minLength: 1
  */
 
 /**
@@ -190,20 +64,20 @@ export class StratificationController {
 
   /**
    * @swagger
-   * /segments:
+   * /stratification:
    *    get:
-   *       description: Get all segments
+   *       description: Get all stratification
    *       tags:
-   *         - Segment
+   *         - Stratification
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Get all segments
+   *            description: Get all stratification
    *            schema:
    *              type: array
    *              items:
-   *                $ref: '#/definitions/segmentResponse'
+   *                $ref: '#/definitions/FactorStrata'
    *          '401':
    *            description: Authorization Required Error
    */
@@ -214,31 +88,29 @@ export class StratificationController {
 
   /**
    * @swagger
-   * /segments/{segmentId}:
+   * /stratification/download/{factor}:
    *    get:
-   *      description: Get segment by id
+   *      description: Get stratificationFactor CSV by factorName
    *      tags:
-   *        - Segment
+   *        - Stratification
    *      produces:
    *        - application/json
    *      parameters:
    *        - in: path
-   *          name: segmentId
-   *          description: Segment id
+   *          name: factor
+   *          description: Factor name
    *          required: true
    *          schema:
    *            type: string
    *      responses:
    *        '200':
-   *          description: Get segment by id
-   *          schema:
-   *            $ref: '#/definitions/segmentResponse'
+   *          description: Get stratificationFactor detailed CSV by name
    *        '401':
    *          description: Authorization Required Error
    *        '404':
-   *          description: Segment not found
+   *          description: Factor name not found
    *        '500':
-   *          description: Internal Server Error, SegmentId is not valid
+   *          description: Internal Server Error, FactorName is not valid
    */
   @Get('/download/:factor')
   public async getStratificationByFactor(
@@ -264,30 +136,31 @@ export class StratificationController {
 
   /**
    * @swagger
-   * /segments:
+   * /stratification:
    *    post:
-   *      description: Create a new segment
+   *      description: Create a new stratificationFactor by CSV
    *      tags:
-   *        - Segment
+   *        - Stratification
    *      produces:
    *        - application/json
    *      parameters:
    *        - in: body
-   *          name: segment
-   *          description: Segment object
+   *          name: file
+   *          description: CSV file
    *          required: true
    *          schema:
-   *            type: object
-   *            $ref: '#/definitions/Segment'
+   *            type: file
    *      responses:
    *        '200':
-   *          description: Create a new segment
+   *          description: Create a new UserStratificationFactors by CSV
    *          schema:
-   *            $ref: '#/definitions/segmentResponse'
+   *            type: array
+   *            items:
+   *              $ref: '#/definitions/UserStratificationFactor'
    *        '401':
    *          description: Authorization Required Error
    *        '500':
-   *          description: Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid
+   *          description: Internal Server Error, Insert Error in database, CSV file is not valid
    */
   @Post()
   @UseBefore(upload.single('file'))
@@ -330,29 +203,29 @@ export class StratificationController {
 
   /**
    * @swagger
-   * /segments/{segmentId}:
+   * /stratification/{factor}:
    *    delete:
-   *      description: Delete a segment
+   *      description: Delete a stratificationFactor by factorName
    *      tags:
-   *      - Segment
+   *      - Stratification
    *      produces:
    *        - application/json
    *      parameters:
    *        - in: path
-   *          name: segmentId
-   *          description: Segment id
+   *          name: factor
+   *          description: Factor name
    *          required: true
    *          schema:
    *            type: string
    *      responses:
    *        '200':
-   *          description: Delete a segment
+   *          description: Delete a stratificationFactor by factorName
    *          schema:
-   *            $ref: '#/definitions/segmentResponse'
+   *            $ref: '#/definitions/FactorStrata'
    *        '401':
    *          description: Authorization Required Error
    *        '500':
-   *          description: Internal Server Error, SegmentId is not valid
+   *          description: Internal Server Error, FactorName is not valid
    */
   @Delete('/:factor')
   public deleteStratification(
