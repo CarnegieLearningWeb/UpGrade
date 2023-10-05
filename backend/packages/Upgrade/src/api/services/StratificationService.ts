@@ -104,22 +104,24 @@ export class StratificationService {
     logger.info({ message: `Insert stratification => ${JSON.stringify(userStratificationData, undefined, 2)}` });
 
     const createdStratificationData = await getConnection().transaction(async (transactionalEntityManager) => {
-      try {
-        await transactionalEntityManager
-          .createQueryBuilder()
-          .delete()
-          .from(UserStratificationFactor)
-          .where('userId IN (:...userIds)', { userIds: userStratificationData.map((data) => data.userId) || [] })
-          .andWhere('factorName IN (:...stratificationFactorNames)', {
-            stratificationFactorNames: userStratificationData.map((data) => data.factor) || [],
-          })
-          .execute();
-      } catch (err) {
-        const error = err as ErrorWithType;
-        error.details = 'Error in deleting existing UserStratificationFactor';
-        error.type = SERVER_ERROR.QUERY_FAILED;
-        logger.error(error);
-        throw error;
+      if (userStratificationData.length > 0) {
+        try {
+          await transactionalEntityManager
+            .createQueryBuilder()
+            .delete()
+            .from(UserStratificationFactor)
+            .where('userId IN (:...userIds)', { userIds: userStratificationData.map((data) => data.userId) })
+            .andWhere('factorName IN (:...stratificationFactorNames)', {
+              stratificationFactorNames: userStratificationData.map((data) => data.factor),
+            })
+            .execute();
+        } catch (err) {
+          const error = err as ErrorWithType;
+          error.details = 'Error in deleting existing UserStratificationFactor';
+          error.type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
       }
 
       // filter out the data with empty value
