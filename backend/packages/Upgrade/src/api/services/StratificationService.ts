@@ -109,9 +109,9 @@ export class StratificationService {
           .createQueryBuilder()
           .delete()
           .from(UserStratificationFactor)
-          .where('userId IN (:...userIds)', { userIds: userStratificationData.map((data) => data.userId) })
-          .andWhere('stratificationFactorStratificationFactorName IN (:...stratificationFactorNames)', {
-            stratificationFactorNames: userStratificationData.map((data) => data.factor),
+          .where('userId IN (:...userIds)', { userIds: userStratificationData.map((data) => data.userId) || [] })
+          .andWhere('factorName IN (:...stratificationFactorNames)', {
+            stratificationFactorNames: userStratificationData.map((data) => data.factor) || [],
           })
           .execute();
       } catch (err) {

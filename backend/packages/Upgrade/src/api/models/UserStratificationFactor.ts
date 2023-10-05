@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { ExperimentUser } from './ExperimentUser';
 import { StratificationFactor } from './StratificationFactor';
@@ -12,6 +12,7 @@ export class UserStratificationFactor extends BaseModel {
     onDelete: 'CASCADE',
     primary: true,
   })
+  @JoinColumn({ name: 'factorName' })
   public stratificationFactor: StratificationFactor;
 
   @Column()

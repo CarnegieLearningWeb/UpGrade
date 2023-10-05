@@ -2047,7 +2047,7 @@ export class ExperimentAssignmentService {
         .createQueryBuilder('srsUser')
         .select('usf.stratificationFactorValue')
         .from(UserStratificationFactor, 'usf')
-        .where('usf.stratificationFactorStratificationFactorName = :factor', {
+        .where('usf.factorName = :factor', {
           factor: experiment.stratificationFactor.stratificationFactorName,
         })
         .andWhere('usf.userId = :userIdX', { userIdX: userId })
@@ -2060,7 +2060,7 @@ export class ExperimentAssignmentService {
         .where('srsUser.stratificationFactorValue = :factorValue', {
           factorValueX: factorValue?.stratificationFactorValue,
         })
-        .andWhere('srsUser.stratificationFactorStratificationFactorName = :factor', {
+        .andWhere('srsUser.factorName = :factor', {
           factorIdX: experiment.stratificationFactor.stratificationFactorName,
         })
         .groupBy('enrollment.conditionId')
