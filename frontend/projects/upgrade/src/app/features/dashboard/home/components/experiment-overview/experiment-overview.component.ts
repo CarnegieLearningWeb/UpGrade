@@ -70,6 +70,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   allStratificationFactors: StratificationFactorSimple[];
   isLoadingStratificationFactors$ = this.stratificationFactorsService.isLoadingStratificationFactors$;
   allStratificationFactorsSub: Subscription;
+  isStratificationFactorSelected = true;
+  stratificationFactorNotSelectedMsg = 'home.new-experiment.overview.stratification-factor.error.text';
 
   // Used to control chips
   isChipSelectable = true;
@@ -96,8 +98,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(
       (StratificationFactors) => {
         this.allStratificationFactors = StratificationFactors.map((stratificationFactor) => ({
-          factorId: stratificationFactor.factorId,
-          factor: stratificationFactor.factor,
+          factorName: stratificationFactor.factor,
         }));
       }
     );
@@ -262,17 +263,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     }
   }
 
-  findStratificationFactorId(stratificationFactorName: string) {
-    let stratificationFactorId: string = null;
-    this.allStratificationFactors.forEach((staratificationFactor) => {
-      stratificationFactorId =
-        staratificationFactor.factor === stratificationFactorName
-          ? staratificationFactor.factorId
-          : stratificationFactorId;
-    });
-    return stratificationFactorId;
-  }
-
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
@@ -328,32 +318,49 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         tags,
         logging,
       } = this.overviewForm.value;
-      const stratificationFactorid = this.findStratificationFactorId(stratificationFactor);
-      const overviewFormData = {
-        name: experimentName,
-        description: description || '',
-        consistencyRule: consistencyRule,
-        conditionOrder: conditionOrder,
-        assignmentUnit: unitOfAssignment,
-        group: groupType,
-        type: designType,
-        context: [context],
-        assignmentAlgorithm: assignmentAlgorithm,
-        stratificationFactor: stratificationFactorid
-          ? { id: stratificationFactorid, stratificationFactorName: stratificationFactor }
-          : null,
-        tags,
-        logging,
-      };
-      this.emitExperimentDialogEvent.emit({
-        type: eventType,
-        formData: overviewFormData,
-        path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
-      });
+      let stratificationFactorValueToSend = stratificationFactor;
+      if (assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+        if (!stratificationFactor) {
+          this.isStratificationFactorSelected = false;
+          if (this.allStratificationFactors.length == 0) {
+            this.stratificationFactorNotSelectedMsg =
+              'home.new-experiment.overview.no-stratification-factor.error.text';
+          } else {
+            this.stratificationFactorNotSelectedMsg = 'home.new-experiment.overview.stratification-factor.error.text';
+          }
+        } else {
+          this.isStratificationFactorSelected = true;
+        }
+      } else {
+        stratificationFactorValueToSend = null;
+      }
+      if (this.isStratificationFactorSelected) {
+        const overviewFormData = {
+          name: experimentName,
+          description: description || '',
+          consistencyRule: consistencyRule,
+          conditionOrder: conditionOrder,
+          assignmentUnit: unitOfAssignment,
+          group: groupType,
+          type: designType,
+          context: [context],
+          assignmentAlgorithm: assignmentAlgorithm,
+          stratificationFactor: stratificationFactorValueToSend
+            ? { stratificationFactorName: stratificationFactorValueToSend }
+            : null,
+          tags,
+          logging,
+        };
+        this.emitExperimentDialogEvent.emit({
+          type: eventType,
+          formData: overviewFormData,
+          path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
+        });
 
-      if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
-        this.experimentDesignStepperService.experimentStepperDataReset();
-        this.overviewForm.markAsPristine();
+        if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
+          this.experimentDesignStepperService.experimentStepperDataReset();
+          this.overviewForm.markAsPristine();
+        }
       }
     }
   }

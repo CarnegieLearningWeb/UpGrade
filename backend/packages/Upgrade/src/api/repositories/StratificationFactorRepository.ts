@@ -28,18 +28,18 @@ export class StratificationFactorRepository extends Repository<StratificationFac
     return result.raw || [];
   }
 
-  public async deleteStratificationFactorById(id: string, logger: UpgradeLogger): Promise<StratificationFactor> {
+  public async deleteStratificationFactorByName(factor: string, logger: UpgradeLogger): Promise<StratificationFactor> {
     const result = await this.createQueryBuilder()
       .delete()
       .from(StratificationFactor)
-      .where('id=:id', { id })
+      .where('stratificationFactorName=:factor', { factor })
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           'stratificationFactorRepository',
-          'deleteStratificationFactorById',
-          { id },
+          'deleteStratificationFactorByName',
+          { factor },
           errorMsg
         );
         logger.error(errorMsg);

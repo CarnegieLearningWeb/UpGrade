@@ -17,7 +17,7 @@ export const actionFetchStratificationFactorsFailure = createAction(
 
 export const actionDeleteStratificationFactor = createAction(
   '[Stratification Factors] Delete Stratification Factor',
-  props<{ factorId: string }>()
+  props<{ factor: string }>()
 );
 
 export const actionDeleteStratificationFactorSuccess = createAction(
@@ -44,7 +44,7 @@ export const actionImportStratificationFactorFailure = createAction(
 
 export const actionExportStratificationFactor = createAction(
   '[Stratification Factors] Export Stratification Factor',
-  props<{ factorId: string }>()
+  props<{ factor: string }>()
 );
 
 export const actionExportStratificationFactorSuccess = createAction(

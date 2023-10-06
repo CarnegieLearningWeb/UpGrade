@@ -222,7 +222,7 @@ export interface Experiment {
   type: EXPERIMENT_TYPE;
   group: string;
   assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
-  stratificationFactor?: { id?: string; stratificationFactorName: string };
+  stratificationFactor?: { stratificationFactorName: string };
   logging: boolean;
   conditions: ExperimentCondition[];
   partitions: ExperimentDecisionPoint[];

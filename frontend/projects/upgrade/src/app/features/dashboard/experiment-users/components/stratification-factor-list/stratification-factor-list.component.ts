@@ -19,7 +19,6 @@ export class StratificationComponent implements OnInit {
   allStratificationFactorsSub: Subscription;
   isLoadingStratificationFactors$ = this.stratificationFactorsService.isLoadingStratificationFactors$;
   stratificationFactorsForTable: {
-    id: string;
     factor: string;
     summary: string;
     status: string;
@@ -32,10 +31,7 @@ export class StratificationComponent implements OnInit {
   ngOnInit(): void {
     this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(
       (allStratificationFactors) => {
-        this.allStratificationFactors = allStratificationFactors.map((stratificationFactor) => ({
-          ...stratificationFactor,
-          notApplicable: stratificationFactor.notApplicable || 0,
-        }));
+        this.allStratificationFactors = allStratificationFactors;
         this.stratificationFactorsForTable = this.convertToTableformat();
       }
     );
@@ -53,13 +49,10 @@ export class StratificationComponent implements OnInit {
           : key + '=' + element.values[key];
         totalUsers += element.values[key];
       });
-      tempSummary = tempSummary ? tempSummary + '; N/A=' + element.notApplicable : 'N/A=' + element.notApplicable;
-      totalUsers += element.notApplicable;
       factorSummary = totalUsers.toString() + ' ' + factorSummary + ' (' + tempSummary + ')';
       const status =
         element.experimentIds[0] !== null ? STRATIFICATION_FACTOR_STATUS.USED : STRATIFICATION_FACTOR_STATUS.UNUSED;
       return {
-        id: element.factorId,
         factor: element.factor,
         summary: factorSummary,
         status: status,
@@ -75,14 +68,16 @@ export class StratificationComponent implements OnInit {
     });
     dialogRef.afterClosed().subscribe((isImportButtonClicked) => {
       if (isImportButtonClicked) {
-        this.stratificationFactorsService.fetchStratificationFactors();
+        setTimeout(() => {
+          this.stratificationFactorsService.fetchStratificationFactors();
+        }, 1);
       }
     });
   }
 
   handleDownload(rowData) {
     // Add code of further actions after downloading strata factor details
-    this.stratificationFactorsService.exportStratificationFactors(rowData.id);
+    this.stratificationFactorsService.exportStratificationFactors(rowData.factor);
   }
 
   handleDelete(rowData) {
@@ -93,9 +88,11 @@ export class StratificationComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((isDeleteButtonClicked) => {
       if (isDeleteButtonClicked) {
-        this.stratificationFactorsService.deleteStratificationFactors(rowData.id);
+        this.stratificationFactorsService.deleteStratificationFactors(rowData.factor);
         // Add code of further actions after deleting strata factor details
-        this.stratificationFactorsService.fetchStratificationFactors();
+        setTimeout(() => {
+          this.stratificationFactorsService.fetchStratificationFactors();
+        }, 1);
       }
     });
   }
