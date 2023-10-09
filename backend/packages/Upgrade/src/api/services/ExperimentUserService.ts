@@ -42,7 +42,7 @@ export class ExperimentUserService {
       return user;
     });
     // insert or update in the database
-    const updatedUsers = await this.userRepository.save(multipleUsers);
+    const updatedUsers = await this.safelyTrySaveUserDocuments(multipleUsers);
 
     // update assignment if user group is changed
     const assignmentUpdated = updatedUsers.map((user: ExperimentUser, index: number) => {
@@ -216,13 +216,13 @@ export class ExperimentUserService {
     }
     // TODO check if workingGroup is the subset of group membership
     const newDocument = { ...userExist, workingGroup };
-    return this.userRepository.save(newDocument);
+    return this.safelyTrySaveUserDocuments(newDocument);
   }
 
   public update(id: string, user: Partial<ExperimentUser>, logger: UpgradeLogger): Promise<ExperimentUser> {
     logger.info({ message: `Update a user ${user.toString()}` });
     user.id = id;
-    return this.userRepository.save(user);
+    return this.safelyTrySaveUserDocuments(user);
   }
 
   // TODO should we check for workingGroup as a subset over here?
@@ -258,7 +258,7 @@ export class ExperimentUserService {
     const newDocument = { ...userExist, group: groupMembership };
 
     // update group membership
-    return this.userRepository.save(newDocument);
+    return this.safelyTrySaveUserDocuments(newDocument);
   }
 
   public async getOriginalUserDoc(userId: string, logger?: UpgradeLogger): Promise<ExperimentUser | null> {
@@ -289,6 +289,20 @@ export class ExperimentUserService {
         JSON.stringify({
           type: SERVER_ERROR.QUERY_FAILED,
           message: `Error while finding original user for userId ${userId}`,
+          details: error,
+        })
+      );
+    }
+  }
+
+  private async safelyTrySaveUserDocuments(documents: any) {
+    try {
+      return this.userRepository.save(documents);
+    } catch (error) {
+      throw new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.QUERY_FAILED,
+          message: `Error while saving user documents`,
           details: error,
         })
       );
