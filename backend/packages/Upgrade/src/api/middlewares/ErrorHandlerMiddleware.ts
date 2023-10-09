@@ -93,7 +93,7 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
             break;
           case 422:
             message = error.message;
-            type = SERVER_ERROR.UNSUPPORTED_CALIPER
+            type = SERVER_ERROR.UNSUPPORTED_CALIPER;
             break;
           default:
             message = error.message;
@@ -110,7 +110,9 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     experimentError.errorCode = error.httpCode;
     experimentError.type = type;
     req.logger.error(experimentError);
-    experimentError.type ? await this.errorService.create(experimentError, req.logger) : await Promise.resolve(error);
+
+    // #1040
+    // experimentError.type ? await this.errorService.create(experimentError, req.logger) : await Promise.resolve(error);
     if (!res.headersSent) {
       res.statusCode = error.httpCode || 500;
       res.json(error);
