@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
 import * as StratificationFactorsActions from './store/stratification-factors.actions';
-import { filter, map } from 'rxjs/operators';
 import {
   selectAllStratificationFactors,
   selectIsLoadingStratificationFactors,
@@ -16,8 +15,10 @@ export class StratificationFactorsService {
 
   constructor(private store$: Store<AppState>) {}
 
-  fetchStratificationFactors(isLoading?: boolean) {
-    this.store$.dispatch(StratificationFactorsActions.actionFetchStratificationFactors({ isLoading }));
+  fetchStratificationFactors(isLoadingStratificationFactors?: boolean) {
+    this.store$.dispatch(
+      StratificationFactorsActions.actionFetchStratificationFactors({ isLoadingStratificationFactors })
+    );
   }
 
   deleteStratificationFactors(factor: string) {
