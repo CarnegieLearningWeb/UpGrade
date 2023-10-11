@@ -336,8 +336,8 @@ export class ExperimentDesignStepperService {
       conditionPayloads.push({
         id: payloadRowData.id || uuidv4(),
         payload: { type: PAYLOAD_TYPE.STRING, value: payloadRowData.payload },
-        parentCondition: parentCondition.id,
-        decisionPoint: decisionPoint.id,
+        parentCondition: parentCondition,
+        decisionPoint: decisionPoint,
       });
     });
 
