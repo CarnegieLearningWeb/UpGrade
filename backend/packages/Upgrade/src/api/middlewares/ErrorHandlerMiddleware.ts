@@ -6,6 +6,12 @@ import { ErrorService } from '../services/ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
 import { SERVER_ERROR } from 'upgrade_types';
 
+interface ErrorWithRequest extends ExperimentError {
+  request?: {
+    [key: string]: any;
+  };
+}
+
 @Middleware({ type: 'after' })
 export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
   public isProduction = env.isProduction;
@@ -103,12 +109,16 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     }
 
     // making error document
-    const experimentError = new ExperimentError();
+    const experimentError: ErrorWithRequest = new ExperimentError();
     experimentError.name = error.name;
     experimentError.message = message;
     experimentError.endPoint = req.originalUrl;
     experimentError.errorCode = error.httpCode;
     experimentError.type = type;
+
+    // #1042 send request in logging output, don't need to put into database
+    experimentError.request = req.body;
+
     req.logger.error(experimentError);
 
     // #1040
