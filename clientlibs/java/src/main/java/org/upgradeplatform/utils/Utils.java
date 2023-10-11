@@ -33,7 +33,7 @@ public class Utils
 
 	public static final String PATCH = "PATCH";
 
-	public static final int MAX_RETRIES = 3;
+	public static final int MAX_RETRIES = 1;
 
 
 	public static enum RequestType {

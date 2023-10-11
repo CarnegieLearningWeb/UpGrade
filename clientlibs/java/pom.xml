@@ -8,8 +8,8 @@
 		changed in the next comment. that increases the likelihood that two PRs in-flight 
 		at the same time that happen to rev to the same new version will be caught 
 		by a merge conflict. -->
-    <!-- 3.1.3 -> 3.1.4: bugfix: send status as string -->
-	<version>3.1.4</version>
+    <!-- 3.1.4 -> 3.1.5: no retries for 4xx, retry other errors once instead of 3 times -->
+	<version>3.1.5</version>
 	<build>
 		<plugins>
 			<plugin>
