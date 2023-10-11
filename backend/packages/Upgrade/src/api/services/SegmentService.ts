@@ -110,6 +110,24 @@ export class SegmentService {
         });
       }
 
+      segmentsData.forEach((segment) => {
+        segmentsUsedLockedList.forEach((usedSegment) => {
+          if (segment.id === usedSegment) {
+            segment.subSegments.forEach((subSegment) => {
+              segmentsUsedLockedList.push(subSegment.id);
+            });
+          }
+        });
+
+        segmentsUsedUnlockedList.forEach((usedSegment) => {
+          if (segment.id === usedSegment) {
+            segment.subSegments.forEach((subSegment) => {
+              segmentsUsedUnlockedList.push(subSegment.id);
+            });
+          }
+        });
+      });
+
       const segmentsDataWithStatus = segmentsData.map((segment) => {
         if (segment.id === globalExcludeSegment.id) {
           return { ...segment, status: SEGMENT_STATUS.GLOBAL };
