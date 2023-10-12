@@ -5,7 +5,7 @@ import { IndividualForSegmentRepository } from '../repositories/IndividualForSeg
 import { GroupForSegmentRepository } from '../repositories/GroupForSegmentRepository';
 import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { EXPERIMENT_STATE, SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS } from 'upgrade_types';
+import { SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS } from 'upgrade_types';
 import { getConnection } from 'typeorm';
 import uuid from 'uuid';
 import { ErrorWithType } from '../errors/ErrorWithType';
@@ -85,45 +85,26 @@ export class SegmentService {
       const allExperimentSegmentsInclusion = await this.getExperimentSegmenInclusionData();
       const allExperimentSegmentsExclusion = await this.getExperimentSegmenExclusionData();
 
-      const segmentsUsedLockedList = [];
-      const segmentsUsedUnlockedList = [];
+      const segmentsUsedList = [];
 
       if (allExperimentSegmentsInclusion) {
         allExperimentSegmentsInclusion.forEach((ele) => {
           const subSegments = ele.segment.subSegments;
-          subSegments.forEach((subSegment) => {
-            ele.experiment.state === EXPERIMENT_STATE.ENROLLING
-              ? segmentsUsedLockedList.push(subSegment.id)
-              : segmentsUsedUnlockedList.push(subSegment.id);
-          });
+          segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
         });
       }
 
       if (allExperimentSegmentsExclusion) {
         allExperimentSegmentsExclusion.forEach((ele) => {
           const subSegments = ele.segment.subSegments;
-          subSegments.forEach((subSegment) => {
-            ele.experiment.state === EXPERIMENT_STATE.ENROLLING
-              ? segmentsUsedLockedList.push(subSegment.id)
-              : segmentsUsedUnlockedList.push(subSegment.id);
-          });
+          segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
         });
       }
 
       segmentsData.forEach((segment) => {
-        segmentsUsedLockedList.forEach((usedSegment) => {
+        segmentsUsedList.forEach((usedSegment) => {
           if (segment.id === usedSegment) {
-            segment.subSegments.forEach((subSegment) => {
-              segmentsUsedLockedList.push(subSegment.id);
-            });
-          }
-        });
-
-        segmentsUsedUnlockedList.forEach((usedSegment) => {
-          if (segment.id === usedSegment) {
-            segment.subSegments.forEach((subSegment) => {
-              segmentsUsedUnlockedList.push(subSegment.id);
-            });
+            segmentsUsedList.push(...segment.subSegments.map((subSegment) => subSegment.id));
           }
         });
       });
@@ -131,10 +112,8 @@ export class SegmentService {
       const segmentsDataWithStatus = segmentsData.map((segment) => {
         if (segment.id === globalExcludeSegment.id) {
           return { ...segment, status: SEGMENT_STATUS.GLOBAL };
-        } else if (segmentsUsedLockedList.find((segmentId) => segmentId === segment.id)) {
-          return { ...segment, status: SEGMENT_STATUS.USED }; // TODO change to locked
-        } else if (segmentsUsedUnlockedList.find((segmentId) => segmentId === segment.id)) {
-          return { ...segment, status: SEGMENT_STATUS.USED }; // TODO change to unlocked
+        } else if (segmentsUsedList.find((segmentId) => segmentId === segment.id)) {
+          return { ...segment, status: SEGMENT_STATUS.USED };
         } else {
           return { ...segment, status: SEGMENT_STATUS.UNUSED };
         }
