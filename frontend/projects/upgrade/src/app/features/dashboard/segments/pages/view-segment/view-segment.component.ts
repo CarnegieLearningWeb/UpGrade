@@ -62,7 +62,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
         });
       });
 
-    this.segmentUsed = this.segment?.status === SEGMENT_STATUS.USED ? true : false;
+    this.segmentUsed = this.segment?.status === SEGMENT_STATUS.USED;
   }
 
   openEditSegmentDialog() {
