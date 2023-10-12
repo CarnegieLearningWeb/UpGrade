@@ -515,11 +515,13 @@ export class ExperimentDesignStepperService {
     }
   }
 
-  createFactorialConditionsConditionPayloadsRequestObject() {
+  createFactorialConditionsConditionPayloadsRequestObject(
+    currentConditions: FactorialConditionRequestObject[] | ExperimentCondition[]
+  ) {
     const tableData = this.getFactorialConditionTableData();
     const factorialConditionPayloadsRequestObject = [];
 
-    tableData.forEach((factorialConditionTableRow) => {
+    tableData.forEach((factorialConditionTableRow, index) => {
       if (factorialConditionTableRow.payload === '' || factorialConditionTableRow.payload === null) {
         return;
       }
@@ -527,7 +529,7 @@ export class ExperimentDesignStepperService {
       factorialConditionPayloadsRequestObject.push({
         id: factorialConditionTableRow.conditionPayloadId || uuidv4(),
         payload: { type: PAYLOAD_TYPE.STRING, value: factorialConditionTableRow.payload },
-        parentCondition: factorialConditionTableRow.id,
+        parentCondition: currentConditions[index],
       });
     });
 
