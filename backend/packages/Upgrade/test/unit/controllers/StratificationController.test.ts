@@ -32,30 +32,30 @@ describe('Stratification Controller Testing', () => {
 
   const factorName = 'factor1';
 
-  const jsonData = [
-    { uuid: 'User', Graduated: 'yes' },
-    { uuid: 'Alice', Graduated: 'no' },
-  ];
-
-  const parser = new Parser();
-  const csvData = parser.parse(jsonData, { header: true });
-
-  // Create a temporary CSV file
-  const tempCsvFilePath = path.join(__dirname, `${factorName}.csv`);
-  fs.writeFileSync(tempCsvFilePath, csvData);
-
-  const requestBody = [
-    {
-      file: fs.readFileSync(tempCsvFilePath, 'utf-8'),
-    },
-  ];
-
   test('Post request for /api/stratification', async (done) => {
+    const jsonData = [
+      { uuid: 'User', Graduated: 'yes' },
+      { uuid: 'Alice', Graduated: 'no' },
+    ];
+
+    const parser = new Parser();
+    const csvData = parser.parse(jsonData, { header: true });
+
+    // Create a temporary CSV file
+    const tempCsvFilePath = path.join(__dirname, `${factorName}.csv`);
+    fs.writeFileSync(tempCsvFilePath, csvData);
+
+    const requestBody = [
+      {
+        file: fs.readFileSync(tempCsvFilePath, 'utf-8'),
+      },
+    ];
+
     await request(app).post(`/api/stratification`).send(requestBody).expect('Content-Type', /json/).expect(200);
+
+    fs.unlinkSync(tempCsvFilePath);
     done();
   });
-
-  fs.unlinkSync(tempCsvFilePath);
 
   test('Get request for /api/stratification/download/:factor', async (done) => {
     await request(app)
