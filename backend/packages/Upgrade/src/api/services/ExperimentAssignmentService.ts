@@ -650,21 +650,23 @@ export class ExperimentAssignmentService {
           );
         })
       );
-
-      const allSites = [],
-        allTargets = [];
-      filteredExperiments.forEach((exp) => {
-        exp.partitions.forEach((partition) => {
-          allSites.push(partition.site);
-          allTargets.push(partition.target);
+      let monitoredLogCounts: any[];
+      if (filteredExperiments.some((e) => e.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS)) {
+        const allWithinSubjectsSites = [],
+          allWithinSubjectsTargets = [];
+        filteredExperiments.forEach((exp) => {
+          exp.partitions.forEach((partition) => {
+            allWithinSubjectsSites.push(partition.site);
+            allWithinSubjectsTargets.push(partition.target);
+          });
         });
-      });
-      const monitoredLogCounts = await this.monitoredDecisionPointLogRepository.getAllMonitoredDecisionPointLog(
-        userId,
-        allSites,
-        allTargets,
-        logger
-      );
+        monitoredLogCounts = await this.monitoredDecisionPointLogRepository.getAllMonitoredDecisionPointLog(
+          userId,
+          allWithinSubjectsSites,
+          allWithinSubjectsTargets,
+          logger
+        );
+      }
 
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
@@ -765,7 +767,6 @@ export class ExperimentAssignmentService {
 
   private createExperimentPool(experiments: Experiment[]): Experiment[][] {
     const pool: Experiment[][] = [];
-    // const localExperiment = [...experiments];
 
     const decisionPointExperimentMap: Record<string, Experiment[]> = {};
 
@@ -781,36 +782,6 @@ export class ExperimentAssignmentService {
       const decisionPointToStart = Object.keys(decisionPointExperimentMap)[0];
       pool.push(this.createPool(decisionPointToStart, decisionPointExperimentMap, []));
     }
-
-    // while (localExperiment.length > 0) {
-    //   const poolElements = [];
-    //   const decisionPointHashMap: Record<string, Experiment[]> = {};
-
-    //   for (let i = 0; i < localExperiment.length; i++) {
-    //     // Push single element inside the pool
-    //     const experiment = localExperiment[i];
-    //     if (i === 0) {
-    //       poolElements.push(experiment);
-    //     }
-
-    //     // add to decision point hashmap
-    //     let isIntersecting = false;
-    //     experiment.partitions.forEach((partition) => {
-    //       const partitionId = `${partition.site}_${partition.target}`;
-    //       if (partitionId in decisionPointHashMap) {
-    //         isIntersecting = true;
-    //       }
-    //       decisionPointHashMap[partitionId] = decisionPointHashMap[partitionId] || [];
-    //       decisionPointHashMap[partitionId].push(experiment);
-    //     });
-
-    //     if(isIntersecting) {
-
-    //     }
-    //   }
-
-    //   // remove elements from localExperiment
-    // }
 
     return pool;
   }
