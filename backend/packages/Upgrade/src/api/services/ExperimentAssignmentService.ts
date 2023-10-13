@@ -650,10 +650,10 @@ export class ExperimentAssignmentService {
           );
         })
       );
-      let monitoredLogCounts: any[];
+      let monitoredLogCounts = [];
       if (filteredExperiments.some((e) => e.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS)) {
-        const allWithinSubjectsSites = [],
-          allWithinSubjectsTargets = [];
+        const allWithinSubjectsSites = [];
+        const allWithinSubjectsTargets = [];
         filteredExperiments.forEach((exp) => {
           exp.partitions.forEach((partition) => {
             allWithinSubjectsSites.push(partition.site);
