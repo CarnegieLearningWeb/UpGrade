@@ -81,9 +81,11 @@ export class SegmentService {
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
     const segmentsData = await getConnection().transaction(async () => {
-      const segmentsData = await this.getAllSegments(logger);
-      const allExperimentSegmentsInclusion = await this.getExperimentSegmenInclusionData();
-      const allExperimentSegmentsExclusion = await this.getExperimentSegmenExclusionData();
+      const [segmentsData, allExperimentSegmentsInclusion, allExperimentSegmentsExclusion] = await Promise.all([
+        this.getAllSegments(logger),
+        this.getExperimentSegmenInclusionData(),
+        this.getExperimentSegmenExclusionData(),
+      ]);
 
       const segmentsUsedList = [];
 
@@ -102,17 +104,15 @@ export class SegmentService {
       }
 
       segmentsData.forEach((segment) => {
-        segmentsUsedList.forEach((usedSegment) => {
-          if (segment.id === usedSegment) {
-            segmentsUsedList.push(...segment.subSegments.map((subSegment) => subSegment.id));
-          }
-        });
+        if (segmentsUsedList.includes(segment.id)) {
+          segmentsUsedList.push(...segment.subSegments.map((subSegment) => subSegment.id));
+        }
       });
 
       const segmentsDataWithStatus = segmentsData.map((segment) => {
         if (segment.id === globalExcludeSegment.id) {
           return { ...segment, status: SEGMENT_STATUS.GLOBAL };
-        } else if (segmentsUsedList.find((segmentId) => segmentId === segment.id)) {
+        } else if (segmentsUsedList.includes(segment.id)) {
           return { ...segment, status: SEGMENT_STATUS.USED };
         } else {
           return { ...segment, status: SEGMENT_STATUS.UNUSED };
