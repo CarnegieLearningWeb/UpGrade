@@ -498,8 +498,6 @@ export class ImportExperimentComponent implements OnInit {
         },
       };
     }
-
-    return result;
   }
 
   updateExperimentJSON(result) {
@@ -511,7 +509,7 @@ export class ImportExperimentComponent implements OnInit {
     result = this.deduceConditionPayload(result);
     result = this.deducePartition(result);
     result = this.deduceFactors(result);
-    result = this.deduceParticipants(result);
+    this.deduceParticipants(result);
 
     return result;
   }
