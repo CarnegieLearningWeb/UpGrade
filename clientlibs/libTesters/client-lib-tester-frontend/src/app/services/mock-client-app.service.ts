@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
 import { availableFrontendMockApps } from '../app-config';
-import { BirthdayPresentAppService } from '../mockFrontendClientAppComponents/birthday-present-app.service';
 import { ClientAppHook, HookRequestBody, MockClientAppInterfaceModel } from '../../../../shared/models';
 import { MockPortalService } from '../mockFrontendClientAppComponents/mock-portal.service';
 import { DataFetchService } from './data-fetch.service';
@@ -11,7 +10,6 @@ import { EventBusService } from './event-bus.service';
 import { ClientLibraryService } from './client-library.service';
 import { GeneralTestForVersion41Service } from '../mockFrontendClientAppComponents/general-test-for-version4-1.service';
 import { GeneralTestForVersion1Service } from '../mockFrontendClientAppComponents/general-test-for-version1.service';
-import { GeneralTestForVersion3Service } from '../mockFrontendClientAppComponents/general-test-for-version3.service';
 import { GeneralTestForVersion5Service } from '../mockFrontendClientAppComponents/general-test-for-version5.service';
 import { MockMathstreamBrowserService } from '../mockFrontendClientAppComponents/mock-mathstream-browser.service';
 
@@ -24,11 +22,9 @@ export class MockClientAppService {
   private availableMockApps: string[] = availableFrontendMockApps;
 
   constructor(
-    // public bdayAppService: BirthdayPresentAppService,
-    // public portalAppService: MockPortalService,
-    // public generalTest_1_1: GeneralTestForVersion1Service,
-    // public generalTest_3: GeneralTestForVersion3Service,
-    // public generalTest_4_1: GeneralTestForVersion41Service,
+    public portalAppService: MockPortalService,
+    public generalTest_1_1: GeneralTestForVersion1Service,
+    public generalTest_4_1: GeneralTestForVersion41Service,
     public generalTest_5: GeneralTestForVersion5Service,
     // public mathstream_AdaptiveSegmentSwapExperiment: MockMathstreamBrowserService,
     public dataFetchService: DataFetchService,
@@ -37,13 +33,12 @@ export class MockClientAppService {
   ) {
     this.getTSBackendModels(); // look here
     this.mockClientAppInterfaceMap = {
-    //   [MOCK_APP_NAMES.BDAY_APP]: bdayAppService.getAppInterfaceModel(),
-    //   [MOCK_APP_NAMES.PORTAL_APP]: portalAppService.getAppInterfaceModel(),
-    //   [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_1_1]: generalTest_1_1.getAppInterfaceModel(),
-    //   [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_3_0]: generalTest_3.getAppInterfaceModel(),
-    //   [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_4_1]: generalTest_4_1.getAppInterfaceModel(),
+      [MOCK_APP_NAMES.PORTAL_APP]: portalAppService.getAppInterfaceModel(),
+      [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_1_1]: generalTest_1_1.getAppInterfaceModel(),
+      [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_4_1]: generalTest_4_1.getAppInterfaceModel(),
       [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_5_0]: generalTest_5.getAppInterfaceModel(),
-      // [MOCK_APP_NAMES.MATHSTREAM_AdaptiveSegmentSwapExperiment]: mathstream_AdaptiveSegmentSwapExperiment.getAppInterfaceModel(),
+      [MOCK_APP_NAMES.MATHSTREAM_AdaptiveSegmentSwapExperiment]:
+        mathstream_AdaptiveSegmentSwapExperiment.getAppInterfaceModel(),
     };
   }
 
