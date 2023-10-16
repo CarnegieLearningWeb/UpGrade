@@ -615,6 +615,11 @@ export class ExperimentAssignmentService {
 
       filteredExperiments = alreadyAssignedExperiment.flat().concat(filteredExperiments);
 
+      // return if no experiment
+      if (filteredExperiments.length === 0) {
+        return [];
+      }
+
       // assign remaining experiment
       const experimentAssignment = await Promise.all(
         filteredExperiments.map((experiment) => {
