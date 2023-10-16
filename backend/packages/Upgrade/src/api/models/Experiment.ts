@@ -133,7 +133,7 @@ export class Experiment extends BaseModel {
     onDelete: 'CASCADE',
     nullable: true,
   })
-  public stratificationFactor: StratificationFactor;
+  public stratificationFactor?: StratificationFactor;
 
   @OneToMany(() => ExperimentCondition, (condition) => condition.experiment)
   @ValidateNested()

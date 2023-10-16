@@ -3,10 +3,9 @@ import { SERVER_ERROR } from 'upgrade_types';
 import { AppRequest } from '../../types';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { StratificationService } from '../services/StratificationService';
-import { FactorStrata, StratificationInputValidator } from './validators/StratificationValidator';
+import { FactorStrata } from './validators/StratificationValidator';
 import { StratificationFactor } from '../models/StratificationFactor';
 import * as express from 'express';
-import { Parser } from 'json2csv';
 import multer from 'multer';
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -122,16 +121,12 @@ export class StratificationController {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : stratification Factor should not be null.'));
     }
 
-    const data = await this.stratificatonService.getCSVDataByFactor(factor, request.logger);
-
-    // Convert JSON data to CSV
-    const parser = new Parser();
-    const csv = parser.parse(data);
+    const csvData = await this.stratificatonService.getCSVDataByFactor(factor, request.logger);
 
     // return csv file with appropriate headers to request;
     res.setHeader('Content-Type', 'text/csv; charset=UTF-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="data.csv"');
-    return res.send(csv);
+    res.setHeader('Content-Disposition', `attachment; filename=data-${factor}.csv`);
+    return res.send(csvData);
   }
 
   /**
@@ -165,40 +160,7 @@ export class StratificationController {
   @Post()
   @UseBefore(upload.single('file'))
   public insertStratification(@Req() request: AppRequest): Promise<UserStratificationFactor[]> {
-    const csvData = request.body[0].file;
-    const rows = csvData.replace(/"/g, '').split('\n');
-    const columnNames = rows[0].split(',');
-
-    const userFactorValues: StratificationInputValidator[] = [];
-
-    // Iterate through the rows (skip the header row)
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i];
-      const rowValues = row.split(',');
-
-      // Extract the user ID
-      const userId = rowValues[0];
-      if (!userId) {
-        continue;
-      }
-
-      // Iterate through other columns (factors)
-      for (let j = 1; j < columnNames.length; j++) {
-        const factorName = columnNames[j];
-        const factorValue = rowValues[j].trim();
-
-        // Create an object and add it to the array
-        const userFactorValue: StratificationInputValidator = {
-          userId: userId,
-          factor: factorName.trim(),
-          value: factorValue === '' ? null : factorValue,
-        };
-
-        userFactorValues.push(userFactorValue);
-      }
-    }
-
-    return this.stratificatonService.insertStratification(userFactorValues, request.logger);
+    return this.stratificatonService.insertStratification(request.body[0].file, request.logger);
   }
 
   /**
