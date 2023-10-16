@@ -28,11 +28,11 @@ describe('StratificationFactorsEffects', () => {
 
   describe('fetchStratificationFactors$', () => {
     it('should dispatch actionFetchStratificationFactorsSuccess on API call success', fakeAsync(() => {
-      stratificationFactorsDataService.fetchStratificationFactors = jest.fn().mockReturnValue(of(mockData[0]));
-      selectAllStratificationFactors.setResult(mockData[0]);
+      stratificationFactorsDataService.fetchStratificationFactors = jest.fn().mockReturnValue(of([mockData]));
+      selectAllStratificationFactors.setResult([mockData]);
 
       const expectedAction = StratificationFactorsActions.actionFetchStratificationFactorsSuccess({
-        stratificationFactors: mockData[0],
+        stratificationFactors: [mockData],
       });
 
       service.fetchStratificationFactors$.subscribe((result) => {
@@ -71,7 +71,7 @@ describe('StratificationFactorsEffects', () => {
       const expectedAction = StratificationFactorsActions.actionDeleteStratificationFactorSuccess({
         stratificationFactor: { ...mockData },
       });
-      console.log('expectedAction: ', expectedAction);
+
       service.deleteStratificationFactor$.subscribe((result) => {
         expect(result).toEqual(expectedAction);
         expect(router.navigate).toHaveBeenCalledWith(['/participants']);
