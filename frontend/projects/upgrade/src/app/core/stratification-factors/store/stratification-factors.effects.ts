@@ -64,7 +64,7 @@ export class StratificationFactorsEffects {
       filter(({ csvData }) => !!csvData),
       switchMap(({ csvData }) =>
         this.stratificationFactorsDataService.importStratificationFactors(csvData).pipe(
-          map((data) => {
+          map(() => {
             return StratificationFactorsActions.actionImportStratificationFactorSuccess();
           }),
           catchError(() => [StratificationFactorsActions.actionImportStratificationFactorFailure()])
@@ -100,6 +100,8 @@ export class StratificationFactorsEffects {
     hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvData); // data is the text response of the http request.
     hiddenElement.target = '_blank';
     hiddenElement.download = value + '.csv';
+    document.body.appendChild(hiddenElement);
     hiddenElement.click();
+    document.body.removeChild(hiddenElement);
   }
 }
