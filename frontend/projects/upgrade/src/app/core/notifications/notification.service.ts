@@ -1,5 +1,8 @@
 import { Injectable, NgZone } from '@angular/core';
-import { MatLegacySnackBar as MatSnackBar, MatLegacySnackBarConfig as MatSnackBarConfig } from '@angular/material/legacy-snack-bar';
+import {
+  MatLegacySnackBar as MatSnackBar,
+  MatLegacySnackBarConfig as MatSnackBarConfig,
+} from '@angular/material/legacy-snack-bar';
 
 @Injectable({
   providedIn: 'root',
@@ -21,9 +24,9 @@ export class NotificationService {
     });
   }
 
-  success(message: string) {
+  success(message: string, duration?: number) {
     this.show(message, {
-      duration: 2000,
+      duration: duration || 2000,
       panelClass: 'success-notification-overlay',
     });
   }
