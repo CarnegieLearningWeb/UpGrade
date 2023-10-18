@@ -116,7 +116,7 @@ export class StratificationController {
     @Param('factor') factor: string,
     @Req() request: AppRequest,
     @Res() res: express.Response
-  ): Promise<any> {
+  ): Promise<express.Response> {
     if (!factor) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : stratification Factor should not be null.'));
     }

@@ -1769,7 +1769,7 @@ export class ExperimentAssignmentService {
   private assignStratifiedRandom(
     sortedExperimentCondition: ExperimentCondition[],
     originalWeights: number[],
-    enrollmentCount: any[]
+    enrollmentCount: { conditionId: string; userCount: number }[]
   ): number[] {
     const sortedEnrollmentCounts = [];
     sortedExperimentCondition.forEach((condition) => {

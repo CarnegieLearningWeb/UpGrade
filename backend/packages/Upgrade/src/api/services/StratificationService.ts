@@ -17,7 +17,7 @@ export class StratificationService {
     private stratificationFactorRepository: StratificationFactorRepository
   ) {}
 
-  private calculateStratificationResult(results: any[]): FactorStrata[] {
+  private calculateStratificationResult(results: { factor: string; value: string; count: string }[]): FactorStrata[] {
     const formattedResults = results.reduce((formatted, result) => {
       const { factor, value, count } = result;
       if (!formatted[factor]) {
