@@ -12,8 +12,8 @@ export default class StratificationServieMock {
     return Promise.resolve([]);
   }
 
-  public getCSVDataByFactor(factor: string, logger: UpgradeLogger): Promise<any> {
-    return Promise.resolve({});
+  public getCSVDataByFactor(factor: string, logger: UpgradeLogger): Promise<string> {
+    return Promise.resolve(' ');
   }
 
   public deleteStratification(factor: string, logger: UpgradeLogger): Promise<[]> {

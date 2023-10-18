@@ -6,6 +6,7 @@ import {
   selectAllStratificationFactors,
   selectIsLoadingStratificationFactors,
 } from './store/stratification-factors.selectors';
+import { CsvDataItem } from './store/stratification-factors.model';
 
 @Injectable({ providedIn: 'root' })
 @Injectable()
@@ -25,7 +26,7 @@ export class StratificationFactorsService {
     this.store$.dispatch(StratificationFactorsActions.actionDeleteStratificationFactor({ factor }));
   }
 
-  importStratificationFactors(csvData: string) {
+  importStratificationFactors(csvData: CsvDataItem[]) {
     this.store$.dispatch(StratificationFactorsActions.actionImportStratificationFactor({ csvData }));
   }
 

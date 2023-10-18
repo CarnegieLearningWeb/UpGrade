@@ -7,6 +7,10 @@ import { StratificationFactor } from '../../../../../core/stratification-factors
 import { Subscription } from 'rxjs';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
 
+interface StratificationFactorsTableRow {
+  factor: string;
+  summary: string;
+}
 @Component({
   selector: 'users-stratification-factor-list',
   templateUrl: './stratification-factor-list.component.html',
@@ -17,7 +21,7 @@ export class StratificationComponent implements OnInit {
   allStratificationFactors: StratificationFactor[];
   allStratificationFactorsSub: Subscription;
   isLoadingStratificationFactors$ = this.stratificationFactorsService.isLoadingStratificationFactors$;
-  stratificationFactorsForTable: { factor: string; summary: string }[] = [];
+  stratificationFactorsForTable: StratificationFactorsTableRow[] = [];
   displayedColumns: string[] = ['factor', 'summary', 'actions'];
 
   constructor(private dialog: MatDialog, private stratificationFactorsService: StratificationFactorsService) {}
@@ -26,26 +30,28 @@ export class StratificationComponent implements OnInit {
     this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(
       (allStratificationFactors) => {
         this.allStratificationFactors = allStratificationFactors;
-        this.stratificationFactorsForTable = this.convertToTableformat();
+        this.stratificationFactorsForTable = this.convertToTableFormat();
       }
     );
   }
 
-  convertToTableformat() {
-    const stratificationFactors = this.allStratificationFactors.map((element) => {
-      let factorSummary = 'UUIDs';
-      const allkeys = Object.keys(element.values);
-      let totalUsers = 0;
-      let tempSummary: string;
-      allkeys.forEach((key) => {
-        tempSummary = tempSummary
-          ? tempSummary + '; ' + key + '=' + element.values[key]
-          : key + '=' + element.values[key];
-        totalUsers += element.values[key];
-      });
-      factorSummary = totalUsers.toString() + ' ' + factorSummary + ' (' + tempSummary + ')';
-      return { factor: element.factor, summary: factorSummary };
-    });
+  convertToTableFormat() {
+    const stratificationFactors: StratificationFactorsTableRow[] = this.allStratificationFactors.map(
+      (stratificationFactor) => {
+        let factorSummary = 'UUIDs';
+        const allkeys = Object.keys(stratificationFactor.factorValue);
+        let totalUsers = 0;
+        let tempSummary: string;
+        allkeys.forEach((key) => {
+          tempSummary = tempSummary
+            ? tempSummary + '; ' + key + '=' + stratificationFactor.factorValue[key]
+            : key + '=' + stratificationFactor.factorValue[key];
+          totalUsers += stratificationFactor.factorValue[key];
+        });
+        factorSummary = totalUsers.toString() + ' ' + factorSummary + ' (' + tempSummary + ')';
+        return { factor: stratificationFactor.factor, summary: factorSummary };
+      }
+    );
     return stratificationFactors;
   }
 

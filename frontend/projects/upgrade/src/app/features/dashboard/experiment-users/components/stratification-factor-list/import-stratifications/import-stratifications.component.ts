@@ -1,9 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import {
-  MatLegacyDialogRef as MatDialogRef,
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-} from '@angular/material/legacy-dialog';
+import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { StratificationFactorsService } from '../../../../../../core/stratification-factors/stratification-factors.service';
+import { CsvDataItem } from '../../../../../../core/stratification-factors/store/stratification-factors.model';
 
 @Component({
   selector: 'app-import-stratifications',
@@ -12,16 +10,14 @@ import { StratificationFactorsService } from '../../../../../../core/stratificat
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImportStratificationsComponent {
-  file: any;
-  stratificationInfo: any;
+  file: File;
   isStratificationCSVValid = true;
-  csvData: any = [];
+  csvData: CsvDataItem[] = [];
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   constructor(
     private stratificationFactorsService: StratificationFactorsService,
-    public dialogRef: MatDialogRef<ImportStratificationsComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    public dialogRef: MatDialogRef<ImportStratificationsComponent>
   ) {}
 
   onCancelClick() {

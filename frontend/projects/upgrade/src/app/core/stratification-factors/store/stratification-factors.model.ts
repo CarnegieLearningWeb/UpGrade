@@ -7,7 +7,7 @@ export interface State extends AppState {
 
 export interface StratificationFactor {
   factor: string;
-  values: Record<string, number>;
+  factorValue: Record<string, number>;
 }
 
 export interface StratificationFactorSimple {
@@ -16,5 +16,9 @@ export interface StratificationFactorSimple {
 
 export interface StratificationFactorsState extends EntityState<StratificationFactor> {
   isLoadingStratificationFactors: boolean;
-  totalStratificationFactors: any;
+  totalStratificationFactors: number;
+}
+
+export interface CsvDataItem {
+  file: string;
 }

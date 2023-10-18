@@ -21,10 +21,10 @@ export class StratificationService {
     const formattedResults = results.reduce((formatted, result) => {
       const { factor, value, count } = result;
       if (!formatted[factor]) {
-        formatted[factor] = { factor, values: {} };
+        formatted[factor] = { factor, factorValue: {} };
       }
       if (value !== 'N/A') {
-        formatted[factor].values[value] = parseInt(count);
+        formatted[factor].factorValue[value] = parseInt(count);
       }
       return formatted;
     }, {});
@@ -81,7 +81,7 @@ export class StratificationService {
     return this.calculateStratificationResult(queryBuilder)[0];
   }
 
-  public async getCSVDataByFactor(factor: string, logger: UpgradeLogger): Promise<any> {
+  public async getCSVDataByFactor(factor: string, logger: UpgradeLogger): Promise<string> {
     logger.info({ message: `Download CSV stratification by factor. Factor: ${factor}` });
 
     const data = await this.stratificationFactorRepository
