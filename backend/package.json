@@ -12,9 +12,9 @@
     },
     "license": "ISC",
     "dependencies": {
-        "@json2csv/plainjs": "^7.0.3",
         "dayjs": "^1.11.10",
-        "jsonfile": "^6.0.1"
+        "jsonfile": "^6.0.1",
+        "papaparse": "^5.4.1"
     },
     "devDependencies": {
         "ts-node": "^8.6.2",

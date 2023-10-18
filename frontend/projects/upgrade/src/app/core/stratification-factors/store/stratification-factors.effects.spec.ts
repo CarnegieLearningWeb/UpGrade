@@ -12,7 +12,7 @@ describe('StratificationFactorsEffects', () => {
   let stratificationFactorsDataService: any;
   let router: any;
   let service: StratificationFactorsEffects;
-  const mockData: StratificationFactor = { factor: 'favourite_food', values: { pizza: 10, burger: 5 } };
+  const mockData: StratificationFactor = { factor: 'favourite_food', factorValue: { pizza: 10, burger: 5 } };
 
   beforeEach(() => {
     actions$ = new ActionsSubject();
@@ -103,7 +103,7 @@ describe('StratificationFactorsEffects', () => {
 
   describe('importStratificationFactor$', () => {
     it('should dispatch actionImportStratificationFactorSuccess on success', fakeAsync(() => {
-      const mockCSVData = 'data,test';
+      const mockCSVData = [{ file: 'data,test' }];
       stratificationFactorsDataService.importStratificationFactors = jest.fn().mockReturnValue(of(null));
 
       const expectedAction = StratificationFactorsActions.actionImportStratificationFactorSuccess();
@@ -118,7 +118,7 @@ describe('StratificationFactorsEffects', () => {
     }));
 
     it('should dispatch actionImportStratificationFactorFailure on API call failure', fakeAsync(() => {
-      const mockCSVData = 'data,test';
+      const mockCSVData = [{ file: 'data,test' }];
       stratificationFactorsDataService.importStratificationFactors = jest
         .fn()
         .mockReturnValue(throwError(() => new Error('test')));

@@ -39,7 +39,7 @@ describe('StratificationFactorsService', () => {
 
   describe('#importStratificationFactors', () => {
     it('should dispatch actionImportStratificationFactor with the given input', () => {
-      const csvData = 'testData';
+      const csvData = [{ file: 'data,test' }];
       service.importStratificationFactors(csvData);
       expect(mockStore.dispatch).toHaveBeenCalledWith(actionImportStratificationFactor({ csvData }));
     });

@@ -4,7 +4,7 @@ import { StratificationFactor } from './stratification-factors.model';
 
 const mockStratificationFactor: StratificationFactor = {
   factor: 'favourite_food',
-  values: { pizza: 10, burger: 5 },
+  factorValue: { pizza: 10, burger: 5 },
 };
 describe('StratificationFactorsReducer', () => {
   describe('actionFetchStratificationFactors', () => {

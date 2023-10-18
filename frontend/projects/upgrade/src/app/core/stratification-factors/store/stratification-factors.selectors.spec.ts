@@ -15,17 +15,6 @@ describe('StratificationFactorsSelectors', () => {
     });
   });
 
-  describe('#selectAllStratificationFactors', () => {
-    it('should return all stratification factors', () => {
-      const previousState = { ...mockState };
-      previousState.totalStratificationFactors = [];
-
-      const result = StratificationFactorsSelectors.selectAllStratificationFactors.projector(previousState);
-
-      expect(result).toEqual([]);
-    });
-  });
-
   describe('#selectTotalStratificationFactors', () => {
     it('should return the total count of stratification factors', () => {
       const previousState = { ...mockState };

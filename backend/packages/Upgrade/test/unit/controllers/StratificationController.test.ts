@@ -2,7 +2,7 @@ import app from '../../utils/expressApp';
 import request from 'supertest';
 import fs from 'fs';
 import path from 'path';
-import { Parser } from 'json2csv';
+import Papa from 'papaparse';
 import { configureLogger } from '../../utils/logger';
 import { useContainer as routingUseContainer } from 'routing-controllers';
 import { Container } from 'typedi';
@@ -38,8 +38,7 @@ describe('Stratification Controller Testing', () => {
       { uuid: 'Alice', Graduated: 'no' },
     ];
 
-    const parser = new Parser();
-    const csvData = parser.parse(jsonData, { header: true });
+    const csvData = Papa.unparse(jsonData);
 
     // Create a temporary CSV file
     const tempCsvFilePath = path.join(__dirname, `${factorName}.csv`);

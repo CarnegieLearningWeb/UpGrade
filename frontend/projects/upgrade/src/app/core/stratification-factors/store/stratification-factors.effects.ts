@@ -96,13 +96,11 @@ export class StratificationFactorsEffects {
     const firstRowColumns = rows[0].split(',');
 
     // Access the second column of the first row
-    const factorName = firstRowColumns[1].replace(/["']/g, '');
+    const factorName = firstRowColumns[1].replace(/["'\r]/g, '');
     const hiddenElement = document.createElement('a');
     hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvData); // data is the text response of the http request.
     hiddenElement.target = '_blank';
     hiddenElement.download = factorName + '.csv';
-    document.body.appendChild(hiddenElement);
     hiddenElement.click();
-    document.body.removeChild(hiddenElement);
   }
 }

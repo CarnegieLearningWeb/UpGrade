@@ -3,7 +3,7 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SERVER_ERROR } from 'upgrade_types';
 import { In, getConnection } from 'typeorm';
-import { Parser } from '@json2csv/plainjs';
+import Papa from 'papaparse';
 import { FactorStrata, StratificationInputValidator } from '../controllers/validators/StratificationValidator';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { StratificationFactor } from '../models/StratificationFactor';
@@ -92,8 +92,7 @@ export class StratificationService {
       .getRawMany();
 
     // Convert JSON data to CSV
-    const parser = new Parser();
-    return parser.parse(data);
+    return Papa.unparse(data);
   }
 
   public async deleteStratification(factor: string, logger: UpgradeLogger): Promise<StratificationFactor> {
