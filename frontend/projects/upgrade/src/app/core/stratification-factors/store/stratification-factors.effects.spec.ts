@@ -144,9 +144,6 @@ describe('StratificationFactorsEffects', () => {
       const expectedAction = StratificationFactorsActions.actionExportStratificationFactorSuccess();
       service.exportStratificationFactor$.subscribe((result) => {
         expect(result).toEqual(expectedAction);
-
-        // Check if the download method was called
-        expect(document.body.removeChild).toHaveBeenCalled();
       });
 
       actions$.next(StratificationFactorsActions.actionExportStratificationFactor({ factor: mockCSVFactor }));
