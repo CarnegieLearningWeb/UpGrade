@@ -68,6 +68,5 @@ export default async function RamdomAlgoCheck(): Promise<void> {
     new UpgradeLogger(),
     context
   );
-  console.log("experimentConditionAssignments[0].assignedCondition: ", experimentConditionAssignments[0].assignedCondition)
   expect(experimentConditionAssignments[0].assignedCondition.length).toEqual(100);
 }
