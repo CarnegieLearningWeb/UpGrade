@@ -3,6 +3,7 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SERVER_ERROR } from 'upgrade_types';
 import { In, getConnection } from 'typeorm';
+import Papa from 'papaparse';
 import { FactorStrata, StratificationInputValidator } from '../controllers/validators/StratificationValidator';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { StratificationFactor } from '../models/StratificationFactor';
@@ -16,14 +17,16 @@ export class StratificationService {
     private stratificationFactorRepository: StratificationFactorRepository
   ) {}
 
-  private calculateStratificationResult(results: any[]): FactorStrata[] {
+  private calculateStratificationResult(
+    results: { factor: string; value: string; count: string; experimentIds: string[] }[]
+  ): FactorStrata[] {
     const formattedResults = results.reduce((formatted, result) => {
       const { factor, value, count, experimentIds } = result;
       if (!formatted[factor]) {
-        formatted[factor] = { factor, values: {}, experimentIds};
+        formatted[factor] = { factor, factorValue: {}, experimentIds };
       }
       if (value !== 'N/A') {
-        formatted[factor].values[value] = parseInt(count);
+        formatted[factor].factorValue[value] = parseInt(count);
       }
       return formatted;
     }, {});
@@ -47,9 +50,8 @@ export class StratificationService {
       .groupBy('sf.stratificationFactorName, value')
       .getRawMany();
 
-    const allStratificaitonFactors = await this.stratificationFactorRepository.find();
-    console.log('allStratificaitonFactors: ', allStratificaitonFactors);
-    const remainingFactors = allStratificaitonFactors
+    const allStratificationFactors = await this.stratificationFactorRepository.find();
+    const remainingFactors = allStratificationFactors
       .filter((factor) => {
         return !queryBuilder.some((result) => result.factor === factor.stratificationFactorName);
       })
@@ -63,7 +65,6 @@ export class StratificationService {
       });
 
     const temp = this.calculateStratificationResult([...queryBuilder, ...remainingFactors]);
-    console.log('temp: ', temp);
     return temp;
   }
 
@@ -87,15 +88,18 @@ export class StratificationService {
     return this.calculateStratificationResult(queryBuilder)[0];
   }
 
-  public async getCSVDataByFactor(factor: string, logger: UpgradeLogger): Promise<any> {
+  public async getCSVDataByFactor(factor: string, logger: UpgradeLogger): Promise<string> {
     logger.info({ message: `Download CSV stratification by factor. Factor: ${factor}` });
 
-    return await this.stratificationFactorRepository
+    const data = await this.stratificationFactorRepository
       .createQueryBuilder('sf')
       .select(['usf.user AS uuid', `usf.stratificationFactorValue AS "${factor}"`])
       .leftJoin('sf.userStratificationFactor', 'usf')
       .where('sf.stratificationFactorName = :factor', { factor })
       .getRawMany();
+
+    // Convert JSON data to CSV
+    return Papa.unparse(data);
   }
 
   public async deleteStratification(factor: string, logger: UpgradeLogger): Promise<StratificationFactor> {
@@ -104,10 +108,41 @@ export class StratificationService {
     return await this.stratificationFactorRepository.deleteStratificationFactorByName(factor, logger);
   }
 
-  public async insertStratification(
-    userStratificationData: StratificationInputValidator[],
-    logger: UpgradeLogger
-  ): Promise<UserStratificationFactor[]> {
+  public async insertStratification(csvData: string, logger: UpgradeLogger): Promise<UserStratificationFactor[]> {
+    // const csvData = request.body[0].file;
+    const rows = csvData.replace(/"/g, '').split('\n');
+    const columnNames = rows[0].split(',');
+
+    let userStratificationData: StratificationInputValidator[] = [];
+
+    // Iterate through the rows (skip the header row)
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      const rowValues = row.split(',');
+
+      // Extract the user ID
+      const userId = rowValues[0];
+      if (!userId) {
+        continue;
+      }
+
+      // Iterate through other columns (factors)
+      for (let j = 1; j < columnNames.length; j++) {
+        const factorName = columnNames[j];
+        const factorValue = rowValues[j].trim();
+
+        // Create an object and add it to the array
+        const userFactorValue: StratificationInputValidator = {
+          userId: userId,
+          factor: factorName.trim(),
+          value: factorValue === '' ? null : factorValue,
+          experimentIds: [],
+        };
+
+        userStratificationData.push(userFactorValue);
+      }
+    }
+
     logger.info({ message: `Insert stratification => ${JSON.stringify(userStratificationData, undefined, 2)}` });
 
     const createdStratificationData = await getConnection().transaction(async (transactionalEntityManager) => {

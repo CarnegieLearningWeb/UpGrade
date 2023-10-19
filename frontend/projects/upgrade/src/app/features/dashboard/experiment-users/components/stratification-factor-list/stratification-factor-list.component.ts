@@ -8,6 +8,13 @@ import { Subscription } from 'rxjs';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
 import { STRATIFICATION_FACTOR_STATUS } from '../../../../../../../../../../types/src/Experiment/enums';
 
+interface StratificationFactorsTableRow {
+  factor: string;
+  summary: string;
+  status: string;
+  experimentIds: string[];
+}
+
 @Component({
   selector: 'users-stratification-factor-list',
   templateUrl: './stratification-factor-list.component.html',
@@ -18,12 +25,7 @@ export class StratificationComponent implements OnInit {
   allStratificationFactors: StratificationFactor[];
   allStratificationFactorsSub: Subscription;
   isLoadingStratificationFactors$ = this.stratificationFactorsService.isLoadingStratificationFactors$;
-  stratificationFactorsForTable: {
-    factor: string;
-    summary: string;
-    status: string;
-    experimentIds: string[];
-  }[] = [];
+  stratificationFactorsForTable: StratificationFactorsTableRow[] = [];
   displayedColumns: string[] = ['factor', 'status', 'summary', 'actions'];
 
   constructor(private dialog: MatDialog, private stratificationFactorsService: StratificationFactorsService) {}
@@ -32,33 +34,39 @@ export class StratificationComponent implements OnInit {
     this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(
       (allStratificationFactors) => {
         this.allStratificationFactors = allStratificationFactors;
-        this.stratificationFactorsForTable = this.convertToTableformat();
+        this.stratificationFactorsForTable = this.convertToTableFormat();
       }
     );
   }
 
-  convertToTableformat() {
-    const stratificationFactors = this.allStratificationFactors.map((element) => {
-      let factorSummary = 'UUIDs';
-      const allkeys = Object.keys(element.values);
-      let totalUsers = 0;
-      let tempSummary: string;
-      allkeys.forEach((key) => {
-        tempSummary = tempSummary
-          ? tempSummary + '; ' + key + '=' + element.values[key]
-          : key + '=' + element.values[key];
-        totalUsers += element.values[key];
-      });
-      factorSummary = totalUsers.toString() + ' ' + factorSummary + ' (' + tempSummary + ')';
-      const status =
-        element.experimentIds[0] !== null ? STRATIFICATION_FACTOR_STATUS.USED : STRATIFICATION_FACTOR_STATUS.UNUSED;
-      return {
-        factor: element.factor,
-        summary: factorSummary,
-        status: status,
-        experimentIds: element.experimentIds,
-      };
-    });
+  convertToTableFormat() {
+    const stratificationFactors: StratificationFactorsTableRow[] = this.allStratificationFactors.map(
+      (stratificationFactor) => {
+        let factorSummary = 'UUIDs';
+        const allkeys = Object.keys(stratificationFactor.factorValue);
+        let totalUsers = 0;
+        let tempSummary: string;
+        allkeys.forEach((key) => {
+          tempSummary = tempSummary
+            ? tempSummary + '; ' + key + '=' + stratificationFactor.factorValue[key]
+            : key + '=' + stratificationFactor.factorValue[key];
+          totalUsers += stratificationFactor.factorValue[key];
+        });
+
+        factorSummary = totalUsers.toString() + ' ' + factorSummary + ' (' + tempSummary + ')';
+        const status =
+          stratificationFactor.experimentIds[0] !== null
+            ? STRATIFICATION_FACTOR_STATUS.USED
+            : STRATIFICATION_FACTOR_STATUS.UNUSED;
+
+        return {
+          factor: stratificationFactor.factor,
+          summary: factorSummary,
+          status: status,
+          experimentIds: stratificationFactor.experimentIds,
+        };
+      }
+    );
     return stratificationFactors;
   }
 

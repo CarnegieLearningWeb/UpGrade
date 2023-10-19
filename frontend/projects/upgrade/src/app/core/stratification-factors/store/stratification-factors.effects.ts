@@ -7,6 +7,7 @@ import { AppState } from '../../core.state';
 import * as StratificationFactorsActions from './stratification-factors.actions';
 import { StratificationFactorsDataService } from '../stratification-factors.data.service';
 import { selectAllStratificationFactors } from './stratification-factors.selectors';
+import { StratificationFactor } from './stratification-factors.model';
 
 @Injectable()
 export class StratificationFactorsEffects {
@@ -23,7 +24,7 @@ export class StratificationFactorsEffects {
       withLatestFrom(this.store$.pipe(select(selectAllStratificationFactors))),
       switchMap(() =>
         this.stratificationFactorsDataService.fetchStratificationFactors().pipe(
-          map((data: any) =>
+          map((data: StratificationFactor[]) =>
             StratificationFactorsActions.actionFetchStratificationFactorsSuccess({
               stratificationFactors: data,
             })
@@ -41,15 +42,18 @@ export class StratificationFactorsEffects {
       filter((factor) => !!factor),
       switchMap((factor) =>
         this.stratificationFactorsDataService.deleteStratificationFactor(factor).pipe(
-          map((data: any) => {
-            this.router.navigate(['/participants']);
-            const stratificationFactor = {
-              ...data[0],
-              factor: data[0].stratificationFactorName,
-            };
-            return StratificationFactorsActions.actionDeleteStratificationFactorSuccess({
-              stratificationFactor: stratificationFactor,
-            });
+          map((data) => {
+            if (data[0]) {
+              const stratificationFactor: StratificationFactor = {
+                ...data[0],
+                factor: data[0].stratificationFactorName,
+              };
+              const successResponse = StratificationFactorsActions.actionDeleteStratificationFactorSuccess({
+                stratificationFactor: stratificationFactor,
+              });
+              this.router.navigate(['/participants']);
+              return successResponse;
+            }
           }),
           catchError(() => [StratificationFactorsActions.actionDeleteStratificationFactorFailure()])
         )
@@ -64,7 +68,7 @@ export class StratificationFactorsEffects {
       filter(({ csvData }) => !!csvData),
       switchMap(({ csvData }) =>
         this.stratificationFactorsDataService.importStratificationFactors(csvData).pipe(
-          map((data) => {
+          map(() => {
             return StratificationFactorsActions.actionImportStratificationFactorSuccess();
           }),
           catchError(() => [StratificationFactorsActions.actionImportStratificationFactorFailure()])
@@ -95,11 +99,11 @@ export class StratificationFactorsEffects {
     const firstRowColumns = rows[0].split(',');
 
     // Access the second column of the first row
-    const value = firstRowColumns[1].replace(/["']/g, '');
+    const factorName = firstRowColumns[1].replace(/["'\r]/g, '');
     const hiddenElement = document.createElement('a');
     hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvData); // data is the text response of the http request.
     hiddenElement.target = '_blank';
-    hiddenElement.download = value + '.csv';
+    hiddenElement.download = factorName + '.csv';
     hiddenElement.click();
   }
 }

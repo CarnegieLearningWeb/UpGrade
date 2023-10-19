@@ -7,6 +7,8 @@ import { experimentUsers } from '../../mockData/experimentUsers';
 import { ASSIGNMENT_ALGORITHM, EXPERIMENT_STATE } from 'upgrade_types';
 import { getAllExperimentCondition } from '../../utils';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { ExperimentDTO } from 'src/api/DTO/ExperimentDTO';
+import { UserDetailsValidator } from 'src/api/controllers/validators/UserDetailsValidator';
 
 export default async function RamdomAlgoCheck(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
@@ -15,7 +17,7 @@ export default async function RamdomAlgoCheck(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
+  const user = await userService.upsertUser(systemUser as UserDetailsValidator, new UpgradeLogger());
 
   const conditions = experimentObject.conditions;
   const context = experimentObject.context[0];
@@ -28,7 +30,7 @@ export default async function RamdomAlgoCheck(): Promise<void> {
 
   // create experiment
   await experimentService.create(
-    { ...experimentObject, conditions: updatedConditions } as any,
+    { ...experimentObject, conditions: updatedConditions } as ExperimentDTO,
     user,
     new UpgradeLogger()
   );
@@ -41,7 +43,7 @@ export default async function RamdomAlgoCheck(): Promise<void> {
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
-        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
       }),
     ])
   );
@@ -59,7 +61,7 @@ export default async function RamdomAlgoCheck(): Promise<void> {
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
-        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
       }),
     ])
   );

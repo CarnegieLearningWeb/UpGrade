@@ -318,22 +318,10 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         tags,
         logging,
       } = this.overviewForm.value;
-      let stratificationFactorValueToSend = stratificationFactor;
-      if (assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
-        if (!stratificationFactor) {
-          this.isStratificationFactorSelected = false;
-          if (this.allStratificationFactors.length == 0) {
-            this.stratificationFactorNotSelectedMsg =
-              'home.new-experiment.overview.no-stratification-factor.error.text';
-          } else {
-            this.stratificationFactorNotSelectedMsg = 'home.new-experiment.overview.stratification-factor.error.text';
-          }
-        } else {
-          this.isStratificationFactorSelected = true;
-        }
-      } else {
-        stratificationFactorValueToSend = null;
-      }
+      const stratificationFactorValueToSend = this.stratificationFactorValueToSend(
+        stratificationFactor,
+        assignmentAlgorithm
+      );
       if (this.isStratificationFactorSelected) {
         const overviewFormData = {
           name: experimentName,
@@ -363,6 +351,25 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         }
       }
     }
+  }
+
+  stratificationFactorValueToSend(stratificationFactor: string, assignmentAlgorithm: ASSIGNMENT_ALGORITHM): string {
+    let stratificationFactorValueToSend = stratificationFactor;
+    if (assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+      if (!stratificationFactor) {
+        this.isStratificationFactorSelected = false;
+        if (this.allStratificationFactors.length == 0) {
+          this.stratificationFactorNotSelectedMsg = 'home.new-experiment.overview.no-stratification-factor.error.text';
+        } else {
+          this.stratificationFactorNotSelectedMsg = 'home.new-experiment.overview.stratification-factor.error.text';
+        }
+      } else {
+        this.isStratificationFactorSelected = true;
+      }
+    } else {
+      stratificationFactorValueToSend = null;
+    }
+    return stratificationFactorValueToSend;
   }
 
   ngOnDestroy() {

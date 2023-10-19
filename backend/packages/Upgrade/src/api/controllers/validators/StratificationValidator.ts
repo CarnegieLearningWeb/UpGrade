@@ -6,12 +6,7 @@ export class FactorStrata {
   public factor: string;
 
   @IsObject()
-  public value: Record<string, number>;
-
-  @IsNotEmpty()
-  @IsArray()
-  @IsString({ each: true })
-  public experimentIds: string[];
+  public factorValue: Record<string, number>;
 }
 
 export class StratificationInputValidator {
@@ -26,4 +21,9 @@ export class StratificationInputValidator {
   @IsOptional()
   @IsString()
   public value?: string;
+
+  @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  public experimentIds: string[];
 }

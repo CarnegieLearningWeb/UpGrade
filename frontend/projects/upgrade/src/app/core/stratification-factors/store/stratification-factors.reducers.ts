@@ -10,7 +10,7 @@ export const adapter: EntityAdapter<StratificationFactor> = createEntityAdapter<
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
 export const initialState: StratificationFactorsState = adapter.getInitialState({
-  isLoading: false,
+  isLoadingStratificationFactors: false,
   totalStratificationFactors: null,
 });
 

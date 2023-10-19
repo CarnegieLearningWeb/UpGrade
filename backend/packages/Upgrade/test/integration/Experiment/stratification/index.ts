@@ -31,7 +31,7 @@ const initialChecks = async () => {
   expect(individualExclusions.length).toEqual(0);
 
   // create users over here
-  await userService.create(experimentUsers as any, new UpgradeLogger());
+  await userService.create(experimentUsers, new UpgradeLogger());
 
   // get all user here
   const userList = await userService.find(new UpgradeLogger());

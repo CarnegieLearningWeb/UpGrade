@@ -132,7 +132,7 @@ export class Experiment extends BaseModel {
   @ManyToOne(() => StratificationFactor, (stratificationFactor) => stratificationFactor.experiment, {
     nullable: true,
   })
-  public stratificationFactor: StratificationFactor;
+  public stratificationFactor?: StratificationFactor;
 
   @OneToMany(() => ExperimentCondition, (condition) => condition.experiment)
   @ValidateNested()
