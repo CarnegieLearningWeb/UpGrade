@@ -1,9 +1,9 @@
 import { createAction, props } from '@ngrx/store';
-import { StratificationFactor } from './stratification-factors.model';
+import { CsvDataItem, StratificationFactor } from './stratification-factors.model';
 
 export const actionFetchStratificationFactors = createAction(
   '[Stratification Factors] Fetch Stratification Factors',
-  props<{ isLoading: boolean }>()
+  props<{ isLoadingStratificationFactors: boolean }>()
 );
 
 export const actionFetchStratificationFactorsSuccess = createAction(
@@ -31,7 +31,7 @@ export const actionDeleteStratificationFactorFailure = createAction(
 
 export const actionImportStratificationFactor = createAction(
   '[Stratification Factors] Import Stratification Factor',
-  props<{ csvData: string }>()
+  props<{ csvData: CsvDataItem[] }>()
 );
 
 export const actionImportStratificationFactorSuccess = createAction(

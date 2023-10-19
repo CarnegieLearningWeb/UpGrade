@@ -369,7 +369,8 @@ export class ExperimentAssignmentService {
               groupEnrollment: groupEnrollments,
               groupExclusion: groupExclusions,
             },
-            status
+            status,
+            condition
           );
           if (experiment.enrollmentCompleteCondition) {
             await this.checkEnrollmentEndingCriteriaForCount(experiment, logger);
@@ -620,7 +621,10 @@ export class ExperimentAssignmentService {
 
       filteredExperiments = alreadyAssignedExperiment.flat().concat(filteredExperiments);
 
-      // const enrollmentCountPerCondition = await this.getEnrollmentCountPerCondition(filteredExperiments[0], userId);
+      // return if no experiment
+      if (filteredExperiments.length === 0) {
+        return [];
+      }
 
       // assign remaining experiment
       const experimentAssignment = await Promise.all(
@@ -1415,7 +1419,8 @@ export class ExperimentAssignmentService {
       groupEnrollment: GroupEnrollment;
       groupExclusion: GroupExclusion;
     },
-    status: MARKED_DECISION_POINT_STATUS
+    status: MARKED_DECISION_POINT_STATUS,
+    condition: string
   ): Promise<void> {
     const { assignmentUnit, state, consistencyRule } = experiment;
 
@@ -1534,20 +1539,22 @@ export class ExperimentAssignmentService {
       }
       await Promise.all(promiseArray);
     } else {
-      const enrollmentCounts = await this.getEnrollmentCountPerCondition(experiment, user.id);
       if (assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
         const promiseArray = [];
         let conditionAssigned;
         if (!noGroupSpecified && !invalidGroup) {
-          conditionAssigned = this.assignExperiment(
-            user,
-            experiment,
-            individualEnrollment,
-            groupEnrollment,
-            individualExclusion,
-            groupExclusion,
-            enrollmentCounts
-          );
+          if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+            conditionAssigned = experiment.conditions.find((expCondition) => expCondition.conditionCode === condition);
+          } else {
+            conditionAssigned = this.assignExperiment(
+              user,
+              experiment,
+              individualEnrollment,
+              groupEnrollment,
+              individualExclusion,
+              groupExclusion
+            );
+          }
         }
 
         // get condition which should be assigned
@@ -1626,8 +1633,7 @@ export class ExperimentAssignmentService {
           individualEnrollment,
           groupEnrollment,
           individualExclusion,
-          groupExclusion,
-          enrollmentCounts
+          groupExclusion
         );
         if (!individualEnrollment && !individualExclusion && conditionAssigned) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
@@ -1763,7 +1769,7 @@ export class ExperimentAssignmentService {
   private assignStratifiedRandom(
     sortedExperimentCondition: ExperimentCondition[],
     originalWeights: number[],
-    enrollmentCount: any[]
+    enrollmentCount: { conditionId: string; userCount: number }[]
   ): number[] {
     const sortedEnrollmentCounts = [];
     sortedExperimentCondition.forEach((condition) => {
@@ -2058,10 +2064,10 @@ export class ExperimentAssignmentService {
         .select(['CAST(COUNT(srsUser.user) AS INTEGER) as "userCount", enrollment.conditionId'])
         .innerJoin(IndividualEnrollment, 'enrollment', 'enrollment.userId = srsUser.userId')
         .where('srsUser.stratificationFactorValue = :factorValue', {
-          factorValueX: factorValue?.stratificationFactorValue,
+          factorValue: factorValue?.stratificationFactorValue,
         })
         .andWhere('srsUser.factorName = :factor', {
-          factorIdX: experiment.stratificationFactor.stratificationFactorName,
+          factor: experiment.stratificationFactor.stratificationFactorName,
         })
         .groupBy('enrollment.conditionId')
         .execute();

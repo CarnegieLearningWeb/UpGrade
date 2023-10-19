@@ -6,7 +6,7 @@ export class FactorStrata {
   public factor: string;
 
   @IsObject()
-  public value: Record<string, number>;
+  public factorValue: Record<string, number>;
 }
 
 export class StratificationInputValidator {

@@ -12,14 +12,11 @@
     align-items: center;
     justify-content: space-between;
 
-    button {
+    .import-stratifications-csv {
       background-color: var(--blue);
       height: 40px;
-      color: var(--white);
-    }
-
-    .import-stratifications-csv {
       margin-right: 20px;
+      color: var(--white);
     }
   }
 
@@ -34,7 +31,7 @@
       z-index: 1111;
     }
 
-    .table {
+    .stratification-factor-table {
       width: 100%;
 
       .mat-header-row {
