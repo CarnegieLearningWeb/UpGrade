@@ -159,7 +159,7 @@ export class ExperimentEffects {
               switchMap((experimentStat: IExperimentEnrollmentStats) => {
                 const stats = { ...experimentStats, [data.id]: experimentStat[0] };
                 const queryIds = data.queries.map((query) => query.id);
-                this.notificationService.success(this.translate.instant('global.save-confirmation.message.text'));
+                this.notificationService.showSuccess(this.translate.instant('global.save-confirmation.message.text'));
                 return [
                   experimentAction.actionFetchExperimentStatsSuccess({ stats }),
                   experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
@@ -170,7 +170,7 @@ export class ExperimentEffects {
             )
           ),
           catchError((error) => {
-            this.notificationService.success(error.error.message);
+            this.notificationService.showError(error.error.message);
             return [experimentAction.actionUpsertExperimentFailure()];
           })
         );
@@ -444,8 +444,8 @@ export class ExperimentEffects {
         this.experimentDataService.exportExperimentInfo(experimentId, email).pipe(
           tap(() => {
             email
-              ? this.notificationService.success(`Email will be sent to ${email}`)
-              : this.notificationService.success('Email will be sent to registered email');
+              ? this.notificationService.showSuccess(`Email will be sent to ${email}`)
+              : this.notificationService.showSuccess('Email will be sent to registered email');
           }),
           map(() => experimentAction.actionExportExperimentInfoSuccess()),
           catchError(() => [experimentAction.actionExportExperimentInfoFailure()])
@@ -463,7 +463,7 @@ export class ExperimentEffects {
         this.experimentDataService.importExperiment(experiments).pipe(
           switchMap((data: Experiment[]) => {
             const experimentIds = data.map((exp) => exp.id);
-            this.notificationService.success(this.translate.instant('global.import-segments.message.text'), 4000);
+            this.notificationService.showSuccess(this.translate.instant('global.import-segments.message.text'));
             return [
               experimentAction.actionImportExperimentSuccess(),
               experimentAction.actionGetExperimentsSuccess({ experiments: data, totalExperiments: data.length }),
@@ -484,7 +484,7 @@ export class ExperimentEffects {
       switchMap(({ experimentIds }) =>
         this.experimentDataService.exportExperimentDesign(experimentIds).pipe(
           tap(() => {
-            this.notificationService.success('Experiment Design JSON downloaded!');
+            this.notificationService.showSuccess('Experiment Design JSON downloaded!');
           }),
           map((data: Experiment[]) => {
             if (data.length > 1) {
