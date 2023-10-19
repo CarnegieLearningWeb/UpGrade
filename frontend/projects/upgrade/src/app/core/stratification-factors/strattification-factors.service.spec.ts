@@ -21,11 +21,9 @@ describe('StratificationFactorsService', () => {
 
   describe('#fetchStratificationFactors', () => {
     it('should dispatch actionFetchStratificationFactors with the given input', () => {
-      const isLoadingStratificationFactors = true;
-      service.fetchStratificationFactors(isLoadingStratificationFactors);
-      expect(mockStore.dispatch).toHaveBeenCalledWith(
-        actionFetchStratificationFactors({ isLoadingStratificationFactors })
-      );
+      const isLoading = true;
+      service.fetchStratificationFactors(isLoading);
+      expect(mockStore.dispatch).toHaveBeenCalledWith(actionFetchStratificationFactors({ isLoading }));
     });
   });
 

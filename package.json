@@ -50,5 +50,8 @@
   "bugs": {
     "url": "https://github.com/CarnegieLearningWeb/UpGrade/issues"
   },
-  "homepage": "https://github.com/CarnegieLearningWeb/UpGrade#readme"
+  "homepage": "https://github.com/CarnegieLearningWeb/UpGrade#readme",
+  "dependencies": {
+    "papaparse": "^5.4.1"
+  }
 }

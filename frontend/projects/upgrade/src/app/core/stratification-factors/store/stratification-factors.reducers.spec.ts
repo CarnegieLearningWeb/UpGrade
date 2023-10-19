@@ -8,24 +8,24 @@ const mockStratificationFactor: StratificationFactor = {
 };
 describe('StratificationFactorsReducer', () => {
   describe('actionFetchStratificationFactors', () => {
-    it('should set isLoadingStratificationFactors to true', () => {
+    it('should set isLoading to true', () => {
       const previousState = { ...initialState };
-      previousState.isLoadingStratificationFactors = true;
+      previousState.isLoading = true;
 
       const testAction = StratificationFactorsActions.actionFetchStratificationFactors({
-        isLoadingStratificationFactors: true,
+        isLoading: true,
       });
 
       const newState = stratificationFactorsReducer(previousState, testAction);
 
-      expect(newState.isLoadingStratificationFactors).toEqual(true);
+      expect(newState.isLoading).toEqual(true);
     });
   });
 
   describe('actionFetchStratificationFactorsSuccess', () => {
-    it('should set stratificationFactors and isLoadingStratificationFactors to false', () => {
+    it('should set stratificationFactors and isLoading to false', () => {
       const previousState = { ...initialState };
-      previousState.isLoadingStratificationFactors = false;
+      previousState.isLoading = false;
 
       const testAction = StratificationFactorsActions.actionFetchStratificationFactorsSuccess({
         stratificationFactors: [mockStratificationFactor],
@@ -34,11 +34,11 @@ describe('StratificationFactorsReducer', () => {
       const newState = stratificationFactorsReducer(previousState, testAction);
 
       expect(newState.entities[mockStratificationFactor.factor]).toEqual(mockStratificationFactor);
-      expect(newState.isLoadingStratificationFactors).toEqual(false);
+      expect(newState.isLoading).toEqual(false);
     });
   });
 
-  describe('actions to request failures and set isLoadingStratificationFactors to false', () => {
+  describe('actions to request failures and set isLoading to false', () => {
     const testActions = {
       actionFetchStratificationFactorsFailure: StratificationFactorsActions.actionFetchStratificationFactorsFailure,
       actionDeleteStratificationFactorFailure: StratificationFactorsActions.actionDeleteStratificationFactorFailure,
@@ -46,12 +46,12 @@ describe('StratificationFactorsReducer', () => {
 
     for (const actionKey in testActions) {
       const previousState = { ...initialState };
-      previousState.isLoadingStratificationFactors = false;
+      previousState.isLoading = false;
 
       const newState = stratificationFactorsReducer(previousState, testActions[actionKey]());
 
-      it(`on ${actionKey} reducer should return a state with isLoadingStratificationFactors: false`, () => {
-        expect(newState.isLoadingStratificationFactors).toEqual(false);
+      it(`on ${actionKey} reducer should return a state with isLoading: false`, () => {
+        expect(newState.isLoading).toEqual(false);
       });
     }
   });
@@ -74,17 +74,17 @@ describe('StratificationFactorsReducer', () => {
   });
 
   describe('actionSetIsLoadingStratificationFactors', () => {
-    it('should set boolean for isLoadingStratificationFactors', () => {
+    it('should set boolean for isLoading', () => {
       const previousState = { ...initialState };
-      previousState.isLoadingStratificationFactors = false;
+      previousState.isLoading = false;
 
       const testAction = StratificationFactorsActions.actionSetIsLoadingStratificationFactors({
-        isLoadingStratificationFactors: true,
+        isLoading: true,
       });
 
       const newState = stratificationFactorsReducer(previousState, testAction);
 
-      expect(newState.isLoadingStratificationFactors).toEqual(true);
+      expect(newState.isLoading).toEqual(true);
     });
   });
 });

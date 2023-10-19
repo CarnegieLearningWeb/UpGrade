@@ -62,7 +62,7 @@ export class ImportExperimentComponent implements OnInit {
   uploadedFileCount = 0;
 
   allStratificationFactors: StratificationFactorSimple[];
-  isLoadingStratificationFactors$ = this.stratificationFactorsService.isLoadingStratificationFactors$;
+  isLoading$ = this.stratificationFactorsService.isLoading$;
   allStratificationFactorsSub: Subscription;
 
   missingConditionProperties = '';

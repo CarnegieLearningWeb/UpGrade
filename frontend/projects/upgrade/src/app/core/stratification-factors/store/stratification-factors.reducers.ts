@@ -10,7 +10,7 @@ export const adapter: EntityAdapter<StratificationFactor> = createEntityAdapter<
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
 export const initialState: StratificationFactorsState = adapter.getInitialState({
-  isLoadingStratificationFactors: false,
+  isLoading: false,
   totalStratificationFactors: null,
 });
 
@@ -32,10 +32,10 @@ const reducer = createReducer(
     StratificationFactorsActions.actionDeleteStratificationFactorFailure,
     (state) => ({ ...state, isLoading: false })
   ),
-  on(
-    StratificationFactorsActions.actionSetIsLoadingStratificationFactors,
-    (state, { isLoadingStratificationFactors }) => ({ ...state, isLoadingStratificationFactors })
-  )
+  on(StratificationFactorsActions.actionSetIsLoadingStratificationFactors, (state, { isLoading }) => ({
+    ...state,
+    isLoading,
+  }))
 );
 
 export function stratificationFactorsReducer(state: StratificationFactorsState | undefined, action: Action) {

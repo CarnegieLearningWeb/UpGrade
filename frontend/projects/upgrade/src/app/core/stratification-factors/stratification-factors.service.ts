@@ -11,15 +11,13 @@ import { CsvDataItem } from './store/stratification-factors.model';
 @Injectable({ providedIn: 'root' })
 @Injectable()
 export class StratificationFactorsService {
-  isLoadingStratificationFactors$ = this.store$.pipe(select(selectIsLoadingStratificationFactors));
+  isLoading$ = this.store$.pipe(select(selectIsLoadingStratificationFactors));
   allStratificationFactors$ = this.store$.pipe(select(selectAllStratificationFactors));
 
   constructor(private store$: Store<AppState>) {}
 
-  fetchStratificationFactors(isLoadingStratificationFactors?: boolean) {
-    this.store$.dispatch(
-      StratificationFactorsActions.actionFetchStratificationFactors({ isLoadingStratificationFactors })
-    );
+  fetchStratificationFactors(isLoading?: boolean) {
+    this.store$.dispatch(StratificationFactorsActions.actionFetchStratificationFactors({ isLoading }));
   }
 
   deleteStratificationFactors(factor: string) {

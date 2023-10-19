@@ -68,7 +68,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     { value: ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING },
   ];
   allStratificationFactors: StratificationFactorSimple[];
-  isLoadingStratificationFactors$ = this.stratificationFactorsService.isLoadingStratificationFactors$;
+  isLoading$ = this.stratificationFactorsService.isLoading$;
   allStratificationFactorsSub: Subscription;
   isStratificationFactorSelected = true;
   stratificationFactorNotSelectedMsg = 'home.new-experiment.overview.stratification-factor.error.text';

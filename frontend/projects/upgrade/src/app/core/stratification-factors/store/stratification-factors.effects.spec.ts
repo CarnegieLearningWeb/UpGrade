@@ -39,9 +39,7 @@ describe('StratificationFactorsEffects', () => {
         expect(result).toEqual(expectedAction);
       });
 
-      actions$.next(
-        StratificationFactorsActions.actionFetchStratificationFactors({ isLoadingStratificationFactors: true })
-      );
+      actions$.next(StratificationFactorsActions.actionFetchStratificationFactors({ isLoading: true }));
 
       tick(0);
     }));
@@ -56,9 +54,7 @@ describe('StratificationFactorsEffects', () => {
         expect(result).toEqual(expectedAction);
       });
 
-      actions$.next(
-        StratificationFactorsActions.actionFetchStratificationFactors({ isLoadingStratificationFactors: true })
-      );
+      actions$.next(StratificationFactorsActions.actionFetchStratificationFactors({ isLoading: true }));
 
       tick(0);
     }));
