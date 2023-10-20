@@ -50,22 +50,7 @@ export class StratificationService {
       .groupBy('sf.stratificationFactorName, value')
       .getRawMany();
 
-    const allStratificationFactors = await this.stratificationFactorRepository.find();
-    const remainingFactors = allStratificationFactors
-      .filter((factor) => {
-        return !queryBuilder.some((result) => result.factor === factor.stratificationFactorName);
-      })
-      .map((factors) => {
-        return {
-          factor: factors.stratificationFactorName,
-          value: 'N/A',
-          count: 0,
-          experimetIds: factors.experiment[0].id,
-        };
-      });
-
-    const temp = this.calculateStratificationResult([...queryBuilder, ...remainingFactors]);
-    return temp;
+    return this.calculateStratificationResult(queryBuilder);
   }
 
   public async getStratificationByFactor(factor: string, logger: UpgradeLogger): Promise<FactorStrata> {
