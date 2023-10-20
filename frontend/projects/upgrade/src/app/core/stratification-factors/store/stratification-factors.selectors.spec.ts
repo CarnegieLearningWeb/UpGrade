@@ -5,9 +5,9 @@ describe('StratificationFactorsSelectors', () => {
   const mockState = { ...initialState };
 
   describe('#selectIsLoadingStratificationFactors', () => {
-    it('should return boolean from isLoadingStratificationFactors', () => {
+    it('should return boolean from isLoading', () => {
       const previousState = { ...mockState };
-      previousState.isLoadingStratificationFactors = false;
+      previousState.isLoading = false;
 
       const result = StratificationFactorsSelectors.selectIsLoadingStratificationFactors.projector(previousState);
 

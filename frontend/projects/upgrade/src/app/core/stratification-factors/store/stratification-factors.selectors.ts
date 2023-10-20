@@ -9,7 +9,7 @@ export const selectAllStratificationFactors = createSelector(selectStratificatio
 
 export const selectIsLoadingStratificationFactors = createSelector(
   selectStratificationFactorsState,
-  (state) => state.isLoadingStratificationFactors
+  (state) => state.isLoading
 );
 
 export const selectTotalStratificationFactors = createSelector(

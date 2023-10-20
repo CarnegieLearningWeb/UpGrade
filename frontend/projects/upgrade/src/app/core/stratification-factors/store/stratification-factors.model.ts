@@ -16,7 +16,7 @@ export interface StratificationFactorSimple {
 }
 
 export interface StratificationFactorsState extends EntityState<StratificationFactor> {
-  isLoadingStratificationFactors: boolean;
+  isLoading: boolean;
   totalStratificationFactors: number;
 }
 

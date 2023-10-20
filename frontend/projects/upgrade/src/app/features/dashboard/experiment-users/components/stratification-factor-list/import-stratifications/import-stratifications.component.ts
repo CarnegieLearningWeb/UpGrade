@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { StratificationFactorsService } from '../../../../../../core/stratification-factors/stratification-factors.service';
 import { CsvDataItem } from '../../../../../../core/stratification-factors/store/stratification-factors.model';
@@ -46,7 +46,6 @@ export class ImportStratificationsComponent {
           const reader = new FileReader();
           reader.onload = (e) => {
             const fileContent = e.target?.result as string;
-            console.log(fileContent); // Log the content of the file
             this.csvData.push({ file: fileContent });
           };
           reader.readAsText(file);

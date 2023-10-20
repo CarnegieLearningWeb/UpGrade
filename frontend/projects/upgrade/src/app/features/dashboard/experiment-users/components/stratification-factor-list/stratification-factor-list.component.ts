@@ -24,7 +24,7 @@ interface StratificationFactorsTableRow {
 export class StratificationComponent implements OnInit {
   allStratificationFactors: StratificationFactor[];
   allStratificationFactorsSub: Subscription;
-  isLoadingStratificationFactors$ = this.stratificationFactorsService.isLoadingStratificationFactors$;
+  isLoading$ = this.stratificationFactorsService.isLoading$;
   stratificationFactorsForTable: StratificationFactorsTableRow[] = [];
   displayedColumns: string[] = ['factor', 'status', 'summary', 'actions'];
 

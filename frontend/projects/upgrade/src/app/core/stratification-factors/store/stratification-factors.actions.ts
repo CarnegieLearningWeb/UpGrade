@@ -3,7 +3,7 @@ import { CsvDataItem, StratificationFactor } from './stratification-factors.mode
 
 export const actionFetchStratificationFactors = createAction(
   '[Stratification Factors] Fetch Stratification Factors',
-  props<{ isLoadingStratificationFactors: boolean }>()
+  props<{ isLoading: boolean }>()
 );
 
 export const actionFetchStratificationFactorsSuccess = createAction(
@@ -57,5 +57,5 @@ export const actionExportStratificationFactorFailure = createAction(
 
 export const actionSetIsLoadingStratificationFactors = createAction(
   '[Segments] Set Is Loading Stratification Factors',
-  props<{ isLoadingStratificationFactors: boolean }>()
+  props<{ isLoading: boolean }>()
 );
