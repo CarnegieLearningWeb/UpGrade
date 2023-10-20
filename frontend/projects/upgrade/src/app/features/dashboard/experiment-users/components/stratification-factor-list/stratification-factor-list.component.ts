@@ -110,7 +110,7 @@ export class StratificationComponent implements OnInit {
   }
 
   checkStratificationFactorUsageStatus(status: string): boolean {
-    return status === STRATIFICATION_FACTOR_STATUS.USED ? true : false;
+    return status === STRATIFICATION_FACTOR_STATUS.USED;
   }
 
   ngOnDestroy() {
