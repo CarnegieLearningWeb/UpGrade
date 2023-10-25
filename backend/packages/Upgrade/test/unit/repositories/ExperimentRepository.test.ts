@@ -250,12 +250,12 @@ describe('ExperimentRepository Testing', () => {
     const result = [experiment];
 
     selectMock.expects('leftJoinAndSelect').exactly(22).returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('getMany').twice().returns(Promise.resolve(result));
+    selectMock.expects('where').exactly(4).returns(selectQueryBuilder);
+    selectMock.expects('getMany').exactly(4).returns(Promise.resolve(result));
 
     const res = await repo.getValidExperiments('context');
 
-    sinon.assert.calledTwice(createQueryBuilderStub);
+    expect(createQueryBuilderStub.callCount).toBe(4);
     selectMock.verify();
 
     expect(res).toEqual(result);
@@ -266,15 +266,15 @@ describe('ExperimentRepository Testing', () => {
       .stub(ExperimentRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
 
-    selectMock.expects('leftJoinAndSelect').exactly(22).returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('getMany').twice().returns(Promise.reject(err));
+    selectMock.expects('leftJoinAndSelect').exactly(4).returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('getMany').once().returns(Promise.reject(err));
 
     expect(async () => {
       await repo.getValidExperiments('context');
     }).rejects.toThrow(err);
 
-    sinon.assert.calledTwice(createQueryBuilderStub);
+    sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
   });
 
@@ -285,12 +285,12 @@ describe('ExperimentRepository Testing', () => {
     const result = [experiment];
 
     selectMock.expects('leftJoinAndSelect').exactly(22).returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('getMany').twice().returns(Promise.resolve(result));
+    selectMock.expects('where').exactly(4).returns(selectQueryBuilder);
+    selectMock.expects('getMany').exactly(4).returns(Promise.resolve(result));
 
     const res = await repo.getValidExperimentsWithPreview('context');
 
-    sinon.assert.calledTwice(createQueryBuilderStub);
+    expect(createQueryBuilderStub.callCount).toBe(4);
     selectMock.verify();
 
     expect(res).toEqual(result);
@@ -301,15 +301,15 @@ describe('ExperimentRepository Testing', () => {
       .stub(ExperimentRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
 
-    selectMock.expects('leftJoinAndSelect').exactly(22).returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('getMany').twice().returns(Promise.reject(err));
+    selectMock.expects('leftJoinAndSelect').exactly(4).returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('getMany').once().returns(Promise.reject(err));
 
     expect(async () => {
       await repo.getValidExperimentsWithPreview('context');
     }).rejects.toThrow(err);
 
-    sinon.assert.calledTwice(createQueryBuilderStub);
+    sinon.assert.calledOnce(createQueryBuilderStub);
     selectMock.verify();
   });
 
