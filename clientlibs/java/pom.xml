@@ -9,9 +9,9 @@
 		at the same time that happen to rev to the same new version will be caught 
 		by a merge conflict. -->
 
-  <!-- 5.0.7 -> 5.0.10: Moving data and query in within subject code block for latency issue in QA (#1062) -->
+  <!-- 5.0.10 -> 5.0.11: 1080 temporarily hide error tab -->
 
-	<version>5.0.10</version>
+	<version>5.0.11</version>
 	<build>
 		<plugins>
 			<plugin>
