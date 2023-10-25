@@ -40,7 +40,7 @@ describe('#NotificationService', () => {
         title: 'Info',
         content: message,
         animate: 'fromRight',
-        timeOut: 2000,
+        timeOut: 3000,
       };
 
       service.showInfo(message);
@@ -62,7 +62,7 @@ describe('#NotificationService', () => {
         title: 'Success',
         content: message,
         animate: 'fromRight',
-        timeOut: 4000,
+        timeOut: 3000,
       };
 
       service.showSuccess(message);
@@ -84,7 +84,7 @@ describe('#NotificationService', () => {
         title: 'Warning',
         content: message,
         animate: 'fromRight',
-        timeOut: 2500,
+        timeOut: 3000,
       };
 
       service.showWarning(message);
@@ -106,7 +106,7 @@ describe('#NotificationService', () => {
         title: 'Error. See console for details.',
         content: message,
         animate: 'fromRight',
-        timeOut: 1500,
+        timeOut: 3000,
       };
 
       service.showError(message);
