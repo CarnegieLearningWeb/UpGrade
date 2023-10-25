@@ -68,19 +68,11 @@ export class ExperimentRepository extends Repository<Experiment> {
   }
 
   public async getValidExperiments(context: string): Promise<Experiment[]> {
-    const experiment = this.createQueryBuilder('experiment')
+    const query1 = this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .leftJoinAndSelect('experiment.queries', 'queries')
-      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
-      .leftJoinAndSelect('experiment.factors', 'factors')
-      .leftJoinAndSelect('factors.levels', 'levels')
-      .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')
-      .leftJoinAndSelect('conditionPayloads.parentCondition', 'parentCondition')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
-      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
+      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
       .where(
         new Brackets((qb) => {
           qb.where(
@@ -93,6 +85,54 @@ export class ExperimentRepository extends Repository<Experiment> {
           );
         })
       );
+
+    const result1 = await query1.getMany();
+
+    const query2 = this.createQueryBuilder('experiment')
+      .leftJoinAndSelect('experiment.partitions', 'partitions')
+      .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')
+      .leftJoinAndSelect('conditionPayloads.parentCondition', 'parentCondition')
+      .leftJoinAndSelect('experiment.factors', 'factors')
+      .leftJoinAndSelect('factors.levels', 'levels')
+      .where(
+        new Brackets((qb) => {
+          qb.where(
+            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND :context ILIKE ANY (ARRAY[experiment.context])',
+            {
+              enrolling: 'enrolling',
+              enrollmentComplete: 'enrollmentComplete',
+              context,
+            }
+          );
+        })
+      );
+
+    const result2 = await query2.getMany();
+
+    const query3 = this.createQueryBuilder('experiment')
+      .leftJoinAndSelect('experiment.queries', 'queries')
+      .leftJoinAndSelect('queries.metric', 'metric')
+      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
+      .where(
+        new Brackets((qb) => {
+          qb.where(
+            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND :context ILIKE ANY (ARRAY[experiment.context])',
+            {
+              enrolling: 'enrolling',
+              enrollmentComplete: 'enrollmentComplete',
+              context,
+            }
+          );
+        })
+      );
+
+    const result3 = await query3.getMany();
+
+    const experimentData = result1.map((item) => {
+      const item2 = result2.find((i) => i.id === item.id);
+      const item3 = result3.find((i) => i.id === item.id);
+      return { ...item, ...item2, ...item3 };
+    });
 
     const experimentSegment = this.createQueryBuilder('experiment')
       // making small queries
@@ -120,11 +160,7 @@ export class ExperimentRepository extends Repository<Experiment> {
         })
       );
 
-    const [experimentData, experimentSegmentData] = await Promise.all([
-      experiment.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
-        throw errorMsgString;
-      }),
+    const [experimentSegmentData] = await Promise.all([
       experimentSegment.getMany().catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
         throw errorMsgString;
@@ -143,19 +179,11 @@ export class ExperimentRepository extends Repository<Experiment> {
   }
 
   public async getValidExperimentsWithPreview(context: string): Promise<Experiment[]> {
-    const experiment = this.createQueryBuilder('experiment')
+    const query1 = this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .leftJoinAndSelect('experiment.queries', 'queries')
-      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
-      .leftJoinAndSelect('experiment.factors', 'factors')
-      .leftJoinAndSelect('factors.levels', 'levels')
-      .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')
-      .leftJoinAndSelect('conditionPayloads.parentCondition', 'parentCondition')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
-      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
+      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
       .where(
         new Brackets((qb) => {
           qb.where(
@@ -169,6 +197,56 @@ export class ExperimentRepository extends Repository<Experiment> {
           );
         })
       );
+
+    const result1 = await query1.getMany();
+
+    const query2 = this.createQueryBuilder('experiment')
+      .leftJoinAndSelect('experiment.partitions', 'partitions')
+      .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')
+      .leftJoinAndSelect('conditionPayloads.parentCondition', 'parentCondition')
+      .leftJoinAndSelect('experiment.factors', 'factors')
+      .leftJoinAndSelect('factors.levels', 'levels')
+      .where(
+        new Brackets((qb) => {
+          qb.where(
+            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
+            {
+              enrolling: 'enrolling',
+              enrollmentComplete: 'enrollmentComplete',
+              preview: 'preview',
+              context,
+            }
+          );
+        })
+      );
+
+    const result2 = await query2.getMany();
+
+    const query3 = this.createQueryBuilder('experiment')
+      .leftJoinAndSelect('experiment.queries', 'queries')
+      .leftJoinAndSelect('queries.metric', 'metric')
+      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
+      .where(
+        new Brackets((qb) => {
+          qb.where(
+            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
+            {
+              enrolling: 'enrolling',
+              enrollmentComplete: 'enrollmentComplete',
+              preview: 'preview',
+              context,
+            }
+          );
+        })
+      );
+
+    const result3 = await query3.getMany();
+
+    const experimentData = result1.map((item) => {
+      const item2 = result2.find((i) => i.id === item.id);
+      const item3 = result3.find((i) => i.id === item.id);
+      return { ...item, ...item2, ...item3 };
+    });
 
     const experimentSegment = this.createQueryBuilder('experiment')
       .select('experiment.id')
@@ -196,11 +274,7 @@ export class ExperimentRepository extends Repository<Experiment> {
         })
       );
 
-    const [experimentData, experimentSegmentData] = await Promise.all([
-      experiment.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
-        throw errorMsgString;
-      }),
+    const [experimentSegmentData] = await Promise.all([
       experimentSegment.getMany().catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
         throw errorMsgString;
