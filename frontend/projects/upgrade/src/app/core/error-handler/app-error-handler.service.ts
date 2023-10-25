@@ -20,7 +20,7 @@ export class AppErrorHandler extends ErrorHandler {
     }
 
     if (!((error as any).status === 401) && !this.environment.production) {
-      this.notificationsService.error(displayMessage);
+      this.notificationsService.showError(displayMessage);
     }
 
     super.handleError(error);
