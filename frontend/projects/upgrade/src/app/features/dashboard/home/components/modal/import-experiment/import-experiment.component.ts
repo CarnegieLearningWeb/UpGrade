@@ -473,7 +473,6 @@ export class ImportExperimentComponent implements OnInit {
         }
       });
     });
-    return result;
   }
 
   deduceParticipants(result) {
@@ -506,9 +505,9 @@ export class ImportExperimentComponent implements OnInit {
       result.factors = [];
     }
     // replacing old fields with new field names:
-    result = this.deduceConditionPayload(result);
-    result = this.deducePartition(result);
-    result = this.deduceFactors(result);
+    this.deduceConditionPayload(result);
+    this.deducePartition(result);
+    this.deduceFactors(result);
     this.deduceParticipants(result);
 
     return result;
