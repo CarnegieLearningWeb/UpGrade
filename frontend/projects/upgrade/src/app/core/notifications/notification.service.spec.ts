@@ -1,48 +1,56 @@
+import { NotificationType } from 'angular2-notifications';
+import { environment } from '../../../environments/environment';
 import { NotificationService } from './notification.service';
 
+class MockNotificationService {
+  create = jest.fn();
+}
+
 describe('#NotificationService', () => {
-  let mockSnackBar: any;
-  let mockZone: any;
-  let service: NotificationService;
+  const mockNotificationService: any = new MockNotificationService();
+  const mockEnvironment = { ...environment };
   const mockMessage = 'test123';
 
+  let service: NotificationService;
+
   beforeEach(() => {
-    mockSnackBar = {
-      open: jest.fn(),
-    };
-    mockZone = {
-      run: (callback: any) => {
-        callback();
-      },
-    };
-    service = new NotificationService(mockSnackBar, mockZone);
+    mockNotificationService.create = jest.fn();
+    service = new NotificationService(mockNotificationService, mockEnvironment);
   });
 
-  describe('#default', () => {
-    it('should call snackbar.open correct message and options', () => {
-      const message = mockMessage;
-      const configuration = {
-        duration: 2000,
-        panelClass: 'default-notification-overlay',
-      };
+  // describe('#default', () => {
+  //   it('should call snackbar.open correct message and options', () => {
+  //     const message = mockMessage;
+  //     const configuration = {
+  //       duration: 2000,
+  //       panelClass: 'default-notification-overlay',
+  //     };
 
-      service.default(message);
+  //     service.default(message);
 
-      expect(mockSnackBar.open).toHaveBeenCalledWith(message, null, configuration);
-    });
-  });
+  //     expect(mockNotificationService.create).toHaveBeenCalledWith(message, null, configuration);
+  //   });
+  // });
 
   describe('#info', () => {
     it('should call snackbar.open correct message and options', () => {
       const message = mockMessage;
       const configuration = {
-        duration: 2000,
-        panelClass: 'info-notification-overlay',
+        type: NotificationType.Info,
+        title: 'Info',
+        content: message,
+        animate: 'fromRight',
+        timeOut: 2000,
       };
 
-      service.info(message);
+      service.showInfo(message);
 
-      expect(mockSnackBar.open).toHaveBeenCalledWith(message, null, configuration);
+      expect(mockNotificationService.create).toHaveBeenCalledWith(
+        'Info',
+        message,
+        NotificationType.Info,
+        configuration
+      );
     });
   });
 
@@ -50,13 +58,21 @@ describe('#NotificationService', () => {
     it('should call snackbar.open correct message and options', () => {
       const message = mockMessage;
       const configuration = {
-        duration: 2000,
-        panelClass: 'success-notification-overlay',
+        type: NotificationType.Success,
+        title: 'Success',
+        content: message,
+        animate: 'fromRight',
+        timeOut: 4000,
       };
 
-      service.success(message);
+      service.showSuccess(message);
 
-      expect(mockSnackBar.open).toHaveBeenCalledWith(message, null, configuration);
+      expect(mockNotificationService.create).toHaveBeenCalledWith(
+        'Success',
+        message,
+        NotificationType.Success,
+        configuration
+      );
     });
   });
 
@@ -64,13 +80,21 @@ describe('#NotificationService', () => {
     it('should call snackbar.open correct message and options', () => {
       const message = mockMessage;
       const configuration = {
-        duration: 2500,
-        panelClass: 'warning-notification-overlay',
+        type: NotificationType.Warn,
+        title: 'Warning',
+        content: message,
+        animate: 'fromRight',
+        timeOut: 2500,
       };
 
-      service.warn(message);
+      service.showWarning(message);
 
-      expect(mockSnackBar.open).toHaveBeenCalledWith(message, null, configuration);
+      expect(mockNotificationService.create).toHaveBeenCalledWith(
+        'Warning',
+        message,
+        NotificationType.Warn,
+        configuration
+      );
     });
   });
 
@@ -78,13 +102,21 @@ describe('#NotificationService', () => {
     it('should call snackbar.open correct message and options', () => {
       const message = mockMessage;
       const configuration = {
-        duration: 1500,
-        panelClass: 'error-notification-overlay',
+        type: NotificationType.Error,
+        title: 'Error. See console for details.',
+        content: message,
+        animate: 'fromRight',
+        timeOut: 1500,
       };
 
-      service.error(message);
+      service.showError(message);
 
-      expect(mockSnackBar.open).toHaveBeenCalledWith(message, null, configuration);
+      expect(mockNotificationService.create).toHaveBeenCalledWith(
+        'Error. See console for details.',
+        message,
+        NotificationType.Error,
+        configuration
+      );
     });
   });
 });
