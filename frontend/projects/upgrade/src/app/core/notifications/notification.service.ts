@@ -14,7 +14,7 @@ export class NotificationService {
       title: 'Info',
       content: message,
       animate: 'fromRight',
-      timeOut: 2000,
+      timeOut: 3000,
     };
     this.showSnackBar(temp);
   }
@@ -25,7 +25,7 @@ export class NotificationService {
       title: 'Warning',
       content: message,
       animate: 'fromRight',
-      timeOut: 2500,
+      timeOut: 3000,
     };
     this.showSnackBar(temp);
   }
@@ -36,7 +36,7 @@ export class NotificationService {
       title: 'Error.',
       content: message,
       animate: 'fromRight',
-      timeOut: 1500,
+      timeOut: 3000,
     };
     this.showSnackBar(temp);
   }
@@ -47,7 +47,7 @@ export class NotificationService {
       title: 'Success',
       content: message,
       animate: 'fromRight',
-      timeOut: 4000,
+      timeOut: 3000,
     };
     this.showSnackBar(temp);
   }
