@@ -5,7 +5,7 @@ import { StratificationFactor } from './StratificationFactor';
 
 @Entity()
 export class UserStratificationFactor extends BaseModel {
-  @ManyToOne(() => ExperimentUser, (user) => user.userStratificationFactor, { onDelete: 'CASCADE', primary: true })
+  @ManyToOne(() => ExperimentUser, (user) => user.userStratificationFactor, { primary: true })
   public user: ExperimentUser;
 
   @ManyToOne(() => StratificationFactor, (stratificationFactor) => stratificationFactor.userStratificationFactor, {

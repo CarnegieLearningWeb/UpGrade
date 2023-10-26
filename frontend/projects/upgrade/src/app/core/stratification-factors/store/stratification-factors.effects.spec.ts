@@ -12,7 +12,11 @@ describe('StratificationFactorsEffects', () => {
   let stratificationFactorsDataService: any;
   let router: any;
   let service: StratificationFactorsEffects;
-  const mockData: StratificationFactor = { factor: 'favourite_food', factorValue: { pizza: 10, burger: 5 } };
+  const mockData: StratificationFactor = {
+    factor: 'favourite_food',
+    factorValue: { pizza: 10, burger: 5 },
+    experimentIds: [],
+  };
 
   beforeEach(() => {
     actions$ = new ActionsSubject();

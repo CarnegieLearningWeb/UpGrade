@@ -10,7 +10,10 @@ import { StratificationFactorsService } from '../../../../../core/stratification
 interface StratificationFactorsTableRow {
   factor: string;
   summary: string;
+  isUsed: boolean;
+  experimentIds: string[];
 }
+
 @Component({
   selector: 'users-stratification-factor-list',
   templateUrl: './stratification-factor-list.component.html',
@@ -22,7 +25,7 @@ export class StratificationComponent implements OnInit {
   allStratificationFactorsSub: Subscription;
   isLoading$ = this.stratificationFactorsService.isLoading$;
   stratificationFactorsForTable: StratificationFactorsTableRow[] = [];
-  displayedColumns: string[] = ['factor', 'summary', 'actions'];
+  displayedColumns: string[] = ['factor', 'status', 'summary', 'actions'];
 
   constructor(private dialog: MatDialog, private stratificationFactorsService: StratificationFactorsService) {}
 
@@ -48,8 +51,15 @@ export class StratificationComponent implements OnInit {
             : key + '=' + stratificationFactor.factorValue[key];
           totalUsers += stratificationFactor.factorValue[key];
         });
+
         factorSummary = totalUsers.toString() + ' ' + factorSummary + ' (' + tempSummary + ')';
-        return { factor: stratificationFactor.factor, summary: factorSummary };
+
+        return {
+          factor: stratificationFactor.factor,
+          summary: factorSummary,
+          isUsed: this.checkStratificationFactorUsageStatus(stratificationFactor.experimentIds),
+          experimentIds: stratificationFactor.experimentIds,
+        };
       }
     );
     return stratificationFactors;
@@ -89,6 +99,17 @@ export class StratificationComponent implements OnInit {
       }
     });
   }
+
+  getExperimentIdsTooltip(experimentIds: any[]): string {
+    return 'Experiment IDs: [' + experimentIds.join(', ') + ']';
+  }
+
+  checkStratificationFactorUsageStatus(experimentIds: string[]) {
+    if (Array.isArray(experimentIds)) {
+        return experimentIds.some(id => id);
+    }
+    return false;
+ }
 
   ngOnDestroy() {
     this.allStratificationFactorsSub.unsubscribe();
