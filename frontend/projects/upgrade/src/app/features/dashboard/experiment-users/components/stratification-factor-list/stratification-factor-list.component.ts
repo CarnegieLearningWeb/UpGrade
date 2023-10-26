@@ -11,7 +11,7 @@ import { STRATIFICATION_FACTOR_STATUS } from '../../../../../../../../../../type
 interface StratificationFactorsTableRow {
   factor: string;
   summary: string;
-  status: string;
+  isUsed: boolean;
   experimentIds: string[];
 }
 
@@ -54,15 +54,11 @@ export class StratificationComponent implements OnInit {
         });
 
         factorSummary = totalUsers.toString() + ' ' + factorSummary + ' (' + tempSummary + ')';
-        const status =
-          stratificationFactor.experimentIds[0] !== null
-            ? STRATIFICATION_FACTOR_STATUS.USED
-            : STRATIFICATION_FACTOR_STATUS.UNUSED;
 
         return {
           factor: stratificationFactor.factor,
           summary: factorSummary,
-          status: status,
+          isUsed: this.checkStratificationFactorUsageStatus(stratificationFactor.experimentIds),
           experimentIds: stratificationFactor.experimentIds,
         };
       }
@@ -109,9 +105,12 @@ export class StratificationComponent implements OnInit {
     return 'Experiment IDs: [' + experimentIds.join(', ') + ']';
   }
 
-  checkStratificationFactorUsageStatus(status: string): boolean {
-    return status === STRATIFICATION_FACTOR_STATUS.USED;
-  }
+  checkStratificationFactorUsageStatus(experimentIds: string[]) {
+    if (Array.isArray(experimentIds)) {
+        return experimentIds.some(id => id);
+    }
+    return false;
+ }
 
   ngOnDestroy() {
     this.allStratificationFactorsSub.unsubscribe();

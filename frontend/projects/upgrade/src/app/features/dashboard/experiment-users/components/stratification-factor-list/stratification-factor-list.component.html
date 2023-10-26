@@ -47,10 +47,10 @@
           <span
             class="status-circle"
             [ngStyle]="{
-              'background-color': checkStratificationFactorUsageStatus(rowData.status) ? '#829CF8' : '#D8D8D8'
+              'background-color': rowData.isUsed ? '#829CF8' : '#D8D8D8'
             }"
           ></span>
-          <span>{{ rowData.status }}</span>
+          <span>{{ rowData.isUsed ? 'Used' : 'Unused' }}</span>
         </mat-cell>
       </ng-container>
 
@@ -78,8 +78,8 @@
           <button
             type="button"
             class="row-delete-btn"
-            [ngClass]="{ 'row-delete-btn--disabled': checkStratificationFactorUsageStatus(rowData.status) }"
-            [disabled]="checkStratificationFactorUsageStatus(rowData.status)"
+            [ngClass]="{ 'row-delete-btn--disabled': rowData.isUsed }"
+            [disabled]="rowData.isUsed"
             (click)="handleDelete(rowData)"
           >
             <ng-container>
