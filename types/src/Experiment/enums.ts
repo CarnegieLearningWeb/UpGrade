@@ -170,11 +170,6 @@ export enum SEGMENT_STATUS {
   UNLOCKED = 'Unlocked',
 }
 
-export enum STRATIFICATION_FACTOR_STATUS {
-  USED = 'Used',
-  UNUSED = 'Unused',
-}
-
 export enum INCLUSION_CRITERIA {
   INCLUDE_SPECIFIC = 'Include Specific',
   EXCEPT = 'Include All Except...',
