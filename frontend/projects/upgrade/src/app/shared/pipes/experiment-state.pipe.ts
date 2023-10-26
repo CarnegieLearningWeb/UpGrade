@@ -24,6 +24,8 @@ export class ExperimentStatePipe implements PipeTransform {
         return type === ExperimentStatePipeType.TEXT ? 'Enrolling' : '#7b9cff';
       case EXPERIMENT_STATE.CANCELLED:
         return type === ExperimentStatePipeType.TEXT ? 'Cancelled' : '#ff0000';
+      case EXPERIMENT_STATE.ARCHIVED:
+        return type === ExperimentStatePipeType.TEXT ? 'Archived' : '#fd9099';
     }
   }
 }

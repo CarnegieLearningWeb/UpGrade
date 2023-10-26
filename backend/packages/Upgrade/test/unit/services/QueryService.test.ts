@@ -9,12 +9,15 @@ import { Query } from '../../../src/api/models/Query';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { ErrorService } from '../../../src/api/services/ErrorService';
 import { ErrorRepository } from '../../../src/api/repositories/ErrorRepository';
+import { ArchivedStatsRepository } from '../../../src/api/repositories/ArchivedStatsRepository';
+import { ArchivedStats } from '../../../src/api/models/ArchivedStats';
 
 const logger = new UpgradeLogger();
 
 describe('Query Service Testing', () => {
   let service: QueryService;
   let queryRepo: Repository<QueryRepository>;
+  let archivedStatsRepo: Repository<ArchivedStatsRepository>;
   let module: TestingModule;
 
   const exp1 = new Experiment();
@@ -43,12 +46,19 @@ describe('Query Service Testing', () => {
     result: 0,
     participantsLogged: 0,
   };
+
+  const mockArchiveData = new ArchivedStats();
+  mockArchiveData.id = 'id1';
+  mockArchiveData.query = mockquery1;
+  mockArchiveData.result = { mainEffect: logResult, interactionEffect: null };
+
   beforeEach(async () => {
     module = await Test.createTestingModule({
       providers: [
         QueryService,
         QueryRepository,
         LogRepository,
+        ArchivedStatsRepository,
         ErrorService,
         ErrorRepository,
         {
@@ -70,6 +80,12 @@ describe('Query Service Testing', () => {
           },
         },
         {
+          provide: getRepositoryToken(ArchivedStatsRepository),
+          useValue: {
+            find: jest.fn().mockResolvedValue([mockArchiveData]),
+          },
+        },
+        {
           provide: ErrorService,
           useValue: {
             create: jest.fn(),
@@ -80,6 +96,7 @@ describe('Query Service Testing', () => {
 
     service = module.get<QueryService>(QueryService);
     queryRepo = module.get<Repository<QueryRepository>>(getRepositoryToken(QueryRepository));
+    archivedStatsRepo = module.get<Repository<ArchivedStatsRepository>>(getRepositoryToken(ArchivedStatsRepository));
   });
 
   it('should be defined', async () => {
@@ -88,6 +105,10 @@ describe('Query Service Testing', () => {
 
   it('should have the repo mocked', async () => {
     expect(await queryRepo.find()).toEqual(queryArr);
+  });
+
+  it('should have the repo mocked', async () => {
+    expect(await archivedStatsRepo.find()).toEqual([mockArchiveData]);
   });
 
   it('should find and map queries to experiments', async () => {
@@ -131,6 +152,17 @@ describe('Query Service Testing', () => {
         id: mockquery1.id,
         interactionEffect: null,
         mainEffect: ['rejected'],
+      },
+    ]);
+  });
+
+  it('should find and map archivedStats to queries', async () => {
+    const response = await service.getArchivedStats(['id1'], logger);
+    expect(response).toEqual([
+      {
+        id: mockquery1.id,
+        interactionEffect: null,
+        mainEffect: logResult,
       },
     ]);
   });
