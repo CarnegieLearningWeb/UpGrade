@@ -1,12 +1,14 @@
 import { Component, ChangeDetectionStrategy, OnInit, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import { first } from 'rxjs/operators';
 import { EXPORT_METHOD } from 'upgrade_types';
 import { AuthService } from '../../../../../../core/auth/auth.service';
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 
 @Component({
   selector: 'experiment-export',
@@ -23,7 +25,6 @@ export class ExportModalComponent implements OnInit {
     private _formBuilder: UntypedFormBuilder,
     private experimentService: ExperimentService,
     private authService: AuthService,
-    private _snackBar: MatSnackBar,
     public dialogRef: MatDialogRef<ExportModalComponent>,
     @Inject(MAT_DIALOG_DATA) private data: any
   ) {
@@ -47,25 +48,11 @@ export class ExportModalComponent implements OnInit {
     });
   }
 
-  openSnackBar(exportType: boolean) {
-    this.authService.currentUser$.pipe(first()).subscribe((userInfo) => {
-      if (userInfo.email && exportType) {
-        this._snackBar.open(`Email will be sent to ${userInfo.email}`, null, { duration: 2000 });
-      } else if (!userInfo.email && !exportType) {
-        this._snackBar.open('Email will be sent to registered email', null, { duration: 2000 });
-      } else {
-        this._snackBar.open('Experiment Design JSON downloaded!', null, { duration: 2000 });
-      }
-    });
-  }
-
   exportExperimentInfo(experimentId: string, experimentName: string) {
     this.experimentService.exportExperimentInfo(experimentId, experimentName);
-    this.openSnackBar(true);
   }
   exportExperimentDesign(experimentIds: string[]) {
     this.experimentService.exportExperimentDesign(experimentIds);
-    this.openSnackBar(false);
   }
 
   exportExperiment() {
