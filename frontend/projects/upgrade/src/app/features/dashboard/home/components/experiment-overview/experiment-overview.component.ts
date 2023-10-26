@@ -40,7 +40,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   unitOfAssignments = [
     { value: ASSIGNMENT_UNIT.INDIVIDUAL },
     { value: ASSIGNMENT_UNIT.GROUP },
-    { value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS },
+    // { value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS }, // #1063 temporarily removed within-subjects until solved
   ];
   public ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
 
