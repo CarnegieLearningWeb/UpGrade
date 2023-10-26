@@ -6,7 +6,6 @@ import { DeleteStratificationComponent } from './delete-stratification/delete-st
 import { StratificationFactor } from '../../../../../core/stratification-factors/store/stratification-factors.model';
 import { Subscription } from 'rxjs';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
-import { STRATIFICATION_FACTOR_STATUS } from '../../../../../../../../../../types/src/Experiment/enums';
 
 interface StratificationFactorsTableRow {
   factor: string;
