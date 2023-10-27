@@ -7,7 +7,7 @@ import { AppState } from '../../core.state';
 import * as StratificationFactorsActions from './stratification-factors.actions';
 import { StratificationFactorsDataService } from '../stratification-factors.data.service';
 import { selectAllStratificationFactors } from './stratification-factors.selectors';
-import { StratificationFactor } from './stratification-factors.model';
+import { StratificationFactor, StratificationFactorDeleteResponse } from './stratification-factors.model';
 
 @Injectable()
 export class StratificationFactorsEffects {
@@ -42,7 +42,7 @@ export class StratificationFactorsEffects {
       filter((factor) => !!factor),
       switchMap((factor) =>
         this.stratificationFactorsDataService.deleteStratificationFactor(factor).pipe(
-          map((data) => {
+          map((data: StratificationFactorDeleteResponse[]) => {
             if (data[0]) {
               const stratificationFactor: StratificationFactor = {
                 ...data[0],

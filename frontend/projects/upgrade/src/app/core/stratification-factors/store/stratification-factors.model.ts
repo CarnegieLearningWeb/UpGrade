@@ -11,6 +11,12 @@ export interface StratificationFactor {
   experimentIds: string[];
 }
 
+export interface StratificationFactorDeleteResponse {
+  stratificationFactorName: string;
+  factorValue: Record<string, number>;
+  experimentIds: string[];
+}
+
 export interface StratificationFactorSimple {
   factorName: string;
 }
