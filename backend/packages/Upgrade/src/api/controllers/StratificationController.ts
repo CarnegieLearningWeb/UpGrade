@@ -1,4 +1,4 @@
-import { JsonController, Get, Delete, Param, Authorized, Post, Req, UseBefore, Res } from 'routing-controllers';
+import { JsonController, Get, Delete, Param, Authorized, Post, Req, Res } from 'routing-controllers';
 import { SERVER_ERROR } from 'upgrade_types';
 import { AppRequest } from '../../types';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
@@ -6,9 +6,6 @@ import { StratificationService } from '../services/StratificationService';
 import { FactorStrata } from './validators/StratificationValidator';
 import { StratificationFactor } from '../models/StratificationFactor';
 import * as express from 'express';
-import multer from 'multer';
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
 
 /**
  * @swagger
@@ -158,9 +155,24 @@ export class StratificationController {
    *          description: Internal Server Error, Insert Error in database, CSV file is not valid
    */
   @Post()
-  @UseBefore(upload.single('file'))
-  public insertStratification(@Req() request: AppRequest): Promise<UserStratificationFactor[]> {
-    return this.stratificatonService.insertStratification(request.body[0].file, request.logger);
+  public async insertStratification(@Req() request: AppRequest): Promise<UserStratificationFactor[]> {
+    // Directly access the request body
+    const uploadedFiles = request.body;
+
+    // Ensure uploadedFiles is iterable and has the right structure
+    if (!Array.isArray(uploadedFiles) || !uploadedFiles.every(item => typeof item.file === 'string')) {
+      throw new Error('Invalid request format. Expected an array of objects with a "file" property containing CSV content.');
+    }
+
+    let results: UserStratificationFactor[] = [];
+
+    for (let fileObj of uploadedFiles) {
+      const fileContent = fileObj.file;
+      const result = await this.stratificatonService.insertStratification(fileContent, request.logger);
+      results = results.concat(result);
+    }
+
+    return results;
   }
 
   /**

@@ -5,7 +5,7 @@
     <p class="ft-16-400">
       {{ 'stratifications.import-stratification.message.text' | translate }}
     </p>
-    <input accept=".csv" type="file" class="ft-14-400 file-input" (change)="uploadFile($event)" />
+    <input accept=".csv" type="file" class="ft-14-400 file-input" (change)="uploadFile($event)" multiple/>
     <span class="error-msg" *ngIf="!isStratificationCSVValid">
       {{ 'stratifications.import-stratification.error.message.text' | translate }}
     </span>
