@@ -35,6 +35,7 @@ export enum EXPERIMENT_STATE {
   ENROLLING = 'enrolling',
   ENROLLMENT_COMPLETE = 'enrollmentComplete',
   CANCELLED = 'cancelled',
+  ARCHIVED = 'archived',
 }
 
 export enum SERVER_ERROR {

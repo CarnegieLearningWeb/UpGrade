@@ -13,14 +13,37 @@
         </mat-select>
       </mat-form-field>
       <mat-form-field>
-        <input
-          class="search-input ft-16-400"
-          matInput
-          #searchInput
-          [(ngModel)]="searchValue"
-          (keyup)="applyFilter($event.target.value)"
-          [placeholder]="'global.search.text' | translate"
-        />
+        <div *ngIf="selectedExperimentFilterOption !== 'status'">
+          <input
+            class="search-input ft-16-400"
+            matInput
+            #searchInput
+            [(ngModel)]="searchValue"
+            (keyup)="applyFilter($event.target.value)"
+            [placeholder]="'global.search.text' | translate"
+          />
+        </div>
+        <div *ngIf="selectedExperimentFilterOption === 'status'">
+          <input
+            class="search-input ft-16-400"
+            matInput
+            #searchInput
+            [(ngModel)]="searchValue"
+            (keyup)="applyFilter($event.target.value)"
+            [placeholder]="'global.search.text' | translate"
+            [formControl]="searchControl"
+            [matAutocomplete]="autoCompleteStatus"
+          />
+          <mat-autocomplete
+            #autoCompleteStatus="matAutocomplete"
+            panelWidth="fit-content"
+            (optionSelected)="applyFilter($event.option.value)"
+          >
+            <mat-option *ngFor="let filterOption of filteredStatusOptions" [value]="filterOption">
+              {{ filterOption | titlecase }}
+            </mat-option>
+          </mat-autocomplete>
+        </div>
         <mat-icon matSuffix>search</mat-icon>
       </mat-form-field>
     </div>
@@ -32,7 +55,7 @@
         (click)="openExportAllExperimentsDialog()"
       >
         <mat-icon>download</mat-icon>
-        <span>{{ 'segments.export-all-segments.text' | translate }}</span>
+        <span>{{ 'home.experiment.export-all-experiments.text' | translate }}</span>
       </button>
       <button
         (click)="openImportExperimentDialog()"
@@ -62,7 +85,7 @@
     <table
       class="experiment-list"
       mat-table
-      [dataSource]="allExperiments"
+      [dataSource]="selectedExperimentFilterOption !== 'status' ? allExperimentsExcludingArchived : allExperiments"
       matSort
       (matSortChange)="changeSorting($event)"
       [matSortActive]="experimentSortKey$ | async"

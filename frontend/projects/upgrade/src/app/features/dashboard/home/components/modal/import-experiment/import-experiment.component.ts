@@ -18,7 +18,6 @@ import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { ASSIGNMENT_ALGORITHM, EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { StratificationFactorsService } from '../../../../../../core/stratification-factors/stratification-factors.service';
@@ -170,8 +169,7 @@ export class ImportExperimentComponent implements OnInit {
     private versionService: VersionService,
     private stratificationFactorsService: StratificationFactorsService,
     private translate: TranslateService,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private _snackBar: MatSnackBar
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
 
   ngOnInit() {
@@ -190,10 +188,6 @@ export class ImportExperimentComponent implements OnInit {
           partition.target ? partition.site + partition.target : partition.site
         );
       });
-  }
-
-  openSnackBar() {
-    this._snackBar.open(this.translate.instant('global.import-segments.message.text'), null, { duration: 4000 });
   }
 
   onCancelClick(): void {
@@ -221,7 +215,6 @@ export class ImportExperimentComponent implements OnInit {
     });
     this.experimentService.importExperiment(this.allExperiments);
     this.onCancelClick();
-    this.openSnackBar();
   }
 
   compareVersion(currentBackendVersion, uploadedExperimentBackendVersion) {

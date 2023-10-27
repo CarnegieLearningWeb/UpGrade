@@ -10,6 +10,7 @@ import {
 } from './store/analysis.selectors';
 import * as AnalysisActions from './store/analysis.actions';
 import { UpsertMetrics } from './store/analysis.models';
+import { EXPERIMENT_STATE } from '../experiments/store/experiments.model';
 
 @Injectable()
 export class AnalysisService {

@@ -9,7 +9,7 @@ describe('AppErrorHandler', () => {
 
   beforeEach(() => {
     mockNotificationsService = {
-      error: jest.fn(),
+      showError: jest.fn(),
     };
     mockEnvironment = { ...environment };
     service = new AppErrorHandler(mockNotificationsService, mockEnvironment);
@@ -22,7 +22,7 @@ describe('AppErrorHandler', () => {
 
     service.handleError(mockError);
 
-    expect(mockNotificationsService.error).toHaveBeenCalledWith(expectedValue);
+    expect(mockNotificationsService.showError).toHaveBeenCalledWith(expectedValue);
   });
 
   it('should not call notification service with an error when not in production and is 401', () => {
@@ -32,7 +32,7 @@ describe('AppErrorHandler', () => {
 
     service.handleError(mockError);
 
-    expect(mockNotificationsService.error).not.toHaveBeenCalledWith(expectedValue);
+    expect(mockNotificationsService.showError).not.toHaveBeenCalledWith(expectedValue);
   });
 
   it('should not call when in production mode and 401', () => {
@@ -42,7 +42,7 @@ describe('AppErrorHandler', () => {
 
     service.handleError(mockError);
 
-    expect(mockNotificationsService.error).not.toHaveBeenCalledWith(expectedValue);
+    expect(mockNotificationsService.showError).not.toHaveBeenCalledWith(expectedValue);
   });
 
   it('should not call when in production mode and 400', () => {
@@ -52,6 +52,6 @@ describe('AppErrorHandler', () => {
 
     service.handleError(mockError);
 
-    expect(mockNotificationsService.error).not.toHaveBeenCalledWith(expectedValue);
+    expect(mockNotificationsService.showError).not.toHaveBeenCalledWith(expectedValue);
   });
 });

@@ -1,9 +1,11 @@
-import { Entity, ManyToOne, Column, PrimaryColumn } from 'typeorm';
+import { Entity, ManyToOne, Column, PrimaryColumn, OneToOne } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { Metric } from './Metric';
 import { Experiment } from './Experiment';
 import { IsDefined } from 'class-validator';
 import { REPEATED_MEASURE } from 'upgrade_types';
+import { ArchivedStats } from './ArchivedStats';
+import { Type } from 'class-transformer';
 
 @Entity()
 export class Query extends BaseModel {
@@ -22,6 +24,10 @@ export class Query extends BaseModel {
 
   @ManyToOne(() => Experiment, (experiment) => experiment.queries, { onDelete: 'CASCADE' })
   public experiment: Experiment;
+
+  @OneToOne(() => ArchivedStats, (archivedStats) => archivedStats.query, { onDelete: 'CASCADE' })
+  @Type(() => ArchivedStats)
+  public archivedStats: ArchivedStats;
 
   @Column({
     type: 'enum',
