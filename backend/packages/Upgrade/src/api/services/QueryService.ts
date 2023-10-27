@@ -3,11 +3,13 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
-import { EXPERIMENT_TYPE, SERVER_ERROR } from 'upgrade_types';
+import { EXPERIMENT_STATE, EXPERIMENT_TYPE, SERVER_ERROR } from 'upgrade_types';
 import { ErrorService } from './ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { Experiment } from '../models/Experiment';
+import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
+import { In } from 'typeorm';
 
 interface queryResult {
   conditionId?: string;
@@ -21,6 +23,7 @@ export class QueryService {
   constructor(
     @OrmRepository() private queryRepository: QueryRepository,
     @OrmRepository() private logRepository: LogRepository,
+    @OrmRepository() private archivedStatsRepository: ArchivedStatsRepository,
     public errorService: ErrorService
   ) {}
 
@@ -32,6 +35,17 @@ export class QueryService {
     return queries.map((query) => {
       const { experiment, ...rest } = query;
       return { ...rest, experiment: { id: experiment.id, name: experiment.name } } as any;
+    });
+  }
+
+  public async getArchivedStats(queryIds: string[], logger: UpgradeLogger): Promise<any> {
+    logger.info({ message: `Get archivedStats of query with queryIds ${queryIds}` });
+    const archiveData = await this.archivedStatsRepository.find({
+      relations: ['query'],
+      where: { query: In(queryIds) },
+    });
+    return archiveData.map((data) => {
+      return { ...data.result, id: data.query.id };
     });
   }
 
@@ -52,6 +66,12 @@ export class QueryService {
 
     const promiseResult = await Promise.all(promiseArray);
     const experiments: Experiment[] = [];
+
+    // checks for archieve state experiment
+    if (promiseResult[0].experiment?.state === EXPERIMENT_STATE.ARCHIVED) {
+      return this.getArchivedStats(queryIds, logger);
+    }
+
     const analyzePromise = promiseResult.map((query) => {
       experiments.push(query.experiment);
       if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {

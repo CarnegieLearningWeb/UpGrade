@@ -26,7 +26,11 @@
             mat-flat-button
             class="ft-14-600 button"
             (click)="openDialog(DialogType.EDIT_EXPERIMENT)"
-            *ngIf="permissions?.experiments.update && experiment.state !== ExperimentState.CANCELLED"
+            *ngIf="
+              permissions?.experiments.update &&
+              experiment.state !== ExperimentState.CANCELLED &&
+              experiment.state !== ExperimentState.ARCHIVED
+            "
           >
             {{ 'home.view-experiment.edit-button.text' | translate }}
           </button>
@@ -105,7 +109,9 @@
                   </ng-template>
                   <ng-container
                     *ngIf="
-                      permissions?.experiments.update && experiment.state !== ExperimentState.CANCELLED;
+                      permissions?.experiments.update &&
+                        experiment.state !== ExperimentState.CANCELLED &&
+                        experiment.state !== ExperimentState.ARCHIVED;
                       else readOnlyStatus
                     "
                   >
@@ -131,7 +137,9 @@
                 <div class="experiment-state-container post-experiment-rule-container">
                   <ng-container
                     *ngIf="
-                      permissions?.experiments.update && experiment.state !== ExperimentState.CANCELLED;
+                      permissions?.experiments.update &&
+                        experiment.state !== ExperimentState.CANCELLED &&
+                        experiment.state !== ExperimentState.ARCHIVED;
                       else readOnlyRule
                     "
                   >
@@ -204,10 +212,7 @@
 
               <!-- Experiment consistency rule OR Experiment condition Order -->
               <div class="section-data">
-                <span 
-                  class="ft-16-600 section-data-title"
-                  *ngIf="experiment.consistencyRule; else withinSubject"
-                >
+                <span class="ft-16-600 section-data-title" *ngIf="experiment.consistencyRule; else withinSubject">
                   {{ 'home-global.consistency-rule.text' | translate | uppercase }}
                 </span>
                 <ng-template #withinSubject>
@@ -215,7 +220,9 @@
                     {{ 'home-global.condition-order.text' | translate | uppercase }}
                   </span>
                 </ng-template>
-                <span class="ft-18-700 section-data-value">{{ experiment.consistencyRule || experiment.conditionOrder | titlecase }}</span>
+                <span class="ft-18-700 section-data-value">{{
+                  experiment.consistencyRule || experiment.conditionOrder | titlecase
+                }}</span>
               </div>
             </div>
 
@@ -232,7 +239,7 @@
                     <span class="ft-18-700 end-criteria end-criteria--text"> ( </span>
                     <span
                       *ngIf="
-                        permissions?.experiments.update && !isExperimentStateCancelled;
+                        permissions?.experiments.update && !isExperimentStateCancelled && experiment.state !== ExperimentState.ARCHIVED;
                         else endingCriteriaCommonTempReadOnly
                       "
                       (click)="updateEndingCriteria()"
@@ -282,7 +289,7 @@
                     </ng-template>
 
                     <span class="ft-18-700 end-criteria end-criteria--text"> ) </span>
-                    <mat-icon class="edit-icon" *ngIf="permissions?.experiments.update && !isExperimentStateCancelled">
+                    <mat-icon class="edit-icon" *ngIf="permissions?.experiments.update && !isExperimentStateCancelled && experiment.state !== ExperimentState.ARCHIVED">
                       create
                     </mat-icon>
                   </ng-container>
@@ -290,7 +297,7 @@
                   <!-- if we have end date -->
                   <span class="ft-18-700 end-criteria" *ngIf="experiment.endOn">
                     <ng-container
-                      *ngIf="permissions?.experiments.update && !isExperimentStateCancelled; else endOnReadOnly"
+                      *ngIf="permissions?.experiments.update && !isExperimentStateCancelled && experiment.state !== ExperimentState.ARCHIVED; else endOnReadOnly"
                     >
                       <span class="end-criteria-underline--grey" (click)="updateEndingCriteria()">
                         {{ experiment.endOn | formatDate: 'medium date' }}
@@ -309,7 +316,7 @@
                   <span
                     class="ft-18-700 end-criteria"
                     *ngIf="
-                      permissions?.experiments.update && !isExperimentStateCancelled;
+                      permissions?.experiments.update && !isExperimentStateCancelled  && experiment.state !== ExperimentState.ARCHIVED;
                       else noCriteriaTemplateReadOnly
                     "
                   >
@@ -387,6 +394,7 @@
               class="ft-16-600"
               color="primary"
               (change)="toggleVerboseLogging($event)"
+              [disabled]="experiment.state === ExperimentState.CANCELLED || experiment.state === ExperimentState.ARCHIVED"
             >
               {{ 'home.view-experiment.logging.text' | translate | uppercase }}
             </mat-checkbox>
