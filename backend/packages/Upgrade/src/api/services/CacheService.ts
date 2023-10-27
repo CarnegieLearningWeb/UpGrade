@@ -53,4 +53,15 @@ export class CacheService {
     );
     return data;
   }
+
+  public async wrapFunctionSingle<T>(key: string, functionToCall: () => Promise<T>): Promise<T> {
+    const cachedData = await this.getCache<T>(key);
+    if (cachedData) {
+      return cachedData;
+    }
+
+    const data = await functionToCall();
+    await this.setCache(key, data);
+    return data;
+  }
 }

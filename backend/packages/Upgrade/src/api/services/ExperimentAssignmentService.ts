@@ -468,7 +468,7 @@ export class ExperimentAssignmentService {
       ]);
     } else {
       [experiments, [userExcluded, groupExcluded]] = await Promise.all([
-        this.experimentRepository.getValidExperiments(context),
+        this.experimentService.getCachedValidExperiments(context),
         this.checkUserOrGroupIsGloballyExcluded(experimentUser),
       ]);
     }

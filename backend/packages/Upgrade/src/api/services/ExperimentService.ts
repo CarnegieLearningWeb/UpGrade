@@ -62,10 +62,17 @@ import { Level } from '../models/Level';
 import { LevelRepository } from '../repositories/LevelRepository';
 import { LevelCombinationElement } from '../models/LevelCombinationElement';
 import { LevelCombinationElementRepository } from '../repositories/LevelCombinationElements';
-import { ConditionValidator, ExperimentDTO, FactorValidator, PartitionValidator, ParticipantsValidator } from '../DTO/ExperimentDTO';
+import {
+  ConditionValidator,
+  ExperimentDTO,
+  FactorValidator,
+  PartitionValidator,
+  ParticipantsValidator,
+} from '../DTO/ExperimentDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
+import { CacheService } from './CacheService';
 
 @Service()
 export class ExperimentService {
@@ -90,7 +97,8 @@ export class ExperimentService {
     public previewUserService: PreviewUserService,
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
-    public errorService: ErrorService
+    public errorService: ErrorService,
+    public cacheService: CacheService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
@@ -227,6 +235,14 @@ export class ExperimentService {
     };
   }
 
+  public async getCachedValidExperiments(context: string) {
+    const temp: any = await this.cacheService.getCache(context);
+    console.log('temp', temp);
+    return this.cacheService.wrapFunctionSingle(context, async () => {
+      return await this.experimentRepository.getValidExperiments(context);
+    });
+  }
+
   public create(
     experiment: ExperimentDTO,
     currentUser: User,
@@ -270,6 +286,7 @@ export class ExperimentService {
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
     logger.info({ message: `Generating test experiments`, details: experiment });
+    this.cacheService.resetCache();
     return this.addBulkExperiments(experiment, user, logger);
   }
 
@@ -281,6 +298,7 @@ export class ExperimentService {
     if (logger) {
       logger.info({ message: `Delete experiment =>  ${experimentId}` });
     }
+    this.cacheService.resetCache();
     return getConnection().transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
 
@@ -335,6 +353,7 @@ export class ExperimentService {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
+    this.cacheService.resetCache();
     return this.updateExperimentInDB(experiment as ExperimentDTO, currentUser, logger);
   }
 
@@ -376,6 +395,7 @@ export class ExperimentService {
     scheduleDate?: Date,
     entityManager?: EntityManager
   ): Promise<Experiment> {
+    this.cacheService.resetCache();
     const oldExperiment = await this.experimentRepository.findOne(
       { id: experimentId },
       { relations: ['stateTimeLogs'] }
@@ -437,6 +457,7 @@ export class ExperimentService {
     user: User,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
+    this.cacheService.resetCache();
     for (const experiment of experiments) {
       const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
       if (duplicateExperiment && experiment.id) {
