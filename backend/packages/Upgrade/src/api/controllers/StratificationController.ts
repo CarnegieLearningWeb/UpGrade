@@ -156,7 +156,7 @@ export class StratificationController {
    */
   @Post()
   public async insertStratification(@Req() request: AppRequest): Promise<UserStratificationFactor[]> {
-    // Directly access the request body
+    // Extract uploaded files from the request body
     const uploadedFiles = request.body;
 
     // Ensure uploadedFiles is iterable and has the right structure
@@ -164,12 +164,14 @@ export class StratificationController {
       throw new Error('Invalid request format. Expected an array of objects with a "file" property containing CSV content.');
     }
 
-    let results: UserStratificationFactor[] = [];
+    // Initialize an empty results array to store the combined results from all files
+    const results: UserStratificationFactor[] = [];
 
+    // Iterate over each file object, extract its content, and process it
     for (let fileObj of uploadedFiles) {
       const fileContent = fileObj.file;
       const result = await this.stratificatonService.insertStratification(fileContent, request.logger);
-      results = results.concat(result);
+      results.push(...result);
     }
 
     return results;
