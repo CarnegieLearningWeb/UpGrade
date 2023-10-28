@@ -236,10 +236,12 @@ export class ExperimentService {
   }
 
   public async getCachedValidExperiments(context: string) {
-    const temp: any = await this.cacheService.getCache(context);
-    console.log('temp', temp);
-    return this.cacheService.wrapFunctionSingle(context, async () => {
-      return await this.experimentRepository.getValidExperiments(context);
+    const cacheKey = `validExperiments-${context}`;
+    return this.cacheService.wrap(
+      cacheKey,
+      this.experimentRepository.getValidExperiments.bind(this.experimentRepository, context),
+    ).then((validExperiment) => {
+      return JSON.parse(JSON.stringify(validExperiment));
     });
   }
 
@@ -778,7 +780,7 @@ export class ExperimentService {
         this.checkConditionCodeDefault(conditions);
 
         // creating condition docs
-        const conditionDocToSave: Array<Partial<Omit <ExperimentCondition, 'levelCombinationElements'>>> =
+        const conditionDocToSave: Array<Partial<Omit<ExperimentCondition, 'levelCombinationElements'>>> =
           (conditions &&
             conditions.length > 0 &&
             conditions.map((condition: ConditionValidator) => {
@@ -817,7 +819,7 @@ export class ExperimentService {
                 })
               );
               decisionPoint.id = decisionPoint.id || uuid();
-              return { ...decisionPoint, experiment: experimentDoc }
+              return { ...decisionPoint, experiment: experimentDoc };
             })) ||
           [];
 
@@ -1538,7 +1540,7 @@ export class ExperimentService {
     return { ...experiment, factors: updatedFactors, conditionPayloads: updatedConditionPayloads };
   }
 
-  private includeExcludeSegmentCreation (
+  private includeExcludeSegmentCreation(
     experimentSegment: ParticipantsValidator,
     experimentDocSegmentData: ExperimentSegmentInclusion | ExperimentSegmentExclusion,
     experimentId: string,
@@ -1639,7 +1641,7 @@ export class ExperimentService {
       const array = condition.levelCombinationElements.map((elements) => {
         elements.id = elements.id || uuid();
         // elements.condition = condition;
-        return { ...elements, condition: condition }
+        return { ...elements, condition: condition };
       });
       allLevelCombinationElements.push(...array);
     });

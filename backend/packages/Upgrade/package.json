@@ -30,7 +30,6 @@
     "license": "ISC",
     "devDependencies": {
         "@types/body-parser": "^1.17.1",
-        "@types/cache-manager": "^4.0.1",
         "@types/compression": "^1.0.1",
         "@types/cors": "^2.8.6",
         "@types/dotenv": "^6.1.1",
@@ -66,7 +65,7 @@
         "@types/uuid": "^3.4.5",
         "aws-sdk": "^2.639.0",
         "body-parser": "^1.20.1",
-        "cache-manager": "^4.1.0",
+        "cache-manager": "^5.2.4",
         "chalk": "^2.4.2",
         "class-transformer": "^0.3.1",
         "class-validator": "^0.14.0",
