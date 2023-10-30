@@ -160,19 +160,20 @@ export class StratificationController {
     const uploadedFiles = request.body;
 
     // Ensure uploadedFiles is iterable and has the right structure
-    if (!Array.isArray(uploadedFiles) || !uploadedFiles.every(item => typeof item.file === 'string')) {
-      throw new Error('Invalid request format. Expected an array of objects with a "file" property containing CSV content.');
+    if (!Array.isArray(uploadedFiles) || !uploadedFiles.every((item) => typeof item.file === 'string')) {
+      throw new Error(
+        'Invalid request format. Expected an array of objects with a "file" property containing CSV content.'
+      );
     }
 
-    // Initialize an empty results array to store the combined results from all files
-    const results: UserStratificationFactor[] = [];
-
-    // Iterate over each file object, extract its content, and process it
-    for (let fileObj of uploadedFiles) {
+    // Use Array.map to create an array of promises
+    const promises = uploadedFiles.map((fileObj) => {
       const fileContent = fileObj.file;
-      const result = await this.stratificatonService.insertStratification(fileContent, request.logger);
-      results.push(...result);
-    }
+      return this.stratificatonService.insertStratification(fileContent, request.logger);
+    });
+
+    // Wait for all promises to resolve and flatten the results
+    const results = (await Promise.all(promises)).flat();
 
     return results;
   }
