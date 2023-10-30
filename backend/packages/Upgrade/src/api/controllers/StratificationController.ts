@@ -1,9 +1,9 @@
-import { JsonController, Get, Delete, Param, Authorized, Post, Req, Res } from 'routing-controllers';
+import { JsonController, Get, Delete, Param, Authorized, Post, Req, Res, Body } from 'routing-controllers';
 import { SERVER_ERROR } from 'upgrade_types';
 import { AppRequest } from '../../types';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { StratificationService } from '../services/StratificationService';
-import { FactorStrata } from './validators/StratificationValidator';
+import { FactorStrata, UploadedFilesArrayValidator } from './validators/StratificationValidator';
 import { StratificationFactor } from '../models/StratificationFactor';
 import * as express from 'express';
 
@@ -155,27 +155,14 @@ export class StratificationController {
    *          description: Internal Server Error, Insert Error in database, CSV file is not valid
    */
   @Post()
-  public async insertStratification(@Req() request: AppRequest): Promise<UserStratificationFactor[]> {
-    // Extract uploaded files from the request body
-    const uploadedFiles = request.body;
-
-    // Ensure uploadedFiles is iterable and has the right structure
-    if (!Array.isArray(uploadedFiles) || !uploadedFiles.every((item) => typeof item.file === 'string')) {
-      throw new Error(
-        'Invalid request format. Expected an array of objects with a "file" property containing CSV content.'
-      );
-    }
-
-    // Use Array.map to create an array of promises
-    const promises = uploadedFiles.map((fileObj) => {
-      const fileContent = fileObj.file;
-      return this.stratificatonService.insertStratification(fileContent, request.logger);
+  public async insertStratification(
+    @Req() request: AppRequest,
+    @Body({ validate: true }) body: UploadedFilesArrayValidator
+  ): Promise<UserStratificationFactor[]> {
+    const promises = body.files.map((fileObj) => {
+      return this.stratificatonService.insertStratification(fileObj.file, request.logger);
     });
-
-    // Wait for all promises to resolve and flatten the results
-    const results = (await Promise.all(promises)).flat();
-
-    return results;
+    return (await Promise.all(promises)).flat();
   }
 
   /**
