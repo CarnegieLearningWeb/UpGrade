@@ -59,7 +59,6 @@
     "dependencies": {
         "@golevelup/ts-jest": "^0.3.2",
         "@nestjs/common": "^8.4.0",
-        "@nestjs/core": "^9.0.5",
         "@nestjs/testing": "^8.4.0",
         "@nestjs/typeorm": "^8.0.3",
         "@types/jest": "^26.0.24",
@@ -115,5 +114,9 @@
         "uuid": "^3.3.3",
         "winston": "^3.2.1",
         "winston-splunk-httplogger": "^3.1.0"
+    },
+    "overrides": {
+        "class-validator": "^0.14.0",
+        "typeorm": "^0.2.20"
     }
 }
