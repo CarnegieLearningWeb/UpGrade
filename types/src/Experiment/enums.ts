@@ -193,3 +193,8 @@ export enum SUPPORTED_CALIPER_PROFILES {
 export enum SUPPORTED_CALIPER_EVENTS {
   GRADE = 'GradeEvent',
 }
+
+export enum CACHE_PREFIX {
+  EXPERIMENT_KEY_PREFIX = 'validExperiments-',
+  SEGMENT_KEY_PREFIX = 'segments-',
+}

@@ -203,7 +203,7 @@ export class ExperimentAssignmentService {
     if (previewUser) {
       experiments = await this.experimentRepository.getValidExperimentsWithPreview(context);
     } else {
-      experiments = await this.experimentRepository.getValidExperiments(context);
+      experiments = await this.experimentService.getCachedValidExperiments(context);
     }
 
     // Experiment has assignment type as GROUP_ASSIGNMENT
@@ -458,11 +458,9 @@ export class ExperimentAssignmentService {
 
     // query all experiment and sub experiment
     // check if user or group is excluded
-    let experiments: Experiment[] = [],
-      userExcluded: string,
-      groupExcluded: string[];
-    
-    [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
+    let experiments: Experiment[] = [];
+
+    const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
 
     if (userExcluded || groupExcluded.length > 0) {
       // return null if the user or group is excluded from the experiment
@@ -470,13 +468,9 @@ export class ExperimentAssignmentService {
     }
 
     if (previewUser) {
-      [experiments] = await Promise.all([
-        this.experimentRepository.getValidExperimentsWithPreview(context),
-      ]);
+      [experiments] = await Promise.all([this.experimentRepository.getValidExperimentsWithPreview(context)]);
     } else {
-      [experiments] = await Promise.all([
-        this.experimentService.getCachedValidExperiments(context),
-      ]);
+      [experiments] = await Promise.all([this.experimentService.getCachedValidExperiments(context)]);
     }
     experiments = experiments.map((exp) => this.experimentService.formatingConditionPayload(exp));
 

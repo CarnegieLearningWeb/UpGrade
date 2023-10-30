@@ -17,11 +17,12 @@ export class CacheService {
   private async init() {
     this.memoryCache = await caching('memory', {
       max: 100,
-      ttl: 60 * 1000 /* Caching for 1 minute */,
+      ttl: 900 * 1000 /* Caching for 15 minute */,
     });
   }
 
   public setCache<T>(id: string, value: T): Promise<void> {
+    // this.memoryCache.store.keys(prefix)
     return this.memoryCache ? this.memoryCache.set(id, value) : Promise.resolve();
   }
 
@@ -30,22 +31,28 @@ export class CacheService {
   }
 
   public delCache(id: string): Promise<void> {
-    return this.memoryCache? this.memoryCache.del(id): Promise.resolve();
+    return this.memoryCache ? this.memoryCache.del(id) : Promise.resolve();
   }
 
-  public resetCache(): void {
-    this.memoryCache? this.memoryCache.reset(): Promise.resolve();
+  public async resetPrefixCache(prefix: string): Promise<void> {
+    const keys = this.memoryCache ? await this.memoryCache.store.keys() : [];
+    const filteredKeys = keys.filter((str) => str.startsWith(prefix));
+    return await this.memoryCache.store.mdel(...filteredKeys);
+  }
+
+  public resetEntireCache(): void {
+    this.memoryCache ? this.memoryCache.reset() : Promise.resolve();
   }
 
   // Use this to wrap the function that you want to cache
   public wrap<T>(key: string, fn: () => Promise<T>, ttl?: WrapTTL<T>): Promise<T> {
-    return this.memoryCache ? this.memoryCache.wrap(key, fn, ttl): fn();
+    return this.memoryCache ? this.memoryCache.wrap(key, fn, ttl) : fn();
   }
 
-  public async wrapFunction<T>(keys: string[], functionToCall: () => Promise<T[]>): Promise<T[]> {
+  public async wrapFunction<T>(prefix, keys: string[], functionToCall: () => Promise<T[]>): Promise<T[]> {
     const cachedData = await Promise.all(
       keys.map(async (key) => {
-        return this.getCache<T>(key);
+        return this.getCache<T>(prefix + key);
       })
     );
 
@@ -58,7 +65,7 @@ export class CacheService {
 
     await Promise.all(
       keys.map((key, index) => {
-        return this.setCache(key, data[index]);
+        return this.setCache(prefix + key, data[index]);
       })
     );
     return data;
