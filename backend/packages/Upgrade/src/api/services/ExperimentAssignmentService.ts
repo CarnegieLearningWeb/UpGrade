@@ -461,15 +461,21 @@ export class ExperimentAssignmentService {
     let experiments: Experiment[] = [],
       userExcluded: string,
       groupExcluded: string[];
+    
+    [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
+
+    if (userExcluded || groupExcluded.length > 0) {
+      // return null if the user or group is excluded from the experiment
+      return [];
+    }
+
     if (previewUser) {
-      [experiments, [userExcluded, groupExcluded]] = await Promise.all([
+      [experiments] = await Promise.all([
         this.experimentRepository.getValidExperimentsWithPreview(context),
-        this.checkUserOrGroupIsGloballyExcluded(experimentUser),
       ]);
     } else {
-      [experiments, [userExcluded, groupExcluded]] = await Promise.all([
+      [experiments] = await Promise.all([
         this.experimentService.getCachedValidExperiments(context),
-        this.checkUserOrGroupIsGloballyExcluded(experimentUser),
       ]);
     }
     experiments = experiments.map((exp) => this.experimentService.formatingConditionPayload(exp));
@@ -515,11 +521,6 @@ export class ExperimentAssignmentService {
     try {
       // return if no experiment
       if (experiments.length === 0) {
-        return [];
-      }
-
-      if (userExcluded || groupExcluded.length > 0) {
-        // return null if the user or group is excluded from the experiment
         return [];
       }
 
