@@ -26,7 +26,7 @@ export class MockClientAppService {
     public generalTest_1_1: GeneralTestForVersion1Service,
     public generalTest_4_1: GeneralTestForVersion41Service,
     public generalTest_5: GeneralTestForVersion5Service,
-    public mathstream_AdaptiveSegmentSwapExperiment: MockMathstreamBrowserService,
+    // public mathstream_AdaptiveSegmentSwapExperiment: MockMathstreamBrowserService,
     public dataFetchService: DataFetchService,
     public eventBus: EventBusService,
     public clientLibraryService: ClientLibraryService

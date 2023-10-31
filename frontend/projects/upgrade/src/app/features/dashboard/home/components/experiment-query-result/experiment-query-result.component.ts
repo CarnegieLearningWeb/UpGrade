@@ -13,7 +13,7 @@ import {
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { EXPERIMENT_TYPE } from 'upgrade_types';
+import { EXPERIMENT_STATE, EXPERIMENT_TYPE } from 'upgrade_types';
 import { ExperimentFactorData } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 
 interface FactorColumnDef {
@@ -53,6 +53,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [];
   factorialData = {};
   experimentType: string = null;
+  experimentState: EXPERIMENT_STATE;
   data: { name: string; series: { name: string; value: number }[]; dot: boolean }[];
   meanData2: { name: string; value: number }[];
   meanData1: { name: string; value: number }[];

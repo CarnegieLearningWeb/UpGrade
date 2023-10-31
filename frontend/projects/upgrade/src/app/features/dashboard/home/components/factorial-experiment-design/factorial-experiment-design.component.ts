@@ -762,7 +762,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       const currentConditions =
         this.factorialConditions.length > 0 ? this.factorialConditions : this.experimentInfo?.conditions;
       const factorialConditionPayloads: ExperimentConditionPayloadRequestObject[] =
-        this.experimentDesignStepperService.createFactorialConditionsConditionPayloadsRequestObject();
+        this.experimentDesignStepperService.createFactorialConditionsConditionPayloadsRequestObject(currentConditions);
 
       this.emitExperimentDialogEvent.emit({
         type: eventType,
