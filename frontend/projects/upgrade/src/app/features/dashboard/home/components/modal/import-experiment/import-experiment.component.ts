@@ -19,7 +19,7 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
-import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 
 interface ImportExperimentJSON {
   schema:
@@ -466,7 +466,30 @@ export class ImportExperimentComponent implements OnInit {
         }
       });
     });
-    return result;
+  }
+
+  deduceParticipants(result) {
+    if (!result.experimentSegmentInclusion) {
+      result.experimentSegmentInclusion = {
+        segment: {
+          individualForSegment: [],
+          groupForSegment: [],
+          subSegments: [],
+          type: SEGMENT_TYPE.PRIVATE,
+        },
+      };
+    }
+
+    if (!result.experimentSegmentExclusion) {
+      result.experimentSegmentExclusion = {
+        segment: {
+          individualForSegment: [],
+          groupForSegment: [],
+          subSegments: [],
+          type: SEGMENT_TYPE.PRIVATE,
+        },
+      };
+    }
   }
 
   updateExperimentJSON(result) {
@@ -475,9 +498,10 @@ export class ImportExperimentComponent implements OnInit {
       result.factors = [];
     }
     // replacing old fields with new field names:
-    result = this.deduceConditionPayload(result);
-    result = this.deducePartition(result);
-    result = this.deduceFactors(result);
+    this.deduceConditionPayload(result);
+    this.deducePartition(result);
+    this.deduceFactors(result);
+    this.deduceParticipants(result);
 
     return result;
   }

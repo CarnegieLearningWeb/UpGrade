@@ -1288,8 +1288,8 @@ export class ExperimentService {
               id: conditionPayload.id,
               payloadType: conditionPayload.payload.type,
               payloadValue: conditionPayload.payload.value,
-              parentCondition: conditions.find((doc) => doc.id === conditionPayload.parentCondition),
-              decisionPoint: partitions.find((doc) => doc.id === conditionPayload.decisionPoint),
+              parentCondition: conditions.find((doc) => doc.id === conditionPayload.parentCondition.id),
+              decisionPoint: partitions.find((doc) => doc.id === conditionPayload.decisionPoint?.id),
             };
             return conditionPayloadToReturn;
           })) ||
