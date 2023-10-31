@@ -1,29 +1,23 @@
 import { env } from './../../env';
 import { Service } from 'typedi';
-import { Cache, WrapTTL, caching } from 'cache-manager';
+import cacheManager from 'cache-manager';
 
-// TODO convert this into factory function and use environment variable to take cache type
 @Service()
 export class CacheService {
-  private memoryCache: Cache;
-
+  private memoryCache: cacheManager.Cache;
   constructor() {
     // read from the environment variable for initializing caching
+    let store: 'memory' | 'none';
     if (env.caching.enabled) {
-      this.init();
+      store = 'memory';
+    } else {
+      store = 'none';
     }
+    this.memoryCache = cacheManager.caching({ store, max: 100, ttl: 900 });
   }
 
-  private async init() {
-    this.memoryCache = await caching('memory', {
-      max: 100,
-      ttl: 900 * 1000 /* Caching for 15 minute */,
-    });
-  }
-
-  public setCache<T>(id: string, value: T): Promise<void> {
-    // this.memoryCache.store.keys(prefix)
-    return this.memoryCache ? this.memoryCache.set(id, value) : Promise.resolve();
+  public setCache<T>(id: string, value: T): Promise<T> {
+    return this.memoryCache ? this.memoryCache.set(id, value) : Promise.resolve(null);
   }
 
   public getCache<T>(id: string): Promise<T> {
@@ -37,16 +31,12 @@ export class CacheService {
   public async resetPrefixCache(prefix: string): Promise<void> {
     const keys = this.memoryCache ? await this.memoryCache.store.keys() : [];
     const filteredKeys = keys.filter((str) => str.startsWith(prefix));
-    return await this.memoryCache.store.mdel(...filteredKeys);
-  }
-
-  public resetEntireCache(): void {
-    this.memoryCache ? this.memoryCache.reset() : Promise.resolve();
+    console.log(filteredKeys);
   }
 
   // Use this to wrap the function that you want to cache
-  public wrap<T>(key: string, fn: () => Promise<T>, ttl?: WrapTTL<T>): Promise<T> {
-    return this.memoryCache ? this.memoryCache.wrap(key, fn, ttl) : fn();
+  public wrap<T>(key: string, fn: () => Promise<T>): Promise<T> {
+    return this.memoryCache ? this.memoryCache.wrap(key, fn) : fn();
   }
 
   public async wrapFunction<T>(prefix, keys: string[], functionToCall: () => Promise<T[]>): Promise<T[]> {
