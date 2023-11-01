@@ -233,7 +233,11 @@ export default class ApiService {
 
     this.dataService.rotateAssignmentList(assignment);
 
-    const data = { ...assignment, assignedCondition: { ...assignment.assignedCondition[0], conditionCode: condition } };
+    const data = {
+      ...assignment,
+      assignedCondition: { ...assignment.assignedCondition[0], conditionCode: condition },
+      assignedFactor: assignment.assignedFactor?.[0],
+    };
 
     let requestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
       userId: this.userId,
