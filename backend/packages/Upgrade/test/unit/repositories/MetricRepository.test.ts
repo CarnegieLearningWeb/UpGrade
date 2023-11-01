@@ -26,7 +26,7 @@ afterEach(() => {
 });
 
 describe('MetricRepository Testing', () => {
-  it('should delete a  metric', async () => {
+  it('should delete a metric', async () => {
     createQueryBuilderStub = sandbox.stub(MetricRepository.prototype, 'createQueryBuilder').returns(deleteQueryBuilder);
     const result = {
       identifiers: [{ id: metric.key }],
@@ -106,8 +106,9 @@ describe('MetricRepository Testing', () => {
       raw: [metric],
     };
 
-    selectMock.expects('innerJoin').once().returns(selectQueryBuilder);
+    selectMock.expects('innerJoin').twice().returns(selectQueryBuilder);
     selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('andWhere').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
     const res = await repo.findMetricsWithQueries([metric.key]);
@@ -121,8 +122,9 @@ describe('MetricRepository Testing', () => {
   it('should throw an error when get monitored experiment metric by date range fails', async () => {
     createQueryBuilderStub = sandbox.stub(MetricRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
-    selectMock.expects('innerJoin').once().returns(selectQueryBuilder);
+    selectMock.expects('innerJoin').twice().returns(selectQueryBuilder);
     selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('andWhere').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.reject(err));
 
     expect(async () => {
