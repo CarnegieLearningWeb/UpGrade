@@ -116,7 +116,7 @@
         "winston-splunk-httplogger": "^3.1.0"
     },
     "overrides": {
-        "class-validator": "^0.14.0",
-        "typeorm": "^0.2.20"
+        "class-validator": "$class-validator",
+        "typeorm": "$typeorm"
     }
 }
