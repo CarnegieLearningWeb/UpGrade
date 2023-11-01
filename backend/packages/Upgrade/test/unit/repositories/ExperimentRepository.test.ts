@@ -60,7 +60,6 @@ describe('ExperimentRepository Testing', () => {
       generatedMaps: [experiment],
       raw: [experiment],
     };
-    
 
     insertMock.expects('insert').once().returns(insertQueryBuilder);
     insertMock.expects('into').once().returns(insertQueryBuilder);
@@ -266,15 +265,15 @@ describe('ExperimentRepository Testing', () => {
       .stub(ExperimentRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
 
-    selectMock.expects('leftJoinAndSelect').exactly(4).returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.reject(err));
+    selectMock.expects('leftJoinAndSelect').exactly(22).returns(selectQueryBuilder);
+    selectMock.expects('where').exactly(4).returns(selectQueryBuilder);
+    selectMock.expects('getMany').exactly(4).returns(Promise.reject(err));
 
     expect(async () => {
       await repo.getValidExperiments('context');
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
+    expect(createQueryBuilderStub.callCount).toBe(4);
     selectMock.verify();
   });
 
@@ -301,15 +300,15 @@ describe('ExperimentRepository Testing', () => {
       .stub(ExperimentRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
 
-    selectMock.expects('leftJoinAndSelect').exactly(4).returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.reject(err));
+    selectMock.expects('leftJoinAndSelect').exactly(22).returns(selectQueryBuilder);
+    selectMock.expects('where').exactly(4).returns(selectQueryBuilder);
+    selectMock.expects('getMany').exactly(4).returns(Promise.reject(err));
 
     expect(async () => {
       await repo.getValidExperimentsWithPreview('context');
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
+    expect(createQueryBuilderStub.callCount).toBe(4);
     selectMock.verify();
   });
 
