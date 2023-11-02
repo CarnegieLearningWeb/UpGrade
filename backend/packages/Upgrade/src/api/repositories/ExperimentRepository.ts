@@ -76,10 +76,9 @@ export class ExperimentRepository extends Repository<Experiment> {
       .where(
         new Brackets((qb) => {
           qb.where(
-            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND :context ILIKE ANY (ARRAY[experiment.context])',
+            'experiment.state = :enrolling AND :context ILIKE ANY (ARRAY[experiment.context])',
             {
               enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
               context,
             }
           );
@@ -95,10 +94,9 @@ export class ExperimentRepository extends Repository<Experiment> {
       .where(
         new Brackets((qb) => {
           qb.where(
-            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND :context ILIKE ANY (ARRAY[experiment.context])',
+            'experiment.state = :enrolling AND :context ILIKE ANY (ARRAY[experiment.context])',
             {
               enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
               context,
             }
           );
@@ -112,10 +110,9 @@ export class ExperimentRepository extends Repository<Experiment> {
       .where(
         new Brackets((qb) => {
           qb.where(
-            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND :context ILIKE ANY (ARRAY[experiment.context])',
+            'experiment.state = :enrolling AND :context ILIKE ANY (ARRAY[experiment.context])',
             {
               enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
               context,
             }
           );
@@ -138,10 +135,9 @@ export class ExperimentRepository extends Repository<Experiment> {
       .where(
         new Brackets((qb) => {
           qb.where(
-            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND :context ILIKE ANY (ARRAY[experiment.context])',
+            'experiment.state = :enrolling AND :context ILIKE ANY (ARRAY[experiment.context])',
             {
               enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
               context,
             }
           );
@@ -193,10 +189,9 @@ export class ExperimentRepository extends Repository<Experiment> {
       .where(
         new Brackets((qb) => {
           qb.where(
-            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
+            '(experiment.state = :enrolling OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
             {
               enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
               preview: 'preview',
               context,
             }
@@ -213,10 +208,9 @@ export class ExperimentRepository extends Repository<Experiment> {
       .where(
         new Brackets((qb) => {
           qb.where(
-            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
+            '(experiment.state = :enrolling OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
             {
               enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
               preview: 'preview',
               context,
             }
@@ -231,10 +225,9 @@ export class ExperimentRepository extends Repository<Experiment> {
       .where(
         new Brackets((qb) => {
           qb.where(
-            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
+            '(experiment.state = :enrolling OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
             {
               enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
               preview: 'preview',
               context,
             }
@@ -258,10 +251,9 @@ export class ExperimentRepository extends Repository<Experiment> {
       .where(
         new Brackets((qb) => {
           qb.where(
-            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
+            '(experiment.state = :enrolling OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
             {
               enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
               preview: 'preview',
               context,
             }
