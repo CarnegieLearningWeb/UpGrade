@@ -3,7 +3,7 @@
     "version": "5.1.0",
     "description": "Backend for A/B Testing Project",
     "scripts": {
-        "install:all": "npm ci && cd packages/Scheduler && npm ci && cd ../Upgrade && npm ci --legacy-peer-deps",
+        "install:all": "npm ci && cd packages/Scheduler && npm ci && cd ../Upgrade && npm ci",
         "production:upgrade": "cd packages/Upgrade && npm run production",
         "build:upgrade": "cd packages/Upgrade && npm run build",
         "test:upgrade": "cd packages/Upgrade && npm run test",
