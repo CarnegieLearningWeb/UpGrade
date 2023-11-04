@@ -31,7 +31,7 @@ export class CacheService {
   public async resetPrefixCache(prefix: string): Promise<void> {
     const keys = this.memoryCache ? await this.memoryCache.store.keys() : [];
     const filteredKeys = keys.filter((str) => str.startsWith(prefix));
-    console.log(filteredKeys);
+    this.memoryCache.store.del(filteredKeys);
   }
 
   // Use this to wrap the function that you want to cache
