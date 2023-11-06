@@ -18,9 +18,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
-import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 
 interface ImportExperimentJSON {
   schema:
@@ -162,8 +161,7 @@ export class ImportExperimentComponent implements OnInit {
     public dialogRef: MatDialogRef<ImportExperimentComponent>,
     private versionService: VersionService,
     private translate: TranslateService,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private _snackBar: MatSnackBar
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
 
   ngOnInit() {
@@ -174,10 +172,6 @@ export class ImportExperimentComponent implements OnInit {
           partition.target ? partition.site + partition.target : partition.site
         );
       });
-  }
-
-  openSnackBar() {
-    this._snackBar.open(this.translate.instant('global.import-segments.message.text'), null, { duration: 4000 });
   }
 
   onCancelClick(): void {
@@ -205,7 +199,6 @@ export class ImportExperimentComponent implements OnInit {
     });
     this.experimentService.importExperiment(this.allExperiments);
     this.onCancelClick();
-    this.openSnackBar();
   }
 
   compareVersion(currentBackendVersion, uploadedExperimentBackendVersion) {
@@ -473,7 +466,30 @@ export class ImportExperimentComponent implements OnInit {
         }
       });
     });
-    return result;
+  }
+
+  deduceParticipants(result) {
+    if (!result.experimentSegmentInclusion) {
+      result.experimentSegmentInclusion = {
+        segment: {
+          individualForSegment: [],
+          groupForSegment: [],
+          subSegments: [],
+          type: SEGMENT_TYPE.PRIVATE,
+        },
+      };
+    }
+
+    if (!result.experimentSegmentExclusion) {
+      result.experimentSegmentExclusion = {
+        segment: {
+          individualForSegment: [],
+          groupForSegment: [],
+          subSegments: [],
+          type: SEGMENT_TYPE.PRIVATE,
+        },
+      };
+    }
   }
 
   updateExperimentJSON(result) {
@@ -482,9 +498,10 @@ export class ImportExperimentComponent implements OnInit {
       result.factors = [];
     }
     // replacing old fields with new field names:
-    result = this.deduceConditionPayload(result);
-    result = this.deducePartition(result);
-    result = this.deduceFactors(result);
+    this.deduceConditionPayload(result);
+    this.deducePartition(result);
+    this.deduceFactors(result);
+    this.deduceParticipants(result);
 
     return result;
   }

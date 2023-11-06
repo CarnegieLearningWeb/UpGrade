@@ -17,12 +17,7 @@ import { ExperimentAssignmentValidator } from './validators/ExperimentAssignment
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
-import {
-  SERVER_ERROR,
-  IGroupMembership,
-  IUserAliases,
-  IWorkingGroup,
-} from 'upgrade_types';
+import { SERVER_ERROR, IGroupMembership, IUserAliases, IWorkingGroup } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator.v1';
 import { ExperimentError } from '../models/ExperimentError';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -180,7 +175,7 @@ export class ExperimentClientController {
   public async init(
     @Req()
     request: AppRequest,
-    @Body({ validate: true })
+    @Body({ validate: false })
     experimentUser: ExperimentUserValidator
   ): Promise<Pick<ExperimentUser, 'id' | 'group' | 'workingGroup'>> {
     request.logger.info({ message: 'Starting the init call for user' });
@@ -257,7 +252,7 @@ export class ExperimentClientController {
   public async setGroupMemberShip(
     @Req()
     request: AppRequest,
-    @Body({ validate: true })
+    @Body({ validate: false })
     experimentUser: ExperimentUserValidator
   ): Promise<IGroupMembership> {
     request.logger.info({ message: 'Starting the groupmembership call for user' });
@@ -325,7 +320,7 @@ export class ExperimentClientController {
   public async setWorkingGroup(
     @Req()
     request: AppRequest,
-    @Body({ validate: true })
+    @Body({ validate: false })
     workingGroupParams: UpdateWorkingGroupValidator
   ): Promise<IWorkingGroup> {
     request.logger.info({ message: 'Starting the workinggroup call for user' });
@@ -420,7 +415,7 @@ export class ExperimentClientController {
   public async markExperimentPoint(
     @Req()
     request: AppRequest,
-    @Body({ validate: true })
+    @Body({ validate: false })
     experiment: MarkExperimentValidator
   ): Promise<IMonitoredDeciosionPoint> {
     request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
@@ -504,7 +499,7 @@ export class ExperimentClientController {
   public async getAllExperimentConditions(
     @Req()
     request: AppRequest,
-    @Body({ validate: true })
+    @Body({ validate: false })
     experiment: ExperimentAssignmentValidator
   ): Promise<IExperimentAssignment[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
@@ -597,7 +592,7 @@ export class ExperimentClientController {
   public async log(
     @Req()
     request: AppRequest,
-    @Body({ validate: true })
+    @Body({ validate: false })
     logData: LogValidator
   ): Promise<Omit<Log, 'createdAt' | 'updatedAt' | 'versionNumber'>[]> {
     request.logger.info({ message: 'Starting the log call for user' });
@@ -641,7 +636,7 @@ export class ExperimentClientController {
    */
   @Post('log/caliper')
   public async caliperLog(
-    @Body({ validate: true })
+    @Body({ validate: false })
     @Req()
     request: AppRequest,
     envelope: CaliperLogEnvelope
@@ -768,7 +763,7 @@ export class ExperimentClientController {
   public async failedExperimentPoint(
     @Req()
     request: AppRequest,
-    @Body({ validate: true })
+    @Body({ validate: false })
     errorBody: FailedParamsValidator
   ): Promise<ExperimentError> {
     const experimentUserDoc = await this.getUserDoc(errorBody.userId, request.logger);
@@ -837,7 +832,7 @@ export class ExperimentClientController {
   public async filterMetrics(
     @Req()
     request: AppRequest,
-    @Body({ validate: true })
+    @Body({ validate: false })
     metric: MetricValidator
   ): Promise<Metric[]> {
     return await this.metricService.saveAllMetrics(metric.metricUnit, request.logger);
