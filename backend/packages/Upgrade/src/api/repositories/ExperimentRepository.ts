@@ -37,11 +37,21 @@ export class ExperimentRepository extends Repository<Experiment> {
 
     const [experimentData, experimentSegmentData] = await Promise.all([
       experiment.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('ExperimentRepository', 'findAllExperiments-experimentData', {}, errorMsg);
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'findAllExperiments-experimentData',
+          {},
+          errorMsg
+        );
         throw errorMsgString;
       }),
       experimentSegment.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('ExperimentRepository', 'findAllExperiments-experimentSegmentData', {}, errorMsg);
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'findAllExperiments-experimentSegmentData',
+          {},
+          errorMsg
+        );
         throw errorMsgString;
       }),
     ]);
@@ -68,6 +78,14 @@ export class ExperimentRepository extends Repository<Experiment> {
   }
 
   public async getValidExperiments(context: string): Promise<Experiment[]> {
+    const whereExperimentsClause =
+      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context])';
+    const whereClauseParams = {
+      enrolling: 'enrolling',
+      enrollmentComplete: 'enrollmentComplete',
+      assign: 'assign',
+      context,
+    };
     const experimentConditionLevelPayloadQuery = this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
@@ -75,15 +93,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
       .where(
         new Brackets((qb) => {
-          qb.where(
-            '(experiment.state = :enrolling OR NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL)) AND :context ILIKE ANY (ARRAY[experiment.context])',
-            {
-              enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
-              assign: 'assign',
-              context,
-            }
-          );
+          qb.where(whereExperimentsClause, whereClauseParams);
         })
       );
 
@@ -95,15 +105,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('factors.levels', 'levels')
       .where(
         new Brackets((qb) => {
-          qb.where(
-            '(experiment.state = :enrolling OR NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL)) AND :context ILIKE ANY (ARRAY[experiment.context])',
-            {
-              enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
-              assign: 'assign',
-              context,
-            }
-          );
+          qb.where(whereExperimentsClause, whereClauseParams);
         })
       );
 
@@ -113,15 +115,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
       .where(
         new Brackets((qb) => {
-          qb.where(
-            '(experiment.state = :enrolling OR NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL)) AND :context ILIKE ANY (ARRAY[experiment.context])',
-            {
-              enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
-              assign: 'assign',
-              context,
-            }
-          );
+          qb.where(whereExperimentsClause, whereClauseParams);
         })
       );
 
@@ -140,33 +134,50 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .where(
         new Brackets((qb) => {
-          qb.where(
-            '(experiment.state = :enrolling OR NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL)) AND :context ILIKE ANY (ARRAY[experiment.context])',
-            {
-              enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
-              assign: 'assign',
-              context,
-            }
-          );
+          qb.where(whereExperimentsClause, whereClauseParams);
         })
       );
 
-    const [experimentConditionLevelPayloadData, experimentFactorPartitionLevelPayloadData, experimentMetricData, experimentSegmentData] = await Promise.all([
+    const [
+      experimentConditionLevelPayloadData,
+      experimentFactorPartitionLevelPayloadData,
+      experimentMetricData,
+      experimentSegmentData,
+    ] = await Promise.all([
       experimentConditionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperiments-experimentConditionLevelPayloadQuery', {}, errorMsg);
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getValidExperiments-experimentConditionLevelPayloadQuery',
+          {},
+          errorMsg
+        );
         throw errorMsgString;
       }),
       experimentFactorPartitionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperiments-experimentFactorPartitionLevelPayloadQuery', {}, errorMsg);
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getValidExperiments-experimentFactorPartitionLevelPayloadQuery',
+          {},
+          errorMsg
+        );
         throw errorMsgString;
       }),
       experimentMetricQuery.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperiments-experimentMetricQuery', {}, errorMsg);
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getValidExperiments-experimentMetricQuery',
+          {},
+          errorMsg
+        );
         throw errorMsgString;
       }),
       experimentSegmentQuery.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperiments-experimentSegmentQuery', {}, errorMsg);
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getValidExperiments-experimentSegmentQuery',
+          {},
+          errorMsg
+        );
         throw errorMsgString;
       }),
     ]);
@@ -189,6 +200,15 @@ export class ExperimentRepository extends Repository<Experiment> {
   }
 
   public async getValidExperimentsWithPreview(context: string): Promise<Experiment[]> {
+    const whereExperimentsClause =
+      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context])';
+    const whereClauseParams = {
+      enrolling: 'enrolling',
+      enrollmentComplete: 'enrollmentComplete',
+      preview: 'preview',
+      assign: 'assign',
+      context,
+    };
     const experimentConditionLevelPayloadQuery = this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
@@ -196,16 +216,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
       .where(
         new Brackets((qb) => {
-          qb.where(
-            '((experiment.state = :enrolling OR experiment.state = :preview) OR NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL)) AND :context ILIKE ANY (ARRAY[experiment.context])',
-            {
-              enrolling: 'enrolling',
-              preview: 'preview',
-              enrollmentComplete: 'enrollmentComplete',
-              assign: 'assign',
-              context,
-            }
-          );
+          qb.where(whereExperimentsClause, whereClauseParams);
         })
       );
 
@@ -217,16 +228,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('factors.levels', 'levels')
       .where(
         new Brackets((qb) => {
-          qb.where(
-            '((experiment.state = :enrolling OR experiment.state = :preview) OR NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL)) AND :context ILIKE ANY (ARRAY[experiment.context])',
-            {
-              enrolling: 'enrolling',
-              preview: 'preview',
-              enrollmentComplete: 'enrollmentComplete',
-              assign: 'assign',
-              context,
-            }
-          );
+          qb.where(whereExperimentsClause, whereClauseParams);
         })
       );
 
@@ -236,16 +238,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
       .where(
         new Brackets((qb) => {
-          qb.where(
-            '((experiment.state = :enrolling OR experiment.state = :preview) OR NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL)) AND :context ILIKE ANY (ARRAY[experiment.context])',
-            {
-              enrolling: 'enrolling',
-              preview: 'preview',
-              enrollmentComplete: 'enrollmentComplete',
-              assign: 'assign',
-              context,
-            }
-          );
+          qb.where(whereExperimentsClause, whereClauseParams);
         })
       );
 
@@ -264,34 +257,50 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .where(
         new Brackets((qb) => {
-          qb.where(
-            '((experiment.state = :enrolling OR experiment.state = :preview) OR NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL)) AND :context ILIKE ANY (ARRAY[experiment.context])',
-            {
-              enrolling: 'enrolling',
-              preview: 'preview',
-              enrollmentComplete: 'enrollmentComplete',
-              assign: 'assign',
-              context,
-            }
-          );
+          qb.where(whereExperimentsClause, whereClauseParams);
         })
       );
 
-    const [experimentConditionLevelPayloadData, experimentFactorPartitionLevelPayloadData, experimentMetricData, experimentSegmentData] = await Promise.all([
+    const [
+      experimentConditionLevelPayloadData,
+      experimentFactorPartitionLevelPayloadData,
+      experimentMetricData,
+      experimentSegmentData,
+    ] = await Promise.all([
       experimentConditionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperiments-experimentConditionLevelPayloadQuery', {}, errorMsg);
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getValidExperiments-experimentConditionLevelPayloadQuery',
+          {},
+          errorMsg
+        );
         throw errorMsgString;
       }),
       experimentFactorPartitionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperiments-experimentFactorPartitionLevelPayloadQuery', {}, errorMsg);
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getValidExperiments-experimentFactorPartitionLevelPayloadQuery',
+          {},
+          errorMsg
+        );
         throw errorMsgString;
       }),
       experimentMetricQuery.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperiments-experimentMetricQuery', {}, errorMsg);
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getValidExperiments-experimentMetricQuery',
+          {},
+          errorMsg
+        );
         throw errorMsgString;
       }),
       experimentSegmentQuery.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperiments-experimentSegmentQuery', {}, errorMsg);
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getValidExperiments-experimentSegmentQuery',
+          {},
+          errorMsg
+        );
         throw errorMsgString;
       }),
     ]);

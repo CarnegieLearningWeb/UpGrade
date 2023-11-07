@@ -116,23 +116,6 @@ export default async function testCase(): Promise<void> {
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
-  // change experiment status to complete
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
-
-  // fetch experiment
-  experiments = await experimentService.find(new UpgradeLogger());
-  expect(experiments).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
-        postExperimentRule: experimentObject.postExperimentRule,
-        assignmentUnit: experimentObject.assignmentUnit,
-        consistencyRule: experimentObject.consistencyRule,
-      }),
-    ])
-  );
-
   // get all experiment condition for user 1
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
@@ -188,6 +171,23 @@ export default async function testCase(): Promise<void> {
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
+
+  // change experiment status to complete
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
+
+  // fetch experiment
+  experiments = await experimentService.find(new UpgradeLogger());
+  expect(experiments).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        name: experimentObject.name,
+        state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+        postExperimentRule: experimentObject.postExperimentRule,
+        assignmentUnit: experimentObject.assignmentUnit,
+        consistencyRule: experimentObject.consistencyRule,
+      }),
+    ])
+  );
 
   await checkDeletedExperiment(experimentId, user);
 }
