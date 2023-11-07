@@ -9,7 +9,7 @@ WORKDIR /usr/src/app
 # Install app dependencies
 COPY . .
 RUN cd packages/Upgrade && npm ci
-ENV NODE_OPTIONS=--max_old_space_size=8192
+ENV NODE_OPTIONS=--max_old_space_size=16384
 RUN ["npm", "run", "build:upgrade"]
 
 EXPOSE 3030
