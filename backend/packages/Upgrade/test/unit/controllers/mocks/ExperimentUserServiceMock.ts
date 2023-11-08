@@ -21,7 +21,7 @@ export default class ExperimentUserServiceMock {
     return Promise.resolve([]);
   }
 
-  public getOriginalUserDoc(userId: string, logger: UpgradeLogger): Promise<[]> {
+  public getUserDoc(userId: string, logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
   }
 

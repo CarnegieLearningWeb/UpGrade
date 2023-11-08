@@ -281,6 +281,22 @@ export class ExperimentUserService {
     return this.userRepository.save(newDocument);
   }
 
+  public async getUserDoc(experimentUserId, logger): Promise<RequestedExperimentUser> {
+    try {
+      const experimentUserDoc = await this.getOriginalUserDoc(experimentUserId, logger);
+      if (experimentUserDoc) {
+        const userDoc = { ...experimentUserDoc, requestedUserId: experimentUserId };
+        logger.info({ message: 'Got the user doc', details: userDoc });
+        return userDoc;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      logger.error({ message: `Error in getting user doc for user => ${experimentUserId}`, error });
+      return null;
+    }
+  }
+
   public async getOriginalUserDoc(userId: string, logger?: UpgradeLogger): Promise<ExperimentUser | null> {
     if (logger) {
       logger.info({ message: `Find original user for userId ${userId}` });

@@ -174,7 +174,7 @@ export class ExperimentClientController {
   ): Promise<Pick<ExperimentUser, 'id' | 'group' | 'workingGroup'>> {
     request.logger.info({ message: 'Starting the init call for user' });
     // getOriginalUserDoc call for alias
-    const experimentUserDoc = await this.getUserDoc(experimentUser.id, request.logger);
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(experimentUser.id, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
       request.logger.child({ userDoc: experimentUserDoc });
@@ -256,7 +256,7 @@ export class ExperimentClientController {
   ): Promise<ExperimentUser> {
     request.logger.info({ message: 'Starting the groupmembership call for user' });
     // getOriginalUserDoc call for alias
-    const experimentUserDoc = await this.getUserDoc(experimentUser.id, request.logger);
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(experimentUser.id, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
       request.logger.child({ userDoc: experimentUserDoc });
@@ -319,7 +319,7 @@ export class ExperimentClientController {
   ): Promise<ExperimentUser> {
     request.logger.info({ message: 'Starting the workinggroup call for user' });
     // getOriginalUserDoc call for alias
-    const experimentUserDoc = await this.getUserDoc(workingGroupParams.id, request.logger);
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(workingGroupParams.id, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
       request.logger.child({ userDoc: experimentUserDoc });
@@ -422,7 +422,7 @@ export class ExperimentClientController {
   ): Promise<MonitoredDecisionPoint> {
     request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
     // getOriginalUserDoc call for alias
-    const experimentUserDoc = await this.getUserDoc(experiment.userId, request.logger);
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(experiment.userId, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
       request.logger.child({ userDoc: experimentUserDoc });
@@ -637,7 +637,7 @@ export class ExperimentClientController {
   ): Promise<Log[]> {
     request.logger.info({ message: 'Starting the log call for user' });
     // getOriginalUserDoc call for alias
-    const experimentUserDoc = await this.getUserDoc(logData.userId, request.logger);
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(logData.userId, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
       request.logger.child({ userDoc: experimentUserDoc });
@@ -680,7 +680,7 @@ export class ExperimentClientController {
   ): Promise<Log[]> {
     const result = envelope.data.map(async (log) => {
       // getOriginalUserDoc call for alias
-      const experimentUserDoc = await this.getUserDoc(log.object.assignee.id, request.logger);
+      const experimentUserDoc = await this.experimentUserService.getUserDoc(log.object.assignee.id, request.logger);
       if (experimentUserDoc) {
         // append userDoc in logger
         request.logger.child({ userDoc: experimentUserDoc });
@@ -732,7 +732,7 @@ export class ExperimentClientController {
         const blobData = JSON.parse(request.read());
         try {
           // The function will throw error if userId doesn't exist
-          const experimentUserDoc = await this.getUserDoc(blobData.userId, request.logger);
+          const experimentUserDoc = await this.experimentUserService.getUserDoc(blobData.userId, request.logger);
           if (experimentUserDoc) {
             // append userDoc in logger
             request.logger.child({ userDoc: experimentUserDoc });
@@ -803,7 +803,7 @@ export class ExperimentClientController {
     @Body({ validate: false })
     errorBody: FailedParamsValidator
   ): Promise<ExperimentError> {
-    const experimentUserDoc = await this.getUserDoc(errorBody.userId, request.logger);
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(errorBody.userId, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
       request.logger.child({ userDoc: experimentUserDoc });
@@ -948,7 +948,7 @@ export class ExperimentClientController {
     @Body()
     user: ExperimentUserAliasesValidator
   ): Promise<ExperimentUser[]> {
-    const experimentUserDoc = await this.getUserDoc(user.userId, request.logger);
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(user.userId, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
       request.logger.child({ userDoc: experimentUserDoc });
@@ -969,29 +969,6 @@ export class ExperimentClientController {
         }),
       } as any,
     ];
-  }
-
-  public async getUserDoc(experimentUserId, logger): Promise<RequestedExperimentUser> {
-    try {
-      const experimentUserDoc = await this.experimentUserService.getOriginalUserDoc(experimentUserId, logger);
-      if (experimentUserDoc) {
-        const userDoc = { ...experimentUserDoc, requestedUserId: experimentUserId };
-        // const userDoc = {
-        //   createdAt: experimentUserDoc.createdAt,
-        //   id: experimentUserDoc.id,
-        //   requestedUserId: experimentUserId,
-        //   group: experimentUserDoc.group,
-        //   workingGroup: experimentUserDoc.workingGroup,
-        // };
-        logger.info({ message: 'Got the user doc', details: userDoc });
-        return userDoc;
-      } else {
-        return null;
-      }
-    } catch (error) {
-      logger.error({ message: `Error in getting user doc for user => ${experimentUserId}`, error });
-      return null;
-    }
   }
 
   /**
