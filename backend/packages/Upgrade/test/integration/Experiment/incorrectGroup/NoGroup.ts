@@ -137,7 +137,7 @@ export default async function testCase(): Promise<void> {
     ])
   );
   // getOriginalUserDoc call for alias
-  const experimentUserDoc = await experimentClientController.getUserDoc(experimentUsers[0].id, new UpgradeLogger());
+  const experimentUserDoc = await experimentUserService.getUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // remove user group
   await experimentUserService.updateGroupMembership(experimentUsers[0].id, null, {
     logger: new UpgradeLogger(),
