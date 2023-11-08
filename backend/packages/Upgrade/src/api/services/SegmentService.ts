@@ -311,7 +311,7 @@ export class SegmentService {
       }
 
       // reset caching
-      this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
+      await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
 
       return transactionalEntityManager
         .getRepository(Segment)
