@@ -1,6 +1,7 @@
 import { env } from './../../env';
 import { Service } from 'typedi';
 import cacheManager from 'cache-manager';
+import { CACHE_PREFIX } from 'upgrade_types';
 
 @Service()
 export class CacheService {
@@ -39,7 +40,7 @@ export class CacheService {
     return this.memoryCache ? this.memoryCache.wrap(key, fn) : fn();
   }
 
-  public async wrapFunction<T>(prefix, keys: string[], functionToCall: () => Promise<T[]>): Promise<T[]> {
+  public async wrapFunction<T>(prefix: CACHE_PREFIX, keys: string[], functionToCall: () => Promise<T[]>): Promise<T[]> {
     const cachedData = await Promise.all(
       keys.map(async (key) => {
         return this.getCache<T>(prefix + key);

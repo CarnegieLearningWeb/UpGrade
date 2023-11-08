@@ -305,7 +305,7 @@ export class ExperimentService {
     }
     return getConnection().transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
-      this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
+      await this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
 
       if (experiment) {
         const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
