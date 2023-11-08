@@ -468,9 +468,9 @@ export class ExperimentAssignmentService {
     }
 
     if (previewUser) {
-      [experiments] = await Promise.all([this.experimentRepository.getValidExperimentsWithPreview(context)]);
+      experiments = await this.experimentRepository.getValidExperimentsWithPreview(context);
     } else {
-      [experiments] = await Promise.all([this.experimentService.getCachedValidExperiments(context)]);
+      experiments = await this.experimentService.getCachedValidExperiments(context);
     }
     experiments = experiments.map((exp) => this.experimentService.formatingConditionPayload(exp));
 
