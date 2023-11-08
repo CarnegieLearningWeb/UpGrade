@@ -23,7 +23,7 @@ import { AppRequest } from '../../types';
 import { env } from '../../env';
 import flatten from 'lodash.flatten';
 import { CaliperLogEnvelope } from './validators/CaliperLogEnvelope';
-import { ExperimentUserValidator } from './validators/ExperimentUserValidator';
+import { ExperimentUserValidator, RequestedExperimentUser } from './validators/ExperimentUserValidator';
 import { MetricValidator } from './validators/MetricValidator';
 
 interface IExperimentAssignment {
@@ -180,7 +180,12 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    const userDocument = await this.experimentUserService.create([experimentUser], request.logger);
+
+    const userDocument = await this.experimentUserService.upsertOnChange(
+      experimentUserDoc,
+      experimentUser,
+      request.logger
+    );
     if (!userDocument || !userDocument[0]) {
       request.logger.error({
         details: 'user document not present',
@@ -966,17 +971,18 @@ export class ExperimentClientController {
     ];
   }
 
-  public async getUserDoc(experimentUserId, logger) {
+  public async getUserDoc(experimentUserId, logger): Promise<RequestedExperimentUser> {
     try {
       const experimentUserDoc = await this.experimentUserService.getOriginalUserDoc(experimentUserId, logger);
       if (experimentUserDoc) {
-        const userDoc = {
-          createdAt: experimentUserDoc.createdAt,
-          id: experimentUserDoc.id,
-          requestedUserId: experimentUserId,
-          group: experimentUserDoc.group,
-          workingGroup: experimentUserDoc.workingGroup,
-        };
+        const userDoc = { ...experimentUserDoc, requestedUserId: experimentUserId };
+        // const userDoc = {
+        //   createdAt: experimentUserDoc.createdAt,
+        //   id: experimentUserDoc.id,
+        //   requestedUserId: experimentUserId,
+        //   group: experimentUserDoc.group,
+        //   workingGroup: experimentUserDoc.workingGroup,
+        // };
         logger.info({ message: 'Got the user doc', details: userDoc });
         return userDoc;
       } else {

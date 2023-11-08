@@ -10,6 +10,8 @@ import { getConnection, In, Not } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Experiment } from '../models/Experiment';
+import isEqual from 'lodash/isEqual';
+import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 
 @Service()
 export class ExperimentUserService {
@@ -33,32 +35,50 @@ export class ExperimentUserService {
     return this.userRepository.findOne({ id });
   }
 
+  public async upsertOnChange(
+    oldExperimentUser: RequestedExperimentUser,
+    newExperimentUser: Partial<ExperimentUser>,
+    logger: UpgradeLogger
+  ): Promise<ExperimentUser[]> {
+    if (
+      !oldExperimentUser?.group ||
+      !newExperimentUser?.group ||
+      !oldExperimentUser?.workingGroup ||
+      !newExperimentUser?.workingGroup
+    ) {
+      return await this.create([newExperimentUser], logger);
+    }
+
+    // sort the group membership values
+    const oldGroupKeys = Object.keys(oldExperimentUser.group);
+    const newGroupKeys = Object.keys(newExperimentUser.group);
+
+    oldGroupKeys.forEach((key) => {
+      oldExperimentUser.group[key].sort();
+    });
+    newGroupKeys.forEach((key) => {
+      newExperimentUser.group[key].sort();
+    });
+
+    const isSame =
+      isEqual(oldExperimentUser.group, newExperimentUser.group) &&
+      isEqual(oldExperimentUser.workingGroup, newExperimentUser.workingGroup);
+
+    if (!isSame) {
+      //update assignment if user group is changed
+      if (oldExperimentUser.group && newExperimentUser.group) {
+        await this.removeEnrollments(newExperimentUser.id, newExperimentUser.group, oldExperimentUser.group);
+      }
+      return this.create([newExperimentUser], logger);
+    }
+
+    return [oldExperimentUser];
+  }
+
   public async create(users: Array<Partial<ExperimentUser>>, logger: UpgradeLogger): Promise<ExperimentUser[]> {
     logger.info({ message: 'Create a new User. Metadata of the user =>', details: users });
-    // TODO: Pratik please review this eslint error, is this working as intended?
-    const multipleUsers = users.map((user) => {
-      // eslint-disable-next-line no-self-assign
-      user.id = user.id;
-      return user;
-    });
     // insert or update in the database
-    const updatedUsers = await this.userRepository.save(multipleUsers);
-
-    // update assignment if user group is changed
-    const assignmentUpdated = updatedUsers.map((user: ExperimentUser, index: number) => {
-      if (user.group && users[index].group) {
-        return this.removeEnrollments(user.id, users[index].group, user.group);
-      }
-      return Promise.resolve();
-    });
-
-    // wait for all assignment update to get complete
-    await Promise.all(assignmentUpdated);
-
-    // findAll user document here
-    const updatedUserDocument = await this.userRepository.findByIds(updatedUsers.map((user) => user.id));
-
-    return updatedUserDocument;
+    return this.userRepository.save(users);
   }
 
   public async setAliasesForUser(
