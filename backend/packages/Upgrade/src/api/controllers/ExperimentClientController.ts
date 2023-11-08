@@ -23,7 +23,7 @@ import { AppRequest } from '../../types';
 import { env } from '../../env';
 import flatten from 'lodash.flatten';
 import { CaliperLogEnvelope } from './validators/CaliperLogEnvelope';
-import { ExperimentUserValidator, RequestedExperimentUser } from './validators/ExperimentUserValidator';
+import { ExperimentUserValidator } from './validators/ExperimentUserValidator';
 import { MetricValidator } from './validators/MetricValidator';
 
 interface IExperimentAssignment {
