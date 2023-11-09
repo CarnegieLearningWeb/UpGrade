@@ -99,6 +99,10 @@ export const env = {
   tokenSecretKey: getOsEnv('TOKEN_SECRET_KEY'),
   caching: {
     enabled: toBool(getOsEnvOptional('CACHING_ENABLED')),
+    redisHost: getOsEnvOptional('REDIS_HOST'),
+    redisPort: toNumber(getOsEnvOptional('REDIS_PORT')),
+    redisUsername: getOsEnvOptional('REDIS_USERNAME'),
+    redisPassword: getOsEnvOptional('REDIS_PASSWORD'),
   },
   clientApi: {
     secret: getOsEnv('CLIENT_API_SECRET'),
