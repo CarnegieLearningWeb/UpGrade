@@ -25,9 +25,7 @@ export class StratificationService {
       if (!formatted[factor]) {
         formatted[factor] = { factor, factorValue: {}, experimentIds };
       }
-      if (value !== 'N/A') {
-        formatted[factor].factorValue[value] = parseInt(count);
-      }
+      formatted[factor].factorValue[value] = parseInt(count);
       return formatted;
     }, {});
 
@@ -41,7 +39,7 @@ export class StratificationService {
       .createQueryBuilder('sf')
       .select([
         'sf.stratificationFactorName AS factor',
-        `COALESCE(usf.stratificationFactorValue, 'N/A') AS value`,
+        `COALESCE(usf.stratificationFactorValue) AS value`,
         'COUNT(*) AS count',
         'ARRAY_AGG(experiments.id) AS "experimentIds"', // Aggregate experiment ids into an array
       ])
@@ -60,7 +58,7 @@ export class StratificationService {
       .createQueryBuilder('sf')
       .select([
         'sf.stratificationFactorName AS factor',
-        `COALESCE(usf.stratificationFactorValue, 'N/A') AS value`,
+        `COALESCE(usf.stratificationFactorValue) AS value`,
         'COUNT(*) AS count',
         'ARRAY_AGG(experiments.id) AS "experimentIds"', // Aggregate experiment ids into an array
       ])
