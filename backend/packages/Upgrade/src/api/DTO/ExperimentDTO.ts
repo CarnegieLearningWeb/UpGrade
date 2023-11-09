@@ -191,12 +191,14 @@ class ConditionPayloadValidator {
   public payload: PayloadValidator;
 
   @IsNotEmpty()
-  @IsString()
-  public parentCondition: string;
+  @ValidateNested()
+  @Type(() => ConditionValidator)
+  public parentCondition: ConditionValidator;
 
   @IsOptional()
-  @IsString()
-  public decisionPoint?: string;
+  @ValidateNested()
+  @Type(() => PartitionValidator)
+  public decisionPoint?: PartitionValidator;
 }
 
 class MetricValidator {
