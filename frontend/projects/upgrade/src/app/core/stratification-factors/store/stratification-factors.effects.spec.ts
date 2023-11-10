@@ -78,7 +78,7 @@ describe('StratificationFactorsEffects', () => {
       });
 
       actions$.next(
-        StratificationFactorsActions.actionDeleteStratificationFactor({ factor: { ...mockData[0] }.factor })
+        StratificationFactorsActions.actionDeleteStratificationFactor({ factor: mockData.factor })
       );
 
       tick(0);
@@ -93,6 +93,7 @@ describe('StratificationFactorsEffects', () => {
 
       service.deleteStratificationFactor$.subscribe((result) => {
         expect(result).toEqual(expectedAction);
+        expect(router.navigate).not.toHaveBeenCalledWith(['/participants']);
       });
 
       actions$.next(StratificationFactorsActions.actionDeleteStratificationFactor({ factor: mockData.factor }));

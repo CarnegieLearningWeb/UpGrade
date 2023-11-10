@@ -42,17 +42,19 @@ export class StratificationFactorsEffects {
       filter((factor) => !!factor),
       switchMap((factor) =>
         this.stratificationFactorsDataService.deleteStratificationFactor(factor).pipe(
-          map((data: StratificationFactorDeleteResponse[]) => {
-            if (data[0]) {
+          map((data: StratificationFactorDeleteResponse) => {
+            if (data) {
               const stratificationFactor: StratificationFactor = {
                 ...data[0],
-                factor: data[0].stratificationFactorName,
+                factor: data[0].factor,
               };
               const successResponse = StratificationFactorsActions.actionDeleteStratificationFactorSuccess({
                 stratificationFactor: stratificationFactor,
               });
               this.router.navigate(['/participants']);
               return successResponse;
+            } else {
+              return StratificationFactorsActions.actionDeleteStratificationFactorFailure();
             }
           }),
           catchError(() => [StratificationFactorsActions.actionDeleteStratificationFactorFailure()])

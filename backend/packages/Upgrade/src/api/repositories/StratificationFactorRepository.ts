@@ -46,6 +46,6 @@ export class StratificationFactorRepository extends Repository<StratificationFac
         throw errorMsgString;
       });
 
-    return result.raw;
+    return result.raw[0];
   }
 }
