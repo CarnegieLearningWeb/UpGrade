@@ -147,7 +147,7 @@
                       <span
                         class="ft-18-700 section-data-value section-data-value--editable"
                         (click)="openDialog(DialogType.CHANGE_POST_EXPERIMENT_RULE)"
-                        >{{ experiment.postExperimentRule | titlecase }}</span
+                        >{{ experiment.postExperimentRule | uppercase }}</span
                       >
                       <mat-icon class="edit-icon" *ngIf="permissions?.experiments.update">create</mat-icon>
                     </div>
@@ -181,6 +181,16 @@
                     </span>
                   </ng-template>
                 </div>
+              </div>
+              
+              <!-- Experiment Type-->
+              <div class="section-data">
+                <span 
+                  class="ft-16-600 section-data-title"
+                >
+                  {{ 'home-global.design-type.text' | translate | uppercase }}
+                </span>
+                <span class="ft-18-700 section-data-value">{{ experiment.type | titlecase }} Experiment </span>
               </div>
             </div>
 
@@ -223,6 +233,16 @@
                 <span class="ft-18-700 section-data-value">{{
                   experiment.consistencyRule || experiment.conditionOrder | titlecase
                 }}</span>
+              </div>
+
+              <!-- Stratification Factor Assinment Algorithm -->
+              <div class="section-data">
+                <span 
+                  class="ft-16-600 section-data-title"
+                >
+                  {{ 'home-global.assignment-algorithm.text' | translate | uppercase }}
+                </span>
+                <span class="ft-18-700 section-data-value">{{ experiment.assignmentAlgorithm | titlecase }} </span>
               </div>
             </div>
 
@@ -355,6 +375,17 @@
                 >
                   {{ 'home.view-experiment.enrollment-time-logs.text' | translate }}
                 </span>
+              </div>
+              
+              <!-- Stratification Factor-->
+              <div class="section-data"
+              *ngIf="(experiment.assignmentAlgorithm === 'stratified random sampling')">
+                <span 
+                  class="ft-16-600 section-data-title"
+                >
+                  {{ 'home-global.stratification-factor.text' | translate | uppercase }}
+                </span>
+                <span class="ft-18-700 section-data-value">{{ experiment.stratificationFactor.stratificationFactorName }} </span>
               </div>
             </div>
           </div>

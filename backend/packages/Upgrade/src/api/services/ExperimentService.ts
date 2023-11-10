@@ -158,6 +158,7 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.factors', 'factors')
       .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('queries.metric', 'metric')
+      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
@@ -202,6 +203,7 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experiment.factors', 'factors')
       .leftJoinAndSelect('factors.levels', 'levels')
+      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
@@ -541,6 +543,7 @@ export class ExperimentService {
         'conditions.conditionPayloads',
         'conditions.levelCombinationElements',
         'conditions.levelCombinationElements.level',
+        'stratificationFactor',
       ],
     });
     const formatedExperiments = experimentDetails.map((experiment) => {

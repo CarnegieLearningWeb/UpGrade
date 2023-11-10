@@ -38,6 +38,7 @@ describe('Experiment Controller Testing', () => {
     consistencyRule: 'individual',
     assignmentUnit: 'individual',
     postExperimentRule: 'continue',
+    assignmentAlgorithm: 'random',
     enrollmentCompleteCondition: {
       userCount: 0,
       groupCount: 0,
@@ -69,22 +70,22 @@ describe('Experiment Controller Testing', () => {
         order: 0,
       },
     ],
-    experimentSegmentInclusion: { 
+    experimentSegmentInclusion: {
       segment: {
         individualForSegment: [],
         groupForSegment: [],
         subSegments: [],
-        type: 'private'
-      } 
+        type: 'private',
+      },
     },
-    experimentSegmentExclusion: { 
+    experimentSegmentExclusion: {
       segment: {
         individualForSegment: [],
         groupForSegment: [],
         subSegments: [],
-        type: 'private'
-      } 
-    }
+        type: 'private',
+      },
+    },
   };
 
   test('Get request for /api/experiments', async (done) => {

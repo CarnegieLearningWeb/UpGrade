@@ -8,6 +8,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { UserPermission } from '../../../../core/auth/store/auth.models';
 import { ImportExperimentComponent } from '../components/modal/import-experiment/import-experiment.component';
 import { SegmentsService } from '../../../../core/segments/segments.service';
+import { StratificationFactorsService } from '../../../../core/stratification-factors/stratification-factors.service';
 
 @Component({
   selector: 'app-home',
@@ -24,6 +25,7 @@ export class HomeComponent implements OnInit {
     private experimentService: ExperimentService,
     public dialog: MatDialog,
     private segmentsService: SegmentsService,
+    private stratificationFactorsService: StratificationFactorsService,
     private authService: AuthService
   ) {}
 
@@ -31,6 +33,7 @@ export class HomeComponent implements OnInit {
     this.permissions$ = this.authService.userPermissions$;
     this.experimentService.loadExperiments(true);
     this.segmentsService.fetchSegments(true);
+    this.stratificationFactorsService.fetchStratificationFactors(true);
   }
 
   openNewExperimentDialog() {

@@ -18,6 +18,7 @@ import {
   SUPPORTED_CALIPER_PROFILES,
   SUPPORTED_CALIPER_EVENTS,
   IExperimentAssignmentv5,
+  ASSIGNMENT_ALGORITHM,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -65,6 +66,8 @@ import { parse, toSeconds } from 'iso8601-duration';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { withInSubjectType } from '../Algorithms';
+import { UserStratificationFactorRepository } from '../repositories/UserStratificationRepository';
+import { UserStratificationFactor } from '../models/UserStratificationFactor';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -98,6 +101,8 @@ export class ExperimentAssignmentService {
     private analyticsRepository: AnalyticsRepository,
     @OrmRepository()
     private conditionPayloadRepository: ConditionPayloadRepository,
+    @OrmRepository()
+    private userStratificationFactorRepository: UserStratificationFactorRepository,
 
     public previewUserService: PreviewUserService,
     public experimentUserService: ExperimentUserService,
@@ -364,7 +369,8 @@ export class ExperimentAssignmentService {
               groupEnrollment: groupEnrollments,
               groupExclusion: groupExclusions,
             },
-            status
+            status,
+            condition
           );
           if (experiment.enrollmentCompleteCondition) {
             await this.checkEnrollmentEndingCriteriaForCount(experiment, logger);
@@ -622,7 +628,7 @@ export class ExperimentAssignmentService {
 
       // assign remaining experiment
       const experimentAssignment = await Promise.all(
-        filteredExperiments.map((experiment) => {
+        filteredExperiments.map(async (experiment) => {
           const individualEnrollment = mergedIndividualAssignment.find((assignment) => {
             return assignment.experiment.id === experiment.id;
           });
@@ -645,13 +651,18 @@ export class ExperimentAssignmentService {
             );
           });
 
+          let enrollmentCountPerCondition = null;
+          if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+            enrollmentCountPerCondition = await this.getEnrollmentCountPerCondition(experiment, userId);
+          }
           return this.assignExperiment(
             experimentUser,
             experiment,
             individualEnrollment,
             groupEnrollment,
             individualExclusion,
-            groupExclusion
+            groupExclusion,
+            enrollmentCountPerCondition
           );
         })
       );
@@ -1370,7 +1381,8 @@ export class ExperimentAssignmentService {
       groupEnrollment: GroupEnrollment;
       groupExclusion: GroupExclusion;
     },
-    status: MARKED_DECISION_POINT_STATUS
+    status: MARKED_DECISION_POINT_STATUS,
+    condition: string
   ): Promise<void> {
     const { assignmentUnit, state, consistencyRule } = experiment;
 
@@ -1493,14 +1505,18 @@ export class ExperimentAssignmentService {
         const promiseArray = [];
         let conditionAssigned;
         if (!noGroupSpecified && !invalidGroup) {
-          conditionAssigned = this.assignExperiment(
-            user,
-            experiment,
-            individualEnrollment,
-            groupEnrollment,
-            individualExclusion,
-            groupExclusion
-          );
+          if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+            conditionAssigned = experiment.conditions.find((expCondition) => expCondition.conditionCode === condition);
+          } else {
+            conditionAssigned = this.assignExperiment(
+              user,
+              experiment,
+              individualEnrollment,
+              groupEnrollment,
+              individualExclusion,
+              groupExclusion
+            );
+          }
         }
 
         // get condition which should be assigned
@@ -1603,7 +1619,8 @@ export class ExperimentAssignmentService {
     individualEnrollment: IndividualEnrollment | undefined,
     groupEnrollment: GroupEnrollment | undefined,
     individualExclusion: IndividualExclusion | undefined,
-    groupExclusion: GroupExclusion | undefined
+    groupExclusion: GroupExclusion | undefined,
+    enrollmentCount?: { conditionId: string; userCount: number }[]
   ): ExperimentCondition | void {
     const userId = user.id;
     const individualEnrollmentCondition = experiment.conditions.find(
@@ -1671,14 +1688,18 @@ export class ExperimentAssignmentService {
         return (
           (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
             ? individualEnrollmentCondition
-            : groupEnrollmentCondition) || this.assignRandom(experiment, user)
+            : groupEnrollmentCondition) || this.assignRandom(experiment, user, enrollmentCount)
         );
       }
     }
     return;
   }
 
-  private assignRandom(experiment: Experiment, user: ExperimentUser): ExperimentCondition {
+  private assignRandom(
+    experiment: Experiment,
+    user: ExperimentUser,
+    enrollmentCount?: { conditionId: string; userCount: number }[]
+  ): ExperimentCondition {
     const randomSeed =
       experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
         experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
@@ -1688,7 +1709,11 @@ export class ExperimentAssignmentService {
     const sortedExperimentCondition = experiment.conditions.sort(
       (condition1, condition2) => condition1.order - condition2.order
     );
-    const spec = sortedExperimentCondition.map((condition) => condition.assignmentWeight);
+    let spec = sortedExperimentCondition.map((condition) => condition.assignmentWeight);
+
+    if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+      spec = this.assignStratifiedRandom(sortedExperimentCondition, spec, enrollmentCount || []);
+    }
     const r = seedrandom(randomSeed)() * 100;
     let sum = 0;
     let randomConditions = 0;
@@ -1701,6 +1726,21 @@ export class ExperimentAssignmentService {
     }
     const experimentalCondition = experiment.conditions[randomConditions];
     return experimentalCondition;
+  }
+
+  private assignStratifiedRandom(
+    sortedExperimentCondition: ExperimentCondition[],
+    originalWeights: number[],
+    enrollmentCount: { conditionId: string; userCount: number }[]
+  ): number[] {
+    const sortedEnrollmentCounts = [];
+    sortedExperimentCondition.forEach((condition) => {
+      const foundEnrollmentCount = enrollmentCount.find(({ conditionId }) => conditionId === condition.id);
+      sortedEnrollmentCounts.push(foundEnrollmentCount?.userCount || 0);
+    });
+
+    const adjustedWeights = this.stratifiedConditionsWeight(sortedEnrollmentCounts, originalWeights);
+    return adjustedWeights;
   }
 
   private async resolveSegment(segmentObj: object, segmentDetails: Segment[], depth: number): Promise<any> {
@@ -1964,5 +2004,82 @@ export class ExperimentAssignmentService {
     objectToReturn['conditionPayload'] = factorialConditionPayload;
 
     return objectToReturn;
+  }
+
+  private async getEnrollmentCountPerCondition(
+    experiment: Experiment,
+    userId: string
+  ): Promise<{ conditionId: string; userCount: number }[]> {
+    if (experiment.stratificationFactor) {
+      const factorValue = await this.userStratificationFactorRepository
+        .createQueryBuilder('srsUser')
+        .select('usf.stratificationFactorValue')
+        .from(UserStratificationFactor, 'usf')
+        .where('usf.factorName = :factor', {
+          factor: experiment.stratificationFactor.stratificationFactorName,
+        })
+        .andWhere('usf.userId = :userIdX', { userIdX: userId })
+        .getOne();
+
+      const result = await this.userStratificationFactorRepository
+        .createQueryBuilder('srsUser')
+        .select(['CAST(COUNT(srsUser.user) AS INTEGER) as "userCount", enrollment.conditionId'])
+        .innerJoin(IndividualEnrollment, 'enrollment', 'enrollment.userId = srsUser.userId')
+        .where('srsUser.stratificationFactorValue = :factorValue', {
+          factorValue: factorValue?.stratificationFactorValue,
+        })
+        .andWhere('srsUser.factorName = :factor', {
+          factor: experiment.stratificationFactor.stratificationFactorName,
+        })
+        .groupBy('enrollment.conditionId')
+        .execute();
+
+      return result;
+    }
+    return [];
+  }
+
+  private stratifiedConditionsWeight(enrollmentCounts: number[], conditionsWeight: number[]): number[] {
+    const totalConditions: number = conditionsWeight.length;
+
+    // Calculate the total sum of n
+    const totalEnrollment: number = enrollmentCounts.reduce((acc, curr) => acc + curr, 0);
+
+    // Calculate actual assignment weights
+    let assignmentWeight: number[];
+
+    if (totalEnrollment === 0) {
+      assignmentWeight = new Array(totalConditions).fill(0);
+    } else {
+      assignmentWeight = enrollmentCounts.map((enrollment) => (enrollment * 100) / totalEnrollment);
+    }
+
+    // Calculate the new weights wPrime
+    let adjustedWeights: number[] = new Array(totalConditions).fill(0);
+
+    for (let i = 0; i < totalConditions; i++) {
+      const adjustment: number = conditionsWeight[i] - assignmentWeight[i];
+
+      // Condition based on w and aw relationship
+      if (conditionsWeight[i] > assignmentWeight[i]) {
+        adjustedWeights[i] = conditionsWeight[i] + adjustment;
+        if (adjustedWeights[i] > 100) {
+          adjustedWeights[i] = 100;
+        }
+      } else if (conditionsWeight[i] === assignmentWeight[i]) {
+        adjustedWeights[i] = conditionsWeight[i];
+      } else {
+        adjustedWeights[i] = conditionsWeight[i] + adjustment;
+        if (adjustedWeights[i] < 0) {
+          adjustedWeights[i] = 0;
+        }
+      }
+    }
+
+    // Renormalize all wPrime
+    const totalWPrime: number = adjustedWeights.reduce((acc, curr) => acc + curr, 0);
+    adjustedWeights = adjustedWeights.map((weight) => (weight / totalWPrime) * 100);
+
+    return adjustedWeights;
   }
 }
