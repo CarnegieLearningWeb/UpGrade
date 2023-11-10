@@ -118,6 +118,7 @@
     },
     "overrides": {
         "class-validator": "$class-validator",
-        "typeorm": "$typeorm"
+        "typeorm": "$typeorm",
+        "@types/babel__traverse": "7.0.6"
     }
 }
