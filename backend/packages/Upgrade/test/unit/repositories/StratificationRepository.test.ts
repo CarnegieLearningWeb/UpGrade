@@ -91,7 +91,7 @@ describe('StratificationFactorRepository Testing', () => {
     const res = await repo.deleteStratificationFactorByName(stratificationFactor.stratificationFactorName, logger);
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
-    expect(res).toEqual([stratificationFactor]);
+    expect(res).toEqual(stratificationFactor);
   });
 
   it('should throw an error when delete fails', async () => {
