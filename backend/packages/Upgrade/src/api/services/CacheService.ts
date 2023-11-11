@@ -5,43 +5,46 @@ import { redisStore, RedisCache } from 'cache-manager-ioredis-yet';
 import { CACHE_PREFIX } from 'upgrade_types';
 
 async function createMemoryCache() {
-  const store = "memory";
-  return cacheManager.caching({store, ttl: 900});
+  const store = 'memory';
+  return cacheManager.caching({ store, ttl: 900 });
 }
 
 async function createNoCache() {
-  const store = "none";
-  return cacheManager.caching({store, ttl: 900});
+  const store = 'none';
+  return cacheManager.caching({ store, ttl: 900 });
 }
 
 async function createRedisCache() {
-  const redisCache: RedisCache = cacheManager.caching({store: await redisStore({
-          host: env.caching.redisHost,
-          port: env.caching.redisPort,
-          password: env.caching.redisPassword,
-        }), ttl: 900}) as any; // TODO: After updating the version of cache manager remove any
+  const redisCache: RedisCache = cacheManager.caching({
+    store: await redisStore({
+      host: env.caching.redisHost,
+      port: env.caching.redisPort,
+      password: env.caching.redisPassword,
+    }),
+    ttl: 900,
+  }) as any; // TODO: After updating the version of cache manager remove any
 
   // Add event listener for connection to redis
   const redisClient = redisCache.store.client;
   redisClient.on('error', (err) => {
-        console.error('Redis error: ', err);
+    console.error('Redis error: ', err);
   });
 
   return redisCache;
 }
 
 async function createCache() {
-    let cache: cacheManager.Cache | RedisCache;
-    if (env.caching.enabled) {
-      if (env.caching.redisHost && env.caching.redisPort) {
-        cache = await createRedisCache();
-      } else {
-        cache = await createMemoryCache();
-      }
+  let cache: cacheManager.Cache | RedisCache;
+  if (env.caching.enabled) {
+    if (env.caching.redisHost && env.caching.redisPort) {
+      cache = await createRedisCache();
     } else {
-      cache = await createNoCache();
+      cache = await createMemoryCache();
     }
-    return cache;
+  } else {
+    cache = await createNoCache();
+  }
+  return cache;
 }
 
 @Service()
@@ -52,7 +55,7 @@ export class CacheService {
   }
 
   private async init() {
-    this.cache = await createCache()
+    this.cache = await createCache();
   }
 
   public setCache<T>(id: string, value: T): Promise<T> {
@@ -70,7 +73,9 @@ export class CacheService {
   public async resetPrefixCache(prefix: string): Promise<void> {
     const keys = this.cache ? await this.cache.store.keys() : [];
     const filteredKeys = keys.filter((str) => str.startsWith(prefix));
-    this.cache.store.del(filteredKeys);
+    if (filteredKeys && filteredKeys.length > 0) {
+      this.cache.store.del(filteredKeys);
+    }
   }
 
   // Use this to wrap the function that you want to cache
@@ -87,7 +92,7 @@ export class CacheService {
     }
     // Execute function and set cache
     const data = await fn();
-    this.cache && await this.cache.set(key, data);
+    this.cache && (await this.cache.set(key, data));
     return data;
   }
 
