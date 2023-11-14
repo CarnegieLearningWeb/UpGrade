@@ -11,10 +11,10 @@ export class ExperimentUser extends BaseModel {
   public id: string;
 
   @Column({ type: 'json', nullable: true })
-  public group: object | undefined;
+  public group: Record<string, string[]> | undefined;
 
   @Column({ type: 'json', nullable: true })
-  public workingGroup: object | undefined;
+  public workingGroup: Record<string, string> | undefined;
 
   @OneToMany(() => ExperimentUser, (user) => user.originalUser)
   public aliases: ExperimentUser[];
