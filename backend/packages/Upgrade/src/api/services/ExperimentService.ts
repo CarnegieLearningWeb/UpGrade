@@ -27,6 +27,7 @@ import {
   EXCLUSION_CODE,
   SEGMENT_TYPE,
   EXPERIMENT_TYPE,
+  CACHE_PREFIX,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -62,10 +63,17 @@ import { Level } from '../models/Level';
 import { LevelRepository } from '../repositories/LevelRepository';
 import { LevelCombinationElement } from '../models/LevelCombinationElement';
 import { LevelCombinationElementRepository } from '../repositories/LevelCombinationElements';
-import { ConditionValidator, ExperimentDTO, FactorValidator, PartitionValidator, ParticipantsValidator } from '../DTO/ExperimentDTO';
+import {
+  ConditionValidator,
+  ExperimentDTO,
+  FactorValidator,
+  PartitionValidator,
+  ParticipantsValidator,
+} from '../DTO/ExperimentDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
+import { CacheService } from './CacheService';
 
 @Service()
 export class ExperimentService {
@@ -90,7 +98,8 @@ export class ExperimentService {
     public previewUserService: PreviewUserService,
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
-    public errorService: ErrorService
+    public errorService: ErrorService,
+    public cacheService: CacheService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
@@ -227,6 +236,15 @@ export class ExperimentService {
     };
   }
 
+  public async getCachedValidExperiments(context: string) {
+    const cacheKey = CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + context;
+    return this.cacheService
+      .wrap(cacheKey, this.experimentRepository.getValidExperiments.bind(this.experimentRepository, context))
+      .then((validExperiment) => {
+        return JSON.parse(JSON.stringify(validExperiment));
+      });
+  }
+
   public create(
     experiment: ExperimentDTO,
     currentUser: User,
@@ -234,6 +252,7 @@ export class ExperimentService {
     createType?: string
   ): Promise<ExperimentDTO> {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
+    this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
 
     // order for condition
     let newConditionId;
@@ -265,12 +284,15 @@ export class ExperimentService {
   }
 
   public createMultipleExperiments(
-    experiment: ExperimentDTO[],
+    experiments: ExperimentDTO[],
     user: User,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
-    logger.info({ message: `Generating test experiments`, details: experiment });
-    return this.addBulkExperiments(experiment, user, logger);
+    logger.info({ message: `Generating test experiments`, details: experiments });
+    experiments.forEach((experiment) => {
+      this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
+    });
+    return this.addBulkExperiments(experiments, user, logger);
   }
 
   public async delete(
@@ -283,6 +305,7 @@ export class ExperimentService {
     }
     return getConnection().transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
+      await this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
 
       if (experiment) {
         const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
@@ -335,6 +358,7 @@ export class ExperimentService {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
+    this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
     return this.updateExperimentInDB(experiment as ExperimentDTO, currentUser, logger);
   }
 
@@ -380,6 +404,7 @@ export class ExperimentService {
       { id: experimentId },
       { relations: ['stateTimeLogs'] }
     );
+    this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + oldExperiment.context[0]);
 
     if (
       (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) &&
@@ -438,6 +463,7 @@ export class ExperimentService {
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
     for (const experiment of experiments) {
+      this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
       const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
       if (duplicateExperiment && experiment.id) {
         const error = new Error('Duplicate experiment');
@@ -757,7 +783,7 @@ export class ExperimentService {
         this.checkConditionCodeDefault(conditions);
 
         // creating condition docs
-        const conditionDocToSave: Array<Partial<Omit <ExperimentCondition, 'levelCombinationElements'>>> =
+        const conditionDocToSave: Array<Partial<Omit<ExperimentCondition, 'levelCombinationElements'>>> =
           (conditions &&
             conditions.length > 0 &&
             conditions.map((condition: ConditionValidator) => {
@@ -796,7 +822,7 @@ export class ExperimentService {
                 })
               );
               decisionPoint.id = decisionPoint.id || uuid();
-              return { ...decisionPoint, experiment: experimentDoc }
+              return { ...decisionPoint, experiment: experimentDoc };
             })) ||
           [];
 
@@ -1517,7 +1543,7 @@ export class ExperimentService {
     return { ...experiment, factors: updatedFactors, conditionPayloads: updatedConditionPayloads };
   }
 
-  private includeExcludeSegmentCreation (
+  private includeExcludeSegmentCreation(
     experimentSegment: ParticipantsValidator,
     experimentDocSegmentData: ExperimentSegmentInclusion | ExperimentSegmentExclusion,
     experimentId: string,
@@ -1618,7 +1644,7 @@ export class ExperimentService {
       const array = condition.levelCombinationElements.map((elements) => {
         elements.id = elements.id || uuid();
         // elements.condition = condition;
-        return { ...elements, condition: condition }
+        return { ...elements, condition: condition };
       });
       allLevelCombinationElements.push(...array);
     });
