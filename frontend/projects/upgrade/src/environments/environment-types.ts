@@ -40,6 +40,7 @@ export interface APIEndpoints {
   exportSegment: string;
   exportSegments: string;
   getGroupAssignmentStatus: string;
+  stratification: string;
 }
 
 export interface Environment {
