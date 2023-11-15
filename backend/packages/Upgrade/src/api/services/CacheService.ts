@@ -6,6 +6,8 @@ import { CACHE_PREFIX } from 'upgrade_types';
 @Service()
 export class CacheService {
   private memoryCache: cacheManager.Cache;
+  private ttl = env.caching.ttl || 900;
+
   constructor() {
     // read from the environment variable for initializing caching
     let store: 'memory' | 'none';
@@ -14,7 +16,8 @@ export class CacheService {
     } else {
       store = 'none';
     }
-    this.memoryCache = cacheManager.caching({ store, max: 100, ttl: 900 });
+
+    this.memoryCache = cacheManager.caching({ store, max: 100, ttl: this.ttl });
   }
 
   public setCache<T>(id: string, value: T): Promise<T> {
