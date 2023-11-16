@@ -247,7 +247,7 @@ describe('ExperimentRepository Testing', () => {
       .returns(selectQueryBuilder);
     const result = [experiment];
 
-    selectMock.expects('leftJoinAndSelect').exactly(22).returns(selectQueryBuilder);
+    selectMock.expects('leftJoinAndSelect').exactly(23).returns(selectQueryBuilder);
     selectMock.expects('where').twice().returns(selectQueryBuilder);
     selectMock.expects('getMany').twice().returns(Promise.resolve(result));
 
@@ -264,7 +264,7 @@ describe('ExperimentRepository Testing', () => {
       .stub(ExperimentRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
 
-    selectMock.expects('leftJoinAndSelect').exactly(22).returns(selectQueryBuilder);
+    selectMock.expects('leftJoinAndSelect').exactly(23).returns(selectQueryBuilder);
     selectMock.expects('where').twice().returns(selectQueryBuilder);
     selectMock.expects('getMany').twice().returns(Promise.reject(err));
 
@@ -282,7 +282,7 @@ describe('ExperimentRepository Testing', () => {
       .returns(selectQueryBuilder);
     const result = [experiment];
 
-    selectMock.expects('leftJoinAndSelect').exactly(22).returns(selectQueryBuilder);
+    selectMock.expects('leftJoinAndSelect').exactly(23).returns(selectQueryBuilder);
     selectMock.expects('where').twice().returns(selectQueryBuilder);
     selectMock.expects('getMany').twice().returns(Promise.resolve(result));
 
@@ -299,7 +299,7 @@ describe('ExperimentRepository Testing', () => {
       .stub(ExperimentRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
 
-    selectMock.expects('leftJoinAndSelect').exactly(22).returns(selectQueryBuilder);
+    selectMock.expects('leftJoinAndSelect').exactly(23).returns(selectQueryBuilder);
     selectMock.expects('where').twice().returns(selectQueryBuilder);
     selectMock.expects('getMany').twice().returns(Promise.reject(err));
 
