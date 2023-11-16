@@ -99,6 +99,7 @@ export const env = {
   tokenSecretKey: getOsEnv('TOKEN_SECRET_KEY'),
   caching: {
     enabled: toBool(getOsEnvOptional('CACHING_ENABLED')),
+    ttl: toNumber(getOsEnvOptional('CACHING_TTL')),
   },
   clientApi: {
     secret: getOsEnv('CLIENT_API_SECRET'),
