@@ -118,6 +118,6 @@ export class ExperimentStatusComponent implements OnInit {
   }
 
   setArchivedStatusAgreement() {
-    this.archivedStatusAgreement = true;
+    this.archivedStatusAgreement = !this.archivedStatusAgreement;
   }
 }
