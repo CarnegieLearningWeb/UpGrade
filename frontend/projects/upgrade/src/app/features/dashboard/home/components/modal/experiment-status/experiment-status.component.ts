@@ -99,9 +99,7 @@ export class ExperimentStatusComponent implements OnInit {
         // allow cancelled status for even less than 2 conditions:
         this.showConditionCountErrorMsg = false;
       }
-      if (status.value === EXPERIMENT_STATE.ARCHIVED) {
-        this.archivedStatusAgreement = false;
-      }
+      this.archivedStatusAgreement = status.value !== EXPERIMENT_STATE.ARCHIVED;
     });
   }
 
