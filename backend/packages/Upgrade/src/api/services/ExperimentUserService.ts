@@ -40,13 +40,13 @@ export class ExperimentUserService {
     newExperimentUser: Partial<ExperimentUser>,
     logger: UpgradeLogger
   ): Promise<ExperimentUser[]> {
-    if (
-      !oldExperimentUser?.group ||
-      !newExperimentUser?.group ||
-      !oldExperimentUser?.workingGroup ||
-      !newExperimentUser?.workingGroup
-    ) {
-      return await this.create([newExperimentUser], logger);
+    // Check if either the group or workingGroup is different or not present
+    const isGroupAbsent = !oldExperimentUser?.group && !newExperimentUser?.group;
+    const isWorkingGroupAbsent = !oldExperimentUser?.workingGroup && !newExperimentUser?.workingGroup;
+
+    // Do not call create if both group and workingGroup are absent
+    if (isGroupAbsent && isWorkingGroupAbsent) {
+      return [oldExperimentUser];
     }
 
     // sort the group membership values
