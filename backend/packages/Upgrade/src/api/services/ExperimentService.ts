@@ -177,7 +177,10 @@ export class ExperimentService {
       .whereInIds(expIds);
 
     if (sortParams) {
-      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(`LOWER(experiment.${sortParams.key})`, sortParams.sortAs);
+      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(
+        `LOWER(CAST(experiment.${sortParams.key} AS TEXT))`,
+        sortParams.sortAs
+      );
     }
     const experiments = await queryBuilderToReturn.getMany();
     return experiments.map((experiment) => {
