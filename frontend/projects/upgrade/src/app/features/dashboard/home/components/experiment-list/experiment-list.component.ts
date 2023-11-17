@@ -78,6 +78,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
       const allExperimentsExcludingArchived = allExperiments.filter((experiment) => experiment.state !== 'archived');
       this.allExperimentsExcludingArchived = new MatTableDataSource();
       this.allExperimentsExcludingArchived.data = [...allExperimentsExcludingArchived];
+      this.allExperimentsExcludingArchived.sortingDataAccessor = (item, property) =>
+        property === 'name' ? item.name.toLowerCase() : item[property];
       this.allExperimentsExcludingArchived.sort = this.sort;
       this.allExperiments = new MatTableDataSource();
       this.allExperiments.data = [...allExperiments];
