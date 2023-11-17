@@ -2,6 +2,8 @@ import { Entity, PrimaryColumn, Column, OneToMany, ManyToOne } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { IsNotEmpty, IsDefined } from 'class-validator';
 import { Log } from './Log';
+import { Type } from 'class-transformer';
+import { UserStratificationFactor } from './UserStratificationFactor';
 
 @Entity()
 export class ExperimentUser extends BaseModel {
@@ -24,4 +26,8 @@ export class ExperimentUser extends BaseModel {
 
   @OneToMany(() => Log, (log) => log.user)
   public logs: Log[];
+
+  @OneToMany(() => UserStratificationFactor, (userStratificationFactor) => userStratificationFactor.user)
+  @Type(() => UserStratificationFactor)
+  public userStratificationFactor: UserStratificationFactor[];
 }

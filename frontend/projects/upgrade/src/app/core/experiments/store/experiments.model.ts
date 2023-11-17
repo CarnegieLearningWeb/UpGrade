@@ -18,6 +18,7 @@ import {
   EXPERIMENT_TYPE,
   PAYLOAD_TYPE,
   CONDITION_ORDER,
+  ASSIGNMENT_ALGORITHM,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
 
@@ -220,6 +221,8 @@ export interface Experiment {
   tags: string[];
   type: EXPERIMENT_TYPE;
   group: string;
+  assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
+  stratificationFactor?: { stratificationFactorName: string };
   logging: boolean;
   conditions: ExperimentCondition[];
   partitions: ExperimentDecisionPoint[];

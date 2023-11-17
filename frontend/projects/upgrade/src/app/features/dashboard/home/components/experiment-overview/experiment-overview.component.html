@@ -82,6 +82,26 @@
         </mat-select>
       </mat-form-field>
 
+      <div class="stratification-container">
+        <mat-form-field class="ft-14-600 assignment-algorithm">
+          <mat-label>{{ 'home-global.assignment-algorithm.text' | translate }}</mat-label>
+          <mat-select class="ft-14-400" formControlName="assignmentAlgorithm">
+            <mat-option *ngFor="let assignmentAlgorithm of assignmentAlgorithms" [value]="assignmentAlgorithm.value">
+              {{ assignmentAlgorithm.value | titlecase }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field class="ft-14-600 stratification-factor" *ngIf="assignmentAlgorithmValue === 'stratified random sampling'">
+          <mat-label>{{ 'home-global.stratification-factor.text' | translate }}</mat-label>
+          <mat-select class="ft-14-400" formControlName="stratificationFactor" [disabled]="!isExperimentEditable">
+            <mat-option *ngFor="let stratificationFactor of allStratificationFactors" [value]="stratificationFactor.factorName">
+              {{ stratificationFactor.factorName }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
       <mat-form-field class="ft-14-600 tags">
         <mat-chip-list #tagsList aria-label="Tags" formControlName="tags">
           <mat-chip
@@ -106,6 +126,13 @@
         {{ 'home.view-experiment.logging.text' | translate }}
       </mat-checkbox>
     </form>
+    <div class="validation-container">
+      <span
+        class="ft-14-600 validation-message"
+        *ngIf="!isStratificationFactorSelected"
+        [innerHTML]="stratificationFactorNotSelectedMsg | translate"
+      ></span>
+    </div>
   </section>
 
   <section class="shared-modal--buttons-container">

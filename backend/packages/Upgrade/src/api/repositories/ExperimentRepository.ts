@@ -8,19 +8,23 @@ import { createGlobalExcludeSegment } from '../../../src/init/seed/globalExclude
 @EntityRepository(Experiment)
 export class ExperimentRepository extends Repository<Experiment> {
   public async findAllExperiments(): Promise<Experiment[]> {
-    const experiment = this.createQueryBuilder('experiment')
+    const experimentConditionLevelPayloadQuery = this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
+      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
+      .leftJoinAndSelect('levelCombinationElements.level', 'level')
+      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload');
+
+    const experimentFactorPartitionLevelPayloadQuery = this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .leftJoinAndSelect('experiment.queries', 'queries')
-      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
-      .leftJoinAndSelect('experiment.factors', 'factors')
-      .leftJoinAndSelect('factors.levels', 'levels')
-      .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')
       .leftJoinAndSelect('conditionPayloads.parentCondition', 'parentCondition')
-      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
-      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
-      .leftJoinAndSelect('levelCombinationElements.level', 'level');
+      .leftJoinAndSelect('experiment.factors', 'factors')
+      .leftJoinAndSelect('factors.levels', 'levels');
+
+    const experimentMetricQuery = this.createQueryBuilder('experiment')
+    .leftJoinAndSelect('experiment.queries', 'queries')
+    .leftJoinAndSelect('queries.metric', 'metric')
+    .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs');
 
     const experimentSegment = this.createQueryBuilder('experiment')
       .select('experiment.id')
@@ -35,9 +39,32 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion');
 
-    const [experimentData, experimentSegmentData] = await Promise.all([
-      experiment.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
+    const [experimentConditionLevelPayloadData, experimentFactorPartitionLevelPayloadData, experimentMetricData, experimentSegmentData] = await Promise.all([
+      experimentConditionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'findAllExperiments-experimentConditionLevelPayloadData',
+          {},
+          errorMsg
+        );
+        throw errorMsgString;
+      }),
+      experimentFactorPartitionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'findAllExperiments-experimentFactorPartitionLevelPayloadData',
+          {},
+          errorMsg
+        );
+        throw errorMsgString;
+      }),
+      experimentMetricQuery.getMany().catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'findAllExperiments-experimentMetricData',
+          {},
+          errorMsg
+        );
         throw errorMsgString;
       }),
       experimentSegment.getMany().catch((errorMsg: any) => {
@@ -45,6 +72,12 @@ export class ExperimentRepository extends Repository<Experiment> {
         throw errorMsgString;
       }),
     ]);
+
+    const experimentData = experimentConditionLevelPayloadData.map((data) => {
+      const data2 = experimentFactorPartitionLevelPayloadData.find((i) => i.id === data.id);
+      const data3 = experimentMetricData.find((i) => i.id === data.id);
+      return { ...data, ...data2, ...data3 };
+    });
 
     const mergedData = experimentData.map((data) => {
       const { id } = data;
@@ -74,6 +107,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
       .leftJoinAndSelect('experiment.factors', 'factors')
+      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
       .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')
@@ -149,6 +183,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
       .leftJoinAndSelect('experiment.factors', 'factors')
+      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
       .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')

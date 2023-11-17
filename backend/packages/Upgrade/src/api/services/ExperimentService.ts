@@ -158,6 +158,7 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.factors', 'factors')
       .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('queries.metric', 'metric')
+      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
@@ -176,7 +177,10 @@ export class ExperimentService {
       .whereInIds(expIds);
 
     if (sortParams) {
-      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(`LOWER(experiment.${sortParams.key})`, sortParams.sortAs);
+      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(
+        `LOWER(CAST(experiment.${sortParams.key} AS TEXT))`,
+        sortParams.sortAs
+      );
     }
     const experiments = await queryBuilderToReturn.getMany();
     return experiments.map((experiment) => {
@@ -202,6 +206,7 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experiment.factors', 'factors')
       .leftJoinAndSelect('factors.levels', 'levels')
+      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
@@ -541,6 +546,7 @@ export class ExperimentService {
         'conditions.conditionPayloads',
         'conditions.levelCombinationElements',
         'conditions.levelCombinationElements.level',
+        'stratificationFactor',
       ],
     });
     const formatedExperiments = experimentDetails.map((experiment) => {
