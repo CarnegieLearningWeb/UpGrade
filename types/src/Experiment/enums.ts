@@ -197,4 +197,5 @@ export enum SUPPORTED_CALIPER_EVENTS {
 export enum CACHE_PREFIX {
   EXPERIMENT_KEY_PREFIX = 'validExperiments-',
   SEGMENT_KEY_PREFIX = 'segments-',
+  MARK_KEY_PREFIX = 'markExperiments-',
 }
