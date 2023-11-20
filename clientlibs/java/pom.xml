@@ -9,9 +9,9 @@
 		at the same time that happen to rev to the same new version will be caught 
 		by a merge conflict. -->
 
-	<!-- 4.1.12 -> 4.1.13: make 'status' a string in mark payload  -->
+	<!-- 4.1.13 -> 4.1.14: no retries for 4xx, retry other errors once instead of 3 times  -->
 
-	<version>4.1.13</version>
+	<version>4.1.14</version>
 	<build>
 		<plugins>
 			<plugin>
