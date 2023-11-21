@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { SegmentsDataService } from './segments.data.service';
-import { SegmentInput } from './store/segments.model';
+import { SegmentFile, SegmentInput } from './store/segments.model';
 import { SEGMENT_TYPE } from 'upgrade_types';
 import { Environment } from '../../../environments/environment-types';
 
@@ -16,9 +16,10 @@ class MockHTTPClient {
 describe('SegmentDataService', () => {
   let mockHttpClient: any;
   let service: SegmentsDataService;
-  let mockSegment: SegmentInput;
+  let mockSegmentInput: SegmentInput;
   let mockSegmentId: string;
   let mockEnvironment: Environment;
+  let mockSegmentFile: SegmentFile;
 
   beforeEach(() => {
     mockHttpClient = new MockHTTPClient();
@@ -26,7 +27,7 @@ describe('SegmentDataService', () => {
     service = new SegmentsDataService(mockHttpClient as HttpClient, mockEnvironment);
 
     mockSegmentId = 'segmentId1';
-    mockSegment = {
+    mockSegmentInput = {
       createdAt: 'time',
       updatedAt: 'time',
       versionNumber: 0,
@@ -39,6 +40,21 @@ describe('SegmentDataService', () => {
       subSegmentIds: [],
       type: SEGMENT_TYPE.PUBLIC,
     };
+    const mockSegment = {
+      createdAt: 'test',
+      versionNumber: 0,
+      updatedAt: 'test',
+      id: 'abc123',
+      name: 'abc',
+      context: 'test',
+      description: 'test',
+      individualForSegment: [],
+      groupForSegment: [],
+      subSegments: [],
+      type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
+      status: 'test',
+    };
+    mockSegmentFile = { fileName: 'test', fileContent: JSON.stringify(mockSegment) };
   });
 
   describe('#fetchSegments', () => {
@@ -54,7 +70,7 @@ describe('SegmentDataService', () => {
   describe('#createNewSegment', () => {
     it('should get the createNewSegment http observable', () => {
       const expectedUrl = mockEnvironment.api.segments;
-      const segment = { ...mockSegment };
+      const segment = { ...mockSegmentInput };
 
       service.createNewSegment(segment);
 
@@ -75,7 +91,7 @@ describe('SegmentDataService', () => {
 
   describe('#updateSegment', () => {
     it('should get the updateSegment http observable', () => {
-      const segment = { ...mockSegment };
+      const segment = { ...mockSegmentInput };
       const expectedUrl = mockEnvironment.api.segments;
 
       service.updateSegment(segment);
@@ -102,9 +118,9 @@ describe('SegmentDataService', () => {
   describe('#importSegments', () => {
     it('should get the importSegments http observable', () => {
       const mockUrl = mockEnvironment.api.importSegments;
-      const segment = { ...mockSegment };
+      const segment = { ...mockSegmentInput };
 
-      service.importSegments([segment]);
+      service.importSegments([mockSegmentFile]);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, [segment]);
     });
