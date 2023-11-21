@@ -106,10 +106,10 @@ export class StratificationComponent implements OnInit {
 
   checkStratificationFactorUsageStatus(experimentIds: string[]) {
     if (Array.isArray(experimentIds)) {
-        return experimentIds.some(id => id);
+      return experimentIds.some((id) => id);
     }
     return false;
- }
+  }
 
   ngOnDestroy() {
     this.allStratificationFactorsSub.unsubscribe();

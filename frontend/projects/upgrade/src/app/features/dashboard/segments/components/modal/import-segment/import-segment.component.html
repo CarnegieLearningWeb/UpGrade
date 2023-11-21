@@ -2,31 +2,25 @@
   <span class="ft-24-700 title">{{ 'segments.import-segment.text' | translate | titlecase }}</span>
 
   <div class="import-segment-body">
-    <p class="ft-16-400">
-      {{ 'segments.import-segmemt.message.text' | translate }}
-    </p>
-    <input accept=".json" type="file" multiple class="ft-14-400 file-input" (change)="uploadFile($event)" />
-    <ng-container *ngIf="importFileErrors.length">
-      <mat-table class="table" [dataSource]="importFileErrorsDataSource">
-        <!-- File Name -->
-        <ng-container matColumnDef="File Name">
-          <mat-header-cell class="ft-12-700" *matHeaderCellDef> File Name </mat-header-cell>
-          <mat-cell class="ft-12-600" *matCellDef="let element">
-            {{ element.filename }}
-          </mat-cell>
-        </ng-container>
-
-        <!-- Error -->
-        <ng-container matColumnDef="Error">
-          <mat-header-cell class="ft-12-700" *matHeaderCellDef> Error/Warning </mat-header-cell>
-          <mat-cell class="ft-12-600" *matCellDef="let element">
-            {{ element.error }}
-          </mat-cell>
-        </ng-container>
-
-        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-      </mat-table>
+    <ng-container>
+      <mat-slide-toggle class="toggle-button" color="primary" [(ngModel)]="toggleValue" (change)="clearSegmentArray()">Import CSV</mat-slide-toggle>
+      <div *ngIf="toggleValue">
+        <a href="#" (click)="downloadSampleCSV()">
+          <p class="ft-16-400">
+            {{ 'segments.download-segmemt-csv-sample.message.text' | translate }}
+          </p>
+        </a>
+        <p class="ft-16-400 import-message">
+          {{ 'segments.import-segmemt-csv.message.text' | translate }}
+        </p>
+        <input accept=".csv" type="file" multiple class="ft-14-400 file-input" (change)="uploadFile($event)" />
+      </div>
+      <div *ngIf="!toggleValue">
+        <p class="ft-16-400 import-message">
+          {{ 'segments.import-segmemt.message.text' | translate }}
+        </p>
+        <input accept=".json" type="file" multiple class="ft-14-400 file-input" (change)="uploadFile($event)" />
+      </div>
     </ng-container>
   </div>
 
@@ -39,14 +33,10 @@
       class="shared-modal--modal-btn default-button"
       [ngClass]="{
         'default-button--disabled':
-          uploadedFileCount === 0 ||
-          (uploadedFileCount === 1 && (!segmentInfo || !isSegmentJSONValid)) ||
-          (uploadedFileCount > 1 && importFileErrors.length !== 0)
+          uploadedFileCount === 0
       }"
       [disabled]="
-        uploadedFileCount === 0 ||
-        (uploadedFileCount === 1 && (!segmentInfo || !isSegmentJSONValid)) ||
-          (uploadedFileCount > 1 && importFileErrors.length !== 0)
+        uploadedFileCount === 0
       "
       (click)="importSegments()"
     >

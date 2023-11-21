@@ -4,7 +4,7 @@ import { Segment } from '../models/Segment';
 import { SERVER_ERROR } from 'upgrade_types';
 import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
-import { SegmentInputValidator } from './validators/SegmentInputValidator';
+import { SegmentFile, SegmentInputValidator, SegmentReturnObj } from './validators/SegmentInputValidator';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 
@@ -363,9 +363,9 @@ export class SegmentController {
    */
   @Post('/import')
   public importSegments(
-    @Body({ validate: false }) segments: SegmentInputValidator[],
+    @Body({ validate: false }) segments: SegmentFile[],
     @Req() request: AppRequest
-  ): Promise<Segment[]> {
+  ): Promise<SegmentReturnObj> {
     return this.segmentService.importSegments(segments, request.logger);
   }
 

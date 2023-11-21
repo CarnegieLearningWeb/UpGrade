@@ -1,5 +1,11 @@
 import { createAction, props } from '@ngrx/store';
-import { Segment, SegmentInput, UpsertSegmentType, experimentSegmentInclusionExclusionData } from './segments.model';
+import {
+  Segment,
+  SegmentFile,
+  SegmentInput,
+  UpsertSegmentType,
+  experimentSegmentInclusionExclusionData,
+} from './segments.model';
 
 export const actionFetchSegments = createAction('[Segments] Segment', props<{ fromStarting?: boolean }>());
 
@@ -26,7 +32,7 @@ export const actionUpsertSegmentSuccess = createAction(
 
 export const actionUpsertSegmentFailure = createAction('[Segments] Upsert Segment Failure');
 
-export const actionImportSegments = createAction('[Segments] Import Segment', props<{ segments: SegmentInput[] }>());
+export const actionImportSegments = createAction('[Segments] Import Segment', props<{ segments: SegmentFile[] }>());
 
 export const actionImportSegmentSuccess = createAction(
   '[Segments] Import Segment Success',
