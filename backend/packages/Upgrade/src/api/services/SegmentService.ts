@@ -7,18 +7,33 @@ import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS, CACHE_PREFIX } from 'upgrade_types';
 import { getConnection } from 'typeorm';
-import { v4 as uuid } from 'uuid';
+import uuid from 'uuid';
+import { env } from '../../env';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
-import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
+import {
+  SegmentInputValidator,
+  SegmentReturnObj,
+  SegmentImportError,
+  SegmentFile,
+  Group,
+} from '../controllers/validators/SegmentInputValidator';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
 import { getSegmentData } from '../controllers/SegmentController';
 import { globalExcludeSegment } from '../../init/seed/globalExcludeSegment';
 import { CacheService } from './CacheService';
+
+interface ImportSegmentJSON {
+  schema: Record<keyof SegmentInputValidator, string>;
+  data: SegmentInputValidator;
+}
+
 @Service()
 export class SegmentService {
+  missingAllProperties: string;
+
   constructor(
     @InjectRepository()
     private segmentRepository: SegmentRepository,
@@ -151,7 +166,134 @@ export class SegmentService {
     return await this.segmentRepository.deleteSegment(id, logger);
   }
 
-  public async importSegments(segments: SegmentInputValidator[], logger: UpgradeLogger): Promise<Segment[]> {
+  public async importSegments(segments: SegmentFile[], logger: UpgradeLogger): Promise<SegmentReturnObj> {
+    const importFileErrors: SegmentImportError[] = [];
+    if (this.isJSONString(segments[0].fileContent)) {
+      const parsedJsonData: SegmentInputValidator[] = [];
+      segments.forEach((segment) => {
+        const fileName = segment.fileName;
+        const segmentInfo = JSON.parse(segment.fileContent);
+        const userIds = segmentInfo.individualForSegment.map((individual) =>
+          individual.userId ? individual.userId : null
+        );
+        const subSegmentIds = segmentInfo.subSegments.map((subSegment) => (subSegment.id ? subSegment.id : null));
+        const groups = segmentInfo.groupForSegment.map((group) => {
+          return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
+        });
+
+        const segmentTemp = { ...segmentInfo, userIds: userIds, subSegmentIds: subSegmentIds, groups: groups };
+        const isSegmentJSONValid = this.validateSegmentJSON(segmentTemp);
+        if (isSegmentJSONValid) {
+          parsedJsonData.push(segmentTemp);
+        } else {
+          importFileErrors.push({
+            fileName: fileName,
+            error: 'Invalid Segment JSON data ' + this.missingAllProperties,
+          });
+          return;
+        }
+      });
+      const [importedSegments] = await Promise.all([this.importJsonSegments(parsedJsonData, logger)]);
+      return { segments: importedSegments, importErrors: importFileErrors };
+    } else {
+      const [importedSegments] = await Promise.all([this.importCsvSegments(segments, logger)]);
+      return { segments: importedSegments, importErrors: importFileErrors };
+    }
+  }
+
+  private isJSONString(data: any): boolean {
+    try {
+      JSON.parse(data);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  validateSegmentJSON(segment: SegmentInputValidator): boolean {
+    const segmentSchema: Record<keyof any, string> = {
+      id: 'string',
+      name: 'string',
+      context: 'string',
+      description: 'string',
+      userIds: 'array',
+      groups: 'interface',
+      subSegmentIds: 'array',
+      type: 'enum',
+    };
+
+    this.missingAllProperties = this.checkForMissingProperties({ schema: segmentSchema, data: segment });
+
+    if (this.missingAllProperties.length > 0) {
+      return false;
+    } else {
+      return this.missingAllProperties.length === 0;
+    }
+  }
+
+  private checkForMissingProperties(segmentJson: ImportSegmentJSON) {
+    const { schema, data } = segmentJson;
+    const missingProperties = Object.keys(schema)
+      .filter((key) => data[key] === undefined)
+      .map((key) => key as keyof SegmentInputValidator)
+      .map((key) => `${key}`);
+    return missingProperties.join(', ');
+  }
+
+  public async importCsvSegments(segments: SegmentFile[], logger: UpgradeLogger): Promise<Segment[]> {
+    const csvData: string[] = [];
+    const fileNames: string[] = [];
+
+    segments.forEach((segment) => {
+      csvData.push(segment.fileContent);
+      const filename = segment.fileName.split('.');
+      fileNames.push(filename[0]);
+    });
+
+    const segmentData = csvData.map((data, index) => {
+      const rows = data.replace(/"/g, '').split('\n');
+
+      let segmentContext: string;
+      const segmentUserIds: string[] = [];
+      const subSegmentIds: string[] = [];
+      const segmentGroups: Group[] = [];
+
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const rowValues = row.split(',');
+
+        // Extract the ID
+        const id = rowValues[0];
+        if (!id) {
+          continue;
+        }
+
+        const memberType = rowValues[1].trim().toLowerCase();
+        if (memberType === 'individual') {
+          segmentUserIds.push(id);
+        } else if (memberType === 'segment') {
+          subSegmentIds.push(id);
+        } else if (memberType === 'context') {
+          segmentContext = id;
+        } else {
+          segmentGroups.push({ groupId: id, type: memberType });
+        }
+      }
+      return {
+        id: uuid.v4(),
+        name: fileNames[index],
+        context: segmentContext,
+        type: SEGMENT_TYPE.PUBLIC,
+        userIds: segmentUserIds,
+        groups: segmentGroups,
+        subSegmentIds: subSegmentIds,
+      };
+    });
+
+    return this.importJsonSegments(segmentData, logger);
+  }
+
+  public async importJsonSegments(segments: SegmentInputValidator[], logger: UpgradeLogger): Promise<Segment[]> {
     const allAddedSegments: Segment[] = [];
     const allSegmentIds: string[] = [];
     segments.forEach((segment) => {
@@ -160,16 +302,25 @@ export class SegmentService {
         allSegmentIds.includes(subSegment) ? true : allSegmentIds.push(subSegment);
       });
     });
-    const allDuplicateSegmentsData = await this.getSegmentByIds(allSegmentIds);
-    const duplicateSegmentsIds = allDuplicateSegmentsData?.map((segment) => segment?.id);
-    const duplicateSegmentsContexts = allDuplicateSegmentsData?.map((segment) => segment?.context);
+    const allSegmentsData = await this.getSegmentByIds(allSegmentIds);
+    const duplicateSegmentsIds = allSegmentsData?.map((segment) => segment?.id);
+    const contextMetaData = env.initialization.contextMetadata;
+    const contextMetaDataOptions = Object.keys(contextMetaData);
 
     for (const segment of segments) {
-      const isDuplicateSegment = duplicateSegmentsIds ? duplicateSegmentsIds.includes(segment.id) : false;
-      const isDuplicateSegmentWithSameContext =
-        isDuplicateSegment && duplicateSegmentsContexts ? duplicateSegmentsContexts.includes(segment.context) : false;
-      if (isDuplicateSegment && isDuplicateSegmentWithSameContext && segment.id !== undefined) {
-        const error = new Error('Duplicate segment with same context');
+      if (!contextMetaDataOptions.includes(segment.context)) {
+        const error = new Error('Context ' + segment.context + ' not found. Please enter valid context in segment.');
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      } else if (segment.groups.length > 0) {
+        const segmentGroupOptions = contextMetaData[segment.context].GROUP_TYPES;
+        const segmentGroups = segment.groups.filter((group) => segmentGroupOptions.includes(group.type));
+        segment.groups = segmentGroups;
+      }
+      const duplicateSegment = duplicateSegmentsIds ? duplicateSegmentsIds.includes(segment.id) : false;
+      if (duplicateSegment && segment.id !== undefined) {
+        const error = new Error('Duplicate segment');
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);
         throw error;

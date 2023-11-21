@@ -9,7 +9,7 @@ import {
   selectExperimentSegmentsInclusion,
   selectExperimentSegmentsExclusion,
 } from './store/segments.selectors';
-import { SegmentInput, UpsertSegmentType } from './store/segments.model';
+import { SegmentFile, SegmentInput, UpsertSegmentType } from './store/segments.model';
 import { filter, map } from 'rxjs/operators';
 import { combineLatest } from 'rxjs';
 
@@ -65,7 +65,7 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionExportSegments({ segmentIds }));
   }
 
-  importSegments(segments: SegmentInput[]) {
+  importSegments(segments: SegmentFile[]) {
     this.store$.dispatch(SegmentsActions.actionImportSegments({ segments }));
   }
 }

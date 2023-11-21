@@ -96,3 +96,18 @@ export interface SegmentState extends EntityState<Segment> {
 export interface State extends AppState {
   segments: SegmentState;
 }
+
+export interface SegmentFile {
+  fileName: string;
+  fileContent: string | ArrayBuffer;
+}
+
+export interface SegmentReturnedObj {
+  segments: Segment[];
+  importErrors: SegmentImportError[];
+}
+
+export interface SegmentImportError {
+  fileName: string;
+  error: string;
+}
