@@ -36,11 +36,26 @@ export class AuthService {
 
   initializeUserSession(): void {
     const currentUser = this.getUserFromBrowserStorage();
+    this.determinePostLoginDestinationUrl();
+
     if (currentUser) {
       this.handleAutomaticLogin(currentUser);
     } else {
       this.authLogout();
     }
+  }
+
+  /**
+   * determinePostLoginDestinationUrl
+   *
+   * - navigate to /home if user started from login or if no path is present
+   * - otherwise, navigate to the path they started from after google login does its thing
+   */
+
+  determinePostLoginDestinationUrl(): void {
+    const originalDestinationUrl = window.location.pathname?.endsWith('login') ? 'home' : window.location.pathname;
+
+    this.setRedirectionUrl(originalDestinationUrl);
   }
 
   initializeGoogleSignInButton(btnRef: ElementRef): void {
