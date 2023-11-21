@@ -154,7 +154,6 @@ export class AuthService {
   }
 
   setRedirectionUrl(redirectUrl: string): void {
-    console.log({ redirectUrl });
     this.store$.dispatch(AuthActions.actionSetRedirectUrl({ redirectUrl }));
   }
 
