@@ -51,7 +51,7 @@ export class AuthService {
   handleAutomaticLogin(currentUser: User): void {
     this.store$.dispatch(AuthActions.actionSetIsLoggedIn({ isLoggedIn: true }));
     this.store$.dispatch(AuthActions.actionSetIsAuthenticating({ isAuthenticating: false }));
-    this.store$.dispatch(AuthActions.actionSetUserInfo({ user: currentUser }));
+    this.store$.dispatch(AuthActions.actionSetGoogleCredential({ googleCredential: currentUser.token }));
     this.doLogin(currentUser, currentUser.token);
   }
 
