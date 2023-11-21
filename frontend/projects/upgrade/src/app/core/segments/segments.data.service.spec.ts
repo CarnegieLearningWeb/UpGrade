@@ -114,11 +114,10 @@ describe('SegmentDataService', () => {
   describe('#importSegments', () => {
     it('should get the importSegments http observable', () => {
       const mockUrl = mockEnvironment.api.importSegments;
-      const segment = { ...mockSegmentInput };
 
       service.importSegments([mockSegmentFile]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, [segment]);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, [mockSegmentFile]);
     });
   });
 });
