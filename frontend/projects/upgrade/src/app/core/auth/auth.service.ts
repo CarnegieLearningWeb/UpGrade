@@ -108,7 +108,6 @@ export class AuthService {
       .login(user)
       .pipe(
         tap((res: User) => {
-          console.log(`^^^ Do Login: ${window.location.href}`);
           this.store$.dispatch(AuthActions.actionLoginSuccess());
           this.deferSetUserInfoAfterNavigateEnd(res, googleCredential);
         }),
