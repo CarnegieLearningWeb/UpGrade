@@ -10,6 +10,13 @@ describe('clearState', () => {
     settings: {
       theme: ThemeOptions.DARK_THEME,
     },
+    auth: {
+      isLoggedIn: false,
+      isAuthenticating: false,
+      user: null,
+      googleCredential: null,
+      redirectUrl: '/home',
+    },
   };
 
   beforeEach(() => {
@@ -24,6 +31,13 @@ describe('clearState', () => {
         theme: ThemeOptions.DARK_THEME,
         toCheckAuth: null,
         toFilterMetric: null,
+      },
+      auth: {
+        isLoggedIn: false,
+        isAuthenticating: false,
+        user: null,
+        googleCredential: null,
+        redirectUrl: '/home',
       },
     };
 

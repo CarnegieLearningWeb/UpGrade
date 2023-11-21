@@ -21,7 +21,7 @@ export interface UserPermission {
 export interface AuthState {
   isLoggedIn: boolean;
   isAuthenticating: boolean;
-  redirectUrl?: string;
+  redirectUrl: string;
   user: User;
   googleCredential: string;
 }

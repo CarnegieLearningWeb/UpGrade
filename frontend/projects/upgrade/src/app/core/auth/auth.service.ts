@@ -36,6 +36,8 @@ export class AuthService {
 
   initializeUserSession(): void {
     const currentUser = this.getUserFromBrowserStorage();
+    this.setRedirectionUrl(window.location.pathname);
+
     if (currentUser) {
       this.handleAutomaticLogin(currentUser);
     } else {
@@ -106,6 +108,7 @@ export class AuthService {
       .login(user)
       .pipe(
         tap((res: User) => {
+          console.log(`^^^ Do Login: ${window.location.href}`);
           this.store$.dispatch(AuthActions.actionLoginSuccess());
           this.deferSetUserInfoAfterNavigateEnd(res, googleCredential);
         }),
@@ -152,6 +155,7 @@ export class AuthService {
   }
 
   setRedirectionUrl(redirectUrl: string): void {
+    console.log({ redirectUrl });
     this.store$.dispatch(AuthActions.actionSetRedirectUrl({ redirectUrl }));
   }
 
