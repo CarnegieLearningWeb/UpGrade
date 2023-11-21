@@ -40,6 +40,10 @@ export class ExperimentUserService {
     newExperimentUser: Partial<ExperimentUser>,
     logger: UpgradeLogger
   ): Promise<ExperimentUser[]> {
+    if (!oldExperimentUser) {
+      return this.create([newExperimentUser], logger);
+    }
+
     // Check if either the group or workingGroup is different or not present
     const isGroupAbsent = !oldExperimentUser?.group && !newExperimentUser?.group;
     const isWorkingGroupAbsent = !oldExperimentUser?.workingGroup && !newExperimentUser?.workingGroup;
