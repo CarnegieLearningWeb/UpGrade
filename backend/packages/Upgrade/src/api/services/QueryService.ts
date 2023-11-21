@@ -68,8 +68,12 @@ export class QueryService {
     const experiments: Experiment[] = [];
 
     // checks for archieve state experiment
-    if (promiseResult[0].experiment?.state === EXPERIMENT_STATE.ARCHIVED) {
-      return this.getArchivedStats(queryIds, logger);
+    if (queryIds.length !== 0) {
+      if (promiseResult[0].experiment?.state === EXPERIMENT_STATE.ARCHIVED) {
+        return this.getArchivedStats(queryIds, logger);
+      }
+    } else {
+      return [];
     }
 
     const analyzePromise = promiseResult.map((query) => {

@@ -586,6 +586,7 @@ export class ImportExperimentComponent implements OnInit {
     const reader = new FileReader();
     this.uploadedFileCount = event.target.files.length;
     this.importFileErrors = [];
+    this.allExperiments = [];
 
     readFile(index);
     function readFile(fileIndex: number) {
