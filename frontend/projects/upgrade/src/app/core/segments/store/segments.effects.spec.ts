@@ -3,7 +3,7 @@ import { ActionsSubject } from '@ngrx/store';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { SEGMENT_TYPE } from 'upgrade_types';
 import { SegmentsEffects } from './segments.effects';
-import { Segment, SegmentInput, UpsertSegmentType } from './segments.model';
+import { Segment, SegmentFile, SegmentInput, UpsertSegmentType } from './segments.model';
 import { selectAllSegments } from './segments.selectors';
 import * as SegmentsActions from './segments.actions';
 
@@ -12,6 +12,7 @@ describe('SegmentsEffects', () => {
   let actions$: ActionsSubject;
   let segmentsDataService: any;
   let router: any;
+  let notificationService: any;
   let service: SegmentsEffects;
   const mockSegment: Segment = {
     createdAt: 'test',
@@ -40,6 +41,7 @@ describe('SegmentsEffects', () => {
     subSegmentIds: [],
     type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
   };
+  const mockSegmentFile: SegmentFile = { fileName: 'test', fileContent: JSON.stringify(mockSegment) };
 
   beforeEach(() => {
     actions$ = new ActionsSubject();
@@ -49,8 +51,9 @@ describe('SegmentsEffects', () => {
     router = {
       navigate: jest.fn(),
     };
+    notificationService = jest.fn();
 
-    service = new SegmentsEffects(store$, actions$, segmentsDataService, router);
+    service = new SegmentsEffects(store$, actions$, segmentsDataService, router, notificationService);
   });
 
   describe('fetchSegments$', () => {
@@ -217,7 +220,7 @@ describe('SegmentsEffects', () => {
 
       actions$.next(
         SegmentsActions.actionImportSegments({
-          segments: [mockSegmentInput],
+          segments: [mockSegmentFile],
         })
       );
 
