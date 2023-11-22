@@ -1,6 +1,8 @@
 import { Component, Inject, ViewChild, OnInit } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import {
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -9,7 +11,6 @@ import {
   POST_EXPERIMENT_RULE,
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { TranslateService } from '@ngx-translate/core';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 
 @Component({
@@ -32,9 +33,7 @@ export class NewExperimentComponent implements OnInit {
     private dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService,
     private experimentDesignStepperService: ExperimentDesignStepperService,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private _snackBar: MatSnackBar,
-    private translate: TranslateService
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     if (this.data) {
       this.experimentInfo = this.data.experiment;
@@ -100,7 +99,6 @@ export class NewExperimentComponent implements OnInit {
           ...this.newExperimentData,
           ...formData,
         };
-        this.openSnackBar();
         this.checkPostExperimentRule();
         this.experimentService.updateExperiment(this.newExperimentData);
         break;
@@ -116,10 +114,6 @@ export class NewExperimentComponent implements OnInit {
         this.newExperimentData.postExperimentRule = POST_EXPERIMENT_RULE.CONTINUE;
       }
     }
-  }
-
-  openSnackBar() {
-    this._snackBar.open(this.translate.instant('global.save-confirmation.message.text'), null, { duration: 2000 });
   }
 
   stepChanged(event) {

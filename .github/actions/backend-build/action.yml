@@ -24,7 +24,7 @@ runs:
     - name: "[Backend] Install Package Dependencies"
       shell: bash
       working-directory: backend/packages/Upgrade
-      run: npm ci --legacy-peer-deps
+      run: npm ci
     - name: "[Backend] Install Build Dependencies"
       shell: bash
       working-directory: backend

@@ -3,13 +3,14 @@
 }
 
 :host ::ng-deep simple-notifications .sn-title {
-  font-size: 12px;
+  font-size: 16px;
 }
 
-:host ::ng-deep simple-notifications .simple-notification.error {
+:host ::ng-deep simple-notifications .simple-notification.success {
   background-color: #3466ff;
 }
 
 :host ::ng-deep simple-notifications .simple-notification {
   width: 120%;
+  border-radius: 5px;
 }

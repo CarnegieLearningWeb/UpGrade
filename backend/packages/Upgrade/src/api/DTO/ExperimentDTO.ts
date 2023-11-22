@@ -33,6 +33,7 @@ import {
   PAYLOAD_TYPE,
   REPEATED_MEASURE,
   EXPERIMENT_TYPE,
+  ASSIGNMENT_ALGORITHM,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 
@@ -190,12 +191,14 @@ class ConditionPayloadValidator {
   public payload: PayloadValidator;
 
   @IsNotEmpty()
-  @IsString()
-  public parentCondition: string;
+  @ValidateNested()
+  @Type(() => ConditionValidator)
+  public parentCondition: ConditionValidator;
 
   @IsOptional()
-  @IsString()
-  public decisionPoint?: string;
+  @ValidateNested()
+  @Type(() => PartitionValidator)
+  public decisionPoint?: PartitionValidator;
 }
 
 class MetricValidator {
@@ -313,6 +316,12 @@ class StateTimeLogValidator {
   public timeLog: Date;
 }
 
+class StratificationFactor {
+  @IsString()
+  @IsNotEmpty()
+  public stratificationFactorName: string;
+}
+
 export class ExperimentDTO {
   @IsString()
   @IsOptional()
@@ -352,6 +361,10 @@ export class ExperimentDTO {
   @IsEnum(POST_EXPERIMENT_RULE)
   public postExperimentRule: POST_EXPERIMENT_RULE;
 
+  @IsOptional()
+  @IsEnum(ASSIGNMENT_ALGORITHM)
+  public assignmentAlgorithm?: ASSIGNMENT_ALGORITHM;
+
   // TODO add conditional validity here ie endOn is null
   @IsOptional()
   public enrollmentCompleteCondition?: Partial<IEnrollmentCompleteCondition>;
@@ -385,6 +398,11 @@ export class ExperimentDTO {
   @IsNotEmpty()
   @IsEnum(FILTER_MODE)
   public filterMode: FILTER_MODE;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => StratificationFactor)
+  public stratificationFactor?: StratificationFactor;
 
   @IsNotEmpty()
   @IsArray()

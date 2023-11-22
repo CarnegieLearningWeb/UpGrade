@@ -19,6 +19,7 @@ import { ThemeOptions } from '../../../../../core/settings/store/settings.model'
 import { ImportExperimentComponent } from '../modal/import-experiment/import-experiment.component';
 import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { ExportModalComponent } from '../modal/export-experiment/export-experiment.component';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'home-experiment-list',
@@ -29,6 +30,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   permissions$: Observable<UserPermission>;
   displayedColumns: string[] = ['name', 'state', 'postExperimentRule', 'createdAt', 'context', 'tags', 'enrollment'];
   allExperiments: MatTableDataSource<Experiment>;
+  allExperimentsExcludingArchived: MatTableDataSource<Experiment>;
   allExperimentsSub: Subscription;
   experimentFilterOptions = [
     EXPERIMENT_SEARCH_KEY.ALL,
@@ -37,6 +39,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     EXPERIMENT_SEARCH_KEY.TAG,
     EXPERIMENT_SEARCH_KEY.CONTEXT,
   ];
+  statusFilterOptions = Object.values(EXPERIMENT_STATE);
   selectedExperimentFilterOption = EXPERIMENT_SEARCH_KEY.ALL;
   searchValue: string;
   contextVisibility = [];
@@ -50,6 +53,16 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   @ViewChild('searchInput') searchInput: ElementRef;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
+  searchControl = new FormControl();
+
+  get filteredStatusOptions(): string[] {
+    if (typeof this.searchValue === 'string') {
+      const filterValue = this.searchValue.toLowerCase();
+      return this.statusFilterOptions.filter((option) => option.toLowerCase().includes(filterValue));
+    } else {
+      return this.statusFilterOptions;
+    }
+  }
 
   theme$ = this.settingsService.theme$;
   constructor(
@@ -62,8 +75,16 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
     this.allExperimentsSub = this.experimentService.experiments$.subscribe((allExperiments) => {
+      const allExperimentsExcludingArchived = allExperiments.filter((experiment) => experiment.state !== 'archived');
+      this.allExperimentsExcludingArchived = new MatTableDataSource();
+      this.allExperimentsExcludingArchived.data = [...allExperimentsExcludingArchived];
+      this.allExperimentsExcludingArchived.sortingDataAccessor = (item, property) =>
+        property === 'name' ? item.name.toLowerCase() : item[property];
+      this.allExperimentsExcludingArchived.sort = this.sort;
       this.allExperiments = new MatTableDataSource();
       this.allExperiments.data = [...allExperiments];
+      this.allExperiments.sortingDataAccessor = (item, property) =>
+        property === 'name' ? item.name.toLowerCase() : item[property];
       this.allExperiments.sort = this.sort;
       this.applyFilter(this.searchValue);
     });
@@ -84,26 +105,33 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Modify angular material's table's default search behavior
   filterExperimentPredicate(type: EXPERIMENT_SEARCH_KEY) {
-    this.allExperiments.filterPredicate = (data, filter: string): boolean => {
-      switch (type) {
-        case EXPERIMENT_SEARCH_KEY.ALL:
-          return (
-            data.name.toLocaleLowerCase().includes(filter) ||
-            data.state.toLocaleLowerCase().includes(filter) ||
-            !!data.tags.filter((tags) => tags.toLocaleLowerCase().includes(filter)).length ||
-            this.isPartitionFound(data, filter) ||
-            !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length
-          );
-        case EXPERIMENT_SEARCH_KEY.NAME:
-          return data.name.toLowerCase().includes(filter) || this.isPartitionFound(data, filter);
-        case EXPERIMENT_SEARCH_KEY.STATUS:
-          return data.state.toLowerCase().includes(filter);
-        case EXPERIMENT_SEARCH_KEY.TAG:
-          return !!data.tags.filter((tags) => tags.toLocaleLowerCase().includes(filter)).length;
-        case EXPERIMENT_SEARCH_KEY.CONTEXT:
-          return !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length;
-      }
-    };
+    if (type === EXPERIMENT_SEARCH_KEY.STATUS) {
+      this.allExperiments.filterPredicate = (data, filter: string): boolean => {
+        switch (type) {
+          case EXPERIMENT_SEARCH_KEY.STATUS:
+            return data.state.toLowerCase().includes(filter);
+        }
+      };
+    } else {
+      this.allExperimentsExcludingArchived.filterPredicate = (data, filter: string): boolean => {
+        switch (type) {
+          case EXPERIMENT_SEARCH_KEY.ALL:
+            return (
+              data.name.toLocaleLowerCase().includes(filter) ||
+              data.state.toLocaleLowerCase().includes(filter) ||
+              !!data.tags.filter((tags) => tags.toLocaleLowerCase().includes(filter)).length ||
+              this.isPartitionFound(data, filter) ||
+              !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length
+            );
+          case EXPERIMENT_SEARCH_KEY.NAME:
+            return data.name.toLowerCase().includes(filter) || this.isPartitionFound(data, filter);
+          case EXPERIMENT_SEARCH_KEY.TAG:
+            return !!data.tags.filter((tags) => tags.toLocaleLowerCase().includes(filter)).length;
+          case EXPERIMENT_SEARCH_KEY.CONTEXT:
+            return !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length;
+        }
+      };
+    }
   }
 
   // Used to search based on partition point and name
@@ -118,8 +146,12 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
 
   applyFilter(filterValue: string) {
     this.filterExperimentPredicate(this.selectedExperimentFilterOption);
-    if (filterValue !== undefined) {
-      this.allExperiments.filter = filterValue.trim().toLowerCase();
+    if (typeof filterValue === 'string') {
+      if (this.selectedExperimentFilterOption === EXPERIMENT_SEARCH_KEY.STATUS) {
+        this.allExperiments.filter = filterValue.trim().toLowerCase();
+      } else {
+        this.allExperimentsExcludingArchived.filter = filterValue.trim().toLowerCase();
+      }
     }
   }
 
@@ -209,7 +241,11 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     fromEvent(this.searchInput.nativeElement, 'keyup')
       .pipe(debounceTime(500))
       .subscribe((searchInput) => {
-        this.setSearchString((searchInput as any).target.value);
+        if (this.selectedExperimentFilterOption !== 'status') {
+          this.setSearchString((searchInput as any).target.value);
+        } else {
+          this.setSearchString((searchInput as any).option.value);
+        }
       });
   }
 
