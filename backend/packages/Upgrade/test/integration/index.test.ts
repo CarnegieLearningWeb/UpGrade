@@ -86,6 +86,7 @@ import {
   RandomAlgoCheck,
   RandomRoundRobinAlgoCheck,
 } from './Experiment/withinSubject/index';
+import { CacheService } from '../../src/api/services/CacheService';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -104,6 +105,8 @@ describe('Integration Tests', () => {
   beforeEach(async () => {
     jest.setTimeout(29999);
     await migrateDatabase(connection);
+    const cacheManager = Container.get(CacheService);
+    cacheManager.resetAllCache();
 
     // create System Users
     await CreateSystemUser();
