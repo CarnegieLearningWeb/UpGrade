@@ -1710,10 +1710,11 @@ export class ExperimentService {
     return newDoc;
   }
 
-  private async clearCacheDetails(experiment: Experiment | ExperimentDTO) {
+  private async clearCacheDetails(experiment: Experiment | ExperimentDTO): Promise<void> {
     await this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
-    experiment.partitions.map(async (partition) => {
+    const deletedCache = experiment.partitions.map(async (partition) => {
       await this.cacheService.delCache(CACHE_PREFIX.MARK_KEY_PREFIX + partition.site + ' ' + partition.target);
     });
+    await Promise.all(deletedCache);
   }
 }
