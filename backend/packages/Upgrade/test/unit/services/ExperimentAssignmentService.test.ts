@@ -25,6 +25,7 @@ import { simpleIndividualAssignmentExperiment, simpleGroupAssignmentExperiment, 
 import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
 import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { CacheService } from '../../../src/api/services/CacheService';
 
 describe('Experiment Assignment Service Test', () => {
   let sandbox;
@@ -50,6 +51,7 @@ describe('Experiment Assignment Service Test', () => {
   const settingServiceMock = sinon.createStubInstance(SettingService);
   const segmentServiceMock = sinon.createStubInstance(SegmentService);
   const experimentServiceMock = sinon.createStubInstance(ExperimentService);
+  const cacheServiceMock = sinon.createStubInstance(CacheService);
   experimentServiceMock.formatingConditionPayload.restore()
   experimentServiceMock.formatingPayload.restore()
 
@@ -396,6 +398,8 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.decisionPointRepository = decisionPointRespositoryMock;
     testedModule.experimentService = experimentServiceMock;
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([]);
+    testedModule.cacheService = cacheServiceMock;
+    testedModule.cacheService.wrap = sandbox.stub().resolves([]);
     testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
     testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
     testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
@@ -427,6 +431,8 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.decisionPointRepository = decisionPointRespositoryMock;
     testedModule.experimentService = experimentServiceMock;
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([]);
+    testedModule.cacheService = cacheServiceMock;
+    testedModule.cacheService.wrap = sandbox.stub().resolves([]);
     testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
     testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
     testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
@@ -466,6 +472,8 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.decisionPointRepository = decisionPointRespositoryMock;
     testedModule.experimentService = experimentServiceMock;
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([simpleIndividualAssignmentExperiment]);
+    testedModule.cacheService = cacheServiceMock;
+    testedModule.cacheService.wrap = sandbox.stub().resolves([]);
     testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
     testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
     testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
@@ -501,6 +509,8 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.decisionPointRepository = decisionPointRespositoryMock;
     testedModule.experimentService = experimentServiceMock;
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([simpleIndividualAssignmentExperiment]);
+    testedModule.cacheService = cacheServiceMock;
+    testedModule.cacheService.wrap = sandbox.stub().resolves([]);
     testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
     testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
     testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
@@ -536,6 +546,8 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.decisionPointRepository = decisionPointRespositoryMock;
     testedModule.experimentService = experimentServiceMock;
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([simpleIndividualAssignmentExperiment]);
+    testedModule.cacheService = cacheServiceMock;
+    testedModule.cacheService.wrap = sandbox.stub().resolves([]);
     testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
     testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
     testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;

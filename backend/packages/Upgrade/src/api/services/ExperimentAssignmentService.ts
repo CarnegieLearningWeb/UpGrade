@@ -59,8 +59,6 @@ import { globalExcludeSegment } from '../../../src/init/seed/globalExcludeSegmen
 import { GroupEnrollment } from '../models/GroupEnrollment';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Segment } from '../models/Segment';
-import { ConditionPayloadRepository } from '../repositories/ConditionPayloadRepository';
-import { In } from 'typeorm';
 import { CaliperLogData } from '../controllers/validators/CaliperLogData';
 import { parse, toSeconds } from 'iso8601-duration';
 import { FactorDTO } from '../DTO/FactorDTO';
@@ -98,8 +96,6 @@ export class ExperimentAssignmentService {
     private stateTimeLogsRepository: StateTimeLogsRepository,
     @OrmRepository()
     private analyticsRepository: AnalyticsRepository,
-    @OrmRepository()
-    private conditionPayloadRepository: ConditionPayloadRepository,
 
     public previewUserService: PreviewUserService,
     public experimentUserService: ExperimentUserService,
@@ -153,6 +149,7 @@ export class ExperimentAssignmentService {
         relations: [
           'experiment',
           'experiment.conditions',
+          'experiment.conditions.conditionPayloads',
           'experiment.experimentSegmentInclusion',
           'experiment.experimentSegmentExclusion',
           'experiment.experimentSegmentInclusion.segment',
@@ -165,29 +162,6 @@ export class ExperimentAssignmentService {
 
     let experiments = dpExperiments.map((dp) => dp.experiment);
     const { workingGroup } = userDoc;
-
-    // const experimentDecisionPoint = await this.decisionPointRepository.find({
-    //   where: {
-    //     site: site,
-    //     target: target,
-    //   },
-    //   relations: [
-    //     'experiment',
-    //     'experiment.partitions',
-    //     'experiment.conditions',
-    //     'experiment.conditions.levelCombinationElements',
-    //     'experiment.conditions.levelCombinationElements.level',
-    //     'experiment.conditions.conditionPayloads',
-    //     'experiment.factors',
-    //     'experiment.factors.levels',
-    //     'experiment.experimentSegmentInclusion',
-    //     'experiment.experimentSegmentExclusion',
-    //     'experiment.experimentSegmentInclusion.segment',
-    //     'experiment.experimentSegmentExclusion.segment',
-    //     'experiment.experimentSegmentInclusion.segment.subSegments',
-    //     'experiment.experimentSegmentExclusion.segment.subSegments',
-    //   ],
-    // });
 
     logger.info({
       message: `markExperimentPoint: Target: ${target}, Site: ${site} for User: ${userId}`,
@@ -330,11 +304,7 @@ export class ExperimentAssignmentService {
         }
 
         const { conditions } = experiment;
-
-        const payloadCondition = await this.conditionPayloadRepository.find({
-          relations: ['parentCondition'],
-          where: { parentCondition: In(conditions.map((x) => x.id)) },
-        });
+        const payloadCondition = conditions.flatMap((condition) => condition.conditionPayloads);
 
         const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
         const matchedPayloadCondition = payloadCondition.filter((con) => con.payloadValue === condition);
@@ -351,7 +321,6 @@ export class ExperimentAssignmentService {
           !previewUser
         ) {
           const experiment = await this.experimentService.findOne(experimentId);
-          // TODO: update this function
           await this.updateEnrollmentExclusion(
             userDoc,
             experiment,
