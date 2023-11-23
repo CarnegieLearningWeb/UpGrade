@@ -106,6 +106,14 @@ export class ExperimentRepository extends Repository<Experiment> {
   }
 
   public async getValidExperiments(context: string): Promise<Experiment[]> {
+    const whereExperimentsClause =
+      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context])';
+    const whereClauseParams = {
+      enrolling: 'enrolling',
+      enrollmentComplete: 'enrollmentComplete',
+      assign: 'assign',
+      context,
+    };
     const experimentConditionLevelPayloadQuery = this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
@@ -113,14 +121,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
       .where(
         new Brackets((qb) => {
-          qb.where(
-            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND :context ILIKE ANY (ARRAY[experiment.context])',
-            {
-              enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
-              context,
-            }
-          );
+          qb.where(whereExperimentsClause, whereClauseParams);
         })
       );
 
@@ -133,14 +134,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('factors.levels', 'levels')
       .where(
         new Brackets((qb) => {
-          qb.where(
-            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND :context ILIKE ANY (ARRAY[experiment.context])',
-            {
-              enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
-              context,
-            }
-          );
+          qb.where(whereExperimentsClause, whereClauseParams);
         })
       );
 
@@ -159,14 +153,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .where(
         new Brackets((qb) => {
-          qb.where(
-            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND :context ILIKE ANY (ARRAY[experiment.context])',
-            {
-              enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
-              context,
-            }
-          );
+          qb.where(whereExperimentsClause, whereClauseParams);
         })
       );
 
@@ -218,6 +205,15 @@ export class ExperimentRepository extends Repository<Experiment> {
   }
 
   public async getValidExperimentsWithPreview(context: string): Promise<Experiment[]> {
+    const whereExperimentsClause =
+      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context])';
+    const whereClauseParams = {
+      enrolling: 'enrolling',
+      enrollmentComplete: 'enrollmentComplete',
+      preview: 'preview',
+      assign: 'assign',
+      context,
+    };
     const experimentConditionLevelPayloadQuery = this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
@@ -225,15 +221,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
       .where(
         new Brackets((qb) => {
-          qb.where(
-            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
-            {
-              enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
-              preview: 'preview',
-              context,
-            }
-          );
+          qb.where(whereExperimentsClause, whereClauseParams);
         })
       );
 
@@ -246,15 +234,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('factors.levels', 'levels')
       .where(
         new Brackets((qb) => {
-          qb.where(
-            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
-            {
-              enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
-              preview: 'preview',
-              context,
-            }
-          );
+          qb.where(whereExperimentsClause, whereClauseParams);
         })
       );
 
@@ -273,15 +253,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .where(
         new Brackets((qb) => {
-          qb.where(
-            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
-            {
-              enrolling: 'enrolling',
-              enrollmentComplete: 'enrollmentComplete',
-              preview: 'preview',
-              context,
-            }
-          );
+          qb.where(whereExperimentsClause, whereClauseParams);
         })
       );
 

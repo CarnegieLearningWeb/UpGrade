@@ -338,7 +338,6 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
 
     const result = await testedModule.getAllExperimentConditions(userId, context, requestContext);
-    console.log(result);
 
     const cond = { ...exp.conditions[0], experimentId: exp.id, payload: undefined };
     expect(result.length).toEqual(1);
