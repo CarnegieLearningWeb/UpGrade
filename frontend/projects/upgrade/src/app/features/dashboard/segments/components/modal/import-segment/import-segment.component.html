@@ -5,7 +5,7 @@
     <ng-container>
       <mat-slide-toggle class="toggle-button" color="primary" [(ngModel)]="toggleValue" (change)="clearSegmentArray()">Import CSV</mat-slide-toggle>
       <div *ngIf="toggleValue">
-        <a href="#" (click)="downloadSampleCSV()">
+        <a href="/segments" (click)="downloadSampleCSV()">
           <p class="ft-16-400">
             {{ 'segments.download-segmemt-csv-sample.message.text' | translate }}
           </p>

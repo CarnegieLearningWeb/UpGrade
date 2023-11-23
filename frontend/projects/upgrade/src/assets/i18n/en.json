@@ -400,7 +400,7 @@
   "segments.import-segment.text": "IMPORT SEGMENT",
   "segments.import-segmemt.message.text": "Select the JSON to import segment:",
   "segments.import-segmemt-csv.message.text": "Select the CSV to import segment:",
-  "segments.download-segmemt-csv-sample.message.text": "(Download the CSV import segment format.)",
+  "segments.download-segmemt-csv-sample.message.text": "(Download the CSV import segment format)",
   "segments.import-segment.error.message.text": "Invalid Segment JSON data",
   "segments.segment-experiment-list-title.text": "Experiments using '{{ segmentName }}' ",
   "segments.segment-experiment-list-name.text": "Name",

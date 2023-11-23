@@ -181,10 +181,15 @@ export class SegmentService {
           return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
         });
 
-        const segmentTemp = { ...segmentInfo, userIds: userIds, subSegmentIds: subSegmentIds, groups: groups };
-        const isSegmentJSONValid = this.validateSegmentJSON(segmentTemp);
+        const segmentForValidation = {
+          ...segmentInfo,
+          userIds: userIds,
+          subSegmentIds: subSegmentIds,
+          groups: groups,
+        };
+        const isSegmentJSONValid = this.validateSegmentJSON(segmentForValidation);
         if (isSegmentJSONValid) {
-          parsedJsonData.push(segmentTemp);
+          parsedJsonData.push(segmentForValidation);
         } else {
           importFileErrors.push({
             fileName: fileName,
