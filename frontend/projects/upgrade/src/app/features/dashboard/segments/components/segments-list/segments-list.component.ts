@@ -48,8 +48,6 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   selectedExperimentFilterOption = EXPERIMENT_SEARCH_KEY.ALL;
   searchValue: string;
 
-  isAllSegmentsFetchedSub: Subscription;
-
   constructor(private authService: AuthService, private segmentsService: SegmentsService, private dialog: MatDialog) {}
 
   get SegmentStatus() {

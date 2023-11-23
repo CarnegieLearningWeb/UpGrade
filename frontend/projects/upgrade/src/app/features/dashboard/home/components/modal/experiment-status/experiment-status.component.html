@@ -43,6 +43,12 @@
   <span class="info-msg" *ngIf="showInfoMsg">
     {{ 'home.change-experiment-status.enrolling-info.text' | translate }}
   </span>
+  <span class="info-msg" *ngIf="showArchiveInfoMsg">
+    <mat-checkbox class="ft-15-700" color="primary" (change)="setArchivedStatusAgreement()">
+      {{ 'home.change-experiment-status.archiving-confirmation.text' | translate }}
+    </mat-checkbox>
+    {{ 'home.change-experiment-status.archiving-info.text' | translate }}
+  </span>
   <span class="info-msg" *ngIf="showConditionCountErrorMsg">
     {{ 'home.change-experiment-status.condition-count-error.text' | translate }}
   </span>
@@ -58,9 +64,12 @@
       mat-raised-button
       class="shared-modal--modal-btn default-button"
       [ngClass]="{
-        'default-button--disabled': !this.statusForm.valid || isScheduleDateWrong || showConditionCountErrorMsg
+        'default-button--disabled':
+          !this.statusForm.valid || isScheduleDateWrong || showConditionCountErrorMsg || !archivedStatusAgreement
       }"
-      [disabled]="!this.statusForm.valid || isScheduleDateWrong || showConditionCountErrorMsg"
+      [disabled]="
+        !this.statusForm.valid || isScheduleDateWrong || showConditionCountErrorMsg || !archivedStatusAgreement
+      "
       (click)="changeStatus()"
     >
       {{ 'global.save.text' | translate }}

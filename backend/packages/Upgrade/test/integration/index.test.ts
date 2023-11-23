@@ -86,6 +86,11 @@ import {
   RandomAlgoCheck,
   RandomRoundRobinAlgoCheck,
 } from './Experiment/withinSubject/index';
+import {
+  StratificationSRSAlgorithmCheck,
+  StratificationMetricQueriesCheck,
+  StratificationRandomAlgorithmCheck,
+} from './Experiment/stratification/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -558,4 +563,20 @@ describe('Integration Tests', () => {
     await MetricQueriesCheck();
     done();
   });
+
+  test('Stratification SRS algorithm check', async (done) => {
+    await StratificationSRSAlgorithmCheck();
+    done();
+  });
+
+  test('Stratification Random Algorithm', async (done) => {
+    await StratificationRandomAlgorithmCheck();
+    done();
+  });
+
+  test('Stratification metrics query check', async (done) => {
+    await StratificationMetricQueriesCheck();
+    done();
+  });
+
 });

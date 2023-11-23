@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsDefined, IsUUID, IsEnum, IsDate, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsDefined, IsUUID, IsEnum, IsOptional, IsDateString } from 'class-validator';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 
 export class AssignmentStateUpdateValidator {
   @IsOptional()
-  @IsDate()
+  @IsDateString()
   public scheduleDate?: Date | undefined;
 
   @IsNotEmpty()

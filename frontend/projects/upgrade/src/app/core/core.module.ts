@@ -30,6 +30,7 @@ import { BaseUrlInterceptor } from './http-interceptors/http-base-url-intercepto
 import { ENV, Environment } from '../../environments/environment-types';
 import { environment } from '../../environments/environment';
 import { ExperimentDesignStepperModule } from './experiment-design-stepper/experiment-design-stepper.module';
+import { StratificationFactorsModule } from './stratification-factors/stratification-factors.module';
 
 export { TitleService, AppState, LocalStorageService, selectRouterState, NotificationService };
 
@@ -51,6 +52,7 @@ export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
     LogsModule,
     ExperimentUsersModule,
     PreviewUsersModule,
+    StratificationFactorsModule,
     UsersModule,
     FeatureFlagsModule,
     SegmentsModule,

@@ -1,0 +1,22 @@
+.delete-stratification-container {
+  .title {
+    display: block;
+    padding: 30px 40px 0;
+    height: 88px;
+  }
+
+  .delete-stratification-body {
+    margin: 20px 0;
+    padding: 0 40px;
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 40px 40px;
+
+    .delete-btn {
+      background-color: var(--red) !important;
+    }
+  }
+}

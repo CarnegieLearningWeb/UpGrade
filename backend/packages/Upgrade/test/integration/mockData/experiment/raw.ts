@@ -56,6 +56,7 @@ export const revertToExperiment = {
   ],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
+  assignmentAlgorithm: 'random',
 };
 
 export const experiment = {
@@ -117,6 +118,7 @@ export const experiment = {
   conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
+  assignmentAlgorithm: 'random',
 };
 
 export const experimentSecond = {
@@ -172,6 +174,7 @@ export const experimentSecond = {
   conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
+  assignmentAlgorithm: 'random',
 };
 
 export const experimentThird = {
@@ -227,6 +230,7 @@ export const experimentThird = {
   conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
+  assignmentAlgorithm: 'random',
 };
 
 export const experimentFourth = {
@@ -282,6 +286,7 @@ export const experimentFourth = {
   conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
+  assignmentAlgorithm: 'random',
 };
 
 export const experimentFifth = {
@@ -351,8 +356,22 @@ export const experimentFifth = {
         type: 'string',
         value: 'ConditionA_W1',
       },
-      parentCondition: 'c22467b1-f0e9-4444-9517-cc03037bc079',
-      decisionPoint: 'd22467b1-f0e9-4444-9517-cc03037bc079',
+      parentCondition: {
+        id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
+        name: 'Condition A',
+        description: 'Condition A',
+        assignmentWeight: 40,
+        conditionCode: 'ConditionA',
+        twoCharacterId: 'CA',
+      },
+      decisionPoint: {
+        id: 'd22467b1-f0e9-4444-9517-cc03037bc079',
+        site: 'CurriculumSequence',
+        target: 'W1',
+        description: 'Decision Point on Workspace 1',
+        twoCharacterId: 'W1',
+        excludeIfReached: false,
+      },
     },
     {
       id: '9d753b90-1111-44b5-8acc-2483c0507ea1',
@@ -360,12 +379,27 @@ export const experimentFifth = {
         type: 'string',
         value: 'ConditionA_W2',
       },
-      parentCondition: 'c22467b1-f0e9-4444-9517-cc03037bc079',
-      decisionPoint: 'e22467b1-f0e9-4444-9517-cc03037bc079',
+      parentCondition: {
+        id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
+        name: 'Condition A',
+        description: 'Condition A',
+        assignmentWeight: 40,
+        conditionCode: 'ConditionA',
+        twoCharacterId: 'CA',
+      },
+      decisionPoint: {
+        id: 'e22467b1-f0e9-4444-9517-cc03037bc079',
+        site: 'CurriculumSequence',
+        target: 'W2',
+        description: 'Decision Point on Workspace 2',
+        twoCharacterId: 'W2',
+        excludeIfReached: false,
+      },
     },
   ],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
+  assignmentAlgorithm: 'random',
 };
 
 export const experimentSixth = {
@@ -423,6 +457,7 @@ export const experimentSixth = {
   conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
+  assignmentAlgorithm: 'random',
 };
 
 export const factorialExperimentFirst = {
@@ -589,9 +624,26 @@ export const factorialExperimentFirst = {
         type: 'string',
         value: 'Red-Circle alias name',
       },
-      parentCondition: '6dd63ad9-f121-4d95-8d27-08a80e9560a4',
+      parentCondition: {
+        id: '6dd63ad9-f121-4d95-8d27-08a80e9560a4',
+        twoCharacterId: '5H',
+        name: '',
+        description: null,
+        conditionCode: 'Shape=Circle; Color=Red',
+        assignmentWeight: 50,
+        order: 1,
+        levelCombinationElements: [
+          {
+            level: '11111111-1111-4a52-a058-90fac2d03679',
+          },
+          {
+            level: '33333333-1111-4a52-a058-90fac2d03679',
+          },
+        ],
+      },
     },
   ],
+  assignmentAlgorithm: 'random',
 };
 
 export const factorialExperimentSecond = {
@@ -819,6 +871,7 @@ export const factorialExperimentSecond = {
     },
   },
   conditionPayloads: [],
+  assignmentAlgorithm: 'random',
 };
 
 export function getRevertToExperiment() {

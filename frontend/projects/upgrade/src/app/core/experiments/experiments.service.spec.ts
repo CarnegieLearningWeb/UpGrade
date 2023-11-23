@@ -36,10 +36,9 @@ import {
 } from './store/experiments.actions';
 import { Environment } from '../../../environments/environment-types';
 import { environment } from '../../../environments/environment';
-import { CONDITION_ORDER, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, CONDITION_ORDER, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { segmentNew } from './store/experiments.model';
 import { Segment } from '../segments/store/segments.model';
-// import { SEGMENT_TYPE } from 'upgrade_types';
 
 const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();
@@ -124,6 +123,7 @@ describe('ExperimentService', () => {
     backendVersion: '1.0.0',
     groupSatisfied: 0,
     type: EXPERIMENT_TYPE.SIMPLE,
+    assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
   };
   const mockExperimentStateInfo = {
     newStatus: EXPERIMENT_STATE.INACTIVE,

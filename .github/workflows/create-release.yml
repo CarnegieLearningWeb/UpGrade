@@ -15,7 +15,7 @@ jobs:
           script: |
             const repo = "${{ github.repository }}".split("/").pop()
             const tags = await github.paginate(
-              github.rest.repos.listTags, 
+              github.rest.repos.listTags,
               {owner: "${{ github.repository_owner }}", repo: repo}
             );
             console.log(tags)
@@ -70,7 +70,7 @@ jobs:
           script: |
             var semver = require('semver');
             const tagNames = await github.paginate(
-              github.rest.repos.listTags, 
+              github.rest.repos.listTags,
               {owner: "${{ github.repository_owner }}", repo: "UpGrade"},
               (response) => response.data.map((tag) => tag.name)
             );
@@ -97,7 +97,7 @@ jobs:
         run: |
           npm version ${{ needs.init.outputs.version }} --git-tag-version=false
           cp -R ../types packages/Upgrade
-          npm ci --legacy-peer-deps
+          npm ci
           zip -qq -r upgrade-backend-${{ needs.init.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json
       - uses: actions/upload-artifact@v2
         with:
@@ -157,7 +157,7 @@ jobs:
         with:
           name: lambda
           path: backend/packages/Scheduler/lib/upgrade-lambda-${{ needs.init.outputs.version }}.zip
-      
+
   create-release:
     name: Create Release
     needs: [build-backend, build-frontend, build-lambda, init]
