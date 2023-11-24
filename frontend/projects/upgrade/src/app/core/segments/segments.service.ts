@@ -65,6 +65,10 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionExportSegments({ segmentIds }));
   }
 
+  exportSegmentCSV(segmentId: string) {
+    this.store$.dispatch(SegmentsActions.actionExportSegmentCSV({ segmentId }));
+  }
+
   importSegments(segments: SegmentFile[]) {
     this.store$.dispatch(SegmentsActions.actionImportSegments({ segments }));
   }
