@@ -65,9 +65,9 @@ export class ExperimentUserService {
     });
 
     const isWorkingGroupSame = isEqual(oldExperimentUser.workingGroup, newExperimentUser.workingGroup);
-    const isSame = isEqual(oldExperimentUser.group, newExperimentUser.group) && isWorkingGroupSame;
+    const isGroupAndWorkingGroupSame = isEqual(oldExperimentUser.group, newExperimentUser.group) && isWorkingGroupSame;
 
-    if (!isSame) {
+    if (!isGroupAndWorkingGroupSame) {
       // update assignment if user working group is changed
       if (!isWorkingGroupSame && oldExperimentUser.workingGroup && newExperimentUser.workingGroup) {
         await this.removeEnrollments(
@@ -380,7 +380,7 @@ export class ExperimentUserService {
     const groupExperiments = await this.experimentRepository.find({
       where: {
         assignmentUnit: ASSIGNMENT_UNIT.GROUP,
-        state: Not(In([EXPERIMENT_STATE.INACTIVE, EXPERIMENT_STATE.PREVIEW, EXPERIMENT_STATE.SCHEDULED])),
+        state: In([EXPERIMENT_STATE.ENROLLING, EXPERIMENT_STATE.ENROLLMENT_COMPLETE]),
       },
     });
 
