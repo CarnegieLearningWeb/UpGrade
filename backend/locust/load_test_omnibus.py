@@ -5,29 +5,54 @@ from  upgrade_mathia_data import modules, workspaces
 from locust import HttpUser, SequentialTaskSet, task, tag, between
 import createExperiment
 import deleteExperiment
+import json
 
-schools = {}
+schools = {
+  "greenvilleWaukegaen": "greenvilleWaukegaen",
+  "notGreenvilleWaukegaen": "notGreenvilleWaukegaen"
+}
 students = {}
-allExperimentPartitionIDConditionPair = []
+# allExperimentPartitionIDConditionPair = []
 # For load testing on existing prod experiments:
-# allExperimentPartitionIDConditionPair = [
-#     {"experimentPoint": "SelectAdaptive", "partitionId" : "1_0gzegepj", "condition" : "human-robert-control"},
-#     {"experimentPoint": "SelectAdaptive", "partitionId" : "1_ffi961t9", "condition" : "human-robert-control"},
-#     {"experimentPoint": "SelectAdaptive", "partitionId" : "1_m7qve72i", "condition" : "joke-ai-robert-experimental"},
-#     {"experimentPoint": "SelectAdaptive", "partitionId" : "1_2ee7ws2b", "condition" : "joke-ai-robert-experimental"},
-#     {"experimentPoint": "SelectAdaptive", "partitionId" : "1_i7i7heqa", "condition" : "control-playback-speed"},
-#     {"experimentPoint": "SelectAdaptive", "partitionId" : "1_yspx09fg", "condition" : "control-playback-speed"},
-#     {"experimentPoint": "SelectAdaptive", "partitionId" : "1_fwk036l9", "condition" : "control-playback-speed"},
-#     {"experimentPoint": "DisplayQuestion", "partitionId" : "AR-VST-0150-6.NS.8-1_SP_014", "condition" : "learnosity-item-control"},
-#     {"experimentPoint": "DisplayQuestion", "partitionId" : "AR-VST-0150-6.NS.8-1_SP_008", "condition" : "learnosity-item-control"},
-#     {"experimentPoint": "DisplayQuestion", "partitionId" : "AR-VST-0150-6.NS.8-1_SP_004", "condition" : "learnosity-item-control"},
-#     {"experimentPoint": "SelectStream", "partitionId" : "HintUI", "condition" : "question-hint-tutorbot"},
-#     {"experimentPoint": "SelectStream", "partitionId" : "rewindButton", "condition" : "enable-rewind-button"}
-# ]
+allExperimentPartitionIDConditionPair = [
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_direct_variation", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_lin_mod_mult_rep", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_slope_intercept_decimal", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_slope_intercept_integer", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_patterns_1step_eqn_ops", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_patterns_2step_expr", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_linear_systems_dec", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_linear_systems_int", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_solving_2step_int", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_solving_2step_dec_frac", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_mod_initial_plus_point", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_mod_two_points", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_mod_init_point", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_four_quadrant_graphing_1step", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_linear_models_distrib_div", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_linear_models_distrib_frac", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_solving_1step_int", "condition" : "control"},
+    {"site": "SelectSection", "target" : "worksheet_grapher_a1_solving_1step_dec", "condition" : "control"},
+    {"site": "SelectSection", "target" : "linear_relations_1", "condition" : "control"},
+    {"site": "SelectSection", "target" : "data_displays_comparing_populations", "condition" : "control"},
+    {"site": "SelectSection", "target" : "data_displays_comparing_data_sets_using_center_and_spread", "condition" : "control"},
+    {"site": "SelectSection", "target" : "direct_variation_equation", "condition" : "control"},
+    {"site": "SelectSection", "target" : "direct_variation_convert", "condition" : "control"},
+    {"site": "SelectSection", "target" : "volume_surface_area_right_prism_vol", "condition" : "control"},
+    {"site": "SelectSection", "target" : "volume_surface_area_right_prism_vol-_backward", "condition" : "control"},
+    {"site": "SelectSection", "target" : "volume_surface_area_sq_pyramid_vol", "condition" : "control"},
+    {"site": "SelectSection", "target" : "factor_trees_lcm_gcf", "condition" : "control"},
+    {"site": "SelectSection", "target" : "factor_trees_prime_factorization", "condition" : "control"},
+    {"site": "SelectSection", "target" : "geo_transforms_tr", "condition" : "control"},
+    {"site": "SelectSection", "target" : "geo_transforms_re", "condition" : "control"},
+    {"site": "SelectSection", "target" : "geo_transforms_ro", "condition" : "control"},
+    {"site": "SelectSection", "target" : "graphs_of_functions-1", "condition" : "control"},
+    {"site": "SelectSection", "target" : "solving_angle_measures", "condition" : "control"},
+]
 
 # Setting host URL's:
-protocol = "http"
-host = "localhost:3030"
+protocol = "https"
+host = "upgradeapi.qa-cli.com"
 
 # clear existing experiments:
 option = int(input("Enter 1 for delete a single random experiment and 2 to delete all experiments, else Enter 0 for not deleting any experiment: "))
@@ -45,9 +70,11 @@ else:
 
 # create new experiments:
 experimentCount = int(input("Enter the number of experiments to be created: "))
+
 for i in range(experimentCount):
     experimentType = int(input("Enter the experiment type: Enter 1 for Simple and 2 for Factorial:"))
     # returning the updated partionconditionpair list:
+    allExperimentPartitionIDConditionPair = createExperiment.createExperiment(protocol, host, allExperimentPartitionIDConditionPair)
     experimentType = "Simple" if experimentType == 1 else "Factorial"
     allExperimentPartitionIDConditionPair = createExperiment.createExperiment(protocol, host, allExperimentPartitionIDConditionPair, experimentType)
 
@@ -57,13 +84,13 @@ def initStudent():
     studentId = str(uuid.uuid4())
     
     # 99% of the time, students are in one class, but 1% of the time they will be in two classes
-    schoolCount = random.choices([1, 2], [99, 1])[0]
-    if schoolCount == 1:
-        numClasses = [random.choices([1, 2], [63, 37])[0]]
-    else:
-        numClasses = [random.choices([1, 2], [63, 37])[0], random.choices([1, 2], [63, 37])[0]]
-    schoolIds = getSchools(schoolCount)
-    classData = getClasses(schoolIds, numClasses)
+    # schoolCount = random.choices([1, 2], [99, 1])[0]
+    # if schoolCount == 1:
+    #     numClasses = [random.choices([1, 2], [63, 37])[0]]
+    # else:
+    #     numClasses = [random.choices([1, 2], [63, 37])[0], random.choices([1, 2], [63, 37])[0]]
+    schoolIds = getSchools(1)
+    # classData = getClasses(schoolIds, 1)
     students[studentId] = {
         "studentId": studentId,
         "schools": {}
@@ -73,42 +100,47 @@ def initStudent():
             "classes": {},
             "instructors": []
         }
-    for classObject in classData:
-        students[studentId]["schools"][classObject["schoolId"]]["classes"][classObject["classId"]] = {
-            "classId": classObject["classId"],
-            "instructorId": classObject["instructorId"],
-            "classModules": classObject["classModules"]
-        }
+    # for classObject in classData:
+    #     students[studentId]["schools"][classObject["schoolId"]]["classes"][classObject["classId"]] = {
+    #         "classId": classObject["classId"],
+    #         "instructorId": classObject["instructorId"],
+    #         "classModules": classObject["classModules"]
+    #     }
     return students[studentId]
 #Return a list of schools, either new or existing
 def getSchools(schoolCount):
     retSchools = []
-    for i in range(schoolCount):
-        # minimum of 10 school, if less always create new school
-        if len(schools.keys()) < 10:
-            createNew = True
-        # maximum of 2140 schools, if reached don't create new school
-        elif len(schools.keys()) >= 2140:
-            createNew = False
-        # if schoolCount is between 10 and 2140, create a new school 50% of the time
-        else:
-            createNew = random.choices([True, False], [50, 50])[0]
-        if createNew:
-            schoolId = str(uuid.uuid4())
-            while schoolId in retSchools:
-                schoolId = str(uuid.uuid4())
-            instructors = []
-            for i in range(10):
-                instructors.append(str(uuid.uuid4()))
-            schools[schoolId] = {
-                "classes": {},
-                "instructors": instructors
-            }
-        else:
-            schoolId = random.choice(list(schools.keys()))
-            while schoolId in retSchools:
-                schoolId = random.choice(list(schools.keys()))
-        retSchools.append(schoolId)
+    # for i in range(schoolCount):
+    #     # minimum of 10 school, if less always create new school
+    #     if len(schools.keys()) < 10:
+    #         createNew = True
+    #     # maximum of 2140 schools, if reached don't create new school
+    #     elif len(schools.keys()) >= 2140:
+    #         createNew = False
+    #     # if schoolCount is between 10 and 2140, create a new school 50% of the time
+    #     else:
+    #         createNew = random.choices([True, False], [50, 50])[0]
+        # if createNew:
+        #     schoolId = str(uuid.uuid4())
+        #     while schoolId in retSchools:
+        #         schoolId = str(uuid.uuid4())
+        #     instructors = []
+        #     for i in range(10):
+        #         instructors.append(str(uuid.uuid4()))
+        #     schools[schoolId] = {
+        #         "classes": {},
+        #         "instructors": instructors
+        #     }
+        # else:
+        #     schoolId = random.choice(list(schools.keys()))
+        #     while schoolId in retSchools:
+        #         schoolId = random.choice(list(schools.keys()))
+        # retSchools.append(schoolId)
+    isGreenvilleWauekgaen = random.randint(1,100) <= 3
+    if isGreenvilleWauekgaen:
+        retSchools.append("greenvilleWaukegaen")
+    else:
+        retSchools.append("notGreenvilleWaukegaen")
     return retSchools
 #Return a list of classes, either new or existing
 def getClasses(schoolIds, numClasses):
@@ -150,6 +182,7 @@ class UpgradeUserTask(SequentialTaskSet):
     # each User represents one Student
     def on_start(self):
         self.student = initStudent()
+        print("Student: ", self.student)
     #Portal Tasks
     ## Portal calls init -> setGroupMembership in reality
     # Task 1: portal calls /init
@@ -201,6 +234,8 @@ class UpgradeUserTask(SequentialTaskSet):
             "userId": self.student["studentId"],
             "context": "portal"
         }
+        print("user", self.student["studentId"])
+        print("assignments: ", data)
         with self.client.post(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"/assign Failed with {response.status_code} for userid: " + self.student["studentId"])
@@ -210,19 +245,19 @@ class UpgradeUserTask(SequentialTaskSet):
     @task
     def setWorkingGroup(self):
         workingSchoolId = random.choice(list(self.student["schools"].keys()))
-        workingClassId = random.choice(list(self.student["schools"][workingSchoolId]["classes"].keys()))
-        workingInstructorId = self.student["schools"][workingSchoolId]["classes"][workingClassId]["instructorId"]
-        url = protocol + f"://{host}/api/workinggroup"
+        # workingClassId = random.choice(list(self.student["schools"][workingSchoolId]["classes"].keys()))
+        # workingInstructorId = self.student["schools"][workingSchoolId]["classes"][workingClassId]["instructorId"]
+        url = protocol + f"://{host}/api/v1/workinggroup"
         print("/workinggroup for userid: " + self.student["studentId"])
         data = {
             "id": self.student["studentId"],
             "workingGroup": {
                 "schoolId": workingSchoolId,
-                "classId": workingClassId,
-                "instructorId": workingInstructorId
+                # "classId": workingClassId,
+                # "instructorId": workingInstructorId
             }
         }
-        with self.client.post(url, json = data, catch_response = True) as response:
+        with self.client.patch(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"setWorkingGroup Failed with {response.status_code} for userid: " + self.student["studentId"])
     # Task 5: launcher calls /useraliases
@@ -230,15 +265,15 @@ class UpgradeUserTask(SequentialTaskSet):
     @task
     def setAltIds(self):
         workingSchoolId = random.choice(list(self.student["schools"].keys()))
-        workingClassId = random.choice(list(self.student["schools"][workingSchoolId]["classes"].keys()))
-        classModules = self.student["schools"][workingSchoolId]["classes"][workingClassId]["classModules"]
-        url = protocol + f"://{host}/api/useraliases"
+        # workingClassId = random.choice(list(self.student["schools"][workingSchoolId]["classes"].keys()))
+        # classModules = self.student["schools"][workingSchoolId]["classes"][workingClassId]["classModules"]
+        url = protocol + f"://{host}/api/v1/useraliases"
         print("/useraliases for userid: " + self.student["studentId"])
         data = {
             "userId": self.student["studentId"],
-            "aliases": [self.student["studentId"] + m for m in classModules]
+            "aliases": [str(uuid.uuid4()), str(uuid.uuid4()), str(uuid.uuid4())]
         }
-        with self.client.post(url, json = data, catch_response = True) as response:
+        with self.client.patch(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"/useraliases Failed with {response.status_code} for userid: " + self.student["studentId"])
     #Assignment Progress Service
@@ -247,11 +282,11 @@ class UpgradeUserTask(SequentialTaskSet):
     @tag("assign-prog")
     @task
     def getAllExperimentConditionsAssignProg(self):
-        url = protocol + f"://{host}/api/assign"
+        url = protocol + f"://{host}/api/v1/assign"
         print("/assign assign-prog for userid: " + self.student["studentId"])
         data = {
             "userId": self.student["studentId"],
-            "context": "mathstream"
+            "context": "assign-prog"
         }
         with self.client.post(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
@@ -261,65 +296,77 @@ class UpgradeUserTask(SequentialTaskSet):
     @tag("assign-prog")
     @task
     def markExperimentPoint(self):
-        url = protocol + f"://{host}/api/mark"
+        url = protocol + f"://{host}/api/v1/mark"
         print("/mark for userid: " + self.student["studentId"])
-        if(len(allExperimentPartitionIDConditionPair) == 0):
-            print("No assigned conditions found")
-            return
-        else:
-            print("allExperimentPartitionIDConditionPair: ", allExperimentPartitionIDConditionPair)
+
+        # if(len(allExperimentPartitionIDConditionPair) == 0):
+        #     print("No assigned conditions found")
+        #     return
+        # else:
+        #     print("allExperimentPartitionIDConditionPair: ", allExperimentPartitionIDConditionPair)
         # pick a random pair of PartitionIdConditionId from allExperimentPartitionIDConditionPair
         markPartitionIDConditionPair = random.choice(allExperimentPartitionIDConditionPair)
+
+        if "greenvilleWaukegaen" in self.student["schools"]:
+          condition = markPartitionIDConditionPair['condition'] if "greenvilleWaukegaen" in self.student["schools"] else None
+          site = markPartitionIDConditionPair['site']
+          target = markPartitionIDConditionPair['target']
+        else:
+          condition_choices = ["control", "variant", None]
+          weights = [0.02, 0.02, 0.96]
+
+          condition = random.choices(condition_choices, weights, k=1)[0]
+          site = "SelectSection"
+          target = random.choices(["analyzing_models_2step_integers", "analyzing_models_2step_rationals"])
+
         data = {
             "userId": self.student["studentId"],
-            "experimentPoint": markPartitionIDConditionPair['site'],
-            "partitionId": markPartitionIDConditionPair['target'],
-            "condition": markPartitionIDConditionPair['condition']
+            "site": site,
+            "target": target,
+            "condition": condition,
         }
 
-        # pick a random assigned workspace - requires /assign response to be saved
-        # markPartitionIDConditionPair = random.choice(self.assignedWorkspaces)
-        # data = {
-        #     "userId": self.student["studentId"],
-        #     "experimentPoint": markPartitionIDConditionPair['expPoint'],
-        #     "partitionId": markPartitionIDConditionPair['expId'],
-        #     "condition": markPartitionIDConditionPair['assignedCondition']['conditionCode']
-        # }
+        print("user schoolId", self.student["schools"])
+        print("mark data: ", data)
+
         with self.client.post(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
-                print(f"/mark Failed with {response.status_code} for userid: " + self.student["studentId"])
+                print(f"/mark Failed with {response.status_code} for userid: " + self.student["studentId"]) 
     # Task 8: failed experiment point
-    @tag("assign-prog")
-    @task
-    def failedExperimentPoint(self):
-        url = protocol + f"://{host}/api/failed"
-        print("/failed for userid: " + self.student["studentId"])
-        if(len(allExperimentPartitionIDConditionPair) == 0):
-            print("No assigned conditions found")
-            return
-        else:
-            print("allExperimentPartitionIDConditionPair: ", allExperimentPartitionIDConditionPair)
-        # pick a random pair of PartitionIdConditionId from allExperimentPartitionIDConditionPair
-        markPartitionIDConditionPair = random.choice(allExperimentPartitionIDConditionPair)
+    # @tag("assign-prog")
+    # @task
+    # def failedExperimentPoint(self):
+    #     url = protocol + f"://{host}/api/failed"
+    #     print("/failed for userid: " + self.student["studentId"])
 
-        data = {
-            "userId": self.student["studentId"],
-            "experimentPoint": markPartitionIDConditionPair['site'],
-            "partitionId": markPartitionIDConditionPair['target'],
-            "condition": markPartitionIDConditionPair['condition']
-        }
+    #     if(len(allExperimentPartitionIDConditionPair) == 0):
+    #         print("No assigned conditions found")
+    #         return
+    #     else:
+    #         print("allExperimentPartitionIDConditionPair: ", allExperimentPartitionIDConditionPair)
+    #     # pick a random pair of PartitionIdConditionId from allExperimentPartitionIDConditionPair
+    #     markPartitionIDConditionPair = random.choice(allExperimentPartitionIDConditionPair)
 
-        # pick a random assigned workspace - requires /assign response to be saved
-        # markPartitionIDConditionPair = random.choice(self.assignedWorkspaces)
-        # data = {
-        #     "reason": "locust tests",
-        #     "experimentPoint": markPartitionIDConditionPair['expPoint'],
-        #     "userId": self.student["studentId"],
-        #     "experimentId": markPartitionIDConditionPair['expId']
-        # }
-        with self.client.post(url, json = data, catch_response = True) as response:
-            if response.status_code != 200:
-                print(f"/failed Failed with {response.status_code} for userid: " + self.student["studentId"])
+    #     data = {
+    #         "userId": self.student["studentId"],
+    #         "experimentPoint": markPartitionIDConditionPair['experimentPoint'],
+    #         "partitionId": markPartitionIDConditionPair['partitionId'],
+    #         # "experimentPoint": markPartitionIDConditionPair['site'],
+    #         # "partitionId": markPartitionIDConditionPair['target'],
+    #         "condition": markPartitionIDConditionPair['condition']
+    #     }
+
+    #     # pick a random assigned workspace - requires /assign response to be saved
+    #     # markPartitionIDConditionPair = random.choice(self.assignedWorkspaces)
+    #     # data = {
+    #     #     "reason": "locust tests",
+    #     #     "experimentPoint": markPartitionIDConditionPair['expPoint'],
+    #     #     "userId": self.student["studentId"],
+    #     #     "experimentId": markPartitionIDConditionPair['expId']
+    #     # }
+    #     with self.client.post(url, json = data, catch_response = True) as response:
+    #         if response.status_code != 200:
+    #             print(f"/failed Failed with {response.status_code} for userid: " + self.student["studentId"])
     # Generate mock log data 
     def genMockLog(self):
         attributes = {
@@ -368,5 +415,5 @@ class UpgradeUserTask(SequentialTaskSet):
                 print(f"LogEvent Failed with {response.status_code}")
 class UpgradeUser(HttpUser):
     wait_time = between(0.1, 10)
-    host = "localhost:3030"
+    host = "https://upgradeapi.qa-cli.com"
     tasks = [UpgradeUserTask]

@@ -5,7 +5,7 @@ import { IndividualForSegmentRepository } from '../repositories/IndividualForSeg
 import { GroupForSegmentRepository } from '../repositories/GroupForSegmentRepository';
 import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS } from 'upgrade_types';
+import { SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS, CACHE_PREFIX } from 'upgrade_types';
 import { getConnection } from 'typeorm';
 import uuid from 'uuid';
 import { ErrorWithType } from '../errors/ErrorWithType';
@@ -61,7 +61,7 @@ export class SegmentService {
   }
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
-    return this.cacheService.wrapFunction(ids, async () => {
+    return this.cacheService.wrapFunction(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ids, async () => {
       const result = await this.segmentRepository
         .createQueryBuilder('segment')
         .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
@@ -308,7 +308,7 @@ export class SegmentService {
       }
 
       // reset caching
-      this.cacheService.resetCache();
+      await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
 
       return transactionalEntityManager
         .getRepository(Segment)
