@@ -106,7 +106,7 @@ describe('Integration Tests', () => {
     jest.setTimeout(29999);
     await migrateDatabase(connection);
     const cacheManager = Container.get(CacheService);
-    cacheManager.resetAllCache();
+    await cacheManager.resetAllCache();
 
     // create System Users
     await CreateSystemUser();

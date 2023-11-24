@@ -62,7 +62,6 @@ export class SegmentService {
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
     return this.cacheService.wrapFunction(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ids, async () => {
-      console.log('ids', ids);
       const result = await this.segmentRepository
         .createQueryBuilder('segment')
         .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
@@ -75,7 +74,6 @@ export class SegmentService {
       const sortedData = ids.map((id) => {
         return result.find((data) => data.id === id);
       });
-      console.log('sortedData', sortedData);
       return sortedData;
     });
   }
