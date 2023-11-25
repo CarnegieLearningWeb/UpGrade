@@ -18,9 +18,10 @@ import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
-import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { StratificationFactorsService } from '../../../../../../core/stratification-factors/stratification-factors.service';
+import { StratificationFactorSimple } from '../../../../../../core/stratification-factors/store/stratification-factors.model';
 
 interface ImportExperimentJSON {
   schema:
@@ -59,12 +60,17 @@ export class ImportExperimentComponent implements OnInit {
   displayedColumns: string[] = ['File Name', 'Error'];
   uploadedFileCount = 0;
 
+  allStratificationFactors: StratificationFactorSimple[];
+  isLoading$ = this.stratificationFactorsService.isLoading$;
+  allStratificationFactorsSub: Subscription;
+
   missingConditionProperties = '';
   missingPartitionProperties = '';
   missingFactorProperties = '';
   missingLevelProperties = '';
   missingLevelCombinationElementProperties = '';
   missingPropertiesFlag = false;
+  isStratificationFactorValid = false;
   isFactorialExperiment: boolean;
 
   // TODO remove this any after typescript version updation
@@ -161,12 +167,20 @@ export class ImportExperimentComponent implements OnInit {
     private experimentService: ExperimentService,
     public dialogRef: MatDialogRef<ImportExperimentComponent>,
     private versionService: VersionService,
+    private stratificationFactorsService: StratificationFactorsService,
     private translate: TranslateService,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private _snackBar: MatSnackBar
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
 
   ngOnInit() {
+    this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(
+      (StratificationFactors) => {
+        this.allStratificationFactors = StratificationFactors.map((stratificationFactor) => ({
+          factorName: stratificationFactor.factor,
+        }));
+      }
+    );
+
     this.allPartitionsSub = this.experimentService.allDecisionPoints$
       .pipe(filter((partitions) => !!partitions))
       .subscribe((partitions: any) => {
@@ -174,10 +188,6 @@ export class ImportExperimentComponent implements OnInit {
           partition.target ? partition.site + partition.target : partition.site
         );
       });
-  }
-
-  openSnackBar() {
-    this._snackBar.open(this.translate.instant('global.import-segments.message.text'), null, { duration: 4000 });
   }
 
   onCancelClick(): void {
@@ -205,7 +215,6 @@ export class ImportExperimentComponent implements OnInit {
     });
     this.experimentService.importExperiment(this.allExperiments);
     this.onCancelClick();
-    this.openSnackBar();
   }
 
   compareVersion(currentBackendVersion, uploadedExperimentBackendVersion) {
@@ -473,7 +482,30 @@ export class ImportExperimentComponent implements OnInit {
         }
       });
     });
-    return result;
+  }
+
+  deduceParticipants(result) {
+    if (!result.experimentSegmentInclusion) {
+      result.experimentSegmentInclusion = {
+        segment: {
+          individualForSegment: [],
+          groupForSegment: [],
+          subSegments: [],
+          type: SEGMENT_TYPE.PRIVATE,
+        },
+      };
+    }
+
+    if (!result.experimentSegmentExclusion) {
+      result.experimentSegmentExclusion = {
+        segment: {
+          individualForSegment: [],
+          groupForSegment: [],
+          subSegments: [],
+          type: SEGMENT_TYPE.PRIVATE,
+        },
+      };
+    }
   }
 
   updateExperimentJSON(result) {
@@ -482,9 +514,10 @@ export class ImportExperimentComponent implements OnInit {
       result.factors = [];
     }
     // replacing old fields with new field names:
-    result = this.deduceConditionPayload(result);
-    result = this.deducePartition(result);
-    result = this.deduceFactors(result);
+    this.deduceConditionPayload(result);
+    this.deducePartition(result);
+    this.deduceFactors(result);
+    this.deduceParticipants(result);
 
     return result;
   }
@@ -494,15 +527,42 @@ export class ImportExperimentComponent implements OnInit {
       experimentJSONVersionStatus = await this.validateExperimentJSONVersion(experimentInfo);
     }
 
-    const isExperimentJSONValid = await this.validateExperimentJSON(experimentInfo);
+    let isExperimentJSONValid = await this.validateExperimentJSON(experimentInfo);
+    let isStratificationFactorValid = false;
+    if (experimentInfo.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+      if (!experimentInfo.stratificationFactor) {
+        experimentInfo = { ...experimentInfo, assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM };
+      } else {
+        this.allStratificationFactors.forEach((strataFactor) => {
+          if (strataFactor.factorName === experimentInfo.stratificationFactor.stratificationFactorName) {
+            isStratificationFactorValid = true;
+          }
+        });
+        if (!isStratificationFactorValid) {
+          isExperimentJSONValid = false;
+          this.importFileErrors.push({
+            filename: fileName,
+            error:
+              'Missing ' +
+              experimentInfo.stratificationFactor.stratificationFactorName +
+              ' factor, ' +
+              this.translate.instant('home.import-experiment.invalid-stratification-factor-error.message.text'),
+          });
+        }
+      }
+    }
 
     if (experimentJSONVersionStatus === 0 && isExperimentJSONValid) {
       this.allExperiments.push(experimentInfo);
     } else if (!isExperimentJSONValid) {
-      this.importFileErrors.push({
-        filename: fileName,
-        error: this.translate.instant('home.import-experiment.error.message.text') + ' ' + this.missingAllProperties,
-      });
+      if (
+        this.missingAllProperties !== this.translate.instant('home.import-experiment.missing-properties.message.text')
+      ) {
+        this.importFileErrors.push({
+          filename: fileName,
+          error: this.translate.instant('home.import-experiment.error.message.text') + ' ' + this.missingAllProperties,
+        });
+      }
     } else {
       if (experimentJSONVersionStatus === 1) {
         this.importFileErrors.push({
@@ -526,6 +586,7 @@ export class ImportExperimentComponent implements OnInit {
     const reader = new FileReader();
     this.uploadedFileCount = event.target.files.length;
     this.importFileErrors = [];
+    this.allExperiments = [];
 
     readFile(index);
     function readFile(fileIndex: number) {

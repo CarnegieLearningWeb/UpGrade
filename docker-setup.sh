@@ -19,7 +19,7 @@ setuplocal() {
 
     cp -R ../types packages/Upgrade
     cd packages/Upgrade
-    npm ci --legacy-peer-deps
+    npm ci
 
     cd ../../../frontend
     npm ci

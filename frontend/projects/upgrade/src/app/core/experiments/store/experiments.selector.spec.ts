@@ -1,4 +1,4 @@
-import { EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import {
   ExperimentState,
   EXPERIMENT_SORT_AS,
@@ -200,6 +200,7 @@ describe('Experiments Selectors', () => {
           },
         ],
         type: EXPERIMENT_TYPE.SIMPLE,
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
       },
     },
     isLoadingExperiment: false,

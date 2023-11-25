@@ -27,6 +27,7 @@ export {
   PAYLOAD_TYPE,
   CONDITION_ORDER,
   CACHE_PREFIX,
+  ASSIGNMENT_ALGORITHM,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,

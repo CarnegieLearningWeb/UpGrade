@@ -103,6 +103,7 @@ export const env = {
     redisPort: toNumber(getOsEnvOptional('REDIS_PORT')),
     redisUsername: getOsEnvOptional('REDIS_USERNAME'),
     redisPassword: getOsEnvOptional('REDIS_PASSWORD'),
+    ttl: toNumber(getOsEnvOptional('CACHING_TTL')),
   },
   clientApi: {
     secret: getOsEnv('CLIENT_API_SECRET'),

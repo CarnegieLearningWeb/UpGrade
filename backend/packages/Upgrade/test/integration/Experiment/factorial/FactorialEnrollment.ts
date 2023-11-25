@@ -84,7 +84,7 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
         site: experimentSite,
         assignedCondition: expect.arrayContaining([
           expect.objectContaining({
-            id: experimentConditionPayload.parentCondition,
+            id: experimentConditionPayload.parentCondition.id,
             conditionCode: 'Color=Red; Shape=Circle',
             payload: { type: 'string', value: experimentConditionPayload.payload.value },
           }),

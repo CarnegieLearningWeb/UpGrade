@@ -18,6 +18,7 @@ import {
   SUPPORTED_CALIPER_PROFILES,
   SUPPORTED_CALIPER_EVENTS,
   IExperimentAssignmentv5,
+  ASSIGNMENT_ALGORITHM,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -65,6 +66,8 @@ import { parse, toSeconds } from 'iso8601-duration';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { withInSubjectType } from '../Algorithms';
+import { UserStratificationFactorRepository } from '../repositories/UserStratificationRepository';
+import { UserStratificationFactor } from '../models/UserStratificationFactor';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -98,6 +101,8 @@ export class ExperimentAssignmentService {
     private analyticsRepository: AnalyticsRepository,
     @OrmRepository()
     private conditionPayloadRepository: ConditionPayloadRepository,
+    @OrmRepository()
+    private userStratificationFactorRepository: UserStratificationFactorRepository,
 
     public previewUserService: PreviewUserService,
     public experimentUserService: ExperimentUserService,
@@ -106,7 +111,7 @@ export class ExperimentAssignmentService {
     public settingService: SettingService,
     public segmentService: SegmentService,
     public experimentService: ExperimentService
-  ) {}
+  ) { }
   public async markExperimentPoint(
     userId: string,
     site: string,
@@ -316,7 +321,7 @@ export class ExperimentAssignmentService {
               this.groupEnrollmentRepository.findOne({
                 where: { groupId: workingGroup[experiment.group], experiment: { id: experiment.id } },
               })) ||
-              Promise.resolve(undefined),
+            Promise.resolve(undefined),
             // query group exclusion
             (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
               workingGroup &&
@@ -324,7 +329,7 @@ export class ExperimentAssignmentService {
               this.groupExclusionRepository.findOne({
                 where: { groupId: workingGroup[experiment.group], experiment: { id: experiment.id } },
               })) ||
-              Promise.resolve(undefined),
+            Promise.resolve(undefined),
           ]);
         } catch (error) {
           const err: any = error;
@@ -364,7 +369,8 @@ export class ExperimentAssignmentService {
               groupEnrollment: groupEnrollments,
               groupExclusion: groupExclusions,
             },
-            status
+            status,
+            condition
           );
           if (experiment.enrollmentCompleteCondition) {
             await this.checkEnrollmentEndingCriteriaForCount(experiment, logger);
@@ -610,9 +616,14 @@ export class ExperimentAssignmentService {
 
       filteredExperiments = alreadyAssignedExperiment.flat().concat(filteredExperiments);
 
+      // return if no experiment
+      if (filteredExperiments.length === 0) {
+        return [];
+      }
+
       // assign remaining experiment
       const experimentAssignment = await Promise.all(
-        filteredExperiments.map((experiment) => {
+        filteredExperiments.map(async (experiment) => {
           const individualEnrollment = mergedIndividualAssignment.find((assignment) => {
             return assignment.experiment.id === experiment.id;
           });
@@ -635,13 +646,18 @@ export class ExperimentAssignmentService {
             );
           });
 
+          let enrollmentCountPerCondition = null;
+          if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+            enrollmentCountPerCondition = await this.getEnrollmentCountPerCondition(experiment, userId);
+          }
           return this.assignExperiment(
             experimentUser,
             experiment,
             individualEnrollment,
             groupEnrollment,
             individualExclusion,
-            groupExclusion
+            groupExclusion,
+            enrollmentCountPerCondition
           );
         })
       );
@@ -694,9 +710,8 @@ export class ExperimentAssignmentService {
           if (logging || state === EXPERIMENT_STATE.PREVIEW) {
             // TODO add enrollment code here
             logger.info({
-              message: `getAllExperimentConditions: experiment: ${name}, user: ${userId}, condition: ${
-                conditionAssigned ? conditionAssigned.conditionCode : null
-              }`,
+              message: `getAllExperimentConditions: experiment: ${name}, user: ${userId}, condition: ${conditionAssigned ? conditionAssigned.conditionCode : null
+                }`,
             });
           }
 
@@ -704,8 +719,8 @@ export class ExperimentAssignmentService {
           const factorialCondition = factorialObject ? factorialObject['factorialCondition'] : null;
           const assignedConditionToReturn = factorialCondition ||
             conditionAssigned || {
-              conditionCode: null,
-            };
+            conditionCode: null,
+          };
 
           if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
             const count = monitoredLogCounts.find((log) => log.site === site && log.target === target)?.count || 0;
@@ -940,9 +955,9 @@ export class ExperimentAssignmentService {
     // fetch individual assignment for group experiments
     const individualEnrollments = await (experiments.length > 0
       ? this.individualEnrollmentRepository.findEnrollments(
-          experimentUser.id,
-          experiments.map(({ id }) => id)
-        )
+        experimentUser.id,
+        experiments.map(({ id }) => id)
+      )
       : Promise.resolve([]));
 
     // check assignments for group experiment
@@ -1051,29 +1066,21 @@ export class ExperimentAssignmentService {
     });
 
     const logGroup = await this.logRepository.getMetricUniquifierData(filteredKeyUniqueArray, userId);
-    const mergedLogGroup = [];
-
-    // merge the metrics field
-    logGroup.forEach((logData, index) => {
-      if (logData !== null) {
-        const { id, uniquifier, data, timeStamp, key } = logData;
-        const metric_keys = [key];
-        for (let i = index + 1; i < logGroup.length; i++) {
-          const toCheckMetrics = logGroup[i];
-          // merge the data log here
-          if (
-            toCheckMetrics.id === id &&
-            toCheckMetrics.uniquifier === uniquifier &&
-            isequal(toCheckMetrics.data, data) &&
-            new Date(toCheckMetrics.timeStamp).getTime() === new Date(timeStamp).getTime()
-          ) {
-            metric_keys.push(toCheckMetrics.key);
-            logGroup[i] = null;
-          }
-        }
-        mergedLogGroup.push({ ...logData, key: metric_keys });
+    const mergedLogGroup = logGroup.reduce((prev, curr) => {
+      // If it's a duplicate, except the key, add the key to the first entry
+      const nearDuplicate = prev.find(logItem =>
+        curr.id === logItem.id &&
+        curr.uniquifier === logItem.uniquifier &&
+        isequal(curr.data, logItem.data) &&
+        new Date(curr.timeStamp).getTime() === new Date(logItem.timeStamp).getTime()
+      )
+      if (nearDuplicate) {
+        const toAdd = { ...curr, key: [curr.key, ...nearDuplicate.key] };
+        prev.splice(prev.indexOf(nearDuplicate), 1);
+        return [...prev, toAdd];
       }
-    });
+      return [...prev, { ...curr, key: [curr.key] }];
+    }, []);
 
     const toUpdateLogGroup = [];
     let rawDataLogs = this.createDataLogsFromCLFormat(
@@ -1369,7 +1376,8 @@ export class ExperimentAssignmentService {
       groupEnrollment: GroupEnrollment;
       groupExclusion: GroupExclusion;
     },
-    status: MARKED_DECISION_POINT_STATUS
+    status: MARKED_DECISION_POINT_STATUS,
+    condition: string
   ): Promise<void> {
     const { assignmentUnit, state, consistencyRule } = experiment;
 
@@ -1492,14 +1500,18 @@ export class ExperimentAssignmentService {
         const promiseArray = [];
         let conditionAssigned;
         if (!noGroupSpecified && !invalidGroup) {
-          conditionAssigned = this.assignExperiment(
-            user,
-            experiment,
-            individualEnrollment,
-            groupEnrollment,
-            individualExclusion,
-            groupExclusion
-          );
+          if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+            conditionAssigned = experiment.conditions.find((expCondition) => expCondition.conditionCode === condition);
+          } else {
+            conditionAssigned = this.assignExperiment(
+              user,
+              experiment,
+              individualEnrollment,
+              groupEnrollment,
+              individualExclusion,
+              groupExclusion
+            );
+          }
         }
 
         // get condition which should be assigned
@@ -1530,15 +1542,15 @@ export class ExperimentAssignmentService {
 
         if (!individualEnrollment && !individualExclusion && conditionAssigned && !invalidGroup && !noGroupSpecified) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
-            {
-              id: uuid(),
-              experiment,
-              partition: decisionPoint as DecisionPoint,
-              user,
-              condition: conditionAssigned,
-              groupId: user?.workingGroup[experiment.group],
-              enrollmentCode: groupEnrollment ? ENROLLMENT_CODE.GROUP_LOGIC : ENROLLMENT_CODE.ALGORITHMIC,
-            };
+          {
+            id: uuid(),
+            experiment,
+            partition: decisionPoint as DecisionPoint,
+            user,
+            condition: conditionAssigned,
+            groupId: user?.workingGroup[experiment.group],
+            enrollmentCode: groupEnrollment ? ENROLLMENT_CODE.GROUP_LOGIC : ENROLLMENT_CODE.ALGORITHMIC,
+          };
           promiseArray.push(this.individualEnrollmentRepository.save(individualEnrollmentDocument));
         }
 
@@ -1582,14 +1594,14 @@ export class ExperimentAssignmentService {
         );
         if (!individualEnrollment && !individualExclusion && conditionAssigned) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
-            {
-              id: uuid(),
-              experiment,
-              partition: decisionPoint,
-              user,
-              condition: conditionAssigned,
-              enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
-            };
+          {
+            id: uuid(),
+            experiment,
+            partition: decisionPoint,
+            user,
+            condition: conditionAssigned,
+            enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
+          };
           await this.individualEnrollmentRepository.save(individualEnrollmentDocument);
         }
       }
@@ -1602,7 +1614,8 @@ export class ExperimentAssignmentService {
     individualEnrollment: IndividualEnrollment | undefined,
     groupEnrollment: GroupEnrollment | undefined,
     individualExclusion: IndividualExclusion | undefined,
-    groupExclusion: GroupExclusion | undefined
+    groupExclusion: GroupExclusion | undefined,
+    enrollmentCount?: { conditionId: string; userCount: number }[]
   ): ExperimentCondition | void {
     const userId = user.id;
     const individualEnrollmentCondition = experiment.conditions.find(
@@ -1617,18 +1630,18 @@ export class ExperimentAssignmentService {
           return individualExclusion
             ? undefined
             : individualEnrollmentCondition
-            ? individualEnrollmentCondition
-            : groupExclusion
-            ? undefined
-            : groupEnrollmentCondition;
+              ? individualEnrollmentCondition
+              : groupExclusion
+                ? undefined
+                : groupEnrollmentCondition;
         } else if (experiment.consistencyRule === CONSISTENCY_RULE.GROUP) {
           return groupExclusion
             ? undefined
             : groupEnrollmentCondition
-            ? groupEnrollmentCondition
-            : individualExclusion
-            ? undefined
-            : individualEnrollmentCondition;
+              ? groupEnrollmentCondition
+              : individualExclusion
+                ? undefined
+                : individualEnrollmentCondition;
         } else {
           return experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
             ? individualEnrollmentCondition
@@ -1650,44 +1663,52 @@ export class ExperimentAssignmentService {
         return individualExclusion
           ? undefined
           : individualEnrollmentCondition
-          ? individualEnrollmentCondition
-          : groupExclusion
-          ? undefined
-          : groupEnrollmentCondition
-          ? groupEnrollmentCondition
-          : this.assignRandom(experiment, user);
+            ? individualEnrollmentCondition
+            : groupExclusion
+              ? undefined
+              : groupEnrollmentCondition
+                ? groupEnrollmentCondition
+                : this.assignRandom(experiment, user);
       } else if (experiment.consistencyRule === CONSISTENCY_RULE.GROUP) {
         return groupExclusion
           ? undefined
           : groupEnrollmentCondition
-          ? groupEnrollmentCondition
-          : individualExclusion
-          ? undefined
-          : individualEnrollmentCondition
-          ? individualEnrollmentCondition
-          : this.assignRandom(experiment, user);
+            ? groupEnrollmentCondition
+            : individualExclusion
+              ? undefined
+              : individualEnrollmentCondition
+                ? individualEnrollmentCondition
+                : this.assignRandom(experiment, user);
       } else {
         return (
           (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
             ? individualEnrollmentCondition
-            : groupEnrollmentCondition) || this.assignRandom(experiment, user)
+            : groupEnrollmentCondition) || this.assignRandom(experiment, user, enrollmentCount)
         );
       }
     }
     return;
   }
 
-  private assignRandom(experiment: Experiment, user: ExperimentUser): ExperimentCondition {
+  private assignRandom(
+    experiment: Experiment,
+    user: ExperimentUser,
+    enrollmentCount?: { conditionId: string; userCount: number }[]
+  ): ExperimentCondition {
     const randomSeed =
       experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
-      experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
+        experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
         ? `${experiment.id}_${user.id}`
         : `${experiment.id}_${user.workingGroup[experiment.group]}`;
 
     const sortedExperimentCondition = experiment.conditions.sort(
       (condition1, condition2) => condition1.order - condition2.order
     );
-    const spec = sortedExperimentCondition.map((condition) => condition.assignmentWeight);
+    let spec = sortedExperimentCondition.map((condition) => condition.assignmentWeight);
+
+    if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+      spec = this.assignStratifiedRandom(sortedExperimentCondition, spec, enrollmentCount || []);
+    }
     const r = seedrandom(randomSeed)() * 100;
     let sum = 0;
     let randomConditions = 0;
@@ -1700,6 +1721,21 @@ export class ExperimentAssignmentService {
     }
     const experimentalCondition = experiment.conditions[randomConditions];
     return experimentalCondition;
+  }
+
+  private assignStratifiedRandom(
+    sortedExperimentCondition: ExperimentCondition[],
+    originalWeights: number[],
+    enrollmentCount: { conditionId: string; userCount: number }[]
+  ): number[] {
+    const sortedEnrollmentCounts = [];
+    sortedExperimentCondition.forEach((condition) => {
+      const foundEnrollmentCount = enrollmentCount.find(({ conditionId }) => conditionId === condition.id);
+      sortedEnrollmentCounts.push(foundEnrollmentCount?.userCount || 0);
+    });
+
+    const adjustedWeights = this.stratifiedConditionsWeight(sortedEnrollmentCounts, originalWeights);
+    return adjustedWeights;
   }
 
   private async resolveSegment(segmentObj: object, segmentDetails: Segment[], depth: number): Promise<any> {
@@ -1963,5 +1999,82 @@ export class ExperimentAssignmentService {
     objectToReturn['conditionPayload'] = factorialConditionPayload;
 
     return objectToReturn;
+  }
+
+  private async getEnrollmentCountPerCondition(
+    experiment: Experiment,
+    userId: string
+  ): Promise<{ conditionId: string; userCount: number }[]> {
+    if (experiment.stratificationFactor) {
+      const factorValue = await this.userStratificationFactorRepository
+        .createQueryBuilder('srsUser')
+        .select('usf.stratificationFactorValue')
+        .from(UserStratificationFactor, 'usf')
+        .where('usf.factorName = :factor', {
+          factor: experiment.stratificationFactor.stratificationFactorName,
+        })
+        .andWhere('usf.userId = :userIdX', { userIdX: userId })
+        .getOne();
+
+      const result = await this.userStratificationFactorRepository
+        .createQueryBuilder('srsUser')
+        .select(['CAST(COUNT(srsUser.user) AS INTEGER) as "userCount", enrollment.conditionId'])
+        .innerJoin(IndividualEnrollment, 'enrollment', 'enrollment.userId = srsUser.userId')
+        .where('srsUser.stratificationFactorValue = :factorValue', {
+          factorValue: factorValue?.stratificationFactorValue,
+        })
+        .andWhere('srsUser.factorName = :factor', {
+          factor: experiment.stratificationFactor.stratificationFactorName,
+        })
+        .groupBy('enrollment.conditionId')
+        .execute();
+
+      return result;
+    }
+    return [];
+  }
+
+  private stratifiedConditionsWeight(enrollmentCounts: number[], conditionsWeight: number[]): number[] {
+    const totalConditions: number = conditionsWeight.length;
+
+    // Calculate the total sum of n
+    const totalEnrollment: number = enrollmentCounts.reduce((acc, curr) => acc + curr, 0);
+
+    // Calculate actual assignment weights
+    let assignmentWeight: number[];
+
+    if (totalEnrollment === 0) {
+      assignmentWeight = new Array(totalConditions).fill(0);
+    } else {
+      assignmentWeight = enrollmentCounts.map((enrollment) => (enrollment * 100) / totalEnrollment);
+    }
+
+    // Calculate the new weights wPrime
+    let adjustedWeights: number[] = new Array(totalConditions).fill(0);
+
+    for (let i = 0; i < totalConditions; i++) {
+      const adjustment: number = conditionsWeight[i] - assignmentWeight[i];
+
+      // Condition based on w and aw relationship
+      if (conditionsWeight[i] > assignmentWeight[i]) {
+        adjustedWeights[i] = conditionsWeight[i] + adjustment;
+        if (adjustedWeights[i] > 100) {
+          adjustedWeights[i] = 100;
+        }
+      } else if (conditionsWeight[i] === assignmentWeight[i]) {
+        adjustedWeights[i] = conditionsWeight[i];
+      } else {
+        adjustedWeights[i] = conditionsWeight[i] + adjustment;
+        if (adjustedWeights[i] < 0) {
+          adjustedWeights[i] = 0;
+        }
+      }
+    }
+
+    // Renormalize all wPrime
+    const totalWPrime: number = adjustedWeights.reduce((acc, curr) => acc + curr, 0);
+    adjustedWeights = adjustedWeights.map((weight) => (weight / totalWPrime) * 100);
+
+    return adjustedWeights;
   }
 }
