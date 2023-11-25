@@ -7,6 +7,7 @@ export const initialState: AuthState = {
   isAuthenticating: false,
   user: null,
   googleCredential: null,
+  redirectUrl: '/home',
 };
 
 const reducer = createReducer(

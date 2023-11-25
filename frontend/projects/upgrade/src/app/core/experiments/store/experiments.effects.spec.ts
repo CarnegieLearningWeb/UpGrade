@@ -1,4 +1,4 @@
-import { fakeAsync, tick } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ActionsSubject } from '@ngrx/store';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { last, pairwise, scan, take } from 'rxjs/operators';
@@ -64,6 +64,7 @@ import { actionExecuteQuery } from '../../analysis/store/analysis.actions';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { UserRole } from '../../users/store/users.model';
 import { Environment } from '../../../../environments/environment-types';
+import { TranslateService } from '@ngx-translate/core';
 
 describe('ExperimentEffects', () => {
   let service: ExperimentEffects;
@@ -71,7 +72,8 @@ describe('ExperimentEffects', () => {
   let store$: any;
   let experimentDataService: any;
   let router: any;
-  let snackbar: any;
+  let notificationService: any;
+  let translate: any;
   let mockEnvironment: Environment;
 
   beforeEach(() => {
@@ -82,11 +84,23 @@ describe('ExperimentEffects', () => {
     router = {
       navigate: jest.fn(),
     };
-    snackbar = {
-      open: jest.fn(),
+    notificationService = {
+      showError: jest.fn(),
+      showSuccess: jest.fn(),
+    };
+    translate = {
+      instant: jest.fn(),
     };
     mockEnvironment = { ...environment };
-    service = new ExperimentEffects(actions$, store$, experimentDataService, router, snackbar, mockEnvironment);
+    service = new ExperimentEffects(
+      actions$,
+      store$,
+      experimentDataService,
+      router,
+      translate,
+      notificationService,
+      mockEnvironment
+    );
   });
 
   describe('#getPaginatedExperiment$', () => {

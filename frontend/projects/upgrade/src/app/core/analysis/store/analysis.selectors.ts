@@ -1,5 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { AnalysisState, State } from './analysis.models';
+import { AnalysisState } from './analysis.models';
 
 export const selectAnalysisState = createFeatureSelector<AnalysisState>('analysis');
 

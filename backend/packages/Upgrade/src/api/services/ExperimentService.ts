@@ -74,6 +74,9 @@ import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
 import { CacheService } from './CacheService';
+import { QueryService } from './QueryService';
+import { ArchivedStats } from '../models/ArchivedStats';
+import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
 
 @Service()
 export class ExperimentService {
@@ -95,11 +98,13 @@ export class ExperimentService {
     @OrmRepository() private factorRepository: FactorRepository,
     @OrmRepository() private levelRepository: LevelRepository,
     @OrmRepository() private levelCombinationElementsRepository: LevelCombinationElementRepository,
+    @OrmRepository() private archivedStatsRepository: ArchivedStatsRepository,
     public previewUserService: PreviewUserService,
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
-    public cacheService: CacheService
+    public cacheService: CacheService,
+    public queryService: QueryService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
@@ -156,6 +161,7 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.factors', 'factors')
       .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('queries.metric', 'metric')
+      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
@@ -174,7 +180,10 @@ export class ExperimentService {
       .whereInIds(expIds);
 
     if (sortParams) {
-      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
+      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(
+        `LOWER(CAST(experiment.${sortParams.key} AS TEXT))`,
+        sortParams.sortAs
+      );
     }
     const experiments = await queryBuilderToReturn.getMany();
     return experiments.map((experiment) => {
@@ -200,6 +209,7 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experiment.factors', 'factors')
       .leftJoinAndSelect('factors.levels', 'levels')
+      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
@@ -402,7 +412,7 @@ export class ExperimentService {
   ): Promise<Experiment> {
     const oldExperiment = await this.experimentRepository.findOne(
       { id: experimentId },
-      { relations: ['stateTimeLogs', 'partitions'] }
+      { relations: ['stateTimeLogs', 'partitions', 'queries', 'queries.metric'] }
     );
     await this.clearExperimentCacheDetail(
       oldExperiment.context[0],
@@ -416,6 +426,24 @@ export class ExperimentService {
       oldExperiment.state !== EXPERIMENT_STATE.ENROLLMENT_COMPLETE
     ) {
       await this.populateExclusionTable(experimentId, state, logger);
+    }
+
+    if (state === EXPERIMENT_STATE.ARCHIVED) {
+      const queryIds = oldExperiment.queries.map((query) => query.id);
+      const results = await this.queryService.analyze(queryIds, logger);
+      const archivedStatsData: Array<Omit<ArchivedStats, 'createdAt' | 'updatedAt' | 'versionNumber'>> = results.map(
+        (result) => {
+          const queryId = result.id;
+          delete result.id;
+          const archivedStats: Partial<ArchivedStats> = {
+            id: uuid(),
+            result: result,
+            query: queryId,
+          };
+          return archivedStats;
+        }
+      );
+      await this.archivedStatsRepository.saveRawJson(archivedStatsData);
     }
 
     let data: AuditLogData = {
@@ -542,6 +570,7 @@ export class ExperimentService {
         'conditions.conditionPayloads',
         'conditions.levelCombinationElements',
         'conditions.levelCombinationElements.level',
+        'stratificationFactor',
       ],
     });
     const formatedExperiments = experimentDetails.map((experiment) => {
@@ -1302,8 +1331,8 @@ export class ExperimentService {
               id: conditionPayload.id,
               payloadType: conditionPayload.payload.type,
               payloadValue: conditionPayload.payload.value,
-              parentCondition: conditions.find((doc) => doc.id === conditionPayload.parentCondition),
-              decisionPoint: partitions.find((doc) => doc.id === conditionPayload.decisionPoint),
+              parentCondition: conditions.find((doc) => doc.id === conditionPayload.parentCondition.id),
+              decisionPoint: partitions.find((doc) => doc.id === conditionPayload.decisionPoint?.id),
             };
             return conditionPayloadToReturn;
           })) ||

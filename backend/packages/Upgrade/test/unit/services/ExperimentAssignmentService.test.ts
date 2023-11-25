@@ -34,6 +34,7 @@ import { ConditionPayloadRepository } from '../../../src/api/repositories/Condit
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
 import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { CacheService } from '../../../src/api/services/CacheService';
+import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
 
 describe('Experiment Assignment Service Test', () => {
   let sandbox;
@@ -52,6 +53,7 @@ describe('Experiment Assignment Service Test', () => {
   const stateTimeLogsRepositoryMock = sinon.createStubInstance(StateTimeLogsRepository);
   const analyticsRepositoryMock = sinon.createStubInstance(AnalyticsRepository);
   const conditionPayloadRepositoryMock = sinon.createStubInstance(ConditionPayloadRepository);
+  const userStratificationFactorRepository = sinon.createStubInstance(UserStratificationFactorRepository);
   const previewUserServiceMock = sinon.createStubInstance(PreviewUserService);
   const experimentUserServiceMock = sinon.createStubInstance(ExperimentUserService);
   const scheduledJobServiceMock = sinon.createStubInstance(ScheduledJobService);
@@ -80,6 +82,7 @@ describe('Experiment Assignment Service Test', () => {
       metricRepositoryMock,
       stateTimeLogsRepositoryMock,
       analyticsRepositoryMock,
+      userStratificationFactorRepository,
       previewUserServiceMock,
       experimentUserServiceMock,
       scheduledJobServiceMock,
@@ -342,7 +345,6 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
 
     const result = await testedModule.getAllExperimentConditions(userId, context, requestContext);
-    console.log(result);
 
     const cond = { ...exp.conditions[0], experimentId: exp.id, payload: undefined };
     expect(result.length).toEqual(1);
@@ -670,5 +672,78 @@ describe('Experiment Assignment Service Test', () => {
       undefined
     );
     expect(result).toMatchObject(monitoredDocument);
+  });
+
+  it('should handle fetched log data in any order', async () => {
+    const userId = 'testUser';
+
+    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
+    const logRepositoryMock = {
+      getMetricUniquifierData: sandbox.stub().resolves([
+        {
+          data: { foo: 'bar' },
+          uniquifier: 'uniquifier',
+          timeStamp: '123',
+          id: 'id1',
+          key: 'metric_one',
+        },
+        {
+          data: { foo: 'bar' },
+          uniquifier: 'uniquifier',
+          timeStamp: '321',
+          id: 'id2',
+          key: 'metric_two',
+        },
+        {
+          data: { foo: 'bar' },
+          uniquifier: 'uniquifier',
+          timeStamp: '123',
+          id: 'id1',
+          key: 'metric_three',
+        },
+      ]),
+      updateLog: sandbox.stub().resolves([]),
+      save: sandbox.stub().callsFake((args) => {
+        return args;
+      }),
+    };
+    const metricRepositoryMock = {
+      findMetricsWithQueries: sandbox.stub().resolves([{ key: 'class@__@key@__@foo', type: 'bar' }]),
+    };
+
+    const jsonLog = [
+      {
+        timeStamp: '123',
+        metrics: {
+          groupedMetrics: [
+            {
+              groupClass: 'class',
+              groupKey: 'key',
+              groupUniquifier: 'uniquifier',
+              attributes: {
+                foo: 1,
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    const mergedLog = [
+      {
+        metrics: [
+          {
+            key: 'class@__@key@__@foo',
+            type: 'bar',
+          },
+        ],
+      },
+    ];
+
+    testedModule.logRepository = logRepositoryMock;
+    testedModule.metricRepository = metricRepositoryMock;
+
+    const result = await testedModule.dataLog(userId, jsonLog, { logger: loggerMock, userDoc: { id: userId } });
+    expect(result).toMatchObject(mergedLog);
   });
 });
