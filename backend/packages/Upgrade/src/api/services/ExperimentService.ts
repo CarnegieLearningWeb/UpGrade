@@ -27,6 +27,7 @@ import {
   EXCLUSION_CODE,
   SEGMENT_TYPE,
   EXPERIMENT_TYPE,
+  CACHE_PREFIX,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -72,6 +73,7 @@ import {
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
+import { CacheService } from './CacheService';
 import { QueryService } from './QueryService';
 import { ArchivedStats } from '../models/ArchivedStats';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
@@ -101,6 +103,7 @@ export class ExperimentService {
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
+    public cacheService: CacheService,
     public queryService: QueryService
   ) {}
 
@@ -243,6 +246,15 @@ export class ExperimentService {
     };
   }
 
+  public async getCachedValidExperiments(context: string) {
+    const cacheKey = CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + context;
+    return this.cacheService
+      .wrap(cacheKey, this.experimentRepository.getValidExperiments.bind(this.experimentRepository, context))
+      .then((validExperiment) => {
+        return JSON.parse(JSON.stringify(validExperiment));
+      });
+  }
+
   public create(
     experiment: ExperimentDTO,
     currentUser: User,
@@ -250,6 +262,7 @@ export class ExperimentService {
     createType?: string
   ): Promise<ExperimentDTO> {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
+    this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
 
     // order for condition
     let newConditionId;
@@ -281,12 +294,15 @@ export class ExperimentService {
   }
 
   public createMultipleExperiments(
-    experiment: ExperimentDTO[],
+    experiments: ExperimentDTO[],
     user: User,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
-    logger.info({ message: `Generating test experiments`, details: experiment });
-    return this.addBulkExperiments(experiment, user, logger);
+    logger.info({ message: `Generating test experiments`, details: experiments });
+    experiments.forEach((experiment) => {
+      this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
+    });
+    return this.addBulkExperiments(experiments, user, logger);
   }
 
   public async delete(
@@ -299,6 +315,7 @@ export class ExperimentService {
     }
     return getConnection().transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
+      await this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
 
       if (experiment) {
         const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
@@ -351,6 +368,7 @@ export class ExperimentService {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
+    this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
     return this.updateExperimentInDB(experiment as ExperimentDTO, currentUser, logger);
   }
 
@@ -396,6 +414,7 @@ export class ExperimentService {
       { id: experimentId },
       { relations: ['stateTimeLogs', 'queries', 'queries.metric'] }
     );
+    this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + oldExperiment.context[0]);
 
     if (
       (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) &&
@@ -472,6 +491,7 @@ export class ExperimentService {
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
     for (const experiment of experiments) {
+      this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
       const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
       if (duplicateExperiment && experiment.id) {
         const error = new Error('Duplicate experiment');
