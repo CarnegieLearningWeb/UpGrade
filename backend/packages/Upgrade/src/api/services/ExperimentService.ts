@@ -1765,7 +1765,7 @@ export class ExperimentService {
   ): Promise<void> {
     await this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + context);
     const deletedCache = partitions.map(async (partition) => {
-      await this.cacheService.delCache(CACHE_PREFIX.MARK_KEY_PREFIX + partition.site + ' ' + partition.target);
+      await this.cacheService.delCache(CACHE_PREFIX.MARK_KEY_PREFIX + '-' + partition.site + '-' + partition.target);
     });
     await Promise.all(deletedCache);
     return;

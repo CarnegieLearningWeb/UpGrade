@@ -144,7 +144,7 @@ export class ExperimentAssignmentService {
     const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
 
     // search decision points in experiments cahce
-    const cacheKey = CACHE_PREFIX.MARK_KEY_PREFIX + site + ' ' + target;
+    const cacheKey = CACHE_PREFIX.MARK_KEY_PREFIX + '-' + site + '-' + target;
     const dpExperiments = await this.cacheService.wrap(cacheKey, () =>
       this.decisionPointRepository.find({
         where: {
@@ -264,8 +264,8 @@ export class ExperimentAssignmentService {
       });
 
       if (experimentId && experiments.length > 0) {
-        const selectedExperimentDP = dpExperiments.filter((dp) => dp.experiment.id === experimentId);
-        const decisionPointId = selectedExperimentDP[0].id;
+        const selectedExperimentDP = dpExperiments.find((dp) => dp.experiment.id === experimentId);
+        const decisionPointId = selectedExperimentDP.id;
         const experiment = experiments[0];
         let individualEnrollments: IndividualEnrollment;
         let individualExclusions: IndividualExclusion;
