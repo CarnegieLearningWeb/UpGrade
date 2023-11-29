@@ -6,6 +6,8 @@ labels: bug
 assignees: ''
 
 ---
+**Version where bug was found:**
+e.g "4.1.1"
 
 **Describe the bug**
 A clear and concise description of what the bug is.

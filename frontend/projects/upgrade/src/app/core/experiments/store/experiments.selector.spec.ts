@@ -8,6 +8,7 @@ import {
   POST_EXPERIMENT_RULE,
   ASSIGNMENT_UNIT,
   CONSISTENCY_RULE,
+  CONDITION_ORDER,
 } from './experiments.model';
 import { initialState } from './experiments.reducer';
 import {
@@ -51,6 +52,7 @@ describe('Experiments Selectors', () => {
         startOn: null,
         consistencyRule: CONSISTENCY_RULE.GROUP,
         assignmentUnit: ASSIGNMENT_UNIT.GROUP,
+        conditionOrder: CONDITION_ORDER.RANDOM,
         postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
         enrollmentCompleteCondition: null,
         endOn: null,
@@ -558,25 +560,35 @@ describe('Experiments Selectors', () => {
   // mock router state
   describe('#selectSelectedExperiment', () => {
     it('should return selected experiment with stats mapped if stats id exists', () => {
-      const state = {
+      const previousState = {
         ...mockState,
       };
       const params = {
         experimentId: '1f12cd8f-7ff9-4731-a4eb-7104918ed252',
       };
 
-      const result = selectSelectedExperiment.projector({ state: { params } }, state);
+      const result = selectSelectedExperiment.projector(
+        {
+          state: {
+            params,
+            url: 'test',
+            queryParams: {},
+          },
+          navigationId: 0,
+        },
+        previousState
+      );
 
       expect(result).toEqual({
-        ...state.entities[params.experimentId],
+        ...previousState.entities[params.experimentId],
         stat: {
-          ...state.stats[params.experimentId],
+          ...previousState.stats[params.experimentId],
         },
       });
     });
 
     it('should return selected experiment with null stats mapped if stats id is missing', () => {
-      const state = {
+      const previousState = {
         ...mockState,
         stats: {},
       };
@@ -584,10 +596,20 @@ describe('Experiments Selectors', () => {
         experimentId: '1f12cd8f-7ff9-4731-a4eb-7104918ed252',
       };
 
-      const result = selectSelectedExperiment.projector({ state: { params } }, state);
+      const result = selectSelectedExperiment.projector(
+        {
+          state: {
+            params,
+            url: 'test',
+            queryParams: {},
+          },
+          navigationId: 0,
+        },
+        previousState
+      );
 
       expect(result).toEqual({
-        ...state.entities[params.experimentId],
+        ...previousState.entities[params.experimentId],
         stat: null,
       });
     });

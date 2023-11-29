@@ -1,0 +1,52 @@
+<div class="mock-client-app-interface-container">
+  <div class="left-side">
+    <app-user-form [allowedGroups]="allowedGroups"></app-user-form>
+    <div class="buttons-container">
+      <mat-list>
+        <mat-card class="buttons-list-item" *ngFor="let button of model.buttons">
+          <div class="button-box">
+            <button mat-raised-button (click)="dispatch(button.hookName, button.props)">{{ button.label }}</button>
+            <div class="hook-type">
+              Hook:<span class="hook-value">{{ button.hookName }}</span>
+            </div>
+          </div>
+          <div class="props-box">
+            <div class="props-box-title">Props:</div>
+            <div class="props-box-value">
+              <pre>{{ button.props | json }}</pre>
+            </div>
+          </div>
+        </mat-card>
+      </mat-list>
+    </div>
+  </div>
+
+  <div class="right-side">
+    <mat-card class="interface-properties-container">
+      <mat-card-header class="header">
+        <mat-card-title>
+          {{ model.name }}
+        </mat-card-title>
+        <mat-card-subtitle>
+          {{ model.description }}
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-divider></mat-divider>
+      <mat-card-content class="interface-properties-content">
+        <mat-card-header>
+          <mat-card-title class="hooks-title">Hooks</mat-card-title>
+          <mat-card-subtitle>
+            "Hooks" are event names that map to methods that simulate UpgradeClient code usage in the mock client app.
+            Buttons will dispatch these hooks with the props provided in the button's "props" property (when needed).
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-list>
+          <div class="hook-info-container" *ngFor="let hook of model.hooks">
+            <div class="hook-name">{{ hook.name }}</div>
+            <div class="hook-description">{{ hook.description }}</div>
+          </div>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

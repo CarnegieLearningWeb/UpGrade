@@ -17,7 +17,7 @@ jobs:
       version: ${{ steps.get-dev-version.outputs.version }}
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Get Dev Version
         id: get-dev-version
         uses: ./.github/actions/get-dev-version

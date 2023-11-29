@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": "./src",
     "outDir": "./dist",
-    "sourceMap": true,
+    "sourceMap": false,
     "declaration": true,
     "strict": true,
     "alwaysStrict": true,
@@ -12,6 +12,7 @@
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "resolveJsonModule": true,
     "importHelpers": true,
     "module": "commonjs",
     "target": "es6",
@@ -23,6 +24,7 @@
   },
   "include": [
     "src",
-    ".eslintrc.js"
+    ".eslintrc.js",
+    "webpack.config.ts"
   ]
 }

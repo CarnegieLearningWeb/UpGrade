@@ -20,7 +20,7 @@ import { EnrollmentOverTimeComponent } from './components/enrollment-over-time/e
 import { EnrollmentConditionTableComponent } from './components/enrollment-condition-table/enrollment-condition-table.component';
 import { EnrollmentPointPartitionTableComponent } from './components/enrollment-point-partition-table/enrollment-point-partition-table.component';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
-import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime-ex';
+import { OwlDateTimeModule, OwlNativeDateTimeModule } from '@danielmoncada/angular-datetime-picker';
 import { ExperimentPostConditionComponent } from './components/experiment-post-condition/experiment-post-condition.component';
 import { TableRowComponent } from './components/table-row/table-row.component';
 import { QueriesModalComponent } from './components/modal/queries-modal/queries-modal.component';

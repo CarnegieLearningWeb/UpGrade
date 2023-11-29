@@ -2,7 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ExperimentScheduleComponent } from './experiment-schedule.component';
 import { TestingModule } from '../../../../../../testing/testing.module';
-import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime-ex';
+import { OwlDateTimeModule, OwlNativeDateTimeModule } from '@danielmoncada/angular-datetime-picker';
 
 xdescribe('ExperimentScheduleComponent', () => {
   let component: ExperimentScheduleComponent;

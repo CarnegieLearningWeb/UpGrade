@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ViewChild, ElementRef, OnChanges } from '@angular/core';
-
+import { ASSIGNMENT_UNIT } from 'upgrade_types';
 import { AbstractControl } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import {
@@ -18,7 +18,7 @@ import {
 } from '../../../../../core/analysis/store/analysis.models';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
-import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray } from '@angular/forms';
 import { startWith, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { DialogService } from '../../../../../shared/services/dialog.service';
@@ -38,11 +38,12 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('metricTable', { static: false, read: ElementRef }) metricTable: ElementRef;
 
-  queryForm: FormGroup;
+  queryForm: UntypedFormGroup;
 
   // Used for displaying metrics
   allMetricsSub: Subscription;
   allMetrics = [];
+  private repeatedMeasureSubscriptions: Subscription[] = [];
 
   queryOperations = [];
   comparisonFns = [
@@ -71,10 +72,13 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   queryNameError = [];
   queryStatisticError = [];
   queryComparisonStatisticError = [];
+  queryMetricDropDownError = [];
+
+  currentAssignmentUnit: ASSIGNMENT_UNIT;
 
   constructor(
     private analysisService: AnalysisService,
-    private _formBuilder: FormBuilder,
+    private _formBuilder: UntypedFormBuilder,
     private translate: TranslateService,
     private dialogService: DialogService,
     private experimentDesignStepperService: ExperimentDesignStepperService
@@ -83,11 +87,22 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   optionsSub() {
     this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics) => {
       this.allMetrics = metrics;
-      this.options = this.allMetrics;
+      // Hide global metrics options if Within-subjects is selected
+      this.options =
+        this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
+          ? this.allMetrics.filter((metric) => metric.children.length > 0)
+          : this.allMetrics;
     });
   }
 
   ngOnInit() {
+    // TODO: Invalidate the global metric rows whenever the unit of assignment updates to Within-subjects
+    this.experimentDesignStepperService.currentAssignmentUnit$.subscribe((unit) => {
+      if (unit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+        // console.log('this.queries:', this.queries);
+      }
+      this.currentAssignmentUnit = unit;
+    });
     this.optionsSub();
     this.queryForm = this._formBuilder.group({
       queries: this._formBuilder.array([
@@ -97,7 +112,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
           operationType: [null, Validators.required],
           compareFn: [null, Validators.required],
           compareValue: [null, Validators.required],
-          repeatedMeasure: [REPEATED_MEASURE.mostRecent, Validators.required],
+          repeatedMeasure: [null, Validators.required],
         }),
       ]),
     });
@@ -115,7 +130,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       // Remove the default empty row
       this.queries.removeAt(0);
       this.experimentInfo.queries.forEach((query, queryIndex) => {
-        let key = query.metric.key ? query.metric.key : query.metric;
+        const key = query.metric.key ? query.metric.key : query.metric;
         // separating keys from metric
         const rootKey = key.split(METRICS_JOIN_TEXT);
         // set selectedNode for first key of simple/repeated metrics
@@ -194,8 +209,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   // getters
-  get queries(): FormArray {
-    return this.queryForm.get('queries') as FormArray;
+  get queries(): UntypedFormArray {
+    return this.queryForm.get('queries') as UntypedFormArray;
   }
 
   get NewExperimentDialogEvents() {
@@ -207,14 +222,13 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get ContinuousRepeatedMeasure() {
-    let repeatedMeasure = Object.values(REPEATED_MEASURE);
-    return repeatedMeasure;
+    const repeatedMeasure = Object.values(REPEATED_MEASURE);
+    return repeatedMeasure.slice(0, 3);
   }
 
   get CategoricalRepeatedMeasure() {
-    let repeatedMeasure = Object.values(REPEATED_MEASURE);
-    repeatedMeasure.shift();
-    return repeatedMeasure;
+    const repeatedMeasure = Object.values(REPEATED_MEASURE);
+    return repeatedMeasure.slice(1, 3); // This should update to "repeatedMeasure.slice(1)" later to return all four options
   }
 
   get experimentInfoQueriesLength() {
@@ -222,7 +236,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   getKeys(queryIndex: number) {
-    const keysArray = this.queries.at(queryIndex).get('keys') as FormArray;
+    const keysArray = this.queries.at(queryIndex).get('keys') as UntypedFormArray;
     return keysArray;
   }
 
@@ -255,7 +269,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   setFilteredStatistic(type: string) {
-    if (type && type === IMetricMetaData.CONTINUOUS) {
+    if (type === IMetricMetaData.CONTINUOUS) {
       this.queryOperations = [
         { value: OPERATION_TYPES.SUM, viewValue: 'Sum' },
         { value: OPERATION_TYPES.MIN, viewValue: 'Min' },
@@ -266,7 +280,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         { value: OPERATION_TYPES.MEDIAN, viewValue: 'Median' },
         { value: OPERATION_TYPES.STDEV, viewValue: 'Standard Deviation' },
       ];
-    } else if (type && type === IMetricMetaData.CATEGORICAL) {
+    } else if (type === IMetricMetaData.CATEGORICAL) {
       this.queryOperations = [
         { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
         { value: OPERATION_TYPES.PERCENTAGE, viewValue: 'Percentage' },
@@ -300,14 +314,40 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   addMetrics() {
     const form = this.addMetric();
     this.queries.push(form);
+
+    // Get the last index
+    const lastIndex = this.queries.length - 1;
+
+    // Subscribe to the value changes of the 'repeatedMeasure' form control of the new row
+    this.repeatedMeasureSubscriptions[lastIndex] = (<UntypedFormArray>this.queryForm.get('queries'))
+      .at(lastIndex)
+      .get('repeatedMeasure')
+      .valueChanges.subscribe((selectedValue) => {
+        // set fileredStats for the repeated metrics:
+        let {
+          metadata: { type },
+        } = this.selectedNode[lastIndex];
+        if (
+          type === IMetricMetaData.CATEGORICAL &&
+          (selectedValue === REPEATED_MEASURE.count || selectedValue === REPEATED_MEASURE.percentage)
+        ) {
+          type = IMetricMetaData.CONTINUOUS;
+        }
+        this.filteredStatistic$[lastIndex] = this.setFilteredStatistic(type);
+      });
     const scrollTableType = 'metricTable';
     this.updateView(scrollTableType);
-    const index = this.queries.length;
-    this.setQueryIndex(index - 1);
+    this.setQueryIndex(lastIndex);
     this.ManageKeysControl(this.queryIndex, 0);
   }
 
   removeMetric(queryIndex: number) {
+    // unsubscribe from the 'repeatedMeasure' value changes for the query at this index
+    if (this.repeatedMeasureSubscriptions[queryIndex]) {
+      this.repeatedMeasureSubscriptions[queryIndex].unsubscribe();
+      // remove the subscription from the array
+      this.repeatedMeasureSubscriptions.splice(queryIndex, 1);
+    }
     this.queries.removeAt(queryIndex);
     if (this.experimentInfo) {
       const deletedQuery = this.experimentInfo.queries[queryIndex];
@@ -317,6 +357,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     }
     this.experimentDesignStepperService.experimentStepperDataChanged();
     // reset options for metric keys:
+    this.filteredStatistic$[queryIndex] = [];
     this.firstSelectedNode[queryIndex] = null;
     this.optionsSub();
     this.setQueryIndex(this.queryIndex - 1);
@@ -375,9 +416,15 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  checkMetricFromDropDownError(type: any) {
+    if (!type) {
+      this.queryMetricDropDownError.push(true);
+    }
+  }
+
   filteredMetricKeys(queryIndex: number, keyIndex: number) {
     // Prepare filteredMetrics for each query and its keys for new experiment and for experimentInfo while in edit Mode
-    const keysArray = this.queries.at(queryIndex).get('keys') as FormArray;
+    const keysArray = this.queries.at(queryIndex).get('keys') as UntypedFormArray;
     const filteredMetric = keysArray
       .at(keyIndex)
       .get('metricKey')
@@ -583,6 +630,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     this.queryMetricKeyError = [];
     this.queryStatisticError = [];
     this.queryComparisonStatisticError = [];
+    this.queryMetricDropDownError = [];
     this.queryNameError = [];
     const monitoredMetricsFormData = this.queryForm.getRawValue();
     monitoredMetricsFormData.queries = monitoredMetricsFormData.queries.map((query, index) => {
@@ -594,19 +642,23 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         if (keys[0].metricKey || operationType || queryName || compareFn || compareValue) {
           this.checkMetricKeyRequiredError(keys);
         }
-        let metrics = keys;
+        const metrics = [...keys];
         keys = keys
           .filter((key) => key.metricKey !== null)
           .map((key) => (key.metricKey.key ? key.metricKey.key : key.metricKey));
         if (keys.length) {
           this.checkQueryNameRequiredError(queryName);
           this.checkStatisticRequiredError(operationType);
-          const {
-            metadata: { type },
-          } = metrics[keys.length-1].metricKey;
-          
-          if (type === IMetricMetaData.CATEGORICAL) {
-            this.checkComparisonStatisticRequiredError(compareFn, compareValue);
+          this.checkMetricFromDropDownError(metrics[keys.length - 1].metricKey['metadata']);
+
+          if (metrics[keys.length - 1].metricKey['metadata']) {
+            const {
+              metadata: { type },
+            } = metrics[keys.length - 1].metricKey;
+
+            if (type === IMetricMetaData.CATEGORICAL) {
+              this.checkComparisonStatisticRequiredError(compareFn, compareValue);
+            }
           }
           let queryObj: Query = {
             name: queryName,
@@ -641,6 +693,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       this.queryMetricKeyError.length === 0 &&
       this.queryStatisticError.length === 0 &&
       this.queryComparisonStatisticError.length === 0 &&
+      this.queryMetricDropDownError.length === 0 &&
       this.queryNameError.length === 0
     ) {
       this.emitExperimentDialogEvent.emit({

@@ -6,9 +6,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Build Lambda
         uses: ./.github/actions/generic-npm-build
         with:
           name: Lambda
           working_directory: backend/packages/Scheduler
+          node_version: 16

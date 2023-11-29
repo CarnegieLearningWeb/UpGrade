@@ -11,8 +11,10 @@ import {
   EXPERIMENT_LOG_TYPE,
   REPEATED_MEASURE,
   IMetricMetaData,
+  ASSIGNMENT_UNIT,
+  EXPERIMENT_TYPE,
 } from 'upgrade_types';
-import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
+import { AnalyticsRepository, CSVExportDataRow } from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
 import ObjectsToCsv from 'objects-to-csv';
 import fs from 'fs';
@@ -24,6 +26,12 @@ import { UserRepository } from '../repositories/UserRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { METRICS_JOIN_TEXT } from './MetricService';
 import { getCustomRepository } from 'typeorm';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 interface IEnrollmentStatByDate {
   date: string;
@@ -176,8 +184,13 @@ export class AnalyticsService {
       let skip = 0;
       const take = 50;
       do {
-        const data = await this.analyticsRepository.getCSVDataForSimpleExport(experimentId, skip, take);
-        const userIds = data.map(({ userId }) => userId);
+        let csvExportData: CSVExportDataRow[];
+        if(experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+          csvExportData = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentId, skip, take);
+        }else {
+          csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(experimentId, skip, take);
+        }
+        const userIds = csvExportData.map(({ userId }) => userId);
         // don't query if no data
         if (!experimentId || (userIds && userIds.length === 0)) {
           break;
@@ -223,7 +236,7 @@ export class AnalyticsService {
                   const jsonLog = groupedUser[userId][queryId].reduce(
                     (accumulator: queryDataType | undefined, doc: queryDataType) => {
                       if (accumulator) {
-                        return new Date(accumulator.createdAt) > new Date(doc.createdAt) ? doc : accumulator;
+                        return new Date(accumulator.updatedAt) > new Date(doc.updatedAt) ? doc : accumulator;
                       }
                       return doc;
                     },
@@ -246,7 +259,7 @@ export class AnalyticsService {
                   const jsonLog = groupedUser[userId][queryId].reduce(
                     (accumulator: queryDataType | undefined, doc: queryDataType) => {
                       if (accumulator) {
-                        return new Date(accumulator.createdAt) < new Date(doc.createdAt) ? doc : accumulator;
+                        return new Date(accumulator.updatedAt) < new Date(doc.updatedAt) ? doc : accumulator;
                       }
                       return doc;
                     },
@@ -280,7 +293,7 @@ export class AnalyticsService {
         }
 
         // merge with data
-        const csvRows = data.map((row) => {
+        const csvRows = csvExportData.map((row) => {
           const queryObject = logsUser[row.userId];
           const queryDataToAdd = {};
 
@@ -294,7 +307,12 @@ export class AnalyticsService {
             ExperimentId: row.experimentId,
             ExperimentName: row.experimentName,
             UserId: row.userId,
+            AppContext: row.context[0],
+            UnitOfAssignment: row.assignmentUnit,
+            GroupType: row.group,
             GroupId: row.groupId,
+            Site: row.site,
+            Target: row.target,
             ConditionName: row.conditionName,
             FirstDecisionPointReachedOn: new Date(row.firstDecisionPointReachedOn).toISOString(),
             UniqueDecisionPointsMarked: row.decisionPointReachedCount,
@@ -305,12 +323,15 @@ export class AnalyticsService {
         // write in the file
         const csv = new ObjectsToCsv(csvRows);
         try {
+          if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+            csv.delimiter = ',';
+          }
           await csv.toDisk(`${folderPath}${simpleExportCSV}`, { append: true });
         } catch (err) {
           console.log(err);
         }
 
-        if (data.length === take) {
+        if (csvExportData.length === take) {
           skip += take;
         } else {
           toLoop = false;

@@ -61,13 +61,11 @@ export class SegmentsService {
     );
   }
 
-  exportSegment(segmentId: string) {
-    this.store$.dispatch(SegmentsActions.actionExportSegment({ segmentId }));
+  exportSegments(segmentIds: string[]) {
+    this.store$.dispatch(SegmentsActions.actionExportSegments({ segmentIds }));
   }
 
-  importSegment(segment: SegmentInput) {
-    this.store$.dispatch(
-      SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.IMPORT_SEGMENT })
-    );
+  importSegments(segments: SegmentInput[]) {
+    this.store$.dispatch(SegmentsActions.actionImportSegments({ segments }));
   }
 }

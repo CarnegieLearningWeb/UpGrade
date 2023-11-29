@@ -8,7 +8,7 @@ jobs:
       node-version: ${{ steps.get-node-version.outputs.node-version }}
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Load Environment Variables
         uses: tw3lveparsecs/github-actions-setvars@v0.1
       - name: Get Node Version
@@ -34,7 +34,7 @@ jobs:
           --health-retries 5
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install Dependencies
         run: |
           cd ..

@@ -480,18 +480,19 @@
                                 [matTooltip]="
                                   factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
                                     levelPayloadIndex
-                                  ]?.payload
+                                  ]?.payload?.value
                                 "
                                 matTooltipPosition="above"
                               >
                                 {{
                                   factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
                                     levelPayloadIndex
-                                  ]?.payload | truncate: 35
+                                  ]?.payload?.value | truncate: 35
                                 }}
                               </span>
                             </ng-container>
                             <ng-container
+                              formGroupName="payload"
                               *ngIf="
                                 (levelsTableEditIndex$ | async) === levelPayloadIndex &&
                                 (factorsTableIndex$ | async) === factorIndex
@@ -502,15 +503,15 @@
                                   [matTooltip]="
                                     factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
                                       levelPayloadIndex
-                                    ]?.payload
+                                    ]?.payload?.value
                                   "
                                   matTooltipPosition="above"
                                 >
                                   <input
                                     matInput
                                     [placeholder]="'home.new-experiment.design.payload.placeholder.text' | translate"
-                                    formControlName="payload"
-                                    [value]="payload"
+                                    formControlName="value"
+                                    [value]="payload?.value"
                                     autocomplete="off"
                                   />
                                 </span>

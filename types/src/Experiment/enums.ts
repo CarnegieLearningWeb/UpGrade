@@ -7,6 +7,13 @@ export enum CONSISTENCY_RULE {
 export enum ASSIGNMENT_UNIT {
   INDIVIDUAL = 'individual',
   GROUP = 'group',
+  WITHIN_SUBJECTS = 'within-subjects',
+}
+
+export enum CONDITION_ORDER {
+  RANDOM = 'random',
+  RANDOM_ROUND_ROBIN = 'random round robin',
+  ORDERED_ROUND_ROBIN = 'ordered round robin',
 }
 
 export enum POST_EXPERIMENT_RULE {
@@ -44,7 +51,7 @@ export enum SERVER_ERROR {
   CONDITION_NOT_FOUND = 'Condition not found',
   EXPERIMENT_ID_MISSING_FOR_SHARED_DECISIONPOINT = 'Experiment ID not provided for shared Decision Point',
   INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT = 'Experiment ID provided is invalid for shared Decision Point',
-  UNSUPPORTED_CALIPER = 'Caliper profile or event not supported'
+  UNSUPPORTED_CALIPER = 'Caliper profile or event not supported',
 }
 
 export enum MARKED_DECISION_POINT_STATUS {
@@ -135,6 +142,8 @@ export enum REPEATED_MEASURE {
   mean = 'MEAN',
   earliest = 'EARLIEST',
   mostRecent = 'MOST RECENT',
+  count = 'COUNT',
+  percentage = 'PERCENTAGE',
 }
 
 export enum FILTER_MODE {
@@ -178,9 +187,14 @@ export enum PAYLOAD_TYPE {
 }
 
 export enum SUPPORTED_CALIPER_PROFILES {
-  GRADING = "GradingProfile"
+  GRADING = 'GradingProfile',
 }
 
 export enum SUPPORTED_CALIPER_EVENTS {
-  GRADE = "GradeEvent"
+  GRADE = 'GradeEvent',
+}
+
+export enum CACHE_PREFIX {
+  EXPERIMENT_KEY_PREFIX = 'validExperiments-',
+  SEGMENT_KEY_PREFIX = 'segments-',
 }

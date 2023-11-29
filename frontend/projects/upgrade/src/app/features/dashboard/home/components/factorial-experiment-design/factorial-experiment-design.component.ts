@@ -10,7 +10,7 @@ import {
   OnChanges,
   OnDestroy,
 } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators, UntypedFormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
@@ -31,15 +31,14 @@ import { ExperimentDesignStepperService } from '../../../../../core/experiment-d
 import {
   DecisionPointsTableRowData,
   ExperimentConditionPayloadRequestObject,
-  ExperimentFactorFormData,
-  ExperimentFactorialFormDesignData,
-  ExperimentLevelFormData,
+  ExperimentFactorialDesignData,
   FactorialConditionRequestObject,
   FactorialConditionTableRowData,
   FactorialFactorTableRowData,
   FactorialLevelTableRowData,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { FACTORIAL_EXP_CONSTANTS } from './factorial-experiment-design.constants';
+import { PAYLOAD_TYPE } from '../../../../../../../../../../types/src';
 
 @Component({
   selector: 'home-factorial-experiment-design',
@@ -62,7 +61,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   subscriptionHandler: Subscription;
 
-  factorialExperimentDesignForm: FormGroup;
+  factorialExperimentDesignForm: UntypedFormGroup;
   decisionPointDataSource = new BehaviorSubject<AbstractControl[]>([]);
   factorDataSource = new BehaviorSubject<AbstractControl[]>([]);
   tableData$ = new BehaviorSubject<FactorialLevelTableRowData[]>([]);
@@ -124,7 +123,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   factorialConditions: FactorialConditionRequestObject[] = [];
 
   constructor(
-    private _formBuilder: FormBuilder,
+    private _formBuilder: UntypedFormBuilder,
     private experimentService: ExperimentService,
     private translate: TranslateService,
     private dialogService: DialogService,
@@ -313,7 +312,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return this._formBuilder.group({
       id: [id || uuidv4()],
       name: [name, Validators.required],
-      payload: [payload],
+      payload: this._formBuilder.group({ type: PAYLOAD_TYPE.STRING, value: [payload] }),
     });
   }
 
@@ -497,7 +496,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     return !this.levelPointErrors.length;
   }
 
-  validateFactorCount(factorialExperimentDesignFormData: ExperimentFactorialFormDesignData) {
+  validateFactorCount(factorialExperimentDesignFormData: ExperimentFactorialDesignData) {
     this.factorCountError = null;
     this.levelCountError = null;
     this.expandedId = 0;
@@ -526,7 +525,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     } else {
       this.factorCountError = factorCountErrorMsg;
     }
-    this.expandedId--;
+    this.expandedId;
   }
 
   validateConditionCount() {
@@ -604,7 +603,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   // level table
   getFactorialLevelsAt(factorIndex: number) {
-    const levelsArray = this.factor?.at(factorIndex).get('levels') as FormArray;
+    const levelsArray = this.factor?.at(factorIndex).get('levels') as UntypedFormArray;
     return levelsArray;
   }
 
@@ -642,7 +641,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   // factor table
   getFactorialFactorsAt(factorIndex: number) {
-    const factorsArray = this.factor?.at(factorIndex) as FormArray;
+    const factorsArray = this.factor?.at(factorIndex) as UntypedFormArray;
     return factorsArray;
   }
 
@@ -753,9 +752,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       );
 
       order = 1;
-      const factorsDesignFormData = this.experimentDesignStepperService.createFactorialDesignDataFromForm(
-        this.factorialExperimentDesignForm.value
-      );
+      const factorsDesignFormData = this.factorialExperimentDesignForm.value.factors;
       factorialExperimentDesignFormData.factors = factorsDesignFormData.map((factor, index) => {
         return this.experimentInfo
           ? { ...this.experimentInfo.factors[index], ...factor, order: order++ }
@@ -787,18 +784,18 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   }
 
   // getters:
-  get decisionPoints(): FormArray {
+  get decisionPoints(): UntypedFormArray {
     return this.factorialExperimentDesignForm?.get(
       FACTORIAL_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY
-    ) as FormArray;
+    ) as UntypedFormArray;
   }
 
-  get factor(): FormArray {
-    return this.factorialExperimentDesignForm?.get('factors') as FormArray;
+  get factor(): UntypedFormArray {
+    return this.factorialExperimentDesignForm?.get('factors') as UntypedFormArray;
   }
 
-  get level(): FormArray {
-    return this.factorialExperimentDesignForm?.get('factors').get('levels') as FormArray;
+  get level(): UntypedFormArray {
+    return this.factorialExperimentDesignForm?.get('factors').get('levels') as UntypedFormArray;
   }
 
   get NewExperimentDialogEvents() {

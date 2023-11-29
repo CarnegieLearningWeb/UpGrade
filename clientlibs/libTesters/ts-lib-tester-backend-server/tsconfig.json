@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,  
+    "sourceMap": true,
+    "baseUrl": ".",
+    "importHelpers": true,
+    "target": "esnext",
+    "allowJs": true,
+    "module": "esnext",
+      "lib": [
+        "esnext",
+      ],
+      "paths": {
+          "*": [
+              "node_modules/*"
+          ],
+          "shared": [
+              "../shared/*"
+          ],
+          "types": [
+              "../types/*"
+          ]
+      },
+      "skipLibCheck": true
+  },
+  "include": ["src/**/*"]
+}

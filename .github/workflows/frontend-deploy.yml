@@ -60,7 +60,7 @@ jobs:
       # Otherwise, build it
       - name: Git Checkout
         if: steps.check-tag.outputs.exists == 'false'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Frontend Build
         if: steps.check-tag.outputs.exists == 'false'
         uses: ./.github/actions/generic-npm-build

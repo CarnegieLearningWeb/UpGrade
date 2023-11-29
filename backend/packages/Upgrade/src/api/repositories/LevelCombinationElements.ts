@@ -21,7 +21,7 @@ export class LevelCombinationElementRepository extends Repository<LevelCombinati
   }
 
   public async insertLevelCombinationElement(
-    levelCombinationElementDoc: LevelCombinationElement[],
+    levelCombinationElementDoc: Array<Partial<LevelCombinationElement>>,
     entityManager: EntityManager
   ): Promise<LevelCombinationElement[]> {
     const result = await entityManager

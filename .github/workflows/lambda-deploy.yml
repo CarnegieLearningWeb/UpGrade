@@ -57,13 +57,14 @@ jobs:
       # Otherwise, build the artifact
       - name: Git Checkout
         if: steps.check-tag.outputs.exists == 'false'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Build Lambda
         if: steps.check-tag.outputs.exists == 'false'
         uses: ./.github/actions/generic-npm-build
         with:
           working_directory: backend/packages/Scheduler
           version: ${{ steps.set-vars.outputs.version }}
+          node_version: 16
       - name: Copy Files
         if: steps.check-tag.outputs.exists == 'false'
         working-directory: backend/packages/Scheduler

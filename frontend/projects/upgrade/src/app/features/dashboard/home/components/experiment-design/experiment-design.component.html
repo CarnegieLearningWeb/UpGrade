@@ -5,20 +5,7 @@
         <section class="simple-experiment-decision-point-conditions-view">
           <div class="decision-point-header-container">
             <span class="title">{{ 'home.new-experiment.design.decision-point.text' | translate }}</span>
-            <button
-              type="button"
-              mat-flat-button
-              color="primary"
-              class="ft-14-600 default-button toggle-button"
-              (click)="scrollToPayloadsTable()"
-              [class.default-button--disabled]="(isFormLockedForEdit$ | async) || !(payloadTableData$ | async).length"
-              [disabled]="(isFormLockedForEdit$ | async) || !(payloadTableData$ | async).length"
-            >
-              <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
-              <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.payloads' | translate }}</span>
-            </button>
           </div>
-          <br />
           <!-- Decision Point Table -->
           <ng-container>
             <mat-table
@@ -422,15 +409,13 @@
               [innerHTML]="conditionCountError"
             ></span>
           </div>
-        </section>
 
-        <div>
-          <br />
-          <br />
-          <app-payloads-table [experimentInfo]="experimentInfo" (hidePayloadTable)="scrollToConditionsTable()">
-          </app-payloads-table>
-          <br />
-        </div>
+          <div *ngIf="decisionPoints.length && conditions.length">
+            <app-payloads-table 
+              [experimentInfo]="experimentInfo">
+            </app-payloads-table>
+          </div>
+        </section>
       </form>
     </section>
   </section>

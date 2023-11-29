@@ -6,8 +6,9 @@ import { currentUserChecker } from '../../auth/currentUserChecker';
 
 const expressApp: Application = createExpressServer({
   cors: true,
-  classTransformer: false,
-  validation: false,
+  classTransformer: true,
+  validation: { validationError: { target: false , value: false }},
+  // validation: { whitelist: true, forbidNonWhitelisted: true, validationError: { target: false, value: false } },
   defaultErrorHandler: false,
   routePrefix: env.app.routePrefix,
   controllers: env.app.dirs.controllers,

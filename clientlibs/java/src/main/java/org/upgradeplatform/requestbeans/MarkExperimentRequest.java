@@ -6,25 +6,35 @@ public class MarkExperimentRequest {
 
 	
 	private String userId;
-	private MarkedDecisionPointStatus status;
+	private String status;
 	private MarkExperimentRequestData data;
 	private String clientError;
+	private String uniquifier;
 
 	public MarkExperimentRequest() {}
 
 	public MarkExperimentRequest(String userId, MarkedDecisionPointStatus status, MarkExperimentRequestData data) {
 		super();
 		this.userId = userId;
-		this.status = status;
+		this.status = status.toString();
 		this.data = data;
 	}
 
 	public MarkExperimentRequest(String userId, MarkedDecisionPointStatus status, MarkExperimentRequestData data, String clientError) {
 		super();
 		this.userId = userId;
-		this.status = status;
+		this.status = status.toString();
 		this.data = data;
 		this.clientError = clientError;
+	}
+
+	public MarkExperimentRequest(String userId, MarkedDecisionPointStatus status, MarkExperimentRequestData data,
+			String clientError, String uniquifier) {
+		this.userId = userId;
+		this.status = status.toString();
+		this.data = data;
+		this.clientError = clientError;
+		this.uniquifier = uniquifier;
 	}
 
 	public String getUserId() {
@@ -35,12 +45,12 @@ public class MarkExperimentRequest {
 		this.userId = userId;
 	}
 
-	public MarkedDecisionPointStatus getStatus() {
+	public String getStatus() {
 		return status;
 	}
 
 	public void setStatus(MarkedDecisionPointStatus status){
-		this.status = status;
+		this.status = status.toString();
 	}
 
 	public MarkExperimentRequestData getData(){
@@ -57,6 +67,14 @@ public class MarkExperimentRequest {
 
 	public void setClientError(String clientError) {
 		this.clientError = clientError;
+	}
+
+	public String getUniquifier() {
+		return uniquifier;
+	}
+
+	public void setUniquifier(String uniquifier) {
+		this.uniquifier = uniquifier;
 	}
 	
 }

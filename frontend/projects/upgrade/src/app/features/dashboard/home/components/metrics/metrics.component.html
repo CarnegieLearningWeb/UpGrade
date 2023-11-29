@@ -76,15 +76,6 @@
               </mat-header-cell>
               <mat-cell *matCellDef="let element; let queryIndex = index" [formGroupName]="queryIndex">
                 <div class="secondary-form">
-                  <!-- statistic -->
-                  <mat-form-field class="ft-14-400 form-control" floatLabel="never">
-                    <mat-label>{{ 'monitor.statistic.text' | translate | titlecase }}</mat-label>
-                    <mat-select class="ft-14-400" formControlName="operationType">
-                      <mat-option *ngFor="let operation of filteredStatistic$[queryIndex]" [value]="operation.value">
-                        {{ operation.viewValue | titlecase }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
                   <!-- repeated measure -->
                   <mat-form-field
                     class="ft-14-400 form-control"
@@ -118,6 +109,15 @@
                           {{ measure | titlecase }}
                         </mat-option>
                       </div>
+                    </mat-select>
+                  </mat-form-field>
+                  <!-- statistic -->
+                  <mat-form-field class="ft-14-400 form-control" floatLabel="never">
+                    <mat-label>{{ 'home.new-experiment.metrics.statistics.placeholder.text' | translate | titlecase }}</mat-label>
+                    <mat-select class="ft-14-400" formControlName="operationType">
+                      <mat-option *ngFor="let operation of filteredStatistic$[queryIndex]" [value]="operation.value">
+                        {{ operation.viewValue | titlecase }}
+                      </mat-option>
                     </mat-select>
                   </mat-form-field>
                   <!-- comparison function -->
@@ -214,6 +214,11 @@
           class="ft-14-600 validation-message"
           *ngIf="queryNameError.length > 0"
           [innerHTML]="'home.new-experiment.metrics.description-exist.validation.text' | translate"
+        ></span>
+        <span
+          class="ft-14-600 validation-message"
+          *ngIf="queryMetricDropDownError.length > 0"
+          [innerHTML]="'home.new-experiment.metrics.metric-name-exist.validation.text' | translate"
         ></span>
       </ng-container>
       <ng-template #noAvailableMetricsMessage>

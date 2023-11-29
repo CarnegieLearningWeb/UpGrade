@@ -1,0 +1,41 @@
+{
+  "name": "ts-lib-tester-backend-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "build": "rm -rf ./dist && npx tsc",
+    "start:build": "npm run build && npm run start",
+    "start": "node --es-module-specifier-resolution=node dist/ts-lib-tester-backend-server/src/app.js",
+    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/ts-lib-tester-backend-server/src/app.js\"",
+    "preinstall": "npm run copy-local-js-build",
+    "start:install": "npm install && npm run start",
+    "copy-local-js-build": "mkdir -p node_modules/upgrade_client_local && cd ../../js/ && npm install && npm run build && cp -r ./{dist,package.json,README.md} ../libTesters/ts-lib-tester-backend-server/node_modules/upgrade_client_local",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "upgrade_client_1_1_7": "npm:upgrade_client_lib@1.1.7",
+    "upgrade_client_1_1_8": "npm:upgrade_client_lib@1.1.8",
+    "upgrade_client_3_0_18": "npm:upgrade_client_lib@3.0.18",
+    "upgrade_client_4_1_6": "npm:upgrade_client_lib@4.1.6",
+    "upgrade_client_4_2_0": "npm:upgrade_client_lib@4.2.0",
+    "upgrade_types_1_0_5": "npm:upgrade_types@1.0.5",
+    "upgrade_types_3_0_18": "npm:upgrade_types@3.0.18",
+    "upgrade_types_4_2_0": "npm:upgrade_types@4.2.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/node": "^20.2.5",
+    "concurrently": "^8.1.0",
+    "nodemon": "^2.0.22",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.5.2",
+    "typescript": "^5.0.4"
+  }
+}

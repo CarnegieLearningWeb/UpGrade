@@ -1,0 +1,15 @@
+@base= http://localhost:3000/api
+
+#####################################
+POST {{base}}/hook HTTP/1.1
+Content-type: application/json
+  
+  {
+      "hook": "login",
+      "libVersion": "1.1.7",
+      "mockApp": "Birthday App Backend",
+      "user": {
+        "id": "1234567890"
+      },
+      "apiHostUrl": "http://localhost:3000/api"
+  }

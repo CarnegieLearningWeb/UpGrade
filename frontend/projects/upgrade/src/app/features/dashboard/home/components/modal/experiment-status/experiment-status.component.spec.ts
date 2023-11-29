@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ExperimentStatusComponent } from './experiment-status.component';
 import { TestingModule } from '../../../../../../../testing/testing.module';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime-ex';
+import { OwlDateTimeModule, OwlNativeDateTimeModule } from '@danielmoncada/angular-datetime-picker';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { TestMockData } from '../../../../../../../testing/test.mock.data';
 

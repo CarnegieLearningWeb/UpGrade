@@ -1,9 +1,9 @@
 {
     "name": "ab_testing_backend",
-    "version": "4.1.12",
+    "version": "5.0.12",
     "description": "Backend for A/B Testing Project",
     "scripts": {
-        "install:all": "npm ci && cd packages/Scheduler && npm ci && cd ../Upgrade && npm ci",
+        "install:all": "npm ci && cd packages/Scheduler && npm ci && cd ../Upgrade && npm ci --legacy-peer-deps",
         "production:upgrade": "cd packages/Upgrade && npm run production",
         "build:upgrade": "cd packages/Upgrade && npm run build",
         "test:upgrade": "cd packages/Upgrade && npm run test",

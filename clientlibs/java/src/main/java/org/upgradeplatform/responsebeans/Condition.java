@@ -30,6 +30,22 @@ public class Condition {
         this.payload = payload;
 	}
 
+    /** If your experiment site is not data-driven, this code identifies which
+     * condition should be given. If your experiment site is data-driven, use
+     * {@link Payload#getValue()} instead.
+     * <p>
+     * In general, which one to use requires prior agreement with the experimenter
+     * who configures the experiments in UpGrade.
+     * <p>
+     * An example of a non-data-driven experiment site would be the part of the app
+     * that gives feedback to a student, either textual or audio. Those two are the
+     * only conditions that the code supports, there is nothing data-driven about
+     * it.
+     * <p>
+     * An example of a data-driven experiment site would be the part of the app that
+     * renders an iFrame containing an arbitrary URL. The payload would contain the
+     * URL to load. This is totally data-driven, the app has no idea up front what
+     * URLs might be assigned in various conditions. */
     public String getConditionCode() {
         return conditionCode;
     }
@@ -54,6 +70,7 @@ public class Condition {
         this.experimentId = experimentId;
     }
 
+    /** {@see #getConditionCode()} */
     public Payload getPayload() {
         return payload;
     }

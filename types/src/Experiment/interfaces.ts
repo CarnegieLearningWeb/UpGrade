@@ -51,13 +51,22 @@ export type INewExperimentAssignment = Pick<IExperimentAssignmentv4, 'assignedCo
 export interface IExperimentAssignmentv4 {
   site: string;
   target: string;
-  assignedCondition: {
-    conditionCode: string;
-    payload: { type: PAYLOAD_TYPE; value: string };
-    experimentId: string;
-    id?: string;
-  };
-  assignedFactor?: Record<string, { level: string; payload: { type: PAYLOAD_TYPE; value: string } }>;
+  assignedCondition: AssignedCondition;
+  assignedFactor?: Record<string, { level: string; payload: IPayload }>;
+}
+
+export interface IExperimentAssignmentv5 {
+  site: string;
+  target: string;
+  assignedCondition: AssignedCondition[];
+  assignedFactor?: Record<string, { level: string; payload: IPayload }>[];
+}
+
+export interface AssignedCondition {
+  conditionCode: string;
+  payload: IPayload;
+  experimentId?: string;
+  id: string;
 }
 
 interface ExperimentCreatedData {
@@ -135,7 +144,7 @@ export interface IExperimentEnrollmentDetailDateStats {
 }
 
 interface ILogMetrics {
-  attributes: any;
+  attributes?: Record<string, string | number>;
   groupedMetrics: ILogGroupMetrics[];
 }
 
@@ -143,7 +152,7 @@ interface ILogGroupMetrics {
   groupClass: string;
   groupKey: string;
   groupUniquifier: string;
-  attributes: any;
+  attributes?: Record<string, string | number>;
 }
 export interface ILogInput {
   timestamp: string;
@@ -181,7 +190,6 @@ export interface IPayload {
   value: string;
 }
 
-
 export interface ScoreObject {
   id: string;
   type: string;
@@ -205,20 +213,20 @@ export interface Attempt {
 }
 
 export interface CaliperGradingProfile {
-  id: string,
-  type: SUPPORTED_CALIPER_EVENTS,
-  profile: SUPPORTED_CALIPER_PROFILES,
-  actor: CaliperActor,
-  action: string,
-  object: Attempt,
-  generated: ScoreObject,
-  extensions: Record<string, unknown>,
-  eventTime: string,
+  id: string;
+  type: SUPPORTED_CALIPER_EVENTS;
+  profile: SUPPORTED_CALIPER_PROFILES;
+  actor: CaliperActor;
+  action: string;
+  object: Attempt;
+  generated: ScoreObject;
+  extensions: Record<string, unknown>;
+  eventTime: string;
 }
 
 export interface CaliperEnvelope {
-  sensor: string,
-  sendTime: string,
-  dataVersion: string,
-  data: CaliperGradingProfile[]
+  sensor: string;
+  sendTime: string;
+  dataVersion: string;
+  data: CaliperGradingProfile[];
 }

@@ -12,6 +12,7 @@ import { FLAG_SEARCH_SORT_KEY } from '../../../src/api/controllers/validators/Fe
 import { EXPERIMENT_SORT_AS } from '../../../../../../types/src';
 import { FlagVariation } from '../../../src/api/models/FlagVariation';
 import { isUUID } from 'class-validator';
+import uuid from 'uuid';
 
 describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
@@ -21,17 +22,30 @@ describe('Feature Flag Service Testing', () => {
 
   const logger = new UpgradeLogger();
   const var1 = new FlagVariation();
-  var1.id = 'var1';
+  var1.id = uuid();
+  var1.value = 'value1'
   const var2 = new FlagVariation();
-  var2.id = 'var2';
+  var2.id = uuid();
+  var1.value = 'value2'
   const var3 = new FlagVariation();
 
   const mockFlag1 = new FeatureFlag();
-  mockFlag1.id = 'flag1';
+  mockFlag1.id = uuid();
+  mockFlag1.name = 'name';
+  mockFlag1.key = 'key';
+  mockFlag1.description = 'description';
+  mockFlag1.variationType = 'variationType';
+  mockFlag1.status = true
   mockFlag1.variations = [var1, var2, var3];
 
   const mockFlag2 = new FeatureFlag();
-  mockFlag2.id = 'flag2';
+  mockFlag2.id = uuid();
+  mockFlag2.name = 'name';
+  mockFlag2.key = 'key';
+  mockFlag2.description = 'description';
+  mockFlag2.variationType = 'variationType';
+  mockFlag2.status = true
+
   mockFlag1.variations = [var2, var3];
 
   const mockFlag3 = new FeatureFlag();

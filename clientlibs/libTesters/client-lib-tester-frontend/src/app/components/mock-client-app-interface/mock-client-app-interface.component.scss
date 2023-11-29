@@ -1,0 +1,96 @@
+.mock-client-app-interface-container {
+  display: flex;
+  flex-direction: row;
+
+  .left-side,
+  .right-side {
+    width: 50%;
+  }
+
+  .header {
+    padding: 10px 0;
+    color: tomato;
+    border-radius: 5px;
+  }
+
+  .interface-properties-content {
+    padding: 10px 0;
+    margin: 4px;
+  }
+
+  .hook-name {
+    font-weight: bold;
+    margin-right: 12px;
+    color: tomato;
+  }
+
+  .hooks-title {
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  .hook-info-container {
+    margin-left: 20px;
+
+    .hook-name {
+      font-weight: bold;
+      margin-right: 14px;
+      color: tomato;
+      margin-bottom: 5px;
+    }
+
+    .hook-description {
+      font-style: italic;
+      color: rgba(0, 0, 0, 0.54);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+  }
+
+  .buttons-list-item {
+    .mat-raised-button {
+      color: #fff;
+      background-color: tomato;
+    }
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    justify-content: space-between;
+    height: 100px;
+    margin: 5px;
+
+    .button-box {
+      display: flex;
+      flex-direction: column;
+      width: 48%;
+
+      .hook-type {
+        margin-top: 10px;
+        font-weight: bold;
+        font-size: 14px;
+      }
+
+      .hook-value {
+        margin-left: 4px;
+        font-weight: bold;
+        color: tomato;
+      }
+    }
+
+    .props-box {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      width: 48%;
+
+      .props-box-title {
+        font-weight: bold;
+        font-size: 14px;
+      }
+
+      .props-box-value {
+        font-weight: bold;
+        color: tomato;
+      }
+    }
+  }
+}

@@ -7,7 +7,7 @@ import {
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { filter } from 'rxjs/operators';
-import { MatCheckboxChange } from '@angular/material/checkbox';
+import { MatLegacyCheckboxChange as MatCheckboxChange } from '@angular/material/legacy-checkbox';
 import { Subscription } from 'rxjs';
 
 // Used in EnrollmentOverTimeComponent
@@ -45,7 +45,22 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   isInitialLoad = true;
   showLabelOfxAxis = true;
 
-  colors = ['#31e8dd', '#7dc7fb', '#fedb64', '#51ed8f', '#ddaaf8', '#fd9099', '#14c9be'];
+  colors = [
+    '#31e8dd',
+    '#7dc7fb',
+    '#fedb64',
+    '#51ed8f',
+    '#ddaaf8',
+    '#fd9099',
+    '#14c9be',
+    '#57ff6d',
+    '#3dffec',
+    '#fedb64',
+    '#0a6de6',
+    '#da0766',
+    '#cd8014',
+    '#fa59a1',
+  ];
   colorScheme = {
     domain: this.colors,
   };

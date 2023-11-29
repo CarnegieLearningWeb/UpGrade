@@ -9,7 +9,7 @@ import {
   ElementRef,
   OnDestroy,
 } from '@angular/core';
-import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE } from 'upgrade_types';
+import { ASSIGNMENT_UNIT, CONDITION_ORDER, CONSISTENCY_RULE, EXPERIMENT_STATE } from 'upgrade_types';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -19,11 +19,11 @@ import {
   ExperimentDesignTypes,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
-import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
-import * as find from 'lodash.find';
+import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray } from '@angular/forms';
+import find from 'lodash.find';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Observable, Subscription } from 'rxjs';
-import { MatChipInputEvent } from '@angular/material/chips';
+import { MatLegacyChipInputEvent as MatChipInputEvent } from '@angular/material/legacy-chips';
 import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 @Component({
@@ -36,14 +36,24 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('contextInput') contextInput: ElementRef<HTMLInputElement>;
-  overviewForm: FormGroup;
-  unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
+  overviewForm: UntypedFormGroup;
+  unitOfAssignments = [
+    { value: ASSIGNMENT_UNIT.INDIVIDUAL },
+    { value: ASSIGNMENT_UNIT.GROUP },
+    // { value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS }, // #1063 temporarily removed within-subjects until solved
+  ];
+  public ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
 
   groupTypes = [];
   enableSave = true;
   allContexts = [];
   currentContext = null;
   consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
+  conditionOrders = [
+    { value: CONDITION_ORDER.RANDOM },
+    { value: CONDITION_ORDER.RANDOM_ROUND_ROBIN },
+    { value: CONDITION_ORDER.ORDERED_ROUND_ROBIN },
+  ];
   designTypes = [{ value: ExperimentDesignTypes.SIMPLE }, { value: ExperimentDesignTypes.FACTORIAL }];
 
   // Used to control chips
@@ -60,7 +70,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
   constructor(
-    private _formBuilder: FormBuilder,
+    private _formBuilder: UntypedFormBuilder,
     private experimentService: ExperimentService,
     private experimentDesignStepperService: ExperimentDesignStepperService,
     private dialogService: DialogService
@@ -86,6 +96,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         unitOfAssignment: [null, Validators.required],
         groupType: [null],
         consistencyRule: [null, Validators.required],
+        conditionOrder: [null],
         designType: [ExperimentDesignTypes.SIMPLE, Validators.required],
         context: [null, Validators.required],
         tags: [[]],
@@ -93,16 +104,23 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       });
 
       this.overviewForm.get('unitOfAssignment').valueChanges.subscribe((assignmentUnit) => {
+        this.experimentDesignStepperService.changeAssignmentUnit(assignmentUnit);
         this.overviewForm.get('consistencyRule').reset();
+        this.overviewForm.get('conditionOrder').reset();
         switch (assignmentUnit) {
           case ASSIGNMENT_UNIT.INDIVIDUAL:
             this.overviewForm.get('groupType').disable();
             this.overviewForm.get('groupType').reset();
             this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }];
+            this.isExperimentEditable ? this.overviewForm.get('consistencyRule').enable() : false;
+            this.overviewForm.get('conditionOrder').disable();
             break;
           case ASSIGNMENT_UNIT.GROUP:
             if (this.overviewForm.get('context')) {
-              this.overviewForm.get('groupType').enable();
+              if (this.isExperimentEditable) {
+                this.overviewForm.get('groupType').enable();
+                this.overviewForm.get('consistencyRule').enable();
+              }
               this.overviewForm.get('groupType').setValidators(Validators.required);
               this.setGroupTypes();
               this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
@@ -110,6 +128,15 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
               this.overviewForm.get('groupType').reset();
               this.overviewForm.get('groupType').disable();
             }
+            this.overviewForm.get('conditionOrder').disable();
+            break;
+          case ASSIGNMENT_UNIT.WITHIN_SUBJECTS:
+            this.overviewForm.get('groupType').disable();
+            this.overviewForm.get('groupType').reset();
+            this.consistencyRules = [];
+            this.overviewForm.get('consistencyRule').disable();
+            this.isExperimentEditable ? this.overviewForm.get('conditionOrder').enable() : false;
+            this.overviewForm.get('conditionOrder').setValidators(Validators.required);
             break;
         }
       });
@@ -130,13 +157,14 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           this.isExperimentEditable = false;
         }
         this.currentContext = this.experimentInfo.context[0];
-        const { groupType } = this.setGroupTypeControlValue();
+
         this.overviewForm.setValue({
           experimentName: this.experimentInfo.name,
           description: this.experimentInfo.description,
           unitOfAssignment: this.experimentInfo.assignmentUnit,
           groupType: this.experimentInfo.group,
           consistencyRule: this.experimentInfo.consistencyRule,
+          conditionOrder: this.experimentInfo.conditionOrder,
           designType: this.experimentInfo.type,
           context: this.currentContext,
           tags: this.experimentInfo.tags,
@@ -168,7 +196,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   // Used to add tags or contexts
   addChip(event: MatChipInputEvent, type: string): void {
-    const input = event.input;
+    const input = event.chipInput;
     const value = event.value.toLowerCase();
 
     // Add chip
@@ -185,7 +213,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
     // Reset the input value
     if (input) {
-      input.value = '';
+      input.clear();
     }
   }
 
@@ -253,6 +281,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         unitOfAssignment,
         groupType,
         consistencyRule,
+        conditionOrder,
         context,
         designType,
         tags,
@@ -262,6 +291,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         name: experimentName,
         description: description || '',
         consistencyRule: consistencyRule,
+        conditionOrder: conditionOrder,
         assignmentUnit: unitOfAssignment,
         group: groupType,
         type: designType,
@@ -291,15 +321,15 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   }
 
   get unitOfAssignmentValue() {
-    return this.overviewForm.get('unitOfAssignment').value === ASSIGNMENT_UNIT.GROUP;
+    return this.overviewForm.get('unitOfAssignment').value;
   }
 
-  get contexts(): FormArray {
-    return this.overviewForm.get('context') as FormArray;
+  get contexts(): UntypedFormArray {
+    return this.overviewForm.get('context') as UntypedFormArray;
   }
 
-  get tags(): FormArray {
-    return this.overviewForm.get('tags') as FormArray;
+  get tags(): UntypedFormArray {
+    return this.overviewForm.get('tags') as UntypedFormArray;
   }
 
   get ExperimentState() {

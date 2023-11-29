@@ -5,7 +5,7 @@ import { IndividualForSegmentRepository } from '../repositories/IndividualForSeg
 import { GroupForSegmentRepository } from '../repositories/GroupForSegmentRepository';
 import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { EXPERIMENT_STATE, SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS } from 'upgrade_types';
+import { EXPERIMENT_STATE, SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS, CACHE_PREFIX } from 'upgrade_types';
 import { getConnection } from 'typeorm';
 import uuid from 'uuid';
 import { ErrorWithType } from '../errors/ErrorWithType';
@@ -61,7 +61,7 @@ export class SegmentService {
   }
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
-    return this.cacheService.wrapFunction(ids, async () => {
+    return this.cacheService.wrapFunction(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ids, async () => {
       const result = await this.segmentRepository
         .createQueryBuilder('segment')
         .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
@@ -152,46 +152,68 @@ export class SegmentService {
     return await this.segmentRepository.deleteSegment(id, logger);
   }
 
-  public async importSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
-    const duplicateSegment = await this.segmentRepository.findOne(segment.id);
-    if (duplicateSegment && segment.id !== undefined) {
-      const error = new Error('Duplicate segment');
-      (error as any).type = SERVER_ERROR.QUERY_FAILED;
-      logger.error(error);
-      throw error;
-    }
+  public async importSegments(segments: SegmentInputValidator[], logger: UpgradeLogger): Promise<Segment[]> {
+    const allAddedSegments: Segment[] = [];
+    const allSegmentIds: string[] = [];
+    segments.forEach((segment) => {
+      allSegmentIds.push(segment.id);
+      segment.subSegmentIds.forEach((subSegment) => {
+        allSegmentIds.includes(subSegment) ? true : allSegmentIds.push(subSegment);
+      });
+    });
+    const allSegmentsData = await this.getSegmentByIds(allSegmentIds);
+    const duplicateSegmentsIds = allSegmentsData?.map((segment) => segment?.id);
 
-    // check for each subSegment to exists
-    const allSegments = await this.segmentRepository.getAllSegments(logger);
-    segment.subSegmentIds.forEach((subSegmentId) => {
-      const subSegment = allSegments.find((segmentId) => subSegmentId === segmentId.id);
-      if (!subSegment) {
-        const error = new Error(
-          'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
-        );
+    for (const segment of segments) {
+      const duplicateSegment = duplicateSegmentsIds ? duplicateSegmentsIds.includes(segment.id) : false;
+      if (duplicateSegment && segment.id !== undefined) {
+        const error = new Error('Duplicate segment');
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);
         throw error;
       }
-    });
 
-    logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
-    return this.addSegmentDataInDB(segment, logger);
-  }
+      segment.subSegmentIds.forEach((subSegmentId) => {
+        const subSegment = allSegmentsData ? allSegmentsData.find((segment) => subSegmentId === segment?.id) : null;
+        if (!subSegment) {
+          const error = new Error(
+            'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
+          );
+          (error as any).type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
+      });
 
-  public async exportSegment(segmentId: string, logger: UpgradeLogger): Promise<Segment> {
-    logger.info({ message: `Export segment by id. segmentId: ${segmentId}` });
-    const segmentDoc = await this.segmentRepository.findOne({
-      where: { id: segmentId },
-      relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
-    });
-    if (!segmentDoc) {
-      throw new Error(SERVER_ERROR.QUERY_FAILED);
+      logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
+      const addedSegment = await this.addSegmentDataInDB(segment, logger);
+      allAddedSegments.push(addedSegment);
+      allSegmentsData.push(addedSegment);
     }
-    return segmentDoc;
+    return allAddedSegments;
   }
 
-  private async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
+  public async exportSegments(segmentIds: string[], logger: UpgradeLogger): Promise<Segment[]> {
+    logger.info({ message: `Export segment by id. segmentId: ${segmentIds}` });
+    let segmentsDoc: Segment[] = [];
+    if (segmentIds.length > 1) {
+      segmentsDoc = await this.getSegmentByIds(segmentIds);
+    } else {
+      const segmentDoc = await this.segmentRepository.findOne({
+        where: { id: segmentIds[0] },
+        relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+      });
+      if (!segmentDoc) {
+        throw new Error(SERVER_ERROR.QUERY_FAILED);
+      } else {
+        segmentsDoc.push(segmentDoc);
+      }
+    }
+
+    return segmentsDoc;
+  }
+
+  async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     const createdSegment = await getConnection().transaction(async (transactionalEntityManager) => {
       let segmentDoc: Segment;
 
@@ -229,7 +251,7 @@ export class SegmentService {
       // create/update segment document
       segment.id = segment.id || uuid();
       const { id, name, description, context, type } = segment;
-      const allSegments = await this.segmentRepository.getAllSegments(logger);
+      const allSegments = await this.getSegmentByIds(segment.subSegmentIds);
       const subSegmentData = segment.subSegmentIds
         .filter((subSegmentId) => {
           // check if segment exists:
@@ -289,7 +311,7 @@ export class SegmentService {
       }
 
       // reset caching
-      this.cacheService.resetCache();
+      await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
 
       return transactionalEntityManager
         .getRepository(Segment)

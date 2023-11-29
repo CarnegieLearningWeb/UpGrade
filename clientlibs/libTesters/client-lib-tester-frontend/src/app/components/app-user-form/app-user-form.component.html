@@ -1,0 +1,64 @@
+<mat-card class="user-details-container">
+  <div class="header">
+    <h3 class="form-title">User Details</h3>
+
+    <div class="toggle-user-details">
+      <button mat-stroked-button *ngIf="openUserDetails" (click)="openUserDetails = false">
+        Click to see less [-]
+      </button>
+      <button mat-stroked-button *ngIf="!openUserDetails" (click)="openUserDetails = true">
+        Click to see more [+].
+      </button>
+    </div>
+  </div>
+
+  <div class="user-form-container">
+    <form class="flex-wrapper" [formGroup]="userForm">
+      <div class="user-block">
+        <mat-form-field class="user-form-field">
+          <mat-label>User Id</mat-label>
+          <input type="text" matInput formControlName="userId" />
+        </mat-form-field>
+      </div>
+
+      <div class="collapsible-block" *ngIf="openUserDetails">
+        <div class="useraliases-block">
+          <mat-form-field
+            class="user-form-field"
+            hintLabel="Comma-separated list. Leave blank for none."
+            [style.width.px]="400"
+          >
+            <mat-label>User Aliases</mat-label>
+            <input type="text" matInput formControlName="userAliases" />
+          </mat-form-field>
+        </div>
+
+        <br />
+
+        <div class="form-block-bottom">
+          <span class="groups-block" formArrayName="groups">
+            <h4>Groups</h4>
+            <div *ngFor="let group of groups.controls; let allowedGroupIndex = index">
+              <mat-form-field hintLabel="Comma-separated list. Leave blank for none." [style.width.px]="400">
+                <mat-label>{{ allowedGroups[allowedGroupIndex] }}</mat-label>
+                <input type="text" matInput [formControlName]="allowedGroupIndex" />
+              </mat-form-field>
+            </div>
+          </span>
+
+          <span class="groups-block" formArrayName="workingGroup">
+            <h4>Working Group</h4>
+            <div *ngFor="let group of workingGroup.controls; let allowedGroupIndex = index">
+              <mat-form-field [style.width.px]="150">
+                <mat-label>{{ allowedGroups[allowedGroupIndex] }}</mat-label>
+                <input type="text" matInput [formControlName]="allowedGroupIndex" />
+              </mat-form-field>
+            </div>
+          </span>
+        </div>
+      </div>
+    </form>
+    <br />
+  </div>
+  <!-- add the working group and other things later -->
+</mat-card>

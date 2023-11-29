@@ -1,0 +1,34 @@
+.user-details-container {
+  margin: 4px;
+
+  .mat-form-field {
+    margin-left: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    .form-title {
+      display: inline-block;
+    }
+
+    .toggle-user-details {
+      display: inline-block;
+    }
+  }
+
+  .flex-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .groups-block {
+      display: inline-block;
+      margin-right: 20px;
+    }
+  }
+}

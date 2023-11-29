@@ -45,10 +45,10 @@ jobs:
       version: ${{ steps.get-version.outputs.result }}
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
       - run: npm install semver
       - name: Load Env Vars
         uses: tw3lveparsecs/github-actions-setvars@v0.1
@@ -61,7 +61,7 @@ jobs:
           echo "::set-output name=function_name::$STAGING_LAMBDA_FUNCTION_NAME"
       - id: get-major-minor-version
         run: |
-          VERSION=$(jq -r '.version' package.json)
+          VERSION=$(jq -r '.version' package.json | awk '{split($0, num, "."); print num[1] "." num[2]}')
           echo "::set-output name=version::$VERSION"
       - id: get-version
         uses: actions/github-script@v6
@@ -85,10 +85,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
       - name: Set Backend App Version
         working-directory: backend/packages/Upgrade
         run: npm version ${{ needs.init.outputs.version }} --git-tag-version=false
@@ -97,7 +97,7 @@ jobs:
         run: |
           npm version ${{ needs.init.outputs.version }} --git-tag-version=false
           cp -R ../types packages/Upgrade
-          npm ci
+          npm ci --legacy-peer-deps
           zip -qq -r upgrade-backend-${{ needs.init.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json
       - uses: actions/upload-artifact@v2
         with:
@@ -110,10 +110,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
       - name: Build Frontend
         working-directory: frontend
         run: |
@@ -135,8 +135,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
       - name: Build Lambda
@@ -168,7 +168,7 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "**/upgrade-*.zip"
-          commit: main
+          commit: ${{ github.ref }}
           generateReleaseNotes: true
           tag: ${{ needs.init.outputs.version }}
           token: ${{ secrets.GITHUB_TOKEN }}

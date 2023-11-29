@@ -29,9 +29,10 @@ describe('Experiment Controller Testing', () => {
   });
 
   const experimentData = {
-    id: 'string',
+    id: uuid(),
     name: 'string',
     description: 'string',
+    context: ['home'],
     state: 'inactive',
     startOn: '2021-08-11T05:41:51.655Z',
     consistencyRule: 'individual',
@@ -45,11 +46,17 @@ describe('Experiment Controller Testing', () => {
     revertTo: 'string',
     tags: ['string'],
     group: 'string',
+    logging: false,
+    filterMode: 'includeAll',
+    type: 'Simple',
     conditions: [
       {
+        id: 'string',
         name: 'string',
+        conditionCode: 'string',
         assignmentWeight: 0,
         description: 'string',
+        order: 0,
       },
     ],
     partitions: [
@@ -58,10 +65,26 @@ describe('Experiment Controller Testing', () => {
         target: 'string',
         id: 'string',
         description: 'string',
+        excludeIfReached: false,
         order: 0,
       },
     ],
-    metrics: [{}],
+    experimentSegmentInclusion: { 
+      segment: {
+        individualForSegment: [],
+        groupForSegment: [],
+        subSegments: [],
+        type: 'private'
+      } 
+    },
+    experimentSegmentExclusion: { 
+      segment: {
+        individualForSegment: [],
+        groupForSegment: [],
+        subSegments: [],
+        type: 'private'
+      } 
+    }
   };
 
   test('Get request for /api/experiments', async (done) => {
@@ -124,7 +147,7 @@ describe('Experiment Controller Testing', () => {
   });
 
   test('Post request for /api/experiments/batch', async (done) => {
-    await request(app).post('/api/experiments/batch').send(experimentData).expect('Content-Type', /json/).expect(200);
+    await request(app).post('/api/experiments/batch').send([experimentData]).expect('Content-Type', /json/).expect(200);
     done();
   });
 
@@ -139,7 +162,12 @@ describe('Experiment Controller Testing', () => {
   });
 
   test('Put request for /api/experiments/:id', async (done) => {
-    await request(app).put(`/api/experiments/${uuid()}`).expect(200);
+    await request(app)
+      .put(`/api/experiments/${experimentData.id}`)
+      .send(experimentData)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
     done();
   });
 
@@ -151,7 +179,7 @@ describe('Experiment Controller Testing', () => {
   test('Post request for /api/experiments/state', async (done) => {
     await request(app)
       .post('/api/experiments/state')
-      .send({ id: uuid(), state: 'enrollmentComplete' })
+      .send({ experimentId: experimentData.id, state: 'enrolling' })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -171,7 +199,7 @@ describe('Experiment Controller Testing', () => {
   test('Get request for /api/experiments/export', async (done) => {
     await request(app)
       .post('/api/experiments/import')
-      .send({"experimentIds":[experimentData.id]})
+      .send([experimentData.id])
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

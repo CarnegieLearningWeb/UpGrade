@@ -14,7 +14,6 @@ import { ExperimentVM } from '../../../../../../core/experiments/store/experimen
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PayloadsTableComponent implements OnInit, OnDestroy {
-  @Output() hidePayloadTable = new EventEmitter<boolean>();
   @Input() experimentInfo: ExperimentVM;
 
   subscriptions: Subscription;
@@ -50,7 +49,8 @@ export class PayloadsTableComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.experimentDesignStepperService.setUpdatePayloadTableEditModeDetails(null);
+    this.experimentDesignStepperService.clearSimpleExperimentDesignStepperData();
+    this.experimentDesignStepperService.setUpdatePayloadTableEditModeDetails(null, true);
     this.subscriptions.unsubscribe();
   }
 
@@ -104,10 +104,6 @@ export class PayloadsTableComponent implements OnInit, OnDestroy {
     this.initialLoad = false;
   }
 
-  handleHideClick() {
-    this.hidePayloadTable.emit(true);
-  }
-
   handleEditClick(rowData: SimpleExperimentPayloadTableRowData, rowIndex: number) {
     const payloadTableData = this.experimentDesignStepperService.getSimpleExperimentPayloadTableData();
     const rowDataCopy = { ...rowData };
@@ -118,7 +114,7 @@ export class PayloadsTableComponent implements OnInit, OnDestroy {
     }
 
     this.currentPayloadInput$.next(rowData.payload);
-    this.experimentDesignStepperService.setUpdatePayloadTableEditModeDetails(rowIndex);
+    this.experimentDesignStepperService.setUpdatePayloadTableEditModeDetails(rowIndex, false);
     this.experimentDesignStepperService.setNewSimpleExperimentPayloadTableData(payloadTableData);
   }
 

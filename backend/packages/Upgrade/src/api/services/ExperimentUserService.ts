@@ -219,7 +219,7 @@ export class ExperimentUserService {
     return this.userRepository.save(newDocument);
   }
 
-  public update(id: string, user: ExperimentUser, logger: UpgradeLogger): Promise<ExperimentUser> {
+  public update(id: string, user: Partial<ExperimentUser>, logger: UpgradeLogger): Promise<ExperimentUser> {
     logger.info({ message: `Update a user ${user.toString()}` });
     user.id = id;
     return this.userRepository.save(user);
