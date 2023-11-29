@@ -262,7 +262,6 @@ export class ExperimentService {
     createType?: string
   ): Promise<ExperimentDTO> {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
-    this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
 
     // order for condition
     let newConditionId;
@@ -299,9 +298,6 @@ export class ExperimentService {
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
     logger.info({ message: `Generating test experiments`, details: experiments });
-    experiments.forEach((experiment) => {
-      this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
-    });
     return this.addBulkExperiments(experiments, user, logger);
   }
 
@@ -315,7 +311,12 @@ export class ExperimentService {
     }
     return getConnection().transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
-      await this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
+      await this.clearExperimentCacheDetail(
+        experiment.context[0],
+        experiment.partitions.map((partition) => {
+          return { site: partition.site, target: partition.target };
+        })
+      );
 
       if (experiment) {
         const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
@@ -368,7 +369,6 @@ export class ExperimentService {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
-    this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
     return this.updateExperimentInDB(experiment as ExperimentDTO, currentUser, logger);
   }
 
@@ -412,9 +412,14 @@ export class ExperimentService {
   ): Promise<Experiment> {
     const oldExperiment = await this.experimentRepository.findOne(
       { id: experimentId },
-      { relations: ['stateTimeLogs', 'queries', 'queries.metric'] }
+      { relations: ['stateTimeLogs', 'partitions', 'queries', 'queries.metric'] }
     );
-    this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + oldExperiment.context[0]);
+    await this.clearExperimentCacheDetail(
+      oldExperiment.context[0],
+      oldExperiment.partitions.map((partition) => {
+        return { site: partition.site, target: partition.target };
+      })
+    );
 
     if (
       (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) &&
@@ -491,7 +496,6 @@ export class ExperimentService {
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
     for (const experiment of experiments) {
-      this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
       const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
       if (duplicateExperiment && experiment.id) {
         const error = new Error('Duplicate experiment');
@@ -711,6 +715,13 @@ export class ExperimentService {
     user: User,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO> {
+    await this.clearExperimentCacheDetail(
+      experiment.context[0],
+      experiment.partitions.map((partition) => {
+        return { site: partition.site, target: partition.target };
+      })
+    );
+
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id, logger);
     const oldConditions = oldExperiment.conditions;
@@ -1153,6 +1164,12 @@ export class ExperimentService {
     user: User,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO> {
+    await this.clearExperimentCacheDetail(
+      experiment.context[0],
+      experiment.partitions.map((partition) => {
+        return { site: partition.site, target: partition.target };
+      })
+    );
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
@@ -1740,5 +1757,17 @@ export class ExperimentService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { createdAt, updatedAt, versionNumber, ...newDoc } = doc;
     return newDoc;
+  }
+
+  private async clearExperimentCacheDetail(
+    context: string,
+    partitions: { site: string; target: string }[]
+  ): Promise<void> {
+    await this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + context);
+    const deletedCache = partitions.map(async (partition) => {
+      await this.cacheService.delCache(CACHE_PREFIX.MARK_KEY_PREFIX + '-' + partition.site + '-' + partition.target);
+    });
+    await Promise.all(deletedCache);
+    return;
   }
 }
