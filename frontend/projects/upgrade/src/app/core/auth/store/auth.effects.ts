@@ -29,9 +29,9 @@ export class AuthEffects {
     @Inject(ENV) private environment: Environment
   ) {}
 
-  setUserInfoInStore$ = createEffect(() =>
+  fetchUserExperimentData$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(authActions.actionSetUserInfo),
+      ofType(authActions.actionFetchUserExperimentData),
       map((action) => action.user),
       filter((user) => !!user.email),
       switchMap((user: User) => {
@@ -82,6 +82,21 @@ export class AuthEffects {
     )
   );
 
+  login$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(authActions.actionLoginStart),
+      filter(({ user }) => !!user),
+      switchMap((action) => {
+        return this.authDataService.login(action.user).pipe(
+          map(() => authActions.actionLoginSuccess({ user: action.user, googleCredential: action.googleCredential })),
+          catchError(() => {
+            return [authActions.actionLoginFailure()];
+          })
+        );
+      })
+    )
+  );
+
   logout$ = createEffect(
     () =>
       this.actions$.pipe(
@@ -99,7 +114,8 @@ export class AuthEffects {
       this.actions$.pipe(
         ofType(authActions.actionLoginSuccess),
         withLatestFrom(this.store$.pipe(select(selectRedirectUrl))),
-        tap(([, redirectUrl]) => {
+        tap(([action, redirectUrl]) => {
+          this.authService.deferFetchUserExperimentDataAfterNavigationEnd(action.user, action.googleCredential);
           const path = redirectUrl || '/home';
           this.router.navigate([path]);
         })
