@@ -1,6 +1,6 @@
 {
   "name": "ab-testing",
-  "version": "5.0.13",
+  "version": "5.0.12",
   "license": "MIT",
   "scripts": {
     "ng": "ng",
