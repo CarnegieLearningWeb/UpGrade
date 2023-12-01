@@ -1,5 +1,5 @@
 import { createReducer } from '@ngrx/store';
-import { actionLogoutSuccess, actionLoginStart } from '../auth/store/auth.actions';
+import { actionLogoutSuccess, actionLoginFailure } from '../auth/store/auth.actions';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { ThemeOptions } from '../settings/store/settings.model';
 import { clearState } from './clear-state.reducer';
@@ -70,7 +70,7 @@ describe('clearState', () => {
       },
     };
 
-    const newState = metaReducer(mockWithNonDefaultState, actionLoginStart());
+    const newState = metaReducer(mockWithNonDefaultState, actionLoginFailure());
 
     expect(LocalStorageService.prototype.removeItem).not.toHaveBeenCalledTimes(
       Object.keys(ExperimentLocalStorageKeys).length

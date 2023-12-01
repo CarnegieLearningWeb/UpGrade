@@ -8,7 +8,6 @@ import {
   selectCurrentUser,
   selectGoogleCredential,
 } from './store/auth.selectors';
-import { catchError, map, tap } from 'rxjs/operators';
 import { UserPermission } from './store/auth.models';
 import { BehaviorSubject } from 'rxjs';
 import { AUTH_CONSTANTS, GoogleAuthJWTPayload, User, UserRole } from '../users/store/users.model';
@@ -63,11 +62,12 @@ export class AuthService {
     this.renderGoogleSignInButton(btnRef);
   }
 
-  handleAutomaticLogin(currentUser: User): void {
+  handleAutomaticLogin(user: User): void {
     this.store$.dispatch(AuthActions.actionSetIsLoggedIn({ isLoggedIn: true }));
     this.store$.dispatch(AuthActions.actionSetIsAuthenticating({ isAuthenticating: false }));
-    this.store$.dispatch(AuthActions.actionSetUserInfo({ user: currentUser }));
-    this.doLogin(currentUser, currentUser.token);
+    this.store$.dispatch(AuthActions.actionSetGoogleCredential({ googleCredential: user.token }));
+    this.store$.dispatch(AuthActions.actionSetUserInfo({ user }));
+    this.store$.dispatch(AuthActions.actionLoginStart({ user, googleCredential: user.token }));
   }
 
   initializeGoogleSignIn(): void {
@@ -113,20 +113,7 @@ export class AuthService {
     const googleCredential = googleIdCredentialResponse.credential;
 
     this.store$.dispatch(AuthActions.actionSetGoogleCredential({ googleCredential }));
-    this.doLogin(user, googleCredential);
-  };
-
-  doLogin = (user: User, googleCredential: string): void => {
-    this.authDataService
-      .login(user)
-      .pipe(
-        tap((res: User) => {
-          this.store$.dispatch(AuthActions.actionLoginSuccess());
-          this.deferSetUserInfoAfterNavigateEnd(res, googleCredential);
-        }),
-        catchError(() => [this.store$.dispatch(AuthActions.actionLoginFailure())])
-      )
-      .subscribe();
+    this.store$.dispatch(AuthActions.actionLoginStart({ user, googleCredential }));
   };
 
   setUserInBrowserStorage(user: User): void {
@@ -142,12 +129,13 @@ export class AuthService {
   }
 
   // wait after google auth login navs back to app on success to dispatch data fetches
-  deferSetUserInfoAfterNavigateEnd(res: User, googleCredential: string): void {
+  deferFetchUserExperimentDataAfterNavigationEnd(user: User, googleCredential: string): void {
     let hasFired = false;
+
     this.router.events.pipe().subscribe((event) => {
       if (!hasFired && event instanceof NavigationEnd) {
         hasFired = true;
-        this.store$.dispatch(AuthActions.actionSetUserInfo({ user: { ...res, token: googleCredential } }));
+        this.store$.dispatch(AuthActions.actionFetchUserExperimentData({ user: { ...user, token: googleCredential } }));
       }
     });
   }
@@ -159,7 +147,7 @@ export class AuthService {
   }
 
   authLoginStart(): void {
-    this.store$.dispatch(AuthActions.actionLoginStart());
+    this.store$.dispatch(AuthActions.actionLoginStart({ user: null, googleCredential: null }));
   }
 
   authLogout(): void {
