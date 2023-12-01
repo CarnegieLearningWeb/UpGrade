@@ -4,7 +4,7 @@
     *ngIf="currentUser"
     [ngClass]="{ 'normal-user': currentUser?.role !== UserRole.ADMIN }"
   >
-    <img [src]="currentUser?.imageUrl" class="profile-pic" />
+    <img [src]="currentUser?.imageUrl" class="profile-pic" referrerpolicy="no-referrer" />
     <div class="user-info">
       <span class="ft-22-700">{{ (currentUser?.firstName || '') + ' ' + (currentUser?.lastName || '') }}</span>
       <span class="ft-12-600 email">{{ '( ' + currentUser?.email + ' )' }}</span>

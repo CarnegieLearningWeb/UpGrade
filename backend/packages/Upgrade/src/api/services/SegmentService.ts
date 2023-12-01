@@ -74,7 +74,6 @@ export class SegmentService {
       const sortedData = ids.map((id) => {
         return result.find((data) => data.id === id);
       });
-
       return sortedData;
     });
   }
@@ -313,13 +312,13 @@ export class SegmentService {
         throw error;
       }
 
-      // reset caching
-      await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
-
       return transactionalEntityManager
         .getRepository(Segment)
         .findOne(segmentDoc.id, { relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
     });
+
+    // reset caching
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
 
     return createdSegment;
   }

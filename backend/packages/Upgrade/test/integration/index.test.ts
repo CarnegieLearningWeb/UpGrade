@@ -86,6 +86,7 @@ import {
   RandomAlgoCheck,
   RandomRoundRobinAlgoCheck,
 } from './Experiment/withinSubject/index';
+import { CacheService } from '../../src/api/services/CacheService';
 import {
   StratificationSRSAlgorithmCheck,
   StratificationMetricQueriesCheck,
@@ -109,6 +110,8 @@ describe('Integration Tests', () => {
   beforeEach(async () => {
     jest.setTimeout(29999);
     await migrateDatabase(connection);
+    const cacheManager = Container.get(CacheService);
+    await cacheManager.resetAllCache();
 
     // create System Users
     await CreateSystemUser();
@@ -578,5 +581,4 @@ describe('Integration Tests', () => {
     await StratificationMetricQueriesCheck();
     done();
   });
-
 });
