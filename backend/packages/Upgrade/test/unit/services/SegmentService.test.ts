@@ -26,7 +26,7 @@ const segmentArr = [seg1, seg2];
 const segVal = new SegmentInputValidator();
 const include = [{ segment: seg1, experiment: exp }];
 const segValImportFile: SegmentFile = {
-  fileName: 'seg1.csv',
+  fileName: 'seg1.json',
   fileContent: '',
 };
 
@@ -68,15 +68,15 @@ describe('Segment Service Testing', () => {
     group.groupId = 'group1';
     group.type = 'type';
     seg1.groupForSegment = [group];
-    segVal.id = 'segval1';
+    segVal.id = 'c6d3fe3b-4ad2-4949-bd05-5a7a2481d32f';
     segVal.subSegmentIds = ['seg1', 'seg2'];
     segVal.userIds = ['user1', 'user2', 'user3'];
-    segVal.groups = [{ groupId: 'group1', type: 'type1' }];
+    segVal.groups = [{ groupId: 'group1', type: 'add-group1' }];
     segValSegment.id = 'segval1';
     segValSegment.subSegments = [seg1, seg2];
     const group1 = new GroupForSegment();
     group1.groupId = 'group1';
-    group1.type = 'type1';
+    group1.type = 'add-group1';
     segValSegment.groupForSegment = [group1];
     const user2 = new IndividualForSegment();
     user2.userId = 'user2';
@@ -347,19 +347,34 @@ describe('Segment Service Testing', () => {
   });
 
   it('should throw an error when trying to import a duplicate segment', async () => {
+    const returnSegment = {
+      importErrors: [
+        {
+          fileName: 'seg1',
+          error: 'Invalid Segment data: ' + 'Duplicate segment. ',
+        },
+      ],
+      segments: [],
+    };
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2, segVal]);
-    expect(async () => {
-      await service.importSegments([segValImportFile], logger);
-    }).rejects.toThrow(new Error('Duplicate segment'));
+    const segments = await service.importSegments([segValImportFile], logger);
+    expect(segments).toEqual(returnSegment);
   });
 
   it('should throw an error when trying to import a segment that includes an unknown subsegment', async () => {
+    const returnSegment = {
+      importErrors: [
+        {
+          fileName: 'seg1',
+          error:
+            'Invalid Segment data: ' + 'SubSegment: seg2 not found. Please import subSegment and link in segment. ',
+        },
+      ],
+      segments: [],
+    };
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1]);
-    expect(async () => {
-      await service.importSegments([segValImportFile], logger);
-    }).rejects.toThrow(
-      new Error('SubSegment: ' + seg2.id + ' not found. Please import subSegment and link in experiment.')
-    );
+    const segments = await service.importSegments([segValImportFile], logger);
+    expect(segments).toEqual(returnSegment);
   });
 
   it('should export a segment', async () => {
