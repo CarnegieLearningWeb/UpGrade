@@ -19,8 +19,8 @@ describe('User Controller Testing', () => {
     Container.reset();
   });
 
-  test('Post request for /api/users/paginated', async (done) => {
-    await request(app)
+  test('Post request for /api/users/paginated', () => {
+    return request(app)
       .post('/api/users/paginated')
       .send({
         skip: 0,
@@ -37,25 +37,22 @@ describe('User Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/users/paginated with no params', async (done) => {
-    await request(app).post('/api/users/paginated').set('Accept', 'application/json').expect(500);
-    done();
+  test('Post request for /api/users/paginated with no params', () => {
+    return request(app).post('/api/users/paginated').set('Accept', 'application/json').expect(500);
   });
 
-  test('Get request for /api/users/:email', async (done) => {
-    await request(app)
+  test('Get request for /api/users/:email', () => {
+    return request(app)
       .get('/api/users/email@email.com')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/users/', async (done) => {
-    await request(app)
+  test('Post request for /api/users/', () => {
+    return request(app)
       .post('/api/users/')
       .send({
         email: 'email@email.com',
@@ -66,11 +63,10 @@ describe('User Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/users/details', async (done) => {
-    await request(app)
+  test('Post request for /api/users/details', () => {
+    return request(app)
       .post('/api/users/details')
       .send({
         firstName: 'firstname',
@@ -81,15 +77,13 @@ describe('User Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Delete request for /api/users/:email', async (done) => {
-    await request(app)
+  test('Delete request for /api/users/:email', () => {
+    return request(app)
       .delete('/api/users/email@email.com')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 });
