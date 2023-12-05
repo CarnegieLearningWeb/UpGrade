@@ -11,6 +11,8 @@ describe('StratificationFactorsEffects', () => {
   let store$: any;
   let stratificationFactorsDataService: any;
   let router: any;
+  let translate: any;
+  let notificationService: any;
   let service: StratificationFactorsEffects;
   const mockData: StratificationFactor = {
     factor: 'favourite_food',
@@ -27,7 +29,14 @@ describe('StratificationFactorsEffects', () => {
       navigate: jest.fn(),
     };
 
-    service = new StratificationFactorsEffects(actions$, router, store$, stratificationFactorsDataService);
+    service = new StratificationFactorsEffects(
+      actions$,
+      router,
+      store$,
+      translate,
+      notificationService,
+      stratificationFactorsDataService
+    );
   });
 
   describe('fetchStratificationFactors$', () => {
@@ -77,9 +86,7 @@ describe('StratificationFactorsEffects', () => {
         expect(router.navigate).toHaveBeenCalledWith(['/participants']);
       });
 
-      actions$.next(
-        StratificationFactorsActions.actionDeleteStratificationFactor({ factor: mockData.factor })
-      );
+      actions$.next(StratificationFactorsActions.actionDeleteStratificationFactor({ factor: mockData.factor }));
 
       tick(0);
     }));
