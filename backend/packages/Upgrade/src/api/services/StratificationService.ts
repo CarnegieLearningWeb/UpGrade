@@ -92,7 +92,6 @@ export class StratificationService {
   }
 
   public async insertStratification(csvData: string, logger: UpgradeLogger): Promise<UserStratificationFactor[]> {
-    // const csvData = request.body[0].file;
     const rows = csvData.replace(/"/g, '').split('\n');
     const columnNames = rows[0].split(',');
 
