@@ -25,6 +25,13 @@ describe('StratificationFactorsEffects', () => {
     store$ = new BehaviorSubject({});
     store$.dispatch = jest.fn();
     stratificationFactorsDataService = {};
+    notificationService = {
+      showError: jest.fn(),
+      showSuccess: jest.fn(),
+    };
+    translate = {
+      instant: jest.fn(),
+    };
     router = {
       navigate: jest.fn(),
     };
