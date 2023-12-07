@@ -25,28 +25,26 @@ describe('Analytics Controller Testing', () => {
     Container.reset();
   });
 
-  test('Post request for /api/stats/enrollment', async (done) => {
-    await request(app)
+  test('Post request for /api/stats/enrollment', () => {
+    return request(app)
       .post('/api/stats/enrollment')
       .send({ experimentIds: [uuid()] })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/stats/enrollment/detail', async (done) => {
-    await request(app)
+  test('Post request for /api/stats/enrollment/detail', () => {
+    return request(app)
       .post('/api/stats/enrollment/detail')
       .send({ experimentId: uuid() })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/stats/enrollment/date', async (done) => {
-    await request(app)
+  test('Post request for /api/stats/enrollment/date', () => {
+    return request(app)
       .post('/api/stats/enrollment/date')
       .send({
         experimentId: uuid(),
@@ -56,11 +54,10 @@ describe('Analytics Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/stats/csv', async (done) => {
-    await request(app)
+  test('Post request for /api/stats/csv', () => {
+    return request(app)
       .post('/api/stats/csv')
       .send({
         experimentId: uuid(),
@@ -69,6 +66,5 @@ describe('Analytics Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 });

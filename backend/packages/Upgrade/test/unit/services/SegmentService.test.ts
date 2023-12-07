@@ -12,7 +12,7 @@ import { ExperimentSegmentExclusionRepository } from '../../../src/api/repositor
 import { ExperimentSegmentInclusionRepository } from '../../../src/api/repositories/ExperimentSegmentInclusionRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { SegmentInputValidator } from '../../../src/api/controllers/validators/SegmentInputValidator';
-import { EXPERIMENT_STATE, SERVER_ERROR } from '../../../../../../types/src';
+import { EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
 import { IndividualForSegment } from '../../../src/api/models/IndividualForSegment';
 import { GroupForSegment } from '../../../src/api/models/GroupForSegment';
 import { Experiment } from '../../../src/api/models/Experiment';

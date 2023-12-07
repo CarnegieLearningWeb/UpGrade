@@ -25,14 +25,13 @@ describe('Stratification Controller Testing', () => {
     Container.reset();
   });
 
-  test('Get request for /api/stratification', async (done) => {
-    await request(app).get('/api/stratification').expect('Content-Type', /json/).expect(200);
-    done();
+  test('Get request for /api/stratification', () => {
+    return request(app).get('/api/stratification').expect('Content-Type', /json/).expect(200);
   });
 
   const factorName = 'factor1';
 
-  test('Post request for /api/stratification', async (done) => {
+  test('Post request for /api/stratification', async () => {
     const jsonData = [
       { uuid: 'User', Graduated: 'yes' },
       { uuid: 'Alice', Graduated: 'no' },
@@ -53,19 +52,17 @@ describe('Stratification Controller Testing', () => {
     await request(app).post(`/api/stratification`).send(requestBody).expect('Content-Type', /json/).expect(200);
 
     fs.unlinkSync(tempCsvFilePath);
-    done();
+    return;
   });
 
-  test('Get request for /api/stratification/download/:factor', async (done) => {
-    await request(app)
+  test('Get request for /api/stratification/download/:factor', () => {
+    return request(app)
       .get(`/api/stratification/download/${factorName}`)
       .expect('Content-Type', 'text/csv; charset=utf-8')
       .expect(200);
-    done();
   });
 
-  test('Delete request for /api/stratification/:factor', async (done) => {
-    await request(app).delete(`/api/stratification/${factorName}`).expect('Content-Type', /json/).expect(200);
-    done();
+  test('Delete request for /api/stratification/:factor', () => {
+    return request(app).delete(`/api/stratification/${factorName}`).expect('Content-Type', /json/).expect(200);
   });
 });

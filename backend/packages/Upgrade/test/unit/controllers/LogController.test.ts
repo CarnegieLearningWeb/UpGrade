@@ -25,8 +25,8 @@ describe('Log Controller Testing', () => {
     Container.reset();
   });
 
-  test('Post request for /api/audit', async (done) => {
-    await request(app)
+  test('Post request for /api/audit', () => {
+    return request(app)
       .post('/api/audit')
       .send({
         skip: 0,
@@ -36,12 +36,11 @@ describe('Log Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/error', async (done) => {
-    await request(app)
-      .post('/api/error')
+  test('Post request for /api/error', () => {
+    return request(app)
+    .post('/api/error')
       .send({
         skip: 0,
         take: 0,
@@ -50,6 +49,5 @@ describe('Log Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 });
