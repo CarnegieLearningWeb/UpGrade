@@ -51,10 +51,11 @@ export class StratificationFactorsEffects {
               this.notificationService.showSuccess(
                 this.translate.instant('Stratification factor deleted successfully!')
               );
-              const stratificationFactor: StratificationFactor = {
+              const stratificationFactor = {
                 ...data,
                 factor: data.stratificationFactorName,
               };
+              delete stratificationFactor.stratificationFactorName;
               const successResponse = StratificationFactorsActions.actionDeleteStratificationFactorSuccess({
                 stratificationFactor: stratificationFactor,
               });
