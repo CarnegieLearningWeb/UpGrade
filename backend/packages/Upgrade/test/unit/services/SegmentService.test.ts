@@ -328,7 +328,7 @@ describe('Segment Service Testing', () => {
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2, segVal]);
     expect(async () => {
       await service.importSegments([segVal], logger);
-    }).rejects.toThrow(new Error('Duplicate segment'));
+    }).rejects.toThrow(new Error('Duplicate segment with same context'));
   });
 
   it('should throw an error when trying to import a segment that includes an unknown subsegment', async () => {
