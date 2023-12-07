@@ -1,4 +1,4 @@
-<p align="center"><a href="https://www.upgradeplatform.org"><img src="assets/upgrade-logo.png" width="40px" alt="Upgrade - Open Source A/B Testing & Feature Flagging Tool" />&nbsp;&nbsp;<img src="assets/upgrade-logo-name.png" width="150px" alt="Upgrade - Open Source A/B Testing & Feature Flagging Tool" /></a></p>
+<p align="center"><a href="https://www.upgradeplatform.org"><img src="assets/upgrade-logo.png" width="40px" alt="Upgrade - Open Source A/B Testing & Feature Flagging Tool" /><img src="assets/upgrade-logo-name.png" width="150px" alt="Upgrade - Open Source A/B Testing & Feature Flagging Tool" /></a></p>
 <p align="center"><b>Open Source A/B Testing & Feature Flagging Tool</b></p>
 
 <div align="center">
