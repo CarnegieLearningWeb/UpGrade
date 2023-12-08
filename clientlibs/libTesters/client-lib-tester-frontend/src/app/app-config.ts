@@ -1,10 +1,8 @@
-import * as UpgradeClient_Local from 'upgrade_client_local/dist/browser';
+import { UpgradeClient as UpgradeClient_Local } from 'upgrade_client_local/dist/browser-lite';
 // import { UpgradeClient as UpgradeClient_Local } from 'upgrade_client_1_1_7';
 import { UpgradeClient as UpgradeClient_1_1_7 } from 'upgrade_client_1_1_7';
 import * as UpgradeClient_1_1_8 from 'upgrade_client_1_1_8/dist/browser';
-import { UpgradeClient as UpgradeClient_3_0_18 } from 'upgrade_client_3_0_18';
-import * as UpgradeClient_4_1_6 from 'upgrade_client_4_1_6/dist/browser';
-import { UpgradeClient as UpgradeClient_4_2_0 } from 'upgrade_client_4_2_0';
+import * as UpgradeClient_4_1_12 from 'upgrade_client_4_1_12/dist/browser';
 import { MOCK_APP_NAMES } from '../../../shared/constants';
 
 /**
@@ -33,19 +31,9 @@ export const availableClientLibraries: ClientLibraryRef[] = [
     client: UpgradeClient_1_1_8,
   },
   {
-    version: '3.0.18',
+    version: '4.1.12',
     language: 'ts',
-    client: UpgradeClient_3_0_18,
-  },
-  {
-    version: '4.1.6',
-    language: 'ts',
-    client: UpgradeClient_4_1_6,
-  },
-  {
-    version: '4.2.0',
-    language: 'ts',
-    client: UpgradeClient_4_2_0,
+    client: UpgradeClient_4_1_12,
   },
 ];
 
@@ -57,10 +45,8 @@ export const availableApiHostUrls = [
 
 export const availableFrontendMockApps = [
   MOCK_APP_NAMES.GENERAL_TS_FRONTEND_1_1,
-  MOCK_APP_NAMES.GENERAL_TS_FRONTEND_3_0,
   MOCK_APP_NAMES.GENERAL_TS_FRONTEND_4_1,
   MOCK_APP_NAMES.GENERAL_TS_FRONTEND_5_0,
-  // MOCK_APP_NAMES.BDAY_APP,
   MOCK_APP_NAMES.PORTAL_APP,
   MOCK_APP_NAMES.MATHSTREAM_AdaptiveSegmentSwapExperiment,
 ];

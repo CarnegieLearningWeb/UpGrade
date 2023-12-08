@@ -36,9 +36,11 @@ export interface APIEndpoints {
   getVersion: string;
   contextMetaData: string;
   segments: string;
-  importSegment: string;
+  importSegments: string;
   exportSegment: string;
+  exportSegments: string;
   getGroupAssignmentStatus: string;
+  stratification: string;
 }
 
 export interface Environment {

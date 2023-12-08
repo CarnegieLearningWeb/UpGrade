@@ -4,7 +4,6 @@ import {
   Body,
   UseBefore,
   Get,
-  BodyParam,
   Req,
   InternalServerError,
   Delete,
@@ -18,14 +17,7 @@ import { ExperimentAssignmentValidator } from './validators/ExperimentAssignment
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
-import {
-  ISingleMetric,
-  IGroupMetric,
-  SERVER_ERROR,
-  IGroupMembership,
-  IUserAliases,
-  IWorkingGroup,
-} from 'upgrade_types';
+import { SERVER_ERROR, IGroupMembership, IUserAliases, IWorkingGroup } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator.v1';
 import { ExperimentError } from '../models/ExperimentError';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -42,6 +34,8 @@ import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { Log } from '../models/Log';
 import flatten from 'lodash.flatten';
 import { CaliperLogEnvelope } from './validators/CaliperLogEnvelope';
+import { ExperimentUserValidator } from './validators/ExperimentUserValidator';
+import { MetricValidator } from './validators/MetricValidator';
 
 interface IMonitoredDeciosionPoint {
   id: string;
@@ -179,10 +173,10 @@ export class ExperimentClientController {
    */
   @Post('init')
   public async init(
-    @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
-    experimentUser: ExperimentUser
+    @Body({ validate: false })
+    experimentUser: ExperimentUserValidator
   ): Promise<Pick<ExperimentUser, 'id' | 'group' | 'workingGroup'>> {
     request.logger.info({ message: 'Starting the init call for user' });
     // getOriginalUserDoc call for alias
@@ -256,10 +250,10 @@ export class ExperimentClientController {
    */
   @Patch('groupmembership')
   public async setGroupMemberShip(
-    @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
-    experimentUser: ExperimentUser
+    @Body({ validate: false })
+    experimentUser: ExperimentUserValidator
   ): Promise<IGroupMembership> {
     request.logger.info({ message: 'Starting the groupmembership call for user' });
     // getOriginalUserDoc call for alias
@@ -324,9 +318,9 @@ export class ExperimentClientController {
    */
   @Patch('workinggroup')
   public async setWorkingGroup(
-    @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
+    @Body({ validate: false })
     workingGroupParams: UpdateWorkingGroupValidator
   ): Promise<IWorkingGroup> {
     request.logger.info({ message: 'Starting the workinggroup call for user' });
@@ -419,9 +413,9 @@ export class ExperimentClientController {
    */
   @Post('mark')
   public async markExperimentPoint(
-    @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
+    @Body({ validate: false })
     experiment: MarkExperimentValidator
   ): Promise<IMonitoredDeciosionPoint> {
     request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
@@ -503,9 +497,9 @@ export class ExperimentClientController {
    */
   @Post('assign')
   public async getAllExperimentConditions(
-    @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
+    @Body({ validate: false })
     experiment: ExperimentAssignmentValidator
   ): Promise<IExperimentAssignment[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
@@ -522,7 +516,7 @@ export class ExperimentClientController {
       return {
         site,
         target,
-        assignedCondition: { condition: assignedCondition.payload?.value || assignedCondition.conditionCode },
+        assignedCondition: { condition: assignedCondition[0].payload?.value || assignedCondition[0].conditionCode },
       };
     });
   }
@@ -596,9 +590,9 @@ export class ExperimentClientController {
    */
   @Post('log')
   public async log(
-    @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
+    @Body({ validate: false })
     logData: LogValidator
   ): Promise<Omit<Log, 'createdAt' | 'updatedAt' | 'versionNumber'>[]> {
     request.logger.info({ message: 'Starting the log call for user' });
@@ -618,7 +612,7 @@ export class ExperimentClientController {
     });
   }
 
-   /**
+  /**
    * @swagger
    * /log/caliper:
    *    post:
@@ -642,12 +636,12 @@ export class ExperimentClientController {
    */
   @Post('log/caliper')
   public async caliperLog(
-    @Body({ validate: { validationError: { target: false, value: false } } })
+    @Body({ validate: false })
     @Req()
     request: AppRequest,
     envelope: CaliperLogEnvelope
   ): Promise<Log[]> {
-    let result = envelope.data.map(async log => {
+    const result = envelope.data.map(async (log) => {
       // getOriginalUserDoc call for alias
       const experimentUserDoc = await this.getUserDoc(log.object.assignee.id, request.logger);
       if (experimentUserDoc) {
@@ -767,9 +761,9 @@ export class ExperimentClientController {
    */
   @Post('failed')
   public async failedExperimentPoint(
-    @Body({ validate: { validationError: { target: false, value: false } } })
     @Req()
     request: AppRequest,
+    @Body({ validate: false })
     errorBody: FailedParamsValidator
   ): Promise<ExperimentError> {
     const experimentUserDoc = await this.getUserDoc(errorBody.userId, request.logger);
@@ -835,12 +829,13 @@ export class ExperimentClientController {
    *            description: Insert error in database
    */
   @Post('metric')
-  public filterMetrics(
-    @BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>,
+  public async filterMetrics(
     @Req()
-    request: AppRequest
+    request: AppRequest,
+    @Body({ validate: false })
+    metric: MetricValidator
   ): Promise<Metric[]> {
-    return this.metricService.saveAllMetrics(metricUnit, request.logger);
+    return await this.metricService.saveAllMetrics(metric.metricUnit, request.logger);
   }
 
   /**

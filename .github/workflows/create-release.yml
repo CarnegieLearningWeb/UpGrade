@@ -15,7 +15,7 @@ jobs:
           script: |
             const repo = "${{ github.repository }}".split("/").pop()
             const tags = await github.paginate(
-              github.rest.repos.listTags, 
+              github.rest.repos.listTags,
               {owner: "${{ github.repository_owner }}", repo: repo}
             );
             console.log(tags)
@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
       - run: npm install semver
       - name: Load Env Vars
         uses: tw3lveparsecs/github-actions-setvars@v0.1
@@ -70,7 +70,7 @@ jobs:
           script: |
             var semver = require('semver');
             const tagNames = await github.paginate(
-              github.rest.repos.listTags, 
+              github.rest.repos.listTags,
               {owner: "${{ github.repository_owner }}", repo: "UpGrade"},
               (response) => response.data.map((tag) => tag.name)
             );
@@ -88,7 +88,7 @@ jobs:
         uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
       - name: Set Backend App Version
         working-directory: backend/packages/Upgrade
         run: npm version ${{ needs.init.outputs.version }} --git-tag-version=false
@@ -113,7 +113,7 @@ jobs:
         uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
       - name: Build Frontend
         working-directory: frontend
         run: |
@@ -157,7 +157,7 @@ jobs:
         with:
           name: lambda
           path: backend/packages/Scheduler/lib/upgrade-lambda-${{ needs.init.outputs.version }}.zip
-      
+
   create-release:
     name: Create Release
     needs: [build-backend, build-frontend, build-lambda, init]
@@ -168,7 +168,7 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "**/upgrade-*.zip"
-          commit: main
+          commit: ${{ github.ref }}
           generateReleaseNotes: true
           tag: ${{ needs.init.outputs.version }}
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
+import { ASSIGNMENT_UNIT } from 'upgrade_types';
 import {
   ExperimentDecisionPoint,
   ExperimentCondition,
@@ -48,9 +49,7 @@ import {
   FactorLevelData,
   FactorialFactorTableRowData,
   FactorialLevelTableRowData,
-  ExperimentFactorialFormDesignData,
   ExperimentFactorData,
-  ExperimentLevelData,
 } from './store/experiment-design-stepper.model';
 import {
   actionUpdateFactorialConditionTableData,
@@ -74,6 +73,10 @@ export class ExperimentDesignStepperService {
     distinctUntilChanged(isEqual)
   );
   factorialExperimentDesignData$ = this.store$.pipe(select(selectFactorialDesignData), distinctUntilChanged(isEqual));
+
+  // Unit of Assignment:
+  private assignmentUnitSource = new BehaviorSubject<ASSIGNMENT_UNIT>(ASSIGNMENT_UNIT.INDIVIDUAL);
+  currentAssignmentUnit$ = this.assignmentUnitSource.asObservable();
 
   // Payload table:
   simpleExperimentPayloadTableDataBehaviorSubject$ = new BehaviorSubject<SimpleExperimentPayloadTableRowData[]>([]);
@@ -129,6 +132,10 @@ export class ExperimentDesignStepperService {
     this.simpleExperimentPayloadTableData$.subscribe(this.simpleExperimentPayloadTableDataBehaviorSubject$);
     this.factorialFactorTableData$.subscribe(this.factorialFactorTableDataBehaviorSubject$);
     this.factorialLevelsTableData$.subscribe(this.factorialLevelTableDataBehaviorSubject$);
+  }
+
+  changeAssignmentUnit(unit: ASSIGNMENT_UNIT) {
+    this.assignmentUnitSource.next(unit);
   }
 
   getHasExperimentDesignStepperDataChanged() {
@@ -329,24 +336,12 @@ export class ExperimentDesignStepperService {
       conditionPayloads.push({
         id: payloadRowData.id || uuidv4(),
         payload: { type: PAYLOAD_TYPE.STRING, value: payloadRowData.payload },
-        parentCondition: parentCondition.id,
-        decisionPoint: decisionPoint.id,
+        parentCondition: parentCondition,
+        decisionPoint: decisionPoint,
       });
     });
 
     return conditionPayloads;
-  }
-
-  createFactorialDesignDataFromForm(
-    factorialFormDesignData: ExperimentFactorialFormDesignData
-  ): ExperimentFactorData[] {
-    const factorsData: ExperimentFactorData[] = factorialFormDesignData.factors.map((factor) => {
-      const levelsData: ExperimentLevelData[] = factor.levels.map((level) => {
-        return { ...level, payload: { type: PAYLOAD_TYPE.STRING, value: level.payload } };
-      });
-      return { ...factor, levels: levelsData };
-    });
-    return factorsData;
   }
 
   createNewFactorialConditionTableData(designData: ExperimentFactorialDesignData): FactorialConditionTableRowData[] {
@@ -436,7 +431,7 @@ export class ExperimentDesignStepperService {
       const payloadValue = conditionPayload ? conditionPayload.payload.value : '';
       const existingConditionPayloadId = conditionPayload?.id;
 
-      factorialCondition.levelCombinationElements.sort((a, b) =>
+      [...factorialCondition.levelCombinationElements].sort((a, b) =>
         levelOrder[a.level?.id] > levelOrder[b.level?.id]
           ? 1
           : levelOrder[b.level?.id] > levelOrder[a.level?.id]
@@ -520,11 +515,13 @@ export class ExperimentDesignStepperService {
     }
   }
 
-  createFactorialConditionsConditionPayloadsRequestObject() {
+  createFactorialConditionsConditionPayloadsRequestObject(
+    currentConditions: FactorialConditionRequestObject[] | ExperimentCondition[]
+  ) {
     const tableData = this.getFactorialConditionTableData();
     const factorialConditionPayloadsRequestObject = [];
 
-    tableData.forEach((factorialConditionTableRow) => {
+    tableData.forEach((factorialConditionTableRow, index) => {
       if (factorialConditionTableRow.payload === '' || factorialConditionTableRow.payload === null) {
         return;
       }
@@ -532,7 +529,7 @@ export class ExperimentDesignStepperService {
       factorialConditionPayloadsRequestObject.push({
         id: factorialConditionTableRow.conditionPayloadId || uuidv4(),
         payload: { type: PAYLOAD_TYPE.STRING, value: factorialConditionTableRow.payload },
-        parentCondition: factorialConditionTableRow.id,
+        parentCondition: currentConditions[index],
       });
     });
 

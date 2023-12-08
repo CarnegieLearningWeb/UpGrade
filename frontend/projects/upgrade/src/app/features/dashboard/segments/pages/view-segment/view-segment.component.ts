@@ -25,6 +25,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   segment: Segment;
   segmentSub: Subscription;
   members: { type: string; id: string }[] = [];
+  segmentUsed: boolean;
 
   displayedVariationColumns: string[] = ['value', 'name'];
 
@@ -60,6 +61,8 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
           this.members.push({ type: MemberTypes.SEGMENT, id: subSegment.name });
         });
       });
+
+    this.segmentUsed = this.segment?.status === SEGMENT_STATUS.USED;
   }
 
   openEditSegmentDialog() {
@@ -103,7 +106,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   }
 
   exportSegment(segmentId: string) {
-    this.segmentsService.exportSegment(segmentId);
+    this.segmentsService.exportSegments([segmentId]);
   }
 
   ngOnDestroy() {

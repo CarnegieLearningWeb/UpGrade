@@ -1,6 +1,9 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { ExperimentVM, ExperimentStateInfo } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
@@ -17,7 +20,9 @@ export class ExperimentStatusComponent implements OnInit {
   experimentStatus = [];
   minDate = new Date();
   showInfoMsg = false;
+  showArchiveInfoMsg = false;
   showConditionCountErrorMsg = false;
+  archivedStatusAgreement = true;
 
   constructor(
     private _formBuilder: UntypedFormBuilder,
@@ -62,11 +67,16 @@ export class ExperimentStatusComponent implements OnInit {
     );
     switch (this.experimentInfo.state) {
       case EXPERIMENT_STATE.ENROLLING:
+        this.experimentStatus = [
+          { value: EXPERIMENT_STATE.ENROLLMENT_COMPLETE },
+          { value: EXPERIMENT_STATE.CANCELLED },
+        ];
+        break;
       case EXPERIMENT_STATE.ENROLLMENT_COMPLETE:
         this.experimentStatus = [
           { value: EXPERIMENT_STATE.ENROLLING },
-          { value: EXPERIMENT_STATE.ENROLLMENT_COMPLETE },
           { value: EXPERIMENT_STATE.CANCELLED },
+          { value: EXPERIMENT_STATE.ARCHIVED },
         ];
         break;
       default:
@@ -76,10 +86,12 @@ export class ExperimentStatusComponent implements OnInit {
           { value: EXPERIMENT_STATE.SCHEDULED },
           { value: EXPERIMENT_STATE.ENROLLING },
           { value: EXPERIMENT_STATE.CANCELLED },
+          { value: EXPERIMENT_STATE.ARCHIVED },
         ];
     }
     this.statusForm.get('newStatus').valueChanges.subscribe((status) => {
       this.showInfoMsg = status.value === EXPERIMENT_STATE.ENROLLING;
+      this.showArchiveInfoMsg = status.value === EXPERIMENT_STATE.ARCHIVED;
       // set validation flag for condition count less than 2 and not for status as cancelled:
       if (this.data.experiment.conditions.length < 2 && !(status.value === EXPERIMENT_STATE.CANCELLED)) {
         this.showConditionCountErrorMsg = true;
@@ -87,6 +99,7 @@ export class ExperimentStatusComponent implements OnInit {
         // allow cancelled status for even less than 2 conditions:
         this.showConditionCountErrorMsg = false;
       }
+      this.archivedStatusAgreement = status.value !== EXPERIMENT_STATE.ARCHIVED;
     });
   }
 
@@ -100,5 +113,9 @@ export class ExperimentStatusComponent implements OnInit {
     }
     this.experimentService.updateExperimentState(this.experimentInfo.id, data);
     this.onCancelClick();
+  }
+
+  setArchivedStatusAgreement() {
+    this.archivedStatusAgreement = !this.archivedStatusAgreement;
   }
 }

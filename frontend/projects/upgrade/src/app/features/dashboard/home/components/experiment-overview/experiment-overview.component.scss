@@ -24,11 +24,19 @@
     }
   }
 
-  .consistency-rule,
-  .context {
-    width: 230px;
+  .stratification-container {
+    .assignment-algorithm {
+      width: 230px;
+    }
+
+    .stratification-factor {
+      margin-left: 50px;
+      width: 230px;
+    }
   }
 
+  .condition-order,
+  .consistency-rule,
   .chips {
     width: 230px;
   }

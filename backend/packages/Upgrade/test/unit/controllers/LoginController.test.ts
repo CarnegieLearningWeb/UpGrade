@@ -22,36 +22,32 @@ describe('Login Controller Testing', () => {
     Container.reset();
   });
 
-  test('Post request for /api/login/user when user exists', async (done) => {
-    await request(app)
+  test('Post request for /api/login/user when user exists', () => {
+    return request(app)
       .post('/api/login/user')
       .send({
-        id: 'string',
-        email: 'string',
+        email: 'string@email.com',
         firstName: 'string',
         lastName: 'string',
-        imageUrl: 'string',
-        role: 'string',
+        imageUrl: 'https://image.com',
+        role: 'reader',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/login/user when user does not exist', async (done) => {
-    await request(app)
+  test('Post request for /api/login/user when user does not exist', () => {
+    return request(app)
       .post('/api/login/user')
       .send({
-        id: 'string',
-        email: 'string',
+        email: 'string@email.com',
         firstName: 'string',
         lastName: 'string',
-        imageUrl: 'string',
+        imageUrl: 'https://image.com',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 });

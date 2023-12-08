@@ -24,7 +24,7 @@
         mat-flat-button
         color="primary"
         class="ft-14-700 export-segments"
-        (click)="openExportAllSegmentDialog()"
+        (click)="openExportAllSegment()"
         *ngIf="(permissions$ | async)?.segments.create"
       >
         <mat-icon>download</mat-icon>
@@ -122,7 +122,9 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <mat-chip class="ft-12-600" *ngIf="segment.context != 'ALL'"> {{ segment.context }} </mat-chip>
+          <mat-chip-list>
+            <mat-chip class="ft-12-600" *ngIf="segment.context != 'ALL'"> {{ segment.context }} </mat-chip>
+          </mat-chip-list>
           <span class="ft-12-600" *ngIf="segment.context == 'ALL'" style="margin-left: 10px">
             {{ segment.context }}
           </span>

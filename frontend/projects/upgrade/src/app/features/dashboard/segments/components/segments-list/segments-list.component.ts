@@ -48,8 +48,6 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   selectedExperimentFilterOption = EXPERIMENT_SEARCH_KEY.ALL;
   searchValue: string;
 
-  isAllSegmentsFetchedSub: Subscription;
-
   constructor(private authService: AuthService, private segmentsService: SegmentsService, private dialog: MatDialog) {}
 
   get SegmentStatus() {
@@ -80,6 +78,13 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.dialog.open(ImportSegmentComponent, {
       panelClass: 'import-segment-modal',
     });
+  }
+
+  openExportAllSegment() {
+    const segmentIds = this.allSegments.data.map((segment) => {
+      return segment.id;
+    });
+    this.segmentsService.exportSegments(segmentIds);
   }
 
   ngOnDestroy() {

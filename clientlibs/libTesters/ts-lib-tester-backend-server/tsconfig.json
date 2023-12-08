@@ -9,6 +9,7 @@
     "baseUrl": ".",
     "importHelpers": true,
     "target": "esnext",
+    "allowJs": true,
     "module": "esnext",
       "lib": [
         "esnext",

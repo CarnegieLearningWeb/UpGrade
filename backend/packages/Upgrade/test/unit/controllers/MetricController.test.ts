@@ -23,29 +23,26 @@ describe('Metric Controller Testing', () => {
     Container.reset();
   });
 
-  test('Get request for /api/metric', async (done) => {
-    await request(app).get('/api/metric').set('Accept', 'application/json').expect('Content-Type', /json/).expect(200);
-    done();
+  test('Get request for /api/metric', () => {
+    return request(app).get('/api/metric').set('Accept', 'application/json').expect('Content-Type', /json/).expect(200);
   });
 
-  test('Post request for /api/metric/save', async (done) => {
-    await request(app)
+  test('Post request for /api/metric/save', () => {
+    return request(app)
       .post('/api/metric/save')
       .send({
-        metricUnit: {},
+        metricUnit: [],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Delete request for /api/metric/:key', async (done) => {
-    await request(app)
+  test('Delete request for /api/metric/:key', () => {
+    return request(app)
       .delete(`/api/metric/${uuid()}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 });

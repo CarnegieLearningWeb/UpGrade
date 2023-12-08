@@ -24,8 +24,8 @@ describe('Feature Flag Controller Testing', () => {
     Container.reset();
   });
 
-  test('Post request for /api/flags/paginated', async (done) => {
-    await request(app)
+  test('Post request for /api/flags/paginated', () => {
+    return request(app)
       .post('/api/flags/paginated')
       .send({
         skip: 0,
@@ -38,11 +38,10 @@ describe('Feature Flag Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/flags', async (done) => {
-    await request(app)
+  test('Post request for /api/flags', () => {
+    return request(app)
       .post('/api/flags')
       .send({
         id: 'string',
@@ -53,45 +52,61 @@ describe('Feature Flag Controller Testing', () => {
         status: true,
         variations: [
           {
+            id: 'string',
             value: 'string',
             name: 'string',
             description: 'string',
-            defaultVariation: 'Unknown Type: boolean[]',
+            defaultVariation: [],
           },
         ],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/flags/status', async (done) => {
-    await request(app)
+  test('Post request for /api/flags/status', () => {
+    return request(app)
       .post('/api/flags/status')
-      .send('flagid')
+      .send({
+        flagId: uuid(),
+        status: true,
+      })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Delete request for /api/flags/id', async (done) => {
-    await request(app)
+  test('Delete request for /api/flags/id', () => {
+    return request(app)
       .delete('/api/flags/' + uuid())
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Put request for /api/flags/id', async (done) => {
-    await request(app)
-      .put('/api/flags/flagid')
-      .send('flagid')
+  test('Put request for /api/flags/id', () => {
+    return request(app)
+      .put('/api/flags/' + uuid())
+      .send({
+        id: 'string',
+        name: 'string',
+        key: 'string',
+        description: 'string',
+        variationType: 'string',
+        status: true,
+        variations: [
+          {
+            id: 'string',
+            value: 'string',
+            name: 'string',
+            description: 'string',
+            defaultVariation: [],
+          },
+        ],
+      })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 });

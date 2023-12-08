@@ -10,13 +10,7 @@ import {
 } from '../../../../shared/models';
 import { CaliperEnvelope } from '../../../../../../types/src';
 
-// There's probably a clever way to do this, but getting the right types automatically is tricky
-
-// import UpgradeClient from 'upgrade_client_local/dist/browser';
-// import { UpgradeClient } from 'upgrade_client_1_1_7';
-// import { UpgradeClient } from 'upgrade_client_3_0_18';
-import UpgradeClient from 'upgrade_client_4_1_6/dist/browser';
-// import { UpgradeClient } from 'upgrade_client_4_2_0';
+import UpgradeClient from 'upgrade_client_4_1_12/dist/browser';
 
 import { AbstractMockAppService } from './abstract-mock-app.service';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
@@ -32,7 +26,6 @@ export enum MARKED_DECISION_POINT_STATUS {
 })
 export class GeneralTestForVersion41Service extends AbstractMockAppService {
   public override upgradeClient!: UpgradeClient;
-  // public upgradeClient: any;
 
   /******************* required metadata to describe the mock app and its callable hooks ********************/
   public NAME = MOCK_APP_NAMES.GENERAL_TS_FRONTEND_4_1;
@@ -323,7 +316,7 @@ export class GeneralTestForVersion41Service extends AbstractMockAppService {
       data: [],
     };
     try {
-      const logResponse = await this.upgradeClient.logCaliper(logRequest);
+      const logResponse = await this.upgradeClient.logCaliper(logRequest as any);
       console.log({ logResponse });
     } catch (err) {
       console.error(err);

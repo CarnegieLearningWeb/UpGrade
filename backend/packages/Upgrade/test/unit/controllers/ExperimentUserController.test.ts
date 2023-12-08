@@ -24,64 +24,64 @@ describe('Experiment User Controller Testing', () => {
     Container.reset();
   });
 
-  test('Get request for /api/experimentusers', async (done) => {
-    await request(app)
+  test('Get request for /api/experimentusers', () => {
+    return request(app)
       .get('/api/experimentusers')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Get request for /api/experimentusers/id', async (done) => {
-    await request(app)
+  test('Get request for /api/experimentusers/id', () => {
+    return request(app)
       .get('/api/experimentusers/' + uuid())
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Get request for /api/experimentusers/id with bad id', async (done) => {
-    await request(app)
+  test('Get request for /api/experimentusers/id with bad id', () => {
+    return request(app)
       .get('/api/experimentusers/u22')
       .set('Accept', 'application/json')
       .expect('Content-Type', 'text/html; charset=utf-8')
       .expect(500);
-    done();
   });
 
-  test('Post request for /api/experimentusers/', async (done) => {
-    await request(app)
+  test('Post request for /api/experimentusers/', () => {
+    return request(app)
       .post('/api/experimentusers/')
       .send({
-        id: 'u21',
-        group: {
-          school: 'testschool',
-          class: 'testclass',
-          instructor: 'testteacher',
-        },
-        workingGroup: {
-          school: 'testschool',
-          class: 'testclass',
-          instructor: 'testteacher',
-        },
+        users: [
+          {
+            id: 'u21',
+            group: {
+              school: ['testschool'],
+              class: ['testclass'],
+              instructor: ['testteacher'],
+            },
+            workingGroup: {
+              school: 'testschool',
+              class: 'testclass',
+              instructor: 'testteacher',
+            },
+          },
+        ],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Put request for /api/experimentusers/id', async (done) => {
-    await request(app)
+  test('Put request for /api/experimentusers/id', () => {
+    return request(app)
       .put('/api/experimentusers/u21')
       .send({
         id: 'u21',
         group: {
-          school: 'testschool',
-          class: 'testclass',
-          instructor: 'testteacher',
+          school: ['testschool'],
+          class: ['testclass'],
+          instructor: ['testteacher'],
         },
         workingGroup: {
           school: 'testschool',
@@ -92,6 +92,5 @@ describe('Experiment User Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 });

@@ -23,27 +23,24 @@ export class GeneralTSBackendVersion4 extends AbstractTSBackendMockApp {
   public TYPE: MockAppType = 'frontend';
   public LANGUAGE: CodeLanguage = 'ts';
   public SITES = {
-    TEST: 'test',
+    TEST: 'test_site',
   };
   public TARGETS = {
     TARGET_1: 'target_1',
-    TARGET_2: 'target_2',
   };
   public GROUPS = ['schoolId', 'classId', 'instructorId'];
-  public CONTEXT = 'assign-prog'; // what should this be really?
+  public CONTEXT = 'lib-tester';
   public HOOKNAMES = {
     INIT: 'init',
     ASSIGN: 'assign',
+    GET_ASSIGNMENT: 'getDecisionPointAssignment',
     MARK_EXPERIMENT_POINT: 'markExperimentPoint',
     GROUP_MEMBERSHIP: 'setGroupMembership',
     WORKING_GROUPS: 'setWorkingGroup',
     SET_ALT_USER_IDS: 'setAltUserIds',
     LOG: 'log',
   };
-  public DECISION_POINTS = [
-    { site: this.SITES.TEST, target: this.TARGETS.TARGET_1 },
-    { site: this.SITES.TEST, target: this.TARGETS.TARGET_2 },
-  ];
+  public DECISION_POINTS = [{ site: this.SITES.TEST, target: this.TARGETS.TARGET_1 }];
 
   constructor(UpgradeClientConstructor?: any) {
     super(UpgradeClientConstructor);
@@ -63,6 +60,10 @@ export class GeneralTSBackendVersion4 extends AbstractTSBackendMockApp {
         {
           name: this.HOOKNAMES.ASSIGN,
           description: 'Dispatches .getAllExperimentConditions()',
+        },
+        {
+          name: this.HOOKNAMES.GET_ASSIGNMENT,
+          description: 'Dispatches .getAssignment()',
         },
         {
           name: this.HOOKNAMES.MARK_EXPERIMENT_POINT,
@@ -95,6 +96,10 @@ export class GeneralTSBackendVersion4 extends AbstractTSBackendMockApp {
         {
           label: this.HOOKNAMES.ASSIGN,
           hookName: this.HOOKNAMES.ASSIGN,
+        },
+        {
+          label: this.HOOKNAMES.GET_ASSIGNMENT,
+          hookName: this.HOOKNAMES.GET_ASSIGNMENT,
         },
         {
           label: this.HOOKNAMES.MARK_EXPERIMENT_POINT,
@@ -144,6 +149,8 @@ export class GeneralTSBackendVersion4 extends AbstractTSBackendMockApp {
       return await this.doInit(hookEvent);
     } else if (name === this.HOOKNAMES.ASSIGN) {
       return await this.doAssign(hookEvent);
+    } else if (name === this.HOOKNAMES.GET_ASSIGNMENT) {
+      return await this.doGetDecisionPointAssignment(hookEvent);
     } else if (name === this.HOOKNAMES.MARK_EXPERIMENT_POINT) {
       return await this.doMark(hookEvent);
     } else if (name === this.HOOKNAMES.SET_ALT_USER_IDS) {
@@ -207,6 +214,29 @@ export class GeneralTSBackendVersion4 extends AbstractTSBackendMockApp {
     }
   }
 
+  private async doGetDecisionPointAssignment(hookEvent: HookRequestBody): Promise<any> {
+    console.log('doGetAssignment called:', hookEvent);
+    this.upgradeClient = this.constructUpgradeClient(hookEvent.user.id, hookEvent.apiHostUrl);
+
+    try {
+      const decisionPointAssignmentResponse = await this.upgradeClient.getDecisionPointAssignment(
+        this.SITES.TEST,
+        this.TARGETS.TARGET_1
+      );
+      console.log({ decisionPointAssignmentResponse });
+      return {
+        hookReceived: hookEvent,
+        response: decisionPointAssignmentResponse,
+      };
+    } catch (err) {
+      console.error(err);
+      return {
+        hookReceived: hookEvent,
+        response: err,
+      };
+    }
+  }
+
   private async doMark(hookEvent: HookRequestBody): Promise<HookResponse> {
     console.log('doMark called:', hookEvent);
     this.upgradeClient = this.constructUpgradeClient(hookEvent.user.id, hookEvent.apiHostUrl);
@@ -214,7 +244,7 @@ export class GeneralTSBackendVersion4 extends AbstractTSBackendMockApp {
     try {
       const markResponse = await this.upgradeClient.markExperimentPoint(
         this.SITES.TEST,
-        'control',
+        hookEvent.payload?.condition || 'control',
         MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
         this.TARGETS.TARGET_1
       );

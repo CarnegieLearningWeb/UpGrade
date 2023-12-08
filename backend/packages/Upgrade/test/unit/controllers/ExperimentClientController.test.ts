@@ -41,7 +41,6 @@ describe('Experiment Client Controller Testing', () => {
     userId: 'u22',
     value: [
       {
-        userId: 'u22',
         timestamp: '1970-01-01T00:00:00Z',
         metrics: {
           groupedMetrics: [
@@ -81,8 +80,8 @@ describe('Experiment Client Controller Testing', () => {
   //   ]
   // }
 
-  test('Post request for /api/init', async (done) => {
-    await request(app)
+  test('Post request for /api/init', () => {
+    return request(app)
       .post('/api/init')
       .send({
         id: '123',
@@ -90,11 +89,10 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/v1/groupmembership', async (done) => {
-    await request(app)
+  test('Post request for /api/v1/groupmembership', () => {
+    return request(app)
       .patch('/api/v1/groupmembership')
       .send({
         id: 'u21',
@@ -105,11 +103,10 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/v1/workinggroup', async (done) => {
-    await request(app)
+  test('Post request for /api/v1/workinggroup', () => {
+    return request(app)
       .patch('/api/v1/workinggroup')
       .send({
         id: 'u21',
@@ -122,11 +119,10 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/mark', async (done) => {
-    await request(app)
+  test('Post request for /api/mark', () => {
+    return request(app)
       .post('/api/mark')
       .send({
         userId: 'u21',
@@ -137,11 +133,10 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/assign', async (done) => {
-    await request(app)
+  test('Post request for /api/assign', () => {
+    return request(app)
       .post('/api/assign')
       .send({
         userId: 'u21',
@@ -150,24 +145,19 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/log', async (done) => {
-    await request(app)
+  test('Post request for /api/log', () => {
+    return request(app)
       .post('/api/log')
-      .send({
-        userId: 'u21',
-        logData,
-      })
+      .send(logData)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/failed', async (done) => {
-    await request(app)
+  test('Post request for /api/failed', () => {
+    return request(app)
       .post('/api/failed')
       .send({
         reason: 'xyz',
@@ -178,28 +168,25 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Get request for /api/featureflag', async (done) => {
-    await request(app).get('/api/featureflag').expect('Content-Type', /json/).expect(200);
-    done();
+  test('Get request for /api/featureflag', () => {
+    return request(app).get('/api/featureflag').expect('Content-Type', /json/).expect(200);
   });
 
-  test('Post request for /api/metric', async (done) => {
-    await request(app)
+  test('Post request for /api/metric', () => {
+    return request(app)
       .post('/api/metric')
       .send({
-        metricUnit: {},
+        metricUnit: [],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/v1/useraliases', async (done) => {
-    await request(app)
+  test('Post request for /api/v1/useraliases', () => {
+    return request(app)
       .patch('/api/v1/useraliases')
       .send({
         userId: 'u21',
@@ -208,6 +195,5 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 });

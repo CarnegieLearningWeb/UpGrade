@@ -41,7 +41,7 @@
           </mat-select>
         </mat-form-field>
 
-        <mat-form-field class="ft-14-600 group-type" *ngIf="unitOfAssignmentValue">
+        <mat-form-field class="ft-14-600 group-type" *ngIf="unitOfAssignmentValue === ASSIGNMENT_UNIT.GROUP">
           <mat-label>{{ 'home.new-experiment.overview.group-type.placeHolder' | translate }}</mat-label>
           <mat-select class="ft-14-400" formControlName="groupType" [disabled]="!isExperimentEditable">
             <mat-option *ngFor="let group of groupTypes" [value]="group.value">{{ group.value }}</mat-option>
@@ -49,11 +49,26 @@
         </mat-form-field>
       </div>
 
-      <mat-form-field class="ft-14-600 consistency-rule">
+      <mat-form-field
+        class="ft-14-600 consistency-rule"
+        *ngIf="unitOfAssignmentValue !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS"
+      >
         <mat-label>{{ 'home-global.consistency-rule.text' | translate }}</mat-label>
-        <mat-select class="ft-14-400" formControlName="consistencyRule">
+        <mat-select class="ft-14-400" formControlName="consistencyRule" [disabled]="!isExperimentEditable">
           <mat-option *ngFor="let consistencyRule of consistencyRules" [value]="consistencyRule.value">
             {{ consistencyRule.value | titlecase }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field
+        class="ft-14-600 condition-order"
+        *ngIf="unitOfAssignmentValue === ASSIGNMENT_UNIT.WITHIN_SUBJECTS"
+      >
+        <mat-label>{{ 'home-global.condition-order.text' | translate }}</mat-label>
+        <mat-select class="ft-14-400" formControlName="conditionOrder" [disabled]="!isExperimentEditable">
+          <mat-option *ngFor="let conditionOrder of conditionOrders" [value]="conditionOrder.value">
+            {{ conditionOrder.value | titlecase }}
           </mat-option>
         </mat-select>
       </mat-form-field>
@@ -66,6 +81,26 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
+
+      <div class="stratification-container">
+        <mat-form-field class="ft-14-600 assignment-algorithm">
+          <mat-label>{{ 'home-global.assignment-algorithm.text' | translate }}</mat-label>
+          <mat-select class="ft-14-400" formControlName="assignmentAlgorithm">
+            <mat-option *ngFor="let assignmentAlgorithm of assignmentAlgorithms" [value]="assignmentAlgorithm.value">
+              {{ assignmentAlgorithm.value | titlecase }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field class="ft-14-600 stratification-factor" *ngIf="assignmentAlgorithmValue === 'stratified random sampling'">
+          <mat-label>{{ 'home-global.stratification-factor.text' | translate }}</mat-label>
+          <mat-select class="ft-14-400" formControlName="stratificationFactor" [disabled]="!isExperimentEditable">
+            <mat-option *ngFor="let stratificationFactor of allStratificationFactors" [value]="stratificationFactor.factorName">
+              {{ stratificationFactor.factorName }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
 
       <mat-form-field class="ft-14-600 tags">
         <mat-chip-list #tagsList aria-label="Tags" formControlName="tags">
@@ -91,11 +126,18 @@
         {{ 'home.view-experiment.logging.text' | translate }}
       </mat-checkbox>
     </form>
+    <div class="validation-container">
+      <span
+        class="ft-14-600 validation-message"
+        *ngIf="!isStratificationFactorSelected"
+        [innerHTML]="stratificationFactorNotSelectedMsg | translate"
+      ></span>
+    </div>
   </section>
 
   <section class="shared-modal--buttons-container">
     <span class="shared-modal--buttons-left">
-      <!-- 
+      <!--
         empty left-side spacer for flex-box;
         first modal step has no left side / back btn
       -->

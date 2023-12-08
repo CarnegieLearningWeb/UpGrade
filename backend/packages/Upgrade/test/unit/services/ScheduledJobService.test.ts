@@ -254,9 +254,11 @@ describe('Scheduled Job Service Testing', () => {
     mockjob1.timeStamp = new Date('2019-01-20');
 
     const mockDate = new Date(2022, 3, 1);
-    jest.spyOn(global, "Date").mockImplementation(() => (mockDate as unknown) as string);
-    let res = await service.startExperiment(exp.id, logger);
-    expect(res).toStrictEqual(new Error('Error in start experiment of scheduler: Time Difference of more than 5 hours is found'))
+    jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
+    const res = await service.startExperiment(exp.id, logger);
+    expect(res).toStrictEqual(
+      new Error('Error in start experiment of scheduler: Time Difference of more than 5 hours is found')
+    );
   });
 
   it('should end the experiment', async () => {
@@ -273,11 +275,12 @@ describe('Scheduled Job Service Testing', () => {
     exp.state = EXPERIMENT_STATE.SCHEDULED;
 
     mockjob1.timeStamp = new Date('2019-01-20');
-    jest.useFakeTimers('modern');
+    jest.useFakeTimers();
     jest.setSystemTime(new Date(2020, 3, 1));
-    let res = await service.endExperiment(exp.id, logger);
-    expect(res).toStrictEqual(new Error('Error in end experiment of scheduler: Time Difference of more than 5 hours is found'))
-
+    const res = await service.endExperiment(exp.id, logger);
+    expect(res).toStrictEqual(
+      new Error('Error in end experiment of scheduler: Time Difference of more than 5 hours is found')
+    );
   });
 
   it('should return empty when no experiment to stop', async () => {

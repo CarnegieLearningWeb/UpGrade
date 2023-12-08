@@ -19,8 +19,8 @@ describe('User Controller Testing', () => {
     Container.reset();
   });
 
-  test('Post request for /api/users/paginated', async (done) => {
-    await request(app)
+  test('Post request for /api/users/paginated', () => {
+    return request(app)
       .post('/api/users/paginated')
       .send({
         skip: 0,
@@ -37,44 +37,39 @@ describe('User Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/users/paginated with no params', async (done) => {
-    await request(app).post('/api/users/paginated').set('Accept', 'application/json').expect(500);
-    done();
+  test('Post request for /api/users/paginated with no params', () => {
+    return request(app).post('/api/users/paginated').set('Accept', 'application/json').expect(500);
   });
 
-  test('Get request for /api/users/:email', async (done) => {
-    await request(app)
+  test('Get request for /api/users/:email', () => {
+    return request(app)
       .get('/api/users/email@email.com')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/users/', async (done) => {
-    await request(app)
+  test('Post request for /api/users/', () => {
+    return request(app)
       .post('/api/users/')
       .send({
-        id: 'string',
         email: 'email@email.com',
         firstName: 'firstname',
         lastName: 'lastname',
-        imageUrl: 'imgurl',
+        imageUrl: 'https://image.com',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Post request for /api/users/details', async (done) => {
-    await request(app)
+  test('Post request for /api/users/details', () => {
+    return request(app)
       .post('/api/users/details')
       .send({
-        firstNamr: 'firstname',
+        firstName: 'firstname',
         lastName: 'lastname',
         email: 'email@email.com',
         role: 'admin',
@@ -82,15 +77,13 @@ describe('User Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 
-  test('Delete request for /api/users/:email', async (done) => {
-    await request(app)
+  test('Delete request for /api/users/:email', () => {
+    return request(app)
       .delete('/api/users/email@email.com')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-    done();
   });
 });

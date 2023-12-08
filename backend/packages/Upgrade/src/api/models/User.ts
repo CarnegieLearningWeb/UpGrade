@@ -35,5 +35,5 @@ export class User extends BaseModel {
 
   @OneToMany(() => ExperimentAuditLog, (auditLog) => auditLog.user)
   @Type(() => ExperimentAuditLog)
-  public auditLogs: ExperimentAuditLog[];
+  public auditLogs?: ExperimentAuditLog[];
 }

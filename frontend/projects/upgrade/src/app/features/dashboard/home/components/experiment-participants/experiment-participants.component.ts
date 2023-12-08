@@ -170,10 +170,9 @@ export class ExperimentParticipantsComponent implements OnInit {
           this.members2.push(this.addMembers2(MemberTypes.SEGMENT, id.name));
         });
       }
-    } else {
-      this.members1.removeAt(0);
-      this.members2.removeAt(0);
     }
+    this.members1.removeAt(0);
+    this.members2.removeAt(0);
 
     this.updateView1();
     this.updateView2();
@@ -368,9 +367,9 @@ export class ExperimentParticipantsComponent implements OnInit {
     const memberFiltered = members.filter((member) => member.type);
     memberFiltered.forEach((member) => {
       if (member.type === MemberTypes.INDIVIDUAL) {
-        this.userIdsToSend.push(member.id);
+        this.userIdsToSend.push({ userId: member.id });
       } else if (member.type === MemberTypes.SEGMENT) {
-        this.subSegmentIdsToSend.push(this.segmentNameId.get(member.id));
+        this.subSegmentIdsToSend.push({ id: this.segmentNameId.get(member.id) });
       } else {
         this.groupsToSend.push({ type: member.type, groupId: member.id });
       }
@@ -449,17 +448,21 @@ export class ExperimentParticipantsComponent implements OnInit {
     ) {
       this.gettingMembersValueToSend(members1);
       const segmentMembers1FormData = {
-        userIds: this.userIdsToSend,
-        groups: this.groupsToSend,
-        subSegmentIds: this.subSegmentIdsToSend,
-        type: SEGMENT_TYPE.PRIVATE,
+        segment: {
+          individualForSegment: this.userIdsToSend,
+          groupForSegment: this.groupsToSend,
+          subSegments: this.subSegmentIdsToSend,
+          type: SEGMENT_TYPE.PRIVATE,
+        }
       };
       this.gettingMembersValueToSend(members2);
       const segmentMembers2FormData = {
-        userIds: this.userIdsToSend,
-        groups: this.groupsToSend,
-        subSegmentIds: this.subSegmentIdsToSend,
-        type: SEGMENT_TYPE.PRIVATE,
+        segment: {
+          individualForSegment: this.userIdsToSend,
+          groupForSegment: this.groupsToSend,
+          subSegments: this.subSegmentIdsToSend,
+          type: SEGMENT_TYPE.PRIVATE,
+        }
       };
       this.emitExperimentDialogEvent.emit({
         type: eventType,

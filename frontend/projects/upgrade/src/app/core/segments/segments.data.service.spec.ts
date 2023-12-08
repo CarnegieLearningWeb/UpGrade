@@ -84,25 +84,25 @@ describe('SegmentDataService', () => {
     });
   });
 
-  describe('#exportSegment', () => {
-    it('should get the exportSegment http observable', () => {
+  describe('#exportSegments', () => {
+    it('should post the exportSegments http observable', () => {
       const segmentId = mockSegmentId;
-      const expectedUrl = `${mockEnvironment.api.exportSegment}/${segmentId}`;
+      const expectedUrl = `${mockEnvironment.api.exportSegments}`;
 
-      service.exportSegment(segmentId);
+      service.exportSegments([segmentId]);
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, [segmentId]);
     });
   });
 
-  describe('#importSegment', () => {
-    it('should get the importSegment http observable', () => {
-      const mockUrl = mockEnvironment.api.importSegment;
+  describe('#importSegments', () => {
+    it('should get the importSegments http observable', () => {
+      const mockUrl = mockEnvironment.api.importSegments;
       const segment = { ...mockSegment };
 
-      service.importSegment(segment);
+      service.importSegments([segment]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, { ...segment });
+      expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, [segment]);
     });
   });
 });

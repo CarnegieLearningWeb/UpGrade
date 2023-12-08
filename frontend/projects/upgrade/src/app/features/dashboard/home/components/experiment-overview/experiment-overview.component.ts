@@ -9,7 +9,13 @@ import {
   ElementRef,
   OnDestroy,
 } from '@angular/core';
-import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE } from 'upgrade_types';
+import {
+  ASSIGNMENT_ALGORITHM,
+  ASSIGNMENT_UNIT,
+  CONDITION_ORDER,
+  CONSISTENCY_RULE,
+  EXPERIMENT_STATE,
+} from 'upgrade_types';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -26,6 +32,8 @@ import { Observable, Subscription } from 'rxjs';
 import { MatLegacyChipInputEvent as MatChipInputEvent } from '@angular/material/legacy-chips';
 import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
+import { StratificationFactorSimple } from '../../../../../core/stratification-factors/store/stratification-factors.model';
+import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
 @Component({
   selector: 'home-experiment-overview',
   templateUrl: './experiment-overview.component.html',
@@ -37,14 +45,33 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('contextInput') contextInput: ElementRef<HTMLInputElement>;
   overviewForm: UntypedFormGroup;
-  unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
+  unitOfAssignments = [
+    { value: ASSIGNMENT_UNIT.INDIVIDUAL },
+    { value: ASSIGNMENT_UNIT.GROUP },
+    // { value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS }, // #1063 temporarily removed within-subjects until solved
+  ];
+  public ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
 
   groupTypes = [];
   enableSave = true;
   allContexts = [];
   currentContext = null;
   consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
+  conditionOrders = [
+    { value: CONDITION_ORDER.RANDOM },
+    { value: CONDITION_ORDER.RANDOM_ROUND_ROBIN },
+    { value: CONDITION_ORDER.ORDERED_ROUND_ROBIN },
+  ];
   designTypes = [{ value: ExperimentDesignTypes.SIMPLE }, { value: ExperimentDesignTypes.FACTORIAL }];
+  assignmentAlgorithms = [
+    { value: ASSIGNMENT_ALGORITHM.RANDOM },
+    { value: ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING },
+  ];
+  allStratificationFactors: StratificationFactorSimple[];
+  isLoading$ = this.stratificationFactorsService.isLoading$;
+  allStratificationFactorsSub: Subscription;
+  isStratificationFactorSelected = true;
+  stratificationFactorNotSelectedMsg = 'home.new-experiment.overview.stratification-factor.error.text';
 
   // Used to control chips
   isChipSelectable = true;
@@ -63,10 +90,18 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     private _formBuilder: UntypedFormBuilder,
     private experimentService: ExperimentService,
     private experimentDesignStepperService: ExperimentDesignStepperService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private stratificationFactorsService: StratificationFactorsService
   ) {}
 
   ngOnInit() {
+    this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(
+      (StratificationFactors) => {
+        this.allStratificationFactors = StratificationFactors.map((stratificationFactor) => ({
+          factorName: stratificationFactor.factor,
+        }));
+      }
+    );
     this.isLoadingContextMetaData$ = this.experimentService.isLoadingContextMetaData$;
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
       this.contextMetaData = contextMetaData;
@@ -86,23 +121,33 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         unitOfAssignment: [null, Validators.required],
         groupType: [null],
         consistencyRule: [null, Validators.required],
+        conditionOrder: [null],
         designType: [ExperimentDesignTypes.SIMPLE, Validators.required],
+        assignmentAlgorithm: [ASSIGNMENT_ALGORITHM.RANDOM, Validators.required],
+        stratificationFactor: [null],
         context: [null, Validators.required],
         tags: [[]],
         logging: [false],
       });
 
       this.overviewForm.get('unitOfAssignment').valueChanges.subscribe((assignmentUnit) => {
+        this.experimentDesignStepperService.changeAssignmentUnit(assignmentUnit);
         this.overviewForm.get('consistencyRule').reset();
+        this.overviewForm.get('conditionOrder').reset();
         switch (assignmentUnit) {
           case ASSIGNMENT_UNIT.INDIVIDUAL:
             this.overviewForm.get('groupType').disable();
             this.overviewForm.get('groupType').reset();
             this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }];
+            this.isExperimentEditable ? this.overviewForm.get('consistencyRule').enable() : false;
+            this.overviewForm.get('conditionOrder').disable();
             break;
           case ASSIGNMENT_UNIT.GROUP:
             if (this.overviewForm.get('context')) {
-              this.overviewForm.get('groupType').enable();
+              if (this.isExperimentEditable) {
+                this.overviewForm.get('groupType').enable();
+                this.overviewForm.get('consistencyRule').enable();
+              }
               this.overviewForm.get('groupType').setValidators(Validators.required);
               this.setGroupTypes();
               this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
@@ -110,6 +155,15 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
               this.overviewForm.get('groupType').reset();
               this.overviewForm.get('groupType').disable();
             }
+            this.overviewForm.get('conditionOrder').disable();
+            break;
+          case ASSIGNMENT_UNIT.WITHIN_SUBJECTS:
+            this.overviewForm.get('groupType').disable();
+            this.overviewForm.get('groupType').reset();
+            this.consistencyRules = [];
+            this.overviewForm.get('consistencyRule').disable();
+            this.isExperimentEditable ? this.overviewForm.get('conditionOrder').enable() : false;
+            this.overviewForm.get('conditionOrder').setValidators(Validators.required);
             break;
         }
       });
@@ -137,7 +191,10 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           unitOfAssignment: this.experimentInfo.assignmentUnit,
           groupType: this.experimentInfo.group,
           consistencyRule: this.experimentInfo.consistencyRule,
+          conditionOrder: this.experimentInfo.conditionOrder,
           designType: this.experimentInfo.type,
+          assignmentAlgorithm: this.experimentInfo.assignmentAlgorithm,
+          stratificationFactor: this.experimentInfo.stratificationFactor?.stratificationFactorName || null,
           context: this.currentContext,
           tags: this.experimentInfo.tags,
           logging: this.experimentInfo.logging,
@@ -253,33 +310,66 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         unitOfAssignment,
         groupType,
         consistencyRule,
+        conditionOrder,
         context,
         designType,
+        assignmentAlgorithm,
+        stratificationFactor,
         tags,
         logging,
       } = this.overviewForm.value;
-      const overviewFormData = {
-        name: experimentName,
-        description: description || '',
-        consistencyRule: consistencyRule,
-        assignmentUnit: unitOfAssignment,
-        group: groupType,
-        type: designType,
-        context: [context],
-        tags,
-        logging,
-      };
-      this.emitExperimentDialogEvent.emit({
-        type: eventType,
-        formData: overviewFormData,
-        path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
-      });
+      const stratificationFactorValueToSend = this.stratificationFactorValueToSend(
+        stratificationFactor,
+        assignmentAlgorithm
+      );
+      if (this.isStratificationFactorSelected) {
+        const overviewFormData = {
+          name: experimentName,
+          description: description || '',
+          consistencyRule: consistencyRule,
+          conditionOrder: conditionOrder,
+          assignmentUnit: unitOfAssignment,
+          group: groupType,
+          type: designType,
+          context: [context],
+          assignmentAlgorithm: assignmentAlgorithm,
+          stratificationFactor: stratificationFactorValueToSend
+            ? { stratificationFactorName: stratificationFactorValueToSend }
+            : null,
+          tags,
+          logging,
+        };
+        this.emitExperimentDialogEvent.emit({
+          type: eventType,
+          formData: overviewFormData,
+          path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
+        });
 
-      if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
-        this.experimentDesignStepperService.experimentStepperDataReset();
-        this.overviewForm.markAsPristine();
+        if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
+          this.experimentDesignStepperService.experimentStepperDataReset();
+          this.overviewForm.markAsPristine();
+        }
       }
     }
+  }
+
+  stratificationFactorValueToSend(stratificationFactor: string, assignmentAlgorithm: ASSIGNMENT_ALGORITHM): string {
+    let stratificationFactorValueToSend = stratificationFactor;
+    if (assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+      if (!stratificationFactor) {
+        this.isStratificationFactorSelected = false;
+        if (this.allStratificationFactors.length == 0) {
+          this.stratificationFactorNotSelectedMsg = 'home.new-experiment.overview.no-stratification-factor.error.text';
+        } else {
+          this.stratificationFactorNotSelectedMsg = 'home.new-experiment.overview.stratification-factor.error.text';
+        }
+      } else {
+        this.isStratificationFactorSelected = true;
+      }
+    } else {
+      stratificationFactorValueToSend = null;
+    }
+    return stratificationFactorValueToSend;
   }
 
   ngOnDestroy() {
@@ -291,7 +381,11 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   }
 
   get unitOfAssignmentValue() {
-    return this.overviewForm.get('unitOfAssignment').value === ASSIGNMENT_UNIT.GROUP;
+    return this.overviewForm.get('unitOfAssignment').value;
+  }
+
+  get assignmentAlgorithmValue() {
+    return this.overviewForm.get('assignmentAlgorithm').value;
   }
 
   get contexts(): UntypedFormArray {

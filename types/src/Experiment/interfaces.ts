@@ -51,13 +51,22 @@ export type INewExperimentAssignment = Pick<IExperimentAssignmentv4, 'assignedCo
 export interface IExperimentAssignmentv4 {
   site: string;
   target: string;
-  assignedCondition: {
-    conditionCode: string;
-    payload: IPayload | null;
-    experimentId: string;
-    id?: string;
-  };
-  assignedFactor?: Record<string, { level: string; payload: IPayload | null }>;
+  assignedCondition: AssignedCondition;
+  assignedFactor?: Record<string, { level: string; payload: IPayload }>;
+}
+
+export interface IExperimentAssignmentv5 {
+  site: string;
+  target: string;
+  assignedCondition: AssignedCondition[];
+  assignedFactor?: Record<string, { level: string; payload: IPayload }>[];
+}
+
+export interface AssignedCondition {
+  conditionCode: string;
+  payload: IPayload;
+  experimentId?: string;
+  id: string;
 }
 
 interface ExperimentCreatedData {
@@ -135,7 +144,7 @@ export interface IExperimentEnrollmentDetailDateStats {
 }
 
 interface ILogMetrics {
-  attributes: any;
+  attributes?: Record<string, string | number>;
   groupedMetrics: ILogGroupMetrics[];
 }
 
@@ -143,7 +152,7 @@ interface ILogGroupMetrics {
   groupClass: string;
   groupKey: string;
   groupUniquifier: string;
-  attributes: any;
+  attributes?: Record<string, string | number>;
 }
 export interface ILogInput {
   timestamp: string;

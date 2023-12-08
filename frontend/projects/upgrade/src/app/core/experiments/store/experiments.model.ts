@@ -17,12 +17,15 @@ import {
   FILTER_MODE,
   EXPERIMENT_TYPE,
   PAYLOAD_TYPE,
+  CONDITION_ORDER,
+  ASSIGNMENT_ALGORITHM,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
 
 export {
   CONSISTENCY_RULE,
   ASSIGNMENT_UNIT,
+  CONDITION_ORDER,
   POST_EXPERIMENT_RULE,
   EXPERIMENT_STATE,
   IExperimentEnrollmentStats,
@@ -209,6 +212,7 @@ export interface Experiment {
   context: string[];
   startOn: string;
   consistencyRule: CONSISTENCY_RULE;
+  conditionOrder: CONDITION_ORDER;
   assignmentUnit: ASSIGNMENT_UNIT;
   postExperimentRule: POST_EXPERIMENT_RULE;
   enrollmentCompleteCondition: EnrollmentCompleteCondition;
@@ -217,6 +221,8 @@ export interface Experiment {
   tags: string[];
   type: EXPERIMENT_TYPE;
   group: string;
+  assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
+  stratificationFactor?: { stratificationFactorName: string };
   logging: boolean;
   conditions: ExperimentCondition[];
   partitions: ExperimentDecisionPoint[];

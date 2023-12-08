@@ -8,8 +8,22 @@ import deleteExperiment
 
 schools = {}
 students = {}
-
 allExperimentPartitionIDConditionPair = []
+# For load testing on existing prod experiments:
+# allExperimentPartitionIDConditionPair = [
+#     {"experimentPoint": "SelectAdaptive", "partitionId" : "1_0gzegepj", "condition" : "human-robert-control"},
+#     {"experimentPoint": "SelectAdaptive", "partitionId" : "1_ffi961t9", "condition" : "human-robert-control"},
+#     {"experimentPoint": "SelectAdaptive", "partitionId" : "1_m7qve72i", "condition" : "joke-ai-robert-experimental"},
+#     {"experimentPoint": "SelectAdaptive", "partitionId" : "1_2ee7ws2b", "condition" : "joke-ai-robert-experimental"},
+#     {"experimentPoint": "SelectAdaptive", "partitionId" : "1_i7i7heqa", "condition" : "control-playback-speed"},
+#     {"experimentPoint": "SelectAdaptive", "partitionId" : "1_yspx09fg", "condition" : "control-playback-speed"},
+#     {"experimentPoint": "SelectAdaptive", "partitionId" : "1_fwk036l9", "condition" : "control-playback-speed"},
+#     {"experimentPoint": "DisplayQuestion", "partitionId" : "AR-VST-0150-6.NS.8-1_SP_014", "condition" : "learnosity-item-control"},
+#     {"experimentPoint": "DisplayQuestion", "partitionId" : "AR-VST-0150-6.NS.8-1_SP_008", "condition" : "learnosity-item-control"},
+#     {"experimentPoint": "DisplayQuestion", "partitionId" : "AR-VST-0150-6.NS.8-1_SP_004", "condition" : "learnosity-item-control"},
+#     {"experimentPoint": "SelectStream", "partitionId" : "HintUI", "condition" : "question-hint-tutorbot"},
+#     {"experimentPoint": "SelectStream", "partitionId" : "rewindButton", "condition" : "enable-rewind-button"}
+# ]
 
 # Setting host URL's:
 protocol = "http"
@@ -48,30 +62,24 @@ def initStudent():
         numClasses = [random.choices([1, 2], [63, 37])[0]]
     else:
         numClasses = [random.choices([1, 2], [63, 37])[0], random.choices([1, 2], [63, 37])[0]]
-
     schoolIds = getSchools(schoolCount)
     classData = getClasses(schoolIds, numClasses)
-
     students[studentId] = {
         "studentId": studentId,
         "schools": {}
    }
-
     for schoolId in schoolIds:
         students[studentId]["schools"][schoolId] = {
             "classes": {},
             "instructors": []
         }
-
     for classObject in classData:
         students[studentId]["schools"][classObject["schoolId"]]["classes"][classObject["classId"]] = {
             "classId": classObject["classId"],
             "instructorId": classObject["instructorId"],
             "classModules": classObject["classModules"]
         }
-
     return students[studentId]
-
 #Return a list of schools, either new or existing
 def getSchools(schoolCount):
     retSchools = []
@@ -85,30 +93,23 @@ def getSchools(schoolCount):
         # if schoolCount is between 10 and 2140, create a new school 50% of the time
         else:
             createNew = random.choices([True, False], [50, 50])[0]
-
         if createNew:
             schoolId = str(uuid.uuid4())
             while schoolId in retSchools:
                 schoolId = str(uuid.uuid4())
-
             instructors = []
             for i in range(10):
                 instructors.append(str(uuid.uuid4()))
-
             schools[schoolId] = {
                 "classes": {},
                 "instructors": instructors
             }
-
         else:
             schoolId = random.choice(list(schools.keys()))
             while schoolId in retSchools:
                 schoolId = random.choice(list(schools.keys()))
-
         retSchools.append(schoolId)
-
     return retSchools
-
 #Return a list of classes, either new or existing
 def getClasses(schoolIds, numClasses):
     retClasses = []
@@ -125,12 +126,10 @@ def getClasses(schoolIds, numClasses):
             else:
                 #if numClasses is between 5 and 50, create a new class 50% of the time
                 createNew = random.choices([True, False], [50, 50])[0] 
-
             if createNew:
                 classId = str(uuid.uuid4())
                 while classId in retClasses:
                     classId = str(uuid.uuid4())
-
                 instructorId = random.choice(schools[schoolId]["instructors"])
                 classModules = random.sample(list(modules.keys()), k=5)
                 schools[schoolId]["classes"][classId] = {
@@ -139,27 +138,20 @@ def getClasses(schoolIds, numClasses):
                     "instructorId": instructorId,
                     "classModules": classModules
                 }
-
             else:
                 classId = random.choice(list(schools[schoolId]["classes"].keys()))
                 while classId in retClasses:
                     classId = random.choice(list(schools[schoolId]["classes"].keys()))
-
             retClasses.append(classId)
             retClassData.append(schools[schoolId]["classes"][classId])
-
     return retClassData
-
 # Main Locust API calls for enrolling students in an experiment:
 class UpgradeUserTask(SequentialTaskSet):
-
     # each User represents one Student
     def on_start(self):
         self.student = initStudent()
-
     #Portal Tasks
     ## Portal calls init -> setGroupMembership in reality
-
     # Task 1: portal calls /init
     @tag("required", "portal")
     @task
@@ -171,26 +163,21 @@ class UpgradeUserTask(SequentialTaskSet):
             "group": {},
             "workingGroup": {}
         }
-
         with self.client.post(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"Init Failed with {response.status_code} for userid: " + self.student["studentId"])
-
     # Task 2: portal calls /groupmembership
     @tag("portal")
     @task
     def setGroupMembership(self):
         schoolIds = list(self.student["schools"].keys())
-
         classIds = []
         for schoolId in self.student["schools"].keys():
             classIds.extend(list(self.student["schools"][schoolId]["classes"].keys()))
-
         instructorIds = []
         for schoolId in self.student["schools"].keys():
             for classId in self.student["schools"][schoolId]["classes"].keys():
                 instructorIds.append(self.student["schools"][schoolId]["classes"][classId]["instructorId"])
-
         url = protocol + f"://{host}/api/groupmembership"
         print("/groupmembership for userid: " + self.student["studentId"])
         data = {
@@ -201,12 +188,9 @@ class UpgradeUserTask(SequentialTaskSet):
                 "instructorId": instructorIds
             }
         }
-
         with self.client.post(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"Group membership Failed with {response.status_code} for userid: " + self.student["studentId"])
-
-
     # Task 3: portal calls /assign
     @tag("portal")
     @task
@@ -217,12 +201,9 @@ class UpgradeUserTask(SequentialTaskSet):
             "userId": self.student["studentId"],
             "context": "portal"
         }
-
         with self.client.post(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"/assign Failed with {response.status_code} for userid: " + self.student["studentId"])
-
-
     # Launcher tasks
     # Task 4: launcher calls /workinggroup
     @tag("launcher")
@@ -241,11 +222,9 @@ class UpgradeUserTask(SequentialTaskSet):
                 "instructorId": workingInstructorId
             }
         }
-
         with self.client.post(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"setWorkingGroup Failed with {response.status_code} for userid: " + self.student["studentId"])
-
     # Task 5: launcher calls /useraliases
     @tag("launcher")
     @task
@@ -253,38 +232,30 @@ class UpgradeUserTask(SequentialTaskSet):
         workingSchoolId = random.choice(list(self.student["schools"].keys()))
         workingClassId = random.choice(list(self.student["schools"][workingSchoolId]["classes"].keys()))
         classModules = self.student["schools"][workingSchoolId]["classes"][workingClassId]["classModules"]
-
         url = protocol + f"://{host}/api/useraliases"
         print("/useraliases for userid: " + self.student["studentId"])
         data = {
             "userId": self.student["studentId"],
             "aliases": [self.student["studentId"] + m for m in classModules]
         }
-
         with self.client.post(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"/useraliases Failed with {response.status_code} for userid: " + self.student["studentId"])
-
-
     #Assignment Progress Service
     #Skipping getExperimentCondition() - Assume getAllExperimentConditionsAssignProg() has been called, so getExperimentCondition() does not hit API
-
     # Task 6: workspace calls /assign or uses cached data
     @tag("assign-prog")
     @task
     def getAllExperimentConditionsAssignProg(self):
         url = protocol + f"://{host}/api/assign"
         print("/assign assign-prog for userid: " + self.student["studentId"])
-
         data = {
             "userId": self.student["studentId"],
-            "context": "assign-prog"
+            "context": "mathstream"
         }
-
         with self.client.post(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"getAllExperimentConditions in assign-prog Failed with {response.status_code}")
-
     # mark is called after finishing a workspace. In reality, mark is called 15-30 mins after assign
     # Task 7: Student count gets incremented here on marking complete
     @tag("assign-prog")
@@ -308,18 +279,15 @@ class UpgradeUserTask(SequentialTaskSet):
 
         # pick a random assigned workspace - requires /assign response to be saved
         # markPartitionIDConditionPair = random.choice(self.assignedWorkspaces)
-
         # data = {
         #     "userId": self.student["studentId"],
         #     "experimentPoint": markPartitionIDConditionPair['expPoint'],
         #     "partitionId": markPartitionIDConditionPair['expId'],
         #     "condition": markPartitionIDConditionPair['assignedCondition']['conditionCode']
         # }
-
         with self.client.post(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"/mark Failed with {response.status_code} for userid: " + self.student["studentId"])
-
     # Task 8: failed experiment point
     @tag("assign-prog")
     @task
@@ -343,18 +311,15 @@ class UpgradeUserTask(SequentialTaskSet):
 
         # pick a random assigned workspace - requires /assign response to be saved
         # markPartitionIDConditionPair = random.choice(self.assignedWorkspaces)
-
         # data = {
         #     "reason": "locust tests",
         #     "experimentPoint": markPartitionIDConditionPair['expPoint'],
         #     "userId": self.student["studentId"],
         #     "experimentId": markPartitionIDConditionPair['expId']
         # }
-
         with self.client.post(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"/failed Failed with {response.status_code} for userid: " + self.student["studentId"])
-
     # Generate mock log data 
     def genMockLog(self):
         attributes = {
@@ -386,7 +351,6 @@ class UpgradeUserTask(SequentialTaskSet):
                 "groupedMetrics": [groupedMetrics]
             }
         }
-
     #UpgradeForwarder
     # Task 9:
     @tag("logger")
@@ -399,12 +363,9 @@ class UpgradeUserTask(SequentialTaskSet):
                     self.genMockLog()
                 ]
         }
-
         with self.client.post(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"LogEvent Failed with {response.status_code}")
-
-
 class UpgradeUser(HttpUser):
     wait_time = between(0.1, 10)
     host = "localhost:3030"

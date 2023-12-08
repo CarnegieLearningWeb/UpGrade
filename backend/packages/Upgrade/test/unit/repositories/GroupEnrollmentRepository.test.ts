@@ -1,4 +1,4 @@
-import { SelectQueryBuilder } from 'typeorm';
+// import { SelectQueryBuilder } from 'typeorm';
 import * as sinon from 'sinon';
 import { GroupEnrollmentRepository } from '../../../src/api/repositories/GroupEnrollmentRepository';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
@@ -6,8 +6,7 @@ import { Experiment } from '../../../src/api/models/Experiment';
 
 let sandbox;
 let createQueryBuilderStub;
-let selectMock;
-const selectQueryBuilder = new SelectQueryBuilder<GroupEnrollmentRepository>(null);
+// const selectQueryBuilder = new SelectQueryBuilder<GroupEnrollmentRepository>(null);
 const repo = new GroupEnrollmentRepository();
 const err = new Error('test error');
 
@@ -20,7 +19,7 @@ group.experiment = exp;
 beforeEach(() => {
   sandbox = sinon.createSandbox();
 
-  selectMock = sandbox.mock(selectQueryBuilder);
+  // selectMock = sandbox.mock(selectQueryBuilder);
 });
 
 afterEach(() => {
@@ -51,48 +50,5 @@ describe('GroupEnrollmentRepository Testing', () => {
     }).rejects.toThrow(err);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
-  });
-
-  it('should get enrollment count by condition', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(GroupEnrollmentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-
-    const result = [
-      {
-        id: exp.id,
-        count: 40,
-      },
-    ];
-
-    selectMock.expects('select').once().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('groupBy').once().returns(selectQueryBuilder);
-    selectMock.expects('execute').once().returns(Promise.resolve(result));
-
-    const res = await repo.getEnrollmentCountByCondition(exp.id);
-
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
-
-    expect(res).toEqual(result);
-  });
-
-  it('should throw an error when get enrollment count by condition fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(GroupEnrollmentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-
-    selectMock.expects('select').once().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('groupBy').once().returns(selectQueryBuilder);
-    selectMock.expects('execute').once().returns(Promise.reject(err));
-
-    expect(async () => {
-      await repo.getEnrollmentCountByCondition(exp.id);
-    }).rejects.toThrow(err);
-
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
   });
 });

@@ -12,3 +12,4 @@ jobs:
         with:
           name: Lambda
           working_directory: backend/packages/Scheduler
+          node_version: 16

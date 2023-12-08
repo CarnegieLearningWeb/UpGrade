@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany, OneToOne, ManyToOne } from 'typeorm';
 import { IsNotEmpty, ValidateNested, ValidateIf } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
 import { DecisionPoint } from './DecisionPoint';
@@ -16,6 +16,8 @@ import {
   IExperimentSearchParams,
   IExperimentSortParams,
   EXPERIMENT_TYPE,
+  CONDITION_ORDER,
+  ASSIGNMENT_ALGORITHM,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { Query } from './Query';
@@ -24,6 +26,7 @@ import { ExperimentSegmentInclusion } from './ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
 import { ConditionPayload } from 'src/api/models/ConditionPayload';
 import { Factor } from './Factor';
+import { StratificationFactor } from './StratificationFactor';
 
 export {
   EXPERIMENT_SEARCH_KEY,
@@ -63,6 +66,7 @@ export class Experiment extends BaseModel {
 
   @IsNotEmpty()
   @Column({
+    nullable: true,
     type: 'enum',
     enum: CONSISTENCY_RULE,
   })
@@ -100,6 +104,20 @@ export class Experiment extends BaseModel {
   public group: string;
 
   @Column({
+    type: 'enum',
+    enum: CONDITION_ORDER,
+    nullable: true,
+  })
+  public conditionOrder: CONDITION_ORDER;
+
+  @Column({
+    type: 'enum',
+    enum: ASSIGNMENT_ALGORITHM,
+    default: ASSIGNMENT_ALGORITHM.RANDOM,
+  })
+  public assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
+
+  @Column({
     default: false,
   })
   public logging: boolean;
@@ -110,6 +128,11 @@ export class Experiment extends BaseModel {
     default: FILTER_MODE.INCLUDE_ALL,
   })
   public filterMode: FILTER_MODE;
+
+  @ManyToOne(() => StratificationFactor, (stratificationFactor) => stratificationFactor.experiment, {
+    nullable: true,
+  })
+  public stratificationFactor?: StratificationFactor;
 
   @OneToMany(() => ExperimentCondition, (condition) => condition.experiment)
   @ValidateNested()

@@ -1,6 +1,7 @@
 import { Metric } from '../models/Metric';
 import { EntityRepository, Repository } from 'typeorm';
 import repositoryError from './utils/repositoryError';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 
 @EntityRepository(Metric)
 export class MetricRepository extends Repository<Metric> {
@@ -32,7 +33,9 @@ export class MetricRepository extends Repository<Metric> {
   public async findMetricsWithQueries(ids: string[]): Promise<Metric[]> {
     return this.createQueryBuilder('metrics')
       .innerJoin('metrics.queries', 'queries')
+      .innerJoin('queries.experiment', 'experiment')
       .where('key IN (:...ids)', { ids })
+      .andWhere('experiment.state NOT IN (:...archived)', { archived: [EXPERIMENT_STATE.ARCHIVED] })
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'findMetricsWithQueries', { ids }, errorMsg);

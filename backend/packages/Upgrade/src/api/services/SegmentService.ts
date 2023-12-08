@@ -5,7 +5,7 @@ import { IndividualForSegmentRepository } from '../repositories/IndividualForSeg
 import { GroupForSegmentRepository } from '../repositories/GroupForSegmentRepository';
 import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { EXPERIMENT_STATE, SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS } from 'upgrade_types';
+import { SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS, CACHE_PREFIX } from 'upgrade_types';
 import { getConnection } from 'typeorm';
 import uuid from 'uuid';
 import { ErrorWithType } from '../errors/ErrorWithType';
@@ -61,7 +61,7 @@ export class SegmentService {
   }
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
-    return this.cacheService.wrapFunction(ids, async () => {
+    return this.cacheService.wrapFunction(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ids, async () => {
       const result = await this.segmentRepository
         .createQueryBuilder('segment')
         .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
@@ -74,49 +74,45 @@ export class SegmentService {
       const sortedData = ids.map((id) => {
         return result.find((data) => data.id === id);
       });
-
       return sortedData;
     });
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
     const segmentsData = await getConnection().transaction(async () => {
-      const segmentsData = await this.getAllSegments(logger);
-      const allExperimentSegmentsInclusion = await this.getExperimentSegmenInclusionData();
-      const allExperimentSegmentsExclusion = await this.getExperimentSegmenExclusionData();
+      const [segmentsData, allExperimentSegmentsInclusion, allExperimentSegmentsExclusion] = await Promise.all([
+        this.getAllSegments(logger),
+        this.getExperimentSegmenInclusionData(),
+        this.getExperimentSegmenExclusionData(),
+      ]);
 
-      const segmentsUsedLockedList = [];
-      const segmentsUsedUnlockedList = [];
+      const segmentsUsedList = [];
 
       if (allExperimentSegmentsInclusion) {
         allExperimentSegmentsInclusion.forEach((ele) => {
           const subSegments = ele.segment.subSegments;
-          subSegments.forEach((subSegment) => {
-            ele.experiment.state === EXPERIMENT_STATE.ENROLLING
-              ? segmentsUsedLockedList.push(subSegment.id)
-              : segmentsUsedUnlockedList.push(subSegment.id);
-          });
+          segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
         });
       }
 
       if (allExperimentSegmentsExclusion) {
         allExperimentSegmentsExclusion.forEach((ele) => {
           const subSegments = ele.segment.subSegments;
-          subSegments.forEach((subSegment) => {
-            ele.experiment.state === EXPERIMENT_STATE.ENROLLING
-              ? segmentsUsedLockedList.push(subSegment.id)
-              : segmentsUsedUnlockedList.push(subSegment.id);
-          });
+          segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
         });
       }
+
+      segmentsData.forEach((segment) => {
+        if (segmentsUsedList.includes(segment.id)) {
+          segmentsUsedList.push(...segment.subSegments.map((subSegment) => subSegment.id));
+        }
+      });
 
       const segmentsDataWithStatus = segmentsData.map((segment) => {
         if (segment.id === globalExcludeSegment.id) {
           return { ...segment, status: SEGMENT_STATUS.GLOBAL };
-        } else if (segmentsUsedLockedList.find((segmentId) => segmentId === segment.id)) {
-          return { ...segment, status: SEGMENT_STATUS.USED }; // TODO change to locked
-        } else if (segmentsUsedUnlockedList.find((segmentId) => segmentId === segment.id)) {
-          return { ...segment, status: SEGMENT_STATUS.USED }; // TODO change to unlocked
+        } else if (segmentsUsedList.includes(segment.id)) {
+          return { ...segment, status: SEGMENT_STATUS.USED };
         } else {
           return { ...segment, status: SEGMENT_STATUS.UNUSED };
         }
@@ -152,46 +148,74 @@ export class SegmentService {
     return await this.segmentRepository.deleteSegment(id, logger);
   }
 
-  public async importSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
-    const duplicateSegment = await this.segmentRepository.findOne(segment.id);
-    if (duplicateSegment && segment.id !== undefined) {
-      const error = new Error('Duplicate segment');
-      (error as any).type = SERVER_ERROR.QUERY_FAILED;
-      logger.error(error);
-      throw error;
-    }
+  public async importSegments(segments: SegmentInputValidator[], logger: UpgradeLogger): Promise<Segment[]> {
+    const allAddedSegments: Segment[] = [];
+    const allSegmentIds: string[] = [];
+    segments.forEach((segment) => {
+      allSegmentIds.push(segment.id);
+      segment.subSegmentIds.forEach((subSegment) => {
+        allSegmentIds.includes(subSegment) ? true : allSegmentIds.push(subSegment);
+      });
+    });
+    const allDuplicateSegmentsData = await this.getSegmentByIds(allSegmentIds);
+    const duplicateSegmentsIds = allDuplicateSegmentsData?.map((segment) => segment?.id);
+    const duplicateSegmentsContexts = allDuplicateSegmentsData?.map((segment) => segment?.context);
 
-    // check for each subSegment to exists
-    const allSegments = await this.segmentRepository.getAllSegments(logger);
-    segment.subSegmentIds.forEach((subSegmentId) => {
-      const subSegment = allSegments.find((segmentId) => subSegmentId === segmentId.id);
-      if (!subSegment) {
-        const error = new Error(
-          'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
-        );
+    for (const segment of segments) {
+      const isDuplicateSegment = duplicateSegmentsIds ? duplicateSegmentsIds.includes(segment.id) : false;
+      const isDuplicateSegmentWithSameContext = isDuplicateSegment && duplicateSegmentsContexts ? duplicateSegmentsContexts.includes(segment.context) : false;
+      if (isDuplicateSegment && isDuplicateSegmentWithSameContext && segment.id !== undefined) {
+        const error = new Error('Duplicate segment with same context');
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);
         throw error;
       }
-    });
+      // import duplicate segment with different context:
+      if (!isDuplicateSegment || !isDuplicateSegmentWithSameContext) {
+        // assign new uuid to duplicate segment with new context:
+        segment.id = !isDuplicateSegment ? segment.id : uuid();
+        segment.subSegmentIds.forEach((subSegmentId) => {
+          const subSegment = allDuplicateSegmentsData ? allDuplicateSegmentsData.find((segment) => subSegmentId === segment?.id) : null;
+          if (!subSegment) {
+            const error = new Error(
+              'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
+            );
+            (error as any).type = SERVER_ERROR.QUERY_FAILED;
+            logger.error(error);
+            throw error;
+          }
+        });
 
-    logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
-    return this.addSegmentDataInDB(segment, logger);
-  }
-
-  public async exportSegment(segmentId: string, logger: UpgradeLogger): Promise<Segment> {
-    logger.info({ message: `Export segment by id. segmentId: ${segmentId}` });
-    const segmentDoc = await this.segmentRepository.findOne({
-      where: { id: segmentId },
-      relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
-    });
-    if (!segmentDoc) {
-      throw new Error(SERVER_ERROR.QUERY_FAILED);
+        logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
+        const addedSegment = await this.addSegmentDataInDB(segment, logger);
+        allAddedSegments.push(addedSegment);
+        allDuplicateSegmentsData.push(addedSegment);
+      }
     }
-    return segmentDoc;
+    return allAddedSegments;
   }
 
-  private async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
+  public async exportSegments(segmentIds: string[], logger: UpgradeLogger): Promise<Segment[]> {
+    logger.info({ message: `Export segment by id. segmentId: ${segmentIds}` });
+    let segmentsDoc: Segment[] = [];
+    if (segmentIds.length > 1) {
+      segmentsDoc = await this.getSegmentByIds(segmentIds);
+    } else {
+      const segmentDoc = await this.segmentRepository.findOne({
+        where: { id: segmentIds[0] },
+        relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+      });
+      if (!segmentDoc) {
+        throw new Error(SERVER_ERROR.QUERY_FAILED);
+      } else {
+        segmentsDoc.push(segmentDoc);
+      }
+    }
+
+    return segmentsDoc;
+  }
+
+  async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     const createdSegment = await getConnection().transaction(async (transactionalEntityManager) => {
       let segmentDoc: Segment;
 
@@ -288,13 +312,13 @@ export class SegmentService {
         throw error;
       }
 
-      // reset caching
-      this.cacheService.resetCache();
-
       return transactionalEntityManager
         .getRepository(Segment)
         .findOne(segmentDoc.id, { relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
     });
+
+    // reset caching
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
 
     return createdSegment;
   }
