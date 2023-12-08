@@ -28,6 +28,8 @@ UpGrade is an open-source platform designed to support large-scale A/B testing i
 
     ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) &nbsp;&nbsp; ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E) &nbsp;&nbsp; ![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white)
 
+https://github.com/CarnegieLearningWeb/UpGrade/assets/33730817/359c88c3-3020-46b9-b63b-f3160f827dff
+
 ## Documentation
 
 Find detailed documentation for UpGrade at [UpGrade Documentation](https://upgrade-platform.gitbook.io/docs/).
