@@ -27,6 +27,7 @@ import {
   EXCLUSION_CODE,
   SEGMENT_TYPE,
   EXPERIMENT_TYPE,
+  CACHE_PREFIX,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -72,6 +73,7 @@ import {
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
+import { CacheService } from './CacheService';
 import { QueryService } from './QueryService';
 import { ArchivedStats } from '../models/ArchivedStats';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
@@ -101,6 +103,7 @@ export class ExperimentService {
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
+    public cacheService: CacheService,
     public queryService: QueryService
   ) {}
 
@@ -243,6 +246,15 @@ export class ExperimentService {
     };
   }
 
+  public async getCachedValidExperiments(context: string) {
+    const cacheKey = CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + context;
+    return this.cacheService
+      .wrap(cacheKey, this.experimentRepository.getValidExperiments.bind(this.experimentRepository, context))
+      .then((validExperiment) => {
+        return JSON.parse(JSON.stringify(validExperiment));
+      });
+  }
+
   public create(
     experiment: ExperimentDTO,
     currentUser: User,
@@ -281,12 +293,12 @@ export class ExperimentService {
   }
 
   public createMultipleExperiments(
-    experiment: ExperimentDTO[],
+    experiments: ExperimentDTO[],
     user: User,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
-    logger.info({ message: `Generating test experiments`, details: experiment });
-    return this.addBulkExperiments(experiment, user, logger);
+    logger.info({ message: `Generating test experiments`, details: experiments });
+    return this.addBulkExperiments(experiments, user, logger);
   }
 
   public async delete(
@@ -299,6 +311,12 @@ export class ExperimentService {
     }
     return getConnection().transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
+      await this.clearExperimentCacheDetail(
+        experiment.context[0],
+        experiment.partitions.map((partition) => {
+          return { site: partition.site, target: partition.target };
+        })
+      );
 
       if (experiment) {
         const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
@@ -394,7 +412,13 @@ export class ExperimentService {
   ): Promise<Experiment> {
     const oldExperiment = await this.experimentRepository.findOne(
       { id: experimentId },
-      { relations: ['stateTimeLogs', 'queries', 'queries.metric'] }
+      { relations: ['stateTimeLogs', 'partitions', 'queries', 'queries.metric'] }
+    );
+    await this.clearExperimentCacheDetail(
+      oldExperiment.context[0],
+      oldExperiment.partitions.map((partition) => {
+        return { site: partition.site, target: partition.target };
+      })
     );
 
     if (
@@ -691,6 +715,13 @@ export class ExperimentService {
     user: User,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO> {
+    await this.clearExperimentCacheDetail(
+      experiment.context[0],
+      experiment.partitions.map((partition) => {
+        return { site: partition.site, target: partition.target };
+      })
+    );
+
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id, logger);
     const oldConditions = oldExperiment.conditions;
@@ -1133,6 +1164,12 @@ export class ExperimentService {
     user: User,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO> {
+    await this.clearExperimentCacheDetail(
+      experiment.context[0],
+      experiment.partitions.map((partition) => {
+        return { site: partition.site, target: partition.target };
+      })
+    );
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
@@ -1720,5 +1757,17 @@ export class ExperimentService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { createdAt, updatedAt, versionNumber, ...newDoc } = doc;
     return newDoc;
+  }
+
+  private async clearExperimentCacheDetail(
+    context: string,
+    partitions: { site: string; target: string }[]
+  ): Promise<void> {
+    await this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + context);
+    const deletedCache = partitions.map(async (partition) => {
+      await this.cacheService.delCache(CACHE_PREFIX.MARK_KEY_PREFIX + '-' + partition.site + '-' + partition.target);
+    });
+    await Promise.all(deletedCache);
+    return;
   }
 }

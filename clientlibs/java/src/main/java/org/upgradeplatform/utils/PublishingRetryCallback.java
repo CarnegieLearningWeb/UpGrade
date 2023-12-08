@@ -7,6 +7,7 @@ import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 
 public class PublishingRetryCallback<T> implements InvocationCallback<Response> {
 
@@ -35,7 +36,10 @@ public class PublishingRetryCallback<T> implements InvocationCallback<Response> 
 
 	@Override
 	public void completed(Response response) {
-		if (SUCCESSFUL.equals(response.getStatusInfo().getFamily()) || retries <= 0) {
+    boolean isSuccess = SUCCESSFUL.equals(response.getStatusInfo().getFamily());
+    boolean isClientRequestError = CLIENT_ERROR.equals(response.getStatusInfo().getFamily());
+  
+		if (isSuccess || isClientRequestError || retries <= 0) {
 			callback.completed(response);
 		} else {
 			retry();
