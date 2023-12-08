@@ -74,7 +74,6 @@ export class SegmentService {
       const sortedData = ids.map((id) => {
         return result.find((data) => data.id === id);
       });
-
       return sortedData;
     });
   }
@@ -158,34 +157,40 @@ export class SegmentService {
         allSegmentIds.includes(subSegment) ? true : allSegmentIds.push(subSegment);
       });
     });
-    const allSegmentsData = await this.getSegmentByIds(allSegmentIds);
-    const duplicateSegmentsIds = allSegmentsData?.map((segment) => segment?.id);
+    const allDuplicateSegmentsData = await this.getSegmentByIds(allSegmentIds);
+    const duplicateSegmentsIds = allDuplicateSegmentsData?.map((segment) => segment?.id);
+    const duplicateSegmentsContexts = allDuplicateSegmentsData?.map((segment) => segment?.context);
 
     for (const segment of segments) {
-      const duplicateSegment = duplicateSegmentsIds ? duplicateSegmentsIds.includes(segment.id) : false;
-      if (duplicateSegment && segment.id !== undefined) {
-        const error = new Error('Duplicate segment');
+      const isDuplicateSegment = duplicateSegmentsIds ? duplicateSegmentsIds.includes(segment.id) : false;
+      const isDuplicateSegmentWithSameContext = isDuplicateSegment && duplicateSegmentsContexts ? duplicateSegmentsContexts.includes(segment.context) : false;
+      if (isDuplicateSegment && isDuplicateSegmentWithSameContext && segment.id !== undefined) {
+        const error = new Error('Duplicate segment with same context');
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);
         throw error;
       }
+      // import duplicate segment with different context:
+      if (!isDuplicateSegment || !isDuplicateSegmentWithSameContext) {
+        // assign new uuid to duplicate segment with new context:
+        segment.id = !isDuplicateSegment ? segment.id : uuid();
+        segment.subSegmentIds.forEach((subSegmentId) => {
+          const subSegment = allDuplicateSegmentsData ? allDuplicateSegmentsData.find((segment) => subSegmentId === segment?.id) : null;
+          if (!subSegment) {
+            const error = new Error(
+              'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
+            );
+            (error as any).type = SERVER_ERROR.QUERY_FAILED;
+            logger.error(error);
+            throw error;
+          }
+        });
 
-      segment.subSegmentIds.forEach((subSegmentId) => {
-        const subSegment = allSegmentsData ? allSegmentsData.find((segment) => subSegmentId === segment?.id) : null;
-        if (!subSegment) {
-          const error = new Error(
-            'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
-          );
-          (error as any).type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-          throw error;
-        }
-      });
-
-      logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
-      const addedSegment = await this.addSegmentDataInDB(segment, logger);
-      allAddedSegments.push(addedSegment);
-      allSegmentsData.push(addedSegment);
+        logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
+        const addedSegment = await this.addSegmentDataInDB(segment, logger);
+        allAddedSegments.push(addedSegment);
+        allDuplicateSegmentsData.push(addedSegment);
+      }
     }
     return allAddedSegments;
   }
@@ -307,13 +312,13 @@ export class SegmentService {
         throw error;
       }
 
-      // reset caching
-      await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
-
       return transactionalEntityManager
         .getRepository(Segment)
         .findOne(segmentDoc.id, { relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
     });
+
+    // reset caching
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
 
     return createdSegment;
   }

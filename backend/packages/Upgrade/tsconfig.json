@@ -11,5 +11,10 @@
       "upgrade_types": ["../../../types"]
     }
   },
+  "references": [
+    {
+      "path": "../../../types"
+    }
+  ],
   "exclude": ["**/*/node_modules"]
 }

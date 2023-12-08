@@ -12,7 +12,7 @@ import { ExperimentSegmentExclusionRepository } from '../../../src/api/repositor
 import { ExperimentSegmentInclusionRepository } from '../../../src/api/repositories/ExperimentSegmentInclusionRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { SegmentInputValidator } from '../../../src/api/controllers/validators/SegmentInputValidator';
-import { EXPERIMENT_STATE, SERVER_ERROR } from '../../../../../../types/src';
+import { EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
 import { IndividualForSegment } from '../../../src/api/models/IndividualForSegment';
 import { GroupForSegment } from '../../../src/api/models/GroupForSegment';
 import { Experiment } from '../../../src/api/models/Experiment';
@@ -328,7 +328,7 @@ describe('Segment Service Testing', () => {
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2, segVal]);
     expect(async () => {
       await service.importSegments([segVal], logger);
-    }).rejects.toThrow(new Error('Duplicate segment'));
+    }).rejects.toThrow(new Error('Duplicate segment with same context'));
   });
 
   it('should throw an error when trying to import a segment that includes an unknown subsegment', async () => {

@@ -1,5 +1,5 @@
 <mat-drawer-container [class]="theme$ | async">
-  <mat-drawer mode="side" opened>
+  <mat-drawer mode="side" opened disableClose>
     <div class="drawer-container">
       <div class="logo">
         <a class="logo-link ft-36-800" [routerLink]="['/home']">UpGrade</a>
@@ -29,7 +29,7 @@
                 *ngIf="currentUser$ | async as user"
                 routerLinkActive="user-list--item-selected"
               >
-                <img src="{{ user?.imageUrl }}" class="user-pic" />
+                <img src="{{ user?.imageUrl }}" class="user-pic" referrerpolicy="no-referrer" />
                 <span>{{ (user?.firstName || '') + ' ' + (user?.lastName || '') }}</span>
               </mat-list-item>
             </a>

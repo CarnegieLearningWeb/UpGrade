@@ -21,6 +21,9 @@ export class CacheService {
   }
 
   public setCache<T>(id: string, value: T): Promise<T> {
+    if (value === null || value === undefined) {
+      return Promise.resolve(null);
+    }
     return this.memoryCache ? this.memoryCache.set(id, value) : Promise.resolve(null);
   }
 
@@ -35,7 +38,11 @@ export class CacheService {
   public async resetPrefixCache(prefix: string): Promise<void> {
     const keys = this.memoryCache ? await this.memoryCache.store.keys() : [];
     const filteredKeys = keys.filter((str) => str.startsWith(prefix));
-    this.memoryCache.store.del(filteredKeys);
+    return this.memoryCache.store.del(filteredKeys);
+  }
+
+  public async resetAllCache(): Promise<void> {
+    return this.memoryCache ? this.memoryCache.store.reset() : Promise.resolve();
   }
 
   // Use this to wrap the function that you want to cache
@@ -50,7 +57,7 @@ export class CacheService {
       })
     );
 
-    const allCachedFound = cachedData.every((cached) => cached);
+    const allCachedFound = cachedData.every((cached) => !!cached);
     if (allCachedFound) {
       return cachedData;
     }
