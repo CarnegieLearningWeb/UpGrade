@@ -10,20 +10,21 @@
     <a href="https://github.com/CarnegieLearningWeb/UpGrade/issues"><img src="https://img.shields.io/github/issues/CarnegieLearningWeb/UpGrade" alt="Issues Badge"/></a>
     <a href="https://github.com/CarnegieLearningWeb/UpGrade/graphs/contributors"><img alt="GitHub contributors" src="https://img.shields.io/github/contributors/CarnegieLearningWeb/UpGrade?color=2b9348"></a>
     <a href="https://github.com/CarnegieLearningWeb/UpGrade/blob/dev/LICENSE"><img src="https://img.shields.io/github/license/CarnegieLearningWeb/UpGrade?color=2b9348" alt="License Badge"/></a>
-    <a href="https://join.slack.com/share/enQtNjI4MjA0NzQ1OTY3MS1mNTMwMmE3M2M4ZWUxYWI5NDAyYzBiNTBmY2ZjYTMyYmMzOTA4ODliZmI2MzBjNmQ5NTU0NmVlNzQ2OWNlOTgz"><img src="https://img.shields.io/badge/slack-join-E01E5A?logo=slack" alt="Join us on Slack" height="22"/></a>
+    <a href="https://join.slack.com/t/upgrade-platform/shared_invite/zt-28mb077fn-_ZapZ_624EVRAdt5QOO7zA"><img src="https://img.shields.io/badge/slack-join-E01E5A?logo=slack" alt="Join us on Slack" height="22"/></a>
 </div>
 
-UpGrade is an open-source platform designed to support large-scale A/B testing in any web-application. This combined repository provides tools and resources to integrate A/B testing frameworks into various software solutions. Learn more at www.upgradeplatform.org.
+UpGrade is an open-source platform designed to support large-scale A/B testing in EdTech web applications. This combined repository provides tools and resources to integrate A/B testing frameworks into your client software. Learn more at www.upgradeplatform.org.
 
 ## Features
 
-- 🆎 **A/B Testing**: Implement controlled trials within software for impactful learning analysis.
-- 🚩 **Feature Flagging**: Provision for experiment based feature flagging.
-- 📊 **Segmentation**: Segmentation for inclusion/exclusion of groups.
-- ➿ **Factorial Experiments**: Support for factorial experiment.
-- ♊ **Stratified Random Sampling**: Provision for stratifications for categorical study.
+- 🆎 **A/B Testing**: Implement randomized field trials within EdTech software for impactful analysis of learning.
+- 🏫 **Group Random Assignment**: Assign conditions by group such as school, teacher, or class.
+- 🚩 **Feature Flagging**: Experiment-based feature flagging.
+- 📊 **Segmentation**: Segmentation for inclusion/exclusion of participant groups.
+- ➿ **Factorial Experiments**: Support for factorial experiment designs.
+- ♊ **Stratified Random Sampling**: Sampling from subpopulations for proportional weighting.
 - ⏫ **Scalability**: Designed to support large-scale experiments.
-- 🔃 **Integration**: Easily integrates with various applications.
+- 🔃 **Integration**: Easily integrates with EdTech applications.
 - 💻 **SDKs**: We have SDKs for [Java](https://github.com/CarnegieLearningWeb/UpGrade/tree/dev/clientlibs/java), [Javascript](https://github.com/CarnegieLearningWeb/UpGrade/tree/dev/clientlibs/js) and [C#](https://github.com/CarnegieLearningWeb/UpGrade/pull/860). More to come soon!
 
     ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) &nbsp;&nbsp; ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E) &nbsp;&nbsp; ![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white)
@@ -83,12 +84,11 @@ This project is licensed under the BSD-3-Clause License - see the [LICENSE](http
 
 ## Support
 
-For support, please visit [UpGrade Platform](www.upgradeplatform.org).
+For an overview of the UpGrade platform, please visit [UpGrade Platform](https://www.upgradeplatform.org/).
 
 ## Acknowledgments
 
 - Thanks to all the contributors who have helped build UpGrade.
-- Special thanks to Carnegie Learning for supporting and growing this project.
 
 #### Contributors:
 
