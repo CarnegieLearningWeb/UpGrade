@@ -1,4 +1,13 @@
-import { IsArray, IsNotEmpty, IsOptional, IsString, ValidateNested, ValidationOptions, isObject, registerDecorator } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateNested,
+  ValidationOptions,
+  isObject,
+  registerDecorator,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export const IsGroupRecord = (validationOptions?: ValidationOptions) => {

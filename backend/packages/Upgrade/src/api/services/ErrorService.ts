@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { ErrorRepository } from '../repositories/ErrorRepository';
 import { ExperimentError } from '../models/ExperimentError';
 import { SERVER_ERROR } from 'upgrade_types';
@@ -7,7 +7,7 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class ErrorService {
-  constructor(@OrmRepository() private errorRepository: ErrorRepository) {}
+  constructor(@InjectRepository() private errorRepository: ErrorRepository) {}
 
   public getTotalLogs(filter: SERVER_ERROR): Promise<number> {
     if (filter) {

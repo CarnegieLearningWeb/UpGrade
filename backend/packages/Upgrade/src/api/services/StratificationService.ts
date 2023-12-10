@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SERVER_ERROR } from 'upgrade_types';
 import { In, getConnection } from 'typeorm';
@@ -13,7 +13,7 @@ import { ErrorWithType } from '../errors/ErrorWithType';
 @Service()
 export class StratificationService {
   constructor(
-    @OrmRepository()
+    @InjectRepository()
     private stratificationFactorRepository: StratificationFactorRepository
   ) {}
 

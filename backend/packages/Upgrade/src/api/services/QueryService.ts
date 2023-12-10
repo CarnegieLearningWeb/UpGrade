@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
@@ -21,9 +21,9 @@ interface queryResult {
 @Service()
 export class QueryService {
   constructor(
-    @OrmRepository() private queryRepository: QueryRepository,
-    @OrmRepository() private logRepository: LogRepository,
-    @OrmRepository() private archivedStatsRepository: ArchivedStatsRepository,
+    @InjectRepository() private queryRepository: QueryRepository,
+    @InjectRepository() private logRepository: LogRepository,
+    @InjectRepository() private archivedStatsRepository: ArchivedStatsRepository,
     public errorService: ErrorService
   ) {}
 
