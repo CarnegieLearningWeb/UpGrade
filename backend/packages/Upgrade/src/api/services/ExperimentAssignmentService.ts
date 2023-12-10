@@ -2,7 +2,7 @@ import { GroupEnrollmentRepository } from './../repositories/GroupEnrollmentRepo
 import { IndividualEnrollmentRepository } from './../repositories/IndividualEnrollmentRepository';
 import { IndividualEnrollment } from './../models/IndividualEnrollment';
 import { ErrorWithType } from './../errors/ErrorWithType';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { DecisionPoint } from '../models/DecisionPoint';
 import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import {
@@ -31,7 +31,7 @@ import { GroupExclusion } from '../models/GroupExclusion';
 import { Experiment } from '../models/Experiment';
 import { ScheduledJobService } from './ScheduledJobService';
 import { ExperimentCondition } from '../models/ExperimentCondition';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import { PreviewUserService } from './PreviewUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentService } from './ExperimentService';
@@ -72,35 +72,35 @@ import { MoocletTestService } from './MoocletTestService';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
-    @OrmRepository() private experimentRepository: ExperimentRepository,
-    @OrmRepository()
+    @InjectRepository() private experimentRepository: ExperimentRepository,
+    @InjectRepository()
     private decisionPointRepository: DecisionPointRepository,
-    @OrmRepository()
+    @InjectRepository()
     private individualExclusionRepository: IndividualExclusionRepository,
-    @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
-    // @OrmRepository()
+    @InjectRepository() private groupExclusionRepository: GroupExclusionRepository,
+    // @InjectRepository()
     // private groupAssignmentRepository: GroupAssignmentRepository,
-    @OrmRepository() private groupEnrollmentRepository: GroupEnrollmentRepository,
-    @OrmRepository()
-    // @OrmRepository()
+    @InjectRepository() private groupEnrollmentRepository: GroupEnrollmentRepository,
+    @InjectRepository()
+    // @InjectRepository()
     // private individualAssignmentRepository: IndividualAssignmentRepository,
-    @OrmRepository()
+    @InjectRepository()
     private individualEnrollmentRepository: IndividualEnrollmentRepository,
-    @OrmRepository()
+    @InjectRepository()
     private monitoredDecisionPointLogRepository: MonitoredDecisionPointLogRepository,
-    @OrmRepository()
+    @InjectRepository()
     private monitoredDecisionPointRepository: MonitoredDecisionPointRepository,
-    @OrmRepository()
+    @InjectRepository()
     private errorRepository: ErrorRepository,
-    @OrmRepository()
+    @InjectRepository()
     private logRepository: LogRepository,
-    @OrmRepository()
+    @InjectRepository()
     private metricRepository: MetricRepository,
-    @OrmRepository()
+    @InjectRepository()
     private stateTimeLogsRepository: StateTimeLogsRepository,
-    @OrmRepository()
+    @InjectRepository()
     private analyticsRepository: AnalyticsRepository,
-    @OrmRepository()
+    @InjectRepository()
     private userStratificationFactorRepository: UserStratificationFactorRepository,
 
     public previewUserService: PreviewUserService,

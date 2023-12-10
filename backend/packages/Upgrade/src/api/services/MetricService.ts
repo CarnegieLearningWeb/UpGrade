@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { MetricRepository } from '../repositories/MetricRepository';
 import { Metric } from '../models/Metric';
 import { SERVER_ERROR, IMetricUnit, IMetricMetaData, IGroupMetric, ISingleMetric } from 'upgrade_types';
@@ -10,7 +10,7 @@ export const METRICS_JOIN_TEXT = '@__@';
 
 @Service()
 export class MetricService {
-  constructor(@OrmRepository() private metricRepository: MetricRepository, public settingService: SettingService) {}
+  constructor(@InjectRepository() private metricRepository: MetricRepository, public settingService: SettingService) {}
 
   public async getAllMetrics(logger: UpgradeLogger): Promise<IMetricUnit[]> {
     logger.info({ message: 'Get all metrics' });

@@ -6,7 +6,7 @@ import { Container } from 'typedi';
 import { MetricService } from '../../../src/api/services/MetricService';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import { useContainer as ormUseContainer } from 'typeorm';
-import uuid from 'uuid';
+import { v4 as uuid } from 'uuid';
 import MetricServiceMock from './mocks/MetricServiceMock';
 
 describe('Metric Controller Testing', () => {
