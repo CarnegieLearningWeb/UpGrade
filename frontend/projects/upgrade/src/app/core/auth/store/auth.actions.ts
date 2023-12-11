@@ -1,9 +1,12 @@
 import { Action, createAction, props } from '@ngrx/store';
 import { User } from '../../users/store/users.model';
 
-export const actionLoginStart = createAction('[Auth] Login Start');
+export const actionLoginStart = createAction('[Auth] Login Start', props<{ user: User; googleCredential: string }>());
 
-export const actionLoginSuccess = createAction('[Auth] Login Success');
+export const actionLoginSuccess = createAction(
+  '[Auth] Login Success',
+  props<{ user: User; googleCredential: string }>()
+);
 
 export const actionLoginFailure = createAction('[Auth] Login Failure');
 
@@ -15,6 +18,8 @@ export const actionSetIsAuthenticating = createAction(
 );
 
 export const actionSetUserInfo = createAction('[Auth] Set User Information', props<{ user: any }>());
+
+export const actionFetchUserExperimentData = createAction('[Auth] Fetch User Experiment Data', props<{ user: User }>());
 
 export const actionSetUserInfoSuccess = createAction('[Auth] Set User Information Success', props<{ user: User }>());
 
