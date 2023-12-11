@@ -252,6 +252,7 @@
   "home.view-experiment.graph-time.text": "Time",
   "home.view-experiment.graph-select-all.text": "Select All",
   "home.view-experiment.logging.text": "Logging",
+  "home.view-experiment.use-mooclets-proxy.text": "Proxy Assignments through MOOClet Services",
   "home.view-experiment.mattab.data.text": "Data",
   "home.view-experiment.mattab.data.enrollment.text": "Enrollment",
   "home.view-experiment.mattab.data.enrollment-detail.text": "Enrollments reflects participants who have started the experiment.",

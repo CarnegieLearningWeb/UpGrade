@@ -104,7 +104,9 @@ export class ExperimentClientController {
     public experimentAssignmentService: ExperimentAssignmentService,
     public experimentUserService: ExperimentUserService,
     public featureFlagService: FeatureFlagService,
-    public metricService: MetricService
+    public metricService: MetricService,
+    public moocletTestService: MoocletTestService,
+    public moocletDataService: MoocletDataService
   ) {}
 
   /**
@@ -644,6 +646,54 @@ export class ExperimentClientController {
     });
   }
 
+
+   /**
+   * @swagger
+   * /log/caliper:
+   *    post:
+   *       description: Post Caliper format log data
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *          - in: body
+   *            name: data
+   *            required: true
+   *            description: User Document
+   *       tags:
+   *         - Client Side SDK
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Log data
+   *          '500':
+   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
+   */
+  @Post('log/caliper')
+  public async caliperLog(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
+    envelope: CaliperLogEnvelope
+  ): Promise<Log[]> {
+    let result = envelope.data.map(async log => {
+      // getOriginalUserDoc call for alias
+      const experimentUserDoc = await this.getUserDoc(log.object.assignee.id, request.logger);
+      if (experimentUserDoc) {
+        // append userDoc in logger
+        request.logger.child({ userDoc: experimentUserDoc });
+        request.logger.info({ message: 'Got the original user doc' });
+      }
+      return this.experimentAssignmentService.caliperDataLog(log, {
+        logger: request.logger,
+        userDoc: experimentUserDoc,
+      });
+    });
+
+    const logsToReturn = await Promise.all(result);
+    return flatten(logsToReturn);
+  }
+
   /**
    * @swagger
    * /log/caliper:
@@ -1011,5 +1061,33 @@ export class ExperimentClientController {
       return 'DB truncate successful';
     }
     return Promise.resolve('DEMO mode is disabled. You cannot clear DB.');
+  }
+
+  /**
+   * @swagger
+   * /mooclet:
+   *    post:
+   *       description: Upgrade-Mooclets Integration Tests
+   *       consumes:
+   *         - application/json
+   *       tags:
+   *         - Client Side SDK
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Ok
+   *          '500':
+   *            description: Oops
+   */
+  @Post('mooclet')
+  public async fetchFromMooclet(
+    @Req()
+    request: AppRequest,
+    @Body({ validate: { validationError: { target: false, value: false } } }) requestParams: MoocletParamsValidator
+  ): Promise<any> {
+    const response = this.moocletDataService.fetchExternalMoocletsData(requestParams);
+
+    return response;
   }
 }

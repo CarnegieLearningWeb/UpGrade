@@ -128,6 +128,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         context: [null, Validators.required],
         tags: [[]],
         logging: [false],
+        useMoocletsProxy: [false],
       });
 
       this.overviewForm.get('unitOfAssignment').valueChanges.subscribe((assignmentUnit) => {
@@ -317,6 +318,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         stratificationFactor,
         tags,
         logging,
+        useMoocletsProxy,
       } = this.overviewForm.value;
       const stratificationFactorValueToSend = this.stratificationFactorValueToSend(
         stratificationFactor,

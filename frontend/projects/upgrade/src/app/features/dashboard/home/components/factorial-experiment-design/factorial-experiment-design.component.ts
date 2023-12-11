@@ -537,6 +537,15 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     }
   }
 
+  validateConditionCount() {
+    this.conditionCountError = null;
+    if (this.factorialConditions.length < 2) {
+      this.conditionCountError = this.translate.instant(
+        'home.new-experiment.design.condition-create-count-new-factorial-exp-error.text'
+      );
+    }
+  }
+
   isFormValid() {
     return (
       !this.decisionPointErrors.length &&

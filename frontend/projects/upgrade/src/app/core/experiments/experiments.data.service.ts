@@ -1,5 +1,10 @@
 import { Inject, Injectable } from '@angular/core';
-import { Experiment, ExperimentStateInfo, ExperimentPaginationParams } from './store/experiments.model';
+import {
+  Experiment,
+  ExperimentStateInfo,
+  ExperimentPaginationParams,
+  MoocletsRequest,
+} from './store/experiments.model';
 import { HttpClient } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
 
@@ -89,5 +94,10 @@ export class ExperimentDataService {
   fetchGroupAssignmentStatus(experimentId: string) {
     const url = `${this.environment.api.getGroupAssignmentStatus}/${experimentId}`;
     return this.http.get(url);
+  }
+
+  fetchExternalMoocletsData(requestParams: MoocletsRequest) {
+    const url = this.environment.api.mooclet;
+    return this.http.post(url, requestParams);
   }
 }

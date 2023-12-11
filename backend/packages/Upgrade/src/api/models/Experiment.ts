@@ -176,4 +176,13 @@ export class Experiment extends BaseModel {
     default: EXPERIMENT_TYPE.SIMPLE,
   })
   public type: string;
+
+  @Column({ default: false })
+  public useMoocletsProxy?: boolean;
+
+  @Column({
+    nullable: true,
+    type: 'json',
+  })
+  public moocletDetails?: Partial<MoocletExperimentDataSummary>;
 }

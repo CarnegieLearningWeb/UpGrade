@@ -54,5 +54,6 @@ export const environment = {
     exportSegment: '/segments/export',
     exportSegments: '/segments/export',
     getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
+    mooclet: '/mooclet',
   },
 };
