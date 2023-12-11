@@ -848,21 +848,6 @@ export class ExperimentService {
             })) ||
           [];
 
-        const conditionPayloadDocToSave: Array<Partial<ConditionPayload>> =
-          (conditionPayloads &&
-            conditionPayloads.length > 0 &&
-            conditionPayloads.map((conditionPayload: ConditionPayloadDTO) => {
-              const conditionPayloadToReturn = {
-                id: conditionPayload.id,
-                payloadType: conditionPayload.payload.type,
-                payloadValue: conditionPayload.payload.value,
-                parentCondition: conditionPayload.parentCondition,
-                decisionPoint: conditionPayload.decisionPoint,
-              };
-              return conditionPayloadToReturn;
-            })) ||
-          [];
-
         // creating decision point docs
         let promiseArray = [];
         const decisionPointDocToSave =
@@ -1016,24 +1001,6 @@ export class ExperimentService {
           logger.error(error);
           throw error;
         }
-
-        try {
-          [conditionPayloadDocs] = await Promise.all([
-            Promise.all(
-              conditionPayloadDocToSave.map(async (conditionPayload) => {
-                return this.conditionPayloadRepository.upsertConditionPayload(
-                  conditionPayload,
-                  transactionalEntityManager
-                );
-              })
-            ) as any,
-          ]);
-        } catch (err) {
-          const error = err as Error;
-          error.message = `Error in creating conditionPayloads "updateExperimentInDB"`;
-          logger.error(error);
-          throw error;
-        }   
 
         let conditionDocToReturn = conditionDocs.map((conditionDoc) => {
           return { ...conditionDoc, experiment: conditionDoc.experiment };

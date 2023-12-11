@@ -49,8 +49,8 @@ interface ImportExperimentJSON {
 })
 export class ImportExperimentComponent implements OnInit {
   experimentInfo: Experiment;
-  isExperimentJSONValid: boolean = true;
-  experimentJSONVersionStatus: number = 0;
+  isExperimentJSONValid = true;
+  experimentJSONVersionStatus = 0;
   missingAllProperties: string;
   allPartitions: ExperimentDecisionPoint[] = [];
   allPartitionsSub: Subscription;
@@ -332,6 +332,7 @@ export class ImportExperimentComponent implements OnInit {
 
     if (this.isFactorialExperiment) {
       this.checkMissingFactorAndLevelProperties(experiment.factors);
+
       if (this.missingFactorProperties.length > 0) {
         this.missingAllProperties =
           this.missingAllProperties +
@@ -344,6 +345,7 @@ export class ImportExperimentComponent implements OnInit {
     }
 
     this.missingPropertiesFlag = this.updateMissingPropertiesFlag(this.missingPartitionProperties);
+
     return !this.missingPropertiesFlag;
   }
   updateMissingPropertiesFlag(missingPropertiesList: string): boolean {

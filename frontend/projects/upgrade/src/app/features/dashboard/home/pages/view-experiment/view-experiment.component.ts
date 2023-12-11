@@ -252,16 +252,6 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         const statisticOperation: string[] = [query.query.operationType];
         if (rootKey.length > 1) {
           statisticOperation.push(query.repeatedMeasure);
-          if (query.metric.type === IMetricMetaData.CATEGORICAL) {
-            let compareFn;
-            this.comparisonFns.forEach((comparisonFn) => {
-              if (comparisonFn.value === query.query.compareFn) {
-                compareFn = comparisonFn.viewValue;
-              }
-            });
-            statisticOperation.push(compareFn);
-            statisticOperation.push(query.query.compareValue);
-          }
         }
         if (query.metric.type === IMetricMetaData.CATEGORICAL) {
           let compareFn;
