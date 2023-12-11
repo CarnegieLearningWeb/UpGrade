@@ -323,6 +323,7 @@ export class SegmentService {
     });
     const allSegmentsData = await this.getSegmentByIds(allSegmentIds);
     const duplicateSegmentsIds = allSegmentsData?.map((segment) => segment?.id);
+    const duplicateSegmentsContexts = allSegmentsData?.map((segment) => segment?.context);
     const contextMetaData = env.initialization.contextMetadata;
     const contextMetaDataOptions = Object.keys(contextMetaData);
     const importFileErrors: SegmentImportError[] = [];
@@ -341,9 +342,17 @@ export class SegmentService {
           }
         });
       }
-      const duplicateSegment = duplicateSegmentsIds ? duplicateSegmentsIds.includes(segment.id) : false;
-      if (duplicateSegment && segment.id !== undefined) {
-        errorMessage = errorMessage + 'Duplicate segment. ';
+      const isDuplicateSegment = duplicateSegmentsIds ? duplicateSegmentsIds.includes(segment.id) : false;
+      const isDuplicateSegmentWithSameContext =
+        isDuplicateSegment && duplicateSegmentsContexts ? duplicateSegmentsContexts.includes(segment.context) : false;
+      if (isDuplicateSegment && isDuplicateSegmentWithSameContext && segment.id !== undefined) {
+        errorMessage = errorMessage + 'Duplicate segment with same context';
+      }
+
+      // import duplicate segment with different context:
+      if (!isDuplicateSegment || !isDuplicateSegmentWithSameContext) {
+        // assign new uuid to duplicate segment with new context:
+        segment.id = !isDuplicateSegment ? segment.id : uuid();
       }
 
       segment.subSegmentIds.forEach((subSegmentId) => {

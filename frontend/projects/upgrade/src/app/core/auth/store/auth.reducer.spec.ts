@@ -19,7 +19,7 @@ describe('AuthReducer', () => {
   it('should handle actionLoginStart by setting isAuthenticating to true', () => {
     const previousState = { ...initialState };
     previousState.isAuthenticating = false;
-    const testAction = AuthActions.actionLoginStart();
+    const testAction = AuthActions.actionLoginStart({ user: null, googleCredential: '' });
 
     const newState = authReducer(previousState, testAction);
 
@@ -30,7 +30,7 @@ describe('AuthReducer', () => {
     const previousState = { ...initialState };
     previousState.isAuthenticating = true;
     previousState.isLoggedIn = false;
-    const testAction = AuthActions.actionLoginSuccess();
+    const testAction = AuthActions.actionLoginSuccess({ user: null, googleCredential: '' });
 
     const newState = authReducer(previousState, testAction);
 

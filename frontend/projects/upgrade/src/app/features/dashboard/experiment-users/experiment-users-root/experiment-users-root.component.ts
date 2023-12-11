@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ExperimentService } from '../../../../core/experiments/experiments.service';
 import { PreviewUsersService } from '../../../../core/preview-users/preview-users.service';
+import { StratificationFactorsService } from '../../../../core/stratification-factors/stratification-factors.service';
 
 @Component({
   selector: 'app-user-root',
@@ -8,12 +9,17 @@ import { PreviewUsersService } from '../../../../core/preview-users/preview-user
   styleUrls: ['./experiment-users-root.component.scss'],
 })
 export class ExperimentUsersRootComponent {
-  constructor(private experimentService: ExperimentService, private previewUsersService: PreviewUsersService) {}
+  constructor(
+    private experimentService: ExperimentService,
+    private previewUsersService: PreviewUsersService,
+    private stratificationFactorsService: StratificationFactorsService
+  ) {}
 
   selectedTabChange(event) {
     if (event.index === 1) {
       this.experimentService.fetchAllExperimentNames();
       this.previewUsersService.fetchPreviewUsers(true);
+      this.stratificationFactorsService.fetchStratificationFactors(true);
     }
   }
 }

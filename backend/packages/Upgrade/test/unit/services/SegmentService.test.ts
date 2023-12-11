@@ -68,6 +68,7 @@ describe('Segment Service Testing', () => {
     group.groupId = 'group1';
     group.type = 'type';
     seg1.groupForSegment = [group];
+    segVal.context = 'add';
     segVal.id = 'c6d3fe3b-4ad2-4949-bd05-5a7a2481d32f';
     segVal.subSegmentIds = ['seg1', 'seg2'];
     segVal.userIds = ['user1', 'user2', 'user3'];
@@ -351,7 +352,7 @@ describe('Segment Service Testing', () => {
       importErrors: [
         {
           fileName: 'seg1',
-          error: 'Invalid Segment data: ' + 'Duplicate segment. ',
+          error: 'Invalid Segment data: ' + 'Duplicate segment with same context',
         },
       ],
       segments: [],

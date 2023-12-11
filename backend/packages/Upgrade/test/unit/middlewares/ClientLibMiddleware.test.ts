@@ -44,22 +44,22 @@ describe('ClientLib Middleware tests', () => {
     };
   });
 
-  test('JWT Expired error test', async () => {
+  test('JWT Expired error test', () => {
     const error = new Error();
     error.message = 'jwt expired';
     mockRequest.header = jest.fn(() => {
       throw error;
     });
-    await expect(clientlib.use(mockRequest, mockResponse, nextFunction)).rejects.toThrow(error);
+    return expect(clientlib.use(mockRequest, mockResponse, nextFunction)).rejects.toThrow(error);
   });
 
-  test('Invalid token error test', async () => {
+  test('Invalid token error test', () => {
     const error = new Error();
     error.message = 'invalid token';
     mockRequest.header = jest.fn(() => {
       throw error;
     });
-    await expect(clientlib.use(mockRequest, mockResponse, nextFunction)).rejects.toThrow(error);
+    return expect(clientlib.use(mockRequest, mockResponse, nextFunction)).rejects.toThrow(error);
   });
 
   test('No Auth check test', async () => {
@@ -67,16 +67,16 @@ describe('ClientLib Middleware tests', () => {
     expect(nextFunction).toHaveBeenCalled();
   });
 
-  test('Auth Check no token test', async () => {
+  test('Auth Check no token test', () => {
     Container.set(SettingService, new SettingServiceAuthCheck());
     clientlib = new ClientLibMiddleware(Container.get(SettingService));
 
-    await expect(clientlib.use(mockRequest, mockResponse, nextFunction)).rejects.toThrow(
+    return expect(clientlib.use(mockRequest, mockResponse, nextFunction)).rejects.toThrow(
       'Token is not present in request header from client'
     );
   });
 
-  test('Auth Check no token test', async () => {
+  test('Auth Check no token test', () => {
     Container.set(SettingService, new SettingServiceAuthCheck());
     clientlib = new ClientLibMiddleware(Container.get(SettingService));
     const headerAuth = (x) => {
@@ -91,6 +91,6 @@ describe('ClientLib Middleware tests', () => {
     const verify = jest.spyOn(jwt, 'verify');
     verify.mockImplementation(() => () => ({ verified: 'true' }));
 
-    await expect(clientlib.use(mockRequest, mockResponse, nextFunction)).rejects.toThrow('Provided token is invalid');
+    return expect(clientlib.use(mockRequest, mockResponse, nextFunction)).rejects.toThrow('Provided token is invalid');
   });
 });

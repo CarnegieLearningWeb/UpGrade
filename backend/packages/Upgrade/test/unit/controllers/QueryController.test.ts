@@ -20,8 +20,8 @@ describe('Query Controller Testing', () => {
     Container.reset();
   });
 
-  test('Post request for /api/query/analyse', async (done) => {
-    await request(app)
+  test('Post request for /api/query/analyse', () => {
+    return request(app)
       .post('/api/query/analyse')
       .send({
         queryIds: [uuid()],
@@ -29,7 +29,5 @@ describe('Query Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-
-    done();
   });
 });
