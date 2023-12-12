@@ -99,6 +99,20 @@ export class MoocletDataService {
     return response;
   }
 
+  public async getVersionForNewLearner(moocletId: number, userId: string) {
+    const endpoint = `/mooclet/${moocletId}/run?user=${userId}`;
+
+    const requestParams: MoocletParamsValidator = {
+      method: 'GET',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
+    };
+
+    const response = await this.fetchExternalMoocletsData(requestParams);
+
+    return response;
+  }
+
   /**
    * Generic Requests to Mooclets API
    */

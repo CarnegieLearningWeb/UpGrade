@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 import { ExperimentCondition } from '../models/ExperimentCondition';
-import { ExperimentDTO } from '../DTO/ExperimentDTO';
 import { MoocletDataService } from './MoocletDataService';
+import { Experiment } from '../models/Experiment';
 
 /**********************************************************************
  * types for the test MOOClet services. I don't know where to put these so they're here still!
@@ -47,6 +47,12 @@ export interface MoocletPolicyParametersResponseDetails {
   mooclet: number;
   policy: number;
   parameters: MoocletPolicyParameters;
+}
+
+export interface ExperimentCondtitionToMoocletVersionParams {
+  moocletId: number;
+  userId: string;
+  experimentConditions: ExperimentCondition[];
 }
 
 // {"prior": {"failure": 1, "success": 1}, "batch_size": 4, "max_rating": 1, "min_rating": 0, "uniform_threshold": 8, "outcome_variable_name": ""} #TS parameters
@@ -116,7 +122,7 @@ export class MoocletTestService {
    * TODO: after create is working, do the experiment runtime POC through assign
    * TODO: create an architectrual diagram of this flow in UpGrade
    */
-  public async orchestrateMoocletCreation(UpgradeExperiment: ExperimentDTO): Promise<MoocletExperimentDataSummary> {
+  public async orchestrateMoocletCreation(UpgradeExperiment: Experiment): Promise<MoocletExperimentDataSummary> {
     const { conditions: upgradeConditions, name: upgradeName } = UpgradeExperiment;
     let moocletResponse: MoocletResponseDetails = null;
     let moocletVersionsResponse: MoocletVersionResponseDetails[] = null;
@@ -198,6 +204,41 @@ export class MoocletTestService {
       console.log(err);
       throw new Error('Mooclet creation failed');
     }
+  }
+
+  public async getConditionFromMoocletProxy({
+    moocletId,
+    userId,
+    experimentConditions,
+  }: ExperimentCondtitionToMoocletVersionParams): Promise<ExperimentCondition> {
+    const versionResponse = await this.moocletDataService.getVersionForNewLearner(moocletId, userId);
+    const experimentCondition = this.findExperimentConditionFromVersionResponse(versionResponse, experimentConditions);
+
+    console.log('* versionResponse **************************************************');
+    console.log(versionResponse);
+
+    return experimentCondition;
+  }
+
+  private findExperimentConditionFromVersionResponse(
+    versionResponse: MoocletVersionResponseDetails,
+    experimentConditions: ExperimentCondition[]
+  ): ExperimentCondition {
+    // use version response to find the experiment condtions
+    const experimentCondition = experimentConditions.find(
+      (condition) => condition.conditionCode === versionResponse.name
+    );
+
+    if (!experimentCondition) {
+      const error = {
+        message: 'Version name not found be found in experiment conditions',
+        version: versionResponse,
+        conditions: experimentConditions,
+      };
+      throw new Error(JSON.stringify(error));
+    }
+
+    return experimentCondition;
   }
 
   private createWeightedRandomParameters(

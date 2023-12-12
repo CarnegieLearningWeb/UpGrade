@@ -77,6 +77,7 @@ import { CacheService } from './CacheService';
 import { QueryService } from './QueryService';
 import { ArchivedStats } from '../models/ArchivedStats';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
+import { MoocletTestService } from './MoocletTestService';
 
 @Service()
 export class ExperimentService {
@@ -104,7 +105,8 @@ export class ExperimentService {
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
     public cacheService: CacheService,
-    public queryService: QueryService
+    public queryService: QueryService,
+    public moocletTestService: MoocletTestService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {

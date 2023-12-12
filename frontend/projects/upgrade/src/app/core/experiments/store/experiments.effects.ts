@@ -23,7 +23,6 @@ import {
   ExperimentPaginationParams,
   IExperimentEnrollmentDetailStats,
   IContextMetaData,
-  MoocletsRequest,
 } from './experiments.model';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';

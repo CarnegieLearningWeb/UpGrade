@@ -27,6 +27,7 @@ import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
 import { ConditionPayload } from 'src/api/models/ConditionPayload';
 import { Factor } from './Factor';
 import { StratificationFactor } from './StratificationFactor';
+import { MoocletExperimentDataSummary } from '../services/MoocletTestService';
 
 export {
   EXPERIMENT_SEARCH_KEY,

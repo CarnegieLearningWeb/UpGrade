@@ -457,4 +457,7 @@ export class ExperimentDTO {
   @IsNotEmpty()
   @IsEnum(EXPERIMENT_TYPE)
   public type: EXPERIMENT_TYPE;
+
+  public useMoocletsProxy: boolean;
+  public moocletDetails: any;
 }

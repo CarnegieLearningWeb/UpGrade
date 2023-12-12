@@ -425,6 +425,10 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
+
+    console.log('*******************, experiment');
+    console.log(experiment);
+
     const { createdAt, updatedAt, versionNumber, ...rest } = await this.experimentAssignmentService.markExperimentPoint(
       experiment.userId,
       experiment.data.site,

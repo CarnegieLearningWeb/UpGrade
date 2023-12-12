@@ -340,6 +340,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
             : null,
           tags,
           logging,
+          useMoocletsProxy,
         };
         this.emitExperimentDialogEvent.emit({
           type: eventType,
