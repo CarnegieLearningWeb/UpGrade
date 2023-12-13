@@ -329,7 +329,7 @@ export class ExperimentAssignmentService {
           await this.updateEnrollmentExclusion(
             userDoc,
             experiment,
-            selectedExperimentDP[0],
+            selectedExperimentDP,
             {
               individualEnrollment: individualEnrollments,
               individualExclusion: individualExclusions,
