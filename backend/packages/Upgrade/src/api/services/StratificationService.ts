@@ -22,12 +22,9 @@ export class StratificationService {
   ): FactorStrata[] {
     const formattedResults = results.reduce((formatted, result) => {
       const { factor, value, count, experimentIds } = result;
-      const expIds: string[] = [];
-      experimentIds.forEach((expId) => {
-        expId ? expIds.push(expId) : null;
-      });
+      const expIds = experimentIds.filter((experimentId) => !!experimentId);
       if (!formatted[factor]) {
-        formatted[factor] = { factor, factorValue: {}, expIds };
+        formatted[factor] = { factor, factorValue: {}, experimentIds: expIds };
       }
       formatted[factor].factorValue[value] = parseInt(count);
       return formatted;
