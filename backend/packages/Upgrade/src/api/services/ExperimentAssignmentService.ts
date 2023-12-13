@@ -1557,14 +1557,19 @@ export class ExperimentAssignmentService {
         };
         await this.individualEnrollmentRepository.save(individualEnrollmentDocument);
       } else {
-        const conditionAssigned = await this.assignExperiment(
-          user,
-          experiment,
-          individualEnrollment,
-          groupEnrollment,
-          individualExclusion,
-          groupExclusion
-        );
+        let conditionAssigned = null;
+        if (experiment.useMoocletsProxy && condition) {
+          conditionAssigned = experiment.conditions.find((expCondition) => expCondition.conditionCode === condition);
+        } else {
+          conditionAssigned = await this.assignExperiment(
+            user,
+            experiment,
+            individualEnrollment,
+            groupEnrollment,
+            individualExclusion,
+            groupExclusion
+          );
+        }
         if (!individualEnrollment && !individualExclusion && conditionAssigned) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
             {
