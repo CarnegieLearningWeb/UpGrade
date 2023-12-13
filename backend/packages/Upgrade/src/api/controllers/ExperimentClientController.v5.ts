@@ -183,7 +183,11 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    const userDocument = await this.experimentUserService.create([experimentUser], request.logger);
+    const userDocument = await this.experimentUserService.upsertOnChange(
+      experimentUserDoc,
+      experimentUser,
+      request.logger
+    );
     if (!userDocument || !userDocument[0]) {
       request.logger.error({
         details: 'user document not present',
