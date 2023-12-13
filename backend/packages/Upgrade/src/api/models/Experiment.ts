@@ -178,9 +178,6 @@ export class Experiment extends BaseModel {
   })
   public type: string;
 
-  @Column({ default: false })
-  public useMoocletsProxy?: boolean;
-
   @Column({
     nullable: true,
     type: 'json',

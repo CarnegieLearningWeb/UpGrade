@@ -1558,7 +1558,9 @@ export class ExperimentAssignmentService {
         await this.individualEnrollmentRepository.save(individualEnrollmentDocument);
       } else {
         let conditionAssigned = null;
-        if (experiment.useMoocletsProxy && condition) {
+
+        // if moocletDetails exist on the experiment, we should already have an assignment
+        if (experiment?.moocletDetails && condition) {
           conditionAssigned = experiment.conditions.find((expCondition) => expCondition.conditionCode === condition);
         } else {
           conditionAssigned = await this.assignExperiment(
@@ -1700,7 +1702,7 @@ export class ExperimentAssignmentService {
     let experimentalCondition: ExperimentCondition;
 
     // check if experiment is using mooclet proxy, if so, get condition from mooclet proxy
-    if (experiment?.useMoocletsProxy && experiment?.moocletDetails?.mooclet?.id) {
+    if (experiment?.moocletDetails?.mooclet?.id) {
       // this will return undefined if there is an issue with the mooclet proxy
       // check the logs
       return await this.getConditionFromMoocletProxy(experiment, user);

@@ -28,6 +28,7 @@ import {
   SEGMENT_TYPE,
   EXPERIMENT_TYPE,
   CACHE_PREFIX,
+  ASSIGNMENT_ALGORITHM,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -1175,7 +1176,11 @@ export class ExperimentService {
     );
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       // create mooclet if feature is enabled and toggled to true
-      if (env.mooclets?.enabled && experiment?.useMoocletsProxy === true) {
+      const isMoocletExperiment =
+        experiment?.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE ||
+        experiment?.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_UNIFORM_RANDOM;
+
+      if (env.mooclets?.enabled && isMoocletExperiment) {
         const moocletDetails = await this.moocletTestService.orchestrateMoocletCreation(experiment);
         experiment.moocletDetails = moocletDetails; // <--- here
         console.log('moocletDetails****');

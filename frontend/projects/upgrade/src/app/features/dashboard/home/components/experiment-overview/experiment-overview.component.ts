@@ -66,6 +66,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   assignmentAlgorithms = [
     { value: ASSIGNMENT_ALGORITHM.RANDOM },
     { value: ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING },
+    { value: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE },
+    { value: ASSIGNMENT_ALGORITHM.MOOCLET_UNIFORM_RANDOM },
   ];
   allStratificationFactors: StratificationFactorSimple[];
   isLoading$ = this.stratificationFactorsService.isLoading$;
@@ -128,7 +130,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         context: [null, Validators.required],
         tags: [[]],
         logging: [false],
-        useMoocletsProxy: [false],
       });
 
       this.overviewForm.get('unitOfAssignment').valueChanges.subscribe((assignmentUnit) => {
@@ -318,7 +319,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         stratificationFactor,
         tags,
         logging,
-        useMoocletsProxy,
       } = this.overviewForm.value;
       const stratificationFactorValueToSend = this.stratificationFactorValueToSend(
         stratificationFactor,
@@ -340,7 +340,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
             : null,
           tags,
           logging,
-          useMoocletsProxy,
         };
         this.emitExperimentDialogEvent.emit({
           type: eventType,

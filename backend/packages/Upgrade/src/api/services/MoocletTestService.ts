@@ -2,6 +2,8 @@ import { Service } from 'typedi';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { MoocletDataService } from './MoocletDataService';
 import { Experiment } from '../models/Experiment';
+import { ASSIGNMENT_ALGORITHM } from 'upgrade_types';
+import { experiment } from 'test/integration/mockData/experiment/raw';
 
 /**********************************************************************
  * types for the test MOOClet services. I don't know where to put these so they're here still!
@@ -72,6 +74,7 @@ export interface MoocletThompsonSamplingConfigurablePolicyParameters {
   max_rating: number;
   min_rating: number;
   uniform_threshold: number;
+  tspostdiff_thresh: number;
   outcome_variable_name: string;
 }
 
@@ -122,8 +125,8 @@ export class MoocletTestService {
    * TODO: after create is working, do the experiment runtime POC through assign
    * TODO: create an architectrual diagram of this flow in UpGrade
    */
-  public async orchestrateMoocletCreation(UpgradeExperiment: Experiment): Promise<MoocletExperimentDataSummary> {
-    const { conditions: upgradeConditions, name: upgradeName } = UpgradeExperiment;
+  public async orchestrateMoocletCreation(upgradeExperiment: Experiment): Promise<MoocletExperimentDataSummary> {
+    const { conditions: upgradeConditions, name: upgradeName, assignmentAlgorithm } = upgradeExperiment;
     let moocletResponse: MoocletResponseDetails = null;
     let moocletVersionsResponse: MoocletVersionResponseDetails[] = null;
     let moocletPolicyParametersResponse: MoocletPolicyParametersResponseDetails = null;
@@ -135,7 +138,7 @@ export class MoocletTestService {
 
     try {
       // Step 0: get policy id by policy name. id and policy name could change.
-      newMoocletRequest.policy = await this.moocletDataService.getMoocletIdByName(MoocletPolicyNames.TS_CONFIGURABLE);
+      newMoocletRequest.policy = await this.moocletDataService.getMoocletIdByName(MoocletPolicyNames.UNIFORM_RANDOM);
 
       console.log('* newMoocletRequest **************************************************');
       console.log(newMoocletRequest);
@@ -158,20 +161,7 @@ export class MoocletTestService {
         const policyParametersRequest: MoocletPolicyParametersRequestBody = {
           mooclet: moocletResponse.id,
           policy: moocletResponse.policy,
-          // parameters: this.createWeightedRandomParameters(moocletVersionsResponse, upgradeConditions),
-
-          // hardcode TS Configurable parameters for now
-          parameters: {
-            prior: {
-              failure: 0,
-              success: 0,
-            },
-            batch_size: 4,
-            max_rating: 1,
-            min_rating: 0,
-            uniform_threshold: 4,
-            outcome_variable_name: 'test_outcome_variable_name',
-          },
+          parameters: this.createPolicyParameters(moocletVersionsResponse, upgradeExperiment),
         };
 
         moocletPolicyParametersResponse = await this.moocletDataService.postNewPolicyParameters(
@@ -239,6 +229,35 @@ export class MoocletTestService {
     }
 
     return experimentCondition;
+  }
+
+  private createPolicyParameters(moocletVersions: MoocletVersionResponseDetails[], experiment: Experiment) {
+    const assignmentAlgorithm = experiment.assignmentAlgorithm;
+
+    if (assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_UNIFORM_RANDOM) {
+      return this.createWeightedRandomParameters(moocletVersions, experiment.conditions);
+    } else if (assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {
+      return this.createTSConfigurableParameters();
+    } else {
+      throw new Error(`Assignment algorithm not found: ${assignmentAlgorithm}`);
+    }
+  }
+
+  private createTSConfigurableParameters(): MoocletPolicyParameters {
+    // hardcode for now
+    // pass in through ui, but where?
+    return {
+      prior: {
+        failure: 1,
+        success: 1,
+      },
+      batch_size: 4,
+      max_rating: 5,
+      min_rating: 1,
+      uniform_threshold: 8,
+      tspostdiff_thresh: 0.1,
+      outcome_variable_name: 'dummy_reward_name',
+    };
   }
 
   private createWeightedRandomParameters(

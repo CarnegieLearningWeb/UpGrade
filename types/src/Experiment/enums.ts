@@ -19,6 +19,8 @@ export enum CONDITION_ORDER {
 export enum ASSIGNMENT_ALGORITHM {
   RANDOM = 'random',
   STRATIFIED_RANDOM_SAMPLING = 'stratified random sampling',
+  MOOCLET_UNIFORM_RANDOM = 'mooclet uniform random',
+  MOOCLET_TS_CONFIGURABLE = 'mooclet ts configurable',
 }
 
 export enum POST_EXPERIMENT_RULE {

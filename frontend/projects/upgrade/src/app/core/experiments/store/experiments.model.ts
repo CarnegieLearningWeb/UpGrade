@@ -235,7 +235,6 @@ export interface Experiment {
   experimentSegmentExclusion: segmentNew;
   groupSatisfied?: number;
   backendVersion: string;
-  useMoocletsProxy?: boolean;
 }
 
 export interface ParticipantsMember {

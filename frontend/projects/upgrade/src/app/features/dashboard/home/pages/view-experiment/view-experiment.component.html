@@ -431,18 +431,11 @@
             </mat-checkbox>
           </div>
 
-          <!-- Use Mooclets Proxy -->
-          <div class="use-mooclets-proxy">
-            <mat-checkbox [checked]="experiment.useMoocletsProxy" class="ft-16-600" color="primary" disabled="true">
-              {{ 'home.view-experiment.use-mooclets-proxy.text' | translate | uppercase }}
-            </mat-checkbox>
-          </div>
-
-          <ng-container *ngIf="experiment.useMoocletsProxy">
+          <ng-container *ngIf="experiment.moocletDetails">
             <div class="mooclets-details-overview">
               <br />
               <p>
-                With 'useMoocletsProxy' enabled, this experiment will still use UpGrade's include/exclude algorithm to
+                This experiment will still use UpGrade's include/exclude algorithm to
                 gatekeep which users receive an assignment. However, the actual assignments will come from external
                 MOOClet assignment services
               </p>
