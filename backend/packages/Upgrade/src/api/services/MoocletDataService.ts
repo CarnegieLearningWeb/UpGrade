@@ -100,7 +100,7 @@ export class MoocletDataService {
   }
 
   public async getVersionForNewLearner(moocletId: number, userId: string) {
-    const endpoint = `/mooclet/${moocletId}/run?user=${userId}`;
+    const endpoint = `/mooclet/${moocletId}/run?learner=${userId}`;
 
     const requestParams: MoocletParamsValidator = {
       method: 'GET',
