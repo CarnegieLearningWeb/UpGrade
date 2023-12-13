@@ -44,30 +44,14 @@ export class ExperimentUserService {
       return this.create([newExperimentUser], logger);
     }
 
-    // Check if either the group or workingGroup is different or not present
-    const isGroupAbsent = !oldExperimentUser?.group && !newExperimentUser?.group;
-    const isWorkingGroupAbsent = !oldExperimentUser?.workingGroup && !newExperimentUser?.workingGroup;
+    const isGroupSame = this.isGroupsEqual(oldExperimentUser, newExperimentUser);
+    const isWorkingGroupSame =
+      (!oldExperimentUser?.workingGroup && !newExperimentUser?.workingGroup) ||
+      (oldExperimentUser?.workingGroup &&
+        newExperimentUser?.workingGroup &&
+        isEqual(oldExperimentUser.workingGroup, newExperimentUser.workingGroup));
 
-    // Do not call create if both group and workingGroup are absent
-    if (isGroupAbsent && isWorkingGroupAbsent) {
-      return [oldExperimentUser];
-    }
-
-    // sort the group membership values
-    const oldGroupKeys = Object.keys(oldExperimentUser.group);
-    const newGroupKeys = Object.keys(newExperimentUser.group);
-
-    oldGroupKeys.forEach((key) => {
-      oldExperimentUser.group[key].sort();
-    });
-    newGroupKeys.forEach((key) => {
-      newExperimentUser.group[key].sort();
-    });
-
-    const isWorkingGroupSame = isEqual(oldExperimentUser.workingGroup, newExperimentUser.workingGroup);
-    const isGroupAndWorkingGroupSame = isEqual(oldExperimentUser.group, newExperimentUser.group) && isWorkingGroupSame;
-
-    if (!isGroupAndWorkingGroupSame) {
+    if (!isGroupSame || !isWorkingGroupSame) {
       // update assignment if user working group is changed
       if (!isWorkingGroupSame && oldExperimentUser.workingGroup && newExperimentUser.workingGroup) {
         await this.removeEnrollments(
@@ -82,6 +66,26 @@ export class ExperimentUserService {
     }
 
     return [oldExperimentUser];
+  }
+
+  private isGroupsEqual(oldUserData: RequestedExperimentUser, newUserData: Partial<ExperimentUser>): boolean {
+    if (!oldUserData?.group && !newUserData?.group) {
+      return true;
+    } else if (oldUserData.group && newUserData.group) {
+      const oldGroupKeys = Object.keys(oldUserData.group);
+      const newGroupKeys = Object.keys(newUserData.group);
+
+      oldGroupKeys.forEach((key) => {
+        oldUserData.group[key].sort();
+      });
+      newGroupKeys.forEach((key) => {
+        newUserData.group[key].sort();
+      });
+
+      return isEqual(oldUserData.group, newUserData.group);
+    } else {
+      return false;
+    }
   }
 
   public async create(users: Array<Partial<ExperimentUser>>, logger: UpgradeLogger): Promise<ExperimentUser[]> {
