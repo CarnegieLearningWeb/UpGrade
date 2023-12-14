@@ -9,6 +9,7 @@ import {
   registerDecorator,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ExperimentUser } from '../../../../src/api/models/ExperimentUser';
 
 export const IsGroupRecord = (validationOptions?: ValidationOptions) => {
   return function (object: unknown, propertyName: string) {
@@ -91,4 +92,8 @@ export class ExperimentUserArrayValidator {
   @ValidateNested({ each: true })
   @Type(() => ExperimentUserValidator)
   public users: ExperimentUserValidator[];
+}
+
+export class RequestedExperimentUser extends ExperimentUser {
+  requestedUserId: string;
 }

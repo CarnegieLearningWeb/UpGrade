@@ -1,5 +1,4 @@
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
-import { ExperimentClientController } from '../../../../src/api/controllers/ExperimentClientController';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { Container } from 'typedi';
@@ -23,7 +22,6 @@ import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 export default async function testCase(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
-  const experimentClientController = Container.get<ExperimentClientController>(ExperimentClientController);
   const userService = Container.get<UserService>(UserService);
   // creating new user
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
@@ -140,7 +138,7 @@ export default async function testCase(): Promise<void> {
   const workingGroup = { ...experimentUsers[0].workingGroup };
   delete workingGroup['teacher'];
   // getOriginalUserDoc call for alias
-  const experimentUserDoc = await experimentClientController.getUserDoc(experimentUsers[0].id, new UpgradeLogger());
+  const experimentUserDoc = await experimentUserService.getUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // remove user group
   await experimentUserService.updateWorkingGroup(experimentUsers[0].id, workingGroup, {
     logger: new UpgradeLogger(),

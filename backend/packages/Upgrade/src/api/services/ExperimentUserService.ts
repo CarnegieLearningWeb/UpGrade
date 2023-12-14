@@ -10,6 +10,8 @@ import { getConnection, In, Not } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Experiment } from '../models/Experiment';
+import isEqual from 'lodash/isEqual';
+import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 
 @Service()
 export class ExperimentUserService {
@@ -33,32 +35,63 @@ export class ExperimentUserService {
     return this.userRepository.findOne({ id });
   }
 
+  public async upsertOnChange(
+    oldExperimentUser: RequestedExperimentUser,
+    newExperimentUser: Partial<ExperimentUser>,
+    logger: UpgradeLogger
+  ): Promise<ExperimentUser[]> {
+    if (!oldExperimentUser) {
+      return this.create([newExperimentUser], logger);
+    }
+
+    const isGroupSame = this.isGroupsEqual(oldExperimentUser, newExperimentUser);
+    const isWorkingGroupSame =
+      (!oldExperimentUser?.workingGroup && !newExperimentUser?.workingGroup) ||
+      (oldExperimentUser?.workingGroup &&
+        newExperimentUser?.workingGroup &&
+        isEqual(oldExperimentUser.workingGroup, newExperimentUser.workingGroup));
+
+    if (!isGroupSame || !isWorkingGroupSame) {
+      // update assignment if user working group is changed
+      if (!isWorkingGroupSame && oldExperimentUser.workingGroup && newExperimentUser.workingGroup) {
+        await this.removeEnrollments(
+          newExperimentUser.id,
+          newExperimentUser.workingGroup,
+          oldExperimentUser.workingGroup
+        );
+      }
+
+      // update the new user
+      return this.create([newExperimentUser], logger);
+    }
+
+    return [oldExperimentUser];
+  }
+
+  private isGroupsEqual(oldUserData: RequestedExperimentUser, newUserData: Partial<ExperimentUser>): boolean {
+    if (!oldUserData?.group && !newUserData?.group) {
+      return true;
+    } else if (oldUserData.group && newUserData.group) {
+      const oldGroupKeys = Object.keys(oldUserData.group);
+      const newGroupKeys = Object.keys(newUserData.group);
+
+      oldGroupKeys.forEach((key) => {
+        oldUserData.group[key].sort();
+      });
+      newGroupKeys.forEach((key) => {
+        newUserData.group[key].sort();
+      });
+
+      return isEqual(oldUserData.group, newUserData.group);
+    } else {
+      return false;
+    }
+  }
+
   public async create(users: Array<Partial<ExperimentUser>>, logger: UpgradeLogger): Promise<ExperimentUser[]> {
     logger.info({ message: 'Create a new User. Metadata of the user =>', details: users });
-    // TODO: Pratik please review this eslint error, is this working as intended?
-    const multipleUsers = users.map((user) => {
-      // eslint-disable-next-line no-self-assign
-      user.id = user.id;
-      return user;
-    });
     // insert or update in the database
-    const updatedUsers = await this.userRepository.save(multipleUsers);
-
-    // update assignment if user group is changed
-    const assignmentUpdated = updatedUsers.map((user: ExperimentUser, index: number) => {
-      if (user.group && users[index].group) {
-        return this.removeEnrollments(user.id, users[index].group, user.group);
-      }
-      return Promise.resolve();
-    });
-
-    // wait for all assignment update to get complete
-    await Promise.all(assignmentUpdated);
-
-    // findAll user document here
-    const updatedUserDocument = await this.userRepository.findByIds(updatedUsers.map((user) => user.id));
-
-    return updatedUserDocument;
+    return this.userRepository.save(users);
   }
 
   public async setAliasesForUser(
@@ -214,6 +247,12 @@ export class ExperimentUserService {
       (error as any).httpCode = 404;
       throw error;
     }
+
+    // removing enrollments in case working group is changed
+    if (userExist && userExist.workingGroup && workingGroup) {
+      await this.removeEnrollments(userExist.id, workingGroup, userExist.workingGroup);
+    }
+
     // TODO check if workingGroup is the subset of group membership
     const newDocument = { ...userExist, workingGroup };
     return this.userRepository.save(newDocument);
@@ -228,7 +267,7 @@ export class ExperimentUserService {
   // TODO should we check for workingGroup as a subset over here?
   public async updateGroupMembership(
     userId: string,
-    groupMembership: any,
+    groupMembership: Record<string, string[]>,
     requestContext: { logger: UpgradeLogger; userDoc: any }
   ): Promise<ExperimentUser> {
     const { logger, userDoc } = requestContext;
@@ -250,15 +289,26 @@ export class ExperimentUserService {
       throw error;
     }
 
-    // update assignments
-    if (userExist && userExist.group) {
-      await this.removeEnrollments(userExist.id, groupMembership, userExist.group);
-    }
-
     const newDocument = { ...userExist, group: groupMembership };
 
     // update group membership
     return this.userRepository.save(newDocument);
+  }
+
+  public async getUserDoc(experimentUserId, logger): Promise<RequestedExperimentUser> {
+    try {
+      const experimentUserDoc = await this.getOriginalUserDoc(experimentUserId, logger);
+      if (experimentUserDoc) {
+        const userDoc = { ...experimentUserDoc, requestedUserId: experimentUserId };
+        logger.info({ message: 'Got the user doc', details: userDoc });
+        return userDoc;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      logger.error({ message: `Error in getting user doc for user => ${experimentUserId}`, error });
+      return null;
+    }
   }
 
   public async getOriginalUserDoc(userId: string, logger?: UpgradeLogger): Promise<ExperimentUser | null> {
@@ -301,55 +351,63 @@ export class ExperimentUserService {
     });
   }
 
-  private async removeEnrollments(userId: string, groupMembership: any, oldGroupMembership: any): Promise<void> {
-    const userGroupRemovedMap: Map<string, string[]> = new Map();
+  /**
+   * Remove enrollments only if the working group is changed
+   * @param userId
+   * @param newWorkingGroup
+   * @param oldWorkingGroup
+   * return Promise<void>
+   */
+  private async removeEnrollments(
+    userId: string,
+    newWorkingGroup: Record<string, string>,
+    oldWorkingGroup: Record<string, string>
+  ): Promise<void> {
+    const workingGroupUpdated: string[] = [];
 
-    // check the groups removed from setGroupMembership
-    Object.keys(oldGroupMembership).map((key) => {
-      const oldGroupArray: string[] = oldGroupMembership[key] || [];
-      const newGroupArray: string[] = (groupMembership && groupMembership[key]) || [];
-      oldGroupArray.map((groupId) => {
-        if (!(newGroupArray && newGroupArray.includes(groupId))) {
-          const groupNames = userGroupRemovedMap.has(key) ? userGroupRemovedMap.get(key) : [];
-          if (!newGroupArray) {
-            userGroupRemovedMap.set(key, [...groupNames, ...newGroupArray]);
-          } else {
-            userGroupRemovedMap.set(key, [...groupNames, groupId]);
-          }
-        }
-      });
+    // check the groups removed from existing GroupMembership
+    // and populate userGroupRemoved
+    Object.entries(oldWorkingGroup).map(([key, value]) => {
+      const newWorkingGroupValue: string | undefined = newWorkingGroup[key];
+      // if the working group value has changed
+      if (newWorkingGroupValue !== value) {
+        workingGroupUpdated.push(key);
+      }
     });
+
+    // End the function if there is no change in working group
+    if (workingGroupUpdated.length === 0) {
+      return;
+    }
 
     // get all group experiments
     const groupExperiments = await this.experimentRepository.find({
       where: {
         assignmentUnit: ASSIGNMENT_UNIT.GROUP,
-        state: Not(In([EXPERIMENT_STATE.INACTIVE, EXPERIMENT_STATE.PREVIEW, EXPERIMENT_STATE.SCHEDULED])),
+        state: In([EXPERIMENT_STATE.ENROLLING, EXPERIMENT_STATE.ENROLLMENT_COMPLETE]),
       },
     });
 
+    // End the function if no group experiments
     if (groupExperiments.length === 0) {
       return;
     }
 
-    // filter experiment for those groups
-    const groupKeys = Array.from(userGroupRemovedMap.keys());
-
-    if (groupKeys.length === 0) {
-      return;
-    }
-
     const experimentAssignmentRemovalArray = [];
-    // ============       Experiment with Group Consistency
+
+    // Group Experiment with Group Consistency which has group which got removed
     const filteredGroupExperiment = groupExperiments.filter((experiment) => {
-      return groupKeys.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.GROUP;
+      return workingGroupUpdated.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.GROUP;
     });
+
     if (filteredGroupExperiment.length > 0) {
       experimentAssignmentRemovalArray.push(this.groupExperimentsWithGroupConsistency(filteredGroupExperiment, userId));
     }
 
     const filteredIndividualExperiment = groupExperiments.filter((experiment) => {
-      return groupKeys.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL;
+      return (
+        workingGroupUpdated.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL
+      );
     });
 
     if (filteredIndividualExperiment.length > 0) {
@@ -359,7 +417,9 @@ export class ExperimentUserService {
     }
 
     const filteredExperimentExperiment = groupExperiments.filter((experiment) => {
-      return groupKeys.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.EXPERIMENT;
+      return (
+        workingGroupUpdated.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.EXPERIMENT
+      );
     });
 
     if (filteredExperimentExperiment.length > 0) {
@@ -373,26 +433,26 @@ export class ExperimentUserService {
   }
 
   private async groupExperimentsWithGroupConsistency(filteredExperiment: Experiment[], userId: string): Promise<void> {
-    const filteredExperimentIds = filteredExperiment.map((experiment) => experiment.id);
-
-    if (filteredExperimentIds.length === 0) {
+    // end the loop if no group experiments
+    if (filteredExperiment.length === 0) {
       return;
     }
 
-    // remove individual assignment related to that group
-    const individualAssignments = await this.individualEnrollmentRepository.findEnrollments(
-      userId,
-      filteredExperimentIds
-    );
-    const assignedExperimentIds = individualAssignments.map(
+    const filteredExperimentIds = filteredExperiment.map((experiment) => experiment.id);
+
+    const [individualEnrollments, individualExclusions] = await Promise.all([
+      this.individualEnrollmentRepository.findEnrollments(userId, filteredExperimentIds),
+      this.individualExclusionRepository.findExcluded(userId, filteredExperimentIds),
+    ]);
+
+    const enrolledExperimentIds = individualEnrollments.map(
       (individualAssignment) => individualAssignment.experiment.id
     );
-    if (assignedExperimentIds.length > 0) {
-      await this.individualEnrollmentRepository.deleteEnrollmentsOfUserInExperiments(userId, assignedExperimentIds);
+    if (enrolledExperimentIds.length > 0) {
+      await this.individualEnrollmentRepository.deleteEnrollmentsOfUserInExperiments(userId, enrolledExperimentIds);
     }
 
     // remove individual exclusion related to that group
-    const individualExclusions = await this.individualExclusionRepository.findExcluded(userId, filteredExperimentIds);
     const excludedExperimentIds = individualExclusions.map((individualExclusion) => individualExclusion.experiment.id);
 
     if (excludedExperimentIds.length > 0) {
