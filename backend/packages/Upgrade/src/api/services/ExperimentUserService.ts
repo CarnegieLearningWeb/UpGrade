@@ -1,7 +1,7 @@
 import { IndividualEnrollmentRepository } from './../repositories/IndividualEnrollmentRepository';
 import { UpgradeLogger } from './../../lib/logger/UpgradeLogger';
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
@@ -16,11 +16,11 @@ import { RequestedExperimentUser } from '../controllers/validators/ExperimentUse
 @Service()
 export class ExperimentUserService {
   constructor(
-    @OrmRepository() private userRepository: ExperimentUserRepository,
-    @OrmRepository() private experimentRepository: ExperimentRepository,
-    @OrmRepository() private individualEnrollmentRepository: IndividualEnrollmentRepository,
-    @OrmRepository() private individualExclusionRepository: IndividualExclusionRepository,
-    @OrmRepository() private groupExclusionRepository: GroupExclusionRepository
+    @InjectRepository() private userRepository: ExperimentUserRepository,
+    @InjectRepository() private experimentRepository: ExperimentRepository,
+    @InjectRepository() private individualEnrollmentRepository: IndividualEnrollmentRepository,
+    @InjectRepository() private individualExclusionRepository: IndividualExclusionRepository,
+    @InjectRepository() private groupExclusionRepository: GroupExclusionRepository
   ) {}
 
   public find(logger?: UpgradeLogger): Promise<ExperimentUser[]> {
