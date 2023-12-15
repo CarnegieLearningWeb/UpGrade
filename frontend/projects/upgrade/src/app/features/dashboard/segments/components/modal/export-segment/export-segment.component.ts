@@ -5,9 +5,10 @@ import {
   MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
 } from '@angular/material/legacy-dialog';
 import { first } from 'rxjs/operators';
-import { EXPORT_METHOD } from 'upgrade_types';
+import JSZip from 'jszip';
+import { EXPORT_Segment_METHOD } from 'upgrade_types';
 import { AuthService } from '../../../../../../core/auth/auth.service';
-import { Segment } from '../../../../../../core/segments/store/segments.model';
+import { Segment, SegmentFile } from '../../../../../../core/segments/store/segments.model';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
 
 @Component({
@@ -17,7 +18,7 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExportSegmentComponent implements OnInit {
-  exportMethod = [{ value: EXPORT_METHOD.DESIGN }, { value: EXPORT_METHOD.DATA }];
+  exportMethod = [{ value: EXPORT_Segment_METHOD.JSON }, { value: EXPORT_Segment_METHOD.CSV }];
   emailId: string;
   exportForm: UntypedFormGroup;
   segments: Segment[];
@@ -44,9 +45,26 @@ export class ExportSegmentComponent implements OnInit {
     });
   }
 
-  exportSegmentCSV(segmentId: string) {
-    this.segmentsService.exportSegmentCSV(segmentId);
+  exportSegmentCSV(segmentIds: string[]) {
+    let segmentData: SegmentFile[] = [];
+    this.segmentsService.exportSegmentCSV(segmentIds).subscribe((response) => {
+      segmentData = response;
+      if (segmentData) {
+        if (segmentData.length > 1) {
+          const zip = new JSZip();
+          segmentData.forEach((segment) => {
+            zip.file(segment.fileName + '.csv', segment.fileContent);
+          });
+          zip.generateAsync({ type: 'base64' }).then((content) => {
+            this.download('Segments.zip', content, true);
+          });
+        } else {
+          this.download(segmentData[0].fileName, segmentData[0].fileContent, false);
+        }
+      }
+    });
   }
+
   exportSegmentJson(segmentIds: string[]) {
     this.segmentsService.exportSegments(segmentIds);
   }
@@ -55,12 +73,22 @@ export class ExportSegmentComponent implements OnInit {
     this.dialogRef.close();
   }
 
+  private download(filename, content, isZip: boolean) {
+    const element = document.createElement('a');
+    isZip
+      ? element.setAttribute('href', 'data:application/zip;base64,' + content)
+      : element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURI(content));
+    element.target = '_blank';
+    element.download = filename;
+    element.click();
+  }
+
   exportSegment() {
     const { exportMethod } = this.exportForm.value;
-    if (exportMethod === EXPORT_METHOD.DATA && this.segments[0]) {
-      this.exportSegmentCSV(this.segments[0].id);
-    } else if (exportMethod === EXPORT_METHOD.DESIGN) {
-      const segmentIds = this.segments.map((segment) => segment.id);
+    const segmentIds = this.segments.map((segment) => segment.id);
+    if (exportMethod === EXPORT_Segment_METHOD.CSV && this.segments[0]) {
+      this.exportSegmentCSV(segmentIds);
+    } else if (exportMethod === EXPORT_Segment_METHOD.JSON) {
       this.exportSegmentJson(segmentIds);
     }
     this.onCancelClick();

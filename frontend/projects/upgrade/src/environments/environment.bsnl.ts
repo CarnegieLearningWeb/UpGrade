@@ -48,6 +48,7 @@ export const environment = {
     segments: '/segments',
     importSegments: '/segments/import',
     exportSegment: '/segments/export',
+    exportSegmentCSV: '/segments/export/csv',
     exportSegments: '/segments/export',
     getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
   },

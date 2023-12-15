@@ -69,9 +69,3 @@ export const actionExportSegments = createAction('[Segments] Export Segment', pr
 export const actionExportSegmentSuccess = createAction('[Segments] Export Segment Success');
 
 export const actionExportSegmentFailure = createAction('[Segments] Export Segment Failure');
-
-export const actionExportSegmentCSV = createAction('[Segments] Export Segment CSV', props<{ segmentId: string }>());
-
-export const actionExportSegmentCSVSuccess = createAction('[Segments] Export Segment CSV Success');
-
-export const actionExportSegmentCSVFailure = createAction('[Segments] Export Segment CSV Failure');
