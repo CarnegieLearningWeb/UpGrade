@@ -15,6 +15,7 @@ const MockStateStore$ = new BehaviorSubject({});
 
 describe('SegmentService', () => {
   let mockStore: any;
+  let segmentsDataService: any;
   let service: SegmentsService;
   const mockSegmentsList: any = [
     { id: 'first', createdAt: '04/25/17 04:34:22 +0000' },
@@ -52,7 +53,8 @@ describe('SegmentService', () => {
 
   beforeEach(() => {
     mockStore = MockStateStore$;
-    service = new SegmentsService(mockStore);
+    segmentsDataService = {};
+    service = new SegmentsService(mockStore, segmentsDataService);
   });
 
   describe('#allSegments$', () => {
