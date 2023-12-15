@@ -37,9 +37,9 @@ export class SegmentsDataService {
     return this.http.get(url, { params: ids });
   }
 
-  exportSegmentCSV(segmentId: string) {
-    const url = this.environment.api.exportSegments;
-    return this.http.post(url, segmentId);
+  exportSegmentCSV(segmentIds: string[]) {
+    const url = this.environment.api.exportSegmentCSV;
+    return this.http.post(url, segmentIds);
   }
 
   importSegments(segments: SegmentFile[]) {

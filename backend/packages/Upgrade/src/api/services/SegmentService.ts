@@ -8,6 +8,7 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS, CACHE_PREFIX } from 'upgrade_types';
 import { getConnection } from 'typeorm';
 import uuid from 'uuid';
+import Papa from 'papaparse';
 import { env } from '../../env';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { IndividualForSegment } from '../models/IndividualForSegment';
@@ -34,6 +35,11 @@ interface SegmentWithValidation {
 interface IsSegmentValidWithError {
   missingProperty: string;
   isSegmentValid: boolean;
+}
+
+interface SegmentParticipantsRow {
+  UUID: string;
+  Type: string;
 }
 
 @Service()
@@ -363,6 +369,43 @@ export class SegmentService {
     }
 
     return segmentsDoc;
+  }
+
+  public async exportSegmentCSV(segmentIds: string[], logger: UpgradeLogger): Promise<SegmentFile[]> {
+    logger.info({ message: `Export segment by id. segmentId: ${segmentIds}` });
+
+    let segmentsDoc: Segment[] = [];
+    if (segmentIds.length > 1) {
+      segmentsDoc = await this.getSegmentByIds(segmentIds);
+    } else {
+      const segmentDoc = await this.segmentRepository.findOne({
+        where: { id: segmentIds[0] },
+        relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+      });
+      if (!segmentDoc) {
+        throw new Error(SERVER_ERROR.QUERY_FAILED);
+      } else {
+        segmentsDoc.push(segmentDoc);
+      }
+    }
+
+    const segmentExportObj: SegmentFile[] = [];
+    segmentsDoc.forEach((segmentDoc) => {
+      const segmentRows: SegmentParticipantsRow[] = [];
+      // segmentRows.push({ UUID: segmentDoc.context, Type: 'context' });
+      segmentDoc.individualForSegment?.forEach((element) => {
+        segmentRows.push({ UUID: element.userId, Type: 'individual' });
+      });
+      segmentDoc.subSegments?.forEach((element) => {
+        segmentRows.push({ UUID: element.name, Type: 'segment' });
+      });
+      segmentDoc.groupForSegment?.forEach((element) => {
+        segmentRows.push({ UUID: element.groupId, Type: element.type });
+      });
+      segmentExportObj.push({ fileName: segmentDoc.name, fileContent: Papa.unparse(segmentRows) });
+    });
+
+    return segmentExportObj;
   }
 
   async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {

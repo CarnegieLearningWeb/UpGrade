@@ -378,4 +378,24 @@ export class SegmentController {
     const segmentIds = params.ids;
     return this.segmentService.exportSegments(segmentIds, request.logger);
   }
+
+  @Post('/export/csv')
+  public exportSegment(@Body({ validate: false }) ids: string[], @Req() request: AppRequest): Promise<SegmentFile[]> {
+    if (!ids) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
+    }
+    for (const id of ids) {
+      if (!isUUID(id)) {
+        return Promise.reject(
+          new Error(
+            JSON.stringify({
+              type: SERVER_ERROR.INCORRECT_PARAM_FORMAT,
+              message: ' : segmentId should be of type UUID.',
+            })
+          )
+        );
+      }
+    }
+    return this.segmentService.exportSegmentCSV(ids, request.logger);
+  }
 }
