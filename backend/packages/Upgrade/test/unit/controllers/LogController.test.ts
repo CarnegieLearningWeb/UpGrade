@@ -40,7 +40,7 @@ describe('Log Controller Testing', () => {
 
   test('Post request for /api/error', () => {
     return request(app)
-    .post('/api/error')
+      .post('/api/error')
       .send({
         skip: 0,
         take: 0,

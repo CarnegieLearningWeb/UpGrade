@@ -8,7 +8,7 @@ import ExperimentUserServiceMock from './mocks/ExperimentUserServiceMock';
 
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import { useContainer as ormUseContainer } from 'typeorm';
-import uuid from 'uuid';
+import { v4 as uuid } from 'uuid';
 
 describe('Experiment User Controller Testing', () => {
   beforeAll(() => {

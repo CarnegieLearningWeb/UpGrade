@@ -1,5 +1,5 @@
-import * as path from 'path';
-import * as winston from 'winston';
+import path from 'path';
+import winston from 'winston';
 
 /**
  * core.Log

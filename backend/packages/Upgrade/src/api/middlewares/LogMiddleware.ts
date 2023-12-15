@@ -3,14 +3,7 @@ import express from 'express';
 import morgan from 'morgan';
 import { ExpressMiddlewareInterface, Middleware } from 'routing-controllers';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import uuid from 'uuid';
-declare global {
-  namespace Express {
-    interface Request {
-      logger: any;
-    }
-  }
-}
+import { v4 as uuid } from 'uuid';
 
 @Middleware({ type: 'before' })
 export class LogMiddleware implements ExpressMiddlewareInterface {
@@ -29,10 +22,16 @@ export class LogMiddleware implements ExpressMiddlewareInterface {
     });
   }
   public use(req: express.Request, res: express.Response, next: express.NextFunction): any {
+    // add request id in the header
+    const headerName = 'x-request-id';
+    const oldValue: string = req.get('headerName');
+    const id = oldValue === undefined ? uuid() : oldValue;
+    res.set(headerName, id);
+
     // child logger creation
     const logger = new UpgradeLogger();
     logger.child({
-      http_request_id: uuid(),
+      request_id: id,
       endpoint: req.url,
       request_method_type: req.method,
     });
