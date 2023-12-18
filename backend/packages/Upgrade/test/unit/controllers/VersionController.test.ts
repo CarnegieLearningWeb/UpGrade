@@ -14,7 +14,7 @@ describe('Version Controller Testing', () => {
     Container.reset();
   });
 
-  test('Get request for /api/version', async () => {
+  test('Get request for /api/version', () => {
     return request(app)
       .get('/api/version')
       .set('Accept', 'application/json')
