@@ -1,7 +1,7 @@
 import { LogRepository } from './../repositories/LogRepository';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { AWSService } from './AWSService';
 import {
@@ -12,13 +12,13 @@ import {
   REPEATED_MEASURE,
   IMetricMetaData,
   ASSIGNMENT_UNIT,
-  EXPERIMENT_TYPE,
+  SERVER_ERROR,
+  IExperimentEnrollmentStats,
 } from 'upgrade_types';
 import { AnalyticsRepository, CSVExportDataRow } from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
 import ObjectsToCsv from 'objects-to-csv';
 import fs from 'fs';
-import { SERVER_ERROR, IExperimentEnrollmentStats } from 'upgrade_types';
 import { env } from '../../env';
 import { ErrorService } from './ErrorService';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
@@ -41,13 +41,13 @@ interface IEnrollmentStatByDate {
 @Service()
 export class AnalyticsService {
   constructor(
-    @OrmRepository()
+    @InjectRepository()
     private experimentRepository: ExperimentRepository,
-    @OrmRepository()
+    @InjectRepository()
     private analyticsRepository: AnalyticsRepository,
-    @OrmRepository()
+    @InjectRepository()
     private experimentAuditLogRepository: ExperimentAuditLogRepository,
-    @OrmRepository()
+    @InjectRepository()
     private logRepository: LogRepository,
     public awsService: AWSService,
     public errorService: ErrorService
@@ -185,9 +185,9 @@ export class AnalyticsService {
       const take = 50;
       do {
         let csvExportData: CSVExportDataRow[];
-        if(experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+        if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
           csvExportData = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentId, skip, take);
-        }else {
+        } else {
           csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(experimentId, skip, take);
         }
         const userIds = csvExportData.map(({ userId }) => userId);
@@ -323,9 +323,10 @@ export class AnalyticsService {
         // write in the file
         const csv = new ObjectsToCsv(csvRows);
         try {
-          if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
-            csv.delimiter = ',';
-          }
+          // TODO: check if this is needed
+          // if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+          //   csv.delimiter = ',';
+          // }
           await csv.toDisk(`${folderPath}${simpleExportCSV}`, { append: true });
         } catch (err) {
           console.log(err);
@@ -365,9 +366,14 @@ export class AnalyticsService {
 
       await Promise.all([this.awsService.uploadCSV(monitorFileBuffer, email_export, simpleExportCSV)]);
 
-      const signedURLMonitored = await Promise.all([
-        this.awsService.generateSignedURL(email_export, simpleExportCSV, email_expiry_time),
-      ]);
+      const signedURLMonitored = await this.awsService
+        .generateSignedURL(email_export, simpleExportCSV, email_expiry_time)
+        .catch((err) => {
+          // log error here and throw error
+          logger.error({ message: `Error in generating signed url for ${simpleExportCSV}`, details: err });
+          // throw error because we don't want the code to execute further without the url
+          throw err;
+        });
 
       const emailText = `Hey,
       <br>

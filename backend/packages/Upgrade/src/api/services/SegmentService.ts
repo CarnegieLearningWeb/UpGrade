@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { IndividualForSegmentRepository } from '../repositories/IndividualForSegmentRepository';
 import { GroupForSegmentRepository } from '../repositories/GroupForSegmentRepository';
@@ -7,9 +7,9 @@ import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS, CACHE_PREFIX } from 'upgrade_types';
 import { getConnection } from 'typeorm';
-import uuid from 'uuid';
 import Papa from 'papaparse';
 import { env } from '../../env';
+import { v4 as uuid } from 'uuid';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
@@ -45,15 +45,15 @@ interface SegmentParticipantsRow {
 @Service()
 export class SegmentService {
   constructor(
-    @OrmRepository()
+    @InjectRepository()
     private segmentRepository: SegmentRepository,
-    @OrmRepository()
+    @InjectRepository()
     private individualForSegmentRepository: IndividualForSegmentRepository,
-    @OrmRepository()
+    @InjectRepository()
     private groupForSegmentRepository: GroupForSegmentRepository,
-    @OrmRepository()
+    @InjectRepository()
     private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
-    @OrmRepository()
+    @InjectRepository()
     private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
     private cacheService: CacheService
   ) {}

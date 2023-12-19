@@ -2,7 +2,7 @@
 import { GroupExclusion } from './../models/GroupExclusion';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import {
   Experiment,
@@ -10,7 +10,7 @@ import {
   EXPERIMENT_SEARCH_KEY,
   IExperimentSortParams,
 } from '../models/Experiment';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
 import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
@@ -81,24 +81,24 @@ import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository
 @Service()
 export class ExperimentService {
   constructor(
-    @OrmRepository() private experimentRepository: ExperimentRepository,
-    @OrmRepository() private experimentConditionRepository: ExperimentConditionRepository,
-    @OrmRepository() private decisionPointRepository: DecisionPointRepository,
-    @OrmRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
-    @OrmRepository() private individualExclusionRepository: IndividualExclusionRepository,
-    @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
-    @OrmRepository() private monitoredDecisionPointRepository: MonitoredDecisionPointRepository,
-    @OrmRepository() private userRepository: ExperimentUserRepository,
-    @OrmRepository() private metricRepository: MetricRepository,
-    @OrmRepository() private queryRepository: QueryRepository,
-    @OrmRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
-    @OrmRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
-    @OrmRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
-    @OrmRepository() private conditionPayloadRepository: ConditionPayloadRepository,
-    @OrmRepository() private factorRepository: FactorRepository,
-    @OrmRepository() private levelRepository: LevelRepository,
-    @OrmRepository() private levelCombinationElementsRepository: LevelCombinationElementRepository,
-    @OrmRepository() private archivedStatsRepository: ArchivedStatsRepository,
+    @InjectRepository() private experimentRepository: ExperimentRepository,
+    @InjectRepository() private experimentConditionRepository: ExperimentConditionRepository,
+    @InjectRepository() private decisionPointRepository: DecisionPointRepository,
+    @InjectRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
+    @InjectRepository() private individualExclusionRepository: IndividualExclusionRepository,
+    @InjectRepository() private groupExclusionRepository: GroupExclusionRepository,
+    @InjectRepository() private monitoredDecisionPointRepository: MonitoredDecisionPointRepository,
+    @InjectRepository() private userRepository: ExperimentUserRepository,
+    @InjectRepository() private metricRepository: MetricRepository,
+    @InjectRepository() private queryRepository: QueryRepository,
+    @InjectRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
+    @InjectRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
+    @InjectRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
+    @InjectRepository() private conditionPayloadRepository: ConditionPayloadRepository,
+    @InjectRepository() private factorRepository: FactorRepository,
+    @InjectRepository() private levelRepository: LevelRepository,
+    @InjectRepository() private levelCombinationElementsRepository: LevelCombinationElementRepository,
+    @InjectRepository() private archivedStatsRepository: ArchivedStatsRepository,
     public previewUserService: PreviewUserService,
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,

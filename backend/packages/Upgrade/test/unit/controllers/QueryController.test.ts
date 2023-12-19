@@ -3,7 +3,7 @@ import { Container } from 'typedi';
 import { configureLogger } from '../../utils/logger';
 import { useContainer as routingUseContainer } from 'routing-controllers';
 import request from 'supertest';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import { QueryService } from '../../../src/api/services/QueryService';
 import QueryServiceMock from './mocks/QueryServiceMock';
 
