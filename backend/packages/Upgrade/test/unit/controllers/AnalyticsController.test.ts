@@ -3,7 +3,7 @@ import request from 'supertest';
 import { configureLogger } from '../../utils/logger';
 import { useContainer as routingUseContainer } from 'routing-controllers';
 import { Container } from 'typedi';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import AuditServiceMock from './mocks/AuditServiceMock';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 

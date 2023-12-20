@@ -1,6 +1,7 @@
 import { Service } from 'typedi';
 import { ExperimentUser } from '../../../../src/api/models/ExperimentUser';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { RequestedExperimentUser } from '../../../../src/api/controllers/validators/ExperimentUserValidator';
 
 @Service()
 export default class ExperimentUserServiceMock {
@@ -20,8 +21,16 @@ export default class ExperimentUserServiceMock {
     return Promise.resolve([]);
   }
 
-  public getOriginalUserDoc(userId: string, logger: UpgradeLogger): Promise<[]> {
+  public getUserDoc(userId: string, logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
+  }
+
+  public upsertOnChange(
+    oldExperimentUser: RequestedExperimentUser,
+    newExperimentUser: Partial<ExperimentUser>,
+    logger: UpgradeLogger
+  ): Promise<[{ id: string }]> {
+    return Promise.resolve([{ id: '123' }]);
   }
 
   public find(logger: UpgradeLogger): Promise<[]> {

@@ -1,7 +1,7 @@
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
 import * as sinon from 'sinon';
 import { Connection, ConnectionManager } from 'typeorm';
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ErrorService } from '../../../src/api/services/ErrorService';
@@ -12,21 +12,21 @@ import { FLAG_SEARCH_SORT_KEY } from '../../../src/api/controllers/validators/Fe
 import { EXPERIMENT_SORT_AS } from '../../../../../../types/src';
 import { FlagVariation } from '../../../src/api/models/FlagVariation';
 import { isUUID } from 'class-validator';
-import uuid from 'uuid';
+import { v4 as uuid } from 'uuid';
 
 describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
   let flagRepo: FeatureFlagRepository;
   let flagVariationRepo: FlagVariationRepository;
-  let module: TestingModule;
+  let module: Awaited<ReturnType<TestingModuleBuilder['compile']>>;
 
   const logger = new UpgradeLogger();
   const var1 = new FlagVariation();
   var1.id = uuid();
-  var1.value = 'value1'
+  var1.value = 'value1';
   const var2 = new FlagVariation();
   var2.id = uuid();
-  var1.value = 'value2'
+  var1.value = 'value2';
   const var3 = new FlagVariation();
 
   const mockFlag1 = new FeatureFlag();
@@ -35,7 +35,7 @@ describe('Feature Flag Service Testing', () => {
   mockFlag1.key = 'key';
   mockFlag1.description = 'description';
   mockFlag1.variationType = 'variationType';
-  mockFlag1.status = true
+  mockFlag1.status = true;
   mockFlag1.variations = [var1, var2, var3];
 
   const mockFlag2 = new FeatureFlag();
@@ -44,7 +44,7 @@ describe('Feature Flag Service Testing', () => {
   mockFlag2.key = 'key';
   mockFlag2.description = 'description';
   mockFlag2.variationType = 'variationType';
-  mockFlag2.status = true
+  mockFlag2.status = true;
 
   mockFlag1.variations = [var2, var3];
 
@@ -159,7 +159,7 @@ describe('Feature Flag Service Testing', () => {
     flagRepo.insertFeatureFlag = jest.fn().mockRejectedValue(err);
     expect(async () => {
       await service.create(mockFlag1, logger);
-    }).rejects.toThrow(new Error('Error in creating feature flag document \"addFeatureFlagInDB\" Error: insert error'));
+    }).rejects.toThrow(new Error('Error in creating feature flag document "addFeatureFlagInDB" Error: insert error'));
   });
 
   it('should throw an error when create variation fails', async () => {
@@ -167,7 +167,7 @@ describe('Feature Flag Service Testing', () => {
     flagVariationRepo.insertVariations = jest.fn().mockRejectedValue(err);
     expect(async () => {
       await service.create(mockFlag1, logger);
-    }).rejects.toThrow(new Error('Error in creating variation \"addFeatureFlagInDB\" Error: insert error'));
+    }).rejects.toThrow(new Error('Error in creating variation "addFeatureFlagInDB" Error: insert error'));
   });
 
   it('should return a count of feature flags', async () => {
@@ -286,7 +286,9 @@ describe('Feature Flag Service Testing', () => {
     flagRepo.updateFeatureFlag = jest.fn().mockRejectedValue(err);
     expect(async () => {
       await service.update(mockFlag1, logger);
-    }).rejects.toThrow(new Error('Error in updating feature flag document \"updateFeatureFlagInDB\" Error: insert error'));
+    }).rejects.toThrow(
+      new Error('Error in updating feature flag document "updateFeatureFlagInDB" Error: insert error')
+    );
   });
 
   it('should throw an error when unable to update flag variation', async () => {
@@ -294,7 +296,7 @@ describe('Feature Flag Service Testing', () => {
     flagVariationRepo.upsertFlagVariation = jest.fn().mockRejectedValue(err);
     expect(async () => {
       await service.update(mockFlag1, logger);
-    }).rejects.toThrow(new Error('Error in creating variations \"updateFeatureFlagInDB\" Error: insert error'));
+    }).rejects.toThrow(new Error('Error in creating variations "updateFeatureFlagInDB" Error: insert error'));
   });
 
   it('should update the flag state', async () => {
