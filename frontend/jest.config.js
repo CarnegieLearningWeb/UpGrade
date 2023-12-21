@@ -6,7 +6,7 @@ module.exports = {
   coverageReporters: ['json-summary', 'text', 'lcov'],
   setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
   transform: {
-    '^.+\\.(ts)$': 'jest-preset-angular',
+    '^.+\\.(ts,html)$': 'jest-preset-angular',
   },
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',
