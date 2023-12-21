@@ -6,7 +6,7 @@ module.exports = {
   coverageReporters: ['json-summary', 'text', 'lcov'],
   setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
   transform: {
-    '^.+\\.(ts)$': 'ts-jest',
+    '^.+\\.(ts)$': 'jest-preset-angular',
   },
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',
@@ -18,11 +18,4 @@ module.exports = {
     '<rootDir>/src/app/features/',
     '<rootDir>/src/app/shared/',
   ],
-  globals: {
-    'ts-jest': {
-      tsconfig: '<rootDir>/tsconfig.spec.json',
-      useESM: true,
-      stringifyContentPathRegex: '\\.html$',
-    },
-  },
 };
