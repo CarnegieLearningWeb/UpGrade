@@ -16,14 +16,14 @@ class ExplicitIndividualAssignment {
   public experiment?: Experiment;
 }
 
-export class PreviewUserValidator{
+export class PreviewUserValidator {
   @IsOptional()
   @IsString()
   public id?: string;
 
   @IsOptional()
   @IsArray()
-  @ValidateNested({each: true})
+  @ValidateNested({ each: true })
   @Type(() => ExplicitIndividualAssignment)
   public assignments?: ExplicitIndividualAssignment[];
 }
