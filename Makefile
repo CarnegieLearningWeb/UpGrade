@@ -70,6 +70,18 @@ setup-local:
 	@echo "---- Setup for the Local Environment ----"
 	./docker-setup.sh -l
 
+mooclet-upgrade-bridge:
+	@echo "---- Resetting Mooclet Network ----"
+	-docker network create mooclet-upgrade-bridge
+	-make
+	-docker network connect mooclet-upgrade-bridge upgrade-backend-1
+	-make launch-mooclet
+	docker network connect mooclet-upgrade-bridge mooclet-api
+
+launch-mooclet:
+	@echo "---- Launching Mooclet ----"
+	docker-compose -f ~/Code/mooclet-engine/mooclet_engine/docker-compose.yml up -d
+
 db-dump:
 	@echo "---- Backing Up Database ----"
 	docker exec -t $(postgresContainer) pg_dumpall -c -U postgres > $(addsuffix $(postgresBackupFile),$(postgresOutputPath))
