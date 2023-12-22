@@ -1,12 +1,12 @@
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { SettingRepository } from '../repositories/SettingRepository';
 import { Setting } from '../models/Setting';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class SettingService {
-  constructor(@OrmRepository() private settingRepository: SettingRepository) {}
+  constructor(@InjectRepository() private settingRepository: SettingRepository) {}
 
   public async setClientCheck(
     checkAuth: boolean | null,

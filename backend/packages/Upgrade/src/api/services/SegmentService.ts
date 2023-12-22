@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { IndividualForSegmentRepository } from '../repositories/IndividualForSegmentRepository';
 import { GroupForSegmentRepository } from '../repositories/GroupForSegmentRepository';
@@ -7,7 +7,7 @@ import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS, CACHE_PREFIX } from 'upgrade_types';
 import { getConnection } from 'typeorm';
-import uuid from 'uuid';
+import { v4 as uuid } from 'uuid';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
@@ -20,15 +20,15 @@ import { CacheService } from './CacheService';
 @Service()
 export class SegmentService {
   constructor(
-    @OrmRepository()
+    @InjectRepository()
     private segmentRepository: SegmentRepository,
-    @OrmRepository()
+    @InjectRepository()
     private individualForSegmentRepository: IndividualForSegmentRepository,
-    @OrmRepository()
+    @InjectRepository()
     private groupForSegmentRepository: GroupForSegmentRepository,
-    @OrmRepository()
+    @InjectRepository()
     private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
-    @OrmRepository()
+    @InjectRepository()
     private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
     private cacheService: CacheService
   ) {}
@@ -163,7 +163,8 @@ export class SegmentService {
 
     for (const segment of segments) {
       const isDuplicateSegment = duplicateSegmentsIds ? duplicateSegmentsIds.includes(segment.id) : false;
-      const isDuplicateSegmentWithSameContext = isDuplicateSegment && duplicateSegmentsContexts ? duplicateSegmentsContexts.includes(segment.context) : false;
+      const isDuplicateSegmentWithSameContext =
+        isDuplicateSegment && duplicateSegmentsContexts ? duplicateSegmentsContexts.includes(segment.context) : false;
       if (isDuplicateSegment && isDuplicateSegmentWithSameContext && segment.id !== undefined) {
         const error = new Error('Duplicate segment with same context');
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
@@ -175,7 +176,9 @@ export class SegmentService {
         // assign new uuid to duplicate segment with new context:
         segment.id = !isDuplicateSegment ? segment.id : uuid();
         segment.subSegmentIds.forEach((subSegmentId) => {
-          const subSegment = allDuplicateSegmentsData ? allDuplicateSegmentsData.find((segment) => subSegmentId === segment?.id) : null;
+          const subSegment = allDuplicateSegmentsData
+            ? allDuplicateSegmentsData.find((segment) => subSegmentId === segment?.id)
+            : null;
           if (!subSegment) {
             const error = new Error(
               'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'

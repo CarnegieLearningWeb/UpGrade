@@ -8,6 +8,8 @@ import * as StratificationFactorsActions from './stratification-factors.actions'
 import { StratificationFactorsDataService } from '../stratification-factors.data.service';
 import { selectAllStratificationFactors } from './stratification-factors.selectors';
 import { StratificationFactor, StratificationFactorDeleteResponse } from './stratification-factors.model';
+import { NotificationService } from '../../core.module';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable()
 export class StratificationFactorsEffects {
@@ -15,6 +17,8 @@ export class StratificationFactorsEffects {
     private actions$: Actions,
     private router: Router,
     private store$: Store<AppState>,
+    private translate: TranslateService,
+    private notificationService: NotificationService,
     private stratificationFactorsDataService: StratificationFactorsDataService
   ) {}
 
@@ -44,10 +48,14 @@ export class StratificationFactorsEffects {
         this.stratificationFactorsDataService.deleteStratificationFactor(factor).pipe(
           map((data: StratificationFactorDeleteResponse) => {
             if (data) {
-              const stratificationFactor: StratificationFactor = {
-                ...data[0],
-                factor: data[0].factor,
+              this.notificationService.showSuccess(
+                this.translate.instant('Stratification factor deleted successfully!')
+              );
+              const stratificationFactor = {
+                ...data,
+                factor: data.stratificationFactorName,
               };
+              delete stratificationFactor.stratificationFactorName;
               const successResponse = StratificationFactorsActions.actionDeleteStratificationFactorSuccess({
                 stratificationFactor: stratificationFactor,
               });
@@ -71,6 +79,9 @@ export class StratificationFactorsEffects {
       switchMap(({ csvData }) =>
         this.stratificationFactorsDataService.importStratificationFactors(csvData).pipe(
           map(() => {
+            this.notificationService.showSuccess(
+              this.translate.instant('Stratification factor imported successfully!')
+            );
             return StratificationFactorsActions.actionImportStratificationFactorSuccess();
           }),
           catchError(() => [StratificationFactorsActions.actionImportStratificationFactorFailure()])
@@ -88,6 +99,9 @@ export class StratificationFactorsEffects {
         this.stratificationFactorsDataService.exportStratificationFactor(factor).pipe(
           map((data) => {
             this.download(data);
+            this.notificationService.showSuccess(
+              this.translate.instant('Stratification factor downloaded successfully!')
+            );
             return StratificationFactorsActions.actionExportStratificationFactorSuccess();
           }),
           catchError(() => [StratificationFactorsActions.actionExportStratificationFactorFailure()])

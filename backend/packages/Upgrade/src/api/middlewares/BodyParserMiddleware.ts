@@ -1,5 +1,5 @@
 import { Middleware, ExpressMiddlewareInterface } from 'routing-controllers';
-import * as express from 'express';
+import express from 'express';
 import { json } from 'body-parser';
 
 @Middleware({ type: 'before' })

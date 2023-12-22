@@ -4,16 +4,23 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 import { StratificationFactorsEffects } from './stratification-factors.effects';
 import * as StratificationFactorsActions from './stratification-factors.actions';
 import { selectAllStratificationFactors } from './stratification-factors.selectors';
-import { StratificationFactor } from './stratification-factors.model';
+import { StratificationFactor, StratificationFactorDeleteResponse } from './stratification-factors.model';
 
 describe('StratificationFactorsEffects', () => {
   let actions$: ActionsSubject;
   let store$: any;
   let stratificationFactorsDataService: any;
   let router: any;
+  let translate: any;
+  let notificationService: any;
   let service: StratificationFactorsEffects;
   const mockData: StratificationFactor = {
     factor: 'favourite_food',
+    factorValue: { pizza: 10, burger: 5 },
+    experimentIds: [],
+  };
+  const mockData2: StratificationFactorDeleteResponse = {
+    stratificationFactorName: 'favourite_food',
     factorValue: { pizza: 10, burger: 5 },
     experimentIds: [],
   };
@@ -23,11 +30,25 @@ describe('StratificationFactorsEffects', () => {
     store$ = new BehaviorSubject({});
     store$.dispatch = jest.fn();
     stratificationFactorsDataService = {};
+    notificationService = {
+      showError: jest.fn(),
+      showSuccess: jest.fn(),
+    };
+    translate = {
+      instant: jest.fn(),
+    };
     router = {
       navigate: jest.fn(),
     };
 
-    service = new StratificationFactorsEffects(actions$, router, store$, stratificationFactorsDataService);
+    service = new StratificationFactorsEffects(
+      actions$,
+      router,
+      store$,
+      translate,
+      notificationService,
+      stratificationFactorsDataService
+    );
   });
 
   describe('fetchStratificationFactors$', () => {
@@ -66,7 +87,7 @@ describe('StratificationFactorsEffects', () => {
 
   describe('deleteStratificationFactor$', () => {
     it('should dispatch actionDeleteStratificationFactorSuccess and navigate to participants page on success', fakeAsync(() => {
-      stratificationFactorsDataService.deleteStratificationFactor = jest.fn().mockReturnValue(of([{ ...mockData }]));
+      stratificationFactorsDataService.deleteStratificationFactor = jest.fn().mockReturnValue(of({ ...mockData2 }));
 
       const expectedAction = StratificationFactorsActions.actionDeleteStratificationFactorSuccess({
         stratificationFactor: { ...mockData },
@@ -77,9 +98,7 @@ describe('StratificationFactorsEffects', () => {
         expect(router.navigate).toHaveBeenCalledWith(['/participants']);
       });
 
-      actions$.next(
-        StratificationFactorsActions.actionDeleteStratificationFactor({ factor: mockData.factor })
-      );
+      actions$.next(StratificationFactorsActions.actionDeleteStratificationFactor({ factor: mockData.factor }));
 
       tick(0);
     }));
