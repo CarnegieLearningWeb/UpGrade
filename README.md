@@ -58,9 +58,7 @@ $ cd Upgrade
 $ make setup-local
 ```
 
-```
-NOTE: If this make command says nix not found and you are using zsh on mac, it may need to be manually added to PATH. OR, just try running it in bash
-```
+<b>NOTE:</b> If this make command says nix not found and you are using zsh on mac, it may need to be manually added to PATH. OR, just try running it in bash
 
 Then visit http://localhost:4200 and login using google id to view the Upgrade App.
 
@@ -74,7 +72,7 @@ Then visit http://localhost:4200 and login using google id to view the Upgrade A
 
 ## How to Contribute
 
-Contributions are always welcome! If you're interested in improving UpGrade, please create a PR to add your Github Profile in the contributors list. Please refer the [Contributors](https://github.com/CarnegieLearningWeb/UpGrade/blob/readme-enhancement/contributors.md) file for the details of the trech stack we have used.
+Contributions are always welcome! If you're interested in improving UpGrade, please create a PR to add your Github Profile in the contributors list. Please refer the [Contributors](https://github.com/CarnegieLearningWeb/UpGrade/blob/dev/CONTRIBUTORS.md) file for the details of the trech stack we have used.
 
 If you like this Repo, Please click the :star: !!!
 
