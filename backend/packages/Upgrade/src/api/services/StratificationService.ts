@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SERVER_ERROR } from 'upgrade_types';
 import { In, getConnection } from 'typeorm';
@@ -13,7 +13,7 @@ import { ErrorWithType } from '../errors/ErrorWithType';
 @Service()
 export class StratificationService {
   constructor(
-    @OrmRepository()
+    @InjectRepository()
     private stratificationFactorRepository: StratificationFactorRepository
   ) {}
 
@@ -22,8 +22,9 @@ export class StratificationService {
   ): FactorStrata[] {
     const formattedResults = results.reduce((formatted, result) => {
       const { factor, value, count, experimentIds } = result;
+      const expIds = experimentIds.filter((experimentId) => !!experimentId);
       if (!formatted[factor]) {
-        formatted[factor] = { factor, factorValue: {}, experimentIds };
+        formatted[factor] = { factor, factorValue: {}, experimentIds: expIds };
       }
       formatted[factor].factorValue[value] = parseInt(count);
       return formatted;
@@ -92,7 +93,6 @@ export class StratificationService {
   }
 
   public async insertStratification(csvData: string, logger: UpgradeLogger): Promise<UserStratificationFactor[]> {
-    // const csvData = request.body[0].file;
     const rows = csvData.replace(/"/g, '').split('\n');
     const columnNames = rows[0].split(',');
 

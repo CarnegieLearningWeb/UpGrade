@@ -1,5 +1,5 @@
 import Container, { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { ScheduledJob, SCHEDULE_TYPE } from '../models/ScheduledJob';
 import { Experiment } from '../models/Experiment';
@@ -18,9 +18,9 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 @Service()
 export class ScheduledJobService {
   constructor(
-    @OrmRepository() private scheduledJobRepository: ScheduledJobRepository,
-    @OrmRepository() private errorRepository: ErrorRepository,
-    @OrmRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
+    @InjectRepository() private scheduledJobRepository: ScheduledJobRepository,
+    @InjectRepository() private errorRepository: ErrorRepository,
+    @InjectRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
     private awsService: AWSService
   ) {}
 

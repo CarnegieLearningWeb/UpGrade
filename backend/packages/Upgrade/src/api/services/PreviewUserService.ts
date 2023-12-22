@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
-import uuid from 'uuid/v4';
+import { InjectRepository } from 'typeorm-typedi-extensions';
+import { v4 as uuid } from 'uuid';
 import { PreviewUser } from '../models/PreviewUser';
 import { PreviewUserRepository } from '../repositories/PreviewUserRepository';
 import { ExplicitIndividualAssignmentRepository } from '../repositories/ExplicitIndividualAssignmentRepository';
@@ -11,8 +11,8 @@ import { PreviewUserValidator } from '../controllers/validators/PreviewUserValid
 @Service()
 export class PreviewUserService {
   constructor(
-    @OrmRepository() private userRepository: PreviewUserRepository,
-    @OrmRepository() private explicitIndividualAssignmentRepository: ExplicitIndividualAssignmentRepository
+    @InjectRepository() private userRepository: PreviewUserRepository,
+    @InjectRepository() private explicitIndividualAssignmentRepository: ExplicitIndividualAssignmentRepository
   ) {}
 
   public async find(logger: UpgradeLogger): Promise<PreviewUser[]> {
@@ -58,7 +58,7 @@ export class PreviewUserService {
   }
 
   public create(userDTO: PreviewUserValidator, logger: UpgradeLogger): Promise<PreviewUser> {
-    logger.info({ message: `Create a new preview user => ${userDTO}` });   
+    logger.info({ message: `Create a new preview user => ${userDTO}` });
     userDTO.id = userDTO.id || uuid();
     return this.userRepository.save(this.previewUserValidatorToUser(userDTO));
   }
@@ -135,7 +135,7 @@ export class PreviewUserService {
       assignment.experiment = assignmentDTO.experiment;
       assignment.experimentCondition = assignmentDTO.experimentCondition;
       return assignment;
-    })
+    });
     return user;
   }
 }
