@@ -22,8 +22,9 @@ export class StratificationService {
   ): FactorStrata[] {
     const formattedResults = results.reduce((formatted, result) => {
       const { factor, value, count, experimentIds } = result;
+      const expIds = experimentIds.filter((experimentId) => !!experimentId);
       if (!formatted[factor]) {
-        formatted[factor] = { factor, factorValue: {}, experimentIds };
+        formatted[factor] = { factor, factorValue: {}, experimentIds: expIds };
       }
       formatted[factor].factorValue[value] = parseInt(count);
       return formatted;
@@ -92,7 +93,6 @@ export class StratificationService {
   }
 
   public async insertStratification(csvData: string, logger: UpgradeLogger): Promise<UserStratificationFactor[]> {
-    // const csvData = request.body[0].file;
     const rows = csvData.replace(/"/g, '').split('\n');
     const columnNames = rows[0].split(',');
 

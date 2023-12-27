@@ -101,7 +101,7 @@ export class StratificationComponent implements OnInit {
   }
 
   getExperimentIdsTooltip(experimentIds: any[]): string {
-    return 'Experiment IDs: [' + experimentIds.join(', ') + ']';
+    return 'Experiment IDs: [' + experimentIds?.join(', ') + ']';
   }
 
   checkStratificationFactorUsageStatus(experimentIds: string[]) {
