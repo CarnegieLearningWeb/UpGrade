@@ -40,7 +40,7 @@ export class CacheService {
   public async resetPrefixCache(prefix: string): Promise<void> {
     const keys = this.memoryCache ? await this.memoryCache.store.keys() : [];
     const filteredKeys = keys.filter((str) => str.startsWith(prefix));
-    return this.memoryCache.store.mdel(...filteredKeys);
+    return this.memoryCache ? this.memoryCache.store.mdel(...filteredKeys) : null;
   }
 
   public async resetAllCache(): Promise<void> {
@@ -53,7 +53,7 @@ export class CacheService {
   }
 
   public async wrapFunction<T>(prefix: CACHE_PREFIX, keys: string[], functionToCall: () => Promise<T[]>): Promise<T[]> {
-    const cachedData = await this.memoryCache.store.mget(...keys);
+    const cachedData = this.memoryCache ? await this.memoryCache.store.mget(...keys) : [];
 
     const allCachedFound = cachedData.every((cached) => !!cached);
     if (allCachedFound) {
