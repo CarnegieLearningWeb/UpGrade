@@ -56,14 +56,23 @@ export class CacheService {
     const cachedData = this.memoryCache ? await this.memoryCache.store.mget(...keys) : [];
 
     const allCachedFound = cachedData.every((cached) => !!cached);
-    if (allCachedFound) {
+    if (allCachedFound && cachedData.length) {
       return cachedData as T[];
     }
 
     const data = await functionToCall();
 
     // creata an array of array containing key and data and then set it in cache
-    await this.memoryCache.store.mset(keys.map((key, index) => [prefix + key, data[index]]));
+    if (this.memoryCache) {
+      await this.memoryCache.store.mset(
+        keys.reduce((acc, key, index) => {
+          if (data[index] !== null && data[index] !== undefined) {
+            acc.push([prefix + key, data[index]]);
+          }
+          return acc;
+        }, [])
+      );
+    }
     return data;
   }
 }
