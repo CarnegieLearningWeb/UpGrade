@@ -19,10 +19,6 @@ describe('clearState', () => {
     const reducer = createReducer(mockState);
     const metaReducer = clearState(reducer);
     const expectedResetState = {
-      settings: {
-        toCheckAuth: null,
-        toFilterMetric: null,
-      },
       auth: {
         isLoggedIn: false,
         isAuthenticating: false,
@@ -51,10 +47,6 @@ describe('clearState', () => {
     const reducer = createReducer(mockState);
     const metaReducer = clearState(reducer);
     const expectedResetState = {
-      settings: {
-        toCheckAuth: null,
-        toFilterMetric: null,
-      },
       auth: {
         isLoggedIn: true,
         isAuthenticating: false,

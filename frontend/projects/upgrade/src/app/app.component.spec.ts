@@ -1,19 +1,30 @@
 import { AppComponent } from './app.component';
 
-jest.mock('./core/auth/auth.service');
-jest.mock('@ngx-translate/core');
-
 describe('AppComponent', () => {
-  const mockAuthService = {
+  const mockAuthService: any = {
     initializeUserSession: jest.fn(),
   };
   const mockTranslateService: any = {
     setDefaultLang: jest.fn(),
   };
-  const component = new AppComponent(mockAuthService as any, mockTranslateService);
+  const mockOverlayContainer: any = {
+    getContainerElement: () => {
+      return {
+        classList: {
+          add: jest.fn(),
+        },
+      };
+    },
+  };
+
+  let component: AppComponent;
+
+  beforeEach(() => {
+    component = new AppComponent(mockAuthService, mockTranslateService, mockOverlayContainer);
+  });
 
   describe('#ngOnInit', () => {
-    it('should call to set translation service default to "en" and init google auth', () => {
+    it('should call to set translation service default to "en", init google auth, and globally add light-theme to cdk-overlay for modals', () => {
       const expectedLangConstant = 'en';
 
       component.ngOnInit();
