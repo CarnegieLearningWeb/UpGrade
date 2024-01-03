@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { Observable, combineLatest } from 'rxjs';
 import { AuthService } from './auth.service';
 import { map, filter } from 'rxjs/operators';
@@ -7,7 +7,7 @@ import { map, filter } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root',
 })
-export class NegateAuthGuard implements CanActivate {
+export class NegateAuthGuard {
   constructor(private authService: AuthService, private router: Router) {}
 
   canActivate(): Observable<boolean> {
