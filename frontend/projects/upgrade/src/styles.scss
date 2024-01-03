@@ -17,7 +17,6 @@
 
 @import './styles/variables.css';
 @import './themes/light-theme';
-@import './themes/dark-theme';
 @import './styles/utility.scss';
 @import './styles/shared-modal.scss';
 @import './app/features/dashboard/dashboard-root/dashboard-root.theme.scss';
@@ -105,11 +104,6 @@
   @include custom-components-theme($light-theme);
 }
 
-.dark-theme {
-  @include mat.all-legacy-component-themes($dark-theme);
-  @include custom-components-theme($dark-theme);
-}
-
 // TODO material specific style which cannot be changed by scope
 .mat-drawer-inner-container {
   display: flex;
@@ -144,6 +138,7 @@
 .query-result,
 .duplicate-segment-modal,
 .experiment-ending-criteria {
+  @include custom-components-theme($light-theme);
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
 

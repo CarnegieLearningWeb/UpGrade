@@ -5,7 +5,7 @@
         <app-shared-icons
           class="icon icon--black"
           [iconType]="'dark-setting'"
-          *ngIf="theme === ThemeOptions.DARK_THEME && log.user?.email === systemUserEmail; else userIconTemplate"
+          *ngIf="log.user?.email === systemUserEmail; else userIconTemplate"
         ></app-shared-icons>
 
         <ng-template #userIconTemplate>
@@ -15,11 +15,7 @@
 
       <!-- If user is null or Action is performed via CLI tool-->
       <ng-template #noUserLogTemplate>
-        <app-shared-icons
-          class="icon"
-          [ngClass]="theme === ThemeOptions.DARK_THEME ? 'icon--black' : 'icon--light-blue'"
-          [iconType]="theme === ThemeOptions.DARK_THEME ? 'dark-user' : 'user-1'"
-        ></app-shared-icons>
+        <app-shared-icons class="icon" [ngClass]="'icon--light-blue'" [iconType]="'user-1'"></app-shared-icons>
       </ng-template>
 
       <ng-template #errorLogIconTemplate>

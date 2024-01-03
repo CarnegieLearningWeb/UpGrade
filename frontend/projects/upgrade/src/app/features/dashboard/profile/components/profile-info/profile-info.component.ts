@@ -13,7 +13,6 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 import { SettingsService } from '../../../../../core/settings/settings.service';
 import { NewUserComponent } from '../modals/new-user/new-user.component';
 import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
-import { ThemeOptions } from '../../../../../core/settings/store/settings.model';
 import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 
 @Component({
@@ -25,7 +24,6 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('profileInfoContainer') profileInfoContainer: ElementRef;
 
   permissions$: Observable<UserPermission>;
-  theme$ = this.settingsService.theme$;
   displayedUsersColumns: string[] = ['firstName', 'lastName', 'email', 'role', 'edit', 'deleteUser'];
   userDetailsForm: UntypedFormGroup;
   editMode = null;
@@ -63,10 +61,6 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
 
   get UserRole() {
     return UserRole;
-  }
-
-  get ThemeOptions() {
-    return ThemeOptions;
   }
 
   @ViewChild('usersTable') set content(content: ElementRef) {
@@ -225,11 +219,6 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
     this.usersService.setSortingType(event.direction ? event.direction.toUpperCase() : null);
     this.usersService.setSortKey(event.direction ? event.active : null);
     this.usersService.fetchUsers(true);
-  }
-
-  changeTheme(event) {
-    const theme = event.checked ? ThemeOptions.DARK_THEME : ThemeOptions.LIGHT_THEME;
-    this.settingsService.changeTheme(theme);
   }
 
   ngOnDestroy() {
