@@ -56,7 +56,7 @@ export class CacheService {
     const cachedData = this.memoryCache ? await this.memoryCache.store.mget(...keys) : [];
 
     const allCachedFound = cachedData.every((cached) => !!cached);
-    if (allCachedFound && cachedData.length) {
+    if (allCachedFound && env.caching.enabled) {
       return cachedData as T[];
     }
 
