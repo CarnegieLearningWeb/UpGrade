@@ -40,7 +40,7 @@ export class CacheService {
   public async resetPrefixCache(prefix: string): Promise<void> {
     const keys = this.memoryCache ? await this.memoryCache.store.keys() : [];
     const filteredKeys = keys.filter((str) => str.startsWith(prefix));
-    return this.memoryCache.store.mdel(...filteredKeys);
+    return this.memoryCache ? this.memoryCache.store.mdel(...filteredKeys) : null;
   }
 
   public async resetAllCache(): Promise<void> {
@@ -53,17 +53,26 @@ export class CacheService {
   }
 
   public async wrapFunction<T>(prefix: CACHE_PREFIX, keys: string[], functionToCall: () => Promise<T[]>): Promise<T[]> {
-    const cachedData = await this.memoryCache.store.mget(...keys);
+    const cachedData = this.memoryCache ? await this.memoryCache.store.mget(...keys) : [];
 
     const allCachedFound = cachedData.every((cached) => !!cached);
-    if (allCachedFound) {
+    if (allCachedFound && env.caching.enabled) {
       return cachedData as T[];
     }
 
     const data = await functionToCall();
 
     // creata an array of array containing key and data and then set it in cache
-    await this.memoryCache.store.mset(keys.map((key, index) => [prefix + key, data[index]]));
+    if (this.memoryCache) {
+      await this.memoryCache.store.mset(
+        keys.reduce((acc, key, index) => {
+          if (data[index] !== null && data[index] !== undefined) {
+            acc.push([prefix + key, data[index]]);
+          }
+          return acc;
+        }, [])
+      );
+    }
     return data;
   }
 }

@@ -62,6 +62,9 @@ export class SegmentService {
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
     return this.cacheService.wrapFunction(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ids, async () => {
+      if (!ids.length) {
+        return [];
+      }
       const result = await this.segmentRepository
         .createQueryBuilder('segment')
         .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
