@@ -315,25 +315,13 @@
             <ngx-skeleton-loader
               count="1"
               animation="pulse"
-              [theme]="
-                (theme$ | async) === Theme.DARK_THEME
-                  ? {
-                      'border-radius': '5px',
-                      height: '20px',
-                      position: 'relative',
-                      top: '8px',
-                      'background-color': '#323232',
-                      border: '1px solid #323232',
-                      'animation-duration': '2s'
-                    }
-                  : {
-                      'border-radius': '5px',
-                      height: '20px',
-                      position: 'relative',
-                      top: '8px',
-                      'animation-duration': '2s'
-                    }
-              "
+              [theme]="{
+                'border-radius': '5px',
+                height: '20px',
+                position: 'relative',
+                top: '8px',
+                'animation-duration': '2s'
+              }"
             >
             </ngx-skeleton-loader>
           </ng-template>
