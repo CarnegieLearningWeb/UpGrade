@@ -18,7 +18,6 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   isAllErrorLogFetched = false;
   isAllErrorLogFetchedSub: Subscription;
   isErrorLogLoading$ = this.logsService.isErrorLogLoading$;
-  theme$ = this.settingsService.theme$;
 
   constructor(private logsService: LogsService, private settingsService: SettingsService) {}
 
