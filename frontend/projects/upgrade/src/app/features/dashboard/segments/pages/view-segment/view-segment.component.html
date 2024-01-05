@@ -90,9 +90,9 @@
       <!-- Context -->
       <div class="section-data section-data--fixed">
         <span class="ft-16-600 section-data-title">{{ 'global.context.text' | translate }}</span>
-        <mat-chip class="ft-14-700" *ngIf="segment.context != 'ALL'">
+        <mat-chip-option class="ft-14-700" *ngIf="segment.context != 'ALL'">
           {{ segment.context }}
-        </mat-chip>
+        </mat-chip-option>
         <span class="ft-14-700 section-data-value" *ngIf="segment.context == 'ALL'">
           {{ segment.context }}
         </span>
