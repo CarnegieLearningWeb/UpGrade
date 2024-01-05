@@ -260,8 +260,13 @@ $font-size-small: 15px;
         flex-shrink: 0;
         padding-top: 15px;
         width: 90px;
-        color: var(--grey-5);
-        font-size: $font-size-small !important;
+
+        .mdc-label {
+          font-family: 'Open Sans';
+          font-weight: 700;
+          font-size: 16px;
+          color: var(--grey-5);
+        }
       }
     }
   }

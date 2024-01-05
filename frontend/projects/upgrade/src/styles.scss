@@ -244,6 +244,19 @@
   }
 }
 
+.mat-mdc-checkbox {
+  margin-left: -10px;
+
+  // label styles can be targeted by selecting the sibling of the checkbox
+  .mdc-checkbox {
+    + .mdc-label {
+      font-family: Open Sans;
+      font-size: 13px;
+      font-weight: 700;
+    }
+  }
+}
+
 // Material library doesn't expose any params to prevent content truncation for these widgets.
 // Therefore we override the css. If option appears in future, these can go away.
 
