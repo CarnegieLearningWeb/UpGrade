@@ -460,11 +460,12 @@ export class ExperimentUserService {
 
       // check if other individual exclusions are present for that group
       const otherExclusions = await this.individualExclusionRepository.find({
-        where: { experimentId: In(excludedExperimentIds) },
+        where: { experiment: { id: In(excludedExperimentIds) } },
+        relations: ['experiment'],
       });
       const otherExcludedExperimentIds = otherExclusions.map((otherExclusion) => otherExclusion.experiment.id);
       // remove group exclusion
-      const toRemoveExperimentFromGroupExclusions = otherExcludedExperimentIds.filter((experimentId) => {
+      const toRemoveExperimentFromGroupExclusions = excludedExperimentIds.filter((experimentId) => {
         return !otherExcludedExperimentIds.includes(experimentId);
       });
       if (toRemoveExperimentFromGroupExclusions.length > 0) {
@@ -488,13 +489,17 @@ export class ExperimentUserService {
 
     // remove individual exclusion related to that group
     const excludedExperimentIds = individualExclusions.map((individualExclusion) => individualExclusion.experiment.id);
+
     if (excludedExperimentIds.length > 0) {
+      await this.individualExclusionRepository.deleteExperimentsForUserId(userId, excludedExperimentIds);
+
       const otherExclusions = await this.individualExclusionRepository.find({
-        where: { experimentId: In(excludedExperimentIds), userId: Not(userId) },
+        where: { experiment: { id: In(excludedExperimentIds) }, user: { id: Not(userId) } },
+        relations: ['experiment', 'user'],
       });
       const otherExcludedExperimentIds = otherExclusions.map((otherExclusion) => otherExclusion.experiment.id);
       // remove group exclusion
-      const toRemoveExperimentFromGroupExclusions = otherExcludedExperimentIds.filter((experimentId) => {
+      const toRemoveExperimentFromGroupExclusions = excludedExperimentIds.filter((experimentId) => {
         return !otherExcludedExperimentIds.includes(experimentId);
       });
       if (toRemoveExperimentFromGroupExclusions.length > 0) {
