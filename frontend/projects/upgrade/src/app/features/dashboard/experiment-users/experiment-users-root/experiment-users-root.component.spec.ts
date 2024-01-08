@@ -2,7 +2,6 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ExperimentUsersRootComponent } from './experiment-users-root.component';
 import { TestingModule } from '../../../../../testing/testing.module';
-import { ExperimentUsersComponent } from '../components/experiment-users/experiment-users.component';
 import { ExperimentService } from '../../../../core/experiments/experiments.service';
 import { PreviewUsersService } from '../../../../core/preview-users/preview-users.service';
 import { PreviewUserComponent } from '../components/preview-user/preview-user.component';
@@ -15,7 +14,7 @@ xdescribe('UserRootComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ExperimentUsersRootComponent, ExperimentUsersComponent, PreviewUserComponent],
+      declarations: [ExperimentUsersRootComponent, PreviewUserComponent],
       imports: [TestingModule],
       providers: [ExperimentService, PreviewUsersService, ExperimentUsersService, AuthService],
     }).compileComponents();

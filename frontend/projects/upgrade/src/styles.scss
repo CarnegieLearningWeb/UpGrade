@@ -35,7 +35,6 @@
 @import './app/features/dashboard/home/components/modal/new-experiment/new-experiment.theme.scss';
 @import './app/features/dashboard/profile/components/profile-info/profile-info.theme.scss';
 @import './app/features/dashboard/profile/components/modals/new-user/new-user.theme.scss';
-@import './app/features/dashboard/experiment-users/components/experiment-users/experiment-users.theme.scss';
 @import './app/features/dashboard/experiment-users/components/preview-user/preview-user.theme.scss';
 @import './app/features/dashboard/logs/common/logs-view.theme.scss';
 @import './app/features/dashboard/common/tabs-view.theme.scss';
@@ -73,7 +72,6 @@
   @include payloads-table-component-theme($theme);
   @include enrollment-over-time-component-theme($theme);
   @include new-experiment-component-theme($theme);
-  @include experiment-users-component-theme($theme);
   @include profile-info-component-theme($theme);
   @include new-user-component-theme($theme);
   @include preview-user-component-theme($theme);
