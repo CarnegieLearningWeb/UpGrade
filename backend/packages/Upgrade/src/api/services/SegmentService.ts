@@ -189,17 +189,6 @@ export class SegmentService {
             error: 'Invalid Segment JSON, missing properties: ' + segmentJSONValidation.missingProperty,
           });
         }
-      } else {
-        const parsedCsvData = this.convertCSVStringToSegInputValFormat(segment);
-        if (parsedCsvData.context) {
-          fileNames.push(fileName[0]);
-          parsedData.push(parsedCsvData);
-        } else {
-          importFileErrors.push({
-            fileName: fileName[0],
-            error: 'Invalid Segment CSV, missing property: context',
-          });
-        }
       }
     }
     const importedSegments = await this.validateAndImportSegments(parsedData, fileNames, logger);
@@ -261,56 +250,6 @@ export class SegmentService {
     }
   }
 
-  convertCSVStringToSegInputValFormat(segment: SegmentFile): SegmentInputValidator {
-    const rows = segment.fileContent.replace(/"/g, '').split('\n');
-    const fileName = segment.fileName.split('.');
-
-    const segmentUserIds: string[] = [];
-    const subSegmentIds: string[] = [];
-    const segmentGroups: Group[] = [];
-    let segmentId = '';
-    let segmentContext = '';
-    let segmentDescription = '';
-
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i];
-      const rowValues = row.split(',');
-
-      // Extract the ID
-      const id = rowValues[0];
-      if (!id) {
-        continue;
-      }
-
-      const memberType = rowValues[1].trim().toLowerCase();
-      if (memberType === 'individual') {
-        segmentUserIds.push(id);
-      } else if (memberType === 'segment') {
-        subSegmentIds.push(id);
-      } else if (memberType === 'context') {
-        segmentContext = id;
-      } else if (memberType === 'id') {
-        segmentId = id;
-      } else if (memberType === 'description') {
-        segmentDescription = id;
-      } else {
-        segmentGroups.push({ groupId: id, type: memberType });
-      }
-    }
-    const segmentData: SegmentInputValidator = {
-      id: segmentId || uuid(),
-      name: fileName[0],
-      context: segmentContext,
-      description: segmentDescription || '',
-      type: SEGMENT_TYPE.PUBLIC,
-      userIds: segmentUserIds,
-      groups: segmentGroups,
-      subSegmentIds: subSegmentIds,
-    };
-
-    return segmentData;
-  }
-
   public async validateAndImportSegments(
     segments: SegmentInputValidator[],
     fileNames: string[],
@@ -318,6 +257,7 @@ export class SegmentService {
   ): Promise<SegmentReturnObj> {
     const allAddedSegments: Segment[] = [];
     const allSegmentIds: string[] = [];
+    const [allSegments] = await Promise.all([this.getAllSegments(logger)]);
     segments.forEach((segment) => {
       allSegmentIds.push(segment.id);
       segment.subSegmentIds.forEach((subSegment) => {
@@ -329,9 +269,13 @@ export class SegmentService {
     const contextMetaData = env.initialization.contextMetadata;
     const contextMetaDataOptions = Object.keys(contextMetaData);
     const importFileErrors: SegmentImportError[] = [];
-    let errorMessage = '';
     let index = 0;
+    const allSegmentNameConextArray: string[] = allSegments.map((segment) => {
+      return segment.name + '_' + segment.context;
+    });
+
     for (const segment of segments) {
+      let errorMessage = '';
       if (!contextMetaDataOptions.includes(segment.context)) {
         errorMessage =
           errorMessage + 'Context ' + segment.context + ' not found. Please enter valid context in segment. ';
@@ -366,6 +310,15 @@ export class SegmentService {
           }
         });
 
+      const segmentNameContextString = segment.name + '_' + segment.context;
+      if (allSegmentNameConextArray.includes(segmentNameContextString)) {
+        errorMessage =
+          errorMessage +
+          'Invalid Segment Name: ' +
+          segment.name +
+          ' is already used by another segment with same context. ';
+      }
+
       segment.subSegmentIds.forEach((subSegmentId) => {
         const subSegment = allSegmentsData ? allSegmentsData.find((segment) => subSegmentId === segment?.id) : null;
         if (!subSegment) {
@@ -387,6 +340,7 @@ export class SegmentService {
       const addedSegment = await this.addSegmentDataInDB(segment, logger);
       allAddedSegments.push(addedSegment);
       allSegmentsData.push(addedSegment);
+      allSegmentNameConextArray.push(addedSegment.name + '_' + addedSegment.context);
     }
     return { segments: allAddedSegments, importErrors: importFileErrors };
   }

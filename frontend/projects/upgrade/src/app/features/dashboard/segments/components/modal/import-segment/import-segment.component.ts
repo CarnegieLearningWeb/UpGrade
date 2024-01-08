@@ -14,9 +14,6 @@ import { Segment, SegmentFile } from '../../../../../../core/segments/store/segm
 export class ImportSegmentComponent {
   file: any;
   segmentInfo: Segment;
-  toggleValue = false;
-  sampleSegmentData =
-    'UUID,Type\nmathia,context\nuser1,individual\nGroup-xyz,group1\nGroup-abc,group2\nSubseg1,segment\n';
   uploadedFileCount = 0;
   fileData: SegmentFile[] = [];
 
@@ -34,14 +31,6 @@ export class ImportSegmentComponent {
     // TODO: improve the logic here
     this.segmentsService.importSegments(this.fileData);
     this.onCancelClick();
-  }
-
-  downloadSampleCSV() {
-    const hiddenElement = document.createElement('a');
-    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(this.sampleSegmentData); // data is the text response of the http request.
-    hiddenElement.target = '_blank';
-    hiddenElement.download = 'sample_segment.csv';
-    hiddenElement.click();
   }
 
   uploadFile(event) {
@@ -69,9 +58,5 @@ export class ImportSegmentComponent {
         }
       }
     }
-  }
-
-  clearSegmentArray() {
-    this.fileData = [];
   }
 }
