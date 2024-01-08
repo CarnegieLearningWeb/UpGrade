@@ -33,11 +33,7 @@ mat-drawer {
     height: 100%;
 
     .list {
-      padding: 0 26px;
-
-      ::ng-deep .mat-list-item-content {
-        padding: 0;
-      }
+      padding: 0 10px;
 
       .nav-item {
         display: flex;
