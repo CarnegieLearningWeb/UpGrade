@@ -41,7 +41,13 @@
     </ng-container>
 
     <ng-container matColumnDef="removeMember">
-      <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+      <mat-header-cell class="ft-13-700 import-csv" aria-hidden="true" (click)="fileInput.click()" *matHeaderCellDef>
+        <mat-icon class="upload-icon" (click)="removeMember(groupIndex)">
+          upload_2
+        </mat-icon>
+        {{ 'users.stratification-users-import-csv.text' | translate }}
+        <input  accept=".csv" type="file" #fileInput file-input class="select-file" (change)="onFileSelected($event)">
+      </mat-header-cell>
       <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
         <mat-icon class="remove-icon" (click)="removeMember(groupIndex)"> delete_outline </mat-icon>
       </mat-cell>
@@ -51,6 +57,9 @@
     <mat-row *matRowDef="let row; columns: membersDisplayedColumns"></mat-row>
   </mat-table>
   <span class="ft-14-600 validation-message" *ngIf="membersCountError" [innerHTML]="membersCountError"></span>
+  <span class="ft-14-600 validation-message" *ngIf="!membersValid">
+    {{ 'segments.new-segment-members-stepper.error-message.text' | translate }}
+  </span>
   <button type="button" class="ft-12-700 add-member" (click)="addMember()">
     + {{ 'segments.members-add-members.text' | translate }}
   </button>

@@ -52,6 +52,11 @@ export interface GroupForSegment {
   segmentId: string;
 }
 
+export interface membersTableRowData {
+  type: string;
+  id: string;
+}
+
 export interface IndividualForSegment {
   userId: string;
   segmentId: string;

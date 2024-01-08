@@ -30,8 +30,8 @@
     .cdk-column-removeMember {
       margin-right: 0;
       padding-right: 0;
-      flex: 0 0 10%;
-      justify-content: left;
+      flex: 0 0 15%;
+      justify-content: center;
     }
 
     .cdk-column-type {
@@ -39,12 +39,23 @@
       justify-content: left;
     }
     .cdk-column-id {
-      flex: 0 0 55%;
+      flex: 0 0 50%;
       justify-content: left;
     }
     .cdk-column-memberNumber {
       flex: 0 0 10%;
       justify-content: left;
+    }
+
+    .import-csv {
+      color: var(--blue);
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .select-file {
+      display: none;
     }
 
     .remove-icon {
