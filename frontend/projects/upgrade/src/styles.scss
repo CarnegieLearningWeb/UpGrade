@@ -117,6 +117,12 @@
   justify-content: space-between;
 }
 
+button[mat-button], button[mat-raised-button], button[mat-flat-button], button[mat-stroked-button], button[mat-icon-button] {
+  span {
+    letter-spacing: normal;
+  }
+}
+
 .default-button {
   background-color: var(--blue) !important;
   padding: 0 1rem;
@@ -234,14 +240,6 @@
 
 .new-user-modal {
   width: 805px;
-}
-
-.mat-button,
-.mat-flat-button,
-.mat-stroked-button {
-  &.cdk-program-focused .mat-button-focus-overlay {
-    opacity: 0 !important;
-  }
 }
 
 .mat-mdc-checkbox {
