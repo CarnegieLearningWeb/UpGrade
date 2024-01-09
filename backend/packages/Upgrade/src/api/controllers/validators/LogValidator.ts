@@ -10,8 +10,6 @@ import {
   ValidationOptions,
   isObject,
   registerDecorator,
-  IsNotEmptyObject,
-  ArrayNotEmpty,
 } from 'class-validator';
 
 const IsLogAttributesRecord = (validationOptions?: ValidationOptions) => {
@@ -22,13 +20,13 @@ const IsLogAttributesRecord = (validationOptions?: ValidationOptions) => {
       propertyName: propertyName,
       constraints: [],
       options: {
-        message: 'The Attributes value is not a valid non-empty Record<string, string | number>',
+        message: 'The Attributes value is not a valid Record<string, string | number>',
         ...validationOptions,
       },
       validator: {
         validate(value: unknown) {
           if (!isObject(value)) return false;
-          if (Object.keys(value).length === 0) return false;
+          if (Object.keys(value).length === 0) return true;
 
           const keys = Object.keys(value);
 
@@ -58,8 +56,9 @@ class ILogGroupMetrics {
   @IsNotEmpty()
   groupUniquifier: string;
 
+  @IsOptional()
   @IsLogAttributesRecord()
-  attributes: Record<string, string | number>;
+  attributes?: Record<string, string | number>;
 }
 
 class ILogMetrics {
@@ -69,7 +68,6 @@ class ILogMetrics {
 
   @IsOptional()
   @IsArray()
-  @ArrayNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => ILogGroupMetrics)
   groupedMetrics: ILogGroupMetrics[];
@@ -81,7 +79,6 @@ class ILogInput {
   timestamp: string;
 
   @IsObject()
-  @IsNotEmptyObject()
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => ILogMetrics)
