@@ -561,8 +561,10 @@ export class ExperimentClientController {
    *             properties:
    *               userId:
    *                 type: string
+   *                 required: true
    *               value:
    *                 type: array
+   *                 required: true
    *                 items:
    *                   type: object
    *                   properties:
@@ -588,10 +590,16 @@ export class ExperimentClientController {
    *                                  properties:
    *                                      groupClass:
    *                                          type: string
+   *                                          required: true
    *                                          example: workspaceType
    *                                      groupKey:
+   *                                          type: string
+   *                                          required: true
+   *                                          example: workspaceName
+   *                                      groupUniquifier:
    *                                           type: string
-   *                                           example: workspaceName
+   *                                           required: true
+   *                                           example: workspaceUniquifier
    *                                      attributes:
    *                                        type: object
    *                                        properties:
