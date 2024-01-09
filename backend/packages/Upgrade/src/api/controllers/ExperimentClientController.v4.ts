@@ -624,7 +624,7 @@ export class ExperimentClientController {
   public async log(
     @Req()
     request: AppRequest,
-    @Body({ validate: false })
+    @Body({ validate: true })
     logData: LogValidator
   ): Promise<Omit<Log, 'createdAt' | 'updatedAt' | 'versionNumber'>[]> {
     request.logger.info({ message: 'Starting the log call for user' });
