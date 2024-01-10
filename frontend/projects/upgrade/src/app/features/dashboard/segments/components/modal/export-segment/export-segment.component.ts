@@ -6,9 +6,8 @@ import {
 } from '@angular/material/legacy-dialog';
 import { first } from 'rxjs/operators';
 import JSZip from 'jszip';
-import { EXPORT_Segment_METHOD } from 'upgrade_types';
 import { AuthService } from '../../../../../../core/auth/auth.service';
-import { Segment, SegmentFile } from '../../../../../../core/segments/store/segments.model';
+import { EXPORT_SEGMENT_METHOD, Segment, SegmentFile } from '../../../../../../core/segments/store/segments.model';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
 
 @Component({
@@ -18,7 +17,7 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExportSegmentComponent implements OnInit {
-  exportMethod = [{ value: EXPORT_Segment_METHOD.JSON }, { value: EXPORT_Segment_METHOD.CSV }];
+  exportMethod = [{ value: EXPORT_SEGMENT_METHOD.JSON }, { value: EXPORT_SEGMENT_METHOD.CSV }];
   emailId: string;
   exportForm: UntypedFormGroup;
   segments: Segment[];
@@ -86,9 +85,9 @@ export class ExportSegmentComponent implements OnInit {
   exportSegment() {
     const { exportMethod } = this.exportForm.value;
     const segmentIds = this.segments.map((segment) => segment.id);
-    if (exportMethod === EXPORT_Segment_METHOD.CSV && this.segments[0]) {
+    if (exportMethod === EXPORT_SEGMENT_METHOD.CSV && this.segments[0]) {
       this.exportSegmentCSV(segmentIds);
-    } else if (exportMethod === EXPORT_Segment_METHOD.JSON) {
+    } else if (exportMethod === EXPORT_SEGMENT_METHOD.JSON) {
       this.exportSegmentJson(segmentIds);
     }
     this.onCancelClick();

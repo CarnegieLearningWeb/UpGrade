@@ -181,11 +181,6 @@ export enum EXPORT_METHOD {
   DATA = 'Email Experiment Data (CSV)',
 }
 
-export enum EXPORT_Segment_METHOD {
-  JSON = 'Download Segment (JSON)',
-  CSV = 'Download Segment Members (CSV)',
-}
-
 export enum EXPERIMENT_TYPE {
   SIMPLE = 'Simple',
   FACTORIAL = 'Factorial',
