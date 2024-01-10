@@ -255,8 +255,10 @@ $font-size-small: 15px;
       }
 
       .logging {
+        margin-top: 12px;
+
         .mat-mdc-checkbox {
-          margin-top: 9px;
+          margin-top: -3px;
           margin-left: -12px;
 
           span {
