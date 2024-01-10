@@ -116,3 +116,8 @@ export interface SegmentImportError {
   fileName: string;
   error: string;
 }
+
+export enum EXPORT_SEGMENT_METHOD {
+  JSON = 'Download Segment (JSON)',
+  CSV = 'Download Segment Members (CSV)',
+}

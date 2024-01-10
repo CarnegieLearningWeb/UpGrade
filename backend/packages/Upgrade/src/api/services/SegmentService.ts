@@ -392,7 +392,6 @@ export class SegmentService {
     const segmentExportObj: SegmentFile[] = [];
     segmentsDoc.forEach((segmentDoc) => {
       const segmentRows: SegmentParticipantsRow[] = [];
-      // segmentRows.push({ UUID: segmentDoc.context, Type: 'context' });
       segmentDoc.individualForSegment?.forEach((element) => {
         segmentRows.push({ UUID: element.userId, Type: 'individual' });
       });
