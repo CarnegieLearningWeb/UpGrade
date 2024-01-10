@@ -310,6 +310,10 @@ $font-size-small: 15px;
   .table-container {
     padding: 24px 34px;
 
+    .mat-row {
+      max-height: 50px;
+    }
+
     &-partition {
       margin-bottom: 24px;
 
