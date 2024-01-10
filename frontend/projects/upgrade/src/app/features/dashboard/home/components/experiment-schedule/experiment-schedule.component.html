@@ -2,7 +2,6 @@
   <section class="shared-modal--form-container">
     <form class="experiment-schedule-form" [formGroup]="experimentScheduleForm">
       <mat-checkbox
-        class="ft-13-700"
         color="primary"
         [disabled]="
           experimentInfo &&
@@ -11,7 +10,9 @@
         "
         formControlName="startExperimentAutomatically"
       >
-        {{ 'home.new-experiment.schedule.start-automatically.text' | translate }}
+        <span class="ft-13-700">
+          {{ 'home.new-experiment.schedule.start-automatically.text' | translate }}
+        </span>
       </mat-checkbox>
 
       <div class="date-picker-container">
@@ -37,12 +38,13 @@
       </div>
 
       <mat-checkbox
-        class="ft-13-700"
         color="primary"
         formControlName="endExperimentAutomatically"
         [disabled]="experimentInfo && experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
       >
-        {{ 'home.new-experiment.schedule.end-automatically.text' | translate }}
+        <span class="ft-13-700">
+          {{ 'home.new-experiment.schedule.end-automatically.text' | translate }}
+        </span>
       </mat-checkbox>
 
       <mat-radio-group formControlName="endCondition">

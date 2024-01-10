@@ -255,17 +255,13 @@ $font-size-small: 15px;
       }
 
       .logging {
-        display: flex;
-        flex-direction: row;
-        flex-shrink: 0;
-        padding-top: 15px;
-        width: 90px;
+        .mat-mdc-checkbox {
+          margin-top: 9px;
+          margin-left: -12px;
 
-        .mdc-label {
-          font-family: 'Open Sans';
-          font-weight: 700;
-          font-size: 16px;
-          color: var(--grey-5);
+          span {
+            color: var(--grey-5);
+          }
         }
       }
     }

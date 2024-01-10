@@ -5,13 +5,14 @@
 
   <div class="conditions-weight-checkbox">
     <mat-checkbox
-      class="ft-13-700"
       color="primary"
       [checked]="equalWeightFlag"
       (change)="handleEqualWeightToggle()"
       [disabled]="!isExperimentEditable"
     >
-      {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
+      <span class="ft-13-700">
+        {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
+      </span>
     </mat-checkbox>
   </div>
   <form [formGroup]="factorialConditionTableForm">
@@ -87,7 +88,6 @@
         <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
           <mat-checkbox
             formControlName="include"
-            class="ft-13-700"
             color="primary"
             [disabled]="(tableEditIndex$ | async) !== rowIndex || !isExperimentEditable"
           >

@@ -44,8 +44,10 @@
     {{ 'home.change-experiment-status.enrolling-info.text' | translate }}
   </span>
   <span class="info-msg" *ngIf="showArchiveInfoMsg">
-    <mat-checkbox class="ft-15-700" color="primary" (change)="setArchivedStatusAgreement()">
-      {{ 'home.change-experiment-status.archiving-confirmation.text' | translate }}
+    <mat-checkbox color="primary" (change)="setArchivedStatusAgreement()">
+      <span class="ft-14-700">
+        {{ 'home.change-experiment-status.archiving-confirmation.text' | translate }}
+      </span>
     </mat-checkbox>
     {{ 'home.change-experiment-status.archiving-info.text' | translate }}
   </span>

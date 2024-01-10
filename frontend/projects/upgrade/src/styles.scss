@@ -243,15 +243,15 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
 }
 
 .mat-mdc-checkbox {
-  margin-left: -10px;
-
-  // label styles can be targeted by selecting the sibling of the checkbox
   .mdc-checkbox {
-    + .mdc-label {
-      font-family: Open Sans;
-      font-size: 13px;
-      font-weight: 700;
-    }
+    transform: scale(0.889); // transform 18px to 16px
+  }
+
+  label {
+    margin-left: -8px !important;
+    color: var(--black-2);
+    letter-spacing: normal;
+    user-select: none;
   }
 }
 
