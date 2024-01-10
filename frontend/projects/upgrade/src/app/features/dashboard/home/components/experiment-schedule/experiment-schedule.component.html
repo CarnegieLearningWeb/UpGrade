@@ -10,7 +10,7 @@
         "
         formControlName="startExperimentAutomatically"
       >
-        <span class="ft-13-700">
+        <span class="ft-13-700 checkbox-label">
           {{ 'home.new-experiment.schedule.start-automatically.text' | translate }}
         </span>
       </mat-checkbox>
@@ -42,7 +42,7 @@
         formControlName="endExperimentAutomatically"
         [disabled]="experimentInfo && experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
       >
-        <span class="ft-13-700">
+        <span class="ft-13-700 checkbox-label">
           {{ 'home.new-experiment.schedule.end-automatically.text' | translate }}
         </span>
       </mat-checkbox>
