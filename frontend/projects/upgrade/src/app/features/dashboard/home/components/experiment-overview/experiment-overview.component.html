@@ -105,13 +105,14 @@
       <mat-form-field class="ft-14-600 tags">
         <mat-chip-grid #tagsList aria-label="Tags" formControlName="tags">
           <mat-chip-row
-            class="ft-12-600"
             *ngFor="let experimentTag of tags.value"
             [selectable]="isChipSelectable"
             [removable]="isChipRemovable"
             (removed)="removeChip(experimentTag, 'tags')"
           >
-            {{ experimentTag }}
+            <span class="ft-12-600 chip-label">
+              {{ experimentTag }}
+            </span>
             <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
           </mat-chip-row>
           <input

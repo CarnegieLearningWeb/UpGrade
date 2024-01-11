@@ -391,32 +391,34 @@
           </div>
 
           <!-- Experiment Context -->
-          <div class="experiment-chips">
+          <mat-chip-listbox class="experiment-chips">
             <span class="ft-16-600 experiment-chips-title">{{ 'global.context.text' | translate }}</span>
-            <div class="experiment-chips-values">
-              <span
-                class="ft-12-600"
-                (click)="searchExperiment(ExperimentSearchKey.CONTEXT, context)"
-                *ngFor="let context of experiment.context"
-              >
-                {{ context }}
-              </span>
-            </div>
-          </div>
+            <ng-container *ngFor="let context of experiment.context">
+              <mat-chip>
+                <span
+                  class="ft-12-600 chip-label"
+                  (click)="searchExperiment(ExperimentSearchKey.CONTEXT, context)"
+                >
+                  {{ context }}
+                </span>
+              </mat-chip>
+            </ng-container>
+          </mat-chip-listbox>
 
           <!-- Experiment Tags -->
-          <div class="experiment-chips" *ngIf="experiment.tags?.length">
+          <mat-chip-listbox class="experiment-chips" *ngIf="experiment.tags?.length">
             <span class="ft-16-600 experiment-chips-title">{{ 'global.tags.text' | translate }}</span>
-            <div class="experiment-chips-values">
-              <span
-                class="ft-12-600"
-                (click)="searchExperiment(ExperimentSearchKey.TAG, tag)"
-                *ngFor="let tag of experiment.tags"
-              >
-                {{ tag }}
-              </span>
-            </div>
-          </div>
+            <ng-container *ngFor="let tag of experiment.tags">
+              <mat-chip>
+                <span
+                  class="ft-12-600 chip-label"
+                  (click)="searchExperiment(ExperimentSearchKey.TAG, tag)"
+                >
+                  {{ tag }}
+                </span>
+              </mat-chip>
+            </ng-container>
+          </mat-chip-listbox>
 
           <!-- Logging -->
           <div class="logging">
