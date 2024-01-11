@@ -9,10 +9,9 @@
     margin: 20px 0;
     padding: 0 40px;
 
-    mat-checkbox {
-      &.mat-checkbox-checked {
-        color: var(--blue);
-      }
+    .mat-mdc-checkbox {
+      margin-top: -3px;
+      margin-left: -12px;
     }
 
     .mat-radio-button,

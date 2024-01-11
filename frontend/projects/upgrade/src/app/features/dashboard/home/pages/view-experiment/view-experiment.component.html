@@ -182,10 +182,10 @@
                   </ng-template>
                 </div>
               </div>
-              
+
               <!-- Experiment Type-->
               <div class="section-data">
-                <span 
+                <span
                   class="ft-16-600 section-data-title"
                 >
                   {{ 'home-global.design-type.text' | translate | uppercase }}
@@ -237,7 +237,7 @@
 
               <!-- Stratification Factor Assinment Algorithm -->
               <div class="section-data">
-                <span 
+                <span
                   class="ft-16-600 section-data-title"
                 >
                   {{ 'home-global.assignment-algorithm.text' | translate | uppercase }}
@@ -359,7 +359,7 @@
                   {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let data; let groupIndex = index" style="margin-left: 25px">
-                  <mat-checkbox class="ft-8-100" color="primary" [checked]="data.excludeIfReached" [disabled]="true">
+                  <mat-checkbox color="primary" [checked]="data.excludeIfReached" [disabled]="true">
                   </mat-checkbox>
                 </mat-cell>
               </ng-container>
@@ -376,11 +376,11 @@
                   {{ 'home.view-experiment.enrollment-time-logs.text' | translate }}
                 </span>
               </div>
-              
+
               <!-- Stratification Factor-->
               <div class="section-data"
               *ngIf="(experiment.assignmentAlgorithm === 'stratified random sampling')">
-                <span 
+                <span
                   class="ft-16-600 section-data-title"
                 >
                   {{ 'home-global.stratification-factor.text' | translate | uppercase }}
@@ -422,12 +422,13 @@
           <div class="logging">
             <mat-checkbox
               [checked]="experiment.logging"
-              class="ft-16-600"
               color="primary"
               (change)="toggleVerboseLogging($event)"
               [disabled]="experiment.state === ExperimentState.CANCELLED || experiment.state === ExperimentState.ARCHIVED"
             >
-              {{ 'home.view-experiment.logging.text' | translate | uppercase }}
+              <span class="ft-16-600 checkbox-label">
+                {{ 'home.view-experiment.logging.text' | translate | uppercase }}
+              </span>
             </mat-checkbox>
           </div>
 
@@ -494,7 +495,7 @@
                   {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let data; let groupIndex = index" style="margin-left: 25px">
-                  <mat-checkbox class="ft-8-100" color="primary" [checked]="data.excludeIfReached" [disabled]="true">
+                  <mat-checkbox color="primary" [checked]="data.excludeIfReached" [disabled]="true">
                   </mat-checkbox>
                 </mat-cell>
               </ng-container>
