@@ -21,6 +21,7 @@ import { SegmentStatusPipeType } from '../../../../../shared/pipes/segment-statu
 import { SEGMENT_STATUS } from '../../../../../core/segments/store/segments.model';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
+import { ExportSegmentComponent } from '../../components/modal/export-segment/export-segment.component';
 
 @Component({
   selector: 'segments-list',
@@ -81,10 +82,10 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   openExportAllSegment() {
-    const segmentIds = this.allSegments.data.map((segment) => {
-      return segment.id;
+    this.dialog.open(ExportSegmentComponent, {
+      panelClass: 'export-modal',
+      data: { segment: this.allSegments.data },
     });
-    this.segmentsService.exportSegments(segmentIds);
   }
 
   ngOnDestroy() {
