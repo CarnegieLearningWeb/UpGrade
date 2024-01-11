@@ -1,9 +1,9 @@
-<mat-card class="segment-container" *ngIf="segment">
+<mat-card appearance="raised" class="segment-container" *ngIf="segment">
   <span class="ft-16-400">
     <a [routerLink]="['/segments']" class="ft-16-400 segment-link">{{ 'segments.title.text' | translate }} </a>
     > <b> {{ segment?.name }} </b>
   </span>
-  <mat-card class="segment">
+  <mat-card appearance="raised" class="segment">
     <div class="segment-info">
       <div class="segment-overview">
         <span class="ft-32-700 segment-overview-title">

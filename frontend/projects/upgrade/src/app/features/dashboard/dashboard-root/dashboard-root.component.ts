@@ -9,7 +9,6 @@ import { VersionService } from '../../../core/version/version.service';
   styleUrls: ['./dashboard-root.component.scss'],
 })
 export class DashboardRootComponent implements OnInit {
-  theme$ = this.settingsService.theme$;
   isLoggedIn$ = this.authService.isLoggedIn$;
   currentUser$ = this.authService.currentUser$;
   serverVersion = '';

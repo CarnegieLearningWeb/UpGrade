@@ -11,13 +11,16 @@
 //  If you specify typography styles for the components you use elsewhere, you should delete this line.
 //  If you don't need the default component typographies but still want the hierarchy styles,
 //  you can delete this line and instead use:
-//    `@include mat.legacy-typography-hierarchy(mat.define-legacy-typography-config());
+//    `@include mat.legacy-typography-hierarchy(mat.define-typography-config());
+/* TODO(mdc-migration): Remove all-legacy-component-typographies once all legacy components are migrated*/
 @include mat.all-legacy-component-typographies();
+@include mat.all-component-typographies();
+/* TODO(mdc-migration): Remove legacy-core once all legacy components are migrated*/
 @include mat.legacy-core();
+@include mat.core();
 
 @import './styles/variables.css';
 @import './themes/light-theme';
-@import './themes/dark-theme';
 @import './styles/utility.scss';
 @import './styles/shared-modal.scss';
 @import './app/features/dashboard/dashboard-root/dashboard-root.theme.scss';
@@ -101,13 +104,10 @@
 }
 
 .light-theme {
+  /* TODO(mdc-migration): Remove all-legacy-component-themes once all legacy components are migrated*/
   @include mat.all-legacy-component-themes($light-theme);
+  @include mat.all-component-themes($light-theme);
   @include custom-components-theme($light-theme);
-}
-
-.dark-theme {
-  @include mat.all-legacy-component-themes($dark-theme);
-  @include custom-components-theme($dark-theme);
 }
 
 // TODO material specific style which cannot be changed by scope
@@ -115,6 +115,12 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+button[mat-button], button[mat-raised-button], button[mat-flat-button], button[mat-stroked-button], button[mat-icon-button] {
+  span {
+    letter-spacing: normal;
+  }
 }
 
 .default-button {
@@ -144,6 +150,7 @@
 .query-result,
 .duplicate-segment-modal,
 .experiment-ending-criteria {
+  @include custom-components-theme($light-theme);
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
 
@@ -233,14 +240,6 @@
 
 .new-user-modal {
   width: 805px;
-}
-
-.mat-button,
-.mat-flat-button,
-.mat-stroked-button {
-  &.cdk-program-focused .mat-button-focus-overlay {
-    opacity: 0 !important;
-  }
 }
 
 // Material library doesn't expose any params to prevent content truncation for these widgets.

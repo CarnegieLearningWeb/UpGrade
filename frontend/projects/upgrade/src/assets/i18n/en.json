@@ -335,7 +335,6 @@
   "profile.new-user.add-btn.text": "ADD",
   "profile.action.authorization.text": "Authorization",
   "profile.action.filter-metric.text": "Filter Metric",
-  "profile.action.dark-theme.text": "Dark mode",
   "feature-flags.global-name.text": "Name",
   "feature-flags.global-key.text": "Key",
   "feature-flags.global-status.text": "Status",
