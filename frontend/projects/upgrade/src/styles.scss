@@ -242,6 +242,19 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
   width: 805px;
 }
 
+.mat-mdc-checkbox {
+  .mdc-checkbox {
+    transform: scale(0.889); // transform 18px to 16px
+  }
+
+  .checkbox-label {
+    margin-left: -8px;
+    color: var(--black-2);
+    letter-spacing: normal;
+    user-select: none;
+  }
+}
+
 // Material library doesn't expose any params to prevent content truncation for these widgets.
 // Therefore we override the css. If option appears in future, these can go away.
 

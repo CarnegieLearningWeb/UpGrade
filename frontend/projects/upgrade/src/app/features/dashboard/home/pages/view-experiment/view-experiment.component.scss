@@ -255,13 +255,16 @@ $font-size-small: 15px;
       }
 
       .logging {
-        display: flex;
-        flex-direction: row;
-        flex-shrink: 0;
-        padding-top: 15px;
-        width: 90px;
-        color: var(--grey-5);
-        font-size: $font-size-small !important;
+        margin-top: 12px;
+
+        .mat-mdc-checkbox {
+          margin-top: -3px;
+          margin-left: -12px;
+
+          .checkbox-label {
+            color: var(--grey-5);
+          }
+        }
       }
     }
   }
@@ -306,6 +309,10 @@ $font-size-small: 15px;
 
   .table-container {
     padding: 24px 34px;
+
+    .mat-row {
+      max-height: 50px;
+    }
 
     &-partition {
       margin-bottom: 24px;
