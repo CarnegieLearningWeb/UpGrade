@@ -122,9 +122,13 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <mat-chip-list>
-            <mat-chip class="ft-12-600" *ngIf="segment.context != 'ALL'"> {{ segment.context }} </mat-chip>
-          </mat-chip-list>
+          <mat-chip-listbox>
+            <mat-chip *ngIf="segment.context != 'ALL'">
+              <span class="ft-12-600 chip-label">
+                {{ segment.context }}
+              </span>
+            </mat-chip>
+          </mat-chip-listbox>
           <span class="ft-12-600" *ngIf="segment.context == 'ALL'" style="margin-left: 10px">
             {{ segment.context }}
           </span>
