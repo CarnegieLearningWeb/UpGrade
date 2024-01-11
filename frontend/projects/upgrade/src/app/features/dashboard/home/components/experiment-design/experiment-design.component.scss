@@ -24,7 +24,9 @@
     }
 
     .conditions-header-container {
-      margin-top: 10px;
+      .mat-mdc-checkbox {
+        margin-left: -2px;
+      }
     }
 
     .condition-table,
@@ -68,7 +70,7 @@
         max-width: 150px;
         justify-content: center;
 
-        mat-checkbox {
+        .mat-mdc-checkbox {
           margin-top: -5px;
         }
       }

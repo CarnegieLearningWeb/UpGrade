@@ -111,7 +111,6 @@
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
                   <mat-checkbox
-                    class="ft-8-100"
                     color="primary"
                     [disabled]="(decisionPointsTableEditIndex$ | async) !== groupIndex"
                     [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.EXCLUDE_IF_REACHED"
@@ -203,13 +202,14 @@
           <!-- apply equal condition weights -->
           <div class="conditions-header-container">
             <mat-checkbox
-              class="ft-13-700"
               color="primary"
               [disabled]="!isExperimentEditable"
               [checked]="equalWeightFlag"
               (change)="changeEqualWeightFlag($event)"
             >
-              {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
+              <span class="ft-13-700 checkbox-label">
+                {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
+              </span>
             </mat-checkbox>
           </div>
           <ng-container>
@@ -411,7 +411,7 @@
           </div>
 
           <div *ngIf="decisionPoints.length && conditions.length">
-            <app-payloads-table 
+            <app-payloads-table
               [experimentInfo]="experimentInfo">
             </app-payloads-table>
           </div>
