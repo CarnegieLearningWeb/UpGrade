@@ -226,31 +226,12 @@ $font-size-small: 15px;
       }
 
       .experiment-chips {
-        display: flex;
-        flex-direction: row;
-
         &-title {
           flex-shrink: 0;
           padding-top: 12px;
           width: 90px;
           color: var(--grey-5);
           font-size: $font-size-small !important;
-        }
-
-        &-values {
-          display: flex;
-          flex-wrap: wrap;
-
-          span {
-            margin: 5px;
-            border-radius: 14px;
-            background-color: rgba(216, 216, 216, 0.6);
-            padding: 7px 10px;
-
-            &:hover {
-              cursor: pointer;
-            }
-          }
         }
       }
 
