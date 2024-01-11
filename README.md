@@ -46,7 +46,7 @@ Clone the github repository and run the docker containers for DB and Upgrade App
 ```markdown
 git clone https://github.com/CarnegieLearningWeb/UpGrade.git
 cd Upgrade
-docker-compose up -d
+docker-compose -f singleContainerApp-docker-compose.yml up -d
 ```
 
 Then visit http://localhost:4200 and login using google id to view the Upgrade App.
