@@ -243,9 +243,11 @@ $font-size-small: 15px;
 
           span {
             margin: 5px;
-            border-radius: 14px;
-            background-color: rgba(216, 216, 216, 0.6);
-            padding: 7px 10px;
+            border-radius: 16px;
+            background-color: rgb(224, 224, 224);
+            padding: 7px 12px;
+            letter-spacing: normal;
+            -webkit-font-smoothing: antialiased;
 
             &:hover {
               cursor: pointer;

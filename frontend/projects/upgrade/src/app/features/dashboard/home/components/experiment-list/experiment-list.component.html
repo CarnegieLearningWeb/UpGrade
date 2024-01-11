@@ -220,14 +220,14 @@
             <ng-container *ngFor="let context of experiment.context; let contextIndex = index">
               <mat-chip-option
                 *ngIf="contextIndex < 2; else moreContextTemplate"
-                class="chip ft-12-600"
+                class="ft-12-600"
                 (click)="filterExperimentByChips(context, ExperimentSearchKey.CONTEXT)"
               >
                 {{ context }}
               </mat-chip-option>
               <ng-template #moreContextTemplate>
                 <mat-chip-option
-                  class="chip ft-12-600"
+                  class="ft-12-600"
                   *ngIf="isAllChipsVisible(experiment.id, 'contextVisibility')"
                   (click)="filterExperimentByChips(context, ExperimentSearchKey.CONTEXT)"
                 >
@@ -237,7 +237,7 @@
             </ng-container>
             <mat-chip-option
               *ngIf="experiment.context.length > 2 && !isAllChipsVisible(experiment.id, 'contextVisibility')"
-              class="chip ft-12-600"
+              class="ft-12-600"
               (click)="setChipsVisible(experiment.id, 'contextVisibility')"
             >
               {{ '+' + (experiment.context.length - 2) }}
@@ -257,14 +257,14 @@
             <ng-container *ngFor="let tag of experiment?.tags; let tagIndex = index">
               <mat-chip-option
                 *ngIf="tagIndex < 2; else moreTagsTemplate"
-                class="chip ft-12-600"
+                class="ft-12-600"
                 (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
               >
                 {{ tag }}
               </mat-chip-option>
               <ng-template #moreTagsTemplate>
                 <mat-chip-option
-                  class="chip ft-12-600"
+                  class="ft-12-600"
                   *ngIf="isAllChipsVisible(experiment.id, 'tagsVisibility')"
                   (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
                 >
@@ -274,7 +274,7 @@
             </ng-container>
             <mat-chip-option
               *ngIf="experiment.tags?.length > 2 && !isAllChipsVisible(experiment.id, 'tagsVisibility')"
-              class="chip ft-12-600"
+              class="ft-12-600"
               (click)="setChipsVisible(experiment.id, 'tagsVisibility')"
             >
               {{ '+' + (experiment.tags.length - 2) }}
