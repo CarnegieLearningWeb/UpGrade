@@ -23,13 +23,20 @@
 
   .info-msg,
   .error-msg {
-    display: block;
-    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    margin-top: -20px;
+    margin-bottom: 30px;
     padding: 0 40px;
   }
 
   .info-msg {
     color: var(--green);
+
+    .mat-mdc-checkbox {
+      margin-top: -3px;
+      margin-left: -12px;
+    }
   }
 
   .error-msg {

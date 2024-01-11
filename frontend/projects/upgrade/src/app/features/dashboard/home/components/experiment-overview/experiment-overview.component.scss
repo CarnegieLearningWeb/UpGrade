@@ -45,8 +45,9 @@
     width: 100%;
   }
 
-  .logging {
-    margin-top: 5px;
+  .mat-mdc-checkbox {
+    margin-top: -3px;
+    margin-left: -12px;
   }
 
   ::ng-deep .mat-chip-list-wrapper {
