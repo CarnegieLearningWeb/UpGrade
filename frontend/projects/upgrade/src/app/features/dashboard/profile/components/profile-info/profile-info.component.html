@@ -32,15 +32,6 @@
       >
         {{ 'profile.action.filter-metric.text' | translate }}
       </mat-slide-toggle> -->
-      <mat-slide-toggle
-        class="ft-16-600"
-        color="primary"
-        [checked]="(theme$ | async) === ThemeOptions.DARK_THEME"
-        labelPosition="before"
-        (change)="changeTheme($event)"
-      >
-        {{ 'profile.action.dark-theme.text' | translate }}
-      </mat-slide-toggle>
     </div>
   </div>
   <div class="role-wrapper" *ngIf="(permissions$ | async)?.manageRoles.update">

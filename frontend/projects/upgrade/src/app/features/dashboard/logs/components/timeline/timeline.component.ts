@@ -2,7 +2,6 @@ import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 import * as env from '../../../../../../environments/environment';
 import { LogType, EXPERIMENT_LOG_TYPE, SERVER_ERROR } from '../../../../../core/logs/store/logs.model';
 import Convert from 'ansi-to-html';
-import { ThemeOptions } from '../../../../../core/settings/store/settings.model';
 
 @Component({
   selector: 'logs-timeline',
@@ -13,7 +12,6 @@ import { ThemeOptions } from '../../../../../core/settings/store/settings.model'
 export class TimelineComponent {
   @Input() logData;
   @Input() logType: LogType;
-  @Input() theme: ThemeOptions;
   // Used to change setting icon based on theme
   systemUserEmail = 'system@gmail.com';
   endPoint = env.environment.apiBaseUrl.substring(0, env.environment.apiBaseUrl.lastIndexOf('/'));
@@ -28,10 +26,6 @@ export class TimelineComponent {
 
   get ServerErrors() {
     return SERVER_ERROR;
-  }
-
-  get ThemeOptions() {
-    return ThemeOptions;
   }
 
   getHtmlFormedLogData(id: string, diff) {

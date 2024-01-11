@@ -43,8 +43,6 @@ export class AuthEffects {
           settingsActions.actionGetSetting(),
           analysisActions.actionFetchMetrics(),
         ];
-        // Set theme from local storage if exist
-        this.settingsService.setLocalStorageTheme();
 
         if (user.role) {
           return this.authService.setUserSettingsWithRole(user, actions);
