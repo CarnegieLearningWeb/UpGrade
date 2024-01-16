@@ -18,7 +18,9 @@
           (click)="$event.stopPropagation()"
           (change)="toggleSelection($event, 'partitions')"
         >
-          {{ 'home.view-experiment.graph-select-all.text' | translate }}
+          <span class="ft-16-400 checkbox-label">
+            {{ 'home.view-experiment.graph-select-all.text' | translate }}
+          </span>
         </mat-checkbox>
         <mat-option *ngFor="let partition of partitionsFilterOptions" [value]="partition.id">
           {{ partition.point + ' (' + partition.twoCharacterId + ')' }}
@@ -43,7 +45,9 @@
           (click)="$event.stopPropagation()"
           (change)="toggleSelection($event, 'conditions')"
         >
-          {{ 'home.view-experiment.graph-select-all.text' | translate }}
+          <span class="ft-16-400 checkbox-label">
+            {{ 'home.view-experiment.graph-select-all.text' | translate }}
+          </span>
         </mat-checkbox>
         <mat-option *ngFor="let condition of conditionsFilterOptions" [value]="condition.id">
           {{ condition.code }}

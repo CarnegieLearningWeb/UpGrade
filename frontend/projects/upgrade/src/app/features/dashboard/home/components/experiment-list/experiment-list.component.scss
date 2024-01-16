@@ -147,13 +147,5 @@ $experiment-state-light-color: #8f9bb3;
         color: var(--grey-3);
       }
     }
-
-    .chip {
-      height: auto;
-
-      &:hover {
-        cursor: pointer;
-      }
-    }
   }
 }
