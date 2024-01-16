@@ -226,9 +226,6 @@ $font-size-small: 15px;
       }
 
       .experiment-chips {
-        display: flex;
-        flex-direction: row;
-
         &-title {
           flex-shrink: 0;
           padding-top: 12px;
@@ -236,32 +233,19 @@ $font-size-small: 15px;
           color: var(--grey-5);
           font-size: $font-size-small !important;
         }
-
-        &-values {
-          display: flex;
-          flex-wrap: wrap;
-
-          span {
-            margin: 5px;
-            border-radius: 14px;
-            background-color: rgba(216, 216, 216, 0.6);
-            padding: 7px 10px;
-
-            &:hover {
-              cursor: pointer;
-            }
-          }
-        }
       }
 
       .logging {
-        display: flex;
-        flex-direction: row;
-        flex-shrink: 0;
-        padding-top: 15px;
-        width: 90px;
-        color: var(--grey-5);
-        font-size: $font-size-small !important;
+        margin-top: 12px;
+
+        .mat-mdc-checkbox {
+          margin-top: -3px;
+          margin-left: -12px;
+
+          .checkbox-label {
+            color: var(--grey-5);
+          }
+        }
       }
     }
   }
@@ -306,6 +290,10 @@ $font-size-small: 15px;
 
   .table-container {
     padding: 24px 34px;
+
+    .mat-row {
+      max-height: 50px;
+    }
 
     &-partition {
       margin-bottom: 24px;

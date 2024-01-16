@@ -20,10 +20,6 @@
 
     mat-form-field {
       margin-right: 20px;
-
-      ::ng-deep .mat-checkbox-checked.mat-primary .mat-checkbox-background {
-        background-color: var(--blue) !important;
-      }
     }
 
     .dropdown-label {
@@ -118,7 +114,6 @@
   }
 }
 
-::ng-deep .mat-option .mat-checkbox-layout,
-::ng-deep .mat-option .mat-checkbox-label {
-  width: 100% !important;
+.mat-mdc-checkbox {
+  padding-left: 4px;
 }

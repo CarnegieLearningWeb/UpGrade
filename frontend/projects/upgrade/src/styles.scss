@@ -117,6 +117,12 @@
   justify-content: space-between;
 }
 
+button[mat-button], button[mat-raised-button], button[mat-flat-button], button[mat-stroked-button], button[mat-icon-button] {
+  span {
+    letter-spacing: normal;
+  }
+}
+
 .default-button {
   background-color: var(--blue) !important;
   padding: 0 1rem;
@@ -236,11 +242,23 @@
   width: 805px;
 }
 
-.mat-button,
-.mat-flat-button,
-.mat-stroked-button {
-  &.cdk-program-focused .mat-button-focus-overlay {
-    opacity: 0 !important;
+.mat-mdc-checkbox {
+  .mdc-checkbox {
+    transform: scale(0.889); // transform 18px to 16px
+  }
+
+  .checkbox-label {
+    margin-left: -8px;
+    color: var(--black-2);
+    letter-spacing: normal;
+    user-select: none;
+  }
+}
+
+.mat-mdc-chip {
+  .chip-label {
+    color: var(--black-2);
+    letter-spacing: normal;
   }
 }
 
