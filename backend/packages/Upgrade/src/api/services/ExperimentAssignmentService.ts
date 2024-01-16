@@ -1022,15 +1022,20 @@ export class ExperimentAssignmentService {
       logger.info({ message: `Add group metrics userId ${userId}`, details: groupedMetrics });
       // search metrics log with specific uniquifier
       groupedMetrics.forEach(({ groupClass, groupKey, groupUniquifier, attributes }) => {
-        const key = `${groupClass}${METRICS_JOIN_TEXT}${groupKey}${METRICS_JOIN_TEXT}`;
-        Object.keys(attributes).forEach((metricKey) => {
-          keyUniqueArray.push({ key: `${key}${metricKey}`, uniquifier: groupUniquifier });
-        });
+        if (attributes) {
+          const key = `${groupClass}${METRICS_JOIN_TEXT}${groupKey}${METRICS_JOIN_TEXT}`;
+          Object.keys(attributes).forEach((metricKey) => {
+            keyUniqueArray.push({ key: `${key}${metricKey}`, uniquifier: groupUniquifier });
+          });
+        }
       });
     }
 
     // get metrics document
-    const metricKeyInQueries = await this.metricRepository.findMetricsWithQueries(keyUniqueArray.map(({ key }) => key));
+    const metricKeyInQueries =
+      keyUniqueArray.length === 0
+        ? []
+        : await this.metricRepository.findMetricsWithQueries(keyUniqueArray.map(({ key }) => key));
 
     if (metricKeyInQueries.length === 0) {
       return [];
