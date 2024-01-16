@@ -1,4 +1,9 @@
 .experiment-schedule-form {
+  .mat-mdc-checkbox {
+    margin-top: -3px;
+    margin-left: -12px;
+  }
+
   .mat-radio-button,
   .input {
     font-weight: 600;

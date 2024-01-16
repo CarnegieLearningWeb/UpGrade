@@ -103,16 +103,18 @@
       </div>
 
       <mat-form-field class="ft-14-600 tags">
-        <mat-chip-list #tagsList aria-label="Tags" formControlName="tags">
-          <mat-chip
+        <mat-chip-grid #tagsList aria-label="Tags" formControlName="tags">
+          <mat-chip-row
             *ngFor="let experimentTag of tags.value"
             [selectable]="isChipSelectable"
             [removable]="isChipRemovable"
             (removed)="removeChip(experimentTag, 'tags')"
           >
-            {{ experimentTag }}
+            <span class="ft-12-600 chip-label">
+              {{ experimentTag }}
+            </span>
             <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
-          </mat-chip>
+          </mat-chip-row>
           <input
             [placeholder]="'home.new-experiment.overview.tags.placeHolder' | translate"
             [matChipInputFor]="tagsList"
@@ -120,10 +122,12 @@
             [matChipInputAddOnBlur]="addChipOnBlur"
             (matChipInputTokenEnd)="addChip($event, 'tags')"
           />
-        </mat-chip-list>
+        </mat-chip-grid>
       </mat-form-field>
-      <mat-checkbox class="ft-13-700 logging" color="primary" formControlName="logging">
-        {{ 'home.view-experiment.logging.text' | translate }}
+      <mat-checkbox color="primary" formControlName="logging">
+        <span class="ft-13-700 checkbox-label">
+          {{ 'home.view-experiment.logging.text' | translate }}
+        </span>
       </mat-checkbox>
     </form>
     <div class="validation-container">
