@@ -390,10 +390,9 @@ export class SegmentController {
   }
 
   @Get('/export/csv')
-  public exportSegment(@Body({ validate: false }) @Req() request: AppRequest): Promise<SegmentFile[]> {
+  public exportSegment(@Req() request: AppRequest): Promise<SegmentFile[]> {
     const id = request.query.ids;
     let ids: string[] = [];
-    console.log(typeof id);
     if (typeof id === 'string') {
       ids.push(id);
     } else if (Array.isArray(id)) {
