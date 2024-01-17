@@ -577,8 +577,10 @@ export class ExperimentClientController {
    *             properties:
    *               userId:
    *                 type: string
+   *                 required: true
    *               value:
    *                 type: array
+   *                 required: true
    *                 items:
    *                   type: object
    *                   properties:
@@ -604,10 +606,16 @@ export class ExperimentClientController {
    *                                  properties:
    *                                      groupClass:
    *                                          type: string
+   *                                          required: true
    *                                          example: workspaceType
    *                                      groupKey:
+   *                                          type: string
+   *                                          required: true
+   *                                          example: workspaceName
+   *                                      groupUniquifier:
    *                                           type: string
-   *                                           example: workspaceName
+   *                                           required: true
+   *                                           example: workspaceUniquifier
    *                                      attributes:
    *                                        type: object
    *                                        properties:
@@ -632,7 +640,7 @@ export class ExperimentClientController {
   public async log(
     @Req()
     request: AppRequest,
-    @Body({ validate: false })
+    @Body({ validate: true })
     logData: LogValidator
   ): Promise<Log[]> {
     request.logger.info({ message: 'Starting the log call for user' });
