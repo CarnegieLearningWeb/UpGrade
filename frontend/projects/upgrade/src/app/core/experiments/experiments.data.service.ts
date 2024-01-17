@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@angular/core';
 import { Experiment, ExperimentStateInfo, ExperimentPaginationParams } from './store/experiments.model';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
 
 @Injectable()
@@ -67,13 +67,22 @@ export class ExperimentDataService {
   }
 
   exportExperimentInfo(experimentId: string, email: string) {
+    let experimentInfoParams = new HttpParams();
+    experimentInfoParams = experimentInfoParams.append('experimentId', experimentId.toString());
+    experimentInfoParams = experimentInfoParams.append('email', email.toString());
+
     const url = this.environment.api.generateCsv;
-    return this.http.post(url, { experimentId, email });
+    return this.http.get(url, { params: experimentInfoParams });
   }
 
   exportExperimentDesign(experimentIds: string[]) {
+    let ids = new HttpParams();
+    experimentIds.forEach((id) => {
+      ids = ids.append('ids', id.toString());
+    });
+
     const url = `${this.environment.api.exportExperiment}`;
-    return this.http.post(url, experimentIds);
+    return this.http.get(url, { params: ids });
   }
 
   fetchExperimentGraphInfo(params: any) {

@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { SegmentsDataService } from './segments.data.service';
@@ -86,12 +86,16 @@ describe('SegmentDataService', () => {
 
   describe('#exportSegments', () => {
     it('should post the exportSegments http observable', () => {
-      const segmentId = mockSegmentId;
-      const expectedUrl = `${mockEnvironment.api.exportSegments}`;
+      const segmentIds = [mockSegmentId]; // Array of segment IDs
+      const expectedUrl = mockEnvironment.api.exportSegments;
 
-      service.exportSegments([segmentId]);
+      let expectedParams = new HttpParams();
+      segmentIds.forEach((id) => {
+        expectedParams = expectedParams.append('ids', id.toString());
+      });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, [segmentId]);
+      service.exportSegments(segmentIds);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl, { params: expectedParams });
     });
   });
 
