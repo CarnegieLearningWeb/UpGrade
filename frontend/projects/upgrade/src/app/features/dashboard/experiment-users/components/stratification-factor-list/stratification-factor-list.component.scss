@@ -34,22 +34,22 @@
     .stratification-factor-table {
       width: 100%;
 
-      .mat-header-row {
+      .mat-mdc-header-row {
         min-height: 35px;
         justify-content: space-between;
       }
 
-      .mat-row {
+      .mat-mdc-row {
         height: 46px;
         justify-content: space-between;
       }
 
-      .mat-header-cell {
+      .mat-mdc-header-cell {
         justify-content: left;
         color: var(--grey-6);
       }
 
-      .mat-cell {
+      .mat-mdc-cell {
         justify-content: left;
       }
 

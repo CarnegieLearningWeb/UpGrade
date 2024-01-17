@@ -18,7 +18,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { ASSIGNMENT_ALGORITHM, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { StratificationFactorsService } from '../../../../../../core/stratification-factors/stratification-factors.service';
 import { StratificationFactorSimple } from '../../../../../../core/stratification-factors/store/stratification-factors.model';

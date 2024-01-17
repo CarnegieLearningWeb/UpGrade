@@ -19,7 +19,7 @@ import { CustomMatTableSource } from './CustomMatTableSource';
 import { EXPERIMENT_SEARCH_KEY } from '../../../../../core/experiments/store/experiments.model';
 import { SegmentStatusPipeType } from '../../../../../shared/pipes/segment-status.pipe';
 import { SEGMENT_STATUS } from '../../../../../core/segments/store/segments.model';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 
 @Component({
