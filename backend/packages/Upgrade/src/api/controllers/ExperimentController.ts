@@ -1170,12 +1170,17 @@ export class ExperimentController {
     return this.experimentService.importExperiment(experiments, currentUser, request.logger);
   }
 
-  @Post('/export')
-  public exportExperiment(
-    @Body({ validate: false, type: String }) ids: string[],
-    @CurrentUser() currentUser: User,
-    @Req() request: AppRequest
-  ): Promise<ExperimentDTO[]> {
+  @Get('/export')
+  public exportExperiment(@CurrentUser() currentUser: User, @Req() request: AppRequest): Promise<ExperimentDTO[]> {
+    let ids: string[] = [];
+    const experimentIds = request.query.ids;
+    if (typeof experimentIds === 'string') {
+      ids.push(experimentIds);
+    } else if (Array.isArray(experimentIds)) {
+      ids = experimentIds.map((id) => {
+        return id.toString();
+      });
+    }
     return this.experimentService.exportExperiment(ids, currentUser, request.logger);
   }
 

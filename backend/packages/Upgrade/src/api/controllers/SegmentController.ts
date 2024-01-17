@@ -369,8 +369,18 @@ export class SegmentController {
     return this.segmentService.importSegments(segments, request.logger);
   }
 
-  @Post('/export')
-  public exportSegments(@Body({ validate: false }) ids: string[], @Req() request: AppRequest): Promise<Segment[]> {
+  @Get('/export/json')
+  public exportSegments(@Req() request: AppRequest): Promise<Segment[]> {
+    let ids: string[] = [];
+    const segmentIds = request.query.ids;
+    if (typeof segmentIds === 'string') {
+      ids.push(segmentIds);
+    } else if (Array.isArray(segmentIds)) {
+      ids = segmentIds.map((id) => {
+        return id.toString();
+      });
+    }
+
     if (!ids) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
     }

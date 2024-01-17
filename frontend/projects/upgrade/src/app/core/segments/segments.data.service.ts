@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@angular/core';
 import { SegmentInput } from './store/segments.model';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
 
 @Injectable()
@@ -28,8 +28,13 @@ export class SegmentsDataService {
   }
 
   exportSegments(segmentIds: string[]) {
+    let ids = new HttpParams();
+    segmentIds.forEach((id) => {
+      ids = ids.append('ids', id.toString());
+    });
+
     const url = this.environment.api.exportSegments;
-    return this.http.post(url, segmentIds);
+    return this.http.get(url, { params: ids });
   }
 
   importSegments(segments: SegmentInput[]) {
