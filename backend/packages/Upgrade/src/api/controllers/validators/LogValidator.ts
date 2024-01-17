@@ -1,5 +1,16 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsDefined, IsString, ValidateNested, IsArray, IsOptional, IsObject, ValidationOptions, isObject, registerDecorator } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsDefined,
+  IsString,
+  ValidateNested,
+  IsArray,
+  IsOptional,
+  IsObject,
+  ValidationOptions,
+  isObject,
+  registerDecorator,
+} from 'class-validator';
 
 const IsLogAttributesRecord = (validationOptions?: ValidationOptions) => {
   return function (object: unknown, propertyName: string) {
@@ -9,7 +20,7 @@ const IsLogAttributesRecord = (validationOptions?: ValidationOptions) => {
       propertyName: propertyName,
       constraints: [],
       options: {
-        message: 'The Attributes is not a valid Record<string, string | number>',
+        message: 'The Attributes value is not a valid Record<string, string | number>',
         ...validationOptions,
       },
       validator: {
