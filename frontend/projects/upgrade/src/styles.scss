@@ -280,3 +280,8 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
 .mat-tooltip-panel {
   pointer-events: none;
 }
+
+.mat-mdc-table tbody .mdc-data-table__row:last-child .mdc-data-table__cell{
+  border-bottom: var(--light-grey) 1px solid;
+}
+
