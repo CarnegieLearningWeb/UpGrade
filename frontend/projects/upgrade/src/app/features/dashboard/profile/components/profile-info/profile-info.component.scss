@@ -101,12 +101,12 @@ $role-text-color: #0a7319;
           color: var(--grey-2);
         }
 
-        tr.mat-footer-row,
-        tr.mat-row {
+        tr.mat-mdc-footer-row,
+        tr.mat-mdc-row {
           height: 55px;
         }
 
-        .mat-cell {
+        .mat-mdc-cell {
           width: 17%;
           word-break: break-word;
 

@@ -10,7 +10,7 @@ import { UserRole } from 'upgrade_types';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { MatSort } from '@angular/material/sort';
 import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'users-experiment-users',

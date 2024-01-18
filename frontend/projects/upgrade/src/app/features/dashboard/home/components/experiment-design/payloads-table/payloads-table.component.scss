@@ -45,7 +45,7 @@
       justify-content: left;
     }
 
-    .mat-row.row-is-locked {
+    .mat-mdc-row.row-is-locked {
       opacity: 0.4;
       pointer-events: none;
     }
@@ -91,7 +91,7 @@
       }
     }
 
-    .mat-cell:last-of-type {
+    .mat-mdc-cell:last-of-type {
       justify-content: center;
 
       .row-action-btn {

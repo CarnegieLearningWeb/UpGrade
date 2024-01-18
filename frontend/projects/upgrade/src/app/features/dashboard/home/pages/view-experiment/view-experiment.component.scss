@@ -297,7 +297,7 @@ $font-size-small: 15px;
   .table-container {
     padding: 24px 34px;
 
-    .mat-row {
+    .mat-mdc-row {
       max-height: 50px;
     }
 
@@ -371,11 +371,11 @@ $font-size-small: 15px;
     &-payloads .payload-table-overview {
       justify-content: space-between;
 
-      .mat-header-cell {
+      .mat-mdc-header-cell {
         justify-content: left;
       }
 
-      .mat-cell {
+      .mat-mdc-cell {
         justify-content: left;
       }
     }
