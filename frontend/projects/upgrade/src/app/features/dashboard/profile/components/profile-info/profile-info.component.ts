@@ -7,7 +7,7 @@ import { User, USER_SEARCH_SORT_KEY } from '../../../../../core/users/store/user
 import { debounceTime } from 'rxjs/operators';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatSort } from '@angular/material/sort';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { UsersService } from '../../../../../core/users/users.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { SettingsService } from '../../../../../core/settings/settings.service';
