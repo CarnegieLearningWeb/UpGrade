@@ -262,6 +262,15 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
   }
 }
 
+.mat-mdc-list-item {
+  .list-item-label {
+    color: var(--black-2);
+    font-family: 'Open Sans';
+    font-weight: 600;
+    letter-spacing: normal;
+  }
+}
+
 // Material library doesn't expose any params to prevent content truncation for these widgets.
 // Therefore we override the css. If option appears in future, these can go away.
 
@@ -271,12 +280,12 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
 }
 
 // Added to globally prevent truncation in tooltips
-.mat-tooltip {
+.mat-mdc-tooltip {
   word-break: break-all;
   white-space: normal;
 }
 
 // Added to globally prevent tooltips from blocking click-events
-.mat-tooltip-panel {
+.mat-mdc-tooltip-panel {
   pointer-events: none;
 }
