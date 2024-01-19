@@ -17,26 +17,26 @@
               #linkInfo="routerLinkActive"
             >
               <mat-icon class="icon">{{ link.iconType }}</mat-icon>
-              <span>{{ link.text | translate }}</span>
+              <span class="list-item-label">{{ link.text | translate }}</span>
             </a>
           </mat-list-item>
         </mat-list>
         <div class="user">
           <mat-list class="user-list">
-            <a class="profile" [routerLink]="['/profile']">
-              <mat-list-item
-                class="user-list--item ft-16-600"
-                *ngIf="currentUser$ | async as user"
-                routerLinkActive="user-list--item-selected"
-              >
+            <mat-list-item
+              class="user-list--item ft-16-600"
+              *ngIf="currentUser$ | async as user"
+              routerLinkActive="user-list--item-selected"
+            >
+              <a class="profile" [routerLink]="['/profile']">
                 <img src="{{ user?.imageUrl }}" class="user-pic" referrerpolicy="no-referrer" />
-                <span>{{ (user?.firstName || '') + ' ' + (user?.lastName || '') }}</span>
-              </mat-list-item>
-            </a>
+                <span class="list-item-label">{{ (user?.firstName || '') + ' ' + (user?.lastName || '') }}</span>
+              </a>
+            </mat-list-item>
             <mat-list-item class="user-list--item ft-16-600">
               <a role="presentation" class="logout-link" (click)="logout()">
                 <mat-icon class="icon">exit_to_app</mat-icon>
-                <span>{{ 'home-global.sign-out.text' | translate }}</span>
+                <span class="list-item-label">{{ 'home-global.sign-out.text' | translate }}</span>
               </a>
             </mat-list-item>
           </mat-list>

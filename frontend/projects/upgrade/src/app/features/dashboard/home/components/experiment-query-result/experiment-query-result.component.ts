@@ -47,6 +47,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   queryFactorResults = [];
   interactionEffectQueryFactorResults = [];
   queryResultsSub: Subscription;
+  analysisSub: Subscription;
   isQueryExecuting$ = this.analysisService.isQueryExecuting$;
   factors: string[] = [];
   queries: string[] = [];
@@ -100,7 +101,13 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
         [query.id]: [],
       };
     });
-    this.analysisService.executeQuery(queryIds);
+
+    this.analysisSub = this.analysisService.experimentQueryResult$(this.experiment.id).subscribe((queryResults) => {
+      if (queryResults && queryResults.length) {
+        const queryIds = queryResults.map((queryResult) => queryResult.id);
+        this.analysisService.executeQuery(queryIds);
+      }
+    });
     this.queryResultsSub = this.analysisService.queryResult$.pipe(filter((result) => !!result)).subscribe((result) => {
       // main effect graph data
       this.populateMainEffectGraphData(result);
@@ -295,10 +302,10 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     resData.map((result) => {
       const factorIndex = result.name === levels[factorNumber].level.name ? alternateFactorNumber : factorNumber;
       return result.series.map((level) => {
-          if (level.name === levels[factorIndex].level.name) {
-            level.value = Math.round(Number(data.result) * 100) / 100;
-            level.participantsLogged = Number(data.participantsLogged);
-          }
+        if (level.name === levels[factorIndex].level.name) {
+          level.value = Math.round(Number(data.result) * 100) / 100;
+          level.participantsLogged = Number(data.participantsLogged);
+        }
       });
     });
     return resData;
@@ -413,6 +420,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.queryResultsSub.unsubscribe();
+    this.analysisSub.unsubscribe();
     this.analysisService.setQueryResult(null);
   }
 }
