@@ -271,12 +271,12 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
 }
 
 // Added to globally prevent truncation in tooltips
-.mat-tooltip {
+.mat-mdc-tooltip {
   word-break: break-all;
   white-space: normal;
 }
 
 // Added to globally prevent tooltips from blocking click-events
-.mat-tooltip-panel {
+.mat-mdc-tooltip-panel {
   pointer-events: none;
 }
