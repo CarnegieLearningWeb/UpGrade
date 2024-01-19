@@ -10,7 +10,7 @@ import {
 } from './store/analysis.selectors';
 import * as AnalysisActions from './store/analysis.actions';
 import { UpsertMetrics } from './store/analysis.models';
-import { EXPERIMENT_STATE } from '../experiments/store/experiments.model';
+import { selectExperimentQueries } from '../experiments/store/experiments.selectors';
 
 @Injectable()
 export class AnalysisService {
@@ -36,6 +36,10 @@ export class AnalysisService {
 
   executeQuery(queryIds: string[]) {
     this.store$.dispatch(AnalysisActions.actionExecuteQuery({ queryIds }));
+  }
+
+  experimentQueryResult$(experimentId: string) {
+    return this.store$.pipe(select(selectExperimentQueries, { experimentId }));
   }
 
   setQueryResult(queryResult: any) {
