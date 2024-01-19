@@ -1,6 +1,6 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
 import { selectAll } from './experiments.reducer';
-import { State, ExperimentState } from './experiments.model';
+import { ExperimentState } from './experiments.model';
 import { selectRouterState } from '../../core.state';
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
@@ -96,6 +96,14 @@ export const selectGroupAssignmentStatus = createSelector(selectExperimentState,
   }
   return null;
 });
+
+export const selectExperimentQueries = createSelector(selectExperimentState, (state, { experimentId }) => {
+  if (state.entities[experimentId]) {
+    return state.entities[experimentId].queries;
+  }
+  return null;
+});
+
 export const selectIsPollingExperimentDetailStats = createSelector(
   selectExperimentState,
   (state) => state.isPollingExperimentDetailStats
