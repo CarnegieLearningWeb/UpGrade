@@ -155,8 +155,23 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
 
   .mat-mdc-dialog-container {
-    padding: 0px;
+    padding: 0px !important;
     overflow: hidden !important;
+    background-color: white;
+    border-radius: 7px;
+
+    .mat-mdc-dialog-surface {
+      box-shadow: none;
+      background-color: transparent;
+
+      .mat-mdc-dialog-content {
+        padding: 40px 40px 20px 40px;
+      }
+
+      .mat-mdc-dialog-actions {
+        padding: 0 40px 40px;
+      }
+    }
   }
 }
 
