@@ -12,7 +12,7 @@ import { Subscription, BehaviorSubject, of } from 'rxjs';
 import { MetricUnit } from '../../../../../core/analysis/store/analysis.models';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
