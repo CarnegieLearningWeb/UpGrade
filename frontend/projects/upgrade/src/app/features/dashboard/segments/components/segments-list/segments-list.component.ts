@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { Segment } from '../../../../../core/segments/store/segments.model';
