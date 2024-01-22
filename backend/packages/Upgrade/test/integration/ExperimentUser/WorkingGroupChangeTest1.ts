@@ -1,5 +1,5 @@
 import { Container } from 'typedi';
-import { groupAssignmentWithIndividulaConsistencyExperiment } from '../mockData/experiment';
+import { groupAssignmentWithIndividualConsistencyExperiment } from '../mockData/experiment';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { UserService } from '../../../src/api/services/UserService';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
@@ -20,7 +20,7 @@ export default async function testCase(): Promise<void> {
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
-  const experimentObject = groupAssignmentWithIndividulaConsistencyExperiment;
+  const experimentObject = groupAssignmentWithIndividualConsistencyExperiment;
   const experimentName = experimentObject.partitions[0].target;
   const experimentPoint = experimentObject.partitions[0].site;
   const condition = experimentObject.conditions[0].conditionCode;
