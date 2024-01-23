@@ -315,3 +315,34 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
 .mat-mdc-tooltip-panel {
   pointer-events: none;
 }
+
+.mat-mdc-table {
+  .mat-mdc-header-row,
+  .mat-mdc-row {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+    &.mat-mdc-row:hover {
+      background-color: transparent;
+    }
+
+    &.expandable-row {
+      min-height: 0;
+      height: auto;
+      overflow: hidden;
+    }
+
+    .mat-mdc-cell {
+      background-color: transparent;
+      border-bottom: none;
+      letter-spacing: normal;
+    }
+
+    .mat-mdc-header-cell,
+    .mat-mdc-cell {
+      &:not(:first-child):not(:last-child) {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+  }
+}
