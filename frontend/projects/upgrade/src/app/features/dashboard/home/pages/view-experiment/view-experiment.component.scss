@@ -291,10 +291,6 @@ $font-size-small: 15px;
   .table-container {
     padding: 24px 34px;
 
-    .mat-mdc-row {
-      max-height: 50px;
-    }
-
     &-partition {
       margin-bottom: 24px;
 
@@ -327,9 +323,6 @@ $font-size-small: 15px;
         }
 
         .expandable-row {
-          min-height: 0px !important;
-          overflow: hidden;
-
           mat-cell,
           mat-header-cell {
             padding-left: 30px;
@@ -345,7 +338,7 @@ $font-size-small: 15px;
       .level-table {
         border: 1px solid #d3d3d3;
         border-radius: 5px;
-        margin: 10px 5px 10px 25px;
+        margin: 10px 5px 10px 23px;
       }
     }
 
@@ -377,6 +370,7 @@ $font-size-small: 15px;
     &-metrics {
       mat-row {
         align-items: flex-start;
+        height: auto !important;
       }
       mat-cell {
         align-items: flex-start;
