@@ -3,7 +3,7 @@
 @mixin payloads-table-component-theme($theme) {
   $background: map-get($theme, background);
 
-  .payload-table-design-stepper .mat-row.odd {
+  .payload-table-design-stepper .mat-mdc-row.odd {
     background-color: mat.get-color-from-palette($background, table-shading);
   }
 }
