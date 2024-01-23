@@ -18,13 +18,12 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
       const authorization = req.header('authorization');
       const token = authorization && authorization.replace('Bearer ', '').trim();
       const setting = await this.settingService.getClientCheck(req.logger);
-      //   const data = {
-      //     APIKey: '494ae733-53cb-4c64-a24e-dab23d55eeb4',
-      //   };
-      //   console.log('Start signing');
-      //   const tokenSigned = jwt.sign(data, 'carnegilearning');
-      //   console.log('tokenSigned', tokenSigned);
-
+      // const data = {
+      //   APIKey: 'key',
+      // };
+      // console.log('Start signing');
+      // const tokenSigned = jwt.sign(data, 'secret');
+      // console.log('tokenSigned', tokenSigned);
       // adding session id in logger instance:
       let session_id = null;
       // if session id received from clientlib request header:
@@ -39,6 +38,7 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
           req.logger.warn({ message: 'Token is not present in request header' });
           const error = new Error('Token is not present in request header from client');
           (error as any).type = SERVER_ERROR.TOKEN_NOT_PRESENT;
+          (error as any).httpCode = '401'
           throw error;
         }
         const { secret, key } = env.clientApi;
@@ -51,6 +51,7 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
         } else {
           const error = new Error('Provided token is invalid');
           (error as any).type = SERVER_ERROR.INVALID_TOKEN;
+          (error as any).httpCode = '401'
           req.logger.error(error);
           throw error;
         }
@@ -59,12 +60,12 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
       }
     } catch (error) {
       const err = error as ErrorWithType;
-      if (err.message === 'jwt expired') {
+      if (err.message === 'jwt expired' || err.message === 'invalid signature') {
         err.type = SERVER_ERROR.INVALID_TOKEN;
+        (error as any).httpCode = '401'
         req.logger.error(err);
         throw err;
       } else {
-        err.type = SERVER_ERROR.INVALID_TOKEN;
         req.logger.error(err);
         throw err;
       }
