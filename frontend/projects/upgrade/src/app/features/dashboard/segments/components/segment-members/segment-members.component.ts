@@ -51,7 +51,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   subSegmentIdsToSend = [];
   segmentNameId = new Map();
   membersCountError: string = null;
-  groupString = ' ( group )';
+  groupString = ' (group)';
 
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
   constructor(
