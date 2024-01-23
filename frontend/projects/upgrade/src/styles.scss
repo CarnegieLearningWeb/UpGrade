@@ -321,7 +321,7 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
   .mat-mdc-row {
     border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 
-    &:hover {
+    &.mat-mdc-row:hover {
       background-color: transparent !important;
     }
 
