@@ -873,7 +873,7 @@ export class ExperimentService {
         // creating queries docs
         promiseArray = [];
         let queriesDocToSave =
-          (queries[0] &&
+          (queries?.[0] &&
             queries.length > 0 &&
             queries.map((query: any) => {
               promiseArray.push(this.metricRepository.findOne(query.metric.key));
@@ -1188,6 +1188,8 @@ export class ExperimentService {
       }
 
       experiment.id = experiment.id || uuid();
+      experiment.description = experiment.description || '';
+
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
       let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
       if (experiment.conditions.length) {
@@ -1235,11 +1237,12 @@ export class ExperimentService {
           segmentInclude = {
             ...experimentSegmentInclusion.segment,
             type: includeSegment.type,
-            userIds: includeSegment.individualForSegment.map((x) => x.userId),
-            groups: includeSegment.groupForSegment.map((x) => {
-              return { type: x.type, groupId: x.groupId };
-            }),
-            subSegmentIds: includeSegment.subSegments.map((x) => x.id),
+            userIds: includeSegment.individualForSegment?.map((x) => x.userId) || [],
+            groups:
+              includeSegment.groupForSegment?.map((x) => {
+                return { type: x.type, groupId: x.groupId };
+              }) || [],
+            subSegmentIds: includeSegment.subSegments?.map((x) => x.id) || [],
           };
         } else {
           segmentInclude = experimentSegmentInclusion;
@@ -1282,11 +1285,12 @@ export class ExperimentService {
           segmentExclude = {
             ...experimentSegmentExclusion.segment,
             type: excludeSegment.type,
-            userIds: excludeSegment.individualForSegment.map((x) => x.userId),
-            groups: excludeSegment.groupForSegment.map((x) => {
-              return { type: x.type, groupId: x.groupId };
-            }),
-            subSegmentIds: excludeSegment.subSegments.map((x) => x.id),
+            userIds: excludeSegment.individualForSegment?.map((x) => x.userId) || [],
+            groups:
+              excludeSegment.groupForSegment?.map((x) => {
+                return { type: x.type, groupId: x.groupId };
+              }) || [],
+            subSegmentIds: excludeSegment.subSegments?.map((x) => x.id) || [],
           };
         } else {
           segmentExclude = experimentSegmentExclusion;
@@ -1333,6 +1337,7 @@ export class ExperimentService {
         partitions.length > 0 &&
         partitions.map((decisionPoint) => {
           decisionPoint.id = decisionPoint.id || uuid();
+          decisionPoint.description = decisionPoint.description || '';
           return { ...decisionPoint, experiment: experimentDoc };
         });
 
