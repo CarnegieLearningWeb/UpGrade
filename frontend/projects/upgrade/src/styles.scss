@@ -322,7 +322,7 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
     border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 
     &.mat-mdc-row:hover {
-      background-color: transparent !important;
+      background-color: transparent;
     }
 
     &.expandable-row {
