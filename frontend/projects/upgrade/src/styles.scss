@@ -316,7 +316,33 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
   pointer-events: none;
 }
 
-.mat-mdc-table tbody .mdc-data-table__row:last-child .mdc-data-table__cell{
-  border-bottom: var(--light-grey) 1px solid;
-}
+.mat-mdc-table {
+  .mat-mdc-header-row,
+  .mat-mdc-row {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 
+    &:hover {
+      background-color: transparent !important;
+    }
+
+    &.expandable-row {
+      min-height: 0;
+      height: auto;
+      overflow: hidden;
+    }
+
+    .mat-mdc-cell {
+      background-color: transparent;
+      border-bottom: none;
+      letter-spacing: normal;
+    }
+
+    .mat-mdc-header-cell,
+    .mat-mdc-cell {
+      &:not(:first-child):not(:last-child) {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+  }
+}

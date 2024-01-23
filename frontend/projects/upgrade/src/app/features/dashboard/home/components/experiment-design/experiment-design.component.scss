@@ -36,6 +36,7 @@
 
       mat-header-row {
         min-height: 35px;
+        max-height: 35px;
         justify-content: space-between;
       }
 
@@ -52,7 +53,6 @@
 
       mat-cell {
         justify-content: left;
-        margin-bottom: -5px;
       }
 
       .cdk-column-site {
@@ -69,10 +69,6 @@
         width: 100%;
         max-width: 150px;
         justify-content: center;
-
-        .mat-mdc-checkbox {
-          margin-top: -5px;
-        }
       }
 
       .cdk-column-conditionCode {
@@ -98,14 +94,14 @@
         margin-left: 30px;
         flex: 0 0 78px;
         width: 78px;
+        justify-content: center;
 
         .row-action-btn {
           border: none;
           background-color: transparent;
 
           .icon {
-            margin-top: -5px;
-            margin-left: -3px;
+            margin-left: -5px;
             display: flex;
             justify-content: center;
             align-items: center;
