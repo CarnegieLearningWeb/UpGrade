@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { ExperimentStatusComponent } from '../../components/modal/experiment-status/experiment-status.component';
 import { PostExperimentRuleComponent } from '../../components/modal/post-experiment-rule/post-experiment-rule.component';
 import { NewExperimentComponent } from '../../components/modal/new-experiment/new-experiment.component';
