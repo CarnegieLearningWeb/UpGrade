@@ -1,10 +1,10 @@
-import { JsonController, Get, Delete, Param, Authorized, Post, Req, Body } from 'routing-controllers';
+import { JsonController, Get, Delete, Param, Authorized, Post, Req, Body, QueryParams } from 'routing-controllers';
 import { SegmentService } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
 import { SERVER_ERROR } from 'upgrade_types';
 import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
-import { SegmentInputValidator } from './validators/SegmentInputValidator';
+import { SegmentIds, SegmentInputValidator } from './validators/SegmentInputValidator';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 
@@ -370,32 +370,12 @@ export class SegmentController {
   }
 
   @Get('/export/json')
-  public exportSegments(@Req() request: AppRequest): Promise<Segment[]> {
-    let ids: string[] = [];
-    const segmentIds = request.query.ids;
-    if (typeof segmentIds === 'string') {
-      ids.push(segmentIds);
-    } else if (Array.isArray(segmentIds)) {
-      ids = segmentIds.map((id) => {
-        return id.toString();
-      });
-    }
-
-    if (!ids) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
-    }
-    for (const id of ids) {
-      if (!isUUID(id)) {
-        return Promise.reject(
-          new Error(
-            JSON.stringify({
-              type: SERVER_ERROR.INCORRECT_PARAM_FORMAT,
-              message: ' : segmentId should be of type UUID.',
-            })
-          )
-        );
-      }
-    }
-    return this.segmentService.exportSegments(ids, request.logger);
+  public exportSegments(
+    @QueryParams()
+    params: SegmentIds,
+    @Req() request: AppRequest
+  ): Promise<Segment[]> {
+    const segmentIds = params.ids;
+    return this.segmentService.exportSegments(segmentIds, request.logger);
   }
 }

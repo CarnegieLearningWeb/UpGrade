@@ -286,11 +286,11 @@ export class AnalyticsController {
   @Get('/csv')
   public async downloadCSV(
     @QueryParams()
-    param: DataExportValidator,
+    params: DataExportValidator,
     @Req()
     request: AppRequest
   ): Promise<string> {
-    request.logger.info({ message: `Request received for csv download ${JSON.stringify(param, null, 2)}` });
-    return this.auditService.getCSVData(param.experimentId, param.email, request.logger);
+    request.logger.info({ message: `Request received for csv download ${JSON.stringify(params, null, 2)}` });
+    return this.auditService.getCSVData(params.experimentId, params.email, request.logger);
   }
 }

@@ -6,7 +6,7 @@ class Group {
   @IsNotEmpty()
   @IsString()
   groupId: string;
-  
+
   @IsNotEmpty()
   @IsString()
   type: string;
@@ -45,4 +45,12 @@ export class SegmentInputValidator {
   @IsArray()
   @IsString({ each: true })
   public subSegmentIds: string[];
+}
+
+export class SegmentIds {
+  @IsArray()
+  @IsNotEmpty()
+  @IsString({ each: true })
+  @IsUUID('all', { each: true })
+  public ids: string[];
 }
