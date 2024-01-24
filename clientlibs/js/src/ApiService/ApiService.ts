@@ -236,7 +236,6 @@ export default class ApiService {
     const data = {
       ...assignment,
       assignedCondition: { ...assignment.assignedCondition[0], conditionCode: condition },
-      assignedFactor: assignment.assignedFactor?.[0],
     };
 
     let requestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
