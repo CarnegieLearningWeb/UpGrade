@@ -7,7 +7,7 @@
 
   .state-time-logs-view {
     margin: 20px;
-    padding: 0 40px;
+    padding: 0 20px;
 
     .stateTimeLogs-table-container {
       min-height: 250px;
@@ -19,6 +19,7 @@
 
         mat-header-row {
           min-height: 35px;
+          max-height: 35px;
         }
 
         mat-row {

@@ -9,6 +9,7 @@
 
     mat-header-row {
       min-height: 35px;
+      max-height: 35px;
     }
 
     mat-row {
@@ -41,6 +42,7 @@
     .cdk-column-id {
       flex: 0 0 50%;
       justify-content: left;
+      padding-top: 5px;
     }
     .cdk-column-memberNumber {
       flex: 0 0 10%;
@@ -59,11 +61,12 @@
     }
 
     .remove-icon {
-      position: relative;
-      top: -3px;
-      width: 18px;
-      height: 18px;
+      margin-right: -5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       font-size: var(--text-size-x-large);
+      color: gray;
 
       &:hover {
         cursor: pointer;

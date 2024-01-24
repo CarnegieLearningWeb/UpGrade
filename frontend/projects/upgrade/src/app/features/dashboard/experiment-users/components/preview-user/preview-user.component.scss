@@ -19,7 +19,7 @@
     table {
       width: 100%;
 
-      .mat-cell {
+      .mat-mdc-cell {
         position: relative;
         width: 15%;
 
@@ -33,7 +33,7 @@
         }
       }
 
-      .mat-header-cell {
+      .mat-mdc-header-cell {
         &.mat-column-totalAssignedConditions {
           text-align: center;
         }
