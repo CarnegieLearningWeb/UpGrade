@@ -11,32 +11,32 @@
         <mat-list class="list">
           <mat-list-item *ngFor="let link of routeLinks">
             <a
-              class="nav-item ft-16-600"
+              class="nav-item"
               routerLinkActive="selected"
               [routerLink]="link.path"
               #linkInfo="routerLinkActive"
             >
               <mat-icon class="icon">{{ link.iconType }}</mat-icon>
-              <span class="list-item-label">{{ link.text | translate }}</span>
+              <span class="ft-16-600 list-item-label">{{ link.text | translate }}</span>
             </a>
           </mat-list-item>
         </mat-list>
         <div class="user">
           <mat-list class="user-list">
             <mat-list-item
-              class="user-list--item ft-16-600"
+              class="user-list--item"
               *ngIf="currentUser$ | async as user"
               routerLinkActive="user-list--item-selected"
             >
               <a class="profile" [routerLink]="['/profile']">
                 <img src="{{ user?.imageUrl }}" class="user-pic" referrerpolicy="no-referrer" />
-                <span class="list-item-label">{{ (user?.firstName || '') + ' ' + (user?.lastName || '') }}</span>
+                <span class="ft-16-600 list-item-label">{{ (user?.firstName || '') + ' ' + (user?.lastName || '') }}</span>
               </a>
             </mat-list-item>
-            <mat-list-item class="user-list--item ft-16-600">
+            <mat-list-item class="user-list--item">
               <a role="presentation" class="logout-link" (click)="logout()">
                 <mat-icon class="icon">exit_to_app</mat-icon>
-                <span class="list-item-label">{{ 'home-global.sign-out.text' | translate }}</span>
+                <span class="ft-16-600 list-item-label">{{ 'home-global.sign-out.text' | translate }}</span>
               </a>
             </mat-list-item>
           </mat-list>
