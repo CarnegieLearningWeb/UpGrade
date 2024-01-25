@@ -52,7 +52,7 @@
           </span>
         </ng-container>
         <ng-container *ngIf="(simpleExperimentPayloadTableEditIndex$ | async) === rowIndex">
-          <mat-form-field class="dense-2">
+          <mat-form-field class="dense-2" subscriptSizing="dynamic">
             <input
               [type]="text"
               matInput

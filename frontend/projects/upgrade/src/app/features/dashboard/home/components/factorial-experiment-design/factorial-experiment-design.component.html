@@ -26,7 +26,7 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field class="dense-2" floatLabel="never">
+                    <mat-form-field subscriptSizing="dynamic" class="dense-2">
                       <span [matTooltip]="decisionPoints.at(groupIndex).get('site').value" matTooltipPosition="above">
                         <input
                           matInput
@@ -57,7 +57,7 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field floatLabel="never">
+                    <mat-form-field subscriptSizing="dynamic" class="dense-2">
                       <span [matTooltip]="decisionPoints.at(groupIndex).get('target').value" matTooltipPosition="above">
                         <input
                           matInput
@@ -245,7 +245,7 @@
                       (levelsTableEditIndex$ | async) === null
                     "
                   >
-                    <mat-form-field floatLabel="never">
+                    <mat-form-field class="dense-2" subscriptSizing="dynamic">
                       <span
                         [matTooltip]="factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.name"
                         matTooltipPosition="above"
@@ -299,7 +299,7 @@
                       (levelsTableEditIndex$ | async) === null
                     "
                   >
-                    <mat-form-field floatLabel="never">
+                    <mat-form-field class="dense-2" subscriptSizing="dynamic">
                       <span
                         [matTooltip]="
                           factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.description
@@ -429,7 +429,7 @@
                                 (factorsTableIndex$ | async) === factorIndex
                               "
                             >
-                              <mat-form-field floatLabel="never">
+                              <mat-form-field class="dense-2" subscriptSizing="dynamic">
                                 <span
                                   [matTooltip]="
                                     factorialExperimentDesignForm.getRawValue('level')?.factors[factorIndex]?.levels[
@@ -496,7 +496,7 @@
                                 (factorsTableIndex$ | async) === factorIndex
                               "
                             >
-                              <mat-form-field floatLabel="never">
+                              <mat-form-field class="dense-2" subscriptSizing="dynamic">
                                 <span
                                   [matTooltip]="
                                     factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[

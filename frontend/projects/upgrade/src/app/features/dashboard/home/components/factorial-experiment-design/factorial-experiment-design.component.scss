@@ -39,8 +39,7 @@
       }
 
       mat-row {
-        min-height: 46px;
-        max-height: 46px;
+        height: 48px;
         justify-content: space-between;
       }
 
@@ -51,7 +50,7 @@
 
       mat-cell {
         justify-content: left;
-        margin-bottom: -5px;
+        // margin-bottom: -5px;
       }
 
       .cdk-column-site {
@@ -111,6 +110,7 @@
     }
 
     .factor-table {
+      min-height: 48px;
       max-height: 380px;
       overflow: auto;
 
@@ -121,6 +121,7 @@
       }
 
       mat-row {
+        // min-height: 48px;
         justify-content: space-between;
       }
 
@@ -229,6 +230,8 @@
       }
 
       mat-row {
+        min-height: 48px;
+        max-height: 48px;
         justify-content: space-between;
 
         &:last-child {
@@ -243,7 +246,7 @@
 
       mat-cell {
         justify-content: left;
-        margin-bottom: -5px;
+        // margin-bottom: -5px;
       }
 
       .cdk-column-level {
