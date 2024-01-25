@@ -44,16 +44,17 @@
       justify-content: left;
       padding-top: 5px;
     }
-    .cdk-column-memberNumber {
-      flex: 0 0 10%;
-      justify-content: left;
-    }
 
     .import-csv {
       color: var(--blue);
       &:hover {
         cursor: pointer;
       }
+    }
+
+    .disabled {
+      color: var(--light-blue);
+      cursor: default;
     }
 
     .select-file {

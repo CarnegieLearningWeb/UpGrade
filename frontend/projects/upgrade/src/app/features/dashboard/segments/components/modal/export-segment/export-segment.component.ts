@@ -1,9 +1,6 @@
 import { Component, ChangeDetectionStrategy, OnInit, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import {
-  MatLegacyDialogRef as MatDialogRef,
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-} from '@angular/material/legacy-dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { first } from 'rxjs/operators';
 import JSZip from 'jszip';
 import { AuthService } from '../../../../../../core/auth/auth.service';
@@ -85,11 +82,11 @@ export class ExportSegmentComponent implements OnInit {
   exportSegment() {
     const { exportMethod } = this.exportForm.value;
     const segmentIds = this.segments.map((segment) => segment.id);
-    if (exportMethod === EXPORT_SEGMENT_METHOD.CSV && this.segments[0]) {
+    if (exportMethod === EXPORT_SEGMENT_METHOD.CSV) {
       this.exportSegmentCSV(segmentIds);
     } else if (exportMethod === EXPORT_SEGMENT_METHOD.JSON) {
       this.exportSegmentJson(segmentIds);
     }
-    this.onCancelClick();
+    this.dialogRef.close();
   }
 }

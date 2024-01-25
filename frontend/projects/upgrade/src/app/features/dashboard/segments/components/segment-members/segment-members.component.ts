@@ -55,6 +55,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   membersCountError: string = null;
   groupString = ' ( group )';
   membersValid = true;
+  isImportMemebervalid = true;
 
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
   constructor(
@@ -77,6 +78,8 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges() {
+    this.checkImportMemberValidation();
+
     if (this.currentContext) {
       this.selectSubSegments();
       this.setMemberTypes();
@@ -115,7 +118,27 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
       });
     }
 
+    this.segmentMembersForm.valueChanges.subscribe(() => {
+      this.checkImportMemberValidation();
+    });
     this.updateView();
+  }
+
+  checkImportMemberValidation() {
+    if (this.segmentMembersForm?.value) {
+      if (
+        this.segmentMembersForm.value.members.length === 0 ||
+        (this.segmentMembersForm.value.members.length === 1 &&
+          !this.segmentMembersForm.value.members[0].type &&
+          !this.segmentMembersForm.value.members[0].id)
+      ) {
+        this.isImportMemebervalid = true;
+      } else {
+        this.isImportMemebervalid = false;
+      }
+    } else {
+      this.isImportMemebervalid = false;
+    }
   }
 
   selectSubSegments(): void {
@@ -164,9 +187,9 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
       const rowValues = row.split(',');
 
       // Extract the ID
-      const id = rowValues[0];
-      const memberType = rowValues[1]?.trim().toLowerCase();
-      const memberTypeOriginal = rowValues[1]?.trim();
+      const id = rowValues[1];
+      const memberType = rowValues[0]?.trim().toLowerCase();
+      const memberTypeOriginal = rowValues[0]?.trim();
       if (!id || !memberType) {
         continue;
       }
