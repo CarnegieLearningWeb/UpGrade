@@ -86,7 +86,12 @@
       [dynamicHeight]="true"
       disableRipple
     >
-      <mat-tab label="{{ 'home.view-experiment.mattab.overview.text' | translate }}">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'home.view-experiment.mattab.overview.text' | translate }}
+          </span>
+        </ng-template>
         <div class="experiment-secondary-info tab-body-container">
           <div class="experiment-secondary-info-container">
             <div class="experiment-info-section">
@@ -456,7 +461,12 @@
         </div>
       </mat-tab>
 
-      <mat-tab label="{{ 'home.view-experiment.mattab.design.text' | translate }}">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'home.view-experiment.mattab.design.text' | translate }}
+          </span>
+        </ng-template>
         <div class="tab-body-container tab-table-body-container">
           <!-- Experiment Decision Points Table -->
           <div class="table-container table-container-partition">
@@ -769,7 +779,12 @@
         </div>
       </mat-tab>
 
-      <mat-tab label="{{ 'home.view-experiment.mattab.participants.text' | translate }}">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'home.view-experiment.mattab.participants.text' | translate }}
+          </span>
+        </ng-template>
         <div class="tab-body-container tab-table-body-container">
           <!-- Participants to include table -->
           <div class="table-container table-container-participants">
@@ -859,7 +874,12 @@
         </div>
       </mat-tab>
 
-      <mat-tab label="{{ 'home.view-experiment.mattab.metrics.text' | translate }}">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'home.view-experiment.mattab.metrics.text' | translate }}
+          </span>
+        </ng-template>
         <div class="tab-body-container tab-table-body-container">
           <!-- Experiment metrics table -->
           <div class="table-container table-container-metrics">
@@ -917,7 +937,12 @@
         </div>
       </mat-tab>
 
-      <mat-tab label="{{ 'home.view-experiment.mattab.data.text' | translate }}">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'home.view-experiment.mattab.data.text' | translate }}
+          </span>
+        </ng-template>
         <div class="tab-body-container">
           <div class="ft-24-700 enrollment-text">
             {{ 'home.view-experiment.mattab.data.enrollment.text' | translate }}

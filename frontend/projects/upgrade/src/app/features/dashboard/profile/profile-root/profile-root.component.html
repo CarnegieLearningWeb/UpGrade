@@ -9,10 +9,20 @@
       [dynamicHeight]="true"
       disableRipple
     >
-      <mat-tab [label]="'profile.heading.text' | translate">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'profile.heading.text' | translate }}
+          </span>
+        </ng-template>
         <profile-info></profile-info>
       </mat-tab>
-      <mat-tab [label]="'global.metrics.text' | translate">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'global.metrics.text' | translate }}
+          </span>
+        </ng-template>
         <profile-metrics></profile-metrics>
       </mat-tab>
     </mat-tab-group>
