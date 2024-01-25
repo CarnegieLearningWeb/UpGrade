@@ -3,7 +3,13 @@
   <span class="ft-16-400 subtitle" [innerHTML]="'logs.sub-heading.text' | translate"></span>
 
   <mat-card appearance="raised" class="tabs-wrapper">
-    <mat-tab-group disableRipple="true" (selectedIndexChange)="selectedIndexChange($event)">
+    <mat-tab-group
+      [selectedIndex]="0"
+      [mat-stretch-tabs]="false"
+      [dynamicHeight]="true"
+      disableRipple
+      (selectedIndexChange)="selectedIndexChange($event)"
+    >
       <mat-tab [label]="'logs.audit-logs-tab.text' | translate">
         <audit-logs></audit-logs>
       </mat-tab>
