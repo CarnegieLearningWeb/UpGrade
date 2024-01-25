@@ -16,7 +16,7 @@
                   <div class="metric-keys">
                     <mat-form-field
                       *ngFor="let key of getKeys(queryIndex).controls; let keyIndex = index"
-                      class="ft-14-400 form-control auto-complete"
+                      class="dense-2 ft-14-400 form-control auto-complete"
                       floatLabel="never"
                     >
                       <ng-container [formGroupName]="keyIndex">
@@ -78,7 +78,7 @@
                 <div class="secondary-form">
                   <!-- repeated measure -->
                   <mat-form-field
-                    class="ft-14-400 form-control"
+                    class="dense-2 ft-14-400 form-control"
                     *ngIf="
                       firstSelectedNode[queryIndex] &&
                       isMetricRepeated(firstSelectedNode[queryIndex], queryIndex, editMode)
@@ -112,7 +112,7 @@
                     </mat-select>
                   </mat-form-field>
                   <!-- statistic -->
-                  <mat-form-field class="ft-14-400 form-control" floatLabel="never">
+                  <mat-form-field class="dense-2 ft-14-400 form-control" floatLabel="never">
                     <mat-label>{{ 'home.new-experiment.metrics.statistics.placeholder.text' | translate | titlecase }}</mat-label>
                     <mat-select class="ft-14-400" formControlName="operationType">
                       <mat-option *ngFor="let operation of filteredStatistic$[queryIndex]" [value]="operation.value">
@@ -122,7 +122,7 @@
                   </mat-form-field>
                   <!-- comparison function -->
                   <mat-form-field
-                    class="ft-14-400 form-control"
+                    class="dense-2 ft-14-400 form-control"
                     *ngIf="
                       selectedNode[queryIndex] &&
                       selectedNode[queryIndex]?.metadata?.type !== IMetricMetadata.CONTINUOUS
@@ -139,7 +139,7 @@
                   </mat-form-field>
                   <!-- compare value -->
                   <mat-form-field
-                    class="ft-14-400 form-control"
+                    class="dense-2 ft-14-400 form-control"
                     *ngIf="
                       selectedNode[queryIndex] &&
                       selectedNode[queryIndex]?.metadata?.type !== IMetricMetadata.CONTINUOUS
@@ -162,7 +162,7 @@
                 {{ 'home.new-experiment.metrics.description-header.placeholder.text' | translate }}
               </mat-header-cell>
               <mat-cell *matCellDef="let element; let queryIndex = index" [formGroupName]="queryIndex">
-                <mat-form-field class="ft-14-400" floatLabel="never">
+                <mat-form-field class="dense-2 ft-14-400" floatLabel="never">
                   <input
                     class="ft-14-400"
                     matInput

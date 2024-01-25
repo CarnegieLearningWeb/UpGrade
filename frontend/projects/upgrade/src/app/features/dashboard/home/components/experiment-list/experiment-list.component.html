@@ -1,7 +1,7 @@
 <mat-card appearance="raised" class="experiments-list-container">
   <div class="header">
     <div>
-      <mat-form-field class="filter-options">
+      <mat-form-field class="dense-2 filter-options">
         <mat-select
           class="ft-16-600"
           [(ngModel)]="selectedExperimentFilterOption"
@@ -12,7 +12,7 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field>
+      <mat-form-field class="dense-2">
         <div *ngIf="selectedExperimentFilterOption !== 'status'">
           <input
             class="search-input ft-16-400"

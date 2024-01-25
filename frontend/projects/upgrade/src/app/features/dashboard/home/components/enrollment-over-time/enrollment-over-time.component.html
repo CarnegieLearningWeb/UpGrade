@@ -1,7 +1,7 @@
 <div class="enrollment-over-time">
   <span class="ft-18-700 title">{{ 'home.view-experiment.enrollments-by-decision-point.title.text' | translate }}</span>
   <div class="enrollment-filters">
-    <mat-form-field class="sites">
+    <mat-form-field class="dense-2 sites">
       <mat-label class="ft-16-700 dropdown-label">{{
         'home.view-experiment.graph-decision-point.text' | translate
       }}</mat-label>
@@ -28,7 +28,7 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field class="conditions">
+    <mat-form-field class="dense-2 conditions">
       <mat-label class="ft-16-700 dropdown-label">{{
         'home.view-experiment.graph-conditions.text' | translate
       }}</mat-label>
@@ -55,7 +55,7 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field>
+    <mat-form-field class="dense-2">
       <mat-label class="ft-16-700 dropdown-label">{{ 'home.view-experiment.graph-type.text' | translate }}</mat-label>
       <mat-select
         [disabled]="experiment.assignmentUnit === AssignmentUnit.INDIVIDUAL"
@@ -68,7 +68,7 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field>
+    <mat-form-field class="dense-2">
       <mat-label class="ft-16-700 dropdown-label">{{ 'home.view-experiment.graph-time.text' | translate }}</mat-label>
       <mat-select
         [(ngModel)]="selectedDateFilter"

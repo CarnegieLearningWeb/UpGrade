@@ -148,16 +148,6 @@
     margin-bottom: 15px;
   }
 
-  // This rule is pretty invasive, we should reconsider how and why we are refusing underlines
-
-  // ::ng-deep .mat-form-field-appearance-legacy .mat-form-field-underline {
-  //   bottom: unset;
-  //   background-color: unset !important;
-  // }
-
-  ::ng-deep .mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple {
-    display: none;
-  }
 
   /* Remove arrows/spinners from input type number */
   input::-webkit-outer-spin-button,

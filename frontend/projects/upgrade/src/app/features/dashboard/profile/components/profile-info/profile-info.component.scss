@@ -75,11 +75,6 @@ $role-text-color: #0a7319;
     .filter-options {
       margin-right: 10px;
       width: 80px;
-
-      ::ng-deep .mat-form-field-underline,
-      ::ng-deep .mat-form-field-ripple {
-        background-color: unset;
-      }
     }
 
     .input {

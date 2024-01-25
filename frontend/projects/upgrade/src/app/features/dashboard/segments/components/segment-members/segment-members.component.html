@@ -24,7 +24,7 @@
         <ng-container
           *ngIf="segmentMembersForm.getRawValue('type')?.members[groupIndex]?.type === 'Segment'; else noSelect"
         >
-          <mat-form-field floatLabel="never" class="form-control">
+          <mat-form-field floatLabel="never" class="dense-2 form-control">
             <mat-select formControlName="id">
               <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
                 {{ subSegmentId }}
@@ -33,7 +33,7 @@
           </mat-form-field>
         </ng-container>
         <ng-template #noSelect>
-          <mat-form-field floatLabel="never" class="form-control">
+          <mat-form-field floatLabel="never" class="dense-2 form-control">
             <input matInput [placeholder]="'segments.global-members-id/name.text' | translate" formControlName="id" />
           </mat-form-field>
         </ng-template>

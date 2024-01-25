@@ -2,7 +2,7 @@
   <span class="ft-24-700 title">{{ 'home.view-experiment.export-experiment.text' | translate | titlecase }}</span>
 
   <form [formGroup]="exportForm" class="export-experiment-container-form">
-    <mat-form-field class="ft-16-400">
+    <mat-form-field class="dense-2 ft-16-400">
       <mat-label>{{ 'home.view-experiment.export-method.text' | translate }}</mat-label>
       <mat-select class="ft-16-400 export-selection" formControlName="exportMethod">
         <mat-option *ngFor="let method of exportMethod" [value]="method.value">

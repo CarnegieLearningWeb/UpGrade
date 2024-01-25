@@ -92,7 +92,7 @@
 
   <div class="property-container">
     <mat-label class="ft-16-600 label">{{ 'feature-flags.variation-default-variation.text' | translate }}</mat-label>
-    <mat-form-field class="default-on-variation">
+    <mat-form-field class="dense-2 default-on-variation">
       <mat-label>{{ 'feature-flags.variation-on.text' | translate }}</mat-label>
       <mat-select formControlName="defaultOnVariation">
         <mat-option *ngFor="let type of getVariationValues()" [value]="type">
@@ -104,7 +104,7 @@
       </mat-error>
     </mat-form-field>
 
-    <mat-form-field class="default-off-variation">
+    <mat-form-field class="dense-2 default-off-variation">
       <mat-label>{{ 'feature-flags.variation-off.text' | translate }}</mat-label>
       <mat-select formControlName="defaultOffVariation">
         <mat-option *ngFor="let type of getVariationValues()" [value]="type">

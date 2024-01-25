@@ -34,7 +34,7 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field floatLabel="never">
+                    <mat-form-field class="dense-2" subscriptSizing="dynamic">
                       <span
                         [matTooltip]="
                           decisionPoints.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.SITE).value
@@ -78,7 +78,7 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field floatLabel="never">
+                    <mat-form-field class="dense-2" subscriptSizing="dynamic">
                       <span
                         [matTooltip]="
                           decisionPoints.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.TARGET).value
@@ -239,7 +239,7 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(conditionsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field floatLabel="never">
+                    <mat-form-field class="dense-2" subscriptSizing="dynamic">
                       <span
                         [matTooltip]="
                           conditions.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITION_CODE).value
@@ -285,7 +285,7 @@
                     </div>
                   </ng-container>
                   <ng-container *ngIf="(conditionsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field floatLabel="never" class="align-right">
+                    <mat-form-field class="dense-2 align-right" subscriptSizing="dynamic">
                       <input
                         type="number"
                         matInput
@@ -318,7 +318,7 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(conditionsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field floatLabel="never">
+                    <mat-form-field class="dense-2" subscriptSizing="dynamic">
                       <input
                         matInput
                         [placeholder]="'home.new-experiment.design.description.placeholder.text' | translate"

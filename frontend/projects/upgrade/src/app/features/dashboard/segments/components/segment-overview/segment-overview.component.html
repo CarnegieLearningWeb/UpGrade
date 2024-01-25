@@ -1,5 +1,5 @@
 <form class="segment-overview" [formGroup]="overviewForm">
-  <mat-form-field class="ft-14-600 name">
+  <mat-form-field class="dense-2 ft-14-600 name">
     <input
       matInput
       class="ft-14-400"
@@ -9,7 +9,7 @@
     />
   </mat-form-field>
 
-  <mat-form-field class="ft-14-600 description">
+  <mat-form-field class="dense-2 ft-14-600 description">
     <input
       class="ft-14-400"
       matInput
@@ -18,7 +18,7 @@
     />
   </mat-form-field>
 
-  <mat-form-field class="ft-14-600 chips">
+  <mat-form-field class="dense-2 ft-14-600 chips">
     <mat-label>{{ 'segments.overview.segment-app-context.text' | translate }}</mat-label>
     <mat-select class="ft-14-400" formControlName="context">
       <mat-option *ngFor="let context of allContexts" [value]="context">

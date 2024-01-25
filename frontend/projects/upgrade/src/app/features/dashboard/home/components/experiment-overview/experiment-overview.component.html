@@ -1,7 +1,11 @@
 <div *ngIf="!(isLoadingContextMetaData$ | async); else loadingExperimentOverview" class="shared-modal--step-container">
   <section class="shared-modal--form-container">
     <form class="experiment-overview" [formGroup]="overviewForm">
-      <mat-form-field class="ft-14-600 name">
+      <mat-form-field
+        subscriptSizing="dynamic"
+        class="ft-14-600 dense-1 name"
+      >
+        <mat-label>Name</mat-label>
         <input
           matInput
           class="ft-14-400"
@@ -12,7 +16,8 @@
         />
       </mat-form-field>
 
-      <mat-form-field class="ft-14-600 description">
+      <mat-form-field subscriptSizing="dynamic" class="ft-14-600 dense-1 description">
+        <mat-label>Description</mat-label>
         <input
           matInput
           class="ft-14-400"
@@ -22,7 +27,7 @@
         />
       </mat-form-field>
 
-      <mat-form-field class="ft-14-600 chips">
+      <mat-form-field subscriptSizing="dynamic" class="ft-14-600 dense-1 chips">
         <mat-label>{{ 'App Context' }}</mat-label>
         <mat-select class="ft-14-400" formControlName="context">
           <mat-option *ngFor="let context of allContexts" [value]="context">
@@ -32,7 +37,7 @@
       </mat-form-field>
 
       <div class="property-container">
-        <mat-form-field class="ft-14-600 unit-of-assignment">
+        <mat-form-field subscriptSizing="dynamic" class="ft-14-600 dense-1 unit-of-assignment">
           <mat-label>{{ 'home-global.unit-of-assignment.text' | translate }}</mat-label>
           <mat-select class="ft-14-400" formControlName="unitOfAssignment">
             <mat-option *ngFor="let unitOfAssignment of unitOfAssignments" [value]="unitOfAssignment.value">
@@ -41,7 +46,7 @@
           </mat-select>
         </mat-form-field>
 
-        <mat-form-field class="ft-14-600 group-type" *ngIf="unitOfAssignmentValue === ASSIGNMENT_UNIT.GROUP">
+        <mat-form-field subscriptSizing="dynamic" class="ft-14-600 dense-1 group-type" *ngIf="unitOfAssignmentValue === ASSIGNMENT_UNIT.GROUP">
           <mat-label>{{ 'home.new-experiment.overview.group-type.placeHolder' | translate }}</mat-label>
           <mat-select class="ft-14-400" formControlName="groupType" [disabled]="!isExperimentEditable">
             <mat-option *ngFor="let group of groupTypes" [value]="group.value">{{ group.value }}</mat-option>
@@ -50,7 +55,7 @@
       </div>
 
       <mat-form-field
-        class="ft-14-600 consistency-rule"
+        subscriptSizing="dynamic" class="ft-14-600 dense-1 consistency-rule"
         *ngIf="unitOfAssignmentValue !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS"
       >
         <mat-label>{{ 'home-global.consistency-rule.text' | translate }}</mat-label>
@@ -62,7 +67,7 @@
       </mat-form-field>
 
       <mat-form-field
-        class="ft-14-600 condition-order"
+        subscriptSizing="dynamic" class="ft-14-600 dense-1 condition-order"
         *ngIf="unitOfAssignmentValue === ASSIGNMENT_UNIT.WITHIN_SUBJECTS"
       >
         <mat-label>{{ 'home-global.condition-order.text' | translate }}</mat-label>
@@ -73,7 +78,7 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field class="ft-14-600 design-type">
+      <mat-form-field subscriptSizing="dynamic" class="ft-14-600 dense-1 design-type">
         <mat-label>{{ 'home-global.design-type.text' | translate }}</mat-label>
         <mat-select class="ft-14-400" formControlName="designType">
           <mat-option *ngFor="let designType of designTypes" [value]="designType.value">
@@ -83,7 +88,7 @@
       </mat-form-field>
 
       <div class="stratification-container">
-        <mat-form-field class="ft-14-600 assignment-algorithm">
+        <mat-form-field subscriptSizing="dynamic" class="ft-14-600 dense-1 assignment-algorithm">
           <mat-label>{{ 'home-global.assignment-algorithm.text' | translate }}</mat-label>
           <mat-select class="ft-14-400" formControlName="assignmentAlgorithm">
             <mat-option *ngFor="let assignmentAlgorithm of assignmentAlgorithms" [value]="assignmentAlgorithm.value">
@@ -92,7 +97,7 @@
           </mat-select>
         </mat-form-field>
 
-        <mat-form-field class="ft-14-600 stratification-factor" *ngIf="assignmentAlgorithmValue === 'stratified random sampling'">
+        <mat-form-field subscriptSizing="dynamic" class="ft-14-600 dense-1 stratification-factor" *ngIf="assignmentAlgorithmValue === 'stratified random sampling'">
           <mat-label>{{ 'home-global.stratification-factor.text' | translate }}</mat-label>
           <mat-select class="ft-14-400" formControlName="stratificationFactor" [disabled]="!isExperimentEditable">
             <mat-option *ngFor="let stratificationFactor of allStratificationFactors" [value]="stratificationFactor.factorName">
@@ -102,7 +107,7 @@
         </mat-form-field>
       </div>
 
-      <mat-form-field class="ft-14-600 tags">
+      <mat-form-field subscriptSizing="dynamic" class="ft-14-600 dense-1 tags">
         <mat-chip-grid #tagsList aria-label="Tags" formControlName="tags">
           <mat-chip-row
             *ngFor="let experimentTag of tags.value"
@@ -137,9 +142,9 @@
         [innerHTML]="stratificationFactorNotSelectedMsg | translate"
       ></span>
     </div>
-  </section>
+</section>
 
-  <section class="shared-modal--buttons-container">
+  <section class="shared-modal--buttons-container sticky">
     <span class="shared-modal--buttons-left">
       <!--
         empty left-side spacer for flex-box;

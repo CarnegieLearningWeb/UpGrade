@@ -1,7 +1,7 @@
 <div class="experiment-status">
   <span class="ft-24-700 title">{{ 'home.change-experiment-status.title.text' | translate }}</span>
   <form [formGroup]="statusForm" class="experiment-status-form">
-    <mat-form-field class="ft-16-400">
+    <mat-form-field class="dense-2 ft-16-400">
       <mat-label>{{ 'home.change-experiment-status.current-status.text' | translate }}</mat-label>
       <mat-select class="ft-16-400 status-selection" disabled="true" [(value)]="experimentInfo.state">
         <mat-option *ngFor="let status of experimentStatus" [value]="status.value">
@@ -10,7 +10,7 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field class="ft-16-400">
+    <mat-form-field class="dense-2 ft-16-400">
       <mat-label>{{ 'home.change-experiment-status.new-status.text' | translate }}</mat-label>
       <mat-select class="ft-16-400 status-selection" formControlName="newStatus">
         <ng-container *ngFor="let status of experimentStatus">
@@ -27,7 +27,7 @@
       </mat-error>
     </mat-form-field>
 
-    <mat-form-field *ngIf="newStatusValue.value === ExperimentStatus.SCHEDULED">
+    <mat-form-field class="dense-2" *ngIf="newStatusValue.value === ExperimentStatus.SCHEDULED">
       <input
         matInput
         readonly

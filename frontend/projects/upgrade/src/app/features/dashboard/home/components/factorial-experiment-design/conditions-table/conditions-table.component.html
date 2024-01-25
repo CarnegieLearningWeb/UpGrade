@@ -41,7 +41,7 @@
             </span>
           </ng-container>
           <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
-            <mat-form-field floatLabel="never">
+            <mat-form-field class="dense-2" floatLabel="never">
               <input
                 class="input-payload"
                 type="text"
@@ -67,7 +67,7 @@
             </span>
           </ng-container>
           <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex">
-            <mat-form-field class="input-weight" floatLabel="never">
+            <mat-form-field class="dense-2 input-weight" floatLabel="never">
               <input
                 autocomplete="off"
                 type="text"

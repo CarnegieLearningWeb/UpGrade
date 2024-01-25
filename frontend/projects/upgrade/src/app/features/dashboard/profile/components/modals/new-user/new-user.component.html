@@ -2,7 +2,7 @@
   <span class="ft-24-700 title">{{ 'profile.new-user.title' | translate }}</span>
   <div class="content">
     <form class="user-form" [formGroup]="newUserForm">
-      <mat-form-field class="ft-14-600">
+      <mat-form-field class="dense-2 ft-14-600">
         <input
           matInput
           class="ft-14-600 input"
@@ -13,7 +13,7 @@
           {{ 'profile.new-user.firstName-required-error.text' | translate }}
         </mat-error>
       </mat-form-field>
-      <mat-form-field class="ft-14-600">
+      <mat-form-field class="dense-2 ft-14-600">
         <input
           matInput
           class="ft-14-600 input"
@@ -24,7 +24,7 @@
           {{ 'profile.new-user.lastName-required-error.text' | translate }}
         </mat-error>
       </mat-form-field>
-      <mat-form-field class="ft-14-600">
+      <mat-form-field class="dense-2 ft-14-600">
         <input
           matInput
           class="ft-14-600 input"
@@ -35,7 +35,7 @@
           {{ 'profile.new-user.email-required-error.text' | translate }}
         </mat-error>
       </mat-form-field>
-      <mat-form-field class="ft-14-600">
+      <mat-form-field class="dense-2 ft-14-600">
         <mat-label>{{ 'profile.global.role.text' | translate }}</mat-label>
         <mat-select class="ft-14-600 input" formControlName="role">
           <mat-option *ngFor="let role of userRole" [value]="role">

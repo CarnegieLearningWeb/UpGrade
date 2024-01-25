@@ -26,7 +26,7 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field floatLabel="never">
+                    <mat-form-field class="dense-2" floatLabel="never">
                       <span [matTooltip]="decisionPoints.at(groupIndex).get('site').value" matTooltipPosition="above">
                         <input
                           matInput

@@ -2,7 +2,7 @@
   <h3 class="ft-22-700">{{ 'users.create-preview-users-title.text' | translate }}</h3>
 
   <form class="preview-user-form" [formGroup]="previewUsersForm" *ngIf="permissions?.users.create">
-    <mat-form-field class="ft-14-600 form-control input">
+    <mat-form-field class="dense-2 ft-14-600 form-control input">
       <input matInput [placeholder]="'users-global.form-id-placeholder.text' | translate" formControlName="id" />
     </mat-form-field>
 
@@ -56,7 +56,7 @@
                   *ngFor="let control of assignedConditions.controls; let formIndex = index"
                   [formGroupName]="formIndex"
                 >
-                  <mat-form-field class="ft-14-600 form-control">
+                  <mat-form-field class="dense-2 ft-14-600 form-control">
                     <mat-label>{{ 'users.preview-users.experiment.text' | translate }}</mat-label>
                     <mat-select class="ft-14-600 form-control" formControlName="experimentId">
                       <mat-option *ngFor="let experiment of allExperimentNamesView[formIndex]" [value]="experiment.id">
@@ -65,7 +65,7 @@
                     </mat-select>
                   </mat-form-field>
                   <div class="condition-container-selection">
-                    <mat-form-field class="ft-14-600 form-control">
+                    <mat-form-field class="dense-2 ft-14-600 form-control">
                       <mat-label>{{ 'global.condition.text' | translate | titlecase }}</mat-label>
                       <mat-select class="ft-14-600 form-control" formControlName="conditionId">
                         <mat-option *ngFor="let condition of experimentConditions[formIndex]" [value]="condition?.id">

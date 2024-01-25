@@ -1,4 +1,4 @@
-::ng-deep .mat-optgroup.hideLabel .mat-optgroup-label {
+::ng-deep .mat-mdc-optgroup.hideLabel .mat-mdc-optgroup-label {
   display: none;
 }
 
@@ -105,18 +105,5 @@
     min-height: 30px;
     margin-top: 5px;
     margin-bottom: 15px;
-  }
-
-  ::ng-deep .mat-form-field-label {
-    color: var(--grey-6);
-  }
-
-  ::ng-deep .form-control .mat-form-field-underline {
-    bottom: unset;
-    background-color: unset !important;
-  }
-
-  ::ng-deep .mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple {
-    display: none;
   }
 }

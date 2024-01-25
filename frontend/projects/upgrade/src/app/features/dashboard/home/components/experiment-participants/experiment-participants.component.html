@@ -12,7 +12,7 @@
                 {{ 'segments.global-members-type.text' | translate }}
               </mat-header-cell>
               <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                <mat-form-field floatLabel="never" class="form-control">
+                <mat-form-field class="dense-2 form-control" subscriptSizing="dynamic">
                   <mat-label>{{ 'segments.members-placeholder-type.text' | translate }}</mat-label>
                   <mat-select formControlName="type" (selectionChange)="selectedOption($event, groupIndex, 1)">
                     <div *ngIf="groupIndex === 0">
@@ -38,7 +38,7 @@
                 <ng-container
                   *ngIf="participantsForm.getRawValue('type')?.members1[groupIndex]?.type === 'Segment'; else noSelect"
                 >
-                  <mat-form-field floatLabel="never" class="form-control">
+                  <mat-form-field class="dense-2 dense-2 form-control" subscriptSizing="dynamic">
                     <input
                       matInput
                       [placeholder]="'segments.members-placeholder-id/name.text' | translate"
@@ -56,7 +56,7 @@
                   </mat-form-field>
                 </ng-container>
                 <ng-template #noSelect>
-                  <mat-form-field floatLabel="never" class="form-control">
+                  <mat-form-field class="dense-2 dense-2 form-control" subscriptSizing="dynamic">
                     <input
                       matInput
                       [placeholder]="'segments.members-placeholder-id/name.text' | translate"
@@ -139,7 +139,7 @@
                   {{ 'segments.global-members-type.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                  <mat-form-field floatLabel="never" class="form-control">
+                  <mat-form-field class="dense-2 dense-2 form-control" subscriptSizing="dynamic">
                     <mat-label>{{ 'segments.members-placeholder-type.text' | translate }}</mat-label>
                     <mat-select formControlName="type" (selectionChange)="selectedOption($event, groupIndex, 2)">
                       <mat-option *ngFor="let val of subSegmentTypes" [value]="val.value">
@@ -161,7 +161,7 @@
                       else noSelect
                     "
                   >
-                    <mat-form-field floatLabel="never" class="form-control">
+                    <mat-form-field class="dense-2 dense-2 form-control" subscriptSizing="dynamic">
                       <input
                         matInput
                         [placeholder]="'segments.members-placeholder-id/name.text' | translate"
@@ -179,7 +179,7 @@
                     </mat-form-field>
                   </ng-container>
                   <ng-template #noSelect>
-                    <mat-form-field floatLabel="never" class="form-control">
+                    <mat-form-field class="dense-2 dense-2 form-control" subscriptSizing="dynamic">
                       <input
                         matInput
                         [placeholder]="'segments.members-placeholder-id/name.text' | translate"

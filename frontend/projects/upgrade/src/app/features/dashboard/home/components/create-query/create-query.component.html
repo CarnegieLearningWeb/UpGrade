@@ -16,7 +16,7 @@
             <div *ngFor="let key of keys.controls; let formIndex = index">
               <ng-container [formGroupName]="formIndex">
                 <span [matTooltip]="queryForm.getRawValue().keys[formIndex]?.metricKey?.key" matTooltipPosition="above">
-                  <mat-form-field class="auto-complete">
+                  <mat-form-field class="dense-2 auto-complete">
                     <input
                       type="text"
                       [placeholder]="tabIndex === 0 ? 'Metric' : controlTitles[formIndex] || 'Metric'"
@@ -45,7 +45,7 @@
           <span>{{ 'query.clear-btn.text' | translate }}</span>
         </button>
         <div class="secondary-form" *ngIf="selectedNode">
-          <mat-form-field class="ft-14-600 form-control">
+          <mat-form-field class="dense-2 ft-14-600 form-control">
             <input
               matInput
               class="ft-14-400"
@@ -54,7 +54,7 @@
             />
           </mat-form-field>
 
-          <mat-form-field class="ft-14-600 form-control">
+          <mat-form-field class="dense-2 ft-14-600 form-control">
             <mat-label>{{ 'monitor.statistic.text' | translate | titlecase }}</mat-label>
             <mat-select class="ft-14-400" formControlName="operationType">
               <mat-option *ngFor="let operation of queryOperations" [value]="operation.value">
@@ -64,7 +64,7 @@
           </mat-form-field>
 
           <mat-form-field
-            class="ft-14-600 form-control"
+            class="dense-2 ft-14-600 form-control"
             *ngIf="selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS"
           >
             <mat-label>{{ 'query.form-comparison-function.text' | translate | titlecase }}</mat-label>
@@ -77,7 +77,7 @@
           </mat-form-field>
 
           <mat-form-field
-            class="ft-14-600 form-control"
+            class="dense-2 ft-14-600 form-control"
             *ngIf="selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS"
           >
             <mat-label>{{ 'query.form-compare-value.text' | translate | titlecase }}</mat-label>

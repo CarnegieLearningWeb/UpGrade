@@ -43,7 +43,7 @@
       </button>
     </div>
     <div>
-      <mat-form-field class="filter-options">
+      <mat-form-field class="dense-2 filter-options">
         <mat-select
           class="ft-16-600"
           [(ngModel)]="selectedUserFilterOption"
@@ -54,7 +54,7 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field class="ft-14-600 input">
+      <mat-form-field class="dense-2 ft-14-600 input">
         <input
           class="ft-14-600 input"
           #searchInput
@@ -84,7 +84,7 @@
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
               <div *ngIf="editMode === index; else firstNameReadOnly">
-                <mat-form-field class="ft-14-600 input">
+                <mat-form-field class="dense-2 ft-14-600 input">
                   <input
                     matInput
                     class="ft-14-400"
@@ -108,7 +108,7 @@
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
               <div *ngIf="editMode === index; else lastNameReadOnly">
-                <mat-form-field class="ft-14-600 input">
+                <mat-form-field class="dense-2 ft-14-600 input">
                   <input
                     matInput
                     class="ft-14-400"
@@ -144,7 +144,7 @@
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
               <div *ngIf="editMode === index; else roleReadOnly">
-                <mat-form-field class="ft-14-600 input">
+                <mat-form-field class="dense-2 ft-14-600 input">
                   <mat-label>{{ 'profile.form.role-control.text' | translate }}</mat-label>
                   <mat-select class="ft-14-600 input" formControlName="role">
                     <mat-option *ngFor="let role of userRoles" [value]="role">
