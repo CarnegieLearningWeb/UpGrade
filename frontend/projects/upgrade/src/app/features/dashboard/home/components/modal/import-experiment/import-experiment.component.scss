@@ -34,6 +34,12 @@
     .warn-msg {
       color: var(--blue);
     }
+
+    .table {
+      mat-row {
+        height: auto;
+      }
+    }
   }
 
   .button-container {

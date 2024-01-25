@@ -62,8 +62,8 @@ $experiment-state-light-color: #8f9bb3;
       color: var(--grey-2);
     }
 
-    tr.mat-footer-row,
-    tr.mat-row {
+    tr.mat-mdc-footer-row,
+    tr.mat-mdc-row {
       height: 55px;
     }
 
@@ -73,8 +73,8 @@ $experiment-state-light-color: #8f9bb3;
       }
     }
 
-    .mat-cell,
-    .mat-header-cell {
+    .mat-mdc-cell,
+    .mat-mdc-header-cell {
       padding: 10px 5px;
       word-break: break-word;
 
@@ -101,7 +101,7 @@ $experiment-state-light-color: #8f9bb3;
       }
     }
 
-    .mat-header-cell {
+    .mat-mdc-header-cell {
       &.cdk-column-state,
       &.cdk-column-context,
       &.cdk-column-createdAt {

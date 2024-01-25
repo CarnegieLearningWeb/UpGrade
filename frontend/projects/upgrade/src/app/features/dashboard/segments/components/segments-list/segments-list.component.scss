@@ -60,19 +60,19 @@
       color: var(--grey-2);
     }
 
-    tr.mat-footer-row,
-    tr.mat-row {
+    tr.mat-mdc-footer-row,
+    tr.mat-mdc-row {
       height: 55px;
     }
 
-    .mat-cell,
-    .mat-header-cell {
+    .mat-mdc-cell,
+    .mat-mdc-header-cell {
       padding: 10px 5px;
       width: 20%;
       word-break: break-word;
     }
 
-    .mat-header-cell {
+    .mat-mdc-header-cell {
       padding-left: 5px;
     }
 

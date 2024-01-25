@@ -323,7 +323,6 @@
                 <mat-cell
                   *matCellDef="let rowData; let rowIndex = dataIndex"
                   class="actions-cell"
-                  style="justify-content: flex-end"
                   [ngClass]="{
                     'row-is-locked':
                       ((isFormLockedForEdit$ | async) &&
@@ -525,7 +524,6 @@
                           <mat-cell
                             *matCellDef="let rowData; let rowIndex = index"
                             class="actions-cell"
-                            style="justify-content: flex-end"
                             [ngClass]="{
                               'row-is-locked':
                                 ((levelsTableEditIndex$ | async) !== null &&

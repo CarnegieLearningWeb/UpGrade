@@ -34,6 +34,7 @@
       overflow: auto;
       mat-header-row {
         min-height: 35px;
+        max-height: 35px;
         justify-content: space-between;
       }
 
@@ -77,12 +78,15 @@
         margin-left: 30px;
         flex: 0 0 78px;
         width: 78px;
+        justify-content: center;
+
         .row-action-btn {
           border: none;
           background-color: transparent;
+
           .icon {
             margin-top: -5px;
-            margin-left: -3px;
+            margin-left: -5px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -112,6 +116,7 @@
 
       mat-header-row {
         min-height: 35px;
+        max-height: 35px;
         justify-content: space-between;
       }
 
@@ -144,14 +149,12 @@
       }
 
       .cdk-column-factor {
-        flex: 0 0 220px;
-        width: 150px;
+        width: 100%;
       }
 
       .cdk-column-description {
-        flex: 0 0 220px;
-        width: 170px;
         margin-left: 30px;
+        width: 100%;
       }
 
       .cdk-column-expandedDetail {
@@ -162,17 +165,17 @@
       }
 
       .cdk-column-actions {
-        margin-left: 15px;
-        padding-right: 10px;
-        justify-content: flex-end;
+        margin-left: 30px;
+        flex: 0 0 78px;
+        width: 78px;
+        justify-content: center;
 
         .row-action-btn {
           border: none;
           background-color: transparent;
 
           .icon {
-            margin-top: -5px;
-            margin-left: -3px;
+            margin-left: -5px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -183,9 +186,6 @@
       }
 
       .expandable-row {
-        min-height: 0;
-        overflow: hidden;
-
         mat-cell,
         mat-header-cell {
           padding: 0px;
@@ -224,13 +224,16 @@
     .level-table {
       mat-header-row {
         min-height: 35px;
+        max-height: 35px;
         justify-content: space-between;
       }
 
       mat-row {
         justify-content: space-between;
-        border-bottom-style: none;
-        border-top: 1px solid #d3d3d3;
+
+        &:last-child {
+          border-bottom-style: none;
+        }
       }
 
       mat-header-cell {
@@ -244,22 +247,20 @@
       }
 
       .cdk-column-level {
-        margin-left: 20px;
-        flex: 0 0 220px;
-        width: 180px;
+        margin-left: 30px;
+        width: 100%;
       }
 
       .cdk-column-payload {
-        flex: 0 0 220px;
-        width: 100%;
-        min-width: 320px;
         margin-left: 30px;
+        width: 100%;
       }
 
       .cdk-column-actions {
-        margin-left: 15px;
-        padding-right: 10px;
-        justify-content: flex-end;
+        margin-left: 30px;
+        flex: 0 0 78px;
+        width: 78px;
+        justify-content: center;
 
         .row-action-btn {
           border: none;
@@ -267,7 +268,7 @@
 
           .icon {
             margin-top: -5px;
-            margin-left: -3px;
+            margin-left: -5px;
             display: flex;
             justify-content: center;
             align-items: center;
