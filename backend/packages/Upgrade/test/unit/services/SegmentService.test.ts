@@ -58,9 +58,11 @@ describe('Segment Service Testing', () => {
     seg2.subSegments = [];
     seg2.id = 'seg2';
     seg2.subSegments = [];
+    seg2.context = 'add';
     seg1.subSegments = [];
     seg1.id = 'seg1';
     seg1.subSegments = [seg2];
+    seg1.context = 'add';
     const user = new IndividualForSegment();
     user.userId = 'user1';
     seg1.individualForSegment = [user];
@@ -229,12 +231,13 @@ describe('Segment Service Testing', () => {
       segmentsData: [
         {
           id: seg1.id,
+          context: 'add',
           status: 'Unused',
           subSegments: seg1.subSegments,
           groupForSegment: seg1.groupForSegment,
           individualForSegment: seg1.individualForSegment,
         },
-        { id: seg2.id, status: 'Used', subSegments: seg2.subSegments },
+        { id: seg2.id, context: 'add', status: 'Used', subSegments: seg2.subSegments },
       ],
       experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
@@ -249,12 +252,13 @@ describe('Segment Service Testing', () => {
       segmentsData: [
         {
           id: seg1.id,
+          context: 'add',
           status: 'Unused',
           subSegments: seg1.subSegments,
           groupForSegment: seg1.groupForSegment,
           individualForSegment: seg1.individualForSegment,
         },
-        { id: seg2.id, status: 'Used', subSegments: seg2.subSegments },
+        { id: seg2.id, context: 'add', status: 'Used', subSegments: seg2.subSegments },
       ],
       experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
@@ -269,12 +273,13 @@ describe('Segment Service Testing', () => {
       segmentsData: [
         {
           id: seg1.id,
+          context: 'add',
           status: 'Global',
           subSegments: seg1.subSegments,
           groupForSegment: seg1.groupForSegment,
           individualForSegment: seg1.individualForSegment,
         },
-        { id: seg2.id, status: 'Used', subSegments: seg2.subSegments },
+        { id: seg2.id, context: 'add', status: 'Used', subSegments: seg2.subSegments },
       ],
       experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
@@ -368,7 +373,8 @@ describe('Segment Service Testing', () => {
         {
           fileName: 'seg1',
           error:
-            'Invalid Segment data: ' + 'SubSegment: seg2 not found. Please import subSegment and link in segment. ',
+            'Invalid Segment data: ' +
+            'SubSegment: seg2 not found. Please import subSegment with same context and link in segment. ',
         },
       ],
       segments: [],

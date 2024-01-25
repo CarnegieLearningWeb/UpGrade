@@ -1,10 +1,10 @@
-import { JsonController, Get, Delete, Param, Authorized, Post, Req, Body } from 'routing-controllers';
+import { JsonController, Get, Delete, Param, Authorized, Post, Req, Body, QueryParams } from 'routing-controllers';
 import { SegmentService } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
 import { SERVER_ERROR } from 'upgrade_types';
 import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
-import { SegmentFile, SegmentInputValidator, SegmentReturnObj } from './validators/SegmentInputValidator';
+import { SegmentFile, SegmentIds, SegmentInputValidator, SegmentReturnObj } from './validators/SegmentInputValidator';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 
@@ -390,32 +390,12 @@ export class SegmentController {
   }
 
   @Get('/export/csv')
-  public exportSegment(@Req() request: AppRequest): Promise<SegmentFile[]> {
-    const id = request.query.ids;
-    let ids: string[] = [];
-    if (typeof id === 'string') {
-      ids.push(id);
-    } else if (Array.isArray(id)) {
-      ids = id.map((id) => {
-        return id.toString();
-      });
-    }
-
-    if (!ids) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
-    }
-    for (const id of ids) {
-      if (!isUUID(id)) {
-        return Promise.reject(
-          new Error(
-            JSON.stringify({
-              type: SERVER_ERROR.INCORRECT_PARAM_FORMAT,
-              message: ' : segmentId should be of type UUID.',
-            })
-          )
-        );
-      }
-    }
-    return this.segmentService.exportSegmentCSV(ids, request.logger);
+  public exportSegment(
+    @QueryParams()
+    params: SegmentIds,
+    @Req() request: AppRequest
+  ): Promise<SegmentFile[]> {
+    const segmentIds = params.ids;
+    return this.segmentService.exportSegmentCSV(segmentIds, request.logger);
   }
 }

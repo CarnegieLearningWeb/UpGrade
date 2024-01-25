@@ -41,12 +41,12 @@
     </ng-container>
 
     <ng-container matColumnDef="removeMember">
-      <mat-header-cell class="ft-13-700 import-csv" aria-hidden="true" (click)="fileInput.click()" *matHeaderCellDef>
+      <mat-header-cell class="ft-12-600 import-csv" [ngClass]="{ 'disabled': !isImportMemebervalid }" aria-hidden="true" (click)="fileInput.click()" *matHeaderCellDef>
         <mat-icon class="upload-icon" (click)="removeMember(groupIndex)">
           upload_2
         </mat-icon>
         {{ 'users.stratification-users-import-csv.text' | translate }}
-        <input  accept=".csv" type="file" #fileInput file-input class="select-file" (change)="onFileSelected($event)">
+        <input  accept=".csv" type="file" #fileInput [disabled]="!isImportMemebervalid" file-input class="select-file" (change)="onFileSelected($event)">
       </mat-header-cell>
       <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
         <mat-icon class="remove-icon" (click)="removeMember(groupIndex)"> delete_outline </mat-icon>

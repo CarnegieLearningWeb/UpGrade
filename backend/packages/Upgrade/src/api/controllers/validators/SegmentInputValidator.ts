@@ -48,17 +48,41 @@ export class SegmentInputValidator {
   public subSegmentIds: string[];
 }
 
-export interface SegmentReturnObj {
+export class SegmentReturnObj {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => Segment)
   segments: Segment[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SegmentImportError)
   importErrors: SegmentImportError[];
 }
 
-export interface SegmentImportError {
+export class SegmentImportError {
+  @IsNotEmpty()
+  @IsString()
   fileName: string;
+
+  @IsString()
   error: string;
 }
 
-export interface SegmentFile {
+export class SegmentFile {
+  @IsNotEmpty()
+  @IsString()
   fileName: string;
+
+  @IsNotEmpty()
+  @IsString()
   fileContent: string;
+}
+
+export class SegmentIds {
+  @IsArray()
+  @IsNotEmpty()
+  @IsString({ each: true })
+  @IsUUID('all', { each: true })
+  public ids: string[];
 }
