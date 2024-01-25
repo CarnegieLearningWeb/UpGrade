@@ -346,3 +346,45 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
     }
   }
 }
+
+.mat-mdc-tab-group {
+  .mat-mdc-tab-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+    .mat-mdc-tab-header-pagination {
+      box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px;
+    }
+
+    .mat-mdc-tab-label-container .mat-mdc-tab-labels .mat-mdc-tab {
+      margin: 20px 0;
+      min-width: 160px;
+
+      &:first-of-type {
+        margin-left: 34px;
+      }
+
+      .mdc-tab__text-label {
+        font-family: 'Open Sans';
+        font-weight: 600;
+        font-size: var(--text-size-xx-large);
+        letter-spacing: normal;
+        color: var(--grey-2);
+        user-select: none;
+      }
+
+      opacity: 0.6;
+
+      &.mdc-tab--active {
+        opacity: 1;
+
+        .mdc-tab__text-label {
+          color: var(--blue);
+        }
+      }
+
+      .mdc-tab-indicator .mdc-tab-indicator__content {
+        margin-bottom: -20px;
+      }
+    }
+  }
+}

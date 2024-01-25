@@ -1,5 +1,11 @@
 <div class="create-query-container">
-  <mat-tab-group disableRipple="true" (selectedIndexChange)="selectedIndexChange($event)">
+  <mat-tab-group
+    [selectedIndex]="0"
+    [mat-stretch-tabs]="false"
+    [dynamicHeight]="true"
+    disableRipple
+    (selectedIndexChange)="selectedIndexChange($event)"
+  >
     <mat-tab [label]="'monitor.simple-metric.text' | translate">
       <ng-container *ngTemplateOutlet="queryTemplate; context: { tabIndex: 0 }"></ng-container>
     </mat-tab>
