@@ -80,7 +80,12 @@
       </div>
     </div>
 
-    <mat-tab-group [selectedIndex]="0" disableRipple>
+    <mat-tab-group
+      [selectedIndex]="0"
+      [mat-stretch-tabs]="false"
+      [dynamicHeight]="true"
+      disableRipple
+    >
       <mat-tab label="{{ 'home.view-experiment.mattab.overview.text' | translate }}">
         <div class="experiment-secondary-info tab-body-container">
           <div class="experiment-secondary-info-container">

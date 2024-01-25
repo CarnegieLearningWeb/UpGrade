@@ -8,7 +8,7 @@
       box-shadow: 0 0 8px 0 mat.get-color-from-palette($background, shadow-color);
     }
 
-    .mat-tab-header {
+    .mat-mdc-tab-header {
       box-shadow: 0 8px 8px -8px mat.get-color-from-palette($background, shadow-color);
     }
   }

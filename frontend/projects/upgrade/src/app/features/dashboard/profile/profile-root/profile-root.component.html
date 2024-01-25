@@ -3,7 +3,12 @@
   <span class="ft-16-400 subtitle" [innerHTML]="'profile.sub-heading.text' | translate"></span>
 
   <mat-card appearance="raised" class="tabs-wrapper">
-    <mat-tab-group disableRipple="true">
+    <mat-tab-group
+      [selectedIndex]="0"
+      [mat-stretch-tabs]="false"
+      [dynamicHeight]="true"
+      disableRipple
+    >
       <mat-tab [label]="'profile.heading.text' | translate">
         <profile-info></profile-info>
       </mat-tab>
