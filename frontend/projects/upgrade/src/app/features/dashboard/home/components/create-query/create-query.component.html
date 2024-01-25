@@ -6,10 +6,20 @@
     disableRipple
     (selectedIndexChange)="selectedIndexChange($event)"
   >
-    <mat-tab [label]="'monitor.simple-metric.text' | translate">
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <span class="ft-22-600 tab-label">
+            {{ 'monitor.simple-metric.text' | translate }}
+        </span>
+      </ng-template>
       <ng-container *ngTemplateOutlet="queryTemplate; context: { tabIndex: 0 }"></ng-container>
     </mat-tab>
-    <mat-tab [label]="'monitor.grouped-metric.text' | translate">
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <span class="ft-22-600 tab-label">
+            {{ 'monitor.grouped-metric.text' | translate }}
+        </span>
+      </ng-template>
       <ng-container *ngTemplateOutlet="queryTemplate"></ng-container>
     </mat-tab>
   </mat-tab-group>
