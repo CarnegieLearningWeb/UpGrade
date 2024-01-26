@@ -10,11 +10,21 @@
       disableRipple
       (selectedIndexChange)="selectedIndexChange($event)"
     >
-      <mat-tab [label]="'logs.audit-logs-tab.text' | translate">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'logs.audit-logs-tab.text' | translate }}
+          </span>
+        </ng-template>
         <audit-logs></audit-logs>
       </mat-tab>
       <!-- #1080 temporarily disable -->
-      <!-- <mat-tab [label]="'logs.error-logs-tab.text' | translate">
+      <!-- <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'logs.error-logs-tab.text' | translate }}
+          </span>
+        </ng-template>
         <error-logs></error-logs>
       </mat-tab> -->
     </mat-tab-group>

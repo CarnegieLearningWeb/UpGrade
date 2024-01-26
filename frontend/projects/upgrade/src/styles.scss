@@ -363,10 +363,7 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
         margin-left: 34px;
       }
 
-      .mdc-tab__text-label {
-        font-family: 'Open Sans';
-        font-weight: 600;
-        font-size: var(--text-size-xx-large);
+      .tab-label {
         letter-spacing: normal;
         color: var(--grey-2);
         user-select: none;
@@ -377,7 +374,7 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
       &.mdc-tab--active {
         opacity: 1;
 
-        .mdc-tab__text-label {
+        .tab-label {
           color: var(--blue);
         }
       }
