@@ -28,8 +28,13 @@ export class SegmentsDataService {
   }
 
   exportSegments(segmentIds: string[]) {
+    let ids = new HttpParams();
+    segmentIds.forEach((id) => {
+      ids = ids.append('ids', id.toString());
+    });
+
     const url = this.environment.api.exportSegments;
-    return this.http.post(url, segmentIds);
+    return this.http.get(url, { params: ids });
   }
 
   exportSegmentCSV(segmentIds: string[]) {
