@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { Segment } from '../../../../../core/segments/store/segments.model';
@@ -19,8 +19,9 @@ import { CustomMatTableSource } from './CustomMatTableSource';
 import { EXPERIMENT_SEARCH_KEY } from '../../../../../core/experiments/store/experiments.model';
 import { SegmentStatusPipeType } from '../../../../../shared/pipes/segment-status.pipe';
 import { SEGMENT_STATUS } from '../../../../../core/segments/store/segments.model';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
+import { ExportSegmentComponent } from '../../components/modal/export-segment/export-segment.component';
 
 @Component({
   selector: 'segments-list',
@@ -81,10 +82,10 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   openExportAllSegment() {
-    const segmentIds = this.allSegments.data.map((segment) => {
-      return segment.id;
+    this.dialog.open(ExportSegmentComponent, {
+      panelClass: 'export-modal',
+      data: { segment: this.allSegments.data },
     });
-    this.segmentsService.exportSegments(segmentIds);
   }
 
   ngOnDestroy() {

@@ -9,6 +9,7 @@
 
     mat-header-row {
       min-height: 35px;
+      max-height: 35px;
     }
 
     mat-row {
@@ -30,8 +31,8 @@
     .cdk-column-removeMember {
       margin-right: 0;
       padding-right: 0;
-      flex: 0 0 10%;
-      justify-content: left;
+      flex: 0 0 15%;
+      justify-content: center;
     }
 
     .cdk-column-type {
@@ -39,20 +40,34 @@
       justify-content: left;
     }
     .cdk-column-id {
-      flex: 0 0 55%;
+      flex: 0 0 50%;
       justify-content: left;
+      padding-top: 5px;
     }
-    .cdk-column-memberNumber {
-      flex: 0 0 10%;
-      justify-content: left;
+
+    .import-csv {
+      color: var(--blue);
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .disabled {
+      color: var(--light-blue);
+      cursor: default;
+    }
+
+    .select-file {
+      display: none;
     }
 
     .remove-icon {
-      position: relative;
-      top: -3px;
-      width: 18px;
-      height: 18px;
+      margin-right: -5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       font-size: var(--text-size-x-large);
+      color: gray;
 
       &:hover {
         cursor: pointer;

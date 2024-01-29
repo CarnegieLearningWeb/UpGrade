@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { Subscription } from 'rxjs';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { filter } from 'rxjs/operators';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
@@ -14,6 +14,7 @@ import { DeleteComponent } from '../../../../../shared/components/delete/delete.
 import { SegmentExperimentListComponent } from '../../components/modal/segment-experiment-list/segment-experiment-list.component';
 import { SEGMENT_STATUS } from 'upgrade_types';
 import { SegmentStatusPipeType } from '../../../../../shared/pipes/segment-status.pipe';
+import { ExportSegmentComponent } from '../../components/modal/export-segment/export-segment.component';
 @Component({
   selector: 'view-segment',
   templateUrl: './view-segment.component.html',
@@ -105,8 +106,11 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
     });
   }
 
-  exportSegment(segmentId: string) {
-    this.segmentsService.exportSegments([segmentId]);
+  exportSegment() {
+    this.dialog.open(ExportSegmentComponent, {
+      panelClass: 'export-modal',
+      data: { segment: [clonedeep(this.segment)] },
+    });
   }
 
   ngOnDestroy() {

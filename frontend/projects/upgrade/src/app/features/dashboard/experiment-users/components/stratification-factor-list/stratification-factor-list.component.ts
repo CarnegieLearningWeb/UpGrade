@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ImportStratificationsComponent } from './import-stratifications/import-stratifications.component';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import * as clonedeep from 'lodash.clonedeep';
 import { DeleteStratificationComponent } from './delete-stratification/delete-stratification.component';
 import { StratificationFactor } from '../../../../../core/stratification-factors/store/stratification-factors.model';

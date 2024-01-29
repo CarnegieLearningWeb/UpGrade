@@ -260,26 +260,6 @@ $font-size-small: 15px;
     padding: 0px 34px;
   }
 
-  .mat-tab-label {
-    background-color: transparent;
-    color: #8992a3;
-    font-family: Open Sans;
-    font-size: 22px;
-    font-weight: 600;
-    line-height: 48px;
-    margin: 28px 0px 21px 0px;
-    padding: 0px;
-
-    &:first-of-type {
-      margin-left: 34px;
-    }
-  }
-
-  .mat-tab-label-active {
-    color: #3366ff;
-    opacity: 1;
-  }
-
   .tab-body-container {
     padding: 24px 0px;
   }
@@ -290,10 +270,6 @@ $font-size-small: 15px;
 
   .table-container {
     padding: 24px 34px;
-
-    .mat-row {
-      max-height: 50px;
-    }
 
     &-partition {
       margin-bottom: 24px;
@@ -327,9 +303,6 @@ $font-size-small: 15px;
         }
 
         .expandable-row {
-          min-height: 0px !important;
-          overflow: hidden;
-
           mat-cell,
           mat-header-cell {
             padding-left: 30px;
@@ -345,7 +318,7 @@ $font-size-small: 15px;
       .level-table {
         border: 1px solid #d3d3d3;
         border-radius: 5px;
-        margin: 10px 5px 10px 25px;
+        margin: 10px 5px 10px 23px;
       }
     }
 
@@ -365,11 +338,11 @@ $font-size-small: 15px;
     &-payloads .payload-table-overview {
       justify-content: space-between;
 
-      .mat-header-cell {
+      .mat-mdc-header-cell {
         justify-content: left;
       }
 
-      .mat-cell {
+      .mat-mdc-cell {
         justify-content: left;
       }
     }
@@ -377,6 +350,7 @@ $font-size-small: 15px;
     &-metrics {
       mat-row {
         align-items: flex-start;
+        height: auto !important;
       }
       mat-cell {
         align-items: flex-start;

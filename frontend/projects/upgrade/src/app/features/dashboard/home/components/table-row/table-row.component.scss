@@ -4,10 +4,10 @@ div {
   .inner-table-container {
     border: 1px solid #D3D3D3;
     border-radius: 5px;
-    margin: 10px 5px 10px 25px;
+    margin: 10px 5px 10px 23px;
   }
 
-  .mat-table {
+  .mat-mdc-table {
     mat-cell,
     mat-header-cell {
       display: flex;
@@ -22,7 +22,11 @@ div {
     }
 
     .mat-column-expandIcon {
-      flex-grow: 0;
+      flex: 0 0 60px;
+      width: 30px;
+      padding-left: 10px;
+      justify-content: center !important;
+      margin-right: -16px;
     }
 
     .mat-icon {
@@ -36,9 +40,6 @@ div {
   }
 
   .expandable-row {
-    min-height: 0;
-    overflow: hidden;
-
     mat-cell,
     mat-header-cell {
       padding: 0px;
