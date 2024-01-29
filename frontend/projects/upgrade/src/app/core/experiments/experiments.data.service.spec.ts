@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { of } from 'rxjs';
 import { ASSIGNMENT_ALGORITHM, CONDITION_ORDER, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { environment } from '../../../environments/environment';
@@ -243,21 +243,29 @@ describe('ExperimentDataService', () => {
       const experimentId = mockExperimentId;
       const email = mockEmail;
       const expectedUrl = mockEnvironment.api.generateCsv;
+      let experimentInfoParams = new HttpParams();
+      experimentInfoParams = experimentInfoParams.append('experimentId', experimentId.toString());
+      experimentInfoParams = experimentInfoParams.append('email', email.toString());
 
       service.exportExperimentInfo(experimentId, email);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, { experimentId, email });
+      expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl, { params: experimentInfoParams });
     });
   });
 
   describe('#exportExperimentDesign', () => {
     it('should get the exportExperimentDesign http observable', () => {
-      const experimentId = mockExperimentId;
+      const experimentIds = [mockExperimentId];
+      let ids = new HttpParams();
+      experimentIds.forEach((id) => {
+        ids = ids.append('ids', id.toString());
+      });
+
       const expectedUrl = `${mockEnvironment.api.exportExperiment}`;
 
-      service.exportExperimentDesign([experimentId]);
+      service.exportExperimentDesign(experimentIds);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, [experimentId]);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl, { params: ids });
     });
   });
 

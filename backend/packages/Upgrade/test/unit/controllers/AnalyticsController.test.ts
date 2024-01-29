@@ -58,8 +58,8 @@ describe('Analytics Controller Testing', () => {
 
   test('Post request for /api/stats/csv', () => {
     return request(app)
-      .post('/api/stats/csv')
-      .send({
+      .get('/api/stats/csv')
+      .query({
         experimentId: uuid(),
         email: 'xyz@gmail.com',
       })

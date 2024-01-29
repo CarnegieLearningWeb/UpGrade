@@ -1,10 +1,10 @@
-import { JsonController, Get, Delete, Param, Authorized, Post, Req, Body } from 'routing-controllers';
+import { JsonController, Get, Delete, Param, Authorized, Post, Req, Body, QueryParams } from 'routing-controllers';
 import { SegmentService } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
 import { SERVER_ERROR } from 'upgrade_types';
 import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
-import { SegmentInputValidator } from './validators/SegmentInputValidator';
+import { SegmentFile, SegmentIds, SegmentInputValidator, SegmentReturnObj } from './validators/SegmentInputValidator';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 
@@ -363,29 +363,29 @@ export class SegmentController {
    */
   @Post('/import')
   public importSegments(
-    @Body({ validate: false }) segments: SegmentInputValidator[],
+    @Body({ validate: false }) segments: SegmentFile[],
     @Req() request: AppRequest
-  ): Promise<Segment[]> {
+  ): Promise<SegmentReturnObj> {
     return this.segmentService.importSegments(segments, request.logger);
   }
 
-  @Post('/export')
-  public exportSegments(@Body({ validate: false }) ids: string[], @Req() request: AppRequest): Promise<Segment[]> {
-    if (!ids) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
-    }
-    for (const id of ids) {
-      if (!isUUID(id)) {
-        return Promise.reject(
-          new Error(
-            JSON.stringify({
-              type: SERVER_ERROR.INCORRECT_PARAM_FORMAT,
-              message: ' : segmentId should be of type UUID.',
-            })
-          )
-        );
-      }
-    }
-    return this.segmentService.exportSegments(ids, request.logger);
+  @Get('/export/json')
+  public exportSegments(
+    @QueryParams()
+    params: SegmentIds,
+    @Req() request: AppRequest
+  ): Promise<Segment[]> {
+    const segmentIds = params.ids;
+    return this.segmentService.exportSegments(segmentIds, request.logger);
+  }
+
+  @Get('/export/csv')
+  public exportSegment(
+    @QueryParams()
+    params: SegmentIds,
+    @Req() request: AppRequest
+  ): Promise<SegmentFile[]> {
+    const segmentIds = params.ids;
+    return this.segmentService.exportSegmentCSV(segmentIds, request.logger);
   }
 }

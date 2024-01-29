@@ -10,6 +10,7 @@ import {
   Authorized,
   CurrentUser,
   Req,
+  QueryParams,
 } from 'routing-controllers';
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
@@ -25,6 +26,7 @@ import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpda
 import { env } from '../../env';
 import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentDTO } from '../DTO/ExperimentDTO';
+import { ExperimentIds } from './validators/ExperimentIdsValidator';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: ExperimentDTO[];
@@ -1170,13 +1172,15 @@ export class ExperimentController {
     return this.experimentService.importExperiment(experiments, currentUser, request.logger);
   }
 
-  @Post('/export')
+  @Get('/export')
   public exportExperiment(
-    @Body({ validate: true, type: String }) ids: string[],
+    @QueryParams()
+    params: ExperimentIds,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO[]> {
-    return this.experimentService.exportExperiment(ids, currentUser, request.logger);
+    const experimentIds = params.ids;
+    return this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
   }
 
   /**
