@@ -3,12 +3,28 @@
   <span class="ft-16-400 subtitle" [innerHTML]="'logs.sub-heading.text' | translate"></span>
 
   <mat-card appearance="raised" class="tabs-wrapper">
-    <mat-tab-group disableRipple="true" (selectedIndexChange)="selectedIndexChange($event)">
-      <mat-tab [label]="'logs.audit-logs-tab.text' | translate">
+    <mat-tab-group
+      [selectedIndex]="0"
+      [mat-stretch-tabs]="false"
+      [dynamicHeight]="true"
+      disableRipple
+      (selectedIndexChange)="selectedIndexChange($event)"
+    >
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'logs.audit-logs-tab.text' | translate }}
+          </span>
+        </ng-template>
         <audit-logs></audit-logs>
       </mat-tab>
       <!-- #1080 temporarily disable -->
-      <!-- <mat-tab [label]="'logs.error-logs-tab.text' | translate">
+      <!-- <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'logs.error-logs-tab.text' | translate }}
+          </span>
+        </ng-template>
         <error-logs></error-logs>
       </mat-tab> -->
     </mat-tab-group>

@@ -47,7 +47,8 @@ export const environment = {
     contextMetaData: '/experiments/contextMetaData',
     segments: '/segments',
     importSegments: '/segments/import',
-    exportSegments: '/segments/export',
+    exportSegments: '/segments/export/json',
+    exportSegmentCSV: '/segments/export/csv',
     getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
   },
 };
