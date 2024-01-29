@@ -10,6 +10,7 @@ import { IContextMetaData } from '../../../../../core/experiments/store/experime
 import { Subscription } from 'rxjs';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { SEGMENT_TYPE } from 'upgrade_types';
+import { SegmentsService } from '../../../../../core/segments/segments.service';
 
 @Component({
   selector: 'segment-overview',
@@ -24,11 +25,19 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
   overviewForm: UntypedFormGroup;
   allContexts = [];
   currentContext = null;
+  isSegmentNameValid = true;
 
+  allSegmentNameConextArray: string[] = [];
+  allSegments: Segment[];
+  allSegmentsSub: Subscription;
   contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
 
-  constructor(private _formBuilder: UntypedFormBuilder, private experimentService: ExperimentService) {}
+  constructor(
+    private _formBuilder: UntypedFormBuilder,
+    private experimentService: ExperimentService,
+    private segmentsService: SegmentsService
+  ) {}
 
   get NewSegmentDialogEvents() {
     return NewSegmentDialogEvents;
@@ -41,6 +50,10 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
       if (this.contextMetaData && this.contextMetaData.contextMetadata) {
         this.allContexts = Object.keys(this.contextMetaData.contextMetadata);
       }
+    });
+
+    this.allSegmentsSub = this.segmentsService.allSegments$.subscribe((allSegments) => {
+      this.allSegments = allSegments;
     });
 
     this.overviewForm = this._formBuilder.group({
@@ -68,13 +81,31 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
     }
   }
 
+  SegmentNameValidation(name: string, context: string) {
+    this.allSegmentNameConextArray = [];
+    this.isSegmentNameValid = true;
+    this.allSegmentNameConextArray = this.allSegments.map((segment) => {
+      if (this.segmentInfo) {
+        if (this.segmentInfo.id === segment.id) {
+          return '';
+        }
+      }
+      return segment.name + '_' + segment.context;
+    });
+    const segmentNameContextString = name + '_' + context;
+    if (this.allSegmentNameConextArray.includes(segmentNameContextString)) {
+      this.isSegmentNameValid = false;
+    }
+  }
+
   emitEvent(eventType: NewSegmentDialogEvents) {
     switch (eventType) {
       case NewSegmentDialogEvents.CLOSE_DIALOG:
         this.emitSegmentDialogEvent.emit({ type: eventType });
         break;
       case NewSegmentDialogEvents.SEND_FORM_DATA:
-        if (this.overviewForm.valid || this.overviewForm.disabled) {
+        this.SegmentNameValidation(this.overviewForm.value.name, this.overviewForm.value.context);
+        if ((this.overviewForm.valid || this.overviewForm.disabled) && this.isSegmentNameValid) {
           const { name, description, context } = this.overviewForm.value;
           const overviewFormData = {
             name,

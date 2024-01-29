@@ -1,8 +1,9 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { Segment } from '../../models/Segment';
 import { SEGMENT_TYPE } from 'upgrade_types';
 
-class Group {
+export class Group {
   @IsNotEmpty()
   @IsString()
   groupId: string;
@@ -45,6 +46,37 @@ export class SegmentInputValidator {
   @IsArray()
   @IsString({ each: true })
   public subSegmentIds: string[];
+}
+
+export class SegmentReturnObj {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => Segment)
+  segments: Segment[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SegmentImportError)
+  importErrors: SegmentImportError[];
+}
+
+export class SegmentImportError {
+  @IsNotEmpty()
+  @IsString()
+  fileName: string;
+
+  @IsString()
+  error: string;
+}
+
+export class SegmentFile {
+  @IsNotEmpty()
+  @IsString()
+  fileName: string;
+
+  @IsNotEmpty()
+  @IsString()
+  fileContent: string;
 }
 
 export class SegmentIds {
