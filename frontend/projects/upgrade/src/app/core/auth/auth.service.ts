@@ -13,7 +13,6 @@ import { BehaviorSubject, filter, take } from 'rxjs';
 import { AUTH_CONSTANTS, GoogleAuthJWTPayload, User, UserRole } from '../users/store/users.model';
 import { ENV, Environment } from '../../../environments/environment-types';
 import jwt_decode from 'jwt-decode';
-import { AuthDataService } from './auth.data.service';
 import { NavigationEnd, NavigationSkipped, Router } from '@angular/router';
 
 @Injectable()
@@ -26,7 +25,6 @@ export class AuthService {
 
   constructor(
     private store$: Store<AppState>,
-    private authDataService: AuthDataService,
     private router: Router,
     private ngZone: NgZone,
     private localStorageService: LocalStorageService,
