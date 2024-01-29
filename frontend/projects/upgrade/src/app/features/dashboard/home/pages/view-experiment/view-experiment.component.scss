@@ -274,6 +274,12 @@ $font-size-small: 15px;
     &-partition {
       margin-bottom: 24px;
 
+      .table {
+        mat-row {
+          max-height: 50px;
+        }
+      }
+
       .factor-table {
         overflow: auto;
 
@@ -285,6 +291,10 @@ $font-size-small: 15px;
         mat-header-cell,
         mat-cell {
           justify-content: left;
+        }
+
+        mat-header-cell {
+          color: var(--grey-2);
         }
 
         mat-icon {
