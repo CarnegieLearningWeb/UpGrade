@@ -1,4 +1,4 @@
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { fakeAsync, tick } from '@angular/core/testing';
 import { ActionsSubject } from '@ngrx/store';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { last, pairwise, scan, take } from 'rxjs/operators';
@@ -64,7 +64,6 @@ import { actionExecuteQuery } from '../../analysis/store/analysis.actions';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { UserRole } from '../../users/store/users.model';
 import { Environment } from '../../../../environments/environment-types';
-import { TranslateService } from '@ngx-translate/core';
 
 describe('ExperimentEffects', () => {
   let service: ExperimentEffects;

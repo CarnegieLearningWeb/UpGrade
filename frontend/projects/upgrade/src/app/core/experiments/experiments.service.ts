@@ -41,7 +41,6 @@ import { AppState } from '../core.state';
 import { map, first, filter, tap } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { ENV, Environment } from '../../../environments/environment-types';
-import { PAYLOAD_TYPE } from '../../../../../../../types/src';
 
 @Injectable()
 export class ExperimentService {
