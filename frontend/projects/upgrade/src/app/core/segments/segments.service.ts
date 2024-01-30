@@ -9,14 +9,15 @@ import {
   selectExperimentSegmentsInclusion,
   selectExperimentSegmentsExclusion,
 } from './store/segments.selectors';
-import { SegmentInput, UpsertSegmentType } from './store/segments.model';
+import { SegmentFile, SegmentInput, UpsertSegmentType } from './store/segments.model';
 import { filter, map } from 'rxjs/operators';
-import { combineLatest } from 'rxjs';
+import { Observable, combineLatest } from 'rxjs';
+import { SegmentsDataService } from './segments.data.service';
 
 @Injectable({ providedIn: 'root' })
 @Injectable()
 export class SegmentsService {
-  constructor(private store$: Store<AppState>) {}
+  constructor(private store$: Store<AppState>, private segmentsDataService: SegmentsDataService) {}
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
@@ -65,7 +66,11 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionExportSegments({ segmentIds }));
   }
 
-  importSegments(segments: SegmentInput[]) {
+  exportSegmentCSV(segmentIds: string[]): Observable<any> {
+    return this.segmentsDataService.exportSegmentCSV(segmentIds);
+  }
+
+  importSegments(segments: SegmentFile[]) {
     this.store$.dispatch(SegmentsActions.actionImportSegments({ segments }));
   }
 }

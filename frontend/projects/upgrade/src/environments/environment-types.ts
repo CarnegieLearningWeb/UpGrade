@@ -3,6 +3,7 @@ import { InjectionToken } from '@angular/core';
 export const ENV = new InjectionToken<Environment>('env.token');
 
 export interface APIEndpoints {
+  exportSegmentCSV: string;
   getAllExperiments: string;
   createNewExperiments: string;
   importExperiment: string;
@@ -37,7 +38,6 @@ export interface APIEndpoints {
   contextMetaData: string;
   segments: string;
   importSegments: string;
-  exportSegment: string;
   exportSegments: string;
   getGroupAssignmentStatus: string;
   stratification: string;

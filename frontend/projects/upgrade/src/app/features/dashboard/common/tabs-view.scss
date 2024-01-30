@@ -1,5 +1,3 @@
-$tab-text-color: #8f9bb3;
-
 .tabs-container {
   display: flex;
   flex-direction: column;
@@ -21,38 +19,5 @@ $tab-text-color: #8f9bb3;
     flex-grow: 1;
     border-radius: 10px;
     padding: 0;
-  }
-
-  ::ng-deep .logs-tabs .mat-tab-header {
-    margin-bottom: 50px;
-    border-bottom: none !important;
-  }
-
-  ::ng-deep .mat-tab-label-content {
-    color: $tab-text-color;
-    font-family: 'Open Sans';
-    font-size: var(--text-size-xx-large);
-    font-weight: 600;
-  }
-
-  ::ng-deep .mat-tab-label-active {
-    opacity: 1;
-
-    ::ng-deep .mat-tab-label-content {
-      color: var(--blue);
-    }
-  }
-
-  ::ng-deep .mat-tab-label-container {
-    padding: 34px 34px 0;
-    height: 94px;
-  }
-
-  ::ng-deep .mat-tab-header {
-    border-bottom: 0 !important;
-  }
-
-  ::ng-deep .mat-tab-body-content {
-    padding: 24px 34px 34px;
   }
 }
