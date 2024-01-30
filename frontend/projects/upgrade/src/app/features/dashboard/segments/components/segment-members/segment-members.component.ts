@@ -22,6 +22,7 @@ import {
   NewSegmentDialogEvents,
   NewSegmentPaths,
   Segment,
+  membersTableRowData,
 } from '../../../../../core/segments/store/segments.model';
 
 @Component({
@@ -47,11 +48,14 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   segmentMemberTypes: any[];
   subSegmentIds: string[] = [];
   userIdsToSend: string[] = [];
+  allGroupTypes: string[] = [];
   groupsToSend: { type: string; groupId: string }[] = [];
   subSegmentIdsToSend = [];
   segmentNameId = new Map();
   membersCountError: string = null;
-  groupString = ' (group)';
+  groupString = ' ( group )';
+  membersValid = true;
+  isImportMemebervalid = true;
 
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
   constructor(
@@ -74,7 +78,10 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges() {
+    this.checkImportMemberValidation();
+
     if (this.currentContext) {
+      this.selectSubSegments();
       this.setMemberTypes();
     }
 
@@ -94,22 +101,6 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
       this.allSegments = allSegments;
     });
 
-    if (this.allSegments) {
-      this.allSegments.forEach((segment) => {
-        if (this.segmentInfo) {
-          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.id !== this.segmentInfo.id) {
-            this.subSegmentIds.push(segment.name);
-            this.segmentNameId.set(segment.name, segment.id);
-          }
-        } else {
-          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE) {
-            this.subSegmentIds.push(segment.name);
-            this.segmentNameId.set(segment.name, segment.id);
-          }
-        }
-      });
-    }
-
     this.segmentMembersForm = this._formBuilder.group({
       members: this._formBuilder.array([this.addMembers()]),
     });
@@ -127,7 +118,100 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
       });
     }
 
+    this.segmentMembersForm.valueChanges.subscribe(() => {
+      this.checkImportMemberValidation();
+    });
     this.updateView();
+  }
+
+  checkImportMemberValidation() {
+    if (this.segmentMembersForm?.value) {
+      if (
+        this.segmentMembersForm.value.members.length === 0 ||
+        (this.segmentMembersForm.value.members.length === 1 &&
+          !this.segmentMembersForm.value.members[0].type &&
+          !this.segmentMembersForm.value.members[0].id)
+      ) {
+        this.isImportMemebervalid = true;
+      } else {
+        this.isImportMemebervalid = false;
+      }
+    } else {
+      this.isImportMemebervalid = false;
+    }
+  }
+
+  selectSubSegments(): void {
+    if (this.allSegments) {
+      this.allSegments.forEach((segment) => {
+        if (this.segmentInfo) {
+          if (
+            segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE &&
+            segment.id !== this.segmentInfo.id &&
+            segment.context === this.currentContext
+          ) {
+            this.subSegmentIds.push(segment.name);
+            this.segmentNameId.set(segment.name, segment.id);
+          }
+        } else {
+          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.context === this.currentContext) {
+            this.subSegmentIds.push(segment.name);
+            this.segmentNameId.set(segment.name, segment.id);
+          }
+        }
+      });
+    }
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      // Process the file here. For example, upload to a server
+      // Implement the file upload logic here
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const fileContent = e.target?.result as string;
+        this.addCSVMembersToTable(fileContent);
+        this.updateView();
+      };
+      reader.readAsText(file);
+    }
+  }
+
+  addCSVMembersToTable(segmentMembers: string): void {
+    const rows = segmentMembers.replace(/"/g, '').split('\n');
+    // const fileName = segment.fileName.split('.');
+
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      const rowValues = row.split(',');
+
+      // Extract the ID
+      const id = rowValues[1];
+      const memberType = rowValues[0]?.trim().toLowerCase();
+      const memberTypeOriginal = rowValues[0]?.trim();
+      if (!id || !memberType) {
+        continue;
+      }
+
+      if (memberType === 'individual') {
+        this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, id));
+      } else if (memberType === 'segment') {
+        if (this.subSegmentIds.includes(id)) {
+          this.members.push(this.addMembers(MemberTypes.SEGMENT, id));
+        } else {
+          this.members.push(this.addMembers(MemberTypes.SEGMENT, ''));
+        }
+      } else {
+        if (this.allGroupTypes.includes(memberTypeOriginal)) {
+          this.members.push(this.addMembers(memberTypeOriginal, id));
+        } else if (this.allGroupTypes.includes(memberType)) {
+          this.members.push(this.addMembers(memberType, id));
+        } else {
+          this.members.push(this.addMembers('', id));
+        }
+      }
+    }
   }
 
   addMembers(type = null, id = null) {
@@ -157,7 +241,22 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     }
   }
 
-  validateMembersCount(members: any) {
+  validateMembers(members: membersTableRowData[]) {
+    this.membersValid = true;
+    members.forEach((member) => {
+      if (member.type === 'Individual') {
+        return;
+      } else if (member.type === 'Segment') {
+        if (!this.subSegmentIds.includes(member.id)) {
+          this.membersValid = false;
+        }
+      } else if (!this.allGroupTypes.includes(member.type)) {
+        this.membersValid = false;
+      }
+    });
+  }
+
+  validateMembersCount(members: membersTableRowData[]) {
     const membersCountErrorMsg = this.translate.instant('segments.global-members.segments-count-members-error.text');
     this.membersCountError = null;
     if (members.length === 0) {
@@ -175,11 +274,13 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
       contexts.forEach((context) => {
         this.contextMetaData.contextMetadata[context].GROUP_TYPES.forEach((group) => {
           this.segmentMemberTypes.push({ name: group + this.groupString, value: group });
+          this.allGroupTypes.push(group);
         });
       });
     } else if (this.contextMetaData.contextMetadata && this.contextMetaData.contextMetadata[this.currentContext]) {
       this.contextMetaData.contextMetadata[this.currentContext].GROUP_TYPES.forEach((type) => {
         this.segmentMemberTypes.push({ name: type + this.groupString, value: type });
+        this.allGroupTypes.push(type);
       });
     }
   }
@@ -205,7 +306,8 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
         {
           const members = this.segmentMembersForm.value.members;
           this.validateMembersCount(members);
-          if (this.segmentMembersForm.valid && !this.membersCountError) {
+          this.validateMembers(members);
+          if (this.segmentMembersForm.valid && !this.membersCountError && this.membersValid) {
             this.gettingMembersValueToSend(members);
             const segmentMembersFormData = {
               userIds: this.userIdsToSend,

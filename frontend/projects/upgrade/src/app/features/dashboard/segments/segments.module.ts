@@ -11,6 +11,7 @@ import { ViewSegmentComponent } from './pages/view-segment/view-segment.componen
 import { DuplicateSegmentComponent } from './components/modal/duplicate-segment/duplicate-segment.component';
 import { ImportSegmentComponent } from './components/modal/import-segment/import-segment.component';
 import { SegmentExperimentListComponent } from './components/modal/segment-experiment-list/segment-experiment-list.component';
+import { ExportSegmentComponent } from './components/modal/export-segment/export-segment.component';
 @NgModule({
   declarations: [
     SegmentsRootComponent,
@@ -22,6 +23,7 @@ import { SegmentExperimentListComponent } from './components/modal/segment-exper
     DuplicateSegmentComponent,
     ImportSegmentComponent,
     SegmentExperimentListComponent,
+    ExportSegmentComponent,
   ],
   imports: [CommonModule, SegmentsRoutingModule, SharedModule],
 })

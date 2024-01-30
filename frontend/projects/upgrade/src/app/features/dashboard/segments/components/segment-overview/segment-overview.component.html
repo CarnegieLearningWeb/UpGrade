@@ -29,6 +29,9 @@
       {{ 'home.new-experiment.overview.context.error.text' | translate }}
     </mat-error>
   </mat-form-field>
+  <span class="ft-14-600 validation-message" *ngIf="!isSegmentNameValid">
+    {{ 'segments.new-segment-overview-stepper.segment-name-error.text' | translate }}
+  </span>
 
   <div class="button-container">
     <button class="shared-modal--modal-btn" mat-raised-button (click)="emitEvent(NewSegmentDialogEvents.CLOSE_DIALOG)">
