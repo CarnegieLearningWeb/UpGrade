@@ -13,12 +13,17 @@
     height: 94px;
 
     .filter-options {
-      margin-right: 10px;
-      width: 80px;
+      margin-right: 20px;
+      width: 120px;
     }
 
     .search-input {
       line-height: 20px;
+    }
+
+    .search-icon {
+      margin-top: -6px;
+      height: 16px;
     }
 
     button {
@@ -34,10 +39,6 @@
     .import-segments {
       margin-right: 20px;
     }
-  }
-  /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
-  ::ng-deep .mat-form-field-suffix {
-    top: 5px;
   }
 
   .segments-list-table-container {

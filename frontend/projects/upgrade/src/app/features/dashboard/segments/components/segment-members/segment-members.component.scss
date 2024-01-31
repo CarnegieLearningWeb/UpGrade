@@ -1,97 +1,102 @@
-::ng-deep .mat-mdc-optgroup.hideLabel .mat-mdc-optgroup-label {
-  display: none;
-}
-
 .segment-members {
-  .members-table {
-    height: 190px;
-    overflow: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 280px;
 
-    mat-header-row {
-      min-height: 35px;
-      max-height: 35px;
+  .members-table-container {
+    height: 200px;
+
+    .members-table {
+      margin-top: -10px;
+      max-height: 200px;
+      overflow: auto;
+
+      mat-header-row {
+        min-height: 35px;
+        max-height: 35px;
+      }
+
+      mat-row {
+        min-height: 46px;
+        max-height: 46px;
+      }
+
+      mat-header-cell {
+        justify-content: left;
+        margin-right: 15px;
+        color: var(--grey-6);
+      }
+
+      mat-cell {
+        justify-content: left;
+        margin-right: 15px;
+      }
+
+      .cdk-column-removeMember {
+        margin-right: 0;
+        padding-right: 0;
+        flex: 0 0 15%;
+        justify-content: center;
+      }
+
+      .cdk-column-type {
+        flex: 0 0 30%;
+        justify-content: left;
+      }
+
+      .cdk-column-id {
+        flex: 0 0 50%;
+        justify-content: left;
+      }
+
+      .import-csv {
+        color: var(--blue);
+        &:hover {
+          cursor: pointer;
+        }
+      }
+
+      .disabled {
+        color: var(--light-blue);
+        cursor: default;
+      }
+
+      .select-file {
+        display: none;
+      }
+
+      .remove-icon {
+        margin-right: -42px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: var(--text-size-x-large);
+        color: gray;
+
+        &:hover {
+          cursor: pointer;
+        }
+      }
+
+      mat-form-field {
+        width: 100%;
+        text-align: left;
+      }
     }
 
-    mat-row {
-      min-height: 46px;
-      max-height: 46px;
-    }
-
-    mat-header-cell {
-      justify-content: left;
-      margin-right: 15px;
-      color: var(--grey-6);
-    }
-
-    mat-cell {
-      justify-content: left;
-      margin-right: 15px;
-    }
-
-    .cdk-column-removeMember {
-      margin-right: 0;
-      padding-right: 0;
-      flex: 0 0 15%;
-      justify-content: center;
-    }
-
-    .cdk-column-type {
-      flex: 0 0 30%;
-      justify-content: left;
-    }
-    .cdk-column-id {
-      flex: 0 0 50%;
-      justify-content: left;
-      padding-top: 5px;
-    }
-
-    .import-csv {
+    .add-member {
+      margin-top: 10px;
+      outline: 0;
+      border: 0;
+      background-color: transparent;
       color: var(--blue);
-      &:hover {
-        cursor: pointer;
-      }
     }
-
-    .disabled {
-      color: var(--light-blue);
-      cursor: default;
-    }
-
-    .select-file {
-      display: none;
-    }
-
-    .remove-icon {
-      margin-right: -5px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: var(--text-size-x-large);
-      color: gray;
-
-      &:hover {
-        cursor: pointer;
-      }
-    }
-
-    mat-form-field {
-      width: 100%;
-      text-align: left;
-    }
-  }
-
-  .add-member {
-    margin-top: 20px;
-    outline: 0;
-    border: 0;
-    background-color: transparent;
-    color: var(--blue);
   }
 
   .button-container {
     display: flex;
     justify-content: space-between;
-    margin-top: 10px;
 
     .btn-back {
       margin-left: 0 !important;

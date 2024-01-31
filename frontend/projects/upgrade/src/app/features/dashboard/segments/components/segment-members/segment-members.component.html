@@ -1,68 +1,96 @@
 <form class="segment-members" [formGroup]="segmentMembersForm">
-  <!-- Members TABLE -->
-  <mat-table class="members-table" [dataSource]="membersDataSource" formArrayName="members" #membersTable>
-    <!-- Members Type Column -->
-    <ng-container matColumnDef="type">
-      <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-        {{ 'segments.global-members-type.text' | translate }}
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-        <mat-select formControlName="type" [placeholder]="'segments.members-placeholder-type.text' | translate">
-          <mat-option *ngFor="let val of segmentMemberTypes" [value]="val.value">
-            {{ val.name }}
-          </mat-option>
-        </mat-select>
-      </mat-cell>
-    </ng-container>
-
-    <!-- Members Id Column -->
-    <ng-container matColumnDef="id">
-      <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-        {{ 'segments.global-members-id/name.text' | translate }}
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-        <ng-container
-          *ngIf="segmentMembersForm.getRawValue('type')?.members[groupIndex]?.type === 'Segment'; else noSelect"
-        >
-          <mat-form-field floatLabel="never" class="dense-2 form-control">
-            <mat-select formControlName="id">
-              <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
-                {{ subSegmentId }}
+  <section class="members-table-container">
+    <!-- Members TABLE -->
+    <mat-table class="members-table" [dataSource]="membersDataSource" formArrayName="members" #membersTable>
+      <!-- Members Type Column -->
+      <ng-container matColumnDef="type">
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+          {{ 'segments.global-members-type.text' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
+          <mat-form-field
+            class="dense-2 form-control"
+            appearance="outline"
+            subscriptSizing="dynamic"
+          >
+            <mat-select class="ft-14-400" formControlName="type" [placeholder]="'segments.members-placeholder-type.text' | translate">
+              <mat-option class="ft-14-400" *ngFor="let val of segmentMemberTypes" [value]="val.value">
+                {{ val.name }}
               </mat-option>
             </mat-select>
           </mat-form-field>
-        </ng-container>
-        <ng-template #noSelect>
-          <mat-form-field floatLabel="never" class="dense-2 form-control">
-            <input matInput [placeholder]="'segments.global-members-id/name.text' | translate" formControlName="id" />
-          </mat-form-field>
-        </ng-template>
-      </mat-cell>
-    </ng-container>
+        </mat-cell>
+      </ng-container>
 
-    <ng-container matColumnDef="removeMember">
-      <mat-header-cell class="ft-12-600 import-csv" [ngClass]="{ 'disabled': !isImportMemebervalid }" aria-hidden="true" (click)="fileInput.click()" *matHeaderCellDef>
-        <mat-icon class="upload-icon" (click)="removeMember(groupIndex)">
-          upload_2
-        </mat-icon>
-        {{ 'users.stratification-users-import-csv.text' | translate }}
-        <input  accept=".csv" type="file" #fileInput [disabled]="!isImportMemebervalid" file-input class="select-file" (change)="onFileSelected($event)">
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-        <mat-icon class="remove-icon" (click)="removeMember(groupIndex)"> delete_outline </mat-icon>
-      </mat-cell>
-    </ng-container>
+      <!-- Members Id Column -->
+      <ng-container matColumnDef="id">
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+          {{ 'segments.global-members-id/name.text' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
+          <ng-container
+            *ngIf="segmentMembersForm.getRawValue('type')?.members[groupIndex]?.type === 'Segment'; else noSelect"
+          >
+            <mat-form-field
+              class="dense-2 form-control"
+              appearance="outline"
+              subscriptSizing="dynamic"
+            >
+              <mat-select class="ft-14-400" formControlName="id">
+                <mat-option class="ft-14-400" *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
+                  {{ subSegmentId }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </ng-container>
+          <ng-template #noSelect>
+            <mat-form-field
+              class="dense-2 form-control"
+              appearance="outline"
+              subscriptSizing="dynamic"
+            >
+              <input
+                class="ft-14-400"
+                matInput
+                [placeholder]="'segments.global-members-id/name.text' | translate" formControlName="id"
+              />
+            </mat-form-field>
+          </ng-template>
+        </mat-cell>
+      </ng-container>
 
-    <mat-header-row *matHeaderRowDef="membersDisplayedColumns; sticky: true"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: membersDisplayedColumns"></mat-row>
-  </mat-table>
-  <span class="ft-14-600 validation-message" *ngIf="membersCountError" [innerHTML]="membersCountError"></span>
-  <span class="ft-14-600 validation-message" *ngIf="!membersValid">
-    {{ 'segments.new-segment-members-stepper.error-message.text' | translate }}
-  </span>
-  <button type="button" class="ft-12-700 add-member" (click)="addMember()">
-    + {{ 'segments.members-add-members.text' | translate }}
-  </button>
+      <ng-container matColumnDef="removeMember">
+        <mat-header-cell class="ft-12-600 import-csv" [ngClass]="{ 'disabled': !isImportMemebervalid }" aria-hidden="true" (click)="fileInput.click()" *matHeaderCellDef>
+          <mat-icon class="upload-icon" (click)="removeMember(groupIndex)">
+            upload_2
+          </mat-icon>
+          {{ 'users.stratification-users-import-csv.text' | translate }}
+          <input
+            class="ft-14-400 select-file"
+            accept=".csv"
+            type="file"
+            #fileInput
+            [disabled]="!isImportMemebervalid"
+            file-input
+            (change)="onFileSelected($event)"
+          />
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
+          <mat-icon class="remove-icon" (click)="removeMember(groupIndex)"> delete_outline </mat-icon>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="membersDisplayedColumns; sticky: true"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: membersDisplayedColumns"></mat-row>
+    </mat-table>
+    <span class="ft-14-400 validation-message" *ngIf="membersCountError" [innerHTML]="membersCountError"></span>
+    <span class="ft-14-400 validation-message" *ngIf="!membersValid">
+      {{ 'segments.new-segment-members-stepper.error-message.text' | translate }}
+    </span>
+    <button type="button" class="ft-12-700 add-member" (click)="addMember()">
+      + {{ 'segments.members-add-members.text' | translate }}
+    </button>
+  </section>
 
   <div class="button-container">
     <button matStepperPrevious mat-raised-button class="shared-modal--modal-btn default-button btn-back">

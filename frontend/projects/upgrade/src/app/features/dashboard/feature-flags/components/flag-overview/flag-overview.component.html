@@ -17,7 +17,7 @@
       formControlName="key"
     />
   </mat-form-field>
-  <mat-error class="ft-14-600 validation-message" *ngIf="keyError">
+  <mat-error class="ft-14-400 validation-message" *ngIf="keyError">
     {{ keyError }}
   </mat-error>
 
@@ -28,7 +28,7 @@
         {{ type | titlecase }}
       </mat-option>
     </mat-select>
-    <mat-error *ngIf="overviewForm.controls.variationType.hasError('required')">
+    <mat-error class="ft-14-400" *ngIf="overviewForm.controls.variationType.hasError('required')">
       {{ 'feature-flags.overview.flag-variation-type-error.text' | translate }}
     </mat-error>
   </mat-form-field>
