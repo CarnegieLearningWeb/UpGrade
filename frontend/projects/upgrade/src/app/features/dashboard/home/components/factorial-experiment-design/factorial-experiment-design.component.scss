@@ -17,16 +17,6 @@
     .factors-header-container {
       display: flex;
       justify-content: space-between;
-
-      // .toggle-button {
-      //   margin-top: -5px;
-      //   .icon-bump-left {
-      //     margin-left: -5px;
-      //   }
-      //   .toggle-text {
-      //     margin-left: 5px;
-      //   }
-      // }
     }
 
     .decision-point-table {
@@ -50,7 +40,6 @@
 
       mat-cell {
         justify-content: left;
-        // margin-bottom: -5px;
       }
 
       .cdk-column-site {
@@ -69,7 +58,7 @@
         justify-content: center;
 
         .mat-mdc-checkbox {
-          margin-top: -5px;
+          margin-top: -1px;
         }
       }
 
@@ -84,7 +73,7 @@
           background-color: transparent;
 
           .icon {
-            margin-top: -5px;
+            margin-top: -2px;
             margin-left: -5px;
             display: flex;
             justify-content: center;
@@ -121,7 +110,6 @@
       }
 
       mat-row {
-        // min-height: 48px;
         justify-content: space-between;
       }
 
@@ -246,7 +234,6 @@
 
       mat-cell {
         justify-content: left;
-        // margin-bottom: -5px;
       }
 
       .cdk-column-level {
@@ -270,7 +257,7 @@
           background-color: transparent;
 
           .icon {
-            margin-top: -5px;
+            margin-top: -1px;
             margin-left: -5px;
             display: flex;
             justify-content: center;

@@ -25,15 +25,14 @@
     mat-cell {
       justify-content: left;
       align-items: flex-start;
-      margin-bottom: -11px;
     }
 
     .metric-keys {
       display: flex;
       flex-direction: column;
-      padding: 10px 0;
+      row-gap: 33px;
+      padding: 20px 0;
       width: 250px;
-      margin-bottom: 7px;
 
       .dropdown {
         position: absolute;
@@ -45,7 +44,8 @@
     .secondary-form {
       display: flex;
       flex-direction: column;
-      padding: 10px 0;
+      row-gap: 33px;
+      padding: 20px 0;
       width: 160px;
 
       .form-control {
@@ -75,7 +75,7 @@
       width: 100%;
       max-width: 350px;
       &.mat-mdc-cell {
-        margin-top: -3px;
+        padding-top: 7px;
       }
     }
 
@@ -83,7 +83,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-top: 16px;
+      margin-top: 15px;
       margin-left: -16px;
       min-width: 60px;
       height: 16px;

@@ -34,7 +34,11 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field class="dense-2" subscriptSizing="dynamic">
+                    <mat-form-field
+                      class="dense-2"
+                      appearance="outline"
+                      subscriptSizing="dynamic"
+                    >
                       <span
                         [matTooltip]="
                           decisionPoints.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.SITE).value
@@ -42,13 +46,18 @@
                         matTooltipPosition="above"
                       >
                         <input
+                          class="ft-14-400"
                           matInput
                           [placeholder]="'home.new-experiment.design.decision-point-site.placeholder.text' | translate"
                           [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.SITE"
                           [matAutocomplete]="autoCompleteSites"
                         />
                         <mat-autocomplete #autoCompleteSites="matAutocomplete" panelWidth="fit-content">
-                          <mat-option *ngFor="let site of filteredSites$[groupIndex] | async" [value]="site">
+                          <mat-option
+                            class="ft-14-400"
+                            *ngFor="let site of filteredSites$[groupIndex] | async"
+                            [value]="site"
+                          >
                             {{ site }}
                           </mat-option>
                         </mat-autocomplete>
@@ -78,7 +87,11 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field class="dense-2" subscriptSizing="dynamic">
+                    <mat-form-field
+                      class="dense-2"
+                      appearance="outline"
+                      subscriptSizing="dynamic"
+                    >
                       <span
                         [matTooltip]="
                           decisionPoints.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.TARGET).value
@@ -86,6 +99,7 @@
                         matTooltipPosition="above"
                       >
                         <input
+                          class="ft-14-400"
                           matInput
                           [placeholder]="
                             'home.new-experiment.design.decision-point-target.placeholder.text' | translate
@@ -94,7 +108,11 @@
                           [matAutocomplete]="autoCompleteTargets"
                         />
                         <mat-autocomplete #autoCompleteTargets="matAutocomplete" panelWidth="fit-content">
-                          <mat-option *ngFor="let target of filteredTargets$[groupIndex] | async" [value]="target">
+                          <mat-option
+                            class="ft-14-400"
+                            *ngFor="let target of filteredTargets$[groupIndex] | async"
+                            [value]="target"
+                          >
                             {{ target }}
                           </mat-option>
                         </mat-autocomplete>
@@ -239,7 +257,11 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(conditionsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field class="dense-2" subscriptSizing="dynamic">
+                    <mat-form-field
+                      class="dense-2"
+                      appearance="outline"
+                      subscriptSizing="dynamic"
+                    >
                       <span
                         [matTooltip]="
                           conditions.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITION_CODE).value
@@ -247,6 +269,7 @@
                         matTooltipPosition="above"
                       >
                         <input
+                          class="ft-14-400"
                           matInput
                           [placeholder]="'home.new-experiment.design.condition.placeholder.text' | translate"
                           [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITION_CODE"
@@ -254,6 +277,7 @@
                         />
                         <mat-autocomplete #autoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
                           <mat-option
+                            class="ft-14-400"
                             *ngFor="let conditionCode of filteredConditionCodes$[groupIndex] | async"
                             [value]="conditionCode"
                           >
@@ -285,8 +309,13 @@
                     </div>
                   </ng-container>
                   <ng-container *ngIf="(conditionsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field class="dense-2 align-right" subscriptSizing="dynamic">
+                    <mat-form-field
+                      class="dense-2"
+                      appearance="outline"
+                      subscriptSizing="dynamic"
+                    >
                       <input
+                        class="ft-14-400 align-right"
                         type="number"
                         matInput
                         [placeholder]="'home.new-experiment.design.assignment-weight.placeholder.text' | translate"
@@ -318,8 +347,13 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(conditionsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field class="dense-2" subscriptSizing="dynamic">
+                    <mat-form-field
+                      class="dense-2"
+                      appearance="outline"
+                      subscriptSizing="dynamic"
+                    >
                       <input
+                        class="ft-14-400"
                         matInput
                         [placeholder]="'home.new-experiment.design.description.placeholder.text' | translate"
                         [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DESCRIPTION"

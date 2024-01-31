@@ -22,11 +22,15 @@
         >
           {{ 'home.new-experiment.schedule.start-on.text' | translate }}
         </mat-label>
-        <mat-form-field class="dense-2 ft-14-700">
+        <mat-form-field
+          class="dense-2"
+          appearance="outline"
+          subscriptSizing="dynamic"
+        >
           <input
+            class="ft-14-400 input"
             matInput
             readonly
-            class="input"
             [min]="minDate"
             [owlDateTimeTrigger]="startDateTime"
             [owlDateTime]="startDateTime"
@@ -58,11 +62,15 @@
               {{ 'home.new-experiment.schedule.end-on.text' | translate }}
             </span>
           </mat-radio-button>
-          <mat-form-field class="dense-2 ft-14-700">
+          <mat-form-field
+            class="dense-2"
+            appearance="outline"
+            subscriptSizing="dynamic"
+          >
             <input
+              class="ft-14-400 input"
               matInput
               readonly
-              class="input"
               [min]="minDate"
               [owlDateTimeTrigger]="dateTime"
               [owlDateTime]="dateTime"
@@ -84,11 +92,15 @@
             </span>
           </mat-radio-button>
           <div class="end-criteria" *ngIf="groupType">
-            <mat-form-field class="dense-2 ft-12-700 group-type-control">
+            <mat-form-field
+              class="dense-2 group-type-control"
+              appearance="outline"
+              subscriptSizing="dynamic"
+            >
               <input
+                class="ft-14-400 input"
                 type="number"
                 matInput
-                class="input"
                 [placeholder]="
                   ('home.new-experiment.schedule.group-count.placeholder.text' | translate) +
                   ' ' +
@@ -108,11 +120,15 @@
             ></span>
           </div>
           <div class="end-criteria">
-            <mat-form-field class="dense-2 ft-12-700">
+            <mat-form-field
+              class="dense-2"
+              appearance="outline"
+              subscriptSizing="dynamic"
+            >
               <input
+                class="ft-14-400 input"
                 type="number"
                 matInput
-                class="input"
                 [placeholder]="'home.new-experiment.schedule.user-count.placeholder.text' | translate"
                 formControlName="userCount"
               />

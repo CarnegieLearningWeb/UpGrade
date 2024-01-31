@@ -41,11 +41,16 @@
             </span>
           </ng-container>
           <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
-            <mat-form-field class="dense-2" floatLabel="never">
+            <mat-form-field
+              class="dense-2"
+              appearance="outline"
+              subscriptSizing="dynamic"
+            >
               <input
-                class="input-payload"
+                class="ft-14-400 input-payload"
                 type="text"
                 matInput
+                [placeholder]="'home.new-experiment.design.payload.placeholder.text' | translate"
                 formControlName="payload"
                 [disabled]="!isExperimentEditable"
                 autocomplete="off"
@@ -67,8 +72,13 @@
             </span>
           </ng-container>
           <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex">
-            <mat-form-field class="dense-2 input-weight" floatLabel="never">
+            <mat-form-field
+              class="dense-2 input-weight"
+              appearance="outline"
+              subscriptSizing="dynamic"
+            >
               <input
+                class="ft-14-400"
                 autocomplete="off"
                 type="text"
                 matInput

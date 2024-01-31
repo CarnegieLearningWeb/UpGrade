@@ -12,16 +12,24 @@
                 {{ 'segments.global-members-type.text' | translate }}
               </mat-header-cell>
               <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                <mat-form-field class="dense-2 form-control" subscriptSizing="dynamic">
-                  <mat-label>{{ 'segments.members-placeholder-type.text' | translate }}</mat-label>
-                  <mat-select formControlName="type" (selectionChange)="selectedOption($event, groupIndex, 1)">
+                <mat-form-field
+                  class="dense-2 form-control"
+                  appearance="outline"
+                  subscriptSizing="dynamic"
+                >
+                  <mat-select
+                    class="ft-14-400"
+                    [placeholder]="'segments.members-placeholder-type.text' | translate"
+                    formControlName="type"
+                    (selectionChange)="selectedOption($event, groupIndex, 1)"
+                  >
                     <div *ngIf="groupIndex === 0">
-                      <mat-option *ngFor="let val of allSubSegmentTypes" [value]="val.value">
+                      <mat-option class="ft-14-400" *ngFor="let val of allSubSegmentTypes" [value]="val.value">
                         {{ val.name }}
                       </mat-option>
                     </div>
                     <div *ngIf="groupIndex !== 0">
-                      <mat-option *ngFor="let val of subSegmentTypes" [value]="val.value">
+                      <mat-option class="ft-14-400" *ngFor="let val of subSegmentTypes" [value]="val.value">
                         {{ val.name }}
                       </mat-option>
                     </div>
@@ -38,8 +46,13 @@
                 <ng-container
                   *ngIf="participantsForm.getRawValue('type')?.members1[groupIndex]?.type === 'Segment'; else noSelect"
                 >
-                  <mat-form-field class="dense-2 dense-2 form-control" subscriptSizing="dynamic">
+                  <mat-form-field
+                    class="dense-2 form-control"
+                    appearance="outline"
+                    subscriptSizing="dynamic"
+                  >
                     <input
+                      class="ft-14-400"
                       matInput
                       [placeholder]="'segments.members-placeholder-id/name.text' | translate"
                       formControlName="id"
@@ -47,6 +60,7 @@
                     />
                     <mat-autocomplete #autoCompleteSegmentName="matAutocomplete" panelWidth="fit-content">
                       <mat-option
+                        class="ft-14-400"
                         *ngFor="let subSegmentId of filteredSegmentIds$[groupIndex] | async"
                         [value]="subSegmentId"
                       >
@@ -56,8 +70,13 @@
                   </mat-form-field>
                 </ng-container>
                 <ng-template #noSelect>
-                  <mat-form-field class="dense-2 dense-2 form-control" subscriptSizing="dynamic">
+                  <mat-form-field
+                    class="dense-2 form-control"
+                    appearance="outline"
+                    subscriptSizing="dynamic"
+                  >
                     <input
+                      class="ft-14-400"
                       matInput
                       [placeholder]="'segments.members-placeholder-id/name.text' | translate"
                       formControlName="id"
@@ -139,10 +158,18 @@
                   {{ 'segments.global-members-type.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                  <mat-form-field class="dense-2 dense-2 form-control" subscriptSizing="dynamic">
-                    <mat-label>{{ 'segments.members-placeholder-type.text' | translate }}</mat-label>
-                    <mat-select formControlName="type" (selectionChange)="selectedOption($event, groupIndex, 2)">
-                      <mat-option *ngFor="let val of subSegmentTypes" [value]="val.value">
+                  <mat-form-field
+                    class="dense-2 form-control"
+                    appearance="outline"
+                    subscriptSizing="dynamic"
+                  >
+                    <mat-select
+                      class="ft-14-400"
+                      [placeholder]="'segments.members-placeholder-type.text' | translate"
+                      formControlName="type"
+                      (selectionChange)="selectedOption($event, groupIndex, 2)"
+                    >
+                      <mat-option class="ft-14-400" *ngFor="let val of subSegmentTypes" [value]="val.value">
                         {{ val.name }}
                       </mat-option>
                     </mat-select>
@@ -161,8 +188,13 @@
                       else noSelect
                     "
                   >
-                    <mat-form-field class="dense-2 dense-2 form-control" subscriptSizing="dynamic">
+                    <mat-form-field
+                      class="dense-2 form-control"
+                      appearance="outline"
+                      subscriptSizing="dynamic"
+                    >
                       <input
+                        class="ft-14-400"
                         matInput
                         [placeholder]="'segments.members-placeholder-id/name.text' | translate"
                         formControlName="id"
@@ -170,6 +202,7 @@
                       />
                       <mat-autocomplete #autoCompleteSegmentName="matAutocomplete" panelWidth="fit-content">
                         <mat-option
+                          class="ft-14-400"
                           *ngFor="let subSegmentId of filteredSegmentIds2$[groupIndex] | async"
                           [value]="subSegmentId"
                         >
@@ -179,8 +212,13 @@
                     </mat-form-field>
                   </ng-container>
                   <ng-template #noSelect>
-                    <mat-form-field class="dense-2 dense-2 form-control" subscriptSizing="dynamic">
+                    <mat-form-field
+                      class="dense-2 form-control"
+                      appearance="outline"
+                      subscriptSizing="dynamic"
+                    >
                       <input
+                        class="ft-14-400"
                         matInput
                         [placeholder]="'segments.members-placeholder-id/name.text' | translate"
                         formControlName="id"

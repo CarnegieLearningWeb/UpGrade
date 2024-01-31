@@ -274,7 +274,6 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
   .checkbox-label {
     margin-left: -8px;
     color: var(--black-2);
-    letter-spacing: normal;
     user-select: none;
   }
 }
@@ -282,14 +281,12 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
 .mat-mdc-chip {
   .chip-label {
     color: var(--black-2);
-    letter-spacing: normal;
   }
 }
 
 .mat-mdc-list-item {
   .list-item-label {
     color: var(--black-2);
-    letter-spacing: normal;
   }
 }
 
@@ -307,7 +304,6 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
   .radio-button-label {
     margin-left: -6px;
     color: var(--black-2);
-    letter-spacing: normal;
     user-select: none;
   }
 }
@@ -331,6 +327,19 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
   pointer-events: none;
 }
 
+.mat-mdc-form-field {
+  .mdc-text-field .mat-mdc-form-field-flex {
+    .mdc-notched-outline .mdc-floating-label {
+      top: 21px;
+    }
+
+    .mat-mdc-form-field-infix {
+      min-height: auto;
+      padding: 10px 0;
+    }
+  }
+}
+
 .mat-mdc-table {
   .mat-mdc-header-row,
   .mat-mdc-row {
@@ -346,14 +355,19 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
       overflow: hidden;
     }
 
-    .mat-mdc-cell, .mat-mdc-header-cell {
-      background-color: transparent;
-      border-bottom: none;
-      letter-spacing: normal;
-    }
-
     .mat-mdc-header-cell,
     .mat-mdc-cell {
+      background-color: transparent;
+      border-bottom: none;
+
+      .mat-mdc-form-field .mdc-text-field {
+        padding: 0 8px;
+
+        .mat-mdc-form-field-flex .mat-mdc-form-field-infix {
+          padding: 4px 0;
+        }
+      }
+
       &:not(:first-child):not(:last-child) {
         padding-left: 0;
         padding-right: 0;
@@ -379,7 +393,6 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
       }
 
       .tab-label {
-        letter-spacing: normal;
         color: var(--grey-2);
         user-select: none;
       }
@@ -397,6 +410,16 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
       .mdc-tab-indicator .mdc-tab-indicator__content {
         margin-bottom: -20px;
       }
+    }
+  }
+}
+
+.cdk-overlay-pane {
+  .mat-mdc-select-panel, .mat-mdc-autocomplete-panel {
+    padding: 0;
+
+    .mat-mdc-option:hover {
+      background-color: rgba(0, 0, 0, 0.04) !important;
     }
   }
 }
