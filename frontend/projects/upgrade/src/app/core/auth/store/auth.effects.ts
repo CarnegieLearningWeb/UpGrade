@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as authActions from './auth.actions';
 import * as experimentUserActions from '../../experiment-users/store/experiment-users.actions';
@@ -14,8 +14,6 @@ import { selectRedirectUrl } from './auth.selectors';
 import { AuthDataService } from '../auth.data.service';
 import { AuthService } from '../auth.service';
 import { User } from '../../users/store/users.model';
-import { SettingsService } from '../../settings/settings.service';
-import { ENV, Environment } from '../../../../environments/environment-types';
 
 @Injectable()
 export class AuthEffects {
@@ -24,9 +22,7 @@ export class AuthEffects {
     private store$: Store<AppState>,
     private router: Router,
     private authDataService: AuthDataService,
-    private authService: AuthService,
-    private settingsService: SettingsService,
-    @Inject(ENV) private environment: Environment
+    private authService: AuthService
   ) {}
 
   fetchUserExperimentData$ = createEffect(() =>
