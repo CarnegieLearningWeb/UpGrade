@@ -15,7 +15,6 @@ import { Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
 
 @Injectable({ providedIn: 'root' })
-@Injectable()
 export class SegmentsService {
   constructor(private store$: Store<AppState>, private segmentsDataService: SegmentsDataService) {}
 
