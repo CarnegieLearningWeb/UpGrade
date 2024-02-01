@@ -55,4 +55,7 @@ export {
   IPayload,
   IExperimentAssignmentv4,
   IExperimentAssignmentv5,
+  ILogRequestBody,
+  ILogMetrics,
+  ILogGroupMetrics,
 } from './Experiment/interfaces';
