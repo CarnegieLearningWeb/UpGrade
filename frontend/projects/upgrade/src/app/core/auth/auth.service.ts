@@ -9,12 +9,11 @@ import {
   selectGoogleCredential,
 } from './store/auth.selectors';
 import { UserPermission } from './store/auth.models';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, filter, take } from 'rxjs';
 import { AUTH_CONSTANTS, GoogleAuthJWTPayload, User, UserRole } from '../users/store/users.model';
 import { ENV, Environment } from '../../../environments/environment-types';
 import jwt_decode from 'jwt-decode';
-import { AuthDataService } from './auth.data.service';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, NavigationSkipped, Router } from '@angular/router';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +25,6 @@ export class AuthService {
 
   constructor(
     private store$: Store<AppState>,
-    private authDataService: AuthDataService,
     private router: Router,
     private ngZone: NgZone,
     private localStorageService: LocalStorageService,
@@ -129,15 +127,17 @@ export class AuthService {
   }
 
   // wait after google auth login navs back to app on success to dispatch data fetches
+  // we want to simply wait until we receive NavigationEnd or NavigationSkipped (when the redirectUrl is the same as the current url)
+  // then we once want to fire this one time to fetch the authed user data in db per permissions and complete the sub, so we use take(1)
   deferFetchUserExperimentDataAfterNavigationEnd(user: User, googleCredential: string): void {
-    let hasFired = false;
-
-    this.router.events.pipe().subscribe((event) => {
-      if (!hasFired && event instanceof NavigationEnd) {
-        hasFired = true;
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd || event instanceof NavigationSkipped),
+        take(1)
+      )
+      .subscribe(() => {
         this.store$.dispatch(AuthActions.actionFetchUserExperimentData({ user: { ...user, token: googleCredential } }));
-      }
-    });
+      });
   }
 
   setUserSettingsWithRole(user: User, actions: Action[]): Action[] {

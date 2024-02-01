@@ -9,7 +9,6 @@ import {
 import { CsvDataItem } from './store/stratification-factors.model';
 
 @Injectable({ providedIn: 'root' })
-@Injectable()
 export class StratificationFactorsService {
   isLoading$ = this.store$.pipe(select(selectIsLoadingStratificationFactors));
   allStratificationFactors$ = this.store$.pipe(select(selectAllStratificationFactors));
