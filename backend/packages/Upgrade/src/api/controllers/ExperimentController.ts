@@ -1176,7 +1176,6 @@ export class ExperimentController {
   public exportExperiment(
     @QueryParams()
     params: ExperimentIds,
-    @Body({ validate: true, type: String }) ids: string[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO[]> {
