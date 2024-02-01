@@ -11,6 +11,7 @@ import {
   isObject,
   registerDecorator,
 } from 'class-validator';
+import { ILogRequestBody, ILogInput, ILogMetrics, ILogGroupMetrics } from 'upgrade_types';
 
 const IsLogAttributesRecord = (validationOptions?: ValidationOptions) => {
   return function (object: unknown, propertyName: string) {
@@ -43,7 +44,7 @@ const IsLogAttributesRecord = (validationOptions?: ValidationOptions) => {
   };
 };
 
-class ILogGroupMetrics {
+class ILogGroupMetricsValidator implements ILogGroupMetrics {
   @IsString()
   @IsNotEmpty()
   groupClass: string;
@@ -56,12 +57,12 @@ class ILogGroupMetrics {
   @IsNotEmpty()
   groupUniquifier: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsLogAttributesRecord()
-  attributes?: Record<string, string | number>;
+  attributes: Record<string, string | number>;
 }
 
-class ILogMetrics {
+class ILogMetricsValidator implements ILogMetrics {
   @IsOptional()
   @IsLogAttributesRecord()
   attributes?: Record<string, string | number>;
@@ -69,11 +70,11 @@ class ILogMetrics {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ILogGroupMetrics)
-  groupedMetrics: ILogGroupMetrics[];
+  @Type(() => ILogGroupMetricsValidator)
+  groupedMetrics: ILogGroupMetricsValidator[];
 }
 
-class ILogInput {
+class ILogInputValidator implements ILogInput {
   @IsString()
   @IsNotEmpty()
   timestamp: string;
@@ -81,11 +82,11 @@ class ILogInput {
   @IsObject()
   @IsNotEmpty()
   @ValidateNested()
-  @Type(() => ILogMetrics)
-  metrics: ILogMetrics;
+  @Type(() => ILogMetricsValidator)
+  metrics: ILogMetricsValidator;
 }
 
-export class LogValidator {
+export class LogValidator implements ILogRequestBody {
   @IsDefined()
   @IsNotEmpty()
   @IsString()
@@ -95,6 +96,6 @@ export class LogValidator {
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ILogInput)
+  @Type(() => ILogInputValidator)
   public value: ILogInput[];
 }
