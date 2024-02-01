@@ -1,26 +1,36 @@
 .segment-overview {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  height: 280px;
 
-  mat-form-field {
-    line-height: 20px;
+  .fields-container {
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    row-gap: 18px;
+
+    .name,
+    .key,
+    .variationType {
+      width: 30%;
+    }
+
+    .description {
+      width: 100%;
+    }
+
+    .chips {
+      width: 30%;
+    }
+
+    .validation-message {
+      margin-bottom: -20px;
+    }
   }
 
-  .name,
-  .key,
-  .variationType {
-    width: 30%;
-  }
-
-  .description {
-    width: 100%;
-  }
-  .chips {
-    width: 30%;
-  }
   .button-container {
     display: flex;
     justify-content: flex-end;
-    margin-top: 46px;
   }
 }

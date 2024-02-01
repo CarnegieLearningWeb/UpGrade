@@ -2,10 +2,16 @@
     <span class="ft-24-700 title">{{ 'segments.overview.export-segment.text' | translate | titlecase }}</span>
 
     <form [formGroup]="exportForm" class="export-segment-container-form">
-      <mat-form-field class="ft-16-400">
-        <mat-label>{{ 'home.view-experiment.export-method.text' | translate }}</mat-label>
-        <mat-select class="ft-16-400 export-selection" formControlName="exportMethod">
-          <mat-option *ngFor="let method of exportMethod" [value]="method.value">
+      <mat-form-field
+        class="dense-2"
+        appearance="outline"
+        subscriptSizing="dynamic"
+      >
+        <mat-label class="ft-14-400">
+          {{ 'home.view-experiment.export-method.text' | translate }}
+        </mat-label>
+        <mat-select class="ft-14-400 export-selection" formControlName="exportMethod">
+          <mat-option class="ft-14-400" *ngFor="let method of exportMethod" [value]="method.value">
             {{ method.value }}
           </mat-option>
         </mat-select>

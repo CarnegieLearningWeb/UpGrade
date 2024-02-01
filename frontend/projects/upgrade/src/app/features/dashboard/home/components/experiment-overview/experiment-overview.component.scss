@@ -1,10 +1,7 @@
 .experiment-overview {
   display: flex;
   flex-direction: column;
-
-  mat-form-field {
-    line-height: 20px;
-  }
+  row-gap: 18px;
 
   .name {
     width: 230px;
@@ -41,17 +38,19 @@
     width: 230px;
   }
 
+  .chip-grid {
+    max-height: 70px;
+    overflow-y: auto;
+  }
+
   .tags {
     width: 100%;
   }
 
   .mat-mdc-checkbox {
-    margin-top: -3px;
+    z-index: 1;
+    margin-top: -6px;
     margin-left: -12px;
-  }
-
-  ::ng-deep .mat-form-field-label {
-    color: var(--grey-6);
   }
 }
 

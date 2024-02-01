@@ -5,6 +5,8 @@
   }
 
   .starts-on-title {
+    color: var(--black-2);
+
     &--disable {
       color: var(--grey-5);
     }
@@ -26,7 +28,8 @@
       margin-left: 30px;
 
       .group-type {
-        margin-left: 30px;
+        margin-left: 16px;
+        color: var(--black-2);
 
         &-control {
           line-height: 18px;

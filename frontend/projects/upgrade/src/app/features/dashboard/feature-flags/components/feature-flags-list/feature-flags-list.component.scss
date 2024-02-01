@@ -15,7 +15,7 @@
     .filter-options {
       margin-right: 10px;
       width: 80px;
-
+      /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
       ::ng-deep .mat-form-field-underline,
       ::ng-deep .mat-form-field-ripple {
         background-color: unset;
@@ -32,7 +32,7 @@
       color: var(--white);
     }
   }
-
+  /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
   ::ng-deep .mat-form-field-suffix {
     top: 5px;
   }
@@ -83,7 +83,7 @@
       }
     }
 
-    .mat-form-field {
+    .mat-mdc-form-field {
       width: 40%;
     }
   }

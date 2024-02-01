@@ -17,16 +17,6 @@
     .factors-header-container {
       display: flex;
       justify-content: space-between;
-
-      // .toggle-button {
-      //   margin-top: -5px;
-      //   .icon-bump-left {
-      //     margin-left: -5px;
-      //   }
-      //   .toggle-text {
-      //     margin-left: 5px;
-      //   }
-      // }
     }
 
     .decision-point-table {
@@ -39,8 +29,7 @@
       }
 
       mat-row {
-        min-height: 46px;
-        max-height: 46px;
+        height: 48px;
         justify-content: space-between;
       }
 
@@ -51,7 +40,6 @@
 
       mat-cell {
         justify-content: left;
-        margin-bottom: -5px;
       }
 
       .cdk-column-site {
@@ -70,7 +58,7 @@
         justify-content: center;
 
         .mat-mdc-checkbox {
-          margin-top: -5px;
+          margin-top: -1px;
         }
       }
 
@@ -85,7 +73,7 @@
           background-color: transparent;
 
           .icon {
-            margin-top: -5px;
+            margin-top: -2px;
             margin-left: -5px;
             display: flex;
             justify-content: center;
@@ -111,6 +99,7 @@
     }
 
     .factor-table {
+      min-height: 48px;
       max-height: 380px;
       overflow: auto;
 
@@ -229,6 +218,8 @@
       }
 
       mat-row {
+        min-height: 48px;
+        max-height: 48px;
         justify-content: space-between;
 
         &:last-child {
@@ -243,7 +234,6 @@
 
       mat-cell {
         justify-content: left;
-        margin-bottom: -5px;
       }
 
       .cdk-column-level {
@@ -267,7 +257,7 @@
           background-color: transparent;
 
           .icon {
-            margin-top: -5px;
+            margin-top: -1px;
             margin-left: -5px;
             display: flex;
             justify-content: center;
@@ -310,16 +300,6 @@
     margin-bottom: 5px;
   }
 
-  // This rule is pretty invasive, we should reconsider how and why we are refusing underlines
-
-  // ::ng-deep .mat-form-field-appearance-legacy .mat-form-field-underline {
-  //   bottom: unset;
-  //   background-color: unset !important;
-  // }
-
-  ::ng-deep .mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple {
-    display: none;
-  }
 
   /* Remove arrows/spinners from input type number */
   input::-webkit-outer-spin-button,

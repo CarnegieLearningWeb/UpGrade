@@ -13,17 +13,17 @@
     height: 94px;
 
     .filter-options {
-      margin-right: 10px;
-      width: 80px;
-
-      ::ng-deep .mat-form-field-underline,
-      ::ng-deep .mat-form-field-ripple {
-        background-color: unset;
-      }
+      margin-right: 20px;
+      width: 120px;
     }
 
     .search-input {
       line-height: 20px;
+    }
+
+    .search-icon {
+      margin-top: -6px;
+      height: 16px;
     }
 
     button {
@@ -39,10 +39,6 @@
     .import-segments {
       margin-right: 20px;
     }
-  }
-
-  ::ng-deep .mat-form-field-suffix {
-    top: 5px;
   }
 
   .segments-list-table-container {
@@ -119,7 +115,7 @@
       }
     }
 
-    .mat-form-field {
+    .mat-mdc-form-field {
       width: 40%;
     }
   }

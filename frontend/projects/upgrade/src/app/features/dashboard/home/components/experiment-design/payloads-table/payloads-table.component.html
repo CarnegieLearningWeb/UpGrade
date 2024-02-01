@@ -52,8 +52,13 @@
           </span>
         </ng-container>
         <ng-container *ngIf="(simpleExperimentPayloadTableEditIndex$ | async) === rowIndex">
-          <mat-form-field floatLabel="never">
+          <mat-form-field
+            class="dense-2"
+            appearance="outline"
+            subscriptSizing="dynamic"
+          >
             <input
+              class="ft-14-400"
               [type]="text"
               matInput
               [(ngModel)]="rowData.payload"
@@ -64,6 +69,7 @@
             />
             <mat-autocomplete #payloadRowAutoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
               <mat-option
+                class="ft-14-400"
                 *ngFor="let conditionCode of filteredContextMetaDataConditions$ | async"
                 [value]="conditionCode"
               >

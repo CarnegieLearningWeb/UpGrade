@@ -110,6 +110,15 @@
   @include custom-components-theme($light-theme);
 }
 
+.dense-1 {
+  @include mat.all-component-densities(-1);
+}
+
+.dense-2 {
+  @include mat.all-component-densities(-2);
+}
+
+
 // TODO material specific style which cannot be changed by scope
 .mat-drawer-inner-container {
   display: flex;
@@ -265,7 +274,6 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
   .checkbox-label {
     margin-left: -8px;
     color: var(--black-2);
-    letter-spacing: normal;
     user-select: none;
   }
 }
@@ -273,15 +281,19 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
 .mat-mdc-chip {
   .chip-label {
     color: var(--black-2);
-    letter-spacing: normal;
   }
 }
 
 .mat-mdc-list-item {
   .list-item-label {
     color: var(--black-2);
-    letter-spacing: normal;
   }
+}
+
+
+.mdc-text-field.mdc-text-field--filled,
+.mat-mdc-option {
+  background-color: white !important;
 }
 
 .mat-mdc-radio-button {
@@ -292,7 +304,6 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
   .radio-button-label {
     margin-left: -6px;
     color: var(--black-2);
-    letter-spacing: normal;
     user-select: none;
   }
 }
@@ -301,7 +312,7 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
 // Therefore we override the css. If option appears in future, these can go away.
 
 // Added to globally prevent truncation of content dropdowns
-.mat-select-panel-wrap .mat-select-panel {
+.mat-mdc-select-panel-wrap .mat-select-panel {
   max-width: fit-content;
 }
 
@@ -314,6 +325,23 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
 // Added to globally prevent tooltips from blocking click-events
 .mat-mdc-tooltip-panel {
   pointer-events: none;
+}
+
+.mat-mdc-form-field {
+  .mdc-text-field .mat-mdc-form-field-flex {
+    .mdc-notched-outline .mdc-floating-label {
+      top: 21px;
+    }
+
+    .mat-mdc-form-field-infix {
+      min-height: auto;
+      padding: 10px 0;
+    }
+  }
+
+  &.preview-input .mdc-text-field .mat-mdc-form-field-flex .mdc-notched-outline .mdc-floating-label {
+    top: 18px;
+  }
 }
 
 .mat-mdc-table {
@@ -331,14 +359,20 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
       overflow: hidden;
     }
 
-    .mat-mdc-cell, .mat-mdc-header-cell {
+    .mat-mdc-header-cell,
+    .mat-mdc-cell {
       background-color: transparent;
       border-bottom: none;
       letter-spacing: normal;
-    }
 
-    .mat-mdc-header-cell,
-    .mat-mdc-cell {
+      .mat-mdc-form-field .mdc-text-field {
+        padding: 0 8px;
+
+        .mat-mdc-form-field-flex .mat-mdc-form-field-infix {
+          padding: 4px 0;
+        }
+      }
+
       &:not(:first-child):not(:last-child) {
         padding-left: 0;
         padding-right: 0;
@@ -364,7 +398,6 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
       }
 
       .tab-label {
-        letter-spacing: normal;
         color: var(--grey-2);
         user-select: none;
       }
@@ -382,6 +415,16 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
       .mdc-tab-indicator .mdc-tab-indicator__content {
         margin-bottom: -20px;
       }
+    }
+  }
+}
+
+.cdk-overlay-pane {
+  .mat-mdc-select-panel, .mat-mdc-autocomplete-panel {
+    padding: 0;
+
+    .mat-mdc-option:hover {
+      background-color: rgba(0, 0, 0, 0.04) !important;
     }
   }
 }
