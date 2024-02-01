@@ -338,6 +338,10 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
       padding: 10px 0;
     }
   }
+
+  &.preview-input .mdc-text-field .mat-mdc-form-field-flex .mdc-notched-outline .mdc-floating-label {
+    top: 18px;
+  }
 }
 
 .mat-mdc-table {

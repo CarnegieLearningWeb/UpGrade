@@ -29,9 +29,12 @@
       </mat-tab> -->
     </mat-tab-group>
 
-    <mat-form-field class="dense-2 log-filter">
+    <mat-form-field
+      class="dense-2 log-filter"
+      subscriptSizing="dynamic"
+    >
       <mat-select
-        class="ft-16-600 log-filter-selection"
+        class="ft-14-400 log-filter-selection"
         [(ngModel)]="selectedFilterOption"
         (ngModelChange)="changeLogOption($event)"
       >

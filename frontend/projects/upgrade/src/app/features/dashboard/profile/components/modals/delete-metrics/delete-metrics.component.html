@@ -1,11 +1,15 @@
 <div mat-dialog-content class="metric-delete-dialog">
-  <p class="ft-16-600">
+  <p class="ft-14-600">
     {{ 'metric.delete-metric.message.text' | translate }}
   </p>
-  <mat-form-field class="dense-2 ft-14-600 name">
+  <mat-form-field
+    class="dense-2 name"
+    appearance="outline"
+    subscriptSizing="dynamic"
+  >
     <input
-      matInput
       class="ft-14-400 name-input"
+      matInput
       [placeholder]="'metric.delete-metric.input-placeholder.text' | translate"
       [(ngModel)]="metricName"
     />
