@@ -1,4 +1,4 @@
-import { CaliperEnvelope } from 'upgrade_types';
+import { CaliperEnvelope, ILogRequestBody } from 'upgrade_types';
 import ApiService from './ApiService';
 import { UpGradeClientInterfaces } from './../types/Interfaces';
 import { UpGradeClientRequests } from './../types/requests';
@@ -245,7 +245,7 @@ describe('ApiService', () => {
           },
         },
       ];
-      const mockLogDataInput: UpGradeClientRequests.ILogRequestBody = {
+      const mockLogDataInput: ILogRequestBody = {
         userId: defaultConfig.userId,
         value: mockLogData,
       };

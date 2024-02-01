@@ -9,6 +9,7 @@ import {
   ILogInput,
   ISingleMetric,
   IUserAliases,
+  ILogRequestBody,
 } from 'upgrade_types';
 import { DataService } from 'DataService/DataService';
 import { IApiServiceRequestParams, IEndpoints } from './ApiService.types';
@@ -270,7 +271,7 @@ export default class ApiService {
   }
 
   public log(logData: ILogInput[]): Promise<UpGradeClientInterfaces.ILogResponse[]> {
-    const requestBody: UpGradeClientRequests.ILogRequestBody = {
+    const requestBody: ILogRequestBody = {
       userId: this.userId,
       value: logData,
     };
