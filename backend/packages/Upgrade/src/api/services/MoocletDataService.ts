@@ -10,8 +10,10 @@ import {
   MoocletVersionResponseDetails,
   MoocletPolicyParametersRequestBody,
   MoocletPolicyParametersResponseDetails,
+  MoocletVariableRequestBody,
+  MoocletVariableResponseDetails,
 } from './MoocletTestService';
-import fetch, { RequestInit } from 'node-fetch';
+import axios, { AxiosRequestConfig } from 'axios';
 
 @Service()
 export class MoocletDataService {
@@ -99,6 +101,21 @@ export class MoocletDataService {
     return response;
   }
 
+  public async postNewVariable(requestBody: MoocletVariableRequestBody): Promise<MoocletVariableResponseDetails> {
+    const endpoint = '/variable';
+
+    const requestParams: MoocletParamsValidator = {
+      method: 'POST',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
+      body: requestBody,
+    };
+
+    const response = await this.fetchExternalMoocletsData(requestParams);
+
+    return response;
+  }
+
   public async getVersionForNewLearner(moocletId: number, userId: string) {
     const endpoint = `/mooclet/${moocletId}/run?learner=${userId}`;
 
@@ -130,19 +147,20 @@ export class MoocletDataService {
       const JSONbody = JSON.stringify(body);
 
       try {
-        const options: RequestInit = {
+        const options: AxiosRequestConfig = {
           method,
-          body: JSONbody,
+          data: JSONbody,
           headers,
+          url,
         };
         console.log('*** MOOCLETS API REQUEST ***');
         console.log('fetching data from: ', url);
         console.log('with options: ', options);
         console.log('with headers: ', headers);
-        const res = await fetch(requestParams.url, options);
+        const res = await axios(options);
 
         if (res?.status?.toString().startsWith('2')) {
-          jsonResponse = await res.json();
+          jsonResponse = res.data;
           return jsonResponse;
         } else {
           return {

@@ -3,7 +3,6 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
 import { MoocletDataService } from './MoocletDataService';
 import { Experiment } from '../models/Experiment';
 import { ASSIGNMENT_ALGORITHM } from 'upgrade_types';
-import { experiment } from 'test/integration/mockData/experiment/raw';
 
 /**********************************************************************
  * types for the test MOOClet services. I don't know where to put these so they're here still!
@@ -51,6 +50,42 @@ export interface MoocletPolicyParametersResponseDetails {
   parameters: MoocletPolicyParameters;
 }
 
+export interface MoocletVariableRequestBody {
+  name: string;
+}
+
+export interface MoocletVariableResponseDetails {
+  id: number;
+  environment?: null;
+  variable_id?: null;
+  name: string;
+  min_value: number;
+  max_value: number;
+  value_type: 'BIN'; // binary is only supported type, must use 0 or 1
+  sample_thres: number;
+}
+
+export interface MoocletValueRequestBody {
+  variable: string;
+  learner?: number;
+  value: number;
+  mooclet: number;
+  version: number;
+  policy: number;
+}
+
+export interface MoocletValueResponseDetails {
+  id: 20;
+  variable: 'version';
+  learner: 'danqq';
+  mooclet: 6;
+  version: 12;
+  policy: 17;
+  value: 12.0;
+  text: 'variant';
+  timestamp: '2023-12-22T19:51:55.255158Z';
+}
+
 export interface ExperimentCondtitionToMoocletVersionParams {
   moocletId: number;
   userId: string;
@@ -66,16 +101,25 @@ export interface MoocletWeightedRandomPolicyParameters {
 
 export interface MoocletThompsonSamplingConfigurablePolicyParameters {
   prior: {
-    failure: number;
-    success: number;
+    failure: number; // use 1 as default
+    success: number; // use 1 as default
   };
-  current_posteriors?: any; // what is this shape
-  batch_size: number;
-  max_rating: number;
-  min_rating: number;
-  uniform_threshold: number;
-  tspostdiff_thresh: number;
+  // current_posteriors will show up after first reward is given
+  // BUT if you wanted to set different priors for different arms, you could do that by setting current_posteriors manually
+  current_posteriors?: MoocletThompsonSamplingConfigurableCurrentPosteriors;
+  batch_size: number; // for now leave at 1
+  max_rating: number; // leave at 1
+  min_rating: number; // leave at 0
+  uniform_threshold: number; // leave at 0
+  tspostdiff_thresh: number; // ignore this (or leave at 0)
   outcome_variable_name: string;
+}
+
+export interface MoocletThompsonSamplingConfigurableCurrentPosteriors {
+  [key: string]: {
+    failures: number;
+    successes: number;
+  };
 }
 
 export type MoocletPolicyParameters =
@@ -130,6 +174,7 @@ export class MoocletTestService {
     let moocletResponse: MoocletResponseDetails = null;
     let moocletVersionsResponse: MoocletVersionResponseDetails[] = null;
     let moocletPolicyParametersResponse: MoocletPolicyParametersResponseDetails = null;
+    let moocletVariableResponse: MoocletVariableResponseDetails = null;
 
     const newMoocletRequest: MoocletRequestBody = {
       name: upgradeName,
@@ -138,7 +183,9 @@ export class MoocletTestService {
 
     try {
       // Step 0: get policy id by policy name. id and policy name could change.
-      newMoocletRequest.policy = await this.moocletDataService.getMoocletIdByName(MoocletPolicyNames.UNIFORM_RANDOM);
+      console.log('******asignmentAlgorithm***************************************');
+      console.log(assignmentAlgorithm);
+      newMoocletRequest.policy = await this.moocletDataService.getMoocletIdByName(assignmentAlgorithm);
 
       console.log('* newMoocletRequest **************************************************');
       console.log(newMoocletRequest);
@@ -147,7 +194,7 @@ export class MoocletTestService {
       moocletResponse = await this.moocletDataService.postNewMooclet(newMoocletRequest);
 
       // Step 2: create versions
-      if (moocletResponse.id) {
+      if (moocletResponse?.id) {
         moocletVersionsResponse = await Promise.all(
           upgradeConditions.map(async (condition, index) => this.createNewVersion(condition, moocletResponse, index))
         );
@@ -161,7 +208,7 @@ export class MoocletTestService {
         const policyParametersRequest: MoocletPolicyParametersRequestBody = {
           mooclet: moocletResponse.id,
           policy: moocletResponse.policy,
-          parameters: this.createPolicyParameters(moocletVersionsResponse, upgradeExperiment),
+          parameters: this.createPolicyParameters(moocletVersionsResponse, upgradeExperiment, moocletResponse.name),
         };
 
         moocletPolicyParametersResponse = await this.moocletDataService.postNewPolicyParameters(
@@ -172,8 +219,18 @@ export class MoocletTestService {
         console.log(moocletPolicyParametersResponse);
       }
 
-      // Step 4: if all has succeeded, insert the mooclet details in the experiment json
-      if (moocletResponse && moocletVersionsResponse && moocletPolicyParametersResponse) {
+      // Step 4: associate outcome variable name with variable if TS_CONFIGURABLE
+
+      if (moocletPolicyParametersResponse && assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {
+        const variableRequest: MoocletVariableRequestBody = {
+          name: this.createOutcomeVariableName(moocletResponse.name),
+        };
+
+        moocletVariableResponse = await this.moocletDataService.postNewVariable(variableRequest);
+      }
+
+      // Step 5: if all has succeeded, insert the mooclet details in the experiment json
+      if (moocletResponse && moocletVersionsResponse && moocletPolicyParametersResponse && moocletVariableResponse) {
         const moocletExperimentDataSummary: MoocletExperimentDataSummary = {
           mooclet: moocletResponse,
           versions: moocletVersionsResponse,
@@ -231,33 +288,39 @@ export class MoocletTestService {
     return experimentCondition;
   }
 
-  private createPolicyParameters(moocletVersions: MoocletVersionResponseDetails[], experiment: Experiment) {
+  private createPolicyParameters(
+    moocletVersions: MoocletVersionResponseDetails[],
+    experiment: Experiment,
+    moocletName: string
+  ) {
     const assignmentAlgorithm = experiment.assignmentAlgorithm;
 
     if (assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_UNIFORM_RANDOM) {
       return this.createWeightedRandomParameters(moocletVersions, experiment.conditions);
     } else if (assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {
-      return this.createTSConfigurableParameters();
+      return this.createTSConfigurableParameters(moocletName);
     } else {
       throw new Error(`Assignment algorithm not found: ${assignmentAlgorithm}`);
     }
   }
 
-  private createTSConfigurableParameters(): MoocletPolicyParameters {
-    // hardcode for now
-    // pass in through ui, but where?
+  private createTSConfigurableParameters(moocletName: string): MoocletPolicyParameters {
     return {
       prior: {
         failure: 1,
         success: 1,
       },
-      batch_size: 4,
-      max_rating: 5,
-      min_rating: 1,
-      uniform_threshold: 8,
-      tspostdiff_thresh: 0.1,
-      outcome_variable_name: 'dummy_reward_name',
+      batch_size: 1,
+      max_rating: 1,
+      min_rating: 0,
+      uniform_threshold: 0,
+      tspostdiff_thresh: 0,
+      outcome_variable_name: this.createOutcomeVariableName(moocletName),
     };
+  }
+
+  private createOutcomeVariableName(moocletName: string): string {
+    return 'TS_CONFIG_TEST_' + moocletName;
   }
 
   private createWeightedRandomParameters(

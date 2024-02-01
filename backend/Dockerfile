@@ -13,4 +13,3 @@ ENV NODE_OPTIONS=--max_old_space_size=4096
 RUN ["npm", "run", "build:upgrade"]
 
 EXPOSE 3030
-CMD ["npm", "run", "--silent", "production:upgrade"]
