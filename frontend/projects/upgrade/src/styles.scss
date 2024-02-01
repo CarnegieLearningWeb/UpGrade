@@ -363,6 +363,7 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
     .mat-mdc-cell {
       background-color: transparent;
       border-bottom: none;
+      letter-spacing: normal;
 
       .mat-mdc-form-field .mdc-text-field {
         padding: 0 8px;
