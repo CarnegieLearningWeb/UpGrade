@@ -617,6 +617,5 @@ export class ImportExperimentComponent implements OnInit {
         }
       }.bind(this)
     );
-    
   }
 }

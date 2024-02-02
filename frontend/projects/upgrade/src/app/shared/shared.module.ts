@@ -24,6 +24,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSortModule } from '@angular/material/sort';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatStepperModule } from '@angular/material/stepper';
@@ -72,6 +73,7 @@ import { environment } from '../../environments/environment';
     MatRadioModule,
     MatExpansionModule,
     MatProgressBarModule,
+    MatProgressSpinnerModule,
     MatAutocompleteModule,
     MatTreeModule,
     environment.production ? [] : DevToolsModule,
@@ -116,6 +118,7 @@ import { environment } from '../../environments/environment';
     MatRadioModule,
     MatExpansionModule,
     MatProgressBarModule,
+    MatProgressSpinnerModule,
     MatAutocompleteModule,
     MatTreeModule,
     SharedIconsComponent,
