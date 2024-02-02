@@ -1,12 +1,16 @@
-import * as jsonfile from 'jsonfile';
-import * as path from 'path';
+import jsonfile from 'jsonfile';
+import path from 'path';
+import tsconfig from '../tsconfig.json';
+import baseConfig from '../../../tsconfig.json';
 
-import * as tsconfig from '../tsconfig.json';
-
-const content: any = tsconfig;
+const content: any = JSON.parse(JSON.stringify(tsconfig)); // Clone JSON.parse(JSON.stringify(tsconfig.json
+content.compilerOptions = { ...baseConfig.compilerOptions, ...content.compilerOptions }; // Clone tsconfig.json
 content.compilerOptions.outDir = 'dist';
 content.include = ['src/**/*', 'custom.d.ts'];
 content.compilerOptions.paths.upgrade_types = ['./types'];
+delete content.references;
+delete content.extends;
+delete content.references;
 
 const filePath = path.join(process.cwd(), 'tsconfig.build.json');
 jsonfile.writeFile(filePath, content, { spaces: 2 }, (err) => {

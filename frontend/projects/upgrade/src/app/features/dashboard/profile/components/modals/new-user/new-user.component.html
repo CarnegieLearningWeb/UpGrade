@@ -2,52 +2,72 @@
   <span class="ft-24-700 title">{{ 'profile.new-user.title' | translate }}</span>
   <div class="content">
     <form class="user-form" [formGroup]="newUserForm">
-      <mat-form-field class="ft-14-600">
+      <mat-form-field
+        class="dense-2"
+        appearance="outline"
+      >
+        <mat-label class="ft-14-400">
+          {{ 'profile.table.firstName.text' | translate }}
+        </mat-label>
         <input
+          class="ft-14-400 input"
           matInput
-          class="ft-14-600 input"
-          [placeholder]="'profile.table.firstName.text' | translate"
           formControlName="firstName"
         />
-        <mat-error *ngIf="newUserForm.controls.firstName.hasError('required')">
+        <mat-error class="ft-14-400" *ngIf="newUserForm.controls.firstName.hasError('required')">
           {{ 'profile.new-user.firstName-required-error.text' | translate }}
         </mat-error>
       </mat-form-field>
-      <mat-form-field class="ft-14-600">
+      <mat-form-field
+        class="dense-2"
+        appearance="outline"
+      >
+        <mat-label class="ft-14-400">
+          {{ 'profile.table.lastName.text' | translate }}
+        </mat-label>
         <input
+          class="ft-14-400 input"
           matInput
-          class="ft-14-600 input"
-          [placeholder]="'profile.table.lastName.text' | translate"
           formControlName="lastName"
         />
-        <mat-error *ngIf="newUserForm.controls.lastName.hasError('required')">
+        <mat-error class="ft-14-400" *ngIf="newUserForm.controls.lastName.hasError('required')">
           {{ 'profile.new-user.lastName-required-error.text' | translate }}
         </mat-error>
       </mat-form-field>
-      <mat-form-field class="ft-14-600">
+      <mat-form-field
+        class="dense-2"
+        appearance="outline"
+      >
+        <mat-label class="ft-14-400">
+          {{ 'profile.global.email.text' | translate }}
+        </mat-label>
         <input
+          class="ft-14-400 input"
           matInput
-          class="ft-14-600 input"
-          [placeholder]="'profile.global.email.text' | translate"
           formControlName="email"
         />
-        <mat-error *ngIf="newUserForm.controls.email.hasError('required')">
+        <mat-error class="ft-14-400" *ngIf="newUserForm.controls.email.hasError('required')">
           {{ 'profile.new-user.email-required-error.text' | translate }}
         </mat-error>
       </mat-form-field>
-      <mat-form-field class="ft-14-600">
-        <mat-label>{{ 'profile.global.role.text' | translate }}</mat-label>
-        <mat-select class="ft-14-600 input" formControlName="role">
-          <mat-option *ngFor="let role of userRole" [value]="role">
+      <mat-form-field
+        class="dense-2"
+        appearance="outline"
+      >
+        <mat-label class="ft-14-400">
+          {{ 'profile.global.role.text' | translate }}
+        </mat-label>
+        <mat-select class="ft-14-400 input" formControlName="role">
+          <mat-option class="ft-14-400" *ngFor="let role of userRole" [value]="role">
             {{ role | titlecase }}
           </mat-option>
         </mat-select>
-        <mat-error *ngIf="newUserForm.controls.role.hasError('required')">
+        <mat-error class="ft-14-400" *ngIf="newUserForm.controls.role.hasError('required')">
           {{ 'profile.new-user.role-required-error.text' | translate }}
         </mat-error>
       </mat-form-field>
     </form>
-    <span class="ft-14-600 validation-message" *ngIf="isUserExist">
+    <span class="ft-14-400 validation-message" *ngIf="isUserExist">
       {{ 'profile.new-user.email-exist-error.text' | translate }}
     </span>
   </div>

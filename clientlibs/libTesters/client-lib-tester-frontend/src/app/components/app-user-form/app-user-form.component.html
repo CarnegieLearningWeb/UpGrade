@@ -15,7 +15,7 @@
   <div class="user-form-container">
     <form class="flex-wrapper" [formGroup]="userForm">
       <div class="user-block">
-        <mat-form-field class="user-form-field">
+        <mat-form-field class="dense-2 user-form-field">
           <mat-label>User Id</mat-label>
           <input type="text" matInput formControlName="userId" />
         </mat-form-field>
@@ -24,7 +24,7 @@
       <div class="collapsible-block" *ngIf="openUserDetails">
         <div class="useraliases-block">
           <mat-form-field
-            class="user-form-field"
+            class="dense-2 user-form-field"
             hintLabel="Comma-separated list. Leave blank for none."
             [style.width.px]="400"
           >

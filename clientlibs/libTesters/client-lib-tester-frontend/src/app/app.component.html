@@ -1,7 +1,7 @@
 <div class="config-container">
   <form class="config-form" [formGroup]="configForm">
     <div class="config-form-column mock-app">
-      <mat-form-field class="config-form-field" [style.width.px]="400">
+      <mat-form-field class="dense-2 config-form-field" [style.width.px]="400">
         <mat-label>Mock Client App / Component</mat-label>
         <mat-select formControlName="mockClientApp">
           <mat-option *ngFor="let mockClient of mockClientAppSelectOptions" [value]="mockClient.value">
@@ -38,7 +38,7 @@
     </div>
 
     <div class="config-form-column version">
-      <mat-form-field class="config-form-field" [style.width.px]="400">
+      <mat-form-field class="dense-2 config-form-field" [style.width.px]="400">
         <mat-label>Client Lib Version</mat-label>
         <mat-select formControlName="clientLibVersion">
           <mat-option *ngFor="let version of clientLibVersionSelectOptions" [value]="version.value">
@@ -49,7 +49,7 @@
     </div>
 
     <div class="config-form-column version">
-      <mat-form-field class="config-form-field" [style.width.px]="400">
+      <mat-form-field class="dense-2 config-form-field" [style.width.px]="400">
         <mat-label>API Host URL</mat-label>
         <input type="text" matInput formControlName="apiHostUrl" [matAutocomplete]="auto" />
         <mat-autocomplete #auto="matAutocomplete">
