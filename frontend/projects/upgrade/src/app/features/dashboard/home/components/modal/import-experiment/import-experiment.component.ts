@@ -62,6 +62,7 @@ export class ImportExperimentComponent implements OnInit {
 
   allStratificationFactors: StratificationFactorSimple[];
   isLoading$ = this.stratificationFactorsService.isLoading$;
+  isLoadingExperiments$ = false;
   allStratificationFactorsSub: Subscription;
 
   missingConditionProperties = '';
@@ -588,25 +589,32 @@ export class ImportExperimentComponent implements OnInit {
     this.importFileErrors = [];
     this.allExperiments = [];
 
+    // Set loading to true before processing the files
+    this.isLoadingExperiments$ = true;
     readFile(index);
     function readFile(fileIndex: number) {
       if (fileIndex >= event.target.files.length) return;
       fileName = event.target.files[fileIndex].name;
       reader.readAsText(event.target.files[fileIndex]);
     }
-
     reader.addEventListener(
       'load',
       async function () {
         let result = JSON.parse(reader.result as any);
         result = this.updateExperimentJSON(result);
         this.experimentInfo = result;
+        this.isLoadingExperiments$ = true;
         this.importFileErrorsDataSource.data = await this.validateExperiment(
           this.experimentInfo,
           fileName,
           this.experimentJSONVersionStatus
         );
         readFile(++index);
+        // Check if this is the last file
+        if (index >= this.uploadedFileCount) {
+          // Set loading to false after processing all files
+          this.isLoadingExperiments$ = false;
+        }
       }.bind(this)
     );
   }
