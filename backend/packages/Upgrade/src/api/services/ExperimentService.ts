@@ -1546,19 +1546,18 @@ export class ExperimentService {
     currentUser: User,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
-    const createdExperiments = await Promise.all(
-      experiments.map(async (exp) => {
-        try {
-          return await this.create(exp, currentUser, logger);
-        } catch (err) {
-          const error = err as Error;
-          error.message = `Error in creating experiment document "addBulkExperiments"`;
-          logger.error(error);
-          throw error;
-        }
-      })
-    );
-
+    const createdExperiments = [];
+    for (const exp of experiments) {
+      try {
+        const result = await this.create(exp, currentUser, logger);
+        createdExperiments.push(result);
+      } catch (err) {
+        const error = err as Error;
+        error.message = `Error in creating experiment document "addBulkExperiments"`;
+        logger.error(error);
+        throw error;
+      }
+    }
     return createdExperiments;
   }
 

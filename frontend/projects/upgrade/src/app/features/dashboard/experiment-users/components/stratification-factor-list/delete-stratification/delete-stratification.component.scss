@@ -1,3 +1,5 @@
+$dark-grey-text-color: #646e7b;
+
 .delete-stratification-container {
   .title {
     display: block;
@@ -7,7 +9,8 @@
 
   .delete-stratification-body {
     margin: 20px 0;
-    padding: 0 40px;
+    padding: 0 40px 20px;
+    color: $dark-grey-text-color;
   }
 
   .button-container {

@@ -1,11 +1,15 @@
 <div mat-dialog-content class="dialog">
-  <p class="ft-16-600">
+  <p class="ft-14-600">
     {{ 'global.delete-confirmation.message.text' | translate }}
   </p>
-  <mat-form-field class="ft-14-600 name">
+  <mat-form-field
+    class="dense-2 name"
+    appearance="outline"
+    subscriptSizing="dynamic"
+  >
     <input
-      matInput
       class="ft-14-400 name-input"
+      matInput
       [placeholder]="'global.delete.input-placeholder.text' | translate"
       [(ngModel)]="isDeleteButtonClicked"
     />

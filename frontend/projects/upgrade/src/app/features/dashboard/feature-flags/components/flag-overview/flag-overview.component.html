@@ -1,5 +1,5 @@
 <form class="flag-overview" [formGroup]="overviewForm">
-  <mat-form-field class="ft-14-600 name">
+  <mat-form-field class="dense-2 ft-14-600 name">
     <input
       matInput
       class="ft-14-400"
@@ -9,7 +9,7 @@
     />
   </mat-form-field>
 
-  <mat-form-field class="ft-14-600 key">
+  <mat-form-field class="dense-2 ft-14-600 key">
     <input
       matInput
       class="ft-14-400"
@@ -17,23 +17,23 @@
       formControlName="key"
     />
   </mat-form-field>
-  <mat-error class="ft-14-600 validation-message" *ngIf="keyError">
+  <mat-error class="ft-14-400 validation-message" *ngIf="keyError">
     {{ keyError }}
   </mat-error>
 
-  <mat-form-field class="ft-14-600 variationType">
+  <mat-form-field class="dense-2 ft-14-600 variationType">
     <mat-label>{{ 'feature-flags.overview.flag-variation-type.text' | translate }}</mat-label>
     <mat-select class="ft-14-400" formControlName="variationType">
       <mat-option *ngFor="let type of variationTypes" [value]="type">
         {{ type | titlecase }}
       </mat-option>
     </mat-select>
-    <mat-error *ngIf="overviewForm.controls.variationType.hasError('required')">
+    <mat-error class="ft-14-400" *ngIf="overviewForm.controls.variationType.hasError('required')">
       {{ 'feature-flags.overview.flag-variation-type-error.text' | translate }}
     </mat-error>
   </mat-form-field>
 
-  <mat-form-field class="ft-14-600 description">
+  <mat-form-field class="dense-2 ft-14-600 description">
     <input
       class="ft-14-400"
       matInput
