@@ -45,6 +45,8 @@
       }
 
       .mat-mdc-header-cell {
+        background-color: var(--white);
+
         &.mat-column-totalAssignedConditions {
           text-align: center;
         }
