@@ -512,7 +512,7 @@
               <mat-table class="factor-table" [dataSource]="factorsDataSource" multiTemplateDataRows>
                 <!-- Expand Icon Column -->
                 <ng-container matColumnDef="expandIcon">
-                  <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef></mat-header-cell>
                   <mat-cell *matCellDef="let data; let factorIndex = dataIndex" style="justify-content: flex-start">
                     <mat-icon [class.active]="factorIndex === expandedId" (click)="expandFactor(factorIndex)"
                       >play_arrow</mat-icon
@@ -561,20 +561,20 @@
                       <mat-table class="table level-table" [dataSource]="data.levels">
                         <!-- Level Column -->
                         <ng-container matColumnDef="level">
-                          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
                             {{ 'home.new-experiment.design.level-name.text' | translate }}
                           </mat-header-cell>
-                          <mat-cell *matCellDef="let data; let levelIndex = index">
+                          <mat-cell class="ft-12-600" *matCellDef="let data; let levelIndex = index">
                             <span>{{ data.name }}</span>
                           </mat-cell>
                         </ng-container>
 
                         <!-- Payload Column -->
                         <ng-container matColumnDef="payload">
-                          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
                             {{ 'home.new-experiment.design.payloads.column-header.payload.text' | translate }}
                           </mat-header-cell>
-                          <mat-cell *matCellDef="let data; let levelIndex = index">
+                          <mat-cell class="ft-12-600" *matCellDef="let data; let levelIndex = index">
                             <span>{{ data.payload?.value }}</span>
                           </mat-cell>
                         </ng-container>
