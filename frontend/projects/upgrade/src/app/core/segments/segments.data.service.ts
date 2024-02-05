@@ -17,6 +17,11 @@ export class SegmentsDataService {
     return this.http.post(url, segment);
   }
 
+  getSegmentById(id: string) {
+    const url = `${this.environment.api.segments}/${id}`;
+    return this.http.get(url);
+  }
+
   deleteSegment(id: string) {
     const url = `${this.environment.api.segments}/${id}`;
     return this.http.delete(url);
