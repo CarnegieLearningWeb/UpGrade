@@ -78,6 +78,7 @@ $experiment-state-light-color: #8f9bb3;
     .mat-mdc-header-cell {
       padding: 10px 5px;
       word-break: break-word;
+      background-color: var(--white);
 
       &.cdk-column-name {
         width: 15%;
