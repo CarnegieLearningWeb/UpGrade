@@ -15,6 +15,11 @@
     .search-input {
       line-height: 20px;
     }
+
+    .search-icon {
+      margin-top: -6px;
+      height: 16px;
+    }
   }
 
   .spinner {
@@ -51,6 +56,9 @@
       }
 
       .mat-mdc-header-cell {
+        background-color: var(--white);
+        color: var(--grey-2);
+
         &.mat-column-metric {
           padding-left: 20px;
         }

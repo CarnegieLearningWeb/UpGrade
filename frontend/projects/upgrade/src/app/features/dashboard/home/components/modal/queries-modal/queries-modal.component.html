@@ -20,7 +20,7 @@
       <!-- Do not shows search bar in create query view -->
       <mat-form-field [ngClass]="{ 'hide-search': createQueryMode }">
         <input
-          class="ft-16-400 search-input"
+          class="dense-2 ft-16-400 search-input"
           [(ngModel)]="searchInput"
           matInput
           (keyup)="applyFilter()"

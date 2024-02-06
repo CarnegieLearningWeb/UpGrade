@@ -15,17 +15,17 @@ $experiment-state-light-color: #8f9bb3;
     height: 94px;
 
     .filter-options {
-      margin-right: 10px;
-      width: 80px;
-
-      ::ng-deep .mat-form-field-underline,
-      ::ng-deep .mat-form-field-ripple {
-        background-color: unset;
-      }
+      margin-right: 20px;
+      width: 120px;
     }
 
     .search-input {
       line-height: 20px;
+    }
+
+    .search-icon {
+      margin-top: -6px;
+      height: 16px;
     }
 
     button {
@@ -41,10 +41,6 @@ $experiment-state-light-color: #8f9bb3;
     .import-experiment {
       margin-right: 20px;
     }
-  }
-
-  ::ng-deep .mat-form-field-suffix {
-    top: 5px;
   }
 
   .experiment-list-table-container {
@@ -82,6 +78,7 @@ $experiment-state-light-color: #8f9bb3;
     .mat-mdc-header-cell {
       padding: 10px 5px;
       word-break: break-word;
+      background-color: var(--white);
 
       &.cdk-column-name {
         width: 15%;

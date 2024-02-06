@@ -1,32 +1,20 @@
 .export-segment-container {
   .title {
     display: block;
-    padding: 30px 40px 0;
-    height: 88px;
+    padding: 40px 40px 0;
+    height: 108px;
+    border-bottom: 1px solid var(--light-grey);
   }
 
   &-form {
     display: flex;
     justify-content: space-between;
     margin: 20px 0;
-    padding: 0 40px;
+    padding: 0 40px 30px;
 
     mat-form-field {
-      margin-right: 10px;
-      width: 75%;
+      width: 100%;
     }
-  }
-
-  .info-msg {
-    display: block;
-    padding-top: -40px;
-    padding-bottom: 30px;
-    padding-left: 35px;
-    padding-right: 35px;
-  }
-
-  .info-msg {
-    color: var(--blue);
   }
 
   .button-container {
