@@ -25,13 +25,14 @@ export class SegmentsService {
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
 
   selectSegmentById(segmentId: string) {
-    return this.store$.pipe(select(selectSegmentById, { segmentId })).pipe(
+    return this.store$.pipe(
+      select(selectSegmentById, { segmentId }),
       tap((segment) => {
         if (!segment) {
           this.fetchSegmentById(segmentId);
         }
-        return { ...segment };
-      })
+      }),
+      map((segment) => ({ ...segment }))
     );
   }
 
