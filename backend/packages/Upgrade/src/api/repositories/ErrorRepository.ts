@@ -20,7 +20,7 @@ export class ErrorRepository extends Repository<ExperimentError> {
   }
 
   public async paginatedFind(limit: number, offset: number, filter: SERVER_ERROR): Promise<ExperimentError[]> {
-    let queryBuilder = this.createQueryBuilder('error').skip(offset).take(limit).orderBy('error.createdAt', 'DESC');
+    let queryBuilder = this.createQueryBuilder('error').offset(offset).limit(limit).orderBy('error.createdAt', 'DESC');
     if (filter) {
       queryBuilder = queryBuilder.where('error.type = :filter', { filter });
     }
@@ -45,7 +45,7 @@ export class ErrorRepository extends Repository<ExperimentError> {
     const errorLogOffset = await this.createQueryBuilder('error')
       .select('error.id')
       .orderBy('error.createdAt', 'DESC')
-      .take(limit);
+      .limit(limit);
 
     const result = await this.createQueryBuilder()
       .delete()
