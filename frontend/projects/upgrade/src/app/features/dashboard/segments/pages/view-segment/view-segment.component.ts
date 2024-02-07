@@ -15,6 +15,7 @@ import { SegmentExperimentListComponent } from '../../components/modal/segment-e
 import { SEGMENT_STATUS } from 'upgrade_types';
 import { SegmentStatusPipeType } from '../../../../../shared/pipes/segment-status.pipe';
 import { ExportSegmentComponent } from '../../components/modal/export-segment/export-segment.component';
+import { ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'view-segment',
   templateUrl: './view-segment.component.html',
@@ -22,6 +23,7 @@ import { ExportSegmentComponent } from '../../components/modal/export-segment/ex
 })
 export class ViewSegmentComponent implements OnInit, OnDestroy {
   permissions: UserPermission;
+  segmentIdSub: Subscription;
   permissionsSub: Subscription;
   segment: Segment;
   segmentSub: Subscription;
@@ -30,7 +32,12 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
 
   displayedVariationColumns: string[] = ['value', 'name'];
 
-  constructor(private segmentsService: SegmentsService, private dialog: MatDialog, private authService: AuthService) {}
+  constructor(
+    private segmentsService: SegmentsService,
+    private dialog: MatDialog,
+    private authService: AuthService,
+    private _Activatedroute: ActivatedRoute
+  ) {}
 
   get SegmentStatus() {
     return SEGMENT_STATUS;
@@ -43,6 +50,11 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.permissionsSub = this.authService.userPermissions$.subscribe((permission) => {
       this.permissions = permission;
+    });
+
+    this.segmentIdSub = this._Activatedroute.paramMap.subscribe((params) => {
+      const segmentIdFromParams = params.get('segmentId');
+      this.segmentsService.fetchSegmentById(segmentIdFromParams);
     });
 
     this.segmentSub = this.segmentsService.selectedSegment$
@@ -116,5 +128,6 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.segmentSub.unsubscribe();
     this.permissionsSub.unsubscribe();
+    this.segmentIdSub.unsubscribe();
   }
 }
