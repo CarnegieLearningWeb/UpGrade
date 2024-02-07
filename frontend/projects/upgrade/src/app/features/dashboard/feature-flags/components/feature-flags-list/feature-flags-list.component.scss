@@ -15,11 +15,6 @@
     .filter-options {
       margin-right: 10px;
       width: 80px;
-
-      ::ng-deep .mat-form-field-underline,
-      ::ng-deep .mat-form-field-ripple {
-        background-color: unset;
-      }
     }
 
     .search-input {
@@ -31,10 +26,6 @@
       height: 40px;
       color: var(--white);
     }
-  }
-
-  ::ng-deep .mat-form-field-suffix {
-    top: 5px;
   }
 
   .flags-list-table-container {
@@ -83,7 +74,7 @@
       }
     }
 
-    .mat-form-field {
+    .mat-mdc-form-field {
       width: 40%;
     }
   }

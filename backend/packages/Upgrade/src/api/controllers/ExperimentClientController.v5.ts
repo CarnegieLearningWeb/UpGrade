@@ -172,7 +172,7 @@ export class ExperimentClientController {
   public async init(
     @Req()
     request: AppRequest,
-    @Body({ validate: false })
+    @Body({ validate: true })
     experimentUser: ExperimentUserValidator
   ): Promise<Pick<ExperimentUser, 'id' | 'group' | 'workingGroup'>> {
     request.logger.info({ message: 'Starting the init call for user' });
@@ -253,7 +253,7 @@ export class ExperimentClientController {
   public async setGroupMemberShip(
     @Req()
     request: AppRequest,
-    @Body({ validate: false })
+    @Body({ validate: true })
     experimentUser: ExperimentUserValidator
   ): Promise<IGroupMembership> {
     request.logger.info({ message: 'Starting the groupmembership call for user' });
@@ -321,7 +321,7 @@ export class ExperimentClientController {
   public async setWorkingGroup(
     @Req()
     request: AppRequest,
-    @Body({ validate: false })
+    @Body({ validate: true })
     workingGroupParams: UpdateWorkingGroupValidator
   ): Promise<IWorkingGroup> {
     request.logger.info({ message: 'Starting the workinggroup call for user' });
@@ -416,7 +416,7 @@ export class ExperimentClientController {
   public async markExperimentPoint(
     @Req()
     request: AppRequest,
-    @Body({ validate: false })
+    @Body({ validate: true })
     experiment: MarkExperimentValidatorv5
   ): Promise<IMonitoredDecisionPoint> {
     request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
@@ -502,7 +502,7 @@ export class ExperimentClientController {
   public async getAllExperimentConditions(
     @Req()
     request: AppRequest,
-    @Body({ validate: false })
+    @Body({ validate: true })
     experiment: ExperimentAssignmentValidator
   ): Promise<IExperimentAssignmentv5[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
@@ -763,7 +763,7 @@ export class ExperimentClientController {
   public async filterMetrics(
     @Req()
     request: AppRequest,
-    @Body({ validate: false })
+    @Body({ validate: true })
     metric: MetricValidator
   ): Promise<Metric[]> {
     return await this.metricService.saveAllMetrics(metric.metricUnit, request.logger);
@@ -822,7 +822,7 @@ export class ExperimentClientController {
   public async setUserAliases(
     @Req()
     request: AppRequest,
-    @Body({ validate: false })
+    @Body({ validate: true })
     user: ExperimentUserAliasesValidator
   ): Promise<IUserAliases> {
     const experimentUserDoc = await this.experimentUserService.getUserDoc(user.userId, request.logger);

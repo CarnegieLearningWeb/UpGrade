@@ -2,12 +2,12 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
-import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operators';
+import { catchError, filter, map, mergeMap, switchMap, withLatestFrom } from 'rxjs/operators';
 import { AppState, NotificationService } from '../../core.module';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
 import { Segment, SegmentReturnedObj, UpsertSegmentType } from './segments.model';
-import { selectAllSegments } from './segments.selectors';
+import { selectAllSegments, selectSegmentsState } from './segments.selectors';
 import JSZip from 'jszip';
 
 @Injectable()
@@ -34,6 +34,22 @@ export class SegmentsEffects {
             })
           ),
           catchError(() => [SegmentsActions.actionFetchSegmentsFailure()])
+        )
+      )
+    )
+  );
+
+  getSegmentById$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionGetSegmentById),
+      map((action) => action.segmentId),
+      filter((segmentId) => !!segmentId),
+      switchMap((segmentId) =>
+        this.segmentsDataService.getSegmentById(segmentId).pipe(
+          map((data: Segment) => {
+            return SegmentsActions.actionGetSegmentByIdSuccess({ segment: data });
+          }),
+          catchError(() => [SegmentsActions.actionGetSegmentByIdFailure()])
         )
       )
     )

@@ -1,21 +1,27 @@
 <mat-card appearance="raised" class="experiments-list-container">
   <div class="header">
     <div>
-      <mat-form-field class="filter-options">
+      <mat-form-field
+        class="dense-2 filter-options"
+        subscriptSizing="dynamic"
+      >
         <mat-select
-          class="ft-16-600"
+          class="ft-14-400"
           [(ngModel)]="selectedExperimentFilterOption"
           (selectionChange)="applyFilter(searchValue); setSearchKey()"
         >
-          <mat-option *ngFor="let filterOption of experimentFilterOptions" [value]="filterOption">
+          <mat-option class="ft-14-400" *ngFor="let filterOption of experimentFilterOptions" [value]="filterOption">
             {{ filterOption | titlecase }}
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field>
+      <mat-form-field
+        class="dense-2"
+        subscriptSizing="dynamic"
+      >
         <div *ngIf="selectedExperimentFilterOption !== 'status'">
           <input
-            class="search-input ft-16-400"
+            class="ft-14-400 search-input"
             matInput
             #searchInput
             [(ngModel)]="searchValue"
@@ -25,7 +31,7 @@
         </div>
         <div *ngIf="selectedExperimentFilterOption === 'status'">
           <input
-            class="search-input ft-16-400"
+            class="ft-14-400 search-input"
             matInput
             #searchInput
             [(ngModel)]="searchValue"
@@ -39,12 +45,12 @@
             panelWidth="fit-content"
             (optionSelected)="applyFilter($event.option.value)"
           >
-            <mat-option *ngFor="let filterOption of filteredStatusOptions" [value]="filterOption">
+            <mat-option class="ft-14-400" *ngFor="let filterOption of filteredStatusOptions" [value]="filterOption">
               {{ filterOption | titlecase }}
             </mat-option>
           </mat-autocomplete>
         </div>
-        <mat-icon matSuffix>search</mat-icon>
+        <mat-icon class="search-icon" matSuffix>search</mat-icon>
       </mat-form-field>
     </div>
     <div>

@@ -1,4 +1,4 @@
-import { ILogInput, MARKED_DECISION_POINT_STATUS } from '../../../../types/src';
+import { MARKED_DECISION_POINT_STATUS } from '../../../../types/src';
 import { UpGradeClientInterfaces } from './Interfaces';
 
 /* eslint-disable @typescript-eslint/no-namespace */
@@ -33,10 +33,5 @@ export namespace UpGradeClientRequests {
     };
     uniquifier?: string;
     clientError?: string;
-  }
-
-  export interface ILogRequestBody {
-    userId: string;
-    value: ILogInput[];
   }
 }

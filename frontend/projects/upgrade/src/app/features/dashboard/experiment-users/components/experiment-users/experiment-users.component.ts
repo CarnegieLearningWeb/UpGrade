@@ -9,7 +9,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 import { UserRole } from 'upgrade_types';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { MatSort } from '@angular/material/sort';
-import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
+import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
