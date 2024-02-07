@@ -100,6 +100,10 @@ $role-text-color: #0a7319;
           color: var(--grey-2);
         }
 
+        .mat-mdc-header-cell {
+          background-color: var(--white);
+        }
+
         tr.mat-mdc-footer-row,
         tr.mat-mdc-row {
           height: 55px;
