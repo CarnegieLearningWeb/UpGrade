@@ -55,7 +55,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   membersCountError: string = null;
   groupString = ' ( group )';
   membersValid = true;
-  isImportMemebervalid = true;
+  isImportMembervalid = true;
 
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
   constructor(
@@ -126,18 +126,30 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
 
   checkImportMemberValidation() {
     if (this.segmentMembersForm?.value) {
-      if (
-        this.segmentMembersForm.value.members.length === 0 ||
-        (this.segmentMembersForm.value.members.length === 1 &&
-          !this.segmentMembersForm.value.members[0].type &&
-          !this.segmentMembersForm.value.members[0].id)
+      if (this.segmentMembersForm.value.members.length === 0) {
+        this.isImportMembervalid = true;
+      } else if (
+        this.segmentMembersForm.value.members.length === 1 &&
+        !this.segmentMembersForm.value.members[0].type &&
+        !this.segmentMembersForm.value.members[0].id
       ) {
-        this.isImportMemebervalid = true;
+        this.isImportMembervalid = true;
+      } else if (this.segmentMembersForm.value.members.length > 1) {
+        const members = this.segmentMembersForm.value.members;
+        for (const member of members) {
+          if (!member.id && !member.type) {
+            this.isImportMembervalid = true;
+            continue;
+          } else {
+            this.isImportMembervalid = false;
+            break;
+          }
+        }
       } else {
-        this.isImportMemebervalid = false;
+        this.isImportMembervalid = false;
       }
     } else {
-      this.isImportMemebervalid = false;
+      this.isImportMembervalid = false;
     }
   }
 
@@ -173,12 +185,17 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
         const fileContent = e.target?.result as string;
         this.addCSVMembersToTable(fileContent);
         this.updateView();
+
+        event.target.value = '';
       };
       reader.readAsText(file);
     }
   }
 
   addCSVMembersToTable(segmentMembers: string): void {
+    if (this.members.length > 0) {
+      this.members.clear();
+    }
     const rows = segmentMembers.replace(/"/g, '').split('\n');
     // const fileName = segment.fileName.split('.');
 
