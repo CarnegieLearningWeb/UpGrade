@@ -103,14 +103,12 @@ export class NewExperimentComponent implements OnInit {
   }
 
   checkPostExperimentRule() {
-    if (this.newExperimentData.postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN) {
-      if (this.newExperimentData.revertTo) {
-        const conditionToSet = this.newExperimentData.conditions.filter((condition) => {
-          return condition.id === this.newExperimentData.revertTo;
-        });
-        if (!conditionToSet.length) {
-          this.newExperimentData.postExperimentRule = POST_EXPERIMENT_RULE.CONTINUE;
-        }
+    if (this.newExperimentData.postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN && this.newExperimentData.revertTo) {
+      const conditionToSet = this.newExperimentData.conditions.filter((condition) => {
+        return condition.id === this.newExperimentData.revertTo;
+      });
+      if (!conditionToSet.length) {
+        this.newExperimentData.postExperimentRule = POST_EXPERIMENT_RULE.CONTINUE;
       }
     }
   }
