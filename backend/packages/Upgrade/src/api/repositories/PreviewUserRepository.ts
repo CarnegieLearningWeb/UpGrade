@@ -67,8 +67,8 @@ export class PreviewUserRepository extends Repository<PreviewUser> {
 
   public async findPaginated(skip: number, take: number): Promise<PreviewUser[] | undefined> {
     return this.createQueryBuilder('user')
-      .skip(skip)
-      .take(take)
+      .offset(skip)
+      .limit(take)
       .orderBy('user.createdAt', 'DESC')
       .getMany()
       .catch((errorMsg: any) => {

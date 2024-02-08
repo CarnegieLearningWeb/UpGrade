@@ -212,8 +212,8 @@ describe('PreviewUserRepository Testing', () => {
       raw: [user],
     };
 
-    selectMock.expects('skip').once().returns(selectQueryBuilder);
-    selectMock.expects('take').once().returns(selectQueryBuilder);
+    selectMock.expects('offset').once().returns(selectQueryBuilder);
+    selectMock.expects('limit').once().returns(selectQueryBuilder);
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
@@ -231,8 +231,8 @@ describe('PreviewUserRepository Testing', () => {
       .withArgs('user')
       .returns(selectQueryBuilder);
 
-    selectMock.expects('skip').once().returns(selectQueryBuilder);
-    selectMock.expects('take').once().returns(selectQueryBuilder);
+    selectMock.expects('offset').once().returns(selectQueryBuilder);
+    selectMock.expects('limit').once().returns(selectQueryBuilder);
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.reject(err));
 

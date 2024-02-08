@@ -52,8 +52,8 @@ describe('Feature Flag Service Testing', () => {
 
   const mockFlagArr = [mockFlag1, mockFlag2, mockFlag3];
 
-  const takeSpy = jest.fn().mockReturnThis();
-  const skipSpy = jest.fn().mockReturnThis();
+  const limitSpy = jest.fn().mockReturnThis();
+  const offsetSpy = jest.fn().mockReturnThis();
   const addSelectSpy = jest.fn().mockReturnThis();
   const setParamaterSpy = jest.fn().mockReturnThis();
   const addOrderBySpy = jest.fn().mockReturnThis();
@@ -63,8 +63,8 @@ describe('Feature Flag Service Testing', () => {
     addOrderBy: addOrderBySpy,
     setParameter: setParamaterSpy,
     where: jest.fn().mockReturnThis(),
-    skip: skipSpy,
-    take: takeSpy,
+    offset: offsetSpy,
+    limit: limitSpy,
     innerJoinAndSelect: jest.fn().mockReturnThis(),
     getMany: jest.fn().mockResolvedValue(mockFlagArr),
   };
@@ -104,8 +104,8 @@ describe('Feature Flag Service Testing', () => {
               addOrderBy: addOrderBySpy,
               setParameter: setParamaterSpy,
               where: jest.fn().mockReturnThis(),
-              skip: skipSpy,
-              take: takeSpy,
+              offset: offsetSpy,
+              limit: limitSpy,
               innerJoinAndSelect: jest.fn().mockReturnThis(),
               getMany: jest.fn().mockResolvedValue(mockFlagArr),
             })),

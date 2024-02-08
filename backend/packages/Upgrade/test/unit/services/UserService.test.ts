@@ -35,8 +35,8 @@ describe('User Service Testing', () => {
 
   const userArr = [mockUser1, mockUser2, mockUser3];
 
-  const takeSpy = jest.fn().mockReturnThis();
-  const skipSpy = jest.fn().mockReturnThis();
+  const limitSpy = jest.fn().mockReturnThis();
+  const offsetSpy = jest.fn().mockReturnThis();
   const addSelectSpy = jest.fn().mockReturnThis();
   const setParamaterSpy = jest.fn().mockReturnThis();
   const addOrderBySpy = jest.fn().mockReturnThis();
@@ -63,8 +63,8 @@ describe('User Service Testing', () => {
               addOrderBy: addOrderBySpy,
               setParameter: setParamaterSpy,
               where: jest.fn().mockReturnThis(),
-              skip: skipSpy,
-              take: takeSpy,
+              offset: offsetSpy,
+              limit: limitSpy,
               getMany: jest.fn().mockResolvedValue(userArr),
             })),
           },
@@ -109,8 +109,8 @@ describe('User Service Testing', () => {
   it('should return paginated users', async () => {
     const users = await service.findPaginated(1, 2, logger);
     expect(repo.createQueryBuilder).toBeCalledWith('users');
-    expect(skipSpy).toBeCalledWith(1);
-    expect(takeSpy).toBeCalledWith(2);
+    expect(offsetSpy).toBeCalledWith(1);
+    expect(limitSpy).toBeCalledWith(2);
     expect(users).toEqual(userArr);
   });
 
@@ -121,8 +121,8 @@ describe('User Service Testing', () => {
     };
     const users = await service.findPaginated(0, 0, logger, params);
     expect(repo.createQueryBuilder).toBeCalledWith('users');
-    expect(skipSpy).toBeCalledWith(0);
-    expect(takeSpy).toBeCalledWith(0);
+    expect(offsetSpy).toBeCalledWith(0);
+    expect(limitSpy).toBeCalledWith(0);
     expect(addSelectSpy).toBeCalledWith(
       `ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users."firstName"::TEXT,''))), to_tsquery(:query))`,
       'rank'
@@ -142,8 +142,8 @@ describe('User Service Testing', () => {
     };
     const users = await service.findPaginated(0, 0, logger, searchParams, sortParams);
     expect(repo.createQueryBuilder).toBeCalledWith('users');
-    expect(skipSpy).toBeCalledWith(0);
-    expect(takeSpy).toBeCalledWith(0);
+    expect(offsetSpy).toBeCalledWith(0);
+    expect(limitSpy).toBeCalledWith(0);
     expect(addSelectSpy).toBeCalledWith(
       `ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users."lastName"::TEXT,''))), to_tsquery(:query))`,
       'rank'
