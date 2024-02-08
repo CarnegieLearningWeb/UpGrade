@@ -46,7 +46,7 @@ export const groupAssignmentWithGroupConsistencyExperiment = {
   state: EXPERIMENT_STATE.INACTIVE,
 };
 
-export const groupAssignmentWithIndividulaConsistencyExperiment = {
+export const groupAssignmentWithIndividualConsistencyExperiment = {
   ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,

@@ -156,7 +156,7 @@ class UpgradeUserTask(SequentialTaskSet):
     @tag("required", "portal")
     @task
     def init(self):
-        url = protocol + f"://{host}/api/init"
+        url = protocol + f"://{host}/api/v5/init"
         print("/init for userid: " + self.student["studentId"])
         data = {
             "id": self.student["studentId"],
@@ -178,7 +178,7 @@ class UpgradeUserTask(SequentialTaskSet):
         for schoolId in self.student["schools"].keys():
             for classId in self.student["schools"][schoolId]["classes"].keys():
                 instructorIds.append(self.student["schools"][schoolId]["classes"][classId]["instructorId"])
-        url = protocol + f"://{host}/api/groupmembership"
+        url = protocol + f"://{host}/api/v5/groupmembership"
         print("/groupmembership for userid: " + self.student["studentId"])
         data = {
             "id": self.student["studentId"],
@@ -188,14 +188,14 @@ class UpgradeUserTask(SequentialTaskSet):
                 "instructorId": instructorIds
             }
         }
-        with self.client.post(url, json = data, catch_response = True) as response:
+        with self.client.patch(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"Group membership Failed with {response.status_code} for userid: " + self.student["studentId"])
     # Task 3: portal calls /assign
     @tag("portal")
     @task
     def getAllExperimentConditionsPortal(self):
-        url = protocol + f"://{host}/api/assign"
+        url = protocol + f"://{host}/api/v5/assign"
         print("/assign portal for userid: " + self.student["studentId"])
         data = {
             "userId": self.student["studentId"],
@@ -212,7 +212,7 @@ class UpgradeUserTask(SequentialTaskSet):
         workingSchoolId = random.choice(list(self.student["schools"].keys()))
         workingClassId = random.choice(list(self.student["schools"][workingSchoolId]["classes"].keys()))
         workingInstructorId = self.student["schools"][workingSchoolId]["classes"][workingClassId]["instructorId"]
-        url = protocol + f"://{host}/api/workinggroup"
+        url = protocol + f"://{host}/api/v5/workinggroup"
         print("/workinggroup for userid: " + self.student["studentId"])
         data = {
             "id": self.student["studentId"],
@@ -222,7 +222,7 @@ class UpgradeUserTask(SequentialTaskSet):
                 "instructorId": workingInstructorId
             }
         }
-        with self.client.post(url, json = data, catch_response = True) as response:
+        with self.client.patch(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"setWorkingGroup Failed with {response.status_code} for userid: " + self.student["studentId"])
     # Task 5: launcher calls /useraliases
@@ -232,13 +232,13 @@ class UpgradeUserTask(SequentialTaskSet):
         workingSchoolId = random.choice(list(self.student["schools"].keys()))
         workingClassId = random.choice(list(self.student["schools"][workingSchoolId]["classes"].keys()))
         classModules = self.student["schools"][workingSchoolId]["classes"][workingClassId]["classModules"]
-        url = protocol + f"://{host}/api/useraliases"
+        url = protocol + f"://{host}/api/v5/useraliases"
         print("/useraliases for userid: " + self.student["studentId"])
         data = {
             "userId": self.student["studentId"],
             "aliases": [self.student["studentId"] + m for m in classModules]
         }
-        with self.client.post(url, json = data, catch_response = True) as response:
+        with self.client.patch(url, json = data, catch_response = True) as response:
             if response.status_code != 200:
                 print(f"/useraliases Failed with {response.status_code} for userid: " + self.student["studentId"])
     #Assignment Progress Service
@@ -247,7 +247,7 @@ class UpgradeUserTask(SequentialTaskSet):
     @tag("assign-prog")
     @task
     def getAllExperimentConditionsAssignProg(self):
-        url = protocol + f"://{host}/api/assign"
+        url = protocol + f"://{host}/api/v5/assign"
         print("/assign assign-prog for userid: " + self.student["studentId"])
         data = {
             "userId": self.student["studentId"],
@@ -261,7 +261,7 @@ class UpgradeUserTask(SequentialTaskSet):
     @tag("assign-prog")
     @task
     def markExperimentPoint(self):
-        url = protocol + f"://{host}/api/mark"
+        url = protocol + f"://{host}/api/v5/mark"
         print("/mark for userid: " + self.student["studentId"])
         if(len(allExperimentPartitionIDConditionPair) == 0):
             print("No assigned conditions found")
@@ -272,9 +272,13 @@ class UpgradeUserTask(SequentialTaskSet):
         markPartitionIDConditionPair = random.choice(allExperimentPartitionIDConditionPair)
         data = {
             "userId": self.student["studentId"],
-            "experimentPoint": markPartitionIDConditionPair['site'],
-            "partitionId": markPartitionIDConditionPair['target'],
-            "condition": markPartitionIDConditionPair['condition']
+            "data": {
+                "site": markPartitionIDConditionPair['site'],
+                "target": markPartitionIDConditionPair['target'],
+                "assignedCondition": {
+                    "conditionCode": markPartitionIDConditionPair['condition']
+                }
+            }
         }
 
         # pick a random assigned workspace - requires /assign response to be saved
@@ -356,7 +360,7 @@ class UpgradeUserTask(SequentialTaskSet):
     @tag("logger")
     @task
     def logEvent(self):
-        url = protocol + f"://{host}/api/log"
+        url = protocol + f"://{host}/api/v5/log"
         data = {
             "userId": self.student["studentId"],
             "value": [

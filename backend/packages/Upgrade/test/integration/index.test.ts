@@ -51,7 +51,7 @@ import {
   DeletePreviewAssignmentOnExperimentDelete,
   DeletePreviewAssignmentWithPreviewUserDelete,
 } from './PreviewExperiment/index';
-import { NoExperimentUserOnAssignment } from './ExperimentUser';
+import { GroupConsistency, IndividualConsistency, NoExperimentUserOnAssignment } from './ExperimentUser';
 import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
 import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalStateChange/index';
 import { StatsIndividualEnrollment, StatsGroupEnrollment, StatsWithinSubjectEnrollment } from './ExperimentStats/index';
@@ -108,7 +108,6 @@ describe('Integration Tests', () => {
   });
 
   beforeEach(async () => {
-    jest.setTimeout(29999);
     await migrateDatabase(connection);
     const cacheManager = Container.get(CacheService);
     await cacheManager.resetAllCache();
@@ -116,7 +115,7 @@ describe('Integration Tests', () => {
     // create System Users
     await CreateSystemUser();
     await createGlobalExcludeSegment(new UpgradeLogger());
-  });
+  }, 99999);
 
   // -------------------------------------------------------------------------
   // Tear down
@@ -504,5 +503,13 @@ describe('Integration Tests', () => {
 
   test('Stratification metrics query check', () => {
     return StratificationMetricQueriesCheck();
+  });
+
+  test('Working group change after user exclusion for individual consistency', () => {
+    return IndividualConsistency();
+  });
+
+  test('Working group change after user exclusion for group consistency', () => {
+    return GroupConsistency();
   });
 });
