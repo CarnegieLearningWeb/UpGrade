@@ -61,7 +61,7 @@ export class FeatureFlagService {
       queryBuilder = queryBuilder.addOrderBy(`feature_flag.${sortParams.key}`, sortParams.sortAs);
     }
 
-    queryBuilder = queryBuilder.skip(skip).take(take);
+    queryBuilder = queryBuilder.offset(skip).limit(take);
     return queryBuilder.getMany();
   }
 
