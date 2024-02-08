@@ -439,8 +439,8 @@ export class AnalyticsRepository {
       .addGroupBy('"individualEnrollment"."groupId"')
       .addGroupBy('condition."conditionCode"')
       .orderBy('"individualEnrollment"."userId"', 'ASC')
-      .skip(skip)
-      .take(take)
+      .offset(skip)
+      .limit(take)
       .where('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
       .execute();
   }
@@ -486,8 +486,8 @@ export class AnalyticsRepository {
       .addGroupBy('"individualEnrollment"."groupId"')
       .addGroupBy('"monitoredPointLogs"."condition"')
       .orderBy('"individualEnrollment"."userId"', 'ASC')
-      .skip(skip)
-      .take(take)
+      .offset(skip)
+      .limit(take)
       .where('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
       .execute();
   }

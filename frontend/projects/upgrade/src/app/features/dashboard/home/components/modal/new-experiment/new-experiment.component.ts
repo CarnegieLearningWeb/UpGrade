@@ -1,8 +1,5 @@
 import { Component, Inject, ViewChild, OnInit } from '@angular/core';
-import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -106,9 +103,9 @@ export class NewExperimentComponent implements OnInit {
   }
 
   checkPostExperimentRule() {
-    if (this.newExperimentData.postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN) {
+    if (this.newExperimentData.postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN && this.newExperimentData.revertTo) {
       const conditionToSet = this.newExperimentData.conditions.filter((condition) => {
-        condition.id === this.newExperimentData.revertTo;
+        return condition.id === this.newExperimentData.revertTo;
       });
       if (!conditionToSet.length) {
         this.newExperimentData.postExperimentRule = POST_EXPERIMENT_RULE.CONTINUE;

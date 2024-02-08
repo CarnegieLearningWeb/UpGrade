@@ -81,7 +81,7 @@ describe('ErrorRepository Testing', () => {
 
     selectMock.expects('select').once().returns(selectQueryBuilder);
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-    selectMock.expects('take').once().returns(selectQueryBuilder);
+    selectMock.expects('limit').once().returns(selectQueryBuilder);
     selectMock.expects('getQuery').once().returns(experiment.id);
     deleteMock.expects('delete').once().returns(deleteQueryBuilder);
     deleteMock.expects('from').once().returns(deleteQueryBuilder);
@@ -105,7 +105,7 @@ describe('ErrorRepository Testing', () => {
 
     selectMock.expects('select').once().returns(selectQueryBuilder);
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-    selectMock.expects('take').once().returns(selectQueryBuilder);
+    selectMock.expects('limit').once().returns(selectQueryBuilder);
     selectMock.expects('getQuery').once().returns(experiment.id);
     deleteMock.expects('delete').once().returns(deleteQueryBuilder);
     deleteMock.expects('from').once().returns(deleteQueryBuilder);
@@ -151,8 +151,8 @@ describe('ErrorRepository Testing', () => {
   it('should find paginated', async () => {
     createQueryBuilderStub = sandbox.stub(ErrorRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
-    selectMock.expects('skip').once().returns(selectQueryBuilder);
-    selectMock.expects('take').once().returns(selectQueryBuilder);
+    selectMock.expects('offset').once().returns(selectQueryBuilder);
+    selectMock.expects('limit').once().returns(selectQueryBuilder);
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
@@ -168,8 +168,8 @@ describe('ErrorRepository Testing', () => {
   it('should find paginated with no filter', async () => {
     createQueryBuilderStub = sandbox.stub(ErrorRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
-    selectMock.expects('skip').once().returns(selectQueryBuilder);
-    selectMock.expects('take').once().returns(selectQueryBuilder);
+    selectMock.expects('offset').once().returns(selectQueryBuilder);
+    selectMock.expects('limit').once().returns(selectQueryBuilder);
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
     selectMock.expects('where').never().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.resolve(result));
@@ -185,8 +185,8 @@ describe('ErrorRepository Testing', () => {
   it('should throw an error when find paginated fails', async () => {
     createQueryBuilderStub = sandbox.stub(ErrorRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
-    selectMock.expects('skip').once().returns(selectQueryBuilder);
-    selectMock.expects('take').once().returns(selectQueryBuilder);
+    selectMock.expects('offset').once().returns(selectQueryBuilder);
+    selectMock.expects('limit').once().returns(selectQueryBuilder);
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
     selectMock.expects('where').once().returns(selectQueryBuilder);
     selectMock.expects('getMany').once().returns(Promise.reject(err));
