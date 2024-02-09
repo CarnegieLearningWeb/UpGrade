@@ -89,13 +89,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - name: Set Backend App Version
-        working-directory: backend/packages/Upgrade
-        run: npm version ${{ needs.init.outputs.version }} --git-tag-version=false
       - name: Package Backend
         working-directory: backend
         run: |
-          npm version ${{ needs.init.outputs.version }} --git-tag-version=false
           cp -R ../types packages/Upgrade
           npm ci
           zip -qq -r upgrade-backend-${{ needs.init.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json
@@ -117,7 +113,6 @@ jobs:
       - name: Build Frontend
         working-directory: frontend
         run: |
-          npm version ${{ needs.init.outputs.version }} --git-tag-version=false
           npm ci
           npm run build:prod
       - name: Package Frontend
@@ -142,7 +137,6 @@ jobs:
       - name: Build Lambda
         working-directory: backend/packages/Scheduler
         run: |
-          npm version ${{ needs.init.outputs.version }} --git-tag-version=false
           npm ci
           npm run build
           mkdir lib
