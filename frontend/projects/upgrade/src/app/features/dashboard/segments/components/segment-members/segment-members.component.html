@@ -60,8 +60,8 @@
       </ng-container>
 
       <ng-container matColumnDef="removeMember">
-        <mat-header-cell class="ft-12-600 import-csv" [ngClass]="{ 'disabled': !isImportMemebervalid }" aria-hidden="true" (click)="fileInput.click()" *matHeaderCellDef>
-          <mat-icon class="upload-icon" (click)="removeMember(groupIndex)">
+        <mat-header-cell class="ft-12-600 import-csv" [ngClass]="{ 'disabled': !isImportMembervalid }" aria-hidden="true" (click)="fileInput.click()" *matHeaderCellDef>
+          <mat-icon class="upload-icon">
             upload_2
           </mat-icon>
           {{ 'users.stratification-users-import-csv.text' | translate }}
@@ -70,7 +70,7 @@
             accept=".csv"
             type="file"
             #fileInput
-            [disabled]="!isImportMemebervalid"
+            [disabled]="!isImportMembervalid"
             file-input
             (change)="onFileSelected($event)"
           />
