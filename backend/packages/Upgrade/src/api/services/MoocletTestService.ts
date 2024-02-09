@@ -267,6 +267,76 @@ export class MoocletTestService {
     return experimentCondition;
   }
 
+  public async syncRewardLogs(userId: string, logs: any): Promise<any> {
+    console.log('*************************syncRewardLogs');
+    console.log(logs);
+    /*
+    *[
+2024-02-05 13:41:59   {
+2024-02-05 13:41:59     timeStamp: 2024-02-05T18:41:58.928Z,
+2024-02-05 13:41:59     uniquifier: '1',
+2024-02-05 13:41:59     data: { solverBotSuccesses: 1 },
+2024-02-05 13:41:59     metrics: [ [Metric] ],
+2024-02-05 13:41:59     user: {
+2024-02-05 13:41:59       createdAt: 2024-02-05T17:37:13.852Z,
+2024-02-05 13:41:59       updatedAt: 2024-02-05T17:37:13.852Z,
+2024-02-05 13:41:59       versionNumber: 1,
+2024-02-05 13:41:59       id: 'bort6',
+2024-02-05 13:41:59       group: [Object],
+2024-02-05 13:41:59       workingGroup: null,
+2024-02-05 13:41:59       requestedUserId: 'bort6'
+2024-02-05 13:41:59     },
+2024-02-05 13:41:59     createdAt: 2024-02-05T18:41:58.987Z,
+2024-02-05 13:41:59     updatedAt: 2024-02-05T18:41:58.987Z,
+2024-02-05 13:41:59     versionNumber: 1,
+2024-02-05 13:41:59     id: 12
+2024-02-05 13:41:59   }
+2024-02-05 13:41:59 ]
+    */
+    const rewardData = logs[0].data;
+    let versionId = null;
+    let value = null;
+
+    if (rewardData.solverBotSuccesses) {
+      versionId = 19;
+      value = 1;
+    }
+
+    if (rewardData.solverBotFailures) {
+      versionId = 19;
+      value = 0;
+    }
+
+    if (rewardData.explainerBotSuccesses) {
+      versionId = 20;
+      value = 1;
+    }
+
+    if (rewardData.explainerBotFailures) {
+      versionId = 20;
+      value = 0;
+    }
+
+    const moocletValue = {
+      variable: 'TS_CONFIG_TEST_livehint-ts-demo',
+      value,
+      mooclet: 12,
+      version: versionId,
+      policy: 17,
+    };
+
+    console.log('*************************moocletValue');
+    console.log(moocletValue);
+    try {
+      const moocletResponse = await this.moocletDataService.postNewValue(moocletValue);
+
+      console.log('*************************moocletResponse');
+      console.log(moocletResponse);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   private findExperimentConditionFromVersionResponse(
     versionResponse: MoocletVersionResponseDetails,
     experimentConditions: ExperimentCondition[]

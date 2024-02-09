@@ -1137,6 +1137,12 @@ export class ExperimentAssignmentService {
     // metrics to save
     if (rawDataLogs.length > 0) {
       newLogData = await this.logRepository.save(rawDataLogs);
+      // sync new logged reward data for mooclet
+      try {
+        await this.moocletTestService.syncRewardLogs(userId, newLogData);
+      } catch (error) {
+        logger.error({ message: `Error in syncRewardLogs: ${error}` });
+      }
     }
 
     return [...updatedLog, ...newLogData];

@@ -101,6 +101,21 @@ export class MoocletDataService {
     return response;
   }
 
+  public async postNewValue(requestBody: any): Promise<any> {
+    const endpoint = '/value';
+
+    const requestParams: MoocletParamsValidator = {
+      method: 'POST',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
+      body: requestBody,
+    };
+
+    const response = await this.fetchExternalMoocletsData(requestParams);
+
+    return response;
+  }
+
   public async postNewVariable(requestBody: MoocletVariableRequestBody): Promise<MoocletVariableResponseDetails> {
     const endpoint = '/variable';
 
