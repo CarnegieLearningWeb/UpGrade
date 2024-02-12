@@ -6,7 +6,7 @@ import { ExperimentUserRepository } from '../repositories/ExperimentUserReposito
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, IUserAliases, SERVER_ERROR } from 'upgrade_types';
-import { getConnection, In, Not } from 'typeorm';
+import { getConnection, In, InsertResult, Not } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Experiment } from '../models/Experiment';
@@ -39,7 +39,7 @@ export class ExperimentUserService {
     oldExperimentUser: RequestedExperimentUser,
     newExperimentUser: Partial<ExperimentUser>,
     logger: UpgradeLogger
-  ): Promise<ExperimentUser[]> {
+  ): Promise<InsertResult | boolean> {
     if (!oldExperimentUser) {
       return this.create([newExperimentUser], logger);
     }
@@ -65,7 +65,7 @@ export class ExperimentUserService {
       return this.create([newExperimentUser], logger);
     }
 
-    return [oldExperimentUser];
+    return true;
   }
 
   private isGroupsEqual(oldUserData: RequestedExperimentUser, newUserData: Partial<ExperimentUser>): boolean {
@@ -88,10 +88,10 @@ export class ExperimentUserService {
     }
   }
 
-  public async create(users: Array<Partial<ExperimentUser>>, logger: UpgradeLogger): Promise<ExperimentUser[]> {
+  public async create(users: Array<Partial<ExperimentUser>>, logger: UpgradeLogger): Promise<InsertResult> {
     logger.info({ message: 'Create a new User. Metadata of the user =>', details: users });
     // insert or update in the database
-    return this.userRepository.save(users);
+    return this.userRepository.upsert(users, ['id']);
   }
 
   public async setAliasesForUser(
