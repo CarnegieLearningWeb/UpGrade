@@ -143,7 +143,7 @@ export class ExperimentAssignmentService {
 
     const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
 
-    // search decision points in experiments cahce
+    // search decision points in experiments cache
     const cacheKey = CACHE_PREFIX.MARK_KEY_PREFIX + '-' + site + '-' + target;
     const dpExperiments = await this.cacheService.wrap(cacheKey, () =>
       this.decisionPointRepository.find({
@@ -336,11 +336,6 @@ export class ExperimentAssignmentService {
               groupEnrollment: groupEnrollments,
               groupExclusion: groupExclusions,
             },
-            {
-              user: userExcluded,
-              group: groupExcluded,
-            },
-            exclusionReason,
             status,
             condition
           );
@@ -374,6 +369,56 @@ export class ExperimentAssignmentService {
         condition: monitoredDocument.condition || logDocument.condition,
       };
     } else {
+      // experiment level exclusion
+      const experimentExcluded = exclusionReason.length > 0 ? true : false;
+
+      const globallyExcluded = {
+        user: userExcluded,
+        group: groupExcluded,
+      };
+      const experiment = experiments[0];
+      const user = userDoc;
+      // Don't mark the experiment if user or group are in exclusion list
+      // TODO update this with segment implementation
+      if (globallyExcluded.user) {
+        const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
+          user,
+          experiment,
+          exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
+        };
+        await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
+      } else if (globallyExcluded.group.length > 0) {
+        const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
+          groupId: user?.workingGroup[experiment.group],
+          experiment,
+          exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
+        };
+        await this.groupExclusionRepository.saveRawJson([excludeGroupDoc]);
+      } else if (experimentExcluded) {
+        if (exclusionReason[0].reason === 'user') {
+          const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
+            user,
+            experiment,
+            exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
+          };
+          await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
+        } else if (exclusionReason[0].reason === 'group') {
+          const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
+            groupId: user?.workingGroup[experiment.group],
+            experiment,
+            exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
+          };
+          await this.groupExclusionRepository.saveRawJson([excludeGroupDoc]);
+        } else {
+          const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
+            user,
+            experiment,
+            exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
+          };
+          await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
+        }
+      }
+
       const assignmentUnit = experiments
         ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0]?.assignmentUnit
         : null;
@@ -1355,17 +1400,10 @@ export class ExperimentAssignmentService {
       groupEnrollment: GroupEnrollment;
       groupExclusion: GroupExclusion;
     },
-    gloabllyExcluded: { user: string; group: string[] },
-    experimentLevelExclused: { experiment: Experiment; reason: string }[],
     status: MARKED_DECISION_POINT_STATUS,
     condition: string
   ): Promise<void> {
     const { assignmentUnit, state, consistencyRule } = experiment;
-    // experiment level exclusion
-    let experimentExcluded = false;
-    if (experimentLevelExclused.length > 0) {
-      experimentExcluded = true;
-    }
 
     if (status === MARKED_DECISION_POINT_STATUS.CONDITION_FAILED_TO_APPLY) {
       const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
@@ -1374,51 +1412,6 @@ export class ExperimentAssignmentService {
         exclusionCode: EXCLUSION_CODE.EXCLUDED_BY_CLIENT,
       };
       await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
-      return;
-    }
-
-    // Don't mark the experiment if user or group are in exclusion list
-    // TODO update this with segment implementation
-    if (gloabllyExcluded.user) {
-      const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
-        user,
-        experiment,
-        exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
-      };
-      await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
-      return;
-    } else if (gloabllyExcluded.group.length > 0) {
-      const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
-        groupId: user?.workingGroup[experiment.group],
-        experiment,
-        exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
-      };
-      await this.groupExclusionRepository.saveRawJson([excludeGroupDoc]);
-      return;
-    } else if (experimentExcluded) {
-      // TODO: testing this
-      if (experimentLevelExclused[0].reason === 'user') {
-        const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
-          user,
-          experiment,
-          exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
-        };
-        await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
-      } else if (experimentLevelExclused[0].reason === 'group') {
-        const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
-          groupId: user?.workingGroup[experiment.group],
-          experiment,
-          exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
-        };
-        await this.groupExclusionRepository.saveRawJson([excludeGroupDoc]);
-      } else {
-        const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
-          user,
-          experiment,
-          exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
-        };
-        await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
-      }
       return;
     }
 
@@ -1836,7 +1829,7 @@ export class ExperimentAssignmentService {
       });
     }
 
-    // psuedocode for experiment level inclusion and exclusion
+    // pseudocode for experiment level inclusion and exclusion
     //
     // If the user or the user's group is on the global exclude list, exclude the user.
     //
