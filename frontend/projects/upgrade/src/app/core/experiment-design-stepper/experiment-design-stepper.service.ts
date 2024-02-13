@@ -323,9 +323,6 @@ export class ExperimentDesignStepperService {
 
     payloadTableData.forEach((payloadRowData: SimpleExperimentPayloadTableRowData) => {
       // if no custom payload, return early, do not add to array to send to backend
-      if (payloadRowData.payload === payloadRowData.condition) {
-        return;
-      }
 
       const parentCondition = conditions.find((condition) => condition.conditionCode === payloadRowData.condition);
 
