@@ -353,7 +353,7 @@ export class ExperimentDesignStepperService {
         id: uuidv4(), // TODO: maybe not the right place?
         levels: conditionLevelsData,
         condition: conditions,
-        payload: '',
+        payload: conditions,
         weight: '0.0',
         include: true,
       };
