@@ -14,6 +14,7 @@ import {
   EXPERIMENT_STATE,
   POST_EXPERIMENT_RULE,
   segmentNew,
+  ExperimentFile,
 } from './store/experiments.model';
 
 class MockHTTPClient {
@@ -160,9 +161,10 @@ describe('ExperimentDataService', () => {
       const mockUrl = mockEnvironment.api.importExperiment;
       const experiment = { ...mockExperiment };
 
-      service.importExperiment([experiment]);
+      const experimentFile: ExperimentFile = { fileName: 'test.json', fileContent: JSON.stringify(experiment) };
+      service.importExperiment([experimentFile]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, [{ ...experiment }]);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, [experimentFile]);
     });
   });
 
