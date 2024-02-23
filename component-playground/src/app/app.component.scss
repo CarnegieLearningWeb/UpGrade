@@ -1,0 +1,19 @@
+.playground {
+  background-color: #333;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  .button-sections {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 20px;
+    height: 100px;
+  }
+
+  .component-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
