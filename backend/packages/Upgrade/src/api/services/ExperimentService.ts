@@ -510,8 +510,16 @@ export class ExperimentService {
     experimentFiles: ExperimentFile[],
     user: User,
     logger: UpgradeLogger
-  ): Promise<ExperimentDTO[]> {
-    const experiments = experimentFiles.map((experimentFile) => {
+  ): Promise<ValidatedExperimentError[]> {
+    const validatedExperiments = await this.validateExperiments(experimentFiles, logger);
+
+    const nonErrorExperiments = experimentFiles.filter((file) => {
+      // Find the corresponding validation error entry for the file
+      const errorEntry = validatedExperiments.find((errorFile) => errorFile.fileName === file.fileName);
+      // if error starts with Warning or null is should pass
+      return !errorEntry || !errorEntry.error || errorEntry.error.startsWith('Warning');
+    });
+    const experiments = nonErrorExperiments.map((experimentFile) => {
       let experiment = JSON.parse(experimentFile.fileContent);
       experiment = this.autoFillSomeMissingProperties(experiment);
       experiment = this.deduceExperimentDetails(experiment);
@@ -562,7 +570,8 @@ export class ExperimentService {
       // Always set the imported experiment to "inactive".
       experiment.state = EXPERIMENT_STATE.INACTIVE;
     }
-    return this.addBulkExperiments(experiments, user, logger);
+    await this.addBulkExperiments(experiments, user, logger);
+    return validatedExperiments;
   }
 
   public async exportExperiment(experimentIds: string[], user: User, logger: UpgradeLogger): Promise<ExperimentDTO[]> {
@@ -1546,11 +1555,11 @@ export class ExperimentService {
           return { fileName: fileName, error: versionErrorMessage };
         }
         // If JSON is valid and version is the same, don't add to errors
-        return null;
+        return { fileName: fileName, error: null };
       })
     );
 
-    return validationErrors.flat().filter((result) => result != null);
+    return validationErrors;
   }
 
   private async validateExperimentJSON(experiment: ExperimentDTO): Promise<string> {

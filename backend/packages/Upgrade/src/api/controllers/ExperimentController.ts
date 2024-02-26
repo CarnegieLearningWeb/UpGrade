@@ -1195,7 +1195,7 @@ export class ExperimentController {
     experiments: ExperimentFile[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<ValidatedExperimentError[]> {
     return this.experimentService.importExperiment(experiments, currentUser, request.logger);
   }
 
