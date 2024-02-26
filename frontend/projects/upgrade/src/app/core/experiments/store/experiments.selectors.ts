@@ -24,10 +24,16 @@ export const selectIsLoadingExperimentDetailStats = createSelector(
 export const selectSelectedExperiment = createSelector(
   selectRouterState,
   selectExperimentState,
-  ({ state: { params } }, experimentState) =>
-    experimentState.stats[params.experimentId]
-      ? { ...experimentState.entities[params.experimentId], stat: experimentState.stats[params.experimentId] }
-      : { ...experimentState.entities[params.experimentId], stat: null }
+  (routerState, experimentState) => {
+    if (routerState?.state && experimentState?.entities && experimentState?.stats) {
+      const {
+        state: { params },
+      } = routerState;
+      return experimentState.stats[params.experimentId]
+        ? { ...experimentState.entities[params.experimentId], stat: experimentState.stats[params.experimentId] }
+        : { ...experimentState.entities[params.experimentId], stat: null };
+    }
+  }
 );
 
 export const selectExperimentById = createSelector(
