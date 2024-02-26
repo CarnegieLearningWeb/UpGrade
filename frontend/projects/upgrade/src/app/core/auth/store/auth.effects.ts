@@ -97,6 +97,7 @@ export class AuthEffects {
         ofType(authActions.actionLogoutStart),
         tap(() => {
           this.authService.removeUserFromBrowserStorage();
+          this.authService.setRedirectionUrl('/home');
           this.store$.dispatch(authActions.actionLogoutSuccess());
         })
       ),
