@@ -357,7 +357,6 @@ describe('ExperimentService', () => {
   describe('#importExperiment', () => {
     it('should dispatch actionUpsertExperiment with the given input', () => {
       const experiment = { ...mockExperiment };
-
       service.importExperiment([experiment]);
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
