@@ -11,7 +11,6 @@ import {
   DATE_RANGE,
   ExperimentLocalStorageKeys,
   EXPERIMENT_STATE,
-  ExperimentFile,
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
@@ -209,7 +208,7 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionExportExperimentDesign({ experimentIds }));
   }
 
-  importExperiment(experiments: ExperimentFile[]) {
+  importExperiment(experiments: Experiment[]) {
     this.store$.dispatch(experimentAction.actionImportExperiment({ experiments }));
   }
 

@@ -1,14 +1,20 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import {
-  Experiment,
-  ValidateExperimentError,
-  ExperimentFile,
-} from '../../../../../../core/experiments/store/experiments.model';
+import { Experiment } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { ExperimentDataService } from '../../../../../../core/experiments/experiments.data.service';
 import { NotificationService } from '../../../../../../core/notifications/notification.service';
+
+export interface ValidateExperimentError {
+  fileName: string;
+  error: string;
+}
+
+export interface ExperimentFile {
+  fileName: string;
+  fileContent: string | ArrayBuffer;
+}
 
 @Component({
   selector: 'app-import-experiment',

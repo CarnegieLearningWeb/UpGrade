@@ -14,8 +14,8 @@ import {
   EXPERIMENT_STATE,
   POST_EXPERIMENT_RULE,
   segmentNew,
-  ExperimentFile,
 } from './store/experiments.model';
+import { ExperimentFile } from '../../features/dashboard/home/components/modal/import-experiment/import-experiment.component';
 
 class MockHTTPClient {
   get = jest.fn().mockReturnValue(of());

@@ -354,13 +354,3 @@ export interface InteractionEffectGraphData {
   series: InteractionEffectLineChartSeriesData[];
   dot: boolean;
 }
-
-export interface ValidateExperimentError {
-  fileName: string;
-  error: string;
-}
-
-export interface ExperimentFile {
-  fileName: string;
-  fileContent: string | ArrayBuffer;
-}

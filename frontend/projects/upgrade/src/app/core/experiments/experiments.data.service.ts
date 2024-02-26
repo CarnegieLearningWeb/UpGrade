@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@angular/core';
-import { Experiment, ExperimentStateInfo, ExperimentPaginationParams, ExperimentFile } from './store/experiments.model';
+import { Experiment, ExperimentStateInfo, ExperimentPaginationParams } from './store/experiments.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
+import { ExperimentFile } from '../../features/dashboard/home/components/modal/import-experiment/import-experiment.component';
 
 @Injectable()
 export class ExperimentDataService {

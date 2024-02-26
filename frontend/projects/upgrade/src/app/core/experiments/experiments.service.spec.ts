@@ -15,7 +15,6 @@ import {
   EXPERIMENT_STATE,
   POST_EXPERIMENT_RULE,
   UpsertExperimentType,
-  ExperimentFile,
 } from './store/experiments.model';
 import * as ExperimentSelectors from './store/experiments.selectors';
 import {
@@ -358,8 +357,7 @@ describe('ExperimentService', () => {
   describe('#importExperiment', () => {
     it('should dispatch actionUpsertExperiment with the given input', () => {
       const experiment = { ...mockExperiment };
-      const experimentFile: ExperimentFile = { fileName: 'test.json', fileContent: JSON.stringify(experiment) };
-      service.importExperiment([experimentFile]);
+      service.importExperiment([experiment]);
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
         actionUpsertExperiment({

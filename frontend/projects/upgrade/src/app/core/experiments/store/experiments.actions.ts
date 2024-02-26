@@ -11,7 +11,6 @@ import {
   DATE_RANGE,
   IEnrollmentStatByDate,
   IContextMetaData,
-  ExperimentFile,
 } from './experiments.model';
 
 export const actionGetExperiments = createAction('[Experiment] Get Experiments', props<{ fromStarting?: boolean }>());
@@ -150,7 +149,7 @@ export const actionExportExperimentDesignFailure = createAction('[Experiment] Ex
 
 export const actionImportExperiment = createAction(
   '[Experiment] Import Experiment',
-  props<{ experiments: ExperimentFile[] }>()
+  props<{ experiments: Experiment[] }>()
 );
 
 export const actionImportExperimentSuccess = createAction('[Experiment] Import Experiment Success');
