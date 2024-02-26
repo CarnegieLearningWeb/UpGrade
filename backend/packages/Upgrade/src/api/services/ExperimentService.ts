@@ -84,16 +84,17 @@ import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
 
+const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
+const stratificationErrorMessage =
+  'Import Stratification Factor from Participants Menu > Stratification before using it';
+const oldVersionErrorMessage =
+  'Warning: this experiment file is incompatible(older) with the current version of UpGrade. Some features may not import or function as intended.';
+const newVersionErrorMessage =
+  'Warning: this experiment file is incompatible(newer) with the current version of UpGrade. Some features may not import or function as intended.';
 @Service()
 export class ExperimentService {
   backendVersion = env.app.version;
   allIdMap = {};
-  errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
-  stratificationErrorMessage = 'Import Stratification Factor from Participants Menu > Stratification before using it';
-  oldVersionErrorMessage =
-    'Warning: this experiment file is incompatible(older) with the current version of UpGrade. Some features may not import or function as intended.';
-  newVersionErrorMessage =
-    'Warning: this experiment file is incompatible(newer) with the current version of UpGrade. Some features may not import or function as intended.';
 
   constructor(
     @InjectRepository() private experimentRepository: ExperimentRepository,
@@ -1551,7 +1552,7 @@ export class ExperimentService {
           return { fileName: fileName, error: experimentJSONValidationError };
         } else if (versionStatus !== 0) {
           // If version is different, return appropriate warning message
-          const versionErrorMessage = versionStatus === 1 ? this.newVersionErrorMessage : this.oldVersionErrorMessage;
+          const versionErrorMessage = versionStatus === 1 ? newVersionErrorMessage : oldVersionErrorMessage;
           return { fileName: fileName, error: versionErrorMessage };
         }
         // If JSON is valid and version is the same, don't add to errors
@@ -1568,7 +1569,7 @@ export class ExperimentService {
       if (errors.length > 0) {
         errors.forEach((error) => {
           let validationError = error.toString();
-          validationError = validationError.replace(this.errorRemovePart, '');
+          validationError = validationError.replace(errorRemovePart, '');
           errorString = errorString + validationError + ', ';
         });
         errorString = errorString.slice(0, -2);
@@ -1585,7 +1586,7 @@ export class ExperimentService {
           'Missing Stratification Factor ' +
           experiment.stratificationFactor.stratificationFactorName +
           '. ' +
-          this.stratificationErrorMessage;
+          stratificationErrorMessage;
       }
     }
     return errorString;
