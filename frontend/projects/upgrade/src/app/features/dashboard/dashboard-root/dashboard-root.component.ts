@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { SettingsService } from '../../../core/settings/settings.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { VersionService } from '../../../core/version/version.service';
+import { DialogService } from '../../../shared/services/dialog.service';
 
 @Component({
   selector: 'app-dashboard-root',
@@ -43,11 +44,16 @@ export class DashboardRootComponent implements OnInit {
   constructor(
     private settingsService: SettingsService,
     private authService: AuthService,
-    private versionService: VersionService
+    private versionService: VersionService,
+    private dialogService: DialogService
   ) {}
 
   logout() {
     this.authService.authLogout();
+  }
+
+  openTestDialog() {
+    this.dialogService.openTestDialog();
   }
 
   async ngOnInit() {
