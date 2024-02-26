@@ -4,7 +4,7 @@ import { Segment } from '../models/Segment';
 import { SERVER_ERROR } from 'upgrade_types';
 import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
-import { SegmentFile, SegmentIds, SegmentInputValidator, SegmentReturnObj } from './validators/SegmentInputValidator';
+import { SegmentFile, SegmentIds, SegmentImportError, SegmentInputValidator } from './validators/SegmentInputValidator';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 
@@ -365,8 +365,35 @@ export class SegmentController {
   public importSegments(
     @Body({ validate: false }) segments: SegmentFile[],
     @Req() request: AppRequest
-  ): Promise<SegmentReturnObj> {
+  ): Promise<SegmentImportError[]> {
     return this.segmentService.importSegments(segments, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /segments/{validation}:
+   *    put:
+   *       description: Validating Segments
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: path
+   *       tags:
+   *         - Segments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Validations are done
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
+  @Post('/validation')
+  public validateSegments(
+    @Body({ validate: false }) segments: SegmentFile[],
+    @Req() request: AppRequest
+  ): Promise<SegmentImportError[]> {
+    return this.segmentService.validateSegments(segments, request.logger);
   }
 
   @Get('/export/json')

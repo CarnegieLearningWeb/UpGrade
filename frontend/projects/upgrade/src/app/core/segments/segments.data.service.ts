@@ -56,4 +56,9 @@ export class SegmentsDataService {
     const url = this.environment.api.importSegments;
     return this.http.post(url, segments);
   }
+
+  validateSegments(segments: SegmentFile[]) {
+    const url = this.environment.api.validateSegments;
+    return this.http.post(url, segments);
+  }
 }

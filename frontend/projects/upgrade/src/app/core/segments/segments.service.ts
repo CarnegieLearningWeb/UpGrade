@@ -10,7 +10,7 @@ import {
   selectExperimentSegmentsExclusion,
   selectSegmentById,
 } from './store/segments.selectors';
-import { SegmentFile, SegmentInput, UpsertSegmentType } from './store/segments.model';
+import { SegmentInput, UpsertSegmentType } from './store/segments.model';
 import { filter, map, tap } from 'rxjs/operators';
 import { Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
@@ -84,9 +84,5 @@ export class SegmentsService {
 
   exportSegmentCSV(segmentIds: string[]): Observable<any> {
     return this.segmentsDataService.exportSegmentCSV(segmentIds);
-  }
-
-  importSegments(segments: SegmentFile[]) {
-    this.store$.dispatch(SegmentsActions.actionImportSegments({ segments }));
   }
 }
