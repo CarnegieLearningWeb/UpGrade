@@ -24,7 +24,7 @@ export class DialogService {
         title: 'Test Title',
         cancelBtnLabel: 'Test Cancel',
         primaryActionBtnLabel: 'Test Save',
-        formComponent: TestgDialogFormComponent,
+        formComponent: TestgDialogFormComponent, // change this to test different form modal templates
       },
       disableClose: true,
     });
