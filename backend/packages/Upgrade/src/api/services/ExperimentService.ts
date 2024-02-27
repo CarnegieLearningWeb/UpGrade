@@ -759,6 +759,7 @@ export class ExperimentService {
     const oldConditions = oldExperiment.conditions;
     const oldDecisionPoints = oldExperiment.partitions;
     const oldQueries = oldExperiment.queries;
+    const oldConditionPayloads = oldExperiment.conditionPayloads;
 
     // create schedules to start experiment and end experiment
     if (this.scheduledJobService) {
@@ -958,6 +959,18 @@ export class ExperimentService {
           ) {
             toDeleteQueries.push(this.queryRepository.deleteQuery(queryDoc.id, transactionalEntityManager));
             toDeleteQueriesDoc.push(queryDoc);
+          }
+        });
+
+        // delete condition payloads which don't exist in new experiment document
+        const toDeleteConditionPayloads = [];
+        oldConditionPayloads.forEach(({ id }) => {
+          if (
+            !conditionPayloadDocToSave.find((doc) => {
+              return doc.id === id;
+            })
+          ) {
+            toDeleteConditionPayloads.push(this.conditionPayloadRepository.deleteConditionPayload(id, logger));
           }
         });
 
