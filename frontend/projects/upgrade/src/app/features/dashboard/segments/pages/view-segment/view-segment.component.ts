@@ -3,7 +3,7 @@ import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../../../../core/auth/auth.service';
-import { filter } from 'rxjs/operators';
+import { filter, withLatestFrom } from 'rxjs/operators';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { NewSegmentComponent } from '../../components/modal/new-segment/new-segment.component';
 import * as clonedeep from 'lodash.clonedeep';
@@ -43,6 +43,10 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
     return SEGMENT_STATUS;
   }
 
+  get SegmentType() {
+    return SEGMENT_TYPE;
+  }
+
   get SegmentStatusPipeTypes() {
     return SegmentStatusPipeType;
   }
@@ -62,7 +66,6 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
       .subscribe((segment) => {
         this.segment = { ...segment, status: segment.status || SEGMENT_STATUS.UNUSED };
 
-        this.permissions.segments.delete = this.segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE;
         this.members = [];
         this.segment.individualForSegment.forEach((user) => {
           this.members.push({ type: MemberTypes.INDIVIDUAL, id: user.userId });
