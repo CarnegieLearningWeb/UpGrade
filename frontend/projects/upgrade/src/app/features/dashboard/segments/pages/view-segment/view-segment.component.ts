@@ -3,7 +3,7 @@ import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../../../../core/auth/auth.service';
-import { filter, withLatestFrom } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { NewSegmentComponent } from '../../components/modal/new-segment/new-segment.component';
 import * as clonedeep from 'lodash.clonedeep';
