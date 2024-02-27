@@ -13,6 +13,7 @@ export const environment = {
   api: {
     getAllExperiments: '/experiments/paginated',
     createNewExperiments: '/experiments',
+    validateExperiment: '/experiments/validation',
     importExperiment: '/experiments/import',
     exportExperiment: '/experiments/export',
     updateExperiments: '/experiments',

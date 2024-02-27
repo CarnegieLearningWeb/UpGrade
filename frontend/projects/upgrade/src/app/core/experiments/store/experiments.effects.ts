@@ -451,27 +451,27 @@ export class ExperimentEffects {
     )
   );
 
-  importExperiment$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(experimentAction.actionImportExperiment),
-      map((action) => ({ experiments: action.experiments })),
-      filter(({ experiments }) => !!experiments),
-      switchMap(({ experiments }) =>
-        this.experimentDataService.importExperiment(experiments).pipe(
-          switchMap((data: Experiment[]) => {
-            const experimentIds = data.map((exp) => exp.id);
-            this.notificationService.showSuccess(this.translate.instant('global.import-segments.message.text'));
-            return [
-              experimentAction.actionImportExperimentSuccess(),
-              experimentAction.actionGetExperimentsSuccess({ experiments: data, totalExperiments: data.length }),
-              experimentAction.actionFetchExperimentStats({ experimentIds }),
-            ];
-          }),
-          catchError(() => [experimentAction.actionImportExperimentFailure()])
-        )
-      )
-    )
-  );
+  // importExperiment$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(experimentAction.actionImportExperiment),
+  //     map((action) => ({ experiments: action.experiments })),
+  //     filter(({ experiments }) => !!experiments),
+  //     switchMap(({ experiments }) =>
+  //       this.experimentDataService.importExperiment(experiments).pipe(
+  //         switchMap((data: Experiment[]) => {
+  //           const experimentIds = data.map((exp) => exp.id);
+  //           this.notificationService.showSuccess(this.translate.instant('global.import-segments.message.text'));
+  //           return [
+  //             experimentAction.actionImportExperimentSuccess(),
+  //             experimentAction.actionGetExperimentsSuccess({ experiments: data, totalExperiments: data.length }),
+  //             experimentAction.actionFetchExperimentStats({ experimentIds }),
+  //           ];
+  //         }),
+  //         catchError(() => [experimentAction.actionImportExperimentFailure()])
+  //       )
+  //     )
+  //   )
+  // );
 
   exportExperimentDesign$ = createEffect(() =>
     this.actions$.pipe(
