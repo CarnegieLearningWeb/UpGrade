@@ -179,13 +179,13 @@ export class SegmentService {
 
   public async validateSegments(segments: SegmentFile[], logger: UpgradeLogger): Promise<SegmentImportError[]> {
     logger.info({ message: `Validating segments` });
-    const validatedSegments = await this.checkSegmentsValidatity(segments, logger);
+    const validatedSegments = await this.checkSegmentsValidity(segments);
     const validationErrors = validatedSegments.importErrors.filter((seg) => seg.error !== null);
     return validationErrors;
   }
 
   public async importSegments(segments: SegmentFile[], logger: UpgradeLogger): Promise<SegmentImportError[]> {
-    const validatedSegments = await this.checkSegmentsValidatity(segments, logger);
+    const validatedSegments = await this.checkSegmentsValidity(segments);
     for (const segment of validatedSegments.segments) {
       logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
       await this.addSegmentDataInDB(segment, logger);
@@ -193,7 +193,7 @@ export class SegmentService {
     return validatedSegments.importErrors;
   }
 
-  public async checkSegmentsValidatity(segments: SegmentFile[], logger: UpgradeLogger): Promise<SegmentValidationObj> {
+  public async checkSegmentsValidity(segments: SegmentFile[]): Promise<SegmentValidationObj> {
     const importFileErrors: SegmentImportError[] = [];
     const parsedData: SegmentInputValidator[] = [];
     const fileNames: string[] = [];
@@ -218,7 +218,7 @@ export class SegmentService {
         }
       }
     }
-    const validatedSegments = await this.validateSegmentsData(parsedData, fileNames, logger);
+    const validatedSegments = await this.validateSegmentsData(parsedData, fileNames);
     validatedSegments.importErrors = importFileErrors.concat(validatedSegments.importErrors);
     return validatedSegments;
   }
@@ -289,12 +289,10 @@ export class SegmentService {
 
   public async validateSegmentsData(
     segments: SegmentInputValidator[],
-    fileNames: string[],
-    logger: UpgradeLogger
+    fileNames: string[]
   ): Promise<SegmentValidationObj> {
     const allValidatedSegments: SegmentInputValidator[] = [];
     const allSegmentIds: string[] = [];
-    const allSegments = await this.getAllSegments(logger);
     segments.forEach((segment) => {
       allSegmentIds.push(segment.id);
       segment.subSegmentIds.forEach((subSegment) => {
@@ -382,7 +380,6 @@ export class SegmentService {
       });
       index++;
       allSubSegmentsData.push(this.convertSegInputValToSegment(segment));
-      allSegments.push(this.convertSegInputValToSegment(segment));
     }
     return { segments: allValidatedSegments, importErrors: importFileErrors };
   }
