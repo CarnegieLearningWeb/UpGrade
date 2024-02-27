@@ -458,3 +458,13 @@ export class ExperimentDTO {
   @IsEnum(EXPERIMENT_TYPE)
   public type: EXPERIMENT_TYPE;
 }
+
+export interface ExperimentFile {
+  fileName: string;
+  fileContent: string;
+}
+
+export interface ValidatedExperimentError {
+  fileName: string;
+  error: string;
+}
