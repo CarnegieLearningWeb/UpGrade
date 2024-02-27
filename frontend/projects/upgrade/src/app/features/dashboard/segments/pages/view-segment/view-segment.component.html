@@ -29,8 +29,8 @@
             mat-flat-button
             class="ft-14-600 button"
             (click)="deleteSegment()"
-            [ngClass]="{ 'button--disabled': (segment.type === SegmentType.GLOBAL_EXCLUDE) || segmentUsed }"
-            [disabled]="(segment.type === SegmentStatus.GLOBAL_EXCLUDE) || segmentUsed"
+            [ngClass]="{ 'button--disabled': segment.type === SegmentType.GLOBAL_EXCLUDE || segmentUsed }"
+            [disabled]="segment.type === SegmentStatus.GLOBAL_EXCLUDE || segmentUsed"
           >
             {{ 'global.delete.text' | translate }}
           </button>
