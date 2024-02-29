@@ -204,6 +204,9 @@ export class SegmentService {
       const extension = segment.fileName.slice(lastDotIndex + 1);
       if (extension === 'json') {
         const segmentForValidation = this.convertJSONStringToSegInputValFormat(segment.fileContent);
+
+        //To avoid seg duplication
+        segmentForValidation.segment.id = uuid();
         segmentForValidation.segment = plainToClass(SegmentInputValidator, segmentForValidation.segment);
         const segmentJSONValidation = await this.checkForMissingProperties(segmentForValidation);
 
@@ -302,8 +305,6 @@ export class SegmentService {
       });
     });
     const allSubSegmentsData = await this.getSegmentByIds(allSegmentIds);
-    const duplicateSegmentsIds = allSubSegmentsData?.map((segment) => segment?.id);
-    const duplicateSegmentsContexts = allSubSegmentsData?.map((segment) => segment?.context);
     const contextMetaData = env.initialization.contextMetadata;
     const contextMetaDataOptions = Object.keys(contextMetaData);
     const importFileErrors: SegmentImportError[] = [];
@@ -325,18 +326,6 @@ export class SegmentService {
         errorMessage = invalidGroups
           ? errorMessage + 'Group type: ' + invalidGroups + ' not found. Please enter valid group type in segment. '
           : errorMessage;
-      }
-      const isDuplicateSegment = duplicateSegmentsIds ? duplicateSegmentsIds.includes(segment.id) : false;
-      const isDuplicateSegmentWithSameContext =
-        isDuplicateSegment && duplicateSegmentsContexts ? duplicateSegmentsContexts.includes(segment.context) : false;
-      if (isDuplicateSegment && isDuplicateSegmentWithSameContext && segment.id !== undefined) {
-        errorMessage = errorMessage + 'Duplicate segment with same context. ';
-      }
-
-      // import duplicate segment with different context:
-      if (!isDuplicateSegment || !isDuplicateSegmentWithSameContext) {
-        // assign new uuid to duplicate segment with new context:
-        segment.id = !isDuplicateSegment ? segment.id : uuid();
       }
 
       const duplicateName = await this.segmentRepository.find({ name: segment.name, context: segment.context });

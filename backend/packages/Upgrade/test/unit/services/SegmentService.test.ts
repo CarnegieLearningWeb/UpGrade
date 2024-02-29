@@ -359,19 +359,6 @@ describe('Segment Service Testing', () => {
     expect(segments).toEqual(returnSegment);
   });
 
-  it('should throw an error when trying to import a duplicate segment', async () => {
-    const returnSegment = [
-      {
-        fileName: 'seg1',
-        error: 'Invalid Segment data: ' + 'Duplicate segment with same context. ',
-      },
-    ];
-    service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2, segVal]);
-    repo.find = jest.fn().mockResolvedValue([]);
-    const segments = await service.importSegments([segValImportFile], logger);
-    expect(segments).toEqual(returnSegment);
-  });
-
   it('should throw an error when trying to import a segment that includes an unknown subsegment', async () => {
     const returnSegment = [
       {
