@@ -43,6 +43,10 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
     return SEGMENT_STATUS;
   }
 
+  get SegmentType() {
+    return SEGMENT_TYPE;
+  }
+
   get SegmentStatusPipeTypes() {
     return SegmentStatusPipeType;
   }
@@ -62,7 +66,6 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
       .subscribe((segment) => {
         this.segment = { ...segment, status: segment.status || SEGMENT_STATUS.UNUSED };
 
-        this.permissions.segments.delete = this.segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE;
         this.members = [];
         this.segment.individualForSegment.forEach((user) => {
           this.members.push({ type: MemberTypes.INDIVIDUAL, id: user.userId });
