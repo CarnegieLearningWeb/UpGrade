@@ -15,7 +15,7 @@ import { FeatureFlag, FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-f
 import { NewFlagComponent } from '../modal/new-flag/new-flag.component';
 import { debounceTime } from 'rxjs/operators';
 import { MatSort } from '@angular/material/sort';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 
 @Component({

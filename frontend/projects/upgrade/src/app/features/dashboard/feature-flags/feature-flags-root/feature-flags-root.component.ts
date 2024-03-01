@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FeatureFlagsService } from '../../../../core/feature-flags/feature-flags.service';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { NewFlagComponent } from '../components/modal/new-flag/new-flag.component';
 import { UserPermission } from '../../../../core/auth/store/auth.models';
 import { Observable } from 'rxjs';
