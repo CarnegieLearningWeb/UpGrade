@@ -5,7 +5,10 @@ import {
   NewFlagPaths,
   FeatureFlag,
 } from '../../../../../../core/feature-flags/store/feature-flags.model';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { FeatureFlagsService } from '../../../../../../core/feature-flags/feature-flags.service';
 
 @Component({

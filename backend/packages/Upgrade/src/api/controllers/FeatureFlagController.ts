@@ -112,7 +112,7 @@ export class FeatureFlagsController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: true })
+    @Body({ validate: false })
     paginatedParams: FeatureFlagPaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<FeatureFlagsPaginationInfo> {
@@ -166,7 +166,7 @@ export class FeatureFlagsController {
    */
   @Post()
   public create(
-    @Body({ validate: true }) flag: FeatureFlagValidation,
+    @Body({ validate: false }) flag: FeatureFlagValidation,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
@@ -203,7 +203,7 @@ export class FeatureFlagsController {
    */
   @Post('/status')
   public async updateState(
-    @Body({ validate: true })
+    @Body({ validate: false })
     flag: FeatureFlagStatusUpdateValidator
   ): Promise<FeatureFlag> {
     return this.featureFlagService.updateState(flag.flagId, flag.status);
@@ -275,7 +275,7 @@ export class FeatureFlagsController {
   @Put('/:id')
   public update(
     @Param('id') id: string,
-    @Body({ validate: true })
+    @Body({ validate: false })
     flag: FeatureFlagValidation,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
