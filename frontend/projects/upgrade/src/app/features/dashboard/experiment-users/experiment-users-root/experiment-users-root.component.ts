@@ -16,9 +16,10 @@ export class ExperimentUsersRootComponent {
   ) {}
 
   selectedTabChange(event) {
-    if (event.index === 1) {
+    if (event.index === 0) {
       this.experimentService.fetchAllExperimentNames();
       this.previewUsersService.fetchPreviewUsers(true);
+    } else if (event.index === 1) {
       this.stratificationFactorsService.fetchStratificationFactors(true);
     }
   }
