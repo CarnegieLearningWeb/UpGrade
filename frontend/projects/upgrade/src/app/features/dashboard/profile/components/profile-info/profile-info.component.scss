@@ -2,6 +2,7 @@ $role-background-color: #e6fce9;
 $role-text-color: #0a7319;
 
 .profile-wrapper {
+  padding: 24px 34px 34px !important;
   border-radius: 10px;
   padding-top: 10px;
 
@@ -60,6 +61,7 @@ $role-text-color: #0a7319;
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
+      margin-bottom: 10px;
 
       &-title {
         font-size: var(--text-size-xx-large);
@@ -73,20 +75,17 @@ $role-text-color: #0a7319;
     }
 
     .filter-options {
-      margin-right: 10px;
-      width: 80px;
-
-      ::ng-deep .mat-form-field-underline,
-      ::ng-deep .mat-form-field-ripple {
-        background-color: unset;
-      }
+      margin-right: 20px;
+      width: 120px;
     }
 
-    .input {
-      line-height: 18px;
+    .search-icon {
+      margin-top: -6px;
+      height: 16px;
     }
 
     .users-list-container {
+      margin-top: 20px;
       overflow: auto;
 
       .users-list {
@@ -101,12 +100,16 @@ $role-text-color: #0a7319;
           color: var(--grey-2);
         }
 
-        tr.mat-footer-row,
-        tr.mat-row {
+        .mat-mdc-header-cell {
+          background-color: var(--white);
+        }
+
+        tr.mat-mdc-footer-row,
+        tr.mat-mdc-row {
           height: 55px;
         }
 
-        .mat-cell {
+        .mat-mdc-cell {
           width: 17%;
           word-break: break-word;
 
@@ -114,28 +117,23 @@ $role-text-color: #0a7319;
             width: 25%;
           }
 
-          &.cdk-column-role,
-          &.cdk-column-edit {
-            width: 15%;
+          &.cdk-column-role {
+            width: 8%;
           }
 
+          &.cdk-column-edit,
           &.cdk-column-deleteUser {
-            width: 11%;
+            width: 4%;
           }
         }
 
-        .icon {
-          &:hover {
-            cursor: pointer;
-          }
-        }
-
+        .icon,
         .remove-icon {
-          position: relative;
-          top: -3px;
-          width: 18px;
-          height: 18px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
           font-size: var(--text-size-x-large);
+          color: gray;
 
           &:hover {
             cursor: pointer;

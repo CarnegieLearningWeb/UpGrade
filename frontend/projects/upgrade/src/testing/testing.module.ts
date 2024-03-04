@@ -141,7 +141,6 @@ export const mockWindow = {
           totalPreviewUsers: null,
         },
         settings: {
-          theme: 'light',
           toCheckAuth: null,
           toFilterMetric: null,
         },

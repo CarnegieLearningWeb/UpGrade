@@ -7,5 +7,5 @@ export class UpdateWorkingGroupValidator {
 
   @IsWorkingGroupRecord()
   @IsNotEmpty()
-  public workingGroup: any;
+  public workingGroup: Record<string, string>;
 }

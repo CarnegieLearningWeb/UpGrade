@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ImportStratificationsComponent } from './import-stratifications/import-stratifications.component';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import * as clonedeep from 'lodash.clonedeep';
 import { DeleteStratificationComponent } from './delete-stratification/delete-stratification.component';
 import { StratificationFactor } from '../../../../../core/stratification-factors/store/stratification-factors.model';
@@ -101,15 +101,15 @@ export class StratificationComponent implements OnInit {
   }
 
   getExperimentIdsTooltip(experimentIds: any[]): string {
-    return 'Experiment IDs: [' + experimentIds.join(', ') + ']';
+    return 'Experiment IDs: [' + experimentIds?.join(', ') + ']';
   }
 
   checkStratificationFactorUsageStatus(experimentIds: string[]) {
     if (Array.isArray(experimentIds)) {
-        return experimentIds.some(id => id);
+      return experimentIds.some((id) => id);
     }
     return false;
- }
+  }
 
   ngOnDestroy() {
     this.allStratificationFactorsSub.unsubscribe();

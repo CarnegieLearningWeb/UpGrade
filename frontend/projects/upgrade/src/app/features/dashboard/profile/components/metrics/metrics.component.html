@@ -1,17 +1,20 @@
-<mat-card class="metrics-container">
+<mat-card appearance="raised" class="metrics-container">
   <div class="header">
-    <mat-form-field>
+    <mat-form-field
+      class="dense-2"
+      subscriptSizing="dynamic"
+    >
       <input
-        class="ft-16-400 search-input"
+        class="ft-14-400 search-input"
         matInput
         (keyup)="applyFilter($event.target.value)"
         [placeholder]="'global.search.text' | translate"
       />
-      <mat-icon matSuffix>search</mat-icon>
+      <mat-icon class="search-icon" matSuffix>search</mat-icon>
     </mat-form-field>
   </div>
   <div class="read-mode-container" *ngIf="permissions?.metrics.create">
-    <mat-slide-toggle class="ft-16-400" color="primary" (change)="changeMetricMode($event)" labelPosition="before">
+    <mat-slide-toggle class="ft-13-700" color="primary" (change)="changeMetricMode($event)" labelPosition="before">
       {{ 'metric.read-mode.text' | translate }}
     </mat-slide-toggle>
   </div>

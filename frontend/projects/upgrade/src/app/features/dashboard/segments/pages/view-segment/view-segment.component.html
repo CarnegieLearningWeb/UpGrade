@@ -1,9 +1,9 @@
-<mat-card class="segment-container" *ngIf="segment">
+<mat-card appearance="raised" class="segment-container" *ngIf="segment">
   <span class="ft-16-400">
     <a [routerLink]="['/segments']" class="ft-16-400 segment-link">{{ 'segments.title.text' | translate }} </a>
     > <b> {{ segment?.name }} </b>
   </span>
-  <mat-card class="segment">
+  <mat-card appearance="raised" class="segment">
     <div class="segment-info">
       <div class="segment-overview">
         <span class="ft-32-700 segment-overview-title">
@@ -29,8 +29,8 @@
             mat-flat-button
             class="ft-14-600 button"
             (click)="deleteSegment()"
-            [ngClass]="{ 'button--disabled': (permissions && !permissions.segments.delete) || segmentUsed }"
-            [disabled]="(permissions && !permissions.segments.delete) || segmentUsed"
+            [ngClass]="{ 'button--disabled': segment.type === SegmentType.GLOBAL_EXCLUDE || segmentUsed || !permissions?.segments.delete }"
+            [disabled]="segment.type === SegmentStatus.GLOBAL_EXCLUDE || segmentUsed || !permissions?.segments.delete"
           >
             {{ 'global.delete.text' | translate }}
           </button>
@@ -40,8 +40,8 @@
             mat-flat-button
             class="ft-14-600 button-long"
             (click)="duplicateSegmentDialog()"
-            [ngClass]="{ 'button-long--disabled': segment?.type == 'global_exclude' }"
-            [disabled]="segment?.type == 'global_exclude'"
+            [ngClass]="{ 'button-long--disabled': segment.type == SegmentType.GLOBAL_EXCLUDE }"
+            [disabled]="segment.type == SegmentType.GLOBAL_EXCLUDE"
           >
             {{ 'global.duplicate.text' | translate }}
           </button>
@@ -90,8 +90,10 @@
       <!-- Context -->
       <div class="section-data section-data--fixed">
         <span class="ft-16-600 section-data-title">{{ 'global.context.text' | translate }}</span>
-        <mat-chip class="ft-14-700" *ngIf="segment.context != 'ALL'">
-          {{ segment.context }}
+        <mat-chip *ngIf="segment.context != 'ALL'">
+          <span class="ft-12-600 chip-label">
+            {{ segment.context }}
+          </span>
         </mat-chip>
         <span class="ft-14-700 section-data-value" *ngIf="segment.context == 'ALL'">
           {{ segment.context }}

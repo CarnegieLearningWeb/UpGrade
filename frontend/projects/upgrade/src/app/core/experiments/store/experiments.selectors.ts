@@ -1,6 +1,6 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
 import { selectAll } from './experiments.reducer';
-import { State, ExperimentState } from './experiments.model';
+import { ExperimentState } from './experiments.model';
 import { selectRouterState } from '../../core.state';
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
@@ -24,10 +24,16 @@ export const selectIsLoadingExperimentDetailStats = createSelector(
 export const selectSelectedExperiment = createSelector(
   selectRouterState,
   selectExperimentState,
-  ({ state: { params } }, experimentState) =>
-    experimentState.stats[params.experimentId]
-      ? { ...experimentState.entities[params.experimentId], stat: experimentState.stats[params.experimentId] }
-      : { ...experimentState.entities[params.experimentId], stat: null }
+  (routerState, experimentState) => {
+    if (routerState?.state && experimentState?.entities && experimentState?.stats) {
+      const {
+        state: { params },
+      } = routerState;
+      return experimentState.stats[params.experimentId]
+        ? { ...experimentState.entities[params.experimentId], stat: experimentState.stats[params.experimentId] }
+        : { ...experimentState.entities[params.experimentId], stat: null };
+    }
+  }
 );
 
 export const selectExperimentById = createSelector(
@@ -96,6 +102,14 @@ export const selectGroupAssignmentStatus = createSelector(selectExperimentState,
   }
   return null;
 });
+
+export const selectExperimentQueries = createSelector(selectExperimentState, (state, { experimentId }) => {
+  if (state.entities[experimentId]) {
+    return state.entities[experimentId].queries;
+  }
+  return null;
+});
+
 export const selectIsPollingExperimentDetailStats = createSelector(
   selectExperimentState,
   (state) => state.isPollingExperimentDetailStats

@@ -115,7 +115,7 @@ describe('ExperimentAuditLogRepository Testing', () => {
 
     selectMock.expects('select').once().returns(selectQueryBuilder);
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-    selectMock.expects('take').once().returns(selectQueryBuilder);
+    selectMock.expects('limit').once().returns(selectQueryBuilder);
     selectMock.expects('getQuery').once().returns(experiment.id);
     deleteMock.expects('delete').once().returns(deleteQueryBuilder);
     deleteMock.expects('from').once().returns(deleteQueryBuilder);
@@ -139,7 +139,7 @@ describe('ExperimentAuditLogRepository Testing', () => {
 
     selectMock.expects('select').once().returns(selectQueryBuilder);
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-    selectMock.expects('take').once().returns(selectQueryBuilder);
+    selectMock.expects('limit').once().returns(selectQueryBuilder);
     selectMock.expects('getQuery').once().returns(experiment.id);
     deleteMock.expects('delete').once().returns(deleteQueryBuilder);
     deleteMock.expects('from').once().returns(deleteQueryBuilder);
@@ -191,8 +191,8 @@ describe('ExperimentAuditLogRepository Testing', () => {
       .stub(ExperimentAuditLogRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
 
-    selectMock.expects('skip').once().returns(selectQueryBuilder);
-    selectMock.expects('take').once().returns(selectQueryBuilder);
+    selectMock.expects('offset').once().returns(selectQueryBuilder);
+    selectMock.expects('limit').once().returns(selectQueryBuilder);
     selectMock.expects('leftJoinAndSelect').once().returns(selectQueryBuilder);
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
     selectMock.expects('where').once().returns(selectQueryBuilder);
@@ -211,8 +211,8 @@ describe('ExperimentAuditLogRepository Testing', () => {
       .stub(ExperimentAuditLogRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
 
-    selectMock.expects('skip').once().returns(selectQueryBuilder);
-    selectMock.expects('take').once().returns(selectQueryBuilder);
+    selectMock.expects('offset').once().returns(selectQueryBuilder);
+    selectMock.expects('limit').once().returns(selectQueryBuilder);
     selectMock.expects('leftJoinAndSelect').once().returns(selectQueryBuilder);
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
     selectMock.expects('where').never().returns(selectQueryBuilder);
@@ -231,8 +231,8 @@ describe('ExperimentAuditLogRepository Testing', () => {
       .stub(ExperimentAuditLogRepository.prototype, 'createQueryBuilder')
       .returns(selectQueryBuilder);
 
-    selectMock.expects('skip').once().returns(selectQueryBuilder);
-    selectMock.expects('take').once().returns(selectQueryBuilder);
+    selectMock.expects('offset').once().returns(selectQueryBuilder);
+    selectMock.expects('limit').once().returns(selectQueryBuilder);
     selectMock.expects('leftJoinAndSelect').once().returns(selectQueryBuilder);
     selectMock.expects('orderBy').once().returns(selectQueryBuilder);
     selectMock.expects('where').once().returns(selectQueryBuilder);

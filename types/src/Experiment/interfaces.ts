@@ -143,17 +143,23 @@ export interface IExperimentEnrollmentDetailDateStats {
   conditions: IConditionEnrollmentDateStats[];
 }
 
-interface ILogMetrics {
+export interface ILogMetrics {
   attributes?: Record<string, string | number>;
   groupedMetrics: ILogGroupMetrics[];
 }
 
-interface ILogGroupMetrics {
+export interface ILogGroupMetrics {
   groupClass: string;
   groupKey: string;
   groupUniquifier: string;
   attributes?: Record<string, string | number>;
 }
+
+export interface ILogRequestBody {
+  userId: string;
+  value: ILogInput[];
+}
+
 export interface ILogInput {
   timestamp: string;
   metrics: ILogMetrics;

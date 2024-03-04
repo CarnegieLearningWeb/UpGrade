@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 
 import { User } from '../api/models/User';
 import { UserRepository } from '../api/repositories/UserRepository';
@@ -10,7 +10,7 @@ import { SERVER_ERROR } from 'upgrade_types';
 
 @Service()
 export class AuthService {
-  constructor(@OrmRepository() private userRepository: UserRepository) {}
+  constructor(@InjectRepository() private userRepository: UserRepository) {}
 
   public parseBasicAuthFromRequest(req: express.Request): string {
     req.logger.info({ message: 'Inside parseBasicAuthFromRequest' });

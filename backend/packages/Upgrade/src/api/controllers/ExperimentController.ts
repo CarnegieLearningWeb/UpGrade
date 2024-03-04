@@ -10,6 +10,7 @@ import {
   Authorized,
   CurrentUser,
   Req,
+  QueryParams,
 } from 'routing-controllers';
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
@@ -24,7 +25,8 @@ import { DecisionPoint } from '../models/DecisionPoint';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { env } from '../../env';
 import { AppRequest, PaginationResponse } from '../../types';
-import { ExperimentDTO } from '../DTO/ExperimentDTO';
+import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
+import { ExperimentIds } from './validators/ExperimentIdsValidator';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: ExperimentDTO[];
@@ -703,7 +705,7 @@ export class ExperimentController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: false })
+    @Body({ validate: true })
     paginatedParams: ExperimentPaginatedParamsValidator,
     @Req()
     request: AppRequest
@@ -932,7 +934,7 @@ export class ExperimentController {
 
   @Post()
   public create(
-    @Body({ validate: false }) experiment: ExperimentDTO,
+    @Body({ validate: true }) experiment: ExperimentDTO,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
@@ -973,7 +975,7 @@ export class ExperimentController {
 
   @Post('/batch')
   public createMultipleExperiments(
-    @Body({ validate: false, type: ExperimentDTO }) experiment: ExperimentDTO[],
+    @Body({ validate: true, type: ExperimentDTO }) experiment: ExperimentDTO[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO[]> {
@@ -1061,7 +1063,7 @@ export class ExperimentController {
    */
   @Post('/state')
   public async updateState(
-    @Body({ validate: false })
+    @Body({ validate: true })
     experiment: AssignmentStateUpdateValidator,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
@@ -1125,7 +1127,7 @@ export class ExperimentController {
   @Put('/:id')
   public update(
     @Param('id') id: string,
-    @Body({ validate: false })
+    @Body({ validate: true })
     experiment: ExperimentDTO,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
@@ -1139,6 +1141,33 @@ export class ExperimentController {
     }
     request.logger.child({ user: currentUser });
     return this.experimentService.update(experiment, currentUser, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /experiments/{validation}:
+   *    put:
+   *       description: Validating Experiment
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: path
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Validations are done
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
+  @Post('/validation')
+  public validateExperiment(
+    @Body({ validate: false }) experiments: ExperimentFile[],
+    @Req() request: AppRequest
+  ): Promise<ValidatedExperimentError[]> {
+    return this.experimentService.validateExperiments(experiments, request.logger);
   }
 
   /**
@@ -1162,21 +1191,23 @@ export class ExperimentController {
    */
   @Post('/import')
   public importExperiment(
-    @Body({ validate: false, type: ExperimentDTO })
-    experiments: ExperimentDTO[],
+    @Body({ validate: true })
+    experiments: ExperimentFile[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<ValidatedExperimentError[]> {
     return this.experimentService.importExperiment(experiments, currentUser, request.logger);
   }
 
-  @Post('/export')
+  @Get('/export')
   public exportExperiment(
-    @Body({ validate: false, type: String }) ids: string[],
+    @QueryParams()
+    params: ExperimentIds,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO[]> {
-    return this.experimentService.exportExperiment(ids, currentUser, request.logger);
+    const experimentIds = params.ids;
+    return this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
   }
 
   /**

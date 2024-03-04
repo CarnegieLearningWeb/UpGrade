@@ -18,7 +18,6 @@ export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   isAllAuditLogFetched = false;
   isAllAuditLogFetchedSub: Subscription;
   isAuditLoading$ = this.logsService.isAuditLogLoading$;
-  theme$ = this.settingsService.theme$;
 
   constructor(private logsService: LogsService, private settingsService: SettingsService) {}
 

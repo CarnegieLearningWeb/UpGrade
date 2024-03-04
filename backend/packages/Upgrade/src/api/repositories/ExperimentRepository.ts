@@ -22,9 +22,9 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('factors.levels', 'levels');
 
     const experimentMetricQuery = this.createQueryBuilder('experiment')
-    .leftJoinAndSelect('experiment.queries', 'queries')
-    .leftJoinAndSelect('queries.metric', 'metric')
-    .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs');
+      .leftJoinAndSelect('experiment.queries', 'queries')
+      .leftJoinAndSelect('queries.metric', 'metric')
+      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs');
 
     const experimentSegment = this.createQueryBuilder('experiment')
       .select('experiment.id')
@@ -39,7 +39,12 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion');
 
-    const [experimentConditionLevelPayloadData, experimentFactorPartitionLevelPayloadData, experimentMetricData, experimentSegmentData] = await Promise.all([
+    const [
+      experimentConditionLevelPayloadData,
+      experimentFactorPartitionLevelPayloadData,
+      experimentMetricData,
+      experimentSegmentData,
+    ] = await Promise.all([
       experimentConditionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           'ExperimentRepository',
@@ -107,11 +112,10 @@ export class ExperimentRepository extends Repository<Experiment> {
 
   public async getValidExperiments(context: string): Promise<Experiment[]> {
     const whereExperimentsClause =
-      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context])';
+      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND :context ILIKE ANY (ARRAY[experiment.context])';
     const whereClauseParams = {
       enrolling: 'enrolling',
       enrollmentComplete: 'enrollmentComplete',
-      assign: 'assign',
       context,
     };
     const experimentConditionLevelPayloadQuery = this.createQueryBuilder('experiment')
@@ -206,12 +210,11 @@ export class ExperimentRepository extends Repository<Experiment> {
 
   public async getValidExperimentsWithPreview(context: string): Promise<Experiment[]> {
     const whereExperimentsClause =
-      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context])';
+      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])';
     const whereClauseParams = {
       enrolling: 'enrolling',
       enrollmentComplete: 'enrollmentComplete',
       preview: 'preview',
-      assign: 'assign',
       context,
     };
     const experimentConditionLevelPayloadQuery = this.createQueryBuilder('experiment')

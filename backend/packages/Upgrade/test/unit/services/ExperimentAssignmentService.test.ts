@@ -30,7 +30,6 @@ import {
   simpleWithinSubjectOrderedRoundRobinExperiment,
   withinSubjectDPExperiment,
 } from '../mockdata';
-import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
 import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { CacheService } from '../../../src/api/services/CacheService';
@@ -52,7 +51,6 @@ describe('Experiment Assignment Service Test', () => {
   const metricRepositoryMock = sinon.createStubInstance(MetricRepository);
   const stateTimeLogsRepositoryMock = sinon.createStubInstance(StateTimeLogsRepository);
   const analyticsRepositoryMock = sinon.createStubInstance(AnalyticsRepository);
-  const conditionPayloadRepositoryMock = sinon.createStubInstance(ConditionPayloadRepository);
   const userStratificationFactorRepository = sinon.createStubInstance(UserStratificationFactorRepository);
   const previewUserServiceMock = sinon.createStubInstance(PreviewUserService);
   const experimentUserServiceMock = sinon.createStubInstance(ExperimentUserService);

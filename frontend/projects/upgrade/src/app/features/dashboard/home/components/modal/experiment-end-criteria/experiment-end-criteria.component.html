@@ -2,20 +2,28 @@
   <span class="ft-24-700 title">{{ 'Experiment Ending Criteria' | translate }}</span>
 
   <form class="experiment-end-form" [formGroup]="experimentEndForm">
-    <mat-checkbox class="ft-14-700" color="primary" formControlName="endExperimentAutomatically">
-      {{ 'home.new-experiment.schedule.end-automatically.text' | translate }}
+    <mat-checkbox color="primary" formControlName="endExperimentAutomatically">
+      <span class="ft-14-700 checkbox-label">
+        {{ 'home.new-experiment.schedule.end-automatically.text' | translate }}
+      </span>
     </mat-checkbox>
 
     <mat-radio-group formControlName="endCondition">
       <div class="date-picker-container">
-        <mat-radio-button class="ft-14-600" [value]="EndExperimentCondition.END_ON_DATE" color="primary">
-          {{ 'home.new-experiment.schedule.end-on.text' | translate }}
+        <mat-radio-button [value]="EndExperimentCondition.END_ON_DATE" color="primary">
+          <span class="ft-14-600 radio-button-label">
+            {{ 'home.new-experiment.schedule.end-on.text' | translate }}
+          </span>
         </mat-radio-button>
-        <mat-form-field class="ft-14-700">
+        <mat-form-field
+          class="dense-2"
+          appearance="outline"
+          subscriptSizing="dynamic"
+        >
           <input
+            class="ft-14-400 input"
             matInput
             readonly
-            class="input"
             [min]="minDate"
             [owlDateTimeTrigger]="dateTime"
             [owlDateTime]="dateTime"
@@ -27,15 +35,21 @@
       </div>
 
       <div class="experiment-end-criteria">
-        <mat-radio-button class="ft-14-600" [value]="EndExperimentCondition.END_CRITERIA" color="primary">
-          {{ 'home.new-experiment.schedule.end-criteria.text' | translate }}
+        <mat-radio-button [value]="EndExperimentCondition.END_CRITERIA" color="primary">
+          <span class="ft-14-600 radio-button-label">
+            {{ 'home.new-experiment.schedule.end-criteria.text' | translate }}
+          </span>
         </mat-radio-button>
         <div class="end-criteria" *ngIf="experiment.group">
-          <mat-form-field class="ft-14-700 group-type-control">
+          <mat-form-field
+            class="dense-2 group-type-control"
+            appearance="outline"
+            subscriptSizing="dynamic"
+          >
             <input
+              class="ft-14-400 input"
               type="number"
               matInput
-              class="input"
               [placeholder]="
                 ('home.new-experiment.schedule.group-count.placeholder.text' | translate) +
                 ' ' +
@@ -55,11 +69,15 @@
           ></span>
         </div>
         <div class="end-criteria">
-          <mat-form-field class="ft-14-700">
+          <mat-form-field
+            class="dense-2"
+            appearance="outline"
+            subscriptSizing="dynamic"
+          >
             <input
+              class="ft-14-400 input"
               type="number"
               matInput
-              class="input"
               [placeholder]="'home.new-experiment.schedule.user-count.placeholder.text' | translate"
               formControlName="userCount"
             />

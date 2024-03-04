@@ -1,7 +1,10 @@
-import AWS from 'aws-sdk';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { Upload } from '@aws-sdk/lib-storage';
+import { CompleteMultipartUploadCommandOutput, GetObjectCommand, S3 } from '@aws-sdk/client-s3';
+import { SES, SendEmailCommandOutput } from '@aws-sdk/client-ses';
+import { SFN, StartExecutionCommandOutput, StopExecutionCommandOutput } from '@aws-sdk/client-sfn';
 import { env } from '../../env';
 import { Service } from 'typedi';
-import { PromiseResult } from 'aws-sdk/lib/request';
 
 interface StepFunctionStartInput {
   stateMachineArn: string;
@@ -12,15 +15,15 @@ interface StepFunctionStopInput {
   executionArn: string;
 }
 
-const stepFunction = new AWS.StepFunctions({
+const stepFunction = new SFN({
   region: env.aws.region,
 });
 
-const s3 = new AWS.S3({
+const s3 = new S3({
   region: env.aws.region,
 });
 
-const ses = new AWS.SES({
+const ses = new SES({
   region: env.aws.region,
 });
 
@@ -28,35 +31,31 @@ const ses = new AWS.SES({
 export class AWSService {
   public stepFunctionStartExecution(
     experimentSchedulerStateMachine: StepFunctionStartInput
-  ): Promise<PromiseResult<AWS.StepFunctions.StartExecutionOutput, AWS.AWSError>> {
-    return stepFunction.startExecution(experimentSchedulerStateMachine).promise();
+  ): Promise<StartExecutionCommandOutput> {
+    return stepFunction.startExecution(experimentSchedulerStateMachine);
   }
 
-  public stepFunctionStopExecution(
-    stopInput: StepFunctionStopInput
-  ): Promise<PromiseResult<AWS.StepFunctions.StopExecutionOutput, AWS.AWSError>> {
-    return stepFunction.stopExecution(stopInput).promise();
+  public stepFunctionStopExecution(stopInput: StepFunctionStopInput): Promise<StopExecutionCommandOutput> {
+    return stepFunction.stopExecution(stopInput);
   }
 
-  public uploadCSV(fileBuffer: Buffer, bucketName: string, key: string): Promise<AWS.S3.ManagedUpload.SendData> {
-    return s3
-      .upload({
+  public uploadCSV(fileBuffer: Buffer, bucketName: string, key: string): Promise<CompleteMultipartUploadCommandOutput> {
+    return new Upload({
+      client: s3,
+
+      params: {
         Bucket: bucketName,
         Key: key,
         Body: fileBuffer,
-      })
-      .promise();
+      },
+    }).done();
   }
 
   public generateSignedURL(bucketName: string, key: string, expires: number): Promise<string> {
-    const params = { Bucket: bucketName, Key: key, Expires: expires };
-    return new Promise((resolve, reject) => {
-      s3.getSignedUrl('getObject', params, async (err, url) => {
-        if (err) {
-          reject(err);
-        }
-        return resolve(url);
-      });
+    // TODO: Check if it is working
+    const params = { Bucket: bucketName, Key: key };
+    return getSignedUrl(s3, new GetObjectCommand(params), {
+      expiresIn: expires,
     });
   }
 
@@ -65,7 +64,7 @@ export class AWSService {
     toAddress: string,
     text: string,
     subject: string
-  ): Promise<PromiseResult<AWS.SES.SendEmailResponse, AWS.AWSError>> {
+  ): Promise<SendEmailCommandOutput> {
     const param = {
       Destination: {
         ToAddresses: [toAddress],
@@ -85,6 +84,6 @@ export class AWSService {
       Source: fromAddress,
     };
 
-    return ses.sendEmail(param).promise();
+    return ses.sendEmail(param);
   }
 }

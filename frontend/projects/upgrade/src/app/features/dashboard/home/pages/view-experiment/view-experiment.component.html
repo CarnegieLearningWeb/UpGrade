@@ -1,11 +1,11 @@
-<mat-card class="experiment-container" *ngIf="experiment">
+<mat-card appearance="raised" class="experiment-container" *ngIf="experiment">
   <span class="ft-16-400">
     <a [routerLink]="['/home']" class="ft-16-400 experiment-link"
       >{{ 'home.view-experiment.experiments.text' | translate }}
     </a>
     <b> {{ experiment?.name }} </b>
   </span>
-  <mat-card class="experiment">
+  <mat-card appearance="raised" class="experiment">
     <div class="experiment-info">
       <div class="experiment-overview">
         <span class="ft-32-700 experiment-overview-title">
@@ -80,8 +80,18 @@
       </div>
     </div>
 
-    <mat-tab-group [selectedIndex]="0" disableRipple>
-      <mat-tab label="{{ 'home.view-experiment.mattab.overview.text' | translate }}">
+    <mat-tab-group
+      [selectedIndex]="0"
+      [mat-stretch-tabs]="false"
+      [dynamicHeight]="true"
+      disableRipple
+    >
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'home.view-experiment.mattab.overview.text' | translate }}
+          </span>
+        </ng-template>
         <div class="experiment-secondary-info tab-body-container">
           <div class="experiment-secondary-info-container">
             <div class="experiment-info-section">
@@ -182,10 +192,10 @@
                   </ng-template>
                 </div>
               </div>
-              
+
               <!-- Experiment Type-->
               <div class="section-data">
-                <span 
+                <span
                   class="ft-16-600 section-data-title"
                 >
                   {{ 'home-global.design-type.text' | translate | uppercase }}
@@ -237,7 +247,7 @@
 
               <!-- Stratification Factor Assinment Algorithm -->
               <div class="section-data">
-                <span 
+                <span
                   class="ft-16-600 section-data-title"
                 >
                   {{ 'home-global.assignment-algorithm.text' | translate | uppercase }}
@@ -359,7 +369,7 @@
                   {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let data; let groupIndex = index" style="margin-left: 25px">
-                  <mat-checkbox class="ft-8-100" color="primary" [checked]="data.excludeIfReached" [disabled]="true">
+                  <mat-checkbox color="primary" [checked]="data.excludeIfReached" [disabled]="true">
                   </mat-checkbox>
                 </mat-cell>
               </ng-container>
@@ -376,11 +386,11 @@
                   {{ 'home.view-experiment.enrollment-time-logs.text' | translate }}
                 </span>
               </div>
-              
+
               <!-- Stratification Factor-->
               <div class="section-data"
               *ngIf="(experiment.assignmentAlgorithm === 'stratified random sampling')">
-                <span 
+                <span
                   class="ft-16-600 section-data-title"
                 >
                   {{ 'home-global.stratification-factor.text' | translate | uppercase }}
@@ -391,49 +401,57 @@
           </div>
 
           <!-- Experiment Context -->
-          <div class="experiment-chips">
+          <mat-chip-listbox class="experiment-chips">
             <span class="ft-16-600 experiment-chips-title">{{ 'global.context.text' | translate }}</span>
-            <div class="experiment-chips-values">
-              <span
-                class="ft-14-400"
-                (click)="searchExperiment(ExperimentSearchKey.CONTEXT, context)"
-                *ngFor="let context of experiment.context"
-              >
-                {{ context }}
-              </span>
-            </div>
-          </div>
+            <ng-container *ngFor="let context of experiment.context">
+              <mat-chip>
+                <span
+                  class="ft-12-600 chip-label"
+                  (click)="searchExperiment(ExperimentSearchKey.CONTEXT, context)"
+                >
+                  {{ context }}
+                </span>
+              </mat-chip>
+            </ng-container>
+          </mat-chip-listbox>
 
           <!-- Experiment Tags -->
-          <div class="experiment-chips" *ngIf="experiment.tags?.length">
+          <mat-chip-listbox class="experiment-chips" *ngIf="experiment.tags?.length">
             <span class="ft-16-600 experiment-chips-title">{{ 'global.tags.text' | translate }}</span>
-            <div class="experiment-chips-values">
-              <span
-                class="ft-14-400"
-                (click)="searchExperiment(ExperimentSearchKey.TAG, tag)"
-                *ngFor="let tag of experiment.tags"
-              >
-                {{ tag }}
-              </span>
-            </div>
-          </div>
+            <ng-container *ngFor="let tag of experiment.tags">
+              <mat-chip>
+                <span
+                  class="ft-12-600 chip-label"
+                  (click)="searchExperiment(ExperimentSearchKey.TAG, tag)"
+                >
+                  {{ tag }}
+                </span>
+              </mat-chip>
+            </ng-container>
+          </mat-chip-listbox>
 
           <!-- Logging -->
           <div class="logging">
             <mat-checkbox
               [checked]="experiment.logging"
-              class="ft-16-600"
               color="primary"
               (change)="toggleVerboseLogging($event)"
               [disabled]="experiment.state === ExperimentState.CANCELLED || experiment.state === ExperimentState.ARCHIVED"
             >
-              {{ 'home.view-experiment.logging.text' | translate | uppercase }}
+              <span class="ft-16-600 checkbox-label">
+                {{ 'home.view-experiment.logging.text' | translate | uppercase }}
+              </span>
             </mat-checkbox>
           </div>
         </div>
       </mat-tab>
 
-      <mat-tab label="{{ 'home.view-experiment.mattab.design.text' | translate }}">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'home.view-experiment.mattab.design.text' | translate }}
+          </span>
+        </ng-template>
         <div class="tab-body-container tab-table-body-container">
           <!-- Experiment Decision Points Table -->
           <div class="table-container table-container-partition">
@@ -479,7 +497,7 @@
                   {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let data; let groupIndex = index" style="margin-left: 25px">
-                  <mat-checkbox class="ft-8-100" color="primary" [checked]="data.excludeIfReached" [disabled]="true">
+                  <mat-checkbox color="primary" [checked]="data.excludeIfReached" [disabled]="true">
                   </mat-checkbox>
                 </mat-cell>
               </ng-container>
@@ -494,7 +512,7 @@
               <mat-table class="factor-table" [dataSource]="factorsDataSource" multiTemplateDataRows>
                 <!-- Expand Icon Column -->
                 <ng-container matColumnDef="expandIcon">
-                  <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef></mat-header-cell>
                   <mat-cell *matCellDef="let data; let factorIndex = dataIndex" style="justify-content: flex-start">
                     <mat-icon [class.active]="factorIndex === expandedId" (click)="expandFactor(factorIndex)"
                       >play_arrow</mat-icon
@@ -543,20 +561,20 @@
                       <mat-table class="table level-table" [dataSource]="data.levels">
                         <!-- Level Column -->
                         <ng-container matColumnDef="level">
-                          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
                             {{ 'home.new-experiment.design.level-name.text' | translate }}
                           </mat-header-cell>
-                          <mat-cell *matCellDef="let data; let levelIndex = index">
+                          <mat-cell class="ft-12-600" *matCellDef="let data; let levelIndex = index">
                             <span>{{ data.name }}</span>
                           </mat-cell>
                         </ng-container>
 
                         <!-- Payload Column -->
                         <ng-container matColumnDef="payload">
-                          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
                             {{ 'home.new-experiment.design.payloads.column-header.payload.text' | translate }}
                           </mat-header-cell>
-                          <mat-cell *matCellDef="let data; let levelIndex = index">
+                          <mat-cell class="ft-12-600" *matCellDef="let data; let levelIndex = index">
                             <span>{{ data.payload?.value }}</span>
                           </mat-cell>
                         </ng-container>
@@ -746,7 +764,12 @@
         </div>
       </mat-tab>
 
-      <mat-tab label="{{ 'home.view-experiment.mattab.participants.text' | translate }}">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'home.view-experiment.mattab.participants.text' | translate }}
+          </span>
+        </ng-template>
         <div class="tab-body-container tab-table-body-container">
           <!-- Participants to include table -->
           <div class="table-container table-container-participants">
@@ -836,7 +859,12 @@
         </div>
       </mat-tab>
 
-      <mat-tab label="{{ 'home.view-experiment.mattab.metrics.text' | translate }}">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'home.view-experiment.mattab.metrics.text' | translate }}
+          </span>
+        </ng-template>
         <div class="tab-body-container tab-table-body-container">
           <!-- Experiment metrics table -->
           <div class="table-container table-container-metrics">
@@ -894,7 +922,12 @@
         </div>
       </mat-tab>
 
-      <mat-tab label="{{ 'home.view-experiment.mattab.data.text' | translate }}">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span class="ft-22-600 tab-label">
+              {{ 'home.view-experiment.mattab.data.text' | translate }}
+          </span>
+        </ng-template>
         <div class="tab-body-container">
           <div class="ft-24-700 enrollment-text">
             {{ 'home.view-experiment.mattab.data.enrollment.text' | translate }}

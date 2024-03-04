@@ -15,9 +15,10 @@
                 <ng-container formArrayName="keys">
                   <div class="metric-keys">
                     <mat-form-field
+                      class="dense-2 form-control auto-complete"
+                      appearance="outline"
+                      subscriptSizing="dynamic"
                       *ngFor="let key of getKeys(queryIndex).controls; let keyIndex = index"
-                      class="ft-14-400 form-control auto-complete"
-                      floatLabel="never"
                     >
                       <ng-container [formGroupName]="keyIndex">
                         <input
@@ -29,7 +30,6 @@
                           [matAutocomplete]="auto"
                         />
                         <mat-autocomplete
-                          class="ft-14-400"
                           (optionSelected)="selectedOption($event, null, null, queryIndex, keyIndex)"
                           #auto="matAutocomplete"
                           [displayWith]="displayFn"
@@ -78,24 +78,26 @@
                 <div class="secondary-form">
                   <!-- repeated measure -->
                   <mat-form-field
-                    class="ft-14-400 form-control"
+                    class="dense-2 form-control"
+                    appearance="outline"
+                    subscriptSizing="dynamic"
                     *ngIf="
                       firstSelectedNode[queryIndex] &&
                       isMetricRepeated(firstSelectedNode[queryIndex], queryIndex, editMode)
                     "
-                    floatLabel="never"
                   >
-                    <mat-label>{{
-                      'home.new-experiment.metrics.repeatedmeasure.placeholder.text' | translate | titlecase
-                    }}</mat-label>
-                    <mat-select class="ft-14-400" formControlName="repeatedMeasure">
+                    <mat-select
+                      class="ft-14-400"
+                      [placeholder]="'home.new-experiment.metrics.repeatedmeasure.placeholder.text' | translate | titlecase"
+                      formControlName="repeatedMeasure"
+                    >
                       <div
                         *ngIf="
                           selectedNode[queryIndex] &&
                           selectedNode[queryIndex]?.metadata?.type === IMetricMetadata.CONTINUOUS
                         "
                       >
-                        <mat-option *ngFor="let measure of ContinuousRepeatedMeasure" [value]="measure">
+                        <mat-option class="ft-14-400" *ngFor="let measure of ContinuousRepeatedMeasure" [value]="measure">
                           {{ measure | titlecase }}
                         </mat-option>
                       </div>
@@ -105,50 +107,65 @@
                           selectedNode[queryIndex]?.metadata?.type === IMetricMetadata.CATEGORICAL
                         "
                       >
-                        <mat-option *ngFor="let measure of CategoricalRepeatedMeasure" [value]="measure">
+                        <mat-option class="ft-14-400" *ngFor="let measure of CategoricalRepeatedMeasure" [value]="measure">
                           {{ measure | titlecase }}
                         </mat-option>
                       </div>
                     </mat-select>
                   </mat-form-field>
                   <!-- statistic -->
-                  <mat-form-field class="ft-14-400 form-control" floatLabel="never">
-                    <mat-label>{{ 'home.new-experiment.metrics.statistics.placeholder.text' | translate | titlecase }}</mat-label>
-                    <mat-select class="ft-14-400" formControlName="operationType">
-                      <mat-option *ngFor="let operation of filteredStatistic$[queryIndex]" [value]="operation.value">
+                  <mat-form-field
+                    class="dense-2 form-control"
+                    appearance="outline"
+                    subscriptSizing="dynamic"
+                  >
+                    <mat-select
+                      class="ft-14-400"
+                      [placeholder]="'home.new-experiment.metrics.statistics.placeholder.text' | translate | titlecase"
+                      formControlName="operationType"
+                    >
+                      <mat-option class="ft-14-400" *ngFor="let operation of filteredStatistic$[queryIndex]" [value]="operation.value">
                         {{ operation.viewValue | titlecase }}
                       </mat-option>
                     </mat-select>
                   </mat-form-field>
                   <!-- comparison function -->
                   <mat-form-field
-                    class="ft-14-400 form-control"
+                    class="dense-2 form-control"
+                    appearance="outline"
+                    subscriptSizing="dynamic"
                     *ngIf="
                       selectedNode[queryIndex] &&
                       selectedNode[queryIndex]?.metadata?.type !== IMetricMetadata.CONTINUOUS
                     "
-                    floatLabel="never"
                   >
-                    <mat-label>{{ 'query.form-comparison-function.text' | translate | titlecase }}</mat-label>
-                    <mat-select class="ft-14-400" formControlName="compareFn">
-                      <mat-option>{{ 'query.none-option.text' | translate }}</mat-option>
-                      <mat-option *ngFor="let fn of comparisonFns" [value]="fn.value">
+                    <mat-select
+                      class="ft-14-400"
+                      [placeholder]="'query.form-comparison-function.text' | translate | titlecase"
+                      formControlName="compareFn"
+                    >
+                      <mat-option class="ft-14-400">{{ 'query.none-option.text' | translate }}</mat-option>
+                      <mat-option class="ft-14-400" *ngFor="let fn of comparisonFns" [value]="fn.value">
                         {{ fn.viewValue | titlecase }}
                       </mat-option>
                     </mat-select>
                   </mat-form-field>
                   <!-- compare value -->
                   <mat-form-field
-                    class="ft-14-400 form-control"
+                    class="dense-2 form-control"
+                    appearance="outline"
+                    subscriptSizing="dynamic"
                     *ngIf="
                       selectedNode[queryIndex] &&
                       selectedNode[queryIndex]?.metadata?.type !== IMetricMetadata.CONTINUOUS
                     "
-                    floatLabel="never"
                   >
-                    <mat-label>{{ 'query.form-compare-value.text' | translate | titlecase }}</mat-label>
-                    <mat-select class="ft-14-400" formControlName="compareValue">
-                      <mat-option *ngFor="let value of selectedNode[queryIndex]?.allowedData" [value]="value">
+                    <mat-select
+                      class="ft-14-400"
+                      [placeholder]="'query.form-compare-value.text' | translate | titlecase"
+                      formControlName="compareValue"
+                    >
+                      <mat-option class="ft-14-400" *ngFor="let value of selectedNode[queryIndex]?.allowedData" [value]="value">
                         {{ value | titlecase }}
                       </mat-option>
                     </mat-select>
@@ -162,7 +179,11 @@
                 {{ 'home.new-experiment.metrics.description-header.placeholder.text' | translate }}
               </mat-header-cell>
               <mat-cell *matCellDef="let element; let queryIndex = index" [formGroupName]="queryIndex">
-                <mat-form-field class="ft-14-400" floatLabel="never">
+                <mat-form-field
+                  class="dense-2"
+                  appearance="outline"
+                  subscriptSizing="dynamic"
+                >
                   <input
                     class="ft-14-400"
                     matInput

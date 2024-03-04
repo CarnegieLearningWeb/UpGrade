@@ -13,17 +13,17 @@
     height: 94px;
 
     .filter-options {
-      margin-right: 10px;
-      width: 80px;
-
-      ::ng-deep .mat-form-field-underline,
-      ::ng-deep .mat-form-field-ripple {
-        background-color: unset;
-      }
+      margin-right: 20px;
+      width: 120px;
     }
 
     .search-input {
       line-height: 20px;
+    }
+
+    .search-icon {
+      margin-top: -6px;
+      height: 16px;
     }
 
     button {
@@ -39,10 +39,6 @@
     .import-segments {
       margin-right: 20px;
     }
-  }
-
-  ::ng-deep .mat-form-field-suffix {
-    top: 5px;
   }
 
   .segments-list-table-container {
@@ -65,19 +61,20 @@
       color: var(--grey-2);
     }
 
-    tr.mat-footer-row,
-    tr.mat-row {
+    tr.mat-mdc-footer-row,
+    tr.mat-mdc-row {
       height: 55px;
     }
 
-    .mat-cell,
-    .mat-header-cell {
+    .mat-mdc-cell,
+    .mat-mdc-header-cell {
       padding: 10px 5px;
       width: 20%;
       word-break: break-word;
+      background-color: var(--white);
     }
 
-    .mat-header-cell {
+    .mat-mdc-header-cell {
       padding-left: 5px;
     }
 
@@ -119,7 +116,7 @@
       }
     }
 
-    .mat-form-field {
+    .mat-mdc-form-field {
       width: 40%;
     }
   }

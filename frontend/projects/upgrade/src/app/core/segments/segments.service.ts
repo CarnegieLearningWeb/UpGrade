@@ -8,20 +8,33 @@ import {
   selectSelectedSegment,
   selectExperimentSegmentsInclusion,
   selectExperimentSegmentsExclusion,
+  selectSegmentById,
 } from './store/segments.selectors';
-import { SegmentInput, UpsertSegmentType } from './store/segments.model';
-import { filter, map } from 'rxjs/operators';
-import { combineLatest } from 'rxjs';
+import { SegmentFile, SegmentInput, UpsertSegmentType } from './store/segments.model';
+import { filter, map, tap } from 'rxjs/operators';
+import { Observable, combineLatest } from 'rxjs';
+import { SegmentsDataService } from './segments.data.service';
 
 @Injectable({ providedIn: 'root' })
-@Injectable()
 export class SegmentsService {
-  constructor(private store$: Store<AppState>) {}
+  constructor(private store$: Store<AppState>, private segmentsDataService: SegmentsDataService) {}
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
   allExperimentSegmentsInclusion$ = this.store$.pipe(select(selectExperimentSegmentsInclusion));
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
+
+  selectSegmentById(segmentId: string) {
+    return this.store$.pipe(
+      select(selectSegmentById, { segmentId }),
+      tap((segment) => {
+        if (!segment) {
+          this.fetchSegmentById(segmentId);
+        }
+      }),
+      map((segment) => ({ ...segment }))
+    );
+  }
 
   allSegments$ = this.store$.pipe(
     select(selectAllSegments),
@@ -34,6 +47,10 @@ export class SegmentsService {
       })
     )
   );
+
+  fetchSegmentById(segmentId: string) {
+    this.store$.dispatch(SegmentsActions.actionGetSegmentById({ segmentId }));
+  }
 
   isInitialSegmentsLoading() {
     return combineLatest(this.store$.pipe(select(selectIsLoadingSegments)), this.allSegments$).pipe(
@@ -65,7 +82,11 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionExportSegments({ segmentIds }));
   }
 
-  importSegments(segments: SegmentInput[]) {
+  exportSegmentCSV(segmentIds: string[]): Observable<any> {
+    return this.segmentsDataService.exportSegmentCSV(segmentIds);
+  }
+
+  importSegments(segments: SegmentFile[]) {
     this.store$.dispatch(SegmentsActions.actionImportSegments({ segments }));
   }
 }

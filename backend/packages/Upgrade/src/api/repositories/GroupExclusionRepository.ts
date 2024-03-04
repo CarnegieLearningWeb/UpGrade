@@ -72,10 +72,10 @@ export class GroupExclusionRepository extends Repository<GroupExclusion> {
   }
 
   public async deleteByExperimentIds(experimentIds: string[]): Promise<GroupExclusion[]> {
-    const result = await this.createQueryBuilder('groupExclusion')
+    const result = await this.createQueryBuilder()
       .delete()
       .from(GroupExclusion)
-      .where('groupExclusion.experimentId IN (:...experimentIds)')
+      .where('"experimentId" IN (:...ids)', { ids: experimentIds })
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

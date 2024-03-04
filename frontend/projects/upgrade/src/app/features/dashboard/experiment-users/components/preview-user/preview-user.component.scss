@@ -1,6 +1,16 @@
 @import '../../common/table-view.scss';
 
 .preview-users {
+  padding: 24px 34px 34px !important;
+
+  .preview-user-form {
+    margin-top: 30px;
+
+    mat-form-field {
+      margin-right: 20px !important;
+    }
+  }
+
   .progress {
     margin-top: 30px;
 
@@ -19,21 +29,24 @@
     table {
       width: 100%;
 
-      .mat-cell {
+      .mat-mdc-cell {
         position: relative;
         width: 15%;
 
         &.mat-column-totalAssignedConditions {
           width: 20%;
           text-align: center;
+          margin-right: 10px;
         }
 
         &.mat-column-assignment {
-          width: 50%;
+          width: 57%;
         }
       }
 
-      .mat-header-cell {
+      .mat-mdc-header-cell {
+        background-color: var(--white);
+
         &.mat-column-totalAssignedConditions {
           text-align: center;
         }
@@ -57,9 +70,10 @@
 
         .condition-selection {
           max-height: 100px;
-          overflow: scroll;
+          overflow: auto;
 
           .condition-container {
+            margin-bottom: 10px;
             display: flex;
             flex-direction: row;
             align-items: center;
@@ -73,7 +87,7 @@
 
         .add-new-experiment {
           display: block;
-          margin: 5px 5px 35px 0;
+          margin-bottom: 10px;
           outline: 0;
           border: 0;
           background-color: transparent;
@@ -83,7 +97,7 @@
 
         .assigned-condition-list {
           max-height: 100px;
-          overflow: scroll;
+          overflow: visible;
 
           .assigned-condition-info {
             display: flex;
@@ -111,26 +125,29 @@
 
         .save-btn {
           margin-right: 15px;
+          margin-bottom: -8px;
         }
       }
 
       .action-icon {
-        margin-right: 5px;
-        width: 18px;
-        height: 18px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         font-size: var(--text-size-x-large);
+        color: gray;
 
         &:hover {
           cursor: pointer;
         }
 
         &--edit {
-          margin-right: 62px;
+          margin-right: 20px;
         }
 
         &--small {
           margin-left: 10px;
-          font-size: var(--text-size-normal);
+          margin-bottom: -8px;
+          font-size: var(--text-size-x-large);
 
           &:hover {
             cursor: pointer;

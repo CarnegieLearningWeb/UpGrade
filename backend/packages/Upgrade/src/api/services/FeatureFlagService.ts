@@ -1,9 +1,9 @@
 import { Service } from 'typedi';
 import { FeatureFlag } from '../models/FeatureFlag';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
 import { getConnection } from 'typeorm';
-import uuid from 'uuid';
+import { v4 as uuid } from 'uuid';
 import { FlagVariation } from '../models/FlagVariation';
 import { FlagVariationRepository } from '../repositories/FlagVariationRepository';
 import {
@@ -18,8 +18,8 @@ import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagVali
 @Service()
 export class FeatureFlagService {
   constructor(
-    @OrmRepository() private featureFlagRepository: FeatureFlagRepository,
-    @OrmRepository() private flagVariationRepository: FlagVariationRepository
+    @InjectRepository() private featureFlagRepository: FeatureFlagRepository,
+    @InjectRepository() private flagVariationRepository: FlagVariationRepository
   ) {}
 
   public find(logger: UpgradeLogger): Promise<FeatureFlag[]> {
@@ -61,7 +61,7 @@ export class FeatureFlagService {
       queryBuilder = queryBuilder.addOrderBy(`feature_flag.${sortParams.key}`, sortParams.sortAs);
     }
 
-    queryBuilder = queryBuilder.skip(skip).take(take);
+    queryBuilder = queryBuilder.offset(skip).limit(take);
     return queryBuilder.getMany();
   }
 
@@ -267,7 +267,7 @@ export class FeatureFlagService {
     featureFlag.key = flagDTO.key;
     featureFlag.status = flagDTO.status;
     featureFlag.variationType = flagDTO.variationType;
-    featureFlag.variations = flagDTO.variations?.map(variationDTO => {
+    featureFlag.variations = flagDTO.variations?.map((variationDTO) => {
       const featureFlagVariation = new FlagVariation();
       featureFlagVariation.name = variationDTO.name;
       featureFlagVariation.id = variationDTO.id;
@@ -277,6 +277,6 @@ export class FeatureFlagService {
       featureFlagVariation.featureFlag = featureFlag;
       return featureFlagVariation;
     });
-    return featureFlag
+    return featureFlag;
   }
 }

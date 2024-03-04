@@ -1,4 +1,5 @@
 .metrics-container {
+  padding: 24px 34px 34px !important;
   border-radius: 10px;
   box-shadow: unset !important;
   padding: 0;
@@ -13,6 +14,11 @@
 
     .search-input {
       line-height: 20px;
+    }
+
+    .search-icon {
+      margin-top: -6px;
+      height: 16px;
     }
   }
 
@@ -37,7 +43,7 @@
     table {
       width: 100%;
 
-      .mat-cell {
+      .mat-mdc-cell {
         position: relative;
 
         &.mat-column-id {
@@ -49,7 +55,10 @@
         }
       }
 
-      .mat-header-cell {
+      .mat-mdc-header-cell {
+        background-color: var(--white);
+        color: var(--grey-2);
+
         &.mat-column-metric {
           padding-left: 20px;
         }

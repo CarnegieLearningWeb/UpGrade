@@ -72,7 +72,7 @@ module.exports = {
       },
       production: {
         script:
-          'cross-env NODE_ENV=production ts-node --project tsconfig.build.json -r tsconfig-paths/register dist/src/app.js',
+          'cross-env NODE_ENV=production TS_NODE_PROJECT=tsconfig.build.json ts-node --esm -r tsconfig-paths/register dist/src/app.js',
       },
       development: {
         script: 'cross-env NODE_ENV=development node dist/src/app.js',
@@ -236,12 +236,12 @@ function banner(name) {
     hiddenFromHelp: true,
     silent: true,
     description: `Shows ${name} banners to the console`,
-    script: runFast(`./commands/banner.ts ${name}`),
+    script: runFast(`./commands/banner.mts ${name}`),
   };
 }
 
 function runFast(path) {
-  return `ts-node --transpile-only ${path}`;
+  return `ts-node --transpile-only --esm ${path}`;
 }
 
 // function eslint(path) {

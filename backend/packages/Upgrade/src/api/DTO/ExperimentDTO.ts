@@ -230,7 +230,7 @@ class QueryValidator {
   public repeatedMeasure: REPEATED_MEASURE;
 }
 
-class Users {
+class User {
   @IsNotEmpty()
   @IsString()
   public userId: string;
@@ -246,7 +246,7 @@ class Group {
   public type: string;
 }
 
-class SubSegments {
+class SubSegment {
   @IsNotEmpty()
   @IsString()
   public id: string;
@@ -272,8 +272,8 @@ class SegmentValidator {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => Users)
-  public individualForSegment?: Users[];
+  @Type(() => User)
+  public individualForSegment?: User[];
 
   @IsOptional()
   @IsArray()
@@ -284,8 +284,8 @@ class SegmentValidator {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => SubSegments)
-  public subSegments?: SubSegments[];
+  @Type(() => SubSegment)
+  public subSegments?: SubSegment[];
 
   @IsString()
   @IsEnum(SEGMENT_TYPE)
@@ -457,4 +457,14 @@ export class ExperimentDTO {
   @IsNotEmpty()
   @IsEnum(EXPERIMENT_TYPE)
   public type: EXPERIMENT_TYPE;
+}
+
+export interface ExperimentFile {
+  fileName: string;
+  fileContent: string;
+}
+
+export interface ValidatedExperimentError {
+  fileName: string;
+  error: string;
 }

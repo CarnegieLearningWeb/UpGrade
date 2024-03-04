@@ -2,7 +2,7 @@
 import { GroupExclusion } from './../models/GroupExclusion';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import {
   Experiment,
@@ -10,7 +10,7 @@ import {
   EXPERIMENT_SEARCH_KEY,
   IExperimentSortParams,
 } from '../models/Experiment';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
 import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
@@ -28,6 +28,7 @@ import {
   SEGMENT_TYPE,
   EXPERIMENT_TYPE,
   CACHE_PREFIX,
+  FILTER_MODE,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -69,6 +70,8 @@ import {
   FactorValidator,
   PartitionValidator,
   ParticipantsValidator,
+  ExperimentFile,
+  ValidatedExperimentError,
 } from '../DTO/ExperimentDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
@@ -77,28 +80,42 @@ import { CacheService } from './CacheService';
 import { QueryService } from './QueryService';
 import { ArchivedStats } from '../models/ArchivedStats';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
+import { validate } from 'class-validator';
+import { plainToClass } from 'class-transformer';
+import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
 
+const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
+const stratificationErrorMessage =
+  'Import Stratification Factor from Participants Menu > Stratification before using it';
+const oldVersionErrorMessage =
+  'Warning: this experiment file is incompatible(older) with the current version of UpGrade. Some features may not import or function as intended.';
+const newVersionErrorMessage =
+  'Warning: this experiment file is incompatible(newer) with the current version of UpGrade. Some features may not import or function as intended.';
 @Service()
 export class ExperimentService {
+  backendVersion = env.app.version;
+  allIdMap = {};
+
   constructor(
-    @OrmRepository() private experimentRepository: ExperimentRepository,
-    @OrmRepository() private experimentConditionRepository: ExperimentConditionRepository,
-    @OrmRepository() private decisionPointRepository: DecisionPointRepository,
-    @OrmRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
-    @OrmRepository() private individualExclusionRepository: IndividualExclusionRepository,
-    @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
-    @OrmRepository() private monitoredDecisionPointRepository: MonitoredDecisionPointRepository,
-    @OrmRepository() private userRepository: ExperimentUserRepository,
-    @OrmRepository() private metricRepository: MetricRepository,
-    @OrmRepository() private queryRepository: QueryRepository,
-    @OrmRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
-    @OrmRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
-    @OrmRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
-    @OrmRepository() private conditionPayloadRepository: ConditionPayloadRepository,
-    @OrmRepository() private factorRepository: FactorRepository,
-    @OrmRepository() private levelRepository: LevelRepository,
-    @OrmRepository() private levelCombinationElementsRepository: LevelCombinationElementRepository,
-    @OrmRepository() private archivedStatsRepository: ArchivedStatsRepository,
+    @InjectRepository() private experimentRepository: ExperimentRepository,
+    @InjectRepository() private experimentConditionRepository: ExperimentConditionRepository,
+    @InjectRepository() private decisionPointRepository: DecisionPointRepository,
+    @InjectRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
+    @InjectRepository() private individualExclusionRepository: IndividualExclusionRepository,
+    @InjectRepository() private groupExclusionRepository: GroupExclusionRepository,
+    @InjectRepository() private monitoredDecisionPointRepository: MonitoredDecisionPointRepository,
+    @InjectRepository() private userRepository: ExperimentUserRepository,
+    @InjectRepository() private metricRepository: MetricRepository,
+    @InjectRepository() private queryRepository: QueryRepository,
+    @InjectRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
+    @InjectRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
+    @InjectRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
+    @InjectRepository() private conditionPayloadRepository: ConditionPayloadRepository,
+    @InjectRepository() private factorRepository: FactorRepository,
+    @InjectRepository() private levelRepository: LevelRepository,
+    @InjectRepository() private levelCombinationElementsRepository: LevelCombinationElementRepository,
+    @InjectRepository() private archivedStatsRepository: ArchivedStatsRepository,
+    @InjectRepository() private stratificationRepository: StratificationFactorRepository,
     public previewUserService: PreviewUserService,
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
@@ -491,10 +508,24 @@ export class ExperimentService {
   }
 
   public async importExperiment(
-    experiments: ExperimentDTO[],
+    experimentFiles: ExperimentFile[],
     user: User,
     logger: UpgradeLogger
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<ValidatedExperimentError[]> {
+    const validatedExperiments = await this.validateExperiments(experimentFiles, logger);
+
+    const nonErrorExperiments = experimentFiles.filter((file) => {
+      // Find the corresponding validation error entry for the file
+      const errorEntry = validatedExperiments.find((errorFile) => errorFile.fileName === file.fileName);
+      // if error starts with Warning or null is should pass
+      return !errorEntry || !errorEntry.error || errorEntry.error.startsWith('Warning');
+    });
+    const experiments = nonErrorExperiments.map((experimentFile) => {
+      let experiment = JSON.parse(experimentFile.fileContent);
+      experiment = this.autoFillSomeMissingProperties(experiment);
+      experiment = this.deduceExperimentDetails(experiment);
+      return experiment;
+    });
     for (const experiment of experiments) {
       const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
       if (duplicateExperiment && experiment.id) {
@@ -540,7 +571,8 @@ export class ExperimentService {
       // Always set the imported experiment to "inactive".
       experiment.state = EXPERIMENT_STATE.INACTIVE;
     }
-    return this.addBulkExperiments(experiments, user, logger);
+    await this.addBulkExperiments(experiments, user, logger);
+    return validatedExperiments;
   }
 
   public async exportExperiment(experimentIds: string[], user: User, logger: UpgradeLogger): Promise<ExperimentDTO[]> {
@@ -727,6 +759,7 @@ export class ExperimentService {
     const oldConditions = oldExperiment.conditions;
     const oldDecisionPoints = oldExperiment.partitions;
     const oldQueries = oldExperiment.queries;
+    const oldConditionPayloads = oldExperiment.conditionPayloads;
 
     // create schedules to start experiment and end experiment
     if (this.scheduledJobService) {
@@ -869,7 +902,7 @@ export class ExperimentService {
         // creating queries docs
         promiseArray = [];
         let queriesDocToSave =
-          (queries[0] &&
+          (queries?.[0] &&
             queries.length > 0 &&
             queries.map((query: any) => {
               promiseArray.push(this.metricRepository.findOne(query.metric.key));
@@ -926,6 +959,18 @@ export class ExperimentService {
           ) {
             toDeleteQueries.push(this.queryRepository.deleteQuery(queryDoc.id, transactionalEntityManager));
             toDeleteQueriesDoc.push(queryDoc);
+          }
+        });
+
+        // delete condition payloads which don't exist in new experiment document
+        const toDeleteConditionPayloads = [];
+        oldConditionPayloads.forEach(({ id }) => {
+          if (
+            !conditionPayloadDocToSave.find((doc) => {
+              return doc.id === id;
+            })
+          ) {
+            toDeleteConditionPayloads.push(this.conditionPayloadRepository.deleteConditionPayload(id, logger));
           }
         });
 
@@ -1172,6 +1217,8 @@ export class ExperimentService {
     );
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
+      experiment.description = experiment.description || '';
+
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
       let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
       if (experiment.conditions.length) {
@@ -1219,11 +1266,12 @@ export class ExperimentService {
           segmentInclude = {
             ...experimentSegmentInclusion.segment,
             type: includeSegment.type,
-            userIds: includeSegment.individualForSegment.map((x) => x.userId),
-            groups: includeSegment.groupForSegment.map((x) => {
-              return { type: x.type, groupId: x.groupId };
-            }),
-            subSegmentIds: includeSegment.subSegments.map((x) => x.id),
+            userIds: includeSegment.individualForSegment?.map((x) => x.userId) || [],
+            groups:
+              includeSegment.groupForSegment?.map((x) => {
+                return { type: x.type, groupId: x.groupId };
+              }) || [],
+            subSegmentIds: includeSegment.subSegments?.map((x) => x.id) || [],
           };
         } else {
           segmentInclude = experimentSegmentInclusion;
@@ -1266,11 +1314,12 @@ export class ExperimentService {
           segmentExclude = {
             ...experimentSegmentExclusion.segment,
             type: excludeSegment.type,
-            userIds: excludeSegment.individualForSegment.map((x) => x.userId),
-            groups: excludeSegment.groupForSegment.map((x) => {
-              return { type: x.type, groupId: x.groupId };
-            }),
-            subSegmentIds: excludeSegment.subSegments.map((x) => x.id),
+            userIds: excludeSegment.individualForSegment?.map((x) => x.userId) || [],
+            groups:
+              excludeSegment.groupForSegment?.map((x) => {
+                return { type: x.type, groupId: x.groupId };
+              }) || [],
+            subSegmentIds: excludeSegment.subSegments?.map((x) => x.id) || [],
           };
         } else {
           segmentExclude = experimentSegmentExclusion;
@@ -1317,6 +1366,7 @@ export class ExperimentService {
         partitions.length > 0 &&
         partitions.map((decisionPoint) => {
           decisionPoint.id = decisionPoint.id || uuid();
+          decisionPoint.description = decisionPoint.description || '';
           return { ...decisionPoint, experiment: experimentDoc };
         });
 
@@ -1488,6 +1538,216 @@ export class ExperimentService {
     return this.formatingPayload(createdExperiment);
   }
 
+  public async validateExperiments(
+    experimentFiles: ExperimentFile[],
+    logger: UpgradeLogger
+  ): Promise<ValidatedExperimentError[]> {
+    logger.info({ message: `Validating experiments` });
+
+    const validationErrors = await Promise.all(
+      experimentFiles.map(async (experimentFile) => {
+        let experiment = JSON.parse(experimentFile.fileContent);
+        const fileName = experimentFile.fileName;
+
+        experiment = this.autoFillSomeMissingProperties(experiment);
+        experiment = this.deduceExperimentDetails(experiment);
+
+        const newExperiment = plainToClass(ExperimentDTO, experiment);
+        let versionStatus = 0;
+        if (experiment.backendVersion) {
+          versionStatus = this.compareVersions(newExperiment.backendVersion, this.backendVersion);
+        }
+
+        const experimentJSONValidationError = await this.validateExperimentJSON(newExperiment);
+
+        if (experimentJSONValidationError !== '') {
+          // If JSON is not valid, return error message
+          return { fileName: fileName, error: experimentJSONValidationError };
+        } else if (versionStatus !== 0) {
+          // If version is different, return appropriate warning message
+          const versionErrorMessage = versionStatus === 1 ? newVersionErrorMessage : oldVersionErrorMessage;
+          return { fileName: fileName, error: versionErrorMessage };
+        }
+        // If JSON is valid and version is the same, don't add to errors
+        return { fileName: fileName, error: null };
+      })
+    );
+
+    return validationErrors;
+  }
+
+  private async validateExperimentJSON(experiment: ExperimentDTO): Promise<string> {
+    let errorString = '';
+    await validate(experiment).then((errors) => {
+      if (errors.length > 0) {
+        errors.forEach((error) => {
+          let validationError = error.toString();
+          validationError = validationError.replace(errorRemovePart, '');
+          errorString = errorString + validationError + ', ';
+        });
+        errorString = errorString.slice(0, -2);
+      }
+    });
+
+    if (experiment.stratificationFactor?.stratificationFactorName) {
+      const factorFound = await this.stratificationRepository.findOne(
+        experiment.stratificationFactor.stratificationFactorName
+      );
+      if (!factorFound) {
+        errorString =
+          errorString +
+          'Missing Stratification Factor ' +
+          experiment.stratificationFactor.stratificationFactorName +
+          '. ' +
+          stratificationErrorMessage;
+      }
+    }
+    return errorString;
+  }
+
+  private deduceExperimentDetails(experiment: ExperimentDTO): ExperimentDTO {
+    experiment.id = uuid();
+    this.deduceFactors(experiment);
+    this.deduceConditions(experiment);
+    this.deducePartition(experiment);
+    this.deduceConditionPayload(experiment);
+    this.deduceParticipants(experiment);
+    this.deduceQueries(experiment);
+    return experiment;
+  }
+
+  autoFillSomeMissingProperties(experiment: ExperimentDTO): ExperimentDTO {
+    return {
+      ...experiment,
+      backendVersion: experiment.backendVersion || this.backendVersion.toString(),
+      filterMode: experiment.filterMode || FILTER_MODE.INCLUDE_ALL,
+    };
+  }
+
+  deduceConditions(result) {
+    result.conditions.forEach((condition) => {
+      this.allIdMap[condition.id] = uuid();
+      condition.id = this.allIdMap[condition.id];
+      condition.levelCombinationElements.forEach((lce) => {
+        lce.id = uuid();
+        lce.level.id = this.allIdMap[lce.level.id];
+      });
+    });
+  }
+
+  deduceConditionPayload(result) {
+    if (result.conditionAliases) {
+      result.conditionPayloads = result.conditionAliases;
+      result.conditionAliases.forEach((payload, payloadIndex) => {
+        result.conditionPayloads[payloadIndex].payload = {};
+        result.conditionPayloads[payloadIndex].payload.type = 'string';
+        result.conditionPayloads[payloadIndex].payload.value = payload.aliasName;
+      });
+      delete result.conditionAliases;
+    }
+    result.conditionPayloads.forEach((conditionPayload) => {
+      conditionPayload.id = uuid();
+      conditionPayload.parentCondition.id = this.allIdMap[conditionPayload.parentCondition.id];
+      if (conditionPayload.decisionPoint && conditionPayload.decisionPoint.id) {
+        conditionPayload.decisionPoint.id = this.allIdMap[conditionPayload.decisionPoint.id];
+      }
+    });
+
+    return result;
+  }
+
+  deducePartition(result) {
+    result.partitions.forEach((decisionPoint, decisionPointIndex) => {
+      this.allIdMap[decisionPoint.id] = uuid();
+      decisionPoint.id = this.allIdMap[decisionPoint.id];
+      if (decisionPoint.expPoint) {
+        result.partitions[decisionPointIndex].site = decisionPoint.expPoint;
+        delete result.partitions[decisionPointIndex].expPoint;
+      }
+
+      if (decisionPoint.expId) {
+        result.partitions[decisionPointIndex].target = decisionPoint.expId;
+        delete result.partitions[decisionPointIndex].expId;
+      }
+
+      if (decisionPoint.factors) {
+        result.partitions[decisionPointIndex].factors.forEach((factor) => {
+          result.factors.push(factor);
+        });
+        delete result.partitions[decisionPointIndex].factors;
+      }
+    });
+
+    return result;
+  }
+
+  deduceFactors(result) {
+    result.factors.forEach((factor, factorIndex) => {
+      factor.id = uuid();
+      factor.levels.forEach((level, levelIndex) => {
+        this.allIdMap[level.id] = uuid();
+        level.id = this.allIdMap[level.id];
+        if (level.alias) {
+          result.factors[factorIndex].levels[levelIndex].payload = {};
+          result.factors[factorIndex].levels[levelIndex].payload.type = 'string';
+          result.factors[factorIndex].levels[levelIndex].payload.value = level.alias;
+          delete result.factors[factorIndex].levels[levelIndex].alias;
+        }
+      });
+    });
+  }
+
+  deduceParticipants(result) {
+    if (!result.experimentSegmentInclusion) {
+      result.experimentSegmentInclusion = {
+        segment: {
+          individualForSegment: [],
+          groupForSegment: [],
+          subSegments: [],
+          type: SEGMENT_TYPE.PRIVATE,
+        },
+      };
+    }
+    result.experimentSegmentInclusion.id = uuid();
+
+    if (!result.experimentSegmentExclusion) {
+      result.experimentSegmentExclusion = {
+        segment: {
+          individualForSegment: [],
+          groupForSegment: [],
+          subSegments: [],
+          type: SEGMENT_TYPE.PRIVATE,
+        },
+      };
+    }
+    result.experimentSegmentExclusion.id = uuid();
+  }
+
+  deduceQueries(result) {
+    result.queries.forEach((query) => {
+      query.id = uuid();
+    });
+  }
+
+  private compareVersions(version1: string, version2: string): number {
+    version1 = version1
+      .split('.')
+      .map((s) => s.padStart(10))
+      .join('.');
+    version2 = version2
+      .split('.')
+      .map((s) => s.padStart(10))
+      .join('.');
+
+    if (version1 === version2) {
+      return 0;
+    } else if (version1 > version2) {
+      return 1;
+    } else {
+      return -1;
+    }
+  }
+
   private postgresSearchString(type: string): string {
     const searchString: string[] = [];
     switch (type) {
@@ -1522,19 +1782,18 @@ export class ExperimentService {
     currentUser: User,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
-    const createdExperiments = await Promise.all(
-      experiments.map(async (exp) => {
-        try {
-          return await this.create(exp, currentUser, logger);
-        } catch (err) {
-          const error = err as Error;
-          error.message = `Error in creating experiment document "addBulkExperiments"`;
-          logger.error(error);
-          throw error;
-        }
-      })
-    );
-
+    const createdExperiments = [];
+    for (const exp of experiments) {
+      try {
+        const result = await this.create(exp, currentUser, logger);
+        createdExperiments.push(result);
+      } catch (err) {
+        const error = err as Error;
+        error.message = `Error in creating experiment document "addBulkExperiments"`;
+        logger.error(error);
+        throw error;
+      }
+    }
     return createdExperiments;
   }
 

@@ -10,24 +10,14 @@
       display: flex;
       flex-direction: row;
       justify-content: space-between;
-      padding: 15px 40px 0;
+      padding: 20px 40px 10px;
 
       mat-form-field {
-        width: 40%;
-        color: var(--black-2);
-        margin-right: 10px;
+        width: calc(25% - 10px);
       }
 
       .input {
         line-height: 18px;
-      }
-
-      .email-container {
-        width: 45%;
-
-        mat-form-field {
-          width: 100%;
-        }
       }
     }
   }
@@ -36,6 +26,11 @@
     display: flex;
     justify-content: flex-end;
     padding: 14px 40px 34px;
+  }
+
+  mat-error {
+    margin-top: 10px;
+    margin-left: -20px;
   }
 
   .validation-message {

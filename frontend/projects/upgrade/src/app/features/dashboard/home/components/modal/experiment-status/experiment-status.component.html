@@ -1,20 +1,38 @@
 <div class="experiment-status">
   <span class="ft-24-700 title">{{ 'home.change-experiment-status.title.text' | translate }}</span>
   <form [formGroup]="statusForm" class="experiment-status-form">
-    <mat-form-field class="ft-16-400">
-      <mat-label>{{ 'home.change-experiment-status.current-status.text' | translate }}</mat-label>
-      <mat-select class="ft-16-400 status-selection" disabled="true" [(value)]="experimentInfo.state">
-        <mat-option *ngFor="let status of experimentStatus" [value]="status.value">
+    <mat-form-field
+      class="dense-2"
+      appearance="outline"
+    >
+      <mat-label class="ft-14-400">
+        {{ 'home.change-experiment-status.current-status.text' | translate }}
+      </mat-label>
+      <mat-select
+        class="ft-14-400 status-selection"
+        disabled="true"
+        [(value)]="experimentInfo.state"
+      >
+        <mat-option class="ft-14-400" *ngFor="let status of experimentStatus" [value]="status.value">
           {{ status.value | experimentState }}
         </mat-option>
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field class="ft-16-400">
-      <mat-label>{{ 'home.change-experiment-status.new-status.text' | translate }}</mat-label>
-      <mat-select class="ft-16-400 status-selection" formControlName="newStatus">
+    <mat-form-field
+      class="dense-2"
+      appearance="outline"
+    >
+      <mat-label class="ft-14-400">
+        {{ 'home.change-experiment-status.new-status.text' | translate }}
+      </mat-label>
+      <mat-select
+        class="ft-14-400 status-selection"
+        formControlName="newStatus"
+      >
         <ng-container *ngFor="let status of experimentStatus">
           <mat-option
+            class="ft-14-400"
             *ngIf="status.value === ExperimentStatus.SCHEDULED || status.value !== experimentInfo?.state"
             [value]="status"
           >
@@ -22,13 +40,18 @@
           </mat-option>
         </ng-container>
       </mat-select>
-      <mat-error *ngIf="statusForm.controls.newStatus.hasError('required')">
+      <mat-error class="ft-14-400" *ngIf="statusForm.controls.newStatus.hasError('required')">
         {{ 'home.change-experiment-status.new-status.error.text' | translate }}
       </mat-error>
     </mat-form-field>
 
-    <mat-form-field *ngIf="newStatusValue.value === ExperimentStatus.SCHEDULED">
+    <mat-form-field
+      class="dense-2"
+      appearance="outline"
+      *ngIf="newStatusValue.value === ExperimentStatus.SCHEDULED"
+    >
       <input
+        class="ft-14-400"
         matInput
         readonly
         [min]="minDate"
@@ -40,19 +63,21 @@
       <owl-date-time #dateTime></owl-date-time>
     </mat-form-field>
   </form>
-  <span class="info-msg" *ngIf="showInfoMsg">
+  <span class="ft-14-400 info-msg" *ngIf="showInfoMsg">
     {{ 'home.change-experiment-status.enrolling-info.text' | translate }}
   </span>
-  <span class="info-msg" *ngIf="showArchiveInfoMsg">
-    <mat-checkbox class="ft-15-700" color="primary" (change)="setArchivedStatusAgreement()">
-      {{ 'home.change-experiment-status.archiving-confirmation.text' | translate }}
+  <span class="ft-14-400 info-msg" *ngIf="showArchiveInfoMsg">
+    <mat-checkbox color="primary" (change)="setArchivedStatusAgreement()">
+      <span class="ft-14-700 checkbox-label">
+        {{ 'home.change-experiment-status.archiving-confirmation.text' | translate }}
+      </span>
     </mat-checkbox>
     {{ 'home.change-experiment-status.archiving-info.text' | translate }}
   </span>
-  <span class="info-msg" *ngIf="showConditionCountErrorMsg">
+  <span class="ft-14-400 info-msg" *ngIf="showConditionCountErrorMsg">
     {{ 'home.change-experiment-status.condition-count-error.text' | translate }}
   </span>
-  <span class="error-msg" *ngIf="isScheduleDateWrong">
+  <span class="ft-14-400 error-msg" *ngIf="isScheduleDateWrong">
     {{ 'home.change-experiment-status.enrolling-error.text' | translate: { endDate: (experimentInfo.endOn | date) } }}
   </span>
 

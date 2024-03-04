@@ -1,15 +1,11 @@
 import { createReducer } from '@ngrx/store';
-import { actionLogoutSuccess, actionLoginStart } from '../auth/store/auth.actions';
+import { actionLogoutSuccess, actionLoginFailure } from '../auth/store/auth.actions';
 import { LocalStorageService } from '../local-storage/local-storage.service';
-import { ThemeOptions } from '../settings/store/settings.model';
 import { clearState } from './clear-state.reducer';
 import { ExperimentLocalStorageKeys } from '../experiments/store/experiments.model';
 
 describe('clearState', () => {
   const mockState = {
-    settings: {
-      theme: ThemeOptions.DARK_THEME,
-    },
     auth: {
       redirectUrl: '/test',
     },
@@ -19,15 +15,10 @@ describe('clearState', () => {
     LocalStorageService.prototype.removeItem = jest.fn();
   });
 
-  it('should reset settings and auth state except for theme and redirectUrl on actionLogoutSuccess, and also clear localStorage settings', () => {
+  it('should reset settings and auth state except for redirectUrl on actionLogoutSuccess, and also clear localStorage settings', () => {
     const reducer = createReducer(mockState);
     const metaReducer = clearState(reducer);
     const expectedResetState = {
-      settings: {
-        theme: ThemeOptions.DARK_THEME,
-        toCheckAuth: null,
-        toFilterMetric: null,
-      },
       auth: {
         isLoggedIn: false,
         isAuthenticating: false,
@@ -56,11 +47,6 @@ describe('clearState', () => {
     const reducer = createReducer(mockState);
     const metaReducer = clearState(reducer);
     const expectedResetState = {
-      settings: {
-        theme: ThemeOptions.DARK_THEME,
-        toCheckAuth: null,
-        toFilterMetric: null,
-      },
       auth: {
         isLoggedIn: true,
         isAuthenticating: false,
@@ -70,7 +56,7 @@ describe('clearState', () => {
       },
     };
 
-    const newState = metaReducer(mockWithNonDefaultState, actionLoginStart());
+    const newState = metaReducer(mockWithNonDefaultState, actionLoginFailure());
 
     expect(LocalStorageService.prototype.removeItem).not.toHaveBeenCalledTimes(
       Object.keys(ExperimentLocalStorageKeys).length

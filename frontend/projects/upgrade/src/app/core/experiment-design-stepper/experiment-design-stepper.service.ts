@@ -322,11 +322,6 @@ export class ExperimentDesignStepperService {
     const payloadTableData = this.getSimpleExperimentPayloadTableData();
 
     payloadTableData.forEach((payloadRowData: SimpleExperimentPayloadTableRowData) => {
-      // if no custom payload, return early, do not add to array to send to backend
-      if (payloadRowData.payload === payloadRowData.condition) {
-        return;
-      }
-
       const parentCondition = conditions.find((condition) => condition.conditionCode === payloadRowData.condition);
 
       const decisionPoint = decisionPoints.find(
@@ -356,7 +351,7 @@ export class ExperimentDesignStepperService {
         id: uuidv4(), // TODO: maybe not the right place?
         levels: conditionLevelsData,
         condition: conditions,
-        payload: '',
+        payload: conditions,
         weight: '0.0',
         include: true,
       };

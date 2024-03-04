@@ -34,11 +34,25 @@
     .warn-msg {
       color: var(--blue);
     }
+
+    .table {
+      mat-row {
+        height: auto;
+      }
+    }
   }
 
   .button-container {
     display: flex;
     justify-content: flex-end;
     padding: 0 40px 40px;
+  }
+
+  .loading-container {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+    margin-top: 60px;
   }
 }

@@ -1,10 +1,12 @@
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { UserRepository } from '../repositories/UserRepository';
 import { User } from '../models/User';
 import { SERVER_ERROR, UserRole } from 'upgrade_types';
 import {
-  USER_SEARCH_SORT_KEY, UserSearchParamsValidator, UserSortParamsValidator,
+  USER_SEARCH_SORT_KEY,
+  UserSearchParamsValidator,
+  UserSortParamsValidator,
 } from '../controllers/validators/UserPaginatedParamsValidator';
 import { systemUserDoc } from '../../init/seed/systemUser';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
@@ -17,29 +19,31 @@ import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 
 @Service()
 export class UserService {
+  private emails: Emails;
   constructor(
-    @OrmRepository()
+    @InjectRepository()
     private userRepository: UserRepository,
-    public awsService: AWSService,
-    public emails: Emails
-  ) {}
+    public awsService: AWSService
+  ) {
+    this.emails = new Emails();
+  }
 
   public async upsertUser(userDTO: UserDetailsValidator, logger: UpgradeLogger): Promise<User> {
     const user = new User();
     user.email = userDTO.email;
     user.firstName = userDTO.firstName;
-    user.lastName = userDTO.lastName
+    user.lastName = userDTO.lastName;
     user.role = userDTO.role;
-    user.imageUrl = userDTO.imageUrl
+    user.imageUrl = userDTO.imageUrl;
     user.localTimeZone = userDTO.localTimeZone;
-    user.auditLogs = userDTO.auditLogs?.map(auditLogDTO => {
-      const auditLog = new ExperimentAuditLog()
+    user.auditLogs = userDTO.auditLogs?.map((auditLogDTO) => {
+      const auditLog = new ExperimentAuditLog();
       auditLog.data = auditLogDTO.data;
       auditLog.id = auditLogDTO.id;
       auditLog.type = auditLogDTO.type;
       return auditLog;
     });
-  
+
     logger.info({ message: `Upsert a new user => ${JSON.stringify(user, undefined, 2)}` });
 
     const isUserExists = await this.userRepository.find({ where: { email: user.email } });
@@ -91,7 +95,7 @@ export class UserService {
       queryBuilder = queryBuilder.addOrderBy(`users.${sortParams.key}`, sortParams.sortAs);
     }
     const systemEmail = systemUserDoc.email;
-    queryBuilder = queryBuilder.where('users.email != :email', { email: systemEmail }).skip(skip).take(take);
+    queryBuilder = queryBuilder.where('users.email != :email', { email: systemEmail }).offset(skip).limit(take);
 
     return queryBuilder.getMany();
   }

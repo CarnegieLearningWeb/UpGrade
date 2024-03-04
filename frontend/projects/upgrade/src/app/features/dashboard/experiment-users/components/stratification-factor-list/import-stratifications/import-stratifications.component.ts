@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
+import { MatDialogRef } from '@angular/material/dialog';
 import { StratificationFactorsService } from '../../../../../../core/stratification-factors/stratification-factors.service';
 import { CsvDataItem } from '../../../../../../core/stratification-factors/store/stratification-factors.model';
 
