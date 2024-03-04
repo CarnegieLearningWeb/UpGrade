@@ -3,6 +3,7 @@ const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const GlobEntries = require('webpack-glob-entries');
+const webpack = require('webpack');
 
 module.exports = {
   mode: 'production',
@@ -11,9 +12,14 @@ module.exports = {
     path: path.join(__dirname, 'dist'),
     libraryTarget: 'commonjs',
     filename: '[name].js',
+    hashFunction: 'xxhash64',
   },
   resolve: {
     extensions: ['.ts', '.js'],
+    fallback: {
+      stream: false,
+      crypto: false,
+    },
   },
   module: {
     rules: [
