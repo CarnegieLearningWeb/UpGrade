@@ -260,6 +260,49 @@ export class SegmentController {
 
   /**
    * @swagger
+   * /segments/status/{segmentId}:
+   *    get:
+   *      description: Get segment by id with status
+   *      tags:
+   *        - Segment
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: path
+   *          name: segmentId
+   *          description: Segment id
+   *          required: true
+   *          schema:
+   *            type: string
+   *      responses:
+   *        '200':
+   *          description: Get segment by id
+   *          schema:
+   *            $ref: '#/definitions/segmentResponse'
+   *        '401':
+   *          description: Authorization Required Error
+   *        '404':
+   *          description: Segment not found
+   *        '500':
+   *          description: Internal Server Error, SegmentId is not valid
+   */
+  @Get('/status/:segmentId')
+  public getSegmentWithStatusById(@Param('segmentId') segmentId: string, @Req() request: AppRequest): Promise<Segment> {
+    if (!segmentId) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
+    }
+    if (!isUUID(segmentId)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
+        )
+      );
+    }
+    return this.segmentService.getSingleSegmentWithStatus(segmentId, request.logger);
+  }
+
+  /**
+   * @swagger
    * /segments:
    *    post:
    *      description: Create a new segment
