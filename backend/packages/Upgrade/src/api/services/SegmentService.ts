@@ -27,11 +27,7 @@ import { globalExcludeSegment } from '../../init/seed/globalExcludeSegment';
 import { CacheService } from './CacheService';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-
-interface SegmentJsonForValidation {
-  missingProperty: string;
-  segment: SegmentInputValidator;
-}
+import path from 'path';
 
 interface IsSegmentValidWithError {
   missingProperty: string;
@@ -187,6 +183,9 @@ export class SegmentService {
   public async importSegments(segments: SegmentFile[], logger: UpgradeLogger): Promise<SegmentImportError[]> {
     const validatedSegments = await this.checkSegmentsValidity(segments);
     for (const segment of validatedSegments.segments) {
+      // Giving new id to avoid segment duplication
+      segment.id = uuid();
+
       logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
       await this.addSegmentDataInDB(segment, logger);
     }
@@ -198,59 +197,47 @@ export class SegmentService {
     const parsedData: SegmentInputValidator[] = [];
     const fileNames: string[] = [];
 
-    for (const segment of segments) {
-      const lastDotIndex = segment.fileName.lastIndexOf('.');
-      const fileName = segment.fileName.slice(0, lastDotIndex);
-      const extension = segment.fileName.slice(lastDotIndex + 1);
-      if (extension === 'json') {
-        const segmentForValidation = this.convertJSONStringToSegInputValFormat(segment.fileContent);
+    await Promise.all(
+      segments.map(async (segment) => {
+        const extension = path.extname(segment.fileName);
+        if (extension === '.json') {
+          let segmentForValidation = this.convertJSONStringToSegInputValFormat(segment.fileContent);
+          segmentForValidation = plainToClass(SegmentInputValidator, segmentForValidation);
+          const segmentJSONValidation = await this.checkForMissingProperties(segmentForValidation);
+          const fileName = segment.fileName.slice(0, segment.fileName.lastIndexOf('.'));
 
-        //To avoid seg duplication
-        segmentForValidation.segment.id = uuid();
-        segmentForValidation.segment = plainToClass(SegmentInputValidator, segmentForValidation.segment);
-        const segmentJSONValidation = await this.checkForMissingProperties(segmentForValidation);
-
-        if (segmentJSONValidation.isSegmentValid) {
-          fileNames.push(fileName);
-          parsedData.push(segmentForValidation.segment);
-        } else {
-          importFileErrors.push({
-            fileName: fileName,
-            error: segmentJSONValidation.missingProperty,
-          });
+          if (segmentJSONValidation.isSegmentValid) {
+            fileNames.push(fileName);
+            parsedData.push(segmentForValidation);
+          } else {
+            importFileErrors.push({ fileName, error: segmentJSONValidation.missingProperty });
+          }
         }
-      }
-    }
+      })
+    );
     const validatedSegments = await this.validateSegmentsData(parsedData, fileNames);
     validatedSegments.importErrors = importFileErrors.concat(validatedSegments.importErrors);
     return validatedSegments;
   }
 
-  convertJSONStringToSegInputValFormat(segmentDetails: string): SegmentJsonForValidation {
+  convertJSONStringToSegInputValFormat(segmentDetails: string): SegmentInputValidator {
     const segmentInfo = JSON.parse(segmentDetails);
     let userIds: string[];
     let subSegmentIds: string[];
     let groups: Group[];
-    let missingAllProperties = '';
 
     if (segmentInfo.individualForSegment) {
       userIds = segmentInfo.individualForSegment.map((individual) => (individual.userId ? individual.userId : null));
-    } else {
-      missingAllProperties = missingAllProperties + ' individualForSegment';
     }
 
     if (segmentInfo.subSegments) {
       subSegmentIds = segmentInfo.subSegments.map((subSegment) => (subSegment.id ? subSegment.id : null));
-    } else {
-      missingAllProperties = missingAllProperties + ' subSegments';
     }
 
     if (segmentInfo.groupForSegment) {
       groups = segmentInfo.groupForSegment.map((group) => {
         return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
       });
-    } else {
-      missingAllProperties = missingAllProperties + ' groupForSegment';
     }
 
     const segmentForValidation: SegmentInputValidator = {
@@ -260,19 +247,15 @@ export class SegmentService {
       groups: groups,
     };
 
-    missingAllProperties = missingAllProperties
-      ? 'Invalid Segment JSON, missing properties: ' + missingAllProperties
-      : missingAllProperties;
-
-    return { missingProperty: missingAllProperties, segment: segmentForValidation };
+    return segmentForValidation;
   }
 
-  public async checkForMissingProperties(obj: SegmentJsonForValidation): Promise<IsSegmentValidWithError> {
+  public async checkForMissingProperties(segment: SegmentInputValidator): Promise<IsSegmentValidWithError> {
     const errorRemovePart = 'Segment Input validator instance has failed the validation:\n - ';
-    let missingAllProperties = obj.missingProperty;
+    let missingAllProperties = '';
     let isSegmentValid = true;
 
-    await validate(obj.segment).then((errors) => {
+    await validate(segment).then((errors) => {
       if (errors.length > 0) {
         errors.forEach((error) => {
           let validationError = error.toString();
@@ -295,15 +278,7 @@ export class SegmentService {
     fileNames: string[]
   ): Promise<SegmentValidationObj> {
     const allValidatedSegments: SegmentInputValidator[] = [];
-    const allSegmentIds: string[] = [];
-    segments.forEach((segment) => {
-      allSegmentIds.push(segment.id);
-      segment.subSegmentIds.forEach((subSegment) => {
-        if (!allSegmentIds.includes(subSegment)) {
-          allSegmentIds.push(subSegment);
-        }
-      });
-    });
+    const allSegmentIds = [...new Set(segments.flatMap((segment) => [segment.id].concat(segment.subSegmentIds)))];
     const allSubSegmentsData = await this.getSegmentByIds(allSegmentIds);
     const contextMetaData = env.initialization.contextMetadata;
     const contextMetaDataOptions = Object.keys(contextMetaData);
@@ -368,17 +343,8 @@ export class SegmentService {
         error: null,
       });
       index++;
-      allSubSegmentsData.push(this.convertSegInputValToSegment(segment));
     }
     return { segments: allValidatedSegments, importErrors: importFileErrors };
-  }
-
-  convertSegInputValToSegment(segment: SegmentInputValidator): Segment {
-    const seg = new Segment();
-    seg.id = segment.id;
-    seg.context = segment.context;
-    seg.name = segment.name;
-    return seg;
   }
 
   public async exportSegments(segmentIds: string[], logger: UpgradeLogger): Promise<Segment[]> {

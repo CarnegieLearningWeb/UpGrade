@@ -363,7 +363,7 @@ export class SegmentController {
    */
   @Post('/import')
   public importSegments(
-    @Body({ validate: false }) segments: SegmentFile[],
+    @Body({ validate: true }) segments: SegmentFile[],
     @Req() request: AppRequest
   ): Promise<SegmentImportError[]> {
     return this.segmentService.importSegments(segments, request.logger);
@@ -390,7 +390,7 @@ export class SegmentController {
    */
   @Post('/validation')
   public validateSegments(
-    @Body({ validate: false }) segments: SegmentFile[],
+    @Body({ validate: true }) segments: SegmentFile[],
     @Req() request: AppRequest
   ): Promise<SegmentImportError[]> {
     return this.segmentService.validateSegments(segments, request.logger);

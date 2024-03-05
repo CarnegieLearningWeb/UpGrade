@@ -65,33 +65,27 @@ export class ImportSegmentComponent {
   uploadFile(event) {
     // Get the input element from the event
     // Get the FileList from the input element
-    const index = 0;
-    const fileList = event.target.files;
+    const fileList = Array.from(event.target.files) as any[];
     this.uploadedFileCount = fileList.length;
-    const reader = new FileReader();
     this.importFileErrors = [];
     this.fileData = [];
 
     if (this.uploadedFileCount === 0) return;
     this.isLoadingSegments$ = true;
 
-    const readFile = (fileIndex) => {
-      if (fileIndex >= this.uploadedFileCount) {
-        // Check if this is the last file
-        this.validateFiles();
-        this.isLoadingSegments$ = false;
-        return;
-      }
-      const file = fileList.item(fileIndex);
+    fileList.forEach((file) => {
+      const reader = new FileReader();
       reader.onload = (e) => {
-        const fileContent = e.target?.result as any;
+        const fileContent = e.target?.result;
         this.fileData.push({ fileName: file.name, fileContent: fileContent });
-        readFile(fileIndex + 1);
+        // Check if this is the last file and validate
+        if (this.fileData.length === this.uploadedFileCount) {
+          this.validateFiles();
+          this.isLoadingSegments$ = false;
+        }
       };
       reader.readAsText(file);
-    };
-
-    readFile(index);
+    });
   }
 
   async validateFiles() {
