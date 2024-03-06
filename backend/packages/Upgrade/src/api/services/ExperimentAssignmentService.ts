@@ -155,6 +155,7 @@ export class ExperimentAssignmentService {
           'experiment',
           'experiment.conditions',
           'experiment.conditions.conditionPayloads',
+          'experiment.partitions',
           'experiment.experimentSegmentInclusion',
           'experiment.experimentSegmentExclusion',
           'experiment.experimentSegmentInclusion.segment',
@@ -240,7 +241,6 @@ export class ExperimentAssignmentService {
           experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) &&
         !previewUser
       ) {
-        const experiment = await this.experimentService.findOne(experimentId);
         const decisionPointId = selectedExperimentDP.id;
         let individualEnrollments: IndividualEnrollment;
         let individualExclusions: IndividualExclusion;
