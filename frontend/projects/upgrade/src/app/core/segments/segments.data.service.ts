@@ -18,7 +18,7 @@ export class SegmentsDataService {
   }
 
   getSegmentById(id: string) {
-    const url = `${this.environment.api.segments}/${id}`;
+    const url = `${this.environment.api.segments}/status/${id}`;
     return this.http.get(url);
   }
 

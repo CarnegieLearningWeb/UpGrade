@@ -103,12 +103,21 @@ export class SegmentService {
     });
   }
 
+  public async getSingleSegmentWithStatus(segmentId: string, logger: UpgradeLogger): Promise<Segment> {
+    const segmentData = await this.getSegmentById(segmentId, logger);
+    return (await this.getSegmentStatus([segmentData])).segmentsData[0];
+  }
+
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
-    const segmentsData = await getConnection().transaction(async () => {
-      const [segmentsData, allExperimentSegmentsInclusion, allExperimentSegmentsExclusion] = await Promise.all([
-        this.getAllSegments(logger),
-        this.getExperimentSegmenInclusionData(),
-        this.getExperimentSegmenExclusionData(),
+    const segmentsData = await this.getAllSegments(logger);
+    return this.getSegmentStatus(segmentsData);
+  }
+
+  public async getSegmentStatus(segmentsData: Segment[]): Promise<getSegmentData> {
+    const segmentsDataWithStatus = await getConnection().transaction(async () => {
+      const [allExperimentSegmentsInclusion, allExperimentSegmentsExclusion] = await Promise.all([
+        this.getExperimentSegmentInclusionData(),
+        this.getExperimentSegmentExclusionData(),
       ]);
 
       const segmentsUsedList = [];
@@ -150,15 +159,15 @@ export class SegmentService {
       };
     });
 
-    return segmentsData;
+    return segmentsDataWithStatus;
   }
 
-  public async getExperimentSegmenExclusionData() {
+  public async getExperimentSegmentExclusionData() {
     const queryBuilder = await this.experimentSegmentExclusionRepository.getExperimentSegmentExclusionData();
     return queryBuilder;
   }
 
-  public async getExperimentSegmenInclusionData() {
+  public async getExperimentSegmentInclusionData() {
     const queryBuilder = await this.experimentSegmentInclusionRepository.getExperimentSegmentInclusionData();
     return queryBuilder;
   }
