@@ -222,7 +222,11 @@ export class ExperimentDesignStepperService {
     const decisionPoints = experiment.partitions;
     const conditions = experiment.conditions;
     const conditionPayloads = experiment.conditionPayloads || [];
-    const conditionPayloadsRowData = this.getExistingConditionPayloadRowData(conditionPayloads);
+    const conditionPayloadsRowData = this.getExistingConditionPayloadRowData(
+      decisionPoints,
+      conditions,
+      conditionPayloads
+    );
     const payloadTableData = this.createPayloadTableData(decisionPoints, conditions, conditionPayloadsRowData);
 
     return payloadTableData;
@@ -282,12 +286,18 @@ export class ExperimentDesignStepperService {
   }
 
   getExistingConditionPayloadRowData(
+    decisionPoints: ExperimentDecisionPoint[],
+    conditions: ExperimentCondition[],
     preexistingConditionPayloadData: ExperimentConditionPayload[]
   ): SimpleExperimentPayloadTableRowData[] {
     const currentPayloadTableData = this.getSimpleExperimentPayloadTableData();
 
     if (preexistingConditionPayloadData.length) {
-      const payloadTableData = this.mapPreexistingConditionPayloadsToTableData(preexistingConditionPayloadData);
+      const payloadTableData = this.mapPreexistingConditionPayloadsToTableData(
+        decisionPoints,
+        conditions,
+        preexistingConditionPayloadData
+      );
       return payloadTableData;
     }
 
@@ -299,17 +309,23 @@ export class ExperimentDesignStepperService {
   }
 
   mapPreexistingConditionPayloadsToTableData(
+    decisionPoints: ExperimentDecisionPoint[],
+    conditions: ExperimentCondition[],
     conditionPayloads: ExperimentConditionPayload[]
   ): SimpleExperimentPayloadTableRowData[] {
     return conditionPayloads.map((conditionPayload) => {
+      const parentCondition = conditions.find((condition) => condition.id === conditionPayload.parentCondition);
+      const parentDecisionPoint = decisionPoints.find(
+        (decisionPoint) => decisionPoint.id === conditionPayload.decisionPoint
+      );
       return {
         id: conditionPayload.id,
-        designTableCombinationId: conditionPayload.decisionPoint.id + conditionPayload.parentCondition.id,
-        site: conditionPayload.decisionPoint.site,
-        target: conditionPayload.decisionPoint.target,
-        condition: conditionPayload.parentCondition.conditionCode,
+        designTableCombinationId: conditionPayload.decisionPoint + conditionPayload.parentCondition,
+        site: parentDecisionPoint.site,
+        target: parentDecisionPoint.target,
+        condition: parentCondition.conditionCode,
         payload: conditionPayload.payload.value,
-        useCustom: conditionPayload.payload.value !== conditionPayload.parentCondition.conditionCode,
+        useCustom: conditionPayload.payload.value !== parentCondition.conditionCode,
       };
     });
   }
@@ -420,7 +436,7 @@ export class ExperimentDesignStepperService {
 
     const tableData = existingConditions.map((factorialCondition) => {
       const conditionPayload = existingConditionPayloads?.find(
-        (conditionPayload) => conditionPayload?.parentCondition.id === factorialCondition.id
+        (conditionPayload) => conditionPayload?.parentCondition === factorialCondition.id
       );
 
       const payloadValue = conditionPayload ? conditionPayload.payload.value : '';

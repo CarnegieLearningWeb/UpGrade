@@ -181,7 +181,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       this.experiment.conditions?.forEach((condition) => {
         let conditionPayload: ExperimentConditionPayload;
         this.experiment.conditionPayloads.forEach((payloadcondition) => {
-          if (payloadcondition.parentCondition.id === condition.id) {
+          if (payloadcondition.parentCondition === condition.id) {
             conditionPayload = payloadcondition;
           }
         });
