@@ -821,7 +821,7 @@
               <!-- Type Column -->
               <ng-container matColumnDef="participantsType">
                 <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                  {{ 'home.view-experiment-global.experiment-site.text' | translate }}
+                  {{ 'segments.global-members-type.text' | translate }}
                 </mat-header-cell>
                 <mat-cell class="ft-12-600" *matCellDef="let data">
                   <span *ngIf="data.participant_Type?.length < 50; else participantType">
@@ -838,7 +838,7 @@
               <!-- Name/Id Column -->
               <ng-container matColumnDef="participantsId">
                 <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                  {{ 'home.view-experiment-global.experiment-target.text' | translate }}
+                  {{ 'segments.global-members-id/name.text' | translate }}
                 </mat-header-cell>
                 <mat-cell class="ft-12-600" *matCellDef="let data">
                   <span *ngIf="data.participant_id?.length < 50; else participantId">
