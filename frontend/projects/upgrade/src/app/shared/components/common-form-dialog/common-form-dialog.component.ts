@@ -14,9 +14,9 @@ import {
   MatDialogTitle,
 } from '@angular/material/dialog';
 import { NgIf, NgTemplateOutlet } from '@angular/common';
-import { TestgDialogFormComponent } from '../general-form-dialog-templates/testg-dialog-form/testg-dialog-form.component';
+import { ExampleDialogFormTemplateComponent } from './example-dialog-form-template/example-dialog-form.component';
 
-export interface GeneralFormModalParams {
+export interface CommonFormDialogParams {
   formComponent: any;
   title: string;
   cancelBtnLabel?: string;
@@ -24,7 +24,7 @@ export interface GeneralFormModalParams {
 }
 
 @Component({
-  selector: 'app-general-form-dialog',
+  selector: 'app-common-form-dialog',
   standalone: true,
   imports: [
     MatCardModule,
@@ -38,12 +38,12 @@ export interface GeneralFormModalParams {
     MatDialogClose,
     NgIf,
     NgTemplateOutlet,
-    TestgDialogFormComponent,
+    ExampleDialogFormTemplateComponent,
   ],
-  templateUrl: './general-form-dialog.component.html',
-  styleUrl: './general-form-dialog.component.scss',
+  templateUrl: './common-form-dialog.component.html',
+  styleUrl: './common-form-dialog.component.scss',
 })
-export class GeneralFormDialogComponent implements AfterViewInit {
+export class CommonFormDialogComponent implements AfterViewInit {
   title: string;
   cancelBtnLabel: string;
   primaryActionBtnLabel: string;
@@ -54,9 +54,9 @@ export class GeneralFormDialogComponent implements AfterViewInit {
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
-    public params: GeneralFormModalParams,
+    public params: CommonFormDialogParams,
     public dialog: MatDialog,
-    private dialogRef: MatDialogRef<GeneralFormDialogComponent>
+    private dialogRef: MatDialogRef<CommonFormDialogComponent>
   ) {
     this.formComponent = params.formComponent;
     this.title = params.title;

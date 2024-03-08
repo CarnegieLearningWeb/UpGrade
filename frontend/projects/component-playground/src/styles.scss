@@ -1,0 +1,11 @@
+/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+@import 'upgrade/src/styles.scss';
+@import 'upgrade/src/styles/variables.scss';
+@import 'upgrade/src/styles/utility.scss';
+@import 'upgrade/src/themes/light-theme.scss';
+
+@include mat.all-component-typographies();
+@include mat.core();
+@include mat.all-component-themes($light-theme);

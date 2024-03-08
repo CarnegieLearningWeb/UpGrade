@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TestgDialogFormComponent } from './testg-dialog-form.component';
+import { ExampleDialogFormTemplateComponent } from './example-dialog-form.component';
 
 describe('TestgDialogFormComponent', () => {
-  let component: TestgDialogFormComponent;
-  let fixture: ComponentFixture<TestgDialogFormComponent>;
+  let component: ExampleDialogFormTemplateComponent;
+  let fixture: ComponentFixture<ExampleDialogFormTemplateComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TestgDialogFormComponent],
+      imports: [ExampleDialogFormTemplateComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TestgDialogFormComponent);
+    fixture = TestBed.createComponent(ExampleDialogFormTemplateComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

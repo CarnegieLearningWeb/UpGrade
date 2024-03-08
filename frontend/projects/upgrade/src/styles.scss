@@ -7,7 +7,7 @@
 @include mat.all-component-typographies();
 @include mat.core();
 
-@import './styles/variables.css';
+@import './styles/variables.scss';
 @import './themes/light-theme';
 @import './styles/utility.scss';
 @import './styles/shared-modal.scss';
@@ -104,7 +104,6 @@
   @include mat.all-component-densities(-2);
 }
 
-
 // TODO material specific style which cannot be changed by scope
 .mat-drawer-inner-container {
   display: flex;
@@ -112,7 +111,11 @@
   justify-content: space-between;
 }
 
-button[mat-button], button[mat-raised-button], button[mat-flat-button], button[mat-stroked-button], button[mat-icon-button] {
+button[mat-button],
+button[mat-raised-button],
+button[mat-flat-button],
+button[mat-stroked-button],
+button[mat-icon-button] {
   span {
     letter-spacing: normal;
   }
@@ -276,7 +279,6 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
   }
 }
 
-
 .mdc-text-field.mdc-text-field--filled,
 .mat-mdc-option {
   background-color: white !important;
@@ -372,7 +374,8 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
     border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 
     .mat-mdc-tab-header-pagination {
-      box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px;
+      box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 4px 5px 0px,
+        rgba(0, 0, 0, 0.12) 0px 1px 10px 0px;
     }
 
     .mat-mdc-tab-label-container .mat-mdc-tab-labels .mat-mdc-tab {
@@ -406,7 +409,8 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
 }
 
 .cdk-overlay-pane {
-  .mat-mdc-select-panel, .mat-mdc-autocomplete-panel {
+  .mat-mdc-select-panel,
+  .mat-mdc-autocomplete-panel {
     padding: 0;
 
     .mat-mdc-option:hover {
