@@ -84,9 +84,6 @@ import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
 
-class newExperiment extends Experiment {
-  conditionPayloads: any;
-}
 const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
   'Import Stratification Factor from Participants Menu > Stratification before using it';
