@@ -11,7 +11,7 @@ import { CommonDialogService } from 'upgrade/src/app/shared/services/common-dial
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  // // in a service, each would open a different dialog
+  // temporary, this is just to illustrate an example use
   openDialog() {
     const dialogRef = this.dialogService.openExampleDialog();
 
