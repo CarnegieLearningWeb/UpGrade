@@ -15,6 +15,7 @@ import {
   POST_EXPERIMENT_RULE,
   segmentNew,
 } from './store/experiments.model';
+import { ExperimentFile } from '../../features/dashboard/home/components/modal/import-experiment/import-experiment.component';
 
 class MockHTTPClient {
   get = jest.fn().mockReturnValue(of());
@@ -160,9 +161,10 @@ describe('ExperimentDataService', () => {
       const mockUrl = mockEnvironment.api.importExperiment;
       const experiment = { ...mockExperiment };
 
-      service.importExperiment([experiment]);
+      const experimentFile: ExperimentFile = { fileName: 'test.json', fileContent: JSON.stringify(experiment) };
+      service.importExperiment([experimentFile]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, [{ ...experiment }]);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, [experimentFile]);
     });
   });
 
