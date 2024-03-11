@@ -2,11 +2,31 @@
   <span class="ft-24-700 title">{{ 'segments.import-segment.text' | translate | titlecase }}</span>
 
   <div class="import-segment-body">
-    <ng-container>
-      <p class="ft-16-400 import-message">
-        {{ 'segments.import-segmemt.message.text' | translate }}
-      </p>
-      <input accept=".json" type="file" multiple class="ft-14-400 file-input" (change)="uploadFile($event)" />
+    <p class="ft-16-400 import-message">
+      {{ 'segments.import-segmemt.message.text' | translate }}
+    </p>
+    <input accept=".json" type="file" multiple class="ft-14-400 file-input" (change)="uploadFile($event)" />
+    <ng-container *ngIf="importFileErrors.length">
+      <mat-table class="table" [dataSource]="importFileErrorsDataSource">
+        <!-- File Name -->
+        <ng-container matColumnDef="File Name">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef> File Name </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let element">
+            {{ element.fileName }}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Error -->
+        <ng-container matColumnDef="Error">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef> Error/Warning </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let element">
+            {{ element.error }}
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      </mat-table>
     </ng-container>
   </div>
 
@@ -19,10 +39,10 @@
       class="shared-modal--modal-btn default-button"
       [ngClass]="{
         'default-button--disabled':
-          uploadedFileCount === 0
+        uploadedFileCount === 0 || nonErrorSegments === 0 || this.isLoadingSegments$
       }"
       [disabled]="
-        uploadedFileCount === 0
+        uploadedFileCount === 0 || nonErrorSegments === 0 || this.isLoadingSegments$
       "
       (click)="importSegments()"
     >

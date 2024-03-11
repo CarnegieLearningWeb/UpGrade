@@ -3,7 +3,7 @@
 @import '@danielmoncada/angular-datetime-picker/assets/style/picker.min.css';
 @import url('https://fonts.googleapis.com/css?family=Roboto:400,700|Material+Icons');
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800&display=swap');
-
+@import '~jsoneditor/dist/jsoneditor.min.css';
 @include mat.all-component-typographies();
 @include mat.core();
 
@@ -41,6 +41,7 @@
 @import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
 @import './app/shared/components/query-result/query-result.theme.scss';
 @import './app/features/dashboard/profile/components/metrics/metrics.theme.scss';
+@import './app/features/dashboard/profile/components/modals/add-metrics/add-metrics.theme.scss';
 @import './app/features/dashboard/home/components/experiment-query-result/experiment-query-result.theme.scss';
 @import './app/features/dashboard/home/components/modal/experiment-end-criteria/experiment-ending-criteria.theme.scss';
 @import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
@@ -81,6 +82,7 @@
   @include queries-modal-component-theme($theme);
   @include query-result-component-theme($theme);
   @include metrics-component-theme($theme);
+  @include add-metrics-component-theme($theme);
   @include experiment-query-result-component-theme($theme);
   @include experiment-ending-criteria-component-theme($theme);
   @include import-experiment-component-theme($theme);
@@ -146,6 +148,7 @@ button[mat-icon-button] {
 .queries-modal,
 .export-modal,
 .query-result,
+.add-metric-modal,
 .duplicate-segment-modal,
 .experiment-ending-criteria {
   @include custom-components-theme($light-theme);
@@ -206,7 +209,8 @@ button[mat-icon-button] {
   width: 500px;
 }
 
-.experiment-general-modal {
+.experiment-general-modal,
+.add-metric-modal {
   width: 804px;
   min-height: 294px;
 }
