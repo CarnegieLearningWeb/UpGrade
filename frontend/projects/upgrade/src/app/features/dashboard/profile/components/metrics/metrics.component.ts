@@ -17,6 +17,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { DeleteMetricsComponent } from '../modals/delete-metrics/delete-metrics.component';
+import { AddMetricsComponent } from '../modals/add-metrics/add-metrics.component';
 
 @Component({
   selector: 'profile-metrics',
@@ -87,6 +88,16 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
       }),
     };
     return metrics;
+  }
+
+  openAddMetricDialog() {
+    this.selectedMetricIndex = null;
+    const dialogRef = this.dialog.open(AddMetricsComponent, {
+      panelClass: 'add-metric-modal',
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      // Code will be executed after closing dialog
+    });
   }
 
   deleteNode(nodeToBeDeleted: any) {

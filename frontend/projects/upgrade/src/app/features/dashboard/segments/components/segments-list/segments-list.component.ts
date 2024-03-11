@@ -6,6 +6,7 @@ import {
   ElementRef,
   OnDestroy,
   AfterViewInit,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
@@ -49,7 +50,12 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   selectedExperimentFilterOption = EXPERIMENT_SEARCH_KEY.ALL;
   searchValue: string;
 
-  constructor(private authService: AuthService, private segmentsService: SegmentsService, private dialog: MatDialog) {}
+  constructor(
+    private authService: AuthService,
+    private segmentsService: SegmentsService,
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   get SegmentStatus() {
     return SEGMENT_STATUS;
@@ -61,11 +67,12 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
-    this.allSegmentsSub = this.segmentsService.allSegments$.subscribe((allSegments) => {
-      allSegments = allSegments.map((segment) => ({ ...segment, status: segment.status || SEGMENT_STATUS.UNUSED }));
+    this.allSegmentsSub = this.segmentsService.allSegments$.subscribe((segments) => {
+      segments = segments.map((segment) => ({ ...segment, status: segment.status || SEGMENT_STATUS.UNUSED }));
       this.allSegments = new CustomMatTableSource();
-      this.allSegments.data = [...allSegments];
+      this.allSegments.data = [...segments];
       this.allSegments.sort = this.sort;
+      this.cdr.detectChanges();
     });
   }
 

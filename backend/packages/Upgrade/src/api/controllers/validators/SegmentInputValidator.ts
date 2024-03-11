@@ -1,6 +1,5 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
-import { Segment } from '../../models/Segment';
 import { SEGMENT_TYPE } from 'upgrade_types';
 
 export class Group {
@@ -48,11 +47,11 @@ export class SegmentInputValidator {
   public subSegmentIds: string[];
 }
 
-export class SegmentReturnObj {
+export class SegmentValidationObj {
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => Segment)
-  segments: Segment[];
+  @Type(() => SegmentInputValidator)
+  segments: SegmentInputValidator[];
 
   @IsArray()
   @ValidateNested({ each: true })
