@@ -2,12 +2,7 @@ import { fakeAsync, tick } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 import { SEGMENT_TYPE } from 'upgrade_types';
 import { SegmentsService } from './segments.service';
-import {
-  actionDeleteSegment,
-  actionExportSegments,
-  actionImportSegments,
-  actionUpsertSegment,
-} from './store/segments.actions';
+import { actionDeleteSegment, actionExportSegments, actionUpsertSegment } from './store/segments.actions';
 import { SegmentInput, UpsertSegmentType } from './store/segments.model';
 import * as SegmentSelectors from './store/segments.selectors';
 const MockStateStore$ = new BehaviorSubject({});
@@ -35,21 +30,6 @@ describe('SegmentService', () => {
     subSegmentIds: [],
     type: SEGMENT_TYPE.PUBLIC,
   };
-  const mockSegment = {
-    createdAt: 'test',
-    versionNumber: 0,
-    updatedAt: 'test',
-    id: 'abc123',
-    name: 'abc',
-    context: 'test',
-    description: 'test',
-    individualForSegment: [],
-    groupForSegment: [],
-    subSegments: [],
-    type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
-    status: 'test',
-  };
-  const mockSegmentFile = { fileName: 'test', fileContent: JSON.stringify(mockSegmentInput) };
 
   beforeEach(() => {
     mockStore = MockStateStore$;
@@ -89,55 +69,43 @@ describe('SegmentService', () => {
     });
   });
 
-  describe('#importSegments', () => {
+  describe('#updateSegment', () => {
     it('should dispatch actionUpsertExperiment with the given input', () => {
-      service.importSegments([mockSegmentFile]);
+      const segment = { ...mockSegmentInput } as SegmentInput;
+      segment.description = ' updated segment description';
+
+      service.updateSegment(segment);
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
-        actionImportSegments({
-          segments: [mockSegmentFile],
+        actionUpsertSegment({
+          segment,
+          actionType: UpsertSegmentType.UPDATE_SEGMENT,
         })
       );
     });
+  });
 
-    describe('#updateSegment', () => {
-      it('should dispatch actionUpsertExperiment with the given input', () => {
-        const segment = { ...mockSegmentInput } as SegmentInput;
-        segment.description = ' updated segment description';
+  describe('#deleteSegment', () => {
+    it('should dispatch deleteSegment with the given input', () => {
+      const segmentId = 'segmentId1';
 
-        service.updateSegment(segment);
+      service.deleteSegment(segmentId);
 
-        expect(mockStore.dispatch).toHaveBeenCalledWith(
-          actionUpsertSegment({
-            segment,
-            actionType: UpsertSegmentType.UPDATE_SEGMENT,
-          })
-        );
-      });
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        actionDeleteSegment({
+          segmentId,
+        })
+      );
     });
+  });
 
-    describe('#deleteSegment', () => {
-      it('should dispatch deleteSegment with the given input', () => {
-        const segmentId = 'segmentId1';
+  describe('#exportSegments', () => {
+    it('should dispatch exportSegments with the given input', () => {
+      const segmentIds = ['abc123'];
 
-        service.deleteSegment(segmentId);
+      service.exportSegments(segmentIds);
 
-        expect(mockStore.dispatch).toHaveBeenCalledWith(
-          actionDeleteSegment({
-            segmentId,
-          })
-        );
-      });
-    });
-
-    describe('#exportSegments', () => {
-      it('should dispatch exportSegments with the given input', () => {
-        const segmentIds = ['abc123'];
-
-        service.exportSegments(segmentIds);
-
-        expect(mockStore.dispatch).toHaveBeenCalledWith(actionExportSegments({ segmentIds }));
-      });
+      expect(mockStore.dispatch).toHaveBeenCalledWith(actionExportSegments({ segmentIds }));
     });
   });
 });

@@ -15,10 +15,10 @@ import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
 import {
   SegmentInputValidator,
-  SegmentReturnObj,
   SegmentImportError,
   SegmentFile,
   Group,
+  SegmentValidationObj,
 } from '../controllers/validators/SegmentInputValidator';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
@@ -26,11 +26,8 @@ import { getSegmentData } from '../controllers/SegmentController';
 import { globalExcludeSegment } from '../../init/seed/globalExcludeSegment';
 import { CacheService } from './CacheService';
 import { validate } from 'class-validator';
-
-interface SegmentWithValidation {
-  missingProperty: string;
-  segment: SegmentInputValidator;
-}
+import { plainToClass } from 'class-transformer';
+import path from 'path';
 
 interface IsSegmentValidWithError {
   missingProperty: string;
@@ -40,6 +37,11 @@ interface IsSegmentValidWithError {
 interface SegmentParticipantsRow {
   Type: string;
   UUID: string;
+}
+
+interface ValidSegmentDetail {
+  filename: string;
+  segment: SegmentInputValidator;
 }
 
 @Service()
@@ -185,62 +187,66 @@ export class SegmentService {
     return await this.segmentRepository.deleteSegment(id, logger);
   }
 
-  public async importSegments(segments: SegmentFile[], logger: UpgradeLogger): Promise<SegmentReturnObj> {
-    const importFileErrors: SegmentImportError[] = [];
-    const parsedData: SegmentInputValidator[] = [];
-    const fileNames: string[] = [];
-    for (const segment of segments) {
-      const fileName = segment.fileName.split('.');
-      if (segment.fileName.endsWith('.json')) {
-        const segmentForValidation = this.convertJSONStringToSegInputValFormat(segment.fileContent);
-        const segmentJSONValidation = await this.validateObject(segmentForValidation);
-
-        if (segmentJSONValidation.isSegmentValid) {
-          fileNames.push(fileName[0]);
-          parsedData.push(segmentForValidation.segment);
-        } else {
-          importFileErrors.push({
-            fileName: fileName[0],
-            error: 'Invalid Segment JSON, missing properties: ' + segmentJSONValidation.missingProperty,
-          });
-        }
-      }
-    }
-    const importedSegments = await this.validateAndImportSegments(parsedData, fileNames, logger);
-    importedSegments.importErrors.forEach((err) => {
-      importFileErrors.push({
-        fileName: err.fileName,
-        error: err.error,
-      });
-    });
-    return { segments: importedSegments.segments, importErrors: importFileErrors };
+  public async validateSegments(segments: SegmentFile[], logger: UpgradeLogger): Promise<SegmentImportError[]> {
+    logger.info({ message: `Validating segments` });
+    const validatedSegments = await this.checkSegmentsValidity(segments);
+    const validationErrors = validatedSegments.importErrors.filter((seg) => seg.error !== null);
+    return validationErrors;
   }
 
-  convertJSONStringToSegInputValFormat(segmentDetails: string): SegmentWithValidation {
+  public async importSegments(segments: SegmentFile[], logger: UpgradeLogger): Promise<SegmentImportError[]> {
+    const validatedSegments = await this.checkSegmentsValidity(segments);
+    for (const segment of validatedSegments.segments) {
+      // Giving new id to avoid segment duplication
+      segment.id = uuid();
+
+      logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
+      await this.addSegmentDataInDB(segment, logger);
+    }
+    return validatedSegments.importErrors;
+  }
+
+  public async checkSegmentsValidity(fileData: SegmentFile[]): Promise<SegmentValidationObj> {
+    const importFileErrors: SegmentImportError[] = [];
+    const segments = fileData.filter((segment) => path.extname(segment.fileName) === '.json');
+
+    const segmentData: ValidSegmentDetail[] = await Promise.all(
+      segments.map(async (segment) => {
+        let segmentForValidation = this.convertJSONStringToSegInputValFormat(segment.fileContent);
+        segmentForValidation = plainToClass(SegmentInputValidator, segmentForValidation);
+        const segmentJSONValidation = await this.checkForMissingProperties(segmentForValidation);
+        const fileName = segment.fileName.slice(0, segment.fileName.lastIndexOf('.'));
+        if (segmentJSONValidation.isSegmentValid) {
+          return { filename: fileName, segment: segmentForValidation };
+        } else {
+          importFileErrors.push({ fileName, error: segmentJSONValidation.missingProperty });
+          return null;
+        }
+      })
+    );
+    const validatedSegments = await this.validateSegmentsData(segmentData);
+    validatedSegments.importErrors = importFileErrors.concat(validatedSegments.importErrors);
+    return validatedSegments;
+  }
+
+  convertJSONStringToSegInputValFormat(segmentDetails: string): SegmentInputValidator {
     const segmentInfo = JSON.parse(segmentDetails);
     let userIds: string[];
     let subSegmentIds: string[];
     let groups: Group[];
-    let missingAllProperties = '';
 
     if (segmentInfo.individualForSegment) {
       userIds = segmentInfo.individualForSegment.map((individual) => (individual.userId ? individual.userId : null));
-    } else {
-      missingAllProperties = missingAllProperties + ' individualForSegment';
     }
 
     if (segmentInfo.subSegments) {
       subSegmentIds = segmentInfo.subSegments.map((subSegment) => (subSegment.id ? subSegment.id : null));
-    } else {
-      missingAllProperties = missingAllProperties + ' subSegments';
     }
 
     if (segmentInfo.groupForSegment) {
       groups = segmentInfo.groupForSegment.map((group) => {
         return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
       });
-    } else {
-      missingAllProperties = missingAllProperties + ' groupForSegment';
     }
 
     const segmentForValidation: SegmentInputValidator = {
@@ -250,50 +256,46 @@ export class SegmentService {
       groups: groups,
     };
 
-    return { missingProperty: missingAllProperties, segment: segmentForValidation };
+    return segmentForValidation;
   }
 
-  async validateObject(obj: SegmentWithValidation): Promise<IsSegmentValidWithError> {
-    let missingAllProperties = obj.missingProperty;
-    const object = Object.assign(new SegmentInputValidator(), obj.segment);
-    const errors = await validate(object);
-    if (errors.length > 0) {
-      // Handle errors
-      errors.forEach((error) => {
-        missingAllProperties = missingAllProperties + ' ' + error.property;
-      });
-      return { missingProperty: missingAllProperties, isSegmentValid: false };
-    } else {
-      // Object is valid
-      return { missingProperty: missingAllProperties, isSegmentValid: true };
-    }
-  }
+  public async checkForMissingProperties(segment: SegmentInputValidator): Promise<IsSegmentValidWithError> {
+    const errorRemovePart = 'Segment Input validator instance has failed the validation:\n - ';
+    let missingAllProperties = '';
+    let isSegmentValid = true;
 
-  public async validateAndImportSegments(
-    segments: SegmentInputValidator[],
-    fileNames: string[],
-    logger: UpgradeLogger
-  ): Promise<SegmentReturnObj> {
-    const allAddedSegments: Segment[] = [];
-    const allSegmentIds: string[] = [];
-    const allSegments = await this.getAllSegments(logger);
-    segments.forEach((segment) => {
-      allSegmentIds.push(segment.id);
-      segment.subSegmentIds.forEach((subSegment) => {
-        if (!allSegmentIds.includes(subSegment)) {
-          allSegmentIds.push(subSegment);
-        }
-      });
+    await validate(segment).then((errors) => {
+      if (errors.length > 0) {
+        errors.forEach((error) => {
+          let validationError = error.toString();
+          validationError = validationError.replace(errorRemovePart, '');
+          missingAllProperties = missingAllProperties + validationError + ', ';
+        });
+        missingAllProperties = missingAllProperties.slice(0, -2);
+        isSegmentValid = false;
+      } else {
+        // Object is valid
+        isSegmentValid = true;
+      }
     });
+
+    return { missingProperty: missingAllProperties, isSegmentValid: isSegmentValid };
+  }
+
+  public async validateSegmentsData(segmentsData: ValidSegmentDetail[]): Promise<SegmentValidationObj> {
+    const allValidatedSegments: SegmentInputValidator[] = [];
+    const allSegmentIds = [
+      ...new Set(
+        segmentsData.flatMap((segmentData) => [segmentData.segment.id].concat(segmentData.segment.subSegmentIds))
+      ),
+    ];
     const allSubSegmentsData = await this.getSegmentByIds(allSegmentIds);
-    const duplicateSegmentsIds = allSubSegmentsData?.map((segment) => segment?.id);
-    const duplicateSegmentsContexts = allSubSegmentsData?.map((segment) => segment?.context);
     const contextMetaData = env.initialization.contextMetadata;
     const contextMetaDataOptions = Object.keys(contextMetaData);
     const importFileErrors: SegmentImportError[] = [];
-    let index = 0;
 
-    for (const segment of segments) {
+    for (const segmentFile of segmentsData) {
+      const segment = segmentFile.segment;
       let errorMessage = '';
       if (!contextMetaDataOptions.includes(segment.context)) {
         errorMessage =
@@ -310,20 +312,8 @@ export class SegmentService {
           ? errorMessage + 'Group type: ' + invalidGroups + ' not found. Please enter valid group type in segment. '
           : errorMessage;
       }
-      const isDuplicateSegment = duplicateSegmentsIds ? duplicateSegmentsIds.includes(segment.id) : false;
-      const isDuplicateSegmentWithSameContext =
-        isDuplicateSegment && duplicateSegmentsContexts ? duplicateSegmentsContexts.includes(segment.context) : false;
-      if (isDuplicateSegment && isDuplicateSegmentWithSameContext && segment.id !== undefined) {
-        errorMessage = errorMessage + 'Duplicate segment with same context';
-      }
 
-      // import duplicate segment with different context:
-      if (!isDuplicateSegment || !isDuplicateSegmentWithSameContext) {
-        // assign new uuid to duplicate segment with new context:
-        segment.id = !isDuplicateSegment ? segment.id : uuid();
-      }
-
-      const duplicateName = allSegments.filter((seg) => seg.name === segment.name && seg.context === segment.context);
+      const duplicateName = await this.segmentRepository.find({ name: segment.name, context: segment.context });
       if (duplicateName.length) {
         errorMessage =
           errorMessage +
@@ -335,7 +325,7 @@ export class SegmentService {
       let invalidSubSegments = '';
       segment.subSegmentIds.forEach((subSegmentId) => {
         const subSegment = allSubSegmentsData
-          ? allSubSegmentsData.find((seg) => subSegmentId === seg?.id && segment.context === seg.context)
+          ? allSubSegmentsData.find((seg) => subSegmentId === seg?.id && segment.context === seg?.context)
           : null;
         if (!subSegment) {
           invalidSubSegments = invalidSubSegments ? invalidSubSegments + ', ' + subSegmentId : subSegmentId;
@@ -350,20 +340,19 @@ export class SegmentService {
 
       if (errorMessage.length > 0) {
         importFileErrors.push({
-          fileName: fileNames[index],
+          fileName: segmentFile.filename,
           error: 'Invalid Segment data: ' + errorMessage,
         });
-        index++;
         continue;
       }
-      index++;
-      logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
-      const addedSegment = await this.addSegmentDataInDB(segment, logger);
-      allAddedSegments.push(addedSegment);
-      allSubSegmentsData.push(addedSegment);
-      allSegments.push(addedSegment);
+
+      allValidatedSegments.push(segment);
+      importFileErrors.push({
+        fileName: segmentFile.filename,
+        error: null,
+      });
     }
-    return { segments: allAddedSegments, importErrors: importFileErrors };
+    return { segments: allValidatedSegments, importErrors: importFileErrors };
   }
 
   public async exportSegments(segmentIds: string[], logger: UpgradeLogger): Promise<Segment[]> {
