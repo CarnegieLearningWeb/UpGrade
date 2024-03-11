@@ -184,15 +184,20 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	public void getAllExperimentConditions(String context, final ResponseCallback<List<ExperimentsResponse>> callbacks) {
-		ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context);
+		System.out.println("[UP] getAllExperimentConditions: context= " + context);
+    System.out.println("[UP] getAllExperimentConditions: userId= " + this.userId);
+    ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context);
+    System.out.println("[UP] getAllExperimentConditions: experimentRequest.userId= " + experimentRequest.getUserId() + "experimentRequest.context= " + experimentRequest.getContext());
 		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
+    System.out.println(requestContent);
 
 		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
 				new InvocationCallback<Response>() {
 
 			@Override
 			public void completed(Response response) {
+        System.out.println("[UP] getAllExperimentConditions: completed" + response);
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 					// Cache allExperiment data for future requests
 				    readResponseToCallback(response, callbacks, new GenericType<List<ExperimentsResponse>>() {})
@@ -224,8 +229,12 @@ public class ExperimentClient implements AutoCloseable {
 	public void getExperimentCondition(String context, String site, String target,
 			final ResponseCallback<Assignment> callbacks) {
 
+        System.out.println("[UP] getExperimentCondition: " + context + " " + site + " " + target);
+        System.out.println("[UP] allExperiments: " + allExperiments);
+
 				if (this.allExperiments != null) {
 					ExperimentsResponse resultExperimentsResponse = findExperimentResponse(site, target, allExperiments);
+          System.out.println("[UP] resultExperimentsResponse: " + resultExperimentsResponse);
 					Map<String, Factor> assignedFactor = resultExperimentsResponse.getAssignedFactor() != null ? resultExperimentsResponse.getAssignedFactor()[0] : null;
 					Condition assignedCondition = resultExperimentsResponse.getAssignedCondition() != null ? resultExperimentsResponse.getAssignedCondition()[0] : null;
 					Assignment resultAssignment = new Assignment(this, target, site, resultExperimentsResponse.getExperimentType(), assignedCondition, assignedFactor);
@@ -239,6 +248,7 @@ public class ExperimentClient implements AutoCloseable {
 						public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
 							ExperimentsResponse resultExperimentsResponse = findExperimentResponse(site, target, experiments);
+              System.out.println("[UP] resultExperimentsResponse: " + resultExperimentsResponse);
 							Map<String, Factor> assignedFactor = resultExperimentsResponse.getAssignedFactor() != null ? resultExperimentsResponse.getAssignedFactor()[0] : null;
 							Condition assignedCondition = resultExperimentsResponse.getAssignedCondition() != null ? resultExperimentsResponse.getAssignedCondition()[0] : null;
 							Assignment resultAssignment = new Assignment(ExperimentClient.this, target, site, resultExperimentsResponse.getExperimentType(), assignedCondition, assignedFactor);

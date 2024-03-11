@@ -11,7 +11,7 @@
 
   <!-- 5.0.12 -> 5.0.13: no retries for 4xx, retry other errors once instead of 3 times -->
 
-	<version>5.0.13</version>
+	<version>5.0.13-DEBUG</version>
 	<build>
 		<plugins>
 			<plugin>
