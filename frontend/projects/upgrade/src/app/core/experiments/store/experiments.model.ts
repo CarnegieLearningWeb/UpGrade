@@ -249,8 +249,8 @@ export interface ExperimentConditionPayload {
     value: string;
   };
   // payload: string;
-  parentCondition: ExperimentCondition;
-  decisionPoint: ExperimentDecisionPoint;
+  parentCondition: string;
+  decisionPoint: string;
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;
