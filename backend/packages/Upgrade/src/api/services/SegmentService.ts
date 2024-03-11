@@ -39,6 +39,11 @@ interface SegmentParticipantsRow {
   UUID: string;
 }
 
+interface ValidSegmentDetail {
+  filename: string;
+  segment: SegmentInputValidator;
+}
+
 @Service()
 export class SegmentService {
   constructor(
@@ -201,30 +206,25 @@ export class SegmentService {
     return validatedSegments.importErrors;
   }
 
-  public async checkSegmentsValidity(segments: SegmentFile[]): Promise<SegmentValidationObj> {
+  public async checkSegmentsValidity(fileData: SegmentFile[]): Promise<SegmentValidationObj> {
     const importFileErrors: SegmentImportError[] = [];
-    const parsedData: SegmentInputValidator[] = [];
-    const fileNames: string[] = [];
+    const segments = fileData.filter((segment) => path.extname(segment.fileName) === '.json');
 
-    await Promise.all(
+    const segmentData: ValidSegmentDetail[] = await Promise.all(
       segments.map(async (segment) => {
-        const extension = path.extname(segment.fileName);
-        if (extension === '.json') {
-          let segmentForValidation = this.convertJSONStringToSegInputValFormat(segment.fileContent);
-          segmentForValidation = plainToClass(SegmentInputValidator, segmentForValidation);
-          const segmentJSONValidation = await this.checkForMissingProperties(segmentForValidation);
-          const fileName = segment.fileName.slice(0, segment.fileName.lastIndexOf('.'));
-
-          if (segmentJSONValidation.isSegmentValid) {
-            fileNames.push(fileName);
-            parsedData.push(segmentForValidation);
-          } else {
-            importFileErrors.push({ fileName, error: segmentJSONValidation.missingProperty });
-          }
+        let segmentForValidation = this.convertJSONStringToSegInputValFormat(segment.fileContent);
+        segmentForValidation = plainToClass(SegmentInputValidator, segmentForValidation);
+        const segmentJSONValidation = await this.checkForMissingProperties(segmentForValidation);
+        const fileName = segment.fileName.slice(0, segment.fileName.lastIndexOf('.'));
+        if (segmentJSONValidation.isSegmentValid) {
+          return { filename: fileName, segment: segmentForValidation };
+        } else {
+          importFileErrors.push({ fileName, error: segmentJSONValidation.missingProperty });
+          return null;
         }
       })
     );
-    const validatedSegments = await this.validateSegmentsData(parsedData, fileNames);
+    const validatedSegments = await this.validateSegmentsData(segmentData);
     validatedSegments.importErrors = importFileErrors.concat(validatedSegments.importErrors);
     return validatedSegments;
   }
@@ -282,19 +282,20 @@ export class SegmentService {
     return { missingProperty: missingAllProperties, isSegmentValid: isSegmentValid };
   }
 
-  public async validateSegmentsData(
-    segments: SegmentInputValidator[],
-    fileNames: string[]
-  ): Promise<SegmentValidationObj> {
+  public async validateSegmentsData(segmentsData: ValidSegmentDetail[]): Promise<SegmentValidationObj> {
     const allValidatedSegments: SegmentInputValidator[] = [];
-    const allSegmentIds = [...new Set(segments.flatMap((segment) => [segment.id].concat(segment.subSegmentIds)))];
+    const allSegmentIds = [
+      ...new Set(
+        segmentsData.flatMap((segmentData) => [segmentData.segment.id].concat(segmentData.segment.subSegmentIds))
+      ),
+    ];
     const allSubSegmentsData = await this.getSegmentByIds(allSegmentIds);
     const contextMetaData = env.initialization.contextMetadata;
     const contextMetaDataOptions = Object.keys(contextMetaData);
     const importFileErrors: SegmentImportError[] = [];
-    let index = 0;
 
-    for (const segment of segments) {
+    for (const segmentFile of segmentsData) {
+      const segment = segmentFile.segment;
       let errorMessage = '';
       if (!contextMetaDataOptions.includes(segment.context)) {
         errorMessage =
@@ -339,19 +340,17 @@ export class SegmentService {
 
       if (errorMessage.length > 0) {
         importFileErrors.push({
-          fileName: fileNames[index],
+          fileName: segmentFile.filename,
           error: 'Invalid Segment data: ' + errorMessage,
         });
-        index++;
         continue;
       }
 
       allValidatedSegments.push(segment);
       importFileErrors.push({
-        fileName: fileNames[index],
+        fileName: segmentFile.filename,
         error: null,
       });
-      index++;
     }
     return { segments: allValidatedSegments, importErrors: importFileErrors };
   }
