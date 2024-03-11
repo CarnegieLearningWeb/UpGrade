@@ -9,7 +9,6 @@ import { StratificationFactorsService } from '../../../../core/stratification-fa
   styleUrls: ['./experiment-users-root.component.scss'],
 })
 export class ExperimentUsersRootComponent {
-  selectedTabIndex = 0;
   constructor(
     private experimentService: ExperimentService,
     private previewUsersService: PreviewUsersService,
@@ -17,11 +16,10 @@ export class ExperimentUsersRootComponent {
   ) {}
 
   ngOnInit() {
-    this.selectedTabChange({ index: this.selectedTabIndex });
+    this.selectedTabChange({ index: 0 });
   }
 
   selectedTabChange(event) {
-    this.selectedTabIndex = event.index;
     if (event.index === 0) {
       this.experimentService.fetchAllExperimentNames();
       this.previewUsersService.fetchPreviewUsers(true);
