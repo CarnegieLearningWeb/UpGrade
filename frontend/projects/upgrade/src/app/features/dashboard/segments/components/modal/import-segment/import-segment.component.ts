@@ -1,7 +1,11 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
-import { Segment, SegmentFile } from '../../../../../../core/segments/store/segments.model';
+import { Segment, SegmentFile, SegmentImportError } from '../../../../../../core/segments/store/segments.model';
+import { MatTableDataSource } from '@angular/material/table';
+import { TranslateService } from '@ngx-translate/core';
+import { SegmentsDataService } from '../../../../../../core/segments/segments.data.service';
+import { NotificationService } from '../../../../../../core/notifications/notification.service';
 
 @Component({
   selector: 'app-import-segment',
@@ -12,10 +16,18 @@ export class ImportSegmentComponent {
   file: any;
   segmentInfo: Segment;
   uploadedFileCount = 0;
+  isLoadingSegments$ = false;
   fileData: SegmentFile[] = [];
+  nonErrorSegments: number;
+  importFileErrorsDataSource = new MatTableDataSource<SegmentImportError>();
+  importFileErrors: SegmentImportError[] = [];
+  displayedColumns: string[] = ['File Name', 'Error'];
 
   constructor(
     private segmentsService: SegmentsService,
+    private translate: TranslateService,
+    private notificationService: NotificationService,
+    private segmentdataService: SegmentsDataService,
     public dialogRef: MatDialogRef<ImportSegmentComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
@@ -24,36 +36,63 @@ export class ImportSegmentComponent {
     this.dialogRef.close();
   }
 
-  importSegments() {
-    // TODO: improve the logic here
-    this.segmentsService.importSegments(this.fileData);
+  async importSegments() {
+    const importResult = (await this.segmentdataService
+      .importSegments(this.fileData)
+      .toPromise()) as SegmentImportError[];
+
+    this.showNotification(importResult);
     this.onCancelClick();
+
+    this.segmentsService.fetchSegments(true);
+  }
+
+  showNotification(importResult: SegmentImportError[]) {
+    const importSuccessFiles = importResult.filter((data) => data.error == null).map((data) => data.fileName);
+
+    const importSuccessMsg =
+      importSuccessFiles.length > 0
+        ? `Successfully imported ${importSuccessFiles.length} file/s: ${importSuccessFiles.join(', ')}`
+        : '';
+    this.notificationService.showSuccess(importSuccessMsg);
+
+    const importFailedFiles = importResult.filter((data) => data.error != null);
+    importFailedFiles.forEach((data) => {
+      this.notificationService.showError(`Failed to import ${data.fileName}: ${data.error}`);
+    });
   }
 
   uploadFile(event) {
-    // let fileName = '';
     // Get the input element from the event
-    const inputElement = event.target as HTMLInputElement;
     // Get the FileList from the input element
-    const fileList = inputElement.files;
+    const fileList = Array.from(event.target.files) as any[];
     this.uploadedFileCount = fileList.length;
+    this.importFileErrors = [];
+    this.fileData = [];
 
-    if (fileList) {
-      // Loop through the files in the FileList
-      for (let i = 0; i < fileList.length; i++) {
-        const file = fileList.item(i);
-        if (file) {
-          // Process the file (e.g., upload to server, read its contents, etc.)
-          // For demonstration purposes, we will simply log the file name
-          // If you want to read the contents of the file, you can use the FileReader API
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const fileContent = e.target?.result as any;
-            this.fileData.push({ fileName: file.name, fileContent: fileContent });
-          };
-          reader.readAsText(file);
+    if (this.uploadedFileCount === 0) return;
+    this.isLoadingSegments$ = true;
+
+    fileList.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const fileContent = e.target?.result;
+        this.fileData.push({ fileName: file.name, fileContent: fileContent });
+        // Check if this is the last file and validate
+        if (this.fileData.length === this.uploadedFileCount) {
+          this.validateFiles();
+          this.isLoadingSegments$ = false;
         }
-      }
-    }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  async validateFiles() {
+    this.importFileErrors =
+      ((await this.segmentdataService.validateSegments(this.fileData).toPromise()) as SegmentImportError[]) || [];
+    this.importFileErrorsDataSource.data = this.importFileErrors;
+
+    this.nonErrorSegments = this.uploadedFileCount - this.importFileErrors.length;
   }
 }

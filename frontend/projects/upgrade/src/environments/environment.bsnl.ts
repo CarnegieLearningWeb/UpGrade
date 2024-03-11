@@ -47,6 +47,7 @@ export const environment = {
     getVersion: '/version',
     contextMetaData: '/experiments/contextMetaData',
     segments: '/segments',
+    validateSegments: '/segments/validation',
     importSegments: '/segments/import',
     exportSegment: '/segments/export',
     exportSegmentCSV: '/segments/export/csv',
