@@ -7,7 +7,9 @@ import { ProfileRootComponent } from './profile-root/profile-root.component';
 import { NewUserComponent } from './components/modals/new-user/new-user.component';
 import { ProfileInfoComponent } from './components/profile-info/profile-info.component';
 import { MetricsComponent } from './components/metrics/metrics.component';
+import { AddMetricsComponent } from './components/modals/add-metrics/add-metrics.component';
 import { DeleteMetricsComponent } from './components/modals/delete-metrics/delete-metrics.component';
+import { NgJsonEditorModule } from 'ang-jsoneditor';
 
 @NgModule({
   declarations: [
@@ -16,7 +18,8 @@ import { DeleteMetricsComponent } from './components/modals/delete-metrics/delet
     ProfileInfoComponent,
     MetricsComponent,
     DeleteMetricsComponent,
+    AddMetricsComponent,
   ],
-  imports: [CommonModule, ProfileRoutingModule, SharedModule],
+  imports: [CommonModule, ProfileRoutingModule, SharedModule, NgJsonEditorModule],
 })
 export class ProfileModule {}
