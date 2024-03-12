@@ -48,13 +48,12 @@ export class ImportExperimentComponent implements OnInit {
   }
 
   async importExperiment() {
+    this.onCancelClick();
     const importResult = (await this.dataService
       .importExperiment(this.allExperiments)
       .toPromise()) as ValidateExperimentError[];
     //this.experimentService.importExperiment(this.allExperiments);
     this.showNotification(importResult);
-    this.onCancelClick();
-
     this.experimentService.loadExperiments(true);
   }
 
@@ -97,11 +96,11 @@ export class ImportExperimentComponent implements OnInit {
     // Set loading to true before processing the files
     this.isLoadingExperiments$ = true;
 
-    const readFile = (fileIndex) => {
+    const readFile = async (fileIndex) => {
       if (fileIndex >= event.target.files.length) {
         // Check if this is the last file
         if (fileIndex >= this.uploadedFileCount) {
-          this.checkValidation();
+          await this.checkValidation();
           this.isLoadingExperiments$ = false;
         }
         return;
