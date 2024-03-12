@@ -130,7 +130,7 @@ export class ExperimentService {
     }
     const experiments = await this.experimentRepository.findAllExperiments();
     return experiments.map((experiment) => {
-      return this.formatingPayload(this.formatingConditionPayload(experiment));
+      return this.reducedConditionPayload(this.formatingPayload(this.formatingConditionPayload(experiment)));
     });
   }
 
@@ -204,13 +204,13 @@ export class ExperimentService {
     }
     const experiments = await queryBuilderToReturn.getMany();
     return experiments.map((experiment) => {
-      return this.formatingPayload(this.formatingConditionPayload(experiment));
+      return this.reducedConditionPayload(this.formatingPayload(this.formatingConditionPayload(experiment)));
     });
   }
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
     const experiment = await this.findOne(id, logger);
-    return this.formatingPayload(experiment);
+    return this.reducedConditionPayload(this.formatingPayload(experiment));
   }
 
   public async findOne(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
@@ -382,11 +382,13 @@ export class ExperimentService {
     });
   }
 
-  public update(experiment: ExperimentDTO, currentUser: User, logger: UpgradeLogger): Promise<ExperimentDTO> {
+  public async update(experiment: ExperimentDTO, currentUser: User, logger: UpgradeLogger): Promise<ExperimentDTO> {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
-    return this.updateExperimentInDB(experiment as ExperimentDTO, currentUser, logger);
+    return this.reducedConditionPayload(
+      await this.updateExperimentInDB(experiment as ExperimentDTO, currentUser, logger)
+    );
   }
 
   public async getExperimentalConditions(experimentId: string, logger: UpgradeLogger): Promise<ExperimentCondition[]> {
@@ -1825,6 +1827,17 @@ export class ExperimentService {
       });
     });
     return { ...experiment, conditionPayloads: conditionPayload };
+  }
+
+  public reducedConditionPayload(experiment: Experiment | ExperimentDTO): any {
+    const updatedCP = experiment.conditionPayloads.map((conditionPayload) => {
+      return {
+        ...conditionPayload,
+        parentCondition: conditionPayload.parentCondition.id,
+        decisionPoint: conditionPayload.decisionPoint?.id,
+      };
+    });
+    return { ...experiment, conditionPayloads: updatedCP };
   }
 
   public formatingPayload(experiment: Experiment): any {
