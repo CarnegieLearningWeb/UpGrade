@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
+import org.upgradeplatform.requestbeans.MarkExperimentRequestData;
 import org.upgradeplatform.responsebeans.Assignment;
 import org.upgradeplatform.responsebeans.Condition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
@@ -24,7 +25,7 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 public class Main {
     public static void main(String[] args) throws InterruptedException, ExecutionException
     {
-        final String baseUrl = "https://upgradeapi.qa-cli.net";
+        final String baseUrl = "http://localhost:3030";
         final String userId = UUID.randomUUID().toString();
         final String site = "SelectSection";
 
@@ -72,7 +73,8 @@ public class Main {
                                                     String code = condition == null ? null : condition.getConditionCode();
                                                     System.out.println(condition);
                                                     System.out.println(code);
-                                                    expResult.markDecisionPoint(MarkedDecisionPointStatus.CONDITION_APPLIED, new Date().toString(), new ResponseCallback<MarkDecisionPoint>(){
+                                                    MarkExperimentRequestData markData = new MarkExperimentRequestData(site, target);
+                                                    experimentClient.markDecisionPoint(MarkedDecisionPointStatus.CONDITION_APPLIED, markData, "", new Date().toString(), new ResponseCallback<MarkDecisionPoint>(){
                                                         @Override
                                                         public void onSuccess(@NonNull MarkDecisionPoint markResult){
                                                             result.complete("marked " + code + ": " + markResult.toString());
