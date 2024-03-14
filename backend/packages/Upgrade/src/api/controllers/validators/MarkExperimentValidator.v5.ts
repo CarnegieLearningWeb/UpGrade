@@ -25,6 +25,7 @@ class Data {
   @IsString()
   target: string;
 
+  @IsOptional()
   @ValidateNested()
   @Type(() => AssignedCondition)
   assignedCondition: AssignedCondition;
