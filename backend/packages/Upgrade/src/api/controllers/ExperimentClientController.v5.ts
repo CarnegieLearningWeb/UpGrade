@@ -431,13 +431,13 @@ export class ExperimentClientController {
       experiment.userId,
       experiment.data.site,
       experiment.status,
-      experiment.data.assignedCondition.conditionCode,
+      experiment.data.assignedCondition?.conditionCode ?? null,
       {
         logger: request.logger,
         userDoc: experimentUserDoc,
       },
       experiment.data.target,
-      experiment.data.assignedCondition.experimentId ? experiment.data.assignedCondition.experimentId : null,
+      experiment.data.assignedCondition?.experimentId ?? null,
       experiment.uniquifier ? experiment.uniquifier : null,
       experiment.clientError ? experiment.clientError : null
     );
