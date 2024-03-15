@@ -71,16 +71,18 @@ import { UserStratificationFactor } from '../models/UserStratificationFactor';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
-    @InjectRepository() private experimentRepository: ExperimentRepository,
+    @InjectRepository() 
+    private experimentRepository: ExperimentRepository,
     @InjectRepository()
     private decisionPointRepository: DecisionPointRepository,
     @InjectRepository()
     private individualExclusionRepository: IndividualExclusionRepository,
-    @InjectRepository() private groupExclusionRepository: GroupExclusionRepository,
+    @InjectRepository()
+    private groupExclusionRepository: GroupExclusionRepository,
     // @InjectRepository()
     // private groupAssignmentRepository: GroupAssignmentRepository,
-    @InjectRepository() private groupEnrollmentRepository: GroupEnrollmentRepository,
     @InjectRepository()
+    private groupEnrollmentRepository: GroupEnrollmentRepository,
     // @InjectRepository()
     // private individualAssignmentRepository: IndividualAssignmentRepository,
     @InjectRepository()
@@ -195,7 +197,7 @@ export class ExperimentAssignmentService {
     }
 
     // ============= check if user or group is excluded
-    const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc);
+    const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, experiments[0]?.group);
 
     if (userExcluded || groupExcluded.length > 0) {
       // no experiments if the user or group is excluded from the experiment
@@ -370,13 +372,6 @@ export class ExperimentAssignmentService {
     // check if user or group is excluded
     let experiments: Experiment[] = [];
 
-    const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
-
-    if (userExcluded || groupExcluded.length > 0) {
-      // return null if the user or group is excluded from the experiment
-      return [];
-    }
-
     if (previewUser) {
       experiments = await this.experimentRepository.getValidExperimentsWithPreview(context);
     } else {
@@ -384,41 +379,37 @@ export class ExperimentAssignmentService {
     }
     experiments = experiments.map((exp) => this.experimentService.formatingConditionPayload(exp));
 
+    const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser, experiments[0]?.group);
+
+    if (userExcluded || groupExcluded.length > 0) {
+      // return null if the user or group is excluded from the experiment
+      return [];
+    }
+
     // Experiment has assignment type as GROUP_ASSIGNMENT
     const groupExperiments = experiments.filter(({ assignmentUnit }) => assignmentUnit === ASSIGNMENT_UNIT.GROUP);
     // check for group and working group
     if (groupExperiments.length > 0) {
-      /**
-       * Check already assigned group experiment or exclude group experiment
-       * @param filteredGroupExperiments
-       * @param addError
-       */
-
-      if (
-        !experimentUser.group ||
-        !experimentUser.workingGroup ||
-        Object.keys(experimentUser.workingGroup).length === 0
-      ) {
-        const invalidGroupExperiment = await this.groupExperimentWithoutEnrollments(
-          groupExperiments,
-          experimentUser,
-          logger
-        );
-        const invalidGroupExperimentIds = invalidGroupExperiment.map((experiment) => experiment.id);
-        experiments = experiments.filter(({ id }) => !invalidGroupExperimentIds.includes(id));
-      } else {
-        const experimentWithInvalidGroupOrWorkingGroup = this.experimentsWithInvalidGroupAndWorkingGroup(
+      // if empty group/workingGroup data:
+      let invalidGroupExperiment: Experiment[] = [];
+      let experimentWithInvalidGroupOrWorkingGroup: Experiment[] = [];
+      let isGroupWorkingGroupMissing = !experimentUser.group || !experimentUser.workingGroup || 
+      (experimentUser.group && Object.keys(experimentUser.group).length === 0) || (experimentUser.workingGroup && Object.keys(experimentUser.workingGroup).length === 0);
+      
+      if (!isGroupWorkingGroupMissing) {
+        // if group/workingGroup data present, check for invalid group/workingGroup:
+        experimentWithInvalidGroupOrWorkingGroup = this.experimentsWithInvalidGroupAndWorkingGroup(
           experimentUser,
           groupExperiments
         );
-        const invalidGroupExperiment = await this.groupExperimentWithoutEnrollments(
-          experimentWithInvalidGroupOrWorkingGroup,
-          experimentUser,
-          logger
-        );
-        const invalidGroupExperimentIds = invalidGroupExperiment.map((experiment) => experiment.id);
-        experiments = experiments.filter(({ id }) => !invalidGroupExperimentIds.includes(id));
       }
+      invalidGroupExperiment = await this.groupExperimentWithoutEnrollments(
+        isGroupWorkingGroupMissing ? groupExperiments : experimentWithInvalidGroupOrWorkingGroup,
+        experimentUser,
+        logger
+      );
+      const invalidGroupExperimentIds = invalidGroupExperiment.map((experiment) => experiment.id);
+      experiments = experiments.filter(({ id }) => !invalidGroupExperimentIds.includes(id));
     }
 
     // try catch block for experiment assignment error
@@ -701,7 +692,7 @@ export class ExperimentAssignmentService {
     return pool;
   }
 
-  private async checkUserOrGroupIsGloballyExcluded(experimentUser: ExperimentUser): Promise<[string, string[]]> {
+  private async checkUserOrGroupIsGloballyExcluded(experimentUser: ExperimentUser, experimentGroup: string): Promise<[string, string[]]> {
     let userGroup = [];
     userGroup = Object.keys(experimentUser.workingGroup || {}).map((type: string) => {
       return `${type}_${experimentUser.workingGroup[type]}`;
@@ -729,7 +720,7 @@ export class ExperimentAssignmentService {
     updatedGlobalExcludeSegmentObj[globalExcludeSegment.id].allExcludedSegmentIds.forEach((segmentId) => {
       const foundSegment: Segment = updatedSegmentDetails.find((segment) => segment.id === segmentId);
       excludedUsers.push(...foundSegment.individualForSegment.map((individual) => individual.userId));
-      excludedGroups.push(...foundSegment.groupForSegment.map((group) => `${group.type}_${group.groupId}`));
+      excludedGroups.push(...foundSegment.groupForSegment.filter((group) => group.type === experimentGroup ? `${group.type}_${group.groupId}` : false));
     });
 
     //users and groups excluded from GlobalExclude segment
@@ -1288,7 +1279,7 @@ export class ExperimentAssignmentService {
       groupExclusion: GroupExclusion;
     },
     globallyExcluded: { user: string; group: string[] },
-    experimentLevelExcluded: { experiment: Experiment; reason: string }[],
+    experimentLevelExcluded: { experiment: Experiment; reason: string, matchedGroup: boolean }[],
     status: MARKED_DECISION_POINT_STATUS,
     condition: string
   ): Promise<void> {
@@ -1311,46 +1302,45 @@ export class ExperimentAssignmentService {
 
     // Don't mark the experiment if user or group are in exclusion list
     // TODO update this with segment implementation
-    if (globallyExcluded.user) {
-      const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
-        user,
-        experiment,
-        exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
-      };
-      await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
-      return;
-    } else if (globallyExcluded.group.length > 0) {
-      const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
-        groupId: user?.workingGroup[experiment.group],
-        experiment,
-        exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
-      };
-      await this.groupExclusionRepository.saveRawJson([excludeGroupDoc]);
-      return;
-    } else if (experimentExcluded) {
-      // TODO: testing this
-      if (experimentLevelExcluded[0].reason === 'user') {
-        const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
-          user,
-          experiment,
-          exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
-        };
-        await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
-      } else if (experimentLevelExcluded[0].reason === 'group') {
+    // Create the excludeUserDoc outside of the conditional statements to avoid repetition
+    const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
+      user,
+      experiment,
+      exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
+    };
+    if (globallyExcluded.user || globallyExcluded.group.length) {
+      // store Individual exclusion document for the Group Exclusion as well:
+      const promiseArray = [];
+      promiseArray.push(this.individualExclusionRepository.saveRawJson([excludeUserDoc]));
+      if (globallyExcluded.group.length) {
+        // store Group exclusion document:
         const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
           groupId: user?.workingGroup[experiment.group],
           experiment,
           exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
         };
-        await this.groupExclusionRepository.saveRawJson([excludeGroupDoc]);
-      } else {
-        const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
-          user,
-          experiment,
-          exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
-        };
-        await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
+        promiseArray.push(this.groupExclusionRepository.saveRawJson([excludeGroupDoc]));
+        // check if excluded group was earlier included, if yes - remove them:
+        promiseArray.push(this.groupEnrollmentRepository.deleteGroupEnrollment(user?.workingGroup[experiment.group], new UpgradeLogger()));
       }
+      await Promise.all(promiseArray);
+      return;
+    } else if (experimentExcluded) {
+      // store Individual exclusion document with the Group Exclusion document:
+      const promiseArray = [];
+      promiseArray.push(this.individualExclusionRepository.saveRawJson([excludeUserDoc]));
+      if (experimentLevelExcluded[0].reason === 'group' && experimentLevelExcluded[0].matchedGroup) {
+        // store Group exclusion document:
+        const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
+          groupId: user?.workingGroup[experiment.group],
+          experiment,
+          exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
+        };
+        promiseArray.push(this.groupExclusionRepository.saveRawJson([excludeGroupDoc]));
+        // check if excluded group was earlier included, if yes - remove them:
+        promiseArray.push(this.groupEnrollmentRepository.deleteGroupEnrollment(user?.workingGroup[experiment.group], new UpgradeLogger()));
+      }
+      await Promise.all(promiseArray);
       return;
     }
 
@@ -1694,7 +1684,7 @@ export class ExperimentAssignmentService {
   private async experimentLevelExclusionInclusion(
     experiments: Experiment[],
     experimentUser: ExperimentUser
-  ): Promise<[Experiment[], { experiment: Experiment; reason: string }[]]> {
+  ): Promise<[Experiment[], { experiment: Experiment; reason: string, matchedGroup: boolean }[]]> {
     let segmentDetails: Segment[] = [];
     let segmentObj = {};
 
@@ -1797,6 +1787,7 @@ export class ExperimentAssignmentService {
     experiments.forEach((experiment) => {
       let inclusionFlag = false;
       let exclusionFlag = false;
+      let sameGroupExclusionFlag = false;
 
       if (experiment.filterMode === FILTER_MODE.INCLUDE_ALL) {
         if (explicitExperimentIndividualExclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
@@ -1805,18 +1796,27 @@ export class ExperimentAssignmentService {
           includedExperiments.push(experiment);
         } else {
           for (const userGroup of userGroups) {
-            if (
-              explicitExperimentGroupExclusionFilteredData.some(
-                (e) => e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id
-              )
-            ) {
+            const matchingExclusionData = explicitExperimentGroupExclusionFilteredData.find(
+              (e) => e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id
+            );
+            
+            if (matchingExclusionData) {
               inclusionFlag = true;
+            
+              if (matchingExclusionData.type === experiment.group) {
+                sameGroupExclusionFlag = true;
+              }
             }
           }
           if (!inclusionFlag) {
             includedExperiments.push(experiment);
           } else {
-            excludedExperiments.push({ experiment: experiment, reason: 'group' });
+            const matchedGroup = sameGroupExclusionFlag;
+            excludedExperiments.push({
+              experiment,
+              reason: 'group',
+              matchedGroup,
+            });
           }
         }
       } else {
