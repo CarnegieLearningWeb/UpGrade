@@ -1146,21 +1146,44 @@ export class ExperimentController {
   /**
    * @swagger
    * /experiments/{validation}:
-   *    put:
+   *    post:
    *       description: Validating Experiment
    *       consumes:
    *         - application/json
    *       parameters:
-   *         - in: path
+   *         - in: body
+   *           name: experiments
+   *           required: true
+   *           schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
+   *           description: Experiment Files
    *       tags:
    *         - Experiments
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Validations are done
+   *            description: Validations are completed
+   *            schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 error:
+   *                   type: string
    *          '401':
    *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('/validation')
   public validateExperiment(
@@ -1173,12 +1196,24 @@ export class ExperimentController {
   /**
    * @swagger
    * /experiments/{import}:
-   *    put:
+   *    post:
    *       description: Import New Experiment
    *       consumes:
    *         - application/json
    *       parameters:
-   *         - in: path
+   *         - in: body
+   *           name: experiments
+   *           required: true
+   *           schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
+   *           description: Experiment Files
    *       tags:
    *         - Experiments
    *       produces:
@@ -1186,8 +1221,19 @@ export class ExperimentController {
    *       responses:
    *          '200':
    *            description: Experiment is imported
+   *            schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 error:
+   *                   type: string
    *          '401':
    *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('/import')
   public importExperiment(
