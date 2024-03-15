@@ -85,8 +85,6 @@ export class ImportExperimentComponent implements OnInit {
   }
 
   async uploadFile(event) {
-    const index = 0;
-    const reader = new FileReader();
     this.uploadedFileCount = event.target.files.length;
     this.importFileErrors = [];
     this.allExperiments = [];
@@ -96,25 +94,22 @@ export class ImportExperimentComponent implements OnInit {
     // Set loading to true before processing the files
     this.isLoadingExperiments$ = true;
 
-    const readFile = async (fileIndex) => {
-      if (fileIndex >= event.target.files.length) {
-        // Check if this is the last file
-        if (fileIndex >= this.uploadedFileCount) {
-          await this.checkValidation();
-          this.isLoadingExperiments$ = false;
-        }
-        return;
-      }
-      const file = event.target.files[fileIndex];
-      const fileName = file.name;
-      reader.onload = (e) => {
-        const fileContent = e.target.result;
-        this.allExperiments.push({ fileName: fileName, fileContent: fileContent });
-        readFile(fileIndex + 1);
-      };
-      reader.readAsText(file);
-    };
+    const filesArray = Array.from(event.target.files) as any[];
+    await Promise.all(
+      filesArray.map((file) => {
+        return new Promise<void>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const fileContent = e.target.result;
+            this.allExperiments.push({ fileName: file.name, fileContent: fileContent });
+            resolve();
+          };
+          reader.readAsText(file);
+        });
+      })
+    );
 
-    readFile(index);
+    await this.checkValidation();
+    this.isLoadingExperiments$ = false;
   }
 }
