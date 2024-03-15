@@ -18,7 +18,7 @@ export class SegmentsDataService {
   }
 
   getSegmentById(id: string) {
-    const url = `${this.environment.api.segments}/${id}`;
+    const url = `${this.environment.api.segments}/status/${id}`;
     return this.http.get(url);
   }
 
@@ -54,6 +54,11 @@ export class SegmentsDataService {
 
   importSegments(segments: SegmentFile[]) {
     const url = this.environment.api.importSegments;
+    return this.http.post(url, segments);
+  }
+
+  validateSegments(segments: SegmentFile[]) {
+    const url = this.environment.api.validateSegments;
     return this.http.post(url, segments);
   }
 }

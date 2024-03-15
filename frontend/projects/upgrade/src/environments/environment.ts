@@ -18,6 +18,7 @@ export const environment = {
   api: {
     getAllExperiments: '/experiments/paginated',
     createNewExperiments: '/experiments',
+    validateExperiment: '/experiments/validation',
     importExperiment: '/experiments/import',
     exportExperiment: '/experiments/export',
     updateExperiments: '/experiments',
@@ -50,6 +51,7 @@ export const environment = {
     getVersion: '/version',
     contextMetaData: '/experiments/contextMetaData',
     segments: '/segments',
+    validateSegments: '/segments/validation',
     importSegments: '/segments/import',
     exportSegments: '/segments/export/json',
     exportSegment: '/segments/export',

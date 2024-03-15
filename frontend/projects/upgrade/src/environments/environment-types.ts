@@ -6,6 +6,7 @@ export interface APIEndpoints {
   exportSegmentCSV: string;
   getAllExperiments: string;
   createNewExperiments: string;
+  validateExperiment: string;
   importExperiment: string;
   exportExperiment: string;
   updateExperiments: string;
@@ -37,6 +38,7 @@ export interface APIEndpoints {
   getVersion: string;
   contextMetaData: string;
   segments: string;
+  validateSegments: string;
   importSegments: string;
   exportSegments: string;
   getGroupAssignmentStatus: string;
