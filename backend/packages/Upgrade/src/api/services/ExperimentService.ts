@@ -28,6 +28,7 @@ import {
   SEGMENT_TYPE,
   EXPERIMENT_TYPE,
   CACHE_PREFIX,
+  ASSIGNMENT_UNIT,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -681,7 +682,11 @@ export class ExperimentService {
       await this.groupExclusionRepository.saveRawJson(groupExclusionDocs);
     }
 
-    if (consistencyRule === CONSISTENCY_RULE.INDIVIDUAL || consistencyRule === CONSISTENCY_RULE.GROUP) {
+    if (
+      consistencyRule === CONSISTENCY_RULE.INDIVIDUAL ||
+      consistencyRule === CONSISTENCY_RULE.GROUP ||
+      experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
+    ) {
       // individual exclusion document
       const individualExclusionDocs: Array<
         Omit<IndividualExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>
