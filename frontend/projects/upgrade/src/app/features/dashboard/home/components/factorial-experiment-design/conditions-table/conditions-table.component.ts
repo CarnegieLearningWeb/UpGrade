@@ -105,7 +105,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     } else {
       // if new exp and form initialized and you move back and forth
       // if edit exp and form already initialized
-      this.handleInitializeNewNewTableData(designData); // <---- be careful doing this! if you see bugs, it may be because this is not the intended place for this function
+      this.handleUpdateDesignDataTableChanges(designData); // <---- be careful doing this! if you see bugs, it may be because this is not the intended place for this function
       // this.handleUpdateDesignDataTableChanges(designData);
     }
   }
@@ -125,9 +125,14 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     this.initializeForm(newTableData);
   }
 
-  // handleUpdateDesignDataTableChanges(designData: ExperimentFactorialDesignData) {
-  //   // TODO: intelligently handle updates to design data without triggering complete table re-creation
-  // }
+  handleUpdateDesignDataTableChanges(designData: ExperimentFactorialDesignData) {
+    // TODO: intelligently handle updates to design data without triggering complete table re-creation
+    const newTableData = this.experimentDesignStepperService.editFactorialConditionTableData(
+      designData,
+      this.factorialConditionTableForm.value.factorialConditions
+    );
+    this.initializeForm(newTableData);
+  }
 
   initializeForm(tableData: FactorialConditionTableRowData[]) {
     this.createFormControls(tableData);
@@ -198,7 +203,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     this.equalWeightFlag = !this.equalWeightFlag;
 
     if (this.equalWeightFlag) {
-      const newTableData = this.applyEqualWeights();
+      const newTableData = this.applyEqualWeights(this.factorialConditionTableForm.value.factorialConditions);
       this.experimentDesignStepperService.updateFactorialConditionTableData(newTableData);
     }
   }
