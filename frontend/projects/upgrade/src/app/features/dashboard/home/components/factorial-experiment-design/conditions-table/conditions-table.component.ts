@@ -105,8 +105,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     } else {
       // if new exp and form initialized and you move back and forth
       // if edit exp and form already initialized
-      this.handleUpdateDesignDataTableChanges(designData); // <---- be careful doing this! if you see bugs, it may be because this is not the intended place for this function
-      // this.handleUpdateDesignDataTableChanges(designData);
+      this.handleUpdateDesignDataTableChanges(designData);
     }
   }
 
@@ -126,7 +125,6 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   handleUpdateDesignDataTableChanges(designData: ExperimentFactorialDesignData) {
-    // TODO: intelligently handle updates to design data without triggering complete table re-creation
     const newTableData = this.experimentDesignStepperService.editFactorialConditionTableData(
       designData,
       this.factorialConditionTableForm.value.factorialConditions
