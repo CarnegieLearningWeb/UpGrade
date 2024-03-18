@@ -37,12 +37,12 @@ export class ImportSegmentComponent {
   }
 
   async importSegments() {
+    this.onCancelClick();
     const importResult = (await this.segmentdataService
       .importSegments(this.fileData)
       .toPromise()) as SegmentImportError[];
 
     this.showNotification(importResult);
-    this.onCancelClick();
 
     this.segmentsService.fetchSegments(true);
   }
@@ -75,12 +75,12 @@ export class ImportSegmentComponent {
 
     fileList.forEach((file) => {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         const fileContent = e.target?.result;
         this.fileData.push({ fileName: file.name, fileContent: fileContent });
         // Check if this is the last file and validate
         if (this.fileData.length === this.uploadedFileCount) {
-          this.validateFiles();
+          await this.validateFiles();
           this.isLoadingSegments$ = false;
         }
       };

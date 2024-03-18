@@ -18,7 +18,8 @@ export class CheckService {
     private groupEnrollmentRepository: GroupEnrollmentRepository,
     @InjectRepository()
     private individualEnrollmentRepository: IndividualEnrollmentRepository,
-    @InjectRepository() private groupExclusionRepository: GroupExclusionRepository,
+    @InjectRepository() 
+    private groupExclusionRepository: GroupExclusionRepository,
     @InjectRepository()
     private individualExclusionRepository: IndividualExclusionRepository,
     @InjectRepository()
