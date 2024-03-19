@@ -338,11 +338,11 @@ export class ExperimentDesignStepperService {
     const payloadTableData = this.getSimpleExperimentPayloadTableData();
 
     payloadTableData.forEach((payloadRowData: SimpleExperimentPayloadTableRowData) => {
-      const parentCondition = conditions.find((condition) => condition.conditionCode === payloadRowData.condition);
+      const parentCondition = conditions.find((condition) => condition.conditionCode === payloadRowData.condition).id;
 
       const decisionPoint = decisionPoints.find(
         (decisionPoint) => decisionPoint.target === payloadRowData.target && decisionPoint.site === payloadRowData.site
-      );
+      )?.id;
 
       conditionPayloads.push({
         id: payloadRowData.id || uuidv4(),
@@ -540,7 +540,7 @@ export class ExperimentDesignStepperService {
       factorialConditionPayloadsRequestObject.push({
         id: factorialConditionTableRow.conditionPayloadId || uuidv4(),
         payload: { type: PAYLOAD_TYPE.STRING, value: factorialConditionTableRow.payload },
-        parentCondition: currentConditions[index],
+        parentCondition: currentConditions[index].id,
       });
     });
 
