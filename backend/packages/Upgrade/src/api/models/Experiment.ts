@@ -161,5 +161,5 @@ export class Experiment extends BaseModel {
     enum: EXPERIMENT_TYPE,
     default: EXPERIMENT_TYPE.SIMPLE,
   })
-  public type: string;
+  public type: EXPERIMENT_TYPE;
 }
