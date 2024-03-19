@@ -17,7 +17,6 @@ export class GroupEnrollmentRepository extends Repository<GroupEnrollment> {
       .delete()
       .from(GroupEnrollment)
       .where('groupId=:id', { id })
-      .returning('*')
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('GroupEnrollmentRepository', 'deleteGroupEnrollment', { id }, errorMsg);

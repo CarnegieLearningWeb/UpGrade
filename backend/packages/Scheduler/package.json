@@ -1,6 +1,6 @@
 {
   "name": "ppl-upgrade-serverless",
-  "version": "5.1.1",
+  "version": "5.1.3",
   "description": "Serverless webpack example using Typescript",
   "main": "handler.js",
   "scripts": {

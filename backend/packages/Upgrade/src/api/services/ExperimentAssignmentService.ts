@@ -157,6 +157,7 @@ export class ExperimentAssignmentService {
           'experiment',
           'experiment.conditions',
           'experiment.conditions.conditionPayloads',
+          'experiment.partitions',
           'experiment.experimentSegmentInclusion',
           'experiment.experimentSegmentExclusion',
           'experiment.experimentSegmentInclusion.segment',
@@ -242,7 +243,6 @@ export class ExperimentAssignmentService {
           experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) &&
         !previewUser
       ) {
-        const experiment = await this.experimentService.findOne(experimentId);
         const decisionPointId = selectedExperimentDP.id;
         let individualEnrollments: IndividualEnrollment;
         let individualExclusions: IndividualExclusion;
@@ -1312,7 +1312,8 @@ export class ExperimentAssignmentService {
     };
     if (globallyExcluded.user || globallyExcluded.group.length) {
       // store Individual exclusion document for the Group Exclusion as well:
-      await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
+      const promiseArray = [];
+      promiseArray.push(this.individualExclusionRepository.saveRawJson([excludeUserDoc]));
       if (globallyExcluded.group.length) {
         // store Group exclusion document:
         const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
@@ -1320,14 +1321,16 @@ export class ExperimentAssignmentService {
           experiment,
           exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
         };
-        await this.groupExclusionRepository.saveRawJson([excludeGroupDoc]);
+        promiseArray.push(this.groupExclusionRepository.saveRawJson([excludeGroupDoc]));
         // check if excluded group was earlier included, if yes - remove them:
-        this.groupEnrollmentRepository.deleteGroupEnrollment(user?.workingGroup[experiment.group], new UpgradeLogger());
+        promiseArray.push(this.groupEnrollmentRepository.deleteGroupEnrollment(user?.workingGroup[experiment.group], new UpgradeLogger()));
       }
+      await Promise.all(promiseArray);
       return;
     } else if (experimentExcluded) {
       // store Individual exclusion document with the Group Exclusion document:
-      await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
+      const promiseArray = [];
+      promiseArray.push(this.individualExclusionRepository.saveRawJson([excludeUserDoc]));
       if (experimentLevelExcluded[0].reason === 'group' && experimentLevelExcluded[0].matchedGroup) {
         // store Group exclusion document:
         const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
@@ -1335,10 +1338,11 @@ export class ExperimentAssignmentService {
           experiment,
           exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
         };
-        await this.groupExclusionRepository.saveRawJson([excludeGroupDoc]);
+        promiseArray.push(this.groupExclusionRepository.saveRawJson([excludeGroupDoc]));
         // check if excluded group was earlier included, if yes - remove them:
-        this.groupEnrollmentRepository.deleteGroupEnrollment(user?.workingGroup[experiment.group], new UpgradeLogger());
+        promiseArray.push(this.groupEnrollmentRepository.deleteGroupEnrollment(user?.workingGroup[experiment.group], new UpgradeLogger()));
       }
+      await Promise.all(promiseArray);
       return;
     }
 
