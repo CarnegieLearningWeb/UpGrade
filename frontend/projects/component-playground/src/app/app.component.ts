@@ -11,8 +11,8 @@ import { CommonDialogService } from 'upgrade/src/app/shared/services/common-dial
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  // temporary, this is just to illustrate an example use
   openDialog() {
+    // use the dialog service to pick a dialog to pop for this button
     const dialogRef = this.dialogService.openExampleDialog();
 
     dialogRef.afterClosed().subscribe((result) => {
