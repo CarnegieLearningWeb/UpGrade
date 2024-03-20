@@ -377,6 +377,38 @@ export class ExperimentDesignStepperService {
     return tableData;
   }
 
+  editFactorialConditionTableData(
+    designData: ExperimentFactorialDesignData,
+    oldTableData: FactorialConditionTableRowData[]
+  ): FactorialConditionTableRowData[] {
+    const tableData: FactorialConditionTableRowData[] = [];
+    const requiredFactorialTableData = this.factorDataToConditions(designData.factors);
+
+    requiredFactorialTableData.map((conditionData) => {
+      const conditionLevelsData = this.filterLevelsData(conditionData);
+      const conditionstring = this.createConditionString(conditionData);
+      const condition = oldTableData.filter((conditionData) => {
+        return conditionData.condition === conditionstring;
+      });
+
+      if (condition.length) {
+        tableData.push({ ...condition[0], id: uuidv4() });
+      } else {
+        const tableRow: FactorialConditionTableRowData = {
+          id: uuidv4(), // TODO: maybe not the right place?
+          levels: conditionLevelsData,
+          condition: conditionstring,
+          payload: conditionstring,
+          weight: '0.0',
+          include: true,
+        };
+        tableData.push(tableRow);
+      }
+    });
+
+    return tableData;
+  }
+
   factorDataToConditions(factorsData: ExperimentFactorData[], levelsCombinationData: FactorLevelData[] = []) {
     // return if no data in factors
     if (factorsData.length === 0) {
@@ -485,7 +517,7 @@ export class ExperimentDesignStepperService {
     let conditionIndex = 1;
     tableData.forEach((factorialConditionTableRow) => {
       factorialConditionsRequestObject.push({
-        id: factorialConditionTableRow.id,
+        id: factorialConditionTableRow.id || uuidv4(),
         name: factorialConditionTableRow.condition,
         conditionCode: factorialConditionTableRow.condition,
         assignmentWeight: parseFloat(factorialConditionTableRow.weight),
