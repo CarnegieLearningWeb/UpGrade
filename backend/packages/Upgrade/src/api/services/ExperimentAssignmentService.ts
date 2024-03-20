@@ -633,6 +633,7 @@ export class ExperimentAssignmentService {
                 },
               ],
               assignedFactor: assignedFactors ? [assignedFactors] : null,
+              experimentType: experiment.type,
             };
           }
         });
