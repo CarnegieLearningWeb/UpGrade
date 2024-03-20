@@ -615,7 +615,7 @@ export class ExperimentService {
         { experimentName: experiment.name },
         user
       );
-      return this.formatingPayload(this.formatingConditionPayload(experiment));
+      return this.reducedConditionPayload(this.formatingPayload(this.formatingConditionPayload(experiment)));
     });
 
     return formatedExperiments;
@@ -1388,8 +1388,8 @@ export class ExperimentService {
               id: conditionPayload.id,
               payloadType: conditionPayload.payload.type,
               payloadValue: conditionPayload.payload.value,
-              parentCondition: conditions.find((doc) => doc.id === conditionPayload.parentCondition.id),
-              decisionPoint: partitions.find((doc) => doc.id === conditionPayload.decisionPoint?.id),
+              parentCondition: conditions.find((doc) => doc.id === conditionPayload.parentCondition),
+              decisionPoint: partitions.find((doc) => doc.id === conditionPayload?.decisionPoint),
             };
             return conditionPayloadToReturn;
           })) ||
@@ -1542,7 +1542,7 @@ export class ExperimentService {
       createAuditLogData,
       user
     );
-    return this.formatingPayload(createdExperiment);
+    return this.reducedConditionPayload(this.formatingPayload(createdExperiment));
   }
 
   public async validateExperiments(
@@ -1623,7 +1623,19 @@ export class ExperimentService {
     return experiment;
   }
 
-  autoFillSomeMissingProperties(experiment: ExperimentDTO): ExperimentDTO {
+  autoFillSomeMissingProperties(experiment): ExperimentDTO {
+    // modify conditionPayloads to support older exported experiments
+    if (experiment.conditionPayloads) {
+      experiment.conditionPayloads.forEach((conditionPayload) => {
+        if (typeof conditionPayload.parentCondition === 'object') {
+          conditionPayload.parentCondition = conditionPayload.parentCondition.id;
+        }
+        if (typeof conditionPayload.decisionPoint === 'object') {
+          conditionPayload.decisionPoint = conditionPayload.decisionPoint?.id;
+        }
+      });
+    }
+
     return {
       ...experiment,
       backendVersion: experiment.backendVersion || this.backendVersion.toString(),
@@ -1654,9 +1666,9 @@ export class ExperimentService {
     }
     result.conditionPayloads.forEach((conditionPayload) => {
       conditionPayload.id = uuid();
-      conditionPayload.parentCondition.id = this.allIdMap[conditionPayload.parentCondition.id];
-      if (conditionPayload.decisionPoint && conditionPayload.decisionPoint.id) {
-        conditionPayload.decisionPoint.id = this.allIdMap[conditionPayload.decisionPoint.id];
+      conditionPayload.parentCondition = this.allIdMap[conditionPayload.parentCondition];
+      if (conditionPayload.decisionPoint) {
+        conditionPayload.decisionPoint = this.allIdMap[conditionPayload.decisionPoint];
       }
     });
 
