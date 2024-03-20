@@ -17,7 +17,6 @@ import { ExperimentVM } from '../../../../../../core/experiments/store/experimen
 })
 export class ConditionsTableComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
-  @Input() isAnyRowRemoved: boolean;
   @Input() isExperimentEditable: boolean;
 
   subscriptions: Subscription;
@@ -99,9 +98,9 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
 
   handleDesignDataChanges(designData: ExperimentFactorialDesignData) {
     const isDesignDataValid = this.checkDesignDataValidity(designData);
-    if (this.experimentInfo?.partitions.length && !this.isAnyRowRemoved && !this.formInitialized) {
+    if (this.experimentInfo?.partitions.length && (!this.formInitialized || !isDesignDataValid)) {
       this.handleInitializeExistingTableData();
-    } else if (!this.experimentInfo && !this.isAnyRowRemoved && (!this.formInitialized || !isDesignDataValid)) {
+    } else if (!this.experimentInfo && (!this.formInitialized || !isDesignDataValid)) {
       this.handleInitializeNewNewTableData(designData);
     } else {
       // if new exp and form initialized and you move back and forth
