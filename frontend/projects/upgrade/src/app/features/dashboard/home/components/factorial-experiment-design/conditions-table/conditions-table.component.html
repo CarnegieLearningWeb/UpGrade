@@ -41,11 +41,7 @@
             </span>
           </ng-container>
           <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
-            <mat-form-field
-              class="dense-2"
-              appearance="outline"
-              subscriptSizing="dynamic"
-            >
+            <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
               <input
                 class="ft-14-400 input-payload"
                 type="text"
@@ -72,11 +68,7 @@
             </span>
           </ng-container>
           <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex">
-            <mat-form-field
-              class="dense-2 input-weight"
-              appearance="outline"
-              subscriptSizing="dynamic"
-            >
+            <mat-form-field class="dense-2 input-weight" appearance="outline" subscriptSizing="dynamic">
               <input
                 class="ft-14-400"
                 autocomplete="off"
@@ -152,8 +144,8 @@
       ></mat-row>
     </mat-table>
     <div class="validation-container">
-      <span class="ft-14-600 validation-message">{{ conditionweightSumError }}</span>
-      <span class="ft-14-600 validation-message">{{ conditionnegativeweightError }}</span>
+      <span class="ft-14-600 validation-message">{{ conditionWeightSumError }}</span>
+      <span class="ft-14-600 validation-message">{{ conditionNegativeWeightError }}</span>
     </div>
   </form>
 </section>

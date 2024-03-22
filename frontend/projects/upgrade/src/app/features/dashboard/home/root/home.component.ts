@@ -9,6 +9,7 @@ import { UserPermission } from '../../../../core/auth/store/auth.models';
 import { ImportExperimentComponent } from '../components/modal/import-experiment/import-experiment.component';
 import { SegmentsService } from '../../../../core/segments/segments.service';
 import { StratificationFactorsService } from '../../../../core/stratification-factors/stratification-factors.service';
+import { PreviewUsersService } from '../../../../core/preview-users/preview-users.service';
 
 @Component({
   selector: 'app-home',
@@ -26,7 +27,8 @@ export class HomeComponent implements OnInit {
     public dialog: MatDialog,
     private segmentsService: SegmentsService,
     private stratificationFactorsService: StratificationFactorsService,
-    private authService: AuthService
+    private authService: AuthService,
+    private previewUsersService: PreviewUsersService
   ) {}
 
   ngOnInit() {
@@ -34,6 +36,8 @@ export class HomeComponent implements OnInit {
     this.experimentService.loadExperiments(true);
     this.segmentsService.fetchSegments(true);
     this.stratificationFactorsService.fetchStratificationFactors(true);
+    this.experimentService.fetchAllExperimentNames();
+    this.previewUsersService.fetchPreviewUsers(true);
   }
 
   openNewExperimentDialog() {

@@ -25,7 +25,7 @@ import { DecisionPoint } from '../models/DecisionPoint';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { env } from '../../env';
 import { AppRequest, PaginationResponse } from '../../types';
-import { ExperimentDTO } from '../DTO/ExperimentDTO';
+import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
@@ -1145,13 +1145,75 @@ export class ExperimentController {
 
   /**
    * @swagger
+   * /experiments/{validation}:
+   *    post:
+   *       description: Validating Experiment
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: experiments
+   *           required: true
+   *           schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
+   *           description: Experiment Files
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Validations are completed
+   *            schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 error:
+   *                   type: string
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
+   */
+  @Post('/validation')
+  public validateExperiment(
+    @Body({ validate: false }) experiments: ExperimentFile[],
+    @Req() request: AppRequest
+  ): Promise<ValidatedExperimentError[]> {
+    return this.experimentService.validateExperiments(experiments, request.logger);
+  }
+
+  /**
+   * @swagger
    * /experiments/{import}:
-   *    put:
+   *    post:
    *       description: Import New Experiment
    *       consumes:
    *         - application/json
    *       parameters:
-   *         - in: path
+   *         - in: body
+   *           name: experiments
+   *           required: true
+   *           schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
+   *           description: Experiment Files
    *       tags:
    *         - Experiments
    *       produces:
@@ -1159,16 +1221,27 @@ export class ExperimentController {
    *       responses:
    *          '200':
    *            description: Experiment is imported
+   *            schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 error:
+   *                   type: string
    *          '401':
    *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('/import')
   public importExperiment(
-    @Body({ validate: true, type: ExperimentDTO })
-    experiments: ExperimentDTO[],
+    @Body({ validate: true })
+    experiments: ExperimentFile[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<ValidatedExperimentError[]> {
     return this.experimentService.importExperiment(experiments, currentUser, request.logger);
   }
 

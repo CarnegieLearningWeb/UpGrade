@@ -13,7 +13,7 @@
           <ng-container matColumnDef="File Name">
             <mat-header-cell class="ft-12-700" *matHeaderCellDef> File Name </mat-header-cell>
             <mat-cell class="ft-12-600" *matCellDef="let element">
-              {{ element.filename }}
+              {{ element.fileName }}
             </mat-cell>
           </ng-container>
 
@@ -44,10 +44,9 @@
       mat-raised-button
       class="shared-modal--modal-btn default-button"
       [ngClass]="{
-        'default-button--disabled':
-          uploadedFileCount === 0 || (uploadedFileCount === 1 && (!experimentInfo || !isExperimentJSONValid)) || this.isLoadingExperiments$
+        'default-button--disabled': uploadedFileCount === 0 || nonErrorExperiments === 0 || this.isLoadingExperiments$
       }"
-      [disabled]="uploadedFileCount === 0 || (uploadedFileCount === 1 && (!experimentInfo || !isExperimentJSONValid)) || this.isLoadingExperiments$"
+      [disabled]="uploadedFileCount === 0 || nonErrorExperiments === 0 || this.isLoadingExperiments$"
       (click)="importExperiment()"
     >
       {{ 'global.import.text' | translate }}

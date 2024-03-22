@@ -1,9 +1,6 @@
 <mat-card appearance="raised" class="metrics-container">
   <div class="header">
-    <mat-form-field
-      class="dense-2"
-      subscriptSizing="dynamic"
-    >
+    <mat-form-field class="dense-2" subscriptSizing="dynamic">
       <input
         class="ft-14-400 search-input"
         matInput
@@ -12,6 +9,16 @@
       />
       <mat-icon class="search-icon" matSuffix>search</mat-icon>
     </mat-form-field>
+    <button
+      mat-flat-button
+      color="primary"
+      class="ft-14-700"
+      (click)="openAddMetricDialog()"
+      *ngIf="permissions?.metrics.create"
+    >
+      <mat-icon>add</mat-icon>
+      <span>{{ 'metric.add-metrics.text' | translate }}</span>
+    </button>
   </div>
   <div class="read-mode-container" *ngIf="permissions?.metrics.create">
     <mat-slide-toggle class="ft-13-700" color="primary" (change)="changeMetricMode($event)" labelPosition="before">

@@ -26,11 +26,7 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field
-                      class="dense-2"
-                      appearance="outline"
-                      subscriptSizing="dynamic"
-                    >
+                    <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
                       <span [matTooltip]="decisionPoints.at(groupIndex).get('site').value" matTooltipPosition="above">
                         <input
                           class="ft-14-400"
@@ -42,7 +38,8 @@
                         <mat-autocomplete #autoCompleteSites="matAutocomplete" panelWidth="fit-content">
                           <mat-option
                             class="ft-14-400"
-                            *ngFor="let site of filteredSites$[groupIndex] | async" [value]="site"
+                            *ngFor="let site of filteredSites$[groupIndex] | async"
+                            [value]="site"
                           >
                             {{ site }}
                           </mat-option>
@@ -65,11 +62,7 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field
-                      class="dense-2"
-                      appearance="outline"
-                      subscriptSizing="dynamic"
-                    >
+                    <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
                       <span [matTooltip]="decisionPoints.at(groupIndex).get('target').value" matTooltipPosition="above">
                         <input
                           class="ft-14-400"
@@ -83,7 +76,8 @@
                         <mat-autocomplete #autoCompleteTargets="matAutocomplete" panelWidth="fit-content">
                           <mat-option
                             class="ft-14-400"
-                            *ngFor="let target of filteredTargets$[groupIndex] | async" [value]="target"
+                            *ngFor="let target of filteredTargets$[groupIndex] | async"
+                            [value]="target"
                           >
                             {{ target }}
                           </mat-option>
@@ -261,11 +255,7 @@
                       (levelsTableEditIndex$ | async) === null
                     "
                   >
-                    <mat-form-field
-                      class="dense-2"
-                      appearance="outline"
-                      subscriptSizing="dynamic"
-                    >
+                    <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
                       <span
                         [matTooltip]="factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.name"
                         matTooltipPosition="above"
@@ -320,11 +310,7 @@
                       (levelsTableEditIndex$ | async) === null
                     "
                   >
-                    <mat-form-field
-                      class="dense-2"
-                      appearance="outline"
-                      subscriptSizing="dynamic"
-                    >
+                    <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
                       <span
                         [matTooltip]="
                           factorialExperimentDesignForm.getRawValue('factor')?.factors[factorIndex]?.description
@@ -455,11 +441,7 @@
                                 (factorsTableIndex$ | async) === factorIndex
                               "
                             >
-                              <mat-form-field
-                                class="dense-2"
-                                appearance="outline"
-                                subscriptSizing="dynamic"
-                              >
+                              <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
                                 <span
                                   [matTooltip]="
                                     factorialExperimentDesignForm.getRawValue('level')?.factors[factorIndex]?.levels[
@@ -527,11 +509,7 @@
                                 (factorsTableIndex$ | async) === factorIndex
                               "
                             >
-                              <mat-form-field
-                                class="dense-2"
-                                appearance="outline"
-                                subscriptSizing="dynamic"
-                              >
+                              <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
                                 <span
                                   [matTooltip]="
                                     factorialExperimentDesignForm.getRawValue('payload')?.factors[factorIndex]?.levels[
@@ -772,7 +750,6 @@
             <div *ngIf="this.factor.length >= 2">
               <br />
               <app-conditions-table
-                [isAnyRowRemoved]="isAnyRowRemoved"
                 [experimentInfo]="experimentInfo"
                 [isExperimentEditable]="isExperimentEditable"
               ></app-conditions-table>

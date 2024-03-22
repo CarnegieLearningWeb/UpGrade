@@ -29,8 +29,11 @@
             mat-flat-button
             class="ft-14-600 button"
             (click)="deleteSegment()"
-            [ngClass]="{ 'button--disabled': (permissions && !permissions.segments.delete) || segmentUsed }"
-            [disabled]="(permissions && !permissions.segments.delete) || segmentUsed"
+            [ngClass]="{
+              'button--disabled':
+                segment.type === SegmentType.GLOBAL_EXCLUDE || segmentUsed || !permissions?.segments.delete
+            }"
+            [disabled]="segment.type === SegmentStatus.GLOBAL_EXCLUDE || segmentUsed || !permissions?.segments.delete"
           >
             {{ 'global.delete.text' | translate }}
           </button>
@@ -40,8 +43,8 @@
             mat-flat-button
             class="ft-14-600 button-long"
             (click)="duplicateSegmentDialog()"
-            [ngClass]="{ 'button-long--disabled': segment?.type == 'global_exclude' }"
-            [disabled]="segment?.type == 'global_exclude'"
+            [ngClass]="{ 'button-long--disabled': segment.type == SegmentType.GLOBAL_EXCLUDE }"
+            [disabled]="segment.type == SegmentType.GLOBAL_EXCLUDE"
           >
             {{ 'global.duplicate.text' | translate }}
           </button>
