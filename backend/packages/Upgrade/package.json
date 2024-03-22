@@ -109,7 +109,7 @@
         "swagger-ui-express": "^5.0.0",
         "ts-jest": "^29.1.1",
         "typedi": "^0.8.0",
-        "typeorm": "^0.2.20",
+        "typeorm": "^0.3.0",
         "typeorm-typedi-extensions": "^0.4.1",
         "typescript": "^5.3.3",
         "uuid": "^9.0.1",
