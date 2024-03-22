@@ -18,7 +18,7 @@ export default class Assignment {
   private _assignedFactor: Record<string, { level: string; payload: IPayload | null }>;
 
   constructor(
-    { site, target, assignedCondition, assignedFactor }: IExperimentAssignmentv5,
+    { site, target, assignedCondition, assignedFactor, experimentType }: IExperimentAssignmentv5,
     private apiService: ApiService
   ) {
     this._site = site;
@@ -28,7 +28,7 @@ export default class Assignment {
       assignedCondition[0] && assignedCondition[0].payload ? assignedCondition[0].payload.type : PAYLOAD_TYPE.STRING;
     this._payloadValue =
       assignedCondition[0] && assignedCondition[0].payload ? assignedCondition[0].payload.value : null;
-    this._experimentType = assignedFactor ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE;
+    this._experimentType = experimentType;
     this._assignedFactor = assignedFactor ? assignedFactor[0] : null;
   }
 

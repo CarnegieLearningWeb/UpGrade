@@ -40,12 +40,9 @@
       mat-raised-button
       class="shared-modal--modal-btn default-button"
       [ngClass]="{
-        'default-button--disabled':
-        uploadedFileCount === 0 || nonErrorSegments === 0 || this.isLoadingSegments$
+        'default-button--disabled': uploadedFileCount === 0 || nonErrorSegments === 0 || this.isLoadingSegments$
       }"
-      [disabled]="
-        uploadedFileCount === 0 || nonErrorSegments === 0 || this.isLoadingSegments$
-      "
+      [disabled]="uploadedFileCount === 0 || nonErrorSegments === 0 || this.isLoadingSegments$"
       (click)="importSegments()"
     >
       {{ 'global.import.text' | translate }}
