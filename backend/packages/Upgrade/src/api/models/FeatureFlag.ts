@@ -21,6 +21,9 @@ export class FeatureFlag extends BaseModel {
   @Column()
   public description: string;
 
+  @Column('text', { array: true })
+  public context: string[];
+
   @Column()
   public variationType: string;
 
