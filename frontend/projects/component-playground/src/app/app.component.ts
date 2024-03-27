@@ -1,12 +1,18 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MatDialogModule } from '@angular/material/dialog';
-import { CommonDialogService } from 'upgrade/src/app/shared/services/common-dialog.service';
+import { CommonDialogService } from '@shared-standalone-component-lib/services/common-dialog.service';
+import * as SharedComponentLib from '@shared-standalone-component-lib/components';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, MatDialogModule],
+  imports: [
+    RouterOutlet,
+    MatDialogModule,
+    SharedComponentLib.CommonDialogComponent,
+    SharedComponentLib.ExampleDialogFormTemplateComponent,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })

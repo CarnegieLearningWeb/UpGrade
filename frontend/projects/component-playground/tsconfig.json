@@ -25,7 +25,8 @@
     ],
     "baseUrl": "./",
     "paths": {
-      "upgrade/*": ["../upgrade/*"]
+      "@upgrade/*": ["../upgrade/*"],
+      "@shared-standalone-component-lib/*": ["../upgrade/src/app/shared-standalone-component-lib/*"]
     }
   },
   "angularCompilerOptions": {
