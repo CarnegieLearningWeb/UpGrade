@@ -23,7 +23,7 @@ import { BlankAppStateComponent } from './blank-app-state/blank-app-state.compon
 export class AppComponent {
   openDialog() {
     // use the dialog service to pick a dialog to pop for this button
-    const dialogRef = this.dialogService.openExampleDialog();
+    const dialogRef = this.dialogService.openCommonProjectedDialog();
 
     dialogRef.afterClosed().subscribe((result) => {
       console.log(result);

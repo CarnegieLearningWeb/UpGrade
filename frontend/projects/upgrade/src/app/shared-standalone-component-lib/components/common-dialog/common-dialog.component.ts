@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   Component,
   ComponentRef,
+  ContentChild,
   Inject,
   ViewChild,
   ViewContainerRef,
@@ -47,10 +48,11 @@ import { BASE_DIALOG_CONFIG_DEFAULTS, CommonDialogConfig } from './common-dialog
 })
 export class CommonDialogComponent implements AfterViewInit {
   configData: CommonDialogConfig = BASE_DIALOG_CONFIG_DEFAULTS.data;
-  childContentComponentRef!: ComponentRef<any>;
+  // childContentComponentRef!: ComponentRef<any>;
 
-  @ViewChild('childContentComponentContainer', { read: ViewContainerRef })
-  childContentComponentContainer!: ViewContainerRef;
+  // @ViewChild('childContentComponentContainer', { read: ViewContainerRef })
+  // childContentComponentContainer!: ViewContainerRef;
+  @ContentChild(ExampleDialogFormTemplateComponent) childComponent: any;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
@@ -63,21 +65,19 @@ export class CommonDialogComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    console.log('this.childContentComponentContainer', this.childContentComponentContainer);
-
-    this.loadComponent();
+    console.log('this.childComponent', this.childComponent);
   }
 
-  loadComponent() {
-    this.childContentComponentContainer.clear();
-    this.childContentComponentRef = this.childContentComponentContainer.createComponent(
-      this.configData.childContentComponent
-    );
-    this.changeDetectorRef.detectChanges();
-  }
+  // loadComponent() {
+  //   this.childContentComponentContainer.clear();
+  //   this.childContentComponentRef = this.childContentComponentContainer.createComponent(
+  //     this.configData.childContentComponent
+  //   );
+  //   this.changeDetectorRef.detectChanges();
+  // }
 
   onPrimaryActionBtnClicked() {
-    const formData = this.childContentComponentRef.instance?.form?.value; // form value must exist on the template?
+    const formData = this.childComponent?.form?.value; // form value must exist on the template?
 
     this.dialogRef.close(formData);
   }

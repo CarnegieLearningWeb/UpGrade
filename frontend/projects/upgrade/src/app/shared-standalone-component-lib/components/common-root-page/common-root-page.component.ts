@@ -1,10 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { MatCard } from '@angular/material/card';
 
 @Component({
   selector: 'app-common-root-page',
   standalone: true,
-  imports: [MatCard],
+  imports: [],
   templateUrl: './common-root-page.component.html',
   styleUrl: './common-root-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -12,6 +11,4 @@ import { MatCard } from '@angular/material/card';
 export class CommonRootPageComponent {
   @Input() public title = '';
   @Input() public subtitle = '';
-
-  public sectionCards!: any[];
 }
