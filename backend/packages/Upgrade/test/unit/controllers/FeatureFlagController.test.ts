@@ -49,7 +49,7 @@ describe('Feature Flag Controller Testing', () => {
         key: 'string',
         description: 'string',
         variationType: 'string',
-        status: true,
+        status: 'enabled',
         variations: [
           {
             id: 'string',
@@ -70,7 +70,7 @@ describe('Feature Flag Controller Testing', () => {
       .post('/api/flags/status')
       .send({
         flagId: uuid(),
-        status: true,
+        status: 'enabled',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -94,7 +94,7 @@ describe('Feature Flag Controller Testing', () => {
         key: 'string',
         description: 'string',
         variationType: 'string',
-        status: true,
+        status: 'enabled',
         variations: [
           {
             id: 'string',

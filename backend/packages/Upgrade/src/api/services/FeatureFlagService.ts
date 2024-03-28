@@ -11,7 +11,7 @@ import {
   IFeatureFlagSortParams,
   FLAG_SEARCH_SORT_KEY,
 } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
-import { SERVER_ERROR } from 'upgrade_types';
+import { SERVER_ERROR, FEATURE_FLAG_STATUS } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
 
@@ -81,7 +81,7 @@ export class FeatureFlagService {
     return undefined;
   }
 
-  public async updateState(flagId: string, status: boolean): Promise<FeatureFlag> {
+  public async updateState(flagId: string, status: FEATURE_FLAG_STATUS): Promise<FeatureFlag> {
     // TODO: Add log for updating flag state
     const updatedState = await this.featureFlagRepository.updateState(flagId, status);
     return updatedState;
@@ -266,7 +266,6 @@ export class FeatureFlagService {
     featureFlag.id = flagDTO.id;
     featureFlag.key = flagDTO.key;
     featureFlag.status = flagDTO.status;
-    featureFlag.variationType = flagDTO.variationType;
     featureFlag.variations = flagDTO.variations?.map((variationDTO) => {
       const featureFlagVariation = new FlagVariation();
       featureFlagVariation.name = variationDTO.name;
