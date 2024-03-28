@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { SettingsService } from '../../../core/settings/settings.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { VersionService } from '../../../core/version/version.service';
 
@@ -40,11 +39,7 @@ export class DashboardRootComponent implements OnInit {
     },
   ];
 
-  constructor(
-    private settingsService: SettingsService,
-    private authService: AuthService,
-    private versionService: VersionService
-  ) {}
+  constructor(private authService: AuthService, private versionService: VersionService) {}
 
   logout() {
     this.authService.authLogout();

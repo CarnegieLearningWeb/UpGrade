@@ -1,0 +1,34 @@
+// necessary to make the height of <app-common-root-page> element itself 100%. Else, the height of the element will be the height of the content inside it.
+:host {
+  display: flex;
+  height: 100%;
+}
+
+.common-root-page-container {
+  display: flex;
+  flex-direction: column;
+  background-color: #f0f2f9; // get this from global var for gray background
+  height: 100%;
+  width: 100%;
+
+  .header-container {
+    height: 112px;
+    padding: 30px; // possibly 30px "gutter" should be described in global vars
+
+    .title {
+      margin-bottom: 0;
+    }
+
+    .subtitle {
+      display: block;
+      color: var(--grey-3);
+    }
+  }
+
+  .content-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 30px;
+  }
+}
