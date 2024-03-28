@@ -1,14 +1,14 @@
 <div class="playground">
-  <section class="button-section">
+  <nav class="button-section">
     <button
       mat-button
       (click)="openDialog()"
     >Open Dialog</button>
-  </section>
+    <a routerLink="/test-component">Test Component Route</a>
+    <a routerLink="/">Reset Route</a>
+  </nav>
 
-  <section class="component-section">
-    <!-- to view a component without needing to click the button, put it in here and it will be centered-->
-  </section>
-
-  
+  <ng-container class="component-section">  
+    <router-outlet></router-outlet>
+  </ng-container>
 </div>

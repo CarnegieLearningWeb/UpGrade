@@ -1,19 +1,24 @@
 .playground {
   background-color: #333;
   height: 100vh;
+  width: 100vw;
   display: flex;
   flex-direction: column;
 
-  .button-sections {
+  .button-section {
     display: flex;
     justify-content: flex-start;
-    margin-top: 20px;
-    height: 100px;
+    background-color: white;
+    gap: 20px;
+    padding: 10px;
+    border-bottom: 2px dashed #333;
   }
 
   .component-section {
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 100vh;
+    width: 100%;
   }
 }

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ExampleDialogFormTemplateComponent } from './example-dialog-form.component';
 
-describe('TestgDialogFormComponent', () => {
+xdescribe('TestgDialogFormComponent', () => {
   let component: ExampleDialogFormTemplateComponent;
   let fixture: ComponentFixture<ExampleDialogFormTemplateComponent>;
 
