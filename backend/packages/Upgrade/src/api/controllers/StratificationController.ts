@@ -59,7 +59,7 @@ const upload = multer({ storage: storage });
 @Authorized()
 @JsonController('/stratification')
 export class StratificationController {
-  constructor(public stratificatonService: StratificationService) {}
+  constructor(public stratificationService: StratificationService) {}
 
   /**
    * @swagger
@@ -82,7 +82,7 @@ export class StratificationController {
    */
   @Get()
   public async getAllStratification(@Req() request: AppRequest): Promise<FactorStrata[]> {
-    return this.stratificatonService.getAllStratification(request.logger);
+    return this.stratificationService.getAllStratification(request.logger);
   }
 
   /**
@@ -121,7 +121,7 @@ export class StratificationController {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : stratification Factor should not be null.'));
     }
 
-    const csvData = await this.stratificatonService.getCSVDataByFactor(factor, request.logger);
+    const csvData = await this.stratificationService.getCSVDataByFactor(factor, request.logger);
 
     // return csv file with appropriate headers to request;
     res.setHeader('Content-Type', 'text/csv; charset=UTF-8');
@@ -160,7 +160,7 @@ export class StratificationController {
   @Post()
   @UseBefore(upload.single('file'))
   public insertStratification(@Req() request: AppRequest): Promise<UserStratificationFactor[]> {
-    return this.stratificatonService.insertStratification(request.body[0].file, request.logger);
+    return this.stratificationService.insertStratification(request.body[0].file, request.logger);
   }
 
   /**
@@ -197,6 +197,6 @@ export class StratificationController {
     if (!stratificationFactor) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : stratification Factor should not be null.'));
     }
-    return this.stratificatonService.deleteStratification(stratificationFactor, request.logger);
+    return this.stratificationService.deleteStratification(stratificationFactor, request.logger);
   }
 }
