@@ -9,6 +9,8 @@ export const appRoutes: Routes = [
   {
     path: 'test-component',
     loadComponent: () =>
-      import('./feature-flag-root-page/feature-flag-root-page.component').then((c) => c.FeatureFlagRootPageComponent),
+      import(
+        '@upgrade/src/app/features/dashboard/feature-flags/pages/feature-flag-root-page/feature-flag-root-page.component'
+      ).then((c) => c.FeatureFlagRootPageComponent),
   },
 ];

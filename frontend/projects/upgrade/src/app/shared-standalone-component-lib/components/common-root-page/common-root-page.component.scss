@@ -1,8 +1,8 @@
 // necessary to make the height of <app-common-root-page> element itself 100%. Else, the height of the element will be the height of the content inside it.
-:host {
-  display: flex;
-  height: 100%;
-}
+// :host {
+//   display: flex;
+//   height: 100%;
+// }
 
 .common-root-page-container {
   display: flex;

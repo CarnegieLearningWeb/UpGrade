@@ -28,11 +28,6 @@
 @import './app/features/dashboard/logs/common/logs-view.theme.scss';
 @import './app/features/dashboard/common/tabs-view.theme.scss';
 @import './app/features/auth/login/login.theme.scss';
-@import './app/features/dashboard/feature-flags/feature-flags-root/feature-flags-root.theme.scss';
-@import './app/features/dashboard/feature-flags/components/feature-flags-list/feature-flags-list.theme.scss';
-@import './app/features/dashboard/feature-flags/components/modal/new-flag/new-flag.theme.scss';
-@import './app/features/dashboard/feature-flags/components/flag-variations/flag-variations.theme.scss';
-@import './app/features/dashboard/feature-flags/pages/view-feature-flag/view-feature-flag.theme.scss';
 @import './app/features/dashboard/segments/segments-root/segments-root.theme.scss';
 @import './app/features/dashboard/segments/components/segments-list/segments-list.theme.scss';
 @import './app/features/dashboard/segments/components/modal/new-segment/new-segment.theme.scss';
@@ -69,16 +64,11 @@
   @include logs-view-component-theme($theme);
   @include tabs-view-theme($theme);
   @include login-component-theme($theme);
-  @include feature-flags-root-component-theme($theme);
-  @include feature-flags-list-component-theme($theme);
-  @include new-flag-component-theme($theme);
-  @include flag-variations-component-theme($theme);
   @include view-segment-component-theme($theme);
   @include segments-root-component-theme($theme);
   @include segments-list-component-theme($theme);
   @include new-segment-component-theme($theme);
   @include segment-members-component-theme($theme);
-  @include view-feature-flag-component-theme($theme);
   @include queries-modal-component-theme($theme);
   @include query-result-component-theme($theme);
   @include metrics-component-theme($theme);

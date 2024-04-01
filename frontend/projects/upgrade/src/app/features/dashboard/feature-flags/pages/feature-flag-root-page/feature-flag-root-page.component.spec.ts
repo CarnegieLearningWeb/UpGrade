@@ -8,10 +8,9 @@ xdescribe('FeatureFlagRootPageComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FeatureFlagRootPageComponent]
-    })
-    .compileComponents();
-    
+      imports: [FeatureFlagRootPageComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(FeatureFlagRootPageComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

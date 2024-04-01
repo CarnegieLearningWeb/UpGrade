@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CommonDialogComponent } from '../components/common-dialog/common-dialog.component';
 import { CommonDialogMatDialogConfig, EXAMPLE_DIALOG_CONFIG } from '../components/common-dialog/common-dialog-config';
-import { ExampleProjectedContentComponent } from '../../../../../component-playground/src/app/example-projected-content/example-projected-content.component';
+import { ExampleProjectedContentComponent } from '../components/example-projected-content/example-projected-content.component';
 
 @Injectable({
   providedIn: 'root',

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { CommonRootPageComponent } from '@upgrade/src/app/shared-standalone-component-lib/components';
-import { SectionCardExampleComponent } from '../section-card-example/section-card-example.component';
+import { CommonRootPageComponent } from '../../../../../shared-standalone-component-lib/components';
+import { SectionCardExampleComponent } from '../../../../../shared-standalone-component-lib/components/section-card-example/section-card-example.component';
 
 @Component({
   selector: 'app-feature-flag-root-page',

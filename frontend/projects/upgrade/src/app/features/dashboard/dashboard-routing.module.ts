@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { DashboardRootComponent } from './dashboard-root/dashboard-root.component';
+import { FeatureFlagRootPageComponent } from './feature-flags/pages/feature-flag-root-page/feature-flag-root-page.component';
 
 const routes: Routes = [
   {
@@ -33,13 +34,13 @@ const routes: Routes = [
           title: 'app-header.title.logs',
         },
       },
-      // {
-      //   path: 'featureFlags',
-      //   loadChildren: () => import('./feature-flags/feature-flags.module').then(m => m.FeatureFlagsModule),
-      //   data: {
-      //     title: 'app-header.title.feature-flag'
-      //   }
-      // },
+      {
+        path: 'featureFlags',
+        component: FeatureFlagRootPageComponent,
+        data: {
+          title: 'app-header.title.feature-flag',
+        },
+      },
       {
         path: 'segments',
         loadChildren: () => import('./segments/segments.module').then((m) => m.SegmentsModule),

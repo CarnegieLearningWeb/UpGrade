@@ -68,14 +68,6 @@ export class CommonDialogComponent implements AfterViewInit {
     console.log('this.childComponent', this.childComponent);
   }
 
-  // loadComponent() {
-  //   this.childContentComponentContainer.clear();
-  //   this.childContentComponentRef = this.childContentComponentContainer.createComponent(
-  //     this.configData.childContentComponent
-  //   );
-  //   this.changeDetectorRef.detectChanges();
-  // }
-
   onPrimaryActionBtnClicked() {
     const formData = this.childComponent?.form?.value; // form value must exist on the template?
 

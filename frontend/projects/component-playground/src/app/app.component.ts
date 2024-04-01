@@ -4,6 +4,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { CommonDialogService } from '@shared-standalone-component-lib/services/common-dialog.service';
 import * as SharedComponentLib from '@shared-standalone-component-lib/components';
 import { BlankAppStateComponent } from './blank-app-state/blank-app-state.component';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-root',
@@ -30,5 +31,8 @@ export class AppComponent {
     });
   }
 
-  constructor(public dialogService: CommonDialogService) {}
+  constructor(public dialogService: CommonDialogService, private translate: TranslateService) {
+    this.translate.setDefaultLang('en');
+    this.translate.use('en');
+  }
 }
