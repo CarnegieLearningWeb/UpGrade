@@ -87,7 +87,7 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  filterExperimentPredicate(type: EXPERIMENT_SEARCH_KEY) {
+  filterSegmentPredicate(type: EXPERIMENT_SEARCH_KEY) {
     this.allSegments.filterPredicate = (data, filter: string): boolean => {
       switch (type) {
         case EXPERIMENT_SEARCH_KEY.ALL:
@@ -107,15 +107,10 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   applyFilter(filterValue: string) {
-    this.filterExperimentPredicate(this.selectedSegmentFilterOption);
+    this.filterSegmentPredicate(this.selectedSegmentFilterOption);
     if (typeof filterValue === 'string') {
       this.allSegments.filter = filterValue.trim().toLowerCase();
     }
-  }
-
-  filterExperimentByChips(tagValue: string, type: EXPERIMENT_SEARCH_KEY) {
-    this.selectedSegmentFilterOption = type;
-    this.applyFilter(tagValue);
   }
 
   openNewSegmentDialog() {
