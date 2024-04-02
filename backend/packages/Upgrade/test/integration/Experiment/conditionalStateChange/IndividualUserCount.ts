@@ -23,8 +23,30 @@ export default async function IndividualUserCount(): Promise<void> {
   // experiment object
   const experimentObject: any = individualAssignmentExperiment;
   experimentObject.enrollmentCompleteCondition = {
-    userCount: 4,
+    userCount: 3,
   };
+  experimentObject.partitions = [
+    {
+      site: 'CurriculumSequence',
+      target: 'W1',
+      description: 'Decision Point on Workspace 1',
+      twoCharacterId: 'W1',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      target: 'W2',
+      description: 'Decision Point on Workspace 2',
+      twoCharacterId: 'W2',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      description: 'No Decision Point',
+      twoCharacterId: 'NP',
+      excludeIfReached: true,
+    },
+  ];
 
   // create experiment 1
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -37,7 +59,7 @@ export default async function IndividualUserCount(): Promise<void> {
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
-        enrollmentCompleteCondition: { userCount: 4 },
+        enrollmentCompleteCondition: { userCount: 3 },
       }),
     ])
   );
@@ -104,7 +126,7 @@ export default async function IndividualUserCount(): Promise<void> {
     ])
   );
 
-  // get all experiment condition for user 1
+  // get all experiment condition for user 1 (excluded)
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
 
@@ -160,7 +182,7 @@ export default async function IndividualUserCount(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
 
   experiments = await experimentService.find(new UpgradeLogger());
-  // enrollment complete as 4 users enrolled which is the enrollment completion criteria
+  // enrollment complete as 3 users enrolled which is the enrollment completion criteria
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

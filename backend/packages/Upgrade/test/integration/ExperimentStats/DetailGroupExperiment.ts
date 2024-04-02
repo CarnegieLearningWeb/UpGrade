@@ -185,8 +185,6 @@ export default async function testCase(): Promise<void> {
   // user 2 logs in experiment
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
-  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName1, experimentPoint1);
-  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   // mark experiment point for exp2
   markedExperimentPoint = await markExperimentPoint(

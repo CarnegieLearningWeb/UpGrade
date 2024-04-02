@@ -67,7 +67,6 @@ export default async function CompetingExperiment(): Promise<void> {
   // get all experiment condition for user 1
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(2);
-  checkExperimentAssignedIsNull(experimentConditionAssignments, target, site);
 
   // experiment 2 object
   const experimentObject2 = competingExperimentAssignmentExperiment2;

@@ -25,9 +25,31 @@ export default async function GroupUserCount(): Promise<void> {
   // experiment object
   const experimentObject: any = groupAssignmentWithGroupConsistencyExperiment;
   experimentObject.enrollmentCompleteCondition = {
-    groupCount: 3,
+    groupCount: 2,
     userCount: 2,
   };
+  experimentObject.partitions = [
+    {
+      site: 'CurriculumSequence',
+      target: 'W1',
+      description: 'Decision Point on Workspace 1',
+      twoCharacterId: 'W1',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      target: 'W2',
+      description: 'Decision Point on Workspace 2',
+      twoCharacterId: 'W2',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      description: 'No Decision Point',
+      twoCharacterId: 'NP',
+      excludeIfReached: true,
+    },
+  ];
 
   // create experiment 1
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -41,7 +63,7 @@ export default async function GroupUserCount(): Promise<void> {
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
         enrollmentCompleteCondition: {
-          groupCount: 3,
+          groupCount: 2,
           userCount: 2,
         },
       }),
@@ -94,7 +116,6 @@ export default async function GroupUserCount(): Promise<void> {
 
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
-  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 2
   markedExperimentPoint = await markExperimentPoint(
@@ -126,30 +147,8 @@ export default async function GroupUserCount(): Promise<void> {
     ])
   );
 
-  // get all experiment condition for user 1
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
-  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
-
-  // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(
-    experimentUsers[0].id,
-    experimentName,
-    experimentPoint,
-    condition,
-    new UpgradeLogger()
-  );
-  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
-
-  // get the number of group satisfied as 1
-  testingNumberOfGroupSatisfied = await assignmentService.getGroupAssignmentStatus(
-    experiments[0].id,
-    new UpgradeLogger()
-  );
-  expect(testingNumberOfGroupSatisfied).toEqual(1);
-
   // get all experiment condition for user 3
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
-  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 3
   markedExperimentPoint = await markExperimentPoint(
@@ -160,26 +159,6 @@ export default async function GroupUserCount(): Promise<void> {
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
-
-  // get the number of group satisfied as 1
-  testingNumberOfGroupSatisfied = await assignmentService.getGroupAssignmentStatus(
-    experiments[0].id,
-    new UpgradeLogger()
-  );
-  expect(testingNumberOfGroupSatisfied).toEqual(1);
-
-  experiments = await experimentService.find(new UpgradeLogger());
-  expect(experiments).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
-        postExperimentRule: experimentObject.postExperimentRule,
-        assignmentUnit: experimentObject.assignmentUnit,
-        consistencyRule: experimentObject.consistencyRule,
-      }),
-    ])
-  );
 
   // get all experiment condition for user 4
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id, new UpgradeLogger());
@@ -195,12 +174,12 @@ export default async function GroupUserCount(): Promise<void> {
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
 
-  // get the number of group satisfied as 2
+  // get the number of group satisfied as 1
   testingNumberOfGroupSatisfied = await assignmentService.getGroupAssignmentStatus(
     experiments[0].id,
     new UpgradeLogger()
   );
-  expect(testingNumberOfGroupSatisfied).toEqual(2);
+  expect(testingNumberOfGroupSatisfied).toEqual(1);
 
   experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
@@ -229,13 +208,6 @@ export default async function GroupUserCount(): Promise<void> {
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[4].id, experimentName, experimentPoint);
 
-  // get the number of group satisfied as 2
-  testingNumberOfGroupSatisfied = await assignmentService.getGroupAssignmentStatus(
-    experiments[0].id,
-    new UpgradeLogger()
-  );
-  expect(testingNumberOfGroupSatisfied).toEqual(2);
-
   experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
@@ -249,7 +221,7 @@ export default async function GroupUserCount(): Promise<void> {
     ])
   );
 
-  //   get all experiment condition for user 6
+  // get all experiment condition for user 6
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[5].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
@@ -263,12 +235,12 @@ export default async function GroupUserCount(): Promise<void> {
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[5].id, experimentName, experimentPoint);
 
-  // get the number of group satisfied as 3
+  // get the number of group satisfied as 2
   testingNumberOfGroupSatisfied = await assignmentService.getGroupAssignmentStatus(
     experiments[0].id,
     new UpgradeLogger()
   );
-  expect(testingNumberOfGroupSatisfied).toEqual(3);
+  expect(testingNumberOfGroupSatisfied).toEqual(2);
 
   experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(

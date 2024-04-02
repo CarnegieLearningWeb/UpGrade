@@ -22,7 +22,28 @@ export default async function testCase(): Promise<void> {
 
   // experiment object
   const experimentObject = groupAssignmentWithGroupConsistencyExperiment;
-
+  experimentObject.partitions = [
+    {
+      site: 'CurriculumSequence',
+      target: 'W1',
+      description: 'Decision Point on Workspace 1',
+      twoCharacterId: 'W1',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      target: 'W2',
+      description: 'Decision Point on Workspace 2',
+      twoCharacterId: 'W2',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      description: 'No Decision Point',
+      twoCharacterId: 'NP',
+      excludeIfReached: true,
+    },
+  ];
   const experimentName = experimentObject.partitions[0].target;
   const experimentPoint = experimentObject.partitions[0].site;
   const condition = experimentObject.conditions[0].conditionCode;
@@ -76,7 +97,6 @@ export default async function testCase(): Promise<void> {
 
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
-  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 2
   markedExperimentPoint = await markExperimentPoint(

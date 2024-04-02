@@ -17,6 +17,28 @@ export default async function NoExperiment(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // experiment object
   const experimentObject = individualAssignmentExperiment;
+  experimentObject.partitions = [
+    {
+      site: 'CurriculumSequence',
+      target: 'W1',
+      description: 'Decision Point on Workspace 1',
+      twoCharacterId: 'W1',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      target: 'W2',
+      description: 'Decision Point on Workspace 2',
+      twoCharacterId: 'W2',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      description: 'No Decision Point',
+      twoCharacterId: 'NP',
+      excludeIfReached: true,
+    },
+  ];
   const userService = Container.get<UserService>(UserService);
 
   // creating new user

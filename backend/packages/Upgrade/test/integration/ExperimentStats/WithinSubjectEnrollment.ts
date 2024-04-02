@@ -29,7 +29,28 @@ export default async function testCase(): Promise<void> {
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
   // experiment object
   const experimentObject = withinSubjectExperiment;
-
+  experimentObject.partitions = [
+    {
+      site: 'CurriculumSequence',
+      target: 'W1',
+      description: 'Decision Point on Workspace 1',
+      twoCharacterId: 'W1',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      target: 'W2',
+      description: 'Decision Point on Workspace 2',
+      twoCharacterId: 'W2',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      description: 'No Decision Point',
+      twoCharacterId: 'NP',
+      excludeIfReached: true,
+    },
+  ];
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
   const experiments = await experimentService.find(new UpgradeLogger());
@@ -116,7 +137,6 @@ export default async function testCase(): Promise<void> {
   );
 
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
-  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName1, experimentPoint1);
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,

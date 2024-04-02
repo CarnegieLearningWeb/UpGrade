@@ -92,6 +92,7 @@ import {
   StratificationMetricQueriesCheck,
   StratificationRandomAlgorithmCheck,
 } from './Experiment/stratification/index';
+import { IndividualExperimentEnrollmentCode, GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } from './Experiment/enrollmentCode';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -377,20 +378,17 @@ describe('Integration Tests', () => {
     return QueryCRUD();
   });
 
-  // test('Individual Experiment Enrollment Code', () => {
-  //   return IndividualExperimentEnrollmentCode();
-  //
-  // });
+  test('Individual Experiment Enrollment Code', () => {
+    return IndividualExperimentEnrollmentCode();
+  });
 
-  // test('Group Experiment Enrollment Code', () => {
-  //   return GroupExperimentEnrollmentCode();
-  //
-  // });
+  test('Group Experiment Enrollment Code', () => {
+    return GroupExperimentEnrollmentCode();
+  });
 
-  // test('Experiment Experiment Enrollment Code', () => {
-  //   return ExperimentExperimentEnrollmentCode();
-  //
-  // });
+  test('Experiment Experiment Enrollment Code', () => {
+    return ExperimentExperimentEnrollmentCode();
+  });
 
   test('Experiment Context Assignment', () => {
     return ExperimentContextAssignments();
@@ -406,22 +404,18 @@ describe('Integration Tests', () => {
 
   // test('Experiment Level exclusion of user with FilterMode as IncludeAll', () => {
   //   return ExperimentExcludeUser();
-  //
   // });
 
   // test('Experiment Level exclusion of group with FilterMode as IncludeAll', () => {
   //   return ExperimentExcludeGroup();
-  //
   // });
 
   // test('Experiment Level inclusion of user with FilterMode as ExcludeAll', () => {
   //   return ExperimentIncludeUser();
-  //
   // });
 
   // test('Experiment Level inclusion of group with FilterMode as ExcludeAll', () => {
   //   return ExperimentIncludeGroup();
-  //
   // });
 
   test('Segments CRUD operations - Create', () => {

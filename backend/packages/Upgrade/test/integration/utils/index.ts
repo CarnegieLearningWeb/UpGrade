@@ -17,8 +17,8 @@ export function checkExperimentAssignedIsNull(experimentConditionAssignments: an
   expect(experimentConditionAssignments).not.toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        expId: target,
-        expPoint: site,
+        target: target,
+        site: site,
       }),
     ])
   );
