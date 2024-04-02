@@ -338,11 +338,11 @@ export class ExperimentDesignStepperService {
     const payloadTableData = this.getSimpleExperimentPayloadTableData();
 
     payloadTableData.forEach((payloadRowData: SimpleExperimentPayloadTableRowData) => {
-      const parentCondition = conditions.find((condition) => condition.conditionCode === payloadRowData.condition);
+      const parentCondition = conditions.find((condition) => condition.conditionCode === payloadRowData.condition).id;
 
       const decisionPoint = decisionPoints.find(
         (decisionPoint) => decisionPoint.target === payloadRowData.target && decisionPoint.site === payloadRowData.site
-      );
+      )?.id;
 
       conditionPayloads.push({
         id: payloadRowData.id || uuidv4(),
@@ -372,6 +372,38 @@ export class ExperimentDesignStepperService {
         include: true,
       };
       tableData.push(tableRow);
+    });
+
+    return tableData;
+  }
+
+  editFactorialConditionTableData(
+    designData: ExperimentFactorialDesignData,
+    oldTableData: FactorialConditionTableRowData[]
+  ): FactorialConditionTableRowData[] {
+    const tableData: FactorialConditionTableRowData[] = [];
+    const requiredFactorialTableData = this.factorDataToConditions(designData.factors);
+
+    requiredFactorialTableData.map((conditionData) => {
+      const conditionLevelsData = this.filterLevelsData(conditionData);
+      const conditionstring = this.createConditionString(conditionData);
+      const condition = oldTableData.filter((conditionData) => {
+        return conditionData.condition === conditionstring;
+      });
+
+      if (condition.length) {
+        tableData.push({ ...condition[0], id: uuidv4() });
+      } else {
+        const tableRow: FactorialConditionTableRowData = {
+          id: uuidv4(), // TODO: maybe not the right place?
+          levels: conditionLevelsData,
+          condition: conditionstring,
+          payload: conditionstring,
+          weight: '0.0',
+          include: true,
+        };
+        tableData.push(tableRow);
+      }
     });
 
     return tableData;
@@ -485,7 +517,7 @@ export class ExperimentDesignStepperService {
     let conditionIndex = 1;
     tableData.forEach((factorialConditionTableRow) => {
       factorialConditionsRequestObject.push({
-        id: factorialConditionTableRow.id,
+        id: factorialConditionTableRow.id || uuidv4(),
         name: factorialConditionTableRow.condition,
         conditionCode: factorialConditionTableRow.condition,
         assignmentWeight: parseFloat(factorialConditionTableRow.weight),
@@ -540,7 +572,7 @@ export class ExperimentDesignStepperService {
       factorialConditionPayloadsRequestObject.push({
         id: factorialConditionTableRow.conditionPayloadId || uuidv4(),
         payload: { type: PAYLOAD_TYPE.STRING, value: factorialConditionTableRow.payload },
-        parentCondition: currentConditions[index],
+        parentCondition: currentConditions[index].id,
       });
     });
 
