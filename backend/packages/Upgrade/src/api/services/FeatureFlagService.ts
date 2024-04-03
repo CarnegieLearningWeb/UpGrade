@@ -266,16 +266,6 @@ export class FeatureFlagService {
     featureFlag.id = flagDTO.id;
     featureFlag.key = flagDTO.key;
     featureFlag.status = flagDTO.status;
-    featureFlag.variations = flagDTO.variations?.map((variationDTO) => {
-      const featureFlagVariation = new FlagVariation();
-      featureFlagVariation.name = variationDTO.name;
-      featureFlagVariation.id = variationDTO.id;
-      featureFlagVariation.defaultVariation = variationDTO.defaultVariation;
-      featureFlagVariation.value = variationDTO.value;
-      featureFlagVariation.description = variationDTO.description;
-      featureFlagVariation.featureFlag = featureFlag;
-      return featureFlagVariation;
-    });
     return featureFlag;
   }
 }

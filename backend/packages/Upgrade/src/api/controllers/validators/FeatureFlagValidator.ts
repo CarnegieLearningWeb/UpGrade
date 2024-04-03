@@ -1,40 +1,5 @@
-import { Type } from 'class-transformer';
-import {
-  IsNotEmpty,
-  IsDefined,
-  IsOptional,
-  ValidateNested,
-  IsString,
-  IsBoolean,
-  IsArray,
-  IsEnum,
-} from 'class-validator';
+import { IsNotEmpty, IsDefined, IsString, IsArray, IsEnum } from 'class-validator';
 import { FEATURE_FLAG_STATUS } from 'upgrade_types';
-
-class FlagVariationValidator {
-  @IsNotEmpty()
-  @IsDefined()
-  @IsString()
-  id: string;
-
-  @IsNotEmpty()
-  @IsDefined()
-  @IsString()
-  value: string;
-
-  @IsOptional()
-  @IsString()
-  name?: string;
-
-  @IsOptional()
-  @IsString()
-  description?: string;
-
-  @IsOptional()
-  @IsArray()
-  @IsBoolean({ each: true })
-  defaultVariation?: boolean[];
-}
 
 export class FeatureFlagValidation {
   @IsNotEmpty()
@@ -62,8 +27,11 @@ export class FeatureFlagValidation {
   @IsEnum(FEATURE_FLAG_STATUS)
   status: FEATURE_FLAG_STATUS;
 
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => FlagVariationValidator)
-  variations: FlagVariationValidator[];
+  @IsNotEmpty()
+  @IsArray()
+  public context: string[];
+
+  @IsNotEmpty()
+  @IsArray()
+  public tags: string[];
 }

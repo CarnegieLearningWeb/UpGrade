@@ -50,15 +50,8 @@ describe('Feature Flag Controller Testing', () => {
         description: 'string',
         variationType: 'string',
         status: 'enabled',
-        variations: [
-          {
-            id: 'string',
-            value: 'string',
-            name: 'string',
-            description: 'string',
-            defaultVariation: [],
-          },
-        ],
+        context: ['foo'],
+        tags: ['bar'],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -95,15 +88,8 @@ describe('Feature Flag Controller Testing', () => {
         description: 'string',
         variationType: 'string',
         status: 'enabled',
-        variations: [
-          {
-            id: 'string',
-            value: 'string',
-            name: 'string',
-            description: 'string',
-            defaultVariation: [],
-          },
-        ],
+        context: ['foo'],
+        tags: ['bar'],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
