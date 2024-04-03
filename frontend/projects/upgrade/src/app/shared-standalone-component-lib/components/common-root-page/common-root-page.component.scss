@@ -13,16 +13,8 @@
 
   .header-container {
     height: 112px;
-    padding: 30px; // possibly 30px "gutter" should be described in global vars
-
-    .title {
-      margin-bottom: 0;
-    }
-
-    .subtitle {
-      display: block;
-      color: var(--grey-3);
-    }
+    padding: 30px;
+    margin-top: -30px; // there's a weird ghost element in dashboard-root.html that pushes the header down by 30px
   }
 
   .content-container {

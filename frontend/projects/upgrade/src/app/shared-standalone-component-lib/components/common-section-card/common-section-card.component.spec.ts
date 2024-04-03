@@ -1,18 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SectionCardExampleComponent } from './section-card-example.component';
+import { CommonSectionCardComponent } from './common-section-card.component';
 
 xdescribe('SectionCardExampleComponent', () => {
-  let component: SectionCardExampleComponent;
-  let fixture: ComponentFixture<SectionCardExampleComponent>;
+  let component: CommonSectionCardComponent;
+  let fixture: ComponentFixture<CommonSectionCardComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SectionCardExampleComponent]
-    })
-    .compileComponents();
-    
-    fixture = TestBed.createComponent(SectionCardExampleComponent);
+      imports: [CommonSectionCardComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(CommonSectionCardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

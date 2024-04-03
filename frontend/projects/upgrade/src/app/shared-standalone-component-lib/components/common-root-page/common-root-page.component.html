@@ -1,9 +1,8 @@
 <div class="common-root-page-container">
-  <section class="header-container">
-    <h1 class="title ft-32-700">{{ title | translate }}</h1>
-    <h3 class="subtitle ft-16-400">{{ subtitle | translate }}</h3>
-  </section>
+  <header class="header-container">
+    <ng-content select="[header]"></ng-content>
+  </header>
   <section class="content-container">
-    <ng-content></ng-content>
+    <ng-content select="[content]"></ng-content>
   </section>
 </div>

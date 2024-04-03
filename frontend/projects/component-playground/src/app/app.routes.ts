@@ -10,7 +10,7 @@ export const appRoutes: Routes = [
     path: 'test-component',
     loadComponent: () =>
       import(
-        '@upgrade/src/app/features/dashboard/feature-flags/pages/feature-flag-root-page/feature-flag-root-page.component'
-      ).then((c) => c.FeatureFlagRootPageComponent),
+        '@upgrade/src/app/shared-standalone-component-lib/components/common-section-card/common-section-card.component'
+      ).then((c) => c.CommonSectionCardComponent),
   },
 ];
