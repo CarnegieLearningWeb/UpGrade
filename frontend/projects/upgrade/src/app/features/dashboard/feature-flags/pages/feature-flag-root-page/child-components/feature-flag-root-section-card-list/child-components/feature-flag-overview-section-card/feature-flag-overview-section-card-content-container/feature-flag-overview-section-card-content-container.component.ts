@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
+import { FeatureFlagsService } from '../../../../../../../../../../core/feature-flags/feature-flags.service';
 import { Observable } from 'rxjs/internal/Observable';
 import { MatTableModule } from '@angular/material/table';
 import { AsyncPipe, NgIf } from '@angular/common';
