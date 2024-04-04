@@ -13,12 +13,12 @@ import { AsyncPipe, NgIf } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagOverviewSectionCardContentContainerComponent {
-  flags: Observable<any[]> = this.featureFlagsService.featureFlags$;
-  isLoading: Observable<boolean> = this.featureFlagsService.isLoadingFeatureFlags$;
+  flags: Observable<any[]> = this.featureFlagsService.mockFeatureFlags$;
+  isLoading: Observable<boolean> = this.featureFlagsService.isLoadingMockFeatureFlags$;
   displayedColumns: string[] = ['name'];
 
   constructor(public featureFlagsService: FeatureFlagsService) {
-    this.featureFlagsService.fetchFeatureFlags();
+    this.featureFlagsService.fetchMockFeatureFlags();
 
     this.flags.subscribe((flags) => {
       console.log('flags', flags);
