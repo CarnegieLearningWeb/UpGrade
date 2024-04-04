@@ -9,7 +9,6 @@ import { TranslateModule } from '@ngx-translate/core';
   templateUrl: './common-root-page-header-container.component.html',
   styleUrl: './common-root-page-header-container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None,
 })
 export class CommonRootPageHeaderContainerComponent {
   @Input() title!: string;

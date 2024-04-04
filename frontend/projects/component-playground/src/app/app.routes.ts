@@ -9,8 +9,8 @@ export const appRoutes: Routes = [
   {
     path: 'test-component',
     loadComponent: () =>
-      import(
-        '@upgrade/src/app/shared-standalone-component-lib/components/common-section-card/common-section-card.component'
-      ).then((c) => c.CommonSectionCardComponent),
+      import('@shared-standalone-component-lib/components/common-section-card/common-section-card.component').then(
+        (c) => c.CommonSectionCardComponent
+      ),
   },
 ];
