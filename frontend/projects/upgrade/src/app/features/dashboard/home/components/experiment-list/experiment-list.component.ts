@@ -14,7 +14,6 @@ import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-
 import { debounceTime } from 'rxjs/operators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
-import { SettingsService } from '../../../../../core/settings/settings.service';
 import { ImportExperimentComponent } from '../modal/import-experiment/import-experiment.component';
 import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { ExportModalComponent } from '../modal/export-experiment/export-experiment.component';
@@ -66,8 +65,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   constructor(
     private experimentService: ExperimentService,
     private dialog: MatDialog,
-    private authService: AuthService,
-    private settingsService: SettingsService
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -122,7 +120,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
               !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length
             );
           case EXPERIMENT_SEARCH_KEY.NAME:
-            return data.name.toLowerCase().includes(filter) || this.isPartitionFound(data, filter);
+            return data.name.toLocaleLowerCase().includes(filter) || this.isPartitionFound(data, filter);
           case EXPERIMENT_SEARCH_KEY.TAG:
             return !!data.tags.filter((tags) => tags.toLocaleLowerCase().includes(filter)).length;
           case EXPERIMENT_SEARCH_KEY.CONTEXT:
