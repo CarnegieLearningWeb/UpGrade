@@ -32,8 +32,8 @@ export class LogsEffects {
         this.store$.pipe(select(selectTotalAuditLogs))
       ),
       filter(
-        ([fromStart, skipAuditLog, __, isAuditLogLoading, totalAuditLogs]) =>
-          !isAuditLogLoading && (skipAuditLog < totalAuditLogs || totalAuditLogs === null || fromStart)
+        ([fromStart, skipAuditLog, __, , totalAuditLogs]) =>
+          skipAuditLog < totalAuditLogs || totalAuditLogs === null || fromStart
       ),
       tap(([fromStart]) => {
         this.store$.dispatch(logsActions.actionSetIsAuditLogLoading({ isAuditLogLoading: true }));
