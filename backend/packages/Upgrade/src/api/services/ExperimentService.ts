@@ -84,6 +84,8 @@ import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
+import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
+import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 
 const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
@@ -1878,9 +1880,13 @@ export class ExperimentService {
     return { ...experiment, factors: updatedFactors, conditionPayloads: updatedConditionPayloads };
   }
 
-  private includeExcludeSegmentCreation(
+  public includeExcludeSegmentCreation(
     experimentSegment: ParticipantsValidator,
-    experimentDocSegmentData: ExperimentSegmentInclusion | ExperimentSegmentExclusion,
+    experimentDocSegmentData:
+      | ExperimentSegmentInclusion
+      | ExperimentSegmentExclusion
+      | FeatureFlagSegmentExclusion
+      | FeatureFlagSegmentInclusion,
     experimentId: string,
     context: string[],
     isIncludeMode: boolean
