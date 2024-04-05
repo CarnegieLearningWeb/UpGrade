@@ -1,4 +1,4 @@
-import { JsonController, Authorized, Post, Body, CurrentUser, Delete, Param, Put, Req } from 'routing-controllers';
+import { JsonController, Authorized, Post, Body, CurrentUser, Delete, Param, Put, Req, Get } from 'routing-controllers';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { User } from '../models/User';
@@ -21,9 +21,8 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
  *       - name
  *       - key
  *       - description
- *       - variationType
  *       - status
- *       - variations
+ *       - context
  *     properties:
  *       id:
  *         type: string
@@ -33,29 +32,101 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
  *         type: string
  *       description:
  *         type: string
- *       variationType:
- *         type: string
  *       status:
- *         type: boolean
- *       variations:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               value:
- *                type: string
- *               name:
- *                type: string
- *               description:
- *                type: string
- *               defaultVariation:
- *                type: boolean[]
+ *         type: string
+ *         enum: [archived, enabled, disabled]
+ *       context:
+ *         type: array
+ *         items:
+ *           type: string
+ *       tags:
+ *         type: array
+ *         items:
+ *           type: string
+ *       featureFlagSegmentInclusion:
+ *          type: object
+ *          properties:
+ *              segment:
+ *                type: object
+ *                properties:
+ *                  type:
+ *                    type: string
+ *                    example: private
+ *                  individualForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        userId:
+ *                          type: string
+ *                          example: user1
+ *                  groupForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        groupId:
+ *                          type: string
+ *                          example: school1
+ *                        type:
+ *                           type: string
+ *                           example: schoolId
+ *                  subSegments:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        id:
+ *                          type: string
+ *                        name:
+ *                          type: string
+ *                        context:
+ *                          type: string
+ *       featureFlagSegmentExclusion:
+ *          type: object
+ *          properties:
+ *              segment:
+ *                type: object
+ *                properties:
+ *                  type:
+ *                    type: string
+ *                    example: private
+ *                  individualForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        userId:
+ *                          type: string
+ *                          example: user1
+ *                  groupForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        groupId:
+ *                          type: string
+ *                          example: school1
+ *                        type:
+ *                           type: string
+ *                           example: schoolId
+ *                  subSegments:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        id:
+ *                          type: string
+ *                        name:
+ *                          type: string
+ *                        context:
+ *                          type: string
  */
 
 /**
  * @swagger
  * flags:
- *   - name: Feature flags
+ *   - name: Feature Flags
  *     description: Get Feature flags related data
  */
 
@@ -63,6 +134,64 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
 @JsonController('/flags')
 export class FeatureFlagsController {
   constructor(public featureFlagService: FeatureFlagService) {}
+
+  /**
+   * @swagger
+   * /flags:
+   *    get:
+   *       description: Get all the feature flags
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Feature Flag List
+   *            schema:
+   *              type: array
+   *              items:
+   *                $ref: '#/definitions/FeatureFlag'
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
+
+  @Get()
+  public find(@Req() request: AppRequest): Promise<FeatureFlag[]> {
+    return this.featureFlagService.find(request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/{id}:
+   *    get:
+   *       description: Get feature flag by id
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Feature Flag Id
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get Feature Flag By Id
+   *            schema:
+   *                $ref: '#/definitions/FeatureFlag'
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Feature Flag not found
+   *          '500':
+   *            description: id should be of type UUID
+   */
+  @Get('/:id')
+  public findOne(@Param('id') id: string, @Req() request: AppRequest): Promise<FeatureFlag | undefined> {
+    return this.featureFlagService.findOne(id, request.logger);
+  }
 
   /**
    * @swagger
@@ -103,13 +232,14 @@ export class FeatureFlagsController {
    *                     type: string
    *                     enum: [ASC, DESC]
    *       tags:
-   *         - Feature flags
+   *         - Feature Flags
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
    *            description: Get Paginated Experiments
    */
+
   @Post('/paginated')
   public async paginatedFind(
     @Body({ validate: true })
@@ -157,7 +287,7 @@ export class FeatureFlagsController {
    *             $ref: '#/definitions/FeatureFlag'
    *           description: Feature flag structure
    *       tags:
-   *         - Feature flags
+   *         - Feature Flags
    *       produces:
    *         - application/json
    *       responses:
@@ -182,19 +312,21 @@ export class FeatureFlagsController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: flagId
-   *           required: true
+   *           name: statusUpdate
+   *           description: Updating the featur flag's status
    *           schema:
-   *             type: string
-   *           description: Flag ID
-   *         - in: body
-   *           name: status
-   *           required: true
-   *           schema:
-   *             type: boolean
-   *           description: Flag State
+   *             type: object
+   *             required:
+   *              - flagId
+   *              - status
+   *             properties:
+   *              flagId:
+   *                type: string
+   *              status:
+   *                type: string
+   *                enum: [archived, enabled, disabled]
    *       tags:
-   *         - Feature flags
+   *         - Feature Flags
    *       produces:
    *         - application/json
    *       responses:
@@ -222,7 +354,7 @@ export class FeatureFlagsController {
    *             type: string
    *           description: Feature flag Id
    *       tags:
-   *         - Feature flags
+   *         - Feature Flags
    *       produces:
    *         - application/json
    *       responses:
@@ -265,7 +397,7 @@ export class FeatureFlagsController {
    *             $ref: '#/definitions/FeatureFlag'
    *           description: Feature Flag Structure
    *       tags:
-   *         - Feature flags
+   *         - Feature Flags
    *       produces:
    *         - application/json
    *       responses:
