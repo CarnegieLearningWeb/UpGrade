@@ -58,6 +58,7 @@ export interface Environment {
   pollingInterval: number;
   pollingLimit: number;
   api: APIEndpoints;
+  featureFlagNavToggle: boolean;
 }
 
 export interface RuntimeEnvironmentConfig {
@@ -65,4 +66,5 @@ export interface RuntimeEnvironmentConfig {
   googleClientId?: string;
   endpointApi?: string;
   apiBaseUrl?: string;
+  featureFlagNavToggle?: boolean;
 }
