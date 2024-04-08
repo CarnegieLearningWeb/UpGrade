@@ -45,7 +45,6 @@ export class LogsComponent implements OnInit, OnDestroy {
     { value: SERVER_ERROR.CONDITION_NOT_FOUND, viewValue: SERVER_ERROR.CONDITION_NOT_FOUND },
   ];
   filterOptions = [];
-  isAuditLoading$ = this.logsService.isAuditLogLoading$;
   selectedFilterOption: string;
   // Used to persist previous tab filter option
   selectedOptionForAnotherTab: string;

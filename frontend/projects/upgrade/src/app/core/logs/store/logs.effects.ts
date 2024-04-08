@@ -6,7 +6,6 @@ import { mergeMap, map, catchError, withLatestFrom, filter, tap } from 'rxjs/ope
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../../core.state';
 import {
-  selectIsAuditLogLoading,
   selectTotalAuditLogs,
   selectTotalErrorLogs,
   selectIsErrorLogLoading,
@@ -28,11 +27,10 @@ export class LogsEffects {
       withLatestFrom(
         this.store$.pipe(select(selectSkipAuditLog)),
         this.store$.pipe(select(selectAuditFilterType)),
-        this.store$.pipe(select(selectIsAuditLogLoading)),
         this.store$.pipe(select(selectTotalAuditLogs))
       ),
       filter(
-        ([fromStart, skipAuditLog, __, , totalAuditLogs]) =>
+        ([fromStart, skipAuditLog, , totalAuditLogs]) =>
           skipAuditLog < totalAuditLogs || totalAuditLogs === null || fromStart
       ),
       tap(([fromStart]) => {
