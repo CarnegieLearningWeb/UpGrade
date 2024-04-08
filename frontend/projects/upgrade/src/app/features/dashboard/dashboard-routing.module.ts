@@ -35,7 +35,7 @@ const routes: Routes = [
         },
       },
       {
-        path: 'featureFlags',
+        path: 'featureflags',
         component: FeatureFlagRootPageComponent,
         data: {
           title: 'app-header.title.feature-flag',

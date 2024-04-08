@@ -123,7 +123,7 @@ export class FeatureFlagsEffects {
       switchMap((id) =>
         this.featureFlagsDataService.deleteFeatureFlag(id).pipe(
           map((data: any) => {
-            this.router.navigate(['/featureFlags']);
+            this.router.navigate(['/featureflags']);
             return FeatureFlagsActions.actionDeleteFeatureFlagSuccess({ flag: data[0] });
           }),
           catchError(() => [FeatureFlagsActions.actionDeleteFeatureFlagFailure()])

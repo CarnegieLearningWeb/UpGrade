@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonRootPageComponent } from '../../../../../shared-standalone-component-lib/components';
-import { FeatureFlagRootPageHeaderComponent } from './child-components/feature-flag-root-page-header/feature-flag-root-page-header.component';
+import { FeatureFlagRootPageHeaderComponent } from './projected-components/feature-flag-root-page-header/feature-flag-root-page-header.component';
 import { CommonSectionCardListComponent } from '../../../../../shared-standalone-component-lib/components/common-section-card-list/common-section-card-list.component';
-import { FeatureFlagRootSectionCardListComponent } from './child-components/feature-flag-root-section-card-list/feature-flag-root-section-card-list.component';
+import { FeatureFlagRootSectionCardListComponent } from './projected-components/feature-flag-root-section-card-list/feature-flag-root-section-card-list.component';
 
 @Component({
   selector: 'app-feature-flag-root-page',
