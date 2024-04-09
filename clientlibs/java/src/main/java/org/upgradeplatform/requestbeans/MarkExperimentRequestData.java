@@ -6,7 +6,7 @@ public class MarkExperimentRequestData {
 
   private String site;
   private String target;
-  private Condition assignedCondition;
+  private Condition assignedCondition = new Condition();
 
   public MarkExperimentRequestData() {
     super();
@@ -22,7 +22,7 @@ public class MarkExperimentRequestData {
     super();
     this.site = site;
     this.target = target;
-    this.assignedCondition = assignedCondition;
+    this.assignedCondition = assignedCondition != null ? assignedCondition : new Condition();
   }
 
   public String getSite() {
