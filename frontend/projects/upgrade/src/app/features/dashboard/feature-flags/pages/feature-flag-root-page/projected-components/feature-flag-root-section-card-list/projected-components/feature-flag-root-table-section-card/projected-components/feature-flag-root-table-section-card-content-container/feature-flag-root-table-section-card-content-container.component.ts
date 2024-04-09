@@ -3,11 +3,12 @@ import { FeatureFlagsService } from '../../../../../../../../../../../core/featu
 import { Observable } from 'rxjs/internal/Observable';
 import { MatTableModule } from '@angular/material/table';
 import { AsyncPipe, NgIf } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-feature-flag-root-table-section-card-content-container',
   standalone: true,
-  imports: [MatTableModule, AsyncPipe, NgIf],
+  imports: [AsyncPipe, NgIf, MatTableModule, MatButtonModule],
   templateUrl: './feature-flag-root-table-section-card-content-container.component.html',
   styleUrl: './feature-flag-root-table-section-card-content-container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

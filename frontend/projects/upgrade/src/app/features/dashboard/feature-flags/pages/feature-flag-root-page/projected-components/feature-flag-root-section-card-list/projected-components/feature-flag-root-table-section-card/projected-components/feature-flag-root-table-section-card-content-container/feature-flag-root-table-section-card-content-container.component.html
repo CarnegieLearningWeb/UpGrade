@@ -8,7 +8,7 @@
   </ng-template>
 
   <ng-template #table>
-    <mat-table [dataSource]="(flags | async)">
+    <table mat-table [dataSource]="(flags | async)">
 
       <!-- Flag Column -->
       <ng-container matColumnDef="name">
@@ -20,6 +20,6 @@
 
       <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
       <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-    </mat-table>
+    </table>
   </ng-template>
 </div>

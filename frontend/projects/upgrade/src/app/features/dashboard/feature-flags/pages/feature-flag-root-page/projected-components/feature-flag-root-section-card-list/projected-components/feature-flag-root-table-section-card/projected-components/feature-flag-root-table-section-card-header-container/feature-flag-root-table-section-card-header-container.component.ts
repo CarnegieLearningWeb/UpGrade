@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-feature-flag-root-table-section-card-header-container',
@@ -6,7 +7,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   templateUrl: './feature-flag-root-table-section-card-header-container.component.html',
   styleUrl: './feature-flag-root-table-section-card-header-container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [],
+  imports: [MatButtonModule],
 })
 export class FeatureFlagRootTableSectionCardHeaderContainerComponent {
   openAddFlagModal() {
