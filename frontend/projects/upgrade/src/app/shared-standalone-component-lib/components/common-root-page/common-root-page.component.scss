@@ -1,6 +1,4 @@
-@import '../../../../themes/light-theme.scss';
-
-.common-root-page-container {
+::ng-deep .common-root-page-container {
   display: flex;
   flex-direction: column;
   background-color: #f0f2f9; // get this from global var for gray background
