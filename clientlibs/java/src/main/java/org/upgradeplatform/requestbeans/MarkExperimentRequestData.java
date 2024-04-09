@@ -46,7 +46,7 @@ public class MarkExperimentRequestData {
   }
 
   public void setAssignedCondition(Condition assignedCondition) {
-    this.assignedCondition = assignedCondition;
+    this.assignedCondition = assignedCondition != null ? assignedCondition : new Condition();
   }
 
 }
