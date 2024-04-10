@@ -167,11 +167,11 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  // check for experiment condition for user 3
+  // check for experiment condition for user 4
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id, new UpgradeLogger());
   checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
 
-  // mark experiment point for user 2
+  // mark experiment point for user 4
   markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
@@ -195,11 +195,11 @@ export default async function testCase(): Promise<void> {
     3
   );
 
-  // get all experiment condition for user 2
+  // get all experiment condition for user 3
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
-  // mark experiment point for user 2
+  // mark experiment point for user 3
   markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,

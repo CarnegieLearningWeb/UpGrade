@@ -9,7 +9,6 @@ import { individualExperimentStats } from '../mockData/experiment/index';
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsNull,
 } from '../utils/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';

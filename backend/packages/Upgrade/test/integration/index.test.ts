@@ -93,6 +93,7 @@ import {
   StratificationRandomAlgorithmCheck,
 } from './Experiment/stratification/index';
 import { IndividualExperimentEnrollmentCode, GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } from './Experiment/enrollmentCode';
+import { IndividualExperimentExclusionCode, GroupExperimentExclusionCode, ExperimentLevelExclusionCode, WithinSubjectExclusionCode }  from './Experiment/exclusionCode';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -184,46 +185,21 @@ describe('Integration Tests', () => {
     return Scenario1();
   });
 
-  // test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', () => {
-  //   return PreviewScenario1();
-  //
-  // });
-
   test('Experiment Scenario 2 - Individual Assignment With Experiment Consistency', () => {
     return Scenario2();
   });
-
-  // test('Experiment Preview Scenario 2 - Individual Assignment With Experiment Consistency for Preview', () => {
-  //   return PreviewScenario2();
-  //
-  // });
 
   test('Experiment Scenario 3 - Group Assignment With Group Consistency', () => {
     return Scenario3();
   });
 
-  // test('Experiment Preview Scenario 3 - Group Assignment With Group Consistency for Preview', () => {
-  //   return PreviewScenario3();
-  //
-  // });
-
   test('Experiment Scenario 4 - Group Assignment With Individual Consistency', () => {
     return Scenario4();
   });
 
-  // test('Experiment Preview Scenario 4 - Group Assignment With Individual Consistency for Preview', () => {
-  //   return PreviewScenario4();
-  //
-  // });
-
   test('Experiment Scenario 5 - Group Assignment With Experiment Consistency', () => {
     return Scenario5();
   });
-
-  // test('Experiment Preview Scenario 5 - Group Assignment With Experiment Consistency for Preview', () => {
-  //   return PreviewScenario5();
-  //
-  // });
 
   test('Experiment Scenario 6 - Group Switching before assignment Group Assignment With Group Consistency', () => {
     return Scenario6();
@@ -240,11 +216,6 @@ describe('Integration Tests', () => {
   test('Experiment Scenario 10 - Group Switching after assignment Group Assignment With Experiment Consistency', () => {
     return Scenario10();
   });
-
-  // test('Preview User Forced assignment', () => {
-  //   return PreviewForcedAssigned();
-  //
-  // });
 
   test('Revert to Default', () => {
     return RevertToDefault();
@@ -390,6 +361,22 @@ describe('Integration Tests', () => {
     return ExperimentExperimentEnrollmentCode();
   });
 
+  test('Individual Experiment Exclusion Code', () => {
+    return IndividualExperimentExclusionCode();
+  });
+
+  test('Experiment Experiment Exclusion Code', () => {
+    return ExperimentLevelExclusionCode();
+  });
+
+  test('Group Experiment Exclusion Code', () => {
+    return GroupExperimentExclusionCode();
+  });
+
+  test('Within Subject Exclusion Code', () => {
+    return WithinSubjectExclusionCode();
+  });
+
   test('Experiment Context Assignment', () => {
     return ExperimentContextAssignments();
   });
@@ -401,22 +388,6 @@ describe('Integration Tests', () => {
   test('Order For Decision Point', () => {
     return PartitionOrder();
   });
-
-  // test('Experiment Level exclusion of user with FilterMode as IncludeAll', () => {
-  //   return ExperimentExcludeUser();
-  // });
-
-  // test('Experiment Level exclusion of group with FilterMode as IncludeAll', () => {
-  //   return ExperimentExcludeGroup();
-  // });
-
-  // test('Experiment Level inclusion of user with FilterMode as ExcludeAll', () => {
-  //   return ExperimentIncludeUser();
-  // });
-
-  // test('Experiment Level inclusion of group with FilterMode as ExcludeAll', () => {
-  //   return ExperimentIncludeGroup();
-  // });
 
   test('Segments CRUD operations - Create', () => {
     return SegmentCreate();
@@ -478,11 +449,6 @@ describe('Integration Tests', () => {
     return OrderedRoundRobinAlgoCheck();
   });
 
-  // test('Monitored Point for Export', () => {
-  //   return MonitoredPointForExport();
-  //
-  // });
-
   test('Within Subject metrics query check', () => {
     return MetricQueriesCheck();
   });
@@ -506,4 +472,48 @@ describe('Integration Tests', () => {
   test('Working group change after user exclusion for group consistency', () => {
     return GroupConsistency();
   });
+
+  // test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', () => {
+  //   return PreviewScenario1();
+  // });
+
+  // test('Experiment Preview Scenario 2 - Individual Assignment With Experiment Consistency for Preview', () => {
+  //   return PreviewScenario2();
+  // });
+
+  // test('Experiment Preview Scenario 3 - Group Assignment With Group Consistency for Preview', () => {
+  //   return PreviewScenario3();
+  // });
+
+  // test('Experiment Preview Scenario 4 - Group Assignment With Individual Consistency for Preview', () => {
+  //   return PreviewScenario4();
+  // });
+
+  // test('Experiment Preview Scenario 5 - Group Assignment With Experiment Consistency for Preview', () => {
+  //   return PreviewScenario5();
+  // });
+
+  // test('Preview User Forced assignment', () => {
+  //   return PreviewForcedAssigned();
+  // });
+
+  // test('Monitored Point for Export', () => {
+  //   return MonitoredPointForExport();
+  // });
+
+  // test('Experiment Level exclusion of user with FilterMode as IncludeAll', () => {
+  //   return ExperimentExcludeUser();
+  // });
+
+  // test('Experiment Level exclusion of group with FilterMode as IncludeAll', () => {
+  //   return ExperimentExcludeGroup();
+  // });
+
+  // test('Experiment Level inclusion of user with FilterMode as ExcludeAll', () => {
+  //   return ExperimentIncludeUser();
+  // });
+
+  // test('Experiment Level inclusion of group with FilterMode as ExcludeAll', () => {
+  //   return ExperimentIncludeGroup();
+  // });
 });

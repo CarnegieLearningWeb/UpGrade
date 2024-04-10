@@ -7,7 +7,6 @@ import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsNull,
 } from '../utils/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UserService } from '../../../src/api/services/UserService';

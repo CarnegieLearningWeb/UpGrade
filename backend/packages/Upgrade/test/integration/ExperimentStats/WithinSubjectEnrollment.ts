@@ -6,11 +6,7 @@ import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 import { withinSubjectExperiment } from '../mockData/experiment/index';
-import {
-  checkMarkExperimentPointForUser,
-  checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsNull,
-} from '../utils/index';
+import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import { previewUsers } from '../mockData/previewUsers/index';
