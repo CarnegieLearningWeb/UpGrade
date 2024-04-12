@@ -110,6 +110,7 @@ export interface IExperimentSortParams {
 
 export interface IMetricUnit {
   key: string | string[];
+  context?: string[];
   children?: IMetricUnit[];
   metadata?: { type: IMetricMetaData };
   allowedData?: string[];
