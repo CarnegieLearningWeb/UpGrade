@@ -170,6 +170,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   filterExperimentByChips(tagValue: FLAG_SEARCH_SORT_KEY, type: EXPERIMENT_SEARCH_KEY) {
+    this.searchValue = tagValue;
     this.selectedExperimentFilterOption = type;
     this.applyFilter(tagValue);
     this.setSearchKey();
@@ -197,7 +198,9 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   setChipsVisible(experimentId: string, type: string) {
-    const index = this[type].findIndex((data) => data.experimentId === experimentId);
+    const index = this[type].findIndex((data) => {
+      data.experimentId === experimentId;
+    });
     if (index !== -1) {
       this[type][index] = { experimentId, visibility: true };
     } else {

@@ -15,7 +15,8 @@ import { SegmentExperimentListComponent } from '../../components/modal/segment-e
 import { SEGMENT_STATUS } from 'upgrade_types';
 import { SegmentStatusPipeType } from '../../../../../shared/pipes/segment-status.pipe';
 import { ExportSegmentComponent } from '../../components/modal/export-segment/export-segment.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { SEGMENT_SEARCH_KEY } from '../../../../../../../../../../types/src/Experiment/enums';
 @Component({
   selector: 'view-segment',
   templateUrl: './view-segment.component.html',
@@ -36,7 +37,8 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
     private segmentsService: SegmentsService,
     private dialog: MatDialog,
     private authService: AuthService,
-    private _Activatedroute: ActivatedRoute
+    private _Activatedroute: ActivatedRoute,
+    private router: Router
   ) {}
 
   get SegmentStatus() {
@@ -88,6 +90,12 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
     });
   }
 
+  searchSegment(type: SEGMENT_SEARCH_KEY, value: string) {
+    this.segmentsService.setSearchKey(type);
+    this.segmentsService.setSearchString(value);
+    this.router.navigate(['/segments']);
+  }
+
   deleteSegment() {
     const dialogRef = this.dialog.open(DeleteComponent, {
       panelClass: 'delete-modal',
@@ -132,5 +140,9 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
     this.segmentSub.unsubscribe();
     this.permissionsSub.unsubscribe();
     this.segmentIdSub.unsubscribe();
+  }
+
+  get SegmentSearchKey() {
+    return SEGMENT_SEARCH_KEY;
   }
 }

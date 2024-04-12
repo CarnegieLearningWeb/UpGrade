@@ -2,6 +2,11 @@ import { createReducer, Action, on } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
 import { SegmentState, Segment } from './segments.model';
 import * as SegmentsActions from './segments.actions';
+import {
+  SEGMENT_SEARCH_KEY,
+  SEGMENT_SORT_AS,
+  SEGMENT_SORT_KEY,
+} from '../../../../../../../../types/src/Experiment/enums';
 
 export const adapter: EntityAdapter<Segment> = createEntityAdapter<Segment>();
 
@@ -11,6 +16,10 @@ export const initialState: SegmentState = adapter.getInitialState({
   isLoadingSegments: false,
   allExperimentSegmentsInclusion: null,
   allExperimentSegmentsExclusion: null,
+  searchKey: SEGMENT_SEARCH_KEY.ALL,
+  searchString: null,
+  sortKey: SEGMENT_SORT_KEY.NAME,
+  sortAs: SEGMENT_SORT_AS.ASCENDING,
 });
 
 const reducer = createReducer(
@@ -43,6 +52,10 @@ const reducer = createReducer(
   on(SegmentsActions.actionGetSegmentByIdSuccess, (state, { segment }) =>
     adapter.upsertOne(segment, { ...state, isLoadingSegments: false })
   ),
+  on(SegmentsActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),
+  on(SegmentsActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchString })),
+  on(SegmentsActions.actionSetSortKey, (state, { sortKey }) => ({ ...state, sortKey })),
+  on(SegmentsActions.actionSetSortingType, (state, { sortingType }) => ({ ...state, sortAs: sortingType })),
   on(SegmentsActions.actionDeleteSegmentSuccess, (state, { segment }) => adapter.removeOne(segment.id, state)),
   on(SegmentsActions.actionSetIsLoadingSegments, (state, { isLoadingSegments }) => ({ ...state, isLoadingSegments }))
 );

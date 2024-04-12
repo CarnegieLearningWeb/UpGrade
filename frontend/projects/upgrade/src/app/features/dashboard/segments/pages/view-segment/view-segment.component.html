@@ -91,7 +91,7 @@
       <div class="section-data section-data--fixed">
         <span class="ft-16-600 section-data-title">{{ 'global.context.text' | translate }}</span>
         <mat-chip *ngIf="segment.context != 'ALL'">
-          <span class="ft-12-600 chip-label">
+          <span class="ft-12-600 chip-label" (click)="searchSegment(SegmentSearchKey.CONTEXT, segment.context)">
             {{ segment.context }}
           </span>
         </mat-chip>

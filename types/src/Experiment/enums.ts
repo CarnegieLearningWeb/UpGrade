@@ -176,6 +176,24 @@ export enum SEGMENT_STATUS {
   UNLOCKED = 'Unlocked',
 }
 
+export enum SEGMENT_SEARCH_KEY {
+  ALL = 'all',
+  NAME = 'name',
+  STATUS = 'status',
+  CONTEXT = 'context',
+}
+
+export enum SEGMENT_SORT_KEY {
+  NAME = 'name',
+  STATUS = 'state',
+  UPDATED_AT = 'updatedAt',
+}
+
+export enum SEGMENT_SORT_AS {
+  ASCENDING = 'ASC',
+  DESCENDING = 'DESC',
+}
+
 export enum INCLUSION_CRITERIA {
   INCLUDE_SPECIFIC = 'Include Specific',
   EXCEPT = 'Include All Except...',

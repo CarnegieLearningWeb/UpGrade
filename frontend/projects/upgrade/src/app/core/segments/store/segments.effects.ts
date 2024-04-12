@@ -2,12 +2,12 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
-import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operators';
+import { catchError, filter, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import { AppState, NotificationService } from '../../core.module';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
-import { Segment, SegmentReturnedObj, UpsertSegmentType } from './segments.model';
-import { selectAllSegments } from './segments.selectors';
+import { Segment, UpsertSegmentType } from './segments.model';
+import { selectAllSegments, selectSearchString } from './segments.selectors';
 import JSZip from 'jszip';
 
 @Injectable()
@@ -53,6 +53,35 @@ export class SegmentsEffects {
         )
       )
     )
+  );
+
+  fetchSegmentOnSearchString$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(SegmentsActions.actionSetSearchString),
+        map((action) => action.searchString),
+        tap((searchString) => {
+          // Allow empty string as we erasing text from search input
+          if (searchString !== null) {
+            this.store$.dispatch(SegmentsActions.actionFetchSegments({ fromStarting: true }));
+          }
+        })
+      ),
+    { dispatch: false }
+  );
+
+  fetchSegmentOnSearchKeyChange$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(SegmentsActions.actionSetSearchKey),
+        withLatestFrom(this.store$.pipe(select(selectSearchString))),
+        tap(([_, searchString]) => {
+          if (searchString) {
+            this.store$.dispatch(SegmentsActions.actionFetchSegments({ fromStarting: true }));
+          }
+        })
+      ),
+    { dispatch: false }
   );
 
   upsertSegment$ = createEffect(() =>

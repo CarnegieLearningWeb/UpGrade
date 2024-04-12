@@ -6,6 +6,8 @@ import {
   EXPERIMENT_SORT_AS,
   EXPERIMENT_SORT_KEY,
 } from '../experiments/store/experiments.model';
+import { SegmentLocalStorageKeys, SegmentState } from '../segments/store/segments.model';
+import { SEGMENT_SEARCH_KEY, SEGMENT_SORT_AS, SEGMENT_SORT_KEY } from '../../../../../../../types/src/Experiment/enums';
 
 const APP_PREFIX = 'UPGRADE-';
 
@@ -18,6 +20,11 @@ export class LocalStorageService {
     const experimentSortType = this.getItem(ExperimentLocalStorageKeys.EXPERIMENT_SORT_TYPE);
     const experimentSearchKey = this.getItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_KEY);
     const experimentSearchString = this.getItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_STRING);
+
+    const segmentSortKey = this.getItem(SegmentLocalStorageKeys.SEGMENT_SORT_KEY);
+    const segmentSortType = this.getItem(SegmentLocalStorageKeys.SEGMENT_SORT_TYPE);
+    const segmentSearchKey = this.getItem(SegmentLocalStorageKeys.SEGMENT_SEARCH_KEY);
+    const segmentSearchString = this.getItem(SegmentLocalStorageKeys.SEGMENT_SEARCH_STRING);
 
     // 1. Populate experiment state
     const experimentState: ExperimentState = {
@@ -45,8 +52,21 @@ export class LocalStorageService {
       currentUserSelectedContext: null,
     };
 
+    const segmentState: SegmentState = {
+      ids: [],
+      entities: {},
+      isLoadingSegments: false,
+      allExperimentSegmentsInclusion: null,
+      allExperimentSegmentsExclusion: null,
+      searchKey: segmentSearchKey as SEGMENT_SEARCH_KEY,
+      searchString: segmentSearchString || null,
+      sortKey: (segmentSortKey as SEGMENT_SORT_KEY) || SEGMENT_SORT_KEY.NAME,
+      sortAs: (segmentSortType as SEGMENT_SORT_AS) || SEGMENT_SORT_AS.ASCENDING,
+    };
+
     const state = {
       experiments: experimentState, // experiment state,
+      segments: segmentState,
     };
     return state;
   }
