@@ -85,13 +85,16 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   ) {}
 
   optionsSub() {
+    console.log('this.currentContext:', this.currentContext, this.experimentInfo?.context);
     this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics) => {
       this.allMetrics = metrics;
       // Hide global metrics options if Within-subjects is selected
       this.options =
         this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
           ? this.allMetrics.filter((metric) => metric.children.length > 0)
-          : this.allMetrics;
+          : this.allMetrics.filter((metric) =>
+              metric.context.includes(this.currentContext || this.experimentInfo?.context)
+            );
     });
   }
 
@@ -711,7 +714,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges() {
     if (this.isContextChanged || this.isExperimentTypeChanged) {
-      this.isContextChanged = false;
+      this.optionsSub();
       this.isExperimentTypeChanged = false;
       this.queries.clear();
       this.metricsDataSource.next(this.queries.controls);
