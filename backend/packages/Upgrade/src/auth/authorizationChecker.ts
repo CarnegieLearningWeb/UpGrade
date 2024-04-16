@@ -31,7 +31,7 @@ export function authorizationChecker(): (action: Action, roles: any[]) => Promis
       action.request.user = userDoc;
       return true;
     } catch (error) {
-      return env.auth.authCheck ? false : true;
+      return false;
     }
   };
 }
