@@ -8,5 +8,4 @@ export const MOCK_APP_NAMES = {
   GENERAL_TS_FRONTEND_5_0: 'General TS Browser v5.0',
   BDAY_APP: 'Birthday App Browser',
   PORTAL_APP: 'Mock Portal',
-  MATHSTREAM_AdaptiveSegmentSwapExperiment: 'Mathstream: AdaptiveSegmentSwapExperiment',
 };

@@ -29,6 +29,7 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
       .then((config: RuntimeEnvironmentConfig) => {
         env.apiBaseUrl = config.endpointApi || config.apiBaseUrl;
         env.googleClientId = config.gapiClientId || config.googleClientId;
+        env.featureFlagNavToggle = config.featureFlagNavToggle ?? env.featureFlagNavToggle ?? false;
       })
       .catch((error) => {
         console.log({ error });
