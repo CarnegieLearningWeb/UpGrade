@@ -1,11 +1,6 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
-import { SEGMENT_TYPE, SEGMENT_STATUS } from 'upgrade_types';
-import {
-  SEGMENT_SEARCH_KEY,
-  SEGMENT_SORT_AS,
-  SEGMENT_SORT_KEY,
-} from '../../../../../../../../types/src/Experiment/enums';
+import { SEGMENT_TYPE, SEGMENT_STATUS, SEGMENT_SEARCH_KEY, SEGMENT_SORT_AS, SEGMENT_SORT_KEY } from 'upgrade_types';
 export { SEGMENT_STATUS };
 
 export enum NewSegmentDialogEvents {

@@ -18,7 +18,7 @@ import { SegmentInput, SegmentLocalStorageKeys, UpsertSegmentType } from './stor
 import { filter, first, map, tap } from 'rxjs/operators';
 import { Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
-import { SEGMENT_SEARCH_KEY, SEGMENT_SORT_AS, SEGMENT_SORT_KEY } from '../../../../../../../types/src/Experiment/enums';
+import { SEGMENT_SEARCH_KEY, SEGMENT_SORT_AS, SEGMENT_SORT_KEY } from 'upgrade_types';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 
 @Injectable({ providedIn: 'root' })

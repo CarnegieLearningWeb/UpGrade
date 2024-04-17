@@ -28,6 +28,9 @@ export {
   CONDITION_ORDER,
   CACHE_PREFIX,
   ASSIGNMENT_ALGORITHM,
+  SEGMENT_SEARCH_KEY,
+  SEGMENT_SORT_AS,
+  SEGMENT_SORT_KEY,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,

@@ -7,7 +7,7 @@ import {
   EXPERIMENT_SORT_KEY,
 } from '../experiments/store/experiments.model';
 import { SegmentLocalStorageKeys, SegmentState } from '../segments/store/segments.model';
-import { SEGMENT_SEARCH_KEY, SEGMENT_SORT_AS, SEGMENT_SORT_KEY } from '../../../../../../../types/src/Experiment/enums';
+import { SEGMENT_SEARCH_KEY, SEGMENT_SORT_AS, SEGMENT_SORT_KEY } from 'upgrade_types';
 
 const APP_PREFIX = 'UPGRADE-';
 
