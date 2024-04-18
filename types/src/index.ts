@@ -31,6 +31,7 @@ export {
   SEGMENT_SEARCH_KEY,
   SEGMENT_SORT_AS,
   SEGMENT_SORT_KEY,
+  FEATURE_FLAG_STATUS,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,
