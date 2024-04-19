@@ -5,7 +5,7 @@ import * as uuid from 'uuid';
 
 define(ExperimentUser, (faker: typeof Faker) => {
   const id = uuid.v4();
-  const group = { class: faker.random.number(5), teacher: faker.name.firstName(), school: faker.name.findName };
+  const group: any = { class: faker.random.number(5), teacher: faker.name.firstName(), school: faker.name.findName };
 
   const user = new ExperimentUser();
   user.id = id;

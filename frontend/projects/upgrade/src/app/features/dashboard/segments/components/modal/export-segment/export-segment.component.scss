@@ -1,0 +1,25 @@
+.export-segment-container {
+  .title {
+    display: block;
+    padding: 40px 40px 0;
+    height: 108px;
+    border-bottom: 1px solid var(--light-grey);
+  }
+
+  &-form {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+    padding: 0 40px 30px;
+
+    mat-form-field {
+      width: 100%;
+    }
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 40px 40px;
+  }
+}

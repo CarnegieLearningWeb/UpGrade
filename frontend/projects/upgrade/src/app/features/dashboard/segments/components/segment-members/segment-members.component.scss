@@ -1,94 +1,105 @@
-::ng-deep .mat-optgroup.hideLabel .mat-optgroup-label {
-  display: none;
-}
-
 .segment-members {
-  .members-table {
-    height: 190px;
-    overflow: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 280px;
 
-    mat-header-row {
-      min-height: 35px;
-    }
+  .members-table-container {
+    height: 200px;
 
-    mat-row {
-      min-height: 46px;
-      max-height: 46px;
-    }
+    .members-table {
+      margin-top: -10px;
+      max-height: 200px;
+      overflow: auto;
 
-    mat-header-cell {
-      justify-content: left;
-      margin-right: 15px;
-      color: var(--grey-6);
-    }
+      mat-header-row {
+        min-height: 35px;
+        max-height: 35px;
+      }
 
-    mat-cell {
-      justify-content: left;
-      margin-right: 15px;
-    }
+      mat-row {
+        min-height: 46px;
+        max-height: 46px;
+      }
 
-    .cdk-column-removeMember {
-      margin-right: 0;
-      padding-right: 0;
-      flex: 0 0 10%;
-      justify-content: left;
-    }
+      mat-header-cell {
+        justify-content: left;
+        margin-right: 15px;
+        color: var(--grey-6);
+      }
 
-    .cdk-column-type {
-      flex: 0 0 30%;
-      justify-content: left;
-    }
-    .cdk-column-id {
-      flex: 0 0 55%;
-      justify-content: left;
-    }
-    .cdk-column-memberNumber {
-      flex: 0 0 10%;
-      justify-content: left;
-    }
+      mat-cell {
+        justify-content: left;
+        margin-right: 15px;
+      }
 
-    .remove-icon {
-      position: relative;
-      top: -3px;
-      width: 18px;
-      height: 18px;
-      font-size: var(--text-size-x-large);
+      .cdk-column-removeMember {
+        margin-right: 0;
+        padding-right: 0;
+        flex: 0 0 15%;
+        justify-content: center;
+      }
 
-      &:hover {
-        cursor: pointer;
+      .cdk-column-type {
+        flex: 0 0 30%;
+        justify-content: left;
+      }
+
+      .cdk-column-id {
+        flex: 0 0 50%;
+        justify-content: left;
+      }
+
+      .import-csv {
+        color: var(--blue);
+        &:hover {
+          cursor: pointer;
+        }
+      }
+
+      .disabled {
+        color: var(--light-blue);
+        cursor: default;
+      }
+
+      .select-file {
+        display: none;
+      }
+
+      .remove-icon {
+        margin-right: -42px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: var(--text-size-x-large);
+        color: gray;
+
+        &:hover {
+          cursor: pointer;
+        }
+      }
+
+      mat-form-field {
+        width: 100%;
+        text-align: left;
       }
     }
 
-    mat-form-field {
-      width: 100%;
-      text-align: left;
+    .add-member {
+      margin-top: 10px;
+      outline: 0;
+      border: 0;
+      background-color: transparent;
+      color: var(--blue);
     }
-  }
-
-  .add-member {
-    margin-top: 20px;
-    outline: 0;
-    border: 0;
-    background-color: transparent;
-    color: var(--blue);
   }
 
   .button-container {
     display: flex;
     justify-content: space-between;
-    margin-top: 10px;
 
     .btn-back {
       margin-left: 0 !important;
     }
-  }
-
-  ::ng-deep .form-control .mat-form-field-underline {
-    bottom: unset;
-    background-color: unset !important;
-  }
-
-  ::ng-deep .mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple {
-    display: none;
   }
 }

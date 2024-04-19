@@ -64,7 +64,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   subSegmentIdsToSend = [];
   userIdsToSend = [];
   groupsToSend = [];
-  groupString = ' ( group )';
+  groupString = ' (group)';
   includeAll = false;
   segmentNotValid = false;
   segmentNotValid2 = false;

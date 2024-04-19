@@ -5,6 +5,7 @@
 
     mat-header-row {
       min-height: 35px;
+      max-height: 35px;
     }
 
     mat-row {
@@ -86,14 +87,5 @@
     .btn-back {
       margin-left: 0 !important;
     }
-  }
-
-  ::ng-deep .form-control .mat-form-field-underline {
-    bottom: unset;
-    background-color: unset !important;
-  }
-
-  ::ng-deep .mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple {
-    display: none;
   }
 }

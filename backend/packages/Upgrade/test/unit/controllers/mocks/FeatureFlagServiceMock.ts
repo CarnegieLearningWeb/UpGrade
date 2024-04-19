@@ -1,11 +1,10 @@
-import { User } from 'aws-sdk/clients/appstream';
 import { Service } from 'typedi';
 import {
   IFeatureFlagSearchParams,
   IFeatureFlagSortParams,
 } from '../../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
-import { FeatureFlag } from '../../../../src/api/models/FeatureFlag';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { FeatureFlagValidation } from 'src/api/controllers/validators/FeatureFlagValidator';
 
 @Service()
 export default class FeatureFlagServiceMock {
@@ -22,7 +21,7 @@ export default class FeatureFlagServiceMock {
     return Promise.resolve([]);
   }
 
-  public create(flag: FeatureFlag, currentUser: User, logger: UpgradeLogger): Promise<[]> {
+  public create(flagDTO: FeatureFlagValidation, logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
   }
 
@@ -36,7 +35,7 @@ export default class FeatureFlagServiceMock {
   public delete(featureFlagId: string, logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
   }
-  public update(id: string, flag: FeatureFlag, currentUser: User, logger: UpgradeLogger): Promise<[]> {
+  public update(flagDTO: FeatureFlagValidation, logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
   }
 }

@@ -1,6 +1,6 @@
 import { GroupEnrollment } from './../models/GroupEnrollment';
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusion } from '../models/GroupExclusion';
@@ -14,14 +14,15 @@ import { IndividualEnrollment } from '../models/IndividualEnrollment';
 @Service()
 export class CheckService {
   constructor(
-    @OrmRepository()
+    @InjectRepository()
     private groupEnrollmentRepository: GroupEnrollmentRepository,
-    @OrmRepository()
+    @InjectRepository()
     private individualEnrollmentRepository: IndividualEnrollmentRepository,
-    @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
-    @OrmRepository()
+    @InjectRepository() 
+    private groupExclusionRepository: GroupExclusionRepository,
+    @InjectRepository()
     private individualExclusionRepository: IndividualExclusionRepository,
-    @OrmRepository()
+    @InjectRepository()
     private monitoredExperimentPointRepository: MonitoredDecisionPointRepository
   ) {}
 

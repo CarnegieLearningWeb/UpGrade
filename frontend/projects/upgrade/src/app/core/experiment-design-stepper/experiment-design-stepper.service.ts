@@ -322,11 +322,6 @@ export class ExperimentDesignStepperService {
     const payloadTableData = this.getSimpleExperimentPayloadTableData();
 
     payloadTableData.forEach((payloadRowData: SimpleExperimentPayloadTableRowData) => {
-      // if no custom payload, return early, do not add to array to send to backend
-      if (payloadRowData.payload === payloadRowData.condition) {
-        return;
-      }
-
       const parentCondition = conditions.find((condition) => condition.conditionCode === payloadRowData.condition);
 
       const decisionPoint = decisionPoints.find(
@@ -336,8 +331,8 @@ export class ExperimentDesignStepperService {
       conditionPayloads.push({
         id: payloadRowData.id || uuidv4(),
         payload: { type: PAYLOAD_TYPE.STRING, value: payloadRowData.payload },
-        parentCondition: parentCondition.id,
-        decisionPoint: decisionPoint.id,
+        parentCondition: parentCondition,
+        decisionPoint: decisionPoint,
       });
     });
 
@@ -356,7 +351,7 @@ export class ExperimentDesignStepperService {
         id: uuidv4(), // TODO: maybe not the right place?
         levels: conditionLevelsData,
         condition: conditions,
-        payload: '',
+        payload: conditions,
         weight: '0.0',
         include: true,
       };
@@ -515,11 +510,13 @@ export class ExperimentDesignStepperService {
     }
   }
 
-  createFactorialConditionsConditionPayloadsRequestObject() {
+  createFactorialConditionsConditionPayloadsRequestObject(
+    currentConditions: FactorialConditionRequestObject[] | ExperimentCondition[]
+  ) {
     const tableData = this.getFactorialConditionTableData();
     const factorialConditionPayloadsRequestObject = [];
 
-    tableData.forEach((factorialConditionTableRow) => {
+    tableData.forEach((factorialConditionTableRow, index) => {
       if (factorialConditionTableRow.payload === '' || factorialConditionTableRow.payload === null) {
         return;
       }
@@ -527,7 +524,7 @@ export class ExperimentDesignStepperService {
       factorialConditionPayloadsRequestObject.push({
         id: factorialConditionTableRow.conditionPayloadId || uuidv4(),
         payload: { type: PAYLOAD_TYPE.STRING, value: factorialConditionTableRow.payload },
-        parentCondition: factorialConditionTableRow.id,
+        parentCondition: currentConditions[index],
       });
     });
 

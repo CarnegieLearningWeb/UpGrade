@@ -1,7 +1,6 @@
-import * as dotenv from 'dotenv';
-import * as path from 'path';
-
-import * as pkg from '../package.json';
+import dotenv from 'dotenv';
+import path from 'path';
+import pkg from '../package.json';
 
 import { getOsEnv, getOsPath, getOsPaths, normalizePort, toBool } from './lib/env';
 import { getOsEnvOptional, toNumber, parseAdminUsers } from './lib/env/utils';
@@ -21,6 +20,7 @@ export const env = {
   isProduction: process.env.NODE_ENV === 'production',
   isTest: process.env.NODE_ENV === 'test',
   isDevelopment: process.env.NODE_ENV === 'development',
+  useNewRelic: toBool(getOsEnvOptional('USE_NEW_RELIC')) || false,
   app: {
     name: getOsEnv('APP_NAME'),
     version: (pkg as any).version,

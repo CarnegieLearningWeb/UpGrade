@@ -88,8 +88,8 @@ export class MonitoredDecisionPointRepository extends Repository<MonitoredDecisi
   //         .select('*')
   //         .from(MonitoredExperimentPoint, 'monitoredExperiment')
   //         .where('"monitoredExperiment"."experimentId" IN (:...ids)', { ids: monitorPointIds })
-  //         .skip(offset)
-  //         .take(limit);
+  //         .offset(offset)
+  //         .limit(limit);
   //     }, 'monitoredExperiment')
   //     .leftJoin(ExperimentUser, 'user', 'user.id = "monitoredExperiment"."userId"')
   //     .leftJoin(IndividualAssignment, 'individualAssignment', 'user.id = "individualAssignment"."userId"')

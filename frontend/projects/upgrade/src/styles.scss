@@ -4,20 +4,11 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto:400,700|Material+Icons');
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800&display=swap');
 
-// TODO(v15): As of v15 mat.legacy-core no longer includes default typography styles.
-//  The following line adds:
-//    1. Default typography styles for all components
-//    2. Styles for typography hierarchy classes (e.g. .mat-headline-1)
-//  If you specify typography styles for the components you use elsewhere, you should delete this line.
-//  If you don't need the default component typographies but still want the hierarchy styles,
-//  you can delete this line and instead use:
-//    `@include mat.legacy-typography-hierarchy(mat.define-legacy-typography-config());
-@include mat.all-legacy-component-typographies();
-@include mat.legacy-core();
+@include mat.all-component-typographies();
+@include mat.core();
 
 @import './styles/variables.css';
 @import './themes/light-theme';
-@import './themes/dark-theme';
 @import './styles/utility.scss';
 @import './styles/shared-modal.scss';
 @import './app/features/dashboard/dashboard-root/dashboard-root.theme.scss';
@@ -55,6 +46,8 @@
 @import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
 @import './app/features/dashboard/home/components/modal/state-time-logs/state-time-logs.theme.scss';
 @import './app/features/dashboard/segments/components/modal/import-segment/import-segment.theme.scss';
+@import './app/features/dashboard/experiment-users/components/stratification-factor-list/import-stratifications/import-stratifications.theme.scss';
+@import './app/features/dashboard/experiment-users/components/stratification-factor-list/delete-stratification/delete-stratification.theme.scss';
 @import './app/features/dashboard/segments/components/modal/segment-experiment-list/segment-experiment-list.theme.scss';
 
 @mixin custom-components-theme($theme) {
@@ -93,24 +86,36 @@
   @include import-experiment-component-theme($theme);
   @include state-time-logs-modal-component-theme($theme);
   @include import-segment-component-theme($theme);
+  @include import-stratifications-component-theme($theme);
+  @include delete-stratifications-component-theme($theme);
   @include segment-experiment-list-modal-component-theme($theme);
 }
 
 .light-theme {
-  @include mat.all-legacy-component-themes($light-theme);
+  @include mat.all-component-themes($light-theme);
   @include custom-components-theme($light-theme);
 }
 
-.dark-theme {
-  @include mat.all-legacy-component-themes($dark-theme);
-  @include custom-components-theme($dark-theme);
+.dense-1 {
+  @include mat.all-component-densities(-1);
 }
+
+.dense-2 {
+  @include mat.all-component-densities(-2);
+}
+
 
 // TODO material specific style which cannot be changed by scope
 .mat-drawer-inner-container {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+button[mat-button], button[mat-raised-button], button[mat-flat-button], button[mat-stroked-button], button[mat-icon-button] {
+  span {
+    letter-spacing: normal;
+  }
 }
 
 .default-button {
@@ -129,6 +134,7 @@
 .delete-modal,
 .import-experiment-modal,
 .import-segment-modal,
+.import-stratification-modal,
 .experiment-general-modal,
 .new-experiment-modal,
 .new-flag-modal,
@@ -139,11 +145,28 @@
 .query-result,
 .duplicate-segment-modal,
 .experiment-ending-criteria {
+  @include custom-components-theme($light-theme);
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
 
-  .mat-dialog-container {
-    padding: 0px;
+  .mat-mdc-dialog-container {
+    padding: 0px !important;
+    overflow: hidden !important;
+    background-color: white;
+    border-radius: 7px;
+
+    .mat-mdc-dialog-surface {
+      box-shadow: none;
+      background-color: transparent;
+
+      .mat-mdc-dialog-content {
+        padding: 40px 40px 20px 40px;
+      }
+
+      .mat-mdc-dialog-actions {
+        padding: 0 40px 40px;
+      }
+    }
   }
 }
 
@@ -151,7 +174,7 @@
 .state-time-logs-modal {
   border-radius: 7px;
 
-  .mat-dialog-container {
+  .mat-mdc-dialog-container {
     padding: 0px;
   }
 }
@@ -160,7 +183,7 @@
   width: 400px;
   min-height: 192px;
 
-  .mat-dialog-container {
+  .mat-mdc-dialog-container {
     padding: 40px;
   }
 }
@@ -169,13 +192,14 @@
   width: 700px;
   min-height: 192px;
 
-  .mat-dialog-container {
+  .mat-mdc-dialog-container {
     padding: 40px;
   }
 }
 
 .import-segment-modal,
-.import-experiment-modal {
+.import-experiment-modal,
+.import-stratification-modal {
   width: 500px;
 }
 
@@ -228,11 +252,45 @@
   width: 805px;
 }
 
-.mat-button,
-.mat-flat-button,
-.mat-stroked-button {
-  &.cdk-program-focused .mat-button-focus-overlay {
-    opacity: 0 !important;
+.mat-mdc-checkbox {
+  .mdc-checkbox {
+    transform: scale(0.889); // transform 18px to 16px
+  }
+
+  .checkbox-label {
+    margin-left: -8px;
+    color: var(--black-2);
+    user-select: none;
+  }
+}
+
+.mat-mdc-chip {
+  .chip-label {
+    color: var(--black-2);
+  }
+}
+
+.mat-mdc-list-item {
+  .list-item-label {
+    color: var(--black-2);
+  }
+}
+
+
+.mdc-text-field.mdc-text-field--filled,
+.mat-mdc-option {
+  background-color: white !important;
+}
+
+.mat-mdc-radio-button {
+  .mdc-radio {
+    margin-left: -10px;
+  }
+
+  .radio-button-label {
+    margin-left: -6px;
+    color: var(--black-2);
+    user-select: none;
   }
 }
 
@@ -240,17 +298,119 @@
 // Therefore we override the css. If option appears in future, these can go away.
 
 // Added to globally prevent truncation of content dropdowns
-.mat-select-panel-wrap .mat-select-panel {
+.mat-mdc-select-panel-wrap .mat-select-panel {
   max-width: fit-content;
 }
 
 // Added to globally prevent truncation in tooltips
-.mat-tooltip {
+.mat-mdc-tooltip {
   word-break: break-all;
   white-space: normal;
 }
 
 // Added to globally prevent tooltips from blocking click-events
-.mat-tooltip-panel {
+.mat-mdc-tooltip-panel {
   pointer-events: none;
+}
+
+.mat-mdc-form-field {
+  .mdc-text-field .mat-mdc-form-field-flex {
+    .mdc-notched-outline .mdc-floating-label {
+      top: 21px;
+    }
+
+    .mat-mdc-form-field-infix {
+      min-height: auto;
+      padding: 10px 0;
+    }
+  }
+
+  &.preview-input .mdc-text-field .mat-mdc-form-field-flex .mdc-notched-outline .mdc-floating-label {
+    top: 18px;
+  }
+}
+
+.mat-mdc-table {
+  .mat-mdc-header-row,
+  .mat-mdc-row {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+    &.mat-mdc-row:hover {
+      background-color: transparent;
+    }
+
+    &.expandable-row {
+      min-height: 0;
+      height: auto;
+      overflow: hidden;
+    }
+
+    .mat-mdc-header-cell,
+    .mat-mdc-cell {
+      background-color: transparent;
+      border-bottom: none;
+      letter-spacing: normal;
+
+      .mat-mdc-form-field .mdc-text-field {
+        padding: 0 8px;
+
+        .mat-mdc-form-field-flex .mat-mdc-form-field-infix {
+          padding: 4px 0;
+        }
+      }
+
+      &:not(:first-child):not(:last-child) {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+  }
+}
+
+.mat-mdc-tab-group {
+  .mat-mdc-tab-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+    .mat-mdc-tab-header-pagination {
+      box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px;
+    }
+
+    .mat-mdc-tab-label-container .mat-mdc-tab-labels .mat-mdc-tab {
+      margin: 20px 0;
+      min-width: 160px;
+
+      &:first-of-type {
+        margin-left: 34px;
+      }
+
+      .tab-label {
+        color: var(--grey-2);
+        user-select: none;
+      }
+
+      opacity: 0.6;
+
+      &.mdc-tab--active {
+        opacity: 1;
+
+        .tab-label {
+          color: var(--blue);
+        }
+      }
+
+      .mdc-tab-indicator .mdc-tab-indicator__content {
+        margin-bottom: -20px;
+      }
+    }
+  }
+}
+
+.cdk-overlay-pane {
+  .mat-mdc-select-panel, .mat-mdc-autocomplete-panel {
+    padding: 0;
+
+    .mat-mdc-option:hover {
+      background-color: rgba(0, 0, 0, 0.04) !important;
+    }
+  }
 }

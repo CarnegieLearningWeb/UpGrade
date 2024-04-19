@@ -13,7 +13,7 @@ import {
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { EXPERIMENT_TYPE } from 'upgrade_types';
+import { EXPERIMENT_STATE, EXPERIMENT_TYPE } from 'upgrade_types';
 import { ExperimentFactorData } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 
 interface FactorColumnDef {
@@ -47,12 +47,14 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   queryFactorResults = [];
   interactionEffectQueryFactorResults = [];
   queryResultsSub: Subscription;
+  analysisSub: Subscription;
   isQueryExecuting$ = this.analysisService.isQueryExecuting$;
   factors: string[] = [];
   queries: string[] = [];
   displayedColumns: string[] = [];
   factorialData = {};
   experimentType: string = null;
+  experimentState: EXPERIMENT_STATE;
   data: { name: string; series: { name: string; value: number }[]; dot: boolean }[];
   meanData2: { name: string; value: number }[];
   meanData1: { name: string; value: number }[];
@@ -99,7 +101,13 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
         [query.id]: [],
       };
     });
-    this.analysisService.executeQuery(queryIds);
+
+    this.analysisSub = this.analysisService.experimentQueryResult$(this.experiment.id).subscribe((queryResults) => {
+      if (queryResults && queryResults.length) {
+        const queryIds = queryResults.map((queryResult) => queryResult.id);
+        this.analysisService.executeQuery(queryIds);
+      }
+    });
     this.queryResultsSub = this.analysisService.queryResult$.pipe(filter((result) => !!result)).subscribe((result) => {
       // main effect graph data
       this.populateMainEffectGraphData(result);
@@ -294,10 +302,10 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     resData.map((result) => {
       const factorIndex = result.name === levels[factorNumber].level.name ? alternateFactorNumber : factorNumber;
       return result.series.map((level) => {
-          if (level.name === levels[factorIndex].level.name) {
-            level.value = Math.round(Number(data.result) * 100) / 100;
-            level.participantsLogged = Number(data.participantsLogged);
-          }
+        if (level.name === levels[factorIndex].level.name) {
+          level.value = Math.round(Number(data.result) * 100) / 100;
+          level.participantsLogged = Number(data.participantsLogged);
+        }
       });
     });
     return resData;
@@ -412,6 +420,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.queryResultsSub.unsubscribe();
+    this.analysisSub.unsubscribe();
     this.analysisService.setQueryResult(null);
   }
 }

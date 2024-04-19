@@ -1,8 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 
-import { ThemeOptions, SettingParams } from './settings.model';
-
-export const actionChangeTheme = createAction('[Settings] Change Theme', props<{ theme: ThemeOptions }>());
+import { SettingParams } from './settings.model';
 
 export const actionGetSetting = createAction('[Settings] Get Setting');
 

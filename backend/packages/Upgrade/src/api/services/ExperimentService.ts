@@ -2,7 +2,7 @@
 import { GroupExclusion } from './../models/GroupExclusion';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import {
   Experiment,
@@ -10,7 +10,7 @@ import {
   EXPERIMENT_SEARCH_KEY,
   IExperimentSortParams,
 } from '../models/Experiment';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
 import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
@@ -28,6 +28,7 @@ import {
   SEGMENT_TYPE,
   EXPERIMENT_TYPE,
   CACHE_PREFIX,
+  ASSIGNMENT_UNIT,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -74,32 +75,37 @@ import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
 import { CacheService } from './CacheService';
+import { QueryService } from './QueryService';
+import { ArchivedStats } from '../models/ArchivedStats';
+import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
 
 @Service()
 export class ExperimentService {
   constructor(
-    @OrmRepository() private experimentRepository: ExperimentRepository,
-    @OrmRepository() private experimentConditionRepository: ExperimentConditionRepository,
-    @OrmRepository() private decisionPointRepository: DecisionPointRepository,
-    @OrmRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
-    @OrmRepository() private individualExclusionRepository: IndividualExclusionRepository,
-    @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
-    @OrmRepository() private monitoredDecisionPointRepository: MonitoredDecisionPointRepository,
-    @OrmRepository() private userRepository: ExperimentUserRepository,
-    @OrmRepository() private metricRepository: MetricRepository,
-    @OrmRepository() private queryRepository: QueryRepository,
-    @OrmRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
-    @OrmRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
-    @OrmRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
-    @OrmRepository() private conditionPayloadRepository: ConditionPayloadRepository,
-    @OrmRepository() private factorRepository: FactorRepository,
-    @OrmRepository() private levelRepository: LevelRepository,
-    @OrmRepository() private levelCombinationElementsRepository: LevelCombinationElementRepository,
+    @InjectRepository() private experimentRepository: ExperimentRepository,
+    @InjectRepository() private experimentConditionRepository: ExperimentConditionRepository,
+    @InjectRepository() private decisionPointRepository: DecisionPointRepository,
+    @InjectRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
+    @InjectRepository() private individualExclusionRepository: IndividualExclusionRepository,
+    @InjectRepository() private groupExclusionRepository: GroupExclusionRepository,
+    @InjectRepository() private monitoredDecisionPointRepository: MonitoredDecisionPointRepository,
+    @InjectRepository() private userRepository: ExperimentUserRepository,
+    @InjectRepository() private metricRepository: MetricRepository,
+    @InjectRepository() private queryRepository: QueryRepository,
+    @InjectRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
+    @InjectRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
+    @InjectRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
+    @InjectRepository() private conditionPayloadRepository: ConditionPayloadRepository,
+    @InjectRepository() private factorRepository: FactorRepository,
+    @InjectRepository() private levelRepository: LevelRepository,
+    @InjectRepository() private levelCombinationElementsRepository: LevelCombinationElementRepository,
+    @InjectRepository() private archivedStatsRepository: ArchivedStatsRepository,
     public previewUserService: PreviewUserService,
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
-    public cacheService: CacheService
+    public cacheService: CacheService,
+    public queryService: QueryService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
@@ -156,6 +162,7 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.factors', 'factors')
       .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('queries.metric', 'metric')
+      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
@@ -174,7 +181,10 @@ export class ExperimentService {
       .whereInIds(expIds);
 
     if (sortParams) {
-      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
+      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(
+        `LOWER(CAST(experiment.${sortParams.key} AS TEXT))`,
+        sortParams.sortAs
+      );
     }
     const experiments = await queryBuilderToReturn.getMany();
     return experiments.map((experiment) => {
@@ -200,6 +210,7 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experiment.factors', 'factors')
       .leftJoinAndSelect('factors.levels', 'levels')
+      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
@@ -252,7 +263,6 @@ export class ExperimentService {
     createType?: string
   ): Promise<ExperimentDTO> {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
-    this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
 
     // order for condition
     let newConditionId;
@@ -289,9 +299,6 @@ export class ExperimentService {
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
     logger.info({ message: `Generating test experiments`, details: experiments });
-    experiments.forEach((experiment) => {
-      this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
-    });
     return this.addBulkExperiments(experiments, user, logger);
   }
 
@@ -305,7 +312,12 @@ export class ExperimentService {
     }
     return getConnection().transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
-      await this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
+      await this.clearExperimentCacheDetail(
+        experiment.context[0],
+        experiment.partitions.map((partition) => {
+          return { site: partition.site, target: partition.target };
+        })
+      );
 
       if (experiment) {
         const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
@@ -358,7 +370,6 @@ export class ExperimentService {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
-    this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
     return this.updateExperimentInDB(experiment as ExperimentDTO, currentUser, logger);
   }
 
@@ -402,15 +413,38 @@ export class ExperimentService {
   ): Promise<Experiment> {
     const oldExperiment = await this.experimentRepository.findOne(
       { id: experimentId },
-      { relations: ['stateTimeLogs'] }
+      { relations: ['stateTimeLogs', 'partitions', 'queries', 'queries.metric'] }
     );
-    this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + oldExperiment.context[0]);
+    await this.clearExperimentCacheDetail(
+      oldExperiment.context[0],
+      oldExperiment.partitions.map((partition) => {
+        return { site: partition.site, target: partition.target };
+      })
+    );
 
     if (
       (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) &&
       oldExperiment.state !== EXPERIMENT_STATE.ENROLLMENT_COMPLETE
     ) {
       await this.populateExclusionTable(experimentId, state, logger);
+    }
+
+    if (state === EXPERIMENT_STATE.ARCHIVED) {
+      const queryIds = oldExperiment.queries.map((query) => query.id);
+      const results = await this.queryService.analyze(queryIds, logger);
+      const archivedStatsData: Array<Omit<ArchivedStats, 'createdAt' | 'updatedAt' | 'versionNumber'>> = results.map(
+        (result) => {
+          const queryId = result.id;
+          delete result.id;
+          const archivedStats: Partial<ArchivedStats> = {
+            id: uuid(),
+            result: result,
+            query: queryId,
+          };
+          return archivedStats;
+        }
+      );
+      await this.archivedStatsRepository.saveRawJson(archivedStatsData);
     }
 
     let data: AuditLogData = {
@@ -463,7 +497,6 @@ export class ExperimentService {
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
     for (const experiment of experiments) {
-      this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + experiment.context[0]);
       const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
       if (duplicateExperiment && experiment.id) {
         const error = new Error('Duplicate experiment');
@@ -538,6 +571,7 @@ export class ExperimentService {
         'conditions.conditionPayloads',
         'conditions.levelCombinationElements',
         'conditions.levelCombinationElements.level',
+        'stratificationFactor',
       ],
     });
     const formatedExperiments = experimentDetails.map((experiment) => {
@@ -648,7 +682,11 @@ export class ExperimentService {
       await this.groupExclusionRepository.saveRawJson(groupExclusionDocs);
     }
 
-    if (consistencyRule === CONSISTENCY_RULE.INDIVIDUAL || consistencyRule === CONSISTENCY_RULE.GROUP) {
+    if (
+      consistencyRule === CONSISTENCY_RULE.INDIVIDUAL ||
+      consistencyRule === CONSISTENCY_RULE.GROUP ||
+      experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
+    ) {
       // individual exclusion document
       const individualExclusionDocs: Array<
         Omit<IndividualExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>
@@ -682,11 +720,19 @@ export class ExperimentService {
     user: User,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO> {
+    await this.clearExperimentCacheDetail(
+      experiment.context[0],
+      experiment.partitions.map((partition) => {
+        return { site: partition.site, target: partition.target };
+      })
+    );
+
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id, logger);
     const oldConditions = oldExperiment.conditions;
     const oldDecisionPoints = oldExperiment.partitions;
     const oldQueries = oldExperiment.queries;
+    const oldConditionPayloads = oldExperiment.conditionPayloads;
 
     // create schedules to start experiment and end experiment
     if (this.scheduledJobService) {
@@ -829,7 +875,7 @@ export class ExperimentService {
         // creating queries docs
         promiseArray = [];
         let queriesDocToSave =
-          (queries[0] &&
+          (queries?.[0] &&
             queries.length > 0 &&
             queries.map((query: any) => {
               promiseArray.push(this.metricRepository.findOne(query.metric.key));
@@ -886,6 +932,18 @@ export class ExperimentService {
           ) {
             toDeleteQueries.push(this.queryRepository.deleteQuery(queryDoc.id, transactionalEntityManager));
             toDeleteQueriesDoc.push(queryDoc);
+          }
+        });
+
+        // delete condition payloads which don't exist in new experiment document
+        const toDeleteConditionPayloads = [];
+        oldConditionPayloads.forEach(({ id }) => {
+          if (
+            !conditionPayloadDocToSave.find((doc) => {
+              return doc.id === id;
+            })
+          ) {
+            toDeleteConditionPayloads.push(this.conditionPayloadRepository.deleteConditionPayload(id, logger));
           }
         });
 
@@ -1124,8 +1182,16 @@ export class ExperimentService {
     user: User,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO> {
+    await this.clearExperimentCacheDetail(
+      experiment.context[0],
+      experiment.partitions.map((partition) => {
+        return { site: partition.site, target: partition.target };
+      })
+    );
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
+      experiment.description = experiment.description || '';
+
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
       let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
       if (experiment.conditions.length) {
@@ -1173,11 +1239,12 @@ export class ExperimentService {
           segmentInclude = {
             ...experimentSegmentInclusion.segment,
             type: includeSegment.type,
-            userIds: includeSegment.individualForSegment.map((x) => x.userId),
-            groups: includeSegment.groupForSegment.map((x) => {
-              return { type: x.type, groupId: x.groupId };
-            }),
-            subSegmentIds: includeSegment.subSegments.map((x) => x.id),
+            userIds: includeSegment.individualForSegment?.map((x) => x.userId) || [],
+            groups:
+              includeSegment.groupForSegment?.map((x) => {
+                return { type: x.type, groupId: x.groupId };
+              }) || [],
+            subSegmentIds: includeSegment.subSegments?.map((x) => x.id) || [],
           };
         } else {
           segmentInclude = experimentSegmentInclusion;
@@ -1220,11 +1287,12 @@ export class ExperimentService {
           segmentExclude = {
             ...experimentSegmentExclusion.segment,
             type: excludeSegment.type,
-            userIds: excludeSegment.individualForSegment.map((x) => x.userId),
-            groups: excludeSegment.groupForSegment.map((x) => {
-              return { type: x.type, groupId: x.groupId };
-            }),
-            subSegmentIds: excludeSegment.subSegments.map((x) => x.id),
+            userIds: excludeSegment.individualForSegment?.map((x) => x.userId) || [],
+            groups:
+              excludeSegment.groupForSegment?.map((x) => {
+                return { type: x.type, groupId: x.groupId };
+              }) || [],
+            subSegmentIds: excludeSegment.subSegments?.map((x) => x.id) || [],
           };
         } else {
           segmentExclude = experimentSegmentExclusion;
@@ -1271,6 +1339,7 @@ export class ExperimentService {
         partitions.length > 0 &&
         partitions.map((decisionPoint) => {
           decisionPoint.id = decisionPoint.id || uuid();
+          decisionPoint.description = decisionPoint.description || '';
           return { ...decisionPoint, experiment: experimentDoc };
         });
 
@@ -1285,8 +1354,8 @@ export class ExperimentService {
               id: conditionPayload.id,
               payloadType: conditionPayload.payload.type,
               payloadValue: conditionPayload.payload.value,
-              parentCondition: conditions.find((doc) => doc.id === conditionPayload.parentCondition),
-              decisionPoint: partitions.find((doc) => doc.id === conditionPayload.decisionPoint),
+              parentCondition: conditions.find((doc) => doc.id === conditionPayload.parentCondition.id),
+              decisionPoint: partitions.find((doc) => doc.id === conditionPayload.decisionPoint?.id),
             };
             return conditionPayloadToReturn;
           })) ||
@@ -1476,19 +1545,18 @@ export class ExperimentService {
     currentUser: User,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
-    const createdExperiments = await Promise.all(
-      experiments.map(async (exp) => {
-        try {
-          return await this.create(exp, currentUser, logger);
-        } catch (err) {
-          const error = err as Error;
-          error.message = `Error in creating experiment document "addBulkExperiments"`;
-          logger.error(error);
-          throw error;
-        }
-      })
-    );
-
+    const createdExperiments = [];
+    for (const exp of experiments) {
+      try {
+        const result = await this.create(exp, currentUser, logger);
+        createdExperiments.push(result);
+      } catch (err) {
+        const error = err as Error;
+        error.message = `Error in creating experiment document "addBulkExperiments"`;
+        logger.error(error);
+        throw error;
+      }
+    }
     return createdExperiments;
   }
 
@@ -1711,5 +1779,17 @@ export class ExperimentService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { createdAt, updatedAt, versionNumber, ...newDoc } = doc;
     return newDoc;
+  }
+
+  private async clearExperimentCacheDetail(
+    context: string,
+    partitions: { site: string; target: string }[]
+  ): Promise<void> {
+    await this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + context);
+    const deletedCache = partitions.map(async (partition) => {
+      await this.cacheService.delCache(CACHE_PREFIX.MARK_KEY_PREFIX + '-' + partition.site + '-' + partition.target);
+    });
+    await Promise.all(deletedCache);
+    return;
   }
 }

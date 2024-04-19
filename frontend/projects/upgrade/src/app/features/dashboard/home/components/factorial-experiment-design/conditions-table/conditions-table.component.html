@@ -5,13 +5,14 @@
 
   <div class="conditions-weight-checkbox">
     <mat-checkbox
-      class="ft-13-700"
       color="primary"
       [checked]="equalWeightFlag"
       (change)="handleEqualWeightToggle()"
       [disabled]="!isExperimentEditable"
     >
-      {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
+      <span class="ft-13-700 checkbox-label">
+        {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
+      </span>
     </mat-checkbox>
   </div>
   <form [formGroup]="factorialConditionTableForm">
@@ -40,11 +41,16 @@
             </span>
           </ng-container>
           <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
-            <mat-form-field floatLabel="never">
+            <mat-form-field
+              class="dense-2"
+              appearance="outline"
+              subscriptSizing="dynamic"
+            >
               <input
-                class="input-payload"
+                class="ft-14-400 input-payload"
                 type="text"
                 matInput
+                [placeholder]="'home.new-experiment.design.payload.placeholder.text' | translate"
                 formControlName="payload"
                 [disabled]="!isExperimentEditable"
                 autocomplete="off"
@@ -66,8 +72,13 @@
             </span>
           </ng-container>
           <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex">
-            <mat-form-field class="input-weight" floatLabel="never">
+            <mat-form-field
+              class="dense-2 input-weight"
+              appearance="outline"
+              subscriptSizing="dynamic"
+            >
               <input
+                class="ft-14-400"
                 autocomplete="off"
                 type="text"
                 matInput
@@ -87,7 +98,6 @@
         <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
           <mat-checkbox
             formControlName="include"
-            class="ft-13-700"
             color="primary"
             [disabled]="(tableEditIndex$ | async) !== rowIndex || !isExperimentEditable"
           >

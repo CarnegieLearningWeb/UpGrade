@@ -42,6 +42,14 @@ def createExperiment(protocol, host, allExperimentPartitionIDConditionPair, expe
     levelId1 = str(uuid.uuid4())
     levelId2 = str(uuid.uuid4())
     levelId3 = str(uuid.uuid4())
+    conditionId1 = str(uuid.uuid4())
+    conditionId2 = str(uuid.uuid4())
+    partitionId1 = str(uuid.uuid4())
+    partitionId2 = str(uuid.uuid4())
+    levelElementId1 = str(uuid.uuid4())
+    levelElementId2 = str(uuid.uuid4())
+    levelElementId3 = str(uuid.uuid4())
+    levelElementId4 = str(uuid.uuid4())
 
     if experimentType == 'Simple':
         PartitionIDConditionPair1 = {"site": site1, "target" : target1, "condition" : conditionCode1}
@@ -59,45 +67,59 @@ def createExperiment(protocol, host, allExperimentPartitionIDConditionPair, expe
             "context": [random.choice(context)],
             "filterMode": "includeAll",
             "type": "Simple",
+            "logging": False,
             "conditions": [
                 {
+                    "id": conditionId1,
                     "name": "condition1",
                     "description": "condition description 1",
                     "assignmentWeight": weight,
-                    "conditionCode": conditionCode1
+                    "conditionCode": conditionCode1,
+                    "order": 1
                 },
                 {
+                    "id": conditionId2,
                     "name": "condition2",
                     "description": "condition description 2",
                     "assignmentWeight": 100-weight,
-                    "conditionCode": conditionCode2
+                    "conditionCode": conditionCode2,
+                    "order": 2
                 }
             ],
             "partitions": [
                 {
-                    "name": site1,
+                    "id": partitionId1,
                     "site": site1,
                     "target": target1,
-                    "description": target1
+                    "description": target1,
+                    "order": 1,
+                    "excludeIfReached": False
                 },
                 {
-                    "name": site2,
+                    "id": partitionId2,
                     "site": site2,
                     "target": target2,
-                    "description": target2
+                    "description": target2,
+                    "order": 2,
+                    "excludeIfReached": False
                 }
             ],
             "experimentSegmentInclusion": {
-                "userIds": [],
-                "groups": [ { "type": "All", "groupId": "All" } ],
-                "subSegmentIds": [],
-                "type": "private"
-            },
-            "experimentSegmentExclusion": { 
-                "userIds": [],
-                "groups": [],
-                "subSegmentIds": [],
-                "type": "private" }
+                "segment": {
+                    "type": "private",
+                    "groupForSegment": [
+                    {
+                        "groupId": "All",
+                        "type": "All"
+                    }
+                    ]
+                }
+                },
+                "experimentSegmentExclusion": {
+                "segment": {
+                    "type": "private"
+                }
+            }
         }
     else:
         PartitionIDConditionPair1 = {"site": site1, "target" : target1, "condition" : factorialConditionCode1}
@@ -114,56 +136,73 @@ def createExperiment(protocol, host, allExperimentPartitionIDConditionPair, expe
             "tags": ["Workspace", "Content"],
             "context": [random.choice(context)],
             "filterMode": "includeAll",
+            "logging": False,
             "type": "Factorial",
             "conditions": [
                 {
                     "name": "condition1",
+                    "id": conditionId1,
                     "description": "condition description 1",
                     "assignmentWeight": weight,
                     "conditionCode": factorialConditionCode1,
+                    "order": 1,
                     "levelCombinationElements": [
                         {
+                            "id": levelElementId1,
                             "level": {
                                 "id": levelId1,
                                 "name": level1,
                                 "description": level1,
-                                "payloadValue": level1,
-                                "payloadType": "string"
+                                "payload": {
+                                    "value": level1,
+                                    "type": "string"
+                                }
                             }
                         },
                         {
+                            "id": levelElementId2,
                             "level": {
                                 "id": levelId3,
                                 "name": level3,
                                 "description": level3,
-                                "payloadValue": level3,
-                                "payloadType": "string"
+                                "payload": {
+                                    "value": level3,
+                                    "type": "string"
+                                }
                             }
                         }
                     ]
                 },
                 {
                     "name": "condition2",
+                    "id": conditionId2,
                     "description": "condition description 2",
                     "assignmentWeight": weight,
                     "conditionCode": factorialConditionCode2,
+                    "order": 2,
                     "levelCombinationElements": [
                         {
+                            "id": levelElementId3,
                             "level": {
                                 "id": levelId2,
                                 "name": level2,
                                 "description": level2,
-                                "payloadValue": level2,
-                                "payloadType": "string"
+                                "payload": {
+                                    "value": level2,
+                                    "type": "string"
+                                }
                             }
                         },
                         {
+                            "id": levelElementId4,
                             "level": {
                                 "id": levelId3,
                                 "name": level3,
                                 "description": level3,
-                                "payloadValue": level3,
-                                "payloadType": "string"
+                                "payload": {
+                                    "value": level3,
+                                    "type": "string"
+                                }
                             }
                         }
                     ]
@@ -171,22 +210,27 @@ def createExperiment(protocol, host, allExperimentPartitionIDConditionPair, expe
             ],
             "partitions": [
                 {
-                    "name": site1,
+                    "id": partitionId1,
                     "site": site1,
                     "target": target1,
-                    "description": target1
+                    "description": target1,
+                    "order": 1,
+                    "excludeIfReached": False
                 },
                 {
-                    "name": site2,
+                    "id": partitionId2,
                     "site": site2,
                     "target": target2,
-                    "description": target2
+                    "description": target2,
+                    "order": 2,
+                    "excludeIfReached": False
                 }
             ],
             "factors": [
                 {
                     "name": factor1,
                     "description": factor1,
+                    "order": 1,
                     "levels": [
                         {
                             "id": levelId1,
@@ -211,6 +255,7 @@ def createExperiment(protocol, host, allExperimentPartitionIDConditionPair, expe
                 {
                     "name": factor2,
                     "description": factor2,
+                    "order": 2,
                     "levels": [
                         {
                             "id": levelId3,
@@ -226,16 +271,20 @@ def createExperiment(protocol, host, allExperimentPartitionIDConditionPair, expe
             ],
             "conditionPayloads": [],
             "experimentSegmentInclusion": {
-                "userIds": [],
-                "groups": [{ "type": "All", "groupId": "All" }],
-                "subSegmentIds": [],
-                "type": "private"
-            },
-            "experimentSegmentExclusion": { 
-                "userIds": [],
-                "groups": [],
-                "subSegmentIds": [],
-                "type": "private" 
+                "segment": {
+                    "type": "private",
+                    "groupForSegment": [
+                    {
+                        "groupId": "All",
+                        "type": "All"
+                    }
+                    ]
+                }
+                },
+                "experimentSegmentExclusion": {
+                    "segment": {
+                        "type": "private"
+                    }
             }
         }
 

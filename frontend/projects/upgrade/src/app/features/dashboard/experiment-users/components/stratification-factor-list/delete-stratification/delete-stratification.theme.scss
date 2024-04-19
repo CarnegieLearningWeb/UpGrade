@@ -1,0 +1,11 @@
+@use '@angular/material' as mat;
+
+@mixin delete-stratifications-component-theme($theme) {
+  $background: map-get($theme, background);
+
+  .delete-stratification-container {
+    .title {
+      box-shadow: 0 0 8px 0 mat.get-color-from-palette($background, shadow-color);
+    }
+  }
+}

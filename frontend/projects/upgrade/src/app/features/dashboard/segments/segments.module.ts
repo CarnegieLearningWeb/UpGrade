@@ -8,10 +8,10 @@ import { NewSegmentComponent } from './components/modal/new-segment/new-segment.
 import { SegmentOverviewComponent } from './components/segment-overview/segment-overview.component';
 import { SegmentMembersComponent } from './components/segment-members/segment-members.component';
 import { ViewSegmentComponent } from './pages/view-segment/view-segment.component';
-import { DeleteSegmentComponent } from './components/modal/delete-segment/delete-segment.component';
 import { DuplicateSegmentComponent } from './components/modal/duplicate-segment/duplicate-segment.component';
 import { ImportSegmentComponent } from './components/modal/import-segment/import-segment.component';
 import { SegmentExperimentListComponent } from './components/modal/segment-experiment-list/segment-experiment-list.component';
+import { ExportSegmentComponent } from './components/modal/export-segment/export-segment.component';
 @NgModule({
   declarations: [
     SegmentsRootComponent,
@@ -20,10 +20,10 @@ import { SegmentExperimentListComponent } from './components/modal/segment-exper
     SegmentOverviewComponent,
     SegmentMembersComponent,
     ViewSegmentComponent,
-    DeleteSegmentComponent,
     DuplicateSegmentComponent,
     ImportSegmentComponent,
     SegmentExperimentListComponent,
+    ExportSegmentComponent,
   ],
   imports: [CommonModule, SegmentsRoutingModule, SharedModule],
 })

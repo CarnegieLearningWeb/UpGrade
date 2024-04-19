@@ -27,6 +27,7 @@ export {
   PAYLOAD_TYPE,
   CONDITION_ORDER,
   CACHE_PREFIX,
+  ASSIGNMENT_ALGORITHM,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,
@@ -54,4 +55,7 @@ export {
   IPayload,
   IExperimentAssignmentv4,
   IExperimentAssignmentv5,
+  ILogRequestBody,
+  ILogMetrics,
+  ILogGroupMetrics,
 } from './Experiment/interfaces';

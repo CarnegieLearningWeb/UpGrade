@@ -16,6 +16,11 @@ export enum CONDITION_ORDER {
   ORDERED_ROUND_ROBIN = 'ordered round robin',
 }
 
+export enum ASSIGNMENT_ALGORITHM {
+  RANDOM = 'random',
+  STRATIFIED_RANDOM_SAMPLING = 'stratified random sampling',
+}
+
 export enum POST_EXPERIMENT_RULE {
   CONTINUE = 'continue',
   // TO DO : Remove revert when frontend and backend integrated with assign
@@ -30,6 +35,7 @@ export enum EXPERIMENT_STATE {
   ENROLLING = 'enrolling',
   ENROLLMENT_COMPLETE = 'enrollmentComplete',
   CANCELLED = 'cancelled',
+  ARCHIVED = 'archived',
 }
 
 export enum SERVER_ERROR {
@@ -66,15 +72,20 @@ export enum ENROLLMENT_CODE {
 }
 
 export enum EXCLUSION_CODE {
-  ERROR = 'participant excluded due to unspecified error',
+  // individual level:
   REACHED_PRIOR = 'participant reached experiment prior to experiment enrolling',
   REACHED_AFTER = 'participant reached experiment during enrollment complete',
+  // experiment level:
   PARTICIPANT_ON_EXCLUSION_LIST = 'participant was on the exclusion list',
   GROUP_ON_EXCLUSION_LIST = 'participant’s group was on the exclusion list',
+  // group level:
   EXCLUDED_DUE_TO_GROUP_LOGIC = 'participant excluded due to group assignment logic',
   NO_GROUP_SPECIFIED = 'participant excluded due to incomplete group information',
   INVALID_GROUP_OR_WORKING_GROUP = "participant's group or working group is incorrect",
+  // triggered by client SDK:
   EXCLUDED_BY_CLIENT = 'participant is excluded by client',
+  // generic error (for future use):
+  ERROR = 'participant excluded due to unspecified error',
 }
 
 export enum EXPERIMENT_LOG_TYPE {
@@ -197,4 +208,5 @@ export enum SUPPORTED_CALIPER_EVENTS {
 export enum CACHE_PREFIX {
   EXPERIMENT_KEY_PREFIX = 'validExperiments-',
   SEGMENT_KEY_PREFIX = 'segments-',
+  MARK_KEY_PREFIX = 'markExperiments-',
 }

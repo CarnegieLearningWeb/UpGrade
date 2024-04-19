@@ -1,4 +1,4 @@
-import { JsonController, Post, Body, Authorized, Req } from 'routing-controllers';
+import { JsonController, Post, Body, Authorized, Req, Get, QueryParams } from 'routing-controllers';
 import { AnalyticsService } from '../services/AnalyticsService';
 import { IExperimentEnrollmentStats, IExperimentEnrollmentDetailStats } from 'upgrade_types';
 import { EnrollmentAnalyticsValidator } from './validators/EnrollmentAnalyticsValidator';
@@ -283,13 +283,14 @@ export class AnalyticsController {
    *          '200':
    *            description: Get CSV files
    */
-  @Post('/csv')
+  @Get('/csv')
   public async downloadCSV(
-    @Body({ validate: true })
-    csvInfo: DataExportValidator,
-    @Req() request: AppRequest
+    @QueryParams()
+    params: DataExportValidator,
+    @Req()
+    request: AppRequest
   ): Promise<string> {
-    request.logger.info({ message: `Request received for csv download ${JSON.stringify(csvInfo, null, 2)}` });
-    return this.auditService.getCSVData(csvInfo.experimentId, csvInfo.email, request.logger);
+    request.logger.info({ message: `Request received for csv download ${JSON.stringify(params, null, 2)}` });
+    return this.auditService.getCSVData(params.experimentId, params.email, request.logger);
   }
 }

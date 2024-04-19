@@ -1,5 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { State, FeatureFlagState } from './feature-flags.model';
+import { FeatureFlagState } from './feature-flags.model';
 import { selectAll } from './feature-flags.reducer';
 import { selectRouterState } from '../../core.state';
 

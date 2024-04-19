@@ -11,11 +11,11 @@ import { GroupForSegmentRepository } from '../../../src/api/repositories/GroupFo
 import { ExperimentSegmentExclusionRepository } from '../../../src/api/repositories/ExperimentSegmentExclusionRepository';
 import { ExperimentSegmentInclusionRepository } from '../../../src/api/repositories/ExperimentSegmentInclusionRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
-import { SegmentInputValidator } from '../../../src/api/controllers/validators/SegmentInputValidator';
-import { EXPERIMENT_STATE, SERVER_ERROR } from '../../../../../../types/src';
+import { SegmentFile, SegmentInputValidator } from '../../../src/api/controllers/validators/SegmentInputValidator';
 import { IndividualForSegment } from '../../../src/api/models/IndividualForSegment';
 import { GroupForSegment } from '../../../src/api/models/GroupForSegment';
 import { Experiment } from '../../../src/api/models/Experiment';
+import { SEGMENT_TYPE, SERVER_ERROR, EXPERIMENT_STATE } from 'upgrade_types';
 
 const exp = new Experiment();
 const seg2 = new Segment();
@@ -25,6 +25,10 @@ const logger = new UpgradeLogger();
 const segmentArr = [seg1, seg2];
 const segVal = new SegmentInputValidator();
 const include = [{ segment: seg1, experiment: exp }];
+const segValImportFile: SegmentFile = {
+  fileName: 'seg1.json',
+  fileContent: '',
+};
 
 describe('Segment Service Testing', () => {
   let service: SegmentService;
@@ -54,9 +58,11 @@ describe('Segment Service Testing', () => {
     seg2.subSegments = [];
     seg2.id = 'seg2';
     seg2.subSegments = [];
+    seg2.context = 'add';
     seg1.subSegments = [];
     seg1.id = 'seg1';
     seg1.subSegments = [seg2];
+    seg1.context = 'add';
     const user = new IndividualForSegment();
     user.userId = 'user1';
     seg1.individualForSegment = [user];
@@ -64,21 +70,39 @@ describe('Segment Service Testing', () => {
     group.groupId = 'group1';
     group.type = 'type';
     seg1.groupForSegment = [group];
-    segVal.id = 'segval1';
+    segVal.context = 'add';
+    segVal.id = 'c6d3fe3b-4ad2-4949-bd05-5a7a2481d32f';
     segVal.subSegmentIds = ['seg1', 'seg2'];
     segVal.userIds = ['user1', 'user2', 'user3'];
-    segVal.groups = [{ groupId: 'group1', type: 'type1' }];
+    segVal.groups = [{ groupId: 'group1', type: 'add-group1' }];
     segValSegment.id = 'segval1';
     segValSegment.subSegments = [seg1, seg2];
     const group1 = new GroupForSegment();
     group1.groupId = 'group1';
-    group1.type = 'type1';
+    group1.type = 'add-group1';
     segValSegment.groupForSegment = [group1];
     const user2 = new IndividualForSegment();
     user2.userId = 'user2';
     const user3 = new IndividualForSegment();
     user3.userId = 'user3';
     segValSegment.individualForSegment = [user, user2, user3];
+    const segValUserIds = segVal.userIds.map((userId) => {
+      return { userId: userId };
+    });
+    const segValSubSegmentIds = segVal.subSegmentIds.map((segmentId) => {
+      return { id: segmentId };
+    });
+    const segValImport = {
+      ...segVal,
+      individualForSegment: segValUserIds,
+      groupForSegment: segVal.groups,
+      subSegments: segValSubSegmentIds,
+      name: 'seg1',
+      context: 'add',
+      description: '',
+      type: SEGMENT_TYPE.PUBLIC,
+    };
+    segValImportFile.fileContent = JSON.stringify(segValImport);
 
     module = await Test.createTestingModule({
       providers: [
@@ -207,12 +231,13 @@ describe('Segment Service Testing', () => {
       segmentsData: [
         {
           id: seg1.id,
+          context: 'add',
           status: 'Unused',
           subSegments: seg1.subSegments,
           groupForSegment: seg1.groupForSegment,
           individualForSegment: seg1.individualForSegment,
         },
-        { id: seg2.id, status: 'Used', subSegments: seg2.subSegments },
+        { id: seg2.id, context: 'add', status: 'Used', subSegments: seg2.subSegments },
       ],
       experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
@@ -227,12 +252,13 @@ describe('Segment Service Testing', () => {
       segmentsData: [
         {
           id: seg1.id,
+          context: 'add',
           status: 'Unused',
           subSegments: seg1.subSegments,
           groupForSegment: seg1.groupForSegment,
           individualForSegment: seg1.individualForSegment,
         },
-        { id: seg2.id, status: 'Used', subSegments: seg2.subSegments },
+        { id: seg2.id, context: 'add', status: 'Used', subSegments: seg2.subSegments },
       ],
       experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
@@ -247,12 +273,13 @@ describe('Segment Service Testing', () => {
       segmentsData: [
         {
           id: seg1.id,
+          context: 'add',
           status: 'Global',
           subSegments: seg1.subSegments,
           groupForSegment: seg1.groupForSegment,
           individualForSegment: seg1.individualForSegment,
         },
-        { id: seg2.id, status: 'Used', subSegments: seg2.subSegments },
+        { id: seg2.id, context: 'add', status: 'Used', subSegments: seg2.subSegments },
       ],
       experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
@@ -318,26 +345,43 @@ describe('Segment Service Testing', () => {
   });
 
   it('should import a segment', async () => {
+    const returnSegment = { importErrors: [], segments: [segValSegment] };
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2]);
     service.addSegmentDataInDB = jest.fn().mockResolvedValue(segValSegment);
-    const segments = await service.importSegments([segVal], logger);
-    expect(segments).toEqual([segValSegment]);
+    const segments = await service.importSegments([segValImportFile], logger);
+    expect(segments).toEqual(returnSegment);
   });
 
   it('should throw an error when trying to import a duplicate segment', async () => {
+    const returnSegment = {
+      importErrors: [
+        {
+          fileName: 'seg1',
+          error: 'Invalid Segment data: ' + 'Duplicate segment with same context',
+        },
+      ],
+      segments: [],
+    };
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2, segVal]);
-    expect(async () => {
-      await service.importSegments([segVal], logger);
-    }).rejects.toThrow(new Error('Duplicate segment'));
+    const segments = await service.importSegments([segValImportFile], logger);
+    expect(segments).toEqual(returnSegment);
   });
 
   it('should throw an error when trying to import a segment that includes an unknown subsegment', async () => {
+    const returnSegment = {
+      importErrors: [
+        {
+          fileName: 'seg1',
+          error:
+            'Invalid Segment data: ' +
+            'SubSegment: seg2 not found. Please import subSegment with same context and link in segment. ',
+        },
+      ],
+      segments: [],
+    };
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1]);
-    expect(async () => {
-      await service.importSegments([segVal], logger);
-    }).rejects.toThrow(
-      new Error('SubSegment: ' + seg2.id + ' not found. Please import subSegment and link in experiment.')
-    );
+    const segments = await service.importSegments([segValImportFile], logger);
+    expect(segments).toEqual(returnSegment);
   });
 
   it('should export a segment', async () => {

@@ -1,6 +1,10 @@
 .duplicate-segment-dialog {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+
   .name {
-    width: 70%;
+    width: 100%;
     line-height: 18px;
 
     &-input {

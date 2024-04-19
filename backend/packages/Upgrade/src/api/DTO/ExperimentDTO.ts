@@ -33,6 +33,7 @@ import {
   PAYLOAD_TYPE,
   REPEATED_MEASURE,
   EXPERIMENT_TYPE,
+  ASSIGNMENT_ALGORITHM,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 
@@ -190,12 +191,14 @@ class ConditionPayloadValidator {
   public payload: PayloadValidator;
 
   @IsNotEmpty()
-  @IsString()
-  public parentCondition: string;
+  @ValidateNested()
+  @Type(() => ConditionValidator)
+  public parentCondition: ConditionValidator;
 
   @IsOptional()
-  @IsString()
-  public decisionPoint?: string;
+  @ValidateNested()
+  @Type(() => PartitionValidator)
+  public decisionPoint?: PartitionValidator;
 }
 
 class MetricValidator {
@@ -227,7 +230,7 @@ class QueryValidator {
   public repeatedMeasure: REPEATED_MEASURE;
 }
 
-class Users {
+class User {
   @IsNotEmpty()
   @IsString()
   public userId: string;
@@ -243,7 +246,7 @@ class Group {
   public type: string;
 }
 
-class SubSegments {
+class SubSegment {
   @IsNotEmpty()
   @IsString()
   public id: string;
@@ -269,8 +272,8 @@ class SegmentValidator {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => Users)
-  public individualForSegment?: Users[];
+  @Type(() => User)
+  public individualForSegment?: User[];
 
   @IsOptional()
   @IsArray()
@@ -281,8 +284,8 @@ class SegmentValidator {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => SubSegments)
-  public subSegments?: SubSegments[];
+  @Type(() => SubSegment)
+  public subSegments?: SubSegment[];
 
   @IsString()
   @IsEnum(SEGMENT_TYPE)
@@ -311,6 +314,12 @@ class StateTimeLogValidator {
   @IsNotEmpty()
   @IsDateString()
   public timeLog: Date;
+}
+
+class StratificationFactor {
+  @IsString()
+  @IsNotEmpty()
+  public stratificationFactorName: string;
 }
 
 export class ExperimentDTO {
@@ -352,6 +361,10 @@ export class ExperimentDTO {
   @IsEnum(POST_EXPERIMENT_RULE)
   public postExperimentRule: POST_EXPERIMENT_RULE;
 
+  @IsOptional()
+  @IsEnum(ASSIGNMENT_ALGORITHM)
+  public assignmentAlgorithm?: ASSIGNMENT_ALGORITHM;
+
   // TODO add conditional validity here ie endOn is null
   @IsOptional()
   public enrollmentCompleteCondition?: Partial<IEnrollmentCompleteCondition>;
@@ -385,6 +398,11 @@ export class ExperimentDTO {
   @IsNotEmpty()
   @IsEnum(FILTER_MODE)
   public filterMode: FILTER_MODE;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => StratificationFactor)
+  public stratificationFactor?: StratificationFactor;
 
   @IsNotEmpty()
   @IsArray()

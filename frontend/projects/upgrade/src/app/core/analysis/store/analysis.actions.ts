@@ -1,5 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 import { MetricUnit, UpsertMetrics } from './analysis.models';
+import { EXPERIMENT_STATE } from '../../experiments/store/experiments.model';
 
 export const actionFetchMetrics = createAction('[Analysis] Fetch Metrics');
 

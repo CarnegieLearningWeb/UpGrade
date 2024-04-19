@@ -28,6 +28,10 @@ describe('ExperimentStatePipe', () => {
     expect(experimentStatePipe.transform(EXPERIMENT_STATE.INACTIVE)).toBe('Inactive');
   });
 
+  it('should return Archived State', () => {
+    expect(experimentStatePipe.transform(EXPERIMENT_STATE.ARCHIVED)).toBe('Archived');
+  });
+
   it('should return #000 color for Preview State', () => {
     expect(experimentStatePipe.transform(EXPERIMENT_STATE.PREVIEW, ExperimentStatePipeType.COLOR)).toBe('#000');
   });
@@ -52,5 +56,9 @@ describe('ExperimentStatePipe', () => {
 
   it('should return #d8d8d8 color for Inactive State', () => {
     expect(experimentStatePipe.transform(EXPERIMENT_STATE.INACTIVE, ExperimentStatePipeType.COLOR)).toBe('#d8d8d8');
+  });
+
+  it('should return #fd9099 color for Archived State', () => {
+    expect(experimentStatePipe.transform(EXPERIMENT_STATE.ARCHIVED, ExperimentStatePipeType.COLOR)).toBe('#fd9099');
   });
 });

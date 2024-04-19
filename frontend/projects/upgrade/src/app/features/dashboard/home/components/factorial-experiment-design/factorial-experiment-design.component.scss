@@ -17,16 +17,6 @@
     .factors-header-container {
       display: flex;
       justify-content: space-between;
-
-      // .toggle-button {
-      //   margin-top: -5px;
-      //   .icon-bump-left {
-      //     margin-left: -5px;
-      //   }
-      //   .toggle-text {
-      //     margin-left: 5px;
-      //   }
-      // }
     }
 
     .decision-point-table {
@@ -34,12 +24,12 @@
       overflow: auto;
       mat-header-row {
         min-height: 35px;
+        max-height: 35px;
         justify-content: space-between;
       }
 
       mat-row {
-        min-height: 46px;
-        max-height: 46px;
+        height: 48px;
         justify-content: space-between;
       }
 
@@ -50,7 +40,6 @@
 
       mat-cell {
         justify-content: left;
-        margin-bottom: -5px;
       }
 
       .cdk-column-site {
@@ -67,8 +56,9 @@
         width: 100%;
         max-width: 150px;
         justify-content: center;
-        mat-checkbox {
-          margin-top: -5px;
+
+        .mat-mdc-checkbox {
+          margin-top: -1px;
         }
       }
 
@@ -76,12 +66,15 @@
         margin-left: 30px;
         flex: 0 0 78px;
         width: 78px;
+        justify-content: center;
+
         .row-action-btn {
           border: none;
           background-color: transparent;
+
           .icon {
-            margin-top: -5px;
-            margin-left: -3px;
+            margin-top: -2px;
+            margin-left: -5px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -106,11 +99,13 @@
     }
 
     .factor-table {
+      min-height: 48px;
       max-height: 380px;
       overflow: auto;
 
       mat-header-row {
         min-height: 35px;
+        max-height: 35px;
         justify-content: space-between;
       }
 
@@ -143,14 +138,12 @@
       }
 
       .cdk-column-factor {
-        flex: 0 0 220px;
-        width: 150px;
+        width: 100%;
       }
 
       .cdk-column-description {
-        flex: 0 0 220px;
-        width: 170px;
         margin-left: 30px;
+        width: 100%;
       }
 
       .cdk-column-expandedDetail {
@@ -161,17 +154,17 @@
       }
 
       .cdk-column-actions {
-        margin-left: 15px;
-        padding-right: 10px;
-        justify-content: flex-end;
+        margin-left: 30px;
+        flex: 0 0 78px;
+        width: 78px;
+        justify-content: center;
 
         .row-action-btn {
           border: none;
           background-color: transparent;
 
           .icon {
-            margin-top: -5px;
-            margin-left: -3px;
+            margin-left: -5px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -182,9 +175,6 @@
       }
 
       .expandable-row {
-        min-height: 0;
-        overflow: hidden;
-
         mat-cell,
         mat-header-cell {
           padding: 0px;
@@ -223,13 +213,18 @@
     .level-table {
       mat-header-row {
         min-height: 35px;
+        max-height: 35px;
         justify-content: space-between;
       }
 
       mat-row {
+        min-height: 48px;
+        max-height: 48px;
         justify-content: space-between;
-        border-bottom-style: none;
-        border-top: 1px solid #d3d3d3;
+
+        &:last-child {
+          border-bottom-style: none;
+        }
       }
 
       mat-header-cell {
@@ -239,34 +234,31 @@
 
       mat-cell {
         justify-content: left;
-        margin-bottom: -5px;
       }
 
       .cdk-column-level {
-        margin-left: 20px;
-        flex: 0 0 220px;
-        width: 180px;
+        margin-left: 30px;
+        width: 100%;
       }
 
       .cdk-column-payload {
-        flex: 0 0 220px;
-        width: 100%;
-        min-width: 320px;
         margin-left: 30px;
+        width: 100%;
       }
 
       .cdk-column-actions {
-        margin-left: 15px;
-        padding-right: 10px;
-        justify-content: flex-end;
+        margin-left: 30px;
+        flex: 0 0 78px;
+        width: 78px;
+        justify-content: center;
 
         .row-action-btn {
           border: none;
           background-color: transparent;
 
           .icon {
-            margin-top: -5px;
-            margin-left: -3px;
+            margin-top: -1px;
+            margin-left: -5px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -308,16 +300,6 @@
     margin-bottom: 5px;
   }
 
-  // This rule is pretty invasive, we should reconsider how and why we are refusing underlines
-
-  // ::ng-deep .mat-form-field-appearance-legacy .mat-form-field-underline {
-  //   bottom: unset;
-  //   background-color: unset !important;
-  // }
-
-  ::ng-deep .mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple {
-    display: none;
-  }
 
   /* Remove arrows/spinners from input type number */
   input::-webkit-outer-spin-button,

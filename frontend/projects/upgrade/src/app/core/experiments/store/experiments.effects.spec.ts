@@ -71,7 +71,8 @@ describe('ExperimentEffects', () => {
   let store$: any;
   let experimentDataService: any;
   let router: any;
-  let snackbar: any;
+  let notificationService: any;
+  let translate: any;
   let mockEnvironment: Environment;
 
   beforeEach(() => {
@@ -82,11 +83,23 @@ describe('ExperimentEffects', () => {
     router = {
       navigate: jest.fn(),
     };
-    snackbar = {
-      open: jest.fn(),
+    notificationService = {
+      showError: jest.fn(),
+      showSuccess: jest.fn(),
+    };
+    translate = {
+      instant: jest.fn(),
     };
     mockEnvironment = { ...environment };
-    service = new ExperimentEffects(actions$, store$, experimentDataService, router, snackbar, mockEnvironment);
+    service = new ExperimentEffects(
+      actions$,
+      store$,
+      experimentDataService,
+      router,
+      translate,
+      notificationService,
+      mockEnvironment
+    );
   });
 
   describe('#getPaginatedExperiment$', () => {

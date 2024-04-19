@@ -759,9 +759,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       } else {
         this.conditions.controls.forEach((control, index) => {
           const assignmentWeightFormControl = control.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.ASSIGNMENT_WEIGHT);
-          assignmentWeightFormControl.setValue(
-            control.value.assignmentWeight ? control.value.assignmentWeight : 0
-          );
+          assignmentWeightFormControl.setValue(control.value.assignmentWeight ? control.value.assignmentWeight : 0);
           if (this.isExperimentEditable) {
             assignmentWeightFormControl.enable();
           }

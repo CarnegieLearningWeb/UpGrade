@@ -46,7 +46,7 @@ export const groupAssignmentWithGroupConsistencyExperiment = {
   state: EXPERIMENT_STATE.INACTIVE,
 };
 
-export const groupAssignmentWithIndividulaConsistencyExperiment = {
+export const groupAssignmentWithIndividualConsistencyExperiment = {
   ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
@@ -257,4 +257,53 @@ export const competingExperimentAssignmentExperiment2 = {
 export const competingExperimentAssignmentExperiment3 = {
   ...getSixthExperiment(),
   state: EXPERIMENT_STATE.ENROLLING,
+};
+
+export const stratificationSRSExperimentAssignmentExperiment1 = {
+  ...getExperiment(),
+  conditions: [
+    {
+      id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
+      name: 'Abstract',
+      description: 'Abstract',
+      assignmentWeight: 50,
+      conditionCode: 'Abstract',
+      twoCharacterId: 'AB',
+    },
+    {
+      id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
+      name: 'Concrete',
+      description: 'Concrete',
+      assignmentWeight: 50,
+      conditionCode: 'Concrete',
+      twoCharacterId: 'CN',
+    },
+  ],
+  conditionOrder: CONDITION_ORDER.RANDOM,
+  consistencyRule: null,
+  assignmentAlgorithm: 'stratified random sampling'
+};
+
+export const stratificationRandomExperimentAssignmentExperiment2 = {
+  ...getExperiment(),
+  conditions: [
+    {
+      id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
+      name: 'Abstract',
+      description: 'Abstract',
+      assignmentWeight: 50,
+      conditionCode: 'Abstract',
+      twoCharacterId: 'AB',
+    },
+    {
+      id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
+      name: 'Concrete',
+      description: 'Concrete',
+      assignmentWeight: 50,
+      conditionCode: 'Concrete',
+      twoCharacterId: 'CN',
+    },
+  ],
+  conditionOrder: CONDITION_ORDER.RANDOM,
+  consistencyRule: null
 };

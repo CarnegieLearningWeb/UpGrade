@@ -6,11 +6,13 @@
 
     mat-header-row {
       min-height: 35px;
+      max-height: 35px;
       justify-content: space-between;
     }
 
     mat-row {
       min-height: 46px;
+      height: auto;
       justify-content: space-between;
       align-items: flex-start;
     }
@@ -22,15 +24,15 @@
 
     mat-cell {
       justify-content: left;
-      margin-bottom: -11px;
+      align-items: flex-start;
     }
 
     .metric-keys {
       display: flex;
       flex-direction: column;
-      padding: 10px 0;
+      row-gap: 33px;
+      padding: 20px 0;
       width: 250px;
-      margin-bottom: 7px;
 
       .dropdown {
         position: absolute;
@@ -42,7 +44,8 @@
     .secondary-form {
       display: flex;
       flex-direction: column;
-      padding: 10px 0;
+      row-gap: 33px;
+      padding: 20px 0;
       width: 160px;
 
       .form-control {
@@ -71,8 +74,8 @@
     .cdk-column-queryName {
       width: 100%;
       max-width: 350px;
-      &.mat-cell {
-        margin-top: -3px;
+      &.mat-mdc-cell {
+        padding-top: 7px;
       }
     }
 
@@ -80,7 +83,8 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-top: 1px;
+      margin-top: 15px;
+      margin-left: -16px;
       min-width: 60px;
       height: 16px;
       font-size: var(--text-size-x-large);
@@ -113,14 +117,5 @@
   .title {
     font-size: 18px;
     font-weight: bold;
-  }
-
-  ::ng-deep .mat-form-field-appearance-legacy .mat-form-field-underline {
-    bottom: unset;
-    background-color: unset !important;
-  }
-
-  ::ng-deep .mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple {
-    display: none;
   }
 }

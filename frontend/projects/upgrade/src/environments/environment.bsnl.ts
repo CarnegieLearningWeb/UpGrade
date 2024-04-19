@@ -31,6 +31,7 @@ export const environment = {
     getAllUsers: '/users/paginated',
     userDetails: '/users/details',
     previewUsers: '/previewUsers',
+    stratification: '/stratification',
     getAllPreviewUsers: '/previewUsers/paginated',
     previewUsersAssignCondition: '/previewUsers/assign',
     allPartitions: '/experiments/partitions',
@@ -47,7 +48,8 @@ export const environment = {
     segments: '/segments',
     importSegments: '/segments/import',
     exportSegment: '/segments/export',
-    exportSegments: '/segments/export',
+    exportSegmentCSV: '/segments/export/csv',
+    exportSegments: '/segments/export/json',
     getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
   },
 };

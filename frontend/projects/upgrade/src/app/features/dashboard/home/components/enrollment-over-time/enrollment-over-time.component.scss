@@ -3,12 +3,13 @@
 
   .title {
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
   }
 
   .enrollment-filters {
     display: flex;
     justify-content: space-between;
+    column-gap: 20px;
 
     .sites {
       width: 250px;
@@ -16,18 +17,6 @@
 
     .conditions {
       width: 400px;
-    }
-
-    mat-form-field {
-      margin-right: 20px;
-
-      ::ng-deep .mat-checkbox-checked.mat-primary .mat-checkbox-background {
-        background-color: var(--blue) !important;
-      }
-    }
-
-    .dropdown-label {
-      color: var(--grey-2);
     }
   }
 
@@ -118,7 +107,6 @@
   }
 }
 
-::ng-deep .mat-option .mat-checkbox-layout,
-::ng-deep .mat-option .mat-checkbox-label {
-  width: 100% !important;
+.mat-mdc-checkbox {
+  padding-left: 4px;
 }

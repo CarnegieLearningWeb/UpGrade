@@ -1,34 +1,54 @@
 <form class="segment-overview" [formGroup]="overviewForm">
-  <mat-form-field class="ft-14-600 name">
-    <input
-      matInput
-      class="ft-14-400"
-      [placeholder]="'segments.global-name.text' | translate"
-      formControlName="name"
-      cdkFocusInitial
-    />
-  </mat-form-field>
+  <section class="fields-container">
+    <mat-form-field
+      class="dense-2 name"
+      appearance="outline"
+      subscriptSizing="dynamic"
+    >
+      <mat-label class="ft-14-400">
+        {{ 'segments.global-name.text' | translate }}
+      </mat-label>
+      <input
+        class="ft-14-400"
+        matInput
+        formControlName="name"
+        cdkFocusInitial
+      />
+    </mat-form-field>
 
-  <mat-form-field class="ft-14-600 description">
-    <input
-      class="ft-14-400"
-      matInput
-      [placeholder]="'segments.overview.segment-description.text' | translate"
-      formControlName="description"
-    />
-  </mat-form-field>
+    <mat-form-field
+      class="dense-2 description"
+      appearance="outline"
+      subscriptSizing="dynamic"
+    >
+      <mat-label class="ft-14-400">
+        {{ 'segments.overview.segment-description.text' | translate }}
+      </mat-label>
+      <input
+        class="ft-14-400"
+        matInput
+        formControlName="description"
+      />
+    </mat-form-field>
 
-  <mat-form-field class="ft-14-600 chips">
-    <mat-label>{{ 'segments.overview.segment-app-context.text' | translate }}</mat-label>
-    <mat-select class="ft-14-400" formControlName="context">
-      <mat-option *ngFor="let context of allContexts" [value]="context">
-        {{ context }}
-      </mat-option>
-    </mat-select>
-    <mat-error *ngIf="overviewForm.controls.context.hasError('required')">
-      {{ 'home.new-experiment.overview.context.error.text' | translate }}
-    </mat-error>
-  </mat-form-field>
+    <mat-form-field
+      class="dense-2 chips"
+      appearance="outline"
+      subscriptSizing="dynamic"
+    >
+      <mat-label class="ft-14-400">
+        {{ 'segments.overview.segment-app-context.text' | translate }}
+      </mat-label>
+      <mat-select class="ft-14-400" formControlName="context">
+        <mat-option class="ft-14-400" *ngFor="let context of allContexts" [value]="context">
+          {{ context }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <span class="ft-14-400 validation-message" *ngIf="!isSegmentNameValid">
+      {{ 'segments.new-segment-overview-stepper.segment-name-error.text' | translate }}
+    </span>
+  </section>
 
   <div class="button-container">
     <button class="shared-modal--modal-btn" mat-raised-button (click)="emitEvent(NewSegmentDialogEvents.CLOSE_DIALOG)">

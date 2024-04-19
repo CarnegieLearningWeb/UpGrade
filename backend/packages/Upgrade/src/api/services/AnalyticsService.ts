@@ -1,7 +1,7 @@
 import { LogRepository } from './../repositories/LogRepository';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { AWSService } from './AWSService';
 import {
@@ -12,13 +12,13 @@ import {
   REPEATED_MEASURE,
   IMetricMetaData,
   ASSIGNMENT_UNIT,
-  EXPERIMENT_TYPE,
+  SERVER_ERROR,
+  IExperimentEnrollmentStats,
 } from 'upgrade_types';
 import { AnalyticsRepository, CSVExportDataRow } from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
 import ObjectsToCsv from 'objects-to-csv';
 import fs from 'fs';
-import { SERVER_ERROR, IExperimentEnrollmentStats } from 'upgrade_types';
 import { env } from '../../env';
 import { ErrorService } from './ErrorService';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
@@ -41,13 +41,13 @@ interface IEnrollmentStatByDate {
 @Service()
 export class AnalyticsService {
   constructor(
-    @OrmRepository()
+    @InjectRepository()
     private experimentRepository: ExperimentRepository,
-    @OrmRepository()
+    @InjectRepository()
     private analyticsRepository: AnalyticsRepository,
-    @OrmRepository()
+    @InjectRepository()
     private experimentAuditLogRepository: ExperimentAuditLogRepository,
-    @OrmRepository()
+    @InjectRepository()
     private logRepository: LogRepository,
     public awsService: AWSService,
     public errorService: ErrorService
@@ -185,9 +185,9 @@ export class AnalyticsService {
       const take = 50;
       do {
         let csvExportData: CSVExportDataRow[];
-        if(experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+        if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
           csvExportData = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentId, skip, take);
-        }else {
+        } else {
           csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(experimentId, skip, take);
         }
         const userIds = csvExportData.map(({ userId }) => userId);
@@ -227,6 +227,7 @@ export class AnalyticsService {
               const repeatedMeasure = groupedUser[userId][queryId][0].repeatedMeasure;
               const key = groupedUser[userId][queryId][0].key;
               const type = groupedUser[userId][queryId][0].type;
+              let metricKey;
 
               const keySplitArray = key.split(METRICS_JOIN_TEXT);
               logsUser[userId] = logsUser[userId] || {};
@@ -242,6 +243,7 @@ export class AnalyticsService {
                     },
                     undefined
                   ).data;
+                  metricKey = Object.keys(jsonLog);
                   if (type === IMetricMetaData.CONTINUOUS) {
                     logsUser[userId][queryId] = +keySplitArray.reduce(
                       (accumulator, attribute: string) => accumulator[attribute],
@@ -265,6 +267,7 @@ export class AnalyticsService {
                     },
                     undefined
                   ).data;
+                  metricKey = Object.keys(jsonLog);
                   if (type === IMetricMetaData.CONTINUOUS) {
                     logsUser[userId][queryId] = +keySplitArray.reduce(
                       (accumulator, attribute: string) => accumulator[attribute],
@@ -288,21 +291,42 @@ export class AnalyticsService {
                   break;
                 }
               }
+              logsUser[userId][queryId] = metricKey[0] + ': ' + logsUser[userId][queryId];
             }
           }
         }
-
         // merge with data
         const csvRows = csvExportData.map((row) => {
           const queryObject = logsUser[row.userId];
           const queryDataToAdd = {};
+          let postRule = '';
+          let revertToCondition = '';
 
           for (const queryId in queryObject) {
             if (queryObject[queryId]) {
               queryDataToAdd[queryNameIdMapping[queryId]] = queryObject[queryId];
             }
           }
+          if (row.postRule === 'assign') {
+            if (row.revertTo !== null) {
+              revertToCondition = row.revertTo;
+            } else {
+              revertToCondition = 'Default';
+            }
+            postRule = 'Assign: ' + revertToCondition;
+          } else {
+            postRule = 'Continue';
+          }
 
+          let excludeIfReached = 'FALSE';
+          if (row.excludeIfReached) {
+            excludeIfReached = 'TRUE';
+          }
+
+          let stratification = 'NA';
+          if (row.stratification && row.stratificationValue) {
+            stratification = row.stratification + ': ' + row.stratificationValue;
+          }
           return {
             ExperimentId: row.experimentId,
             ExperimentName: row.experimentName,
@@ -310,12 +334,24 @@ export class AnalyticsService {
             AppContext: row.context[0],
             UnitOfAssignment: row.assignmentUnit,
             GroupType: row.group,
-            GroupId: row.groupId,
+            GroupId: row.enrollmentGroupId ? row.enrollmentGroupId : row.exclusionGroupId,
+            ConsistencyRule: row.consistencyRule,
+            DesignType: row.designType,
+            AlgorithmType: row.algorithmType,
+            Stratification: stratification,
             Site: row.site,
             Target: row.target,
+            ExcludeifReached: excludeIfReached,
             ConditionName: row.conditionName,
-            FirstDecisionPointReachedOn: new Date(row.firstDecisionPointReachedOn).toISOString(),
-            UniqueDecisionPointsMarked: row.decisionPointReachedCount,
+            Payload: row.payload ? row.payload : row.conditionName,
+            PostRule: postRule,
+            EnrollmentStartDate: new Date(row.enrollmentStartDate).toISOString(),
+            EnrollmentCompleteDate: row.enrollmentCompleteDate
+              ? new Date(row.enrollmentCompleteDate).toISOString()
+              : '',
+            MarkExperimentPointTime: new Date(row.markExperimentPointTime).toISOString(),
+            EnrollmentCode: row.enrollmentCode,
+            ExclusionCode: row.exclusionCode,
             ...queryDataToAdd,
           };
         });
@@ -323,9 +359,10 @@ export class AnalyticsService {
         // write in the file
         const csv = new ObjectsToCsv(csvRows);
         try {
-          if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
-            csv.delimiter = ',';
-          }
+          // TODO: check if this is needed
+          // if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+          //   csv.delimiter = ',';
+          // }
           await csv.toDisk(`${folderPath}${simpleExportCSV}`, { append: true });
         } catch (err) {
           console.log(err);
@@ -350,9 +387,25 @@ export class AnalyticsService {
             ExperimentId: '',
             ExperimentName: '',
             UserId: '',
+            AppContext: '',
+            UnitOfAssignment: '',
+            GroupType: '',
             GroupId: '',
+            ConsistencyRule: '',
+            DesignType: '',
+            AlgorithmType: '',
+            Stratification: '',
+            Site: '',
+            Target: '',
+            ExcludeifReached: '',
             ConditionName: '',
-            FirstDecisionPointReachedOn: '',
+            Payload: '',
+            PostRule: '',
+            EnrollmentStartDate: '',
+            EnrollmentCompleteDate: '',
+            MarkExperimentPointTime: '',
+            EnrollmentCode: '',
+            ExclusionCode: '',
           },
         ];
         const csv = new ObjectsToCsv(csvRows);
@@ -365,15 +418,20 @@ export class AnalyticsService {
 
       await Promise.all([this.awsService.uploadCSV(monitorFileBuffer, email_export, simpleExportCSV)]);
 
-      const signedURLMonitored = await Promise.all([
-        this.awsService.generateSignedURL(email_export, simpleExportCSV, email_expiry_time),
-      ]);
+      const signedURLMonitored = await this.awsService
+        .generateSignedURL(email_export, simpleExportCSV, email_expiry_time)
+        .catch((err) => {
+          // log error here and throw error
+          logger.error({ message: `Error in generating signed url for ${simpleExportCSV}`, details: err });
+          // throw error because we don't want the code to execute further without the url
+          throw err;
+        });
 
       const emailText = `Hey,
       <br>
       Here is the exported experiment data:
       <br>
-      <a href="${signedURLMonitored[0]}">Monitored Experiment Data</a>`;
+      <a href="${signedURLMonitored}">Monitored Experiment Data</a>`;
 
       const emailSubject = `Exported Data for the experiment: ${experiment.name}`;
       // send email to the user

@@ -1,22 +1,31 @@
-<mat-card class="segments-list-container">
+<mat-card appearance="raised" class="segments-list-container">
   <div class="header">
     <div>
-      <mat-form-field class="filter-options">
-        <mat-select class="ft-16-600" [(ngModel)]="selectedExperimentFilterOption">
-          <mat-option *ngFor="let filterOption of experimentFilterOptions" [value]="filterOption">
+      <mat-form-field
+        class="dense-2 filter-options"
+        subscriptSizing="dynamic"
+      >
+        <mat-select
+          class="ft-14-400"
+          [(ngModel)]="selectedExperimentFilterOption"
+        >
+          <mat-option class="ft-14-400" *ngFor="let filterOption of experimentFilterOptions" [value]="filterOption">
             {{ filterOption | titlecase }}
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field>
+      <mat-form-field
+        class="dense-2"
+        subscriptSizing="dynamic"
+      >
         <input
-          class="search-input ft-16-400"
+          class="ft-14-400 search-input"
           matInput
           #searchInput
           [(ngModel)]="searchValue"
           [placeholder]="'global.search.text' | translate"
         />
-        <mat-icon matSuffix>search</mat-icon>
+        <mat-icon class="search-icon" matSuffix>search</mat-icon>
       </mat-form-field>
     </div>
     <div>
@@ -122,7 +131,13 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <mat-chip class="ft-12-600" *ngIf="segment.context != 'ALL'"> {{ segment.context }} </mat-chip>
+          <mat-chip-listbox>
+            <mat-chip *ngIf="segment.context != 'ALL'">
+              <span class="ft-12-600 chip-label">
+                {{ segment.context }}
+              </span>
+            </mat-chip>
+          </mat-chip-listbox>
           <span class="ft-12-600" *ngIf="segment.context == 'ALL'" style="margin-left: 10px">
             {{ segment.context }}
           </span>

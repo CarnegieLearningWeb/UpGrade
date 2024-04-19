@@ -1,5 +1,8 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
+import { Component, ChangeDetectionStrategy, Inject } from '@angular/core';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-delete',
@@ -10,7 +13,7 @@ import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dia
 export class DeleteComponent {
   isDeleteButtonClicked: string;
   message: boolean;
-  constructor(public dialogRef: MatDialogRef<DeleteComponent>) {}
+  constructor(public dialogRef: MatDialogRef<DeleteComponent>, @Inject(MAT_DIALOG_DATA) public data: any) {}
 
   onCancelClick(): void {
     this.message = false;

@@ -1,34 +1,59 @@
 import { Service } from 'typedi';
-import { OrmRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { IndividualForSegmentRepository } from '../repositories/IndividualForSegmentRepository';
 import { GroupForSegmentRepository } from '../repositories/GroupForSegmentRepository';
 import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { EXPERIMENT_STATE, SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS, CACHE_PREFIX } from 'upgrade_types';
+import { SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS, CACHE_PREFIX } from 'upgrade_types';
 import { getConnection } from 'typeorm';
-import uuid from 'uuid';
+import Papa from 'papaparse';
+import { env } from '../../env';
+import { v4 as uuid } from 'uuid';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
-import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
+import {
+  SegmentInputValidator,
+  SegmentReturnObj,
+  SegmentImportError,
+  SegmentFile,
+  Group,
+} from '../controllers/validators/SegmentInputValidator';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
 import { getSegmentData } from '../controllers/SegmentController';
 import { globalExcludeSegment } from '../../init/seed/globalExcludeSegment';
 import { CacheService } from './CacheService';
+import { validate } from 'class-validator';
+
+interface SegmentWithValidation {
+  missingProperty: string;
+  segment: SegmentInputValidator;
+}
+
+interface IsSegmentValidWithError {
+  missingProperty: string;
+  isSegmentValid: boolean;
+}
+
+interface SegmentParticipantsRow {
+  Type: string;
+  UUID: string;
+}
+
 @Service()
 export class SegmentService {
   constructor(
-    @OrmRepository()
+    @InjectRepository()
     private segmentRepository: SegmentRepository,
-    @OrmRepository()
+    @InjectRepository()
     private individualForSegmentRepository: IndividualForSegmentRepository,
-    @OrmRepository()
+    @InjectRepository()
     private groupForSegmentRepository: GroupForSegmentRepository,
-    @OrmRepository()
+    @InjectRepository()
     private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
-    @OrmRepository()
+    @InjectRepository()
     private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
     private cacheService: CacheService
   ) {}
@@ -62,6 +87,9 @@ export class SegmentService {
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
     return this.cacheService.wrapFunction(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ids, async () => {
+      if (!ids.length) {
+        return [];
+      }
       const result = await this.segmentRepository
         .createQueryBuilder('segment')
         .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
@@ -74,49 +102,45 @@ export class SegmentService {
       const sortedData = ids.map((id) => {
         return result.find((data) => data.id === id);
       });
-
       return sortedData;
     });
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
     const segmentsData = await getConnection().transaction(async () => {
-      const segmentsData = await this.getAllSegments(logger);
-      const allExperimentSegmentsInclusion = await this.getExperimentSegmenInclusionData();
-      const allExperimentSegmentsExclusion = await this.getExperimentSegmenExclusionData();
+      const [segmentsData, allExperimentSegmentsInclusion, allExperimentSegmentsExclusion] = await Promise.all([
+        this.getAllSegments(logger),
+        this.getExperimentSegmenInclusionData(),
+        this.getExperimentSegmenExclusionData(),
+      ]);
 
-      const segmentsUsedLockedList = [];
-      const segmentsUsedUnlockedList = [];
+      const segmentsUsedList = [];
 
       if (allExperimentSegmentsInclusion) {
         allExperimentSegmentsInclusion.forEach((ele) => {
           const subSegments = ele.segment.subSegments;
-          subSegments.forEach((subSegment) => {
-            ele.experiment.state === EXPERIMENT_STATE.ENROLLING
-              ? segmentsUsedLockedList.push(subSegment.id)
-              : segmentsUsedUnlockedList.push(subSegment.id);
-          });
+          segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
         });
       }
 
       if (allExperimentSegmentsExclusion) {
         allExperimentSegmentsExclusion.forEach((ele) => {
           const subSegments = ele.segment.subSegments;
-          subSegments.forEach((subSegment) => {
-            ele.experiment.state === EXPERIMENT_STATE.ENROLLING
-              ? segmentsUsedLockedList.push(subSegment.id)
-              : segmentsUsedUnlockedList.push(subSegment.id);
-          });
+          segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
         });
       }
+
+      segmentsData.forEach((segment) => {
+        if (segmentsUsedList.includes(segment.id)) {
+          segmentsUsedList.push(...segment.subSegments.map((subSegment) => subSegment.id));
+        }
+      });
 
       const segmentsDataWithStatus = segmentsData.map((segment) => {
         if (segment.id === globalExcludeSegment.id) {
           return { ...segment, status: SEGMENT_STATUS.GLOBAL };
-        } else if (segmentsUsedLockedList.find((segmentId) => segmentId === segment.id)) {
-          return { ...segment, status: SEGMENT_STATUS.USED }; // TODO change to locked
-        } else if (segmentsUsedUnlockedList.find((segmentId) => segmentId === segment.id)) {
-          return { ...segment, status: SEGMENT_STATUS.USED }; // TODO change to unlocked
+        } else if (segmentsUsedList.includes(segment.id)) {
+          return { ...segment, status: SEGMENT_STATUS.USED };
         } else {
           return { ...segment, status: SEGMENT_STATUS.UNUSED };
         }
@@ -152,45 +176,185 @@ export class SegmentService {
     return await this.segmentRepository.deleteSegment(id, logger);
   }
 
-  public async importSegments(segments: SegmentInputValidator[], logger: UpgradeLogger): Promise<Segment[]> {
+  public async importSegments(segments: SegmentFile[], logger: UpgradeLogger): Promise<SegmentReturnObj> {
+    const importFileErrors: SegmentImportError[] = [];
+    const parsedData: SegmentInputValidator[] = [];
+    const fileNames: string[] = [];
+    for (const segment of segments) {
+      const fileName = segment.fileName.split('.');
+      if (segment.fileName.endsWith('.json')) {
+        const segmentForValidation = this.convertJSONStringToSegInputValFormat(segment.fileContent);
+        const segmentJSONValidation = await this.validateObject(segmentForValidation);
+
+        if (segmentJSONValidation.isSegmentValid) {
+          fileNames.push(fileName[0]);
+          parsedData.push(segmentForValidation.segment);
+        } else {
+          importFileErrors.push({
+            fileName: fileName[0],
+            error: 'Invalid Segment JSON, missing properties: ' + segmentJSONValidation.missingProperty,
+          });
+        }
+      }
+    }
+    const importedSegments = await this.validateAndImportSegments(parsedData, fileNames, logger);
+    importedSegments.importErrors.forEach((err) => {
+      importFileErrors.push({
+        fileName: err.fileName,
+        error: err.error,
+      });
+    });
+    return { segments: importedSegments.segments, importErrors: importFileErrors };
+  }
+
+  convertJSONStringToSegInputValFormat(segmentDetails: string): SegmentWithValidation {
+    const segmentInfo = JSON.parse(segmentDetails);
+    let userIds: string[];
+    let subSegmentIds: string[];
+    let groups: Group[];
+    let missingAllProperties = '';
+
+    if (segmentInfo.individualForSegment) {
+      userIds = segmentInfo.individualForSegment.map((individual) => (individual.userId ? individual.userId : null));
+    } else {
+      missingAllProperties = missingAllProperties + ' individualForSegment';
+    }
+
+    if (segmentInfo.subSegments) {
+      subSegmentIds = segmentInfo.subSegments.map((subSegment) => (subSegment.id ? subSegment.id : null));
+    } else {
+      missingAllProperties = missingAllProperties + ' subSegments';
+    }
+
+    if (segmentInfo.groupForSegment) {
+      groups = segmentInfo.groupForSegment.map((group) => {
+        return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
+      });
+    } else {
+      missingAllProperties = missingAllProperties + ' groupForSegment';
+    }
+
+    const segmentForValidation: SegmentInputValidator = {
+      ...segmentInfo,
+      userIds: userIds,
+      subSegmentIds: subSegmentIds,
+      groups: groups,
+    };
+
+    return { missingProperty: missingAllProperties, segment: segmentForValidation };
+  }
+
+  async validateObject(obj: SegmentWithValidation): Promise<IsSegmentValidWithError> {
+    let missingAllProperties = obj.missingProperty;
+    const object = Object.assign(new SegmentInputValidator(), obj.segment);
+    const errors = await validate(object);
+    if (errors.length > 0) {
+      // Handle errors
+      errors.forEach((error) => {
+        missingAllProperties = missingAllProperties + ' ' + error.property;
+      });
+      return { missingProperty: missingAllProperties, isSegmentValid: false };
+    } else {
+      // Object is valid
+      return { missingProperty: missingAllProperties, isSegmentValid: true };
+    }
+  }
+
+  public async validateAndImportSegments(
+    segments: SegmentInputValidator[],
+    fileNames: string[],
+    logger: UpgradeLogger
+  ): Promise<SegmentReturnObj> {
     const allAddedSegments: Segment[] = [];
     const allSegmentIds: string[] = [];
+    const allSegments = await this.getAllSegments(logger);
     segments.forEach((segment) => {
       allSegmentIds.push(segment.id);
       segment.subSegmentIds.forEach((subSegment) => {
-        allSegmentIds.includes(subSegment) ? true : allSegmentIds.push(subSegment);
-      });
-    });
-    const allSegmentsData = await this.getSegmentByIds(allSegmentIds);
-    const duplicateSegmentsIds = allSegmentsData?.map((segment) => segment?.id);
-
-    for (const segment of segments) {
-      const duplicateSegment = duplicateSegmentsIds ? duplicateSegmentsIds.includes(segment.id) : false;
-      if (duplicateSegment && segment.id !== undefined) {
-        const error = new Error('Duplicate segment');
-        (error as any).type = SERVER_ERROR.QUERY_FAILED;
-        logger.error(error);
-        throw error;
-      }
-
-      segment.subSegmentIds.forEach((subSegmentId) => {
-        const subSegment = allSegmentsData ? allSegmentsData.find((segment) => subSegmentId === segment?.id) : null;
-        if (!subSegment) {
-          const error = new Error(
-            'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
-          );
-          (error as any).type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-          throw error;
+        if (!allSegmentIds.includes(subSegment)) {
+          allSegmentIds.push(subSegment);
         }
       });
+    });
+    const allSubSegmentsData = await this.getSegmentByIds(allSegmentIds);
+    const duplicateSegmentsIds = allSubSegmentsData?.map((segment) => segment?.id);
+    const duplicateSegmentsContexts = allSubSegmentsData?.map((segment) => segment?.context);
+    const contextMetaData = env.initialization.contextMetadata;
+    const contextMetaDataOptions = Object.keys(contextMetaData);
+    const importFileErrors: SegmentImportError[] = [];
+    let index = 0;
 
+    for (const segment of segments) {
+      let errorMessage = '';
+      if (!contextMetaDataOptions.includes(segment.context)) {
+        errorMessage =
+          errorMessage + 'Context ' + segment.context + ' not found. Please enter valid context in segment. ';
+      } else if (segment.groups.length > 0) {
+        const segmentGroupOptions = contextMetaData[segment.context].GROUP_TYPES;
+        let invalidGroups = '';
+        segment.groups.forEach((group) => {
+          if (!segmentGroupOptions.includes(group.type)) {
+            invalidGroups = invalidGroups ? invalidGroups + ', ' + group.type : group.type;
+          }
+        });
+        errorMessage = invalidGroups
+          ? errorMessage + 'Group type: ' + invalidGroups + ' not found. Please enter valid group type in segment. '
+          : errorMessage;
+      }
+      const isDuplicateSegment = duplicateSegmentsIds ? duplicateSegmentsIds.includes(segment.id) : false;
+      const isDuplicateSegmentWithSameContext =
+        isDuplicateSegment && duplicateSegmentsContexts ? duplicateSegmentsContexts.includes(segment.context) : false;
+      if (isDuplicateSegment && isDuplicateSegmentWithSameContext && segment.id !== undefined) {
+        errorMessage = errorMessage + 'Duplicate segment with same context';
+      }
+
+      // import duplicate segment with different context:
+      if (!isDuplicateSegment || !isDuplicateSegmentWithSameContext) {
+        // assign new uuid to duplicate segment with new context:
+        segment.id = !isDuplicateSegment ? segment.id : uuid();
+      }
+
+      const duplicateName = allSegments.filter((seg) => seg.name === segment.name && seg.context === segment.context);
+      if (duplicateName.length) {
+        errorMessage =
+          errorMessage +
+          'Invalid Segment Name: ' +
+          segment.name +
+          ' is already used by another segment with same context. ';
+      }
+
+      let invalidSubSegments = '';
+      segment.subSegmentIds.forEach((subSegmentId) => {
+        const subSegment = allSubSegmentsData
+          ? allSubSegmentsData.find((seg) => subSegmentId === seg?.id && segment.context === seg.context)
+          : null;
+        if (!subSegment) {
+          invalidSubSegments = invalidSubSegments ? invalidSubSegments + ', ' + subSegmentId : subSegmentId;
+        }
+      });
+      errorMessage = invalidSubSegments
+        ? errorMessage +
+          'SubSegment: ' +
+          invalidSubSegments +
+          ' not found. Please import subSegment with same context and link in segment. '
+        : errorMessage;
+
+      if (errorMessage.length > 0) {
+        importFileErrors.push({
+          fileName: fileNames[index],
+          error: 'Invalid Segment data: ' + errorMessage,
+        });
+        index++;
+        continue;
+      }
+      index++;
       logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
       const addedSegment = await this.addSegmentDataInDB(segment, logger);
       allAddedSegments.push(addedSegment);
-      allSegmentsData.push(addedSegment);
+      allSubSegmentsData.push(addedSegment);
+      allSegments.push(addedSegment);
     }
-    return allAddedSegments;
+    return { segments: allAddedSegments, importErrors: importFileErrors };
   }
 
   public async exportSegments(segmentIds: string[], logger: UpgradeLogger): Promise<Segment[]> {
@@ -211,6 +375,26 @@ export class SegmentService {
     }
 
     return segmentsDoc;
+  }
+
+  public async exportSegmentCSV(segmentIds: string[], logger: UpgradeLogger): Promise<SegmentFile[]> {
+    const segmentsDoc = await this.exportSegments(segmentIds, logger);
+
+    const segmentExportObj: SegmentFile[] = segmentsDoc.map((segmentDoc) => {
+      const segmentRows: SegmentParticipantsRow[] = [];
+      segmentDoc.individualForSegment?.forEach((element) => {
+        segmentRows.push({ Type: 'Individual', UUID: element.userId });
+      });
+      segmentDoc.subSegments?.forEach((element) => {
+        segmentRows.push({ Type: 'Segment', UUID: element.name });
+      });
+      segmentDoc.groupForSegment?.forEach((element) => {
+        segmentRows.push({ Type: element.type, UUID: element.groupId });
+      });
+      return { fileName: segmentDoc.name, fileContent: Papa.unparse(segmentRows) };
+    });
+
+    return segmentExportObj;
   }
 
   async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
@@ -310,13 +494,13 @@ export class SegmentService {
         throw error;
       }
 
-      // reset caching
-      await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
-
       return transactionalEntityManager
         .getRepository(Segment)
         .findOne(segmentDoc.id, { relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
     });
+
+    // reset caching
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
 
     return createdSegment;
   }

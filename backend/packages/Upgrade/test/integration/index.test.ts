@@ -51,7 +51,7 @@ import {
   DeletePreviewAssignmentOnExperimentDelete,
   DeletePreviewAssignmentWithPreviewUserDelete,
 } from './PreviewExperiment/index';
-import { NoExperimentUserOnAssignment } from './ExperimentUser';
+import { GroupConsistency, IndividualConsistency, NoExperimentUserOnAssignment } from './ExperimentUser';
 import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
 import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalStateChange/index';
 import { StatsIndividualEnrollment, StatsGroupEnrollment, StatsWithinSubjectEnrollment } from './ExperimentStats/index';
@@ -86,6 +86,12 @@ import {
   RandomAlgoCheck,
   RandomRoundRobinAlgoCheck,
 } from './Experiment/withinSubject/index';
+import { CacheService } from '../../src/api/services/CacheService';
+import {
+  StratificationSRSAlgorithmCheck,
+  StratificationMetricQueriesCheck,
+  StratificationRandomAlgorithmCheck,
+} from './Experiment/stratification/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -102,13 +108,14 @@ describe('Integration Tests', () => {
   });
 
   beforeEach(async () => {
-    jest.setTimeout(29999);
     await migrateDatabase(connection);
+    const cacheManager = Container.get(CacheService);
+    await cacheManager.resetAllCache();
 
     // create System Users
     await CreateSystemUser();
     await createGlobalExcludeSegment(new UpgradeLogger());
-  });
+  }, 99999);
 
   // -------------------------------------------------------------------------
   // Tear down
@@ -120,442 +127,389 @@ describe('Integration Tests', () => {
   // Test cases
   // -------------------------------------------------------------------------
 
-  test('Mark Experiment before experiment is created', async (done) => {
-    await NoExperiment();
-    done();
+  test('Mark Experiment before experiment is created', () => {
+    return NoExperiment();
   });
 
-  test('No Group for Experiment', async (done) => {
-    await NoGroup();
-    done();
+  test('No Group for Experiment', () => {
+    return NoGroup();
   });
 
-  test('No Working Group for Experiment', async (done) => {
-    await NoWorkingGroup();
-    done();
+  test('No Working Group for Experiment', () => {
+    return NoWorkingGroup();
   });
 
-  test('Working Group not having the key', async (done) => {
-    await IncorrectWorkingGroup();
-    done();
+  test('Working Group not having the key', () => {
+    return IncorrectWorkingGroup();
   });
 
-  test('Group not having the key', async (done) => {
-    await IncorrectGroup();
-    done();
+  test('Group not having the key', () => {
+    return IncorrectGroup();
   });
 
-  test('Group and Participants', async (done) => {
-    await GroupAndParticipants();
-    done();
+  test('Group and Participants', () => {
+    return GroupAndParticipants();
   });
 
-  test('Participants Only', async (done) => {
-    await ParticipantsOnly();
-    done();
+  test('Participants Only', () => {
+    return ParticipantsOnly();
   });
 
-  test('Log Operations', async (done) => {
-    await LogOperations();
-    done();
+  test('Log Operations', () => {
+    return LogOperations();
   });
 
-  test('Repeated Measure', async (done) => {
-    await RepeatedMeasure();
-    done();
+  test('Repeated Measure', () => {
+    return RepeatedMeasure();
   });
 
-  test('User not defined', async (done) => {
-    await UserNotDefined();
-    done();
+  test('User not defined', () => {
+    return UserNotDefined();
   });
 
-  test('No Experiment user on assignment', async (done) => {
-    await NoExperimentUserOnAssignment();
-    done();
+  test('No Experiment user on assignment', () => {
+    return NoExperimentUserOnAssignment();
   });
 
-  test('System User is created', async (done) => {
-    await SystemUserCreated();
-    done();
+  test('System User is created', () => {
+    return SystemUserCreated();
   });
 
-  test('Competing Experiment', async (done) => {
-    await CompetingExperiment();
-    done();
+  test('Competing Experiment', () => {
+    return CompetingExperiment();
   });
 
-  test('Experiment Scenario 1 - Individual Assignment With Individual Consistency', async (done) => {
-    await Scenario1();
-    done();
+  test('Experiment Scenario 1 - Individual Assignment With Individual Consistency', () => {
+    return Scenario1();
   });
 
-  // test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', async (done) => {
-  //   await PreviewScenario1();
-  //   done();
+  // test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', () => {
+  //   return PreviewScenario1();
+  //
   // });
 
-  test('Experiment Scenario 2 - Individual Assignment With Experiment Consistency', async (done) => {
-    await Scenario2();
-    done();
+  test('Experiment Scenario 2 - Individual Assignment With Experiment Consistency', () => {
+    return Scenario2();
   });
 
-  // test('Experiment Preview Scenario 2 - Individual Assignment With Experiment Consistency for Preview', async (done) => {
-  //   await PreviewScenario2();
-  //   done();
+  // test('Experiment Preview Scenario 2 - Individual Assignment With Experiment Consistency for Preview', () => {
+  //   return PreviewScenario2();
+  //
   // });
 
-  test('Experiment Scenario 3 - Group Assignment With Group Consistency', async (done) => {
-    await Scenario3();
-    done();
+  test('Experiment Scenario 3 - Group Assignment With Group Consistency', () => {
+    return Scenario3();
   });
 
-  // test('Experiment Preview Scenario 3 - Group Assignment With Group Consistency for Preview', async (done) => {
-  //   await PreviewScenario3();
-  //   done();
+  // test('Experiment Preview Scenario 3 - Group Assignment With Group Consistency for Preview', () => {
+  //   return PreviewScenario3();
+  //
   // });
 
-  test('Experiment Scenario 4 - Group Assignment With Individual Consistency', async (done) => {
-    await Scenario4();
-    done();
+  test('Experiment Scenario 4 - Group Assignment With Individual Consistency', () => {
+    return Scenario4();
   });
 
-  // test('Experiment Preview Scenario 4 - Group Assignment With Individual Consistency for Preview', async (done) => {
-  //   await PreviewScenario4();
-  //   done();
+  // test('Experiment Preview Scenario 4 - Group Assignment With Individual Consistency for Preview', () => {
+  //   return PreviewScenario4();
+  //
   // });
 
-  test('Experiment Scenario 5 - Group Assignment With Experiment Consistency', async (done) => {
-    await Scenario5();
-    done();
+  test('Experiment Scenario 5 - Group Assignment With Experiment Consistency', () => {
+    return Scenario5();
   });
 
-  // test('Experiment Preview Scenario 5 - Group Assignment With Experiment Consistency for Preview', async (done) => {
-  //   await PreviewScenario5();
-  //   done();
+  // test('Experiment Preview Scenario 5 - Group Assignment With Experiment Consistency for Preview', () => {
+  //   return PreviewScenario5();
+  //
   // });
 
-  test('Experiment Scenario 6 - Group Switching before assignment Group Assignment With Group Consistency', async (done) => {
-    await Scenario6();
-    done();
+  test('Experiment Scenario 6 - Group Switching before assignment Group Assignment With Group Consistency', () => {
+    return Scenario6();
   });
 
-  test('Experiment Scenario 8 - Group Switching after assignment Group Assignment With Group Consistency', async (done) => {
-    await Scenario8();
-    done();
+  test('Experiment Scenario 8 - Group Switching after assignment Group Assignment With Group Consistency', () => {
+    return Scenario8();
   });
 
-  test('Experiment Scenario 9 - Group Switching after assignment Group Assignment With Individual Consistency', async (done) => {
-    await Scenario9();
-    done();
+  test('Experiment Scenario 9 - Group Switching after assignment Group Assignment With Individual Consistency', () => {
+    return Scenario9();
   });
 
-  test('Experiment Scenario 10 - Group Switching after assignment Group Assignment With Experiment Consistency', async (done) => {
-    await Scenario10();
-    done();
+  test('Experiment Scenario 10 - Group Switching after assignment Group Assignment With Experiment Consistency', () => {
+    return Scenario10();
   });
 
-  // test('Preview User Forced assignment', async (done) => {
-  //   await PreviewForcedAssigned();
-  //   done();
+  // test('Preview User Forced assignment', () => {
+  //   return PreviewForcedAssigned();
+  //
   // });
 
-  test('Revert to Default', async (done) => {
-    await RevertToDefault();
-    done();
+  test('Revert to Default', () => {
+    return RevertToDefault();
   });
 
-  test('Revert to Condition', async (done) => {
-    await RevertToCondition();
-    done();
+  test('Revert to Condition', () => {
+    return RevertToCondition();
   });
 
   // testing experiment update over here
-  test('Update Experiment', async (done) => {
-    await UpdateExperiment();
-    done();
+  test('Update Experiment', () => {
+    return UpdateExperiment();
   });
 
   // testing experiment update over here
-  test('Experiment End Date when updated', async (done) => {
-    await ExperimentEndDate();
-    done();
+  test('Experiment End Date when updated', () => {
+    return ExperimentEndDate();
   });
 
   // testing experiment update over here
-  test('Experiment Start Date when updated', async (done) => {
-    await ExperimentStartDate();
-    done();
+  test('Experiment Start Date when updated', () => {
+    return ExperimentStartDate();
   });
 
   // testing ScheduleJob
-  test('Create Scheduled Job in database to start experiment', async (done) => {
-    await StartExperiment();
-    done();
+  test('Create Scheduled Job in database to start experiment', () => {
+    return StartExperiment();
   });
 
-  test('End Experiment after some timestamp', async (done) => {
-    await EndExperiment();
-    done();
+  test('End Experiment after some timestamp', () => {
+    return EndExperiment();
   });
 
-  test('Update Experiment state some timestamp', async (done) => {
-    await UpdateExperimentState();
-    done();
+  test('Update Experiment state some timestamp', () => {
+    return UpdateExperimentState();
   });
 
-  test('Complete Start Experiment', async (done) => {
-    await CompleteStartExperiment();
-    done();
+  test('Complete Start Experiment', () => {
+    return CompleteStartExperiment();
   });
 
-  test('Delete Start Experiment', async (done) => {
-    await DeleteStartExperiment();
-    done();
+  test('Delete Start Experiment', () => {
+    return DeleteStartExperiment();
   });
 
-  test('Complete End Experiment', async (done) => {
-    await CompleteEndExperiment();
-    done();
+  test('Complete End Experiment', () => {
+    return CompleteEndExperiment();
   });
 
-  test('Delete End Experiment', async (done) => {
-    await DeleteEndExperiment();
-    done();
+  test('Delete End Experiment', () => {
+    return DeleteEndExperiment();
   });
 
-  test('Check audit log', async (done) => {
-    await MainAuditLog();
-    done();
+  test('Check audit log', () => {
+    return MainAuditLog();
   });
 
-  test('Stats for Individual Enrollment', async (done) => {
-    await StatsIndividualEnrollment();
-    done();
+  test('Stats for Individual Enrollment', () => {
+    return StatsIndividualEnrollment();
   });
 
-  test('Stats for Group Enrollment', async (done) => {
-    await StatsGroupEnrollment();
-    done();
+  test('Stats for Group Enrollment', () => {
+    return StatsGroupEnrollment();
   });
 
-  test('Stats for Within-Subject Enrollment', async (done) => {
-    await StatsWithinSubjectEnrollment();
-    done();
+  test('Stats for Within-Subject Enrollment', () => {
+    return StatsWithinSubjectEnrollment();
   });
 
-  test('Stats from Individual Experiment for table', async (done) => {
-    await StatsDetailIndividualExperiment();
-    done();
+  test('Stats from Individual Experiment for table', () => {
+    return StatsDetailIndividualExperiment();
   });
 
-  test('Stats from Group Experiment with for table', async (done) => {
-    await StatsDetailGroupExperiment();
-    done();
+  test('Stats from Group Experiment with for table', () => {
+    return StatsDetailGroupExperiment();
   });
 
-  test('No preview user', async (done) => {
-    await NoPreviewUser();
-    done();
+  test('No preview user', () => {
+    return NoPreviewUser();
   });
 
-  test('Preview Assignments', async (done) => {
-    await PreviewAssignments();
-    done();
+  test('Preview Assignments', () => {
+    return PreviewAssignments();
   });
 
-  test('Preview experiment with preview user', async (done) => {
-    await PreviewExperimentWithPreviewUser();
-    done();
+  test('Preview experiment with preview user', () => {
+    return PreviewExperimentWithPreviewUser();
   });
 
-  test('Experiment without decision point', async (done) => {
-    await NoPartitionPoint();
-    done();
+  test('Experiment without decision point', () => {
+    return NoPartitionPoint();
   });
 
-  test('Experiment with decimal assignment weights', async (done) => {
-    await DecimalAssignmentWeight();
-    done();
+  test('Experiment with decimal assignment weights', () => {
+    return DecimalAssignmentWeight();
   });
 
-  test('Delete Preview Assignment with experiment Update', async (done) => {
-    await DeletePreviewAssignmentWithExperimentUpdate();
-    done();
+  test('Delete Preview Assignment with experiment Update', () => {
+    return DeletePreviewAssignmentWithExperimentUpdate();
   });
 
-  test('Delete Preview Assignment on experiment Delete', async (done) => {
-    await DeletePreviewAssignmentOnExperimentDelete();
-    done();
+  test('Delete Preview Assignment on experiment Delete', () => {
+    return DeletePreviewAssignmentOnExperimentDelete();
   });
 
-  test('Delete Preview Assignment with preview user delete', async (done) => {
-    await DeletePreviewAssignmentWithPreviewUserDelete();
-    done();
+  test('Delete Preview Assignment with preview user delete', () => {
+    return DeletePreviewAssignmentWithPreviewUserDelete();
   });
 
-  test('Delete Assignments on Experiment Delete', async (done) => {
-    await DeleteAssignmentOnExperimentDelete();
-    done();
+  test('Delete Assignments on Experiment Delete', () => {
+    return DeleteAssignmentOnExperimentDelete();
   });
 
-  test('Individual User Count for State Change to Enrollment Complete', async (done) => {
-    await IndividualUserCount();
-    done();
+  test('Individual User Count for State Change to Enrollment Complete', () => {
+    return IndividualUserCount();
   });
 
-  test('Group User Count for State Change to Enrollment Complete', async (done) => {
-    await GroupUserCount();
-    done();
+  test('Group User Count for State Change to Enrollment Complete', () => {
+    return GroupUserCount();
   });
 
-  test('Metric CRUD', async (done) => {
-    await MetricCRUD();
-    done();
+  test('Metric CRUD', () => {
+    return MetricCRUD();
   });
 
-  test('Create Log', async (done) => {
-    await CreateLog();
-    done();
+  test('Create Log', () => {
+    return CreateLog();
   });
 
-  test('Query CRUD operation', async (done) => {
-    await QueryCRUD();
-    done();
+  test('Query CRUD operation', () => {
+    return QueryCRUD();
   });
 
-  // test('Individual Experiment Enrollment Code', async (done) => {
-  //   await IndividualExperimentEnrollmentCode();
-  //   done();
+  // test('Individual Experiment Enrollment Code', () => {
+  //   return IndividualExperimentEnrollmentCode();
+  //
   // });
 
-  // test('Group Experiment Enrollment Code', async (done) => {
-  //   await GroupExperimentEnrollmentCode();
-  //   done();
+  // test('Group Experiment Enrollment Code', () => {
+  //   return GroupExperimentEnrollmentCode();
+  //
   // });
 
-  // test('Experiment Experiment Enrollment Code', async (done) => {
-  //   await ExperimentExperimentEnrollmentCode();
-  //   done();
+  // test('Experiment Experiment Enrollment Code', () => {
+  //   return ExperimentExperimentEnrollmentCode();
+  //
   // });
 
-  test('Experiment Context Assignment', async (done) => {
-    await ExperimentContextAssignments();
-    done();
+  test('Experiment Context Assignment', () => {
+    return ExperimentContextAssignments();
   });
 
-  test('Order For Condition', async (done) => {
-    await ConditionOrder();
-    done();
+  test('Order For Condition', () => {
+    return ConditionOrder();
   });
 
-  test('Order For Decision Point', async (done) => {
-    await PartitionOrder();
-    done();
+  test('Order For Decision Point', () => {
+    return PartitionOrder();
   });
 
-  // test('Experiment Level exclusion of user with FilterMode as IncludeAll', async (done) => {
-  //   await ExperimentExcludeUser();
-  //   done();
+  // test('Experiment Level exclusion of user with FilterMode as IncludeAll', () => {
+  //   return ExperimentExcludeUser();
+  //
   // });
 
-  // test('Experiment Level exclusion of group with FilterMode as IncludeAll', async (done) => {
-  //   await ExperimentExcludeGroup();
-  //   done();
+  // test('Experiment Level exclusion of group with FilterMode as IncludeAll', () => {
+  //   return ExperimentExcludeGroup();
+  //
   // });
 
-  // test('Experiment Level inclusion of user with FilterMode as ExcludeAll', async (done) => {
-  //   await ExperimentIncludeUser();
-  //   done();
+  // test('Experiment Level inclusion of user with FilterMode as ExcludeAll', () => {
+  //   return ExperimentIncludeUser();
+  //
   // });
 
-  // test('Experiment Level inclusion of group with FilterMode as ExcludeAll', async (done) => {
-  //   await ExperimentIncludeGroup();
-  //   done();
+  // test('Experiment Level inclusion of group with FilterMode as ExcludeAll', () => {
+  //   return ExperimentIncludeGroup();
+  //
   // });
 
-  test('Segments CRUD operations - Create', async (done) => {
-    await SegmentCreate();
-    done();
+  test('Segments CRUD operations - Create', () => {
+    return SegmentCreate();
   });
 
-  test('Segments CRUD operations - Update', async (done) => {
-    await SegmentUpdate();
-    done();
+  test('Segments CRUD operations - Update', () => {
+    return SegmentUpdate();
   });
 
-  test('Segments CRUD operations - Delete', async (done) => {
-    await SegmentDelete();
-    done();
+  test('Segments CRUD operations - Delete', () => {
+    return SegmentDelete();
   });
 
-  test('Enrollment of User of Segment', async (done) => {
-    await SegmentMemberUserEnrollment();
-    done();
+  test('Enrollment of User of Segment', () => {
+    return SegmentMemberUserEnrollment();
   });
 
-  test('Enrollment of Group of Segment', async (done) => {
-    await SegmentMemberGroupEnrollment();
-    done();
+  test('Enrollment of Group of Segment', () => {
+    return SegmentMemberGroupEnrollment();
   });
 
-  test('Enrollment of User of subSegment', async (done) => {
-    await SubSegmentEnrollment();
-    done();
+  test('Enrollment of User of subSegment', () => {
+    return SubSegmentEnrollment();
   });
 
-  test('ConditionPayloads', async (done) => {
-    await ConditionPayload();
-    done();
+  test('ConditionPayloads', () => {
+    return ConditionPayload();
   });
 
-  test('Factorial CRUD', async (done) => {
-    await FactorialExperimentCRUD();
-    done();
+  test('Factorial CRUD', () => {
+    return FactorialExperimentCRUD();
   });
 
-  test('Enrollment With ConditionPayloads', async (done) => {
-    await EnrollmentWithConditionPayload();
-    done();
+  test('Enrollment With ConditionPayloads', () => {
+    return EnrollmentWithConditionPayload();
   });
 
-  test('Factorial Enrollment with same Decision Point', async (done) => {
-    await FactorialEnrollment();
-    done();
+  test('Factorial Enrollment with same Decision Point', () => {
+    return FactorialEnrollment();
   });
 
-  test('Factorial Enrollment with different Decision Point', async (done) => {
-    await FactorialEnrollment2();
-    done();
+  test('Factorial Enrollment with different Decision Point', () => {
+    return FactorialEnrollment2();
   });
 
-  test('Within Subject algorithmCRUD', async (done) => {
-    await AlgorithmCheck();
-    done();
+  test('Within Subject algorithmCRUD', () => {
+    return AlgorithmCheck();
   });
 
-  test('Within Subject Random Algorithm', async (done) => {
-    await RandomAlgoCheck();
-    done();
+  test('Within Subject Random Algorithm', () => {
+    return RandomAlgoCheck();
   });
 
-  test('Within Subject Random Round Round Algorithm', async (done) => {
-    await RandomRoundRobinAlgoCheck();
-    done();
+  test('Within Subject Random Round Round Algorithm', () => {
+    return RandomRoundRobinAlgoCheck();
   });
 
-  test('Within Subject Ordered Round Round algorithmCRUD', async (done) => {
-    await OrderedRoundRobinAlgoCheck();
-    done();
+  test('Within Subject Ordered Round Round algorithmCRUD', () => {
+    return OrderedRoundRobinAlgoCheck();
   });
 
-  // test('Monitored Point for Export', async (done) => {
-  //   await MonitoredPointForExport();
-  //   done();
+  // test('Monitored Point for Export', () => {
+  //   return MonitoredPointForExport();
+  //
   // });
 
-  test('Within Subject metrics query check', async (done) => {
-    await MetricQueriesCheck();
-    done();
+  test('Within Subject metrics query check', () => {
+    return MetricQueriesCheck();
+  });
+
+  test('Stratification SRS algorithm check', () => {
+    return StratificationSRSAlgorithmCheck();
+  });
+
+  test('Stratification Random Algorithm', async () => {
+    return StratificationRandomAlgorithmCheck();
+  });
+
+  test('Stratification metrics query check', () => {
+    return StratificationMetricQueriesCheck();
+  });
+
+  test('Working group change after user exclusion for individual consistency', () => {
+    return IndividualConsistency();
+  });
+
+  test('Working group change after user exclusion for group consistency', () => {
+    return GroupConsistency();
   });
 });

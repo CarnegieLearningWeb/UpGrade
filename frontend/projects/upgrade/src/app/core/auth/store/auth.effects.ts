@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as authActions from './auth.actions';
 import * as experimentUserActions from '../../experiment-users/store/experiment-users.actions';
@@ -14,8 +14,6 @@ import { selectRedirectUrl } from './auth.selectors';
 import { AuthDataService } from '../auth.data.service';
 import { AuthService } from '../auth.service';
 import { User } from '../../users/store/users.model';
-import { SettingsService } from '../../settings/settings.service';
-import { ENV, Environment } from '../../../../environments/environment-types';
 
 @Injectable()
 export class AuthEffects {
@@ -24,14 +22,12 @@ export class AuthEffects {
     private store$: Store<AppState>,
     private router: Router,
     private authDataService: AuthDataService,
-    private authService: AuthService,
-    private settingsService: SettingsService,
-    @Inject(ENV) private environment: Environment
+    private authService: AuthService
   ) {}
 
-  setUserInfoInStore$ = createEffect(() =>
+  fetchUserExperimentData$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(authActions.actionSetUserInfo),
+      ofType(authActions.actionFetchUserExperimentData),
       map((action) => action.user),
       filter((user) => !!user.email),
       switchMap((user: User) => {
@@ -43,8 +39,6 @@ export class AuthEffects {
           settingsActions.actionGetSetting(),
           analysisActions.actionFetchMetrics(),
         ];
-        // Set theme from local storage if exist
-        this.settingsService.setLocalStorageTheme();
 
         if (user.role) {
           return this.authService.setUserSettingsWithRole(user, actions);
@@ -82,6 +76,21 @@ export class AuthEffects {
     )
   );
 
+  login$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(authActions.actionLoginStart),
+      filter(({ user }) => !!user),
+      switchMap((action) => {
+        return this.authDataService.login(action.user).pipe(
+          map(() => authActions.actionLoginSuccess({ user: action.user, googleCredential: action.googleCredential })),
+          catchError(() => {
+            return [authActions.actionLoginFailure()];
+          })
+        );
+      })
+    )
+  );
+
   logout$ = createEffect(
     () =>
       this.actions$.pipe(
@@ -99,7 +108,8 @@ export class AuthEffects {
       this.actions$.pipe(
         ofType(authActions.actionLoginSuccess),
         withLatestFrom(this.store$.pipe(select(selectRedirectUrl))),
-        tap(([, redirectUrl]) => {
+        tap(([action, redirectUrl]) => {
+          this.authService.deferFetchUserExperimentDataAfterNavigationEnd(action.user, action.googleCredential);
           const path = redirectUrl || '/home';
           this.router.navigate([path]);
         })

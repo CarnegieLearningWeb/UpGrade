@@ -9,13 +9,8 @@ import {
   MockClientAppUser,
 } from '../../../../shared/models';
 
-// There's probably a clever way to do this, but getting the right types automatically is tricky
-
-// import UpgradeClient from 'upgrade_client_local/dist/browser';
 // import { UpgradeClient } from 'upgrade_client_1_1_7';
-import UpgradeClient from "upgrade_client_1_1_8/dist/browser"
-// import { UpgradeClient } from 'upgrade_client_3_0_18';
-// import { UpgradeClient } from 'upgrade_client_4_2_0';
+import UpgradeClient from 'upgrade_client_1_1_8/dist/browser';
 
 import { AbstractMockAppService } from './abstract-mock-app.service';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
@@ -49,9 +44,7 @@ export class GeneralTestForVersion1Service extends AbstractMockAppService {
     SET_ALT_USER_IDS: 'setAltUserIds',
     LOG: 'log',
   };
-  public DECISION_POINTS = [
-    { site: this.SITES.SelectSection, target: this.TARGETS.TARGET_1 },
-  ];
+  public DECISION_POINTS = [{ site: this.SITES.SelectSection, target: this.TARGETS.TARGET_1 }];
 
   constructor(public override clientLibraryService: ClientLibraryService, public override eventBus: EventBusService) {
     super(MOCK_APP_NAMES.GENERAL_TS_FRONTEND_1_1, eventBus, clientLibraryService);
@@ -140,7 +133,7 @@ export class GeneralTestForVersion1Service extends AbstractMockAppService {
     }
 
     if (name === this.HOOKNAMES.INIT && user?.id) {
-      this.doInit(user.id);
+      this.doInit(user.id, user);
     } else if (name === this.HOOKNAMES.ASSIGN) {
       this.doAssign();
     } else if (name === this.HOOKNAMES.MARK_EXPERIMENT_POINT) {
@@ -160,14 +153,32 @@ export class GeneralTestForVersion1Service extends AbstractMockAppService {
 
   /******************* simulated client app code ****************************************************/
 
-  private async doInit(userId: string) {
+  private async doInit(userId: string, user: MockClientAppUser) {
     console.log('login hook called:', userId);
     this.upgradeClient = this.constructUpgradeClient(userId);
     console.log({ upgradeClient: this.upgradeClient });
+    if (!user || !user.workingGroup) {
+      console.error('User info is missing working groups:', user);
+    }
+
+    const groupMap = new Map<string, Array<string>>();
+    for (const group in user.groups) {
+      groupMap.set(group, user.groups[group]);
+    }
+    const workingGroupMap = new Map<string, string>();
+    for (const workingGroup in user.workingGroup) {
+      workingGroupMap.set(workingGroup, user.workingGroup[workingGroup]);
+    }
 
     try {
       const initResponse = await this.upgradeClient.init();
+      const initGroupResponse = await this.upgradeClient.init(groupMap);
+
+      const initWorkingGroupResponse = await this.upgradeClient.init(groupMap, workingGroupMap);
+
       console.log({ initResponse });
+      console.log({ initGroupResponse });
+      console.log({ initWorkingGroupResponse });
     } catch (err) {
       console.error(err);
     }
@@ -190,7 +201,11 @@ export class GeneralTestForVersion1Service extends AbstractMockAppService {
       console.error('No upgradeClient found. Maybe you need to run login hook first?');
     }
     try {
-      const markResponse = await this.upgradeClient.markExperimentPoint(this.SITES.SelectSection, 'asdf=orange; fdfasdfs=green', this.TARGETS.TARGET_1);
+      const markResponse = await this.upgradeClient.markExperimentPoint(
+        this.SITES.SelectSection,
+        null,
+        this.TARGETS.TARGET_1
+      );
       console.log({ markResponse });
     } catch (err) {
       console.error(err);
@@ -237,10 +252,13 @@ export class GeneralTestForVersion1Service extends AbstractMockAppService {
     if (!this.upgradeClient) {
       console.error('No upgradeClient found. Maybe you need to run login hook first?');
     }
-    if (!user || !user.groups) {
+    if (!user || !user.workingGroup) {
       console.error('User info is missing working groups:', user);
     }
     const workingGroupMap = new Map<string, string>();
+    for (const workingGroup in user.workingGroup) {
+      workingGroupMap.set(workingGroup, user.workingGroup[workingGroup]);
+    }
 
     try {
       const workingGroupMembershipResponse = await this.upgradeClient.setWorkingGroup(workingGroupMap);

@@ -4,7 +4,7 @@
     *ngIf="currentUser"
     [ngClass]="{ 'normal-user': currentUser?.role !== UserRole.ADMIN }"
   >
-    <img [src]="currentUser?.imageUrl" class="profile-pic" />
+    <img [src]="currentUser?.imageUrl" class="profile-pic" referrerpolicy="no-referrer" />
     <div class="user-info">
       <span class="ft-22-700">{{ (currentUser?.firstName || '') + ' ' + (currentUser?.lastName || '') }}</span>
       <span class="ft-12-600 email">{{ '( ' + currentUser?.email + ' )' }}</span>
@@ -13,7 +13,7 @@
     <div class="toggle-container">
       <mat-slide-toggle
         *ngIf="(permissions$ | async)?.manageRoles.update"
-        class="ft-16-600 toggle"
+        class="ft-13-700 toggle"
         color="primary"
         [checked]="toCheckAuth$ | async"
         (change)="setToCheckAuth($event)"
@@ -24,7 +24,7 @@
       <!-- TODO: Uncomment if we want filter metric toggle -->
       <!-- <mat-slide-toggle
         *ngIf="(permissions$ | async)?.manageRoles.update"
-        class="ft-16-600 toggle"
+        class="ft-13-700 toggle"
         color="primary"
         [checked]="toFilterMetric$ | async"
         (change)="setToFilterMetric($event)"
@@ -32,15 +32,6 @@
       >
         {{ 'profile.action.filter-metric.text' | translate }}
       </mat-slide-toggle> -->
-      <mat-slide-toggle
-        class="ft-16-600"
-        color="primary"
-        [checked]="(theme$ | async) === ThemeOptions.DARK_THEME"
-        labelPosition="before"
-        (change)="changeTheme($event)"
-      >
-        {{ 'profile.action.dark-theme.text' | translate }}
-      </mat-slide-toggle>
     </div>
   </div>
   <div class="role-wrapper" *ngIf="(permissions$ | async)?.manageRoles.update">
@@ -52,27 +43,33 @@
       </button>
     </div>
     <div>
-      <mat-form-field class="filter-options">
+      <mat-form-field
+        class="dense-2 filter-options"
+        subscriptSizing="dynamic"
+      >
         <mat-select
-          class="ft-16-600"
+          class="ft-14-400"
           [(ngModel)]="selectedUserFilterOption"
           (selectionChange)="applyFilter(searchString); setSearchKey()"
         >
-          <mat-option *ngFor="let filterOption of userFilterOptions" [value]="filterOption.value">
+          <mat-option class="ft-14-400" *ngFor="let filterOption of userFilterOptions" [value]="filterOption.value">
             {{ filterOption.viewValue | titlecase }}
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field class="ft-14-600 input">
+      <mat-form-field
+        class="dense-2 input"
+        subscriptSizing="dynamic"
+      >
         <input
-          class="ft-14-600 input"
+          class="ft-14-400 input"
           #searchInput
           matInput
           [(ngModel)]="searchString"
           (keyup)="applyFilter($event.target.value)"
           [placeholder]="'global.search.text' | translate"
         />
-        <mat-icon matSuffix>search</mat-icon>
+        <mat-icon class="search-icon" matSuffix>search</mat-icon>
       </mat-form-field>
     </div>
     <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isUsersLoading"></mat-progress-bar>
@@ -93,10 +90,14 @@
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
               <div *ngIf="editMode === index; else firstNameReadOnly">
-                <mat-form-field class="ft-14-600 input">
+                <mat-form-field
+                  class="dense-2 input"
+                  appearance="outline"
+                  subscriptSizing="dynamic"
+                >
                   <input
-                    matInput
                     class="ft-14-400"
+                    matInput
                     [placeholder]="'profile.table.firstName.text' | translate"
                     formControlName="firstName"
                   />
@@ -117,10 +118,14 @@
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
               <div *ngIf="editMode === index; else lastNameReadOnly">
-                <mat-form-field class="ft-14-600 input">
+                <mat-form-field
+                  class="dense-2 input"
+                  appearance="outline"
+                  subscriptSizing="dynamic"
+                >
                   <input
-                    matInput
                     class="ft-14-400"
+                    matInput
                     [placeholder]="'profile.table.lastName.text' | translate"
                     formControlName="lastName"
                   />
@@ -153,10 +158,17 @@
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
               <div *ngIf="editMode === index; else roleReadOnly">
-                <mat-form-field class="ft-14-600 input">
-                  <mat-label>{{ 'profile.form.role-control.text' | translate }}</mat-label>
-                  <mat-select class="ft-14-600 input" formControlName="role">
-                    <mat-option *ngFor="let role of userRoles" [value]="role">
+                <mat-form-field
+                  class="dense-2 input"
+                  appearance="outline"
+                  subscriptSizing="dynamic"
+                >
+                  <mat-select
+                    class="ft-14-400 input"
+                    formControlName="role"
+                    [placeholder]="'profile.form.role-control.text' | translate"
+                  >
+                    <mat-option class="ft-14-400" *ngFor="let role of userRoles" [value]="role">
                       {{ role | titlecase }}
                     </mat-option>
                   </mat-select>

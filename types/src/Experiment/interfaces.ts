@@ -7,6 +7,7 @@ import {
   PAYLOAD_TYPE,
   SUPPORTED_CALIPER_EVENTS,
   SUPPORTED_CALIPER_PROFILES,
+  EXPERIMENT_TYPE,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -60,6 +61,7 @@ export interface IExperimentAssignmentv5 {
   target: string;
   assignedCondition: AssignedCondition[];
   assignedFactor?: Record<string, { level: string; payload: IPayload }>[];
+  experimentType: EXPERIMENT_TYPE;
 }
 
 export interface AssignedCondition {
@@ -143,17 +145,23 @@ export interface IExperimentEnrollmentDetailDateStats {
   conditions: IConditionEnrollmentDateStats[];
 }
 
-interface ILogMetrics {
+export interface ILogMetrics {
   attributes?: Record<string, string | number>;
   groupedMetrics: ILogGroupMetrics[];
 }
 
-interface ILogGroupMetrics {
+export interface ILogGroupMetrics {
   groupClass: string;
   groupKey: string;
   groupUniquifier: string;
   attributes?: Record<string, string | number>;
 }
+
+export interface ILogRequestBody {
+  userId: string;
+  value: ILogInput[];
+}
+
 export interface ILogInput {
   timestamp: string;
   metrics: ILogMetrics;

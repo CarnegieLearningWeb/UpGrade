@@ -4,7 +4,7 @@
   margin-bottom: 97px;
 
   mat-form-field {
-    width: 45%;
+    width: calc(50% - 20px);
     color: var(--grey-6);
   }
 }

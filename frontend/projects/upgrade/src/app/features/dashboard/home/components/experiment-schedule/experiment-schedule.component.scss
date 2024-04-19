@@ -1,10 +1,12 @@
 .experiment-schedule-form {
-  .mat-radio-button,
-  .input {
-    font-weight: 600;
+  .mat-mdc-checkbox {
+    margin-top: -3px;
+    margin-left: -12px;
   }
 
   .starts-on-title {
+    color: var(--black-2);
+
     &--disable {
       color: var(--grey-5);
     }
@@ -26,7 +28,8 @@
       margin-left: 30px;
 
       .group-type {
-        margin-left: 30px;
+        margin-left: 16px;
+        color: var(--black-2);
 
         &-control {
           line-height: 18px;

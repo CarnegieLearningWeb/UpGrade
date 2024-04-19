@@ -2,6 +2,8 @@ import { Entity, PrimaryColumn, Column, OneToMany, ManyToOne } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { IsNotEmpty, IsDefined } from 'class-validator';
 import { Log } from './Log';
+import { Type } from 'class-transformer';
+import { UserStratificationFactor } from './UserStratificationFactor';
 
 @Entity()
 export class ExperimentUser extends BaseModel {
@@ -11,10 +13,10 @@ export class ExperimentUser extends BaseModel {
   public id: string;
 
   @Column({ type: 'json', nullable: true })
-  public group: object | undefined;
+  public group: Record<string, string[]> | undefined;
 
   @Column({ type: 'json', nullable: true })
-  public workingGroup: object | undefined;
+  public workingGroup: Record<string, string> | undefined;
 
   @OneToMany(() => ExperimentUser, (user) => user.originalUser)
   public aliases: ExperimentUser[];
@@ -24,4 +26,8 @@ export class ExperimentUser extends BaseModel {
 
   @OneToMany(() => Log, (log) => log.user)
   public logs: Log[];
+
+  @OneToMany(() => UserStratificationFactor, (userStratificationFactor) => userStratificationFactor.user)
+  @Type(() => UserStratificationFactor)
+  public userStratificationFactor: UserStratificationFactor[];
 }

@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
-import * as analysisAction from '../../analysis/store/analysis.actions';
 import { ExperimentDataService } from '../experiments.data.service';
 import {
   map,
@@ -26,7 +25,7 @@ import {
 } from './experiments.model';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
-import { AppState } from '../../core.module';
+import { AppState, NotificationService } from '../../core.module';
 import {
   selectExperimentStats,
   selectSkipExperiment,
@@ -43,10 +42,9 @@ import {
 } from './experiments.selectors';
 import { interval } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { ENV, Environment } from '../../../../environments/environment-types';
 import JSZip from 'jszip';
-
+import { TranslateService } from '@ngx-translate/core';
 @Injectable()
 export class ExperimentEffects {
   constructor(
@@ -54,7 +52,8 @@ export class ExperimentEffects {
     private store$: Store<AppState>,
     private experimentDataService: ExperimentDataService,
     private router: Router,
-    private _snackBar: MatSnackBar,
+    private translate: TranslateService,
+    private notificationService: NotificationService,
     @Inject(ENV) private environment: Environment
   ) {}
 
@@ -158,18 +157,17 @@ export class ExperimentEffects {
             this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
               switchMap((experimentStat: IExperimentEnrollmentStats) => {
                 const stats = { ...experimentStats, [data.id]: experimentStat[0] };
-                const queryIds = data.queries.map((query) => query.id);
+                this.notificationService.showSuccess(this.translate.instant('global.save-confirmation.message.text'));
                 return [
                   experimentAction.actionFetchExperimentStatsSuccess({ stats }),
                   experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
                   experimentAction.actionFetchAllDecisionPoints(),
-                  analysisAction.actionExecuteQuery({ queryIds }),
                 ];
               })
             )
           ),
           catchError((error) => {
-            this._snackBar.open(error.error.message, null, { duration: 2000 });
+            this.notificationService.showError(error.error.message);
             return [experimentAction.actionUpsertExperimentFailure()];
           })
         );
@@ -200,10 +198,13 @@ export class ExperimentEffects {
       filter((experimentId) => !!experimentId),
       switchMap((experimentId) =>
         this.experimentDataService.deleteExperiment(experimentId).pipe(
-          switchMap(() => [
-            experimentAction.actionDeleteExperimentSuccess({ experimentId }),
-            experimentAction.actionFetchAllDecisionPoints(),
-          ]),
+          switchMap(() => {
+            this.notificationService.showSuccess(this.translate.instant('global.delete-experiments.message.text'));
+            return [
+              experimentAction.actionDeleteExperimentSuccess({ experimentId }),
+              experimentAction.actionFetchAllDecisionPoints(),
+            ];
+          }),
           catchError(() => [experimentAction.actionDeleteExperimentFailure()])
         )
       )
@@ -441,6 +442,11 @@ export class ExperimentEffects {
       filter(([{ experimentId }, { email }]) => !!experimentId && !!email),
       switchMap(([{ experimentId }, { email }]) =>
         this.experimentDataService.exportExperimentInfo(experimentId, email).pipe(
+          tap(() => {
+            email
+              ? this.notificationService.showSuccess(`Email will be sent to ${email}`)
+              : this.notificationService.showSuccess('Email will be sent to registered email');
+          }),
           map(() => experimentAction.actionExportExperimentInfoSuccess()),
           catchError(() => [experimentAction.actionExportExperimentInfoFailure()])
         )
@@ -457,6 +463,7 @@ export class ExperimentEffects {
         this.experimentDataService.importExperiment(experiments).pipe(
           switchMap((data: Experiment[]) => {
             const experimentIds = data.map((exp) => exp.id);
+            this.notificationService.showSuccess(this.translate.instant('global.import-experiments.message.text'));
             return [
               experimentAction.actionImportExperimentSuccess(),
               experimentAction.actionGetExperimentsSuccess({ experiments: data, totalExperiments: data.length }),
@@ -476,6 +483,9 @@ export class ExperimentEffects {
       filter(({ experimentIds }) => !!experimentIds),
       switchMap(({ experimentIds }) =>
         this.experimentDataService.exportExperimentDesign(experimentIds).pipe(
+          tap(() => {
+            this.notificationService.showSuccess('Experiment Design JSON downloaded!');
+          }),
           map((data: Experiment[]) => {
             if (data.length > 1) {
               const zip = new JSZip();

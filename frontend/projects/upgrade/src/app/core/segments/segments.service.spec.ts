@@ -15,13 +15,14 @@ const MockStateStore$ = new BehaviorSubject({});
 
 describe('SegmentService', () => {
   let mockStore: any;
+  let segmentsDataService: any;
   let service: SegmentsService;
   const mockSegmentsList: any = [
     { id: 'first', createdAt: '04/25/17 04:34:22 +0000' },
     { id: 'second', createdAt: '04/24/17 04:34:22 +0000' },
     { id: 'third', createdAt: '04/24/17 04:34:22 +0000' },
   ];
-  const mockSegment = {
+  const mockSegmentInput = {
     createdAt: 'time',
     updatedAt: 'time',
     versionNumber: 0,
@@ -34,10 +35,26 @@ describe('SegmentService', () => {
     subSegmentIds: [],
     type: SEGMENT_TYPE.PUBLIC,
   };
+  const mockSegment = {
+    createdAt: 'test',
+    versionNumber: 0,
+    updatedAt: 'test',
+    id: 'abc123',
+    name: 'abc',
+    context: 'test',
+    description: 'test',
+    individualForSegment: [],
+    groupForSegment: [],
+    subSegments: [],
+    type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
+    status: 'test',
+  };
+  const mockSegmentFile = { fileName: 'test', fileContent: JSON.stringify(mockSegmentInput) };
 
   beforeEach(() => {
     mockStore = MockStateStore$;
-    service = new SegmentsService(mockStore);
+    segmentsDataService = {};
+    service = new SegmentsService(mockStore, segmentsDataService);
   });
 
   describe('#allSegments$', () => {
@@ -59,7 +76,7 @@ describe('SegmentService', () => {
 
   describe('#createNewSegment', () => {
     it('should dispatch actionUpsertSegment with the given input', () => {
-      const segment = { ...mockSegment };
+      const segment = { ...mockSegmentInput };
 
       service.createNewSegment(segment);
 
@@ -74,20 +91,18 @@ describe('SegmentService', () => {
 
   describe('#importSegments', () => {
     it('should dispatch actionUpsertExperiment with the given input', () => {
-      const segment = { ...mockSegment };
-
-      service.importSegments([segment]);
+      service.importSegments([mockSegmentFile]);
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
         actionImportSegments({
-          segments: [segment],
+          segments: [mockSegmentFile],
         })
       );
     });
 
     describe('#updateSegment', () => {
       it('should dispatch actionUpsertExperiment with the given input', () => {
-        const segment = { ...mockSegment } as SegmentInput;
+        const segment = { ...mockSegmentInput } as SegmentInput;
         segment.description = ' updated segment description';
 
         service.updateSegment(segment);

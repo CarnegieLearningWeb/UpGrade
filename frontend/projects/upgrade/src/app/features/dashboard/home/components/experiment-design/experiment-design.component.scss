@@ -24,7 +24,9 @@
     }
 
     .conditions-header-container {
-      margin-top: 10px;
+      .mat-mdc-checkbox {
+        margin-left: -2px;
+      }
     }
 
     .condition-table,
@@ -34,12 +36,12 @@
 
       mat-header-row {
         min-height: 35px;
+        max-height: 35px;
         justify-content: space-between;
       }
 
       mat-row {
-        min-height: 46px;
-        max-height: 46px;
+        height: 48px;
         justify-content: space-between;
       }
 
@@ -50,7 +52,6 @@
 
       mat-cell {
         justify-content: left;
-        margin-bottom: -5px;
       }
 
       .cdk-column-site {
@@ -67,10 +68,6 @@
         width: 100%;
         max-width: 150px;
         justify-content: center;
-
-        mat-checkbox {
-          margin-top: -5px;
-        }
       }
 
       .cdk-column-conditionCode {
@@ -96,14 +93,14 @@
         margin-left: 30px;
         flex: 0 0 78px;
         width: 78px;
+        justify-content: center;
 
         .row-action-btn {
           border: none;
           background-color: transparent;
 
           .icon {
-            margin-top: -5px;
-            margin-left: -3px;
+            margin-left: -5px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -146,16 +143,6 @@
     margin-bottom: 15px;
   }
 
-  // This rule is pretty invasive, we should reconsider how and why we are refusing underlines
-
-  // ::ng-deep .mat-form-field-appearance-legacy .mat-form-field-underline {
-  //   bottom: unset;
-  //   background-color: unset !important;
-  // }
-
-  ::ng-deep .mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple {
-    display: none;
-  }
 
   /* Remove arrows/spinners from input type number */
   input::-webkit-outer-spin-button,

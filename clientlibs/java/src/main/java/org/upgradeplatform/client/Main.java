@@ -20,12 +20,13 @@ import org.upgradeplatform.responsebeans.ExperimentUser;
 import org.upgradeplatform.responsebeans.InitializeUser;
 import org.upgradeplatform.responsebeans.MarkDecisionPoint;
 import org.upgradeplatform.responsebeans.UserAliasResponse;
+import org.upgradeplatform.utils.Utils;
 import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException, ExecutionException
     {
-        final String baseUrl = "https://upgradeapi.qa-cli.net";
+        final String baseUrl = "http://localhost:3030";
         final String userId = UUID.randomUUID().toString();
         final String site = "SelectSection";
 
@@ -71,7 +72,14 @@ public class Main {
 
                                                     Condition condition = expResult.getAssignedCondition();
                                                     String code = condition == null ? null : condition.getConditionCode();
+                                                    Utils.ExperimentType experimentType = expResult.getExperimentType();
+                                                    System.out.println("experimentType");
+                                                    System.out.println(experimentType);
+
+                                                    System.out.println("condition");
                                                     System.out.println(condition);
+
+                                                    System.out.println("code");
                                                     System.out.println(code);
                                                     MarkExperimentRequestData data = new MarkExperimentRequestData(site, target, null);
                                                     System.out.println(data.getAssignedCondition());

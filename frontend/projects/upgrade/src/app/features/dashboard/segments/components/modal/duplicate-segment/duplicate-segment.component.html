@@ -1,24 +1,36 @@
 <div mat-dialog-content class="duplicate-segment-dialog">
-  <p class="ft-16-600">
+  <p class="ft-14-600">
     {{ 'segments.duplicate-segment.heading.text' | translate: { segmentName: data.segment.name } }}
   </p>
-  <mat-form-field class="ft-14-600 name">
+  <mat-form-field
+    class="dense-2 name"
+    appearance="outline"
+    subscriptSizing="dynamic"
+  >
+    <mat-label class="ft-14-400">
+      {{ 'segments.duplicate-segment.segmentName-input-placeholder.text' | translate }}
+    </mat-label>
     <input
-      matInput
       class="ft-14-400 name-input"
+      matInput
       [(ngModel)]="segmentName"
-      [placeholder]="'segments.duplicate-segment.segmentName-input-placeholder.text' | translate"
       required
     />
   </mat-form-field>
   <br />
-  <mat-form-field class="ft-14-600 description">
+  <mat-form-field
+    class="dense-2 description"
+    appearance="outline"
+    subscriptSizing="dynamic"
+  >
+    <mat-label class="ft-14-400">
+      {{ 'segments.duplicate-segment.segmentDescription-input-placeholder.text' | translate }}
+    </mat-label>
     <input
-      matInput
       class="ft-14-400 name-input"
+      matInput
       [(ngModel)]="segmentDescription"
       [value]="segmentDescription"
-      [placeholder]="'segments.duplicate-segment.segmentDescription-input-placeholder.text' | translate"
     />
   </mat-form-field>
 </div>
