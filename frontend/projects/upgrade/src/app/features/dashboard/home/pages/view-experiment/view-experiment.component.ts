@@ -249,7 +249,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         }
         // separating keys from metric
         const rootKey: string[] = key.split(METRICS_JOIN_TEXT);
-        const statisticOperation: string[] = [query.query.operationType];
+        const statisticOperation: string[] = [];
         if (rootKey.length > 1) {
           statisticOperation.push(query.repeatedMeasure);
         }
@@ -263,6 +263,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
           statisticOperation.push(compareFn);
           statisticOperation.push(query.query.compareValue);
         }
+        query.query.operationType === "avg" ? statisticOperation.push("mean") : statisticOperation.push(query.query.operationType);
         this.displayMetrics.push({
           metric_Key: rootKey,
           metric_Operation: statisticOperation,
