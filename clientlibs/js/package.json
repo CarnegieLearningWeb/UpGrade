@@ -1,6 +1,6 @@
 {
   "name": "upgrade_client_lib",
-  "version": "5.1.5",
+  "version": "5.1.8",
   "description": "Client library to communicate with the Upgrade server",
   "files": [
     "dist/*"
