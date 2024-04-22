@@ -23,7 +23,6 @@ import { ExperimentPaginatedParamsValidator } from './validators/ExperimentPagin
 import { User } from '../models/User';
 import { DecisionPoint } from '../models/DecisionPoint';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
-import { env } from '../../env';
 import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
