@@ -1068,17 +1068,15 @@ export class ExperimentController {
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<any> {
-    if (env.auth.authCheck) {
-      if (!currentUser) {
-        return Promise.reject(
-          new Error(JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : currentUser should not be null' }))
-        );
-      }
-
-      await validate(currentUser).catch((error) => {
-        return Promise.reject(new Error(error));
-      });
+    if (!currentUser) {
+      return Promise.reject(
+        new Error(JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : currentUser should not be null' }))
+      );
     }
+
+    await validate(currentUser).catch((error) => {
+      return Promise.reject(new Error(error));
+    });
 
     return this.experimentService.updateState(
       experiment.experimentId,
