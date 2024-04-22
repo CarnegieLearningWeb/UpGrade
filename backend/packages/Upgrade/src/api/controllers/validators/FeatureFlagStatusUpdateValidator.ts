@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsDefined, IsUUID, IsBoolean } from 'class-validator';
+import { IsNotEmpty, IsDefined, IsUUID, IsEnum } from 'class-validator';
+import { FEATURE_FLAG_STATUS } from 'upgrade_types';
 
 export class FeatureFlagStatusUpdateValidator {
   @IsNotEmpty()
@@ -7,6 +8,6 @@ export class FeatureFlagStatusUpdateValidator {
   public flagId: string;
 
   @IsDefined()
-  @IsBoolean()
-  public status: boolean;
+  @IsEnum(FEATURE_FLAG_STATUS)
+  public status: FEATURE_FLAG_STATUS;
 }

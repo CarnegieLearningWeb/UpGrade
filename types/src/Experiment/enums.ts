@@ -38,6 +38,12 @@ export enum EXPERIMENT_STATE {
   ARCHIVED = 'archived',
 }
 
+export enum FEATURE_FLAG_STATUS {
+  ENABLED = 'enabled',
+  DISABLED = 'disabled',
+  ARCHIVED = 'archived',
+}
+
 export enum SERVER_ERROR {
   DB_UNREACHABLE = 'Database not reachable',
   DB_AUTH_FAIL = 'Database auth fail',
