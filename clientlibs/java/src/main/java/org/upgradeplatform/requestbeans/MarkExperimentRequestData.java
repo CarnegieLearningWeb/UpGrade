@@ -1,6 +1,9 @@
 package org.upgradeplatform.requestbeans;
 
+import java.util.Map;
+
 import org.upgradeplatform.responsebeans.Condition;
+import org.upgradeplatform.responsebeans.Factor;
 
 public class MarkExperimentRequestData {
 
