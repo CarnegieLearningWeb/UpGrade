@@ -144,7 +144,7 @@
                   <button
                     type="button"
                     class="row-action-btn"
-                    [disabled]="(isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex"
+                    [disabled]="((isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex) || !isExperimentEditable"
                     (click)="handleDecisionPointTableEditClick(rowIndex, rowData.getRawValue())"
                   >
                     <!-- Edit Icon -->
@@ -161,7 +161,7 @@
                   <button
                     type="button"
                     class="row-action-btn"
-                    [disabled]="(isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex"
+                    [disabled]="((isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex) || !isExperimentEditable"
                     (click)="handleDecisionPointTableClearOrRemoveRow(rowIndex)"
                   >
                     <ng-container *ngIf="(decisionPointsTableEditIndex$ | async) !== rowIndex">
@@ -371,7 +371,7 @@
                   <button
                     type="button"
                     class="row-action-btn"
-                    [disabled]="(isFormLockedForEdit$ | async) && (conditionsTableEditIndex$ | async) !== rowIndex"
+                    [disabled]="((isFormLockedForEdit$ | async) && (conditionsTableEditIndex$ | async) !== rowIndex) || !isExperimentEditable"
                     (click)="handleConditionTableEditClick(rowIndex, rowData.getRawValue())"
                   >
                     <!-- Edit Icon -->
@@ -388,7 +388,7 @@
                   <button
                     type="button"
                     class="row-action-btn"
-                    [disabled]="(isFormLockedForEdit$ | async) && (conditionsTableEditIndex$ | async) !== rowIndex"
+                    [disabled]="((isFormLockedForEdit$ | async) && (conditionsTableEditIndex$ | async) !== rowIndex) || !isExperimentEditable"
                     (click)="handleConditionTableClearOrRemoveRow(rowIndex)"
                   >
                     <ng-container *ngIf="(conditionsTableEditIndex$ | async) !== rowIndex">
@@ -491,8 +491,8 @@
         *ngIf="experimentInfo"
         mat-raised-button
         class="shared-modal--modal-btn default-button"
-        [class.default-button--disabled]="(isFormLockedForEdit$ | async) || !isExperimentEditable"
-        [disabled]="(isFormLockedForEdit$ | async) || !isExperimentEditable"
+        [class.default-button--disabled]="(isFormLockedForEdit$ | async)"
+        [disabled]="(isFormLockedForEdit$ | async)"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
         {{ 'global.save.text' | translate }}
