@@ -692,7 +692,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       !this.decisionPointCountError &&
       this.isExperimentEditable
     ) {
-      (this.experimentDesignForm.get('conditions') as FormArray).controls.forEach((control) => {
+      this.conditions.controls.forEach((control) => {
         control.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.ASSIGNMENT_WEIGHT).enable({ emitEvent: false });
       });
     }
