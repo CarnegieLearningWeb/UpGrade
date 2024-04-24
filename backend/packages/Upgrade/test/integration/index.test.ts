@@ -93,7 +93,7 @@ import {
   StratificationRandomAlgorithmCheck,
 } from './Experiment/stratification/index';
 import { IndividualExperimentEnrollmentCode, GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } from './Experiment/enrollmentCode';
-import { IndividualExperimentExclusionCode, GroupExperimentExclusionCode, ExperimentLevelExclusionCode, WithinSubjectExclusionCode }  from './Experiment/exclusionCode';
+import { IndividualExperimentExclusionCode, GroupExperimentExclusionCode, ExperimentLevelExclusionCodeParticipant, ExperimentLevelExclusionCodeGroup, WithinSubjectExclusionCode }  from './Experiment/exclusionCode';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -365,8 +365,12 @@ describe('Integration Tests', () => {
     return IndividualExperimentExclusionCode();
   });
 
-  test('Experiment Experiment Exclusion Code', () => {
-    return ExperimentLevelExclusionCode();
+  test('Experiment Experiment Exclusion Code Participant on Exclusion', () => {
+    return ExperimentLevelExclusionCodeParticipant();
+  });
+
+  test('Experiment Experiment Exclusion Code Group on Exclusion', () => {
+    return ExperimentLevelExclusionCodeGroup();
   });
 
   test('Group Experiment Exclusion Code', () => {

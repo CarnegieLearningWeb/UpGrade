@@ -20,7 +20,7 @@ export default async function testCase(): Promise<void> {
 
   // First excluding a group to check "EXCLUDED_DUE_TO_GROUP_LOGIC"
   // within subject experiment object
-  let experimentObject = withinSubjectExclusionExperiment;
+  const experimentObject = withinSubjectExclusionExperiment;
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -37,12 +37,12 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  let experimentName = experimentObject.partitions[0].target;
-  let experimentPoint = experimentObject.partitions[0].site;
-  let condition = experimentObject.conditions[0].conditionCode;
+  const experimentName = experimentObject.partitions[0].target;
+  const experimentPoint = experimentObject.partitions[0].site;
+  const condition = experimentObject.conditions[0].conditionCode;
 
   // change experiment status to Enrolling
-  let experimentId = experiments[0].id;
+  const experimentId = experiments[0].id;
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
@@ -79,6 +79,7 @@ export default async function testCase(): Promise<void> {
   expect(groupExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        id: experiments[0].id + "_" + experimentUsers[2].workingGroup[Object.keys(experimentUsers[2].workingGroup)[0]],
         exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST
       })
     ])
@@ -126,6 +127,9 @@ export default async function testCase(): Promise<void> {
   expect(individualAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        user: expect.objectContaining({
+          id: experimentUsers[4].id
+        }),
         enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
       })
     ])
@@ -152,6 +156,9 @@ export default async function testCase(): Promise<void> {
   expect(individualAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        user: expect.objectContaining({
+          id: experimentUsers[4].id
+        }),
         enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
       })
     ])
@@ -176,6 +183,9 @@ export default async function testCase(): Promise<void> {
   expect(individualAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        user: expect.objectContaining({
+          id: experimentUsers[4].id
+        }),
         enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
       })
     ])
@@ -200,6 +210,9 @@ export default async function testCase(): Promise<void> {
   expect(individualAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        user: expect.objectContaining({
+          id: experimentUsers[4].id
+        }),
         enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
       })
     ])
@@ -224,6 +237,9 @@ export default async function testCase(): Promise<void> {
   expect(individualAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        user: expect.objectContaining({
+          id: experimentUsers[4].id
+        }),
         enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
       })
     ])
@@ -250,6 +266,9 @@ export default async function testCase(): Promise<void> {
   expect(individualAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        user: expect.objectContaining({
+          id: experimentUsers[4].id
+        }),
         enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
       })
     ])
@@ -274,6 +293,9 @@ export default async function testCase(): Promise<void> {
   expect(individualAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        user: expect.objectContaining({
+          id: experimentUsers[4].id
+        }),
         enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
       })
     ])

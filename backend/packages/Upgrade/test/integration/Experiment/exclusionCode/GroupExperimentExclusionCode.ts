@@ -20,7 +20,7 @@ export default async function testCase(): Promise<void> {
 
   // First excluding a group to check "EXCLUDED_DUE_TO_GROUP_LOGIC"
   // group experiment object
-  let experimentObject = groupLevelExclusionExperiment;
+  const experimentObject = groupLevelExclusionExperiment;
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -37,12 +37,12 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  let experimentName = experimentObject.partitions[0].target;
-  let experimentPoint = experimentObject.partitions[0].site;
-  let condition = experimentObject.conditions[0].conditionCode;
+  const experimentName = experimentObject.partitions[0].target;
+  const experimentPoint = experimentObject.partitions[0].site;
+  const condition = experimentObject.conditions[0].conditionCode;
 
   // change experiment status to Enrolling
-  let experimentId = experiments[0].id;
+  const experimentId = experiments[0].id;
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
@@ -79,6 +79,7 @@ export default async function testCase(): Promise<void> {
   expect(groupExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        id: experiments[0].id + "_" + experimentUsers[2].workingGroup[Object.keys(experimentUsers[2].workingGroup)[0]],
         exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST
       })
     ])
@@ -126,6 +127,7 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        id: experiments[0].id + "_" + experimentUsers[3].id,
         exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC 
       })
     ])
@@ -153,6 +155,7 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        id: experiments[0].id + "_" + experimentUsers[6].id,
         exclusionCode: EXCLUSION_CODE.NO_GROUP_SPECIFIED 
       })
     ])
@@ -178,6 +181,7 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        id: experiments[0].id + "_" + experimentUsers[7].id,
         exclusionCode: EXCLUSION_CODE.NO_GROUP_SPECIFIED 
       })
     ])
@@ -203,6 +207,7 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        id: experiments[0].id + "_" + experimentUsers[8].id,
         exclusionCode: EXCLUSION_CODE.NO_GROUP_SPECIFIED 
       })
     ])
@@ -228,6 +233,7 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        id: experiments[0].id + "_" + experimentUsers[9].id,
         exclusionCode: EXCLUSION_CODE.NO_GROUP_SPECIFIED 
       })
     ])
@@ -255,6 +261,7 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        id: experiments[0].id + "_" + experimentUsers[10].id,
         exclusionCode: EXCLUSION_CODE.INVALID_GROUP_OR_WORKING_GROUP 
       })
     ])
@@ -280,6 +287,7 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        id: experiments[0].id + "_" + experimentUsers[11].id,
         exclusionCode: EXCLUSION_CODE.INVALID_GROUP_OR_WORKING_GROUP 
       })
     ])

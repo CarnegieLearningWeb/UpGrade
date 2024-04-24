@@ -1,6 +1,7 @@
 import IndividualExperimentExclusionCodeTest from './IndividualExperimentExclusionCode';
 import GroupExperimentExclusionCodeTest from './GroupExperimentExclusionCode';
-import ExperimentLevelExclusionCodeTest from './ExperimentLevelExclusionCode';
+import ExperimentLevelExclusionCodeGroupTest from './ExperimentLevelExclusionCodeGroup';
+import ExperimentLevelExclusionCodeParticipantTest from './ExperimentLevelExclusionCodeGroup';
 import WithinSubjectExperimentExclusionCodeTest from './WithinSubjectExperimentExclusionCode';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 import { CheckService } from '../../../../src/api/services/CheckService';
@@ -52,9 +53,14 @@ export const GroupExperimentExclusionCode = async () => {
   await GroupExperimentExclusionCodeTest();
 };
 
-export const ExperimentLevelExclusionCode = async () => {
+export const ExperimentLevelExclusionCodeParticipant = async () => {
   await initialChecks();
-  await ExperimentLevelExclusionCodeTest();
+  await ExperimentLevelExclusionCodeParticipantTest();
+};
+
+export const ExperimentLevelExclusionCodeGroup = async () => {
+  await initialChecks();
+  await ExperimentLevelExclusionCodeGroupTest();
 };
 
 export const WithinSubjectExclusionCode = async () => {

@@ -81,6 +81,7 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        id: experiments[0].id + "_" + experimentUsers[0].id,
         exclusionCode: EXCLUSION_CODE.REACHED_PRIOR 
       })
     ])
@@ -124,6 +125,7 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        id: experiments[0].id + "_" + experimentUsers[1].id,
         exclusionCode: EXCLUSION_CODE.REACHED_AFTER
       })
     ])
