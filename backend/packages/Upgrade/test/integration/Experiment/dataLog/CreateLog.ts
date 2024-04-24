@@ -45,7 +45,7 @@ export default async function CreateLog(): Promise<void> {
 
   await settingService.setClientCheck(false, true, new UpgradeLogger());
 
-  await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
+  await metricService.saveAllMetrics(metrics as any, experimentObject.context, new UpgradeLogger());
 
   const findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(36);

@@ -26,7 +26,11 @@ export default async function MetricQueriesCheck(): Promise<void> {
 
   await settingService.setClientCheck(false, true, new UpgradeLogger());
   // create metrics service
-  await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
+  await metricService.saveAllMetrics(
+    metrics as any,
+    stratificationRandomExperimentAssignmentExperiment2.context,
+    new UpgradeLogger()
+  );
 
   // creating new user
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
@@ -412,7 +416,11 @@ export default async function MetricQueriesCheck(): Promise<void> {
   ];
 
   // experiment object
-  const experimentObject = { ...stratificationRandomExperimentAssignmentExperiment2, queries: metricsQueries, conditionOrder: CONDITION_ORDER.ORDERED_ROUND_ROBIN };
+  const experimentObject = {
+    ...stratificationRandomExperimentAssignmentExperiment2,
+    queries: metricsQueries,
+    conditionOrder: CONDITION_ORDER.ORDERED_ROUND_ROBIN,
+  };
   await experimentService.update(experimentObject as any, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
   const experimentTarget = experimentObject.partitions[0].target;
@@ -537,7 +545,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
     ],
     { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
   );
-  
+
   const condition2 = experimentObject.conditions[1].conditionCode;
   // user 1 mark experiment point on condition2
   markedExperimentPoint = await markExperimentPoint(
@@ -699,7 +707,6 @@ export default async function MetricQueriesCheck(): Promise<void> {
     const queryResult = await queryService.analyze([query.id], new UpgradeLogger());
     let expectedValue;
     switch (query.query.operationType) {
-
       case OPERATION_TYPES.SUM: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
