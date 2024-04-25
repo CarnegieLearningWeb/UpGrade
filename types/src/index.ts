@@ -28,6 +28,7 @@ export {
   CONDITION_ORDER,
   CACHE_PREFIX,
   ASSIGNMENT_ALGORITHM,
+  FEATURE_FLAG_STATUS,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,
