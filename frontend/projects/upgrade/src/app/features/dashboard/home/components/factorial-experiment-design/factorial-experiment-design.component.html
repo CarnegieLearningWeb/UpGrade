@@ -10,6 +10,7 @@
           <ng-container *ngIf="decisionPoints?.length; else initialDecisionPointMessage">
             <mat-table
               class="decision-point-table"
+              [class.disabled]="!isExperimentEditable"
               [dataSource]="decisionPointDataSource"
               formArrayName="decisionPoints"
               #decisionPointTable
@@ -116,7 +117,7 @@
                   <button
                     type="button"
                     class="row-action-btn"
-                    [disabled]="(isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex"
+                    [disabled]="((isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex) || !isExperimentEditable"
                     (click)="handleDecisionPointTableEditClick(rowIndex, rowData.getRawValue())"
                   >
                     <!-- Edit Icon -->
@@ -131,7 +132,7 @@
                   <button
                     type="button"
                     class="row-action-btn"
-                    [disabled]="(isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex"
+                    [disabled]="((isFormLockedForEdit$ | async) && (decisionPointsTableEditIndex$ | async) !== rowIndex) || !isExperimentEditable"
                     (click)="handleDecisionPointTableClearOrRemoveRow(rowIndex)"
                   >
                     <!-- Delete Icon -->
@@ -205,6 +206,7 @@
           <ng-container *ngIf="factor?.length; else initialFactorsMessage">
             <mat-table
               class="factor-table"
+              [class.disabled]="!isExperimentEditable"
               [dataSource]="factorDataSource"
               #factorTable
               formArrayName="factors"
@@ -360,7 +362,7 @@
                   <button
                     type="button"
                     class="row-action-btn"
-                    [disabled]="(isFormLockedForEdit$ | async) && (factorsTableEditIndex$ | async) !== rowIndex"
+                    [disabled]="((isFormLockedForEdit$ | async) && (factorsTableEditIndex$ | async) !== rowIndex) || !isExperimentEditable"
                     (click)="handleFactorTableEditClick(rowData.getRawValue(), rowIndex)"
                   >
                     <!-- Edit Icon -->
@@ -382,7 +384,7 @@
                   <button
                     type="button"
                     class="row-action-btn"
-                    [disabled]="(isFormLockedForEdit$ | async) && (factorsTableEditIndex$ | async) !== rowIndex"
+                    [disabled]="((isFormLockedForEdit$ | async) && (factorsTableEditIndex$ | async) !== rowIndex) || !isExperimentEditable"
                     (click)="handleFactorTableClearOrRemoveRow(rowIndex)"
                   >
                     <!-- Delete Icon -->
@@ -580,7 +582,7 @@
                               type="button"
                               class="row-action-btn"
                               [disabled]="
-                                (isFormLockedForEdit$ | async) && (levelsTableEditIndex$ | async) !== rowIndex
+                                ((isFormLockedForEdit$ | async) && (levelsTableEditIndex$ | async) !== rowIndex) || !isExperimentEditable
                               "
                               (click)="handleLevelTableEditClick(rowData.getRawValue(), rowIndex, factorIndex)"
                             >
@@ -615,7 +617,7 @@
                               type="button"
                               class="row-action-btn"
                               [disabled]="
-                                (isFormLockedForEdit$ | async) && (levelsTableEditIndex$ | async) !== rowIndex
+                                ((isFormLockedForEdit$ | async) && (levelsTableEditIndex$ | async) !== rowIndex) || !isExperimentEditable
                               "
                               (click)="handleLevelTableClearOrRemoveRow(factorIndex, rowIndex)"
                             >
@@ -822,8 +824,8 @@
         *ngIf="experimentInfo"
         mat-raised-button
         class="shared-modal--modal-btn default-button"
-        [ngClass]="{ 'default-button--disabled': (isFormLockedForEdit$ | async) || !isExperimentEditable }"
-        [disabled]="(isFormLockedForEdit$ | async) || !isExperimentEditable"
+        [ngClass]="{ 'default-button--disabled': (isFormLockedForEdit$ | async) }"
+        [disabled]="(isFormLockedForEdit$ | async)"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
         {{ 'global.save.text' | translate }}
