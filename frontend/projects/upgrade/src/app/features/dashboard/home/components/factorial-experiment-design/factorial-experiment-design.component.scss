@@ -19,14 +19,6 @@
       justify-content: space-between;
     }
 
-    .decision-point-table,
-    .factor-table {
-      &.disabled {
-        opacity: 0.5;
-        cursor: default;
-      }
-    }
-
     .decision-point-table {
       max-height: 135px;
       overflow: auto;
@@ -132,6 +124,7 @@
 
       mat-icon {
         position: relative;
+        cursor: pointer;
 
         &.active {
           transform: rotate(90deg);
@@ -201,6 +194,10 @@
         height: 16px;
         font-size: var(--text-size-x-large);
         color: gray;
+
+        &:hover {
+          cursor: pointer;
+        }
       }
 
       mat-form-field {
@@ -281,7 +278,7 @@
       background-color: transparent;
       color: var(--blue);
       &--disabled {
-        color: var(--light-blue);
+        color: var(--grey-6);
       }
     }
   }

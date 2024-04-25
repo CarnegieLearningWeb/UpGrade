@@ -10,7 +10,6 @@
           <ng-container *ngIf="decisionPoints?.length; else initialDecisionPointMessage">
             <mat-table
               class="decision-point-table"
-              [class.disabled]="!isExperimentEditable"
               [dataSource]="decisionPointDataSource"
               formArrayName="decisionPoints"
               #decisionPointTable
@@ -206,7 +205,6 @@
           <ng-container *ngIf="factor?.length; else initialFactorsMessage">
             <mat-table
               class="factor-table"
-              [class.disabled]="!isExperimentEditable"
               [dataSource]="factorDataSource"
               #factorTable
               formArrayName="factors"

@@ -34,11 +34,6 @@
       max-height: 135px;
       overflow: auto;
 
-      &.disabled {
-        opacity: 0.5;
-        cursor: default;
-      }
-
       mat-header-row {
         min-height: 35px;
         max-height: 35px;
