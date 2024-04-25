@@ -1,6 +1,6 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
-import { SEGMENT_TYPE, SEGMENT_STATUS, SEGMENT_SEARCH_KEY, SEGMENT_SORT_AS, SEGMENT_SORT_KEY } from 'upgrade_types';
+import { SEGMENT_TYPE, SEGMENT_STATUS, SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
 export { SEGMENT_STATUS };
 
 export enum NewSegmentDialogEvents {
@@ -106,7 +106,7 @@ export interface SegmentState extends EntityState<Segment> {
   searchKey: SEGMENT_SEARCH_KEY;
   searchString: string;
   sortKey: SEGMENT_SORT_KEY;
-  sortAs: SEGMENT_SORT_AS;
+  sortAs: SORT_AS_DIRECTION;
 }
 
 export interface State extends AppState {

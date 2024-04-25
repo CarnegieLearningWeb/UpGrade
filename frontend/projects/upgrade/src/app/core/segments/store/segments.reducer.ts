@@ -4,7 +4,7 @@ import { SegmentState, Segment } from './segments.model';
 import * as SegmentsActions from './segments.actions';
 import {
   SEGMENT_SEARCH_KEY,
-  SEGMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   SEGMENT_SORT_KEY,
 } from '../../../../../../../../types/src/Experiment/enums';
 
@@ -19,7 +19,7 @@ export const initialState: SegmentState = adapter.getInitialState({
   searchKey: SEGMENT_SEARCH_KEY.ALL,
   searchString: null,
   sortKey: SEGMENT_SORT_KEY.NAME,
-  sortAs: SEGMENT_SORT_AS.ASCENDING,
+  sortAs: SORT_AS_DIRECTION.ASCENDING,
 });
 
 const reducer = createReducer(

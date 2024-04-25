@@ -18,7 +18,7 @@ import { SegmentInput, SegmentLocalStorageKeys, UpsertSegmentType } from './stor
 import { filter, first, map, tap } from 'rxjs/operators';
 import { Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
-import { SEGMENT_SEARCH_KEY, SEGMENT_SORT_AS, SEGMENT_SORT_KEY } from 'upgrade_types';
+import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 
 @Injectable({ providedIn: 'root' })
@@ -41,8 +41,7 @@ export class SegmentsService {
   selectSearchSegmentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
       filter(([searchKey, searchString]) => !!searchKey && !!searchString),
-      map(([searchKey, searchString]) => ({ searchKey, searchString })),
-      first()
+      map(([searchKey, searchString]) => ({ searchKey, searchString }))
     );
   }
 
@@ -105,7 +104,7 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionSetSortKey({ sortKey }));
   }
 
-  setSortingType(sortingType: SEGMENT_SORT_AS) {
+  setSortingType(sortingType: SORT_AS_DIRECTION) {
     this.localStorageService.setItem(SegmentLocalStorageKeys.SEGMENT_SORT_TYPE, sortingType);
     this.store$.dispatch(SegmentsActions.actionSetSortingType({ sortingType }));
   }

@@ -126,8 +126,8 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  setSearchKey() {
-    this.segmentsService.setSearchKey(this.selectedSegmentFilterOption);
+  setSearchKey(searchKey: SEGMENT_SEARCH_KEY) {
+    this.segmentsService.setSearchKey(searchKey);
   }
 
   setSearchString(searchString: string) {
@@ -141,14 +141,10 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
       top: 0,
       behavior: 'smooth',
     });
-    this.segmentsService.fetchSegments(true);
   }
 
   filterSegmentsByChips(tagValue: string, type: SEGMENT_SEARCH_KEY) {
-    this.searchValue = tagValue;
-    this.selectedSegmentFilterOption = type;
-    this.applyFilter(tagValue);
-    this.setSearchKey();
+    this.setSearchKey(type);
     this.setSearchString(tagValue);
   }
 

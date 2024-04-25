@@ -119,7 +119,7 @@ export enum EXPERIMENT_SORT_KEY {
   POST_EXPERIMENT_RULE = 'postExperimentRule',
 }
 
-export enum EXPERIMENT_SORT_AS {
+export enum SORT_AS_DIRECTION {
   ASCENDING = 'ASC',
   DESCENDING = 'DESC',
 }
@@ -193,11 +193,6 @@ export enum SEGMENT_SORT_KEY {
   NAME = 'name',
   STATUS = 'state',
   UPDATED_AT = 'updatedAt',
-}
-
-export enum SEGMENT_SORT_AS {
-  ASCENDING = 'ASC',
-  DESCENDING = 'DESC',
 }
 
 export enum INCLUSION_CRITERIA {

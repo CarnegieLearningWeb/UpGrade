@@ -3,11 +3,10 @@ import {
   ExperimentLocalStorageKeys,
   ExperimentState,
   EXPERIMENT_SEARCH_KEY,
-  EXPERIMENT_SORT_AS,
   EXPERIMENT_SORT_KEY,
 } from '../experiments/store/experiments.model';
 import { SegmentLocalStorageKeys, SegmentState } from '../segments/store/segments.model';
-import { SEGMENT_SEARCH_KEY, SEGMENT_SORT_AS, SEGMENT_SORT_KEY } from 'upgrade_types';
+import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
 
 const APP_PREFIX = 'UPGRADE-';
 
@@ -38,7 +37,7 @@ export class LocalStorageService {
       searchKey: experimentSearchKey as EXPERIMENT_SEARCH_KEY,
       searchString: experimentSearchString || null,
       sortKey: (experimentSortKey as EXPERIMENT_SORT_KEY) || EXPERIMENT_SORT_KEY.NAME,
-      sortAs: (experimentSortType as EXPERIMENT_SORT_AS) || EXPERIMENT_SORT_AS.ASCENDING,
+      sortAs: (experimentSortType as SORT_AS_DIRECTION) || SORT_AS_DIRECTION.ASCENDING,
       stats: {},
       graphInfo: null,
       graphRange: null,
@@ -61,7 +60,7 @@ export class LocalStorageService {
       searchKey: segmentSearchKey as SEGMENT_SEARCH_KEY,
       searchString: segmentSearchString || null,
       sortKey: (segmentSortKey as SEGMENT_SORT_KEY) || SEGMENT_SORT_KEY.NAME,
-      sortAs: (segmentSortType as SEGMENT_SORT_AS) || SEGMENT_SORT_AS.ASCENDING,
+      sortAs: (segmentSortType as SORT_AS_DIRECTION) || SORT_AS_DIRECTION.ASCENDING,
     };
 
     const state = {

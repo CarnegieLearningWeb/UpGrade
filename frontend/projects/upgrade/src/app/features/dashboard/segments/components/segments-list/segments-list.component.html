@@ -8,7 +8,7 @@
         <mat-select
           class="ft-14-400"
           [(ngModel)]="selectedSegmentFilterOption"
-          (selectionChange)="applyFilter(searchValue); setSearchKey()"
+          (selectionChange)="applyFilter(searchValue); setSearchKey(selectedSegmentFilterOption)"
         >
           <mat-option class="ft-14-400" *ngFor="let filterOption of segmentFilterOptions" [value]="filterOption">
             {{ filterOption | titlecase }}

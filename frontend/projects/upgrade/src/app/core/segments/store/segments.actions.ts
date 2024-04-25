@@ -2,7 +2,7 @@ import { createAction, props } from '@ngrx/store';
 import { Segment, SegmentInput, UpsertSegmentType, experimentSegmentInclusionExclusionData } from './segments.model';
 import {
   SEGMENT_SEARCH_KEY,
-  SEGMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   SEGMENT_SORT_KEY,
 } from '../../../../../../../../types/src/Experiment/enums';
 
@@ -71,5 +71,5 @@ export const actionSetSortKey = createAction('[Segments] Set Sort key value', pr
 
 export const actionSetSortingType = createAction(
   '[Segments] Set Sorting type',
-  props<{ sortingType: SEGMENT_SORT_AS }>()
+  props<{ sortingType: SORT_AS_DIRECTION }>()
 );
