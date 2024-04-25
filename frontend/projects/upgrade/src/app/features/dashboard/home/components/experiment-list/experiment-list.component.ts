@@ -153,8 +153,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-  setSearchKey() {
-    this.experimentService.setSearchKey(this.selectedExperimentFilterOption);
+  setSearchKey(searchKey: EXPERIMENT_SEARCH_KEY) {
+    this.experimentService.setSearchKey(searchKey);
   }
 
   setSearchString(searchString: FLAG_SEARCH_SORT_KEY) {
@@ -172,10 +172,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   filterExperimentByChips(tagValue: FLAG_SEARCH_SORT_KEY, type: EXPERIMENT_SEARCH_KEY) {
-    this.searchValue = tagValue;
-    this.selectedExperimentFilterOption = type;
-    this.applyFilter(tagValue);
-    this.setSearchKey();
+    this.setSearchKey(type);
     this.setSearchString(tagValue);
   }
 

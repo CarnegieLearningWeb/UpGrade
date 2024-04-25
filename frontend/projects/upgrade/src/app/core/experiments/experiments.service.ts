@@ -82,8 +82,7 @@ export class ExperimentService {
   selectSearchExperimentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
       filter(([searchKey, searchString]) => !!searchKey && !!searchString),
-      map(([searchKey, searchString]) => ({ searchKey, searchString })),
-      first()
+      map(([searchKey, searchString]) => ({ searchKey, searchString }))
     );
   }
 
