@@ -10,6 +10,7 @@
           <ng-container>
             <mat-table
               class="decision-point-table"
+              [class.disabled]="!isExperimentEditable"
               [dataSource]="decisionPointDataSource"
               [formArrayName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DECISION_POINTS_ARRAY"
               #decisionPointTable
@@ -233,6 +234,7 @@
           <ng-container>
             <mat-table
               class="condition-table"
+              [class.disabled]="!isExperimentEditable"
               [dataSource]="conditionDataSource"
               [formArrayName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITIONS_ARRAY"
               #conditionTable
