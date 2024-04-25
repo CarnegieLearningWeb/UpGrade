@@ -8,11 +8,9 @@ export function InitMetrics(logger: UpgradeLogger): Promise<any> {
   // Init default metrics in system
   if (env.initialization.metrics) {
     try {
-      return metricService.saveAllMetrics(
-        JSON.parse(env.initialization.metrics),
-        Object.keys(env.initialization.contextMetadata),
-        logger
-      );
+      return JSON.parse(env.initialization.metrics).map((metricData) => {
+        return metricService.saveAllMetrics(metricData.metrics, metricData.contexts, logger);
+      });
     } catch (err) {
       const error = new Error('Error while initializing metrics');
       logger.error(error);
