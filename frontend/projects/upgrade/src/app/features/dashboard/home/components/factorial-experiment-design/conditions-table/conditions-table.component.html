@@ -66,12 +66,12 @@
           {{ 'WEIGHT' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
-          <ng-container *ngIf="equalWeightFlag || (tableEditIndex$ | async) !== rowIndex">
+          <ng-container *ngIf="equalWeightFlag || (tableEditIndex$ | async) !== rowIndex || !isExperimentEditable">
             <span [matTooltip]="rowData.weight" matTooltipPosition="above">
               {{ rowData.weight }}
             </span>
           </ng-container>
-          <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex">
+          <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex && isExperimentEditable">
             <mat-form-field
               class="dense-2 input-weight"
               appearance="outline"
@@ -83,7 +83,6 @@
                 type="text"
                 matInput
                 formControlName="weight"
-                [disabled]="!isExperimentEditable"
               />
             </mat-form-field>
           </ng-container>
@@ -113,7 +112,7 @@
             type="button"
             class="row-action-btn"
             [disabled]="
-              ((isFormLockedForEdit$ | async) && (tableEditIndex$ | async) !== rowIndex) || !isExperimentEditable
+              ((isFormLockedForEdit$ | async) && (tableEditIndex$ | async) !== rowIndex)
             "
             (click)="handleRowEditClick(rowData, rowIndex)"
           >

@@ -11,7 +11,14 @@ import {
   SimpleChanges,
   OnDestroy,
 } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators, UntypedFormArray, AbstractControl } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+  UntypedFormArray,
+  AbstractControl,
+  FormArray,
+} from '@angular/forms';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
@@ -628,7 +635,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   isFormValid() {
     return (
       !this.decisionPointErrors.length &&
-      this.experimentDesignForm.valid &&
+      (this.experimentDesignForm.valid || !this.isExperimentEditable) &&
       !this.conditionCodeErrors.length &&
       this.decisionPointCountError === null &&
       this.conditionCountError === null
@@ -668,25 +675,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         if (this.experimentDesignForm.dirty) {
           this.experimentDesignStepperService.experimentStepperDataChanged();
         }
-        if (!this.isExperimentEditable) {
-          this.emitExperimentDialogEvent.emit({
-            type: eventType,
-            formData: this.experimentInfo,
-            path: NewExperimentPaths.EXPERIMENT_DESIGN,
-          });
-          break;
-        }
         this.saveData(eventType);
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
-        if (!this.isExperimentEditable) {
-          this.emitExperimentDialogEvent.emit({
-            type: eventType,
-            formData: this.experimentInfo,
-            path: NewExperimentPaths.EXPERIMENT_DESIGN,
-          });
-          break;
-        }
         this.saveData(eventType);
         break;
     }
@@ -694,8 +685,13 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   saveData(eventType: NewExperimentDialogEvents) {
     this.validateForm();
-
-    if (!this.decisionPointErrors.length && !this.conditionCodeErrors.length && !this.decisionPointCountError) {
+    //Form will have assignment weight enabled if it's in enrolling state
+    if (
+      !this.decisionPointErrors.length &&
+      !this.conditionCodeErrors.length &&
+      !this.decisionPointCountError &&
+      this.isExperimentEditable
+    ) {
       this.conditions.controls.forEach((control) => {
         control.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.ASSIGNMENT_WEIGHT).enable({ emitEvent: false });
       });
