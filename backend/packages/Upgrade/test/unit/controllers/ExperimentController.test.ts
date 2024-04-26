@@ -6,11 +6,12 @@ import { Container } from 'typedi';
 import { v4 as uuid } from 'uuid';
 import ExperimentServiceMock from './mocks/ExperimentServiceMock';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
-
+import { UserRole } from 'upgrade_types';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import { useContainer as ormUseContainer } from 'typeorm';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentServiceMock';
+import { User } from 'src/api/models/User';
 
 describe('Experiment Controller Testing', () => {
   beforeAll(() => {
@@ -86,6 +87,17 @@ describe('Experiment Controller Testing', () => {
         type: 'private',
       },
     },
+  };
+
+  const mockUser: User = {
+    email: 'test@user.com',
+    firstName: 'test',
+    lastName: 'user',
+    role: UserRole.READER,
+    versionNumber: 5,
+    imageUrl: '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   test('Get request for /api/experiments', () => {
