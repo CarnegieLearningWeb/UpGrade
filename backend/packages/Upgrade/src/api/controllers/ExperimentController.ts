@@ -17,7 +17,7 @@ import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { SERVER_ERROR } from 'upgrade_types';
-import { validate, isUUID } from 'class-validator';
+import { isUUID } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentPaginatedParamsValidator } from './validators/ExperimentPaginatedParamsValidator';
 import { User } from '../models/User';

@@ -89,17 +89,6 @@ describe('Experiment Controller Testing', () => {
     },
   };
 
-  const mockUser: User = {
-    email: 'test@user.com',
-    firstName: 'test',
-    lastName: 'user',
-    role: UserRole.READER,
-    versionNumber: 5,
-    imageUrl: '',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-
   test('Get request for /api/experiments', () => {
     return request(app).get('/api/experiments').expect('Content-Type', /json/).expect(200);
   });
