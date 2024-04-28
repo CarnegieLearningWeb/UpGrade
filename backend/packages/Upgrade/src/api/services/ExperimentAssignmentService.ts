@@ -215,15 +215,21 @@ export class ExperimentAssignmentService {
     // experiment level inclusion and exclusion
     const [, exclusionReason] = await this.experimentLevelExclusionInclusion(globalFilteredExperiments, userDoc);
     let monitoredDocument: MonitoredDecisionPoint;
+    let assignmentUnit;
     if (experimentId && experiments.length) {
-      monitoredDocument = await this.monitoredDecisionPointRepository.findOne({
-        where: {
-          site: site,
-          target: target,
-          user: userId,
-        },
-        relations: ['user'],
-      });
+      assignmentUnit = experiments
+      ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0]?.assignmentUnit
+      : null;
+      if (assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+        monitoredDocument = await this.monitoredDecisionPointRepository.findOne({
+          where: {
+            site: site,
+            target: target,
+            user: userId,
+          },
+          relations: ['user'],
+        });
+      }
       const selectedExperimentDP = dpExperiments.find((dp) => dp.experiment.id === experimentId);
       const experiment = experiments[0];
       const { conditions } = experiment;
@@ -308,14 +314,10 @@ export class ExperimentAssignmentService {
       }
     }
     // adding in monitored experiment point table
-
-    const assignmentUnit = experiments
-      ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0]?.assignmentUnit
-      : null;
     monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
-      id: monitoredDocument?.id || uuid(),
+      id: (assignmentUnit && assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) ? (monitoredDocument?.id || uuid()) : uuid(),
       experimentId: experimentId,
-      condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? null : condition,
+      condition: (assignmentUnit && assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) ? null : condition,
       user: userDoc,
       site: site,
       target: target,
@@ -324,8 +326,8 @@ export class ExperimentAssignmentService {
     // save monitored log document
     const logDocument = await this.monitoredDecisionPointLogRepository.save({
       monitoredDecisionPoint: monitoredDocument,
-      condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? condition : null,
-      uniquifier: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? uniquifier : null,
+      condition: (assignmentUnit && assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) ? condition : null,
+      uniquifier: (assignmentUnit && assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) ? uniquifier : null,
     });
     return {
       ...monitoredDocument,
