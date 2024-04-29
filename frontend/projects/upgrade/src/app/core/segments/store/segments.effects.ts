@@ -6,7 +6,7 @@ import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operato
 import { AppState, NotificationService } from '../../core.module';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
-import { Segment, SegmentReturnedObj, UpsertSegmentType } from './segments.model';
+import { Segment, UpsertSegmentType } from './segments.model';
 import { selectAllSegments } from './segments.selectors';
 import JSZip from 'jszip';
 

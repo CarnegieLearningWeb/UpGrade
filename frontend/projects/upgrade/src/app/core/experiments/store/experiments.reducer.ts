@@ -2,7 +2,7 @@ import {
   ExperimentState,
   Experiment,
   EXPERIMENT_SEARCH_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   EXPERIMENT_SORT_KEY,
 } from './experiments.model';
 import { createReducer, on, Action } from '@ngrx/store';
@@ -22,7 +22,7 @@ export const initialState: ExperimentState = adapter.getInitialState({
   searchKey: EXPERIMENT_SEARCH_KEY.ALL,
   searchString: null,
   sortKey: EXPERIMENT_SORT_KEY.NAME,
-  sortAs: EXPERIMENT_SORT_AS.ASCENDING,
+  sortAs: SORT_AS_DIRECTION.ASCENDING,
   stats: {},
   graphInfo: null,
   graphRange: null,

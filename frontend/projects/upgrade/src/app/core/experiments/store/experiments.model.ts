@@ -6,7 +6,7 @@ import {
   POST_EXPERIMENT_RULE,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   EXPERIMENT_STATE,
   IExperimentEnrollmentStats,
   IExperimentSearchParams,
@@ -31,7 +31,7 @@ export {
   IExperimentEnrollmentStats,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   IExperimentSearchParams,
   IExperimentSortParams,
   IExperimentEnrollmentDetailStats,
@@ -292,7 +292,7 @@ export interface ExperimentState extends EntityState<Experiment> {
   searchKey: EXPERIMENT_SEARCH_KEY;
   searchString: string;
   sortKey: EXPERIMENT_SORT_KEY;
-  sortAs: EXPERIMENT_SORT_AS;
+  sortAs: SORT_AS_DIRECTION;
   stats: Record<string, IExperimentEnrollmentDetailStats>;
   graphInfo: IExperimentGraphInfo;
   graphRange: DATE_RANGE;

@@ -1,12 +1,19 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
-import { SEGMENT_TYPE, SEGMENT_STATUS } from 'upgrade_types';
+import { SEGMENT_TYPE, SEGMENT_STATUS, SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
 export { SEGMENT_STATUS };
 
 export enum NewSegmentDialogEvents {
   CLOSE_DIALOG = 'Close Dialog',
   SEND_FORM_DATA = 'Send Form Data',
   UPDATE_SEGMENT = 'Update segment',
+}
+
+export enum SegmentLocalStorageKeys {
+  SEGMENT_SEARCH_STRING = 'SEGMENT_SEARCH_STRING',
+  SEGMENT_SEARCH_KEY = 'SEGMENT_KEY_STRING',
+  SEGMENT_SORT_KEY = 'SEGMENT_SORT_KEY',
+  SEGMENT_SORT_TYPE = 'SEGMENT_SORT_TYPE',
 }
 
 export enum NewSegmentPaths {
@@ -96,6 +103,10 @@ export interface SegmentState extends EntityState<Segment> {
   // TODO: remove any
   allExperimentSegmentsInclusion: any;
   allExperimentSegmentsExclusion: any;
+  searchKey: SEGMENT_SEARCH_KEY;
+  searchString: string;
+  sortKey: SEGMENT_SORT_KEY;
+  sortAs: SORT_AS_DIRECTION;
 }
 
 export interface State extends AppState {
