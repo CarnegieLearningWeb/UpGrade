@@ -1,7 +1,7 @@
 import { ASSIGNMENT_ALGORITHM, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import {
   ExperimentState,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   EXPERIMENT_SORT_KEY,
   DATE_RANGE,
   EXPERIMENT_STATE,
@@ -211,7 +211,7 @@ describe('Experiments Selectors', () => {
     searchKey: null,
     searchString: null,
     sortKey: EXPERIMENT_SORT_KEY.NAME,
-    sortAs: EXPERIMENT_SORT_AS.ASCENDING,
+    sortAs: SORT_AS_DIRECTION.ASCENDING,
     stats: {
       '1f12cd8f-7ff9-4731-a4eb-7104918ed252': {
         id: '1f12cd8f-7ff9-4731-a4eb-7104918ed252',
