@@ -56,6 +56,7 @@ export interface Environment {
   pollingInterval: number;
   pollingLimit: number;
   api: APIEndpoints;
+  withinSubjectExperimentSupportToggle: boolean,
 }
 
 export interface RuntimeEnvironmentConfig {
@@ -63,4 +64,5 @@ export interface RuntimeEnvironmentConfig {
   googleClientId?: string;
   endpointApi?: string;
   apiBaseUrl?: string;
+  withinSubjectExperimentSupportToggle?: boolean,
 }

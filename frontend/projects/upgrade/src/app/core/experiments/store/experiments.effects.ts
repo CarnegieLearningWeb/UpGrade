@@ -198,10 +198,13 @@ export class ExperimentEffects {
       filter((experimentId) => !!experimentId),
       switchMap((experimentId) =>
         this.experimentDataService.deleteExperiment(experimentId).pipe(
-          switchMap(() => [
-            experimentAction.actionDeleteExperimentSuccess({ experimentId }),
-            experimentAction.actionFetchAllDecisionPoints(),
-          ]),
+          switchMap(() => {
+            this.notificationService.showSuccess(this.translate.instant('global.delete-experiments.message.text'));
+            return [
+              experimentAction.actionDeleteExperimentSuccess({ experimentId }),
+              experimentAction.actionFetchAllDecisionPoints(),
+            ];
+          }),
           catchError(() => [experimentAction.actionDeleteExperimentFailure()])
         )
       )
@@ -460,7 +463,7 @@ export class ExperimentEffects {
         this.experimentDataService.importExperiment(experiments).pipe(
           switchMap((data: Experiment[]) => {
             const experimentIds = data.map((exp) => exp.id);
-            this.notificationService.showSuccess(this.translate.instant('global.import-segments.message.text'));
+            this.notificationService.showSuccess(this.translate.instant('global.import-experiments.message.text'));
             return [
               experimentAction.actionImportExperimentSuccess(),
               experimentAction.actionGetExperimentsSuccess({ experiments: data, totalExperiments: data.length }),

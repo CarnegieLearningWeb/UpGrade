@@ -25,7 +25,7 @@ import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/s
 import { ExportModalComponent } from '../../components/modal/export-experiment/export-experiment.component';
 import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-time/enrollment-over-time.component';
-import { EXPERIMENT_TYPE, IMetricMetaData, PAYLOAD_TYPE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, IMetricMetaData, OPERATION_TYPES, PAYLOAD_TYPE } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
@@ -76,6 +76,19 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   comparisonFns = [
     { value: '=', viewValue: 'equal' },
     { value: '<>', viewValue: 'not equal' },
+  ];
+
+  queryOperations = [
+    { value: OPERATION_TYPES.SUM, viewValue: 'Sum' },
+    { value: OPERATION_TYPES.MIN, viewValue: 'Min' },
+    { value: OPERATION_TYPES.MAX, viewValue: 'Max' },
+    { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
+    { value: OPERATION_TYPES.AVERAGE, viewValue: 'Mean' },
+    { value: OPERATION_TYPES.MODE, viewValue: 'Mode' },
+    { value: OPERATION_TYPES.MEDIAN, viewValue: 'Median' },
+    { value: OPERATION_TYPES.STDEV, viewValue: 'Standard Deviation' },
+    { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
+    { value: OPERATION_TYPES.PERCENTAGE, viewValue: 'Percentage' },
   ];
 
   includeParticipants: Participants[] = [];
@@ -249,7 +262,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         }
         // separating keys from metric
         const rootKey: string[] = key.split(METRICS_JOIN_TEXT);
-        const statisticOperation: string[] = [query.query.operationType];
+        const statisticOperation: string[] = [];
         if (rootKey.length > 1) {
           statisticOperation.push(query.repeatedMeasure);
         }
@@ -263,6 +276,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
           statisticOperation.push(compareFn);
           statisticOperation.push(query.query.compareValue);
         }
+        const operationObject = this.queryOperations.find(op => op.value === query.query.operationType);
+        statisticOperation.push(operationObject.viewValue);
         this.displayMetrics.push({
           metric_Key: rootKey,
           metric_Operation: statisticOperation,
