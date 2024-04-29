@@ -214,16 +214,15 @@ export class ExperimentAssignmentService {
 
     // experiment level inclusion and exclusion
     const [, exclusionReason] = await this.experimentLevelExclusionInclusion(globalFilteredExperiments, userDoc);
-    let monitoredDocument: MonitoredDecisionPoint;
+    let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
+      where: {
+        site: site,
+        target: target,
+        user: userId,
+      },
+      relations: ['user'],
+    });
     if (experimentId && experiments.length) {
-      monitoredDocument = await this.monitoredDecisionPointRepository.findOne({
-        where: {
-          site: site,
-          target: target,
-          user: userId,
-        },
-        relations: ['user'],
-      });
       const selectedExperimentDP = dpExperiments.find((dp) => dp.experiment.id === experimentId);
       const experiment = experiments[0];
       const { conditions } = experiment;
