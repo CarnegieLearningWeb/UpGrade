@@ -85,7 +85,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   ) {}
 
   optionsSub() {
-    console.log('this.currentContext:', this.currentContext, this.experimentInfo?.context);
     this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics) => {
       this.allMetrics = metrics;
       // Hide global metrics options if Within-subjects is selected
