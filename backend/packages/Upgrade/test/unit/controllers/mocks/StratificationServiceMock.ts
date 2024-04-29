@@ -3,7 +3,7 @@ import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { StratificationInputValidator } from 'src/api/controllers/validators/StratificationValidator';
 
 @Service()
-export default class StratificationServieMock {
+export default class StratificationServiceMock {
   public getAllStratification(logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
   }

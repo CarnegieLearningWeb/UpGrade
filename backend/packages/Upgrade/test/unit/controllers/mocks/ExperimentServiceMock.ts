@@ -4,7 +4,7 @@ import { Service } from 'typedi';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 @Service()
-export default class ExperimentServieMock {
+export default class ExperimentServiceMock {
   public find(): Promise<[]> {
     return Promise.resolve([]);
   }
