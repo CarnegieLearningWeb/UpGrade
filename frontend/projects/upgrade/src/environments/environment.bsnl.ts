@@ -10,6 +10,7 @@ export const environment = {
   pollingEnabled: false,
   pollingInterval: 10 * 1000,
   pollingLimit: 600,
+  withinSubjectExperimentSupportToggle: false,
   api: {
     getAllExperiments: '/experiments/paginated',
     createNewExperiments: '/experiments',
