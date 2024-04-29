@@ -23,7 +23,7 @@ export function authorizationChecker(): (action: Action, roles: any[]) => Promis
     const token = authService.parseBasicAuthFromRequest(action.request);
     if (token === undefined) {
       log.warn({ message: 'No token provided' });
-      return env.auth.authCheck ? false : true;
+      return false;
     }
     try {
       const userDoc = await authService.validateUser(token, action.request);
@@ -31,7 +31,7 @@ export function authorizationChecker(): (action: Action, roles: any[]) => Promis
       action.request.user = userDoc;
       return true;
     } catch (error) {
-      return env.auth.authCheck ? false : true;
+      return false;
     }
   };
 }

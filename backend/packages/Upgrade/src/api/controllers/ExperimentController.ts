@@ -17,13 +17,12 @@ import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { SERVER_ERROR } from 'upgrade_types';
-import { validate, isUUID } from 'class-validator';
+import { isUUID } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentPaginatedParamsValidator } from './validators/ExperimentPaginatedParamsValidator';
 import { User } from '../models/User';
 import { DecisionPoint } from '../models/DecisionPoint';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
-import { env } from '../../env';
 import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
@@ -1068,18 +1067,6 @@ export class ExperimentController {
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<any> {
-    if (env.auth.authCheck) {
-      if (!currentUser) {
-        return Promise.reject(
-          new Error(JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : currentUser should not be null' }))
-        );
-      }
-
-      await validate(currentUser).catch((error) => {
-        return Promise.reject(new Error(error));
-      });
-    }
-
     return this.experimentService.updateState(
       experiment.experimentId,
       experiment.state,
