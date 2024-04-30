@@ -445,10 +445,19 @@ describe('Experiment Assignment Service Test', () => {
     const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
     const groupEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
     const groupExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
+    const monitoredDocument = {
+      site: site,
+      target: target,
+      condition: condition,
+      user: {
+        id: userId,
+      },
+    };
     const monitoredDecisionPointRepositoryMock = {
       saveRawJson: sandbox.stub().callsFake((args) => {
         return args;
       }),
+      findOne: sandbox.stub().resolves(monitoredDocument),
     };
 
     testedModule.decisionPointRepository = decisionPointRepositoryMock;
@@ -490,10 +499,19 @@ describe('Experiment Assignment Service Test', () => {
     const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
     const groupEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
     const groupExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
+    const monitoredDocument = {
+      site: site,
+      target: target,
+      condition: condition,
+      user: {
+        id: userId,
+      },
+    };
     const monitoredDecisionPointRepositoryMock = {
       saveRawJson: sandbox.stub().callsFake((args) => {
         return args;
       }),
+      findOne: sandbox.stub().resolves(monitoredDocument),
     };
 
     testedModule.decisionPointRepository = decisionPointRepositoryMock;
