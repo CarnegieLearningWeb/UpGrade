@@ -46,6 +46,14 @@ export const groupAssignmentWithGroupConsistencyExperiment = {
   state: EXPERIMENT_STATE.INACTIVE,
 };
 
+export const groupAssignmentWithGroupConsistencyExperiment2 = {
+  ...getSecondExperiment(),
+  consistencyRule: CONSISTENCY_RULE.GROUP,
+  assignmentUnit: ASSIGNMENT_UNIT.GROUP,
+  postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+  state: EXPERIMENT_STATE.INACTIVE,
+};
+
 export const groupAssignmentWithIndividualConsistencyExperiment = {
   ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
@@ -135,6 +143,206 @@ export const withinSubjectExperiment = {
   consistencyRule: null,
 };
 
+// exclusion code experiments:
+export const individualLevelExclusionExperiment = {
+  ...individualAssignmentExperiment,
+  partitions : [
+    {
+      site: 'CurriculumSequence',
+      target: 'W1',
+      description: 'Decision Point on Workspace 1',
+      twoCharacterId: 'W1',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      target: 'W2',
+      description: 'Decision Point on Workspace 2',
+      twoCharacterId: 'W2',
+      excludeIfReached: false,
+    }
+  ]
+};
+
+export const groupLevelExclusionExperiment = {
+  ...groupAssignmentWithGroupConsistencyExperiment,
+  partitions : [
+    {
+      site: 'CurriculumSequence',
+      target: 'W1',
+      description: 'Decision Point on Workspace 1',
+      twoCharacterId: 'W1',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      target: 'W2',
+      description: 'Decision Point on Workspace 2',
+      twoCharacterId: 'W2',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      description: 'No Decision Point',
+      twoCharacterId: 'NP',
+      excludeIfReached: true,
+    },
+  ],
+  experimentSegmentInclusion : {
+    "segment": {
+        "id": "a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11",
+        "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment",
+        "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment",
+        "context": "home",
+        "type": "private",
+        "individualForSegment": [],
+        "groupForSegment": [
+            {
+                "groupId": "All",
+                "type": "All"
+            }
+        ],
+        "subSegments": []
+    }
+  },
+  experimentSegmentExclusion : {
+    "segment": {
+        "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",
+        "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
+        "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
+        "context": "home",
+        "type": "private",
+        "individualForSegment": [],
+        "groupForSegment": [
+            {
+                "groupId": "2",
+                "type": "teacher"
+            }
+        ],
+        "subSegments": []
+    }
+  }
+};
+
+export const ExperimentLevelExclusionExperiment = {
+  ...individualAssignmentExperiment,
+  experimentSegmentExclusion : {
+    "segment": {
+        "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",
+        "name": "be3ae74f-370a-4015-93f3-7761d16f8b17 Exclusion Segment",
+        "description": "be3ae74f-370a-4015-93f3-7761d16f8b17 Exclusion Segment",
+        "context": "home",
+        "type": "private",
+        "individualForSegment": [
+            {
+                "userId": "student1"
+            }
+        ],
+        "groupForSegment": [],
+        "subSegments": []
+    }
+  }
+};
+
+export const ExperimentLevelExclusionExperiment2 = {
+  ...groupAssignmentWithGroupConsistencyExperiment2,
+  experimentSegmentInclusion : {
+    "segment": {
+        "id": "a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11",
+        "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment",
+        "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment",
+        "context": "home",
+        "type": "private",
+        "individualForSegment": [],
+        "groupForSegment": [
+            {
+                "groupId": "All",
+                "type": "All"
+            }
+        ],
+        "subSegments": []
+    }
+  },
+  experimentSegmentExclusion : {
+    "segment": {
+        "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",
+        "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
+        "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
+        "context": "home",
+        "type": "private",
+        "individualForSegment": [],
+        "groupForSegment": [
+            {
+                "groupId": "2",
+                "type": "teacher"
+            }
+        ],
+        "subSegments": []
+    }
+  }
+};
+
+export const withinSubjectExclusionExperiment = {
+  ...withinSubjectExperiment,
+  partitions : [
+    {
+      site: 'CurriculumSequence',
+      target: 'W1',
+      description: 'Decision Point on Workspace 1',
+      twoCharacterId: 'W1',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      target: 'W2',
+      description: 'Decision Point on Workspace 2',
+      twoCharacterId: 'W2',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      description: 'No Decision Point',
+      twoCharacterId: 'NP',
+      excludeIfReached: true,
+    },
+  ],
+  experimentSegmentInclusion : {
+    "segment": {
+        "id": "a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11",
+        "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment",
+        "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment",
+        "context": "home",
+        "type": "private",
+        "individualForSegment": [],
+        "groupForSegment": [
+            {
+                "groupId": "All",
+                "type": "All"
+            }
+        ],
+        "subSegments": []
+    }
+  },
+  experimentSegmentExclusion : {
+    "segment": {
+        "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",
+        "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
+        "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
+        "context": "home",
+        "type": "private",
+        "individualForSegment": [],
+        "groupForSegment": [
+            {
+                "groupId": "2",
+                "type": "teacher"
+            }
+        ],
+        "subSegments": []
+    }
+  }
+};
+
+// enrollment code experiments:
 export const individualLevelEnrollmentCodeExperiment = {
   ...individualAssignmentExperiment,
   partitions : [

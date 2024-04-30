@@ -7,8 +7,7 @@ import { groupAssignmentWithGroupConsistencyExperiment } from '../../mockData/ex
 import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import {
   checkMarkExperimentPointForUser,
-  checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsNull,
+  checkExperimentAssignedIsNotDefault
 } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
