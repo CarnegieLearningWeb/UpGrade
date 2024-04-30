@@ -281,6 +281,32 @@ export const withinSubjectExperiment = {
   consistencyRule: null,
 };
 
+export const individualLevelEnrollmentCodeExperiment = {
+  ...individualAssignmentExperiment,
+  partitions : [
+    {
+      site: 'CurriculumSequence',
+      target: 'W1',
+      description: 'Decision Point on Workspace 1',
+      twoCharacterId: 'W1',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      target: 'W2',
+      description: 'Decision Point on Workspace 2',
+      twoCharacterId: 'W2',
+      excludeIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      description: 'No Decision Point',
+      twoCharacterId: 'NP',
+      excludeIfReached: true,
+    },
+  ]
+};
+
 export const withinSubjectExclusionExperiment = {
   ...withinSubjectExperiment,
   partitions : [

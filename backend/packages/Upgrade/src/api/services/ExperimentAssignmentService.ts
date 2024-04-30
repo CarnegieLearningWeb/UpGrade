@@ -910,8 +910,8 @@ export class ExperimentAssignmentService {
           undefined,
           2
         )}`,
-        name: 'Experiment user not defined',
-        type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+        name: 'Experiment user group not defined',
+        type: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
       } as any,
       logger
     );

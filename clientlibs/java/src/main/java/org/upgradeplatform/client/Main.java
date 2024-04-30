@@ -81,8 +81,10 @@ public class Main {
 
                                                     System.out.println("code");
                                                     System.out.println(code);
-                                                    MarkExperimentRequestData markData = new MarkExperimentRequestData(site, target);
-                                                    experimentClient.markDecisionPoint(MarkedDecisionPointStatus.CONDITION_APPLIED, markData, "", new Date().toString(), new ResponseCallback<MarkDecisionPoint>(){
+                                                    MarkExperimentRequestData data = new MarkExperimentRequestData(site, target, null);
+                                                    System.out.println(data.getAssignedCondition());
+
+                                                    experimentClient.markDecisionPoint(MarkedDecisionPointStatus.CONDITION_APPLIED, data, new ResponseCallback<MarkDecisionPoint>(){
                                                         @Override
                                                         public void onSuccess(@NonNull MarkDecisionPoint markResult){
                                                             result.complete("marked " + code + ": " + markResult.toString());

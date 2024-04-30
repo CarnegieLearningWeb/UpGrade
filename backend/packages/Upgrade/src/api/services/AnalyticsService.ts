@@ -291,7 +291,7 @@ export class AnalyticsService {
                   break;
                 }
               }
-              logsUser[userId][queryId] = metricKey[0] + ": " + logsUser[userId][queryId]
+              logsUser[userId][queryId] = metricKey[0] + ': ' + logsUser[userId][queryId];
             }
           }
         }
@@ -299,34 +299,33 @@ export class AnalyticsService {
         const csvRows = csvExportData.map((row) => {
           const queryObject = logsUser[row.userId];
           const queryDataToAdd = {};
-          let postRule = "";
-          let revertToCondition = "";
+          let postRule = '';
+          let revertToCondition = '';
 
           for (const queryId in queryObject) {
             if (queryObject[queryId]) {
               queryDataToAdd[queryNameIdMapping[queryId]] = queryObject[queryId];
             }
           }
-          if (row.postRule === "assign") {
+          if (row.postRule === 'assign') {
             if (row.revertTo !== null) {
               revertToCondition = row.revertTo;
             } else {
-              revertToCondition = "Default";
+              revertToCondition = 'Default';
             }
-            postRule = "Assign: " + revertToCondition;
+            postRule = 'Assign: ' + revertToCondition;
           } else {
-            postRule = "Continue";
-
+            postRule = 'Continue';
           }
 
-          let excludeIfReached = "FALSE";
+          let excludeIfReached = 'FALSE';
           if (row.excludeIfReached) {
-            excludeIfReached = "TRUE";
+            excludeIfReached = 'TRUE';
           }
 
-          let stratification = "NA";
+          let stratification = 'NA';
           if (row.stratification && row.stratificationValue) {
-            stratification = row.stratification + ": " + row.stratificationValue;
+            stratification = row.stratification + ': ' + row.stratificationValue;
           }
           return {
             ExperimentId: row.experimentId,
@@ -347,7 +346,9 @@ export class AnalyticsService {
             Payload: row.payload ? row.payload : row.conditionName,
             PostRule: postRule,
             EnrollmentStartDate: new Date(row.enrollmentStartDate).toISOString(),
-            EnrollmentCompleteDate: row.enrollmentCompleteDate? new Date(row.enrollmentCompleteDate).toISOString(): "",
+            EnrollmentCompleteDate: row.enrollmentCompleteDate
+              ? new Date(row.enrollmentCompleteDate).toISOString()
+              : '',
             MarkExperimentPointTime: new Date(row.markExperimentPointTime).toISOString(),
             EnrollmentCode: row.enrollmentCode,
             ExclusionCode: row.exclusionCode,
@@ -430,7 +431,7 @@ export class AnalyticsService {
       <br>
       Here is the exported experiment data:
       <br>
-      <a href="${signedURLMonitored[0]}">Monitored Experiment Data</a>`;
+      <a href="${signedURLMonitored}">Monitored Experiment Data</a>`;
 
       const emailSubject = `Exported Data for the experiment: ${experiment.name}`;
       // send email to the user
