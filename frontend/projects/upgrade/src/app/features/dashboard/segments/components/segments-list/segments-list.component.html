@@ -8,7 +8,7 @@
         <mat-select
           class="ft-14-400"
           [(ngModel)]="selectedSegmentFilterOption"
-          (selectionChange)="applyFilter(searchValue)"
+          (selectionChange)="applyFilter(searchValue); setSearchKey(selectedSegmentFilterOption)"
         >
           <mat-option class="ft-14-400" *ngFor="let filterOption of segmentFilterOptions" [value]="filterOption">
             {{ filterOption | titlecase }}
@@ -66,7 +66,13 @@
 
   <div class="segments-list-table-container" #tableContainer>
     <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingSegments$ | async"></mat-progress-bar>
-    <table class="segments-list" mat-table [dataSource]="allSegments" matSort>
+    <table
+      class="segments-list"
+      mat-table [dataSource]="allSegments"
+      matSort (matSortChange)="changeSorting($event)"
+      [matSortActive]="segmentSortKey$ | async"
+      [matSortDirection]="(segmentSortAs$ | async | lowercase) ?? 'asc'"
+    >
       <ng-container matColumnDef="name">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
           <span [matTooltip]="'segments.global-name.text' | translate" matTooltipPosition="above">
@@ -134,7 +140,7 @@
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
           <mat-chip-listbox>
-            <mat-chip *ngIf="segment.context != 'ALL'">
+            <mat-chip *ngIf="segment.context != 'ALL'" (click)="filterSegmentsByChips(segment.context, SegmentSearchKey.CONTEXT)">
               <span class="ft-12-600 chip-label">
                 {{ segment.context }}
               </span>

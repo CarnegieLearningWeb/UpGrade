@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsDefined, IsNumber, IsOptional, ValidateNested, IsEnum, IsString } from 'class-validator';
-import { EXPERIMENT_SORT_AS } from 'upgrade_types';
+import { SORT_AS_DIRECTION } from 'upgrade_types';
 
 // TODO: Move to upgrade types
 export interface IFeatureFlagSearchParams {
@@ -9,7 +9,7 @@ export interface IFeatureFlagSearchParams {
 }
 export interface IFeatureFlagSortParams {
   key: FLAG_SORT_KEY;
-  sortAs: EXPERIMENT_SORT_AS;
+  sortAs: SORT_AS_DIRECTION;
 }
 
 export enum FLAG_SORT_KEY {
@@ -34,8 +34,8 @@ class IFeatureFlagSortParamsValidator {
   key: FLAG_SORT_KEY;
 
   @IsNotEmpty()
-  @IsEnum(EXPERIMENT_SORT_AS)
-  sortAs: EXPERIMENT_SORT_AS;
+  @IsEnum(SORT_AS_DIRECTION)
+  sortAs: SORT_AS_DIRECTION;
 }
 
 class IFeatureFlagSearchParamsValidator {
