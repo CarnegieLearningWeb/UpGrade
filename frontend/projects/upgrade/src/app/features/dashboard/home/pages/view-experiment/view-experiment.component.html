@@ -273,7 +273,7 @@
                 >
                   <!-- if we have custom ending criteria -->
                   <ng-container *ngIf="experiment.enrollmentCompleteCondition as endCondition">
-                    <span class="ft-18-700 end-criteria end-criteria--text"> ( </span>
+                    <span class="ft-18-700 end-criteria end-criteria--text"></span>
                     <span
                       *ngIf="
                         permissions?.experiments.update && !isExperimentStateCancelled && experiment.state !== ExperimentState.ARCHIVED;
@@ -325,7 +325,7 @@
                       </span>
                     </ng-template>
 
-                    <span class="ft-18-700 end-criteria end-criteria--text"> ) </span>
+                    <span class="ft-18-700 end-criteria end-criteria--text"></span>
                     <mat-icon class="edit-icon" *ngIf="permissions?.experiments.update && !isExperimentStateCancelled && experiment.state !== ExperimentState.ARCHIVED">
                       create
                     </mat-icon>
