@@ -137,6 +137,9 @@
                     <span class="ft-18-700 section-data-value">{{ experiment.state | experimentState }}</span>
                   </ng-template>
                 </div>
+                <span class="experiment-schedule ft-10-400" *ngIf="experiment.state === ExperimentState.SCHEDULED && experiment.startOn !== null">
+                  {{ '(' + (experiment.startOn | date: 'MMM d, y h:mm a') + ')' }}
+                </span>
               </div>
 
               <!-- Experiment post experiment rule -->
