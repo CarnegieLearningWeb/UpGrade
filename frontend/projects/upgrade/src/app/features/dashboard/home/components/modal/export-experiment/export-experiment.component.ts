@@ -49,11 +49,7 @@ export class ExportModalComponent implements OnInit {
 
     this.formSubscription = this.exportForm.valueChanges.subscribe((value) => {
       const { exportMethod } = value;
-      if (exportMethod) {
-        this.isExportMethodSelected = true;
-      } else {
-        this.isExportMethodSelected = false;
-      }
+      this.isExportMethodSelected = !!exportMethod;
     });
   }
 
