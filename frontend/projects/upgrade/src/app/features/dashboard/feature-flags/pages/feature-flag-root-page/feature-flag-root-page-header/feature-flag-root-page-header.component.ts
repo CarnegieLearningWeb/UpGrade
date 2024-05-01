@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { CommonRootPageHeaderContainerComponent } from '../../../../../../../shared-standalone-component-lib/components/common-root-page-header-container/common-root-page-header-container.component';
+import { CommonRootPageHeaderContainerComponent } from '../../../../../../shared-standalone-component-lib/components/';
 
 @Component({
   selector: 'app-feature-flag-root-page-header',

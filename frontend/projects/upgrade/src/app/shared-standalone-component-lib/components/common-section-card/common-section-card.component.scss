@@ -1,4 +1,15 @@
-::ng-deep .section-card {
-  // display: flex;
-  // height: auto;
+:host ::ng-deep .section-card {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+
+  .header-container {
+    padding: 30px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .content-container {
+    height: 200px;
+    padding: 30px;
+  }
 }

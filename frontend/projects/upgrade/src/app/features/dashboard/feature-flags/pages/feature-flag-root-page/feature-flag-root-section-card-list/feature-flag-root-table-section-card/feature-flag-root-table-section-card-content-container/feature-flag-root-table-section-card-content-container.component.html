@@ -1,3 +1,5 @@
+<!-- this was developed for demo purposes, a section card content container can be a shared component -->
+
 <div class="section-card-content-container">
   <ng-container *ngIf="(isLoading | async); then loading else table">
   </ng-container>
@@ -13,7 +15,7 @@
       <!-- Flag Column -->
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef> Flag </mat-header-cell>
-        <mat-cell *matCellDef="let element"> {{element }} </mat-cell>
+        <mat-cell *matCellDef="let element"> {{ element }} </mat-cell>
       </ng-container>
 
       <!-- Include additional columns as needed -->

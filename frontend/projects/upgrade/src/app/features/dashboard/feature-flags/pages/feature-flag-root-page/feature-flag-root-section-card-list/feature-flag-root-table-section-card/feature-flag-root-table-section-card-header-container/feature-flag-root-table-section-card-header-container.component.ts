@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { CommonSectionCardHeaderComponent } from '../../../../../../../../shared-standalone-component-lib/components';
 
 @Component({
   selector: 'app-feature-flag-root-table-section-card-header-container',
@@ -7,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
   templateUrl: './feature-flag-root-table-section-card-header-container.component.html',
   styleUrl: './feature-flag-root-table-section-card-header-container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule],
+  imports: [MatButtonModule, CommonSectionCardHeaderComponent],
 })
 export class FeatureFlagRootTableSectionCardHeaderContainerComponent {
   openAddFlagModal() {

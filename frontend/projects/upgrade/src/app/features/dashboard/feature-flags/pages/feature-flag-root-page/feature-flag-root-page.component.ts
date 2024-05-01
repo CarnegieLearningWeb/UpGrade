@@ -3,8 +3,8 @@ import {
   CommonRootPageComponent,
   CommonSectionCardListComponent,
 } from '../../../../../shared-standalone-component-lib/components';
-import { FeatureFlagRootPageHeaderComponent } from './projected-components/feature-flag-root-page-header/feature-flag-root-page-header.component';
-import { FeatureFlagRootSectionCardListComponent } from './projected-components/feature-flag-root-section-card-list/feature-flag-root-section-card-list.component';
+import { FeatureFlagRootPageHeaderComponent } from './feature-flag-root-page-header/feature-flag-root-page-header.component';
+import { FeatureFlagRootSectionCardListComponent } from './feature-flag-root-section-card-list/feature-flag-root-section-card-list.component';
 
 @Component({
   selector: 'app-feature-flag-root-page',
