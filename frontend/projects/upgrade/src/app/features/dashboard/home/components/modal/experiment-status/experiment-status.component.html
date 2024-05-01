@@ -13,9 +13,9 @@
         disabled="true"
         [(value)]="experimentInfo.state"
       >
-        <mat-option class="ft-14-400" *ngFor="let status of experimentStatus" [value]="status.value">
-          {{ status.value | experimentState }}
-        </mat-option>
+      <mat-option class="ft-14-400" *ngFor="let status of experimentStatus" [value]="experimentInfo.state">
+        {{ experimentInfo.state | experimentState }}
+      </mat-option>
       </mat-select>
     </mat-form-field>
 
