@@ -4,16 +4,12 @@ import { MatButton } from '@angular/material/button';
 import { TranslateModule } from '@ngx-translate/core';
 
 /**
- * A component nested in this component can be displayed in the **header** or **content** slot.
- * The **header** slot should contain a component that wraps a **app-common-root-page-header**.
- * The **content** slot should contain a component that wraps a **app-common-root-section-card-list**.
- * Simply nest the component and add the slot name as an attribute.
+ * Takes a title and subtitle and displays them in a header in a common root page.
  *
  * Example usage:
  *
  * ```
- * < header>Hi I'm in the header slot</div>
- * <div content>Hi I'm in the content slot</div>
+ * <app-common-root-page-header-container [title]="title" [subtitle]="subtitle"></app-common-root-page-header-container>
  * ```
  */
 @Component({
