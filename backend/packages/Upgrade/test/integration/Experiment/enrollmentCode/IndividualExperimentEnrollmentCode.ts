@@ -7,7 +7,7 @@ import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNull,
-  checkExperimentAssignedIsNotDefault,
+  checkExperimentAssignedIsNotDefault
 } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { ENROLLMENT_CODE, EXCLUSION_CODE, EXPERIMENT_STATE } from 'upgrade_types';

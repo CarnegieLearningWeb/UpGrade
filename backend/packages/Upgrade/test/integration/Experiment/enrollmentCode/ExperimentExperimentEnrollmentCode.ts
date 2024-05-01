@@ -93,7 +93,7 @@ export default async function testCase(): Promise<void> {
   let individualAssignments = await checkService.getAllIndividualAssignment();
   expect(individualAssignments.length).toEqual(0);
 
-  let individualExclusions = await checkService.getAllIndividualExclusion();
+  const individualExclusions = await checkService.getAllIndividualExclusion();
   expect(individualExclusions.length).toEqual(0);
 
   // get all experiment condition for user 1

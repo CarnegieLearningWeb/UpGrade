@@ -2,14 +2,11 @@ import { Container } from 'typedi';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
-import { getAllExperimentCondition, markExperimentPoint } from '../utils';
+import { checkExperimentAssignedIsNull, getAllExperimentCondition, markExperimentPoint, updateExcludeIfReachedFlag } from '../utils';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 import { individualExperimentStats } from '../mockData/experiment/index';
-import {
-  checkMarkExperimentPointForUser,
-  checkExperimentAssignedIsNotDefault,
-} from '../utils/index';
+import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import { previewUsers } from '../mockData/previewUsers/index';
@@ -28,28 +25,8 @@ export default async function testCase(): Promise<void> {
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
   // experiment object
   const experimentObject = individualExperimentStats;
-  experimentObject.partitions = [
-    {
-      site: 'CurriculumSequence',
-      target: 'W1',
-      description: 'Decision Point on Workspace 1',
-      twoCharacterId: 'W1',
-      excludeIfReached: true,
-    },
-    {
-      site: 'CurriculumSequence',
-      target: 'W2',
-      description: 'Decision Point on Workspace 2',
-      twoCharacterId: 'W2',
-      excludeIfReached: true,
-    },
-    {
-      site: 'CurriculumSequence',
-      description: 'No Decision Point',
-      twoCharacterId: 'NP',
-      excludeIfReached: true,
-    },
-  ];
+  experimentObject.partitions = updateExcludeIfReachedFlag(experimentObject.partitions);
+
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
   const experiments = await experimentService.find(new UpgradeLogger());
@@ -78,6 +55,7 @@ export default async function testCase(): Promise<void> {
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
+  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName1, experimentPoint1);
 
   // mark experiment point
   let markedExperimentPoint = await markExperimentPoint(
@@ -93,6 +71,7 @@ export default async function testCase(): Promise<void> {
   // get all experiment condition for user 1
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
+  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName1, experimentPoint1);
 
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(
@@ -136,6 +115,7 @@ export default async function testCase(): Promise<void> {
   );
 
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
+  
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(
     experimentUsers[1].id,
@@ -157,6 +137,29 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
+  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName1, experimentPoint1);
+  // mark experiment point
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[0].id,
+    experimentName1,
+    experimentPoint1,
+    condition1,
+    new UpgradeLogger()
+  );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
+
+  stats = await analyticsService.getEnrollments([experimentId]);
+  expect(stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        users: 1,
+        groups: 0,
+        id: experimentId,
+      }),
+    ])
+  );
+  
   // when preview user is assigned an experiment condition
   experimentConditionAssignments = await getAllExperimentCondition(previewUser.id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(experimentObject.partitions.length);

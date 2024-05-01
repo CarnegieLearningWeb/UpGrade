@@ -3,11 +3,8 @@ import { Container } from 'typedi';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { groupExperimentStats } from '../mockData/experiment/index';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
-import { getAllExperimentCondition, markExperimentPoint } from '../utils';
-import {
-  checkMarkExperimentPointForUser,
-  checkExperimentAssignedIsNotDefault,
-} from '../utils/index';
+import { checkExperimentAssignedIsNull, getAllExperimentCondition, markExperimentPoint } from '../utils';
+import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
@@ -90,8 +87,9 @@ export default async function testCase(): Promise<void> {
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // user 2 logs in experiment
-  // get all experiment condition for user 2
+  // get all experiment condition for user 2, excluded due to same group as user 1 who is excluded
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
+  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName1, experimentPoint1);
 
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(
@@ -108,8 +106,8 @@ export default async function testCase(): Promise<void> {
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        users: 1,
-        groups: 1,
+        users: 0,
+        groups: 0,
         id: experimentId,
       }),
     ])
@@ -135,8 +133,8 @@ export default async function testCase(): Promise<void> {
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        users: 2,
-        groups: 2,
+        users: 1,
+        groups: 1,
         id: experimentId,
       }),
     ])
@@ -162,8 +160,8 @@ export default async function testCase(): Promise<void> {
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        users: 3,
-        groups: 2,
+        users: 2,
+        groups: 1,
         id: experimentId,
       }),
     ])

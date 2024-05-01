@@ -2,14 +2,14 @@ import { Container } from 'typedi';
 import { groupAssignmentWithGroupConsistencyExperiment } from '../mockData/experiment';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { EXPERIMENT_STATE } from 'upgrade_types';
-import { getAllExperimentCondition, markExperimentPoint, checkDeletedExperiment } from '../utils';
+import { getAllExperimentCondition, markExperimentPoint, checkDeletedExperiment, updateExcludeIfReachedFlag } from '../utils';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNull,
-  checkExperimentAssignedIsNotDefault,
+  checkExperimentAssignedIsNotDefault
 } from '../utils/index';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
@@ -22,28 +22,8 @@ export default async function testCase(): Promise<void> {
 
   // experiment object
   const experimentObject = groupAssignmentWithGroupConsistencyExperiment;
-  experimentObject.partitions = [
-    {
-      site: 'CurriculumSequence',
-      target: 'W1',
-      description: 'Decision Point on Workspace 1',
-      twoCharacterId: 'W1',
-      excludeIfReached: true,
-    },
-    {
-      site: 'CurriculumSequence',
-      target: 'W2',
-      description: 'Decision Point on Workspace 2',
-      twoCharacterId: 'W2',
-      excludeIfReached: true,
-    },
-    {
-      site: 'CurriculumSequence',
-      description: 'No Decision Point',
-      twoCharacterId: 'NP',
-      excludeIfReached: true,
-    },
-  ];
+  experimentObject.partitions = updateExcludeIfReachedFlag(experimentObject.partitions);
+
   const experimentName = experimentObject.partitions[0].target;
   const experimentPoint = experimentObject.partitions[0].site;
   const condition = experimentObject.conditions[0].conditionCode;
@@ -95,8 +75,9 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  // get all experiment condition for user 2
+  // get all experiment condition for user 2, excluded due to same group as user 1 who is excluded
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
+  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 2
   markedExperimentPoint = await markExperimentPoint(

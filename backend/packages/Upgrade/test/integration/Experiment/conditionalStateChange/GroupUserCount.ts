@@ -4,11 +4,8 @@ import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { groupAssignmentWithGroupConsistencyExperiment } from '../../mockData/experiment/index';
-import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
-import {
-  checkMarkExperimentPointForUser,
-  checkExperimentAssignedIsNotDefault
-} from '../../utils/index';
+import { getAllExperimentCondition, markExperimentPoint, updateExcludeIfReachedFlag } from '../../utils';
+import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
@@ -27,28 +24,8 @@ export default async function GroupUserCount(): Promise<void> {
     groupCount: 2,
     userCount: 2,
   };
-  experimentObject.partitions = [
-    {
-      site: 'CurriculumSequence',
-      target: 'W1',
-      description: 'Decision Point on Workspace 1',
-      twoCharacterId: 'W1',
-      excludeIfReached: true,
-    },
-    {
-      site: 'CurriculumSequence',
-      target: 'W2',
-      description: 'Decision Point on Workspace 2',
-      twoCharacterId: 'W2',
-      excludeIfReached: true,
-    },
-    {
-      site: 'CurriculumSequence',
-      description: 'No Decision Point',
-      twoCharacterId: 'NP',
-      excludeIfReached: true,
-    },
-  ];
+
+  experimentObject.partitions = updateExcludeIfReachedFlag(experimentObject.partitions);
 
   // create experiment 1
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());

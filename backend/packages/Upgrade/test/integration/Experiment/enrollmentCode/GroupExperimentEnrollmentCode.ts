@@ -4,10 +4,7 @@ import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { groupLevelEnrollmentCodeExperiment } from '../../mockData/experiment/index';
 import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
-import {
-  checkMarkExperimentPointForUser,
-  checkExperimentAssignedIsNull,
-} from '../../utils/index';
+import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNull } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { ENROLLMENT_CODE, EXCLUSION_CODE, EXPERIMENT_STATE } from 'upgrade_types';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';

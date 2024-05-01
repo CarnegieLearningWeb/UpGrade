@@ -3,11 +3,11 @@ import { ExperimentService } from '../../../../src/api/services/ExperimentServic
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { individualAssignmentExperiment } from '../../mockData/experiment/index';
-import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
+import { getAllExperimentCondition, markExperimentPoint, updateExcludeIfReachedFlag } from '../../utils';
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsNull,
+  checkExperimentAssignedIsNull
 } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
@@ -25,28 +25,8 @@ export default async function IndividualUserCount(): Promise<void> {
   experimentObject.enrollmentCompleteCondition = {
     userCount: 3,
   };
-  experimentObject.partitions = [
-    {
-      site: 'CurriculumSequence',
-      target: 'W1',
-      description: 'Decision Point on Workspace 1',
-      twoCharacterId: 'W1',
-      excludeIfReached: true,
-    },
-    {
-      site: 'CurriculumSequence',
-      target: 'W2',
-      description: 'Decision Point on Workspace 2',
-      twoCharacterId: 'W2',
-      excludeIfReached: true,
-    },
-    {
-      site: 'CurriculumSequence',
-      description: 'No Decision Point',
-      twoCharacterId: 'NP',
-      excludeIfReached: true,
-    },
-  ];
+
+  experimentObject.partitions = updateExcludeIfReachedFlag(experimentObject.partitions);
 
   // create experiment 1
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
