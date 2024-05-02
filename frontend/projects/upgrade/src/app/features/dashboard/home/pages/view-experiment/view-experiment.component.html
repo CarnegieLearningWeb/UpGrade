@@ -280,7 +280,7 @@
                         else endingCriteriaCommonTempReadOnly
                       "
                       (click)="updateEndingCriteria()"
-                      [ngClass]="{ 'end-criteria-underline--blue': permissions?.experiments.update }"
+                      [ngClass]="{ 'end-criteria-underline--grey': permissions?.experiments.update }"
                     >
                       <ng-container *ngTemplateOutlet="endingCriteriaCommonTemp"></ng-container>
                     </span>
@@ -312,13 +312,13 @@
                         {{ 'home.view-experiment.ending-criteria.and.text' | translate }}
                       </span>
                       <span
-                        class="ft-18-700 end-criteria end-criteria--data end-criteria--text"
+                        class="ft-18-700 end-criteria end-criteria--text"
                         *ngIf="endCondition?.userCount as studentCount"
                       >
                         {{ studentCount + ('home.view-experiment.ending-criteria.students.text' | translate) }}
                       </span>
                       <span
-                        class="ft-18-700 end-criteria end-criteria--data end-criteria--text"
+                        class="ft-18-700 end-criteria end-criteria--text"
                         *ngIf="endCondition?.groupCount && endCondition?.userCount"
                       >
                         {{ ('home-global.enrollments-per-custom.text' | translate) + experiment.group }}

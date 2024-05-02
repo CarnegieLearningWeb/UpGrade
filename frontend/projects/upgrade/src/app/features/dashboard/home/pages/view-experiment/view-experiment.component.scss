@@ -157,13 +157,9 @@ $font-size-small: 15px;
 
             &.end-criteria-container {
               .end-criteria-underline {
-                &--blue {
-                  text-decoration: underline;
-                  text-decoration-color: var(--blue);
-                }
-
                 &--grey {
                   text-decoration: underline;
+                  text-decoration-color: $dark-grey-text-color;
                 }
 
                 &--blue,
@@ -177,10 +173,6 @@ $font-size-small: 15px;
 
                 &--text {
                   display: unset;
-                }
-
-                &--data {
-                  color: var(--blue);
                 }
               }
 
