@@ -52,6 +52,7 @@ describe('Feature Flag Controller Testing', () => {
         status: 'enabled',
         context: ['foo'],
         tags: ['bar'],
+        filterMode: 'includeAll',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -90,6 +91,7 @@ describe('Feature Flag Controller Testing', () => {
         status: 'enabled',
         context: ['foo'],
         tags: ['bar'],
+        filterMode: 'includeAll',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
