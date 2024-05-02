@@ -487,6 +487,7 @@ export class ExperimentEffects {
       switchMap(({ experimentIds }) =>
         this.experimentDataService.exportExperimentDesign(experimentIds).pipe(
           tap(() => {
+            console.log('>>>> Export successful, displaying the notification!');
             this.notificationService.showSuccess('Experiment Design JSON downloaded!');
           }),
           map((data: Experiment[]) => {
@@ -501,9 +502,13 @@ export class ExperimentEffects {
             } else {
               this.download(data[0].name + '.json', data[0], false);
             }
+            console.log('>>>> Downloading successful!');
             return experimentAction.actionExportExperimentDesignSuccess();
           }),
-          catchError(() => [experimentAction.actionExportExperimentDesignFailure()])
+          catchError((error) => {
+            console.log('>>>> Export failed with Error:', error);
+            return [experimentAction.actionExportExperimentDesignFailure()]
+          })
         )
       )
     )
