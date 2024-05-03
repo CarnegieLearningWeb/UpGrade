@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { DashboardRootComponent } from './dashboard-root/dashboard-root.component';
+import { FeatureFlagRootPageComponent } from './feature-flags/pages/feature-flag-root-page/feature-flag-root-page.component';
 
 const routes: Routes = [
   {
@@ -33,13 +34,17 @@ const routes: Routes = [
           title: 'app-header.title.logs',
         },
       },
-      // {
-      //   path: 'featureFlags',
-      //   loadChildren: () => import('./feature-flags/feature-flags.module').then(m => m.FeatureFlagsModule),
-      //   data: {
-      //     title: 'app-header.title.feature-flag'
-      //   }
-      // },
+      // feature-flags is built with standalone components instead of an ngModule, so we need to lazy load the component directly
+      {
+        path: 'featureflags',
+        loadComponent: () =>
+          import('./feature-flags/pages/feature-flag-root-page/feature-flag-root-page.component').then(
+            (m) => m.FeatureFlagRootPageComponent
+          ),
+        data: {
+          title: 'app-header.title.feature-flag',
+        },
+      },
       {
         path: 'segments',
         loadChildren: () => import('./segments/segments.module').then((m) => m.SegmentsModule),

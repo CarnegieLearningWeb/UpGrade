@@ -15,7 +15,6 @@ import { debounceTime } from 'rxjs/operators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { ImportExperimentComponent } from '../modal/import-experiment/import-experiment.component';
-import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { ExportModalComponent } from '../modal/export-experiment/export-experiment.component';
 import { FormControl } from '@angular/forms';
 
@@ -155,7 +154,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     this.experimentService.setSearchKey(searchKey);
   }
 
-  setSearchString(searchString: FLAG_SEARCH_SORT_KEY) {
+  setSearchString(searchString: EXPERIMENT_SEARCH_KEY) {
     this.experimentService.setSearchString(searchString);
   }
 
@@ -169,7 +168,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     this.experimentService.loadExperiments(true);
   }
 
-  filterExperimentByChips(tagValue: FLAG_SEARCH_SORT_KEY, type: EXPERIMENT_SEARCH_KEY) {
+  filterExperimentByChips(tagValue: EXPERIMENT_SEARCH_KEY, type: EXPERIMENT_SEARCH_KEY) {
     this.setSearchKey(type);
     this.setSearchString(tagValue);
   }
