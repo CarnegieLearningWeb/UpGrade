@@ -1,18 +1,23 @@
 import { BehaviorSubject } from 'rxjs';
-import { FeatureFlagsService } from './feature-flags.service';
-import * as FeatureFlagSelectors from './store/feature-flags.selectors';
-import * as FeatureFlagsActions from './store/feature-flags.actions';
-import { FeatureFlag, FLAG_SEARCH_SORT_KEY, SORT_AS, UpsertFeatureFlagType } from './store/feature-flags.model';
+import { FeatureFlagsService_LEGACY } from './feature-flags.service._LEGACY';
+import * as FeatureFlagSelectors from './store/feature-flags.selectors._LEGACY';
+import * as FeatureFlagsActions from './store/feature-flags.actions._LEGACY';
+import {
+  FeatureFlag_LEGACY,
+  FLAG_SEARCH_SORT_KEY_LEGACY,
+  SORT_AS_LEGACY,
+  UpsertFeatureFlagType_LEGACY,
+} from './store/feature-flags.model._LEGACY';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { isEmpty } from 'rxjs/operators';
 
 const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();
 
-describe('FeatureFlagService', () => {
+describe('FeatureFlagService_LEGACY', () => {
   let mockStore: any;
-  let service: FeatureFlagsService;
-  const mockFeatureFlagsList: FeatureFlag[] = [
+  let service: FeatureFlagsService_LEGACY;
+  const mockFeatureFlagsList: FeatureFlag_LEGACY[] = [
     {
       createdAt: '04/23/17 04:34:22 +0000',
       updatedAt: 'abc123',
@@ -66,14 +71,14 @@ describe('FeatureFlagService', () => {
 
   beforeEach(() => {
     mockStore = MockStateStore$;
-    service = new FeatureFlagsService(mockStore);
+    service = new FeatureFlagsService_LEGACY(mockStore);
   });
 
   describe('#allFeatureFlags$', () => {
     it('should return sorted list of the featureFlags', fakeAsync(() => {
       const expectedValue = [...mockFeatureFlagsList][1];
 
-      FeatureFlagSelectors.selectAllFeatureFlags.setResult([...mockFeatureFlagsList]);
+      FeatureFlagSelectors.selectAllFeatureFlags_LEGACY.setResult([...mockFeatureFlagsList]);
 
       service.allFeatureFlags$.subscribe((val) => {
         tick(0);
@@ -84,7 +89,7 @@ describe('FeatureFlagService', () => {
     it('should not emit anything if selectedFeatureFlags returns a falsey value', fakeAsync(() => {
       const expectedValue = true;
 
-      FeatureFlagSelectors.selectAllFeatureFlags.setResult(null);
+      FeatureFlagSelectors.selectAllFeatureFlags_LEGACY.setResult(null);
 
       service.allFeatureFlags$.pipe(isEmpty()).subscribe((val) => {
         tick(0);
@@ -97,7 +102,7 @@ describe('FeatureFlagService', () => {
     it('should return a map of all feaureFlag keys', fakeAsync(() => {
       const expectedValue = ['flag1', 'flag2', 'flag3', 'flag4'];
 
-      FeatureFlagSelectors.selectAllFeatureFlags.setResult([...mockFeatureFlagsList]);
+      FeatureFlagSelectors.selectAllFeatureFlags_LEGACY.setResult([...mockFeatureFlagsList]);
 
       service.allFlagsKeys$.subscribe((val) => {
         tick(0);
@@ -138,8 +143,8 @@ describe('FeatureFlagService', () => {
       const { whenCondition, expectedValue, isLoading, featureFlags } = testCase;
 
       it(`WHEN ${whenCondition}, THEN ${expectedValue}:`, fakeAsync(() => {
-        FeatureFlagSelectors.selectIsLoadingFeatureFlags.setResult(isLoading);
-        FeatureFlagSelectors.selectAllFeatureFlags.setResult(featureFlags);
+        FeatureFlagSelectors.selectIsLoadingFeatureFlags_LEGACY.setResult(isLoading);
+        FeatureFlagSelectors.selectAllFeatureFlags_LEGACY.setResult(featureFlags);
 
         service.isInitialFeatureFlagsLoading().subscribe((val) => {
           tick(0);
@@ -169,8 +174,8 @@ describe('FeatureFlagService', () => {
       const { whenCondition, expectedValue, skipFlags, totalFlags } = testCase;
 
       it(`WHEN ${whenCondition}, THEN ${expectedValue}:`, fakeAsync(() => {
-        FeatureFlagSelectors.selectSkipFlags.setResult(skipFlags);
-        FeatureFlagSelectors.selectTotalFlags.setResult(totalFlags);
+        FeatureFlagSelectors.selectSkipFlags_LEGACY.setResult(skipFlags);
+        FeatureFlagSelectors.selectTotalFlags_LEGACY.setResult(totalFlags);
 
         service.isAllFlagsFetched().subscribe((val) => {
           tick(0);
@@ -186,14 +191,16 @@ describe('FeatureFlagService', () => {
 
       service.fetchFeatureFlags(fromStarting);
 
-      expect(mockStore.dispatch).toHaveBeenCalledWith(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        FeatureFlagsActions.actionFetchFeatureFlags_LEGACY({ fromStarting })
+      );
     });
 
     it('should dispatch actionFetchFeatureFlags without the given input', () => {
       service.fetchFeatureFlags();
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
-        FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting: undefined })
+        FeatureFlagsActions.actionFetchFeatureFlags_LEGACY({ fromStarting: undefined })
       );
     });
   });
@@ -205,7 +212,10 @@ describe('FeatureFlagService', () => {
       service.createNewFeatureFlag(flag);
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
-        FeatureFlagsActions.actionUpsertFeatureFlag({ flag, actionType: UpsertFeatureFlagType.CREATE_NEW_FLAG })
+        FeatureFlagsActions.actionUpsertFeatureFlag_LEGACY({
+          flag,
+          actionType: UpsertFeatureFlagType_LEGACY.CREATE_NEW_FLAG,
+        })
       );
     });
   });
@@ -217,7 +227,9 @@ describe('FeatureFlagService', () => {
 
       service.updateFeatureFlagStatus(flagId, status);
 
-      expect(mockStore.dispatch).toHaveBeenCalledWith(FeatureFlagsActions.actionUpdateFlagStatus({ flagId, status }));
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        FeatureFlagsActions.actionUpdateFlagStatus_LEGACY({ flagId, status })
+      );
     });
   });
 
@@ -227,7 +239,7 @@ describe('FeatureFlagService', () => {
 
       service.deleteFeatureFlag(flagId);
 
-      expect(mockStore.dispatch).toHaveBeenCalledWith(FeatureFlagsActions.actionDeleteFeatureFlag({ flagId }));
+      expect(mockStore.dispatch).toHaveBeenCalledWith(FeatureFlagsActions.actionDeleteFeatureFlag_LEGACY({ flagId }));
     });
   });
 
@@ -238,7 +250,10 @@ describe('FeatureFlagService', () => {
       service.updateFeatureFlag(flag);
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
-        FeatureFlagsActions.actionUpsertFeatureFlag({ flag, actionType: UpsertFeatureFlagType.UPDATE_FLAG })
+        FeatureFlagsActions.actionUpsertFeatureFlag_LEGACY({
+          flag,
+          actionType: UpsertFeatureFlagType_LEGACY.UPDATE_FLAG,
+        })
       );
     });
   });
@@ -359,11 +374,11 @@ describe('FeatureFlagService', () => {
 
   describe('#setSearchKey', () => {
     it('should dispatch actionSetSearchKey with the given input', () => {
-      const searchKey = FLAG_SEARCH_SORT_KEY.ALL;
+      const searchKey = FLAG_SEARCH_SORT_KEY_LEGACY.ALL;
 
       service.setSearchKey(searchKey);
 
-      expect(mockStore.dispatch).toHaveBeenCalledWith(FeatureFlagsActions.actionSetSearchKey({ searchKey }));
+      expect(mockStore.dispatch).toHaveBeenCalledWith(FeatureFlagsActions.actionSetSearchKey_LEGACY({ searchKey }));
     });
   });
 
@@ -373,27 +388,29 @@ describe('FeatureFlagService', () => {
 
       service.setSearchString(searchString);
 
-      expect(mockStore.dispatch).toHaveBeenCalledWith(FeatureFlagsActions.actionSetSearchString({ searchString }));
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        FeatureFlagsActions.actionSetSearchString_LEGACY({ searchString })
+      );
     });
   });
 
   describe('#setSortKey', () => {
     it('should dispatch actionSetSortKey with the given input', () => {
-      const sortKey = FLAG_SEARCH_SORT_KEY.ALL;
+      const sortKey = FLAG_SEARCH_SORT_KEY_LEGACY.ALL;
 
       service.setSortKey(sortKey);
 
-      expect(mockStore.dispatch).toHaveBeenCalledWith(FeatureFlagsActions.actionSetSortKey({ sortKey }));
+      expect(mockStore.dispatch).toHaveBeenCalledWith(FeatureFlagsActions.actionSetSortKey_LEGACY({ sortKey }));
     });
   });
 
   describe('#setSortingType', () => {
     it('should dispatch actionSetSortingType with the given input', () => {
-      const sortingType = SORT_AS.ASCENDING;
+      const sortingType = SORT_AS_LEGACY.ASCENDING;
 
       service.setSortingType(sortingType);
 
-      expect(mockStore.dispatch).toHaveBeenCalledWith(FeatureFlagsActions.actionSetSortingType({ sortingType }));
+      expect(mockStore.dispatch).toHaveBeenCalledWith(FeatureFlagsActions.actionSetSortingType_LEGACY({ sortingType }));
     });
   });
 });
