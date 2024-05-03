@@ -2,7 +2,7 @@ import {
   EXPERIMENT_STATE,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   IMetricMetaData,
   PAYLOAD_TYPE,
   SUPPORTED_CALIPER_EVENTS,
@@ -105,7 +105,7 @@ export interface IExperimentSearchParams {
 
 export interface IExperimentSortParams {
   key: EXPERIMENT_SORT_KEY;
-  sortAs: EXPERIMENT_SORT_AS;
+  sortAs: SORT_AS_DIRECTION;
 }
 
 export interface IMetricUnit {

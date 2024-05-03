@@ -9,7 +9,7 @@ import { FeatureFlagRepository } from '../../../src/api/repositories/FeatureFlag
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
 import { FlagVariationRepository } from '../../../src/api/repositories/FlagVariationRepository';
 import { FLAG_SEARCH_SORT_KEY } from '../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
-import { EXPERIMENT_SORT_AS } from '../../../../../../types/src';
+import { SORT_AS_DIRECTION } from '../../../../../../types/src';
 import { FlagVariation } from '../../../src/api/models/FlagVariation';
 import { isUUID } from 'class-validator';
 import { v4 as uuid } from 'uuid';
@@ -186,7 +186,7 @@ describe.skip('Feature Flag Service Testing', () => {
       },
       {
         key: FLAG_SEARCH_SORT_KEY.ALL,
-        sortAs: EXPERIMENT_SORT_AS.ASCENDING,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
     expect(results).toEqual(mockFlagArr);
@@ -203,7 +203,7 @@ describe.skip('Feature Flag Service Testing', () => {
       },
       {
         key: FLAG_SEARCH_SORT_KEY.ALL,
-        sortAs: EXPERIMENT_SORT_AS.ASCENDING,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
     expect(results).toEqual(mockFlagArr);
@@ -220,7 +220,7 @@ describe.skip('Feature Flag Service Testing', () => {
       },
       {
         key: FLAG_SEARCH_SORT_KEY.ALL,
-        sortAs: EXPERIMENT_SORT_AS.ASCENDING,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
     expect(results).toEqual(mockFlagArr);
@@ -237,7 +237,7 @@ describe.skip('Feature Flag Service Testing', () => {
       },
       {
         key: FLAG_SEARCH_SORT_KEY.ALL,
-        sortAs: EXPERIMENT_SORT_AS.ASCENDING,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
     expect(results).toEqual(mockFlagArr);
@@ -254,7 +254,7 @@ describe.skip('Feature Flag Service Testing', () => {
       },
       {
         key: FLAG_SEARCH_SORT_KEY.ALL,
-        sortAs: EXPERIMENT_SORT_AS.ASCENDING,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
     expect(results).toEqual(mockFlagArr);

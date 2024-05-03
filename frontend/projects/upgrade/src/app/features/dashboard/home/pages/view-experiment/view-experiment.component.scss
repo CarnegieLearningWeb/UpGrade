@@ -151,6 +151,10 @@ $font-size-small: 15px;
               }
             }
 
+            &-schedule-date {
+              color: var(--grey-3);
+            }
+
             &.end-criteria-container {
               .end-criteria-underline {
                 &--blue {

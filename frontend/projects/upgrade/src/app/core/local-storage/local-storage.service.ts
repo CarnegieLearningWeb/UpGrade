@@ -3,9 +3,10 @@ import {
   ExperimentLocalStorageKeys,
   ExperimentState,
   EXPERIMENT_SEARCH_KEY,
-  EXPERIMENT_SORT_AS,
   EXPERIMENT_SORT_KEY,
 } from '../experiments/store/experiments.model';
+import { SegmentLocalStorageKeys, SegmentState } from '../segments/store/segments.model';
+import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
 
 const APP_PREFIX = 'UPGRADE-';
 
@@ -19,6 +20,11 @@ export class LocalStorageService {
     const experimentSearchKey = this.getItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_KEY);
     const experimentSearchString = this.getItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_STRING);
 
+    const segmentSortKey = this.getItem(SegmentLocalStorageKeys.SEGMENT_SORT_KEY);
+    const segmentSortType = this.getItem(SegmentLocalStorageKeys.SEGMENT_SORT_TYPE);
+    const segmentSearchKey = this.getItem(SegmentLocalStorageKeys.SEGMENT_SEARCH_KEY);
+    const segmentSearchString = this.getItem(SegmentLocalStorageKeys.SEGMENT_SEARCH_STRING);
+
     // 1. Populate experiment state
     const experimentState: ExperimentState = {
       ids: [],
@@ -31,7 +37,7 @@ export class LocalStorageService {
       searchKey: experimentSearchKey as EXPERIMENT_SEARCH_KEY,
       searchString: experimentSearchString || null,
       sortKey: (experimentSortKey as EXPERIMENT_SORT_KEY) || EXPERIMENT_SORT_KEY.NAME,
-      sortAs: (experimentSortType as EXPERIMENT_SORT_AS) || EXPERIMENT_SORT_AS.ASCENDING,
+      sortAs: (experimentSortType as SORT_AS_DIRECTION) || SORT_AS_DIRECTION.ASCENDING,
       stats: {},
       graphInfo: null,
       graphRange: null,
@@ -45,8 +51,21 @@ export class LocalStorageService {
       currentUserSelectedContext: null,
     };
 
+    const segmentState: SegmentState = {
+      ids: [],
+      entities: {},
+      isLoadingSegments: false,
+      allExperimentSegmentsInclusion: null,
+      allExperimentSegmentsExclusion: null,
+      searchKey: segmentSearchKey as SEGMENT_SEARCH_KEY,
+      searchString: segmentSearchString || null,
+      sortKey: (segmentSortKey as SEGMENT_SORT_KEY) || SEGMENT_SORT_KEY.NAME,
+      sortAs: (segmentSortType as SORT_AS_DIRECTION) || SORT_AS_DIRECTION.ASCENDING,
+    };
+
     const state = {
       experiments: experimentState, // experiment state,
+      segments: segmentState,
     };
     return state;
   }

@@ -182,10 +182,16 @@ export class ExperimentEffects {
       filter(({ experimentId, experimentState }) => !!experimentId && !!experimentState),
       switchMap(({ experimentId, experimentState }) =>
         this.experimentDataService.updateExperimentState(experimentId, experimentState).pipe(
-          switchMap((result: Experiment) => [
-            experimentAction.actionUpdateExperimentStateSuccess({ experiment: result }),
-          ]),
-          catchError(() => [experimentAction.actionUpdateExperimentStateFailure()])
+          switchMap((result: Experiment) => {
+            this.notificationService.showSuccess(
+              this.translate.instant('home.change-experiment-status.change-confirmation.text')
+            );
+            return [experimentAction.actionUpdateExperimentStateSuccess({ experiment: result })];
+          }),
+          catchError((error) => {
+            this.notificationService.showError(error.message);
+            return [experimentAction.actionUpdateExperimentStateFailure()];
+          })
         )
       )
     )
@@ -481,6 +487,7 @@ export class ExperimentEffects {
       switchMap(({ experimentIds }) =>
         this.experimentDataService.exportExperimentDesign(experimentIds).pipe(
           tap(() => {
+            console.log('>>>> Export successful, displaying the notification!');
             this.notificationService.showSuccess('Experiment Design JSON downloaded!');
           }),
           map((data: Experiment[]) => {
@@ -495,9 +502,13 @@ export class ExperimentEffects {
             } else {
               this.download(data[0].name + '.json', data[0], false);
             }
+            console.log('>>>> Downloading successful!');
             return experimentAction.actionExportExperimentDesignSuccess();
           }),
-          catchError(() => [experimentAction.actionExportExperimentDesignFailure()])
+          catchError((error) => {
+            console.log('>>>> Export failed with Error:', error);
+            return [experimentAction.actionExportExperimentDesignFailure()]
+          })
         )
       )
     )

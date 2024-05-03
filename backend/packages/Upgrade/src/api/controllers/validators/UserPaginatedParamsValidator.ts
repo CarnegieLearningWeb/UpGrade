@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsDefined, IsNumber, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { EXPERIMENT_SORT_AS } from 'upgrade_types';
+import { SORT_AS_DIRECTION } from 'upgrade_types';
 
 export enum USER_SEARCH_SORT_KEY {
   ALL = 'all',
@@ -16,8 +16,8 @@ export class UserSortParamsValidator {
   key: USER_SEARCH_SORT_KEY;
 
   @IsNotEmpty()
-  @IsEnum(EXPERIMENT_SORT_AS)
-  sortAs: EXPERIMENT_SORT_AS;
+  @IsEnum(SORT_AS_DIRECTION)
+  sortAs: SORT_AS_DIRECTION;
 }
 
 export class UserSearchParamsValidator {

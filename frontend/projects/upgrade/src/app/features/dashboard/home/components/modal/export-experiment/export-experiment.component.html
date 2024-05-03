@@ -36,9 +36,9 @@
       mat-raised-button
       [ngClass]="{
         'default-button--disabled':
-          exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1
+          (exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1) || !isExportMethodSelected
       }"
-      [disabled]="exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1"
+      [disabled]="(exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1) || !isExportMethodSelected"
       class="shared-modal--modal-btn default-button"
       (click)="exportExperiment()"
     >
