@@ -27,20 +27,22 @@ export class FormatDatePipe implements PipeTransform {
 
       if (type === DateType.MEDIUM_DATE) {
         return (
-          dateNumber +
-          this.getSuffix(dateNumber) +
-          ' ' +
           months[experimentDate.getMonth()] +
           ' ' +
+          dateNumber +
+          this.getSuffix(dateNumber) +
+          ' '
+          +
           experimentDate.getFullYear()
         );
       } else {
         return (
+          months[experimentDate.getMonth()].substring(0, 3) +
+          ' ' +
           dateNumber +
           this.getSuffix(dateNumber) +
-          ' ' +
-          months[experimentDate.getMonth()].substring(0, 3) +
           ', ' +
+          
           (dateHours < 10 || dateHours === 12 ? '0' : '') +
           (dateHours < 12 ? dateHours : dateHours - 12) +
           ':' +
