@@ -7,7 +7,7 @@ import {
   ExperimentStateInfo,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   DATE_RANGE,
   ExperimentLocalStorageKeys,
   EXPERIMENT_STATE,
@@ -82,8 +82,7 @@ export class ExperimentService {
   selectSearchExperimentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
       filter(([searchKey, searchString]) => !!searchKey && !!searchString),
-      map(([searchKey, searchString]) => ({ searchKey, searchString })),
-      first()
+      map(([searchKey, searchString]) => ({ searchKey, searchString }))
     );
   }
 
@@ -191,7 +190,7 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionSetSortKey({ sortKey }));
   }
 
-  setSortingType(sortingType: EXPERIMENT_SORT_AS) {
+  setSortingType(sortingType: SORT_AS_DIRECTION) {
     this.localStorageService.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SORT_TYPE, sortingType);
     this.store$.dispatch(experimentAction.actionSetSortingType({ sortingType }));
   }

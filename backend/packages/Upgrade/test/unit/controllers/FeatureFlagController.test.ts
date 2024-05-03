@@ -48,10 +48,20 @@ describe('Feature Flag Controller Testing', () => {
         name: 'string',
         key: 'string',
         description: 'string',
-        variationType: 'string',
         status: 'enabled',
         context: ['foo'],
         tags: ['bar'],
+        featureFlagSegmentInclusion: {
+          segment: {
+            type: 'private',
+          },
+        },
+        featureFlagSegmentExclusion: {
+          segment: {
+            type: 'private',
+          },
+        },
+        filterMode: 'includeAll',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -86,10 +96,26 @@ describe('Feature Flag Controller Testing', () => {
         name: 'string',
         key: 'string',
         description: 'string',
-        variationType: 'string',
         status: 'enabled',
         context: ['foo'],
         tags: ['bar'],
+        featureFlagSegmentInclusion: {
+          segment: {
+            type: 'private',
+            individualForSegment: [],
+            groupForSegment: [],
+            subSegments: [],
+          },
+        },
+        featureFlagSegmentExclusion: {
+          segment: {
+            type: 'private',
+            individualForSegment: [],
+            groupForSegment: [],
+            subSegments: [],
+          },
+        },
+        filterMode: 'includeAll',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)

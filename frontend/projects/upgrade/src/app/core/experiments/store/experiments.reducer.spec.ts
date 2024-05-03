@@ -40,7 +40,7 @@ import {
   ExperimentState,
   ExperimentVM,
   EXPERIMENT_SEARCH_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   EXPERIMENT_SORT_KEY,
   UpsertExperimentType,
 } from './experiments.model';
@@ -559,16 +559,16 @@ describe('ExperimentsReducer', () => {
 
   it('action "actionSetSortingType" should set sort-as', () => {
     const previousState = { ...initialState };
-    previousState.sortAs = EXPERIMENT_SORT_AS.DESCENDING;
+    previousState.sortAs = SORT_AS_DIRECTION.DESCENDING;
 
     const testAction: Action = actionSetSortingType({
-      sortingType: EXPERIMENT_SORT_AS.ASCENDING,
+      sortingType: SORT_AS_DIRECTION.ASCENDING,
     });
 
     const newState = experimentsReducer(previousState, testAction);
 
     expect(newState).not.toBe(previousState);
-    expect(newState.sortAs).toEqual(EXPERIMENT_SORT_AS.ASCENDING);
+    expect(newState.sortAs).toEqual(SORT_AS_DIRECTION.ASCENDING);
   });
 
   it('action "actionSetSkipExperiment" should set experiment skip value', () => {

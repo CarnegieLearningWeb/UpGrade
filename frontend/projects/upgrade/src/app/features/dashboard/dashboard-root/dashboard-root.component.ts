@@ -1,5 +1,4 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { SettingsService } from '../../../core/settings/settings.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { VersionService } from '../../../core/version/version.service';
 import { ENV, Environment } from '../../../../environments/environment-types';
@@ -56,7 +55,7 @@ export class DashboardRootComponent implements OnInit {
 
   addFeatureFlagsLink() {
     this.routeLinks.splice(1, 0, {
-      path: ['/featureFlags'],
+      path: ['/featureflags'],
       text: 'feature-flags.title.text',
       iconType: 'toggle_on',
     });

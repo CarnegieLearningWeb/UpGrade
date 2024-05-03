@@ -36,3 +36,11 @@ export const selectSelectedSegment = createSelector(
     }
   }
 );
+
+export const selectSearchKey = createSelector(selectSegmentsState, (state) => state.searchKey);
+
+export const selectSearchString = createSelector(selectSegmentsState, (state) => state.searchString);
+
+export const selectSortKey = createSelector(selectSegmentsState, (state) => state.sortKey);
+
+export const selectSortAs = createSelector(selectSegmentsState, (state) => state.sortAs);

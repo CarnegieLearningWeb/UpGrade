@@ -6,7 +6,7 @@ import { UserRepository } from '../../../src/api/repositories/UserRepository';
 import { User } from '../../../src/api/models/User';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { USER_SEARCH_SORT_KEY } from '../../../src/api/controllers/validators/UserPaginatedParamsValidator';
-import { EXPERIMENT_SORT_AS, UserRole } from 'upgrade_types';
+import { SORT_AS_DIRECTION, UserRole } from 'upgrade_types';
 import { AWSService } from '../../../src/api/services/AWSService';
 import { Emails } from '../../../src/templates/email';
 import UserServiceMock from '../controllers/mocks/UserServiceMock';
@@ -138,7 +138,7 @@ describe('User Service Testing', () => {
     };
     const sortParams = {
       key: USER_SEARCH_SORT_KEY.FIRST_NAME,
-      sortAs: EXPERIMENT_SORT_AS.DESCENDING,
+      sortAs: SORT_AS_DIRECTION.DESCENDING,
     };
     const users = await service.findPaginated(0, 0, logger, searchParams, sortParams);
     expect(repo.createQueryBuilder).toBeCalledWith('users');

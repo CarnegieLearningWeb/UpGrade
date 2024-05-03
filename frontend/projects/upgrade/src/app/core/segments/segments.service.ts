@@ -9,20 +9,41 @@ import {
   selectExperimentSegmentsInclusion,
   selectExperimentSegmentsExclusion,
   selectSegmentById,
+  selectSearchString,
+  selectSearchKey,
+  selectSortKey,
+  selectSortAs,
 } from './store/segments.selectors';
-import { SegmentInput, UpsertSegmentType } from './store/segments.model';
-import { filter, map, tap } from 'rxjs/operators';
+import { SegmentInput, SegmentLocalStorageKeys, UpsertSegmentType } from './store/segments.model';
+import { filter, first, map, tap } from 'rxjs/operators';
 import { Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
+import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
+import { LocalStorageService } from '../local-storage/local-storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class SegmentsService {
-  constructor(private store$: Store<AppState>, private segmentsDataService: SegmentsDataService) {}
+  constructor(
+    private store$: Store<AppState>,
+    private segmentsDataService: SegmentsDataService,
+    private localStorageService: LocalStorageService
+  ) {}
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
+  selectSearchString$ = this.store$.pipe(select(selectSearchString));
+  selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
+  selectSegmentSortKey$ = this.store$.pipe(select(selectSortKey));
+  selectSegmentSortAs$ = this.store$.pipe(select(selectSortAs));
   allExperimentSegmentsInclusion$ = this.store$.pipe(select(selectExperimentSegmentsInclusion));
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
+
+  selectSearchSegmentParams(): Observable<Record<string, unknown>> {
+    return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
+      filter(([searchKey, searchString]) => !!searchKey && !!searchString),
+      map(([searchKey, searchString]) => ({ searchKey, searchString }))
+    );
+  }
 
   selectSegmentById(segmentId: string) {
     return this.store$.pipe(
@@ -66,6 +87,26 @@ export class SegmentsService {
     this.store$.dispatch(
       SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.CREATE_NEW_SEGMENT })
     );
+  }
+
+  setSearchKey(searchKey: SEGMENT_SEARCH_KEY) {
+    this.localStorageService.setItem(SegmentLocalStorageKeys.SEGMENT_SEARCH_KEY, searchKey);
+    this.store$.dispatch(SegmentsActions.actionSetSearchKey({ searchKey }));
+  }
+
+  setSearchString(searchString: string) {
+    this.localStorageService.setItem(SegmentLocalStorageKeys.SEGMENT_SEARCH_STRING, searchString);
+    this.store$.dispatch(SegmentsActions.actionSetSearchString({ searchString }));
+  }
+
+  setSortKey(sortKey: SEGMENT_SORT_KEY) {
+    this.localStorageService.setItem(SegmentLocalStorageKeys.SEGMENT_SORT_KEY, sortKey);
+    this.store$.dispatch(SegmentsActions.actionSetSortKey({ sortKey }));
+  }
+
+  setSortingType(sortingType: SORT_AS_DIRECTION) {
+    this.localStorageService.setItem(SegmentLocalStorageKeys.SEGMENT_SORT_TYPE, sortingType);
+    this.store$.dispatch(SegmentsActions.actionSetSortingType({ sortingType }));
   }
 
   deleteSegment(segmentId: string) {

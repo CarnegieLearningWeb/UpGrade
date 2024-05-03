@@ -29,7 +29,10 @@
             mat-flat-button
             class="ft-14-600 button"
             (click)="deleteSegment()"
-            [ngClass]="{ 'button--disabled': segment.type === SegmentType.GLOBAL_EXCLUDE || segmentUsed || !permissions?.segments.delete }"
+            [ngClass]="{
+              'button--disabled':
+                segment.type === SegmentType.GLOBAL_EXCLUDE || segmentUsed || !permissions?.segments.delete
+            }"
             [disabled]="segment.type === SegmentStatus.GLOBAL_EXCLUDE || segmentUsed || !permissions?.segments.delete"
           >
             {{ 'global.delete.text' | translate }}
@@ -91,7 +94,7 @@
       <div class="section-data section-data--fixed">
         <span class="ft-16-600 section-data-title">{{ 'global.context.text' | translate }}</span>
         <mat-chip *ngIf="segment.context != 'ALL'">
-          <span class="ft-12-600 chip-label">
+          <span class="ft-12-600 chip-label" (click)="searchSegment(SegmentSearchKey.CONTEXT, segment.context)">
             {{ segment.context }}
           </span>
         </mat-chip>

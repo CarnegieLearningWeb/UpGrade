@@ -1,24 +1,18 @@
 <mat-card appearance="raised" class="experiments-list-container">
   <div class="header">
     <div>
-      <mat-form-field
-        class="dense-2 filter-options"
-        subscriptSizing="dynamic"
-      >
+      <mat-form-field class="dense-2 filter-options" subscriptSizing="dynamic">
         <mat-select
           class="ft-14-400"
           [(ngModel)]="selectedExperimentFilterOption"
-          (selectionChange)="applyFilter(searchValue); setSearchKey()"
+          (selectionChange)="applyFilter(searchValue); setSearchKey(selectedExperimentFilterOption)"
         >
           <mat-option class="ft-14-400" *ngFor="let filterOption of experimentFilterOptions" [value]="filterOption">
             {{ filterOption | titlecase }}
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field
-        class="dense-2"
-        subscriptSizing="dynamic"
-      >
+      <mat-form-field class="dense-2" subscriptSizing="dynamic">
         <div *ngIf="selectedExperimentFilterOption !== 'status'">
           <input
             class="ft-14-400 search-input"

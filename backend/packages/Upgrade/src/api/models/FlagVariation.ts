@@ -1,7 +1,7 @@
-import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryColumn, Column } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 import { BaseModel } from './base/BaseModel';
-import { FeatureFlag } from './FeatureFlag';
+// import { FeatureFlag } from './FeatureFlag';
 
 @Entity()
 export class FlagVariation extends BaseModel {
@@ -28,6 +28,6 @@ export class FlagVariation extends BaseModel {
   })
   public defaultVariation: boolean[];
 
-  @ManyToOne(() => FeatureFlag, (flag) => flag.variations, { onDelete: 'CASCADE' })
-  public featureFlag: FeatureFlag;
+  // @ManyToOne(() => FeatureFlag, (flag) => flag.variations, { onDelete: 'CASCADE' })
+  // public featureFlag: FeatureFlag;
 }
