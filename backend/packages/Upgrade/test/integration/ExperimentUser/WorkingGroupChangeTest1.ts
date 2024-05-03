@@ -4,7 +4,7 @@ import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { UserService } from '../../../src/api/services/UserService';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 import { systemUser } from '../mockData/user/index';
-import { checkMarkExperimentPointForUser, getAllExperimentCondition, markExperimentPoint } from '../utils';
+import { checkMarkExperimentPointForUser, getAllExperimentCondition, markExperimentPoint, updateExcludeIfReachedFlag } from '../utils';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
@@ -26,9 +26,7 @@ export default async function testCase(): Promise<void> {
   const condition = experimentObject.conditions[0].conditionCode;
   const experimentId = experimentObject.id;
 
-  experimentObject.partitions.forEach((partition) => {
-    partition.excludeIfReached = true;
-  });
+  experimentObject.partitions = updateExcludeIfReachedFlag(experimentObject.partitions);
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
