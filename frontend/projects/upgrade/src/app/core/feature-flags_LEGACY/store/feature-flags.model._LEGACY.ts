@@ -2,7 +2,7 @@ import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
 
 // TODO: Move to upgrade types
-export enum FLAG_SEARCH_SORT_KEY {
+export enum FLAG_SEARCH_SORT_KEY_LEGACY {
   ALL = 'all',
   NAME = 'name',
   KEY = 'key',
@@ -10,58 +10,58 @@ export enum FLAG_SEARCH_SORT_KEY {
   VARIATION_TYPE = 'variationType',
 }
 
-export enum SORT_AS {
+export enum SORT_AS_LEGACY {
   ASCENDING = 'ASC',
   DESCENDING = 'DESC',
 }
 
-interface IFeatureFlagsSearchParams {
-  key: FLAG_SEARCH_SORT_KEY;
+interface IFeatureFlagsSearchParams_LEGACY {
+  key: FLAG_SEARCH_SORT_KEY_LEGACY;
   string: string;
 }
 
-interface IFeatureFlagsSortParams {
-  key: FLAG_SEARCH_SORT_KEY;
-  sortAs: SORT_AS;
+interface IFeatureFlagsSortParams_LEGACY {
+  key: FLAG_SEARCH_SORT_KEY_LEGACY;
+  sortAs: SORT_AS_LEGACY;
 }
 
-export interface FeatureFlagsPaginationParams {
+export interface FeatureFlagsPaginationParams_LEGACY {
   skip: number;
   take: number;
-  searchParams?: IFeatureFlagsSearchParams;
-  sortParams?: IFeatureFlagsSortParams;
+  searchParams?: IFeatureFlagsSearchParams_LEGACY;
+  sortParams?: IFeatureFlagsSortParams_LEGACY;
 }
 
-export const NUMBER_OF_FLAGS = 20;
+export const NUMBER_OF_FLAGS_LEGACY = 20;
 
-export enum NewFlagDialogEvents {
+export enum NewFlagDialogEvents_LEGACY {
   CLOSE_DIALOG = 'Close Dialog',
   SEND_FORM_DATA = 'Send Form Data',
   UPDATE_FLAG = 'Update flag',
 }
 
-export enum NewFlagPaths {
+export enum NewFlagPaths_LEGACY {
   FLAG_OVERVIEW = 'Flag Overview',
   FLAG_VARIATIONS = 'Flag Variations',
 }
 
-export enum VariationTypes {
+export enum VariationTypes_LEGACY {
   CUSTOM = 'custom',
   BOOLEAN = 'boolean',
 }
 
-export enum UpsertFeatureFlagType {
+export enum UpsertFeatureFlagType_LEGACY {
   CREATE_NEW_FLAG = 'Create new feature flag',
   UPDATE_FLAG = 'Update feature flag',
 }
 
-export interface NewFlagDialogData {
-  type: NewFlagDialogEvents;
+export interface NewFlagDialogData_LEGACY {
+  type: NewFlagDialogEvents_LEGACY;
   formData?: any;
-  path?: NewFlagPaths;
+  path?: NewFlagPaths_LEGACY;
 }
 
-export interface FlagVariation {
+export interface FlagVariation_LEGACY {
   createdAt: string;
   updatedAt: string;
   versionNumber: number;
@@ -72,7 +72,7 @@ export interface FlagVariation {
   defaultVariation: boolean[];
 }
 
-export interface FeatureFlag {
+export interface FeatureFlag_LEGACY {
   createdAt: string;
   updatedAt: string;
   versionNumber: number;
@@ -82,19 +82,19 @@ export interface FeatureFlag {
   description: string;
   variationType: string;
   status: boolean;
-  variations: FlagVariation[];
+  variations: FlagVariation_LEGACY[];
 }
 
-export interface FeatureFlagState extends EntityState<FeatureFlag> {
+export interface FeatureFlagState_LEGACY extends EntityState<FeatureFlag_LEGACY> {
   isLoadingFeatureFlags: boolean;
   skipFlags: number;
   totalFlags: number;
-  searchKey: FLAG_SEARCH_SORT_KEY;
+  searchKey: FLAG_SEARCH_SORT_KEY_LEGACY;
   searchString: string;
-  sortKey: FLAG_SEARCH_SORT_KEY;
-  sortAs: SORT_AS;
+  sortKey: FLAG_SEARCH_SORT_KEY_LEGACY;
+  sortAs: SORT_AS_LEGACY;
 }
 
 export interface State extends AppState {
-  featureFlags: FeatureFlagState;
+  featureFlags: FeatureFlagState_LEGACY;
 }
