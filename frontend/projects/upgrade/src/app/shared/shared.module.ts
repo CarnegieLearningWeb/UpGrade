@@ -16,7 +16,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTreeModule } from '@angular/material/tree';
@@ -62,7 +61,6 @@ import { environment } from '../../environments/environment';
     MatListModule,
     MatIconModule,
     MatTooltipModule,
-    MatSnackBarModule,
     MatSlideToggleModule,
     MatDividerModule,
     MatTableModule,
@@ -107,7 +105,6 @@ import { environment } from '../../environments/environment';
     MatToolbarModule,
     MatIconModule,
     MatTooltipModule,
-    MatSnackBarModule,
     MatSlideToggleModule,
     MatDividerModule,
     MatTableModule,
