@@ -266,6 +266,7 @@ export class FeatureFlagService {
     featureFlag.id = flagDTO.id;
     featureFlag.key = flagDTO.key;
     featureFlag.status = flagDTO.status;
+    featureFlag.filterMode = flagDTO.filterMode;
     return featureFlag;
   }
 }
