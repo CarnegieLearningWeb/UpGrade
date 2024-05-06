@@ -369,6 +369,7 @@ export class FeatureFlagService {
     const newInclusion = new FeatureFlagSegmentInclusion();
     featureFlag.featureFlagSegmentExclusion = { ...flagDTO.featureFlagSegmentExclusion, ...newExclusion };
     featureFlag.featureFlagSegmentInclusion = { ...flagDTO.featureFlagSegmentInclusion, ...newInclusion };
+    featureFlag.filterMode = flagDTO.filterMode;
     return featureFlag;
   }
 

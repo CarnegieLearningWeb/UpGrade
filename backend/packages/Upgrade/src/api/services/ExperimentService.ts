@@ -508,6 +508,7 @@ export class ExperimentService {
     return {
       ...oldExperiment,
       state: updatedState[0].state,
+      startOn: updatedState[0].startOn,
       stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog],
     };
   }

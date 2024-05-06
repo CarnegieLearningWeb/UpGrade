@@ -1,7 +1,8 @@
-import { Column, Entity, PrimaryColumn, OneToOne } from 'typeorm';
-import { IsNotEmpty } from 'class-validator';
+import { Column, Entity, PrimaryColumn, OneToMany, OneToOne } from 'typeorm';
+import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { BaseModel } from './base/BaseModel';
 import { Type } from 'class-transformer';
+import { FlagVariation } from './FlagVariation';
 import { FeatureFlagSegmentInclusion } from './FeatureFlagSegmentInclusion';
 import { FeatureFlagSegmentExclusion } from './FeatureFlagSegmentExclusion';
 import { FEATURE_FLAG_STATUS } from 'upgrade_types';
@@ -33,6 +34,11 @@ export class FeatureFlag extends BaseModel {
     default: FEATURE_FLAG_STATUS.DISABLED,
   })
   public status: FEATURE_FLAG_STATUS;
+
+  @OneToMany(() => FlagVariation, (variation) => variation.featureFlag)
+  @ValidateNested()
+  @Type(() => FlagVariation)
+  public variations: FlagVariation[];
 
   @OneToOne(() => FeatureFlagSegmentInclusion, (featureFlagSegmentInclusion) => featureFlagSegmentInclusion.featureFlag)
   @Type(() => FeatureFlagSegmentInclusion)

@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, OnDestroy, AfterViewInit } fr
 import { Observable, Subscription, fromEvent } from 'rxjs';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
-import { UserRole } from 'upgrade_types';
+import { EXPERIMENT_SEARCH_KEY, UserRole } from 'upgrade_types';
 import { User, USER_SEARCH_SORT_KEY } from '../../../../../core/users/store/users.model';
 import { debounceTime } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
@@ -13,7 +13,6 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 import { SettingsService } from '../../../../../core/settings/settings.service';
 import { NewUserComponent } from '../modals/new-user/new-user.component';
 import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
-import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 
 @Component({
   selector: 'profile-info',
@@ -205,7 +204,7 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
     this.usersService.setSearchKey(this.selectedUserFilterOption);
   }
 
-  setSearchString(searchString: FLAG_SEARCH_SORT_KEY) {
+  setSearchString(searchString: EXPERIMENT_SEARCH_KEY) {
     this.usersService.setSearchString(searchString);
   }
 

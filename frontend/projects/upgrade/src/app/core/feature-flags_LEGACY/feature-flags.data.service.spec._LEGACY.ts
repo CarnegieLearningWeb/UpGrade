@@ -2,8 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Environment } from '../../../environments/environment-types';
-import { FeatureFlagsDataService } from './feature-flags.data.service';
-import { FeatureFlag, FeatureFlagsPaginationParams } from './store/feature-flags.model';
+import { FeatureFlagsDataService_LEGACY } from './feature-flags.data.service._LEGACY';
+import { FeatureFlag_LEGACY, FeatureFlagsPaginationParams_LEGACY } from './store/feature-flags.model._LEGACY';
 
 class MockHTTPClient {
   get = jest.fn().mockReturnValue(of());
@@ -12,19 +12,19 @@ class MockHTTPClient {
   put = jest.fn().mockReturnValue(of());
 }
 
-describe('FeatureFlagsDataService', () => {
+describe('FeatureFlagsDataService_LEGACY', () => {
   let mockHttpClient: any;
   let mockEnvironment: Environment;
-  let service: FeatureFlagsDataService;
+  let service: FeatureFlagsDataService_LEGACY;
   let mockFlagId: string;
-  let mockParams: FeatureFlagsPaginationParams;
-  let mockFlag: FeatureFlag;
+  let mockParams: FeatureFlagsPaginationParams_LEGACY;
+  let mockFlag: FeatureFlag_LEGACY;
   let mockStatus: boolean;
 
   beforeEach(() => {
     mockHttpClient = new MockHTTPClient();
     mockEnvironment = { ...environment };
-    service = new FeatureFlagsDataService(mockHttpClient as HttpClient, mockEnvironment);
+    service = new FeatureFlagsDataService_LEGACY(mockHttpClient as HttpClient, mockEnvironment);
     mockParams = {
       skip: 0,
       take: 10,
