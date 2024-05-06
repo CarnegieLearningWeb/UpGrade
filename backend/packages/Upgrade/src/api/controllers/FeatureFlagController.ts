@@ -219,7 +219,7 @@ export class FeatureFlagsController {
    *                properties:
    *                  key:
    *                    type: string
-   *                    enum: [all, name, key, status, variation Type]
+   *                    enum: [all, name, key, status, tag, context]
    *                  string:
    *                    type: string
    *               sortParams:
@@ -227,7 +227,7 @@ export class FeatureFlagsController {
    *                  properties:
    *                    key:
    *                     type: string
-   *                     enum: [name, key, status, variationType]
+   *                     enum: [name, key, status, updatedAt]
    *                    sortAs:
    *                     type: string
    *                     enum: [ASC, DESC]

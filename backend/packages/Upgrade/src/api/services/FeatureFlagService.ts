@@ -252,7 +252,6 @@ export class FeatureFlagService {
         featureFlagSegmentExclusion: { ...featureFlagSegmentExclusionDoc, segment: segmentExcludeDoc } as any,
       };
 
-      // return { ...featureFlagDoc, variations: variationDocToReturn as any };
       return newFeatureFlagObject;
     });
 

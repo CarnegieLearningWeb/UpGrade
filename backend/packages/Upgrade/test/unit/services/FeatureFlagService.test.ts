@@ -1,52 +1,87 @@
-import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
 import * as sinon from 'sinon';
 import { Connection, ConnectionManager } from 'typeorm';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
-import { ErrorService } from '../../../src/api/services/ErrorService';
-import { FeatureFlagRepository } from '../../../src/api/repositories/FeatureFlagRepository';
+
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
-import { FlagVariationRepository } from '../../../src/api/repositories/FlagVariationRepository';
-// import { FLAG_SEARCH_SORT_KEY } from '../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
-// import { SORT_AS_DIRECTION } from '../../../../../../types/src';
-import { FlagVariation } from '../../../src/api/models/FlagVariation';
+import { Segment } from '../../../src/api/models/Segment';
+
+import { FeatureFlagRepository } from '../../../src/api/repositories/FeatureFlagRepository';
+import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
+import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentExclusionRepository';
+
+import { ErrorService } from '../../../src/api/services/ErrorService';
+import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
+import { SegmentService } from '../../../src/api/services/SegmentService';
+import { ExperimentService } from '../../../src/api/services/ExperimentService';
+
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+
+import {
+  FLAG_SEARCH_KEY,
+  FLAG_SORT_KEY,
+} from '../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
+import { SORT_AS_DIRECTION } from '../../../../../../types/src';
 import { isUUID } from 'class-validator';
 import { v4 as uuid } from 'uuid';
 import { FEATURE_FLAG_STATUS } from 'upgrade_types';
 
-// Skip these tests until the API work is done and variations are removed
-describe.skip('Feature Flag Service Testing', () => {
+describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
   let flagRepo: FeatureFlagRepository;
-  let flagVariationRepo: FlagVariationRepository;
+  let flagSegmentInclusionRepo: FeatureFlagSegmentInclusionRepository;
+  let flagSegmentExclusionRepo: FeatureFlagSegmentExclusionRepository;
+  let segmentService: SegmentService;
+
   let module: Awaited<ReturnType<TestingModuleBuilder['compile']>>;
 
   const logger = new UpgradeLogger();
-  const var1 = new FlagVariation();
-  var1.id = uuid();
-  var1.value = 'value1';
-  const var2 = new FlagVariation();
-  var2.id = uuid();
-  var1.value = 'value2';
-  // const var3 = new FlagVariation();
+
+  const seg1 = new Segment();
 
   const mockFlag1 = new FeatureFlag();
   mockFlag1.id = uuid();
   mockFlag1.name = 'name';
   mockFlag1.key = 'key';
   mockFlag1.description = 'description';
+  mockFlag1.context = ['context'];
   mockFlag1.status = FEATURE_FLAG_STATUS.ENABLED;
-  // mockFlag1.variations = [var1, var2, var3];
+  mockFlag1.featureFlagSegmentExclusion = {
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    versionNumber: 1,
+    segment: seg1,
+    featureFlag: mockFlag1,
+  };
+  mockFlag1.featureFlagSegmentInclusion = {
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    versionNumber: 1,
+    segment: seg1,
+    featureFlag: mockFlag1,
+  };
 
   const mockFlag2 = new FeatureFlag();
   mockFlag2.id = uuid();
   mockFlag2.name = 'name';
   mockFlag2.key = 'key';
   mockFlag2.description = 'description';
+  mockFlag2.context = ['context'];
   mockFlag2.status = FEATURE_FLAG_STATUS.ENABLED;
-
-  // mockFlag1.variations = [var2, var3];
+  mockFlag2.featureFlagSegmentExclusion = {
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    versionNumber: 1,
+    segment: seg1,
+    featureFlag: mockFlag2,
+  };
+  mockFlag2.featureFlagSegmentInclusion = {
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    versionNumber: 1,
+    segment: seg1,
+    featureFlag: mockFlag2,
+  };
 
   const mockFlag3 = new FeatureFlag();
 
@@ -79,8 +114,20 @@ describe.skip('Feature Flag Service Testing', () => {
     module = await Test.createTestingModule({
       providers: [
         FeatureFlagService,
-        FeatureFlagRepository,
-        FlagVariationRepository,
+        {
+          provide: ExperimentService,
+          useValue: {
+            includeExcludeSegmentCreation: jest.fn().mockResolvedValue({ subSegmentIds: [], userIds: [], groups: [] }),
+          },
+        },
+        {
+          provide: SegmentService,
+          useValue: {
+            upsertSegment: jest.fn().mockResolvedValue({ id: uuid() }),
+            addSegmentDataInDB: jest.fn().mockResolvedValue({ id: uuid() }),
+            find: jest.fn().mockResolvedValue([]),
+          },
+        },
         {
           provide: getRepositoryToken(FeatureFlagRepository),
           useValue: {
@@ -107,18 +154,31 @@ describe.skip('Feature Flag Service Testing', () => {
               offset: offsetSpy,
               limit: limitSpy,
               innerJoinAndSelect: jest.fn().mockReturnThis(),
+              leftJoinAndSelect: jest.fn().mockReturnThis(),
               getMany: jest.fn().mockResolvedValue(mockFlagArr),
+              getOne: jest.fn().mockResolvedValue(mockFlag1),
             })),
           },
         },
         {
-          provide: getRepositoryToken(FlagVariationRepository),
+          provide: getRepositoryToken(FeatureFlagSegmentInclusionRepository),
           useValue: {
-            find: jest.fn().mockResolvedValue(mockFlagArr),
-            insertVariations: jest.fn().mockResolvedValue(mockFlagArr),
-            upsertFlagVariation: jest.fn().mockResolvedValue(mockFlagArr),
-            deleteVariation: jest.fn().mockImplementation((flag) => {
-              return flag;
+            find: jest.fn().mockResolvedValue(''),
+            insertData: jest.fn().mockResolvedValue(''),
+            getFeatureFlagSegmentInclusionData: jest.fn().mockResolvedValue(''),
+            deleteData: jest.fn().mockImplementation((seg) => {
+              return seg;
+            }),
+          },
+        },
+        {
+          provide: getRepositoryToken(FeatureFlagSegmentExclusionRepository),
+          useValue: {
+            find: jest.fn().mockResolvedValue(''),
+            insertData: jest.fn().mockResolvedValue(''),
+            getFeatureFlagSegmentExclusionData: jest.fn().mockResolvedValue(''),
+            deleteData: jest.fn().mockImplementation((seg) => {
+              return seg;
             }),
           },
         },
@@ -133,7 +193,13 @@ describe.skip('Feature Flag Service Testing', () => {
 
     service = module.get<FeatureFlagService>(FeatureFlagService);
     flagRepo = module.get<FeatureFlagRepository>(getRepositoryToken(FeatureFlagRepository));
-    flagVariationRepo = module.get<FlagVariationRepository>(getRepositoryToken(FlagVariationRepository));
+    flagSegmentInclusionRepo = module.get<FeatureFlagSegmentInclusionRepository>(
+      getRepositoryToken(FeatureFlagSegmentInclusionRepository)
+    );
+    flagSegmentExclusionRepo = module.get<FeatureFlagSegmentExclusionRepository>(
+      getRepositoryToken(FeatureFlagSegmentExclusionRepository)
+    );
+    segmentService = module.get<SegmentService>(SegmentService);
   });
 
   it('should be defined', async () => {
@@ -149,10 +215,11 @@ describe.skip('Feature Flag Service Testing', () => {
     expect(results).toEqual(mockFlagArr);
   });
 
-  // it('should create a feature flag with uuid', async () => {
-  //   const results = await service.create(mockFlag1, logger);
-  //   expect(isUUID(results.variations[0].id)).toBeTruthy();
-  // });
+  it('should create a feature flag with uuid', async () => {
+    const results = await service.create(mockFlag1, logger);
+    expect(isUUID(results.featureFlagSegmentInclusion.segment.id)).toBeTruthy();
+    expect(isUUID(results.featureFlagSegmentExclusion.segment.id)).toBeTruthy();
+  });
 
   it('should throw an error when create flag fails', async () => {
     const err = new Error('insert error');
@@ -162,12 +229,20 @@ describe.skip('Feature Flag Service Testing', () => {
     }).rejects.toThrow(new Error('Error in creating feature flag document "addFeatureFlagInDB" Error: insert error'));
   });
 
-  it('should throw an error when create variation fails', async () => {
+  it('should throw an error when create segment inclusion fails', async () => {
     const err = new Error('insert error');
-    flagVariationRepo.insertVariations = jest.fn().mockRejectedValue(err);
+    flagSegmentInclusionRepo.insertData = jest.fn().mockRejectedValue(err);
     expect(async () => {
       await service.create(mockFlag1, logger);
-    }).rejects.toThrow(new Error('Error in creating variation "addFeatureFlagInDB" Error: insert error'));
+    }).rejects.toThrow(new Error('Error in creating inclusion or exclusion segments "addFeatureFlagInDB"'));
+  });
+
+  it('should throw an error when create segment exclusion fails', async () => {
+    const err = new Error('insert error');
+    flagSegmentExclusionRepo.insertData = jest.fn().mockRejectedValue(err);
+    expect(async () => {
+      await service.create(mockFlag1, logger);
+    }).rejects.toThrow(new Error('Error in creating inclusion or exclusion segments "addFeatureFlagInDB"'));
   });
 
   it('should return a count of feature flags', async () => {
@@ -175,90 +250,90 @@ describe.skip('Feature Flag Service Testing', () => {
     expect(results).toEqual(mockFlagArr.length);
   });
 
-  // it('should find all paginated feature flags with search string all', async () => {
-  //   const results = await service.findPaginated(
-  //     1,
-  //     2,
-  //     logger,
-  //     {
-  //       key: FLAG_SEARCH_SORT_KEY.ALL,
-  //       string: '',
-  //     },
-  //     {
-  //       key: FLAG_SEARCH_SORT_KEY.ALL,
-  //       sortAs: SORT_AS_DIRECTION.ASCENDING,
-  //     }
-  //   );
-  //   expect(results).toEqual(mockFlagArr);
-  // });
+  it('should find all paginated feature flags with search string all', async () => {
+    const results = await service.findPaginated(
+      1,
+      2,
+      logger,
+      {
+        key: FLAG_SEARCH_KEY.ALL,
+        string: '',
+      },
+      {
+        key: FLAG_SORT_KEY.NAME,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
+      }
+    );
+    expect(results).toEqual(mockFlagArr);
+  });
 
-  // it('should find all paginated feature flags with search string key', async () => {
-  //   const results = await service.findPaginated(
-  //     1,
-  //     2,
-  //     logger,
-  //     {
-  //       key: FLAG_SEARCH_SORT_KEY.KEY,
-  //       string: '',
-  //     },
-  //     {
-  //       key: FLAG_SEARCH_SORT_KEY.ALL,
-  //       sortAs: SORT_AS_DIRECTION.ASCENDING,
-  //     }
-  //   );
-  //   expect(results).toEqual(mockFlagArr);
-  // });
+  it('should find all paginated feature flags with search string key', async () => {
+    const results = await service.findPaginated(
+      1,
+      2,
+      logger,
+      {
+        key: FLAG_SEARCH_KEY.KEY,
+        string: '',
+      },
+      {
+        key: FLAG_SORT_KEY.NAME,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
+      }
+    );
+    expect(results).toEqual(mockFlagArr);
+  });
 
-  // it('should find all paginated feature flags with search string name', async () => {
-  //   const results = await service.findPaginated(
-  //     1,
-  //     2,
-  //     logger,
-  //     {
-  //       key: FLAG_SEARCH_SORT_KEY.NAME,
-  //       string: '',
-  //     },
-  //     {
-  //       key: FLAG_SEARCH_SORT_KEY.ALL,
-  //       sortAs: SORT_AS_DIRECTION.ASCENDING,
-  //     }
-  //   );
-  //   expect(results).toEqual(mockFlagArr);
-  // });
+  it('should find all paginated feature flags with search string name', async () => {
+    const results = await service.findPaginated(
+      1,
+      2,
+      logger,
+      {
+        key: FLAG_SEARCH_KEY.NAME,
+        string: '',
+      },
+      {
+        key: FLAG_SORT_KEY.NAME,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
+      }
+    );
+    expect(results).toEqual(mockFlagArr);
+  });
 
-  // it('should find all paginated feature flags with search string status', async () => {
-  //   const results = await service.findPaginated(
-  //     1,
-  //     2,
-  //     logger,
-  //     {
-  //       key: FLAG_SEARCH_SORT_KEY.STATUS,
-  //       string: '',
-  //     },
-  //     {
-  //       key: FLAG_SEARCH_SORT_KEY.ALL,
-  //       sortAs: SORT_AS_DIRECTION.ASCENDING,
-  //     }
-  //   );
-  //   expect(results).toEqual(mockFlagArr);
-  // });
+  it('should find all paginated feature flags with search string status', async () => {
+    const results = await service.findPaginated(
+      1,
+      2,
+      logger,
+      {
+        key: FLAG_SEARCH_KEY.STATUS,
+        string: '',
+      },
+      {
+        key: FLAG_SORT_KEY.NAME,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
+      }
+    );
+    expect(results).toEqual(mockFlagArr);
+  });
 
-  // it('should find all paginated feature flags with search string variation type', async () => {
-  //   const results = await service.findPaginated(
-  //     1,
-  //     2,
-  //     logger,
-  //     {
-  //       key: FLAG_SEARCH_SORT_KEY.VARIATION_TYPE,
-  //       string: '',
-  //     },
-  //     {
-  //       key: FLAG_SEARCH_SORT_KEY.ALL,
-  //       sortAs: SORT_AS_DIRECTION.ASCENDING,
-  //     }
-  //   );
-  //   expect(results).toEqual(mockFlagArr);
-  // });
+  it('should find all paginated feature flags with search string context', async () => {
+    const results = await service.findPaginated(
+      1,
+      2,
+      logger,
+      {
+        key: FLAG_SEARCH_KEY.CONTEXT,
+        string: '',
+      },
+      {
+        key: FLAG_SORT_KEY.NAME,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
+      }
+    );
+    expect(results).toEqual(mockFlagArr);
+  });
 
   it('should find all paginated feature flags without search params', async () => {
     const results = await service.findPaginated(1, 2, logger);
@@ -270,16 +345,10 @@ describe.skip('Feature Flag Service Testing', () => {
     expect(isUUID(results.id)).toBeTruthy();
   });
 
-  it('should update the flag with no id and no variations', async () => {
+  it('should update the flag with no id and no context', async () => {
     const results = await service.update(mockFlag3, logger);
     expect(isUUID(results.id)).toBeTruthy();
   });
-
-  // it('should update the flag with no id', async () => {
-  //   mockFlag3.variations = [var3];
-  //   const results = await service.update(mockFlag3, logger);
-  //   expect(isUUID(results.id)).toBeTruthy();
-  // });
 
   it('should throw an error when unable to update flag', async () => {
     const err = new Error('insert error');
@@ -291,12 +360,12 @@ describe.skip('Feature Flag Service Testing', () => {
     );
   });
 
-  it('should throw an error when unable to update flag variation', async () => {
+  it('should throw an error when unable to update segment (for inclusion or exclusion', async () => {
     const err = new Error('insert error');
-    flagVariationRepo.upsertFlagVariation = jest.fn().mockRejectedValue(err);
+    segmentService.upsertSegment = jest.fn().mockRejectedValue(err);
     expect(async () => {
       await service.update(mockFlag1, logger);
-    }).rejects.toThrow(new Error('Error in creating variations "updateFeatureFlagInDB" Error: insert error'));
+    }).rejects.toThrow(err);
   });
 
   it('should update the flag state', async () => {
