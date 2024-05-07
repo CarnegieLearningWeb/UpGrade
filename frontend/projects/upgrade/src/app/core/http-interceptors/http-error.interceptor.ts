@@ -27,6 +27,10 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(request).pipe(
       catchError((err) => {
+        if (err.status === 401) {
+          // auto logout if 401 response returned from api
+          this.authService.authLogout();
+        }
         this.openPopup(err);
         return EMPTY; // returning EMPTY instead of throwError as Error is handled using snacker here itself
       })

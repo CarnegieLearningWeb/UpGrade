@@ -77,6 +77,25 @@ describe('HttpErrorInterceptor', () => {
   });
 
   describe('#intercept', () => {
+    it('should logout if a 401 error is caught and open popup', fakeAsync(() => {
+      const mockError = {
+        status: 401,
+      };
+      const mockRequest: any = {};
+      const mockNextHandler = {
+        handle: jest.fn().mockReturnValue(throwError(mockError)),
+      };
+      mockAuthService.authLogout = jest.fn();
+      service.openPopup = jest.fn();
+
+      service.intercept(mockRequest, mockNextHandler).subscribe();
+
+      tick(0);
+
+      expect(service.openPopup).toHaveBeenCalledWith(mockError);
+      expect(mockAuthService.authLogout).toHaveBeenCalled();
+    }));
+
     it('should NOT logout if error is not 401, and open popup', fakeAsync(() => {
       const mockError = {
         status: 400,

@@ -15,10 +15,9 @@ describe('AppErrorHandler', () => {
     service = new AppErrorHandler(mockNotificationsService, mockEnvironment);
   });
 
-  it('should call notification service with an error of "An error occurred. See console for details." when not in production and not 401', () => {
+  it('should call notification service with an error of "An error occurred. See console for details."', () => {
     const mockError = { status: 400 } as any;
     const expectedValue = 'An error occurred. See console for details.';
-    mockEnvironment.production = false;
 
     service.handleError(mockError);
 
