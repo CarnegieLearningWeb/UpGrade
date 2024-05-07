@@ -87,10 +87,6 @@
     {
       "email": "yagnik.patel@playpowerlabs.com",
       "role": "admin"
-    },
-    {
-      "email": "khanjan.dalwadi@playpowerlabs.com",
-      "role": "admin"
     }
   ],
   "context": [
