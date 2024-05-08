@@ -94,7 +94,11 @@ export class PayloadsTableComponent implements OnInit, OnDestroy {
     const preexistingConditionPayloadData =
       this.initialLoad && this.experimentInfo ? this.experimentInfo.conditionPayloads : [];
     const conditionPayloadsRowData: SimpleExperimentPayloadTableRowData[] =
-      this.experimentDesignStepperService.getExistingConditionPayloadRowData(preexistingConditionPayloadData);
+      this.experimentDesignStepperService.getExistingConditionPayloadRowData(
+        decisionPoints,
+        conditions,
+        preexistingConditionPayloadData
+      );
 
     this.experimentDesignStepperService.updateAndStorePayloadTableData(
       decisionPoints,

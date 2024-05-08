@@ -186,48 +186,6 @@ describe('SegmentsEffects', () => {
     }));
   });
 
-  describe('importSegments$', () => {
-    it('should do nothing if Segment is falsey', fakeAsync(() => {
-      let neverEmitted = true;
-
-      service.importSegments$.subscribe(() => {
-        neverEmitted = false;
-      });
-
-      actions$.next(
-        SegmentsActions.actionImportSegments({
-          segments: undefined,
-        })
-      );
-
-      tick(0);
-
-      expect(neverEmitted).toEqual(true);
-    }));
-
-    it('should call importSegments(), no router nav, and call actionUpsertSegmentSuccess if IMPORT_SEGMENT', fakeAsync(() => {
-      segmentsDataService.importSegments = jest.fn().mockReturnValue(of([mockSegment]));
-
-      const expectedAction = SegmentsActions.actionImportSegmentSuccess({
-        segments: [mockSegment],
-      });
-
-      service.upsertSegment$.subscribe((result) => {
-        expect(result).toEqual(expectedAction);
-        expect(segmentsDataService.importSegments).toHaveBeenCalled();
-        expect(router.navigate).not.toHaveBeenCalledWith(['/segments']);
-      });
-
-      actions$.next(
-        SegmentsActions.actionImportSegments({
-          segments: [mockSegmentFile],
-        })
-      );
-
-      tick(0);
-    }));
-  });
-
   describe('exportSegments$', () => {
     it('should do nothing if Segment is id', fakeAsync(() => {
       let neverEmitted = true;

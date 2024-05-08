@@ -53,7 +53,7 @@ import { ExperimentEffects } from './experiments.effects';
 import {
   DATE_RANGE,
   EXPERIMENT_SEARCH_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_STATE,
   UpsertExperimentType,
@@ -109,7 +109,7 @@ describe('ExperimentEffects', () => {
       Selectors.selectTotalExperiment.setResult(1);
       Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
       Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.CREATED_AT);
-      Selectors.selectSortAs.setResult(EXPERIMENT_SORT_AS.ASCENDING);
+      Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
       Selectors.selectSearchString.setResult('test');
 
       service.getPaginatedExperiment$.subscribe((result: any) => {
@@ -129,7 +129,7 @@ describe('ExperimentEffects', () => {
       Selectors.selectTotalExperiment.setResult(null);
       Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
       Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.CREATED_AT);
-      Selectors.selectSortAs.setResult(EXPERIMENT_SORT_AS.ASCENDING);
+      Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
       Selectors.selectSearchString.setResult('test');
 
       service.getPaginatedExperiment$.subscribe((result: any) => {
@@ -158,7 +158,7 @@ describe('ExperimentEffects', () => {
       Selectors.selectTotalExperiment.setResult(1);
       Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
       Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.CREATED_AT);
-      Selectors.selectSortAs.setResult(EXPERIMENT_SORT_AS.ASCENDING);
+      Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
       Selectors.selectSearchString.setResult('test');
 
       service.getPaginatedExperiment$.pipe(take(2), pairwise()).subscribe((result: any) => {
@@ -189,7 +189,7 @@ describe('ExperimentEffects', () => {
       Selectors.selectTotalExperiment.setResult(1);
       Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
       Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.CREATED_AT);
-      Selectors.selectSortAs.setResult(EXPERIMENT_SORT_AS.ASCENDING);
+      Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
       Selectors.selectSearchString.setResult('test');
 
       service.getPaginatedExperiment$

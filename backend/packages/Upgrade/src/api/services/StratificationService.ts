@@ -22,7 +22,7 @@ export class StratificationService {
   ): FactorStrata[] {
     const formattedResults = results.reduce((formatted, result) => {
       const { factor, value, count, experimentIds } = result;
-      const expIds = experimentIds.filter((experimentId) => !!experimentId);
+      const expIds = new Set(experimentIds.filter((experimentId) => !!experimentId));
       if (!formatted[factor]) {
         formatted[factor] = { factor, factorValue: {}, experimentIds: expIds };
       }

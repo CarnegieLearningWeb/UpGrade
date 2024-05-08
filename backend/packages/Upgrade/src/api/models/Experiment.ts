@@ -10,7 +10,7 @@ import {
   EXPERIMENT_STATE,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   FILTER_MODE,
   IEnrollmentCompleteCondition,
   IExperimentSearchParams,
@@ -30,7 +30,7 @@ import { StratificationFactor } from './StratificationFactor';
 
 export {
   EXPERIMENT_SEARCH_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   EXPERIMENT_SORT_KEY,
   IExperimentSearchParams,
   IExperimentSortParams,

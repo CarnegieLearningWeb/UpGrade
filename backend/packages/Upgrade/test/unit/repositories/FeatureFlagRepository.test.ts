@@ -2,6 +2,7 @@ import { Connection, DeleteQueryBuilder, EntityManager, InsertQueryBuilder, Upda
 import * as sinon from 'sinon';
 import { FeatureFlagRepository } from '../../../src/api/repositories/FeatureFlagRepository';
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
+import { FEATURE_FLAG_STATUS } from 'upgrade_types';
 
 let sandbox;
 let connection;
@@ -167,7 +168,7 @@ describe('FeatureFlagRepository Testing', () => {
     updateMock.expects('returning').once().returns(updateQueryBuilder);
     updateMock.expects('execute').once().returns(Promise.resolve(result));
 
-    const res = await repo.updateState(flag.id, true);
+    const res = await repo.updateState(flag.id, FEATURE_FLAG_STATUS.ENABLED);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     updateMock.verify();
@@ -187,7 +188,7 @@ describe('FeatureFlagRepository Testing', () => {
     updateMock.expects('execute').once().returns(Promise.reject(err));
 
     expect(async () => {
-      await repo.updateState(flag.id, true);
+      await repo.updateState(flag.id, FEATURE_FLAG_STATUS.ENABLED);
     }).rejects.toThrow(err);
 
     sinon.assert.calledOnce(createQueryBuilderStub);

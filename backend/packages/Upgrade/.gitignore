@@ -9,6 +9,7 @@ npm-debug.log
 yarn-error.log
 yarn.lock
 .env
+.env.docker.local
 
 # OS generated files #
 .DS_Store

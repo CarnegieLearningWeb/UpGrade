@@ -8,8 +8,8 @@ import { ExperimentUserService } from '../../../src/api/services/ExperimentUserS
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
 import { MetricService } from '../../../src/api/services/MetricService';
 import { ClientLibMiddleware } from '../../../src/api/middlewares/ClientLibMiddleware';
-import ExperimentServieMock from './mocks/ExperimentServiceMock';
-import ExperimentAssignmentServieMock from './mocks/ExperimentAssignmentServiceMock';
+import ExperimentServiceMock from './mocks/ExperimentServiceMock';
+import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentServiceMock';
 import ExperimentUserServiceMock from './mocks/ExperimentUserServiceMock';
 import FeatureFlagServiceMock from './mocks/FeatureFlagServiceMock';
 import MetricServiceMock from './mocks/MetricServiceMock';
@@ -25,8 +25,8 @@ describe('Experiment Client Controller Testing', () => {
     ormUseContainer(Container);
     classValidatorUseContainer(Container);
 
-    Container.set(ExperimentService, new ExperimentServieMock());
-    Container.set(ExperimentAssignmentService, new ExperimentAssignmentServieMock());
+    Container.set(ExperimentService, new ExperimentServiceMock());
+    Container.set(ExperimentAssignmentService, new ExperimentAssignmentServiceMock());
     Container.set(ExperimentUserService, new ExperimentUserServiceMock());
     Container.set(FeatureFlagService, new FeatureFlagServiceMock());
     Container.set(MetricService, new MetricServiceMock());

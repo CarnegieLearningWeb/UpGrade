@@ -3,11 +3,11 @@
 @import '@danielmoncada/angular-datetime-picker/assets/style/picker.min.css';
 @import url('https://fonts.googleapis.com/css?family=Roboto:400,700|Material+Icons');
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800&display=swap');
-
+@import 'jsoneditor/dist/jsoneditor.min.css';
 @include mat.all-component-typographies();
 @include mat.core();
 
-@import './styles/variables.css';
+@import './styles/variables.scss';
 @import './themes/light-theme';
 @import './styles/utility.scss';
 @import './styles/shared-modal.scss';
@@ -28,11 +28,6 @@
 @import './app/features/dashboard/logs/common/logs-view.theme.scss';
 @import './app/features/dashboard/common/tabs-view.theme.scss';
 @import './app/features/auth/login/login.theme.scss';
-@import './app/features/dashboard/feature-flags/feature-flags-root/feature-flags-root.theme.scss';
-@import './app/features/dashboard/feature-flags/components/feature-flags-list/feature-flags-list.theme.scss';
-@import './app/features/dashboard/feature-flags/components/modal/new-flag/new-flag.theme.scss';
-@import './app/features/dashboard/feature-flags/components/flag-variations/flag-variations.theme.scss';
-@import './app/features/dashboard/feature-flags/pages/view-feature-flag/view-feature-flag.theme.scss';
 @import './app/features/dashboard/segments/segments-root/segments-root.theme.scss';
 @import './app/features/dashboard/segments/components/segments-list/segments-list.theme.scss';
 @import './app/features/dashboard/segments/components/modal/new-segment/new-segment.theme.scss';
@@ -41,6 +36,7 @@
 @import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
 @import './app/shared/components/query-result/query-result.theme.scss';
 @import './app/features/dashboard/profile/components/metrics/metrics.theme.scss';
+@import './app/features/dashboard/profile/components/modals/add-metrics/add-metrics.theme.scss';
 @import './app/features/dashboard/home/components/experiment-query-result/experiment-query-result.theme.scss';
 @import './app/features/dashboard/home/components/modal/experiment-end-criteria/experiment-ending-criteria.theme.scss';
 @import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
@@ -68,19 +64,15 @@
   @include logs-view-component-theme($theme);
   @include tabs-view-theme($theme);
   @include login-component-theme($theme);
-  @include feature-flags-root-component-theme($theme);
-  @include feature-flags-list-component-theme($theme);
-  @include new-flag-component-theme($theme);
-  @include flag-variations-component-theme($theme);
   @include view-segment-component-theme($theme);
   @include segments-root-component-theme($theme);
   @include segments-list-component-theme($theme);
   @include new-segment-component-theme($theme);
   @include segment-members-component-theme($theme);
-  @include view-feature-flag-component-theme($theme);
   @include queries-modal-component-theme($theme);
   @include query-result-component-theme($theme);
   @include metrics-component-theme($theme);
+  @include add-metrics-component-theme($theme);
   @include experiment-query-result-component-theme($theme);
   @include experiment-ending-criteria-component-theme($theme);
   @include import-experiment-component-theme($theme);
@@ -104,7 +96,6 @@
   @include mat.all-component-densities(-2);
 }
 
-
 // TODO material specific style which cannot be changed by scope
 .mat-drawer-inner-container {
   display: flex;
@@ -112,7 +103,11 @@
   justify-content: space-between;
 }
 
-button[mat-button], button[mat-raised-button], button[mat-flat-button], button[mat-stroked-button], button[mat-icon-button] {
+button[mat-button],
+button[mat-raised-button],
+button[mat-flat-button],
+button[mat-stroked-button],
+button[mat-icon-button] {
   span {
     letter-spacing: normal;
   }
@@ -143,6 +138,7 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
 .queries-modal,
 .export-modal,
 .query-result,
+.add-metric-modal,
 .duplicate-segment-modal,
 .experiment-ending-criteria {
   @include custom-components-theme($light-theme);
@@ -203,7 +199,8 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
   width: 500px;
 }
 
-.experiment-general-modal {
+.experiment-general-modal,
+.add-metric-modal {
   width: 804px;
   min-height: 294px;
 }
@@ -275,7 +272,6 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
     color: var(--black-2);
   }
 }
-
 
 .mdc-text-field.mdc-text-field--filled,
 .mat-mdc-option {
@@ -372,7 +368,8 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
     border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 
     .mat-mdc-tab-header-pagination {
-      box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px;
+      box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 4px 5px 0px,
+        rgba(0, 0, 0, 0.12) 0px 1px 10px 0px;
     }
 
     .mat-mdc-tab-label-container .mat-mdc-tab-labels .mat-mdc-tab {
@@ -406,7 +403,8 @@ button[mat-button], button[mat-raised-button], button[mat-flat-button], button[m
 }
 
 .cdk-overlay-pane {
-  .mat-mdc-select-panel, .mat-mdc-autocomplete-panel {
+  .mat-mdc-select-panel,
+  .mat-mdc-autocomplete-panel {
     padding: 0;
 
     .mat-mdc-option:hover {

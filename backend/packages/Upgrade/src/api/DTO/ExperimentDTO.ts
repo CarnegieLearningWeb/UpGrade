@@ -23,7 +23,7 @@ import {
   EXPERIMENT_STATE,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   FILTER_MODE,
   IEnrollmentCompleteCondition,
   IExperimentSearchParams,
@@ -39,7 +39,7 @@ import { Type } from 'class-transformer';
 
 export {
   EXPERIMENT_SEARCH_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   EXPERIMENT_SORT_KEY,
   IExperimentSearchParams,
   IExperimentSortParams,
@@ -191,14 +191,12 @@ class ConditionPayloadValidator {
   public payload: PayloadValidator;
 
   @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => ConditionValidator)
-  public parentCondition: ConditionValidator;
+  @IsString()
+  public parentCondition: string;
 
   @IsOptional()
-  @ValidateNested()
-  @Type(() => PartitionValidator)
-  public decisionPoint?: PartitionValidator;
+  @IsString()
+  public decisionPoint?: string;
 }
 
 class MetricValidator {
@@ -457,4 +455,14 @@ export class ExperimentDTO {
   @IsNotEmpty()
   @IsEnum(EXPERIMENT_TYPE)
   public type: EXPERIMENT_TYPE;
+}
+
+export interface ExperimentFile {
+  fileName: string;
+  fileContent: string;
+}
+
+export interface ValidatedExperimentError {
+  fileName: string;
+  error: string;
 }

@@ -23,7 +23,6 @@ import { QueriesModalComponent } from '../../components/modal/queries-modal/quer
 import { ExperimentEndCriteriaComponent } from '../../components/modal/experiment-end-criteria/experiment-end-criteria.component';
 import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/state-time-logs.component';
 import { ExportModalComponent } from '../../components/modal/export-experiment/export-experiment.component';
-import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-time/enrollment-over-time.component';
 import { EXPERIMENT_TYPE, IMetricMetaData, OPERATION_TYPES, PAYLOAD_TYPE } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
@@ -194,7 +193,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       this.experiment.conditions?.forEach((condition) => {
         let conditionPayload: ExperimentConditionPayload;
         this.experiment.conditionPayloads.forEach((payloadcondition) => {
-          if (payloadcondition.parentCondition.id === condition.id) {
+          if (payloadcondition.parentCondition === condition.id) {
             conditionPayload = payloadcondition;
           }
         });
@@ -308,7 +307,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     });
   }
 
-  searchExperiment(type: EXPERIMENT_SEARCH_KEY, value: FLAG_SEARCH_SORT_KEY) {
+  searchExperiment(type: EXPERIMENT_SEARCH_KEY, value: EXPERIMENT_SEARCH_KEY) {
     this.experimentService.setSearchKey(type);
     this.experimentService.setSearchString(value);
     this.router.navigate(['/home']);
