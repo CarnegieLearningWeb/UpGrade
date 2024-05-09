@@ -1,14 +1,12 @@
 import { Component, ChangeDetectionStrategy, OnInit, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { first } from 'rxjs/operators';
 import { EXPORT_METHOD } from 'upgrade_types';
 import { AuthService } from '../../../../../../core/auth/auth.service';
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'experiment-export',
@@ -20,7 +18,9 @@ export class ExportModalComponent implements OnInit {
   exportMethod = [];
   emailId: string;
   exportForm: UntypedFormGroup;
+  private formSubscription: Subscription;
   experiments: ExperimentVM[];
+  isExportMethodSelected = false;
   constructor(
     private _formBuilder: UntypedFormBuilder,
     private experimentService: ExperimentService,
@@ -46,6 +46,11 @@ export class ExportModalComponent implements OnInit {
         this.emailId = userInfo.email;
       }
     });
+
+    this.formSubscription = this.exportForm.valueChanges.subscribe((value) => {
+      const { exportMethod } = value;
+      this.isExportMethodSelected = !!exportMethod;
+    });
   }
 
   exportExperimentInfo(experimentId: string, experimentName: string) {
@@ -63,5 +68,9 @@ export class ExportModalComponent implements OnInit {
       this.exportExperimentDesign(this.experiments.map((exp) => exp.id));
     }
     this.onCancelClick();
+  }
+
+  ngOnDestroy(): void {
+    this.formSubscription.unsubscribe();
   }
 }

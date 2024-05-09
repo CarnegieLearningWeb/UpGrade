@@ -11,7 +11,6 @@ import { ClientLibraryService } from './client-library.service';
 import { GeneralTestForVersion41Service } from '../mockFrontendClientAppComponents/general-test-for-version4-1.service';
 import { GeneralTestForVersion1Service } from '../mockFrontendClientAppComponents/general-test-for-version1.service';
 import { GeneralTestForVersion5Service } from '../mockFrontendClientAppComponents/general-test-for-version5.service';
-import { MockMathstreamBrowserService } from '../mockFrontendClientAppComponents/mock-mathstream-browser.service';
 
 @Injectable({
   providedIn: 'root',
@@ -26,7 +25,6 @@ export class MockClientAppService {
     public generalTest_1_1: GeneralTestForVersion1Service,
     public generalTest_4_1: GeneralTestForVersion41Service,
     public generalTest_5: GeneralTestForVersion5Service,
-    // public mathstream_AdaptiveSegmentSwapExperiment: MockMathstreamBrowserService,
     public dataFetchService: DataFetchService,
     public eventBus: EventBusService,
     public clientLibraryService: ClientLibraryService
@@ -37,8 +35,6 @@ export class MockClientAppService {
       [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_1_1]: generalTest_1_1.getAppInterfaceModel(),
       [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_4_1]: generalTest_4_1.getAppInterfaceModel(),
       [MOCK_APP_NAMES.GENERAL_TS_FRONTEND_5_0]: generalTest_5.getAppInterfaceModel(),
-      [MOCK_APP_NAMES.MATHSTREAM_AdaptiveSegmentSwapExperiment]:
-        mathstream_AdaptiveSegmentSwapExperiment.getAppInterfaceModel(),
     };
   }
 

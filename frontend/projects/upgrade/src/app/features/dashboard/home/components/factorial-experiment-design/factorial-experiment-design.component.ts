@@ -97,7 +97,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
   conditionTableDataUpToDate = true;
   isExperimentEditable = true;
-  isAnyRowRemoved = false;
   // common lock variable for all tables:
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
 
@@ -370,7 +369,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   removeFactor(groupIndex: number) {
     this.factor.removeAt(groupIndex);
     this.handleConditionsButtonClick();
-    this.isAnyRowRemoved = true;
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.experimentDesignStepperService.clearFactorialFactorTableEditModeDetails();
     this.updateView('factorTable');
@@ -382,7 +380,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   removeLevel(factorIndex: number, levelIndex: number) {
     this.getFactorialLevelsAt(factorIndex).removeAt(levelIndex);
     this.handleConditionsButtonClick();
-    this.isAnyRowRemoved = true;
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.experimentDesignStepperService.clearFactorialLevelTableEditModeDetails();
     this.updateView('levelTable');
@@ -761,7 +758,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
       if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
         this.experimentDesignStepperService.experimentStepperDataReset();
-        this.isAnyRowRemoved = false;
         this.factorialExperimentDesignForm.markAsPristine();
       }
     }

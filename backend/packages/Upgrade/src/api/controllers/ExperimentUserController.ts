@@ -6,6 +6,7 @@ import { SERVER_ERROR } from 'upgrade_types';
 import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
 import { ExperimentUserArrayValidator, ExperimentUserValidator } from './validators/ExperimentUserValidator';
+import { InsertResult } from 'typeorm';
 
 // TODO delete this from experiment system
 /**
@@ -110,7 +111,7 @@ export class UserController {
     @Body({ validate: true })
     users: ExperimentUserArrayValidator,
     @Req() request: AppRequest
-  ): Promise<ExperimentUser[]> {
+  ): Promise<InsertResult> {
     return this.userService.create(users.users, request.logger);
   }
 

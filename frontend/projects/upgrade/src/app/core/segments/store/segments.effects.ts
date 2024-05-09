@@ -2,12 +2,12 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
-import { catchError, filter, map, mergeMap, switchMap, withLatestFrom } from 'rxjs/operators';
+import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operators';
 import { AppState, NotificationService } from '../../core.module';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
-import { Segment, SegmentReturnedObj, UpsertSegmentType } from './segments.model';
-import { selectAllSegments, selectSegmentsState } from './segments.selectors';
+import { Segment, UpsertSegmentType } from './segments.model';
+import { selectAllSegments } from './segments.selectors';
 import JSZip from 'jszip';
 
 @Injectable()
@@ -75,26 +75,6 @@ export class SegmentsEffects {
             return SegmentsActions.actionUpsertSegmentSuccess({ segment: data });
           }),
           catchError(() => [SegmentsActions.actionUpsertSegmentFailure()])
-        );
-      })
-    )
-  );
-
-  importSegments$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(SegmentsActions.actionImportSegments),
-      map((action) => ({ segments: action.segments })),
-      filter(({ segments }) => !!segments),
-      switchMap(({ segments }) => {
-        return this.segmentsDataService.importSegments(segments).pipe(
-          map((data: SegmentReturnedObj) => {
-            data.importErrors.forEach((error) => {
-              const errorMessage = error.fileName + ': ' + error.error;
-              this.notificationService.showError(errorMessage);
-            });
-            return SegmentsActions.actionImportSegmentSuccess({ segments: data.segments });
-          }),
-          catchError(() => [SegmentsActions.actionImportSegmentFailure()])
         );
       })
     )

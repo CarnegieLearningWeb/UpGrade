@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { SettingsService } from '../../../core/settings/settings.service';
+import { Component, Inject, OnInit } from '@angular/core';
 import { AuthService } from '../../../core/auth/auth.service';
 import { VersionService } from '../../../core/version/version.service';
+import { ENV, Environment } from '../../../../environments/environment-types';
 
 @Component({
   selector: 'app-dashboard-root',
@@ -18,11 +18,6 @@ export class DashboardRootComponent implements OnInit {
       text: 'global.experiment.title',
       iconType: 'assignment',
     },
-    // {
-    //   path: ['/featureFlags'],
-    //   text: 'feature-flags.title.text',
-    //   iconType: 'toggle_on'
-    // },
     {
       path: ['/participants'],
       text: 'global.experiment-user.title',
@@ -41,10 +36,14 @@ export class DashboardRootComponent implements OnInit {
   ];
 
   constructor(
-    private settingsService: SettingsService,
+    @Inject(ENV) private environment: Environment,
     private authService: AuthService,
     private versionService: VersionService
-  ) {}
+  ) {
+    if (this.environment.featureFlagNavToggle) {
+      this.addFeatureFlagsLink();
+    }
+  }
 
   logout() {
     this.authService.authLogout();
@@ -52,5 +51,13 @@ export class DashboardRootComponent implements OnInit {
 
   async ngOnInit() {
     this.serverVersion = 'v' + (await this.versionService.getVersion());
+  }
+
+  addFeatureFlagsLink() {
+    this.routeLinks.splice(1, 0, {
+      path: ['/featureflags'],
+      text: 'feature-flags.title.text',
+      iconType: 'toggle_on',
+    });
   }
 }

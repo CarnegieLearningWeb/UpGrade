@@ -227,7 +227,6 @@ export class ExperimentAssignmentService {
       const experiment = experiments[0];
       const { conditions } = experiment;
       const payloadCondition = conditions.flatMap((condition) => condition.conditionPayloads);
-
       const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
       const matchedPayloadCondition = payloadCondition.filter((con) => con.payloadValue === condition);
       if (matchedCondition.length === 0 && matchedPayloadCondition.length === 0 && condition !== null) {
@@ -501,7 +500,7 @@ export class ExperimentAssignmentService {
       // Create new filtered experiment
       const alreadyAssignedExperiment = experimentPools.map((pool) => {
         return pool.filter((experiment) => {
-          const individualEnrollment = individualEnrollments.find((enrollment) => {
+          const individualEnrollment = mergedIndividualAssignment.find((enrollment) => {
             return enrollment.experiment.id === experiment.id;
           });
           const groupEnrollment = groupEnrollments.find((enrollment) => {

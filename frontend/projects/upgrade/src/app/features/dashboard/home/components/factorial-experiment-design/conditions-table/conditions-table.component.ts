@@ -17,7 +17,6 @@ import { ExperimentVM } from '../../../../../../core/experiments/store/experimen
 })
 export class ConditionsTableComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
-  @Input() isAnyRowRemoved: boolean;
   @Input() isExperimentEditable: boolean;
 
   subscriptions: Subscription;
@@ -35,8 +34,8 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   useEllipsis = false;
 
   // Condition Errors
-  conditionweightSumError: string = null;
-  conditionnegativeweightError: string = null;
+  conditionWeightSumError: string = null;
+  conditionNegativeWeightError: string = null;
 
   constructor(
     private experimentDesignStepperService: ExperimentDesignStepperService,
@@ -98,15 +97,15 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   }
 
   handleDesignDataChanges(designData: ExperimentFactorialDesignData) {
-    if (this.experimentInfo?.partitions.length && !this.formInitialized && !this.isAnyRowRemoved) {
+    const isDesignDataValid = this.checkDesignDataValidity(designData);
+    if (this.experimentInfo?.partitions.length && (!this.formInitialized || !isDesignDataValid)) {
       this.handleInitializeExistingTableData();
-    } else if (!this.experimentInfo && this.formInitialized && !this.isAnyRowRemoved) {
+    } else if (!this.experimentInfo && (!this.formInitialized || !isDesignDataValid)) {
       this.handleInitializeNewNewTableData(designData);
     } else {
       // if new exp and form initialized and you move back and forth
       // if edit exp and form already initialized
-      this.handleInitializeNewNewTableData(designData); // <---- be careful doing this! if you see bugs, it may be because this is not the intended place for this function
-      // this.handleUpdateDesignDataTableChanges(designData);
+      this.handleUpdateDesignDataTableChanges(designData);
     }
   }
 
@@ -125,9 +124,25 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     this.initializeForm(newTableData);
   }
 
-  // handleUpdateDesignDataTableChanges(designData: ExperimentFactorialDesignData) {
-  //   // TODO: intelligently handle updates to design data without triggering complete table re-creation
-  // }
+  handleUpdateDesignDataTableChanges(designData: ExperimentFactorialDesignData) {
+    const newTableData = this.experimentDesignStepperService.editFactorialConditionTableData(
+      designData,
+      this.tableData$.value
+    );
+    this.initializeForm(newTableData);
+  }
+
+  checkDesignDataValidity(designData: ExperimentFactorialDesignData) {
+    let isDesignDataValid = true;
+    if (designData.factors.length > 1) {
+      designData.factors.forEach((factor) => {
+        if (!factor.levels[0].name) {
+          isDesignDataValid = false;
+        }
+      });
+    }
+    return isDesignDataValid;
+  }
 
   initializeForm(tableData: FactorialConditionTableRowData[]) {
     this.createFormControls(tableData);
@@ -171,18 +186,18 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     factorialConditions.forEach((condition) => (sumOfAssignmentWeights += parseFloat(condition.weight)));
     // checking if sum is not equal to 100
     if (Math.round(sumOfAssignmentWeights) !== 100.0) {
-      this.conditionweightSumError = weightSumNot100ErrorMsg;
+      this.conditionWeightSumError = weightSumNot100ErrorMsg;
     } else {
-      this.conditionweightSumError = null;
+      this.conditionWeightSumError = null;
     }
   }
 
   validateWeightsNotNegative(factorialConditions: FactorialConditionTableRowData[]) {
-    this.conditionnegativeweightError = null;
-    const negativeweightErrorMsg = this.translate.instant('home.new-experiment.design.assignment-weight-negative.text');
+    this.conditionNegativeWeightError = null;
+    const negativeWeightErrorMsg = this.translate.instant('home.new-experiment.design.assignment-weight-negative.text');
     // handling sum of decimal values for assignment weights:
     factorialConditions.forEach((condition) =>
-      parseFloat(condition.weight) < 0 ? (this.conditionnegativeweightError = negativeweightErrorMsg) : null
+      parseFloat(condition.weight) < 0 ? (this.conditionNegativeWeightError = negativeWeightErrorMsg) : null
     );
   }
 
@@ -198,7 +213,7 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
     this.equalWeightFlag = !this.equalWeightFlag;
 
     if (this.equalWeightFlag) {
-      const newTableData = this.applyEqualWeights();
+      const newTableData = this.applyEqualWeights(this.factorialConditionTableForm.value.factorialConditions);
       this.experimentDesignStepperService.updateFactorialConditionTableData(newTableData);
     }
   }

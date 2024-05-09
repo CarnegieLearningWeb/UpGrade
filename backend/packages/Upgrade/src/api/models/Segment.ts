@@ -4,6 +4,8 @@ import { SEGMENT_TYPE } from 'upgrade_types';
 import { BaseModel } from './base/BaseModel';
 import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
 import { ExperimentSegmentInclusion } from './ExperimentSegmentInclusion';
+import { FeatureFlagSegmentExclusion } from './FeatureFlagSegmentExclusion';
+import { FeatureFlagSegmentInclusion } from './FeatureFlagSegmentInclusion';
 import { GroupForSegment } from './GroupForSegment';
 import { IndividualForSegment } from './IndividualForSegment';
 
@@ -65,4 +67,12 @@ export class Segment extends BaseModel {
   @OneToOne(() => ExperimentSegmentExclusion, (experimentSegmentExclusion) => experimentSegmentExclusion.segment)
   @Type(() => ExperimentSegmentExclusion)
   public experimentSegmentExclusion: ExperimentSegmentExclusion;
+
+  @OneToOne(() => FeatureFlagSegmentInclusion, (featureFlagSegmentInclusion) => featureFlagSegmentInclusion.segment)
+  @Type(() => FeatureFlagSegmentInclusion)
+  public featureFlagSegmentInclusion: FeatureFlagSegmentInclusion;
+
+  @OneToOne(() => FeatureFlagSegmentExclusion, (featureFlagSegmentExclusion) => featureFlagSegmentExclusion.segment)
+  @Type(() => FeatureFlagSegmentExclusion)
+  public featureFlagSegmentExclusion: FeatureFlagSegmentExclusion;
 }

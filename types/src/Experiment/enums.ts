@@ -38,6 +38,12 @@ export enum EXPERIMENT_STATE {
   ARCHIVED = 'archived',
 }
 
+export enum FEATURE_FLAG_STATUS {
+  ENABLED = 'enabled',
+  DISABLED = 'disabled',
+  ARCHIVED = 'archived',
+}
+
 export enum SERVER_ERROR {
   DB_UNREACHABLE = 'Database not reachable',
   DB_AUTH_FAIL = 'Database auth fail',
@@ -113,7 +119,7 @@ export enum EXPERIMENT_SORT_KEY {
   POST_EXPERIMENT_RULE = 'postExperimentRule',
 }
 
-export enum EXPERIMENT_SORT_AS {
+export enum SORT_AS_DIRECTION {
   ASCENDING = 'ASC',
   DESCENDING = 'DESC',
 }
@@ -174,6 +180,19 @@ export enum SEGMENT_STATUS {
   GLOBAL = 'Global',
   LOCKED = 'Locked',
   UNLOCKED = 'Unlocked',
+}
+
+export enum SEGMENT_SEARCH_KEY {
+  ALL = 'all',
+  NAME = 'name',
+  STATUS = 'status',
+  CONTEXT = 'context',
+}
+
+export enum SEGMENT_SORT_KEY {
+  NAME = 'name',
+  STATUS = 'state',
+  UPDATED_AT = 'updatedAt',
 }
 
 export enum INCLUSION_CRITERIA {

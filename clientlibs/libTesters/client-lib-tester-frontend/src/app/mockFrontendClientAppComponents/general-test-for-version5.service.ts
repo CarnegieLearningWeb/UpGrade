@@ -16,6 +16,7 @@ import { AbstractMockAppService } from './abstract-mock-app.service';
 import { MOCK_APP_NAMES } from '../../../../shared/constants';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
+import { IUserAliases } from '../../../../../../types/src/Experiment/interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -382,8 +383,7 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('User info is missing userAliases:', user);
     }
     try {
-      const useraliasesResponse: UpGradeClientInterfaces.IExperimentUserAliases[] =
-        await this.upgradeClient.setAltUserIds(user.userAliases);
+      const useraliasesResponse: IUserAliases = await this.upgradeClient.setAltUserIds(user.userAliases);
       console.log({ useraliasesResponse });
     } catch (err) {
       console.error(err);
@@ -398,9 +398,8 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('User info is missing groups:', user);
     }
     try {
-      const groupMembershipResponse: UpGradeClientInterfaces.IExperimentUser = await this.upgradeClient.setGroupMembership(
-        user.groups
-      );
+      const groupMembershipResponse: UpGradeClientInterfaces.IExperimentUser =
+        await this.upgradeClient.setGroupMembership(user.groups);
       console.log({ groupMembershipResponse });
     } catch (err) {
       console.error(err);
@@ -415,9 +414,8 @@ export class GeneralTestForVersion5Service extends AbstractMockAppService {
       console.error('User info is missing working groups:', user);
     }
     try {
-      const workingGroupMembershipResponse: UpGradeClientInterfaces.IExperimentUser = await this.upgradeClient.setWorkingGroup(
-        user.workingGroup
-      );
+      const workingGroupMembershipResponse: UpGradeClientInterfaces.IExperimentUser =
+        await this.upgradeClient.setWorkingGroup(user.workingGroup);
       console.log({ workingGroupMembershipResponse });
     } catch (err) {
       console.error(err);

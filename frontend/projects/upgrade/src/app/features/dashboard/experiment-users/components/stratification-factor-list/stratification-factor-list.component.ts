@@ -6,6 +6,8 @@ import { DeleteStratificationComponent } from './delete-stratification/delete-st
 import { StratificationFactor } from '../../../../../core/stratification-factors/store/stratification-factors.model';
 import { Subscription } from 'rxjs';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
+import { ExperimentNameVM } from '../../../../../core/experiments/store/experiments.model';
 
 interface StratificationFactorsTableRow {
   factor: string;
@@ -26,10 +28,18 @@ export class StratificationComponent implements OnInit {
   isLoading$ = this.stratificationFactorsService.isLoading$;
   stratificationFactorsForTable: StratificationFactorsTableRow[] = [];
   displayedColumns: string[] = ['factor', 'status', 'summary', 'actions'];
+  allExperimentsName: ExperimentNameVM[];
 
-  constructor(private dialog: MatDialog, private stratificationFactorsService: StratificationFactorsService) {}
+  constructor(
+    private dialog: MatDialog,
+    private stratificationFactorsService: StratificationFactorsService,
+    private experimentService: ExperimentService
+  ) {}
 
   ngOnInit(): void {
+    this.experimentService.allExperimentNames$.subscribe((allExperimentNames) => {
+      this.allExperimentsName = allExperimentNames;
+    });
     this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(
       (allStratificationFactors) => {
         this.allStratificationFactors = allStratificationFactors;
@@ -54,11 +64,14 @@ export class StratificationComponent implements OnInit {
 
         factorSummary = totalUsers.toString() + ' ' + factorSummary + ' (' + tempSummary + ')';
 
+        const experimentNamesToShow = stratificationFactor.experimentIds.map((experimentId) => {
+          return this.allExperimentsName.find((experiment) => experiment.id === experimentId)?.name;
+        });
         return {
           factor: stratificationFactor.factor,
           summary: factorSummary,
           isUsed: this.checkStratificationFactorUsageStatus(stratificationFactor.experimentIds),
-          experimentIds: stratificationFactor.experimentIds,
+          experimentIds: experimentNamesToShow,
         };
       }
     );
@@ -101,7 +114,7 @@ export class StratificationComponent implements OnInit {
   }
 
   getExperimentIdsTooltip(experimentIds: any[]): string {
-    return 'Experiment IDs: [' + experimentIds?.join(', ') + ']';
+    return 'Experiments: [' + experimentIds?.join(', ') + ']';
   }
 
   checkStratificationFactorUsageStatus(experimentIds: string[]) {

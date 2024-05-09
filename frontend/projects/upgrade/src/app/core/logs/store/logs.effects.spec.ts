@@ -34,24 +34,7 @@ describe('LogsEffects', () => {
   });
 
   describe('getAllAuditLogs$', () => {
-    it('should do nothing if isAuditLogLoading is true and skipAuditLog < totalAuditLogs, totalAuditlogs is not null, and fromStarting is true', fakeAsync(() => {
-      let neverEmitted = true;
-      LogsSelectors.selectIsAuditLogLoading.setResult(true);
-      LogsSelectors.selectSkipAuditLog.setResult(1);
-      LogsSelectors.selectTotalAuditLogs.setResult(10);
-
-      service.getAllAuditLogs$.subscribe(() => {
-        neverEmitted = false;
-      });
-
-      actions$.next(LogsActions.actionGetAuditLogs({ fromStart: true }));
-
-      tick(0);
-
-      expect(neverEmitted).toEqual(true);
-    }));
-
-    it('should do nothing if isAuditLogLoading is false and skipAuditLog > totalAuditLogs, and fromStarting is falsey', fakeAsync(() => {
+    it('should do nothing if skipAuditLog > totalAuditLogs, and fromStarting is false', fakeAsync(() => {
       let neverEmitted = true;
       LogsSelectors.selectIsAuditLogLoading.setResult(false);
       LogsSelectors.selectSkipAuditLog.setResult(11);

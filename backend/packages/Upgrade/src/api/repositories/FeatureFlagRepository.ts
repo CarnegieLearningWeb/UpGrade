@@ -1,6 +1,7 @@
 import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { FeatureFlag } from '../models/FeatureFlag';
 import repositoryError from './utils/repositoryError';
+import { FEATURE_FLAG_STATUS } from 'upgrade_types';
 
 @EntityRepository(FeatureFlag)
 export class FeatureFlagRepository extends Repository<FeatureFlag> {
@@ -35,7 +36,7 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
     return result.raw;
   }
 
-  public async updateState(flagId: string, status: boolean): Promise<FeatureFlag> {
+  public async updateState(flagId: string, status: FEATURE_FLAG_STATUS): Promise<FeatureFlag> {
     const result = await this.createQueryBuilder('featureFlag')
       .update()
       .set({ status })
