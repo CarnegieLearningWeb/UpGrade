@@ -29,6 +29,7 @@ import {
   EXPERIMENT_TYPE,
   CACHE_PREFIX,
   ASSIGNMENT_UNIT,
+  FILTER_MODE,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -83,7 +84,6 @@ import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
-import { FILTER_MODE } from 'types/src/Experiment/enums';
 
 const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
