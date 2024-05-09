@@ -4,7 +4,7 @@ import { MatButton } from '@angular/material/button';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
 /**
- * Takes a title and subtitle and displays them in a header in a common details page.
+ * Takes a rootName, detailsName and rootLink and displays them in a header in a common details page.
  *
  * Example usage:
  *
@@ -27,12 +27,5 @@ import { RouterModule } from '@angular/router';
 export class CommonDetailsPageHeaderContainerComponent {
   @Input() rootName!: string;
   @Input() detailsName!: string;
-  @Input() rootLink?: string;
-
-  constructor() {
-    // If feature_root_link is not provided, use feature as its value
-    if (!this.rootLink) {
-      this.rootLink = this.rootName;
-    }
-  }
+  @Input() rootLink!: string;
 }
