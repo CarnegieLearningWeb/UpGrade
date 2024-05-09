@@ -1,7 +1,7 @@
 import {
   ExperimentState,
   EXPERIMENT_SEARCH_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   EXPERIMENT_SORT_KEY,
 } from '../experiments/store/experiments.model';
 import { LocalStorageService } from './local-storage.service';
@@ -31,7 +31,7 @@ describe('LocalStorageService', () => {
       searchKey: EXPERIMENT_SEARCH_KEY.ALL,
       searchString: 'test',
       sortKey: EXPERIMENT_SORT_KEY.STATUS,
-      sortAs: EXPERIMENT_SORT_AS.ASCENDING,
+      sortAs: SORT_AS_DIRECTION.ASCENDING,
       stats: {},
       graphInfo: null,
       graphRange: null,
@@ -55,7 +55,7 @@ describe('LocalStorageService', () => {
       searchKey: null,
       searchString: null,
       sortKey: EXPERIMENT_SORT_KEY.NAME,
-      sortAs: EXPERIMENT_SORT_AS.ASCENDING,
+      sortAs: SORT_AS_DIRECTION.ASCENDING,
       stats: {},
       graphInfo: null,
       graphRange: null,
@@ -74,7 +74,7 @@ describe('LocalStorageService', () => {
         whenCondition: 'when data in local storage, THEN experiment should use those values',
         expectedValue: expectedStateWithFetchedValues,
         fetchedSortKey: EXPERIMENT_SORT_KEY.STATUS,
-        fetchedSortAs: EXPERIMENT_SORT_AS.ASCENDING,
+        fetchedSortAs: SORT_AS_DIRECTION.ASCENDING,
         fetchedSearchKey: EXPERIMENT_SEARCH_KEY.ALL,
         fetchedSearchString: 'test',
       },

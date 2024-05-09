@@ -1,6 +1,6 @@
 {
     "name": "ab_testing_backend",
-    "version": "5.1.13",
+    "version": "5.2.0",
     "description": "Backend for A/B Testing Project",
     "scripts": {
         "install:all": "npm ci && cd packages/Scheduler && npm ci && cd ../Upgrade && npm ci",

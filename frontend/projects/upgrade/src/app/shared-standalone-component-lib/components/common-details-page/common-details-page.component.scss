@@ -1,0 +1,20 @@
+:host ::ng-deep .common-details-page-container {
+  display: flex;
+  flex-direction: column;
+  background-color: #f0f2f9; // get this from global var for gray background
+  height: 100%;
+  width: 100%;
+
+  .header-container {
+    height: 60px;
+    padding: 20px;
+    // margin-top: -30px; // there's a weird ghost element in dashboard-root.html that pushes the header down by 30px
+  }
+
+  .content-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 30px;
+  }
+}

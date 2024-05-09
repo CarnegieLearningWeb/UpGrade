@@ -6,6 +6,7 @@ export interface APIEndpoints {
   exportSegmentCSV: string;
   getAllExperiments: string;
   createNewExperiments: string;
+  validateExperiment: string;
   importExperiment: string;
   exportExperiment: string;
   updateExperiments: string;
@@ -37,6 +38,7 @@ export interface APIEndpoints {
   getVersion: string;
   contextMetaData: string;
   segments: string;
+  validateSegments: string;
   importSegments: string;
   exportSegments: string;
   getGroupAssignmentStatus: string;
@@ -57,6 +59,7 @@ export interface Environment {
   pollingLimit: number;
   api: APIEndpoints;
   withinSubjectExperimentSupportToggle: boolean,
+  featureFlagNavToggle: boolean;
 }
 
 export interface RuntimeEnvironmentConfig {
@@ -64,5 +67,6 @@ export interface RuntimeEnvironmentConfig {
   googleClientId?: string;
   endpointApi?: string;
   apiBaseUrl?: string;
-  withinSubjectExperimentSupportToggle?: boolean,
+  withinSubjectExperimentSupportToggle?: boolean;
+  featureFlagNavToggle?: boolean;
 }

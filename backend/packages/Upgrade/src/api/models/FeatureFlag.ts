@@ -1,9 +1,11 @@
-import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany, OneToOne } from 'typeorm';
 import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { BaseModel } from './base/BaseModel';
 import { Type } from 'class-transformer';
 import { FlagVariation } from './FlagVariation';
-
+import { FeatureFlagSegmentInclusion } from './FeatureFlagSegmentInclusion';
+import { FeatureFlagSegmentExclusion } from './FeatureFlagSegmentExclusion';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 @Entity()
 export class FeatureFlag extends BaseModel {
   @PrimaryColumn('uuid')
@@ -19,14 +21,38 @@ export class FeatureFlag extends BaseModel {
   @Column()
   public description: string;
 
-  @Column()
-  public variationType: string;
+  @Column('text', { array: true })
+  public context: string[];
 
-  @Column()
-  public status: boolean;
+  @Column('text', { array: true, nullable: true })
+  public tags: string[];
+
+  @IsNotEmpty()
+  @Column({
+    type: 'enum',
+    enum: FEATURE_FLAG_STATUS,
+    default: FEATURE_FLAG_STATUS.DISABLED,
+  })
+  public status: FEATURE_FLAG_STATUS;
+
+  @IsNotEmpty()
+  @Column({
+    type: 'enum',
+    enum: FILTER_MODE,
+    default: FILTER_MODE.INCLUDE_ALL,
+  })
+  public filterMode: FILTER_MODE;
 
   @OneToMany(() => FlagVariation, (variation) => variation.featureFlag)
   @ValidateNested()
   @Type(() => FlagVariation)
   public variations: FlagVariation[];
+
+  @OneToOne(() => FeatureFlagSegmentInclusion, (featureFlagSegmentInclusion) => featureFlagSegmentInclusion.featureFlag)
+  @Type(() => FeatureFlagSegmentInclusion)
+  public featureFlagSegmentInclusion: FeatureFlagSegmentInclusion;
+
+  @OneToOne(() => FeatureFlagSegmentExclusion, (featureFlagSegmentExclusion) => featureFlagSegmentExclusion.featureFlag)
+  @Type(() => FeatureFlagSegmentExclusion)
+  public featureFlagSegmentExclusion: FeatureFlagSegmentExclusion;
 }

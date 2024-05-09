@@ -15,10 +15,15 @@ export class ExperimentUsersRootComponent {
     private stratificationFactorsService: StratificationFactorsService
   ) {}
 
+  ngOnInit() {
+    this.selectedTabChange({ index: 0 });
+  }
+
   selectedTabChange(event) {
-    if (event.index === 1) {
+    if (event.index === 0) {
       this.experimentService.fetchAllExperimentNames();
       this.previewUsersService.fetchPreviewUsers(true);
+    } else if (event.index === 1) {
       this.stratificationFactorsService.fetchStratificationFactors(true);
     }
   }

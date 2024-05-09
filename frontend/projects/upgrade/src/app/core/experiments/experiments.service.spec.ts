@@ -10,7 +10,7 @@ import {
   ExperimentLocalStorageKeys,
   ExperimentVM,
   EXPERIMENT_SEARCH_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_STATE,
   POST_EXPERIMENT_RULE,
@@ -357,7 +357,6 @@ describe('ExperimentService', () => {
   describe('#importExperiment', () => {
     it('should dispatch actionUpsertExperiment with the given input', () => {
       const experiment = { ...mockExperiment };
-
       service.importExperiment([experiment]);
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
@@ -541,7 +540,7 @@ describe('ExperimentService', () => {
 
   describe('#setSortingType', () => {
     it('should set localStorage item and dispatch actionSetSortingType with the given input', () => {
-      const sortingType = EXPERIMENT_SORT_AS.ASCENDING;
+      const sortingType = SORT_AS_DIRECTION.ASCENDING;
 
       service.setSortingType(sortingType);
 

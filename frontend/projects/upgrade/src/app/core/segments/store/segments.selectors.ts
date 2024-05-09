@@ -27,6 +27,20 @@ export const selectExperimentSegmentsExclusion = createSelector(
 export const selectSelectedSegment = createSelector(
   selectRouterState,
   selectSegmentsState,
-  ({ state: { params } }, segmentState) =>
-    segmentState.entities[params.segmentId] ? segmentState.entities[params.segmentId] : undefined
+  (routerState, segmentState) => {
+    if (routerState?.state && segmentState?.entities) {
+      const {
+        state: { params },
+      } = routerState;
+      return segmentState.entities[params.segmentId] ? segmentState.entities[params.segmentId] : undefined;
+    }
+  }
 );
+
+export const selectSearchKey = createSelector(selectSegmentsState, (state) => state.searchKey);
+
+export const selectSearchString = createSelector(selectSegmentsState, (state) => state.searchString);
+
+export const selectSortKey = createSelector(selectSegmentsState, (state) => state.sortKey);
+
+export const selectSortAs = createSelector(selectSegmentsState, (state) => state.sortAs);

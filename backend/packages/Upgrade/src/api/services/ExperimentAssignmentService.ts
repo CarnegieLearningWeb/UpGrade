@@ -501,7 +501,7 @@ export class ExperimentAssignmentService {
       // Create new filtered experiment
       const alreadyAssignedExperiment = experimentPools.map((pool) => {
         return pool.filter((experiment) => {
-          const individualEnrollment = individualEnrollments.find((enrollment) => {
+          const individualEnrollment = mergedIndividualAssignment.find((enrollment) => {
             return enrollment.experiment.id === experiment.id;
           });
           const groupEnrollment = groupEnrollments.find((enrollment) => {

@@ -1,11 +1,10 @@
-import { IsNotEmpty, IsDefined, ValidateNested, IsOptional, IsString, IsArray } from 'class-validator';
+import { ValidateNested, IsOptional, IsString, IsArray } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Experiment } from '../../../../src/api/models/Experiment';
 import { ExperimentCondition } from '../../../../src/api/models/ExperimentCondition';
 
 class ExplicitIndividualAssignment {
-  @IsNotEmpty()
-  @IsDefined()
+  @IsOptional()
   @IsString()
   public id: string;
 
