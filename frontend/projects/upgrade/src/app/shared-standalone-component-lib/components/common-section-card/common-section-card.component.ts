@@ -12,7 +12,7 @@ import { TranslateModule } from '@ngx-translate/core';
  * Example usage:
  *
  * ```
- * <app-common-section-card [hasFooter]="true">
+ * <app-common-section-card>
  *   <div header>Hi I'm in the header slot</div>
  *   <div content>Hi I'm in the content slot</div>
  *   <div footer>Hi I'm in the content slot</div>
@@ -28,5 +28,4 @@ import { TranslateModule } from '@ngx-translate/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonSectionCardComponent {
-  @Input() hasFooter: boolean = false;
 }
