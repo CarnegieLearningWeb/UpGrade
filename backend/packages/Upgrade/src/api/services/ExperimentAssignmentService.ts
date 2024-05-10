@@ -220,7 +220,6 @@ export class ExperimentAssignmentService {
         target: target,
         user: userId,
       },
-      relations: ['user'],
     });
     if (experimentId && experiments.length) {
       const selectedExperimentDP = dpExperiments.find((dp) => dp.experiment.id === experimentId);
