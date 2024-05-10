@@ -1,0 +1,11 @@
+<div class="common-section-card-container">
+  <header class="header-container">
+    <ng-content select="[header]"></ng-content>
+  </header>
+  <section class="content-container">
+    <ng-content select="[content]"></ng-content>
+  </section>
+  <section class="footer-container" *ngIf="hasFooter">
+    <ng-content select="[footer]"></ng-content>
+  </section>
+</div>
