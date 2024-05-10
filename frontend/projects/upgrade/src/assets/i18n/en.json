@@ -341,6 +341,7 @@
   "feature-flags.global-variation-value.text": "Value",
   "feature-flags.title.text": "Feature Flags",
   "feature-flags.subtitle.text": "Manage feature flags",
+  "feature-flags.link.text": "featureflags",
   "feature-flags.no-flags.text": "Welcome! <br> Let's start by creating a new flag!",
   "feature-flags.delete-flag.message.text": "Type the name of feature flag to confirm deletion:",
   "feature-flags.delete-flag.input-placeholder.text": "Feature flag name",
