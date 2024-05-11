@@ -5,6 +5,7 @@ import {
   EventEmitter,
   OnInit,
   Input,
+  Inject,
   ViewChild,
   ElementRef,
   OnDestroy,
@@ -34,6 +35,8 @@ import { DialogService } from '../../../../../shared/services/dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import { StratificationFactorSimple } from '../../../../../core/stratification-factors/store/stratification-factors.model';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
+import { ENV, Environment } from '../../../../../../environments/environment-types';
+
 @Component({
   selector: 'home-experiment-overview',
   templateUrl: './experiment-overview.component.html',
@@ -45,11 +48,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('contextInput') contextInput: ElementRef<HTMLInputElement>;
   overviewForm: UntypedFormGroup;
-  unitOfAssignments = [
-    { value: ASSIGNMENT_UNIT.INDIVIDUAL },
-    { value: ASSIGNMENT_UNIT.GROUP },
-    // { value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS }, // #1063 temporarily removed within-subjects until solved
-  ];
+  unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
   public ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
 
   groupTypes = [];
@@ -91,8 +90,13 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     private experimentService: ExperimentService,
     private experimentDesignStepperService: ExperimentDesignStepperService,
     private dialogService: DialogService,
-    private stratificationFactorsService: StratificationFactorsService
-  ) {}
+    private stratificationFactorsService: StratificationFactorsService,
+    @Inject(ENV) private environment: Environment
+  ) {
+    if (this.environment.withinSubjectExperimentSupportToggle) {
+      this.unitOfAssignments.push({ value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS });
+    }
+  }
 
   ngOnInit() {
     this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(

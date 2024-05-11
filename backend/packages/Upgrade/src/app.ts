@@ -1,7 +1,7 @@
 import { UpgradeLogger } from './lib/logger/UpgradeLogger';
 import { env } from './env';
 
-if (env.isProduction && !env?.app.demo) {
+if (env.useNewRelic) {
   require('newrelic/index');
 }
 

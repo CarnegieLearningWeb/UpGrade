@@ -6,11 +6,11 @@ import {
 } from '../../mockData/experiment';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { EXPERIMENT_STATE } from 'upgrade_types';
-import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
+import { checkExperimentAssignedIsNotDefault, getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
-import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNull } from '../../utils/index';
+import { checkMarkExperimentPointForUser } from '../../utils/index';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function CompetingExperiment(): Promise<void> {
@@ -67,7 +67,7 @@ export default async function CompetingExperiment(): Promise<void> {
   // get all experiment condition for user 1
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(2);
-  checkExperimentAssignedIsNull(experimentConditionAssignments, target, site);
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, target, site);
 
   // experiment 2 object
   const experimentObject2 = competingExperimentAssignmentExperiment2;
@@ -90,6 +90,7 @@ export default async function CompetingExperiment(): Promise<void> {
   // get all experiment condition for user 1 will return 2 pools with 2 exps with 2 DP's each
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(4);
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, target, site);
 
   // experiment 3 object which should merge the two pools of exp1 and exp2 with exp3
   const experimentObject3 = competingExperimentAssignmentExperiment3;
@@ -112,6 +113,7 @@ export default async function CompetingExperiment(): Promise<void> {
   // get all experiment condition for user 1 should return only one exp from the pool of exp1-2-3
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(2);
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, target, site);
 
   // mark experiment point for user 4
   const markedExperimentPoint = await markExperimentPoint(

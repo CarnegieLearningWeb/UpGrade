@@ -67,6 +67,7 @@ export class DataService {
           id: null,
         },
       ],
+      experimentType: null,
     };
 
     return assignment || emptyAssignment;

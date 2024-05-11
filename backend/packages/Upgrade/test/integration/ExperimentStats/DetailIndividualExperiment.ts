@@ -21,7 +21,7 @@ export default async function testCase(): Promise<void> {
   const previewService = Container.get<PreviewUserService>(PreviewUserService);
 
   // creating preview user
-  const previewUser = await previewService.create(previewUsers[0], new UpgradeLogger());
+  const previewUser = await previewService.create(previewUsers[2], new UpgradeLogger());
 
   // creating new user
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
@@ -133,7 +133,7 @@ export default async function testCase(): Promise<void> {
       id: experimentId,
       users: 0,
       groups: 0,
-      usersExcluded: 0,
+      usersExcluded: 1,
       groupsExcluded: 0,
       conditions: expect.arrayContaining([
         expect.objectContaining({
@@ -205,14 +205,14 @@ export default async function testCase(): Promise<void> {
     expect.objectContaining({
       users: 1,
       groups: 0,
-      usersExcluded: 0,
+      usersExcluded: 1,
       groupsExcluded: 0,
     })
   );
 
   // when preview user is assigned an experiment condition
   experimentConditionAssignments = await getAllExperimentCondition(previewUser.id, new UpgradeLogger());
-  // the preview user was excluded from the experiment, but preview user is same student1 which is expUser, so enrolled
+  // the preview user was excluded from the experiment, but preview user is same student2 which is expUser, so enrolled
   expect(experimentConditionAssignments).toHaveLength(3);
 
   checkData = await analyticsService.getDetailEnrollment(experimentId);
@@ -220,7 +220,7 @@ export default async function testCase(): Promise<void> {
     expect.objectContaining({
       users: 1,
       groups: 0,
-      usersExcluded: 0,
+      usersExcluded: 1,
       groupsExcluded: 0,
     })
   );
@@ -251,9 +251,9 @@ export default async function testCase(): Promise<void> {
   checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
-      users: 2,
+      users: 1,
       groups: 0,
-      usersExcluded: 0,
+      usersExcluded: 1,
       groupsExcluded: 0,
     })
   );
@@ -274,9 +274,9 @@ export default async function testCase(): Promise<void> {
   checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
-      users: 2,
+      users: 1,
       groups: 0,
-      usersExcluded: 1,
+      usersExcluded: 2,
       groupsExcluded: 0,
     })
   );
