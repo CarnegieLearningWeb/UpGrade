@@ -1,4 +1,5 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { User } from '../models/User';
 import repositoryError from './utils/repositoryError';
 import { UserRole } from 'upgrade_types';

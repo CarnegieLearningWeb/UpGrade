@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
 import { FeatureFlag } from '../models/FeatureFlag';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
 import { getConnection } from 'typeorm';
 import { v4 as uuid } from 'uuid';

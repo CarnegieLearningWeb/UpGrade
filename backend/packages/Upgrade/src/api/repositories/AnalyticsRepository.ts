@@ -2,7 +2,8 @@ import { MonitoredDecisionPoint } from './../models/MonitoredDecisionPoint';
 import { Experiment } from '../models/Experiment';
 import { IndividualExclusionRepository } from './IndividualExclusionRepository';
 import { IndividualEnrollmentRepository } from './IndividualEnrollmentRepository';
-import { EntityRepository, EntityManager, getCustomRepository } from 'typeorm';
+import { EntityManager, getCustomRepository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { ExperimentRepository } from './ExperimentRepository';
 import { PreviewUser } from '../models/PreviewUser';
 import {

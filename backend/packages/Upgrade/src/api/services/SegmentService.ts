@@ -1,12 +1,12 @@
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository, InjectDataSource } from '../../typeorm-typedi-extensions';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { IndividualForSegmentRepository } from '../repositories/IndividualForSegmentRepository';
 import { GroupForSegmentRepository } from '../repositories/GroupForSegmentRepository';
 import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS, CACHE_PREFIX } from 'upgrade_types';
-import { getConnection } from 'typeorm';
+import { getConnection, DataSource } from 'typeorm';
 import Papa from 'papaparse';
 import { env } from '../../env';
 import { v4 as uuid } from 'uuid';
@@ -45,6 +45,8 @@ interface SegmentParticipantsRow {
 @Service()
 export class SegmentService {
   constructor(
+    @InjectDataSource()
+    private dataSource: DataSource,
     @InjectRepository()
     private segmentRepository: SegmentRepository,
     @InjectRepository()
@@ -398,15 +400,17 @@ export class SegmentService {
   }
 
   async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
-    const createdSegment = await getConnection().transaction(async (transactionalEntityManager) => {
+    const manager = this.dataSource.manager;
+    const createdSegment = await manager.transaction(async (transactionalEntityManager) => {
       let segmentDoc: Segment;
 
       if (segment.id) {
         try {
+          const segmentRepository = await transactionalEntityManager.getRepository(Segment);
           // get segment by ids
-          segmentDoc = await transactionalEntityManager
-            .getRepository(Segment)
-            .findOne(segment.id, { relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
+          segmentDoc = segmentRepository.findOne(segment.id, {
+            relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+          });
 
           // delete individual for segment
           if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {

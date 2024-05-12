@@ -1,23 +1,26 @@
 import { MicroframeworkLoader, MicroframeworkSettings } from 'microframework';
-import { createConnection, getConnectionOptions, ConnectionOptions } from 'typeorm';
+import { DataSource, LogLevel } from 'typeorm';
 
 import { env } from '../env';
 import { SERVER_ERROR } from 'upgrade_types';
 import { CONNECTION_NAME } from './enums';
+import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/PostgresConnectionCredentialsOptions';
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
+import { Container } from 'typedi';
+import { Container as tteContainer } from '../typeorm-typedi-extensions';
 
 export const typeormLoader: MicroframeworkLoader = async (settings: MicroframeworkSettings | undefined) => {
-  const loadedConnectionOptions = await getConnectionOptions();
-  const loadedreplicaConnectionOptions = await getConnectionOptions();
-  const replica_hostnames: string[] = (env.db.host_replica && JSON.parse(env.db.host_replica)) || [];
+  const replicaHosts = (env.db.host_replica ? JSON.parse(env.db.host_replica) : []) as string[];
 
-  const master_host = {
+  const masterHost: PostgresConnectionCredentialsOptions = {
     host: env.db.host,
     port: env.db.port,
     username: env.db.username,
     password: env.db.password,
     database: env.db.database,
   };
-  const replica_hosts = replica_hostnames.map((hostname) => {
+
+  const replicaHost: PostgresConnectionCredentialsOptions[] = replicaHosts.map((hostname) => {
     return {
       host: hostname,
       port: env.db.port,
@@ -27,68 +30,64 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     };
   });
 
+  // Dedicating a replica for export
+  const exportReplicaHost = replicaHost.shift();
+  const exportReplicaSlaves = exportReplicaHost ? [exportReplicaHost] : [];
+
   // connection options:
-  const mainDBConnectionOptions = {
+  const mainDBConnectionOptions: PostgresConnectionOptions = {
     name: CONNECTION_NAME.MAIN,
-    type: env.db.type, // See createConnection options for valid types
+    type: env.db.type as 'postgres',
     replication: {
-      master: master_host,
-      slaves: [],
+      master: masterHost,
+      slaves: replicaHost,
     },
     synchronize: env.db.synchronize,
-    logging: env.db.logging,
+    logging: env.db.logging as boolean | 'all' | LogLevel[],
     maxQueryExecutionTime: env.db.maxQueryExecutionTime,
     entities: env.app.dirs.entities,
     migrations: env.app.dirs.migrations,
     extra: { max: env.db.maxConnectionPool },
   };
 
-  const exportReplicaDBConnectionOptions = {
+  const exportReplicaDBConnectionOptions: PostgresConnectionOptions = {
     name: CONNECTION_NAME.REPLICA,
-    type: env.db.type, // See createConnection options for valid types
+    type: env.db.type as 'postgres',
     replication: {
-      master: master_host,
-      slaves: [],
+      master: masterHost,
+      slaves: exportReplicaSlaves,
     },
     synchronize: env.db.synchronize,
-    logging: env.db.logging,
+    logging: env.db.logging as boolean | 'all' | LogLevel[],
     maxQueryExecutionTime: env.db.maxQueryExecutionTime,
     entities: env.app.dirs.entities,
     migrations: env.app.dirs.migrations,
   };
 
-  if (replica_hostnames.length === 0) {
-    // if no read replica is defined, then we use master host for replica connection to handle export data
-    exportReplicaDBConnectionOptions.replication.slaves[0] = master_host;
-  } else {
-    // if a single read replica is defined, then we use the first read replica host to handle export data
-    const replica_host = replica_hosts.shift();
-    exportReplicaDBConnectionOptions.replication.slaves[0] = replica_host; // .shift() is like .pop() but for first item
-
-    // if more than one read replica is defined, then we use all the remaining read replica hosts
-    // as extra read replica db connections to handle load on master db connection.
-    mainDBConnectionOptions.replication.slaves = replica_hosts;
-  }
-
-  const mainConnectionOptions: ConnectionOptions = Object.assign(loadedConnectionOptions, mainDBConnectionOptions);
-  const exportReplicaConnectionOptions: ConnectionOptions = Object.assign(
-    loadedreplicaConnectionOptions,
-    exportReplicaDBConnectionOptions
-  );
-
   try {
-    const connection = await createConnection(mainConnectionOptions);
-    const replicaConnection = await createConnection(exportReplicaConnectionOptions);
-    // run the migrations
-    await connection.runMigrations();
+    const appDataSourceInstance = new DataSource(mainDBConnectionOptions);
+    // register the data source instance in the typeorm-typeDI-extensions
+    tteContainer.setDataSource(CONNECTION_NAME.MAIN, appDataSourceInstance);
+
+    const exportDataSourceInstance = new DataSource(exportReplicaDBConnectionOptions);
+    // register the data source instance in the typeorm-typeDI-extensions
+    tteContainer.setDataSource(CONNECTION_NAME.MAIN, appDataSourceInstance);
+    await Promise.all([appDataSourceInstance.initialize(), exportDataSourceInstance.initialize()]);
+
+    // adding the appDataSourceInstance in the typeDI
+    Container.set(CONNECTION_NAME.MAIN, appDataSourceInstance);
+    Container.set(CONNECTION_NAME.REPLICA, exportDataSourceInstance);
 
     if (settings) {
-      settings.setData('connection', connection);
-      settings.setData('replicaConnection', replicaConnection);
-      settings.onShutdown(() => connection.close());
-      settings.onShutdown(() => replicaConnection.close());
+      // sending the connections to the next middleware
+      settings.setData('connection', appDataSourceInstance);
+      // settings.setData('replicaConnection', exportDataSourceInstance);
+      settings.onShutdown(() => {
+        [appDataSourceInstance.destroy()];
+      });
     }
   } catch (err) {
+    // TODO: use logger to log the error
     const error = err as any;
     if (error.code === 'ECONNREFUSED') {
       error.type = SERVER_ERROR.DB_UNREACHABLE;
@@ -97,7 +96,7 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
       error.type = SERVER_ERROR.MIGRATION_ERROR;
       throw error;
     } else {
-      error.type = SERVER_ERROR.DB_AUTH_FAIL;
+      // throw the error as it is
       throw error;
     }
   }

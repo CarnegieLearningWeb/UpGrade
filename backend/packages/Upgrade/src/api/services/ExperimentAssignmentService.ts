@@ -2,7 +2,7 @@ import { GroupEnrollmentRepository } from './../repositories/GroupEnrollmentRepo
 import { IndividualEnrollmentRepository } from './../repositories/IndividualEnrollmentRepository';
 import { IndividualEnrollment } from './../models/IndividualEnrollment';
 import { ErrorWithType } from './../errors/ErrorWithType';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { DecisionPoint } from '../models/DecisionPoint';
 import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import {

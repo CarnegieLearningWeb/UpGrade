@@ -1,17 +1,18 @@
-import { Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { Experiment } from './Experiment';
 import { Segment } from './Segment';
 
 @Entity()
 export class ExperimentSegmentExclusion extends BaseModel {
-  @OneToOne(() => Segment, (segment) => segment.experimentSegmentExclusion, { onDelete: 'CASCADE', primary: true })
+  @PrimaryColumn('uuid')
+  @OneToOne(() => Segment, (segment) => segment.experimentSegmentExclusion, { onDelete: 'CASCADE' })
   @JoinColumn()
   public segment: Segment;
 
+  @PrimaryColumn('uuid')
   @OneToOne(() => Experiment, (experiment) => experiment.experimentSegmentExclusion, {
     onDelete: 'CASCADE',
-    primary: true,
   })
   @JoinColumn()
   public experiment: Experiment;

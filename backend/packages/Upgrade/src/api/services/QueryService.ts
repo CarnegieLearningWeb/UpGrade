@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';

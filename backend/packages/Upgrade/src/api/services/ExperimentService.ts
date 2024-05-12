@@ -2,7 +2,7 @@
 import { GroupExclusion } from './../models/GroupExclusion';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import {
   Experiment,

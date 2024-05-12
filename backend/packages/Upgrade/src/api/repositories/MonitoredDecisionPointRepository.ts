@@ -1,4 +1,5 @@
-import { EntityRepository, EntityManager, Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
 import repositoryError from './utils/repositoryError';
 

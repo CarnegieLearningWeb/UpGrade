@@ -1,4 +1,5 @@
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { FeatureFlag } from '../models/FeatureFlag';
 import repositoryError from './utils/repositoryError';
 

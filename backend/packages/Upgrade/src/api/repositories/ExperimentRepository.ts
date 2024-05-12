@@ -1,5 +1,6 @@
 import { EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
-import { Repository, EntityRepository, EntityManager, Brackets } from 'typeorm';
+import { Repository, EntityManager, Brackets } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { Experiment } from '../models/Experiment';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
