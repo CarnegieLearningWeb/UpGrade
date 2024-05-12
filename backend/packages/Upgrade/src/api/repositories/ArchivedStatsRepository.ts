@@ -1,4 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { ArchivedStats } from '../models/ArchivedStats';
 import repositoryError from './utils/repositoryError';
 

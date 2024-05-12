@@ -1,7 +1,7 @@
 import { IndividualEnrollmentRepository } from './../repositories/IndividualEnrollmentRepository';
 import { UpgradeLogger } from './../../lib/logger/UpgradeLogger';
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';

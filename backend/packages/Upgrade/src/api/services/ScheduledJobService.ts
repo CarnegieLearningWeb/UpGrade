@@ -1,5 +1,5 @@
 import Container, { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { ScheduledJob, SCHEDULE_TYPE } from '../models/ScheduledJob';
 import { Experiment } from '../models/Experiment';

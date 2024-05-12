@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SERVER_ERROR } from 'upgrade_types';
 import { In, getConnection } from 'typeorm';

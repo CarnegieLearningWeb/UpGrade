@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { v4 as uuid } from 'uuid';
 import { PreviewUser } from '../models/PreviewUser';
 import { PreviewUserRepository } from '../repositories/PreviewUserRepository';

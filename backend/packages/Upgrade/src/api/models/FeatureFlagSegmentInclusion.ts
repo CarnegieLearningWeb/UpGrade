@@ -1,17 +1,18 @@
-import { Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { FeatureFlag } from './FeatureFlag';
 import { Segment } from './Segment';
 
 @Entity()
 export class FeatureFlagSegmentInclusion extends BaseModel {
-  @OneToOne(() => Segment, (segment) => segment.featureFlagSegmentInclusion, { onDelete: 'CASCADE', primary: true })
+  @PrimaryColumn('uuid')
+  @OneToOne(() => Segment, (segment) => segment.featureFlagSegmentInclusion, { onDelete: 'CASCADE' })
   @JoinColumn()
   public segment: Segment;
 
+  @PrimaryColumn('uuid')
   @OneToOne(() => FeatureFlag, (featureFlag) => featureFlag.featureFlagSegmentInclusion, {
     onDelete: 'CASCADE',
-    primary: true,
   })
   @JoinColumn()
   public featureFlag: FeatureFlag;

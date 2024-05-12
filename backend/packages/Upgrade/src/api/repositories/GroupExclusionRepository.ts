@@ -1,4 +1,5 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { GroupExclusion } from '../models/GroupExclusion';
 import repositoryError from './utils/repositoryError';
 
