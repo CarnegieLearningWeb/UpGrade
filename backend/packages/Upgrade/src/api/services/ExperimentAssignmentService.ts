@@ -218,7 +218,7 @@ export class ExperimentAssignmentService {
       where: {
         site: site,
         target: target,
-        user: userId,
+        user: userDoc,
       },
     });
     if (experimentId && experiments.length) {
