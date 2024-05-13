@@ -84,8 +84,6 @@ For an overview of the UpGrade platform, please visit [UpGrade Platform](https:/
 
 ---
 
-For more information, please refer to the [official repository](https://github.com/CarnegieLearningWeb/UpGrade) of UpGrade.
-
 ---
 
 ![Built with Science](http://ForTheBadge.com/images/badges/built-with-science.svg)
