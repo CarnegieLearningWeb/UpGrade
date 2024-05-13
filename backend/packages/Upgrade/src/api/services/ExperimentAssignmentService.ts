@@ -214,16 +214,15 @@ export class ExperimentAssignmentService {
 
     // experiment level inclusion and exclusion
     const [, exclusionReason] = await this.experimentLevelExclusionInclusion(globalFilteredExperiments, userDoc);
-    let monitoredDocument: MonitoredDecisionPoint;
+    let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
+      where: {
+        site: site,
+        target: target,
+        user: userId,
+      },
+      relations: ['user'],
+    });
     if (experimentId && experiments.length) {
-      monitoredDocument = await this.monitoredDecisionPointRepository.findOne({
-        where: {
-          site: site,
-          target: target,
-          user: userId,
-        },
-        relations: ['user'],
-      });
       const selectedExperimentDP = dpExperiments.find((dp) => dp.experiment.id === experimentId);
       const experiment = experiments[0];
       const { conditions } = experiment;
@@ -639,6 +638,7 @@ export class ExperimentAssignmentService {
                 },
               ],
               assignedFactor: assignedFactors ? [assignedFactors] : null,
+              experimentType: experiment.type,
             };
           }
         });
@@ -909,8 +909,8 @@ export class ExperimentAssignmentService {
           undefined,
           2
         )}`,
-        name: 'Experiment user not defined',
-        type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+        name: 'Experiment user group not defined',
+        type: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
       } as any,
       logger
     );
@@ -1304,9 +1304,10 @@ export class ExperimentAssignmentService {
     }
 
     if (status === MARKED_DECISION_POINT_STATUS.CONDITION_FAILED_TO_APPLY) {
-      const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
+      const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'groupId' | 'exclusionCode'> = {
         user,
         experiment,
+        groupId: user?.workingGroup?.[experiment.group],
         exclusionCode: EXCLUSION_CODE.EXCLUDED_BY_CLIENT,
       };
       await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
@@ -1316,9 +1317,10 @@ export class ExperimentAssignmentService {
     // Don't mark the experiment if user or group are in exclusion list
     // TODO update this with segment implementation
     // Create the excludeUserDoc outside of the conditional statements to avoid repetition
-    const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
+    const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'groupId' | 'exclusionCode'> = {
       user,
       experiment,
+      groupId: user?.workingGroup?.[experiment.group],
       exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
     };
     if (globallyExcluded.user || globallyExcluded.group.length) {
@@ -1328,7 +1330,7 @@ export class ExperimentAssignmentService {
       if (globallyExcluded.group.length) {
         // store Group exclusion document:
         const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
-          groupId: user?.workingGroup[experiment.group],
+          groupId: user?.workingGroup?.[experiment.group],
           experiment,
           exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
         };
@@ -1336,7 +1338,7 @@ export class ExperimentAssignmentService {
         // check if excluded group was earlier included, if yes - remove them:
         promiseArray.push(
           this.groupEnrollmentRepository.deleteGroupEnrollment(
-            user?.workingGroup[experiment.group],
+            user?.workingGroup?.[experiment.group],
             new UpgradeLogger()
           )
         );
@@ -1350,7 +1352,7 @@ export class ExperimentAssignmentService {
       if (experimentLevelExcluded[0].reason === 'group' && experimentLevelExcluded[0].matchedGroup) {
         // store Group exclusion document:
         const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
-          groupId: user?.workingGroup[experiment.group],
+          groupId: user?.workingGroup?.[experiment.group],
           experiment,
           exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
         };
@@ -1358,7 +1360,7 @@ export class ExperimentAssignmentService {
         // check if excluded group was earlier included, if yes - remove them:
         promiseArray.push(
           this.groupEnrollmentRepository.deleteGroupEnrollment(
-            user?.workingGroup[experiment.group],
+            user?.workingGroup?.[experiment.group],
             new UpgradeLogger()
           )
         );
@@ -1396,7 +1398,7 @@ export class ExperimentAssignmentService {
         if (!groupEnrollment && !groupExclusion) {
           // exclude group here
           const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
-            groupId: user?.workingGroup[experiment.group],
+            groupId: user?.workingGroup?.[experiment.group],
             experiment,
             exclusionCode: EXCLUSION_CODE.REACHED_AFTER,
           };
@@ -1406,16 +1408,18 @@ export class ExperimentAssignmentService {
 
       if (!individualEnrollment && !individualExclusion) {
         if (assignmentUnit === ASSIGNMENT_UNIT.GROUP && !groupEnrollment) {
-          const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
+          const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'groupId' | 'exclusionCode'> = {
             user,
             experiment,
+            groupId: user?.workingGroup?.[experiment.group],
             exclusionCode: EXCLUSION_CODE.REACHED_AFTER,
           };
           promiseArray.push(this.individualExclusionRepository.saveRawJson([excludeUserDoc]));
         } else if (assignmentUnit !== ASSIGNMENT_UNIT.GROUP) {
-          const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
+          const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'groupId' | 'exclusionCode'> = {
             user,
             experiment,
+            groupId: user?.workingGroup?.[experiment.group],
             exclusionCode: EXCLUSION_CODE.REACHED_AFTER,
           };
           promiseArray.push(this.individualExclusionRepository.saveRawJson([excludeUserDoc]));
@@ -1447,7 +1451,7 @@ export class ExperimentAssignmentService {
             id: uuid(),
             experiment,
             partition: decisionPoint as DecisionPoint,
-            groupId: user.workingGroup[experiment.group],
+            groupId: user?.workingGroup?.[experiment.group],
             condition: conditionAssigned,
           };
           promiseArray.push(this.groupEnrollmentRepository.save(groupEnrollmentDocument));
@@ -1461,6 +1465,7 @@ export class ExperimentAssignmentService {
           > = {
             experiment,
             user,
+            groupId: user?.workingGroup?.[experiment.group],
             exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
           };
           individualExclusion = individualExclusionDocument as IndividualExclusion;
@@ -1475,7 +1480,7 @@ export class ExperimentAssignmentService {
               partition: decisionPoint as DecisionPoint,
               user,
               condition: conditionAssigned,
-              groupId: user?.workingGroup[experiment.group],
+              groupId: user?.workingGroup?.[experiment.group],
               enrollmentCode: groupEnrollment ? ENROLLMENT_CODE.GROUP_LOGIC : ENROLLMENT_CODE.ALGORITHMIC,
             };
           promiseArray.push(this.individualEnrollmentRepository.save(individualEnrollmentDocument));
@@ -1493,6 +1498,7 @@ export class ExperimentAssignmentService {
           > = {
             experiment,
             user,
+            groupId: user?.workingGroup?.[experiment.group],
             exclusionCode: invalidGroup
               ? EXCLUSION_CODE.INVALID_GROUP_OR_WORKING_GROUP
               : EXCLUSION_CODE.NO_GROUP_SPECIFIED,
@@ -1626,7 +1632,7 @@ export class ExperimentAssignmentService {
       experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
       experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
         ? `${experiment.id}_${user.id}`
-        : `${experiment.id}_${user.workingGroup[experiment.group]}`;
+        : `${experiment.id}_${user.workingGroup?.[experiment.group]}`;
 
     const sortedExperimentCondition = experiment.conditions.sort(
       (condition1, condition2) => condition1.order - condition2.order

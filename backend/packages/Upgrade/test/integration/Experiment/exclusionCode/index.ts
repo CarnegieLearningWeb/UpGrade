@@ -1,6 +1,8 @@
-import IndividualExperimentEnrollmentCodeTest from './IndividualExperimentEnrollmentCode';
-import GroupExperimentEnrollmentCodeTest from './GroupExperimentEnrollmentCode';
-import ExperimentExperimentEnrollmentCodeTest from './ExperimentExperimentEnrollmentCode';
+import IndividualExperimentExclusionCodeTest from './IndividualExperimentExclusionCode';
+import GroupExperimentExclusionCodeTest from './GroupExperimentExclusionCode';
+import ExperimentLevelExclusionCodeGroupTest from './ExperimentLevelExclusionCodeGroup';
+import ExperimentLevelExclusionCodeParticipantTest from './ExperimentLevelExclusionCodeGroup';
+import WithinSubjectExperimentExclusionCodeTest from './WithinSubjectExperimentExclusionCode';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 import { CheckService } from '../../../../src/api/services/CheckService';
 import { Container } from 'typedi';
@@ -41,17 +43,28 @@ const initialChecks = async () => {
   });
 };
 
-export const IndividualExperimentEnrollmentCode = async () => {
+export const IndividualExperimentExclusionCode = async () => {
   await initialChecks();
-  await IndividualExperimentEnrollmentCodeTest();
+  await IndividualExperimentExclusionCodeTest();
 };
 
-export const GroupExperimentEnrollmentCode = async () => {
+export const GroupExperimentExclusionCode = async () => {
   await initialChecks();
-  await GroupExperimentEnrollmentCodeTest();
+  await GroupExperimentExclusionCodeTest();
 };
 
-export const ExperimentExperimentEnrollmentCode = async () => {
+export const ExperimentLevelExclusionCodeParticipant = async () => {
   await initialChecks();
-  await ExperimentExperimentEnrollmentCodeTest();
+  await ExperimentLevelExclusionCodeParticipantTest();
 };
+
+export const ExperimentLevelExclusionCodeGroup = async () => {
+  await initialChecks();
+  await ExperimentLevelExclusionCodeGroupTest();
+};
+
+export const WithinSubjectExclusionCode = async () => {
+  await initialChecks();
+  await WithinSubjectExperimentExclusionCodeTest();
+};
+

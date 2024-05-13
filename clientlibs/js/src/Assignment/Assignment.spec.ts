@@ -24,6 +24,7 @@ const defaultMockAssignment: IExperimentAssignmentv5 = {
       factor1: { level: 'level1', payload: { type: PAYLOAD_TYPE.STRING, value: 'testLevel' } },
     },
   ],
+  experimentType: EXPERIMENT_TYPE.FACTORIAL,
 };
 
 const MockApiService = {

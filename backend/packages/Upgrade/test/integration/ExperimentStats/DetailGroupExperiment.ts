@@ -3,12 +3,8 @@ import { Container } from 'typedi';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { groupExperimentStats } from '../mockData/experiment/index';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
-import { getAllExperimentCondition, markExperimentPoint } from '../utils';
-import {
-  checkMarkExperimentPointForUser,
-  checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsNull,
-} from '../utils/index';
+import { checkExperimentAssignedIsNull, getAllExperimentCondition, markExperimentPoint } from '../utils';
+import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
@@ -131,8 +127,8 @@ export default async function testCase(): Promise<void> {
       id: experimentId,
       users: 0,
       groups: 0,
-      usersExcluded: 0,
-      groupsExcluded: 0,
+      usersExcluded: 1,
+      groupsExcluded: 1,
       conditions: expect.arrayContaining([
         expect.objectContaining({
           id: experiments[0].conditions[0].id,
@@ -185,10 +181,10 @@ export default async function testCase(): Promise<void> {
   // user 2 logs in experiment
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
+  expect(experimentConditionAssignments).toHaveLength(0);
   checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName1, experimentPoint1);
-  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName2, experimentPoint2);
 
-  // mark experiment point for exp2
+  // mark experiment point for user 2
   markedExperimentPoint = await markExperimentPoint(
     experimentUsers[1].id,
     experimentName2,
@@ -201,10 +197,10 @@ export default async function testCase(): Promise<void> {
   checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
-      users: 1,
-      groups: 1,
-      usersExcluded: 0,
-      groupsExcluded: 0,
+      users: 0,
+      groups: 0,
+      usersExcluded: 2,
+      groupsExcluded: 1,
     })
   );
 
@@ -225,10 +221,10 @@ export default async function testCase(): Promise<void> {
   checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
-      users: 2,
-      groups: 2,
-      usersExcluded: 0,
-      groupsExcluded: 0,
+      users: 1,
+      groups: 1,
+      usersExcluded: 2,
+      groupsExcluded: 1,
     })
   );
 
@@ -252,10 +248,10 @@ export default async function testCase(): Promise<void> {
   checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
-      users: 2,
-      groups: 2,
-      usersExcluded: 0,
-      groupsExcluded: 0,
+      users: 1,
+      groups: 1,
+      usersExcluded: 2,
+      groupsExcluded: 1,
     })
   );
 }
