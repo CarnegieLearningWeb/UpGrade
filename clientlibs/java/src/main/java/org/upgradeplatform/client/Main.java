@@ -20,6 +20,7 @@ import org.upgradeplatform.responsebeans.ExperimentUser;
 import org.upgradeplatform.responsebeans.InitializeUser;
 import org.upgradeplatform.responsebeans.MarkDecisionPoint;
 import org.upgradeplatform.responsebeans.UserAliasResponse;
+import org.upgradeplatform.utils.Utils;
 import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 
 public class Main {
@@ -71,10 +72,19 @@ public class Main {
 
                                                     Condition condition = expResult.getAssignedCondition();
                                                     String code = condition == null ? null : condition.getConditionCode();
+                                                    Utils.ExperimentType experimentType = expResult.getExperimentType();
+                                                    System.out.println("experimentType");
+                                                    System.out.println(experimentType);
+
+                                                    System.out.println("condition");
                                                     System.out.println(condition);
+
+                                                    System.out.println("code");
                                                     System.out.println(code);
-                                                    MarkExperimentRequestData markData = new MarkExperimentRequestData(site, target);
-                                                    experimentClient.markDecisionPoint(MarkedDecisionPointStatus.CONDITION_APPLIED, markData, "", new Date().toString(), new ResponseCallback<MarkDecisionPoint>(){
+                                                    MarkExperimentRequestData data = new MarkExperimentRequestData(site, target, null);
+                                                    System.out.println(data.getAssignedCondition());
+
+                                                    experimentClient.markDecisionPoint(MarkedDecisionPointStatus.CONDITION_APPLIED, data, new ResponseCallback<MarkDecisionPoint>(){
                                                         @Override
                                                         public void onSuccess(@NonNull MarkDecisionPoint markResult){
                                                             result.complete("marked " + code + ": " + markResult.toString());

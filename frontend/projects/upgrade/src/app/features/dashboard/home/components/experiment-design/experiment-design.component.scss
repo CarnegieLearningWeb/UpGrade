@@ -34,6 +34,11 @@
       max-height: 135px;
       overflow: auto;
 
+      &.disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+
       mat-header-row {
         min-height: 35px;
         max-height: 35px;
@@ -142,7 +147,6 @@
     margin-top: 5px;
     margin-bottom: 15px;
   }
-
 
   /* Remove arrows/spinners from input type number */
   input::-webkit-outer-spin-button,

@@ -724,8 +724,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const sum = parseInt(condition.result, 10);
-        expect(sum).toEqual(expectedValue);
+        const sumValue = parseInt(condition.result, 10);
+        expect(sumValue).toEqual(expectedValue);
         break;
       }
 
@@ -809,8 +809,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const Average = parseInt(condition.result, 10);
-        expect(Average).toEqual(expectedValue);
+        const meanValue = parseInt(condition.result, 10);
+        expect(meanValue).toEqual(expectedValue);
         break;
       }
 
@@ -837,8 +837,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const Mode = parseInt(condition.result, 10);
-        expect(Mode).toEqual(expectedValue);
+        const modeValue = parseInt(condition.result, 10);
+        expect(modeValue).toEqual(expectedValue);
         break;
       }
 
@@ -865,8 +865,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const Median = parseInt(condition.result, 10);
-        expect(Median).toEqual(expectedValue);
+        const medianValue = parseInt(condition.result, 10);
+        expect(medianValue).toEqual(expectedValue);
         break;
       }
 
@@ -893,8 +893,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const StdDev = parseInt(condition.result, 10);
-        expect(StdDev).toEqual(expectedValue);
+        const stdDevValue = parseInt(condition.result, 10);
+        expect(stdDevValue).toEqual(expectedValue);
         break;
       }
 
@@ -938,8 +938,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const Count = parseInt(condition.result, 10);
-        expect(Count).toEqual(expectedValue);
+        const countValue = parseInt(condition.result, 10);
+        expect(countValue).toEqual(expectedValue);
         break;
       }
 
@@ -962,8 +962,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const Percentage = parseInt(condition.result, 10);
-        expect(Percentage).toEqual(expectedValue);
+        const percentageValue = parseInt(condition.result, 10);
+        expect(percentageValue).toEqual(expectedValue);
         break;
       }
       default:
