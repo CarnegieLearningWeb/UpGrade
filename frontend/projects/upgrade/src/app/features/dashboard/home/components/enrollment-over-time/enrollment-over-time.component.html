@@ -107,7 +107,7 @@
 
   <div class="chart-container">
     <div class="condition-container">
-      <div class="condition" *ngFor="let condition of experiment.conditions; let index = index">
+      <div class="condition" *ngFor="let condition of graphColorIndicators; let index = index">
         <span class="color-box" [ngStyle]="{ 'background-color': colors[index] }"></span>
         <span>{{ condition.conditionCode }}</span>
       </div>
@@ -116,7 +116,7 @@
     <div class="chart">
       <div class="chart-data">
         <ngx-charts-bar-vertical-stacked
-          [scheme]="colorScheme"
+          [scheme] = "colorScheme"
           [results]="graphData"
           [xAxis]="showLabelOfxAxis"
           [yAxis]="true"

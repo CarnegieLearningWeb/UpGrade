@@ -37,6 +37,19 @@ export {
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
 };
+export interface ExperimentConditionFilterOptions {
+  code: string;
+  id: string
+}
+export interface ExperimentPartitionFilterOptions {
+  id:string
+  point:string
+  twoCharacterId:string
+}
+export interface ExperimentDateFilterOptions {
+  value:DATE_RANGE
+  viewValue:string
+}
 
 export interface IEnrollmentStatByDate {
   date: string;
