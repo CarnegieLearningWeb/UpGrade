@@ -10,7 +10,7 @@ import { PreviewUserService } from '../../../src/api/services/PreviewUserService
 import {
   checkExperimentAssignedIsNotDefault,
   checkExperimentAssignedIsNull,
-  checkMarkExperimentPointForUser,
+  checkMarkExperimentPointForUser
 } from '../utils/index';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 

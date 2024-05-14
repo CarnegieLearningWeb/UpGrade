@@ -2,7 +2,7 @@ import { Container } from 'typedi';
 import { groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment } from '../mockData/experiment';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { EXPERIMENT_STATE } from 'upgrade_types';
-import { getAllExperimentCondition, markExperimentPoint, checkDeletedExperiment } from '../utils';
+import { getAllExperimentCondition, markExperimentPoint, checkDeletedExperiment, updateExcludeIfReachedFlag } from '../utils';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
@@ -10,7 +10,7 @@ import { experimentUsers } from '../mockData/experimentUsers/index';
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsNull,
+  checkExperimentAssignedIsNull
 } from '../utils/index';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
@@ -24,6 +24,8 @@ export default async function testCase(): Promise<void> {
 
   // experiment object
   const experimentObject = groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment;
+  experimentObject.partitions = updateExcludeIfReachedFlag(experimentObject.partitions);
+
   // getOriginalUserDoc
   let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // change user group
@@ -187,7 +189,6 @@ export default async function testCase(): Promise<void> {
   );
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
-  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 2
   markedExperimentPoint = await markExperimentPoint(

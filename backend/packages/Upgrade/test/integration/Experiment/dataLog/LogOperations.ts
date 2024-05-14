@@ -620,14 +620,14 @@ export default async function LogOperations(): Promise<void> {
         expect(countValue).toEqual(expectedValue);
         break;
       case OPERATION_TYPES.AVERAGE:
-        const aveValue = (res.reduce((accu, data) => {
+        const avgValue = (res.reduce((accu, data) => {
           return accu + data;
         }, 0))/res.length;
         expectedValue = 128;
         if (query.metric.key !== 'totalProblemsCompleted') {
           expectedValue = 250; // For completion metric
         }
-        expect(aveValue).toEqual(expectedValue);
+        expect(avgValue).toEqual(expectedValue);
         break;
       case OPERATION_TYPES.MODE:
         const modeValue = res[1];

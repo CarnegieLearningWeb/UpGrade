@@ -6,7 +6,7 @@ import { CommonRootPageHeaderContainerComponent } from '../common-root-page-head
 /**
  * A component nested in this component can be displayed in the **header** or **content** slot.
  * The **header** slot should contain a component that wraps a **app-common-root-page-header**.
- * The **content** slot should contain a component that wraps a **app-common-root-section-card-list**.
+ * The **content** slot should contain a component that wraps a **app-common-section-card-list**.
  * Simply nest the component and add the slot name as an attribute.
  *
  * Example usage:
