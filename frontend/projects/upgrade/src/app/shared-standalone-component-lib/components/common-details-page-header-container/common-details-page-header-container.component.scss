@@ -1,8 +1,16 @@
 ::ng-deep .header-container {
-  .root-link {
-    text-decoration: none;
-    color: black;
+  margin-top: -25px; // drawer__main-content-header pushes the header down by 25px
+  height: 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  .breadcrumb {
+    display: flex;
+    column-gap: 8px;
+
+    .root-link, .details-name {
+      color: var(--light-black);
+    }
   }
 }
-
-
