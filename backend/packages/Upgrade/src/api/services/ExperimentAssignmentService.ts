@@ -68,6 +68,7 @@ import { withInSubjectType } from '../Algorithms';
 import { CacheService } from './CacheService';
 import { UserStratificationFactorRepository } from '../repositories/UserStratificationRepository';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
+import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -114,18 +115,18 @@ export class ExperimentAssignmentService {
     public cacheService: CacheService
   ) {}
   public async markExperimentPoint(
-    userId: string,
+    userDoc: RequestedExperimentUser,
     site: string,
     status: MARKED_DECISION_POINT_STATUS | undefined,
     condition: string | null,
-    requestContext: { logger: UpgradeLogger; userDoc: any },
+    logger: UpgradeLogger,
     target?: string,
     experimentId?: string,
     uniquifier?: string,
     clientError?: string
   ): Promise<Omit<MonitoredDecisionPoint, 'createdAt | updatedAt | versionNumber'>> {
     // find working group for user
-    const { logger, userDoc } = requestContext;
+    const userId = userDoc.id;
 
     // check error from client side
     if (clientError) {
@@ -333,17 +334,14 @@ export class ExperimentAssignmentService {
   }
 
   public async getAllExperimentConditions(
-    userId: string,
+    experimentUserDoc: RequestedExperimentUser,
     context: string,
-    requestContext: { logger: UpgradeLogger; userDoc: any }
+    logger: UpgradeLogger
   ): Promise<IExperimentAssignmentv5[]> {
-    const { logger, userDoc } = requestContext;
+    const userId = experimentUserDoc.id;
     logger.info({ message: `getAllExperimentConditions: User: ${userId}` });
 
-    const [previewUser, experimentUserDoc] = await Promise.all([
-      this.previewUserService.findOne(userId, logger),
-      this.experimentUserService.getOriginalUserDoc(userId, logger),
-    ]);
+    const previewUser = await this.previewUserService.findOne(userId, logger);
 
     // throw error if user not defined
     if (!experimentUserDoc || !experimentUserDoc.id) {
@@ -359,13 +357,7 @@ export class ExperimentAssignmentService {
       throw error;
     }
 
-    const experimentUser: ExperimentUser = userDoc || {
-      createdAt: experimentUserDoc.createdAt,
-      id: experimentUserDoc.id,
-      requestedUserId: userId,
-      group: experimentUserDoc.group,
-      workingGroup: experimentUserDoc.workingGroup,
-    };
+    const experimentUser: ExperimentUser = experimentUserDoc as ExperimentUser;
 
     // query all experiment and sub experiment
     // check if user or group is excluded
@@ -744,9 +736,13 @@ export class ExperimentAssignmentService {
   }
 
   // When browser will be sending the blob data
-  public async blobDataLog(userId: string, blobLog: ILogInput[], logger: UpgradeLogger): Promise<Log[]> {
+  public async blobDataLog(
+    userDoc: RequestedExperimentUser,
+    blobLog: ILogInput[],
+    logger: UpgradeLogger
+  ): Promise<Log[]> {
+    const userId = userDoc.id;
     logger.info({ message: `Add blob data userId ${userId}`, details: blobLog });
-    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId, logger);
     const keyUniqueArray = [];
 
     // throw error if user not defined
@@ -777,10 +773,7 @@ export class ExperimentAssignmentService {
       logs.metrics.attributes['duration'] = toSeconds(parse(log.generated.attempt.duration));
       logs.metrics.attributes['scoreGiven'] = log.generated.scoreGiven;
 
-      return this.dataLog(userId, [logs], {
-        logger: requestContext.logger,
-        userDoc: requestContext.userDoc,
-      });
+      return this.dataLog(requestContext.userDoc, [logs], requestContext.logger);
     } else {
       const error = new Error(`Unsupported Caliper profile: ${log.profile} or type: ${log.type}`);
       (error as any).type = SERVER_ERROR.UNSUPPORTED_CALIPER;
@@ -789,12 +782,8 @@ export class ExperimentAssignmentService {
     }
   }
 
-  public async dataLog(
-    userId: string,
-    jsonLog: ILogInput[],
-    requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<Log[]> {
-    const { logger, userDoc } = requestContext;
+  public async dataLog(userDoc: RequestedExperimentUser, jsonLog: ILogInput[], logger: UpgradeLogger): Promise<Log[]> {
+    const userId = userDoc.id;
     logger.info({ message: `Add data log userId ${userId}`, details: jsonLog });
     const keyUniqueArray: { key: string; uniquifier: string }[] = [];
 
