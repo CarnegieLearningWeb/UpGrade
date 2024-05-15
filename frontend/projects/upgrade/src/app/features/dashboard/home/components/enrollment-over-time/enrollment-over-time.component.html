@@ -1,11 +1,7 @@
 <div class="enrollment-over-time">
   <span class="ft-18-700 title">{{ 'home.view-experiment.enrollments-by-decision-point.title.text' | translate }}</span>
   <div class="enrollment-filters">
-    <mat-form-field
-      class="dense-2 sites"
-      appearance="outline"
-      subscriptSizing="dynamic"
-    >
+    <mat-form-field class="dense-2 sites" appearance="outline" subscriptSizing="dynamic">
       <mat-label class="ft-14-400 dropdown-label">
         {{ 'home.view-experiment.graph-decision-point.text' | translate }}
       </mat-label>
@@ -33,11 +29,7 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field
-      class="dense-2 conditions"
-      appearance="outline"
-      subscriptSizing="dynamic"
-    >
+    <mat-form-field class="dense-2 conditions" appearance="outline" subscriptSizing="dynamic">
       <mat-label class="ft-14-400 dropdown-label">
         {{ 'home.view-experiment.graph-conditions.text' | translate }}
       </mat-label>
@@ -65,11 +57,7 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field
-      class="dense-2"
-      appearance="outline"
-      subscriptSizing="dynamic"
-    >
+    <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
       <mat-label class="ft-14-400 dropdown-label">
         {{ 'home.view-experiment.graph-type.text' | translate }}
       </mat-label>
@@ -85,11 +73,7 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field
-      class="dense-2"
-      appearance="outline"
-      subscriptSizing="dynamic"
-    >
+    <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
       <mat-label class="ft-14-400 dropdown-label">
         {{ 'home.view-experiment.graph-time.text' | translate }}
       </mat-label>
@@ -116,7 +100,7 @@
     <div class="chart">
       <div class="chart-data">
         <ngx-charts-bar-vertical-stacked
-          [scheme] = "colorScheme"
+          [scheme]="colorScheme"
           [results]="graphData"
           [xAxis]="showLabelOfxAxis"
           [yAxis]="true"

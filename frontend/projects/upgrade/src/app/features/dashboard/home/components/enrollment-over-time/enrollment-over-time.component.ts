@@ -7,6 +7,7 @@ import {
   ExperimentConditionFilterOptions,
   ExperimentPartitionFilterOptions,
   ExperimentDateFilterOptions,
+  ExperimentCondition,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { filter } from 'rxjs/operators';
@@ -47,7 +48,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   copyGraphData: IEnrollmentStatByDate[] = [];
   isInitialLoad = true;
   showLabelOfxAxis = true;
-  graphColorIndicators = [];
+  graphColorIndicators: ExperimentCondition[] = [];
 
   colors = [
     '#31e8dd',
@@ -98,7 +99,6 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
         this.conditionsFilterOptions.sort((a, b) => a.code.localeCompare(b.code));
       });
 
-      
       this.partitionsFilterOptions = [];
       this.selectedPartition = [];
       this.experiment.partitions.forEach((partition) => {
@@ -109,7 +109,6 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
         });
         this.selectedPartition.push(partition.id);
       });
-
 
       this.groupFiltersOptions =
         this.experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
@@ -122,10 +121,10 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
       this.showLabelOfxAxis = false;
     }
   }
-  
+
   ngOnInit() {
     // Creating a new array with experiment conditionCode for the condition colour indicator to align with sorted graphData
-    this.graphColorIndicators = [...this.experiment.conditions]
+    this.graphColorIndicators = [...this.experiment.conditions];
     this.graphColorIndicators.sort((a, b) => a.conditionCode.localeCompare(b.conditionCode));
 
     this.graphInfoSub = this.experimentService.selectExperimentGraphInfo$
@@ -169,7 +168,6 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   }
 
   setDataInGraphFormat(data: IEnrollmentStatByDate[]) {
-
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const months = [
       'January',
@@ -224,16 +222,13 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
 
       return {
         name:
-        this.selectedDateFilter === DATE_RANGE.LAST_SEVEN_DAYS
-        ? this.dateToString(new Date(graphData.date), days)
-        : months[new Date(graphData.date).getMonth()],
+          this.selectedDateFilter === DATE_RANGE.LAST_SEVEN_DAYS
+            ? this.dateToString(new Date(graphData.date), days)
+            : months[new Date(graphData.date).getMonth()],
         series,
       };
-      
     });
   }
-
-
 
   applyExperimentFilter(type: ExperimentFilterType) {
     switch (type) {
