@@ -3,7 +3,7 @@
 
   <div class="import-segment-body">
     <p class="ft-16-400 import-message">
-      {{ 'segments.import-segmemt.message.text' | translate }}
+      {{ 'segments.import-segment.message.text' | translate }}
     </p>
     <input accept=".json" type="file" multiple class="ft-14-400 file-input" (change)="uploadFile($event)" />
     <ng-container *ngIf="!isLoadingSegments$; else loadingSegmentState">
@@ -40,12 +40,9 @@
       mat-raised-button
       class="shared-modal--modal-btn default-button"
       [ngClass]="{
-        'default-button--disabled':
-        uploadedFileCount === 0 || nonErrorSegments === 0 || this.isLoadingSegments$
+        'default-button--disabled': uploadedFileCount === 0 || nonErrorSegments === 0 || this.isLoadingSegments$
       }"
-      [disabled]="
-        uploadedFileCount === 0 || nonErrorSegments === 0 || this.isLoadingSegments$
-      "
+      [disabled]="uploadedFileCount === 0 || nonErrorSegments === 0 || this.isLoadingSegments$"
       (click)="importSegments()"
     >
       {{ 'global.import.text' | translate }}
