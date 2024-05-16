@@ -125,9 +125,6 @@ export class ExperimentAssignmentService {
     uniquifier?: string,
     clientError?: string
   ): Promise<Omit<MonitoredDecisionPoint, 'createdAt | updatedAt | versionNumber'>> {
-    // find working group for user
-    const userId = userDoc.id;
-
     // check error from client side
     if (clientError) {
       const error = new Error(clientError);
@@ -136,13 +133,15 @@ export class ExperimentAssignmentService {
     }
 
     // adding experiment error when user is not defined
-    if (!userDoc) {
-      const error = new Error(`User not defined in markExperimentPoint: ${userId}`);
+    if (!userDoc || !userDoc.id) {
+      const error = new Error(`User not defined in markExperimentPoint: ${userDoc.requestedUserId}`);
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
       (error as any).httpCode = 404;
       logger.error(error);
       throw error;
     }
+
+    const userId = userDoc.id;
 
     const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
 
@@ -338,24 +337,24 @@ export class ExperimentAssignmentService {
     context: string,
     logger: UpgradeLogger
   ): Promise<IExperimentAssignmentv5[]> {
-    const userId = experimentUserDoc.id;
-    logger.info({ message: `getAllExperimentConditions: User: ${userId}` });
-
-    const previewUser = await this.previewUserService.findOne(userId, logger);
+    logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc.requestedUserId}` });
 
     // throw error if user not defined
     if (!experimentUserDoc || !experimentUserDoc.id) {
-      logger.error({ message: `User not defined in getAllExperimentConditions: ${userId}` });
+      logger.error({ message: `User not defined in getAllExperimentConditions: ${experimentUserDoc.requestedUserId}` });
       const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined in getAllExperimentConditions: ${userId}`,
+          message: `User not defined in getAllExperimentConditions: ${experimentUserDoc.requestedUserId}`,
         })
       );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
       (error as any).httpCode = 404;
       throw error;
     }
+    const userId = experimentUserDoc?.id;
+
+    const previewUser = await this.previewUserService.findOne(userId, logger);
 
     const experimentUser: ExperimentUser = experimentUserDoc as ExperimentUser;
 
