@@ -99,7 +99,6 @@ export class FeatureFlagsEffects {
     )
   );
 
-
   fetchFeatureFlagsOnSearchString$ = createEffect(
     () =>
       this.actions$.pipe(
