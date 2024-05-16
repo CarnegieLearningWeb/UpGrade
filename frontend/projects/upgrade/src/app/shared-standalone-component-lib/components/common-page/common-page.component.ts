@@ -5,7 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 /**
  * A component nested in this component can be displayed in the **header** or **content** slot.
  * The **header** slot should contain a component that wraps a **app-common-page-header**.
- * The **content** slot should contain a component that wraps a **app-common-section-card-list**.
+ * The **content** slot should contain a component that wraps a list of **app-common-section-card**.
  * Simply nest the component and add the slot name as an attribute.
  *
  * Example usage:

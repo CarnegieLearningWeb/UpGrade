@@ -9,18 +9,18 @@ import { TranslateModule } from '@ngx-translate/core';
  * Example usage:
  *
  * ```
- * <app-common-root-page-header-container [title]="title" [subtitle]="subtitle"></app-common-root-page-header-container>
+ * <app-common-root-page-header [title]="title" [subtitle]="subtitle"></app-common-root-page-header>
  * ```
  */
 @Component({
-  selector: 'app-common-root-page-header-container',
+  selector: 'app-common-root-page-header',
   standalone: true,
   imports: [CommonModule, TranslateModule, MatButton],
-  templateUrl: './common-root-page-header-container.component.html',
-  styleUrl: './common-root-page-header-container.component.scss',
+  templateUrl: './common-root-page-header.component.html',
+  styleUrl: './common-root-page-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommonRootPageHeaderContainerComponent {
+export class CommonRootPageHeaderComponent {
   @Input() title!: string;
   @Input() subtitle!: string;
 }
