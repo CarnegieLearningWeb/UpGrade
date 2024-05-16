@@ -5,15 +5,32 @@ import { TranslateModule } from '@ngx-translate/core';
 /**
  * A component nested in this component can be displayed in the **header** or **content** slot.
  * The **header** slot should contain a component that wraps a **app-common-page-header**.
- * The **content** slot should contain a component that wraps a **app-common-section-card-list**.
+ * The **section-card** slot should contain section-card components.
  * Simply nest the component and add the slot name as an attribute.
  *
  * Example usage:
  *
  * ```
  * <app-common-page>
- *   <div header>Hi I'm in the header slot</div>
- *   <div content>Hi I'm in the content slot</div>
+ *   <div header>header</div>
+ *   <div section-card>section-card 1</div>
+ *   <div section-card>section-card 2</div>
+ * </app-common-page>
+ * ```
+ *
+ *
+ * Tabbed / Conditional Output
+ * ```
+ * <app-common-page>
+ *   <div header>header</div>
+ *   <div section-card (selectedIndexChange)="selectedIndex = $event">overview-card-with-tabs</div>
+ *    <ng-container [ngSwitch]="selectedIndex">
+ *      <ng-container *ngSwitchCase="1">
+ *        <div section-card>section-card-1-tab-1</div>
+ *        <div section-card>section-card-2-tab-1</div>
+ *      </ng-container>
+ *    <div *ngSwitchCase="2" section-card>section-card-1-tab-2</div>
+ *    </ng-container>
  * </app-common-page>
  * ```
  */
