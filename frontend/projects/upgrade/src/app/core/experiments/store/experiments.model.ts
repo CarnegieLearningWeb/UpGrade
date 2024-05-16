@@ -194,7 +194,7 @@ export interface ExperimentStateTimeLog {
   versionNumber: number;
 }
 
-export interface segmentNew {
+export interface SegmentNew {
   updatedAt: string;
   createdAt: string;
   versionNumber: number;
@@ -231,8 +231,8 @@ export interface Experiment {
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
   filterMode: FILTER_MODE;
-  experimentSegmentInclusion: segmentNew;
-  experimentSegmentExclusion: segmentNew;
+  experimentSegmentInclusion: SegmentNew;
+  experimentSegmentExclusion: SegmentNew;
   groupSatisfied?: number;
   backendVersion: string;
 }

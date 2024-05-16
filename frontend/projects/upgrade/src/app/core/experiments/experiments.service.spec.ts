@@ -37,7 +37,7 @@ import {
 import { Environment } from '../../../environments/environment-types';
 import { environment } from '../../../environments/environment';
 import { ASSIGNMENT_ALGORITHM, CONDITION_ORDER, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
-import { segmentNew } from './store/experiments.model';
+import { SegmentNew } from './store/experiments.model';
 import { Segment } from '../segments/store/segments.model';
 
 const MockStateStore$ = new BehaviorSubject({});
@@ -74,14 +74,14 @@ describe('ExperimentService', () => {
     status: 'segment-status',
   };
 
-  const dummyInclusionData: segmentNew = {
+  const dummyInclusionData: SegmentNew = {
     updatedAt: '2022-06-20T13:14:52.900Z',
     createdAt: '2022-06-20T13:14:52.900Z',
     versionNumber: 1,
     segment: segmentData,
   };
 
-  const dummyExclusionData: segmentNew = {
+  const dummyExclusionData: SegmentNew = {
     updatedAt: '2022-06-20T13:14:52.900Z',
     createdAt: '2022-06-20T13:14:52.900Z',
     versionNumber: 1,
