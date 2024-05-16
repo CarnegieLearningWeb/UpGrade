@@ -140,85 +140,17 @@ export class FeatureFlagService {
         throw error;
       }
 
-      const setSegmentInEx = (inEx: FeatureFlagSegmentExclusion | FeatureFlagSegmentInclusion) => {
-        const segment = inEx.segment;
-        return segment
-          ? {
-              ...featureFlagSegmentInclusion.segment,
-              type: segment.type,
-              userIds: segment.individualForSegment?.map((x) => x.userId) || [],
-              groups:
-                segment.groupForSegment?.map((x) => {
-                  return { type: x.type, groupId: x.groupId };
-                }) || [],
-              subSegmentIds: segment.subSegments?.map((x) => x.id) || [],
-            }
-          : inEx;
-      };
+      const {
+        segmentExists: includeSegmentExists,
+        segmentDoc: segmentIncludeDoc,
+        segmentDocToSave: segmentIncludeDocToSave,
+      } = await this.addPrivateSegmentToDB(featureFlagSegmentInclusion, flag, 'Inclusion', logger);
+      const {
+        segmentExists: excludeSegmentExists,
+        segmentDoc: segmentExcludeDoc,
+        segmentDocToSave: segmentExcludeDocToSave,
+      } = await this.addPrivateSegmentToDB(featureFlagSegmentExclusion, flag, 'Exclusion', logger);
 
-      let includeSegmentExists = true;
-      let segmentIncludeDoc: Segment;
-      let segmentIncludeDocToSave: Partial<FeatureFlagSegmentInclusion> = {};
-      if (featureFlagSegmentInclusion) {
-        const segmentInclude: any = setSegmentInEx(featureFlagSegmentInclusion);
-
-        const segmentIncludeData: SegmentInputValidator = {
-          ...segmentInclude,
-          id: segmentInclude.id || uuid(),
-          name: flagDoc.id + ' Inclusion Segment',
-          description: flagDoc.id + ' Inclusion Segment',
-          context: flagDoc.context[0],
-          type: SEGMENT_TYPE.PRIVATE,
-        };
-        try {
-          segmentIncludeDoc = await this.segmentService.upsertSegment(segmentIncludeData, logger);
-        } catch (err) {
-          const error = err as ErrorWithType;
-          error.details = 'Error in adding segment in DB';
-          error.type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-          throw error;
-        }
-        // creating segmentInclude doc
-        const includeTempDoc = new FeatureFlagSegmentInclusion();
-        includeTempDoc.segment = segmentIncludeDoc;
-        includeTempDoc.featureFlag = flag;
-        segmentIncludeDocToSave = this.getSegmentDoc(includeTempDoc);
-      } else {
-        includeSegmentExists = false;
-      }
-
-      let excludeSegmentExists = true;
-      let segmentExcludeDoc: Segment;
-      let segmentExcludeDocToSave: Partial<FeatureFlagSegmentExclusion> = {};
-      if (featureFlagSegmentExclusion) {
-        const segmentExclude: any = setSegmentInEx(featureFlagSegmentExclusion);
-
-        const segmentExcludeData: SegmentInputValidator = {
-          ...segmentExclude,
-          id: segmentExclude.id || uuid(),
-          name: flagDoc.id + ' Exclusion Segment',
-          description: flagDoc.id + ' Exclusion Segment',
-          context: flagDoc.context[0],
-          type: SEGMENT_TYPE.PRIVATE,
-        };
-        try {
-          segmentExcludeDoc = await this.segmentService.upsertSegment(segmentExcludeData, logger);
-        } catch (err) {
-          const error = err as ErrorWithType;
-          error.details = 'Error in adding segment in DB';
-          error.type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-          throw error;
-        }
-        // creating segmentInclude doc
-        const excludeTempDoc = new FeatureFlagSegmentExclusion();
-        excludeTempDoc.segment = segmentExcludeDoc;
-        excludeTempDoc.featureFlag = flag;
-        segmentExcludeDocToSave = this.getSegmentDoc(excludeTempDoc);
-      } else {
-        excludeSegmentExists = false;
-      }
       let featureFlagSegmentInclusionDoc: FeatureFlagSegmentInclusion;
       let featureFlagSegmentExclusionDoc: FeatureFlagSegmentExclusion;
 
@@ -376,5 +308,61 @@ export class FeatureFlagService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { createdAt, updatedAt, versionNumber, ...newDoc } = doc;
     return newDoc;
+  }
+
+  private async addPrivateSegmentToDB(
+    segmentInclusionExclusion: FeatureFlagSegmentExclusion | FeatureFlagSegmentInclusion,
+    flag: FeatureFlag,
+    type: string,
+    logger: UpgradeLogger
+  ) {
+    let segmentExists = true;
+    let segmentDoc: Segment;
+    let segmentDocToSave: Partial<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> = {};
+    if (segmentInclusionExclusion) {
+      const segment: any = this.setSegmentInclusionOrExclusion(segmentInclusionExclusion);
+      const segmentData: SegmentInputValidator = {
+        ...segment,
+        id: segment.id || uuid(),
+        name: flag.id + ' ' + type + ' Segment',
+        description: flag.id + ' ' + type + ' Segment',
+        context: flag.context[0],
+        type: SEGMENT_TYPE.PRIVATE,
+      };
+      try {
+        segmentDoc = await this.segmentService.upsertSegment(segmentData, logger);
+      } catch (err) {
+        const error = err as ErrorWithType;
+        error.details = 'Error in adding segment in DB';
+        error.type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
+      // creating segment doc
+      const tempDoc = type === 'Inclusion' ? new FeatureFlagSegmentInclusion() : new FeatureFlagSegmentExclusion();
+      tempDoc.segment = segmentDoc;
+      tempDoc.featureFlag = flag;
+      segmentDocToSave = this.getSegmentDoc(tempDoc);
+    } else {
+      segmentExists = false;
+    }
+    return { segmentExists, segmentDoc, segmentDocToSave };
+  }
+
+  private setSegmentInclusionOrExclusion(
+    inclusionOrExclusion: FeatureFlagSegmentExclusion | FeatureFlagSegmentInclusion
+  ) {
+    const segment = inclusionOrExclusion.segment;
+    return segment
+      ? {
+          type: segment.type,
+          userIds: segment.individualForSegment?.map((x) => x.userId) || [],
+          groups:
+            segment.groupForSegment?.map((x) => {
+              return { type: x.type, groupId: x.groupId };
+            }) || [],
+          subSegmentIds: segment.subSegments?.map((x) => x.id) || [],
+        }
+      : inclusionOrExclusion;
   }
 }

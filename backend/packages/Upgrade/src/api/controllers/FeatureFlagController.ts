@@ -6,6 +6,7 @@ import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatus
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { SERVER_ERROR } from 'upgrade_types';
+import { isUUID } from 'class-validator';
 import { FeatureFlagValidation } from './validators/FeatureFlagValidator';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
@@ -190,6 +191,13 @@ export class FeatureFlagsController {
    */
   @Get('/:id')
   public findOne(@Param('id') id: string, @Req() request: AppRequest): Promise<FeatureFlag | undefined> {
+    if (!isUUID(id)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
     return this.featureFlagService.findOne(id, request.logger);
   }
 
@@ -237,7 +245,7 @@ export class FeatureFlagsController {
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Get Paginated Experiments
+   *            description: Get Paginated Feature Flags
    */
 
   @Post('/paginated')
