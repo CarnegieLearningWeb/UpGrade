@@ -765,7 +765,6 @@ export class ExperimentAssignmentService {
   ): Promise<Log[]> {
     if (log.profile === SUPPORTED_CALIPER_PROFILES.GRADING && log.type === SUPPORTED_CALIPER_EVENTS.GRADE) {
       requestContext.logger.info({ message: 'Starting the Caliper log call for user' });
-      const userId = log.object.assignee.id;
 
       const logs: ILogInput = log.generated.attempt.extensions;
 
