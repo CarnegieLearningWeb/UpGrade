@@ -54,29 +54,12 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   searchValue: string;
   contextVisibility = [];
 
-  get filteredStatusOptions(): string[] {
-    if (typeof this.searchValue === 'string') {
-      const filterValue = this.searchValue.toLowerCase();
-      return this.statusFilterOptions.filter((option) => option.toLowerCase().includes(filterValue));
-    } else {
-      return this.statusFilterOptions;
-    }
-  }
-
   constructor(
     private authService: AuthService,
     private segmentsService: SegmentsService,
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef
   ) {}
-
-  get SegmentStatus() {
-    return SEGMENT_STATUS;
-  }
-
-  get SegmentStatusPipeTypes() {
-    return SegmentStatusPipeType;
-  }
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
@@ -143,6 +126,15 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
+  get filteredStatusOptions(): string[] {
+    if (typeof this.searchValue === 'string') {
+      const filterValue = this.searchValue.toLowerCase();
+      return this.statusFilterOptions.filter((option) => option.toLowerCase().includes(filterValue));
+    } else {
+      return this.statusFilterOptions;
+    }
+  }
+
   filterSegmentsByChips(tagValue: string, type: SEGMENT_SEARCH_KEY) {
     this.setSearchKey(type);
     this.setSearchString(tagValue);
@@ -185,5 +177,13 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   get SegmentSearchKey() {
     return SEGMENT_SEARCH_KEY;
+  }
+
+  get SegmentStatus() {
+    return SEGMENT_STATUS;
+  }
+
+  get SegmentStatusPipeTypes() {
+    return SegmentStatusPipeType;
   }
 }
