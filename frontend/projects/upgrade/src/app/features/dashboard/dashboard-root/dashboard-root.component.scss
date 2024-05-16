@@ -109,15 +109,6 @@ mat-drawer {
   }
 }
 
-.drawer__main-content {
-  &-header {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    height: 25px;
-  }
-}
-
 .version {
   display: flex;
   flex-direction: column;

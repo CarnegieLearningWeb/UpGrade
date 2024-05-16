@@ -3,8 +3,8 @@
   flex-direction: column;
   box-shadow: unset;
   background: unset;
-  padding: 0 2.75rem 2.75rem;
-  height: calc(100% - 25px); // Subtract theme selector's height
+  padding: 25px 2.75rem 2.75rem;
+  height: 100%;
 
   .title {
     margin-bottom: 0;
