@@ -1,0 +1,30 @@
+<div class="search-header">
+    <mat-form-field
+      class="dense-2 filter-options"
+      subscriptSizing="dynamic"
+    >
+      <mat-select
+        class="ft-14-400"
+        [(ngModel)]="selectedFilterOption"
+        (selectionChange)="onSearch()"
+      >
+        <mat-option class="ft-14-400" *ngFor="let filterOption of filterOptions" [value]="filterOption">
+          {{ filterOption | titlecase }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field
+      class="dense-2"
+      subscriptSizing="dynamic"
+    >
+      <input
+        class="ft-14-400 search-input"
+        matInput
+        #searchInput
+        [(ngModel)]="searchValue"
+        (keyup)="onSearch()"
+        [placeholder]="'global.search.text' | translate"
+      />
+      <mat-icon (click)="onSearch()" class="search-icon" matSuffix>search</mat-icon>
+    </mat-form-field>
+</div>
