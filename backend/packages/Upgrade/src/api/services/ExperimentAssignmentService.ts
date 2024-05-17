@@ -218,9 +218,8 @@ export class ExperimentAssignmentService {
       where: {
         site: site,
         target: target,
-        user: userId,
+        user: userDoc,
       },
-      relations: ['user'],
     });
     if (experimentId && experiments.length) {
       const selectedExperimentDP = dpExperiments.find((dp) => dp.experiment.id === experimentId);
