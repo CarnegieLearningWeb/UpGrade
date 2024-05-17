@@ -16,8 +16,9 @@ import { TranslateModule } from '@ngx-translate/core';
  *
  * ```
  * <app-common-section-card-search-header
- *   [filterOptions]="['Name', 'Age', 'Location']"
- *   [initialSearchValue]="'John Doe'"
+ *   [filterOptions]="['Name', 'Status', 'Context']"
+ *   [initialSearchValue]="'Experiment 1'"
+ *   [initialFilterOption]="'Name'"
  *   (search)="onSearch($event)"
  * ></app-common-section-card-search-header>
  * ```
@@ -42,6 +43,7 @@ import { TranslateModule } from '@ngx-translate/core';
 export class CommonSectionCardSearchHeaderComponent implements OnInit {
   @Input() filterOptions: string[] = [];
   @Input() initialSearchValue = '';
+  @Input() initialFilterOption = '';
   @Output() search = new EventEmitter<{ filterOption: string; searchValue: string }>();
 
   selectedFilterOption = '';
@@ -52,7 +54,7 @@ export class CommonSectionCardSearchHeaderComponent implements OnInit {
       this.searchValue = this.initialSearchValue;
     }
     if (this.filterOptions.length > 0) {
-      this.selectedFilterOption = this.filterOptions[0];
+      this.selectedFilterOption = this.initialFilterOption;
     }
   }
 
