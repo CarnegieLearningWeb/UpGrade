@@ -195,6 +195,22 @@ export enum SEGMENT_SORT_KEY {
   UPDATED_AT = 'updatedAt',
 }
 
+export enum FLAG_SORT_KEY {
+  NAME = 'name',
+  KEY = 'key',
+  STATUS = 'status',
+  UPDATED_AT = 'updatedAt',
+}
+
+export enum FLAG_SEARCH_KEY {
+  ALL = 'all',
+  NAME = 'name',
+  KEY = 'key',
+  STATUS = 'status',
+  TAG = 'tag',
+  CONTEXT = 'context',
+}
+
 export enum INCLUSION_CRITERIA {
   INCLUDE_SPECIFIC = 'Include Specific',
   EXCEPT = 'Include All Except...',
