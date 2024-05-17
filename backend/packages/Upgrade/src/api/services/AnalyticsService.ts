@@ -227,7 +227,6 @@ export class AnalyticsService {
               const repeatedMeasure = groupedUser[userId][queryId][0].repeatedMeasure;
               const key = groupedUser[userId][queryId][0].key;
               const type = groupedUser[userId][queryId][0].type;
-              let metricKey;
 
               const keySplitArray = key.split(METRICS_JOIN_TEXT);
               logsUser[userId] = logsUser[userId] || {};
@@ -243,7 +242,6 @@ export class AnalyticsService {
                     },
                     undefined
                   ).data;
-                  metricKey = Object.keys(jsonLog);
                   if (type === IMetricMetaData.CONTINUOUS) {
                     logsUser[userId][queryId] = +keySplitArray.reduce(
                       (accumulator, attribute: string) => accumulator[attribute],
@@ -267,7 +265,6 @@ export class AnalyticsService {
                     },
                     undefined
                   ).data;
-                  metricKey = Object.keys(jsonLog);
                   if (type === IMetricMetaData.CONTINUOUS) {
                     logsUser[userId][queryId] = +keySplitArray.reduce(
                       (accumulator, attribute: string) => accumulator[attribute],
@@ -291,41 +288,19 @@ export class AnalyticsService {
                   break;
                 }
               }
-              logsUser[userId][queryId] = metricKey[0] + ': ' + logsUser[userId][queryId];
             }
           }
         }
+
         // merge with data
         const csvRows = csvExportData.map((row) => {
           const queryObject = logsUser[row.userId];
           const queryDataToAdd = {};
-          let postRule = '';
-          let revertToCondition = '';
 
           for (const queryId in queryObject) {
             if (queryObject[queryId]) {
               queryDataToAdd[queryNameIdMapping[queryId]] = queryObject[queryId];
             }
-          }
-          if (row.postRule === 'assign') {
-            if (row.revertTo !== null) {
-              revertToCondition = row.revertTo;
-            } else {
-              revertToCondition = 'Default';
-            }
-            postRule = 'Assign: ' + revertToCondition;
-          } else {
-            postRule = 'Continue';
-          }
-
-          let excludeIfReached = 'FALSE';
-          if (row.excludeIfReached) {
-            excludeIfReached = 'TRUE';
-          }
-
-          let stratification = 'NA';
-          if (row.stratification && row.stratificationValue) {
-            stratification = row.stratification + ': ' + row.stratificationValue;
           }
           return {
             ExperimentId: row.experimentId,
@@ -334,24 +309,12 @@ export class AnalyticsService {
             AppContext: row.context[0],
             UnitOfAssignment: row.assignmentUnit,
             GroupType: row.group,
-            GroupId: row.enrollmentGroupId ? row.enrollmentGroupId : row.exclusionGroupId,
-            ConsistencyRule: row.consistencyRule,
-            DesignType: row.designType,
-            AlgorithmType: row.algorithmType,
-            Stratification: stratification,
+            GroupId: row.groupId,
             Site: row.site,
             Target: row.target,
-            ExcludeifReached: excludeIfReached,
             ConditionName: row.conditionName,
-            Payload: row.payload ? row.payload : row.conditionName,
-            PostRule: postRule,
-            EnrollmentStartDate: new Date(row.enrollmentStartDate).toISOString(),
-            EnrollmentCompleteDate: row.enrollmentCompleteDate
-              ? new Date(row.enrollmentCompleteDate).toISOString()
-              : '',
-            MarkExperimentPointTime: new Date(row.markExperimentPointTime).toISOString(),
-            EnrollmentCode: row.enrollmentCode,
-            ExclusionCode: row.exclusionCode,
+            FirstDecisionPointReachedOn: new Date(row.firstDecisionPointReachedOn).toISOString(),
+            UniqueDecisionPointsMarked: row.decisionPointReachedCount,
             ...queryDataToAdd,
           };
         });
@@ -387,25 +350,9 @@ export class AnalyticsService {
             ExperimentId: '',
             ExperimentName: '',
             UserId: '',
-            AppContext: '',
-            UnitOfAssignment: '',
-            GroupType: '',
             GroupId: '',
-            ConsistencyRule: '',
-            DesignType: '',
-            AlgorithmType: '',
-            Stratification: '',
-            Site: '',
-            Target: '',
-            ExcludeifReached: '',
             ConditionName: '',
-            Payload: '',
-            PostRule: '',
-            EnrollmentStartDate: '',
-            EnrollmentCompleteDate: '',
-            MarkExperimentPointTime: '',
-            EnrollmentCode: '',
-            ExclusionCode: '',
+            FirstDecisionPointReachedOn: '',
           },
         ];
         const csv = new ObjectsToCsv(csvRows);
