@@ -1,6 +1,39 @@
-::ng-deep .common-section-card {
+:host ::ng-deep .common-section-card {
   width: 100%;
   border: 1px solid var(--light-grey);
   border-radius: 4px;
   background-color: var(--white);
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: center;
+    border-bottom: 1px solid var(--light-grey);
+    border-radius: 4px;
+    padding: 30px;
+
+    .header-left {
+      display: flex;
+      justify-content: left;
+      align-items: center;
+      width: 48%;
+      height: 50px; //placeholder remove me when i have content
+    }
+  
+    .header-right {
+      background-color: beige;
+      width: 48%;
+      height: 50px; //placeholder remove me when i have content
+    }
+  }
+
+  .content { //placeholder remove me when i have content
+    margin: 30px;
+    background-color: beige;
+  }
+
+  .footer {
+    // placeholder
+  }
 }
