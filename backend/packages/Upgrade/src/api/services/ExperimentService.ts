@@ -2,7 +2,7 @@
 import { GroupExclusion } from './../models/GroupExclusion';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
-import { InjectRepository } from '../../typeorm-typedi-extensions';
+import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import {
   Experiment,
@@ -16,7 +16,7 @@ import { DecisionPointRepository } from '../repositories/DecisionPointRepository
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { DecisionPoint } from '../models/DecisionPoint';
 import { ScheduledJobService } from './ScheduledJobService';
-import { getConnection, In, EntityManager } from 'typeorm';
+import { In, EntityManager, DataSource } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
 import {
@@ -117,6 +117,7 @@ export class ExperimentService {
     @InjectRepository() private levelCombinationElementsRepository: LevelCombinationElementRepository,
     @InjectRepository() private archivedStatsRepository: ArchivedStatsRepository,
     @InjectRepository() private stratificationRepository: StratificationFactorRepository,
+    @InjectDataSource() private dataSource: DataSource,
     public previewUserService: PreviewUserService,
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
@@ -327,7 +328,8 @@ export class ExperimentService {
     if (logger) {
       logger.info({ message: `Delete experiment =>  ${experimentId}` });
     }
-    return getConnection().transaction(async (transactionalEntityManager) => {
+    const { connection } = this.dataSource.manager;
+    return connection.transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
       await this.clearExperimentCacheDetail(
         experiment.context[0],
@@ -430,10 +432,10 @@ export class ExperimentService {
     scheduleDate?: Date,
     entityManager?: EntityManager
   ): Promise<Experiment> {
-    const oldExperiment = await this.experimentRepository.findOne(
-      { id: experimentId },
-      { relations: ['stateTimeLogs', 'partitions', 'queries', 'queries.metric'] }
-    );
+    const oldExperiment = await this.experimentRepository.findOne({
+      where: { id: experimentId },
+      relations: ['stateTimeLogs', 'partitions', 'queries', 'queries.metric'],
+    });
     await this.clearExperimentCacheDetail(
       oldExperiment.context[0],
       oldExperiment.partitions.map((partition) => {
@@ -774,7 +776,8 @@ export class ExperimentService {
       this.scheduledJobService.updateExperimentSchedules(experiment as any, logger);
     }
 
-    return getConnection()
+    const { connection } = this.dataSource.manager;
+    return connection
       .transaction(async (transactionalEntityManager) => {
         experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
         let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
@@ -913,7 +916,7 @@ export class ExperimentService {
           (queries?.[0] &&
             queries.length > 0 &&
             queries.map((query: any) => {
-              promiseArray.push(this.metricRepository.findOne(query.metric.key));
+              promiseArray.push(this.metricRepository.findOne({ where: { key: query.metric.key } }));
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
               rest.experiment = experimentDoc;
@@ -1223,7 +1226,8 @@ export class ExperimentService {
         return { site: partition.site, target: partition.target };
       })
     );
-    const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
+    const { connection } = this.dataSource.manager;
+    const createdExperiment = await connection.transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.description = experiment.description || '';
 
@@ -1598,9 +1602,9 @@ export class ExperimentService {
     });
 
     if (experiment.stratificationFactor?.stratificationFactorName) {
-      const factorFound = await this.stratificationRepository.findOne(
-        experiment.stratificationFactor.stratificationFactorName
-      );
+      const factorFound = await this.stratificationRepository.findOne({
+        where: { stratificationFactorName: experiment.stratificationFactor.stratificationFactorName },
+      });
       if (!factorFound) {
         errorString =
           errorString +

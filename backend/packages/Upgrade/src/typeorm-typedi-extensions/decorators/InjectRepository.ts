@@ -1,7 +1,9 @@
+import { CustomRepositoryMetadata, DataSourceMetadata } from './../global';
 import { Container } from 'typedi';
 import { getStorage } from '../global';
 import { PropertyTypeMissingError } from '../errors/property-type-missing.error';
 import { ParamTypeMissingError } from '../errors/param-type-missing.error';
+import { Repository } from 'typeorm';
 
 /**
  * Decorator used to inject a repository instance into a class property or constructor parameter.
@@ -45,24 +47,38 @@ export function InjectRepository(connectionName = 'default'): PropertyDecorator 
       index,
       value: () => {
         const storage = getStorage();
-        const dataSourceMap = storage.dataSource.find((item) => item.name === connectionName);
+        const dataSourceMap = storage.dataSourcesMetadata.find((item) => item.name === connectionName);
         if (!dataSourceMap) {
           throw new Error(`DataSource not found for ${connectionName}`);
         }
-        const entityRepository = storage.entityRepository.find((item) => item.target === (repositoryType as unknown));
+        const entityRepository = storage.entityRepositoriesMetadata.find(
+          (item) => item.target === (repositoryType as unknown)
+        );
         if (!entityRepository) {
           throw new Error(`Repository not found for ${repositoryType}`);
         }
-        const instance = new entityRepository.target();
-        const methodDescriptors = Object.getOwnPropertyDescriptors(Object.getPrototypeOf(instance));
-        const methods = Object.fromEntries(
-          Object.entries(methodDescriptors)
-            .filter(([, value]) => typeof value.value === 'function')
-            .map(([key, value]) => [key, value.value])
-        );
-        const repository = dataSourceMap.dataSource.getRepository(entityRepository.entity as any).extend(methods);
-        return repository;
+        return getCustomRepository(entityRepository, dataSourceMap);
       },
     });
   };
+}
+
+export function getCustomRepository<T>(
+  entityRepository: CustomRepositoryMetadata<T>,
+  dataSourceMap: DataSourceMetadata
+): Repository<T> | any {
+  const instance = new entityRepository.target(entityRepository?.entity as any, dataSourceMap.dataSource.manager);
+  const methodDescriptors = Object.getOwnPropertyDescriptors(Object.getPrototypeOf(instance));
+  const methods = Object.fromEntries(
+    Object.entries(methodDescriptors)
+      .filter(([, value]) => typeof value.value === 'function')
+      .map(([key, value]) => [key, value.value])
+  );
+  let repository: Repository<any>;
+  if (entityRepository.entity) {
+    repository = dataSourceMap.dataSource.getRepository(entityRepository.entity as any).extend(methods);
+  } else {
+    repository = instance;
+  }
+  return repository;
 }

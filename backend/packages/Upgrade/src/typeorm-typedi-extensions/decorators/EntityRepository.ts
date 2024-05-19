@@ -6,10 +6,10 @@ import { getStorage } from '../global';
  * @param entity - The entity class associated with the repository.
  * @returns The decorated class.
  */
-function EntityRepository(entity): ClassDecorator {
+function EntityRepository(entity?: new (...arg: any[]) => any): ClassDecorator {
   return function (target: any) {
     // storing the entity and target in the storage
-    getStorage().entityRepository.push({ target, entity });
+    getStorage().entityRepositoriesMetadata.push({ target, entity });
     return target;
   };
 }

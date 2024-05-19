@@ -1,18 +1,20 @@
+import { Container } from './../../typeorm-typedi-extensions/Container';
 import { ExperimentRepository } from './ExperimentRepository';
 import { IndividualEnrollment } from './../models/IndividualEnrollment';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
-import { Repository, EntityManager, getRepository, SelectQueryBuilder, getCustomRepository, getManager } from 'typeorm';
+import { Repository, EntityManager, SelectQueryBuilder, getCustomRepository, getManager } from 'typeorm';
 import { Log } from '../models/Log';
 import repositoryError from './utils/repositoryError';
 import { Experiment } from '../models/Experiment';
 import { OPERATION_TYPES, IMetricMetaData, REPEATED_MEASURE, EXPERIMENT_TYPE } from 'upgrade_types';
 import { METRICS_JOIN_TEXT } from '../services/MetricService';
 import { Query } from '../models/Query';
-import { Metric } from '../models/Metric';
 import { LevelCombinationElement } from '../models/LevelCombinationElement';
 import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
 import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { ExperimentCondition } from '../models/ExperimentCondition';
+import { QueryRepository } from './QueryRepository';
+import { MetricRepository } from './MetricRepository';
 
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
@@ -61,7 +63,7 @@ export class LogRepository extends Repository<Log> {
   }
 
   public async deleteByMetricId(metricKey: string): Promise<any> {
-    const queryRepo = getRepository(Query);
+    const queryRepo = Container.getCustomRepository(QueryRepository);
 
     // delete all logs
     // TODO optimize this query
@@ -107,7 +109,7 @@ export class LogRepository extends Repository<Log> {
     filteredKeyUniqueArray: { key: string; uniquifier: string }[],
     userId: string
   ): Promise<{ data: Record<string, any>; uniquifier: string; timeStamp: string; id: string; key: string }[]> {
-    const metricsRepository = getRepository(Metric);
+    const metricsRepository = Container.getCustomRepository(MetricRepository);
     const values = filteredKeyUniqueArray
       .map((value) => {
         return `('${value.uniquifier}', '${value.key}')`;
@@ -227,7 +229,7 @@ export class LogRepository extends Repository<Log> {
       unitOfAssignment
     );
 
-    let andQuery = isContinuousMetric
+    const andQuery = isContinuousMetric
       ? `jsonb_typeof(${jsonDataValueLog}) = 'number'`
       : `${jsonDataValueLog} IS NOT NULL`;
 
@@ -243,7 +245,7 @@ export class LogRepository extends Repository<Log> {
 
     if (compareFn) {
       const castType = isContinuousMetric ? 'decimal' : 'text';
-      let castFn = `(cast(${valueToUse} as ${castType}))`;
+      const castFn = `(cast(${valueToUse} as ${castType}))`;
 
       percentQuery =
         unitOfAssignment !== 'within-subjects'
@@ -357,7 +359,7 @@ export class LogRepository extends Repository<Log> {
       percentQuery.addSelect('COUNT(DISTINCT "individualEnrollment"."userId") as "participantsLogged"');
 
       if (unitOfAssignment === 'within-subjects') {
-        let conditionOrLevelId = isFactorialExperiment ? 'levelId' : 'conditionId';
+        const conditionOrLevelId = isFactorialExperiment ? 'levelId' : 'conditionId';
         const withinSubjectPercentQuery = getManager()
           .createQueryBuilder()
           .select([
@@ -485,7 +487,7 @@ export class LogRepository extends Repository<Log> {
 
       if (unitOfAssignment === 'within-subjects') {
         let withinSubjectExecuteQuery;
-        let conditionOrLevelId = isFactorialExperiment ? 'levelId' : 'conditionId';
+        const conditionOrLevelId = isFactorialExperiment ? 'levelId' : 'conditionId';
         if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
           withinSubjectExecuteQuery = getManager()
             .createQueryBuilder()
@@ -689,7 +691,7 @@ export class LogRepository extends Repository<Log> {
     isFactorialExperiment: boolean,
     unitOfAssignment: string
   ): SelectQueryBuilder<Experiment> {
-    const experimentRepo = getRepository(Experiment);
+    const experimentRepo = Container.getCustomRepository(ExperimentRepository);
     const analyticsQuery = experimentRepo
       .createQueryBuilder('experiment')
       .innerJoin('experiment.queries', 'queries')

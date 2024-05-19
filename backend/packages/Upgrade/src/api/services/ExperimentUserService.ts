@@ -1,12 +1,12 @@
 import { IndividualEnrollmentRepository } from './../repositories/IndividualEnrollmentRepository';
 import { UpgradeLogger } from './../../lib/logger/UpgradeLogger';
 import { Service } from 'typedi';
-import { InjectRepository } from '../../typeorm-typedi-extensions';
+import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, IUserAliases, SERVER_ERROR } from 'upgrade_types';
-import { getConnection, In, InsertResult, Not } from 'typeorm';
+import { DataSource, In, InsertResult, Not } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Experiment } from '../models/Experiment';
@@ -20,7 +20,8 @@ export class ExperimentUserService {
     @InjectRepository() private experimentRepository: ExperimentRepository,
     @InjectRepository() private individualEnrollmentRepository: IndividualEnrollmentRepository,
     @InjectRepository() private individualExclusionRepository: IndividualExclusionRepository,
-    @InjectRepository() private groupExclusionRepository: GroupExclusionRepository
+    @InjectRepository() private groupExclusionRepository: GroupExclusionRepository,
+    @InjectDataSource() private dataSource: DataSource
   ) {}
 
   public find(logger?: UpgradeLogger): Promise<ExperimentUser[]> {
@@ -32,7 +33,7 @@ export class ExperimentUserService {
 
   public findOne(id: string, logger: UpgradeLogger): Promise<ExperimentUser> {
     logger.info({ message: `Find user by id => ${id}` });
-    return this.userRepository.findOne({ id });
+    return this.userRepository.findOneBy({ id });
   }
 
   public async upsertOnChange(
@@ -346,7 +347,8 @@ export class ExperimentUserService {
   }
 
   public async clearDB(logger: UpgradeLogger): Promise<void> {
-    await getConnection().transaction(async (transactionalEntityManager) => {
+    const { connection } = this.dataSource.manager;
+    await connection.transaction(async (transactionalEntityManager) => {
       await this.experimentRepository.clearDB(transactionalEntityManager, logger);
     });
   }

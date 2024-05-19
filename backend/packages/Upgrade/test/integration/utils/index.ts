@@ -1,3 +1,7 @@
+import { GroupExclusionRepository } from './../../../src/api/repositories/GroupExclusionRepository';
+import { GroupEnrollmentRepository } from './../../../src/api/repositories/GroupEnrollmentRepository';
+import { IndividualEnrollmentRepository } from './../../../src/api/repositories/IndividualEnrollmentRepository';
+import { Container as tteContainer } from './../../../src/typeorm-typedi-extensions/Container';
 import { MonitoredDecisionPoint } from '../../../src/api/models/MonitoredDecisionPoint';
 import { Container } from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
@@ -5,13 +9,9 @@ import { CheckService } from '../../../src/api/services/CheckService';
 import { IExperimentAssignmentv5, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { User } from '../../../src/api/models/User';
-import { getRepository } from 'typeorm';
-import { IndividualEnrollment } from '../../../src/api/models/IndividualEnrollment';
-import { IndividualExclusion } from '../../../src/api/models/IndividualExclusion';
-import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
-import { GroupExclusion } from './../../../src/api/models/GroupExclusion';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
+import { IndividualExclusionRepository } from '../../../src/api/repositories/IndividualExclusionRepository';
 
 export function checkExperimentAssignedIsNull(experimentConditionAssignments: any, target: string, site: string): void {
   expect(experimentConditionAssignments).not.toEqual(
@@ -125,22 +125,22 @@ export async function checkDeletedExperiment(experimentId: string, user: User): 
   await experimentService.delete(experimentId, user, new UpgradeLogger());
 
   // no individual assignments
-  const individualEnrollmentRepository = getRepository(IndividualEnrollment);
+  const individualEnrollmentRepository = tteContainer.getCustomRepository(IndividualEnrollmentRepository);
   const individualAssignments = await individualEnrollmentRepository.find();
   expect(individualAssignments.length).toEqual(0);
 
   // no individual exclusion
-  const individualExclusionRepository = getRepository(IndividualExclusion);
+  const individualExclusionRepository = tteContainer.getCustomRepository(IndividualExclusionRepository);
   const individualExclusions = await individualExclusionRepository.find();
   expect(individualExclusions.length).toEqual(0);
 
   // no group assignment
-  const groupEnrollmentRepository = getRepository(GroupEnrollment);
+  const groupEnrollmentRepository = tteContainer.getCustomRepository(GroupEnrollmentRepository);
   const groupAssignments = await groupEnrollmentRepository.find();
   expect(groupAssignments.length).toEqual(0);
 
   // no group exclusion
-  const groupExclusionRepository = getRepository(GroupExclusion);
+  const groupExclusionRepository = tteContainer.getCustomRepository(GroupExclusionRepository);
   const groupExclusions = await groupExclusionRepository.find();
   expect(groupExclusions.length).toEqual(0);
 }

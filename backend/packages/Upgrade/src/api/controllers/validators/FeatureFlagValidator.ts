@@ -1,6 +1,5 @@
 import { IsNotEmpty, IsDefined, IsString, IsArray, IsEnum } from 'class-validator';
-import { FILTER_MODE } from 'upgrade_types';
-import { FEATURE_FLAG_STATUS } from 'upgrade_types';
+import { FILTER_MODE, FEATURE_FLAG_STATUS } from 'upgrade_types';
 
 export class FeatureFlagValidation {
   @IsNotEmpty()

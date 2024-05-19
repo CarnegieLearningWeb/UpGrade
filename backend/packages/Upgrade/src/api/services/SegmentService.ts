@@ -315,7 +315,9 @@ export class SegmentService {
           : errorMessage;
       }
 
-      const duplicateName = await this.segmentRepository.find({ name: segment.name, context: segment.context });
+      const duplicateName = await this.segmentRepository.find({
+        where: { name: segment.name, context: segment.context },
+      });
       if (duplicateName.length) {
         errorMessage =
           errorMessage +
@@ -406,7 +408,8 @@ export class SegmentService {
         try {
           const segmentRepository = await transactionalEntityManager.getRepository(Segment);
           // get segment by ids
-          segmentDoc = segmentRepository.findOne(segment.id, {
+          segmentDoc = await segmentRepository.findOne({
+            where: { id: segment.id },
             relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
           });
 
@@ -496,9 +499,10 @@ export class SegmentService {
         throw error;
       }
 
-      return transactionalEntityManager
-        .getRepository(Segment)
-        .findOne(segmentDoc.id, { relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
+      return transactionalEntityManager.getRepository(Segment).findOne({
+        where: { id: segmentDoc.id },
+        relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+      });
     });
 
     // reset caching

@@ -110,7 +110,7 @@ export class AnalyticsService {
     }
 
     const promiseArray = await Promise.all([
-      this.experimentRepository.findOne(experimentId, { relations: ['conditions', 'partitions'] }),
+      this.experimentRepository.findOne({ where: { id: experimentId }, relations: ['conditions', 'partitions'] }),
       this.analyticsRepository.getEnrollmentByDateRange(experimentId, dateRange, clientOffset),
     ]);
 
@@ -176,7 +176,7 @@ export class AnalyticsService {
         this.experimentRepository.findOne({
           where: { id: experimentId },
         }),
-        userRepository.findOne({ email }),
+        userRepository.findOneBy({ email }),
       ]);
 
       // make new query here

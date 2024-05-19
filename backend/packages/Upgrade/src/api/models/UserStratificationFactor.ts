@@ -5,11 +5,16 @@ import { StratificationFactor } from './StratificationFactor';
 
 @Entity()
 export class UserStratificationFactor extends BaseModel {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn()
+  public userId: string;
+
   @ManyToOne(() => ExperimentUser, (user) => user.userStratificationFactor)
+  @JoinColumn({ name: 'userId' })
   public user: ExperimentUser;
 
-  @PrimaryColumn('uuid')
+  @PrimaryColumn()
+  public factorName: string;
+
   @ManyToOne(() => StratificationFactor, (stratificationFactor) => stratificationFactor.userStratificationFactor, {
     onDelete: 'CASCADE',
   })
