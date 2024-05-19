@@ -23,6 +23,6 @@ export class AuditService {
   }
 
   public getAuditLogByType(type: EXPERIMENT_LOG_TYPE): Promise<ExperimentAuditLog[]> {
-    return this.experimentAuditLogRepository.find({ type });
+    return this.experimentAuditLogRepository.find({ where: { type } });
   }
 }

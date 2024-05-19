@@ -1,3 +1,5 @@
+import { IndividualEnrollmentRepository } from './../../../../src/api/repositories/IndividualEnrollmentRepository';
+import { Container as tteContainer } from './../../../../src/typeorm-typedi-extensions';
 import { Container } from 'typedi';
 import { individualAssignmentExperiment, secondExperiment } from '../../mockData/experiment';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
@@ -6,8 +8,6 @@ import { getAllExperimentCondition, markExperimentPoint, checkMarkExperimentPoin
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
-import { getRepository } from 'typeorm';
-import { IndividualEnrollment } from '../../../../src/api/models/IndividualEnrollment';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function testCase(): Promise<void> {
@@ -15,7 +15,7 @@ export default async function testCase(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // get repository
-  const individualEnrollmentRepository = getRepository(IndividualEnrollment);
+  const individualEnrollmentRepository = tteContainer.getCustomRepository(IndividualEnrollmentRepository);
 
   // creating new user
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());

@@ -1,23 +1,28 @@
-import { Repository, DataSource } from 'typeorm';
+import { DataSource, ObjectType } from 'typeorm';
 import { getStorage } from './global';
+import { getCustomRepository } from './decorators/InjectRepository';
 
 export const Container = {
-  // Repository helper
-  getRepository(repository: new () => Repository<unknown>) {
+  getCustomRepository<R>(customRepository: ObjectType<R>, connectionName = 'default'): R {
     const storage = getStorage();
-    const item = storage.entityRepository.find((i) => i.target === repository);
-    if (!item) {
-      throw new Error(`Repository not found for ${repository.name}`);
+    const entityRepository = storage.entityRepositoriesMetadata.find((i) => i.target === customRepository);
+    if (!entityRepository) {
+      throw new Error(`Repository not found for ${customRepository.name}`);
     }
-    return item.entity;
+    const dataSourceMap = storage.dataSourcesMetadata.find((item) => item.name === connectionName);
+    if (!dataSourceMap) {
+      throw new Error(`DataSource not found for ${connectionName}`);
+    }
+    return getCustomRepository(entityRepository, dataSourceMap);
   },
 
   // Data source helpers
-  getDataSource(connectionName: string): DataSource | undefined {
+  getDataSource(connectionName = 'default'): DataSource | undefined {
     const storage = getStorage();
-    return storage.dataSource.find((ds) => ds.name === connectionName)?.dataSource;
+    return storage.dataSourcesMetadata.find((ds) => ds.name === connectionName)?.dataSource;
   },
+
   setDataSource(connectionName: string, dataSource: DataSource) {
-    getStorage().dataSource.push({ name: connectionName, dataSource });
+    getStorage().dataSourcesMetadata.push({ name: connectionName, dataSource });
   },
 };

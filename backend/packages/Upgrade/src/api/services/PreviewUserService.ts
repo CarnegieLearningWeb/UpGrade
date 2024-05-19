@@ -32,7 +32,7 @@ export class PreviewUserService {
   public async findOne(id: string, logger: UpgradeLogger): Promise<PreviewUser | undefined> {
     logger.info({ message: `Find user by id => ${id}` });
     const [previewUser, assignments] = await Promise.all([
-      this.userRepository.findOne({ id }),
+      this.userRepository.findOneBy({ id }),
       this.userRepository.findOneById(id),
     ]);
     return assignments ? assignments : previewUser;

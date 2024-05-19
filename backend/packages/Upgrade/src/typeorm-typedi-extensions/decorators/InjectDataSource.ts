@@ -14,7 +14,7 @@ export function InjectDataSource(connectionName = 'default'): PropertyDecorator 
       index,
       value: () => {
         const storage = getStorage();
-        return storage.dataSource.find((ds) => ds.name === connectionName)?.dataSource;
+        return storage.dataSourcesMetadata.find((ds) => ds.name === connectionName)?.dataSource;
       },
     });
   };

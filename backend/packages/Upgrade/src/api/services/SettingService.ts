@@ -14,7 +14,7 @@ export class SettingService {
     logger: UpgradeLogger
   ): Promise<Setting> {
     logger.info({ message: `Update project setting: checkAuth ${checkAuth}, filterMetric ${filterMetric}` });
-    const settingDoc: Setting = await this.settingRepository.findOne();
+    const [settingDoc] = await this.settingRepository.find();
     const newDoc = {
       ...settingDoc,
       toCheckAuth: checkAuth === undefined ? (settingDoc && settingDoc.toCheckAuth) || false : checkAuth,

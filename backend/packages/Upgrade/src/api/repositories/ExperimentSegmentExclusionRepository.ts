@@ -16,7 +16,7 @@ export class ExperimentSegmentExclusionRepository extends Repository<ExperimentS
       .insert()
       .into(ExperimentSegmentExclusion)
       .values(data)
-      .onConflict(`DO NOTHING`)
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

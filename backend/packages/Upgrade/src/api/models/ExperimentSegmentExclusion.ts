@@ -5,15 +5,19 @@ import { Segment } from './Segment';
 
 @Entity()
 export class ExperimentSegmentExclusion extends BaseModel {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn()
+  public segmentId: string;
+
   @OneToOne(() => Segment, (segment) => segment.experimentSegmentExclusion, { onDelete: 'CASCADE' })
-  @JoinColumn()
+  @JoinColumn({ name: 'segmentId' })
   public segment: Segment;
 
-  @PrimaryColumn('uuid')
+  @PrimaryColumn()
+  public experimentId: string;
+
   @OneToOne(() => Experiment, (experiment) => experiment.experimentSegmentExclusion, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn()
+  @JoinColumn({ name: 'experimentId' })
   public experiment: Experiment;
 }

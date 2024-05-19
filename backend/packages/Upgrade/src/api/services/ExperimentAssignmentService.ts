@@ -68,6 +68,7 @@ import { withInSubjectType } from '../Algorithms';
 import { CacheService } from './CacheService';
 import { UserStratificationFactorRepository } from '../repositories/UserStratificationRepository';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
+import { In } from 'typeorm';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -222,6 +223,14 @@ export class ExperimentAssignmentService {
       },
     });
     if (experimentId && experiments.length) {
+      monitoredDocument = await this.monitoredDecisionPointRepository.findOne({
+        where: {
+          site: site,
+          target: target,
+          user: { id: userId },
+        },
+        relations: ['user'],
+      });
       const selectedExperimentDP = dpExperiments.find((dp) => dp.experiment.id === experimentId);
       const experiment = experiments[0];
       const { conditions } = experiment;
@@ -1079,7 +1088,7 @@ export class ExperimentAssignmentService {
     // get groupAssignment and individual assignment details
     const decisionPoints = experimentDoc.partitions;
     const individualAssignments = await this.individualEnrollmentRepository.find({
-      where: { experiment: experimentDoc },
+      where: { experiment: { id: experimentDoc.id } },
       relations: ['user'],
     });
 
@@ -1104,7 +1113,7 @@ export class ExperimentAssignmentService {
             where: {
               site: (await experimentDecisionPointId).site,
               target: (await experimentDecisionPointId).target,
-              user: individualAssignment.user.id,
+              user: { id: individualAssignment.user.id },
             },
           })
         );
@@ -1112,7 +1121,8 @@ export class ExperimentAssignmentService {
     });
 
     // fetch all the monitored document if exist
-    const monitoredDocuments = await this.monitoredDecisionPointRepository.findByIds(monitoredDocumentIds, {
+    const monitoredDocuments = await this.monitoredDecisionPointRepository.find({
+      where: { id: In(monitoredDocumentIds) },
       relations: ['user'],
     });
 
