@@ -31,6 +31,7 @@ export class IndividualEnrollment extends BaseModel {
   @Column({ type: 'enum', enum: ENROLLMENT_CODE, nullable: true })
   public enrollmentCode: ENROLLMENT_CODE;
 
+  @Index()
   @ManyToOne(() => ExperimentCondition, { onDelete: 'CASCADE' })
   public condition: ExperimentCondition;
 }
