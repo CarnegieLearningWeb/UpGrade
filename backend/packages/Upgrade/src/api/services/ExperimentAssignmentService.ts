@@ -1303,10 +1303,9 @@ export class ExperimentAssignmentService {
     }
 
     if (status === MARKED_DECISION_POINT_STATUS.CONDITION_FAILED_TO_APPLY) {
-      const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'groupId' | 'exclusionCode'> = {
+      const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
         user,
         experiment,
-        groupId: user?.workingGroup?.[experiment.group],
         exclusionCode: EXCLUSION_CODE.EXCLUDED_BY_CLIENT,
       };
       await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
@@ -1316,10 +1315,9 @@ export class ExperimentAssignmentService {
     // Don't mark the experiment if user or group are in exclusion list
     // TODO update this with segment implementation
     // Create the excludeUserDoc outside of the conditional statements to avoid repetition
-    const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'groupId' | 'exclusionCode'> = {
+    const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
       user,
       experiment,
-      groupId: user?.workingGroup?.[experiment.group],
       exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
     };
     if (globallyExcluded.user || globallyExcluded.group.length) {
@@ -1407,18 +1405,16 @@ export class ExperimentAssignmentService {
 
       if (!individualEnrollment && !individualExclusion) {
         if (assignmentUnit === ASSIGNMENT_UNIT.GROUP && !groupEnrollment) {
-          const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'groupId' | 'exclusionCode'> = {
+          const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
             user,
             experiment,
-            groupId: user?.workingGroup?.[experiment.group],
             exclusionCode: EXCLUSION_CODE.REACHED_AFTER,
           };
           promiseArray.push(this.individualExclusionRepository.saveRawJson([excludeUserDoc]));
         } else if (assignmentUnit !== ASSIGNMENT_UNIT.GROUP) {
-          const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'groupId' | 'exclusionCode'> = {
+          const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
             user,
             experiment,
-            groupId: user?.workingGroup?.[experiment.group],
             exclusionCode: EXCLUSION_CODE.REACHED_AFTER,
           };
           promiseArray.push(this.individualExclusionRepository.saveRawJson([excludeUserDoc]));
@@ -1464,7 +1460,6 @@ export class ExperimentAssignmentService {
           > = {
             experiment,
             user,
-            groupId: user?.workingGroup?.[experiment.group],
             exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
           };
           individualExclusion = individualExclusionDocument as IndividualExclusion;
@@ -1497,7 +1492,6 @@ export class ExperimentAssignmentService {
           > = {
             experiment,
             user,
-            groupId: user?.workingGroup?.[experiment.group],
             exclusionCode: invalidGroup
               ? EXCLUSION_CODE.INVALID_GROUP_OR_WORKING_GROUP
               : EXCLUSION_CODE.NO_GROUP_SPECIFIED,
