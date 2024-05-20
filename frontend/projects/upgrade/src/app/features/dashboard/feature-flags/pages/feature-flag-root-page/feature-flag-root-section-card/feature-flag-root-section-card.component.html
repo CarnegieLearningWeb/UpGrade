@@ -7,7 +7,7 @@
     (search)="onSearch($event)"
   ></app-common-section-card-search-header>
   <div header-right>right</div>
-  <div content *ngIf="!(isLoadingFeatureFlags$ | async); else loading"><div content *ngIf="!(isLoadingFeatureFlags$ | async); else loading"><pre>{{( allFeatureFlags$ | async) | json }}</pre></div></div>
+  <div content *ngIf="!(isLoadingFeatureFlags$ | async); else loading"><pre>{{( allFeatureFlags$ | async) | json }}</pre></div>
   <ng-template #loading>
     <mat-spinner></mat-spinner>
   </ng-template>
