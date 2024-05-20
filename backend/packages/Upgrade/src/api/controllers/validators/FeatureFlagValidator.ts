@@ -1,6 +1,5 @@
 import { IsNotEmpty, IsDefined, IsString, IsArray, IsEnum, IsOptional, ValidateNested } from 'class-validator';
 import { ParticipantsValidator } from '../../DTO/ExperimentDTO';
-import { Column } from 'typeorm';
 import { FILTER_MODE } from 'upgrade_types';
 import { FEATURE_FLAG_STATUS } from 'upgrade_types';
 import { Type } from 'class-transformer';
@@ -31,7 +30,6 @@ export class FeatureFlagValidation {
   status: FEATURE_FLAG_STATUS;
 
   @IsNotEmpty()
-  @Column('text', { array: true })
   @IsDefined()
   @IsEnum(FILTER_MODE)
   filterMode: FILTER_MODE;

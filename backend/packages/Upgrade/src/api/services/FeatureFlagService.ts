@@ -180,8 +180,12 @@ export class FeatureFlagService {
 
       const newFeatureFlagObject = {
         ...featureFlagDoc,
-        featureFlagSegmentInclusion: { ...featureFlagSegmentInclusionDoc, segment: segmentIncludeDoc } as any,
-        featureFlagSegmentExclusion: { ...featureFlagSegmentExclusionDoc, segment: segmentExcludeDoc } as any,
+        ...(includeSegmentExists && {
+          featureFlagSegmentInclusion: { ...featureFlagSegmentInclusionDoc, segment: segmentIncludeDoc } as any,
+        }),
+        ...(excludeSegmentExists && {
+          featureFlagSegmentExclusion: { ...featureFlagSegmentExclusionDoc, segment: segmentExcludeDoc } as any,
+        }),
       };
 
       return newFeatureFlagObject;
