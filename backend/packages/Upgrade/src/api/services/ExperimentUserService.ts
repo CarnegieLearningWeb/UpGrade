@@ -101,7 +101,6 @@ export class ExperimentUserService {
   ): Promise<IUserAliases> {
     const userId = userDoc.id;
     const userExist = userDoc;
-    console.log('userId', userId, 'userDoc', userDoc);
     logger.info({ message: 'Set aliases for experiment user => ' + userId, details: aliases });
 
     // throw error if user not defined
