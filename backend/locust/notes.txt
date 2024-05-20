@@ -1,0 +1,718 @@
+staging-cli-upgrade-staging-postgres.c0ehk0fl3zte.us-east-1.rds.amazonaws.com
+
+staging-encrypted-copy-cli-production-postgres-2023-10-24.c0ehk0fl3zte.us-east-1.rds.amazonaws.com
+
+If an experiment with a competing decision point is in there (doesn't matter if it's running), when marking that decision point, what is supposed to happen? It seems to be throwing condition not found for that experiment, the payloads are from a different experiment....?
+
+If a user gets the control condition for 
+
+
+cluster_params
+cluster_params_llm
+
+Error: Condition not found: cluster_params_llm
+    at ExperimentAssignmentService.<anonymous> (/usr/src/app/packages/Upgrade/src/api/services/ExperimentAssignmentService.ts:235:23)
+    at Generator.next (<anonymous>)
+    at fulfilled (/usr/src/app/packages/Upgrade/node_modules/tslib/tslib.js:166:62)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+
+{
+    "client_session_id": null,
+    "endpoint": "/v5/mark",
+    "level": "error",
+    "message": {
+        "endPoint": "/api/v5/mark",
+        "message": "Condition not found: cluster_params_llm",
+        "name": "Error",
+        "request": {
+            "data": {
+                "assignedCondition": {
+                    "conditionCode": "cluster_params_llm"
+                },
+                "site": "SelectSection",
+                "target": "worksheet_grapher_a1_lin_mod_mult_rep"
+            },
+            "userId": "678500db-0edc-4ae9-a2d1-512bd6416a49"
+        },
+        "type": "Condition not found"
+    },
+    "request_id": "89eec38c-7842-4b3e-8220-dd090b00cbe0",
+    "request_method_type": "POST",
+    "userDoc": {
+        "createdAt": "2024-04-16T02:03:01.967Z",
+        "group": {
+            "classId": [],
+            "instructorId": [],
+            "schoolId": [
+                "notGreenvilleWaukegaen"
+            ]
+        },
+        "id": "678500db-0edc-4ae9-a2d1-512bd6416a49",
+        "requestedUserId": "678500db-0edc-4ae9-a2d1-512bd6416a49",
+        "updatedAt": "2024-04-16T02:05:28.164Z",
+        "versionNumber": 12,
+        "workingGroup": {
+            "schoolId": "notGreenvilleWaukegaen"
+        }
+    }
+}
+
+{
+    "createdAt": "2024-02-08T16:48:22.150Z",
+    "updatedAt": "2024-02-14T14:02:36.512Z",
+    "versionNumber": 3,
+    "id": "f3276c73-4c5d-45b9-9462-33a77e9b3818",
+    "name": "MARCS BKT + LLM Rewrites Course 3",
+    "description": "",
+    "context": [
+        "assign-prog"
+    ],
+    "state": "enrolling",
+    "startOn": null,
+    "consistencyRule": "individual",
+    "assignmentUnit": "individual",
+    "postExperimentRule": "continue",
+    "enrollmentCompleteCondition": null,
+    "endOn": null,
+    "revertTo": null,
+    "tags": [
+        "marcs"
+    ],
+    "group": null,
+    "conditionOrder": null,
+    "logging": false,
+    "filterMode": "includeAll",
+    "backendVersion": "5.0.13",
+    "type": "Simple",
+    "conditions": [
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "d434af95-faa5-4bee-a23e-cfdcc52ad69a",
+            "twoCharacterId": "AD",
+            "name": "",
+            "description": null,
+            "conditionCode": "control",
+            "assignmentWeight": 10,
+            "order": 1,
+            "levelCombinationElements": [],
+            "conditionPayloads": []
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "fc334644-f394-41d6-893c-755362fa66bf",
+            "twoCharacterId": "YX",
+            "name": "",
+            "description": null,
+            "conditionCode": "bkt",
+            "assignmentWeight": 40,
+            "order": 2,
+            "levelCombinationElements": [],
+            "conditionPayloads": [
+                {
+                    "createdAt": "2024-02-08T16:48:22.150Z",
+                    "updatedAt": "2024-02-08T16:48:22.150Z",
+                    "versionNumber": 1,
+                    "id": "c1d01bd8-97dc-48ab-9170-86de7ad57e65",
+                    "payloadValue": "cluster_params",
+                    "payloadType": "string"
+                },
+                {
+                    "createdAt": "2024-02-08T16:48:22.150Z",
+                    "updatedAt": "2024-02-08T16:48:22.150Z",
+                    "versionNumber": 1,
+                    "id": "68a1ca7e-f83a-48d3-b506-dfd433380bf5",
+                    "payloadValue": "cluster_params",
+                    "payloadType": "string"
+                },
+                {
+                    "createdAt": "2024-02-08T16:48:22.150Z",
+                    "updatedAt": "2024-02-08T16:48:22.150Z",
+                    "versionNumber": 1,
+                    "id": "75a895ba-f1a1-4e1b-88f8-83ea40ecb639",
+                    "payloadValue": "cluster_params",
+                    "payloadType": "string"
+                }
+            ]
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "50dedcae-1efa-4eb8-a20a-a7d038967165",
+            "twoCharacterId": "NS",
+            "name": "",
+            "description": null,
+            "conditionCode": "llm rewrites",
+            "assignmentWeight": 10,
+            "order": 3,
+            "levelCombinationElements": [],
+            "conditionPayloads": [
+                {
+                    "createdAt": "2024-02-08T16:48:22.150Z",
+                    "updatedAt": "2024-02-08T16:48:22.150Z",
+                    "versionNumber": 1,
+                    "id": "19ff93e3-2de1-4160-9d02-2581d89b225b",
+                    "payloadValue": "llm_rewrite",
+                    "payloadType": "string"
+                },
+                {
+                    "createdAt": "2024-02-08T16:48:22.150Z",
+                    "updatedAt": "2024-02-08T16:48:22.150Z",
+                    "versionNumber": 1,
+                    "id": "c5c48af6-4a49-4e69-ba33-c32342a991ca",
+                    "payloadValue": "llm_rewrite",
+                    "payloadType": "string"
+                },
+                {
+                    "createdAt": "2024-02-08T16:48:22.150Z",
+                    "updatedAt": "2024-02-08T16:48:22.150Z",
+                    "versionNumber": 1,
+                    "id": "0cb0616e-dae4-4e2c-b34a-4a6ef513117d",
+                    "payloadValue": "llm_rewrite",
+                    "payloadType": "string"
+                }
+            ]
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "7d68f1ab-472c-4781-935b-887a20f0b857",
+            "twoCharacterId": "OF",
+            "name": "",
+            "description": null,
+            "conditionCode": "bkt and llm rewrites",
+            "assignmentWeight": 40,
+            "order": 4,
+            "levelCombinationElements": [],
+            "conditionPayloads": [
+                {
+                    "createdAt": "2024-02-08T16:48:22.150Z",
+                    "updatedAt": "2024-02-08T16:48:22.150Z",
+                    "versionNumber": 1,
+                    "id": "89937c25-9c77-412b-a337-b326c28d62e0",
+                    "payloadValue": "cluster_params_llm",
+                    "payloadType": "string"
+                },
+                {
+                    "createdAt": "2024-02-08T16:48:22.150Z",
+                    "updatedAt": "2024-02-08T16:48:22.150Z",
+                    "versionNumber": 1,
+                    "id": "169a6426-204f-4769-8a96-9f67a7fb6837",
+                    "payloadValue": "cluster_params_llm",
+                    "payloadType": "string"
+                },
+                {
+                    "createdAt": "2024-02-08T16:48:22.150Z",
+                    "updatedAt": "2024-02-08T16:48:22.150Z",
+                    "versionNumber": 1,
+                    "id": "9bbea071-541e-4a6d-a3c7-f60c2acbc355",
+                    "payloadValue": "cluster_params_llm",
+                    "payloadType": "string"
+                }
+            ]
+        }
+    ],
+    "partitions": [
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "dbae8aab-6c85-4b3e-a8ea-92ebae8e40a2",
+            "twoCharacterId": "5V",
+            "site": "SelectSection",
+            "target": "worksheet_grapher_a1_direct_variation",
+            "description": "",
+            "order": 1,
+            "excludeIfReached": false
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "32b2b6e8-6ee6-453a-b96b-e75e5f1acbd7",
+            "twoCharacterId": "2Q",
+            "site": "SelectSection",
+            "target": "worksheet_grapher_a1_lin_mod_mult_rep",
+            "description": "",
+            "order": 2,
+            "excludeIfReached": false
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "fc0c8e1c-e13b-4073-9a42-6d127320c44b",
+            "twoCharacterId": "IP",
+            "site": "SelectSection",
+            "target": "worksheet_grapher_a1_mod_initial_plus_point",
+            "description": "",
+            "order": 3,
+            "excludeIfReached": false
+        }
+    ],
+    "queries": [
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "34d000cb-b397-46fc-a60f-f968bc2a051d",
+            "name": "Percent graduated direct variation",
+            "query": {
+                "compareFn": "=",
+                "compareValue": "GRADUATED",
+                "operationType": "percentage"
+            },
+            "repeatedMeasure": "MOST RECENT",
+            "metric": {
+                "createdAt": "2022-10-20T16:07:37.770Z",
+                "updatedAt": "2022-10-20T16:07:37.770Z",
+                "versionNumber": 1,
+                "key": "masteryWorkspace@__@worksheet_grapher_a1_direct_variation@__@workspaceCompletionStatus",
+                "type": "categorical",
+                "allowedData": [
+                    "GRADUATED",
+                    "PROMOTED"
+                ]
+            }
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "643cb98a-cad2-4476-9386-539092b3edc5",
+            "name": "Percent graduated lin mod mult rep",
+            "query": {
+                "compareFn": "=",
+                "compareValue": "GRADUATED",
+                "operationType": "percentage"
+            },
+            "repeatedMeasure": "MOST RECENT",
+            "metric": {
+                "createdAt": "2022-10-20T16:07:37.770Z",
+                "updatedAt": "2022-10-20T16:07:37.770Z",
+                "versionNumber": 1,
+                "key": "masteryWorkspace@__@worksheet_grapher_a1_lin_mod_mult_rep@__@workspaceCompletionStatus",
+                "type": "categorical",
+                "allowedData": [
+                    "GRADUATED",
+                    "PROMOTED"
+                ]
+            }
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "1686b168-9f0e-45ea-985d-4674214d3e25",
+            "name": "Percent graduated mod initial plus point",
+            "query": {
+                "compareFn": "=",
+                "compareValue": "GRADUATED",
+                "operationType": "percentage"
+            },
+            "repeatedMeasure": "MOST RECENT",
+            "metric": {
+                "createdAt": "2022-10-20T16:07:37.770Z",
+                "updatedAt": "2022-10-20T16:07:37.770Z",
+                "versionNumber": 1,
+                "key": "masteryWorkspace@__@worksheet_grapher_a1_mod_initial_plus_point@__@workspaceCompletionStatus",
+                "type": "categorical",
+                "allowedData": [
+                    "GRADUATED",
+                    "PROMOTED"
+                ]
+            }
+        }
+    ],
+    "stateTimeLogs": [
+        {
+            "createdAt": "2024-02-09T17:11:12.744Z",
+            "updatedAt": "2024-02-09T17:11:12.744Z",
+            "versionNumber": 1,
+            "id": "554abf9f-86b4-4137-b9ed-4d1e085fce2a",
+            "fromState": "inactive",
+            "toState": "enrolling",
+            "timeLog": "2024-02-09T17:11:12.742Z"
+        }
+    ],
+    "experimentSegmentInclusion": {
+        "createdAt": "2024-02-08T16:48:22.150Z",
+        "updatedAt": "2024-02-08T16:48:22.150Z",
+        "versionNumber": 1,
+        "segment": {
+            "createdAt": "2024-02-08T16:48:22.159Z",
+            "updatedAt": "2024-02-08T16:48:22.159Z",
+            "versionNumber": 1,
+            "id": "c7f60873-af3c-4d3e-b99b-6288ecbc9ddb",
+            "name": "f3276c73-4c5d-45b9-9462-33a77e9b3818 Inclusion Segment",
+            "description": "f3276c73-4c5d-45b9-9462-33a77e9b3818 Inclusion Segment",
+            "context": "assign-prog",
+            "type": "private",
+            "individualForSegment": [],
+            "groupForSegment": [
+                {
+                    "createdAt": "2024-02-14T14:02:36.535Z",
+                    "updatedAt": "2024-02-14T14:02:36.535Z",
+                    "versionNumber": 1,
+                    "groupId": "All",
+                    "type": "All"
+                }
+            ],
+            "subSegments": []
+        }
+    },
+    "factors": [],
+    "experimentSegmentExclusion": {
+        "createdAt": "2024-02-08T16:48:22.150Z",
+        "updatedAt": "2024-02-08T16:48:22.150Z",
+        "versionNumber": 1,
+        "segment": {
+            "createdAt": "2024-02-08T16:48:22.173Z",
+            "updatedAt": "2024-02-08T16:48:22.173Z",
+            "versionNumber": 1,
+            "id": "e71c3b0a-1eb4-4546-b05c-3a9889e555d1",
+            "name": "f3276c73-4c5d-45b9-9462-33a77e9b3818 Exclusion Segment",
+            "description": "f3276c73-4c5d-45b9-9462-33a77e9b3818 Exclusion Segment",
+            "context": "assign-prog",
+            "type": "private",
+            "individualForSegment": [],
+            "groupForSegment": [],
+            "subSegments": [
+                {
+                    "createdAt": "2023-08-18T17:56:16.106Z",
+                    "updatedAt": "2023-10-18T19:46:31.368Z",
+                    "versionNumber": 2,
+                    "id": "ac60f7b7-a651-4801-9353-ed7dd9bf28e5",
+                    "name": "Greenville and Waukegan Schools Exclude list",
+                    "description": "Greenville and Waukegan Schools",
+                    "context": "assign-prog",
+                    "type": "public"
+                },
+                {
+                    "createdAt": "2022-10-20T16:08:29.802Z",
+                    "updatedAt": "2022-10-20T16:08:29.802Z",
+                    "versionNumber": 1,
+                    "id": "3207b4a8-76a3-4e21-9754-f3985046e30a",
+                    "name": "Exclude From Research",
+                    "description": "schools with exclude from research",
+                    "context": "assign-prog",
+                    "type": "public"
+                }
+            ]
+        }
+    },
+    "conditionPayloads": [
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "75a895ba-f1a1-4e1b-88f8-83ea40ecb639",
+            "parentCondition": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "fc334644-f394-41d6-893c-755362fa66bf",
+                "twoCharacterId": "YX",
+                "name": "",
+                "description": null,
+                "conditionCode": "bkt",
+                "assignmentWeight": 40,
+                "order": 2
+            },
+            "decisionPoint": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "dbae8aab-6c85-4b3e-a8ea-92ebae8e40a2",
+                "twoCharacterId": "5V",
+                "site": "SelectSection",
+                "target": "worksheet_grapher_a1_direct_variation",
+                "description": "",
+                "order": 1,
+                "excludeIfReached": false
+            },
+            "payload": {
+                "type": "string",
+                "value": "cluster_params"
+            }
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "c5c48af6-4a49-4e69-ba33-c32342a991ca",
+            "parentCondition": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "50dedcae-1efa-4eb8-a20a-a7d038967165",
+                "twoCharacterId": "NS",
+                "name": "",
+                "description": null,
+                "conditionCode": "llm rewrites",
+                "assignmentWeight": 10,
+                "order": 3
+            },
+            "decisionPoint": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "dbae8aab-6c85-4b3e-a8ea-92ebae8e40a2",
+                "twoCharacterId": "5V",
+                "site": "SelectSection",
+                "target": "worksheet_grapher_a1_direct_variation",
+                "description": "",
+                "order": 1,
+                "excludeIfReached": false
+            },
+            "payload": {
+                "type": "string",
+                "value": "llm_rewrite"
+            }
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "169a6426-204f-4769-8a96-9f67a7fb6837",
+            "parentCondition": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "7d68f1ab-472c-4781-935b-887a20f0b857",
+                "twoCharacterId": "OF",
+                "name": "",
+                "description": null,
+                "conditionCode": "bkt and llm rewrites",
+                "assignmentWeight": 40,
+                "order": 4
+            },
+            "decisionPoint": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "dbae8aab-6c85-4b3e-a8ea-92ebae8e40a2",
+                "twoCharacterId": "5V",
+                "site": "SelectSection",
+                "target": "worksheet_grapher_a1_direct_variation",
+                "description": "",
+                "order": 1,
+                "excludeIfReached": false
+            },
+            "payload": {
+                "type": "string",
+                "value": "cluster_params_llm"
+            }
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "89937c25-9c77-412b-a337-b326c28d62e0",
+            "parentCondition": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "7d68f1ab-472c-4781-935b-887a20f0b857",
+                "twoCharacterId": "OF",
+                "name": "",
+                "description": null,
+                "conditionCode": "bkt and llm rewrites",
+                "assignmentWeight": 40,
+                "order": 4
+            },
+            "decisionPoint": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "32b2b6e8-6ee6-453a-b96b-e75e5f1acbd7",
+                "twoCharacterId": "2Q",
+                "site": "SelectSection",
+                "target": "worksheet_grapher_a1_lin_mod_mult_rep",
+                "description": "",
+                "order": 2,
+                "excludeIfReached": false
+            },
+            "payload": {
+                "type": "string",
+                "value": "cluster_params_llm"
+            }
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "0cb0616e-dae4-4e2c-b34a-4a6ef513117d",
+            "parentCondition": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "50dedcae-1efa-4eb8-a20a-a7d038967165",
+                "twoCharacterId": "NS",
+                "name": "",
+                "description": null,
+                "conditionCode": "llm rewrites",
+                "assignmentWeight": 10,
+                "order": 3
+            },
+            "decisionPoint": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "32b2b6e8-6ee6-453a-b96b-e75e5f1acbd7",
+                "twoCharacterId": "2Q",
+                "site": "SelectSection",
+                "target": "worksheet_grapher_a1_lin_mod_mult_rep",
+                "description": "",
+                "order": 2,
+                "excludeIfReached": false
+            },
+            "payload": {
+                "type": "string",
+                "value": "llm_rewrite"
+            }
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "c1d01bd8-97dc-48ab-9170-86de7ad57e65",
+            "parentCondition": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "fc334644-f394-41d6-893c-755362fa66bf",
+                "twoCharacterId": "YX",
+                "name": "",
+                "description": null,
+                "conditionCode": "bkt",
+                "assignmentWeight": 40,
+                "order": 2
+            },
+            "decisionPoint": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "32b2b6e8-6ee6-453a-b96b-e75e5f1acbd7",
+                "twoCharacterId": "2Q",
+                "site": "SelectSection",
+                "target": "worksheet_grapher_a1_lin_mod_mult_rep",
+                "description": "",
+                "order": 2,
+                "excludeIfReached": false
+            },
+            "payload": {
+                "type": "string",
+                "value": "cluster_params"
+            }
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "68a1ca7e-f83a-48d3-b506-dfd433380bf5",
+            "parentCondition": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "fc334644-f394-41d6-893c-755362fa66bf",
+                "twoCharacterId": "YX",
+                "name": "",
+                "description": null,
+                "conditionCode": "bkt",
+                "assignmentWeight": 40,
+                "order": 2
+            },
+            "decisionPoint": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "fc0c8e1c-e13b-4073-9a42-6d127320c44b",
+                "twoCharacterId": "IP",
+                "site": "SelectSection",
+                "target": "worksheet_grapher_a1_mod_initial_plus_point",
+                "description": "",
+                "order": 3,
+                "excludeIfReached": false
+            },
+            "payload": {
+                "type": "string",
+                "value": "cluster_params"
+            }
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "9bbea071-541e-4a6d-a3c7-f60c2acbc355",
+            "parentCondition": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "7d68f1ab-472c-4781-935b-887a20f0b857",
+                "twoCharacterId": "OF",
+                "name": "",
+                "description": null,
+                "conditionCode": "bkt and llm rewrites",
+                "assignmentWeight": 40,
+                "order": 4
+            },
+            "decisionPoint": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "fc0c8e1c-e13b-4073-9a42-6d127320c44b",
+                "twoCharacterId": "IP",
+                "site": "SelectSection",
+                "target": "worksheet_grapher_a1_mod_initial_plus_point",
+                "description": "",
+                "order": 3,
+                "excludeIfReached": false
+            },
+            "payload": {
+                "type": "string",
+                "value": "cluster_params_llm"
+            }
+        },
+        {
+            "createdAt": "2024-02-08T16:48:22.150Z",
+            "updatedAt": "2024-02-08T16:48:22.150Z",
+            "versionNumber": 1,
+            "id": "19ff93e3-2de1-4160-9d02-2581d89b225b",
+            "parentCondition": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "50dedcae-1efa-4eb8-a20a-a7d038967165",
+                "twoCharacterId": "NS",
+                "name": "",
+                "description": null,
+                "conditionCode": "llm rewrites",
+                "assignmentWeight": 10,
+                "order": 3
+            },
+            "decisionPoint": {
+                "createdAt": "2024-02-08T16:48:22.150Z",
+                "updatedAt": "2024-02-08T16:48:22.150Z",
+                "versionNumber": 1,
+                "id": "fc0c8e1c-e13b-4073-9a42-6d127320c44b",
+                "twoCharacterId": "IP",
+                "site": "SelectSection",
+                "target": "worksheet_grapher_a1_mod_initial_plus_point",
+                "description": "",
+                "order": 3,
+                "excludeIfReached": false
+            },
+            "payload": {
+                "type": "string",
+                "value": "llm_rewrite"
+            }
+        }
+    ]
+}

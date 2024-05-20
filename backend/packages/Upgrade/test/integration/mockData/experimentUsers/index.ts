@@ -55,4 +55,52 @@ export const experimentUsers: Array<Partial<ExperimentUser>> = [
       teacher: '3',
     },
   },
+  {
+    id: 'student7',
+    group: {
+    },
+    workingGroup: {
+      teacher: '4',
+    },
+  },
+  {
+    id: 'student8',
+    group: null,
+    workingGroup: {
+      teacher: '4',
+    },
+  },
+  {
+    id: 'student9',
+    group: {
+      teacher: ['4'],
+    },
+    workingGroup: {
+    },
+  },
+  {
+    id: 'student10',
+    group: {
+      teacher: ['4'],
+    },
+    workingGroup: null,
+  },
+  {
+    id: 'student11',
+    group: {
+      teacher: ['3'],
+    },
+    workingGroup: {
+      class: '3',
+    },
+  },
+  {
+    id: 'student12',
+    group: {
+      teacher: ['3'],
+    },
+    workingGroup: {
+      teacher: '4',
+    },
+  }
 ];

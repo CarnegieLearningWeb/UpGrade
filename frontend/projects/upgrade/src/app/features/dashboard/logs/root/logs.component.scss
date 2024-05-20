@@ -1,7 +1,7 @@
 @import '../../common/tabs-view.scss';
 
 .logs-container {
-  height: calc(100% - 25px); // Subtract header height
+  height: 100%;
 
   .tabs-wrapper {
     position: relative;

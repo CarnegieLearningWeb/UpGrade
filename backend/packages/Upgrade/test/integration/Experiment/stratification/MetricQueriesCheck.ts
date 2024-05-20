@@ -809,8 +809,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const Average = parseInt(condition.result, 10);
-        expect(Average).toEqual(expectedValue);
+        const meanValue = parseInt(condition.result, 10);
+        expect(meanValue).toEqual(expectedValue);
         break;
       }
 

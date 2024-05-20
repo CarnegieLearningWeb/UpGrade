@@ -3,11 +3,11 @@ import { ExperimentService } from '../../../../src/api/services/ExperimentServic
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { individualAssignmentExperiment } from '../../mockData/experiment/index';
-import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
+import { getAllExperimentCondition, markExperimentPoint, updateExcludeIfReachedFlag } from '../../utils';
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsNull,
+  checkExperimentAssignedIsNull
 } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
@@ -23,8 +23,10 @@ export default async function IndividualUserCount(): Promise<void> {
   // experiment object
   const experimentObject: any = individualAssignmentExperiment;
   experimentObject.enrollmentCompleteCondition = {
-    userCount: 4,
+    userCount: 3,
   };
+
+  experimentObject.partitions = updateExcludeIfReachedFlag(experimentObject.partitions);
 
   // create experiment 1
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -37,7 +39,7 @@ export default async function IndividualUserCount(): Promise<void> {
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
-        enrollmentCompleteCondition: { userCount: 4 },
+        enrollmentCompleteCondition: { userCount: 3 },
       }),
     ])
   );
@@ -104,7 +106,7 @@ export default async function IndividualUserCount(): Promise<void> {
     ])
   );
 
-  // get all experiment condition for user 1
+  // get all experiment condition for user 1 (excluded)
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
 
@@ -160,7 +162,7 @@ export default async function IndividualUserCount(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
 
   experiments = await experimentService.find(new UpgradeLogger());
-  // enrollment complete as 4 users enrolled which is the enrollment completion criteria
+  // enrollment complete as 3 users enrolled which is the enrollment completion criteria
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

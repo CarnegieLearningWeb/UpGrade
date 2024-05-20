@@ -13,7 +13,7 @@ import {
   ExperimentStateInfo,
   EXPERIMENT_STATE,
   POST_EXPERIMENT_RULE,
-  segmentNew,
+  SegmentNew,
 } from './store/experiments.model';
 import { ExperimentFile } from '../../features/dashboard/home/components/modal/import-experiment/import-experiment.component';
 
@@ -60,14 +60,14 @@ describe('ExperimentDataService', () => {
       status: 'segment-status',
     };
 
-    const dummyInclusionData: segmentNew = {
+    const dummyInclusionData: SegmentNew = {
       updatedAt: '2022-06-20T13:14:52.900Z',
       createdAt: '2022-06-20T13:14:52.900Z',
       versionNumber: 1,
       segment: segmentData,
     };
 
-    const dummyExclusionData: segmentNew = {
+    const dummyExclusionData: SegmentNew = {
       updatedAt: '2022-06-20T13:14:52.900Z',
       createdAt: '2022-06-20T13:14:52.900Z',
       versionNumber: 1,
