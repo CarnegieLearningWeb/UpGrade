@@ -96,8 +96,8 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
       this.experiment.conditions.forEach((condition) => {
         this.conditionsFilterOptions.push({ code: condition.conditionCode, id: condition.id });
         this.selectedCondition.push(condition.id);
-        this.conditionsFilterOptions.sort((a, b) => a.code.localeCompare(b.code));
       });
+      this.conditionsFilterOptions.sort((a, b) => a.code.localeCompare(b.code));
 
       this.partitionsFilterOptions = [];
       this.selectedPartition = [];
