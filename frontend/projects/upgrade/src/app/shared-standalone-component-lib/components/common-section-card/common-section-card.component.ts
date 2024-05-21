@@ -27,5 +27,4 @@ import { TranslateModule } from '@ngx-translate/core';
   styleUrl: './common-section-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommonSectionCardComponent {
-}
+export class CommonSectionCardComponent {}
