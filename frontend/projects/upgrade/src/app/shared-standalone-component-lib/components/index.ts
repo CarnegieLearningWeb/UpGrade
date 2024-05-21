@@ -3,11 +3,13 @@ import { CommonRootPageHeaderComponent } from './common-root-page-header/common-
 import { CommonDetailsPageHeaderComponent } from './common-details-page-header/common-details-page-header.component';
 import { CommonSectionCardListComponent } from './common-section-card-list/common-section-card-list.component';
 import { CommonSectionCardSearchHeaderComponent } from './common-section-card-search-header/common-section-card-search-header.component';
+import { CommonSectionCardComponent } from './common-section-card/common-section-card.component';
 
 export {
   CommonPageComponent,
   CommonRootPageHeaderComponent,
   CommonDetailsPageHeaderComponent,
+  CommonSectionCardComponent,
   CommonSectionCardListComponent,
   CommonSectionCardSearchHeaderComponent,
 };
