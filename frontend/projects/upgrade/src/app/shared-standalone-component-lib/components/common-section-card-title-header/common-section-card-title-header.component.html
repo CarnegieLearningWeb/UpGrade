@@ -1,0 +1,17 @@
+<div class="title-header">
+  <h1 class="title ft-26-700">
+    {{ title | translate }}
+    <ng-container *ngIf="chipText">
+      <mat-chip [color]="getChipColor(chipText)" selected>
+        {{ chipText }}
+      </mat-chip>
+    </ng-container>
+  </h1>
+  <h3 class="subtitle ft-16-400">
+    {{ subtitle | translate }}
+    <ng-container *ngIf="link">
+      <a [href]="link">{{ linkText }}</a>
+    </ng-container>
+  </h3>
+</div>
+
