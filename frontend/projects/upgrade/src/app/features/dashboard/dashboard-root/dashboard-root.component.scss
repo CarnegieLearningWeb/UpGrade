@@ -53,7 +53,8 @@ mat-drawer {
           border-radius: 7px;
           background-color: var(--blue);
 
-          .icon, .list-item-label {
+          .icon,
+          .list-item-label {
             color: var(--white);
           }
         }
