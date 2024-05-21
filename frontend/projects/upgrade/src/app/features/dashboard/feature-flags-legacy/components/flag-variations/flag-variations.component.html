@@ -17,9 +17,7 @@
         {{ 'feature-flags.global-variation-value.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-        <mat-form-field
-          class="form-control"
-        >
+        <mat-form-field class="form-control">
           <input
             matInput
             [placeholder]="'feature-flags.global-variation-value.text' | translate"
@@ -35,9 +33,7 @@
         {{ 'feature-flags.global-name.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-        <mat-form-field
-          class="form-control"
-        >
+        <mat-form-field class="form-control">
           <input matInput [placeholder]="'feature-flags.global-name.text' | translate" formControlName="name" />
         </mat-form-field>
       </mat-cell>
@@ -49,9 +45,7 @@
         {{ 'feature-flags.variation-description.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-        <mat-form-field
-          class="form-control"
-        >
+        <mat-form-field class="form-control">
           <input
             matInput
             [placeholder]="'feature-flags.variation-description.text' | translate"
@@ -98,9 +92,7 @@
 
   <div class="property-container">
     <mat-label class="ft-16-600 label">{{ 'feature-flags.variation-default-variation.text' | translate }}</mat-label>
-    <mat-form-field
-      class="dense-2 default-on-variation"
-    >
+    <mat-form-field class="dense-2 default-on-variation">
       <mat-label>{{ 'feature-flags.variation-on.text' | translate }}</mat-label>
       <mat-select formControlName="defaultOnVariation">
         <mat-option *ngFor="let type of getVariationValues()" [value]="type">
@@ -112,9 +104,7 @@
       </mat-error>
     </mat-form-field>
 
-    <mat-form-field
-      class="dense-2 default-off-variation"
-    >
+    <mat-form-field class="dense-2 default-off-variation">
       <mat-label>{{ 'feature-flags.variation-off.text' | translate }}</mat-label>
       <mat-select formControlName="defaultOffVariation">
         <mat-option *ngFor="let type of getVariationValues()" [value]="type">
