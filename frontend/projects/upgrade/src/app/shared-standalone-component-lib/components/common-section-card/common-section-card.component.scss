@@ -28,9 +28,12 @@
     }
   }
 
-  .content { //placeholder remove me when i have content
-    margin: 30px;
-    background-color: beige;
+  .content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 200px;
   }
 
   .footer {

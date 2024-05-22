@@ -1,0 +1,87 @@
+<div class="flags-list-container">
+  <div scroll (scrolled)="fetchFlagsOnScroll()" class="flags-list-table-container" #tableContainer>
+    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
+    <table class="flags-list" mat-table [dataSource]="dataSource$" matSort (matSortChange)="changeSorting($event)">
+      <ng-container [matColumnDef]="FLAG_ROOT_COLUMN_NAMES.NAME">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span [matTooltip]="FLAG_TRANSLATION_KEYS.NAME | translate" matTooltipPosition="above">
+            {{ FLAG_TRANSLATION_KEYS.NAME | translate | uppercase }}
+          </span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let flag">
+          <span>{{ flag.name }}</span>
+          <ng-template #flagNameEllipsis>
+            <span
+              [matTooltip]="flag.name"
+              class="flag-name",
+              matTooltipPosition="above"
+            >
+              {{ flag.name | truncate: 30 }}
+            </span>
+          </ng-template>
+          <br />
+          <span class="flag-description ft-10-400" *ngIf="flag.description?.length < 30; else flagDescription">
+            {{ flag.description }}
+          </span>
+          <ng-template #flagDescription>
+            <span class="flag-description ft-10-400" [matTooltip]="flag.description" matTooltipPosition="above">
+              {{ flag.description | truncate: 35 }}
+            </span>
+          </ng-template>
+        </td>
+      </ng-container>
+
+      <ng-container [matColumnDef]="FLAG_ROOT_COLUMN_NAMES.STATUS">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span [matTooltip]="FLAG_TRANSLATION_KEYS.STATUS | translate" matTooltipPosition="above">{{ FLAG_TRANSLATION_KEYS.STATUS | translate | uppercase }}</span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let flag">{{ flag.status }}</td>
+      </ng-container>
+
+      <ng-container [matColumnDef]="FLAG_ROOT_COLUMN_NAMES.UPDATED_AT">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span [matTooltip]="FLAG_TRANSLATION_KEYS.UPDATED_AT | translate" matTooltipPosition="above">
+            {{ FLAG_TRANSLATION_KEYS.UPDATED_AT | translate | uppercase }}
+          </span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let flag">
+          {{ flag.updatedAt }}
+        </td>
+      </ng-container>
+
+      <ng-container [matColumnDef]="FLAG_ROOT_COLUMN_NAMES.APP_CONTEXT">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span [matTooltip]="FLAG_TRANSLATION_KEYS.APP_CONTEXT | translate" matTooltipPosition="above">
+            {{ FLAG_TRANSLATION_KEYS.APP_CONTEXT | translate | uppercase }}
+          </span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let flag">
+          {{ flag.context[0] }}
+        </td>
+      </ng-container>
+      
+      <ng-container [matColumnDef]="FLAG_ROOT_COLUMN_NAMES.TAGS">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span [matTooltip]="FLAG_TRANSLATION_KEYS.TAGS | translate" matTooltipPosition="above">{{ FLAG_TRANSLATION_KEYS.TAGS | translate | uppercase }}</span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let flag">
+          <mat-chip *ngFor="let tag of flag.tags" class="tag">{{ tag }}</mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container [matColumnDef]="FLAG_ROOT_COLUMN_NAMES.EXPOSURES">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span [matTooltip]="FLAG_TRANSLATION_KEYS.EXPOSURES | translate" matTooltipPosition="above">
+            {{ FLAG_TRANSLATION_KEYS.EXPOSURES | translate | uppercase }}
+          </span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let flag">
+          <span *ngFor="let exposure of flag.exposures" class="exposure">{{ exposure }}</span>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </div>
+</div>
