@@ -34,8 +34,10 @@ const browser = {
   output: {
     filename: 'index.js',
     path: path.resolve(__dirname, 'dist/browser'),
+    library: 'UpgradeClient',
+    libraryExport: 'default',
     libraryTarget: 'umd',
-    library: 'upgrade-client-lib',
+    globalObject: 'this',
   },
   plugins: [
     new webpack.DefinePlugin({
