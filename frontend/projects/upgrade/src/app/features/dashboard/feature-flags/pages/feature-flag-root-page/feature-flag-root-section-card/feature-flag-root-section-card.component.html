@@ -1,5 +1,4 @@
 <app-common-section-card>
-  <!-- header-left -->
   <app-common-section-card-search-header
     header-left
     [filterOptions]="['All', 'Name', 'Status', 'Context']"
@@ -7,8 +6,6 @@
     [initialSearchValue]=""
     (search)="onSearch($event)"
   ></app-common-section-card-search-header>
-
-  <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
     [showPrimaryButton]="true"
@@ -17,19 +14,9 @@
     (primaryButtonClick)="onAddFeatureFlagButtonClick()"
     (menuButtonItemClick)="onMenuButtonItemClick($event)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
-  ></app-common-section-card-action-buttons>
-
-  <!-- content -->
-  <ng-container content>
-    <ng-container *ngIf="!(isInitialLoading$ | async); else table">
-      <mat-spinner></mat-spinner>
-    </ng-container>
-
-    <ng-template #table>
-      <app-feature-flag-root-section-card-table class="full-width"
-        [dataSource$]="allFeatureFlags$"
-        [isLoading$]="isLoadingFeatureFlags$"
-      ></app-feature-flag-root-section-card-table>
-    </ng-template>
-  </ng-container>
+    ></app-common-section-card-action-buttons>
+  <div content *ngIf="!(isLoadingFeatureFlags$ | async); else loading"><pre>{{( allFeatureFlags$ | async) | json }}</pre></div>
+  <ng-template #loading>
+    <mat-spinner></mat-spinner>
+  </ng-template>
 </app-common-section-card>
