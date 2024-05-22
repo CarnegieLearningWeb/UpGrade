@@ -1,0 +1,48 @@
+<div class="action-buttons">
+  <div class="main-container">
+    <mat-slide-toggle
+      *ngIf="showSlideToggle"
+      color="primary"
+      [checked]="isEnableToggleChecked"
+      (change)="onSlideToggleChange($event)"
+    >
+      {{ 'feature-flags.enable.text' | translate }}
+    </mat-slide-toggle>
+
+    <button
+      *ngIf="showPrimaryButton"
+      mat-flat-button
+      color="primary"
+      (click)="onPrimaryButtonClick()"
+    >
+      <span class="primary-button-text">{{ primaryButtonText }}</span>
+    </button>
+  </div>
+
+  <div class="options-container dense-2">
+    <button
+      *ngIf="showMenuButton"
+      mat-icon-button
+      [matMenuTriggerFor]="menu"
+    >
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button
+        *ngFor="let item of menuButtonItems"
+        mat-menu-item
+        [disabled]="item.disabled"
+        (click)="onMenuButtonItemClick(item.name)"
+      >
+        <span class="ft-14-400">{{ item.name }}</span>
+      </button>
+    </mat-menu>
+
+    <button
+      mat-icon-button
+      (click)="onSectionCardExpandChange()"
+    >
+      <mat-icon>{{ isSectionCardExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+    </button>
+  </div>
+</div>
