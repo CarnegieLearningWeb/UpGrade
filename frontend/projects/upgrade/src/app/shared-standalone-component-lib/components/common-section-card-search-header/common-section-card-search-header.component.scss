@@ -1,0 +1,22 @@
+.search-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 94px;
+
+  .filter-options {
+    flex: 1;
+    margin-right: 20px;
+  }
+
+  .search-input {
+    flex: 2;
+    line-height: 20px;
+  }
+
+  .search-icon {
+    margin-top: -6px;
+    height: 16px;
+    cursor: pointer;
+  }
+}

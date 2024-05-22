@@ -41,11 +41,7 @@
             </span>
           </ng-container>
           <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
-            <mat-form-field
-              class="dense-2"
-              appearance="outline"
-              subscriptSizing="dynamic"
-            >
+            <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
               <input
                 class="ft-14-400 input-payload"
                 type="text"
@@ -66,25 +62,14 @@
           {{ 'WEIGHT' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
-          <ng-container *ngIf="equalWeightFlag || (tableEditIndex$ | async) !== rowIndex">
+          <ng-container *ngIf="equalWeightFlag || (tableEditIndex$ | async) !== rowIndex || !isExperimentEditable">
             <span [matTooltip]="rowData.weight" matTooltipPosition="above">
               {{ rowData.weight }}
             </span>
           </ng-container>
-          <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex">
-            <mat-form-field
-              class="dense-2 input-weight"
-              appearance="outline"
-              subscriptSizing="dynamic"
-            >
-              <input
-                class="ft-14-400"
-                autocomplete="off"
-                type="text"
-                matInput
-                formControlName="weight"
-                [disabled]="!isExperimentEditable"
-              />
+          <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex && isExperimentEditable">
+            <mat-form-field class="dense-2 input-weight" appearance="outline" subscriptSizing="dynamic">
+              <input class="ft-14-400" autocomplete="off" type="text" matInput formControlName="weight" />
             </mat-form-field>
           </ng-container>
         </mat-cell>
@@ -112,9 +97,7 @@
           <button
             type="button"
             class="row-action-btn"
-            [disabled]="
-              ((isFormLockedForEdit$ | async) && (tableEditIndex$ | async) !== rowIndex) || !isExperimentEditable
-            "
+            [disabled]="(isFormLockedForEdit$ | async) && (tableEditIndex$ | async) !== rowIndex"
             (click)="handleRowEditClick(rowData, rowIndex)"
           >
             <!-- Edit Icon -->

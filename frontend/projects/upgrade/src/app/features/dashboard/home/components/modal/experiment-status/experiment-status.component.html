@@ -1,35 +1,22 @@
 <div class="experiment-status">
   <span class="ft-24-700 title">{{ 'home.change-experiment-status.title.text' | translate }}</span>
   <form [formGroup]="statusForm" class="experiment-status-form">
-    <mat-form-field
-      class="dense-2"
-      appearance="outline"
-    >
+    <mat-form-field class="dense-2" appearance="outline">
       <mat-label class="ft-14-400">
         {{ 'home.change-experiment-status.current-status.text' | translate }}
       </mat-label>
-      <mat-select
-        class="ft-14-400 status-selection"
-        disabled="true"
-        [(value)]="experimentInfo.state"
-      >
-        <mat-option class="ft-14-400" *ngFor="let status of experimentStatus" [value]="status.value">
-          {{ status.value | experimentState }}
+      <mat-select class="ft-14-400 status-selection" disabled="true" [(value)]="experimentInfo.state">
+        <mat-option class="ft-14-400" [value]="experimentInfo.state">
+          {{ experimentInfo.state | experimentState }}
         </mat-option>
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field
-      class="dense-2"
-      appearance="outline"
-    >
+    <mat-form-field class="dense-2" appearance="outline">
       <mat-label class="ft-14-400">
         {{ 'home.change-experiment-status.new-status.text' | translate }}
       </mat-label>
-      <mat-select
-        class="ft-14-400 status-selection"
-        formControlName="newStatus"
-      >
+      <mat-select class="ft-14-400 status-selection" formControlName="newStatus">
         <ng-container *ngFor="let status of experimentStatus">
           <mat-option
             class="ft-14-400"
@@ -45,11 +32,7 @@
       </mat-error>
     </mat-form-field>
 
-    <mat-form-field
-      class="dense-2"
-      appearance="outline"
-      *ngIf="newStatusValue.value === ExperimentStatus.SCHEDULED"
-    >
+    <mat-form-field class="dense-2" appearance="outline" *ngIf="newStatusValue.value === ExperimentStatus.SCHEDULED">
       <input
         class="ft-14-400"
         matInput

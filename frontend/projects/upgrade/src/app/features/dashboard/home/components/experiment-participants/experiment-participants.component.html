@@ -12,11 +12,7 @@
                 {{ 'segments.global-members-type.text' | translate }}
               </mat-header-cell>
               <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                <mat-form-field
-                  class="dense-2 form-control"
-                  appearance="outline"
-                  subscriptSizing="dynamic"
-                >
+                <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
                   <mat-select
                     class="ft-14-400"
                     [placeholder]="'segments.members-placeholder-type.text' | translate"
@@ -46,11 +42,7 @@
                 <ng-container
                   *ngIf="participantsForm.getRawValue('type')?.members1[groupIndex]?.type === 'Segment'; else noSelect"
                 >
-                  <mat-form-field
-                    class="dense-2 form-control"
-                    appearance="outline"
-                    subscriptSizing="dynamic"
-                  >
+                  <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
                     <input
                       class="ft-14-400"
                       matInput
@@ -70,11 +62,7 @@
                   </mat-form-field>
                 </ng-container>
                 <ng-template #noSelect>
-                  <mat-form-field
-                    class="dense-2 form-control"
-                    appearance="outline"
-                    subscriptSizing="dynamic"
-                  >
+                  <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
                     <input
                       class="ft-14-400"
                       matInput
@@ -108,7 +96,7 @@
             <div class="no-include-message-container">
               <span
                 class="ft-14-600 no-include-message"
-                [innerHTML]="'home.new-experiment.participants.inital.include-message' | translate"
+                [innerHTML]="'home.new-experiment.participants.initial.include-message' | translate"
               ></span>
             </div>
           </ng-template>
@@ -131,7 +119,7 @@
       <span
         class="ft-14-600 validation-message"
         *ngIf="segmentNotValid"
-        [innerHTML]="'home.new-experiment.participants.unvalid-segment.text' | translate"
+        [innerHTML]="'home.new-experiment.participants.invalid-segment.text' | translate"
       ></span>
     </div>
     <br />
@@ -158,11 +146,7 @@
                   {{ 'segments.global-members-type.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                  <mat-form-field
-                    class="dense-2 form-control"
-                    appearance="outline"
-                    subscriptSizing="dynamic"
-                  >
+                  <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
                     <mat-select
                       class="ft-14-400"
                       [placeholder]="'segments.members-placeholder-type.text' | translate"
@@ -188,11 +172,7 @@
                       else noSelect
                     "
                   >
-                    <mat-form-field
-                      class="dense-2 form-control"
-                      appearance="outline"
-                      subscriptSizing="dynamic"
-                    >
+                    <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
                       <input
                         class="ft-14-400"
                         matInput
@@ -212,11 +192,7 @@
                     </mat-form-field>
                   </ng-container>
                   <ng-template #noSelect>
-                    <mat-form-field
-                      class="dense-2 form-control"
-                      appearance="outline"
-                      subscriptSizing="dynamic"
-                    >
+                    <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
                       <input
                         class="ft-14-400"
                         matInput
@@ -250,7 +226,7 @@
               <div class="no-exclude-message-container">
                 <span
                   class="ft-14-600 no-exclude-message"
-                  [innerHTML]="'home.new-experiment.participants.inital.exclude-message' | translate"
+                  [innerHTML]="'home.new-experiment.participants.initial.exclude-message' | translate"
                 ></span>
               </div>
             </ng-template>
@@ -265,7 +241,7 @@
       <span
         class="ft-14-600 validation-message"
         *ngIf="segmentNotValid2"
-        [innerHTML]="'home.new-experiment.participants.unvalid-segment.text' | translate"
+        [innerHTML]="'home.new-experiment.participants.invalid-segment.text' | translate"
       ></span>
     </div>
   </section>

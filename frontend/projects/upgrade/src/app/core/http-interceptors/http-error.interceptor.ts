@@ -17,16 +17,11 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   openPopup(error) {
     const temp = {
       type: NotificationType.Error,
-      title: 'Network call failed.',
+      title: 'Network call failed. See console for details.',
       content: error.url,
       animate: 'fromRight',
     };
-    if (!this.environment.production) {
-      temp.title += ' See console for details.';
-    }
-    if (!(error.status === 401) && !this.environment.production) {
-      this._notifications.create(temp.title, temp.content, temp.type, temp);
-    }
+    this._notifications.create(temp.title, temp.content, temp.type, temp);
   }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {

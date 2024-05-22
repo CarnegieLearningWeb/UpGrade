@@ -1,0 +1,16 @@
+<app-common-section-card>
+  <app-common-section-card-search-header
+    header-left
+    [filterOptions]="['All', 'Name', 'Status', 'Context']"
+    [initialFilterOption]="'All'"
+    [initialSearchValue]=""
+    (search)="onSearch($event)"
+  ></app-common-section-card-search-header>
+  <div header-right>right</div>
+  <div content *ngIf="!(isLoadingFeatureFlags$ | async); else loading">
+    <pre>{{ allFeatureFlags$ | async | json }}</pre>
+  </div>
+  <ng-template #loading>
+    <mat-spinner></mat-spinner>
+  </ng-template>
+</app-common-section-card>

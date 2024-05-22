@@ -8,6 +8,7 @@ import { AppRequest, PaginationResponse } from '../../types';
 import { SERVER_ERROR } from 'upgrade_types';
 import { FeatureFlagValidation, UserParamsValidator } from './validators/FeatureFlagValidator';
 import { ExperimentUserService } from '../services/ExperimentUserService';
+import { isUUID } from 'class-validator';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -209,6 +210,7 @@ export class FeatureFlagsController {
     }
     return this.featureFlagService.getKeys(experimentUserDoc, userParams.context, request.logger);
   }
+
   /**
    * @swagger
    * /flags/{id}:
@@ -239,6 +241,13 @@ export class FeatureFlagsController {
    */
   @Get('/:id')
   public findOne(@Param('id') id: string, @Req() request: AppRequest): Promise<FeatureFlag | undefined> {
+    if (!isUUID(id)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
     return this.featureFlagService.findOne(id, request.logger);
   }
 
@@ -268,7 +277,7 @@ export class FeatureFlagsController {
    *                properties:
    *                  key:
    *                    type: string
-   *                    enum: [all, name, key, status, variation Type]
+   *                    enum: [all, name, key, status, tag, context]
    *                  string:
    *                    type: string
    *               sortParams:
@@ -276,7 +285,7 @@ export class FeatureFlagsController {
    *                  properties:
    *                    key:
    *                     type: string
-   *                     enum: [name, key, status, variationType]
+   *                     enum: [name, key, status, updatedAt]
    *                    sortAs:
    *                     type: string
    *                     enum: [ASC, DESC]
@@ -286,7 +295,7 @@ export class FeatureFlagsController {
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Get Paginated Experiments
+   *            description: Get Paginated Feature Flags
    */
 
   @Post('/paginated')

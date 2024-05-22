@@ -61,11 +61,12 @@ export function randomCondition(
     }
   }
 
-  const randomAssignData = {
+  const randomAssignData: IExperimentAssignmentv5 = {
     site: assignedData.site,
     target: assignedData.target,
     assignedCondition: randomConditionArray,
     assignedFactor: experiment.type === EXPERIMENT_TYPE.FACTORIAL ? assignedFactorsArray : null,
+    experimentType: experiment.type,
   };
 
   // rotate elements in assigned condition array based on number of monitored decision point
@@ -103,11 +104,12 @@ export function randomRoundRobinCondition(
     }
   }
 
-  const randomRoundRobinAssignData = {
+  const randomRoundRobinAssignData: IExperimentAssignmentv5 = {
     site: assignedData.site,
     target: assignedData.target,
     assignedCondition: randomRoundRobinConditionArray,
     assignedFactor: experiment.type === EXPERIMENT_TYPE.FACTORIAL ? assignedFactorsArray : null,
+    experimentType: experiment.type,
   };
 
   // rotate elements in assigned condition array based on number of monitored decision point
@@ -175,6 +177,7 @@ function convertToAssignedCondition(
     target: target,
     assignedCondition: assignedConditionArray,
     assignedFactor: experiment.type === EXPERIMENT_TYPE.FACTORIAL ? assignedFactorsArray : null,
+    experimentType: experiment.type,
   };
 }
 

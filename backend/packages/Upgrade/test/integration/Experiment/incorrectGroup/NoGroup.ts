@@ -15,7 +15,7 @@ import {
   checkExperimentAssignedIsNotDefault,
   checkMarkExperimentPointForUser,
   getAllExperimentCondition,
-  markExperimentPoint,
+  markExperimentPoint
 } from '../../utils';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 

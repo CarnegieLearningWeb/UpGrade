@@ -21,7 +21,7 @@ export class User extends BaseModel {
   @Column({
     type: 'enum',
     enum: UserRole,
-    default: UserRole.CREATOR,
+    default: UserRole.READER,
     nullable: true,
   })
   public role: UserRole;

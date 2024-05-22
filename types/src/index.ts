@@ -30,6 +30,8 @@ export {
   ASSIGNMENT_ALGORITHM,
   SEGMENT_SEARCH_KEY,
   SEGMENT_SORT_KEY,
+  FLAG_SORT_KEY,
+  FLAG_SEARCH_KEY,
   FEATURE_FLAG_STATUS,
 } from './Experiment/enums';
 export {
