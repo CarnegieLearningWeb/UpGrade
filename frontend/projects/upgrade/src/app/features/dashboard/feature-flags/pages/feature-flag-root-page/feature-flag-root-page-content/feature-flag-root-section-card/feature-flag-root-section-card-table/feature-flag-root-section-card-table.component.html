@@ -9,7 +9,13 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let flag">
-          <span>{{ flag.name }}</span>
+          <a
+            [routerLink]="['/featureflags', 'detail', flag.id]"
+            *ngIf="flag.name?.length < 30; else flagNameEllipsis"
+            class="flag-name"
+          >
+            {{ flag.name }}
+          </a>
           <ng-template #flagNameEllipsis>
             <span
               [matTooltip]="flag.name"

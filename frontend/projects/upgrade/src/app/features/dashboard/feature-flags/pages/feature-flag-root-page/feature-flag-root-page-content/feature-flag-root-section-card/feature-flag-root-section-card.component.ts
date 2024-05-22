@@ -40,18 +40,15 @@ export class FeatureFlagRootSectionCardComponent {
   menuButtonItems: IMenuButtonItem[] = [
     {
       name: this.translateService.instant('feature-flags.import-feature-flag.text'),
-      disabled: false
+      disabled: false,
     },
     {
       name: this.translateService.instant('feature-flags.export-all-feature-flags.text'),
-      disabled: true
-    }
+      disabled: true,
+    },
   ];
 
-  constructor(
-    private featureFlagService: FeatureFlagsService,
-    private translateService: TranslateService
-  ) {}
+  constructor(private featureFlagService: FeatureFlagsService, private translateService: TranslateService) {}
 
   ngOnInit() {
     this.featureFlagService.fetchFeatureFlags();
@@ -73,5 +70,4 @@ export class FeatureFlagRootSectionCardComponent {
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
     console.log('onSectionCardExpandChange:', isSectionCardExpanded);
   }
-
 }

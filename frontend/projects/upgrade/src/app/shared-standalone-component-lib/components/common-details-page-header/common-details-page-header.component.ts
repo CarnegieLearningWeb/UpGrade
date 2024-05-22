@@ -12,7 +12,7 @@ import { RouterModule } from '@angular/router';
  * <app-common-details-page-header
  *    [rootName]="Experiments"
  *    [detailsName]="Simple Experiment 1"
- *    [rootLink]="/home"
+ *    [rootLink]="home"
  * ></app-common-details-page-header>
  * ```
  */
