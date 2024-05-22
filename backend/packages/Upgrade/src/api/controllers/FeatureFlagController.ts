@@ -6,7 +6,8 @@ import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatus
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { SERVER_ERROR } from 'upgrade_types';
-import { FeatureFlagValidation } from './validators/FeatureFlagValidator';
+import { FeatureFlagValidation, UserParamsValidator } from './validators/FeatureFlagValidator';
+import { ExperimentUserService } from '../services/ExperimentUserService';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -133,7 +134,7 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/flags')
 export class FeatureFlagsController {
-  constructor(public featureFlagService: FeatureFlagService) {}
+  constructor(public featureFlagService: FeatureFlagService, public experimentUserService: ExperimentUserService) {}
 
   /**
    * @swagger
@@ -160,6 +161,54 @@ export class FeatureFlagsController {
     return this.featureFlagService.find(request.logger);
   }
 
+  /**
+   * @swagger
+   * /flags:
+   *    post:
+   *       description: Get feature flags for user
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: user
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *               userId:
+   *                 type: string
+   *                 example: user1
+   *               context:
+   *                 type: string
+   *                 example: add
+   *             description: User Document
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Feature Flag List
+   *            schema:
+   *              type: array
+   *              items:
+   *                $ref: '#/definitions/FeatureFlag'
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
+
+  @Post('/keys')
+  public async getKeys(
+    @Body({ validate: true })
+    userParams: UserParamsValidator,
+    @Req() request: AppRequest
+  ): Promise<string[]> {
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(userParams.userId, request.logger);
+    if (!experimentUserDoc) {
+      throw new Error('User not found');
+    }
+    return this.featureFlagService.getKeys(experimentUserDoc, userParams.context, request.logger);
+  }
   /**
    * @swagger
    * /flags/{id}:

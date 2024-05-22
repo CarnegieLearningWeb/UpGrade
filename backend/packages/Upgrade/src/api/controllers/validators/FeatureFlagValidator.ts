@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsDefined, IsString, IsArray, IsEnum, IsOptional, ValidateNested } from 'class-validator';
-import { ParticipantsValidator } from 'src/api/DTO/ExperimentDTO';
+import { ParticipantsValidator } from '../../DTO/ExperimentDTO';
 import { Column } from 'typeorm';
 import { FILTER_MODE } from 'upgrade_types';
 import { FEATURE_FLAG_STATUS } from 'upgrade_types';
@@ -51,4 +51,16 @@ export class FeatureFlagValidation {
   @ValidateNested()
   @Type(() => ParticipantsValidator)
   public featureFlagSegmentExclusion: ParticipantsValidator;
+}
+
+export class UserParamsValidator {
+  @IsNotEmpty()
+  @IsDefined()
+  @IsString()
+  public userId: string;
+
+  @IsNotEmpty()
+  @IsDefined()
+  @IsString()
+  public context: string;
 }
