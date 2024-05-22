@@ -1,20 +1,20 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
 /**
  * The `app-common-section-card-search-header` component provides a common header with title and subtitle in section card.
- * It contains a title, subtitle, status chip and redirect link in subtitle.
- *
+ * It contains a title, subtitle, status chip Text and variable to confirm if it should contain view Log text anchor tag.
+ * It will emit event when view Log text will be clicked which will notify parent component of getting clicked.
  * Example usage:
  *
  * ```
  * <app-common-section-card-title-header
  *   [title]="title"
  *   [subtitle]="subtitle"
- *   [link]="www.example.com"
- *   [linkText]="view more..."
+ *   [showViewLogs]="true"
  *   [chipText]="Disabled"
+ *   (viewLogs)="viewLogsClicked($event)"
  * ></app-common-section-card-title-header>
  * ```
  */
@@ -36,9 +36,9 @@ enum ChipColor {
 export class CommonSectionCardTitleHeaderComponent {
   @Input() title!: string;
   @Input() subtitle!: string;
-  @Input() link: string;
-  @Input() linkText: string;
-  @Input() chipText: string;
+  @Input() chipText?: string;
+  @Input() showViewLogs?: boolean;
+  @Output() viewLogs = new EventEmitter<{ clicked: boolean }>();
 
   getChipColor(text: string): string {
     switch (text.toLowerCase()) {
@@ -53,5 +53,10 @@ export class CommonSectionCardTitleHeaderComponent {
     }
   }
 
+  viewLogsClicked(): void {
+    this.viewLogs.emit({
+      clicked: true,
+    });
+  }
   // ngOnInit(): void {}
 }

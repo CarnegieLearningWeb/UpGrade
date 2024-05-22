@@ -9,8 +9,8 @@
   </h1>
   <h3 class="subtitle ft-16-400">
     {{ subtitle | translate }}
-    <ng-container *ngIf="link">
-      <a [href]="link">{{ linkText }}</a>
+    <ng-container *ngIf="showViewLogs">
+      <a [href]="" class="view-logs-link" (click)="viewLogsClicked()"> View logs</a>
     </ng-container>
   </h3>
 </div>
