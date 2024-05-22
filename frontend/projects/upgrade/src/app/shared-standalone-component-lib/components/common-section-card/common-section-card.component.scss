@@ -5,35 +5,24 @@
   background-color: var(--white);
 
   .header {
+    height: 96px;
     display: flex;
-    justify-content: space-between;
     flex-direction: row;
+    justify-content: space-between;
     align-items: center;
+    padding: 0 32px;
     border-bottom: 1px solid var(--light-grey);
-    border-radius: 4px;
-    padding: 30px;
-
-    .header-left {
-      display: flex;
-      justify-content: left;
-      align-items: center;
-      width: 48%;
-      height: 50px; //placeholder remove me when i have content
-    }
-  
-    .header-right {
-      background-color: beige;
-      width: 48%;
-      height: 50px; //placeholder remove me when i have content
-    }
   }
 
-  .content { //placeholder remove me when i have content
-    margin: 30px;
-    background-color: beige;
+  .content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 200px;
   }
 
   .footer {
-    // placeholder
+    padding: 0 32px;
   }
 }
