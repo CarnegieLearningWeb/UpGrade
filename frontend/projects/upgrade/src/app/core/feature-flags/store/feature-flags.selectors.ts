@@ -18,6 +18,11 @@ export const selectAllFeatureFlagsSortedByDate = createSelector(selectAllFeature
   });
 });
 
+export const selectHasInitialFeatureFlagsDataLoaded = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.hasInitialFeatureFlagsDataLoaded
+);
+
 export const selectIsLoadingFeatureFlags = createSelector(
   selectFeatureFlagsState,
   (state) => state.isLoadingFeatureFlags
