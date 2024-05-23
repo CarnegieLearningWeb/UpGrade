@@ -18,7 +18,7 @@ import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { DeleteMetricsComponent } from '../modals/delete-metrics/delete-metrics.component';
 import { AddMetricsComponent } from '../modals/add-metrics/add-metrics.component';
-import { EXPERIMENT_SEARCH_KEY } from '../../../../../core/experiments/store/experiments.model';
+import { METRIC_SEARCH_KEY } from '../../../../../../../../../../types/src/Experiment/enums';
 import { IMetricUnit } from '../../../../../../../../../../types/src';
 
 @Component({
@@ -48,8 +48,8 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
   insertNodeIndex = 0;
 
   selectedMetricIndex = null;
-  experimentFilterOptions = [EXPERIMENT_SEARCH_KEY.ALL, EXPERIMENT_SEARCH_KEY.NAME, EXPERIMENT_SEARCH_KEY.CONTEXT];
-  selectedExperimentFilterOption = EXPERIMENT_SEARCH_KEY.ALL;
+  metricFilterOptions = [METRIC_SEARCH_KEY.ALL, METRIC_SEARCH_KEY.NAME, METRIC_SEARCH_KEY.CONTEXT];
+  selectedMetricFilterOption = METRIC_SEARCH_KEY.ALL;
   contextOptions: string[] = [];
   searchValue: string;
 
@@ -66,19 +66,10 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
       this.nestedDataSource.data = this.allMetrics.data;
       this.extractContext(this.allMetrics.data);
     });
-    this.applyFilter(this.selectedExperimentFilterOption);
-
-    // this.nestedTreeControl = new NestedTreeControl<IMetricUnit>((node) => node.children);
-    // this.nestedDataSource = new MatTreeNestedDataSource<IMetricUnit>();
-    // this._dataChange.subscribe((data) => (this.nestedDataSource.data = data));
+    this.applyFilter(this.searchValue);
   }
 
   hasNestedChild = (_: number, nodeData: IMetricUnit) => !!nodeData.children && nodeData.children.length > 0;
-
-  // createTree(metrics: IMetricUnit[]): void {
-  //   const tree = metrics.map((metric) => this.insertNode(metric));
-  //   // this._dataChange.next(tree);
-  // }
 
   insertNode(metrics: any): MetricUnit {
     if (!metrics.children.length) {
@@ -120,34 +111,28 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  // setTreeForMetric(index: number) {
-  //   this.selectedMetricIndex = index;
-  //   this.insertNodeIndex = 0;
-  //   this.createTree([this.allMetrics.data[index]]);
-  // }
-
-  setSearchKey(searchKey: EXPERIMENT_SEARCH_KEY) {
+  setSearchKey(searchKey: METRIC_SEARCH_KEY) {
     this.analysisService.setMetricsFilterValue(searchKey);
   }
 
   applyFilter(filterValue: string) {
-    this.filterExperimentPredicate(this.selectedExperimentFilterOption);
+    this.filterMetricsPredicate(this.selectedMetricFilterOption);
     if (typeof filterValue === 'string') {
       this.allMetrics.filter = filterValue.trim().toLowerCase();
     }
   }
-  filterExperimentPredicate(type: EXPERIMENT_SEARCH_KEY) {
+  filterMetricsPredicate(type: METRIC_SEARCH_KEY) {
     this.allMetrics.filterPredicate = (data, filter: string): boolean => {
       switch (type) {
-        case EXPERIMENT_SEARCH_KEY.ALL:
+        case METRIC_SEARCH_KEY.ALL:
           return (
-            (filter !== EXPERIMENT_SEARCH_KEY.ALL ? data.key.toLocaleLowerCase().includes(filter) : data.key) ||
+            (filter !== METRIC_SEARCH_KEY.ALL ? data.key.toLocaleLowerCase().includes(filter) : data.key) ||
             !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length
           );
-        case EXPERIMENT_SEARCH_KEY.NAME:
-          return filter !== EXPERIMENT_SEARCH_KEY.NAME ? data.key.toLocaleLowerCase().includes(filter) : data.key;
+        case METRIC_SEARCH_KEY.NAME:
+          return filter !== METRIC_SEARCH_KEY.NAME ? data.key.toLocaleLowerCase().includes(filter) : data.key;
 
-        case EXPERIMENT_SEARCH_KEY.CONTEXT:
+        case METRIC_SEARCH_KEY.CONTEXT:
           return !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length;
       }
     };
@@ -168,22 +153,21 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     this.permissionSub.unsubscribe();
   }
 
+  extractContextRecursively(obj: any, contextValuesSet: Set<string>) {
+    if (obj.context && Array.isArray(obj.context)) {
+      obj.context.forEach((value: string) => contextValuesSet.add(value));
+    }
+    if (obj.children && Array.isArray(obj.children)) {
+      obj.children.forEach((child: any) => this.extractContextRecursively(child, contextValuesSet));
+    }
+  }
+
   extractContext(data: any[]): void {
     const contextValuesSet = new Set<string>(); // Using Set to automatically remove duplicates
 
-    function extractContextRecursively(obj: any) {
-      if (obj.context && Array.isArray(obj.context)) {
-        obj.context.forEach((value: string) => contextValuesSet.add(value));
-      }
-      if (obj.children && Array.isArray(obj.children)) {
-        obj.children.forEach((child: any) => extractContextRecursively(child));
-      }
-    }
-
-    data.forEach((item) => extractContextRecursively(item));
+    // Call the recursive function
+    data.forEach((item) => this.extractContextRecursively(item, contextValuesSet));
 
     this.contextOptions = Array.from(contextValuesSet); // Convert Set back to array
   }
-
-  // private _getChildren = (node: MetricUnit) => of(node.children);
 }

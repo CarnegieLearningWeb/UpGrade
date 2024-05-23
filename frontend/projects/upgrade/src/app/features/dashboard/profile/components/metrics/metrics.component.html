@@ -4,10 +4,10 @@
       <mat-form-field class="dense-2 filter-options" subscriptSizing="dynamic">
         <mat-select
           class="ft-14-400"
-          [(ngModel)]="selectedExperimentFilterOption"
-          (selectionChange)="applyFilter(selectedExperimentFilterOption)"
+          [(ngModel)]="selectedMetricFilterOption"
+          (selectionChange)="applyFilter(searchValue)"
         >
-          <mat-option class="ft-14-400" *ngFor="let context of experimentFilterOptions" [value]="context">
+          <mat-option class="ft-14-400" *ngFor="let context of metricFilterOptions" [value]="context">
             {{ context | titlecase }}
           </mat-option>
         </mat-select>
@@ -16,6 +16,7 @@
         <input
           class="ft-14-400 search-input"
           matInput
+          [(ngModel)]="searchValue"
           (keyup)="applyFilter($event.target.value)"
           [placeholder]="'global.search.text' | translate"
         />
@@ -43,30 +44,13 @@
   <div #metricsTable class="metrics-table-container">
     <ng-container *ngIf="allMetrics.data?.length; else zeroState">
       <table mat-table [dataSource]="allMetrics">
-        <!-- Context Column -->
-        <ng-container matColumnDef="context">
-          <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-            {{ 'query.table-context.text' | translate }}
-          </th>
-          <td class="ft-12-600" mat-cell *matCellDef="let element">
-            <mat-chip-row *ngFor="let contextTag of element.context">
-              <!-- <ng-container *ngIf="selectedMetricIndex !== index; else metricTreeTemplate"> -->
-              <span class="ft-12-600 chip-label">
-                {{ contextTag }}
-              </span>
-              <!-- </ng-container> -->
-            </mat-chip-row>
-          </td>
-        </ng-container>
-
         <!-- Metric Column -->
         <ng-container matColumnDef="metric">
           <th mat-header-cell *matHeaderCellDef class="ft-12-700">
             {{ 'query.metric.text' | translate }}
           </th>
           <td class="ft-12-600" mat-cell *matCellDef="let element">
-            <!-- {{ element.key }} -->
-            <mat-tree [dataSource]="[element]" [treeControl]="nestedTreeControl" class="example-tree">
+            <mat-tree [dataSource]="[element]" [treeControl]="nestedTreeControl" class="mat-nested-tree">
               <!-- This is the tree node template for leaf nodes -->
               <mat-tree-node *matTreeNodeDef="let node; let index = index">
                 <button mat-icon-button disabled class="button-container">
@@ -90,7 +74,7 @@
                     >delete_outline</mat-icon
                   >
                 </div>
-                <div [class.example-tree-invisible]="!nestedTreeControl.isExpanded(node)" role="group">
+                <div [class.mat-nested-tree-invisible]="!nestedTreeControl.isExpanded(node)" role="group">
                   <ng-container matTreeNodeOutlet></ng-container>
                 </div>
               </mat-nested-tree-node>
@@ -98,6 +82,19 @@
           </td>
         </ng-container>
 
+        <!-- Context Column -->
+        <ng-container matColumnDef="context">
+          <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+            {{ 'query.table-context.text' | translate }}
+          </th>
+          <td class="ft-12-600" mat-cell *matCellDef="let element">
+            <mat-chip-row *ngFor="let contextTag of element.context">
+              <span class="ft-12-600 chip-label">
+                {{ contextTag }}
+              </span>
+            </mat-chip-row>
+          </td>
+        </ng-container>
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
       </table>

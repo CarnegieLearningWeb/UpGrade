@@ -3,7 +3,8 @@ import { JsonEditorOptions, JsonEditorComponent } from 'ang-jsoneditor';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AnalysisService } from '../../../../../../core/analysis/analysis.service';
 import { Subscription } from 'rxjs';
-import { MatTableDataSource } from '@angular/material/table';
+// import { MetricUnit } from '../../../../../../core/analysis/store/analysis.models';
+import { IMetricUnit } from '../../../../../../../../../../../types/src';
 
 @Component({
   selector: 'app-add-metrics',
@@ -13,17 +14,16 @@ import { MatTableDataSource } from '@angular/material/table';
 export class AddMetricsComponent implements OnInit {
   options = new JsonEditorOptions();
   metricsEditorError = false;
-  allMetrics: any;
+  allMetrics: IMetricUnit[];
   allMetricsSub: Subscription;
   contextOptions: string[] = [];
   @ViewChild('metricsEditor', { static: false }) metricsEditor: JsonEditorComponent;
   constructor(private dialogRef: MatDialogRef<AddMetricsComponent>, private analysisService: AnalysisService) {}
 
   ngOnInit() {
-    this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics) => {
-      this.allMetrics = new MatTableDataSource();
-      this.allMetrics.data = metrics;
-      this.extractContext(this.allMetrics.data);
+    this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics: IMetricUnit[]) => {
+      this.allMetrics = metrics;
+      this.extractContext(this.allMetrics);
     });
     this.options = new JsonEditorOptions();
     this.options.mode = 'code';
