@@ -11,11 +11,22 @@ import { AsyncPipe, NgIf, NgFor, UpperCasePipe } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatChipsModule } from '@angular/material/chips';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-feature-flag-root-section-card-table',
   standalone: true,
-  imports: [MatTableModule, AsyncPipe, NgIf, NgFor, MatTooltipModule, TranslateModule, UpperCasePipe, MatChipsModule],
+  imports: [
+    MatTableModule,
+    AsyncPipe,
+    NgIf,
+    NgFor,
+    MatTooltipModule,
+    TranslateModule,
+    UpperCasePipe,
+    MatChipsModule,
+    RouterModule,
+  ],
   templateUrl: './feature-flag-root-section-card-table.component.html',
   styleUrl: './feature-flag-root-section-card-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
