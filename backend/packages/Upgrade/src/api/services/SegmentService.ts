@@ -22,7 +22,7 @@ import {
 } from '../controllers/validators/SegmentInputValidator';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
-import { getSegmentData } from '../controllers/SegmentController';
+import { SegmentStatus, getSegmentData } from '../controllers/SegmentController';
 import { globalExcludeSegment } from '../../init/seed/globalExcludeSegment';
 import { CacheService } from './CacheService';
 import { validate } from 'class-validator';
@@ -71,7 +71,7 @@ export class SegmentService {
     return queryBuilder;
   }
 
-  public async getSegmentById(id: string, logger: UpgradeLogger): Promise<Segment> {
+  public async getSegmentById(id: string, logger: UpgradeLogger): Promise<SegmentStatus> {
     logger.info({ message: `Find segment by id. segmentId: ${id}` });
     const segmentDoc = await this.segmentRepository
       .createQueryBuilder('segment')
@@ -81,8 +81,36 @@ export class SegmentService {
       .where('segment.type != :private', { private: SEGMENT_TYPE.PRIVATE })
       .andWhere({ id })
       .getOne();
+      
+    // return segmentDoc;
+    const segmentsUsedList = []
+    const [allExperimentSegmentsInclusion, allExperimentSegmentsExclusion] = await Promise.all([
+      this.getExperimentSegmenInclusionData(),
+      this.getExperimentSegmenExclusionData(),
+    ]);
+    
+    if (allExperimentSegmentsInclusion) {
+      allExperimentSegmentsInclusion.forEach((ele) => {
+        const subSegments = ele.segment.subSegments;
+        segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
+      });
+    }
 
-    return segmentDoc;
+    if (allExperimentSegmentsExclusion) {
+      allExperimentSegmentsExclusion.forEach((ele) => {
+        const subSegments = ele.segment.subSegments;
+        segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
+      });
+    }
+
+    if (segmentDoc.id === globalExcludeSegment.id) {
+      return { ...segmentDoc, status: SEGMENT_STATUS.GLOBAL };
+    }  else if(segmentsUsedList.includes(segmentDoc.id)){
+      return { ...segmentDoc, status: SEGMENT_STATUS.USED };
+    } else{
+      return { ...segmentDoc, status: SEGMENT_STATUS.UNUSED };
+    }
+
   }
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
