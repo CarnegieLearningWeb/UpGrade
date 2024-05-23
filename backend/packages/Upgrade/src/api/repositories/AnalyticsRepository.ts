@@ -19,10 +19,8 @@ import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ConditionPayload } from '../models/ConditionPayload';
 import { StateTimeLog } from '../models/StateTimeLogs';
-import { IndividualExclusion } from '../models/IndividualExclusion';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { MonitoredDecisionPointRepository } from './MonitoredDecisionPointRepository';
-import { IndividualEnrollment } from '../models/IndividualEnrollment';
 
 export interface IEnrollmentByCondition {
   conditions_id: string;
@@ -76,9 +74,7 @@ export interface CSVExportDataRow {
   enrollmentStartDate: string;
   enrollmentCompleteDate: string;
   enrollmentGroupId: string;
-  exclusionGroupId: string;
   enrollmentCode: string;
-  exclusionCode: string;
 }
 
 @EntityRepository()
@@ -422,96 +418,94 @@ export class AnalyticsRepository {
     skip: number,
     take: number
   ): Promise<CSVExportDataRow[]> {
+    const individualEnrollmentRepository = getCustomRepository(IndividualEnrollmentRepository, 'export');
+    const individualEnrollmentQuery = individualEnrollmentRepository
+    .createQueryBuilder('individualEnrollment')
+    .select([
+      'experiment.id as "experimentId"',
+      'experiment.name as "experimentName"',
+      'experiment.context as "context"',
+      'experiment.assignmentUnit as "assignmentUnit"',
+      'experiment.group as "group"',
+      'experiment.consistencyRule as "consistencyRule"',
+      'experiment.type as "designType"',
+      'experiment.assignmentAlgorithm as "algorithmType"',
+      'experiment.stratificationFactorStratificationFactorName as "stratification"',
+      '"userStratificationFactor"."stratificationFactorValue" as "stratificationValue"',
+      '"decisionPointData"."excludeIfReached" as "excludeIfReached"',
+      '"individualEnrollment"."userId" as "userId"',
+      '"decisionPointData"."id" as "decisionPointId"',
+      '"individualEnrollment"."groupId" as "enrollmentGroupId"',
+      'condition.conditionCode as "conditionName"',
+      '"conditionPayload"."payloadValue" as "payload"',
+      'experiment.postExperimentRule as "postRule"',
+      '"experimentCondition"."conditionCode" as "revertTo"',
+      '"enrollingStateTimeLog"."timeLog" as "enrollmentStartDate"',
+      '"enrollmentCompleteStateTimeLog"."timeLog" as "enrollmentCompleteDate"',
+      '"individualEnrollment"."enrollmentCode" as "enrollmentCode"',
+    ])
+    .innerJoin(Experiment, 'experiment', 'experiment.id = "individualEnrollment"."experimentId"')
+    .leftJoin(ExperimentCondition, 'experimentCondition', 'experimentCondition.id = experiment.revertTo')
+    .leftJoin(UserStratificationFactor, 'userStratificationFactor', 'userStratificationFactor.userId = "individualEnrollment"."userId" AND userStratificationFactor.factorName = experiment.stratificationFactorStratificationFactorName')
+    .leftJoin(StateTimeLog, 'enrollingStateTimeLog', 'enrollingStateTimeLog.experimentId = experiment.id AND enrollingStateTimeLog.toState = \'enrolling\'')
+    .leftJoin(StateTimeLog, 'enrollmentCompleteStateTimeLog', 'enrollmentCompleteStateTimeLog.experimentId = experiment.id AND enrollmentCompleteStateTimeLog.toState = \'enrollmentComplete\'')
+    .leftJoin('individualEnrollment.condition', 'condition')
+    .leftJoin(ConditionPayload, 'conditionPayload', 'conditionPayload.parentConditionId = condition.id')
+    .leftJoin(DecisionPoint, 'decisionPointData', 'decisionPointData.id = "individualEnrollment"."partitionId"')
+    .groupBy('experiment.id')
+    .addGroupBy('experiment.name')
+    .addGroupBy('individualEnrollment.userId')
+    .addGroupBy('experimentCondition.conditionCode')
+    .addGroupBy('decisionPointData.id')
+    .addGroupBy('individualEnrollment.groupId')
+    .addGroupBy('condition.conditionCode')
+    .addGroupBy('decisionPointData.excludeIfReached')
+    .addGroupBy('conditionPayload.payloadValue')
+    .addGroupBy('enrollingStateTimeLog.timeLog')
+    .addGroupBy('enrollmentCompleteStateTimeLog.timeLog')
+    .addGroupBy('individualEnrollment.enrollmentCode')
+    .addGroupBy('userStratificationFactor.stratificationFactorValue')
+    .orderBy('individualEnrollment.userId', 'ASC')
+    .offset(skip)
+    .limit(take)
+    .where('individualEnrollment.experimentId = :experimentId', { experimentId });
+
     const monitoredDecisionPointRepository = getCustomRepository(MonitoredDecisionPointRepository, 'export');
-    return monitoredDecisionPointRepository
+    const monitoredDecisionPointQuery = monitoredDecisionPointRepository
       .createQueryBuilder('monitoredDecisionPoint')
       .select([
-        'experiment.id as "experimentId"',
-        'experiment.name as "experimentName"',
-        'experiment.context as "context"',
-        'experiment.assignmentUnit as "assignmentUnit"',
-        'experiment.group as "group"',
-        'experiment.consistencyRule as "consistencyRule"',
-        'experiment.type as "designType"',
-        'experiment.assignmentAlgorithm as "algorithmType"',
-        'experiment.stratificationFactorStratificationFactorName as "stratification"',
-        '"userStratificationFactor"."stratificationFactorValue" as "stratificationValue"',
         'monitoredDecisionPoint.site as "site"',
         'monitoredDecisionPoint.target as "target"',
-        '"decisionPointData"."excludeIfReached" as "excludeIfReached"',
-        '"monitoredDecisionPoint"."userId" as "userId"',
-        '"decisionPointData"."id" as "decisionPointId"',
-        '"individualEnrollment"."groupId" as "enrollmentGroupId"',
-        '"individualExclusion"."groupId" as "exclusionGroupId"',
-        'condition."conditionCode" as "conditionName"',
-        '"conditionPayload"."payloadValue" as "payload"',
-        'experiment.postExperimentRule as "postRule"',
-        '"experimentCondition"."conditionCode" as "revertTo"',
-        '"enrollingStateTimeLog"."timeLog" as "enrollmentStartDate"',
-        '"enrollmentCompleteStateTimeLog"."timeLog" as "enrollmentCompleteDate"',
+        'monitoredDecisionPoint.userId as "userId"',
         '"monitoredPointLogs"."createdAt" as "markExperimentPointTime"',
-        '"individualEnrollment"."enrollmentCode" as "enrollmentCode"',
-        '"individualExclusion"."exclusionCode" as "exclusionCode"',
       ])
-      .innerJoin(Experiment, 'experiment', 'experiment.id::text = "monitoredDecisionPoint"."experimentId"')
-      .leftJoin(ExperimentCondition, 'experimentCondition', 'experimentCondition.id = "experiment"."revertTo"')
-      .leftJoin(
-        UserStratificationFactor,
-        'userStratificationFactor',
-        'userStratificationFactor.userId = monitoredDecisionPoint.userId AND userStratificationFactor.factorName = experiment.stratificationFactorStratificationFactorName'
-      )
-      .leftJoin(
-        StateTimeLog,
-        'enrollingStateTimeLog',
-        `"enrollingStateTimeLog"."experimentId" = "experiment"."id" AND enrollingStateTimeLog.toState = 'enrolling'`
-      )
-      .leftJoin(
-        StateTimeLog,
-        'enrollmentCompleteStateTimeLog',
-        `"enrollmentCompleteStateTimeLog"."experimentId" = "experiment"."id" AND enrollmentCompleteStateTimeLog.toState = 'enrollmentComplete'`
-      )
-      .leftJoin(
-        IndividualEnrollment,
-        'individualEnrollment',
-        'individualEnrollment.userId = monitoredDecisionPoint.userId'
-      )
-      .leftJoin(
-        IndividualExclusion,
-        'individualExclusion',
-        'individualExclusion.userId = monitoredDecisionPoint.userId'
-      )
-      .leftJoin(ExperimentCondition, 'condition', '"condition"."conditionCode" = monitoredDecisionPoint.condition')
-      .leftJoin(ConditionPayload, 'conditionPayload', 'conditionPayload.parentConditionId = condition.id')
-      .leftJoin(
-        DecisionPoint,
-        'decisionPointData',
-        'decisionPointData.site = monitoredDecisionPoint.site AND decisionPointData.target = monitoredDecisionPoint.target'
-      )
       .leftJoin('monitoredDecisionPoint.monitoredPointLogs', 'monitoredPointLogs')
-      .groupBy('experiment.id')
-      .addGroupBy('experiment.name')
-      .addGroupBy('"experimentCondition"."conditionCode"')
-      .addGroupBy('"monitoredDecisionPoint"."site"')
-      .addGroupBy('"monitoredDecisionPoint"."target"')
-      .addGroupBy('"monitoredDecisionPoint"."userId"')
-      .addGroupBy('"decisionPointData"."id"')
-      .addGroupBy('"individualEnrollment"."groupId"')
-      .addGroupBy('"individualExclusion"."groupId"')
-      .addGroupBy('condition."conditionCode"')
-      .addGroupBy('"decisionPointData"."excludeIfReached"')
-      .addGroupBy('"conditionPayload"."payloadValue"')
-      .addGroupBy('"enrollingStateTimeLog"."timeLog"')
-      .addGroupBy('"enrollmentCompleteStateTimeLog"."timeLog"')
-      .addGroupBy('"monitoredPointLogs"."createdAt"')
-      .addGroupBy('"individualEnrollment"."enrollmentCode"')
-      .addGroupBy('"individualExclusion"."exclusionCode"')
-      .addGroupBy('"userStratificationFactor"."stratificationFactorValue"')
-      .addGroupBy('"monitoredDecisionPoint"."userId"')
-      .orderBy('"monitoredDecisionPoint"."userId"', 'ASC')
+      .orderBy('monitoredDecisionPoint.userId', 'ASC')
       .offset(skip)
       .limit(take)
-      .where('"monitoredDecisionPoint"."experimentId" = :experimentId', { experimentId })
-      .execute();
+      .where('monitoredDecisionPoint.experimentId = :experimentId', { experimentId });
+    
+    const [individualEnrollmentQueryResult, monitoredDecisionPointQueryResult] = await Promise.all([
+      individualEnrollmentQuery.getRawMany(),
+      monitoredDecisionPointQuery.getRawMany(),
+    ]);
+    
+    // Combined results
+    const combinedCSVExportData = [];
+
+    individualEnrollmentQueryResult.forEach(individualEnrollmentQueryResult => {
+      monitoredDecisionPointQueryResult.forEach(monitoredDecisionPointQueryResult => {
+        if (monitoredDecisionPointQueryResult.userId === individualEnrollmentQueryResult.userId) {
+          combinedCSVExportData.push({
+            ...individualEnrollmentQueryResult,
+            site: monitoredDecisionPointQueryResult.site,
+            target: monitoredDecisionPointQueryResult.target,
+            markExperimentPointTime: monitoredDecisionPointQueryResult.markExperimentPointTime,
+          });
+        }
+      });
+    });
+    return combinedCSVExportData;
   }
 
   public async getCSVDataForWithInSubExport(

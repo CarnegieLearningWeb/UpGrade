@@ -334,7 +334,7 @@ export class AnalyticsService {
             AppContext: row.context[0],
             UnitOfAssignment: row.assignmentUnit,
             GroupType: row.group,
-            GroupId: row.enrollmentGroupId ? row.enrollmentGroupId : row.exclusionGroupId,
+            GroupId: row.enrollmentGroupId ? row.enrollmentGroupId : 'NA',
             ConsistencyRule: row.consistencyRule,
             DesignType: row.designType,
             AlgorithmType: row.algorithmType,
@@ -351,7 +351,6 @@ export class AnalyticsService {
               : '',
             MarkExperimentPointTime: new Date(row.markExperimentPointTime).toISOString(),
             EnrollmentCode: row.enrollmentCode,
-            ExclusionCode: row.exclusionCode,
             ...queryDataToAdd,
           };
         });
@@ -405,7 +404,6 @@ export class AnalyticsService {
             EnrollmentCompleteDate: '',
             MarkExperimentPointTime: '',
             EnrollmentCode: '',
-            ExclusionCode: '',
           },
         ];
         const csv = new ObjectsToCsv(csvRows);
