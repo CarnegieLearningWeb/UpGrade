@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { FeatureFlag } from './feature-flags.model';
+import { CreateFeatureFlagDTO, FeatureFlag } from './feature-flags.model';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 
 export const actionFetchFeatureFlags = createAction(
@@ -37,3 +37,15 @@ export const actionSetSortingType = createAction(
   '[Feature Flags] Set Sorting type',
   props<{ sortingType: SORT_AS_DIRECTION }>()
 );
+
+export const actionCreateFeatureFlag = createAction(
+  '[Feature Flags] Create Feature Flag',
+  props<{ featureFlagDTO: CreateFeatureFlagDTO }>()
+);
+
+export const actionCreateFeatureFlagSuccess = createAction(
+  '[Feature Flags] Create Feature Flag Success',
+  props<{ response: any }>()
+);
+
+export const actionCreateFeatureFlagFailure = createAction('[Feature Flags] Create Feature Flag Failure');

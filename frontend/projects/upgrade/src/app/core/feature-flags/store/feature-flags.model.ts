@@ -19,6 +19,18 @@ export interface FeatureFlag {
   featureFlagSegmentExclusion: SegmentNew;
 }
 
+export interface CreateFeatureFlagDTO {
+  name: string;
+  key: string;
+  description: string;
+  status: FEATURE_FLAG_STATUS;
+  context: string[];
+  tags: string[];
+  featureFlagSegmentInclusion: SegmentNew;
+  featureFlagSegmentExclusion: SegmentNew;
+  filterMode: FILTER_MODE;
+}
+
 export const NUMBER_OF_FLAGS = 20;
 
 interface IFeatureFlagsSearchParams {

@@ -83,6 +83,22 @@ export class FeatureFlagsEffects {
     )
   );
 
+  // actionCreateFeatureFlag dispatch POST feature flag
+  createFeatureFlag$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionCreateFeatureFlag),
+      switchMap((action) => {
+        return this.featureFlagsDataService.createFeatureFlag(action.featureFlagDTO).pipe(
+          map((response) => {
+            return FeatureFlagsActions.actionCreateFeatureFlagSuccess({ response });
+          }),
+          catchError(() => [FeatureFlagsActions.actionCreateFeatureFlagFailure()])
+        );
+      })
+    )
+  );
+
+
   fetchFeatureFlagsOnSearchString$ = createEffect(
     () =>
       this.actions$.pipe(
