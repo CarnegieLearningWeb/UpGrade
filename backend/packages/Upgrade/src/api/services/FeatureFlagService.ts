@@ -43,20 +43,7 @@ export class FeatureFlagService {
   public async getKeys(experimentUserDoc: ExperimentUser, context: string, logger: UpgradeLogger): Promise<string[]> {
     logger.info({ message: 'Get all feature flags' });
 
-    const filteredFeatureFlags = await this.featureFlagRepository
-      .createQueryBuilder('feature_flag')
-      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
-      .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
-      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
-      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
-      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
-      .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'featureFlagSegmentExclusion')
-      .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
-      .where('feature_flag.context @> :searchContext', { searchContext: [context] })
-      .getMany();
+    const filteredFeatureFlags = await this.featureFlagRepository.getFlagsFromContext(context);
 
     const includedFeatureFlags = await this.featureFlagLevelInclusionExclusion(filteredFeatureFlags, experimentUserDoc);
 

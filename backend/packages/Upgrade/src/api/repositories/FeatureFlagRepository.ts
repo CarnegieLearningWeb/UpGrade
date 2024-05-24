@@ -66,4 +66,26 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
 
     return result.raw;
   }
+
+  public async getFlagsFromContext(context: string): Promise<FeatureFlag[]> {
+    const result = await this.createQueryBuilder('featureFlag')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
+      .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
+      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
+      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'featureFlagSegmentExclusion')
+      .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
+      .where('feature_flag.context @> :searchContext', { searchContext: [context] })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('FeatureFlagRepository', 'getFlagsFromContext', { context }, errorMsg);
+        throw errorMsgString;
+      });
+
+    return result;
+  }
 }
