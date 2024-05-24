@@ -24,6 +24,11 @@ import { STATUS_INDICATOR_CHIP_TYPE } from 'upgrade_types';
 })
 export class CommonStatusIndicatorChipComponent {
   @Input() chipClass!: STATUS_INDICATOR_CHIP_TYPE;
+  chipText = '';
+
+  ngOnInit() {
+    this.chipText = this.convertKebabToTitleCase(this.chipClass);
+  }
 
   convertKebabToTitleCase(kebabCaseStr: STATUS_INDICATOR_CHIP_TYPE): string {
     return kebabCaseStr
