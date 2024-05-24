@@ -63,4 +63,5 @@ export {
   ILogRequestBody,
   ILogMetrics,
   ILogGroupMetrics,
+  IMenuButtonItem,
 } from './Experiment/interfaces';

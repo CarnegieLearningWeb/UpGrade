@@ -238,3 +238,8 @@ export interface CaliperEnvelope {
   dataVersion: string;
   data: CaliperGradingProfile[];
 }
+
+export interface IMenuButtonItem {
+  name: string;
+  disabled: boolean;
+}

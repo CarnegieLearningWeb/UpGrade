@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { DashboardRootComponent } from './dashboard-root/dashboard-root.component';
-import { FeatureFlagRootPageComponent } from './feature-flags/pages/feature-flag-root-page/feature-flag-root-page.component';
 
 const routes: Routes = [
   {
@@ -35,11 +34,22 @@ const routes: Routes = [
         },
       },
       // feature-flags is built with standalone components instead of an ngModule, so we need to lazy load the component directly
+      // TODO: figure out how to load lazy-loaded child feature routes for feature flags if needed
       {
         path: 'featureflags',
         loadComponent: () =>
           import('./feature-flags/pages/feature-flag-root-page/feature-flag-root-page.component').then(
-            (m) => m.FeatureFlagRootPageComponent
+            (c) => c.FeatureFlagRootPageComponent
+          ),
+        data: {
+          title: 'app-header.title.feature-flag',
+        },
+      },
+      {
+        path: 'featureflags/detail/:flagId',
+        loadComponent: () =>
+          import('./feature-flags/pages/feature-flag-details-page/feature-flag-details-page.component').then(
+            (c) => c.FeatureFlagDetailsPageComponent
           ),
         data: {
           title: 'app-header.title.feature-flag',
