@@ -6,7 +6,7 @@ import { GroupForSegmentRepository } from '../repositories/GroupForSegmentReposi
 import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS, CACHE_PREFIX } from 'upgrade_types';
-import { getConnection, DataSource } from 'typeorm';
+import { DataSource } from 'typeorm';
 import Papa from 'papaparse';
 import { env } from '../../env';
 import { v4 as uuid } from 'uuid';
@@ -121,7 +121,8 @@ export class SegmentService {
   }
 
   public async getSegmentStatus(segmentsData: Segment[]): Promise<getSegmentData> {
-    const segmentsDataWithStatus = await getConnection().transaction(async () => {
+    const connection = this.dataSource.manager.connection;
+    const segmentsDataWithStatus = await connection.transaction(async () => {
       const [allExperimentSegmentsInclusion, allExperimentSegmentsExclusion] = await Promise.all([
         this.getExperimentSegmentInclusionData(),
         this.getExperimentSegmentExclusionData(),
