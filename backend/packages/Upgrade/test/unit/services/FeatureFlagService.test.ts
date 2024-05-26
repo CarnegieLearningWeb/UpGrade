@@ -14,6 +14,7 @@ import { FlagVariation } from '../../../src/api/models/FlagVariation';
 import { isUUID } from 'class-validator';
 import { v4 as uuid } from 'uuid';
 import { FEATURE_FLAG_STATUS } from 'upgrade_types';
+import { configureLogger } from '../../utils/logger';
 
 // Skip these tests until the API work is done and variations are removed
 describe.skip('Feature Flag Service Testing', () => {
@@ -74,6 +75,10 @@ describe.skip('Feature Flag Service Testing', () => {
   sandbox.stub(ConnectionManager.prototype, 'get').returns({
     transaction: jest.fn(async (passedFunction) => await passedFunction(entityManagerMock)),
   } as unknown as Connection);
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
     module = await Test.createTestingModule({

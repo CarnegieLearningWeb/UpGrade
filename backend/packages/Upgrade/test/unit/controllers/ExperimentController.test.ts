@@ -7,7 +7,6 @@ import { v4 as uuid } from 'uuid';
 import ExperimentServiceMock from './mocks/ExperimentServiceMock';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-import { useContainer as ormUseContainer } from 'typeorm';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentServiceMock';
 
@@ -15,7 +14,6 @@ describe('Experiment Controller Testing', () => {
   beforeAll(() => {
     configureLogger();
     routingUseContainer(Container);
-    ormUseContainer(Container);
     classValidatorUseContainer(Container);
 
     // set mock container

@@ -328,8 +328,7 @@ export class ExperimentService {
     if (logger) {
       logger.info({ message: `Delete experiment =>  ${experimentId}` });
     }
-    const { connection } = this.dataSource.manager;
-    return connection.transaction(async (transactionalEntityManager) => {
+    return this.dataSource.transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
       await this.clearExperimentCacheDetail(
         experiment.context[0],
@@ -776,8 +775,7 @@ export class ExperimentService {
       this.scheduledJobService.updateExperimentSchedules(experiment as any, logger);
     }
 
-    const { connection } = this.dataSource.manager;
-    return connection
+    return this.dataSource
       .transaction(async (transactionalEntityManager) => {
         experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
         let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
@@ -1226,8 +1224,7 @@ export class ExperimentService {
         return { site: partition.site, target: partition.target };
       })
     );
-    const { connection } = this.dataSource.manager;
-    const createdExperiment = await connection.transaction(async (transactionalEntityManager) => {
+    const createdExperiment = await this.dataSource.transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.description = experiment.description || '';
 

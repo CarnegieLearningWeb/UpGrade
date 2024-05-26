@@ -25,8 +25,7 @@ export class ScheduledJobService {
   ) {}
 
   public async startExperiment(id: string, logger: UpgradeLogger): Promise<any> {
-    const { connection } = this.dataSource.manager;
-    return await connection.transaction(async (transactionalEntityManager) => {
+    return await this.dataSource.transaction(async (transactionalEntityManager) => {
       try {
         const scheduledJobRepository = transactionalEntityManager.getRepository(ScheduledJob);
         const scheduledJob = await scheduledJobRepository.findOne({ where: { id }, relations: ['experiment'] });
@@ -73,8 +72,7 @@ export class ScheduledJobService {
   }
 
   public async endExperiment(id: string, logger: UpgradeLogger): Promise<any> {
-    const { connection } = this.dataSource.manager;
-    return await connection.transaction(async (transactionalEntityManager) => {
+    return await this.dataSource.transaction(async (transactionalEntityManager) => {
       try {
         const scheduledJobRepository = transactionalEntityManager.getRepository(ScheduledJob);
         const scheduledJob = await scheduledJobRepository.findOne({ where: { id }, relations: ['experiment'] });

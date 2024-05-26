@@ -5,12 +5,14 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { ErrorService } from '../../../src/api/services/ErrorService';
 import { ExplicitIndividualAssignmentRepository } from '../../../src/api/repositories/ExplicitIndividualAssignmentRepository';
-import { UserRepository } from '../../../src/api/repositories/UserRepository';
 import { PreviewUserRepository } from '../../../src/api/repositories/PreviewUserRepository';
 import { ExplicitIndividualAssignment } from '../../../src/api/models/ExplicitIndividualAssignment';
 import { ExperimentCondition } from '../../../src/api/models/ExperimentCondition';
 import { PreviewUser } from '../../../src/api/models/PreviewUser';
 import { isUUID } from 'class-validator';
+import { DataSource } from 'typeorm';
+import { Container } from '../../../src/typeorm-typedi-extensions';
+import { configureLogger } from '../../utils/logger';
 
 const logger = new UpgradeLogger();
 
@@ -18,6 +20,7 @@ describe('Preview User Service Testing', () => {
   let service: PreviewUserService;
   let userRepo: PreviewUserRepository;
   let module: TestingModule;
+  let dataSource: DataSource;
 
   const assign1 = new ExplicitIndividualAssignment();
   const assign3 = new ExplicitIndividualAssignment();
@@ -50,18 +53,31 @@ describe('Preview User Service Testing', () => {
   const mockUser3 = new PreviewUser();
   const mockUserArr = [mockUser1, mockUser2, mockUser3];
 
+  beforeAll(() => {
+    configureLogger();
+  });
+
   beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'postgres',
+      database: 'postgres',
+      entities: [PreviewUser, ExplicitIndividualAssignment, Experiment, ExperimentCondition],
+      synchronize: true,
+    });
+    Container.setDataSource('default', dataSource);
     module = await Test.createTestingModule({
       providers: [
         PreviewUserService,
-        PreviewUserRepository,
-        UserRepository,
         ExplicitIndividualAssignmentRepository,
+        {
+          provide: PreviewUserRepository,
+          useValue: Container.getCustomRepository(PreviewUserRepository),
+        },
         {
           provide: getRepositoryToken(PreviewUserRepository),
           useValue: {
             find: jest.fn().mockResolvedValue(mockUserArr),
-            findOne: jest.fn().mockResolvedValue(mockUser1),
+            findOneBy: jest.fn().mockResolvedValue(mockUser1),
             findWithNames: jest.fn().mockResolvedValue(mockUserArr),
             findOneById: jest.fn().mockResolvedValue(mockUser1),
             count: jest.fn().mockResolvedValue(mockUserArr.length),

@@ -121,8 +121,7 @@ export class SegmentService {
   }
 
   public async getSegmentStatus(segmentsData: Segment[]): Promise<getSegmentData> {
-    const connection = this.dataSource.manager.connection;
-    const segmentsDataWithStatus = await connection.transaction(async () => {
+    const segmentsDataWithStatus = await this.dataSource.transaction(async () => {
       const [allExperimentSegmentsInclusion, allExperimentSegmentsExclusion] = await Promise.all([
         this.getExperimentSegmentInclusionData(),
         this.getExperimentSegmentExclusionData(),
@@ -401,8 +400,7 @@ export class SegmentService {
   }
 
   async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
-    const manager = this.dataSource.manager;
-    const createdSegment = await manager.transaction(async (transactionalEntityManager) => {
+    const createdSegment = await this.dataSource.transaction(async (transactionalEntityManager) => {
       let segmentDoc: Segment;
 
       if (segment.id) {
