@@ -347,8 +347,7 @@ export class ExperimentUserService {
   }
 
   public async clearDB(logger: UpgradeLogger): Promise<void> {
-    const { connection } = this.dataSource.manager;
-    await connection.transaction(async (transactionalEntityManager) => {
+    await this.dataSource.transaction(async (transactionalEntityManager) => {
       await this.experimentRepository.clearDB(transactionalEntityManager, logger);
     });
   }

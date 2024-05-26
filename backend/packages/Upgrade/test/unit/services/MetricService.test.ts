@@ -7,6 +7,7 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { SettingService } from '../../../src/api/services/SettingService';
 import { MetricRepository } from '../../../src/api/repositories/MetricRepository';
 import { SettingRepository } from '../../../src/api/repositories/SettingRepository';
+import { configureLogger } from '../../utils/logger';
 
 describe('Audit Service Testing', () => {
   let service: MetricService;
@@ -57,6 +58,10 @@ describe('Audit Service Testing', () => {
       },
     },
   ];
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
     module = await Test.createTestingModule({

@@ -13,6 +13,7 @@ import { EXPERIMENT_SORT_AS } from '../../../../../../types/src';
 import { FlagVariation } from '../../../src/api/models/FlagVariation';
 import { isUUID } from 'class-validator';
 import { v4 as uuid } from 'uuid';
+import { configureLogger } from '../../utils/logger';
 
 describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
@@ -74,6 +75,10 @@ describe('Feature Flag Service Testing', () => {
   sandbox.stub(ConnectionManager.prototype, 'get').returns({
     transaction: jest.fn(async (passedFunction) => await passedFunction(entityManagerMock)),
   } as unknown as Connection);
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
     module = await Test.createTestingModule({

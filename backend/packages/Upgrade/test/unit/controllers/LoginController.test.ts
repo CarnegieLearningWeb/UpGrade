@@ -5,14 +5,12 @@ import { useContainer as routingUseContainer } from 'routing-controllers';
 import { Container } from 'typedi';
 import { UserService } from '../../../src/api/services/UserService';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-import { useContainer as ormUseContainer } from 'typeorm';
 import UserServiceMock from './mocks/UserServiceMock';
 
 describe('Login Controller Testing', () => {
   beforeAll(() => {
     configureLogger();
     routingUseContainer(Container);
-    ormUseContainer(Container);
     classValidatorUseContainer(Container);
 
     Container.set(UserService, new UserServiceMock());

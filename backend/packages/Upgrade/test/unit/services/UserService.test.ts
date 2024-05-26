@@ -10,6 +10,7 @@ import { EXPERIMENT_SORT_AS, UserRole } from 'upgrade_types';
 import { AWSService } from '../../../src/api/services/AWSService';
 import { Emails } from '../../../src/templates/email';
 import UserServiceMock from '../controllers/mocks/UserServiceMock';
+import { configureLogger } from '../../utils/logger';
 
 describe('User Service Testing', () => {
   let service: UserService;
@@ -40,6 +41,10 @@ describe('User Service Testing', () => {
   const addSelectSpy = jest.fn().mockReturnThis();
   const setParamaterSpy = jest.fn().mockReturnThis();
   const addOrderBySpy = jest.fn().mockReturnThis();
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
     module = await Test.createTestingModule({

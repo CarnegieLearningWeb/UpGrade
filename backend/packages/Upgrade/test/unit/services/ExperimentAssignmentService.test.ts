@@ -34,6 +34,7 @@ import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
 import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
+import { configureLogger } from '../../utils/logger';
 
 describe('Experiment Assignment Service Test', () => {
   let sandbox;
@@ -62,6 +63,10 @@ describe('Experiment Assignment Service Test', () => {
   const cacheServiceMock = sinon.createStubInstance(CacheService);
   experimentServiceMock.formatingConditionPayload.restore();
   experimentServiceMock.formatingPayload.restore();
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
