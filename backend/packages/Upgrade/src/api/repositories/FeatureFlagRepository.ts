@@ -68,7 +68,7 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
   }
 
   public async getFlagsFromContext(context: string): Promise<FeatureFlag[]> {
-    const result = await this.createQueryBuilder('featureFlag')
+    const result = await this.createQueryBuilder('feature_flag')
       .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
       .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
@@ -80,6 +80,7 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .where('feature_flag.context @> :searchContext', { searchContext: [context] })
+      .andWhere('feature_flag.status = :status', { status: FEATURE_FLAG_STATUS.ENABLED })
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('FeatureFlagRepository', 'getFlagsFromContext', { context }, errorMsg);

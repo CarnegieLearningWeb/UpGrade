@@ -206,7 +206,11 @@ export class FeatureFlagsController {
   ): Promise<string[]> {
     const experimentUserDoc = await this.experimentUserService.getUserDoc(userParams.userId, request.logger);
     if (!experimentUserDoc) {
-      throw new Error('User not found');
+      const error = new Error(`User not defined in markExperimentPoint: ${userParams.userId}`);
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404;
+      request.logger.error(error);
+      throw error;
     }
     return this.featureFlagService.getKeys(experimentUserDoc, userParams.context, request.logger);
   }
