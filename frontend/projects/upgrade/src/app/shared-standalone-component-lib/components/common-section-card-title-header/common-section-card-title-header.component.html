@@ -1,10 +1,8 @@
 <div class="title-header">
   <h1 class="title ft-26-700">
     {{ title | translate }}
-    <ng-container *ngIf="chipText">
-      <mat-chip [color]="getChipColor(chipText)" selected>
-        {{ chipText }}
-      </mat-chip>
+    <ng-container *ngIf="chipClass">
+      <app-common-status-indicator-chip [chipClass] = "chipClass" ></app-common-status-indicator-chip>
     </ng-container>
   </h1>
   <h3 class="subtitle ft-16-400">
