@@ -1,4 +1,4 @@
-import { JsonController, Post, Body, UseBefore, Get, Req, InternalServerError, Delete } from 'routing-controllers';
+import { JsonController, Post, Body, UseBefore, Req, InternalServerError, Delete } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -10,7 +10,6 @@ import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
 import { SERVER_ERROR, PAYLOAD_TYPE } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
-import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidator } from './validators/LogValidator';

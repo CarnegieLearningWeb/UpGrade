@@ -3,7 +3,6 @@ import {
   Post,
   Body,
   UseBefore,
-  Get,
   Req,
   InternalServerError,
   Delete,
@@ -20,7 +19,6 @@ import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupVali
 import { SERVER_ERROR, IGroupMembership, IUserAliases, IWorkingGroup } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator.v1';
 import { ExperimentError } from '../models/ExperimentError';
-import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidator } from './validators/LogValidator';

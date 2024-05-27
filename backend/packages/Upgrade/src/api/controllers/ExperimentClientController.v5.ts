@@ -3,7 +3,6 @@ import {
   Post,
   Body,
   UseBefore,
-  Get,
   Req,
   InternalServerError,
   Delete,
@@ -25,7 +24,6 @@ import {
   PAYLOAD_TYPE,
   IPayload,
 } from 'upgrade_types';
-import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidator } from './validators/LogValidator';
