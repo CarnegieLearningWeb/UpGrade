@@ -73,7 +73,7 @@ export class SegmentService {
     return queryBuilder;
   }
 
-  public async getSegmentById(id: string, logger: UpgradeLogger): Promise<SegmentStatus> {
+  public async getSegmentById(id: string, logger: UpgradeLogger): Promise<SegmentStatus | undefined> {
     logger.info({ message: `Find segment by id. segmentId: ${id}` });
     const segmentDoc = await this.segmentRepository
       .createQueryBuilder('segment')
@@ -83,6 +83,10 @@ export class SegmentService {
       .where('segment.type != :private', { private: SEGMENT_TYPE.PRIVATE })
       .andWhere({ id })
       .getOne();
+
+    if (!segmentDoc) {
+      return undefined;
+    }
 
     const segmentsUsedList = [];
     const [allExperimentSegmentsInclusion, allExperimentSegmentsExclusion] = await Promise.all([
