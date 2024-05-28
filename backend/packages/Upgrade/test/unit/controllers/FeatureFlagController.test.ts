@@ -27,13 +27,9 @@ describe('Feature Flag Controller Testing', () => {
     Container.reset();
   });
 
-  test('Post request for /api/flags/keys', () => {
+  test('Get request for /api/flags/keys', () => {
     return request(app)
-      .post('/api/flags/keys')
-      .send({
-        userId: 'user',
-        context: 'context',
-      })
+      .get('/api/flags/keys?userId=user&context=context')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

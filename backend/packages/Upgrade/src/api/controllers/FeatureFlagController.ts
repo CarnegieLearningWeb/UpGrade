@@ -1,4 +1,16 @@
-import { JsonController, Authorized, Post, Body, CurrentUser, Delete, Param, Put, Req, Get } from 'routing-controllers';
+import {
+  JsonController,
+  Authorized,
+  Post,
+  Body,
+  CurrentUser,
+  Delete,
+  Param,
+  Put,
+  Req,
+  Get,
+  QueryParams,
+} from 'routing-controllers';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { User } from '../models/User';
@@ -164,25 +176,24 @@ export class FeatureFlagsController {
 
   /**
    * @swagger
-   * /flags:
+   * /flags/keys:
    *    post:
    *       description: Get feature flags for user
    *       consumes:
    *         - application/json
    *       parameters:
-   *         - in: body
+   *         - in: query
    *           name: user
    *           required: true
    *           schema:
-   *             type: object
-   *             properties:
-   *               userId:
-   *                 type: string
-   *                 example: user1
-   *               context:
-   *                 type: string
-   *                 example: add
-   *             description: User Document
+   *             type: string
+   *             example: user1
+   *         - in: query
+   *           name: context
+   *           required: true
+   *           schema:
+   *             type: string
+   *             example: mathia
    *       tags:
    *         - Feature Flags
    *       produces:
@@ -198,9 +209,9 @@ export class FeatureFlagsController {
    *            description: AuthorizationRequiredError
    */
 
-  @Post('/keys')
+  @Get('/keys')
   public async getKeys(
-    @Body({ validate: true })
+    @QueryParams()
     userParams: UserParamsValidator,
     @Req() request: AppRequest
   ): Promise<string[]> {
