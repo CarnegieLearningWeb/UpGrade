@@ -36,8 +36,9 @@
       word-break: break-word;
     }
 
-    .flag-table-header-row {
-      background-color: var(--zircon);;
+    .mat-mdc-header-cell {
+      background-color: var(--zircon);
+      margin-bottom: 10px;
     }
 
     .flag {
