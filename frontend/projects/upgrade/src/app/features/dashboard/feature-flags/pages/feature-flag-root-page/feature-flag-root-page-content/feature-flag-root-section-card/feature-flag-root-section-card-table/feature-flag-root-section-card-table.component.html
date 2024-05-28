@@ -65,7 +65,7 @@
           {{ flag.context[0] }}
         </td>
       </ng-container>
-      
+
       <ng-container [matColumnDef]="FLAG_ROOT_COLUMN_NAMES.TAGS">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
           <span [matTooltip]="FLAG_TRANSLATION_KEYS.TAGS | translate" matTooltipPosition="above">{{ FLAG_TRANSLATION_KEYS.TAGS | translate | uppercase }}</span>
@@ -86,8 +86,13 @@
         </td>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" class="flag-tab-header-row"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      <tr *matNoDataRow>
+        <td class="no-data-row" [attr.colspan]="displayedColumns.length">
+          {{ 'feature-flags.no-flags-in-table.text' | translate }}
+        </td>
+      </tr>
     </table>
   </div>
 </div>

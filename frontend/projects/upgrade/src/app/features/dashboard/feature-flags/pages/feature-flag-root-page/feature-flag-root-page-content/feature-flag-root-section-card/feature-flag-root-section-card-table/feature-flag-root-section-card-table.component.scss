@@ -31,12 +31,13 @@
     .mat-mdc-cell,
     .mat-mdc-header-cell {
       padding: 10px 5px;
+      padding-left: 20px;
       width: 10%;
       word-break: break-word;
     }
 
-    .mat-mdc-header-cell {
-      padding-left: 5px;
+    .flag-table-header-row {
+      background-color: var(--zircon);;
     }
 
     .flag {
@@ -53,5 +54,12 @@
     .mat-mdc-form-field {
       width: 40%;
     }
+  }
+
+  .no-data-row {
+    text-align: center;
+    font-size: 16px;
+    color: var(--dark-grey);
+    padding: 16px;
   }
 }
