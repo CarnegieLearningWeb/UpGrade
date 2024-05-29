@@ -1,8 +1,9 @@
-::ng-deep .section-card-list {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    overflow: scroll;
+:host ::ng-deep .section-card-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 20px;
+  margin: 0;
 }
 
 .section-card {

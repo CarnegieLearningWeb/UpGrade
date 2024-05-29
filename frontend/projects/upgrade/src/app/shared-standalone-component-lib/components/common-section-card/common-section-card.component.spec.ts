@@ -8,10 +8,9 @@ describe('CommonSectionCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CommonSectionCardComponent]
-    })
-    .compileComponents();
-    
+      imports: [CommonSectionCardComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(CommonSectionCardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
