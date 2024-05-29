@@ -19,6 +19,11 @@ export interface FeatureFlag {
   featureFlagSegmentExclusion: SegmentNew;
 }
 
+export interface SearchParam {
+  filterType: FLAG_SEARCH_KEY;
+  searchValue: string;
+}
+
 export const NUMBER_OF_FLAGS = 20;
 
 interface IFeatureFlagsSearchParams {

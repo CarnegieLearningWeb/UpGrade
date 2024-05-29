@@ -6,6 +6,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
+import { FLAG_SEARCH_KEY } from 'upgrade_types';
+import { SearchParam } from '../../../core/feature-flags/store/feature-flags.model';
 
 /**
  * The `app-common-section-card-search-header` component provides a common header with search and filter options for search functionality.
@@ -41,12 +43,12 @@ import { TranslateModule } from '@ngx-translate/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonSectionCardSearchHeaderComponent implements OnInit {
-  @Input() filterOptions: string[] = [];
-  @Input() initialSearchValue = '';
-  @Input() initialFilterOption = '';
-  @Output() search = new EventEmitter<{ filterOption: string; searchValue: string }>();
+  @Input() filterOptions: FLAG_SEARCH_KEY[];
+  @Input() initialSearchValue: string;
+  @Input() initialFilterOption: FLAG_SEARCH_KEY;
+  @Output() search = new EventEmitter<SearchParam>();
 
-  selectedFilterOption = '';
+  selectedFilterOption = FLAG_SEARCH_KEY.ALL;
   searchValue = '';
 
   ngOnInit(): void {
@@ -60,7 +62,7 @@ export class CommonSectionCardSearchHeaderComponent implements OnInit {
 
   onSearch(): void {
     this.search.emit({
-      filterOption: this.selectedFilterOption,
+      filterType: this.selectedFilterOption,
       searchValue: this.searchValue,
     });
   }

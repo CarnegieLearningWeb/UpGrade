@@ -6,9 +6,14 @@ import {
   selectIsAllFlagsFetched,
   selectIsLoadingFeatureFlags,
   selectHasInitialFeatureFlagsDataLoaded,
+  selectSearchKey,
+  selectSearchString,
+  selectSortAs,
+  selectSortKey,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
+import { Observable, combineLatest, filter, map } from 'rxjs';
 
 @Injectable()
 export class FeatureFlagsService {
@@ -17,6 +22,18 @@ export class FeatureFlagsService {
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
+  selectSearchString$ = this.store$.pipe(select(selectSearchString));
+  selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
+  selectFeatureFlagSortKey$ = this.store$.pipe(select(selectSortKey));
+  selectFeatureFlagSortAs$ = this.store$.pipe(select(selectSortAs));
+
+  selectSearchFeatureFlagParams(): Observable<Record<string, unknown>> {
+    return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
+      filter(([searchKey, searchString]) => !!searchKey && (!!searchString || searchString === '')),
+      map(([searchKey, searchString]) => ({ searchKey, searchString }))
+    );
+    return;
+  }
 
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
