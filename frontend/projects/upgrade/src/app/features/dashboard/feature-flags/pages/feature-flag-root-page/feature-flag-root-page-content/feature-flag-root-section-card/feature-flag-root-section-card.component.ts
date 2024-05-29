@@ -37,6 +37,7 @@ export class FeatureFlagRootSectionCardComponent {
   isInitialLoading$ = this.featureFlagService.isInitialFeatureFlagsLoading$;
   allFeatureFlags$ = this.featureFlagService.allFeatureFlags$;
   isAllFlagsFetched$ = this.featureFlagService.isAllFlagsFetched$;
+  isSectionCardExpanded = true;
 
   menuButtonItems: IMenuButtonItem[] = [
     {
@@ -75,5 +76,6 @@ export class FeatureFlagRootSectionCardComponent {
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
     console.log('onSectionCardExpandChange:', isSectionCardExpanded);
+    this.isSectionCardExpanded = isSectionCardExpanded;
   }
 }
