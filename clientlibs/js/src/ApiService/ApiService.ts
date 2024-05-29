@@ -3,8 +3,6 @@ import { DefaultHttpClient } from '../DefaultHttpClient/DefaultHttpClient';
 import {
   CaliperEnvelope,
   IExperimentAssignmentv5,
-  IFeatureFlag,
-  IFlagVariation,
   IGroupMetric,
   ILogInput,
   ISingleMetric,
@@ -303,7 +301,7 @@ export default class ApiService {
   }
 
   public async getAllFeatureFlags(): Promise<string[]> {
-    const requestBody: UpGradeClientRequests.IGetAllExperimentConditionsRequestBody = {
+    const requestBody: UpGradeClientRequests.IGetAllFeatureFlagsRequestBody = {
       userId: this.userId,
       context: this.context,
     };
