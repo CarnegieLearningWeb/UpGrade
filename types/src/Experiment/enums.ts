@@ -245,3 +245,18 @@ export enum CACHE_PREFIX {
   SEGMENT_KEY_PREFIX = 'segments-',
   MARK_KEY_PREFIX = 'markExperiments-',
 }
+
+export enum STATUS_INDICATOR_CHIP_TYPE {
+  GLOBAL = 'global',
+  USED = 'used',
+  UNUSED = 'unused',
+  ENABLED = 'enabled',
+  DISABLED = 'disabled',
+  DRAFT = 'draft',
+  ARCHIVED = 'archived',
+  INACTIVE = 'inactive',
+  ENROLLING = 'enrolling',
+  ENROLLMENT_COMPLETE = 'enrollment-complete',
+  CANCELLED = 'cancelled',
+  SCHEDULED = 'scheduled',
+}
