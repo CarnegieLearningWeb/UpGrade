@@ -54,6 +54,17 @@ export const selectSearchKey = createSelector(selectFeatureFlagsState, (state) =
 
 export const selectSearchString = createSelector(selectFeatureFlagsState, (state) => state.searchString);
 
+export const selectSearchFeatureFlagParams = createSelector(
+  selectSearchKey,
+  selectSearchString,
+  (searchKey, searchString) => {
+    if (!!searchKey && (!!searchString || searchString === '')) {
+      return { searchKey, searchString };
+    }
+    return null;
+  }
+);
+
 export const selectSortKey = createSelector(selectFeatureFlagsState, (state) => state.sortKey);
 
 export const selectSortAs = createSelector(selectFeatureFlagsState, (state) => state.sortAs);

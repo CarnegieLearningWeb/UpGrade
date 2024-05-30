@@ -14,7 +14,10 @@ import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Subscription } from 'rxjs';
+import { Store } from '@ngrx/store';
 import { FeatureFlag, SearchParam } from '../../../../../../../core/feature-flags/store/feature-flags.model';
+import { selectSearchFeatureFlagParams } from '../../../../../../../core/feature-flags/store/feature-flags.selectors';
+import { AppState } from '../../../../../../../core/core.state';
 
 @Component({
   selector: 'app-feature-flag-root-section-card',
@@ -63,7 +66,11 @@ export class FeatureFlagRootSectionCardComponent {
     },
   ];
 
-  constructor(private featureFlagService: FeatureFlagsService, private translateService: TranslateService) {}
+  constructor(
+    private featureFlagService: FeatureFlagsService,
+    private translateService: TranslateService,
+    private store$: Store<AppState>
+  ) {}
 
   ngOnInit() {
     this.featureFlagService.fetchFeatureFlags();
@@ -74,11 +81,13 @@ export class FeatureFlagRootSectionCardComponent {
       this.applyFilter(this.searchValue);
     });
 
-    this.featureFlagService.selectSearchFeatureFlagParams().subscribe((searchParams: any) => {
+    this.store$.select(selectSearchFeatureFlagParams).subscribe((searchParams: any) => {
       // Used when user clicks on context from view segment page
-      this.searchValue = searchParams.searchString;
-      this.selectedFeatureFlagFilterOption = searchParams.searchKey;
-      this.applyFilter(searchParams.searchString);
+      if (searchParams) {
+        this.searchValue = searchParams.searchString;
+        this.selectedFeatureFlagFilterOption = searchParams.searchKey;
+        this.applyFilter(searchParams.searchString);
+      }
     });
   }
 
