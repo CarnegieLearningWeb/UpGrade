@@ -35,8 +35,6 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit() {
-    // temporarily disabled
-
     this.errorLogSubscription = this.logsService.getAllErrorLogs$.subscribe((errorLogs) => {
       errorLogs.sort((a, b) => (a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0));
       this.errorLogData = groupBy(errorLogs, (log) => {
@@ -58,7 +56,7 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   fetchErrorLogOnScroll() {
     if (!this.isAllErrorLogFetched) {
-      this.logsService.fetchErrorLogs(); // temporarily disabled
+      this.logsService.fetchErrorLogs();
     }
   }
 

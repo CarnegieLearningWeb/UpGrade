@@ -17,7 +17,7 @@ export const environment = {
   pollingLimit: 600,
   featureFlagNavToggle: true,
   withinSubjectExperimentSupportToggle: false,
-  errorLogsToggle: true,
+  errorLogsToggle: false,
   api: {
     getAllExperiments: '/experiments/paginated',
     createNewExperiments: '/experiments',
