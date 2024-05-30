@@ -60,6 +60,7 @@ export interface Environment {
   api: APIEndpoints;
   featureFlagNavToggle: boolean;
   withinSubjectExperimentSupportToggle: boolean;
+  errorLogsToggle: boolean;
 }
 
 export interface RuntimeEnvironmentConfig {
@@ -69,4 +70,5 @@ export interface RuntimeEnvironmentConfig {
   apiBaseUrl?: string;
   featureFlagNavToggle?: boolean;
   withinSubjectExperimentSupportToggle?: boolean;
+  errorLogsToggle?: boolean;
 }

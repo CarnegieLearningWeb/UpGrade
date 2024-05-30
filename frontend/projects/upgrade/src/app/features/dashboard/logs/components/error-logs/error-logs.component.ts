@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit, Inject } from '@angular/core';
 import { LogType, ErrorLogs, LogDateFormatType } from '../../../../../core/logs/store/logs.model';
 import { LogsService } from '../../../../../core/logs/logs.service';
 import * as groupBy from 'lodash.groupby';
 import { KeyValue } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { SettingsService } from '../../../../../core/settings/settings.service';
+import { ENV, Environment } from '../../../../../../environments/environment-types';
 
 @Component({
   selector: 'error-logs',
@@ -19,7 +20,11 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   isAllErrorLogFetchedSub: Subscription;
   isErrorLogLoading$ = this.logsService.isErrorLogLoading$;
 
-  constructor(private logsService: LogsService, private settingsService: SettingsService) {}
+  constructor(
+    private logsService: LogsService,
+    private settingsService: SettingsService,
+    @Inject(ENV) public environment: Environment
+  ) {}
 
   get LogType() {
     return LogType;
