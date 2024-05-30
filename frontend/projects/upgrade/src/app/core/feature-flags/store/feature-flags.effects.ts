@@ -88,7 +88,7 @@ export class FeatureFlagsEffects {
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionCreateFeatureFlag),
       switchMap((action) => {
-        return this.featureFlagsDataService.createFeatureFlag(action.featureFlagDTO).pipe(
+        return this.featureFlagsDataService.addFeatureFlag(action.addFeatureFlagRequest).pipe(
           map((response) => {
             return FeatureFlagsActions.actionCreateFeatureFlagSuccess({ response });
           }),
@@ -97,7 +97,6 @@ export class FeatureFlagsEffects {
       })
     )
   );
-
 
   fetchFeatureFlagsOnSearchString$ = createEffect(
     () =>

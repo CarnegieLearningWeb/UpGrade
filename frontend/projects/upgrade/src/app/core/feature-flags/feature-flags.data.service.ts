@@ -1,7 +1,12 @@
 import { Inject, Injectable } from '@angular/core';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { HttpClient } from '@angular/common/http';
-import { CreateFeatureFlagDTO, FeatureFlagsPaginationParams } from './store/feature-flags.model';
+import {
+  AddFeatureFlagRequest,
+  FeatureFlag,
+  FeatureFlagsPaginationInfo,
+  FeatureFlagsPaginationParams,
+} from './store/feature-flags.model';
 import { delay, of } from 'rxjs';
 import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../types/src';
 
@@ -11,14 +16,14 @@ export class FeatureFlagsDataService {
 
   fetchFeatureFlagsPaginated(params: FeatureFlagsPaginationParams) {
     const url = this.environment.api.getPaginatedFlags;
-    return this.http.post(url, params);
+    return this.http.post<FeatureFlagsPaginationInfo>(url, params);
     // mock
     // return of({ nodes: mockFeatureFlags, total: 2 }).pipe(delay(2000));
   }
 
-  createFeatureFlag(params: CreateFeatureFlagDTO) {
+  addFeatureFlag(params: AddFeatureFlagRequest) {
     const url = this.environment.api.featureFlag;
-    return this.http.post(url, params);
+    return this.http.post<FeatureFlag>(url, params);
   }
 }
 

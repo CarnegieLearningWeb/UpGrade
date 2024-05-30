@@ -27,6 +27,7 @@ export class DialogService {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: '656px',
+      autoFocus: 'first-heading',
     };
     return this.dialog.open(AddFeatureFlagModalComponent, config);
   }

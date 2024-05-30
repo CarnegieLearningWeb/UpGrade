@@ -1,7 +1,7 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
-import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
-import { SegmentNew } from '../../experiments/store/experiments.model';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SORT_KEY, SEGMENT_TYPE, SORT_AS_DIRECTION } from 'upgrade_types';
+import { Segment } from '../../segments/store/segments.model';
 
 export interface FeatureFlag {
   createdAt: string;
@@ -15,20 +15,33 @@ export interface FeatureFlag {
   filterMode: FILTER_MODE;
   context: string[];
   tags: string[];
-  featureFlagSegmentInclusion: SegmentNew;
-  featureFlagSegmentExclusion: SegmentNew;
+  featureFlagSegmentInclusion: EmptyPrivateSegment | Segment;
+  featureFlagSegmentExclusion: EmptyPrivateSegment | Segment;
 }
 
-export interface CreateFeatureFlagDTO {
+export interface FeatureFlagsPaginationInfo {
+  nodes: FeatureFlag[];
+  total: number;
+  skip: number;
+  take: number;
+}
+
+export interface AddFeatureFlagRequest {
   name: string;
   key: string;
   description: string;
   status: FEATURE_FLAG_STATUS;
   context: string[];
   tags: string[];
-  featureFlagSegmentInclusion: SegmentNew;
-  featureFlagSegmentExclusion: SegmentNew;
+  featureFlagSegmentInclusion: EmptyPrivateSegment | Segment;
+  featureFlagSegmentExclusion: EmptyPrivateSegment | Segment;
   filterMode: FILTER_MODE;
+}
+
+export interface EmptyPrivateSegment {
+  segment: {
+    type: SEGMENT_TYPE.PRIVATE;
+  };
 }
 
 export const NUMBER_OF_FLAGS = 20;
@@ -80,6 +93,7 @@ export const FLAG_TRANSLATION_KEYS = {
 export const FLAG_ROOT_DISPLAYED_COLUMNS = Object.values(FLAG_ROOT_COLUMN_NAMES);
 
 export interface FeatureFlagState extends EntityState<FeatureFlag> {
+  isLoadingAddFeatureFlag: boolean;
   isLoadingFeatureFlags: boolean;
   hasInitialFeatureFlagsDataLoaded: boolean;
   skipFlags: number;

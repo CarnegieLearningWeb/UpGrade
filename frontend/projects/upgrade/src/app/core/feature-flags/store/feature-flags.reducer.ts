@@ -8,6 +8,7 @@ export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFl
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
 export const initialState: FeatureFlagState = adapter.getInitialState({
+  isLoadingAddFeatureFlag: false,
   isLoadingFeatureFlags: false,
   hasInitialFeatureFlagsDataLoaded: false,
   skipFlags: 0,

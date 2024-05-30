@@ -6,6 +6,7 @@ import {
   selectIsAllFlagsFetched,
   selectIsLoadingFeatureFlags,
   selectHasInitialFeatureFlagsDataLoaded,
+  selectIsLoadingAddFeatureFlag,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import {
@@ -17,12 +18,13 @@ import {
   SORT_AS_DIRECTION,
 } from 'upgrade_types';
 import { FeatureFlagFormData } from '../../features/dashboard/feature-flags/modals/add-feature-flag-modal/add-feature-flag-modal.component';
-import { CreateFeatureFlagDTO, FeatureFlag } from './store/feature-flags.model';
+import { AddFeatureFlagRequest, FeatureFlag } from './store/feature-flags.model';
 
 @Injectable()
 export class FeatureFlagsService {
   constructor(private store$: Store<AppState>) {}
   isInitialFeatureFlagsLoading$ = this.store$.pipe(select(selectHasInitialFeatureFlagsDataLoaded));
+  isLoadingAddFeatureFlag$ = this.store$.pipe(select(selectIsLoadingAddFeatureFlag));
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
@@ -31,17 +33,17 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
   }
 
-  createFeatureFlag(featureFlagFormData: any) {
-    const featureFlagDTO = this.createFeatureFlagDTO({
+  addFeatureFlag(featureFlagFormData: any) {
+    const featureFlagDTO = this.createAddFeatureFlagRequest({
       ...featureFlagFormData,
       tags: featureFlagFormData.tags.split(','),
     });
-    this.store$.dispatch(FeatureFlagsActions.actionCreateFeatureFlag({ featureFlagDTO: featureFlagDTO }));
+    this.store$.dispatch(FeatureFlagsActions.actionCreateFeatureFlag({ addFeatureFlagRequest: featureFlagDTO }));
   }
 
-  createFeatureFlagDTO(featureFlagFormData: FeatureFlagFormData): CreateFeatureFlagDTO {
+  createAddFeatureFlagRequest(featureFlagFormData: FeatureFlagFormData): AddFeatureFlagRequest {
     const { name, key, description, appContext, tags } = featureFlagFormData;
-    const createFeatureFlagDTO: any = {
+    const createFeatureFlagDTO: AddFeatureFlagRequest = {
       name,
       key,
       description,

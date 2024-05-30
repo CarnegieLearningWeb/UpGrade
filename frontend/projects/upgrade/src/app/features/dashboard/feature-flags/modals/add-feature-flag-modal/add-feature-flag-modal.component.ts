@@ -53,7 +53,8 @@ export interface FeatureFlagFormData {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddFeatureFlagModalComponent {
-  //disable
+  selectIsLoadingAddFeatureFlag$ = this.featureFlagsService.isLoadingAddFeatureFlag$;
+
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public config: CommonModalConfig,
@@ -67,6 +68,7 @@ export class AddFeatureFlagModalComponent {
   appContexts: string[] = ['Context A', 'Context B', 'Context C'];
 
   ngOnInit() {
+    // give this types
     this.featureFlagForm = this.formBuilder.group({
       name: ['', Validators.required],
       key: ['', Validators.required],
@@ -81,7 +83,9 @@ export class AddFeatureFlagModalComponent {
     if (this.featureFlagForm.valid) {
       // Handle form submission logic here
       console.log('Feature flag created:', this.featureFlagForm.value);
-      this.featureFlagsService.createFeatureFlag(this.featureFlagForm.value);
+      this.featureFlagsService.addFeatureFlag(this.featureFlagForm.value);
+    } else {
+      // handle showing form errors
     }
     // stay on modal but:
     // disable form and buttons
