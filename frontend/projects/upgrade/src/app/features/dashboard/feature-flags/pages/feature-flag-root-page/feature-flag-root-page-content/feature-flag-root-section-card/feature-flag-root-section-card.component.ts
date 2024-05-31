@@ -54,6 +54,7 @@ export class FeatureFlagRootSectionCardComponent {
     FLAG_SEARCH_KEY.STATUS,
     FLAG_SEARCH_KEY.CONTEXT,
   ];
+  isSectionCardExpanded = true;
 
   menuButtonItems: IMenuButtonItem[] = [
     {
@@ -135,5 +136,6 @@ export class FeatureFlagRootSectionCardComponent {
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
     console.log('onSectionCardExpandChange:', isSectionCardExpanded);
+    this.isSectionCardExpanded = isSectionCardExpanded;
   }
 }
