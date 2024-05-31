@@ -22,7 +22,7 @@ import {
 } from '../controllers/validators/SegmentInputValidator';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
-import { SegmentStatus, getSegmentData } from '../controllers/SegmentController';
+import { getSegmentData } from '../controllers/SegmentController';
 import { globalExcludeSegment } from '../../init/seed/globalExcludeSegment';
 import { CacheService } from './CacheService';
 import { validate } from 'class-validator';
@@ -44,6 +44,9 @@ interface ValidSegmentDetail {
   segment: SegmentInputValidator;
 }
 
+export interface SegmentWithStatus extends Segment {
+  status: SEGMENT_STATUS;
+}
 @Service()
 export class SegmentService {
   constructor(
@@ -73,7 +76,18 @@ export class SegmentService {
     return queryBuilder;
   }
 
-  public async getSegmentById(id: string, logger: UpgradeLogger): Promise<SegmentStatus | undefined> {
+  public async getAllSegmentsAndSubsegments(logger: UpgradeLogger): Promise<Segment[]> {
+    logger.info({ message: `Find all segments` });
+    const queryBuilder = await this.segmentRepository
+      .createQueryBuilder('segment')
+      .leftJoinAndSelect('segment.subSegments', 'subSegment')
+      .where('segment.type != :private', { private: SEGMENT_TYPE.PRIVATE })
+      .getMany();
+
+    return queryBuilder;
+  }
+
+  public async getSegmentById(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Find segment by id. segmentId: ${id}` });
     const segmentDoc = await this.segmentRepository
       .createQueryBuilder('segment')
@@ -84,37 +98,7 @@ export class SegmentService {
       .andWhere({ id })
       .getOne();
 
-    if (!segmentDoc) {
-      return undefined;
-    }
-
-    const segmentsUsedList = [];
-    const [allExperimentSegmentsInclusion, allExperimentSegmentsExclusion] = await Promise.all([
-      this.getExperimentSegmentInclusionData(),
-      this.getExperimentSegmentExclusionData(),
-    ]);
-
-    if (allExperimentSegmentsInclusion) {
-      allExperimentSegmentsInclusion.forEach((ele) => {
-        const subSegments = ele.segment.subSegments;
-        segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
-      });
-    }
-
-    if (allExperimentSegmentsExclusion) {
-      allExperimentSegmentsExclusion.forEach((ele) => {
-        const subSegments = ele.segment.subSegments;
-        segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
-      });
-    }
-
-    if (id === globalExcludeSegment.id) {
-      return { ...segmentDoc, status: SEGMENT_STATUS.GLOBAL };
-    } else if (segmentsUsedList.includes(segmentDoc.id)) {
-      return { ...segmentDoc, status: SEGMENT_STATUS.USED };
-    } else {
-      return { ...segmentDoc, status: SEGMENT_STATUS.UNUSED };
-    }
+    return segmentDoc;
   }
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
@@ -138,9 +122,13 @@ export class SegmentService {
     });
   }
 
-  public async getSingleSegmentWithStatus(segmentId: string, logger: UpgradeLogger): Promise<Segment> {
+  public async getSingleSegmentWithStatus(segmentId: string, logger: UpgradeLogger): Promise<SegmentWithStatus> {
+    const allSegmentData = await this.getAllSegmentsAndSubsegments(logger);
     const segmentData = await this.getSegmentById(segmentId, logger);
-    return (await this.getSegmentStatus([segmentData])).segmentsData[0];
+    const segmentWithStatus = (await this.getSegmentStatus(allSegmentData)).segmentsData.find(
+      (segment: Segment) => segment.id === segmentId
+    );
+    return { ...segmentData, status: segmentWithStatus.status };
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {

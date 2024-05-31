@@ -219,7 +219,7 @@ describe('Segment Service Testing', () => {
 
   it('should get segment by id', async () => {
     const segments = await service.getSegmentById(seg1.id, logger);
-    expect(segments).toEqual({ ...seg1, status: 'Unused' });
+    expect(segments).toEqual(seg1);
   });
 
   it('should get segments by ids', async () => {
