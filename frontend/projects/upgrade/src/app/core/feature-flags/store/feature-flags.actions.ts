@@ -49,3 +49,8 @@ export const actionCreateFeatureFlagSuccess = createAction(
 );
 
 export const actionCreateFeatureFlagFailure = createAction('[Feature Flags] Create Feature Flag Failure');
+
+export const actionSetActiveDetailsTabIndex = createAction(
+  '[Feature Flags] Set Active Details Tab Index',
+  props<{ activeDetailsTabIndex: number }>()
+);

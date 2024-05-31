@@ -7,6 +7,7 @@ import { CommonSectionCardActionButtonsComponent } from './common-section-card-a
 import { CommonSectionCardComponent } from './common-section-card/common-section-card.component';
 import { CommonModalComponent } from './common-modal/common-modal.component';
 import { CommonStatusIndicatorChipComponent } from './common-status-indicator-chip/common-status-indicator-chip.component';
+import { CommonSectionCardTitleHeaderComponent } from './common-section-card-title-header/common-section-card-title-header.component';
 
 export {
   CommonPageComponent,
@@ -15,6 +16,7 @@ export {
   CommonSectionCardComponent,
   CommonSectionCardListComponent,
   CommonSectionCardSearchHeaderComponent,
+  CommonSectionCardTitleHeaderComponent,
   CommonSectionCardActionButtonsComponent,
   CommonModalComponent,
   CommonStatusIndicatorChipComponent,
