@@ -58,6 +58,7 @@ export class FeatureFlagRootSectionCardComponent {
 
   ngOnInit() {
     this.featureFlagService.fetchFeatureFlags();
+    this.featureFlagService.fetchContextMetaData();
   }
 
   onSearch(searchString: string) {
@@ -75,7 +76,6 @@ export class FeatureFlagRootSectionCardComponent {
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
-    console.log('onSectionCardExpandChange:', isSectionCardExpanded);
     this.isSectionCardExpanded = isSectionCardExpanded;
   }
 }

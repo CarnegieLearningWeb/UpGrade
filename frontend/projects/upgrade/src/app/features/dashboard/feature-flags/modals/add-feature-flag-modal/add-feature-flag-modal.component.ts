@@ -10,7 +10,7 @@ import {
   MatDialogTitle,
 } from '@angular/material/dialog';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal-config';
-import { NgForOf, NgIf, NgTemplateOutlet } from '@angular/common';
+import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -42,8 +42,7 @@ export interface FeatureFlagFormData {
     MatDialogActions,
     MatDialogClose,
     MatSelectModule,
-    NgIf,
-    NgForOf,
+    CommonModule,
     NgTemplateOutlet,
     MatIcon,
     ReactiveFormsModule,
@@ -53,7 +52,12 @@ export interface FeatureFlagFormData {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddFeatureFlagModalComponent {
-  selectIsLoadingAddFeatureFlag$ = this.featureFlagsService.isLoadingAddFeatureFlag$;
+  // service references
+  isLoadingAddFeatureFlag$ = this.featureFlagsService.isLoadingAddFeatureFlag$;
+  appContexts$ = this.featureFlagsService.appContexts$;
+  featureFlagsListLengthChange$ = this.featureFlagsService.featureFlagsListLengthChange$;
+
+  featureFlagForm: FormGroup;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
@@ -64,9 +68,6 @@ export class AddFeatureFlagModalComponent {
     public dialogRef: MatDialogRef<AddFeatureFlagModalComponent>
   ) {}
 
-  featureFlagForm: FormGroup;
-  appContexts: string[] = ['Context A', 'Context B', 'Context C'];
-
   ngOnInit() {
     // give this types
     this.featureFlagForm = this.formBuilder.group({
@@ -74,27 +75,25 @@ export class AddFeatureFlagModalComponent {
       key: ['', Validators.required],
       description: [''],
       appContext: ['', Validators.required],
-      tags: [''],
+      tags: [null], // this will need corrected, it should be an array of strings, for now we're hackin
     });
+
+    this.isLoadingAddFeatureFlag$.subscribe((value) => console.log('>> isLoadingAddFeatureFlag', value));
+    this.featureFlagsListLengthChange$.subscribe(() => this.closeModal());
   }
 
   onPrimaryActionBtnClicked() {
-    console.log('this.featureFlagForm.valid', this.featureFlagForm.valid);
     if (this.featureFlagForm.valid) {
       // Handle form submission logic here
       console.log('Feature flag created:', this.featureFlagForm.value);
       this.featureFlagsService.addFeatureFlag(this.featureFlagForm.value);
     } else {
-      // handle showing form errors
+      // If the form is invalid, manually mark all form controls as touched
+      Object.keys(this.featureFlagForm.controls).forEach((field) => {
+        const control = this.featureFlagForm.get(field);
+        control.markAsTouched({ onlySelf: true });
+      });
     }
-    // stay on modal but:
-    // disable form and buttons
-    // validate form
-    // show error message if form is invalid
-    // show loading spinner if valid
-    // dispatch action to add feature flag
-    // close the modal if the action is successful
-    // show error message if the action fails and stay on modal
   }
 
   closeModal() {

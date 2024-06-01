@@ -10,6 +10,7 @@ import {
   selectActiveDetailsTabIndex,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
+import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 import {
   FEATURE_FLAG_STATUS,
   FILTER_MODE,
@@ -19,39 +20,55 @@ import {
   SORT_AS_DIRECTION,
 } from 'upgrade_types';
 import { FeatureFlagFormData } from '../../features/dashboard/feature-flags/modals/add-feature-flag-modal/add-feature-flag-modal.component';
-import { AddFeatureFlagRequest, FeatureFlag } from './store/feature-flags.model';
+import { AddFeatureFlagRequest } from './store/feature-flags.model';
+import { ExperimentService } from '../experiments/experiments.service';
+import { filter, map, pairwise, tap } from 'rxjs';
 
 @Injectable()
 export class FeatureFlagsService {
-  constructor(private store$: Store<AppState>) {}
+  constructor(private store$: Store<AppState>, private experimentService: ExperimentService) {}
+
   isInitialFeatureFlagsLoading$ = this.store$.pipe(select(selectHasInitialFeatureFlagsDataLoaded));
-  isLoadingAddFeatureFlag$ = this.store$.pipe(select(selectIsLoadingAddFeatureFlag));
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
+  isLoadingAddFeatureFlag$ = this.store$.pipe(select(selectIsLoadingAddFeatureFlag));
+  featureFlagsListLengthChange$ = this.allFeatureFlags$.pipe(
+    pairwise(),
+    filter(([prevEntities, currEntities]) => prevEntities.length !== currEntities.length)
+  );
   activeDetailsTabIndex$ = this.store$.pipe(select(selectActiveDetailsTabIndex));
+  appContexts$ = this.experimentService.contextMetaData$.pipe(
+    map((contextMetaData) => {
+      return Object.keys(contextMetaData?.contextMetadata ?? []);
+    })
+  );
 
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
   }
 
+  fetchContextMetaData() {
+    this.store$.dispatch(actionFetchContextMetaData({ isLoadingContextMetaData: true }));
+  }
+
   addFeatureFlag(featureFlagFormData: any) {
-    const featureFlagDTO = this.createAddFeatureFlagRequest({
+    const addFeatureFlagRequest = this.createAddFeatureFlagRequest({
       ...featureFlagFormData,
-      tags: featureFlagFormData.tags.split(','),
+      tags: featureFlagFormData.tags?.split(',').map((tag: string) => tag.trim()) ?? [], // this is a temp (hopfeully) hack, see comment in the Add Feature Flag Modal component, this logic should go elsewhere
     });
-    this.store$.dispatch(FeatureFlagsActions.actionCreateFeatureFlag({ addFeatureFlagRequest: featureFlagDTO }));
+    this.store$.dispatch(FeatureFlagsActions.actionCreateFeatureFlag({ addFeatureFlagRequest }));
   }
 
   createAddFeatureFlagRequest(featureFlagFormData: FeatureFlagFormData): AddFeatureFlagRequest {
     const { name, key, description, appContext, tags } = featureFlagFormData;
-    const createFeatureFlagDTO: AddFeatureFlagRequest = {
+    const addFeatureFlagRequest: AddFeatureFlagRequest = {
       name,
       key,
       description,
       status: FEATURE_FLAG_STATUS.DISABLED,
       context: [appContext],
-      tags: tags,
+      tags,
       featureFlagSegmentInclusion: {
         segment: {
           type: SEGMENT_TYPE.PRIVATE,
@@ -65,8 +82,7 @@ export class FeatureFlagsService {
       filterMode: FILTER_MODE.INCLUDE_ALL,
     };
 
-    console.log('createFeatureFlagDTO', createFeatureFlagDTO);
-    return createFeatureFlagDTO;
+    return addFeatureFlagRequest;
   }
 
   setSearchKey(searchKey: FLAG_SEARCH_KEY) {

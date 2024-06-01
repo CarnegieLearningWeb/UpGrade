@@ -21,6 +21,7 @@
         class="dialog-action-btn primary-btn"
         mat-flat-button
         [color]="primaryActionBtnColor"
+        [disabled]="primaryActionBtnDisabled$ | async"
         (click)="onPrimaryActionBtnClicked()"
       >
         {{ primaryActionBtnLabel }}

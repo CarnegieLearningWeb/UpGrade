@@ -5,8 +5,9 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogActions, MatDialogClose, MatDialogContent, MatDialogTitle } from '@angular/material/dialog';
-import { NgIf, NgTemplateOutlet } from '@angular/common';
+import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-common-dialog',
@@ -21,7 +22,7 @@ import { MatIcon } from '@angular/material/icon';
     MatDialogContent,
     MatDialogActions,
     MatDialogClose,
-    NgIf,
+    CommonModule,
     NgTemplateOutlet,
     MatIcon,
   ],
@@ -34,10 +35,10 @@ export class CommonModalComponent {
   @Input() primaryActionBtnLabel = 'Submit';
   @Input() primaryActionBtnColor = 'primary';
   @Input() hideFooter = false;
+  @Input() primaryActionBtnDisabled$: Observable<boolean>;
   @Output() primaryActionBtnClicked = new EventEmitter<string>();
 
   onPrimaryActionBtnClicked() {
-    console.log('Primary action button clicked');
     this.primaryActionBtnClicked.emit('primary action event');
   }
 }

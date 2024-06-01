@@ -43,6 +43,14 @@ const reducer = createReducer(
     ...state,
     isLoadingFeatureFlags,
   })),
+  on(FeatureFlagsActions.actionCreateFeatureFlag, (state) => ({ ...state, isLoadingAddFeatureFlag: true })),
+  on(FeatureFlagsActions.actionCreateFeatureFlagSuccess, (state, { response }) => {
+    return adapter.addOne(response, {
+      ...state,
+      isLoadingAddFeatureFlag: false,
+    });
+  }),
+  on(FeatureFlagsActions.actionCreateFeatureFlagFailure, (state) => ({ ...state, isLoadingAddFeatureFlag: false })),
   on(FeatureFlagsActions.actionSetSkipFlags, (state, { skipFlags }) => ({ ...state, skipFlags })),
   on(FeatureFlagsActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),
   on(FeatureFlagsActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchString })),
