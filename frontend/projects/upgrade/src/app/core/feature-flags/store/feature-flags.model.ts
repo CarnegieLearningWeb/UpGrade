@@ -75,6 +75,7 @@ export const FLAG_ROOT_DISPLAYED_COLUMNS = Object.values(FLAG_ROOT_COLUMN_NAMES)
 export interface FeatureFlagState extends EntityState<FeatureFlag> {
   isLoadingFeatureFlags: boolean;
   hasInitialFeatureFlagsDataLoaded: boolean;
+  activeDetailsTabIndex: number;
   skipFlags: number;
   totalFlags: number;
   searchKey: FLAG_SEARCH_KEY;

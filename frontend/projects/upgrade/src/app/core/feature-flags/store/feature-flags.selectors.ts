@@ -68,3 +68,8 @@ export const selectSearchFeatureFlagParams = createSelector(
 export const selectSortKey = createSelector(selectFeatureFlagsState, (state) => state.sortKey);
 
 export const selectSortAs = createSelector(selectFeatureFlagsState, (state) => state.sortAs);
+
+export const selectActiveDetailsTabIndex = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.activeDetailsTabIndex
+);

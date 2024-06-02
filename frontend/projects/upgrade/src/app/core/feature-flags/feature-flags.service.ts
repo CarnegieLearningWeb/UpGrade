@@ -8,6 +8,7 @@ import {
   selectHasInitialFeatureFlagsDataLoaded,
   selectSearchKey,
   selectSearchString,
+  selectActiveDetailsTabIndex,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
@@ -21,6 +22,7 @@ export class FeatureFlagsService {
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
   searchString$ = this.store$.pipe(select(selectSearchString));
   searchKey$ = this.store$.pipe(select(selectSearchKey));
+  activeDetailsTabIndex$ = this.store$.pipe(select(selectActiveDetailsTabIndex));
 
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
@@ -40,5 +42,9 @@ export class FeatureFlagsService {
 
   setSortingType(sortingType: SORT_AS_DIRECTION) {
     this.store$.dispatch(FeatureFlagsActions.actionSetSortingType({ sortingType }));
+  }
+
+  setActiveDetailsTab(activeDetailsTabIndex: number) {
+    this.store$.dispatch(FeatureFlagsActions.actionSetActiveDetailsTabIndex({ activeDetailsTabIndex }));
   }
 }

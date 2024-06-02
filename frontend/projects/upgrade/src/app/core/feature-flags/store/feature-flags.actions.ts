@@ -37,3 +37,8 @@ export const actionSetSortingType = createAction(
   '[Feature Flags] Set Sorting type',
   props<{ sortingType: SORT_AS_DIRECTION }>()
 );
+
+export const actionSetActiveDetailsTabIndex = createAction(
+  '[Feature Flags] Set Active Details Tab Index',
+  props<{ activeDetailsTabIndex: number }>()
+);
