@@ -1,0 +1,10 @@
+<div class="tabbed-footer">
+  <mat-tab-group
+    mat-stretch-tabs="false"
+    mat-align-tabs="start"
+    animationDuration="0ms"
+    (selectedTabChange)="onSelectedTabChange($event)"
+  >
+    <mat-tab class="footer-tab" *ngFor="let label of tabLabels" [label]="label"></mat-tab>
+  </mat-tab-group>
+</div>

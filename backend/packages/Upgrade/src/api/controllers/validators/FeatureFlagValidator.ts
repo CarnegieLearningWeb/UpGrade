@@ -15,8 +15,7 @@ export class FeatureFlagValidation {
   @IsString()
   name: string;
 
-  @IsNotEmpty()
-  @IsDefined()
+  @IsOptional()
   @IsString()
   description: string;
 
