@@ -20,6 +20,27 @@ export class FeatureFlagsService {
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
   activeDetailsTabIndex$ = this.store$.pipe(select(selectActiveDetailsTabIndex));
 
+  formatDateString(dateString, dateTime) {
+    const date = new Date(dateString);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[date.getMonth()];
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    const strTime = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+
+    if (dateTime) {
+      return `${month} ${day}, ${year}, ${strTime}`;
+    } else {
+      return `${month} ${day}, ${year}`;
+    }
+  }
+
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
   }

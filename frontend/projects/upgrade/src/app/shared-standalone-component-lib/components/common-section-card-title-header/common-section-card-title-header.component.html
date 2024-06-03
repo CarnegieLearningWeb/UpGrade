@@ -2,7 +2,7 @@
   <h1 class="title ft-26-700">
     {{ title | translate }}
     <ng-container *ngIf="chipClass">
-      <app-common-status-indicator-chip [chipClass] = "chipClass" ></app-common-status-indicator-chip>
+      <app-common-status-indicator-chip class="status-chip" [chipClass] = "chipClass" ></app-common-status-indicator-chip>
     </ng-container>
   </h1>
   <h3 class="subtitle ft-16-400">
@@ -12,4 +12,3 @@
     </ng-container>
   </h3>
 </div>
-
