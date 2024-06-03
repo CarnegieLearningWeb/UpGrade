@@ -1,4 +1,13 @@
-import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, ValidateNested, ValidationOptions, registerDecorator } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateNested,
+  ValidationOptions,
+  registerDecorator,
+} from 'class-validator';
 import { IMetricMetaData } from 'upgrade_types';
 
 const IsMetricUnit = (validationOptions?: ValidationOptions) => {
@@ -14,7 +23,7 @@ const IsMetricUnit = (validationOptions?: ValidationOptions) => {
       },
       validator: {
         validate(value: any) {
-          return validateMetricUnit(value)
+          return validateMetricUnit(value);
         },
       },
     });
@@ -23,11 +32,11 @@ const IsMetricUnit = (validationOptions?: ValidationOptions) => {
 
 function validateMetricUnit(data: unknown) {
   if (Array.isArray(data) && data.every(isValidMetric)) {
-    return true
+    return true;
   } else {
-    return false
+    return false;
   }
-};
+}
 
 function isValidMetric(value: any): value is IGroupMetric | ISingleMetric {
   if ('groupClass' in value) {
@@ -49,9 +58,7 @@ function isValidMetric(value: any): value is IGroupMetric | ISingleMetric {
       (value.allowedValues === undefined ||
         (Array.isArray(value.allowedValues) &&
           value.allowedValues.every(
-            (allowedValue) =>
-              typeof allowedValue === 'string' ||
-              typeof allowedValue === 'number'
+            (allowedValue) => typeof allowedValue === 'string' || typeof allowedValue === 'number'
           )))
     );
   }
@@ -68,7 +75,7 @@ class ISingleMetric {
   datatype: IMetricMetaData;
 
   @IsOptional()
-  @IsArray({each: true})
+  @IsArray({ each: true })
   allowedValues?: (string | number)[];
 }
 
@@ -77,7 +84,7 @@ class IGroupMetric {
   groupClass: string;
 
   @IsArray()
-  @IsString({each: true})
+  @IsString({ each: true })
   allowedKeys: string[];
 
   @IsArray()
@@ -91,4 +98,9 @@ export class MetricValidator {
   @IsNotEmpty()
   @IsMetricUnit()
   metricUnit: (ISingleMetric | IGroupMetric)[];
+
+  @IsArray()
+  @IsNotEmpty()
+  @IsString({ each: true })
+  context: string[];
 }
