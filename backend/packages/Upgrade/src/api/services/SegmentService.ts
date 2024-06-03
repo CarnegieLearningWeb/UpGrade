@@ -77,7 +77,7 @@ export class SegmentService {
   }
 
   public async getAllSegmentsAndSubsegments(logger: UpgradeLogger): Promise<Segment[]> {
-    logger.info({ message: `Find all segments` });
+    logger.info({ message: `Find all segments and Subsegments` });
     const queryBuilder = await this.segmentRepository
       .createQueryBuilder('segment')
       .leftJoinAndSelect('segment.subSegments', 'subSegment')
