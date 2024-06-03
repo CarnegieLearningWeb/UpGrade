@@ -1,16 +1,4 @@
-import {
-  JsonController,
-  Authorized,
-  Post,
-  Body,
-  CurrentUser,
-  Delete,
-  Param,
-  Put,
-  Req,
-  Get,
-  QueryParams,
-} from 'routing-controllers';
+import { JsonController, Authorized, Post, Body, CurrentUser, Delete, Param, Put, Req, Get } from 'routing-controllers';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { User } from '../models/User';
@@ -18,7 +6,7 @@ import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatus
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { SERVER_ERROR } from 'upgrade_types';
-import { FeatureFlagValidation, UserParamsValidator } from './validators/FeatureFlagValidator';
+import { FeatureFlagValidation } from './validators/FeatureFlagValidator';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { isUUID } from 'class-validator';
 
