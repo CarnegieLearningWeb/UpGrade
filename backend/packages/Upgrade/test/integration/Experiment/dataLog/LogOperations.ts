@@ -260,7 +260,7 @@ export default async function LogOperations(): Promise<void> {
   let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // log data here
   await experimentAssignmentService.dataLog(
-    experimentUsers[0].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -282,12 +282,12 @@ export default async function LogOperations(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
   // getOriginalUserDoc
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[1].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(
-    experimentUsers[1].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[1].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -306,12 +306,12 @@ export default async function LogOperations(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
   // getOriginalUserDoc
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[2].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(
-    experimentUsers[2].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[2].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -330,12 +330,12 @@ export default async function LogOperations(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
   // getOriginalUserDoc
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[3].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(
-    experimentUsers[3].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[3].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -354,11 +354,11 @@ export default async function LogOperations(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
 
   await experimentAssignmentService.dataLog(
-    experimentUsers[3].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[3].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -377,13 +377,13 @@ export default async function LogOperations(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
 
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[4].id, new UpgradeLogger());
   // log data for 5th user with null values:
   await experimentAssignmentService.dataLog(
-    experimentUsers[4].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[4].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -405,7 +405,7 @@ export default async function LogOperations(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
 
   const allQuery = await queryService.find(new UpgradeLogger());
@@ -620,14 +620,14 @@ export default async function LogOperations(): Promise<void> {
         expect(countValue).toEqual(expectedValue);
         break;
       case OPERATION_TYPES.AVERAGE:
-        const aveValue = (res.reduce((accu, data) => {
+        const avgValue = (res.reduce((accu, data) => {
           return accu + data;
         }, 0))/res.length;
         expectedValue = 128;
         if (query.metric.key !== 'totalProblemsCompleted') {
           expectedValue = 250; // For completion metric
         }
-        expect(aveValue).toEqual(expectedValue);
+        expect(avgValue).toEqual(expectedValue);
         break;
       case OPERATION_TYPES.MODE:
         const modeValue = res[1];

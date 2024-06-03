@@ -88,7 +88,9 @@
                   >
                     <mat-select
                       class="ft-14-400"
-                      [placeholder]="'home.new-experiment.metrics.repeatedmeasure.placeholder.text' | translate | titlecase"
+                      [placeholder]="
+                        'home.new-experiment.metrics.repeated-measure.placeholder.text' | translate | titlecase
+                      "
                       formControlName="repeatedMeasure"
                     >
                       <div
@@ -97,7 +99,11 @@
                           selectedNode[queryIndex]?.metadata?.type === IMetricMetadata.CONTINUOUS
                         "
                       >
-                        <mat-option class="ft-14-400" *ngFor="let measure of ContinuousRepeatedMeasure" [value]="measure">
+                        <mat-option
+                          class="ft-14-400"
+                          *ngFor="let measure of ContinuousRepeatedMeasure"
+                          [value]="measure"
+                        >
                           {{ measure | titlecase }}
                         </mat-option>
                       </div>
@@ -107,24 +113,28 @@
                           selectedNode[queryIndex]?.metadata?.type === IMetricMetadata.CATEGORICAL
                         "
                       >
-                        <mat-option class="ft-14-400" *ngFor="let measure of CategoricalRepeatedMeasure" [value]="measure">
+                        <mat-option
+                          class="ft-14-400"
+                          *ngFor="let measure of CategoricalRepeatedMeasure"
+                          [value]="measure"
+                        >
                           {{ measure | titlecase }}
                         </mat-option>
                       </div>
                     </mat-select>
                   </mat-form-field>
                   <!-- statistic -->
-                  <mat-form-field
-                    class="dense-2 form-control"
-                    appearance="outline"
-                    subscriptSizing="dynamic"
-                  >
+                  <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
                     <mat-select
                       class="ft-14-400"
                       [placeholder]="'home.new-experiment.metrics.statistics.placeholder.text' | translate | titlecase"
                       formControlName="operationType"
                     >
-                      <mat-option class="ft-14-400" *ngFor="let operation of filteredStatistic$[queryIndex]" [value]="operation.value">
+                      <mat-option
+                        class="ft-14-400"
+                        *ngFor="let operation of filteredStatistic$[queryIndex]"
+                        [value]="operation.value"
+                      >
                         {{ operation.viewValue | titlecase }}
                       </mat-option>
                     </mat-select>
@@ -165,7 +175,11 @@
                       [placeholder]="'query.form-compare-value.text' | translate | titlecase"
                       formControlName="compareValue"
                     >
-                      <mat-option class="ft-14-400" *ngFor="let value of selectedNode[queryIndex]?.allowedData" [value]="value">
+                      <mat-option
+                        class="ft-14-400"
+                        *ngFor="let value of selectedNode[queryIndex]?.allowedData"
+                        [value]="value"
+                      >
                         {{ value | titlecase }}
                       </mat-option>
                     </mat-select>
@@ -179,11 +193,7 @@
                 {{ 'home.new-experiment.metrics.description-header.placeholder.text' | translate }}
               </mat-header-cell>
               <mat-cell *matCellDef="let element; let queryIndex = index" [formGroupName]="queryIndex">
-                <mat-form-field
-                  class="dense-2"
-                  appearance="outline"
-                  subscriptSizing="dynamic"
-                >
+                <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
                   <input
                     class="ft-14-400"
                     matInput

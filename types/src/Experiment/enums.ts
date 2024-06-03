@@ -195,6 +195,22 @@ export enum SEGMENT_SORT_KEY {
   UPDATED_AT = 'updatedAt',
 }
 
+export enum FLAG_SORT_KEY {
+  NAME = 'name',
+  KEY = 'key',
+  STATUS = 'status',
+  UPDATED_AT = 'updatedAt',
+}
+
+export enum FLAG_SEARCH_KEY {
+  ALL = 'all',
+  NAME = 'name',
+  KEY = 'key',
+  STATUS = 'status',
+  TAG = 'tag',
+  CONTEXT = 'context',
+}
+
 export enum INCLUSION_CRITERIA {
   INCLUDE_SPECIFIC = 'Include Specific',
   EXCEPT = 'Include All Except...',
@@ -228,4 +244,19 @@ export enum CACHE_PREFIX {
   EXPERIMENT_KEY_PREFIX = 'validExperiments-',
   SEGMENT_KEY_PREFIX = 'segments-',
   MARK_KEY_PREFIX = 'markExperiments-',
+}
+
+export enum STATUS_INDICATOR_CHIP_TYPE {
+  GLOBAL = 'global',
+  USED = 'used',
+  UNUSED = 'unused',
+  ENABLED = 'enabled',
+  DISABLED = 'disabled',
+  DRAFT = 'draft',
+  ARCHIVED = 'archived',
+  INACTIVE = 'inactive',
+  ENROLLING = 'enrolling',
+  ENROLLMENT_COMPLETE = 'enrollment-complete',
+  CANCELLED = 'cancelled',
+  SCHEDULED = 'scheduled',
 }

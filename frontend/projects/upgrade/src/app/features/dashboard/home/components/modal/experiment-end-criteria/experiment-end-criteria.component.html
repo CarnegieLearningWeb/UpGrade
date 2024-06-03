@@ -15,11 +15,7 @@
             {{ 'home.new-experiment.schedule.end-on.text' | translate }}
           </span>
         </mat-radio-button>
-        <mat-form-field
-          class="dense-2"
-          appearance="outline"
-          subscriptSizing="dynamic"
-        >
+        <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
           <input
             class="ft-14-400 input"
             matInput
@@ -41,11 +37,7 @@
           </span>
         </mat-radio-button>
         <div class="end-criteria" *ngIf="experiment.group">
-          <mat-form-field
-            class="dense-2 group-type-control"
-            appearance="outline"
-            subscriptSizing="dynamic"
-          >
+          <mat-form-field class="dense-2 group-type-control" appearance="outline" subscriptSizing="dynamic">
             <input
               class="ft-14-400 input"
               type="number"
@@ -69,11 +61,7 @@
           ></span>
         </div>
         <div class="end-criteria">
-          <mat-form-field
-            class="dense-2"
-            appearance="outline"
-            subscriptSizing="dynamic"
-          >
+          <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
             <input
               class="ft-14-400 input"
               type="number"
@@ -96,11 +84,11 @@
       </div>
       <div class="groupsatisfied-status" *ngIf="experiment.group">
         <span *ngIf="experiment.groupSatisfied">{{
-          'home.new-experiment.schedule.group-count-having-met-ending-criters.text'
+          'home.new-experiment.schedule.group-count-having-met-ending-criteria.text'
             | translate: { groupSatisfied: experiment.groupSatisfied }
         }}</span>
         <span *ngIf="!experiment.groupSatisfied">{{
-          'home.new-experiment.schedule.group-count-having-met-ending-criters.text' | translate: { groupSatisfied: 0 }
+          'home.new-experiment.schedule.group-count-having-met-ending-criteria.text' | translate: { groupSatisfied: 0 }
         }}</span>
       </div>
     </mat-radio-group>

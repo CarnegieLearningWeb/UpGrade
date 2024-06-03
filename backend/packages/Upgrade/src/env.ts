@@ -20,6 +20,7 @@ export const env = {
   isProduction: process.env.NODE_ENV === 'production',
   isTest: process.env.NODE_ENV === 'test',
   isDevelopment: process.env.NODE_ENV === 'development',
+  useNewRelic: toBool(getOsEnvOptional('USE_NEW_RELIC')) || false,
   app: {
     name: getOsEnv('APP_NAME'),
     version: (pkg as any).version,

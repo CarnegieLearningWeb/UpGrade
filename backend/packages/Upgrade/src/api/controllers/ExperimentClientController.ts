@@ -433,14 +433,11 @@ export class ExperimentClientController {
       request.logger.info({ message: 'Got the original user doc' });
     }
     return this.experimentAssignmentService.markExperimentPoint(
-      experiment.userId,
+      experimentUserDoc,
       experiment.experimentPoint,
       experiment.status,
       experiment.condition,
-      {
-        logger: request.logger,
-        userDoc: experimentUserDoc,
-      },
+      request.logger,
       experiment.partitionId,
       experiment.experimentId ? experiment.experimentId : null
     );
@@ -546,13 +543,11 @@ export class ExperimentClientController {
     experiment: ExperimentAssignmentValidator
   ): Promise<IExperimentAssignment[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(experiment.userId, request.logger);
     const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
-      experiment.userId,
+      experimentUserDoc,
       experiment.context,
-      {
-        logger: request.logger,
-        userDoc: null,
-      }
+      request.logger
     );
 
     return assignedData.map(({ site, target, assignedCondition }) => {
@@ -655,10 +650,7 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    return this.experimentAssignmentService.dataLog(logData.userId, logData.value, {
-      logger: request.logger,
-      userDoc: experimentUserDoc,
-    });
+    return this.experimentAssignmentService.dataLog(experimentUserDoc, logData.value, request.logger);
   }
 
   /**
@@ -751,7 +743,7 @@ export class ExperimentClientController {
             request.logger.info({ message: 'Got the original user doc' });
           }
           const response = await this.experimentAssignmentService.blobDataLog(
-            blobData.userId,
+            experimentUserDoc,
             blobData.value,
             request.logger
           );
@@ -966,10 +958,11 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    const aliasData = await this.experimentUserService.setAliasesForUser(user.userId, user.aliases, {
-      logger: request.logger,
-      userDoc: experimentUserDoc,
-    });
+    const aliasData = await this.experimentUserService.setAliasesForUser(
+      experimentUserDoc,
+      user.aliases,
+      request.logger
+    );
 
     return [
       {
