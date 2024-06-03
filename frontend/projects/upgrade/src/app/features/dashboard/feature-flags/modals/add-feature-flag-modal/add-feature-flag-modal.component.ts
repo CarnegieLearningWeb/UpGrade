@@ -20,14 +20,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
-
-export interface FeatureFlagFormData {
-  name: string;
-  key: string;
-  description: string;
-  appContext: string;
-  tags: string[];
-}
+import { FEATURE_FLAG_STATUS, SEGMENT_TYPE, FILTER_MODE } from '../../../../../../../../../../types/src';
+import { AddFeatureFlagRequest } from '../../../../../core/feature-flags/store/feature-flags.model';
+import { Subscription } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-add-feature-flag-modal',
@@ -47,16 +43,17 @@ export interface FeatureFlagFormData {
     NgTemplateOutlet,
     MatIcon,
     ReactiveFormsModule,
+    TranslateModule,
   ],
   templateUrl: './add-feature-flag-modal.component.html',
   styleUrl: './add-feature-flag-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddFeatureFlagModalComponent {
-  // service references
   isLoadingAddFeatureFlag$ = this.featureFlagsService.isLoadingAddFeatureFlag$;
   appContexts$ = this.featureFlagsService.appContexts$;
   featureFlagsListLengthChange$ = this.featureFlagsService.featureFlagsListLengthChange$;
+  subscriptions = new Subscription();
 
   featureFlagForm: FormGroup;
 
@@ -70,8 +67,12 @@ export class AddFeatureFlagModalComponent {
     public dialogRef: MatDialogRef<AddFeatureFlagModalComponent>
   ) {}
 
-  ngOnInit() {
-    // give this types
+  ngOnInit(): void {
+    this.buildForm();
+    this.listenForFeatureFlagListLengthChanges();
+  }
+
+  buildForm(): void {
     this.featureFlagForm = this.formBuilder.group({
       name: ['', Validators.required],
       key: ['', Validators.required],
@@ -79,22 +80,53 @@ export class AddFeatureFlagModalComponent {
       appContext: ['', Validators.required],
       tags: [null], // this will need corrected, it should be an array of strings, for now we're hackin
     });
-
-    this.isLoadingAddFeatureFlag$.subscribe((value) => console.log('>> isLoadingAddFeatureFlag', value));
-    this.featureFlagsListLengthChange$.subscribe(() => this.closeModal());
   }
 
-  onPrimaryActionBtnClicked() {
+  // Close the modal once the feature flag list length changes, as that indicates actual success
+  listenForFeatureFlagListLengthChanges(): void {
+    this.subscriptions = this.featureFlagsListLengthChange$.subscribe(() => this.closeModal());
+  }
+
+  onPrimaryActionBtnClicked(): void {
     if (this.featureFlagForm.valid) {
-      // Handle form submission logic here
-      this.featureFlagsService.addFeatureFlag(this.featureFlagForm.value);
+      // Handle extra form validation logic here?
+      this.createAddFeatureFlagRequest();
     } else {
       // If the form is invalid, manually mark all form controls as touched
       this.formHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);
     }
   }
 
+  createAddFeatureFlagRequest(): void {
+    const { name, key, description, appContext, tags } = this.featureFlagForm.value;
+    const addFeatureFlagRequest: AddFeatureFlagRequest = {
+      name,
+      key,
+      description,
+      status: FEATURE_FLAG_STATUS.DISABLED,
+      context: [appContext],
+      tags,
+      featureFlagSegmentInclusion: {
+        segment: {
+          type: SEGMENT_TYPE.PRIVATE,
+        },
+      },
+      featureFlagSegmentExclusion: {
+        segment: {
+          type: SEGMENT_TYPE.PRIVATE,
+        },
+      },
+      filterMode: FILTER_MODE.INCLUDE_ALL,
+    };
+
+    this.featureFlagsService.addFeatureFlag(addFeatureFlagRequest);
+  }
+
   closeModal() {
     this.dialogRef.close();
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 }

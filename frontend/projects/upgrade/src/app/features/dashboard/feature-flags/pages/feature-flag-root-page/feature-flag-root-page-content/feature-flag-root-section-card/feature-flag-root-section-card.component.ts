@@ -11,7 +11,7 @@ import { FeatureFlagRootSectionCardTableComponent } from './feature-flag-root-se
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IMenuButtonItem } from 'upgrade_types';
 import { RouterModule } from '@angular/router';
-import { DialogService } from '../../../../../../../shared/services/dialog.service';
+import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 
 @Component({
   selector: 'app-feature-flag-root-section-card',
@@ -67,8 +67,7 @@ export class FeatureFlagRootSectionCardComponent {
   }
 
   onAddFeatureFlagButtonClick() {
-    const dialogRef = this.dialogService.openAddFeatureFlagModal();
-    console.log('onAddFeatureFlagButtonClick');
+    this.dialogService.openAddFeatureFlagModal();
   }
 
   onMenuButtonItemClick(menuButtonItemName: string) {

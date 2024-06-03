@@ -11,18 +11,10 @@ import {
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
-import {
-  FEATURE_FLAG_STATUS,
-  FILTER_MODE,
-  FLAG_SEARCH_KEY,
-  FLAG_SORT_KEY,
-  SEGMENT_TYPE,
-  SORT_AS_DIRECTION,
-} from 'upgrade_types';
-import { FeatureFlagFormData } from '../../features/dashboard/feature-flags/modals/add-feature-flag-modal/add-feature-flag-modal.component';
+import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 import { AddFeatureFlagRequest } from './store/feature-flags.model';
 import { ExperimentService } from '../experiments/experiments.service';
-import { filter, map, pairwise, tap } from 'rxjs';
+import { filter, map, pairwise } from 'rxjs';
 
 @Injectable()
 export class FeatureFlagsService {
@@ -52,37 +44,8 @@ export class FeatureFlagsService {
     this.store$.dispatch(actionFetchContextMetaData({ isLoadingContextMetaData: true }));
   }
 
-  addFeatureFlag(featureFlagFormData: any) {
-    const addFeatureFlagRequest = this.createAddFeatureFlagRequest({
-      ...featureFlagFormData,
-      tags: featureFlagFormData.tags?.split(',').map((tag: string) => tag.trim()) ?? [], // this is a temp (hopfeully) hack, see comment in the Add Feature Flag Modal component, this logic should go elsewhere
-    });
-    this.store$.dispatch(FeatureFlagsActions.actionCreateFeatureFlag({ addFeatureFlagRequest }));
-  }
-
-  createAddFeatureFlagRequest(featureFlagFormData: FeatureFlagFormData): AddFeatureFlagRequest {
-    const { name, key, description, appContext, tags } = featureFlagFormData;
-    const addFeatureFlagRequest: AddFeatureFlagRequest = {
-      name,
-      key,
-      description,
-      status: FEATURE_FLAG_STATUS.DISABLED,
-      context: [appContext],
-      tags,
-      featureFlagSegmentInclusion: {
-        segment: {
-          type: SEGMENT_TYPE.PRIVATE,
-        },
-      },
-      featureFlagSegmentExclusion: {
-        segment: {
-          type: SEGMENT_TYPE.PRIVATE,
-        },
-      },
-      filterMode: FILTER_MODE.INCLUDE_ALL,
-    };
-
-    return addFeatureFlagRequest;
+  addFeatureFlag(addFeatureFlagRequest: AddFeatureFlagRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlag({ addFeatureFlagRequest }));
   }
 
   setSearchKey(searchKey: FLAG_SEARCH_KEY) {

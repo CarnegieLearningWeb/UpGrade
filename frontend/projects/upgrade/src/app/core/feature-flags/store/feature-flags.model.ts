@@ -38,6 +38,14 @@ export interface AddFeatureFlagRequest {
   filterMode: FILTER_MODE;
 }
 
+export interface FeatureFlagFormData {
+  name: string;
+  key: string;
+  description: string;
+  appContext: string;
+  tags: string[];
+}
+
 export interface EmptyPrivateSegment {
   segment: {
     type: SEGMENT_TYPE.PRIVATE;

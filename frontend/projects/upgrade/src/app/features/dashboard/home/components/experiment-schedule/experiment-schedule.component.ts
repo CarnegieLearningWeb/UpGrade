@@ -8,7 +8,7 @@ import {
   ExperimentVM,
   EXPERIMENT_STATE,
 } from '../../../../../core/experiments/store/experiments.model';
-import { DialogService } from '../../../../../shared/services/dialog.service';
+import { DialogService } from '../../../../../shared/services/common-dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 @Component({
   selector: 'home-experiment-schedule',

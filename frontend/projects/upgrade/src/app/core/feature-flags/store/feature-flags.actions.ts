@@ -38,17 +38,17 @@ export const actionSetSortingType = createAction(
   props<{ sortingType: SORT_AS_DIRECTION }>()
 );
 
-export const actionCreateFeatureFlag = createAction(
-  '[Feature Flags] Create Feature Flag',
+export const actionAddFeatureFlag = createAction(
+  '[Feature Flags] Add Feature Flag',
   props<{ addFeatureFlagRequest: AddFeatureFlagRequest }>()
 );
 
-export const actionCreateFeatureFlagSuccess = createAction(
-  '[Feature Flags] Create Feature Flag Success',
+export const actionAddFeatureFlagSuccess = createAction(
+  '[Feature Flags] Add Feature Flag Success',
   props<{ response: FeatureFlag }>()
 );
 
-export const actionCreateFeatureFlagFailure = createAction('[Feature Flags] Create Feature Flag Failure');
+export const actionAddFeatureFlagFailure = createAction('[Feature Flags] Add Feature Flag Failure');
 
 export const actionSetActiveDetailsTabIndex = createAction(
   '[Feature Flags] Set Active Details Tab Index',
