@@ -1,0 +1,12 @@
+<div class="content-section">
+  <div *ngFor="let key of keys; let i = index">
+    <span style="font-weight: bold">{{ key }}:</span>
+    <ng-container *ngIf="key !== 'Tags'; else chipSection">
+      <span>{{ values[i] }}</span>
+    </ng-container>
+
+    <ng-template #chipSection>
+      <mat-chip *ngFor="let tag of values[i]">{{ tag }}</mat-chip>
+    </ng-template>
+  </div>
+</div>
