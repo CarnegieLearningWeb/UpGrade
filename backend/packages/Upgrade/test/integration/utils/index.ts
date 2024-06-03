@@ -12,13 +12,21 @@ import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
 import { GroupExclusion } from './../../../src/api/models/GroupExclusion';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
+import { DecisionPoint } from 'src/api/models/DecisionPoint';
+
+export function updateExcludeIfReachedFlag(partitions: DecisionPoint[]): DecisionPoint[] {
+  partitions.forEach((partition) => {
+    partition.excludeIfReached = true;
+  });
+  return partitions;
+}
 
 export function checkExperimentAssignedIsNull(experimentConditionAssignments: any, target: string, site: string): void {
   expect(experimentConditionAssignments).not.toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        expId: target,
-        expPoint: site,
+        target: target,
+        site: site,
       }),
     ])
   );
@@ -29,7 +37,7 @@ export function checkExperimentAssignedIsNotDefault(
   target: string,
   site: string
 ): void {
-  // get object with name and point
+  // get object with target and site
   const experimentObject = experimentConditionAssignments.find((experiment) => {
     return experiment.target === target && experiment.site === site;
   });
@@ -85,10 +93,11 @@ export async function getAllExperimentCondition(
   // getOriginalUserDoc
   const experimentUserDoc = await experimentUserService.getOriginalUserDoc(userId, logger);
   // getAllExperimentConditions
-  return experimentAssignmentService.getAllExperimentConditions(userId, context, {
-    logger: logger,
-    userDoc: experimentUserDoc,
-  });
+  return experimentAssignmentService.getAllExperimentConditions(
+    { ...experimentUserDoc, requestedUserId: userId },
+    context,
+    logger
+  );
 }
 
 export async function markExperimentPoint(
@@ -107,11 +116,11 @@ export async function markExperimentPoint(
   const experimentUserDoc = await experimentUserService.getOriginalUserDoc(userId, logger);
   // mark experiment point
   await experimentAssignmentService.markExperimentPoint(
-    userId,
+    { ...experimentUserDoc, requestedUserId: userId },
     site,
     MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
     condition,
-    { logger, userDoc: experimentUserDoc },
+    logger,
     target,
     experimentId,
     uniquifier

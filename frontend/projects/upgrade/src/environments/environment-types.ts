@@ -59,6 +59,8 @@ export interface Environment {
   pollingLimit: number;
   api: APIEndpoints;
   featureFlagNavToggle: boolean;
+  withinSubjectExperimentSupportToggle: boolean;
+  errorLogsToggle: boolean;
 }
 
 export interface RuntimeEnvironmentConfig {
@@ -67,4 +69,6 @@ export interface RuntimeEnvironmentConfig {
   endpointApi?: string;
   apiBaseUrl?: string;
   featureFlagNavToggle?: boolean;
+  withinSubjectExperimentSupportToggle?: boolean;
+  errorLogsToggle?: boolean;
 }

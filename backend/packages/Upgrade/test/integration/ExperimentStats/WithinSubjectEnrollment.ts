@@ -2,15 +2,11 @@ import { Container } from 'typedi';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
-import { getAllExperimentCondition, markExperimentPoint } from '../utils';
+import { checkExperimentAssignedIsNull, getAllExperimentCondition, markExperimentPoint, updateExcludeIfReachedFlag } from '../utils';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 import { withinSubjectExperiment } from '../mockData/experiment/index';
-import {
-  checkMarkExperimentPointForUser,
-  checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsNull,
-} from '../utils/index';
+import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import { previewUsers } from '../mockData/previewUsers/index';
@@ -29,6 +25,7 @@ export default async function testCase(): Promise<void> {
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
   // experiment object
   const experimentObject = withinSubjectExperiment;
+  experimentObject.partitions = updateExcludeIfReachedFlag(experimentObject.partitions);
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -58,6 +55,7 @@ export default async function testCase(): Promise<void> {
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
+  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName1, experimentPoint1);
 
   // mark experiment point
   let markedExperimentPoint = await markExperimentPoint(
@@ -116,7 +114,7 @@ export default async function testCase(): Promise<void> {
   );
 
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
-  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName1, experimentPoint1);
+  expect(experimentConditionAssignments).toHaveLength(experimentObject.partitions.length);
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,

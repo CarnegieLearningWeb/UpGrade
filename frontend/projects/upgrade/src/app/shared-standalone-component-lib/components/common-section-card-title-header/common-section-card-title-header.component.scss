@@ -1,0 +1,15 @@
+::ng-deep .title-header {
+  height: 112px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  .title {
+    margin-bottom: 0;
+  }
+
+  .subtitle {
+    margin-bottom: 0;
+    color: var(--grey-3);
+  }
+}

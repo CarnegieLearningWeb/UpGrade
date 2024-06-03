@@ -1,0 +1,51 @@
+:root {
+  /* color variables (added for new design) */
+  --zircon: #f5f7fe;
+  --water: #f0f2f9;
+  --light-grey-2: #dce0e6;
+  --grey-3: #929fae; /* same as --grey-3 */
+  --dark-grey: #646e7b;
+  --darker-grey: #444e5b;
+  --light-black: #222b45; /* same as --black-2 */
+  --red-2: #ff3333;
+  --status-disabled: #ff9933;
+  --status-enabled: #3366ff;
+  --status-archived: #999999;
+  --status-global: #ff3333;
+  --status-unused: #999999;
+  --status-used: #3366ff;
+  --status-disabled-alpha: #ff99330c;
+  --status-enabled-alpha: #3366ff0c;
+  --status-archived-alpha: #9999990c;
+  --status-global-alpha: #ff33330c;
+  --status-unused-alpha: #9999990c;
+  --status-used-alpha: #3366ff0c;
+
+  /* color variables */
+  --blue: #3366ff;
+  --light-blue: #7194ff;
+  --black: #000;
+  --black-2: #222b45;
+  --white: #fff;
+  --grey: #808080;
+  --grey-2: #8992a3;
+  --grey-3: #929fae;
+  --grey-4: #959dac;
+  --grey-5: #939bab;
+  --grey-6: #6e6f72;
+  --light-grey: #d3d3d3;
+  --grey-message: #8f9bb3;
+  --red: #ff0000;
+  --green: #008000;
+
+  /* font-size variables */
+  --text-size-xxxxx-large: 2rem;
+  --text-size-xxxx-large: 1.875rem;
+  --text-size-xxx-large: 1.5rem;
+  --text-size-xx-large: 1.375rem;
+  --text-size-x-large: 1.25rem;
+  --text-size-large: 1.125rem;
+  --text-size-normal: 1rem;
+  --text-size-small: 0.875rem;
+  --text-size-x-small: 0.75rem;
+}

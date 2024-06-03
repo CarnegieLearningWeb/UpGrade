@@ -10,6 +10,7 @@ import {
   markExperimentPoint,
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNull,
+  updateExcludeIfReachedFlag
 } from '../../utils';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
@@ -17,6 +18,7 @@ export default async function NoExperiment(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // experiment object
   const experimentObject = individualAssignmentExperiment;
+  experimentObject.partitions = updateExcludeIfReachedFlag(experimentObject.partitions);
   const userService = Container.get<UserService>(UserService);
 
   // creating new user

@@ -55,7 +55,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   membersCountError: string = null;
   groupString = ' ( group )';
   membersValid = true;
-  isImportMembervalid = true;
+  isImportMemberValid = true;
 
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
   constructor(
@@ -127,29 +127,29 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   checkImportMemberValidation() {
     if (this.segmentMembersForm?.value) {
       if (this.segmentMembersForm.value.members.length === 0) {
-        this.isImportMembervalid = true;
+        this.isImportMemberValid = true;
       } else if (
         this.segmentMembersForm.value.members.length === 1 &&
         !this.segmentMembersForm.value.members[0].type &&
         !this.segmentMembersForm.value.members[0].id
       ) {
-        this.isImportMembervalid = true;
+        this.isImportMemberValid = true;
       } else if (this.segmentMembersForm.value.members.length > 1) {
         const members = this.segmentMembersForm.value.members;
         for (const member of members) {
           if (!member.id && !member.type) {
-            this.isImportMembervalid = true;
+            this.isImportMemberValid = true;
             continue;
           } else {
-            this.isImportMembervalid = false;
+            this.isImportMemberValid = false;
             break;
           }
         }
       } else {
-        this.isImportMembervalid = false;
+        this.isImportMemberValid = false;
       }
     } else {
-      this.isImportMembervalid = false;
+      this.isImportMemberValid = false;
     }
   }
 
