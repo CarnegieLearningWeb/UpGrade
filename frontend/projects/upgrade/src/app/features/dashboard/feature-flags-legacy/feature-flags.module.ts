@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { FeatureFlagsRoutingModule } from './feature-flags-routing.module';
+import { FeatureFlagsRoutingModule } from './feature-flags-routing.module--LEGACY';
 import { FeatureFlagsRootComponent } from './feature-flags-root/feature-flags-root.component';
 import { SharedModule } from '../../../shared/shared.module';
 import { FeatureFlagsListComponent } from './components/feature-flags-list/feature-flags-list.component';

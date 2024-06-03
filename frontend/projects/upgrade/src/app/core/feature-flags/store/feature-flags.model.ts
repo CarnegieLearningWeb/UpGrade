@@ -47,8 +47,30 @@ export enum FLAG_SEARCH_KEY {
   CONTEXT = 'context',
 }
 
+export const FLAG_ROOT_COLUMN_NAMES = {
+  NAME: 'Name',
+  STATUS: 'Status',
+  UPDATED_AT: 'Updated at',
+  APP_CONTEXT: 'App Context',
+  TAGS: 'Tags',
+  EXPOSURES: 'Exposures',
+};
+
+export const FLAG_TRANSLATION_KEYS = {
+  NAME: 'feature-flags.global-name.text',
+  STATUS: 'feature-flags.global-status.text',
+  UPDATED_AT: 'feature-flags.global-updated-at.text',
+  APP_CONTEXT: 'feature-flags.global-app-context.text',
+  TAGS: 'feature-flags.global-tags.text',
+  EXPOSURES: 'feature-flags.global-exposures.text',
+};
+
+export const FLAG_ROOT_DISPLAYED_COLUMNS = Object.values(FLAG_ROOT_COLUMN_NAMES);
+
 export interface FeatureFlagState extends EntityState<FeatureFlag> {
   isLoadingFeatureFlags: boolean;
+  hasInitialFeatureFlagsDataLoaded: boolean;
+  activeDetailsTabIndex: number;
   skipFlags: number;
   totalFlags: number;
   searchKey: FLAG_SEARCH_KEY;

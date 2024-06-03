@@ -18,6 +18,11 @@ export const selectAllFeatureFlagsSortedByDate = createSelector(selectAllFeature
   });
 });
 
+export const selectHasInitialFeatureFlagsDataLoaded = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.hasInitialFeatureFlagsDataLoaded
+);
+
 export const selectIsLoadingFeatureFlags = createSelector(
   selectFeatureFlagsState,
   (state) => state.isLoadingFeatureFlags
@@ -52,3 +57,8 @@ export const selectSearchString = createSelector(selectFeatureFlagsState, (state
 export const selectSortKey = createSelector(selectFeatureFlagsState, (state) => state.sortKey);
 
 export const selectSortAs = createSelector(selectFeatureFlagsState, (state) => state.sortAs);
+
+export const selectActiveDetailsTabIndex = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.activeDetailsTabIndex
+);

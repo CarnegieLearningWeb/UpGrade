@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { LogsService } from '../../../../core/logs/logs.service';
 import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
+import { ENV, Environment } from '../../../../../environments/environment-types';
 
 @Component({
   selector: 'app-logs',
@@ -49,7 +50,7 @@ export class LogsComponent implements OnInit, OnDestroy {
   // Used to persist previous tab filter option
   selectedOptionForAnotherTab: string;
   selectedTabIndex: number;
-  constructor(private logsService: LogsService) {}
+  constructor(private logsService: LogsService, @Inject(ENV) public environment: Environment) {}
 
   ngOnInit() {
     // Initially audit log filters will be set

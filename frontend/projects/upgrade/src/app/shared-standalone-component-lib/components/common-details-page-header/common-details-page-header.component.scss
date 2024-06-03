@@ -8,7 +8,8 @@
     display: flex;
     column-gap: 8px;
 
-    .root-link, .details-name {
+    .root-link,
+    .details-name {
       color: var(--light-black);
     }
   }

@@ -9,8 +9,10 @@ export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.get
 
 export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingFeatureFlags: false,
+  hasInitialFeatureFlagsDataLoaded: false,
+  activeDetailsTabIndex: 0,
   skipFlags: 0,
-  totalFlags: 0,
+  totalFlags: null,
   searchKey: FLAG_SEARCH_KEY.ALL,
   searchString: null,
   sortKey: null,
@@ -24,12 +26,16 @@ const reducer = createReducer(
     isLoadingFeatureFlags: true,
   })),
   on(FeatureFlagsActions.actionFetchFeatureFlagsSuccess, (state, { flags, totalFlags }) => {
-    const newState = {
+    const newState: FeatureFlagState = {
       ...state,
       totalFlags,
       skipFlags: state.skipFlags + flags.length,
     };
-    return adapter.upsertMany(flags, { ...newState, isLoadingFeatureFlags: false });
+    return adapter.upsertMany(flags, {
+      ...newState,
+      isLoadingFeatureFlags: false,
+      hasInitialFeatureFlagsDataLoaded: true,
+    });
   }),
   on(FeatureFlagsActions.actionFetchFeatureFlagsFailure, (state) => ({ ...state, isLoadingFeatureFlags: false })),
   on(FeatureFlagsActions.actionSetIsLoadingFeatureFlags, (state, { isLoadingFeatureFlags }) => ({
@@ -40,7 +46,11 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),
   on(FeatureFlagsActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchString })),
   on(FeatureFlagsActions.actionSetSortKey, (state, { sortKey }) => ({ ...state, sortKey })),
-  on(FeatureFlagsActions.actionSetSortingType, (state, { sortingType }) => ({ ...state, sortAs: sortingType }))
+  on(FeatureFlagsActions.actionSetSortingType, (state, { sortingType }) => ({ ...state, sortAs: sortingType })),
+  on(FeatureFlagsActions.actionSetActiveDetailsTabIndex, (state, { activeDetailsTabIndex }) => ({
+    ...state,
+    activeDetailsTabIndex,
+  }))
 );
 
 export function featureFlagsReducer(state: FeatureFlagState | undefined, action: Action) {
