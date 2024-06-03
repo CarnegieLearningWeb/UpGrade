@@ -9,7 +9,7 @@ export class ExperimentFormValidators {
         return { assignmentWeightsSumError: false };
       } else if (conditions.length >= 1) {
         const conditionWeight = conditions.map((condition) => condition.assignmentWeight);
-        if (!conditionWeight[0]) {
+        if (conditionWeight[0] === undefined || conditionWeight[0] === null) {
           return { assignmentWeightsSumError: false };
         } else {
           // handling sum of decimal values for assignment weights:

@@ -10,21 +10,27 @@ export const UserNotDefined = async () => {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   await expect(
-    experimentAssignmentService.getAllExperimentConditions(experimentUsers[0].id, null, {
-      logger: new UpgradeLogger(),
-      userDoc: experimentUserDoc,
-    })
+    experimentAssignmentService.getAllExperimentConditions(
+      { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
+      null,
+      new UpgradeLogger()
+    )
   ).rejects.toThrow();
 
   await expect(
-    experimentAssignmentService.blobDataLog(experimentUsers[0].id, null, new UpgradeLogger())
+    experimentAssignmentService.blobDataLog(
+      { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
+      null,
+      new UpgradeLogger()
+    )
   ).rejects.toThrow();
 
   await expect(
-    experimentAssignmentService.dataLog(experimentUsers[0].id, null, {
-      logger: new UpgradeLogger(),
-      userDoc: experimentUserDoc,
-    })
+    experimentAssignmentService.dataLog(
+      { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
+      null,
+      new UpgradeLogger()
+    )
   ).rejects.toThrow();
 
   await expect(
@@ -36,20 +42,21 @@ export const UserNotDefined = async () => {
 
   await expect(
     experimentAssignmentService.markExperimentPoint(
-      experimentUsers[0].id,
+      { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
       null,
       MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
       null,
-      { logger: new UpgradeLogger(), userDoc: experimentUserDoc },
+      new UpgradeLogger(),
       null
     )
   ).rejects.toThrow();
 
   await expect(
-    experimentUserService.setAliasesForUser(experimentUsers[0].id, null, {
-      logger: new UpgradeLogger(),
-      userDoc: experimentUserDoc,
-    })
+    experimentUserService.setAliasesForUser(
+      { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
+      null,
+      new UpgradeLogger()
+    )
   ).rejects.toThrow();
 
   await expect(

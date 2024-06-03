@@ -1,11 +1,16 @@
-<div class="common-section-card-container">
-  <header class="header-container">
-    <ng-content select="[header]"></ng-content>
+<div class="common-section-card">
+  <header class="header">
+    <div class="header-left">
+      <ng-content select="[header-left]"></ng-content>
+    </div>
+    <div class="header-right">
+      <ng-content select="[header-right]"></ng-content>
+    </div>
   </header>
-  <section class="content-container">
+  <section class="content">
     <ng-content select="[content]"></ng-content>
   </section>
-  <section class="footer-container">
+  <section class="footer">
     <ng-content select="[footer]"></ng-content>
   </section>
 </div>

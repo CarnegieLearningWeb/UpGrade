@@ -12,11 +12,7 @@
                 {{ 'segments.global-members-type.text' | translate }}
               </mat-header-cell>
               <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                <mat-form-field
-                  class="dense-2 form-control"
-                  appearance="outline"
-                  subscriptSizing="dynamic"
-                >
+                <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
                   <mat-select
                     class="ft-14-400"
                     [placeholder]="'segments.members-placeholder-type.text' | translate"
@@ -46,11 +42,7 @@
                 <ng-container
                   *ngIf="participantsForm.getRawValue('type')?.members1[groupIndex]?.type === 'Segment'; else noSelect"
                 >
-                  <mat-form-field
-                    class="dense-2 form-control"
-                    appearance="outline"
-                    subscriptSizing="dynamic"
-                  >
+                  <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
                     <input
                       class="ft-14-400"
                       matInput
@@ -70,11 +62,7 @@
                   </mat-form-field>
                 </ng-container>
                 <ng-template #noSelect>
-                  <mat-form-field
-                    class="dense-2 form-control"
-                    appearance="outline"
-                    subscriptSizing="dynamic"
-                  >
+                  <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
                     <input
                       class="ft-14-400"
                       matInput
@@ -158,11 +146,7 @@
                   {{ 'segments.global-members-type.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-                  <mat-form-field
-                    class="dense-2 form-control"
-                    appearance="outline"
-                    subscriptSizing="dynamic"
-                  >
+                  <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
                     <mat-select
                       class="ft-14-400"
                       [placeholder]="'segments.members-placeholder-type.text' | translate"
@@ -188,11 +172,7 @@
                       else noSelect
                     "
                   >
-                    <mat-form-field
-                      class="dense-2 form-control"
-                      appearance="outline"
-                      subscriptSizing="dynamic"
-                    >
+                    <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
                       <input
                         class="ft-14-400"
                         matInput
@@ -212,11 +192,7 @@
                     </mat-form-field>
                   </ng-container>
                   <ng-template #noSelect>
-                    <mat-form-field
-                      class="dense-2 form-control"
-                      appearance="outline"
-                      subscriptSizing="dynamic"
-                    >
+                    <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
                       <input
                         class="ft-14-400"
                         matInput
