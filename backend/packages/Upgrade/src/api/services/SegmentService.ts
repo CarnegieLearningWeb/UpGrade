@@ -132,7 +132,7 @@ export class SegmentService {
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
-    const segmentsData = await this.getAllSegments(logger);
+    const segmentsData = await this.getAllSegmentsAndSubsegments(logger);
     return this.getSegmentStatus(segmentsData);
   }
 
