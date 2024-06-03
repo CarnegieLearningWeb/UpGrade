@@ -26,7 +26,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
 
   await settingService.setClientCheck(false, true, new UpgradeLogger());
   // create metrics service
-  await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
+  await metricService.saveAllMetrics(metrics as any, withinSubjectExperiment.context, new UpgradeLogger());
 
   // creating new user
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());

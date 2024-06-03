@@ -762,7 +762,7 @@ export class ExperimentClientController {
     @Body({ validate: true })
     metric: MetricValidator
   ): Promise<Metric[]> {
-    return await this.metricService.saveAllMetrics(metric.metricUnit, request.logger);
+    return await this.metricService.saveAllMetrics(metric.metricUnit, metric.context, request.logger);
   }
 
   /**
