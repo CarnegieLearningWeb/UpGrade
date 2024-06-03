@@ -19,6 +19,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
+import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
 
 export interface FeatureFlagFormData {
   name: string;
@@ -65,6 +66,7 @@ export class AddFeatureFlagModalComponent {
     public dialog: MatDialog,
     private formBuilder: FormBuilder,
     private featureFlagsService: FeatureFlagsService,
+    private formHelpersService: CommonFormHelpersService,
     public dialogRef: MatDialogRef<AddFeatureFlagModalComponent>
   ) {}
 
@@ -85,14 +87,10 @@ export class AddFeatureFlagModalComponent {
   onPrimaryActionBtnClicked() {
     if (this.featureFlagForm.valid) {
       // Handle form submission logic here
-      console.log('Feature flag created:', this.featureFlagForm.value);
       this.featureFlagsService.addFeatureFlag(this.featureFlagForm.value);
     } else {
       // If the form is invalid, manually mark all form controls as touched
-      Object.keys(this.featureFlagForm.controls).forEach((field) => {
-        const control = this.featureFlagForm.get(field);
-        control.markAsTouched({ onlySelf: true });
-      });
+      this.formHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);
     }
   }
 

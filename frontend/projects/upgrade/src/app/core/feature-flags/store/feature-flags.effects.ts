@@ -84,7 +84,7 @@ export class FeatureFlagsEffects {
   );
 
   // actionCreateFeatureFlag dispatch POST feature flag
-  createFeatureFlag$ = createEffect(() =>
+  addFeatureFlag$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionCreateFeatureFlag),
       switchMap((action) => {
@@ -97,6 +97,7 @@ export class FeatureFlagsEffects {
       })
     )
   );
+
 
   fetchFeatureFlagsOnSearchString$ = createEffect(
     () =>
