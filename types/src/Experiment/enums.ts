@@ -195,6 +195,12 @@ export enum SEGMENT_SORT_KEY {
   UPDATED_AT = 'updatedAt',
 }
 
+export enum METRIC_SEARCH_KEY {
+  ALL = 'all',
+  NAME = 'name',
+  CONTEXT = 'context',
+}
+
 export enum INCLUSION_CRITERIA {
   INCLUDE_SPECIFIC = 'Include Specific',
   EXCEPT = 'Include All Except...',

@@ -5,6 +5,40 @@
   padding: 0;
   height: 100%;
 
+  .mat-nested-tree-invisible {
+    display: none;
+  }
+
+  .mat-nested-tree ul,
+  .mat-nested-tree li {
+    margin-top: 0;
+    margin-bottom: 0;
+    list-style-type: none;
+  }
+  .button-container {
+    display: flex;
+    align-items: center;
+  }
+
+  .button-container::before {
+    content: ''; /* Empty content for pseudo-element */
+    display: inline-block;
+    width: 5px; /* Width of the square */
+    height: 5px; /* Height of the square */
+    margin-right: 12px; /* Space between square and button */
+    background-color: black; /* Color of the square */
+  }
+  .mat-nested-tree .mat-nested-tree-node div[role='group'] {
+    padding-left: 40px;
+  }
+  .mat-nested-tree div[role='group'] > .mat-tree-node {
+    padding-left: 40px;
+  }
+
+  .mat-nested-tree-invisible {
+    display: none;
+  }
+
   .header {
     display: flex;
     flex-direction: row;
@@ -21,7 +55,19 @@
       height: 16px;
     }
   }
-
+  .input-fields {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 2.25rem;
+  }
+  .chip {
+    background-color: #f2f2f2; /* Grey background color */
+    padding: 5px 10px; /* Adjust padding as needed */
+    border-radius: 10px; /* Border radius */
+    margin-right: 5px;
+  }
   .spinner {
     position: sticky;
     top: 0;
@@ -47,11 +93,11 @@
         position: relative;
 
         &.mat-column-id {
-          width: 10%;
+          width: 40%;
         }
 
         &.mat-column-metric {
-          width: 90%;
+          width: 60%;
         }
       }
 
@@ -87,7 +133,7 @@
           position: relative;
           top: 4px;
           margin-left: 10px;
-          font-size: var(--text-size-normal);
+          font-size: 10px;
 
           &:hover {
             cursor: pointer;

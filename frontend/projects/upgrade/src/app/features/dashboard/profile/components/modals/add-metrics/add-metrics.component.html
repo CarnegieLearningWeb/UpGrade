@@ -1,11 +1,16 @@
 <div class="add-metrics">
   <span class="ft-24-700 title">{{ 'metric.add-metrics.text' | translate | titlecase }}</span>
-
+  <div class="filter-container">
+    <mat-form-field class="dense-2 filter-options" subscriptSizing="dynamic">
+      <mat-select class="ft-14-400" placeholder="App Context">
+        <mat-option class="ft-14-400" *ngFor="let context of contextOptions" [value]="context">
+          {{ context }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
   <div class="json-editor-container">
-    <json-editor
-      #metricsEditor
-      [options]="options"
-    ></json-editor>
+    <json-editor #metricsEditor [options]="options"></json-editor>
   </div>
 
   <div class="button-container">
