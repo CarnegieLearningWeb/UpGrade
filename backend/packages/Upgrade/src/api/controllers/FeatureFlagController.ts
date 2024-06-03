@@ -176,58 +176,6 @@ export class FeatureFlagsController {
 
   /**
    * @swagger
-   * /flags/keys:
-   *    post:
-   *       description: Get feature flags for user
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *         - in: query
-   *           name: user
-   *           required: true
-   *           schema:
-   *             type: string
-   *             example: user1
-   *         - in: query
-   *           name: context
-   *           required: true
-   *           schema:
-   *             type: string
-   *             example: mathia
-   *       tags:
-   *         - Feature Flags
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: Feature Flag List
-   *            schema:
-   *              type: array
-   *              items:
-   *                $ref: '#/definitions/FeatureFlag'
-   *          '401':
-   *            description: AuthorizationRequiredError
-   */
-
-  @Get('/keys')
-  public async getKeys(
-    @QueryParams()
-    userParams: UserParamsValidator,
-    @Req() request: AppRequest
-  ): Promise<string[]> {
-    const experimentUserDoc = await this.experimentUserService.getUserDoc(userParams.userId, request.logger);
-    if (!experimentUserDoc) {
-      const error = new Error(`User not defined in getKeys: ${userParams.userId}`);
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404;
-      request.logger.error(error);
-      throw error;
-    }
-    return this.featureFlagService.getKeys(experimentUserDoc, userParams.context, request.logger);
-  }
-
-  /**
-   * @swagger
    * /flags/{id}:
    *    get:
    *       description: Get feature flag by id
