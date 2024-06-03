@@ -14,6 +14,7 @@ import {
   ASSIGNMENT_UNIT,
   SERVER_ERROR,
   IExperimentEnrollmentStats,
+  ASSIGNMENT_ALGORITHM,
 } from 'upgrade_types';
 import { AnalyticsRepository, CSVExportDataRow } from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
@@ -29,6 +30,10 @@ import { getCustomRepository } from 'typeorm';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import { ExperimentCondition } from '../models/ExperimentCondition';
+import { StateTimeLog } from '../models/StateTimeLogs';
+import { ConditionPayload } from '../models/ConditionPayload';
+import { DecisionPoint } from '../models/DecisionPoint';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -188,7 +193,51 @@ export class AnalyticsService {
         if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
           csvExportData = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentId, skip, take);
         } else {
-          csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(experimentId, skip, take);
+          // Get the experiment details
+          const experimentRepository = getCustomRepository(ExperimentRepository, 'export');
+          const experimentQuery = experimentRepository
+            .createQueryBuilder('experiment')
+            .select([
+              'experiment.id as "experimentId"',
+              'experiment.name as "experimentName"',
+              'experiment.context as "context"',
+              'experiment.assignmentUnit as "assignmentUnit"',
+              'experiment.group as "group"',
+              'experiment.consistencyRule as "consistencyRule"',
+              'experiment.type as "designType"',
+              'experiment.assignmentAlgorithm as "algorithmType"',
+              'experiment.stratificationFactorStratificationFactorName as "stratification"',
+              'experiment.postExperimentRule as "postRule"',
+              'experimentRevertCondition.conditionCode as "revertTo"',
+              '"enrollingStateTimeLog"."timeLog" as "enrollmentStartDate"',
+              '"enrollmentCompleteStateTimeLog"."timeLog" as "enrollmentCompleteDate"',
+              '"conditionPayload"."payloadValue" as "payload"',
+              '"decisionPointData"."excludeIfReached" as "excludeIfReached"',
+              '"decisionPointData"."id" as "expDecisionPointId"',
+              'experimentCondition.id as "expConditionId"',
+              'experimentCondition.conditionCode as "conditionName"',
+            ])
+            .leftJoin(ExperimentCondition, 'experimentCondition', 'experimentCondition.experimentId = experiment.id')
+            .leftJoin(ExperimentCondition, 'experimentRevertCondition', 'experimentRevertCondition.id = experiment.revertTo')
+            .leftJoin(DecisionPoint, 'decisionPointData', 'decisionPointData.experimentId = experiment.id')
+            .leftJoin(ConditionPayload, 'conditionPayload', 'conditionPayload.parentConditionId = experimentCondition.id AND conditionPayload.decisionPointId = decisionPointData.id')
+            .leftJoin(StateTimeLog, 'enrollingStateTimeLog', 'enrollingStateTimeLog.experimentId = experiment.id AND enrollingStateTimeLog.toState = \'enrolling\'')
+            .leftJoin(StateTimeLog, 'enrollmentCompleteStateTimeLog', 'enrollmentCompleteStateTimeLog.experimentId = experiment.id AND enrollmentCompleteStateTimeLog.toState = \'enrollmentComplete\'')
+            .groupBy('experiment.id')
+            .addGroupBy('experimentCondition.id')
+            .addGroupBy('experimentRevertCondition.conditionCode')
+            .addGroupBy('decisionPointData.id')
+            .addGroupBy('conditionPayload.payloadValue')
+            .addGroupBy('enrollingStateTimeLog.timeLog')
+            .addGroupBy('enrollmentCompleteStateTimeLog.timeLog')
+            .where('experiment.id = :experimentId', { experimentId });
+          
+          const experimentQueryResult = await experimentQuery.getRawMany();
+          let isSRSExperiment = false;
+          if (experimentQueryResult.length && experimentQueryResult[0].algorithmType === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+            isSRSExperiment = true;
+          }
+          csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(experimentQueryResult, experimentId, isSRSExperiment, skip, take);
         }
         const userIds = csvExportData.map(({ userId }) => userId);
         // don't query if no data
@@ -333,7 +382,7 @@ export class AnalyticsService {
             UserId: row.userId,
             AppContext: row.context[0],
             UnitOfAssignment: row.assignmentUnit,
-            GroupType: row.group,
+            GroupType: row.group ? row.group : 'NA',
             GroupId: row.enrollmentGroupId ? row.enrollmentGroupId : 'NA',
             ConsistencyRule: row.consistencyRule,
             DesignType: row.designType,
@@ -348,7 +397,7 @@ export class AnalyticsService {
             EnrollmentStartDate: new Date(row.enrollmentStartDate).toISOString(),
             EnrollmentCompleteDate: row.enrollmentCompleteDate
               ? new Date(row.enrollmentCompleteDate).toISOString()
-              : '',
+              : 'NA',
             MarkExperimentPointTime: new Date(row.markExperimentPointTime).toISOString(),
             EnrollmentCode: row.enrollmentCode,
             ...queryDataToAdd,
