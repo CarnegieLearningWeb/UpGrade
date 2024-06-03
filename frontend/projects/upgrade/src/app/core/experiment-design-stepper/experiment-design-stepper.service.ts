@@ -338,7 +338,7 @@ export class ExperimentDesignStepperService {
     const payloadTableData = this.getSimpleExperimentPayloadTableData();
 
     payloadTableData.forEach((payloadRowData: SimpleExperimentPayloadTableRowData) => {
-      const parentCondition = conditions.find((condition) => condition.conditionCode === payloadRowData.condition);
+      const parentCondition = conditions.find((condition) => condition.conditionCode === payloadRowData.condition).id;
 
       const decisionPoint = decisionPoints.find(
         (decisionPoint) => decisionPoint.target === payloadRowData.target && decisionPoint.site === payloadRowData.site
