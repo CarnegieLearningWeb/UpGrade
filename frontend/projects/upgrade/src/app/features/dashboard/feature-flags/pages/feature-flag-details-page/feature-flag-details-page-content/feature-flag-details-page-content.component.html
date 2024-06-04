@@ -1,3 +1,12 @@
 <app-common-section-card-list>
-  <div section-card>Hi I'm a section card 1</div>
+  <app-feature-flag-overview-details-section-card section-card></app-feature-flag-overview-details-section-card>
+  <app-feature-flag-inclusions-section-card *ngIf="(activeTabIndex$ | async) === 0" section-card
+    >inclusions-card</app-feature-flag-inclusions-section-card
+  >
+  <app-feature-flag-exclusions-section-card *ngIf="(activeTabIndex$ | async) === 0" section-card
+    >exclusions-card</app-feature-flag-exclusions-section-card
+  >
+  <app-feature-flag-exposures-section-card *ngIf="(activeTabIndex$ | async) === 1" section-card
+    >exposures-card</app-feature-flag-exposures-section-card
+  >
 </app-common-section-card-list>
