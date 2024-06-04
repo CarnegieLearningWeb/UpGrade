@@ -21,7 +21,7 @@ export class FeatureFlagsDataService {
     // return of({ nodes: mockFeatureFlags, total: 2 }).pipe(delay(2000));
   }
 
-  addFeatureFlag(params: AddFeatureFlagRequest) {
+  addFeatureFlag(params: AddFeatureFlagRequest): Observable<FeatureFlag> {
     const url = this.environment.api.featureFlag;
     return this.http.post<FeatureFlag>(url, params);
   }
