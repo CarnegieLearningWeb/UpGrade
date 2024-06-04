@@ -4,6 +4,10 @@ import {
   ExperimentVM,
   DATE_RANGE,
   IEnrollmentStatByDate,
+  ExperimentConditionFilterOptions,
+  ExperimentPartitionFilterOptions,
+  ExperimentDateFilterOptions,
+  ExperimentCondition,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { filter } from 'rxjs/operators';
@@ -28,9 +32,9 @@ const INDIVIDUAL = 'individual';
 export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy {
   @Input() experiment: ExperimentVM;
   groupFiltersOptions: string[] = [];
-  conditionsFilterOptions: any[] = [];
-  partitionsFilterOptions: any[] = [];
-  dateFilterOptions: any[] = [
+  conditionsFilterOptions: ExperimentConditionFilterOptions[] = [];
+  partitionsFilterOptions: ExperimentPartitionFilterOptions[] = [];
+  dateFilterOptions: ExperimentDateFilterOptions[] = [
     { value: DATE_RANGE.LAST_SEVEN_DAYS, viewValue: 'Last 7 days' },
     { value: DATE_RANGE.LAST_THREE_MONTHS, viewValue: 'Last 3 months' },
     { value: DATE_RANGE.LAST_SIX_MONTHS, viewValue: 'Last 6 months' },
@@ -44,6 +48,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   copyGraphData: IEnrollmentStatByDate[] = [];
   isInitialLoad = true;
   showLabelOfxAxis = true;
+  graphColorIndicators: ExperimentCondition[] = [];
 
   colors = [
     '#31e8dd',
@@ -92,6 +97,8 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
         this.conditionsFilterOptions.push({ code: condition.conditionCode, id: condition.id });
         this.selectedCondition.push(condition.id);
       });
+      this.conditionsFilterOptions.sort((a, b) => a.code.localeCompare(b.code));
+
       this.partitionsFilterOptions = [];
       this.selectedPartition = [];
       this.experiment.partitions.forEach((partition) => {
@@ -102,6 +109,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
         });
         this.selectedPartition.push(partition.id);
       });
+
       this.groupFiltersOptions =
         this.experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
           ? [INDIVIDUAL]
@@ -115,9 +123,13 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   }
 
   ngOnInit() {
+    // Creating a new array with experiment conditionCode for the condition colour indicator to align with sorted graphData
+    this.graphColorIndicators = [...this.experiment.conditions];
+    this.graphColorIndicators.sort((a, b) => a.conditionCode.localeCompare(b.conditionCode));
+
     this.graphInfoSub = this.experimentService.selectExperimentGraphInfo$
       .pipe(filter((info) => !!info))
-      .subscribe((graphInfo: any) => {
+      .subscribe((graphInfo: IEnrollmentStatByDate[]) => {
         this.copyGraphData = graphInfo;
         this.populateGraphData(graphInfo);
       });
@@ -137,7 +149,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
     return value % 1 !== 0 ? '' : value;
   }
 
-  populateGraphData(graphData: any) {
+  populateGraphData(graphData: IEnrollmentStatByDate[]) {
     this.graphData = this.setDataInGraphFormat(graphData);
     switch (this.selectedDateFilter) {
       case DATE_RANGE.LAST_SEVEN_DAYS:
@@ -155,7 +167,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
     }
   }
 
-  setDataInGraphFormat(data: any) {
+  setDataInGraphFormat(data: IEnrollmentStatByDate[]) {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const months = [
       'January',
@@ -203,6 +215,11 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
           });
         }
       });
+
+      // Sort the series array alphabetically based on the condition names.
+      // This ensures consistent ordering of conditions in the resulting graph.
+      series.sort((a, b) => a.name.localeCompare(b.name));
+
       return {
         name:
           this.selectedDateFilter === DATE_RANGE.LAST_SEVEN_DAYS
