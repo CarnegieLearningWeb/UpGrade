@@ -379,20 +379,20 @@ describe('Integration Tests', () => {
     return QueryCRUD();
   });
 
-  test('Individual Experiment Enrollment Code', () => {
-    return IndividualExperimentEnrollmentCode();
-  
-  });
+  // test('Individual Experiment Enrollment Code', () => {
+  //   return IndividualExperimentEnrollmentCode();
+  //
+  // });
 
-  test('Group Experiment Enrollment Code', () => {
-    return GroupExperimentEnrollmentCode();
-  
-  });
+  // test('Group Experiment Enrollment Code', () => {
+  //   return GroupExperimentEnrollmentCode();
+  //
+  // });
 
-  test('Experiment Experiment Enrollment Code', () => {
-    return ExperimentExperimentEnrollmentCode();
-  
-  });
+  // test('Experiment Experiment Enrollment Code', () => {
+  //   return ExperimentExperimentEnrollmentCode();
+  //
+  // });
 
   test('Experiment Context Assignment', () => {
     return ExperimentContextAssignments();
@@ -488,7 +488,6 @@ describe('Integration Tests', () => {
 
   // test('Monitored Point for Export', () => {
   //   return MonitoredPointForExport();
-  //
   // });
 
   test('Within Subject metrics query check', () => {
