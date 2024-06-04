@@ -9,6 +9,8 @@ import {
   selectSearchKey,
   selectSearchString,
   selectActiveDetailsTabIndex,
+  selectSearchFeatureFlagParams,
+  selectRootTableState,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
@@ -22,6 +24,8 @@ export class FeatureFlagsService {
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
   searchString$ = this.store$.pipe(select(selectSearchString));
   searchKey$ = this.store$.pipe(select(selectSearchKey));
+  searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
+  selectRootTableState$ = this.store$.select(selectRootTableState);
   activeDetailsTabIndex$ = this.store$.pipe(select(selectActiveDetailsTabIndex));
 
   fetchFeatureFlags(fromStarting?: boolean) {

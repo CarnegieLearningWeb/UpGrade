@@ -11,13 +11,11 @@ import { FeatureFlagRootSectionCardTableComponent } from './feature-flag-root-se
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FLAG_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
 import { RouterModule } from '@angular/router';
-import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Subscription } from 'rxjs';
-import { Store } from '@ngrx/store';
-import { FeatureFlag, SearchParam } from '../../../../../../../core/feature-flags/store/feature-flags.model';
-import { selectSearchFeatureFlagParams } from '../../../../../../../core/feature-flags/store/feature-flags.selectors';
-import { AppState } from '../../../../../../../core/core.state';
+import { Observable, map } from 'rxjs';
+import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
+import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
+import { CommonTableHelpersService } from '../../../../../../../shared/services/common-table-helpers.service';
 
 @Component({
   selector: 'app-feature-flag-root-section-card',
@@ -39,15 +37,15 @@ import { AppState } from '../../../../../../../core/core.state';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagRootSectionCardComponent {
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
-
-  allFeatureFlagsSub: Subscription;
-  allFeatureFlags: MatTableDataSource<FeatureFlag>;
+  dataSource$: Observable<MatTableDataSource<FeatureFlag>>;
   isLoadingFeatureFlags$ = this.featureFlagService.isLoadingFeatureFlags$;
   isInitialLoading$ = this.featureFlagService.isInitialFeatureFlagsLoading$;
   isAllFlagsFetched$ = this.featureFlagService.isAllFlagsFetched$;
-  searchValue = '';
-  selectedFeatureFlagFilterOption = FLAG_SEARCH_KEY.ALL;
+  searchString$ = this.featureFlagService.searchString$;
+  searchKey$ = this.featureFlagService.searchKey$;
+  searchParams$ = this.featureFlagService.searchParams$;
+  selectRootTableState$ = this.featureFlagService.selectRootTableState$;
+
   featureFlagFilterOption = [
     FLAG_SEARCH_KEY.ALL,
     FLAG_SEARCH_KEY.NAME,
@@ -70,60 +68,22 @@ export class FeatureFlagRootSectionCardComponent {
   constructor(
     private featureFlagService: FeatureFlagsService,
     private translateService: TranslateService,
-    private store$: Store<AppState>
+    private tableHelpersService: CommonTableHelpersService
   ) {}
 
   ngOnInit() {
     this.featureFlagService.fetchFeatureFlags();
-    this.allFeatureFlagsSub = this.featureFlagService.allFeatureFlags$.subscribe((featureFlags) => {
-      this.allFeatureFlags = new MatTableDataSource();
-      this.allFeatureFlags.data = [...featureFlags];
-      this.allFeatureFlags.sort = this.sort;
-      this.applyFilter(this.searchValue);
-    });
-
-    this.store$.select(selectSearchFeatureFlagParams).subscribe((searchParams: any) => {
-      // Used when user clicks on context from view segment page
-      if (searchParams) {
-        this.searchValue = searchParams.searchString;
-        this.selectedFeatureFlagFilterOption = searchParams.searchKey;
-        this.applyFilter(searchParams.searchString);
-      }
-    });
   }
 
-  applyFilter(filterValue: string) {
-    this.filterSegmentPredicate(this.selectedFeatureFlagFilterOption);
-    if (typeof filterValue === 'string') {
-      this.allFeatureFlags.filter = filterValue.trim().toLowerCase();
-    }
+  ngAfterViewInit() {
+    this.dataSource$ = this.featureFlagService.selectRootTableState$.pipe(
+      map(this.tableHelpersService.mapTableStateToDataSource)
+    );
   }
 
-  filterSegmentPredicate(type: FLAG_SEARCH_KEY) {
-    this.allFeatureFlags.filterPredicate = (data, filter: string): boolean => {
-      switch (type) {
-        case FLAG_SEARCH_KEY.ALL:
-          return (
-            data.name.toLocaleLowerCase().includes(filter) ||
-            data.status.toLocaleLowerCase().includes(filter) ||
-            (Array.isArray(data.context) &&
-              data.context.some((context) => context.toLocaleLowerCase().includes(filter)))
-          );
-        case FLAG_SEARCH_KEY.NAME:
-          return data.name.toLocaleLowerCase().includes(filter);
-        case FLAG_SEARCH_KEY.STATUS:
-          return data.status.toLocaleLowerCase().includes(filter);
-        case FLAG_SEARCH_KEY.CONTEXT:
-          return (
-            Array.isArray(data.context) && data.context.some((context) => context.toLocaleLowerCase().includes(filter))
-          );
-      }
-    };
-  }
-
-  onSearch(value: SearchParam) {
-    this.featureFlagService.setSearchString(value.searchValue);
-    this.featureFlagService.setSearchKey(value.filterType);
+  onSearch(params: CommonSearchWidgetSearchParams<FLAG_SEARCH_KEY>) {
+    this.featureFlagService.setSearchString(params.searchString);
+    this.featureFlagService.setSearchKey(params.searchKey as FLAG_SEARCH_KEY);
   }
 
   onAddFeatureFlagButtonClick() {
@@ -135,7 +95,6 @@ export class FeatureFlagRootSectionCardComponent {
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
-    console.log('onSectionCardExpandChange:', isSectionCardExpanded);
     this.isSectionCardExpanded = isSectionCardExpanded;
   }
 }

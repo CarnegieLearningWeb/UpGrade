@@ -19,11 +19,6 @@ export interface FeatureFlag {
   featureFlagSegmentExclusion: SegmentNew;
 }
 
-export interface SearchParam {
-  filterType: FLAG_SEARCH_KEY;
-  searchValue: string;
-}
-
 export const NUMBER_OF_FLAGS = 20;
 
 interface IFeatureFlagsSearchParams {
@@ -79,7 +74,7 @@ export interface FeatureFlagState extends EntityState<FeatureFlag> {
   skipFlags: number;
   totalFlags: number;
   searchKey: FLAG_SEARCH_KEY;
-  searchString: string;
+  searchValue: string;
   sortKey: FLAG_SORT_KEY;
   sortAs: SORT_AS_DIRECTION;
 }

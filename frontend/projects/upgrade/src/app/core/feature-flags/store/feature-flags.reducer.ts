@@ -14,7 +14,7 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   skipFlags: 0,
   totalFlags: null,
   searchKey: FLAG_SEARCH_KEY.ALL,
-  searchString: null,
+  searchValue: null,
   sortKey: null,
   sortAs: null,
 });
@@ -44,7 +44,7 @@ const reducer = createReducer(
   })),
   on(FeatureFlagsActions.actionSetSkipFlags, (state, { skipFlags }) => ({ ...state, skipFlags })),
   on(FeatureFlagsActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),
-  on(FeatureFlagsActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchString })),
+  on(FeatureFlagsActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchValue: searchString })),
   on(FeatureFlagsActions.actionSetSortKey, (state, { sortKey }) => ({ ...state, sortKey })),
   on(FeatureFlagsActions.actionSetSortingType, (state, { sortingType }) => ({ ...state, sortAs: sortingType })),
   on(FeatureFlagsActions.actionSetActiveDetailsTabIndex, (state, { activeDetailsTabIndex }) => ({

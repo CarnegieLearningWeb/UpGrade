@@ -52,7 +52,7 @@ export const selectIsAllFlagsFetched = createSelector(
 
 export const selectSearchKey = createSelector(selectFeatureFlagsState, (state) => state.searchKey);
 
-export const selectSearchString = createSelector(selectFeatureFlagsState, (state) => state.searchString);
+export const selectSearchString = createSelector(selectFeatureFlagsState, (state) => state.searchValue);
 
 export const selectSearchFeatureFlagParams = createSelector(
   selectSearchKey,
@@ -63,6 +63,12 @@ export const selectSearchFeatureFlagParams = createSelector(
     }
     return null;
   }
+);
+
+export const selectRootTableState = createSelector(
+  selectAllFeatureFlags,
+  selectSearchFeatureFlagParams,
+  (tableData, searchParams) => ({ tableData, searchParams })
 );
 
 export const selectSortKey = createSelector(selectFeatureFlagsState, (state) => state.sortKey);
