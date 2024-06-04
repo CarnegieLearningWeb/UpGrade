@@ -39,17 +39,16 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   };
   flagName: string;
   flagHeaderSubtitle: string;
+  flagCreatedAt: string;
+  flagUpdatedAt: string;
   flagStatus: FEATURE_FLAG_STATUS;
 
   constructor(private featureFlagService: FeatureFlagsService) {}
 
   ngOnInit() {
     this.flagName = this.featureFlag.name;
-    this.flagHeaderSubtitle =
-      'Created On: ' +
-      this.featureFlagService.formatDateString(this.featureFlag.createdAt, false) +
-      ' | Updated at: ' +
-      this.featureFlagService.formatDateString(this.featureFlag.updatedAt, true);
+    this.flagCreatedAt = this.featureFlag.createdAt;
+    this.flagUpdatedAt = this.featureFlag.updatedAt;
     this.flagStatus = this.featureFlag.status;
   }
 

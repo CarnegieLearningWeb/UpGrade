@@ -31,8 +31,7 @@ export class FormatDatePipe implements PipeTransform {
           ' ' +
           dateNumber +
           this.getSuffix(dateNumber) +
-          ' '
-          +
+          ' ' +
           experimentDate.getFullYear()
         );
       } else {
@@ -42,7 +41,6 @@ export class FormatDatePipe implements PipeTransform {
           dateNumber +
           this.getSuffix(dateNumber) +
           ', ' +
-          
           (dateHours < 10 || dateHours === 12 ? '0' : '') +
           (dateHours < 12 ? dateHours : dateHours - 12) +
           ':' +

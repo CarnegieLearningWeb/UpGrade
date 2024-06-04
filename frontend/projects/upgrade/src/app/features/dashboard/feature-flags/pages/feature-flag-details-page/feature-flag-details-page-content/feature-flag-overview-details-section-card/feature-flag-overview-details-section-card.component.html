@@ -2,7 +2,8 @@
   <!-- header-left -->
   <app-common-section-card-title-header
     [title]="flagName"
-    [subtitle]="flagHeaderSubtitle"
+    [createdAt]="flagCreatedAt"
+    [updatedAt]="flagUpdatedAt"
     [showViewLogs]="true"
     [chipClass]="flagStatus"
     (viewLogs)="viewLogsClicked($event)"
