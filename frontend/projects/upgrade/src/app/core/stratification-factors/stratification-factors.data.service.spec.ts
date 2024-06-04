@@ -37,7 +37,7 @@ describe('StratificationFactorsDataService', () => {
 
   describe('#importStratificationFactors', () => {
     it('should post the importStratificationFactors http observable', () => {
-      const mockStratificationFactors = [{ name: 'factor1' }, { name: 'factor2' }];
+      const mockStratificationFactors = { files: [{ name: 'factor1' }, { name: 'factor2' }] };
       const expectedUrl = mockEnvironment.api.stratification;
 
       service.importStratificationFactors(mockStratificationFactors);
