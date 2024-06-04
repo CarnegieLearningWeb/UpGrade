@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
 
 @Component({
@@ -26,19 +26,6 @@ import { SharedModule } from '../../../shared/shared.module';
 //
 // Simply pass the data to the component as shown below:
 // <app-common-section-card-content [data]="contentDetails"></app-common-section-card-content>
-export class CommonSectionCardContentComponent implements OnChanges {
+export class CommonSectionCardContentComponent {
   @Input() data: { key: string; value: string }[] = [];
-  keys: string[] = [];
-  values: any[] = [];
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.data && this.data) {
-      this.keys = this.data.map((item) => this.capitalizeKey(Object.keys(item)[0]));
-      this.values = this.data.map((item) => Object.values(item)[0]);
-    }
-  }
-
-  capitalizeKey(key: string): string {
-    return key.charAt(0).toUpperCase() + key.slice(1);
-  }
 }
