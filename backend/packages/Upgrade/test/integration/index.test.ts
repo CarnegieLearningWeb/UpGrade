@@ -128,389 +128,388 @@ describe('Integration Tests', () => {
   // Test cases
   // -------------------------------------------------------------------------
 
-  // test('Mark Experiment before experiment is created', () => {
-  //   return NoExperiment();
-  // });
+  test('Mark Experiment before experiment is created', () => {
+    return NoExperiment();
+  });
 
-  // test('No Group for Experiment', () => {
-  //   return NoGroup();
-  // });
+  test('No Group for Experiment', () => {
+    return NoGroup();
+  });
 
-  // test('No Working Group for Experiment', () => {
-  //   return NoWorkingGroup();
-  // });
+  test('No Working Group for Experiment', () => {
+    return NoWorkingGroup();
+  });
 
-  // test('Working Group not having the key', () => {
-  //   return IncorrectWorkingGroup();
-  // });
+  test('Working Group not having the key', () => {
+    return IncorrectWorkingGroup();
+  });
 
-  // test('Group not having the key', () => {
-  //   return IncorrectGroup();
-  // });
+  test('Group not having the key', () => {
+    return IncorrectGroup();
+  });
 
-  // test('Group and Participants', () => {
-  //   return GroupAndParticipants();
-  // });
+  test('Group and Participants', () => {
+    return GroupAndParticipants();
+  });
 
-  // test('Participants Only', () => {
-  //   return ParticipantsOnly();
-  // });
+  test('Participants Only', () => {
+    return ParticipantsOnly();
+  });
 
-  // test('Log Operations', () => {
-  //   return LogOperations();
-  // });
+  test('Log Operations', () => {
+    return LogOperations();
+  });
 
-  // test('Repeated Measure', () => {
-  //   return RepeatedMeasure();
-  // });
+  test('Repeated Measure', () => {
+    return RepeatedMeasure();
+  });
 
-  // test('User not defined', () => {
-  //   return UserNotDefined();
-  // });
+  test('User not defined', () => {
+    return UserNotDefined();
+  });
 
-  // test('No Experiment user on assignment', () => {
-  //   return NoExperimentUserOnAssignment();
-  // });
+  test('No Experiment user on assignment', () => {
+    return NoExperimentUserOnAssignment();
+  });
 
-  // test('System User is created', () => {
-  //   return SystemUserCreated();
-  // });
+  test('System User is created', () => {
+    return SystemUserCreated();
+  });
 
-  // test('Competing Experiment', () => {
-  //   return CompetingExperiment();
-  // });
+  test('Competing Experiment', () => {
+    return CompetingExperiment();
+  });
 
-  // test('Experiment Scenario 1 - Individual Assignment With Individual Consistency', () => {
-  //   return Scenario1();
+  test('Experiment Scenario 1 - Individual Assignment With Individual Consistency', () => {
+    return Scenario1();
+  });
+
+  // test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', () => {
+  //   return PreviewScenario1();
+  //
   // });
 
-  // // test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', () => {
-  // //   return PreviewScenario1();
-  // //
-  // // });
+  test('Experiment Scenario 2 - Individual Assignment With Experiment Consistency', () => {
+    return Scenario2();
+  });
 
-  // test('Experiment Scenario 2 - Individual Assignment With Experiment Consistency', () => {
-  //   return Scenario2();
+  // test('Experiment Preview Scenario 2 - Individual Assignment With Experiment Consistency for Preview', () => {
+  //   return PreviewScenario2();
+  //
   // });
 
-  // // test('Experiment Preview Scenario 2 - Individual Assignment With Experiment Consistency for Preview', () => {
-  // //   return PreviewScenario2();
-  // //
-  // // });
+  test('Experiment Scenario 3 - Group Assignment With Group Consistency', () => {
+    return Scenario3();
+  });
 
-  // test('Experiment Scenario 3 - Group Assignment With Group Consistency', () => {
-  //   return Scenario3();
+  // test('Experiment Preview Scenario 3 - Group Assignment With Group Consistency for Preview', () => {
+  //   return PreviewScenario3();
+  //
   // });
 
-  // // test('Experiment Preview Scenario 3 - Group Assignment With Group Consistency for Preview', () => {
-  // //   return PreviewScenario3();
-  // //
-  // // });
+  test('Experiment Scenario 4 - Group Assignment With Individual Consistency', () => {
+    return Scenario4();
+  });
 
-  // test('Experiment Scenario 4 - Group Assignment With Individual Consistency', () => {
-  //   return Scenario4();
+  // test('Experiment Preview Scenario 4 - Group Assignment With Individual Consistency for Preview', () => {
+  //   return PreviewScenario4();
+  //
   // });
 
-  // // test('Experiment Preview Scenario 4 - Group Assignment With Individual Consistency for Preview', () => {
-  // //   return PreviewScenario4();
-  // //
-  // // });
+  test('Experiment Scenario 5 - Group Assignment With Experiment Consistency', () => {
+    return Scenario5();
+  });
 
-  // test('Experiment Scenario 5 - Group Assignment With Experiment Consistency', () => {
-  //   return Scenario5();
+  // test('Experiment Preview Scenario 5 - Group Assignment With Experiment Consistency for Preview', () => {
+  //   return PreviewScenario5();
+  //
   // });
 
-  // // test('Experiment Preview Scenario 5 - Group Assignment With Experiment Consistency for Preview', () => {
-  // //   return PreviewScenario5();
-  // //
-  // // });
+  test('Experiment Scenario 6 - Group Switching before assignment Group Assignment With Group Consistency', () => {
+    return Scenario6();
+  });
 
-  // test('Experiment Scenario 6 - Group Switching before assignment Group Assignment With Group Consistency', () => {
-  //   return Scenario6();
-  // });
+  test('Experiment Scenario 8 - Group Switching after assignment Group Assignment With Group Consistency', () => {
+    return Scenario8();
+  });
 
-  // test('Experiment Scenario 8 - Group Switching after assignment Group Assignment With Group Consistency', () => {
-  //   return Scenario8();
-  // });
+  test('Experiment Scenario 9 - Group Switching after assignment Group Assignment With Individual Consistency', () => {
+    return Scenario9();
+  });
 
-  // test('Experiment Scenario 9 - Group Switching after assignment Group Assignment With Individual Consistency', () => {
-  //   return Scenario9();
-  // });
+  test('Experiment Scenario 10 - Group Switching after assignment Group Assignment With Experiment Consistency', () => {
+    return Scenario10();
+  });
 
-  // test('Experiment Scenario 10 - Group Switching after assignment Group Assignment With Experiment Consistency', () => {
-  //   return Scenario10();
+  // test('Preview User Forced assignment', () => {
+  //   return PreviewForcedAssigned();
+  //
   // });
+
+  test('Revert to Default', () => {
+    return RevertToDefault();
+  });
+
+  test('Revert to Condition', () => {
+    return RevertToCondition();
+  });
+
+  // testing experiment update over here
+  test('Update Experiment', () => {
+    return UpdateExperiment();
+  });
 
-  // // test('Preview User Forced assignment', () => {
-  // //   return PreviewForcedAssigned();
-  // //
-  // // });
+  // testing experiment update over here
+  test('Experiment End Date when updated', () => {
+    return ExperimentEndDate();
+  });
 
-  // test('Revert to Default', () => {
-  //   return RevertToDefault();
-  // });
+  // testing experiment update over here
+  test('Experiment Start Date when updated', () => {
+    return ExperimentStartDate();
+  });
 
-  // test('Revert to Condition', () => {
-  //   return RevertToCondition();
-  // });
+  // testing ScheduleJob
+  test('Create Scheduled Job in database to start experiment', () => {
+    return StartExperiment();
+  });
+
+  test('End Experiment after some timestamp', () => {
+    return EndExperiment();
+  });
+
+  test('Update Experiment state some timestamp', () => {
+    return UpdateExperimentState();
+  });
+
+  test('Complete Start Experiment', () => {
+    return CompleteStartExperiment();
+  });
 
-  // // testing experiment update over here
-  // test('Update Experiment', () => {
-  //   return UpdateExperiment();
-  // });
+  test('Delete Start Experiment', () => {
+    return DeleteStartExperiment();
+  });
 
-  // // testing experiment update over here
-  // test('Experiment End Date when updated', () => {
-  //   return ExperimentEndDate();
-  // });
+  test('Complete End Experiment', () => {
+    return CompleteEndExperiment();
+  });
 
-  // // testing experiment update over here
-  // test('Experiment Start Date when updated', () => {
-  //   return ExperimentStartDate();
-  // });
+  test('Delete End Experiment', () => {
+    return DeleteEndExperiment();
+  });
 
-  // // testing ScheduleJob
-  // test('Create Scheduled Job in database to start experiment', () => {
-  //   return StartExperiment();
-  // });
+  test('Check audit log', () => {
+    return MainAuditLog();
+  });
 
-  // test('End Experiment after some timestamp', () => {
-  //   return EndExperiment();
-  // });
+  test('Stats for Individual Enrollment', () => {
+    return StatsIndividualEnrollment();
+  });
 
-  // test('Update Experiment state some timestamp', () => {
-  //   return UpdateExperimentState();
-  // });
+  test('Stats for Group Enrollment', () => {
+    return StatsGroupEnrollment();
+  });
 
-  // test('Complete Start Experiment', () => {
-  //   return CompleteStartExperiment();
-  // });
+  test('Stats for Within-Subject Enrollment', () => {
+    return StatsWithinSubjectEnrollment();
+  });
 
-  // test('Delete Start Experiment', () => {
-  //   return DeleteStartExperiment();
-  // });
+  test('Stats from Individual Experiment for table', () => {
+    return StatsDetailIndividualExperiment();
+  });
 
-  // test('Complete End Experiment', () => {
-  //   return CompleteEndExperiment();
-  // });
+  test('Stats from Group Experiment with for table', () => {
+    return StatsDetailGroupExperiment();
+  });
 
-  // test('Delete End Experiment', () => {
-  //   return DeleteEndExperiment();
-  // });
+  test('No preview user', () => {
+    return NoPreviewUser();
+  });
 
-  // test('Check audit log', () => {
-  //   return MainAuditLog();
-  // });
+  test('Preview Assignments', () => {
+    return PreviewAssignments();
+  });
 
-  // test('Stats for Individual Enrollment', () => {
-  //   return StatsIndividualEnrollment();
-  // });
+  test('Preview experiment with preview user', () => {
+    return PreviewExperimentWithPreviewUser();
+  });
 
-  // test('Stats for Group Enrollment', () => {
-  //   return StatsGroupEnrollment();
-  // });
+  test('Experiment without decision point', () => {
+    return NoPartitionPoint();
+  });
 
-  // test('Stats for Within-Subject Enrollment', () => {
-  //   return StatsWithinSubjectEnrollment();
-  // });
+  test('Experiment with decimal assignment weights', () => {
+    return DecimalAssignmentWeight();
+  });
 
-  // test('Stats from Individual Experiment for table', () => {
-  //   return StatsDetailIndividualExperiment();
-  // });
+  test('Delete Preview Assignment with experiment Update', () => {
+    return DeletePreviewAssignmentWithExperimentUpdate();
+  });
 
-  // test('Stats from Group Experiment with for table', () => {
-  //   return StatsDetailGroupExperiment();
-  // });
+  test('Delete Preview Assignment on experiment Delete', () => {
+    return DeletePreviewAssignmentOnExperimentDelete();
+  });
 
-  // test('No preview user', () => {
-  //   return NoPreviewUser();
-  // });
+  test('Delete Preview Assignment with preview user delete', () => {
+    return DeletePreviewAssignmentWithPreviewUserDelete();
+  });
 
-  // test('Preview Assignments', () => {
-  //   return PreviewAssignments();
-  // });
+  test('Delete Assignments on Experiment Delete', () => {
+    return DeleteAssignmentOnExperimentDelete();
+  });
 
-  // test('Preview experiment with preview user', () => {
-  //   return PreviewExperimentWithPreviewUser();
-  // });
+  test('Individual User Count for State Change to Enrollment Complete', () => {
+    return IndividualUserCount();
+  });
 
-  // test('Experiment without decision point', () => {
-  //   return NoPartitionPoint();
-  // });
+  test('Group User Count for State Change to Enrollment Complete', () => {
+    return GroupUserCount();
+  });
 
-  // test('Experiment with decimal assignment weights', () => {
-  //   return DecimalAssignmentWeight();
-  // });
+  test('Metric CRUD', () => {
+    return MetricCRUD();
+  });
 
-  // test('Delete Preview Assignment with experiment Update', () => {
-  //   return DeletePreviewAssignmentWithExperimentUpdate();
-  // });
+  test('Create Log', () => {
+    return CreateLog();
+  });
 
-  // test('Delete Preview Assignment on experiment Delete', () => {
-  //   return DeletePreviewAssignmentOnExperimentDelete();
-  // });
+  test('Query CRUD operation', () => {
+    return QueryCRUD();
+  });
 
-  // test('Delete Preview Assignment with preview user delete', () => {
-  //   return DeletePreviewAssignmentWithPreviewUserDelete();
+  // test('Individual Experiment Enrollment Code', () => {
+  //   return IndividualExperimentEnrollmentCode();
+  //
   // });
 
-  // test('Delete Assignments on Experiment Delete', () => {
-  //   return DeleteAssignmentOnExperimentDelete();
+  // test('Group Experiment Enrollment Code', () => {
+  //   return GroupExperimentEnrollmentCode();
+  //
   // });
 
-  // test('Individual User Count for State Change to Enrollment Complete', () => {
-  //   return IndividualUserCount();
+  // test('Experiment Experiment Enrollment Code', () => {
+  //   return ExperimentExperimentEnrollmentCode();
+  //
   // });
 
-  // test('Group User Count for State Change to Enrollment Complete', () => {
-  //   return GroupUserCount();
-  // });
+  test('Experiment Context Assignment', () => {
+    return ExperimentContextAssignments();
+  });
 
-  // test('Metric CRUD', () => {
-  //   return MetricCRUD();
-  // });
+  test('Order For Condition', () => {
+    return ConditionOrder();
+  });
 
-  // test('Create Log', () => {
-  //   return CreateLog();
-  // });
+  test('Order For Decision Point', () => {
+    return PartitionOrder();
+  });
 
-  // test('Query CRUD operation', () => {
-  //   return QueryCRUD();
+  // test('Experiment Level exclusion of user with FilterMode as IncludeAll', () => {
+  //   return ExperimentExcludeUser();
+  //
   // });
 
-  // // test('Individual Experiment Enrollment Code', () => {
-  // //   return IndividualExperimentEnrollmentCode();
-  // //
-  // // });
-
-  // // test('Group Experiment Enrollment Code', () => {
-  // //   return GroupExperimentEnrollmentCode();
-  // //
-  // // });
-
-  // // test('Experiment Experiment Enrollment Code', () => {
-  // //   return ExperimentExperimentEnrollmentCode();
-  // //
-  // // });
-
-  // test('Experiment Context Assignment', () => {
-  //   return ExperimentContextAssignments();
+  // test('Experiment Level exclusion of group with FilterMode as IncludeAll', () => {
+  //   return ExperimentExcludeGroup();
+  //
   // });
 
-  // test('Order For Condition', () => {
-  //   return ConditionOrder();
+  // test('Experiment Level inclusion of user with FilterMode as ExcludeAll', () => {
+  //   return ExperimentIncludeUser();
+  //
   // });
 
-  // test('Order For Decision Point', () => {
-  //   return PartitionOrder();
+  // test('Experiment Level inclusion of group with FilterMode as ExcludeAll', () => {
+  //   return ExperimentIncludeGroup();
+  //
   // });
 
-  // // test('Experiment Level exclusion of user with FilterMode as IncludeAll', () => {
-  // //   return ExperimentExcludeUser();
-  // //
-  // // });
-
-  // // test('Experiment Level exclusion of group with FilterMode as IncludeAll', () => {
-  // //   return ExperimentExcludeGroup();
-  // //
-  // // });
-
-  // // test('Experiment Level inclusion of user with FilterMode as ExcludeAll', () => {
-  // //   return ExperimentIncludeUser();
-  // //
-  // // });
-
-  // // test('Experiment Level inclusion of group with FilterMode as ExcludeAll', () => {
-  // //   return ExperimentIncludeGroup();
-  // //
-  // // });
-
-  // test('Segments CRUD operations - Create', () => {
-  //   return SegmentCreate();
-  // });
+  test('Segments CRUD operations - Create', () => {
+    return SegmentCreate();
+  });
 
-  // test('Segments CRUD operations - Update', () => {
-  //   return SegmentUpdate();
-  // });
+  test('Segments CRUD operations - Update', () => {
+    return SegmentUpdate();
+  });
 
-  // test('Segments CRUD operations - Delete', () => {
-  //   return SegmentDelete();
-  // });
+  test('Segments CRUD operations - Delete', () => {
+    return SegmentDelete();
+  });
 
-  // test('Enrollment of User of Segment', () => {
-  //   return SegmentMemberUserEnrollment();
-  // });
+  test('Enrollment of User of Segment', () => {
+    return SegmentMemberUserEnrollment();
+  });
 
-  // test('Enrollment of Group of Segment', () => {
-  //   return SegmentMemberGroupEnrollment();
-  // });
+  test('Enrollment of Group of Segment', () => {
+    return SegmentMemberGroupEnrollment();
+  });
 
-  // test('Enrollment of User of subSegment', () => {
-  //   return SubSegmentEnrollment();
-  // });
+  test('Enrollment of User of subSegment', () => {
+    return SubSegmentEnrollment();
+  });
 
-  // test('ConditionPayloads', () => {
-  //   return ConditionPayload();
-  // });
+  test('ConditionPayloads', () => {
+    return ConditionPayload();
+  });
 
-  // test('Factorial CRUD', () => {
-  //   return FactorialExperimentCRUD();
-  // });
+  test('Factorial CRUD', () => {
+    return FactorialExperimentCRUD();
+  });
 
-  // test('Enrollment With ConditionPayloads', () => {
-  //   return EnrollmentWithConditionPayload();
-  // });
+  test('Enrollment With ConditionPayloads', () => {
+    return EnrollmentWithConditionPayload();
+  });
 
-  // test('Factorial Enrollment with same Decision Point', () => {
-  //   return FactorialEnrollment();
-  // });
+  test('Factorial Enrollment with same Decision Point', () => {
+    return FactorialEnrollment();
+  });
 
-  // test('Factorial Enrollment with different Decision Point', () => {
-  //   return FactorialEnrollment2();
-  // });
+  test('Factorial Enrollment with different Decision Point', () => {
+    return FactorialEnrollment2();
+  });
 
-  // test('Within Subject algorithmCRUD', () => {
-  //   return AlgorithmCheck();
-  // });
+  test('Within Subject algorithmCRUD', () => {
+    return AlgorithmCheck();
+  });
 
-  // test('Within Subject Random Algorithm', () => {
-  //   return RandomAlgoCheck();
-  // });
+  test('Within Subject Random Algorithm', () => {
+    return RandomAlgoCheck();
+  });
 
-  // test('Within Subject Random Round Round Algorithm', () => {
-  //   return RandomRoundRobinAlgoCheck();
-  // });
+  test('Within Subject Random Round Round Algorithm', () => {
+    return RandomRoundRobinAlgoCheck();
+  });
 
-  // test('Within Subject Ordered Round Round algorithmCRUD', () => {
-  //   return OrderedRoundRobinAlgoCheck();
-  // });
+  test('Within Subject Ordered Round Round algorithmCRUD', () => {
+    return OrderedRoundRobinAlgoCheck();
+  });
 
-  // // test('Monitored Point for Export', () => {
-  // //   return MonitoredPointForExport();
-  // //
-  // // });
+  // test('Monitored Point for Export', () => {
+  //   return MonitoredPointForExport();
+  // });
 
   test('Within Subject metrics query check', () => {
     return MetricQueriesCheck();
   });
 
-  // test('Stratification SRS algorithm check', () => {
-  //   return StratificationSRSAlgorithmCheck();
-  // });
+  test('Stratification SRS algorithm check', () => {
+    return StratificationSRSAlgorithmCheck();
+  });
 
-  // test('Stratification Random Algorithm', async () => {
-  //   return StratificationRandomAlgorithmCheck();
-  // });
+  test('Stratification Random Algorithm', async () => {
+    return StratificationRandomAlgorithmCheck();
+  });
 
-  // test('Stratification metrics query check', () => {
-  //   return StratificationMetricQueriesCheck();
-  // });
+  test('Stratification metrics query check', () => {
+    return StratificationMetricQueriesCheck();
+  });
 
-  // test('Working group change after user exclusion for individual consistency', () => {
-  //   return IndividualConsistency();
-  // });
+  test('Working group change after user exclusion for individual consistency', () => {
+    return IndividualConsistency();
+  });
 
-  // test('Working group change after user exclusion for group consistency', () => {
-  //   return GroupConsistency();
-  // });
+  test('Working group change after user exclusion for group consistency', () => {
+    return GroupConsistency();
+  });
 });

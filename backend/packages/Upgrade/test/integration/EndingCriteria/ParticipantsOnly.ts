@@ -82,7 +82,6 @@ export default async function ParticipantsOnly() {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   // mark experiment point
-  console.log('experimentUsers', JSON.stringify(experimentUsers, null, 2));
   markedExperimentPoint = await markExperimentPoint(
     experimentUsers[1].id,
     experimentName1,
