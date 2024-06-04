@@ -42,12 +42,12 @@ export class CommonTableHelpersService {
   /**
    * Defines a filter predicate for a row of data.
    * @param rowData - The row of data to define a filter predicate for.
+   * @param propertyToFilterBy - The property to use for filtering the row of data.
    * @param filter - The filter string to use in the predicate.
    * @returns A boolean indicating whether the row of data matches the filter.
    */
-  defineFilterPredicate<T>(rowData: T, filter: string) {
-    const allFilterableKeys = Object.keys(rowData) as (keyof T)[];
-    return this.filterAll(rowData, allFilterableKeys, filter);
+  defineFilterPredicate<T>(rowData: T, propertyToFilterBy: keyof T, filter: string) {
+    return this.filterByProperty(rowData, propertyToFilterBy, filter);
   }
 
   /**
@@ -58,7 +58,8 @@ export class CommonTableHelpersService {
    */
   mapTableStateToDataSource = <T>({ tableData, searchParams }: { tableData: T[]; searchParams: any }) => {
     const dataSource = new MatTableDataSource(tableData);
-    dataSource.filterPredicate = (rowData, filter) => this.defineFilterPredicate(rowData, filter);
+    dataSource.filterPredicate = (rowData, filter) =>
+      this.defineFilterPredicate(rowData, searchParams.searchKey, filter);
     this.setDataSourceFilter(dataSource, searchParams);
     return dataSource;
   };
