@@ -98,14 +98,17 @@ export class AddFeatureFlagModalComponent {
   }
 
   createAddFeatureFlagRequest(): void {
-    const { name, key, description, appContext, tags } = this.featureFlagForm.value;
+    // temporarily use any until tags feature is added
+    // const { name, key, description, appContext, tags }: FeatureFlagFormData = this.featureFlagForm.value;
+    const { name, key, description, appContext, tags }: any = this.featureFlagForm.value;
+
     const addFeatureFlagRequest: AddFeatureFlagRequest = {
       name,
       key,
       description,
       status: FEATURE_FLAG_STATUS.DISABLED,
       context: [appContext],
-      tags,
+      tags: tags?.split(',').map((tag: string) => tag.trim()) ?? [], // this will need corrected, it should be an array of strings, for now we're hackin
       featureFlagSegmentInclusion: {
         segment: {
           type: SEGMENT_TYPE.PRIVATE,
