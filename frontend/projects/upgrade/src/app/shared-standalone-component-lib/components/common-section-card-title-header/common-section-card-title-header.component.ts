@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonStatusIndicatorChipComponent } from '../common-status-indicator-chip/common-status-indicator-chip.component';
 import { STATUS_INDICATOR_CHIP_TYPE } from 'upgrade_types';
+import { SharedModule } from '../../../shared/shared.module';
 
 /**
  * The `app-common-section-card-search-header` component provides a common header with title and subtitle in section card.
@@ -26,12 +27,14 @@ import { STATUS_INDICATOR_CHIP_TYPE } from 'upgrade_types';
   selector: 'app-common-section-card-title-header',
   templateUrl: './common-section-card-title-header.component.html',
   styleUrls: ['./common-section-card-title-header.component.scss'],
-  imports: [CommonModule, TranslateModule, CommonStatusIndicatorChipComponent],
+  imports: [CommonModule, TranslateModule, CommonStatusIndicatorChipComponent, SharedModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonSectionCardTitleHeaderComponent {
   @Input() title!: string;
-  @Input() subtitle!: string;
+  @Input() subtitle?: string;
+  @Input() createdAt?: string;
+  @Input() updatedAt?: string;
   @Input() chipClass?: STATUS_INDICATOR_CHIP_TYPE;
   @Input() showViewLogs?: boolean;
   @Output() viewLogs = new EventEmitter<{ clicked: boolean }>();
