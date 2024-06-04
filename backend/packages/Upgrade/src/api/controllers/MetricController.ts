@@ -1,6 +1,6 @@
 import { Authorized, JsonController, Get, Delete, Param, Post, Req, Body } from 'routing-controllers';
 import { MetricService } from '../services/MetricService';
-import { IMetricUnit, SERVER_ERROR, } from 'upgrade_types';
+import { IMetricUnit, SERVER_ERROR } from 'upgrade_types';
 import { AppRequest } from '../../types';
 import { MetricValidator } from './validators/MetricValidator';
 
@@ -31,6 +31,33 @@ export class MetricController {
   @Get()
   public getAllMetrics(@Req() request: AppRequest): Promise<IMetricUnit[]> {
     return this.metricService.getAllMetrics(request.logger);
+  }
+
+  /**
+   * @swagger
+   * /metric/{context}:
+   *    get:
+   *       description: Get all metrics with context
+   *       parameters:
+   *         - in: path
+   *           name: context
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: context
+   *       tags:
+   *         - Metrics
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get all metrics with context
+   *          '404':
+   *            description: Context not found
+   */
+  @Get('/:context')
+  public getMetricsByContext(@Param('context') context: string, @Req() request: AppRequest): Promise<IMetricUnit[]> {
+    return this.metricService.getMetricsByContext(context, request.logger);
   }
 
   /**
@@ -75,7 +102,7 @@ export class MetricController {
     @Body({ validate: true }) metric: MetricValidator,
     @Req() request: AppRequest
   ): Promise<IMetricUnit[]> {
-    return this.metricService.upsertAllMetrics(metric.metricUnit, request.logger);
+    return this.metricService.upsertAllMetrics(metric.metricUnit, metric.context, request.logger);
   }
 
   /**

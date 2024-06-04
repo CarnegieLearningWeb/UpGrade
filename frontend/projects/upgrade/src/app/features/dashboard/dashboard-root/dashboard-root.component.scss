@@ -53,7 +53,8 @@ mat-drawer {
           border-radius: 7px;
           background-color: var(--blue);
 
-          .icon, .list-item-label {
+          .icon,
+          .list-item-label {
             color: var(--white);
           }
         }
@@ -106,15 +107,6 @@ mat-drawer {
         margin-right: 10px;
       }
     }
-  }
-}
-
-.drawer__main-content {
-  &-header {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    height: 25px;
   }
 }
 

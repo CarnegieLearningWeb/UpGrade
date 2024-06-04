@@ -1,10 +1,7 @@
 <mat-card appearance="raised" class="segments-list-container">
   <div class="header">
     <div>
-      <mat-form-field
-        class="dense-2 filter-options"
-        subscriptSizing="dynamic"
-      >
+      <mat-form-field class="dense-2 filter-options" subscriptSizing="dynamic">
         <mat-select
           class="ft-14-400"
           [(ngModel)]="selectedSegmentFilterOption"
@@ -15,10 +12,7 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field
-        class="dense-2"
-        subscriptSizing="dynamic"
-      >
+      <mat-form-field class="dense-2" subscriptSizing="dynamic">
         <input
           class="ft-14-400 search-input"
           matInput
@@ -68,8 +62,10 @@
     <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingSegments$ | async"></mat-progress-bar>
     <table
       class="segments-list"
-      mat-table [dataSource]="allSegments"
-      matSort (matSortChange)="changeSorting($event)"
+      mat-table
+      [dataSource]="allSegments"
+      matSort
+      (matSortChange)="changeSorting($event)"
       [matSortActive]="segmentSortKey$ | async"
       [matSortDirection]="(segmentSortAs$ | async | lowercase) ?? 'asc'"
     >
@@ -140,7 +136,10 @@
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
           <mat-chip-listbox>
-            <mat-chip *ngIf="segment.context != 'ALL'" (click)="filterSegmentsByChips(segment.context, SegmentSearchKey.CONTEXT)">
+            <mat-chip
+              *ngIf="segment.context != 'ALL'"
+              (click)="filterSegmentsByChips(segment.context, SegmentSearchKey.CONTEXT)"
+            >
               <span class="ft-12-600 chip-label">
                 {{ segment.context }}
               </span>

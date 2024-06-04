@@ -19,17 +19,28 @@ export class MetricService {
     return this.metricDocumentToJson(metricData);
   }
 
-  public async saveAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>, logger: UpgradeLogger): Promise<Metric[]> {
+  public async getMetricsByContext(context: string, logger: UpgradeLogger): Promise<IMetricUnit[]> {
+    logger.info({ message: `Get metrics by context ${context}` });
+    const metricData = await this.metricRepository.getMetricsByContext(context);
+    return this.metricDocumentToJson(metricData);
+  }
+
+  public async saveAllMetrics(
+    metrics: Array<IGroupMetric | ISingleMetric>,
+    contexts: string[],
+    logger: UpgradeLogger
+  ): Promise<Metric[]> {
     logger.info({ message: 'Save all metrics' });
-    return await this.addAllMetrics(metrics, logger);
+    return await this.addAllMetrics(metrics, contexts, logger);
   }
 
   public async upsertAllMetrics(
     metrics: Array<IGroupMetric | ISingleMetric>,
+    contexts: string[],
     logger: UpgradeLogger
   ): Promise<IMetricUnit[]> {
     logger.info({ message: 'Upsert all metrics' });
-    const upsertedMetrics = await this.addAllMetrics(metrics, logger);
+    const upsertedMetrics = await this.addAllMetrics(metrics, contexts, logger);
     return this.metricDocumentToJson(upsertedMetrics);
   }
 
@@ -41,7 +52,11 @@ export class MetricService {
     return this.metricDocumentToJson(updatedMetric);
   }
 
-  private async addAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>, logger: UpgradeLogger): Promise<Metric[]> {
+  private async addAllMetrics(
+    metrics: Array<IGroupMetric | ISingleMetric>,
+    contexts: string[],
+    logger: UpgradeLogger
+  ): Promise<Metric[]> {
     // check permission for metrics
     const isAllowed = await this.checkMetricsPermission(logger);
     if (!isAllowed) {
@@ -57,6 +72,7 @@ export class MetricService {
       key: metric.key,
       type: metric.type,
       allowedData: metric.allowedData,
+      context: contexts,
     }));
     return this.metricRepository.save(metricDoc);
   }
@@ -138,6 +154,7 @@ export class MetricService {
             children: [],
             metadata: { type: metric.type as any },
             allowedData: metric.allowedData,
+            context: metric.context,
           };
           metricPointer.push(newMetric);
 

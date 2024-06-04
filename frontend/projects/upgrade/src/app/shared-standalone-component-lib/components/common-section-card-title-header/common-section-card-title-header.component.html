@@ -1,0 +1,15 @@
+<div class="title-header">
+  <h1 class="title ft-26-700">
+    {{ title | translate }}
+    <ng-container *ngIf="chipClass">
+      <app-common-status-indicator-chip [chipClass] = "chipClass" ></app-common-status-indicator-chip>
+    </ng-container>
+  </h1>
+  <h3 class="subtitle ft-16-400">
+    {{ subtitle | translate }}
+    <ng-container *ngIf="showViewLogs">
+      <a [href]="" class="view-logs-link" (click)="viewLogsClicked()"> View logs</a>
+    </ng-container>
+  </h3>
+</div>
+

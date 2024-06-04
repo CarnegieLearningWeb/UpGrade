@@ -112,6 +112,7 @@ export interface IExperimentSortParams {
 
 export interface IMetricUnit {
   key: string | string[];
+  context?: string[];
   children?: IMetricUnit[];
   metadata?: { type: IMetricMetaData };
   allowedData?: string[];
@@ -237,4 +238,9 @@ export interface CaliperEnvelope {
   sendTime: string;
   dataVersion: string;
   data: CaliperGradingProfile[];
+}
+
+export interface IMenuButtonItem {
+  name: string;
+  disabled: boolean;
 }

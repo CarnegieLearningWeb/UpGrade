@@ -8,12 +8,12 @@
           {{ 'segments.global-members-type.text' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-          <mat-form-field
-            class="dense-2 form-control"
-            appearance="outline"
-            subscriptSizing="dynamic"
-          >
-            <mat-select class="ft-14-400" formControlName="type" [placeholder]="'segments.members-placeholder-type.text' | translate">
+          <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
+            <mat-select
+              class="ft-14-400"
+              formControlName="type"
+              [placeholder]="'segments.members-placeholder-type.text' | translate"
+            >
               <mat-option class="ft-14-400" *ngFor="let val of segmentMemberTypes" [value]="val.value">
                 {{ val.name }}
               </mat-option>
@@ -31,11 +31,7 @@
           <ng-container
             *ngIf="segmentMembersForm.getRawValue('type')?.members[groupIndex]?.type === 'Segment'; else noSelect"
           >
-            <mat-form-field
-              class="dense-2 form-control"
-              appearance="outline"
-              subscriptSizing="dynamic"
-            >
+            <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
               <mat-select class="ft-14-400" formControlName="id">
                 <mat-option class="ft-14-400" *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
                   {{ subSegmentId }}
@@ -44,15 +40,12 @@
             </mat-form-field>
           </ng-container>
           <ng-template #noSelect>
-            <mat-form-field
-              class="dense-2 form-control"
-              appearance="outline"
-              subscriptSizing="dynamic"
-            >
+            <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
               <input
                 class="ft-14-400"
                 matInput
-                [placeholder]="'segments.global-members-id/name.text' | translate" formControlName="id"
+                [placeholder]="'segments.global-members-id/name.text' | translate"
+                formControlName="id"
               />
             </mat-form-field>
           </ng-template>
@@ -60,10 +53,14 @@
       </ng-container>
 
       <ng-container matColumnDef="removeMember">
-        <mat-header-cell class="ft-12-600 import-csv" [ngClass]="{ 'disabled': !isImportMemberValid }" aria-hidden="true" (click)="fileInput.click()" *matHeaderCellDef>
-          <mat-icon class="upload-icon">
-            upload_2
-          </mat-icon>
+        <mat-header-cell
+          class="ft-12-600 import-csv"
+          [ngClass]="{ disabled: !isImportMemberValid }"
+          aria-hidden="true"
+          (click)="fileInput.click()"
+          *matHeaderCellDef
+        >
+          <mat-icon class="upload-icon"> upload_2 </mat-icon>
           {{ 'users.stratification-users-import-csv.text' | translate }}
           <input
             class="ft-14-400 select-file"
