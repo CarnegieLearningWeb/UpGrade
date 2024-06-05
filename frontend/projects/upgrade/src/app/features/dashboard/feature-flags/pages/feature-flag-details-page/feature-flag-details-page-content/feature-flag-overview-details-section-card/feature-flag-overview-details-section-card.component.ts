@@ -1,19 +1,23 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import {
+  CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
   CommonSectionCardTitleHeaderComponent,
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { FeatureFlagOverviewDetailsFooterComponent } from './feature-flag-overview-details-footer/feature-flag-overview-details-footer.component';
 import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
-import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, IMenuButtonItem } from 'upgrade_types';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,
   imports: [
+    CommonModule,
     CommonSectionCardComponent,
     CommonSectionCardTitleHeaderComponent,
+    CommonSectionCardActionButtonsComponent,
     FeatureFlagOverviewDetailsFooterComponent,
   ],
   templateUrl: './feature-flag-overview-details-section-card.component.html',
@@ -42,6 +46,11 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   flagCreatedAt: string;
   flagUpdatedAt: string;
   flagStatus: FEATURE_FLAG_STATUS;
+  menuButtonItems: IMenuButtonItem[] = [
+    { name: 'Edit', disabled: false },
+    { name: 'Delete', disabled: false },
+  ];
+  isSectionCardExpanded = true;
 
   constructor(private featureFlagService: FeatureFlagsService) {}
 
@@ -55,5 +64,19 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   viewLogsClicked(event) {
     console.log('viewLogs Clicked');
     console.log(event);
+  }
+
+  onSlideToggleChange(event) {
+    console.log('on Slide Toggle Clicked');
+    console.log(event);
+  }
+
+  onMenuButtonItemClick(event) {
+    console.log('Menu button Clicked');
+    console.log(event);
+  }
+
+  onSectionCardExpandChange(isSectionCardExpanded: boolean) {
+    this.isSectionCardExpanded = isSectionCardExpanded;
   }
 }
