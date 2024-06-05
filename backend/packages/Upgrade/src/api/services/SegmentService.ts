@@ -143,32 +143,45 @@ export class SegmentService {
         this.getExperimentSegmentExclusionData(),
       ]);
 
-      const segmentsUsedList = [];
+      const segmentMap = new Map<string, string[]>();
+      segmentsData.forEach((segment) => {
+        if (segment.id === globalExcludeSegment.id) {
+          segmentMap.set(segment.id, []);
+        } else {
+          segmentMap.set(
+            segment.id,
+            segment.subSegments.map((subSegment) => subSegment.id)
+          );
+        }
+      });
+
+      const segmentsUsedList = new Set<string>();
+
+      const collectSegmentIds = (segmentId: string) => {
+        if (segmentsUsedList.has(segmentId)) return;
+        segmentsUsedList.add(segmentId);
+        const subSegmentIds = segmentMap.get(segmentId) || [];
+        subSegmentIds.forEach((subSegmentId) => collectSegmentIds(subSegmentId));
+      };
 
       if (allExperimentSegmentsInclusion) {
         allExperimentSegmentsInclusion.forEach((ele) => {
-          const subSegments = ele.segment.subSegments;
-          segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
+          collectSegmentIds(ele.segment.id);
+          ele.segment.subSegments.forEach((subSegment) => collectSegmentIds(subSegment.id));
         });
       }
 
       if (allExperimentSegmentsExclusion) {
         allExperimentSegmentsExclusion.forEach((ele) => {
-          const subSegments = ele.segment.subSegments;
-          segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
+          collectSegmentIds(ele.segment.id);
+          ele.segment.subSegments.forEach((subSegment) => collectSegmentIds(subSegment.id));
         });
       }
-
-      segmentsData.forEach((segment) => {
-        if (segmentsUsedList.includes(segment.id)) {
-          segmentsUsedList.push(...segment.subSegments.map((subSegment) => subSegment.id));
-        }
-      });
 
       const segmentsDataWithStatus = segmentsData.map((segment) => {
         if (segment.id === globalExcludeSegment.id) {
           return { ...segment, status: SEGMENT_STATUS.GLOBAL };
-        } else if (segmentsUsedList.includes(segment.id)) {
+        } else if (segmentsUsedList.has(segment.id)) {
           return { ...segment, status: SEGMENT_STATUS.USED };
         } else {
           return { ...segment, status: SEGMENT_STATUS.UNUSED };
