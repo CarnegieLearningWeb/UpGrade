@@ -1,30 +1,42 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { JsonEditorOptions, JsonEditorComponent } from 'ang-jsoneditor';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AnalysisService } from '../../../../../../core/analysis/analysis.service';
 import { Subscription } from 'rxjs';
 // import { MetricUnit } from '../../../../../../core/analysis/store/analysis.models';
-import { IMetricUnit } from '../../../../../../../../../../../types/src';
+
+import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
+import { IContextMetaData } from '../../../../../../core/experiments/store/experiments.model';
 
 @Component({
   selector: 'app-add-metrics',
   templateUrl: './add-metrics.component.html',
   styleUrls: ['./add-metrics.component.scss'],
 })
-export class AddMetricsComponent implements OnInit {
+export class AddMetricsComponent implements OnInit, OnDestroy {
   options = new JsonEditorOptions();
   metricsEditorError = false;
-  allMetrics: IMetricUnit[];
-  allMetricsSub: Subscription;
-  contextOptions: string[] = [];
+
+  contextMetaData: IContextMetaData | Record<string, unknown> = {};
+  contextMetaDataSub: Subscription;
+  allContexts = [];
+  selectedContextOption: string;
+
   @ViewChild('metricsEditor', { static: false }) metricsEditor: JsonEditorComponent;
-  constructor(private dialogRef: MatDialogRef<AddMetricsComponent>, private analysisService: AnalysisService) {}
+  constructor(
+    private dialogRef: MatDialogRef<AddMetricsComponent>,
+    private analysisService: AnalysisService,
+    private experimentService: ExperimentService
+  ) {}
 
   ngOnInit() {
-    this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics: IMetricUnit[]) => {
-      this.allMetrics = metrics;
-      this.extractContext(this.allMetrics);
-      console.log(this.allMetrics);
+    this.experimentService.fetchContextMetaData();
+    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
+      this.contextMetaData = contextMetaData;
+
+      if (this.contextMetaData && this.contextMetaData.contextMetadata) {
+        this.allContexts = Object.keys(this.contextMetaData.contextMetadata);
+      }
     });
     this.options = new JsonEditorOptions();
     this.options.mode = 'code';
@@ -50,29 +62,19 @@ export class AddMetricsComponent implements OnInit {
     if (Array.isArray(json)) {
       data = {
         metricUnit: json,
+        context: this.selectedContextOption,
       };
     } else {
       data = {
         metricUnit: [json],
+        context: [this.selectedContextOption],
       };
     }
     this.analysisService.upsertMetrics(data);
     this.onCancelClick();
   }
-  extractContext(data: any[]): void {
-    const contextValuesSet = new Set<string>(); // Using Set to automatically remove duplicates
 
-    function extractContextRecursively(obj: any) {
-      if (obj.context && Array.isArray(obj.context)) {
-        obj.context.forEach((value: string) => contextValuesSet.add(value));
-      }
-      if (obj.children && Array.isArray(obj.children)) {
-        obj.children.forEach((child: any) => extractContextRecursively(child));
-      }
-    }
-
-    data.forEach((item) => extractContextRecursively(item));
-
-    this.contextOptions = Array.from(contextValuesSet); // Convert Set back to array
+  ngOnDestroy() {
+    this.contextMetaDataSub.unsubscribe();
   }
 }

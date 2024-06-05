@@ -15,18 +15,14 @@
     margin-bottom: 0;
     list-style-type: none;
   }
-  .button-container {
+  .leaf-node-button-icon {
     display: flex;
     align-items: center;
+    justify-content: center;
+    font-size: 12px;
   }
-
-  .button-container::before {
-    content: ''; /* Empty content for pseudo-element */
-    display: inline-block;
-    width: 5px; /* Width of the square */
-    height: 5px; /* Height of the square */
-    margin-right: 12px; /* Space between square and button */
-    background-color: black; /* Color of the square */
+  .context-chip {
+    margin: 5px;
   }
   .mat-nested-tree .mat-nested-tree-node div[role='group'] {
     padding-left: 40px;
@@ -62,12 +58,7 @@
     justify-content: flex-start;
     gap: 2.25rem;
   }
-  .chip {
-    background-color: #f2f2f2; /* Grey background color */
-    padding: 5px 10px; /* Adjust padding as needed */
-    border-radius: 10px; /* Border radius */
-    margin-right: 5px;
-  }
+
   .spinner {
     position: sticky;
     top: 0;
