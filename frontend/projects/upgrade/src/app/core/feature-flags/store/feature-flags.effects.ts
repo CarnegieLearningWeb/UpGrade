@@ -83,6 +83,23 @@ export class FeatureFlagsEffects {
     )
   );
 
+  // actionCreateFeatureFlag dispatch POST feature flag
+  addFeatureFlag$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionAddFeatureFlag),
+      switchMap((action) => {
+        return this.featureFlagsDataService.addFeatureFlag(action.addFeatureFlagRequest).pipe(
+          map((response) => {
+            return FeatureFlagsActions.actionAddFeatureFlagSuccess({ response });
+          }),
+          // TODO: currently we are not handling errors #https://github.com/CarnegieLearningWeb/UpGrade/issues/1604
+          catchError(() => [FeatureFlagsActions.actionAddFeatureFlagFailure()])
+        );
+      })
+    )
+  );
+
+
   fetchFeatureFlagsOnSearchString$ = createEffect(
     () =>
       this.actions$.pipe(

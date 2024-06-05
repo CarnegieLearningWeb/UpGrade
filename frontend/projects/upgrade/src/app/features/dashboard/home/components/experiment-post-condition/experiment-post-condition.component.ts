@@ -20,7 +20,7 @@ import { ExperimentFormValidators } from '../../validators/experiment-form.valid
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Subscription } from 'rxjs';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogService } from '../../../../../shared/services/dialog.service';
+import { DialogService } from '../../../../../shared/services/common-dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 @Component({
   selector: 'home-experiment-post-condition',
