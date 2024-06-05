@@ -33,25 +33,18 @@ import { IMenuButtonItem } from 'upgrade_types';
 @Component({
   selector: 'app-common-section-card-action-buttons',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatSlideToggleModule,
-    MatButtonModule,
-    MatIconModule,
-    MatMenuModule,
-    TranslateModule,
-  ],
+  imports: [CommonModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatMenuModule, TranslateModule],
   templateUrl: './common-section-card-action-buttons.component.html',
   styleUrl: './common-section-card-action-buttons.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonSectionCardActionButtonsComponent {
   @Input() showSlideToggle?: boolean = false;
   @Input() isEnableToggleChecked?: boolean = false;
   @Input() showPrimaryButton?: boolean = false;
   @Input() primaryButtonText?: string;
-  @Input() showMenuButton?: boolean = true;
-  @Input() menuButtonItems?: IMenuButtonItem[];
+  @Input() showMenuButton?: boolean = false;
+  @Input() menuButtonItems?: IMenuButtonItem[] = [];
   @Input() isSectionCardExpanded?: boolean = true;
   @Output() slideToggleChange = new EventEmitter<boolean>();
   @Output() primaryButtonClick = new EventEmitter<void>();

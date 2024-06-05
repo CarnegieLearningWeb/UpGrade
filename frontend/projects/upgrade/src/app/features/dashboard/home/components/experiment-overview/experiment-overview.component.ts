@@ -31,7 +31,7 @@ import find from 'lodash.find';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Observable, Subscription } from 'rxjs';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { DialogService } from '../../../../../shared/services/dialog.service';
+import { DialogService } from '../../../../../shared/services/common-dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import { StratificationFactorSimple } from '../../../../../core/stratification-factors/store/stratification-factors.model';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';

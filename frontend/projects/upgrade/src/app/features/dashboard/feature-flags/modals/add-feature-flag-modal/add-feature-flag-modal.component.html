@@ -1,0 +1,47 @@
+<div class="modal-container">
+  <app-common-dialog
+    [title]="config.title"
+    [cancelBtnLabel]="config.cancelBtnLabel"
+    [primaryActionBtnLabel]="config.primaryActionBtnLabel"
+    [primaryActionBtnColor]="config.primaryActionBtnColor"
+    [primaryActionBtnDisabled$]="isLoadingAddFeatureFlag$"
+    (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+  >
+      <form [formGroup]="featureFlagForm">
+        <mat-form-field appearance="outline">
+          <mat-label>Name</mat-label>
+          <input matInput formControlName="name" placeholder="e.g., My feature flag"/>
+          <mat-hint class="form-hint ft-10-400">{{ "feature-flags.add-flag-modal.name-hint.text" | translate }}</mat-hint>
+        </mat-form-field>
+      
+        <mat-form-field appearance="outline">
+          <mat-label>Key</mat-label>
+          <input matInput formControlName="key" placeholder="Key for this feature flag"/>
+          <mat-hint class="form-hint ft-10-400">{{ "feature-flags.add-flag-modal.key-hint.text" | translate }}<a class="learn-more-link" href="https://www.upgradeplatform.org/">Learn more</a></mat-hint>
+        </mat-form-field>
+      
+        <mat-form-field appearance="outline">
+          <mat-label>Description (optional)</mat-label>
+          <input matInput formControlName="description" placeholder="Describe your feature flag"/>
+        </mat-form-field>
+      
+        <mat-form-field appearance="outline">
+          <mat-label>App Context</mat-label>
+          <mat-select formControlName="appContext">
+            <mat-option *ngFor="let context of appContexts$ | async" [value]="context">{{ context }}</mat-option>
+          </mat-select>
+          <mat-hint class="form-hint ft-10-400">{{ "feature-flags.add-flag-modal.app-context-hint.text" | translate }}<a class="learn-more-link" href="https://www.upgradeplatform.org/">Learn more</a></mat-hint>
+        </mat-form-field>
+      
+        <!-- TODO: create a story to create a tag input common component, don't want to copy over the logic of the mat-tag-grid from experiment-overview here -->
+        <mat-form-field appearance="outline">
+          <mat-label>Tags (optional)</mat-label>
+          <input
+            matInput
+            formControlName="tags"
+            placeholder="Tags separated by commas"
+          >
+        </mat-form-field>
+      </form>
+  </app-common-dialog>
+</div>
