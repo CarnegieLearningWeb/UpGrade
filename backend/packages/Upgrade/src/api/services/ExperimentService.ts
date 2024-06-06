@@ -1561,9 +1561,8 @@ export class ExperimentService {
         const newExperiment = plainToClass(ExperimentDTO, experiment);
 
         const experimentJSONValidationError = await this.validateExperimentJSON(newExperiment);
+        const fileName = experimentFile.fileName;
         try {
-          const fileName = experimentFile.fileName;
-
           experiment = this.autoFillSomeMissingProperties(experiment);
           experiment = this.deduceExperimentDetails(experiment);
 
@@ -1583,7 +1582,7 @@ export class ExperimentService {
           // If JSON is valid and version is the same, return null for no error
           return { fileName: fileName, error: null };
         } catch (error: any) {
-          return { fileName: experimentFile.fileName, error: experimentJSONValidationError };
+          return { fileName: fileName, error: experimentJSONValidationError };
         }
       })
     );
