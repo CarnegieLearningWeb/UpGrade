@@ -79,7 +79,7 @@ export class FeatureFlagRootSectionCardComponent {
 
   ngAfterViewInit() {
     this.dataSource$ = this.featureFlagService.selectRootTableState$.pipe(
-      map(this.tableHelpersService.mapTableStateToDataSource)
+      map(this.tableHelpersService.mapTableStateToDataSource<FeatureFlag>)
     );
   }
 

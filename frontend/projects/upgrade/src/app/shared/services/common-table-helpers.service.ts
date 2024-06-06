@@ -15,10 +15,10 @@ export class CommonTableHelpersService {
    * @param filterFunctions - A record of filter functions, keyed by search key.
    * @returns A filter predicate function that takes a row of data and a filter string and returns a boolean.
    */
-  setFilterPredicate(
+  setFilterPredicate<T>(
     searchKey: string,
-    filterFunctions: Record<string, (rowData: any, filter: string) => boolean>
-  ): (rowData: any, filter: string) => boolean {
+    filterFunctions: Record<string, (rowData: T, filter: string) => boolean>
+  ): (rowData: T, filter: string) => boolean {
     return (rowData, filter: string): boolean => {
       const filterFunction = filterFunctions[searchKey];
       return filterFunction ? filterFunction(rowData, filter) : false;
@@ -44,22 +44,36 @@ export class CommonTableHelpersService {
    * @param rowData - The row of data to define a filter predicate for.
    * @param propertyToFilterBy - The property to use for filtering the row of data.
    * @param filter - The filter string to use in the predicate.
+   * @param allSearchableProperties - All properties that can be searched when filtering.
    * @returns A boolean indicating whether the row of data matches the filter.
    */
-  defineFilterPredicate<T>(rowData: T, propertyToFilterBy: keyof T, filter: string) {
-    return this.filterByProperty(rowData, propertyToFilterBy, filter);
+  defineFilterPredicate<T>(rowData: T, propertyToFilterBy: string, filter: string, allSearchableProperties: string[]) {
+    if (propertyToFilterBy === 'all') {
+      return this.filterAll<T>(rowData, allSearchableProperties, filter);
+    } else {
+      return this.filterByProperty<T>(rowData, propertyToFilterBy, filter);
+    }
   }
 
-  /**
+   /**
    * Maps table state to a MatTableDataSource.
    * @param tableData - The data to use for the MatTableDataSource.
    * @param searchParams - The search parameters to use for setting the filter on the MatTableDataSource.
+   * @param allSearchableProperties - All properties that can be searched when filtering.
    * @returns A MatTableDataSource with the provided data and filter.
    */
-  mapTableStateToDataSource = <T>({ tableData, searchParams }: { tableData: T[]; searchParams: any }) => {
+  mapTableStateToDataSource = <T>({
+    tableData,
+    searchParams,
+    allSearchableProperties,
+  }: {
+    tableData: T[];
+    searchParams: { searchString?: string; searchKey?: string };
+    allSearchableProperties: string[];
+  }) => {
     const dataSource = new MatTableDataSource(tableData);
     dataSource.filterPredicate = (rowData, filter) =>
-      this.defineFilterPredicate(rowData, searchParams.searchKey, filter);
+      this.defineFilterPredicate(rowData, searchParams.searchKey, filter, allSearchableProperties);
     this.setDataSourceFilter(dataSource, searchParams);
     return dataSource;
   };
@@ -71,7 +85,7 @@ export class CommonTableHelpersService {
    * @param filter - The filter string to use for filtering the row of data.
    * @returns A boolean indicating whether the row of data matches the filter.
    */
-  filterAll<T>(rowData: T, keys: (keyof T)[], filter: string): boolean {
+  filterAll<T>(rowData: T, keys: string[], filter: string): boolean {
     return keys.some((key) => this.filterByProperty(rowData, key, filter));
   }
 
@@ -86,7 +100,7 @@ export class CommonTableHelpersService {
    * @param filter - The filter string to use for filtering the row of data.
    * @returns A boolean indicating whether the row of data matches the filter.
    */
-  filterByProperty<T>(rowData: T, propertyToFilterBy: keyof T, filter: string): boolean {
+  filterByProperty<T>(rowData: T, propertyToFilterBy: string, filter: string): boolean {
     const propertyValue = rowData[propertyToFilterBy];
     if (Array.isArray(propertyValue)) {
       return propertyValue.some((value) => value.toLocaleLowerCase().includes(filter));
