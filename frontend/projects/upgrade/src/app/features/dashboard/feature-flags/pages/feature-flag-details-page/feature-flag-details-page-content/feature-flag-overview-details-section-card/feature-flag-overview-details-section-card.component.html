@@ -1,6 +1,33 @@
-  <app-common-section-card class="details-overview-card">
-    <div header-left style="background-color: beige; height: 90px; width: 100%">header-left</div>
-    <div header-right style="background-color: beige; height: 90px; width: 100%">header-right</div>
-    <div content style="background-color: beige; height: 90px; width: 100%">content: Details Overview</div>
-    <app-feature-flag-overview-details-footer footer></app-feature-flag-overview-details-footer>
-  </app-common-section-card>
+<app-common-section-card class="details-overview-card">
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="flagName"
+    [createdAt]="flagCreatedAt"
+    [updatedAt]="flagUpdatedAt"
+    [showViewLogs]="true"
+    [chipClass]="flagStatus"
+    (viewLogs)="viewLogsClicked($event)"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showSlideToggle]="true"
+    [isEnableToggleChecked]="false"
+    [showMenuButton]="true"
+    [menuButtonItems]="menuButtonItems"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (slideToggleChange)="onSlideToggleChange($event)"
+    (menuButtonItemClick)="onMenuButtonItemClick($event)"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  ></app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <ng-container content *ngIf="isSectionCardExpanded">
+    <div style="background-color: beige; height: 90px; width: 100%">content: Details Overview</div>
+  </ng-container>
+
+  <!-- footer -->
+  <app-feature-flag-overview-details-footer footer></app-feature-flag-overview-details-footer>
+</app-common-section-card>

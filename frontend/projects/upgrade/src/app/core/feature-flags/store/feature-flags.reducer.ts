@@ -8,6 +8,7 @@ export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFl
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
 export const initialState: FeatureFlagState = adapter.getInitialState({
+  isLoadingAddFeatureFlag: false,
   isLoadingFeatureFlags: false,
   hasInitialFeatureFlagsDataLoaded: false,
   activeDetailsTabIndex: 0,
@@ -42,6 +43,14 @@ const reducer = createReducer(
     ...state,
     isLoadingFeatureFlags,
   })),
+  on(FeatureFlagsActions.actionAddFeatureFlag, (state) => ({ ...state, isLoadingAddFeatureFlag: true })),
+  on(FeatureFlagsActions.actionAddFeatureFlagSuccess, (state, { response }) => {
+    return adapter.addOne(response, {
+      ...state,
+      isLoadingAddFeatureFlag: false,
+    });
+  }),
+  on(FeatureFlagsActions.actionAddFeatureFlagFailure, (state) => ({ ...state, isLoadingAddFeatureFlag: false })),
   on(FeatureFlagsActions.actionSetSkipFlags, (state, { skipFlags }) => ({ ...state, skipFlags })),
   on(FeatureFlagsActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),
   on(FeatureFlagsActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchString })),

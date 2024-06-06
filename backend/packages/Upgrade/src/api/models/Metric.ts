@@ -19,7 +19,7 @@ export class Metric extends BaseModel {
   @Column({ type: 'simple-array', nullable: true })
   public allowedData: string[];
 
-  @Column('text', { array: true })
+  @Column('text', { array: true, nullable: true })
   public context: string[];
 
   @ManyToMany(() => Log, (log) => log.metrics, {
