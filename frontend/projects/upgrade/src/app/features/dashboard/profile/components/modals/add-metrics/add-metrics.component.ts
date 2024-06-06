@@ -21,6 +21,7 @@ export class AddMetricsComponent implements OnInit, OnDestroy {
   contextMetaDataSub: Subscription;
   allContexts = [];
   selectedContextOption: string;
+  isContextSelected = false;
 
   @ViewChild('metricsEditor', { static: false }) metricsEditor: JsonEditorComponent;
   constructor(
@@ -72,6 +73,10 @@ export class AddMetricsComponent implements OnInit, OnDestroy {
     }
     this.analysisService.upsertMetrics(data);
     this.onCancelClick();
+  }
+
+  contextIsSelected() {
+    this.isContextSelected = true;
   }
 
   ngOnDestroy() {
