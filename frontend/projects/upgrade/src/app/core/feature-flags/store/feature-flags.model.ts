@@ -107,7 +107,7 @@ export interface FeatureFlagState extends EntityState<FeatureFlag> {
   activeDetailsTabIndex: number;
   skipFlags: number;
   totalFlags: number;
-  searchKey: FLAG_SEARCH_KEY;
+  searchKey: string;
   searchValue: string;
   sortKey: FLAG_SORT_KEY;
   sortAs: SORT_AS_DIRECTION;
