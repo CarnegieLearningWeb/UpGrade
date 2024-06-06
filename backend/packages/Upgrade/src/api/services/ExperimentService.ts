@@ -1581,7 +1581,7 @@ export class ExperimentService {
             return { fileName: fileName, error: versionErrorMessage };
           }
           // If JSON is valid and version is the same, return null for no error
-          return null;
+          return { fileName: fileName, error: null };
         } catch (error: any) {
           return { fileName: experimentFile.fileName, error: experimentJSONValidationError };
         }
