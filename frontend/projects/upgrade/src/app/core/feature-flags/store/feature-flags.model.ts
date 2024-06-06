@@ -55,7 +55,7 @@ export interface EmptyPrivateSegment {
 export const NUMBER_OF_FLAGS = 20;
 
 interface IFeatureFlagsSearchParams {
-  key: FLAG_SEARCH_KEY;
+  key: string;
   string: string;
 }
 
