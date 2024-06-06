@@ -23,7 +23,7 @@ import { Segment, MemberTypes } from '../../../../../core/segments/store/segment
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from 'upgrade_types';
-import { DialogService } from '../../../../../shared/services/dialog.service';
+import { DialogService } from '../../../../../shared/services/common-dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 
 @Component({
