@@ -57,7 +57,11 @@
                   <mat-icon class="leaf-node-button-icon"> fiber_manual_record</mat-icon>
                 </button>
                 {{ node.key }}
-                <mat-icon *ngIf="permissions.metrics.delete && keyEditMode" class="icon" (click)="deleteNode(node)">
+                <mat-icon
+                  *ngIf="permissions.metrics.delete && keyEditMode"
+                  class="delete-icon"
+                  (click)="deleteNode(node)"
+                >
                   delete_outline
                 </mat-icon>
               </mat-tree-node>
@@ -70,7 +74,10 @@
                     </mat-icon>
                   </button>
                   {{ node.key }}
-                  <mat-icon *ngIf="permissions.metrics.delete && keyEditMode" class="icon" (click)="deleteNode(node)"
+                  <mat-icon
+                    *ngIf="permissions.metrics.delete && keyEditMode"
+                    class="delete-icon"
+                    (click)="deleteNode(node)"
                     >delete_outline</mat-icon
                   >
                 </div>

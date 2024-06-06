@@ -80,6 +80,13 @@
     table {
       width: 100%;
 
+      .delete-icon {
+        margin-left: 10px;
+        &:hover {
+          cursor: pointer;
+        }
+      }
+
       .mat-mdc-cell {
         position: relative;
 
@@ -114,21 +121,6 @@
           margin-top: 0;
           margin-bottom: 0;
           list-style-type: none;
-        }
-
-        .mat-tree-node {
-          min-height: 40px;
-        }
-
-        .icon {
-          position: relative;
-          top: 4px;
-          margin-left: 10px;
-          font-size: 10px;
-
-          &:hover {
-            cursor: pointer;
-          }
         }
       }
     }
