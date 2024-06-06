@@ -34,6 +34,8 @@ const browser = {
   output: {
     filename: 'index.js',
     path: path.resolve(__dirname, 'dist/browser'),
+    libraryExport: 'default',
+    library: 'UpgradeClient',
     libraryTarget: 'umd',
     globalObject: 'this',
   },
