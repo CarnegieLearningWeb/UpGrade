@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
+import { ContentDetail, KeyValueFormat } from 'upgrade_types';
+import { CommonFormHelpersService } from '../../../shared/services/common-form-helpers.service';
 
 @Component({
   selector: 'app-common-section-card-content',
   standalone: true,
   //Here imported SharedModule which exports CommonModule and MatChipModule
   imports: [SharedModule],
-
   templateUrl: './common-section-card-content.component.html',
   styleUrl: './common-section-card-content.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,15 +18,24 @@ import { SharedModule } from '../../../shared/shared.module';
 //
 // Example Usage:
 //
-// contentDetails = [
-//   { key: 'name' },
-//   { description: 'something' },
-//   { tags: ['Tag1', 'Tag2'] },
-//   { Appcontext: 'Context1' },
-// ];
+// contentDetails = {
+//   Key: 'name',
+//   Description: 'something',
+//   Tags: ['Tag1', 'Tag2'],
+//   app_Context: 'Context1',
+// };
 //
 // Simply pass the data to the component as shown below:
 // <app-common-section-card-content [data]="contentDetails"></app-common-section-card-content>
 export class CommonSectionCardContentComponent {
-  @Input() data: { key: string; value: string }[] = [];
+  @Input() data!: KeyValueFormat;
+  dataSource: ContentDetail[] = [];
+
+  constructor(private formHelpersService: CommonFormHelpersService) {}
+
+  ngOnInit() {
+    if (this.data) {
+      this.dataSource = this.formHelpersService.convertObjectFormat(this.data);
+    }
+  }
 }

@@ -1,7 +1,22 @@
 .content-section {
   width: 100%;
-  border: 1px solid var(--light-grey);
-  border-radius: 4px;
   background-color: var(--white);
-  padding: 0 32px;
+
+  .item-key-value {
+    display: flex;
+    align-items: center;
+    line-height: 2;
+  }
+
+  .item-key {
+    margin-right: 8px;
+  }
+
+  .item-value {
+    color: var(--dark-grey);
+  }
+
+  .chip{
+    margin-right: 5px;
+  }
 }

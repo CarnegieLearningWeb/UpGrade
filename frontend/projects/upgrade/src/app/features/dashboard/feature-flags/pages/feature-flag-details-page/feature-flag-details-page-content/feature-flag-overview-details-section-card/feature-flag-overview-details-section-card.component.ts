@@ -6,9 +6,10 @@ import {
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { FeatureFlagOverviewDetailsFooterComponent } from './feature-flag-overview-details-footer/feature-flag-overview-details-footer.component';
 import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
-import { FEATURE_FLAG_STATUS, FILTER_MODE, IMenuButtonItem } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, IMenuButtonItem, KeyValueFormat } from 'upgrade_types';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 import { CommonModule } from '@angular/common';
+import { CommonSectionCardContentComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-content/common-section-card-content.component';
 
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
@@ -18,6 +19,7 @@ import { CommonModule } from '@angular/common';
     CommonSectionCardComponent,
     CommonSectionCardTitleHeaderComponent,
     CommonSectionCardActionButtonsComponent,
+    CommonSectionCardContentComponent,
     FeatureFlagOverviewDetailsFooterComponent,
   ],
   templateUrl: './feature-flag-overview-details-section-card.component.html',
@@ -46,6 +48,8 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   flagCreatedAt: string;
   flagUpdatedAt: string;
   flagStatus: FEATURE_FLAG_STATUS;
+  flagOverviewDetails: KeyValueFormat;
+
   menuButtonItems: IMenuButtonItem[] = [
     { name: 'Edit', disabled: false },
     { name: 'Delete', disabled: false },
@@ -59,6 +63,12 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
     this.flagCreatedAt = this.featureFlag.createdAt;
     this.flagUpdatedAt = this.featureFlag.updatedAt;
     this.flagStatus = this.featureFlag.status;
+    this.flagOverviewDetails = {
+      Key: this.featureFlag.key,
+      Description: this.featureFlag.description,
+      app_context: this.featureFlag.context[0],
+      Tags: this.featureFlag.tags,
+    };
   }
 
   viewLogsClicked(event) {
