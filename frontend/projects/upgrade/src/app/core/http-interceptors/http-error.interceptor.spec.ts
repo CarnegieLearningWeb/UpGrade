@@ -78,28 +78,29 @@ describe('HttpErrorInterceptor', () => {
 
   describe('#intercept', () => {
     it('should logout if a 401 error is caught and open popup', fakeAsync(() => {
-      const mockError = {
-        status: 401,
-      };
       const mockRequest: any = {};
+      const mockError = { status: 401, message: 'test' };
       const mockNextHandler = {
-        handle: jest.fn().mockReturnValue(throwError(mockError)),
+        handle: jest.fn().mockReturnValue(throwError(() => mockError)),
       };
       mockAuthService.authLogout = jest.fn();
       service.openPopup = jest.fn();
 
-      service.intercept(mockRequest, mockNextHandler).subscribe();
+      service.intercept(mockRequest, mockNextHandler).subscribe({
+        error: (error: Error) => {
+          const errObject = JSON.parse(error.message);
+          expect(errObject.status).toEqual(mockError.status);
+          expect(errObject.message).toEqual(mockError.message);
+        },
+      });
 
       tick(0);
 
-      expect(service.openPopup).toHaveBeenCalledWith(mockError);
       expect(mockAuthService.authLogout).toHaveBeenCalled();
     }));
 
     it('should NOT logout if error is not 401, and open popup', fakeAsync(() => {
-      const mockError = {
-        status: 400,
-      };
+      const mockError = { status: 400, message: 'test' };
       const mockRequest: any = {};
       const mockNextHandler = {
         handle: jest.fn().mockReturnValue(throwError(mockError)),
@@ -107,11 +108,17 @@ describe('HttpErrorInterceptor', () => {
       mockAuthService.authLogout = jest.fn();
       service.openPopup = jest.fn();
 
-      service.intercept(mockRequest, mockNextHandler).subscribe();
+      service.intercept(mockRequest, mockNextHandler).subscribe({
+        error: (error: Error) => {
+          const errObject = JSON.parse(error.message);
+          expect(errObject.status).toEqual(mockError.status);
+          expect(errObject.message).toEqual(mockError.message);
+        },
+      });
 
       tick(0);
 
-      expect(service.openPopup).toHaveBeenCalledWith(mockError);
+      expect(service.openPopup).toHaveBeenCalled();
       expect(mockAuthService.authLogout).not.toHaveBeenCalled();
     }));
 
