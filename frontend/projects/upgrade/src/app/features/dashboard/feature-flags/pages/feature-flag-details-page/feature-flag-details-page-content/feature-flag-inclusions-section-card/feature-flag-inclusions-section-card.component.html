@@ -1,5 +1,11 @@
 <app-common-section-card>
-  <div header-left style="background-color: rgb(245, 220, 230); height: 90px; width: 100%">header-left</div>
-  <div header-right style="background-color: rgb(245, 220, 230); height: 90px; width: 100%">header-right</div>
+  <app-common-section-card-title-header
+    header-left
+    [title]="'feature-flags.details.inclusions.card.title.text' | translate"
+    [subtitle]="'feature-flags.details.inclusions.card.subtitle.text' | translate"
+    [tableRowCount]="tableRowCount$ | async"
+></app-common-section-card-title-header>
+<div header-right style="background-color: rgb(245, 220, 230); height: 90px; width: 100%">header-right</div>
+
   <div content style="background-color: rgb(245, 220, 230); height: 90px; width: 100%">content: Inclusions</div>
 </app-common-section-card>
