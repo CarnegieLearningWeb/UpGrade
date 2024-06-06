@@ -18,6 +18,7 @@ import { Store } from '@ngrx/store';
 import { FeatureFlag, SearchParam } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { selectSearchFeatureFlagParams } from '../../../../../../../core/feature-flags/store/feature-flags.selectors';
 import { AppState } from '../../../../../../../core/core.state';
+import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 
 @Component({
   selector: 'app-feature-flag-root-section-card',
@@ -71,6 +72,7 @@ export class FeatureFlagRootSectionCardComponent {
     private featureFlagService: FeatureFlagsService,
     private translateService: TranslateService,
     private store$: Store<AppState>
+    private dialogService: DialogService
   ) {}
 
   ngOnInit() {
@@ -119,6 +121,7 @@ export class FeatureFlagRootSectionCardComponent {
           );
       }
     };
+    this.featureFlagService.fetchContextMetaData();
   }
 
   onSearch(value: SearchParam) {
@@ -127,7 +130,7 @@ export class FeatureFlagRootSectionCardComponent {
   }
 
   onAddFeatureFlagButtonClick() {
-    console.log('onAddFeatureFlagButtonClick');
+    this.dialogService.openAddFeatureFlagModal();
   }
 
   onMenuButtonItemClick(menuButtonItemName: string) {
@@ -135,7 +138,6 @@ export class FeatureFlagRootSectionCardComponent {
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
-    console.log('onSectionCardExpandChange:', isSectionCardExpanded);
     this.isSectionCardExpanded = isSectionCardExpanded;
   }
 }
