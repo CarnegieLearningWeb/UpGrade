@@ -10,6 +10,8 @@ import {
   selectSearchString,
   selectIsLoadingAddFeatureFlag,
   selectActiveDetailsTabIndex,
+  selectSearchFeatureFlagParams,
+  selectRootTableState,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -33,6 +35,8 @@ export class FeatureFlagsService {
     pairwise(),
     filter(([prevEntities, currEntities]) => prevEntities.length !== currEntities.length)
   );
+  searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
+  selectRootTableState$ = this.store$.select(selectRootTableState);
   activeDetailsTabIndex$ = this.store$.pipe(select(selectActiveDetailsTabIndex));
   appContexts$ = this.experimentService.contextMetaData$.pipe(
     map((contextMetaData) => {
