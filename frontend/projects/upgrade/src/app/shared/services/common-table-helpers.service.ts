@@ -32,7 +32,7 @@ export class CommonTableHelpersService {
    */
   setDataSourceFilter<T>(
     dataSource: MatTableDataSource<T>,
-    searchParams: { searchString?: string; searchKey?: string }
+    searchParams: { searchString: string; searchKey: string }
   ): void {
     if (typeof searchParams?.searchString === 'string') {
       dataSource.filter = searchParams.searchString;
@@ -68,7 +68,7 @@ export class CommonTableHelpersService {
     allSearchableProperties,
   }: {
     tableData: T[];
-    searchParams: { searchString?: string; searchKey?: string };
+    searchParams: { searchString: string; searchKey: string };
     allSearchableProperties: string[];
   }) => {
     const dataSource = new MatTableDataSource(tableData);
