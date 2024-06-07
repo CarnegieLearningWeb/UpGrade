@@ -1,14 +1,14 @@
 <div class="content-section">
-  <div *ngFor="let item of dataSource">
+  <div *ngFor="let key of objectKeys(data)">
     <div class='item-key-value'>
-      <span class="ft-16-600 item-key">{{ item.key }}:</span>
-      <ng-container *ngIf="item.key !== 'Tags'; else chipSection">
-        <span class="ft-16-500 item-value">{{ item.value }}</span>
+      <span class="ft-16-600 item-key">{{ key }}:</span>
+      <ng-container *ngIf="key !== 'Tags'; else chipSection">
+        <span class="ft-16-500 item-value">{{ data[key] }}</span>
       </ng-container>
 
       <ng-template #chipSection>
         <mat-chip-list>
-          <mat-chip *ngFor="let tag of item.value" class="chip">{{ tag }}</mat-chip>
+          <mat-chip *ngFor="let tag of data[key]" class="chip">{{ tag }}</mat-chip>
         </mat-chip-list>
       </ng-template>
     </div>

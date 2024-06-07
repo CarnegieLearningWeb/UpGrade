@@ -248,8 +248,3 @@ export interface IMenuButtonItem {
 export interface KeyValueFormat {
   [key: string]: string | string[];
 }
-
-export interface ContentDetail {
-  key: string;
-  value: string | string[];
-}

@@ -64,10 +64,10 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
     this.flagUpdatedAt = this.featureFlag.updatedAt;
     this.flagStatus = this.featureFlag.status;
     this.flagOverviewDetails = {
-      Key: this.featureFlag.key,
-      Description: this.featureFlag.description,
-      app_context: this.featureFlag.context[0],
-      Tags: this.featureFlag.tags,
+      ['Key']: this.featureFlag.key,
+      ['Description']: this.featureFlag.description,
+      ['App Context']: this.featureFlag.context[0],
+      ['Tags']: this.featureFlag.tags,
     };
   }
 

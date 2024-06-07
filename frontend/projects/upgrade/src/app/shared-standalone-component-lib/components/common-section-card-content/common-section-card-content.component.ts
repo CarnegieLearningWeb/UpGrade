@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
-import { ContentDetail, KeyValueFormat } from 'upgrade_types';
-import { CommonFormHelpersService } from '../../../shared/services/common-form-helpers.service';
+import { KeyValueFormat } from 'upgrade_types';
 
 @Component({
   selector: 'app-common-section-card-content',
@@ -29,13 +28,8 @@ import { CommonFormHelpersService } from '../../../shared/services/common-form-h
 // <app-common-section-card-content [data]="contentDetails"></app-common-section-card-content>
 export class CommonSectionCardContentComponent {
   @Input() data!: KeyValueFormat;
-  dataSource: ContentDetail[] = [];
 
-  constructor(private formHelpersService: CommonFormHelpersService) {}
-
-  ngOnInit() {
-    if (this.data) {
-      this.dataSource = this.formHelpersService.convertObjectFormat(this.data);
-    }
+  objectKeys(obj: any): string[] {
+    return Object.keys(obj);
   }
 }

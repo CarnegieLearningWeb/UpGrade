@@ -65,6 +65,5 @@ export {
   ILogMetrics,
   ILogGroupMetrics,
   IMenuButtonItem,
-  ContentDetail,
   KeyValueFormat,
 } from './Experiment/interfaces';
