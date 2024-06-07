@@ -55,7 +55,7 @@ export interface EmptyPrivateSegment {
 export const NUMBER_OF_FLAGS = 20;
 
 interface IFeatureFlagsSearchParams {
-  key: string;
+  key: FLAG_SEARCH_KEY;
   string: string;
 }
 
@@ -107,7 +107,7 @@ export interface FeatureFlagState extends EntityState<FeatureFlag> {
   activeDetailsTabIndex: number;
   skipFlags: number;
   totalFlags: number;
-  searchKey: string;
+  searchKey: FLAG_SEARCH_KEY;
   searchValue: string;
   sortKey: FLAG_SORT_KEY;
   sortAs: SORT_AS_DIRECTION;

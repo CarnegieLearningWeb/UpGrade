@@ -7,7 +7,7 @@ import {
   FeatureFlagsPaginationInfo,
   FeatureFlagsPaginationParams,
 } from './store/feature-flags.model';
-import { Observable, delay, of, skip } from 'rxjs';
+import { Observable } from 'rxjs';
 import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../types/src';
 
 @Injectable()
