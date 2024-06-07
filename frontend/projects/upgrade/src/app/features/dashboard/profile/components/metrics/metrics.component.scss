@@ -81,7 +81,13 @@
       width: 100%;
 
       .delete-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: var(--text-size-x-large);
+        color: gray;
         margin-left: 10px;
+
         &:hover {
           cursor: pointer;
         }
