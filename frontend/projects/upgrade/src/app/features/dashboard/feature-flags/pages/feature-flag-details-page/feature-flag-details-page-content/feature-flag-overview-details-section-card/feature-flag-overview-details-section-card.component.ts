@@ -6,11 +6,13 @@ import {
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { FeatureFlagOverviewDetailsFooterComponent } from './feature-flag-overview-details-footer/feature-flag-overview-details-footer.component';
 import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
-import { FEATURE_FLAG_STATUS, FILTER_MODE, IMenuButtonItem, KeyValueFormat } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, IMenuButtonItem } from 'upgrade_types';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 import { CommonModule } from '@angular/common';
-import { CommonSectionCardContentComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-content/common-section-card-content.component';
-
+import {
+  CommonSectionCardOverviewDetailsComponent,
+  KeyValueFormat,
+} from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,
@@ -19,7 +21,7 @@ import { CommonSectionCardContentComponent } from '../../../../../../../shared-s
     CommonSectionCardComponent,
     CommonSectionCardTitleHeaderComponent,
     CommonSectionCardActionButtonsComponent,
-    CommonSectionCardContentComponent,
+    CommonSectionCardOverviewDetailsComponent,
     FeatureFlagOverviewDetailsFooterComponent,
   ],
   templateUrl: './feature-flag-overview-details-section-card.component.html',

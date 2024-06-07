@@ -244,7 +244,3 @@ export interface IMenuButtonItem {
   name: string;
   disabled: boolean;
 }
-
-export interface KeyValueFormat {
-  [key: string]: string | string[];
-}
