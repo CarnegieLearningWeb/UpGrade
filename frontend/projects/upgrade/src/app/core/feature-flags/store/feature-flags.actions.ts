@@ -14,6 +14,18 @@ export const actionFetchFeatureFlagsSuccess = createAction(
 
 export const actionFetchFeatureFlagsFailure = createAction('[Feature Flags] Fetch Feature Flags Paginated Failure');
 
+export const actionFetchFeatureFlagById = createAction(
+  '[Feature Flags] Fetch Feature Flags By Id',
+  props<{ featureFlagId: string }>()
+);
+
+export const actionFetchFeatureFlagByIdSuccess = createAction(
+  '[Feature Flags] Fetch Feature Flags By Id Success',
+  props<{ flag: FeatureFlag }>()
+);
+
+export const actionFetchFeatureFlagByIdFailure = createAction('[Feature Flags] Fetch Feature Flags By Id Failure');
+
 export const actionSetIsLoadingFeatureFlags = createAction(
   '[Feature Flags] Set Is Loading Flags',
   props<{ isLoadingFeatureFlags: boolean }>()

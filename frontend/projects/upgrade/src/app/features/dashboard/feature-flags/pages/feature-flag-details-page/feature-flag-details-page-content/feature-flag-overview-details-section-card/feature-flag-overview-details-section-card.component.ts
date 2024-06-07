@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
@@ -25,6 +25,7 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagOverviewDetailsSectionCardComponent {
+  @Input() data: FeatureFlag;
   //temp mock data
   featureFlag: FeatureFlag = {
     createdAt: '2021-09-08T08:00:00.000Z',

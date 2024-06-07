@@ -2,8 +2,8 @@ import { FeatureFlagsDataService } from '../feature-flags.data.service';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Injectable } from '@angular/core';
 import * as FeatureFlagsActions from './feature-flags.actions';
-import { catchError, switchMap, map, filter, withLatestFrom, tap, first } from 'rxjs/operators';
-import { FeatureFlagsPaginationParams, NUMBER_OF_FLAGS } from './feature-flags.model';
+import { catchError, switchMap, map, filter, withLatestFrom, tap, first, mergeMap } from 'rxjs/operators';
+import { FeatureFlag, FeatureFlagsPaginationParams, NUMBER_OF_FLAGS } from './feature-flags.model';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../../core.module';
@@ -15,6 +15,7 @@ import {
   selectSortAs,
   selectSearchString,
 } from './feature-flags.selectors';
+import { of } from 'rxjs';
 
 @Injectable()
 export class FeatureFlagsEffects {
@@ -99,7 +100,6 @@ export class FeatureFlagsEffects {
     )
   );
 
-
   fetchFeatureFlagsOnSearchString$ = createEffect(
     () =>
       this.actions$.pipe(
@@ -127,6 +127,43 @@ export class FeatureFlagsEffects {
         })
       ),
     { dispatch: false }
+  );
+
+  // fetchFeatureFlagById$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(FeatureFlagsActions.actionFetchFeatureFlagById),
+  //     mergeMap((action) => {
+  //       console.log('Effect triggered: ', action);
+  //       return this.featureFlagsDataService.fetchFeatureFlagById(action.featureFlagId).pipe(
+  //         map((response: { flags: FeatureFlag; totalFlags: number }) => {
+  //           console.log('API response: ', response);
+  //           return FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess({
+  //             flags: response.flags,
+  //             totalFlags: response.totalFlags,
+  //           });
+  //         }),
+  //         catchError((error) => {
+  //           console.error('API error: ', error);
+  //           return of(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure({ error: error.message || error }));
+  //         })
+  //       );
+  //     })
+  //   )
+  // );
+  fetchFeatureFlagById$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionFetchFeatureFlagById),
+      map((action) => action.featureFlagId),
+      filter((featureFlagId) => !!featureFlagId),
+      switchMap((featureFlagId) =>
+        this.featureFlagsDataService.fetchFeatureFlagById(featureFlagId).pipe(
+          map((data: FeatureFlag) => {
+            return FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess({ flag: data });
+          }),
+          catchError(() => [FeatureFlagsActions.actionFetchFeatureFlagByIdFailure()])
+        )
+      )
+    )
   );
 
   private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());

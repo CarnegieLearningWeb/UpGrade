@@ -1,12 +1,15 @@
 <app-common-section-card-list>
-  <app-feature-flag-overview-details-section-card section-card></app-feature-flag-overview-details-section-card>
-  <app-feature-flag-inclusions-section-card *ngIf="(activeTabIndex$ | async) === 0" section-card
+  <app-feature-flag-overview-details-section-card
+    [data]="featureFlag"
+    section-card
+  ></app-feature-flag-overview-details-section-card>
+  <app-feature-flag-inclusions-section-card [data]="featureFlag" *ngIf="(activeTabIndex$ | async) === 0" section-card
     >inclusions-card</app-feature-flag-inclusions-section-card
   >
-  <app-feature-flag-exclusions-section-card *ngIf="(activeTabIndex$ | async) === 0" section-card
+  <app-feature-flag-exclusions-section-card [data]="featureFlag" *ngIf="(activeTabIndex$ | async) === 0" section-card
     >exclusions-card</app-feature-flag-exclusions-section-card
   >
-  <app-feature-flag-exposures-section-card *ngIf="(activeTabIndex$ | async) === 1" section-card
+  <app-feature-flag-exposures-section-card [data]="featureFlag" *ngIf="(activeTabIndex$ | async) === 1" section-card
     >exposures-card</app-feature-flag-exposures-section-card
   >
 </app-common-section-card-list>

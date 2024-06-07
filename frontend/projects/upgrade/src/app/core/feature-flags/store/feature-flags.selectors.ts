@@ -28,6 +28,11 @@ export const selectIsLoadingFeatureFlags = createSelector(
   (state) => state.isLoadingFeatureFlags
 );
 
+// export const selectIsLoadingFeatureFlagDetail = createSelector(
+//   selectFeatureFlagsState,
+//   (state) => state.isLoadingFeatureFlagDetail
+// );
+
 export const selectIsInitialFeatureFlagsLoading = createSelector(
   selectIsLoadingFeatureFlags,
   selectAllFeatureFlagsSortedByDate,

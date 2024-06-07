@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import {
   CommonSectionCardComponent,
   CommonSectionCardTitleHeaderComponent,
@@ -6,6 +6,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
+import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 
 @Component({
   selector: 'app-feature-flag-exclusions-section-card',
@@ -16,5 +17,6 @@ import { of } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagExclusionsSectionCardComponent {
+  @Input() data: FeatureFlag;
   tableRowCount$ = of(1);
 }

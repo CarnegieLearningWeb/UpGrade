@@ -6,6 +6,7 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { of } from 'rxjs';
+import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 
 @Component({
   selector: 'app-feature-flag-inclusions-section-card',
@@ -16,5 +17,6 @@ import { of } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagInclusionsSectionCardComponent {
+  @Input() data: FeatureFlag;
   tableRowCount$ = of(1);
 }

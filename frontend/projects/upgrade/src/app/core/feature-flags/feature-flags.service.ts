@@ -8,6 +8,8 @@ import {
   selectHasInitialFeatureFlagsDataLoaded,
   selectIsLoadingAddFeatureFlag,
   selectActiveDetailsTabIndex,
+  selectSelectedFeatureFlag,
+  // selectIsLoadingFeatureFlagDetail,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -25,10 +27,15 @@ export class FeatureFlagsService {
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
   isLoadingAddFeatureFlag$ = this.store$.pipe(select(selectIsLoadingAddFeatureFlag));
+  // isLoadingFeatureFlagDetail$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDetail));
+
   featureFlagsListLengthChange$ = this.allFeatureFlags$.pipe(
     pairwise(),
     filter(([prevEntities, currEntities]) => prevEntities.length !== currEntities.length)
   );
+
+  selectedFeatureFlag$ = this.store$.pipe(select(selectSelectedFeatureFlag));
+
   activeDetailsTabIndex$ = this.store$.pipe(select(selectActiveDetailsTabIndex));
   appContexts$ = this.experimentService.contextMetaData$.pipe(
     map((contextMetaData) => {
@@ -38,6 +45,10 @@ export class FeatureFlagsService {
 
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
+  }
+
+  fetchFeatureFlagById(featureFlagId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlagById({ featureFlagId }));
   }
 
   fetchContextMetaData() {

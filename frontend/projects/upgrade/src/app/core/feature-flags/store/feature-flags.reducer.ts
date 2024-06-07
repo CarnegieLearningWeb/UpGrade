@@ -10,6 +10,7 @@ export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.get
 export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingAddFeatureFlag: false,
   isLoadingFeatureFlags: false,
+  isLoadingFeatureFlagDetail: false,
   hasInitialFeatureFlagsDataLoaded: false,
   activeDetailsTabIndex: 0,
   skipFlags: 0,
@@ -39,6 +40,7 @@ const reducer = createReducer(
     });
   }),
   on(FeatureFlagsActions.actionFetchFeatureFlagsFailure, (state) => ({ ...state, isLoadingFeatureFlags: false })),
+  on(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure, (state) => ({ ...state, isLoadingFeatureFlags: false })),
   on(FeatureFlagsActions.actionSetIsLoadingFeatureFlags, (state, { isLoadingFeatureFlags }) => ({
     ...state,
     isLoadingFeatureFlags,
@@ -59,6 +61,10 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionSetActiveDetailsTabIndex, (state, { activeDetailsTabIndex }) => ({
     ...state,
     activeDetailsTabIndex,
+  })),
+  on(FeatureFlagsActions.actionFetchFeatureFlagById, (state) => ({
+    ...state,
+    isLoadingFeatureFlags: true,
   }))
 );
 
