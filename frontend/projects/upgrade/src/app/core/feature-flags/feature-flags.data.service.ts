@@ -7,7 +7,7 @@ import {
   FeatureFlagsPaginationInfo,
   FeatureFlagsPaginationParams,
 } from './store/feature-flags.model';
-import { Observable, delay, of } from 'rxjs';
+import { Observable, delay, of, skip } from 'rxjs';
 import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../types/src';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class FeatureFlagsDataService {
     const url = this.environment.api.getPaginatedFlags;
     return this.http.post<FeatureFlagsPaginationInfo>(url, params);
     // mock
-    // return of({ nodes: mockFeatureFlags, total: 2 }).pipe(delay(2000));
+    // return of({ nodes: mockFeatureFlags, total: 2 } as FeatureFlagsPaginationInfo).pipe(delay(2000));
   }
 
   addFeatureFlag(params: AddFeatureFlagRequest): Observable<FeatureFlag> {

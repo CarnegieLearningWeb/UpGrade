@@ -1,36 +1,36 @@
 import { Injectable } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 
+export interface TableState<T> {
+  tableData: T[];
+  searchParams: { searchString: string; searchKey: string };
+  allSearchableProperties: string[];
+}
 @Injectable({
   providedIn: 'root',
 })
 export class CommonTableHelpersService {
   /**
-   * Sets a filter predicate function based on a provided search key and a record of filter functions.
-   * The search key is used to select the appropriate filter function from the record.
-   * If a matching filter function is found, it is used to filter the row data.
-   * If no matching filter function is found, the predicate returns false.
-   *
-   * @param searchKey - The key to use for selecting a filter function from the record.
-   * @param filterFunctions - A record of filter functions, keyed by search key.
-   * @returns A filter predicate function that takes a row of data and a filter string and returns a boolean.
+   * Maps table state to a MatTableDataSource.
+   * @param tableData - The data to use for the MatTableDataSource.
+   * @param searchParams - The search parameters to use for setting the filter on the MatTableDataSource.
+   * @param allSearchableProperties - All properties that can be searched when filtering.
+   * @returns A MatTableDataSource with the provided data and filter.
    */
-  setFilterPredicate<T>(
-    searchKey: string,
-    filterFunctions: Record<string, (rowData: T, filter: string) => boolean>
-  ): (rowData: T, filter: string) => boolean {
-    return (rowData, filter: string): boolean => {
-      const filterFunction = filterFunctions[searchKey];
-      return filterFunction ? filterFunction(rowData, filter) : false;
-    };
-  }
+  public mapTableStateToDataSource = <T>({ tableData, searchParams, allSearchableProperties }: TableState<T>) => {
+    const dataSource = new MatTableDataSource(tableData);
+    dataSource.filterPredicate = (rowData, filter) =>
+      this.defineFilterFunctionCriteria(rowData, searchParams.searchKey, filter, allSearchableProperties);
+    this.setFilterStringOnDataSource(dataSource, searchParams);
+    return dataSource;
+  };
 
   /**
    * Sets the filter for the provided MatTableDataSource based on the provided search parameters.
    * @param dataSource - The MatTableDataSource to set the filter on.
    * @param searchParams - The search parameters to use for setting the filter.
    */
-  setDataSourceFilter<T>(
+  private setFilterStringOnDataSource<T>(
     dataSource: MatTableDataSource<T>,
     searchParams: { searchString: string; searchKey: string }
   ): void {
@@ -40,43 +40,25 @@ export class CommonTableHelpersService {
   }
 
   /**
-   * Defines a filter predicate for a row of data.
+   * Defines how filter string will be used to filter the row of data.
    * @param rowData - The row of data to define a filter predicate for.
    * @param propertyToFilterBy - The property to use for filtering the row of data.
    * @param filter - The filter string to use in the predicate.
    * @param allSearchableProperties - All properties that can be searched when filtering.
    * @returns A boolean indicating whether the row of data matches the filter.
    */
-  defineFilterPredicate<T>(rowData: T, propertyToFilterBy: string, filter: string, allSearchableProperties: string[]) {
+  private defineFilterFunctionCriteria<T>(
+    rowData: T,
+    propertyToFilterBy: string,
+    filter: string,
+    allSearchableProperties: string[]
+  ) {
     if (propertyToFilterBy === 'all') {
       return this.filterAll<T>(rowData, allSearchableProperties, filter);
     } else {
       return this.filterByProperty<T>(rowData, propertyToFilterBy, filter);
     }
   }
-
-   /**
-   * Maps table state to a MatTableDataSource.
-   * @param tableData - The data to use for the MatTableDataSource.
-   * @param searchParams - The search parameters to use for setting the filter on the MatTableDataSource.
-   * @param allSearchableProperties - All properties that can be searched when filtering.
-   * @returns A MatTableDataSource with the provided data and filter.
-   */
-  mapTableStateToDataSource = <T>({
-    tableData,
-    searchParams,
-    allSearchableProperties,
-  }: {
-    tableData: T[];
-    searchParams: { searchString: string; searchKey: string };
-    allSearchableProperties: string[];
-  }) => {
-    const dataSource = new MatTableDataSource(tableData);
-    dataSource.filterPredicate = (rowData, filter) =>
-      this.defineFilterPredicate(rowData, searchParams.searchKey, filter, allSearchableProperties);
-    this.setDataSourceFilter(dataSource, searchParams);
-    return dataSource;
-  };
 
   /**
    * Filters a row of data based on a filter string and a set of keys.

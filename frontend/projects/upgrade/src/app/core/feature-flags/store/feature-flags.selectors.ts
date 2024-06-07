@@ -1,5 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { FeatureFlagState } from './feature-flags.model';
+import { FLAG_SEARCH_KEY, FeatureFlagState } from './feature-flags.model';
 import { selectRouterState } from '../../core.state';
 import { selectAll } from './feature-flags.reducer';
 
@@ -73,7 +73,11 @@ export const selectSearchFeatureFlagParams = createSelector(
 export const selectRootTableState = createSelector(
   selectAllFeatureFlags,
   selectSearchFeatureFlagParams,
-  (tableData, searchParams) => ({ tableData, searchParams })
+  (tableData, searchParams) => ({
+    tableData,
+    searchParams,
+    allSearchableProperties: Object.values(FLAG_SEARCH_KEY),
+  })
 );
 
 export const selectSortKey = createSelector(selectFeatureFlagsState, (state) => state.sortKey);

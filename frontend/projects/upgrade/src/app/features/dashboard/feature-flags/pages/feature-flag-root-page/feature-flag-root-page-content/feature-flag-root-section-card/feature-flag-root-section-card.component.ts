@@ -16,7 +16,10 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
 import { Observable, map } from 'rxjs';
 import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
-import { CommonTableHelpersService } from '../../../../../../../shared/services/common-table-helpers.service';
+import {
+  CommonTableHelpersService,
+  TableState,
+} from '../../../../../../../shared/services/common-table-helpers.service';
 
 @Component({
   selector: 'app-feature-flag-root-section-card',
@@ -79,7 +82,9 @@ export class FeatureFlagRootSectionCardComponent {
 
   ngAfterViewInit() {
     this.dataSource$ = this.featureFlagService.selectRootTableState$.pipe(
-      map(this.tableHelpersService.mapTableStateToDataSource<FeatureFlag>)
+      map((tableState: TableState<FeatureFlag>) => {
+        return this.tableHelpersService.mapTableStateToDataSource<FeatureFlag>(tableState);
+      })
     );
   }
 
