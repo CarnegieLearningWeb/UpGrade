@@ -29,7 +29,7 @@ import { KeyValueFormat } from 'upgrade_types';
 export class CommonSectionCardContentComponent {
   @Input() data!: KeyValueFormat;
 
-  objectKeys(obj: any): string[] {
+  objectKeys(obj: KeyValueFormat): string[] {
     return Object.keys(obj);
   }
 }
