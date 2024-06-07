@@ -25,10 +25,5 @@ import { FeatureFlagsService } from '../../../../../../core/feature-flags/featur
 export class FeatureFlagDetailsPageContentComponent {
   activeTabIndex$ = this.featureFlagsService.activeDetailsTabIndex$;
 
-  constructor(private featureFlagsService: FeatureFlagsService) {
-    console.log('in the ff content component');
-    this.activeTabIndex$.subscribe((activeTabIndex) => {
-      console.log('activeTabIndex', activeTabIndex);
-    });
-  }
+  constructor(private featureFlagsService: FeatureFlagsService) {}
 }
