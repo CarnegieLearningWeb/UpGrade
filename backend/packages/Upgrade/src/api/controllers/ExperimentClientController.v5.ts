@@ -31,7 +31,6 @@ import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidator } from './validators/LogValidator';
 import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAliasesValidator';
-import { Metric } from '../models/Metric';
 import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
@@ -39,7 +38,6 @@ import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { MarkExperimentValidatorv5 } from './validators/MarkExperimentValidator.v5';
 import { Log } from '../models/Log';
 import { ExperimentUserValidator } from './validators/ExperimentUserValidator';
-import { MetricValidator } from './validators/MetricValidator';
 
 interface IMonitoredDecisionPoint {
   id: string;
@@ -727,42 +725,6 @@ export class ExperimentClientController {
   @Get('featureflag')
   public getAllFlags(@Req() request: AppRequest): Promise<FeatureFlag[]> {
     return this.featureFlagService.find(request.logger);
-  }
-
-  /**
-   * @swagger
-   * /metric:
-   *    post:
-   *       description: Add filter metrics
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *          - in: body
-   *            name: params
-   *            schema:
-   *             type: object
-   *             properties:
-   *              metricUnit:
-   *                type: object
-   *            description: Filtered Metrics
-   *       tags:
-   *         - Client Side SDK
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: Filtered Metrics
-   *          '500':
-   *            description: Insert error in database
-   */
-  @Post('metric')
-  public async filterMetrics(
-    @Req()
-    request: AppRequest,
-    @Body({ validate: true })
-    metric: MetricValidator
-  ): Promise<Metric[]> {
-    return await this.metricService.saveAllMetrics(metric.metricUnit, metric.context, request.logger);
   }
 
   /**

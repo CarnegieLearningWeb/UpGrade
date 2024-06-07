@@ -1,8 +1,6 @@
 import { UpGradeClientInterfaces } from '../types';
 import {
   IFeatureFlag,
-  ISingleMetric,
-  IGroupMetric,
   ILogInput,
   CaliperEnvelope,
   IExperimentAssignmentv5,
@@ -475,7 +473,4 @@ export default class UpgradeClient {
    * This feature is available but not recommended for use as it is not fully regression tested in recent releases.
    * @ignore
    */
-  async addMetrics(metrics: (ISingleMetric | IGroupMetric)[]): Promise<UpGradeClientInterfaces.IMetric[]> {
-    return await this.apiService.addMetrics(metrics);
-  }
 }
