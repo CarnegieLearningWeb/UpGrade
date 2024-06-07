@@ -1,0 +1,18 @@
+<div class="enable-feature-flag-modal-container">
+  <app-common-dialog
+    [title]="config.title"
+    [cancelBtnLabel]="config.cancelBtnLabel"
+    [primaryActionBtnLabel]="config.primaryActionBtnLabel"
+    [primaryActionBtnColor]="config.primaryActionBtnColor"
+    [primaryActionBtnDisabled$]="isLoadingUpdateFeatureFlagStatus$"
+    (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+  >
+    <div class="modal-content">
+      <p class="modal-content-text">
+        {{ 'Are you sure you want to enable "' + featureFlagName + '" ?'}}
+      </p>
+      <p class="modal-content-text info">
+        {{ '* Only the enabled include lists will be affected' }}
+    </div>
+  </app-common-dialog>
+</div>

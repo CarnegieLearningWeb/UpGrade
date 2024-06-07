@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { AddFeatureFlagRequest, FeatureFlag } from './feature-flags.model';
+import { AddFeatureFlagRequest, FeatureFlag, UpdateFeatureFlagStatusRequest } from './feature-flags.model';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 
 export const actionFetchFeatureFlags = createAction(
@@ -54,3 +54,27 @@ export const actionSetActiveDetailsTabIndex = createAction(
   '[Feature Flags] Set Active Details Tab Index',
   props<{ activeDetailsTabIndex: number }>()
 );
+
+export const actionEnableFeatureFlag = createAction(
+  '[Feature Flags] Enable Feature Flag',
+  props<{ updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest }>()
+);
+
+export const actionEnableFeatureFlagSuccess = createAction(
+  '[Feature Flags] Enable Feature Flag Success',
+  props<{ response: FeatureFlag }>()
+);
+
+export const actionEnableFeatureFlagFailure = createAction('[Feature Flags] Enable Feature Flag Failure');
+
+export const actionDisableFeatureFlag = createAction(
+  '[Feature Flags] Disable Feature Flag',
+  props<{ updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest }>()
+);
+
+export const actionDisableFeatureFlagSuccess = createAction(
+  '[Feature Flags] Disable Feature Flag Success',
+  props<{ response: FeatureFlag }>()
+);
+
+export const actionDisableFeatureFlagFailure = createAction('[Feature Flags] Disable Feature Flag Failure');

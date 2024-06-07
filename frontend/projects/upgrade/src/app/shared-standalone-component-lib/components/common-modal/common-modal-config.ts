@@ -6,6 +6,7 @@ export interface CommonModalConfig {
   primaryActionBtnLabel?: string;
   primaryActionBtnColor?: string; // TODO mat-button enum? or just string?
   hideFooter?: boolean;
+  payload?: Record<string, unknown>;
 }
 
 export interface CommonDialogMatDialogConfig extends MatDialogConfig {

@@ -1,0 +1,13 @@
+:host ::ng-deep .enable-feature-flag-modal-container {
+  width: 100%;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  .title {
+    font-size: 18px;
+    font-weight: bold;
+  }
+}

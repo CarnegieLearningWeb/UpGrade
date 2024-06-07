@@ -9,6 +9,13 @@ import { FeatureFlag } from '../../../../../../../core/feature-flags/store/featu
 import { FEATURE_FLAG_STATUS, FILTER_MODE, IMenuButtonItem } from 'upgrade_types';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 import { CommonModule } from '@angular/common';
+import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
+
+export type OverviewDetails = {
+  [key: string]: string;
+} & {
+  Tags?: string[];
+};
 
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
@@ -30,7 +37,7 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
     createdAt: '2021-09-08T08:00:00.000Z',
     updatedAt: '2021-09-08T08:00:00.000Z',
     versionNumber: 1,
-    id: '1',
+    id: '38a29024-0edc-4a9e-83db-b966ae961304',
     name: 'Feature Flag 1',
     key: 'feature_flag_1',
     description: 'Feature Flag 1 Description',
@@ -46,19 +53,21 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   flagCreatedAt: string;
   flagUpdatedAt: string;
   flagStatus: FEATURE_FLAG_STATUS;
+  flagId: string;
   menuButtonItems: IMenuButtonItem[] = [
     { name: 'Edit', disabled: false },
     { name: 'Delete', disabled: false },
   ];
   isSectionCardExpanded = true;
 
-  constructor(private featureFlagService: FeatureFlagsService) {}
+  constructor(private featureFlagService: FeatureFlagsService, private dialogService: DialogService) {}
 
   ngOnInit() {
     this.flagName = this.featureFlag.name;
     this.flagCreatedAt = this.featureFlag.createdAt;
     this.flagUpdatedAt = this.featureFlag.updatedAt;
     this.flagStatus = this.featureFlag.status;
+    this.flagId = this.featureFlag.id;
   }
 
   viewLogsClicked(event) {
@@ -66,9 +75,14 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
     console.log(event);
   }
 
-  onSlideToggleChange(event) {
+  onSlideToggleChange(flagEnabled: boolean) {
+    if (flagEnabled) {
+      this.dialogService.openEnableFeatureFlagConfirmModel({ flagName: this.flagName, flagId: this.featureFlag.id });
+    } else {
+      this.dialogService.openDisableFeatureFlagConfirmModel({ flagName: this.flagName, flagId: this.featureFlag.id });
+    }
     console.log('on Slide Toggle Clicked');
-    console.log(event);
+    console.log(flagEnabled);
   }
 
   onMenuButtonItemClick(event) {

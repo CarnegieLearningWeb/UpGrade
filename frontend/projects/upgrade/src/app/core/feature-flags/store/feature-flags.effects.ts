@@ -99,6 +99,33 @@ export class FeatureFlagsEffects {
     )
   );
 
+  enableFeatureFlagStatus$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionEnableFeatureFlag),
+      switchMap((action) => {
+        return this.featureFlagsDataService.updateFeatureFlagStatus(action.updateFeatureFlagStatusRequest).pipe(
+          map((response) => {
+            return FeatureFlagsActions.actionEnableFeatureFlagSuccess({ response });
+          }),
+          catchError(() => [FeatureFlagsActions.actionEnableFeatureFlagFailure()])
+        );
+      })
+    )
+  );
+
+  disableFeatureFlagStatus$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionDisableFeatureFlag),
+      switchMap((action) => {
+        return this.featureFlagsDataService.updateFeatureFlagStatus(action.updateFeatureFlagStatusRequest).pipe(
+          map((response) => {
+            return FeatureFlagsActions.actionEnableFeatureFlagSuccess({ response });
+          }),
+          catchError(() => [FeatureFlagsActions.actionEnableFeatureFlagFailure()])
+        );
+      })
+    )
+  );
 
   fetchFeatureFlagsOnSearchString$ = createEffect(
     () =>

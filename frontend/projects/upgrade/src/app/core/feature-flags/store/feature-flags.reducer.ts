@@ -2,6 +2,7 @@ import { createReducer, Action, on } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
 import { FeatureFlagState, FeatureFlag, FLAG_SEARCH_KEY } from './feature-flags.model';
 import * as FeatureFlagsActions from './feature-flags.actions';
+import { FEATURE_FLAG_STATUS } from '../../../../../../../../types/src';
 
 export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFlag>();
 
@@ -10,6 +11,7 @@ export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.get
 export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingAddFeatureFlag: false,
   isLoadingFeatureFlags: false,
+  isLoadingUpdateFeatureFlagStatus: false,
   hasInitialFeatureFlagsDataLoaded: false,
   activeDetailsTabIndex: 0,
   skipFlags: 0,
@@ -59,7 +61,29 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionSetActiveDetailsTabIndex, (state, { activeDetailsTabIndex }) => ({
     ...state,
     activeDetailsTabIndex,
+  })),
+  on(FeatureFlagsActions.actionEnableFeatureFlag, (state) => ({
+    ...state,
+    isLoadingStatusUpdate: true,
+  })),
+  on(FeatureFlagsActions.actionEnableFeatureFlagSuccess, (state, { response }) => {
+    return adapter.addOne(response, {
+      ...state,
+      isLoadingUpdateFeatureFlagStatus: false,
+    });
+  }),
+  on(FeatureFlagsActions.actionEnableFeatureFlagFailure, (state) => ({ ...state, isLoadingStatusUpdate: true })),
+  on(FeatureFlagsActions.actionDisableFeatureFlag, (state) => ({
+    ...state,
+    isLoadingStatusUpdate: true,
   }))
+  // on(FeatureFlagsActions.actionDisableFeatureFlag, (state) => ({ ...state, isLoadingStatusUpdate: true })),
+  // on(FeatureFlagsActions.actionDisableFeatureFlagSuccess, (state, { response }) => {
+  //   return adapter.addOne(response, {
+  //     ...state,
+  //     isLoadingUpdateFeatureFlagStatus: false,
+  //   });
+  // }),
 );
 
 export function featureFlagsReducer(state: FeatureFlagState | undefined, action: Action) {

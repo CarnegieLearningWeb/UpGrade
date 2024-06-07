@@ -8,11 +8,12 @@ import {
   selectHasInitialFeatureFlagsDataLoaded,
   selectIsLoadingAddFeatureFlag,
   selectActiveDetailsTabIndex,
+  selectIsLoadingUpdateFeatureFlagStatus,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
-import { AddFeatureFlagRequest } from './store/feature-flags.model';
+import { AddFeatureFlagRequest, UpdateFeatureFlagStatusRequest } from './store/feature-flags.model';
 import { ExperimentService } from '../experiments/experiments.service';
 import { filter, map, pairwise } from 'rxjs';
 
@@ -22,6 +23,7 @@ export class FeatureFlagsService {
 
   isInitialFeatureFlagsLoading$ = this.store$.pipe(select(selectHasInitialFeatureFlagsDataLoaded));
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
+  isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
   isLoadingAddFeatureFlag$ = this.store$.pipe(select(selectIsLoadingAddFeatureFlag));
@@ -29,6 +31,7 @@ export class FeatureFlagsService {
     pairwise(),
     filter(([prevEntities, currEntities]) => prevEntities.length !== currEntities.length)
   );
+  // featureFlagStatusChanged$ = this.store$.pipe(select());
   activeDetailsTabIndex$ = this.store$.pipe(select(selectActiveDetailsTabIndex));
   appContexts$ = this.experimentService.contextMetaData$.pipe(
     map((contextMetaData) => {
@@ -46,6 +49,14 @@ export class FeatureFlagsService {
 
   addFeatureFlag(addFeatureFlagRequest: AddFeatureFlagRequest) {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlag({ addFeatureFlagRequest }));
+  }
+
+  enableFeatureFlag(updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionEnableFeatureFlag({ updateFeatureFlagStatusRequest }));
+  }
+
+  disableFeatureFlag(updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionDisableFeatureFlag({ updateFeatureFlagStatusRequest }));
   }
 
   setSearchKey(searchKey: FLAG_SEARCH_KEY) {

@@ -67,3 +67,13 @@ export const selectActiveDetailsTabIndex = createSelector(
   selectFeatureFlagsState,
   (state) => state.activeDetailsTabIndex
 );
+
+export const selectFeatureFlagsListLength = createSelector(
+  selectAllFeatureFlags,
+  (featureFlags) => featureFlags.length
+);
+
+export const selectIsLoadingUpdateFeatureFlagStatus = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingUpdateFeatureFlagStatus
+);
