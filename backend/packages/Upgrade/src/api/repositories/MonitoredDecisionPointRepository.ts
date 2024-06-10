@@ -13,7 +13,7 @@ export class MonitoredDecisionPointRepository extends Repository<MonitoredDecisi
       .insert()
       .into(MonitoredDecisionPoint)
       .values({ ...rawData })
-      .onConflict(`("id") DO UPDATE SET "site" = :site, "target" = :target`)
+      .orUpdate(['site', 'target'], 'id')
       .setParameter('site', rawData.site)
       .setParameter('target', rawData.target)
       .returning('*')

@@ -34,7 +34,7 @@ export class SegmentRepository extends Repository<Segment> {
       .insert()
       .into(Segment)
       .values(data)
-      .onConflict(`("id") DO UPDATE SET "name" = :name, "description" = :description, "context" = :context`)
+      .orUpdate(['name', 'description', 'context'], 'id')
       .setParameter('name', data.name)
       .setParameter('description', data.description)
       .setParameter('context', data.context)
@@ -53,7 +53,7 @@ export class SegmentRepository extends Repository<Segment> {
       .insert()
       .into(Segment)
       .values(data)
-      .onConflict(`DO NOTHING`)
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

@@ -16,7 +16,7 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
       .insert()
       .into(IndividualExclusion)
       .values(newRawDataArray)
-      .onConflict(`DO NOTHING`)
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

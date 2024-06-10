@@ -15,7 +15,7 @@ export class ScheduledJobRepository extends Repository<ScheduledJob> {
       .insert()
       .into(ScheduledJob)
       .values(scheduledJob)
-      .onConflict(`("id") DO UPDATE SET "timeStamp" = :timeStamp, "executionArn" = :executionArn`)
+      .orUpdate(['timeStamp', 'executionArn'], 'id')
       .setParameter('timeStamp', scheduledJob.timeStamp)
       .setParameter('executionArn', scheduledJob.executionArn)
       .returning('*')

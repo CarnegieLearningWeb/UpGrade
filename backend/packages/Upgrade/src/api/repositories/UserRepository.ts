@@ -11,9 +11,7 @@ export class UserRepository extends Repository<User> {
       .insert()
       .into(User)
       .values(user)
-      .onConflict(
-        `("email") DO UPDATE SET "firstName" = :firstName, "lastName" = :lastName, "imageUrl" = :imageUrl, "localTimeZone" = :localTimeZone`
-      )
+      .orUpdate(['firstName', 'lastName', 'imageUrl', 'localTimeZone'], 'id')
       .setParameter('firstName', user.firstName)
       .setParameter('lastName', user.lastName)
       .setParameter('imageUrl', user.imageUrl)
