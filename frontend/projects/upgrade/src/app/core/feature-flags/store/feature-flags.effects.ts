@@ -92,7 +92,6 @@ export class FeatureFlagsEffects {
           map((response) => {
             return FeatureFlagsActions.actionAddFeatureFlagSuccess({ response });
           }),
-          // TODO: currently we are not handling errors #https://github.com/CarnegieLearningWeb/UpGrade/issues/1604
           catchError(() => [FeatureFlagsActions.actionAddFeatureFlagFailure()])
         );
       })

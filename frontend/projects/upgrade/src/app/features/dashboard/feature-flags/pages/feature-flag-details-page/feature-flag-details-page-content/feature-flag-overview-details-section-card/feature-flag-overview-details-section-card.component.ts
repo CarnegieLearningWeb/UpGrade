@@ -11,6 +11,10 @@ import { FeatureFlagsService } from '../../../../../../../core/feature-flags/fea
 import { CommonModule } from '@angular/common';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 
+import {
+  CommonSectionCardOverviewDetailsComponent,
+  KeyValueFormat,
+} from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,
@@ -19,6 +23,7 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
     CommonSectionCardComponent,
     CommonSectionCardTitleHeaderComponent,
     CommonSectionCardActionButtonsComponent,
+    CommonSectionCardOverviewDetailsComponent,
     FeatureFlagOverviewDetailsFooterComponent,
   ],
   templateUrl: './feature-flag-overview-details-section-card.component.html',
@@ -48,6 +53,8 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   flagUpdatedAt: string;
   flagStatus: FEATURE_FLAG_STATUS;
   flagId: string;
+  flagOverviewDetails: KeyValueFormat;
+
   menuButtonItems: IMenuButtonItem[] = [
     { name: 'Edit', disabled: false },
     { name: 'Delete', disabled: false },
@@ -62,6 +69,12 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
     this.flagUpdatedAt = this.featureFlag.updatedAt;
     this.flagStatus = this.featureFlag.status;
     this.flagId = this.featureFlag.id;
+    this.flagOverviewDetails = {
+      ['Key']: this.featureFlag.key,
+      ['Description']: this.featureFlag.description,
+      ['App Context']: this.featureFlag.context[0],
+      ['Tags']: this.featureFlag.tags,
+    };
   }
 
   viewLogsClicked(event) {
