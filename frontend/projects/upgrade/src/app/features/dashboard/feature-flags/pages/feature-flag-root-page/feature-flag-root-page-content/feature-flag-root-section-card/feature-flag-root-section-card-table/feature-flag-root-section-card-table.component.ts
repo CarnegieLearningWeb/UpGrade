@@ -7,11 +7,12 @@ import {
   FeatureFlag,
 } from '../../../../../../../../core/feature-flags/store/feature-flags.model';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { AsyncPipe, NgIf, NgFor, UpperCasePipe } from '@angular/common';
+import { AsyncPipe, NgIf, NgFor, UpperCasePipe, DatePipe } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatChipsModule } from '@angular/material/chips';
 import { RouterModule } from '@angular/router';
+import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shared-standalone-component-lib/components';
 
 @Component({
   selector: 'app-feature-flag-root-section-card-table',
@@ -26,6 +27,8 @@ import { RouterModule } from '@angular/router';
     UpperCasePipe,
     MatChipsModule,
     RouterModule,
+    DatePipe,
+    CommonStatusIndicatorChipComponent,
   ],
   templateUrl: './feature-flag-root-section-card-table.component.html',
   styleUrl: './feature-flag-root-section-card-table.component.scss',
