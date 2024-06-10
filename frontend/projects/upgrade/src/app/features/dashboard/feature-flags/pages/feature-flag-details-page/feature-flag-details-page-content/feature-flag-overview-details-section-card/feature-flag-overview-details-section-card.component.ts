@@ -59,8 +59,6 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   ];
   isSectionCardExpanded = true;
 
-  constructor(private featureFlagService: FeatureFlagsService) {}
-
   ngOnInit() {
     this.flagName = this.data.name;
     this.flagCreatedAt = this.data.createdAt;
