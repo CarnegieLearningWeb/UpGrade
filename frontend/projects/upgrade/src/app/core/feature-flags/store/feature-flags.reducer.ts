@@ -40,6 +40,12 @@ const reducer = createReducer(
     });
   }),
   on(FeatureFlagsActions.actionFetchFeatureFlagsFailure, (state) => ({ ...state, isLoadingFeatureFlags: false })),
+  on(FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess, (state, { flag }) => {
+    return adapter.addOne(flag, {
+      ...state,
+      isLoadingFeatureFlags: false,
+    });
+  }),
   on(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure, (state) => ({ ...state, isLoadingFeatureFlags: false })),
   on(FeatureFlagsActions.actionSetIsLoadingFeatureFlags, (state, { isLoadingFeatureFlags }) => ({
     ...state,

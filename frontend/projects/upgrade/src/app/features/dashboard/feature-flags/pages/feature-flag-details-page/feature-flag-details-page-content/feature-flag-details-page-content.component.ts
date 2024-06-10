@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonSectionCardListComponent } from '../../../../../../shared-standalone-component-lib/components';
 import { CommonModule } from '@angular/common';
 import { FeatureFlagInclusionsSectionCardComponent } from './feature-flag-inclusions-section-card/feature-flag-inclusions-section-card.component';
@@ -9,6 +9,7 @@ import { FeatureFlagsService } from '../../../../../../core/feature-flags/featur
 import { filter, Subscription } from 'rxjs';
 import { FeatureFlag } from '../../../../../../core/feature-flags/store/feature-flags.model';
 import { ActivatedRoute } from '@angular/router';
+import { SharedModule } from '../../../../../../shared/shared.module';
 
 @Component({
   selector: 'app-feature-flag-details-page-content',
@@ -20,6 +21,7 @@ import { ActivatedRoute } from '@angular/router';
     FeatureFlagExclusionsSectionCardComponent,
     FeatureFlagExposuresSectionCardComponent,
     FeatureFlagOverviewDetailsSectionCardComponent,
+    SharedModule,
   ],
   templateUrl: './feature-flag-details-page-content.component.html',
   styleUrl: './feature-flag-details-page-content.component.scss',
@@ -31,18 +33,14 @@ export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy
   featureFlagSub: Subscription;
   featureFlagIdSub: Subscription;
 
-
-  constructor(private featureFlagsService: FeatureFlagsService, private _Activatedroute: ActivatedRoute) {
-    console.log('in the ff content component');
-
-    this.activeTabIndex$.subscribe((activeTabIndex) => {
-      console.log('activeTabIndex', activeTabIndex);
-    });
-  }
+  constructor(
+    private featureFlagsService: FeatureFlagsService,
+    private _Activatedroute: ActivatedRoute,
+    private changeDetectorRef: ChangeDetectorRef
+  ) {}
   ngOnInit() {
     this.featureFlagIdSub = this._Activatedroute.paramMap.subscribe((params) => {
       const featureFlagIdFromParams = params.get('flagId');
-      console.log(featureFlagIdFromParams);
       this.featureFlagsService.fetchFeatureFlagById(featureFlagIdFromParams);
     });
 
@@ -50,7 +48,7 @@ export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy
       .pipe(filter((featureFlag) => !!featureFlag))
       .subscribe((featureFlag) => {
         this.featureFlag = featureFlag;
-        console.log(this.featureFlag);
+        this.changeDetectorRef.detectChanges();
       });
   }
   ngOnDestroy() {

@@ -27,7 +27,6 @@ export class FeatureFlagsService {
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
   isLoadingAddFeatureFlag$ = this.store$.pipe(select(selectIsLoadingAddFeatureFlag));
-  // isLoadingFeatureFlagDetail$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDetail));
 
   featureFlagsListLengthChange$ = this.allFeatureFlags$.pipe(
     pairwise(),

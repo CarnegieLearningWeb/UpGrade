@@ -129,27 +129,6 @@ export class FeatureFlagsEffects {
     { dispatch: false }
   );
 
-  // fetchFeatureFlagById$ = createEffect(() =>
-  //   this.actions$.pipe(
-  //     ofType(FeatureFlagsActions.actionFetchFeatureFlagById),
-  //     mergeMap((action) => {
-  //       console.log('Effect triggered: ', action);
-  //       return this.featureFlagsDataService.fetchFeatureFlagById(action.featureFlagId).pipe(
-  //         map((response: { flags: FeatureFlag; totalFlags: number }) => {
-  //           console.log('API response: ', response);
-  //           return FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess({
-  //             flags: response.flags,
-  //             totalFlags: response.totalFlags,
-  //           });
-  //         }),
-  //         catchError((error) => {
-  //           console.error('API error: ', error);
-  //           return of(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure({ error: error.message || error }));
-  //         })
-  //       );
-  //     })
-  //   )
-  // );
   fetchFeatureFlagById$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionFetchFeatureFlagById),

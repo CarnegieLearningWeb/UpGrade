@@ -62,15 +62,15 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   constructor(private featureFlagService: FeatureFlagsService) {}
 
   ngOnInit() {
-    this.flagName = this.featureFlag.name;
-    this.flagCreatedAt = this.featureFlag.createdAt;
-    this.flagUpdatedAt = this.featureFlag.updatedAt;
-    this.flagStatus = this.featureFlag.status;
+    this.flagName = this.data.name;
+    this.flagCreatedAt = this.data.createdAt;
+    this.flagUpdatedAt = this.data.updatedAt;
+    this.flagStatus = this.data.status;
     this.flagOverviewDetails = {
-      ['Key']: this.featureFlag.key,
-      ['Description']: this.featureFlag.description,
-      ['App Context']: this.featureFlag.context[0],
-      ['Tags']: this.featureFlag.tags,
+      ['Key']: this.data.key,
+      ['Description']: this.data.description,
+      ['App Context']: this.data.context[0],
+      ['Tags']: this.data.tags,
     };
   }
 
