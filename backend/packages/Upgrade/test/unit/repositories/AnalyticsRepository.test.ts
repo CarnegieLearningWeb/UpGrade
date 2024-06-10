@@ -1,5 +1,4 @@
-import { Connection, ConnectionManager, EntityManager, SelectQueryBuilder } from 'typeorm';
-import * as sinon from 'sinon';
+import { DataSource } from 'typeorm';
 import { AnalyticsRepository } from '../../../src/api/repositories/AnalyticsRepository';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { IndividualEnrollmentRepository } from '../../../src/api/repositories/IndividualEnrollmentRepository';
@@ -11,14 +10,17 @@ import { User } from '../../../src/api/models/User';
 import { ExperimentCondition } from '../../../src/api/models/ExperimentCondition';
 import { DecisionPoint } from '../../../src/api/models/DecisionPoint';
 import { GroupEnrollmentRepository } from '../../../src/api/repositories/GroupEnrollmentRepository';
+import { Container } from '../../../src/typeorm-typedi-extensions';
+import { initializeMocks } from '../mockdata/mockRepo';
 
-let sandbox;
-const connection = sinon.createStubInstance(Connection);
-const manager = new EntityManager(connection);
-const repo = new AnalyticsRepository(manager);
-let createQueryBuilderStub;
-let selectMock;
-const selectQueryBuilder = new SelectQueryBuilder<AnalyticsRepository>(null);
+let mock;
+let dataSource: DataSource;
+let repo: AnalyticsRepository;
+let individualEnrollmentRepo: IndividualEnrollmentRepository;
+let individualExclusionRepo: IndividualExclusionRepository;
+let groupEnrollmentRepo: GroupEnrollmentRepository;
+let groupExclusionRepo: GroupExclusionRepository;
+let experimentRepo: ExperimentRepository;
 const err = new Error('test error');
 
 const user = new User();
@@ -52,95 +54,83 @@ const userResult = [
   },
 ];
 
+beforeAll(() => {
+  dataSource = new DataSource({
+    type: 'postgres',
+    database: 'postgres',
+    entities: [AnalyticsRepository, IndividualEnrollmentRepository],
+    synchronize: true,
+  });
+  Container.setDataSource('default', dataSource);
+});
+
 beforeEach(() => {
-  sandbox = sinon.createSandbox();
+  repo = Container.getCustomRepository(AnalyticsRepository);
+  individualEnrollmentRepo = Container.getCustomRepository(IndividualEnrollmentRepository);
+  experimentRepo = Container.getCustomRepository(ExperimentRepository);
+  individualExclusionRepo = Container.getCustomRepository(IndividualExclusionRepository);
+  groupEnrollmentRepo = Container.getCustomRepository(GroupEnrollmentRepository);
+  groupExclusionRepo = Container.getCustomRepository(GroupExclusionRepository);
+  const commonMockData = initializeMocks(result);
 
-  const repocallback = sinon.stub();
-  repocallback.withArgs(IndividualEnrollmentRepository).returns(IndividualEnrollmentRepository.prototype);
-  repocallback.withArgs(IndividualExclusionRepository).returns(IndividualExclusionRepository.prototype);
-  repocallback.withArgs(ExperimentRepository).returns(ExperimentRepository.prototype);
-  repocallback.withArgs(GroupExclusionRepository).returns(GroupExclusionRepository.prototype);
-  repocallback.returns(AnalyticsRepository.prototype);
-
-  sandbox.stub(ConnectionManager.prototype, 'get').returns({
-    getRepository: repocallback,
-  } as unknown as Connection);
-
-  selectMock = sandbox.mock(selectQueryBuilder);
+  //repo.createQueryBuilder = commonMockData.createQueryBuilder;
+  individualEnrollmentRepo.createQueryBuilder = commonMockData.createQueryBuilder;
+  experimentRepo.createQueryBuilder = commonMockData.createQueryBuilder;
+  individualExclusionRepo.createQueryBuilder = commonMockData.createQueryBuilder;
+  groupEnrollmentRepo.createQueryBuilder = commonMockData.createQueryBuilder;
+  groupExclusionRepo.createQueryBuilder = commonMockData.createQueryBuilder;
+  mock = commonMockData.mocks;
 });
 
 afterEach(() => {
-  sandbox.restore();
+  jest.clearAllMocks();
 });
 
 describe('AnalyticsRepository Testing', () => {
   it('should get enrollment count per group', async () => {
-    const individualEnrollmentRepoStub = sandbox
-      .stub(manager, 'getCustomRepository')
-      .withArgs(IndividualEnrollmentRepository)
-      .returns(IndividualEnrollmentRepository.prototype);
-    createQueryBuilderStub = sandbox
-      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-
-    selectMock.expects('select').once().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('innerJoin').once().returns(selectQueryBuilder);
-    selectMock.expects('groupBy').once().returns(selectQueryBuilder);
-    selectMock.expects('execute').once().returns(Promise.resolve(result));
+    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(individualEnrollmentRepo);
 
     const res = await repo.getEnrollmentCountPerGroup(experiment.id);
 
-    sinon.assert.calledOnce(individualEnrollmentRepoStub);
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository);
+
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.innerJoin).toHaveBeenCalledTimes(1);
+    expect(mock.groupBy).toHaveBeenCalledTimes(1);
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should throw an error when get enrollment count per group fails', async () => {
-    const individualEnrollmentRepoStub = sandbox
-      .stub(manager, 'getCustomRepository')
-      .withArgs(IndividualEnrollmentRepository)
-      .returns(IndividualEnrollmentRepository.prototype);
-    createQueryBuilderStub = sandbox
-      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-
-    selectMock.expects('select').once().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('innerJoin').once().returns(selectQueryBuilder);
-    selectMock.expects('groupBy').once().returns(selectQueryBuilder);
-    selectMock.expects('execute').once().returns(Promise.reject(err));
+    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(individualEnrollmentRepo);
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.getEnrollmentCountPerGroup(experiment.id);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(individualEnrollmentRepoStub);
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository);
+
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.innerJoin).toHaveBeenCalledTimes(1);
+    expect(mock.groupBy).toHaveBeenCalledTimes(1);
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should get enrollment count per decision point for individual assignment', async () => {
-    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    const individualEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(IndividualEnrollmentRepository)
-      .returns(IndividualEnrollmentRepository.prototype);
-    const individualExclusionRepoStub = getCustomRepositoryStub
-      .withArgs(IndividualExclusionRepository)
-      .returns(IndividualExclusionRepository.prototype);
-    const experimentRepoStub = getCustomRepositoryStub
-      .withArgs(ExperimentRepository)
-      .returns(ExperimentRepository.prototype);
-    const groupExclusionRepoStub = getCustomRepositoryStub
-      .withArgs(GroupExclusionRepository)
-      .returns(GroupExclusionRepository.prototype);
-    createQueryBuilderStub = sandbox
-      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
-    sandbox.stub(IndividualExclusionRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(experimentRepo)
+      .mockReturnValueOnce(individualEnrollmentRepo)
+      .mockReturnValueOnce(individualExclusionRepo)
+      .mockReturnValueOnce(groupExclusionRepo);
 
     const decisionPointResult = {
       id: experiment.id,
@@ -164,44 +154,44 @@ describe('AnalyticsRepository Testing', () => {
       ],
     };
 
-    selectMock.expects('select').exactly(4).returns(selectQueryBuilder);
-    selectMock.expects('where').exactly(4).returns(selectQueryBuilder);
-    selectMock.expects('groupBy').exactly(2).returns(selectQueryBuilder);
-    selectMock.expects('addGroupBy').exactly(3).returns(selectQueryBuilder);
-    selectMock.expects('execute').exactly(4).returns(Promise.resolve(userResult));
+    experimentRepo.findOne = jest.fn().mockResolvedValue(experiment);
+    mock.execute.mockResolvedValue(userResult);
 
     const res = await repo.getEnrollmentPerPartitionCondition(experiment.id);
 
-    sinon.assert.calledOnce(individualEnrollmentRepoStub);
-    sinon.assert.calledOnce(individualExclusionRepoStub);
-    sinon.assert.calledOnce(experimentRepoStub);
-    sinon.assert.calledOnce(groupExclusionRepoStub);
-    sinon.assert.calledThrice(createQueryBuilderStub);
-    sinon.assert.calledOnce(findOneStub);
-    selectMock.verify();
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualExclusionRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(GroupExclusionRepository);
+
+    expect(experimentRepo.findOne).toHaveBeenCalledTimes(1);
+    expect(experimentRepo.findOne).toHaveBeenCalledWith({
+      where: { id: experiment.id },
+      relations: ['partitions', 'conditions'],
+    });
+
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(4);
+
+    expect(mock.select).toHaveBeenCalledTimes(4);
+    expect(mock.where).toHaveBeenCalledTimes(4);
+    expect(mock.groupBy).toHaveBeenCalledTimes(5);
+    expect(mock.execute).toHaveBeenCalledTimes(4);
 
     expect(res).toEqual(decisionPointResult);
   });
 
   it('should get enrollment count per decision point for individual assignment with none enrolled', async () => {
-    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    const individualEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(IndividualEnrollmentRepository)
-      .returns(IndividualEnrollmentRepository.prototype);
-    const individualExclusionRepoStub = getCustomRepositoryStub
-      .withArgs(IndividualExclusionRepository)
-      .returns(IndividualExclusionRepository.prototype);
-    const experimentRepoStub = getCustomRepositoryStub
-      .withArgs(ExperimentRepository)
-      .returns(ExperimentRepository.prototype);
-    const groupExclusionRepoStub = getCustomRepositoryStub
-      .withArgs(GroupExclusionRepository)
-      .returns(GroupExclusionRepository.prototype);
-    createQueryBuilderStub = sandbox
-      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
-    sandbox.stub(IndividualExclusionRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(experimentRepo)
+      .mockReturnValueOnce(individualEnrollmentRepo)
+      .mockReturnValueOnce(individualExclusionRepo)
+      .mockReturnValueOnce(groupExclusionRepo);
+    mock.execute
+      .mockReturnValueOnce([{ count: 0, userCount: 0, groupCount: 0 }])
+      .mockReturnValueOnce([{ count: 0 }])
+      .mockReturnValueOnce([{ count: 0 }])
+      .mockReturnValueOnce([{ count: 0 }]);
 
     const decisionPointResult = {
       id: experiment.id,
@@ -225,50 +215,41 @@ describe('AnalyticsRepository Testing', () => {
       ],
     };
 
-    selectMock.expects('select').exactly(4).returns(selectQueryBuilder);
-    selectMock.expects('where').exactly(4).returns(selectQueryBuilder);
-    selectMock.expects('groupBy').exactly(2).returns(selectQueryBuilder);
-    selectMock.expects('addGroupBy').exactly(3).returns(selectQueryBuilder);
-    selectMock.expects('execute').returns(Promise.resolve([{ count: 0, userCount: 0, groupCount: 0 }]));
-    selectMock
-      .expects('execute')
-      .exactly(3)
-      .returns(Promise.resolve([{ count: 0 }]));
+    experimentRepo.findOne = jest.fn().mockResolvedValue(experiment);
+    mock.execute.mockResolvedValue(userResult);
 
     const res = await repo.getEnrollmentPerPartitionCondition(experiment.id);
 
-    sinon.assert.calledOnce(individualEnrollmentRepoStub);
-    sinon.assert.calledOnce(individualExclusionRepoStub);
-    sinon.assert.calledOnce(experimentRepoStub);
-    sinon.assert.calledOnce(groupExclusionRepoStub);
-    sinon.assert.calledThrice(createQueryBuilderStub);
-    sinon.assert.calledOnce(findOneStub);
-    selectMock.verify();
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualExclusionRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(GroupExclusionRepository);
+
+    expect(experimentRepo.findOne).toHaveBeenCalledTimes(1);
+    expect(experimentRepo.findOne).toHaveBeenCalledWith({
+      where: { id: experiment.id },
+      relations: ['partitions', 'conditions'],
+    });
+
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(4);
+
+    expect(mock.select).toHaveBeenCalledTimes(4);
+    expect(mock.where).toHaveBeenCalledTimes(4);
+    expect(mock.groupBy).toHaveBeenCalledTimes(5);
+    expect(mock.execute).toHaveBeenCalledTimes(4);
 
     expect(res).toEqual(decisionPointResult);
   });
 
   it('should get enrollment count per decision point for group assignment', async () => {
     experiment.assignmentUnit = ASSIGNMENT_UNIT.GROUP;
-    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    const individualEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(IndividualEnrollmentRepository)
-      .returns(IndividualEnrollmentRepository.prototype);
-    const individualExclusionRepoStub = getCustomRepositoryStub
-      .withArgs(IndividualExclusionRepository)
-      .returns(IndividualExclusionRepository.prototype);
-    const experimentRepoStub = getCustomRepositoryStub
-      .withArgs(ExperimentRepository)
-      .returns(ExperimentRepository.prototype);
-    const groupExclusionRepoStub = getCustomRepositoryStub
-      .withArgs(GroupExclusionRepository)
-      .returns(GroupExclusionRepository.prototype);
-    createQueryBuilderStub = sandbox
-      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
-    sandbox.stub(IndividualExclusionRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
-    sandbox.stub(GroupExclusionRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(experimentRepo)
+      .mockReturnValueOnce(individualEnrollmentRepo)
+      .mockReturnValueOnce(individualExclusionRepo)
+      .mockReturnValueOnce(groupExclusionRepo);
 
     const decisionPointResult = {
       id: experiment.id,
@@ -292,47 +273,42 @@ describe('AnalyticsRepository Testing', () => {
       ],
     };
 
-    selectMock.expects('select').exactly(5).returns(selectQueryBuilder);
-    selectMock.expects('where').exactly(5).returns(selectQueryBuilder);
-    selectMock.expects('innerJoin').exactly(3).returns(selectQueryBuilder);
-    selectMock.expects('groupBy').exactly(2).returns(selectQueryBuilder);
-    selectMock.expects('addGroupBy').exactly(3).returns(selectQueryBuilder);
-    selectMock.expects('execute').exactly(5).returns(Promise.resolve(userResult));
+    experimentRepo.findOne = jest.fn().mockResolvedValue(experiment);
+    mock.execute.mockResolvedValue(userResult);
 
     const res = await repo.getEnrollmentPerPartitionCondition(experiment.id);
 
-    sinon.assert.calledOnce(individualEnrollmentRepoStub);
-    sinon.assert.calledOnce(individualExclusionRepoStub);
-    sinon.assert.calledOnce(experimentRepoStub);
-    sinon.assert.calledOnce(groupExclusionRepoStub);
-    sinon.assert.calledThrice(createQueryBuilderStub);
-    sinon.assert.calledOnce(findOneStub);
-    selectMock.verify();
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualExclusionRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(GroupExclusionRepository);
+
+    expect(experimentRepo.findOne).toHaveBeenCalledTimes(1);
+    expect(experimentRepo.findOne).toHaveBeenCalledWith({
+      where: { id: experiment.id },
+      relations: ['partitions', 'conditions'],
+    });
+
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(5);
+
+    expect(mock.select).toHaveBeenCalledTimes(5);
+    expect(mock.where).toHaveBeenCalledTimes(5);
+    expect(mock.innerJoin).toHaveBeenCalledTimes(3);
+    expect(mock.groupBy).toHaveBeenCalledTimes(5);
+    expect(mock.execute).toHaveBeenCalledTimes(5);
 
     expect(res).toEqual(decisionPointResult);
   });
 
   it('should get enrollment count per decision point for group assignment with none enrolled', async () => {
     experiment.assignmentUnit = ASSIGNMENT_UNIT.GROUP;
-    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    const individualEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(IndividualEnrollmentRepository)
-      .returns(IndividualEnrollmentRepository.prototype);
-    const individualExclusionRepoStub = getCustomRepositoryStub
-      .withArgs(IndividualExclusionRepository)
-      .returns(IndividualExclusionRepository.prototype);
-    const experimentRepoStub = getCustomRepositoryStub
-      .withArgs(ExperimentRepository)
-      .returns(ExperimentRepository.prototype);
-    const groupExclusionRepoStub = getCustomRepositoryStub
-      .withArgs(GroupExclusionRepository)
-      .returns(GroupExclusionRepository.prototype);
-    createQueryBuilderStub = sandbox
-      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
-    sandbox.stub(IndividualExclusionRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
-    sandbox.stub(GroupExclusionRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(experimentRepo)
+      .mockReturnValueOnce(individualEnrollmentRepo)
+      .mockReturnValueOnce(individualExclusionRepo)
+      .mockReturnValueOnce(groupExclusionRepo);
 
     const decisionPointResult = {
       id: experiment.id,
@@ -356,26 +332,34 @@ describe('AnalyticsRepository Testing', () => {
       ],
     };
 
-    selectMock.expects('select').exactly(5).returns(selectQueryBuilder);
-    selectMock.expects('where').exactly(5).returns(selectQueryBuilder);
-    selectMock.expects('innerJoin').exactly(3).returns(selectQueryBuilder);
-    selectMock.expects('groupBy').exactly(2).returns(selectQueryBuilder);
-    selectMock.expects('addGroupBy').exactly(3).returns(selectQueryBuilder);
-    selectMock.expects('execute').returns(Promise.resolve([{ count: 0, userCount: 0, groupCount: 0 }]));
-    selectMock
-      .expects('execute')
-      .exactly(4)
-      .returns(Promise.resolve([{ count: 0 }]));
+    experimentRepo.findOne = jest.fn().mockResolvedValue(experiment);
+    mock.execute
+      .mockResolvedValueOnce([{ count: 0, userCount: 0, groupCount: 0 }])
+      .mockResolvedValueOnce([{ count: 0 }])
+      .mockResolvedValueOnce([{ count: 0 }])
+      .mockResolvedValueOnce([{ count: 0 }])
+      .mockResolvedValueOnce([{ count: 0 }]);
 
     const res = await repo.getEnrollmentPerPartitionCondition(experiment.id);
 
-    sinon.assert.calledOnce(individualEnrollmentRepoStub);
-    sinon.assert.calledOnce(individualExclusionRepoStub);
-    sinon.assert.calledOnce(experimentRepoStub);
-    sinon.assert.calledOnce(groupExclusionRepoStub);
-    sinon.assert.calledThrice(createQueryBuilderStub);
-    sinon.assert.calledOnce(findOneStub);
-    selectMock.verify();
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualExclusionRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(GroupExclusionRepository);
+
+    expect(experimentRepo.findOne).toHaveBeenCalledTimes(1);
+    expect(experimentRepo.findOne).toHaveBeenCalledWith({
+      where: { id: experiment.id },
+      relations: ['partitions', 'conditions'],
+    });
+
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(5);
+
+    expect(mock.select).toHaveBeenCalledTimes(5);
+    expect(mock.where).toHaveBeenCalledTimes(5);
+    expect(mock.innerJoin).toHaveBeenCalledTimes(3);
+    expect(mock.groupBy).toHaveBeenCalledTimes(5);
+    expect(mock.execute).toHaveBeenCalledTimes(5);
 
     expect(res).toEqual(decisionPointResult);
   });
@@ -387,18 +371,10 @@ describe('AnalyticsRepository Testing', () => {
   });
 
   it('should get enrollments for experiments', async () => {
-    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    const individualEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(IndividualEnrollmentRepository)
-      .returns(IndividualEnrollmentRepository.prototype);
-    const groupEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(GroupEnrollmentRepository)
-      .returns(GroupEnrollmentRepository.prototype);
-
-    createQueryBuilderStub = sandbox
-      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    sandbox.stub(GroupEnrollmentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(individualEnrollmentRepo)
+      .mockReturnValueOnce(groupEnrollmentRepo);
 
     const result = {
       groups: 3,
@@ -406,36 +382,28 @@ describe('AnalyticsRepository Testing', () => {
       users: 4,
     };
 
-    selectMock.expects('select').twice().returns(selectQueryBuilder);
-    selectMock.expects('groupBy').twice().returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').once().returns(selectQueryBuilder);
-    selectMock
-      .expects('execute')
-      .twice()
-      .returns(Promise.resolve([{ id: experiment.id, users: 4, groups: 3 }]));
+    mock.execute.mockResolvedValue([{ id: experiment.id, users: 4, groups: 3 }]);
 
     const res = await repo.getEnrollments([experiment.id]);
 
-    sinon.assert.calledOnce(individualEnrollmentRepoStub);
-    sinon.assert.calledOnce(groupEnrollmentRepoStub);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(GroupEnrollmentRepository);
+
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+
+    expect(mock.select).toHaveBeenCalledTimes(2);
+    expect(mock.groupBy).toHaveBeenCalledTimes(2);
+    expect(mock.where).toHaveBeenCalledTimes(2);
+    expect(mock.andWhere).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([result]);
   });
 
   it('should get enrollments for experiments with none enrolled', async () => {
-    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    const individualEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(IndividualEnrollmentRepository)
-      .returns(IndividualEnrollmentRepository.prototype);
-    const groupEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(GroupEnrollmentRepository)
-      .returns(GroupEnrollmentRepository.prototype);
-
-    createQueryBuilderStub = sandbox
-      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    sandbox.stub(GroupEnrollmentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(individualEnrollmentRepo)
+      .mockReturnValueOnce(groupEnrollmentRepo);
 
     const result = {
       groups: 0,
@@ -443,40 +411,29 @@ describe('AnalyticsRepository Testing', () => {
       users: 0,
     };
 
-    selectMock.expects('select').twice().returns(selectQueryBuilder);
-    selectMock.expects('groupBy').twice().returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').once().returns(selectQueryBuilder);
-    selectMock
-      .expects('execute')
-      .twice()
-      .returns(Promise.resolve([{}]));
+    mock.execute.mockResolvedValue([{}]);
 
     const res = await repo.getEnrollments([experiment.id]);
 
-    sinon.assert.calledOnce(individualEnrollmentRepoStub);
-    sinon.assert.calledOnce(groupEnrollmentRepoStub);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(GroupEnrollmentRepository);
+
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+
+    expect(mock.select).toHaveBeenCalledTimes(2);
+    expect(mock.groupBy).toHaveBeenCalledTimes(2);
+    expect(mock.where).toHaveBeenCalledTimes(2);
+    expect(mock.andWhere).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([result]);
   });
 
   it('should get enrollments by date range last seven days', async () => {
-    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    const individualEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(IndividualEnrollmentRepository)
-      .returns(IndividualEnrollmentRepository.prototype);
-    const groupEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(GroupEnrollmentRepository)
-      .returns(GroupEnrollmentRepository.prototype);
-    const experimentRepoStub = getCustomRepositoryStub
-      .withArgs(ExperimentRepository)
-      .returns(ExperimentRepository.prototype);
-
-    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
-    createQueryBuilderStub = sandbox
-      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    sandbox.stub(GroupEnrollmentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(experimentRepo)
+      .mockReturnValueOnce(individualEnrollmentRepo)
+      .mockReturnValueOnce(groupEnrollmentRepo);
 
     const result = {
       count: 1,
@@ -485,42 +442,37 @@ describe('AnalyticsRepository Testing', () => {
       date_range: DATE_RANGE.LAST_SEVEN_DAYS,
     };
 
-    selectMock.expects('select').twice().returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').thrice().returns(selectQueryBuilder);
-    selectMock.expects('groupBy').twice().returns(selectQueryBuilder);
-    selectMock.expects('addGroupBy').exactly(4).returns(selectQueryBuilder);
-    selectMock
-      .expects('execute')
-      .twice()
-      .returns(Promise.resolve([result]));
+    experimentRepo.findOneBy = jest.fn().mockResolvedValue(experiment);
+    mock.execute.mockResolvedValue([result]);
 
     const res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_SEVEN_DAYS, 3);
-    sinon.assert.calledOnce(individualEnrollmentRepoStub);
-    sinon.assert.calledOnce(groupEnrollmentRepoStub);
-    sinon.assert.calledOnce(experimentRepoStub);
-    sinon.assert.calledOnce(findOneStub);
+
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(GroupEnrollmentRepository);
+
+    expect(experimentRepo.findOneBy).toHaveBeenCalledTimes(1);
+    expect(experimentRepo.findOneBy).toHaveBeenCalledWith({
+      id: experiment.id,
+    });
+
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+
+    expect(mock.select).toHaveBeenCalledTimes(2);
+    expect(mock.where).toHaveBeenCalledTimes(2);
+    expect(mock.andWhere).toHaveBeenCalledTimes(3);
+    expect(mock.groupBy).toHaveBeenCalledTimes(6);
+    expect(mock.execute).toHaveBeenCalledTimes(2);
 
     expect(res).toEqual([[result], [result]]);
   });
 
   it('should get enrollments by date range last six months', async () => {
-    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    const individualEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(IndividualEnrollmentRepository)
-      .returns(IndividualEnrollmentRepository.prototype);
-    const groupEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(GroupEnrollmentRepository)
-      .returns(GroupEnrollmentRepository.prototype);
-    const experimentRepoStub = getCustomRepositoryStub
-      .withArgs(ExperimentRepository)
-      .returns(ExperimentRepository.prototype);
-
-    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
-    createQueryBuilderStub = sandbox
-      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    sandbox.stub(GroupEnrollmentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(experimentRepo)
+      .mockReturnValueOnce(individualEnrollmentRepo)
+      .mockReturnValueOnce(groupEnrollmentRepo);
 
     const result = {
       count: 1,
@@ -529,42 +481,37 @@ describe('AnalyticsRepository Testing', () => {
       date_range: DATE_RANGE.LAST_SIX_MONTHS,
     };
 
-    selectMock.expects('select').twice().returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').thrice().returns(selectQueryBuilder);
-    selectMock.expects('groupBy').twice().returns(selectQueryBuilder);
-    selectMock.expects('addGroupBy').exactly(4).returns(selectQueryBuilder);
-    selectMock
-      .expects('execute')
-      .twice()
-      .returns(Promise.resolve([result]));
+    experimentRepo.findOneBy = jest.fn().mockResolvedValue(experiment);
+    mock.execute.mockResolvedValue([result]);
 
     const res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_SIX_MONTHS, 3);
-    sinon.assert.calledOnce(individualEnrollmentRepoStub);
-    sinon.assert.calledOnce(groupEnrollmentRepoStub);
-    sinon.assert.calledOnce(experimentRepoStub);
-    sinon.assert.calledOnce(findOneStub);
+
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(GroupEnrollmentRepository);
+
+    expect(experimentRepo.findOneBy).toHaveBeenCalledTimes(1);
+    expect(experimentRepo.findOneBy).toHaveBeenCalledWith({
+      id: experiment.id,
+    });
+
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+
+    expect(mock.select).toHaveBeenCalledTimes(2);
+    expect(mock.where).toHaveBeenCalledTimes(2);
+    expect(mock.andWhere).toHaveBeenCalledTimes(3);
+    expect(mock.groupBy).toHaveBeenCalledTimes(6);
+    expect(mock.execute).toHaveBeenCalledTimes(2);
 
     expect(res).toEqual([[result], [result]]);
   });
 
   it('should get enrollments by date range last three months', async () => {
-    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    const individualEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(IndividualEnrollmentRepository)
-      .returns(IndividualEnrollmentRepository.prototype);
-    const groupEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(GroupEnrollmentRepository)
-      .returns(GroupEnrollmentRepository.prototype);
-    const experimentRepoStub = getCustomRepositoryStub
-      .withArgs(ExperimentRepository)
-      .returns(ExperimentRepository.prototype);
-
-    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
-    createQueryBuilderStub = sandbox
-      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    sandbox.stub(GroupEnrollmentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(experimentRepo)
+      .mockReturnValueOnce(individualEnrollmentRepo)
+      .mockReturnValueOnce(groupEnrollmentRepo);
 
     const result = {
       count: 1,
@@ -573,43 +520,37 @@ describe('AnalyticsRepository Testing', () => {
       date_range: DATE_RANGE.LAST_THREE_MONTHS,
     };
 
-    selectMock.expects('select').twice().returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').thrice().returns(selectQueryBuilder);
-    selectMock.expects('groupBy').twice().returns(selectQueryBuilder);
-    selectMock.expects('addGroupBy').exactly(4).returns(selectQueryBuilder);
-    selectMock
-      .expects('execute')
-      .twice()
-      .returns(Promise.resolve([result]));
+    experimentRepo.findOneBy = jest.fn().mockResolvedValue(experiment);
+    mock.execute.mockResolvedValue([result]);
 
     const res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_THREE_MONTHS, 3);
-    sinon.assert.calledOnce(individualEnrollmentRepoStub);
-    sinon.assert.calledOnce(groupEnrollmentRepoStub);
-    sinon.assert.calledOnce(experimentRepoStub);
-    sinon.assert.calledOnce(findOneStub);
+
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(GroupEnrollmentRepository);
+
+    expect(experimentRepo.findOneBy).toHaveBeenCalledTimes(1);
+    expect(experimentRepo.findOneBy).toHaveBeenCalledWith({
+      id: experiment.id,
+    });
+
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+
+    expect(mock.select).toHaveBeenCalledTimes(2);
+    expect(mock.where).toHaveBeenCalledTimes(2);
+    expect(mock.andWhere).toHaveBeenCalledTimes(3);
+    expect(mock.groupBy).toHaveBeenCalledTimes(6);
+    expect(mock.execute).toHaveBeenCalledTimes(2);
 
     expect(res).toEqual([[result], [result]]);
   });
 
   it('should get enrollments by date range last twelve months', async () => {
-    const getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository');
-    const individualEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(IndividualEnrollmentRepository)
-      .returns(IndividualEnrollmentRepository.prototype);
-    const groupEnrollmentRepoStub = getCustomRepositoryStub
-      .withArgs(GroupEnrollmentRepository)
-      .returns(GroupEnrollmentRepository.prototype);
-    const experimentRepoStub = getCustomRepositoryStub
-      .withArgs(ExperimentRepository)
-      .returns(ExperimentRepository.prototype);
-
-    const findOneStub = sandbox.stub(ExperimentRepository.prototype, 'findOne').returns(experiment);
-
-    createQueryBuilderStub = sandbox
-      .stub(IndividualEnrollmentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    sandbox.stub(GroupEnrollmentRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(experimentRepo)
+      .mockReturnValueOnce(individualEnrollmentRepo)
+      .mockReturnValueOnce(groupEnrollmentRepo);
 
     const result = {
       count: 1,
@@ -618,21 +559,27 @@ describe('AnalyticsRepository Testing', () => {
       date_range: DATE_RANGE.LAST_TWELVE_MONTHS,
     };
 
-    selectMock.expects('select').twice().returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').thrice().returns(selectQueryBuilder);
-    selectMock.expects('groupBy').twice().returns(selectQueryBuilder);
-    selectMock.expects('addGroupBy').exactly(4).returns(selectQueryBuilder);
-    selectMock
-      .expects('execute')
-      .twice()
-      .returns(Promise.resolve([result]));
+    experimentRepo.findOneBy = jest.fn().mockResolvedValue(experiment);
+    mock.execute.mockResolvedValue([result]);
 
     const res = await repo.getEnrollmentByDateRange(experiment.id, DATE_RANGE.LAST_TWELVE_MONTHS, 3);
-    sinon.assert.calledOnce(individualEnrollmentRepoStub);
-    sinon.assert.calledOnce(groupEnrollmentRepoStub);
-    sinon.assert.calledOnce(experimentRepoStub);
-    sinon.assert.calledOnce(findOneStub);
+
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(GroupEnrollmentRepository);
+
+    expect(experimentRepo.findOneBy).toHaveBeenCalledTimes(1);
+    expect(experimentRepo.findOneBy).toHaveBeenCalledWith({
+      id: experiment.id,
+    });
+
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+
+    expect(mock.select).toHaveBeenCalledTimes(2);
+    expect(mock.where).toHaveBeenCalledTimes(2);
+    expect(mock.andWhere).toHaveBeenCalledTimes(3);
+    expect(mock.groupBy).toHaveBeenCalledTimes(6);
+    expect(mock.execute).toHaveBeenCalledTimes(2);
 
     expect(res).toEqual([[result], [result]]);
   });

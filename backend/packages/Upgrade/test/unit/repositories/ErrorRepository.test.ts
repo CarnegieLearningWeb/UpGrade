@@ -1,16 +1,11 @@
 import { DataSource } from 'typeorm';
-import * as sinon from 'sinon';
 import { ErrorRepository } from '../../../src/api/repositories/ErrorRepository';
 import { ExperimentError } from '../../../src/api/models/ExperimentError';
 import { SERVER_ERROR } from 'upgrade_types';
 import { Container } from '../../../src/typeorm-typedi-extensions';
+import { initializeMocks } from '../mockdata/mockRepo';
 
-let mockCreateQueryBuilder;
-let mockInsert;
-let mockValues;
-let mockReturning;
-let mockExecute;
-
+let mock;
 let dataSource: DataSource;
 let repo: ErrorRepository;
 const err = new Error('test error');
@@ -34,19 +29,25 @@ beforeAll(() => {
   Container.setDataSource('default', dataSource);
 });
 
+beforeAll(() => {
+  dataSource = new DataSource({
+    type: 'postgres',
+    database: 'postgres',
+    entities: [ErrorRepository],
+    synchronize: true,
+  });
+  Container.setDataSource('default', dataSource);
+});
+
 beforeEach(() => {
   repo = Container.getCustomRepository(ErrorRepository);
-  mockCreateQueryBuilder = jest.fn().mockReturnThis();
-  mockInsert = jest.fn().mockReturnThis();
-  mockValues = jest.fn().mockReturnThis();
-  mockReturning = jest.fn().mockReturnThis();
-  mockExecute = jest.fn().mockResolvedValue(result);
-  repo.createQueryBuilder = jest.fn().mockReturnValue({
-    insert: mockInsert,
-    values: mockValues,
-    returning: mockReturning,
-    execute: mockExecute,
-  });
+  const commonMockData = initializeMocks(result);
+  repo.createQueryBuilder = commonMockData.createQueryBuilder;
+  mock = commonMockData.mocks;
+});
+
+afterEach(() => {
+  jest.clearAllMocks();
 });
 
 afterEach(() => {
@@ -56,161 +57,144 @@ afterEach(() => {
 describe('ErrorRepository Testing', () => {
   it('should save new audit log', async () => {
     const res = await repo.saveRawJson(experiment);
-    expect(res).toBeDefined();
-    expect(mockInsert).toHaveBeenCalledTimes(1);
-    expect(mockInsert).toHaveBeenCalledWith();
-    expect(mockValues).toHaveBeenCalledTimes(1);
-    expect(mockValues).toHaveBeenCalledWith(experiment);
-    expect(mockReturning).toHaveBeenCalledTimes(1);
-    expect(mockReturning).toHaveBeenCalledWith('*');
-    expect(mockExecute).toHaveBeenCalledTimes(1);
-    expect(mockExecute).toHaveBeenCalledWith();
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith(experiment);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(experiment);
   });
 
-  // it('should throw an error when insert fails', async () => {
-  //   // insertMock.expects('insert').once().returns(insertQueryBuilder);
-  //   // insertMock.expects('values').once().returns(insertQueryBuilder);
-  //   // insertMock.expects('returning').once().returns(insertQueryBuilder);
-  //   // insertMock.expects('execute').once().returns(Promise.reject(err));
+  it('should throw an error when insert fails', async () => {
+    mock.execute.mockRejectedValue(err);
 
-  //   expect(async () => {
-  //     await repo.saveRawJson({} as any);
-  //   }).rejects.toThrow(err);
+    expect(async () => {
+      await repo.saveRawJson(experiment as any);
+    }).rejects.toThrow(err);
 
-  //   expect(mockInsert).toHaveBeenCalledTimes(1);
-  //   expect(mockInsert).toHaveBeenCalledWith();
-  //   expect(mockValues).toHaveBeenCalledTimes(1);
-  //   expect(mockValues).toHaveBeenCalledWith(experiment);
-  //   expect(mockReturning).toHaveBeenCalledTimes(1);
-  //   expect(mockReturning).toHaveBeenCalledWith('*');
-  //   expect(mockExecute).toHaveBeenCalledTimes(1);
-  //   expect(mockExecute).toHaveBeenCalledWith();
-  // });
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith(experiment);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
+    expect(mock.execute).toHaveBeenCalledWith();
+  });
 
-  // it('should clear logs', async () => {
-  //   const stub = sandbox.stub(ErrorRepository.prototype, 'createQueryBuilder');
-  //   stub.withArgs('error').returns(selectQueryBuilder);
-  //   stub.withArgs().returns(deleteQueryBuilder);
+  it('should clear logs', async () => {
+    const res = await repo.clearLogs(4);
 
-  //   selectMock.expects('select').once().returns(selectQueryBuilder);
-  //   selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-  //   selectMock.expects('limit').once().returns(selectQueryBuilder);
-  //   selectMock.expects('getQuery').once().returns(experiment.id);
-  //   deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-  //   deleteMock.expects('from').once().returns(deleteQueryBuilder);
-  //   deleteMock.expects('where').once().returns(deleteQueryBuilder);
-  //   deleteMock.expects('execute').once().returns(Promise.resolve(result));
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(2);
 
-  //   const res = await repo.clearLogs(4);
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.orderBy).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledWith(4);
+    expect(mock.getQuery).toHaveBeenCalledTimes(1);
 
-  //   sinon.assert.calledTwice(stub);
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
-  //   deleteMock.verify();
-  //   selectMock.verify();
+    expect(res).toEqual([experiment]);
+  });
 
-  //   expect(res).toEqual([experiment]);
-  // });
+  it('should throw an error when clear fails', async () => {
+    mock.execute.mockRejectedValue(err);
 
-  // it('should throw an error when clear fails', async () => {
-  //   const stub = sandbox.stub(ErrorRepository.prototype, 'createQueryBuilder');
-  //   stub.withArgs('error').returns(selectQueryBuilder);
-  //   stub.withArgs().returns(deleteQueryBuilder);
+    await expect(() => repo.clearLogs(4)).rejects.toThrow();
 
-  //   selectMock.expects('select').once().returns(selectQueryBuilder);
-  //   selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-  //   selectMock.expects('limit').once().returns(selectQueryBuilder);
-  //   selectMock.expects('getQuery').once().returns(experiment.id);
-  //   deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-  //   deleteMock.expects('from').once().returns(deleteQueryBuilder);
-  //   deleteMock.expects('where').once().returns(deleteQueryBuilder);
-  //   deleteMock.expects('execute').once().returns(Promise.reject(err));
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(2);
 
-  //   await expect(() => repo.clearLogs(4)).rejects.toThrow();
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.orderBy).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledWith(4);
+    expect(mock.getQuery).toHaveBeenCalledTimes(1);
 
-  //   sinon.assert.calledTwice(stub);
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.execute).toHaveBeenCalledTimes(1);
+  });
 
-  //   selectMock.verify();
-  //   deleteMock.verify();
-  // });
+  it('should get total logs', async () => {
+    const res = await repo.getTotalLogs(SERVER_ERROR.CONDITION_NOT_FOUND);
 
-  // it('should get total logs', async () => {
-  //   createQueryBuilderStub = sandbox.stub(ErrorRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-  //   selectMock.expects('where').once().returns(selectQueryBuilder);
-  //   selectMock.expects('getCount').once().returns(Promise.resolve(5));
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.getCount).toHaveBeenCalledTimes(1);
 
-  //   const res = await repo.getTotalLogs(SERVER_ERROR.CONDITION_NOT_FOUND);
+    expect(res).toEqual(5);
+  });
 
-  //   sinon.assert.calledOnce(createQueryBuilderStub);
-  //   selectMock.verify();
+  it('should throw an error when get total logs fails', async () => {
+    mock.getCount.mockRejectedValue(err);
 
-  //   expect(res).toEqual(5);
-  // });
+    expect(async () => {
+      await repo.getTotalLogs(SERVER_ERROR.CONDITION_NOT_FOUND);
+    }).rejects.toThrow(err);
 
-  // it('should throw an error when get total logs fails', async () => {
-  //   createQueryBuilderStub = sandbox.stub(ErrorRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-  //   selectMock.expects('where').once().returns(selectQueryBuilder);
-  //   selectMock.expects('getCount').once().returns(Promise.reject(err));
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.getCount).toHaveBeenCalledTimes(1);
+  });
 
-  //   expect(async () => {
-  //     await repo.getTotalLogs(SERVER_ERROR.CONDITION_NOT_FOUND);
-  //   }).rejects.toThrow(err);
+  it('should find paginated', async () => {
+    const res = await repo.paginatedFind(3, 0, SERVER_ERROR.ASSIGNMENT_ERROR);
 
-  //   sinon.assert.calledOnce(createQueryBuilderStub);
-  //   selectMock.verify();
-  // });
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-  // it('should find paginated', async () => {
-  //   createQueryBuilderStub = sandbox.stub(ErrorRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    expect(mock.offset).toHaveBeenCalledTimes(1);
+    expect(mock.offset).toHaveBeenCalledWith(0);
+    expect(mock.limit).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledWith(3);
+    expect(mock.orderBy).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
 
-  //   selectMock.expects('offset').once().returns(selectQueryBuilder);
-  //   selectMock.expects('limit').once().returns(selectQueryBuilder);
-  //   selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-  //   selectMock.expects('where').once().returns(selectQueryBuilder);
-  //   selectMock.expects('getMany').once().returns(Promise.resolve(result));
+    expect(res).toEqual(result);
+  });
 
-  //   const res = await repo.paginatedFind(3, 0, SERVER_ERROR.ASSIGNMENT_ERROR);
+  it('should find paginated with no filter', async () => {
+    const res = await repo.paginatedFind(3, 0, null);
 
-  //   sinon.assert.calledOnce(createQueryBuilderStub);
-  //   selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-  //   expect(res).toEqual(result);
-  // });
+    expect(mock.offset).toHaveBeenCalledTimes(1);
+    expect(mock.offset).toHaveBeenCalledWith(0);
+    expect(mock.limit).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledWith(3);
+    expect(mock.orderBy).toHaveBeenCalledTimes(1);
+    expect(mock.where).not.toHaveBeenCalled();
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
 
-  // it('should find paginated with no filter', async () => {
-  //   createQueryBuilderStub = sandbox.stub(ErrorRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    expect(res).toEqual(result);
+  });
 
-  //   selectMock.expects('offset').once().returns(selectQueryBuilder);
-  //   selectMock.expects('limit').once().returns(selectQueryBuilder);
-  //   selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-  //   selectMock.expects('where').never().returns(selectQueryBuilder);
-  //   selectMock.expects('getMany').once().returns(Promise.resolve(result));
+  it('should throw an error when find paginated fails', async () => {
+    mock.getMany.mockRejectedValue(err);
 
-  //   const res = await repo.paginatedFind(3, 0, null);
+    expect(async () => {
+      await repo.paginatedFind(3, 0, SERVER_ERROR.ASSIGNMENT_ERROR);
+    }).rejects.toThrow(err);
 
-  //   sinon.assert.calledOnce(createQueryBuilderStub);
-  //   selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-  //   expect(res).toEqual(result);
-  // });
-
-  // it('should throw an error when find paginated fails', async () => {
-  //   createQueryBuilderStub = sandbox.stub(ErrorRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
-
-  //   selectMock.expects('offset').once().returns(selectQueryBuilder);
-  //   selectMock.expects('limit').once().returns(selectQueryBuilder);
-  //   selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-  //   selectMock.expects('where').once().returns(selectQueryBuilder);
-  //   selectMock.expects('getMany').once().returns(Promise.reject(err));
-
-  //   expect(async () => {
-  //     await repo.paginatedFind(3, 0, SERVER_ERROR.ASSIGNMENT_ERROR);
-  //   }).rejects.toThrow(err);
-
-  //   sinon.assert.calledOnce(createQueryBuilderStub);
-  //   selectMock.verify();
-  // });
+    expect(mock.offset).toHaveBeenCalledTimes(1);
+    expect(mock.offset).toHaveBeenCalledWith(0);
+    expect(mock.limit).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledWith(3);
+    expect(mock.orderBy).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
+  });
 });
