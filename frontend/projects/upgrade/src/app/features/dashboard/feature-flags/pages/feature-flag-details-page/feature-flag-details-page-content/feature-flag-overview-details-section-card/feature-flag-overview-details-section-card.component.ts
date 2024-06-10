@@ -11,12 +11,6 @@ import { FeatureFlagsService } from '../../../../../../../core/feature-flags/fea
 import { CommonModule } from '@angular/common';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 
-export type OverviewDetails = {
-  [key: string]: string;
-} & {
-  Tags?: string[];
-};
-
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,
