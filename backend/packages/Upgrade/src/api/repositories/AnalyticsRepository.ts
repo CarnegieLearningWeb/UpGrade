@@ -17,6 +17,7 @@ import { GroupExclusionRepository } from './GroupExclusionRepository';
 import { DecisionPoint } from '../models/DecisionPoint';
 import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { ExperimentCondition } from '../models/ExperimentCondition';
+import { Repository } from 'typeorm';
 
 export interface IEnrollmentByCondition {
   conditions_id: string;
@@ -62,8 +63,8 @@ export interface CSVExportDataRow {
   target: string;
 }
 
-@EntityRepository()
-export class AnalyticsRepository {
+@EntityRepository(AnalyticsRepository)
+export class AnalyticsRepository extends Repository<AnalyticsRepository> {
   public async getEnrollmentCountPerGroup(experimentId: string): Promise<Array<{ groupId: string; count: number }>> {
     const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository);
     return individualEnrollmentRepository

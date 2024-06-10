@@ -33,7 +33,7 @@ export class GroupForSegmentRepository extends Repository<GroupForSegment> {
       .insert()
       .into(GroupForSegment)
       .values(data)
-      .onConflict(`DO NOTHING`)
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

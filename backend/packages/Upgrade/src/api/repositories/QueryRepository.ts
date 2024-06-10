@@ -24,7 +24,7 @@ export class QueryRepository extends Repository<Query> {
       .insert()
       .into(Query)
       .values(queryDoc)
-      .onConflict(`("id") DO UPDATE SET "query" = :query, "name" = :name, "repeatedMeasure" = :repeatedMeasure`)
+      .orUpdate(['query', 'name', 'repeatedMeasure'], 'id')
       .setParameter('query', queryDoc.query)
       .setParameter('name', queryDoc.name)
       .setParameter('metric', queryDoc.metric)

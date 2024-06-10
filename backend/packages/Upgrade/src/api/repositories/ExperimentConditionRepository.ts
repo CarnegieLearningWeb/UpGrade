@@ -14,9 +14,7 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
       .insert()
       .into(ExperimentCondition)
       .values(conditionDoc)
-      .onConflict(
-        `("id") DO UPDATE SET "name" = :name, "description" = :description, "conditionCode" = :conditionCode, "assignmentWeight" = :assignmentWeight, "order" = :order`
-      )
+      .orUpdate(['name', 'description', 'conditionCode', 'assignmentWeight', 'order'], 'id')
       .setParameter('name', conditionDoc.name)
       .setParameter('description', conditionDoc.description)
       .setParameter('conditionCode', conditionDoc.conditionCode)

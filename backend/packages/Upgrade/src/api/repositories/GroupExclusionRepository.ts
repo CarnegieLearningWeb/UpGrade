@@ -16,7 +16,7 @@ export class GroupExclusionRepository extends Repository<GroupExclusion> {
       .insert()
       .into(GroupExclusion)
       .values(newRawDataArray)
-      .onConflict(`DO NOTHING`)
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

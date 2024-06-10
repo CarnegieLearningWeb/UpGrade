@@ -34,7 +34,7 @@ export class IndividualForSegmentRepository extends Repository<IndividualForSegm
       .insert()
       .into(IndividualForSegment)
       .values(data)
-      .onConflict(`DO NOTHING`)
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

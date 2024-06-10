@@ -2,7 +2,7 @@ import { Container } from './../../typeorm-typedi-extensions/Container';
 import { ExperimentRepository } from './ExperimentRepository';
 import { IndividualEnrollment } from './../models/IndividualEnrollment';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
-import { Repository, EntityManager, SelectQueryBuilder, getCustomRepository, getManager } from 'typeorm';
+import { Repository, EntityManager, SelectQueryBuilder } from 'typeorm';
 import { Log } from '../models/Log';
 import repositoryError from './utils/repositoryError';
 import { Experiment } from '../models/Experiment';
@@ -139,7 +139,7 @@ export class LogRepository extends Repository<Log> {
       type: IMetricMetaData;
     }>
   > {
-    const experimentRepo = getCustomRepository(ExperimentRepository, 'export');
+    const experimentRepo = Container.getCustomRepository(ExperimentRepository, 'export');
     return experimentRepo
       .createQueryBuilder('experiment')
       .select([
@@ -356,8 +356,8 @@ export class LogRepository extends Repository<Log> {
 
       if (unitOfAssignment === 'within-subjects') {
         const conditionOrLevelId = isFactorialExperiment ? 'levelId' : 'conditionId';
-        const withinSubjectPercentQuery = getManager()
-          .createQueryBuilder()
+        const withinSubjectPercentQuery = Container.getDataSource()
+          .manager.createQueryBuilder()
           .select([
             `subquery."${conditionOrLevelId}"`,
             `COUNT(subquery."result") as "result"`,
@@ -485,8 +485,8 @@ export class LogRepository extends Repository<Log> {
         let withinSubjectExecuteQuery;
         const conditionOrLevelId = isFactorialExperiment ? 'levelId' : 'conditionId';
         if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
-          withinSubjectExecuteQuery = getManager()
-            .createQueryBuilder()
+          withinSubjectExecuteQuery = Container.getDataSource()
+            .manager.createQueryBuilder()
             .select([
               `subquery."${conditionOrLevelId}"`,
               `${queryFunction} within group (order by (subquery."result")) as "result"`,
@@ -496,8 +496,8 @@ export class LogRepository extends Repository<Log> {
             .groupBy(`subquery."${conditionOrLevelId}"`)
             .setParameters(executeQuery.getParameters());
         } else if (operationType === OPERATION_TYPES.STDEV) {
-          withinSubjectExecuteQuery = getManager()
-            .createQueryBuilder()
+          withinSubjectExecuteQuery = Container.getDataSource()
+            .manager.createQueryBuilder()
             .select([
               `subquery."${conditionOrLevelId}"`,
               `coalesce(${operationType}(subquery."result"),0) as "result"`,
@@ -507,8 +507,8 @@ export class LogRepository extends Repository<Log> {
             .groupBy(`subquery."${conditionOrLevelId}"`)
             .setParameters(executeQuery.getParameters());
         } else {
-          withinSubjectExecuteQuery = getManager()
-            .createQueryBuilder()
+          withinSubjectExecuteQuery = Container.getDataSource()
+            .manager.createQueryBuilder()
             .select([
               `subquery."${conditionOrLevelId}"`,
               `${operationType}(subquery."result") as "result"`,
