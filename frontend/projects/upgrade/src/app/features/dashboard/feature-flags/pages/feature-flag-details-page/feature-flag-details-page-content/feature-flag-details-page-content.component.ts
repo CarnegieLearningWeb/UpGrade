@@ -31,6 +31,7 @@ export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy
   featureFlagSub: Subscription;
   featureFlagIdSub: Subscription;
 
+
   constructor(private featureFlagsService: FeatureFlagsService, private _Activatedroute: ActivatedRoute) {
     console.log('in the ff content component');
 
