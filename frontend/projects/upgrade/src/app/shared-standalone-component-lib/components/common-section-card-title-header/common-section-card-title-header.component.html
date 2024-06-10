@@ -1,6 +1,8 @@
 <div class="title-header">
   <h1 class="title ft-26-700">
-    {{ title | translate }}
+    {{ title | translate }} &nbsp;<span *ngIf="tableRowCount > 0">
+      ({{ tableRowCount }})
+  </span>
     <ng-container *ngIf="chipClass">
       <app-common-status-indicator-chip class="status-chip" [chipClass] = "chipClass" ></app-common-status-indicator-chip>
     </ng-container>

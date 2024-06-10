@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import {
   CommonSectionCardComponent,
   CommonSectionCardSearchHeaderComponent,
@@ -9,9 +9,17 @@ import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FeatureFlagRootSectionCardTableComponent } from './feature-flag-root-section-card-table/feature-flag-root-section-card-table.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { IMenuButtonItem } from 'upgrade_types';
+import { FLAG_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
 import { RouterModule } from '@angular/router';
+import { MatTableDataSource } from '@angular/material/table';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
+import { Observable, map } from 'rxjs';
+import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
+import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
+import {
+  CommonTableHelpersService,
+  TableState,
+} from '../../../../../../../shared/services/common-table-helpers.service';
 
 @Component({
   selector: 'app-feature-flag-root-section-card',
@@ -33,10 +41,21 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagRootSectionCardComponent {
+  dataSource$: Observable<MatTableDataSource<FeatureFlag>>;
   isLoadingFeatureFlags$ = this.featureFlagService.isLoadingFeatureFlags$;
   isInitialLoading$ = this.featureFlagService.isInitialFeatureFlagsLoading$;
-  allFeatureFlags$ = this.featureFlagService.allFeatureFlags$;
   isAllFlagsFetched$ = this.featureFlagService.isAllFlagsFetched$;
+  searchString$ = this.featureFlagService.searchString$;
+  searchKey$ = this.featureFlagService.searchKey$;
+  searchParams$ = this.featureFlagService.searchParams$;
+  selectRootTableState$ = this.featureFlagService.selectRootTableState$;
+
+  featureFlagFilterOption = [
+    FLAG_SEARCH_KEY.ALL,
+    FLAG_SEARCH_KEY.NAME,
+    FLAG_SEARCH_KEY.STATUS,
+    FLAG_SEARCH_KEY.CONTEXT,
+  ];
   isSectionCardExpanded = true;
 
   menuButtonItems: IMenuButtonItem[] = [
@@ -53,17 +72,25 @@ export class FeatureFlagRootSectionCardComponent {
   constructor(
     private featureFlagService: FeatureFlagsService,
     private translateService: TranslateService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private tableHelpersService: CommonTableHelpersService
   ) {}
 
   ngOnInit() {
     this.featureFlagService.fetchFeatureFlags();
-    this.featureFlagService.fetchContextMetaData();
   }
 
-  onSearch(searchString: string) {
-    console.log('searchString', searchString);
-    // this.featureFlagService.setSearchString(searchString);
+  ngAfterViewInit() {
+    this.dataSource$ = this.featureFlagService.selectRootTableState$.pipe(
+      map((tableState: TableState<FeatureFlag>) => {
+        return this.tableHelpersService.mapTableStateToDataSource<FeatureFlag>(tableState);
+      })
+    );
+  }
+
+  onSearch(params: CommonSearchWidgetSearchParams<FLAG_SEARCH_KEY>) {
+    this.featureFlagService.setSearchString(params.searchString);
+    this.featureFlagService.setSearchKey(params.searchKey as FLAG_SEARCH_KEY);
   }
 
   onAddFeatureFlagButtonClick() {

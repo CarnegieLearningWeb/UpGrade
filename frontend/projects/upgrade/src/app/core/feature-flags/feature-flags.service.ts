@@ -6,8 +6,12 @@ import {
   selectIsAllFlagsFetched,
   selectIsLoadingFeatureFlags,
   selectHasInitialFeatureFlagsDataLoaded,
+  selectSearchKey,
+  selectSearchString,
   selectIsLoadingAddFeatureFlag,
   selectActiveDetailsTabIndex,
+  selectSearchFeatureFlagParams,
+  selectRootTableState,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -24,11 +28,15 @@ export class FeatureFlagsService {
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
+  searchString$ = this.store$.pipe(select(selectSearchString));
+  searchKey$ = this.store$.pipe(select(selectSearchKey));
   isLoadingAddFeatureFlag$ = this.store$.pipe(select(selectIsLoadingAddFeatureFlag));
   featureFlagsListLengthChange$ = this.allFeatureFlags$.pipe(
     pairwise(),
     filter(([prevEntities, currEntities]) => prevEntities.length !== currEntities.length)
   );
+  searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
+  selectRootTableState$ = this.store$.select(selectRootTableState);
   activeDetailsTabIndex$ = this.store$.pipe(select(selectActiveDetailsTabIndex));
   appContexts$ = this.experimentService.contextMetaData$.pipe(
     map((contextMetaData) => {
