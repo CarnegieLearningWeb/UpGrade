@@ -19,7 +19,7 @@ import { Subscription } from 'rxjs';
 })
 export class EnableFeatureFlagModalContentComponent {
   isLoadingUpdateFeatureFlagStatus$ = this.featureFlagService.isLoadingUpdateFeatureFlagStatus$;
-  isUpdateFeatureFlagStatusSuccess$ = this.featureFlagService.selectIsUpdateFeatureFlagStatusComplete$;
+  // isUpdateFeatureFlagStatusSuccess$ = this.featureFlagService.selectIsUpdateFeatureFlagStatusComplete$;
   subscriptions = new Subscription();
 
   featureFlagName: string;
