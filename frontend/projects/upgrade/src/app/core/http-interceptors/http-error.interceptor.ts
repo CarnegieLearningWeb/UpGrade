@@ -34,7 +34,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         this.openPopup(err);
 
         // re-throw to allow the error to be caught by the calling code
-        return throwError(() => new Error(JSON.stringify(err)));
+        throw err;
       })
     );
   }

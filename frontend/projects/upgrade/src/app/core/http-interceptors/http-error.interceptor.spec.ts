@@ -88,9 +88,7 @@ describe('HttpErrorInterceptor', () => {
 
       service.intercept(mockRequest, mockNextHandler).subscribe({
         error: (error: Error) => {
-          const errObject = JSON.parse(error.message);
-          expect(errObject.status).toEqual(mockError.status);
-          expect(errObject.message).toEqual(mockError.message);
+          expect(error).toEqual(mockError);
         },
       });
 
@@ -103,16 +101,14 @@ describe('HttpErrorInterceptor', () => {
       const mockError = { status: 400, message: 'test' };
       const mockRequest: any = {};
       const mockNextHandler = {
-        handle: jest.fn().mockReturnValue(throwError(mockError)),
+        handle: jest.fn().mockReturnValue(throwError(() => mockError)),
       };
       mockAuthService.authLogout = jest.fn();
       service.openPopup = jest.fn();
 
       service.intercept(mockRequest, mockNextHandler).subscribe({
         error: (error: Error) => {
-          const errObject = JSON.parse(error.message);
-          expect(errObject.status).toEqual(mockError.status);
-          expect(errObject.message).toEqual(mockError.message);
+          expect(error).toEqual(mockError);
         },
       });
 
