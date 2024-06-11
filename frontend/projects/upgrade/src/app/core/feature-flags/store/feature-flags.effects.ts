@@ -2,7 +2,7 @@ import { FeatureFlagsDataService } from '../feature-flags.data.service';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Injectable } from '@angular/core';
 import * as FeatureFlagsActions from './feature-flags.actions';
-import { catchError, switchMap, map, filter, withLatestFrom, tap, first, mergeMap } from 'rxjs/operators';
+import { catchError, switchMap, map, filter, withLatestFrom, tap, first } from 'rxjs/operators';
 import { FeatureFlag, FeatureFlagsPaginationParams, NUMBER_OF_FLAGS } from './feature-flags.model';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
@@ -15,7 +15,6 @@ import {
   selectSortAs,
   selectSearchString,
 } from './feature-flags.selectors';
-import { of } from 'rxjs';
 
 @Injectable()
 export class FeatureFlagsEffects {

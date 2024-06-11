@@ -1,18 +1,29 @@
 <div class="content-container">
-  <mat-spinner *ngIf="!featureFlag"></mat-spinner>
-  <app-common-section-card-list class="common-section-card-list" *ngIf="featureFlag">
-    <app-feature-flag-overview-details-section-card
-      [data]="featureFlag"
-      section-card
-    ></app-feature-flag-overview-details-section-card>
-    <app-feature-flag-inclusions-section-card [data]="featureFlag" *ngIf="(activeTabIndex$ | async) === 0" section-card
-      >inclusions-card</app-feature-flag-inclusions-section-card
-    >
-    <app-feature-flag-exclusions-section-card [data]="featureFlag" *ngIf="(activeTabIndex$ | async) === 0" section-card
-      >exclusions-card</app-feature-flag-exclusions-section-card
-    >
-    <app-feature-flag-exposures-section-card [data]="featureFlag" *ngIf="(activeTabIndex$ | async) === 1" section-card
-      >exposures-card</app-feature-flag-exposures-section-card
-    >
-  </app-common-section-card-list>
+  <ng-container *ngIf="featureFlag$ | async as featureFlag; else loading">
+    <app-common-section-card-list class="common-section-card-list">
+      <app-feature-flag-overview-details-section-card
+        [data]="featureFlag"
+        section-card
+      ></app-feature-flag-overview-details-section-card>
+      <app-feature-flag-inclusions-section-card
+        [data]="featureFlag"
+        *ngIf="(activeTabIndex$ | async) === 0"
+        section-card
+        >inclusions-card</app-feature-flag-inclusions-section-card
+      >
+      <app-feature-flag-exclusions-section-card
+        [data]="featureFlag"
+        *ngIf="(activeTabIndex$ | async) === 0"
+        section-card
+        >exclusions-card</app-feature-flag-exclusions-section-card
+      >
+      <app-feature-flag-exposures-section-card [data]="featureFlag" *ngIf="(activeTabIndex$ | async) === 1" section-card
+        >exposures-card</app-feature-flag-exposures-section-card
+      >
+    </app-common-section-card-list>
+  </ng-container>
+
+  <ng-template #loading>
+    <mat-spinner></mat-spinner>
+  </ng-template>
 </div>
