@@ -19,7 +19,12 @@ export class FeatureFlagsDataService {
     const url = this.environment.api.getPaginatedFlags;
     return this.http.post<FeatureFlagsPaginationInfo>(url, params);
     // mock
-    // return of({ nodes: mockFeatureFlags, total: 2 } as FeatureFlagsPaginationInfo).pipe(delay(2000));
+    // // return of({ nodes: mockFeatureFlags, total: 2 }).pipe(delay(2000));
+  }
+
+  fetchFeatureFlagById(id: string) {
+    const url = `${this.environment.api.featureFlag}/${id}`;
+    return this.http.get(url);
   }
 
   addFeatureFlag(params: AddFeatureFlagRequest): Observable<FeatureFlag> {

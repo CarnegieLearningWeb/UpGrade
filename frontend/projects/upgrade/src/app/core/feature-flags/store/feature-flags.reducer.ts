@@ -12,6 +12,7 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingAddFeatureFlag: false,
   isLoadingFeatureFlags: false,
   isLoadingUpdateFeatureFlagStatus: false,
+  isLoadingFeatureFlagDetail: false,
   hasInitialFeatureFlagsDataLoaded: false,
   activeDetailsTabIndex: 0,
   skipFlags: 0,
@@ -41,6 +42,13 @@ const reducer = createReducer(
     });
   }),
   on(FeatureFlagsActions.actionFetchFeatureFlagsFailure, (state) => ({ ...state, isLoadingFeatureFlags: false })),
+  on(FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess, (state, { flag }) => {
+    return adapter.addOne(flag, {
+      ...state,
+      isLoadingFeatureFlags: false,
+    });
+  }),
+  on(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure, (state) => ({ ...state, isLoadingFeatureFlags: false })),
   on(FeatureFlagsActions.actionSetIsLoadingFeatureFlags, (state, { isLoadingFeatureFlags }) => ({
     ...state,
     isLoadingFeatureFlags,
@@ -97,7 +105,11 @@ const reducer = createReducer(
       state
     );
   }),
-  on(FeatureFlagsActions.actionEnableFeatureFlagFailure, (state) => ({ ...state, isLoadingStatusUpdate: true }))
+  on(FeatureFlagsActions.actionEnableFeatureFlagFailure, (state) => ({ ...state, isLoadingStatusUpdate: true })),
+  on(FeatureFlagsActions.actionFetchFeatureFlagById, (state) => ({
+    ...state,
+    isLoadingFeatureFlags: true,
+  }))
 );
 
 export function featureFlagsReducer(state: FeatureFlagState | undefined, action: Action) {
