@@ -997,7 +997,7 @@ export class ExperimentClientController {
   @Delete('clearDB')
   public async clearDB(@Req() request: AppRequest): Promise<string> {
     // if DEMO mode is enabled, then clear the database:
-    if (env.app.demo) {
+    if (!env.app.demo) {
       await this.experimentUserService.clearDB(request.logger);
       return 'DB truncate successful';
     }
