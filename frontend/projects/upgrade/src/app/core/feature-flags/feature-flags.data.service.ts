@@ -7,7 +7,7 @@ import {
   FeatureFlagsPaginationInfo,
   FeatureFlagsPaginationParams,
 } from './store/feature-flags.model';
-import { Observable, delay, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../types/src';
 
 @Injectable()
@@ -58,7 +58,7 @@ const mockFeatureFlags = [
     description: 'Feature Flag 2 Description',
     status: FEATURE_FLAG_STATUS.ENABLED,
     filterMode: FILTER_MODE.INCLUDE_ALL,
-    context: ['context1', 'context2'],
+    context: ['context2'],
     tags: ['tag1', 'tag2'],
     featureFlagSegmentInclusion: null,
     featureFlagSegmentExclusion: null,
@@ -68,12 +68,12 @@ const mockFeatureFlags = [
     updatedAt: '2021-09-08T08:00:00.000Z',
     versionNumber: 1,
     id: '3',
-    name: 'Feature Flag 2',
-    key: 'feature_flag_2',
-    description: 'Feature Flag 2 Description',
+    name: 'Feature Flag 3',
+    key: 'feature_flag_3',
+    description: 'Feature Flag 3 Description',
     status: FEATURE_FLAG_STATUS.ENABLED,
     filterMode: FILTER_MODE.INCLUDE_ALL,
-    context: ['context1', 'context2'],
+    context: ['context1', 'context3'],
     tags: ['tag1', 'tag2'],
     featureFlagSegmentInclusion: null,
     featureFlagSegmentExclusion: null,
@@ -88,7 +88,7 @@ const mockFeatureFlags = [
     description: 'Feature Flag 4 Description',
     status: FEATURE_FLAG_STATUS.ENABLED,
     filterMode: FILTER_MODE.INCLUDE_ALL,
-    context: ['context1', 'context2'],
+    context: ['context2', 'context3'],
     tags: ['tag1', 'tag2'],
     featureFlagSegmentInclusion: null,
     featureFlagSegmentExclusion: null,
@@ -103,7 +103,7 @@ const mockFeatureFlags = [
     description: 'Feature Flag 5 Description',
     status: FEATURE_FLAG_STATUS.ENABLED,
     filterMode: FILTER_MODE.INCLUDE_ALL,
-    context: ['context1', 'context2'],
+    context: ['context3'],
     tags: ['tag1', 'tag2'],
     featureFlagSegmentInclusion: null,
     featureFlagSegmentExclusion: null,
