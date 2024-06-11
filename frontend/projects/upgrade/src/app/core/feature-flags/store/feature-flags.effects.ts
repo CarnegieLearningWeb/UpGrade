@@ -15,6 +15,7 @@ import {
   selectSortAs,
   selectSearchString,
 } from './feature-flags.selectors';
+import { DialogService } from '../../../shared/services/common-dialog.service';
 
 @Injectable()
 export class FeatureFlagsEffects {
@@ -22,7 +23,7 @@ export class FeatureFlagsEffects {
     private store$: Store<AppState>,
     private actions$: Actions,
     private featureFlagsDataService: FeatureFlagsDataService,
-    private router: Router
+    private dialogService: DialogService
   ) {}
 
   fetchFeatureFlags$ = createEffect(() =>

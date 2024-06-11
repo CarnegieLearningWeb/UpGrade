@@ -7,7 +7,6 @@ import {
 import { FeatureFlagOverviewDetailsFooterComponent } from './feature-flag-overview-details-footer/feature-flag-overview-details-footer.component';
 import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { FEATURE_FLAG_STATUS, FILTER_MODE, IMenuButtonItem } from 'upgrade_types';
-import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 import { CommonModule } from '@angular/common';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 
@@ -15,6 +14,7 @@ import {
   CommonSectionCardOverviewDetailsComponent,
   KeyValueFormat,
 } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
+import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,
@@ -40,7 +40,7 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
     name: 'Feature Flag 1',
     key: 'feature_flag_1',
     description: 'Feature Flag 1 Description',
-    status: FEATURE_FLAG_STATUS.DISABLED,
+    status: FEATURE_FLAG_STATUS.ENABLED,
     filterMode: FILTER_MODE.INCLUDE_ALL,
     context: ['context1', 'context2'],
     tags: ['tag1', 'tag2'],
@@ -61,7 +61,11 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   ];
   isSectionCardExpanded = true;
 
-  constructor(private featureFlagService: FeatureFlagsService, private dialogService: DialogService) {}
+  constructor(private dialogService: DialogService) {}
+
+  get FEATURE_FLAG_STATUS() {
+    return FEATURE_FLAG_STATUS;
+  }
 
   ngOnInit() {
     this.flagName = this.featureFlag.name;
@@ -82,14 +86,31 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
     console.log(event);
   }
 
-  onSlideToggleChange(flagEnabled: boolean) {
-    if (flagEnabled) {
-      this.dialogService.openEnableFeatureFlagConfirmModel({ flagName: this.flagName, flagId: this.featureFlag.id });
+  onSlideToggleChange(event: MatSlideToggleChange) {
+    const slideToggleEvent = event.source;
+
+    if (slideToggleEvent.checked) {
+      this.openEnableConfirmModel();
     } else {
-      this.dialogService.openDisableFeatureFlagConfirmModel({ flagName: this.flagName, flagId: this.featureFlag.id });
+      this.openDisableConfirmModel();
     }
-    console.log('on Slide Toggle Clicked');
-    console.log(flagEnabled);
+
+    // Note: we don't want the toggle to change state immediately because we have to pop a confirmation modal first, so we need override the default and flip it back
+    slideToggleEvent.checked = !slideToggleEvent.checked;
+  }
+
+  openEnableConfirmModel(): void {
+    this.dialogService.openEnableFeatureFlagConfirmModel({
+      flagName: this.flagName,
+      flagId: this.featureFlag.id,
+    });
+  }
+
+  openDisableConfirmModel(): void {
+    this.dialogService.openDisableFeatureFlagConfirmModel({
+      flagName: this.flagName,
+      flagId: this.featureFlag.id,
+    });
   }
 
   onMenuButtonItemClick(event) {

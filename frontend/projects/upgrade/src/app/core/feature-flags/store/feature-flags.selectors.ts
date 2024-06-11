@@ -1,5 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { FLAG_SEARCH_KEY, FeatureFlagState } from './feature-flags.model';
+import { FLAG_SEARCH_KEY, FeatureFlag, FeatureFlagState } from './feature-flags.model';
 import { selectRouterState } from '../../core.state';
 import { selectAll } from './feature-flags.reducer';
 
@@ -44,6 +44,10 @@ export const selectSelectedFeatureFlag = createSelector(
   selectFeatureFlagsState,
   ({ state: { params } }, featureFlagState) => featureFlagState.entities[params.flagId]
 );
+
+// export const selectSelectedFeatureFlagStatusChanged = createSelector(selectSelectedFeatureFlag, (flag: FeatureFlag) =>
+//   flag ? flag.status : null
+// );
 
 export const selectSkipFlags = createSelector(selectFeatureFlagsState, (state) => state.skipFlags);
 

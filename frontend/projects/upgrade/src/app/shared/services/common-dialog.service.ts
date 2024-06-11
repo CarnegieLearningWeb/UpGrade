@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-confirm-dialog.component';
 import { AddFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/add-feature-flag-modal/add-feature-flag-modal.component';
 import { CommonModalConfig } from '../../shared-standalone-component-lib/components/common-modal/common-modal-config';
-import { EnableFeatureFlagModalContentComponent } from '../../features/dashboard/feature-flags/modals/enable-feature-flag-modal-content/enable-feature-flag-modal-content.component';
-import { DisableFeatureFlagModalContentComponent } from '../../features/dashboard/feature-flags/modals/disable-feature-flag-modal-content/disable-feature-flag-modal-content.component';
+import { EnableFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/enable-feature-flag-modal/enable-feature-flag-modal.component';
+import { DisableFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/disable-feature-flag-modal/disable-feature-flag-modal.component';
 
 @Injectable({
   providedIn: 'root',
@@ -49,14 +49,15 @@ export class DialogService {
       autoFocus: 'first-heading',
       disableClose: true,
     };
-    return this.dialog.open(EnableFeatureFlagModalContentComponent, config);
+
+    return this.dialog.open(EnableFeatureFlagModalComponent, config);
   }
 
   openDisableFeatureFlagConfirmModel(payload: { flagName: string; flagId: string }) {
     const commonModalConfig: CommonModalConfig = {
       title: 'Disable Feature Flag',
       primaryActionBtnLabel: 'Disable',
-      primaryActionBtnColor: 'warning',
+      primaryActionBtnColor: 'warn',
       cancelBtnLabel: 'Cancel',
       payload,
     };
@@ -66,6 +67,6 @@ export class DialogService {
       autoFocus: 'first-heading',
       disableClose: true,
     };
-    return this.dialog.open(DisableFeatureFlagModalContentComponent, config);
+    return this.dialog.open(DisableFeatureFlagModalComponent, config);
   }
 }

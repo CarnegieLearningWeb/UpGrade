@@ -67,23 +67,37 @@ const reducer = createReducer(
     isLoadingStatusUpdate: true,
   })),
   on(FeatureFlagsActions.actionEnableFeatureFlagSuccess, (state, { response }) => {
-    return adapter.addOne(response, {
-      ...state,
-      isLoadingUpdateFeatureFlagStatus: false,
-    });
+    return adapter.updateOne(
+      {
+        id: response.id,
+        changes: {
+          status: response.status,
+        },
+      },
+      state
+    );
   }),
   on(FeatureFlagsActions.actionEnableFeatureFlagFailure, (state) => ({ ...state, isLoadingStatusUpdate: true })),
   on(FeatureFlagsActions.actionDisableFeatureFlag, (state) => ({
     ...state,
     isLoadingStatusUpdate: true,
-  }))
-  // on(FeatureFlagsActions.actionDisableFeatureFlag, (state) => ({ ...state, isLoadingStatusUpdate: true })),
-  // on(FeatureFlagsActions.actionDisableFeatureFlagSuccess, (state, { response }) => {
-  //   return adapter.addOne(response, {
-  //     ...state,
-  //     isLoadingUpdateFeatureFlagStatus: false,
-  //   });
-  // }),
+  })),
+  on(FeatureFlagsActions.actionEnableFeatureFlag, (state) => ({
+    ...state,
+    isLoadingStatusUpdate: true,
+  })),
+  on(FeatureFlagsActions.actionEnableFeatureFlagSuccess, (state, { response }) => {
+    return adapter.updateOne(
+      {
+        id: response.id,
+        changes: {
+          status: response.status,
+        },
+      },
+      state
+    );
+  }),
+  on(FeatureFlagsActions.actionEnableFeatureFlagFailure, (state) => ({ ...state, isLoadingStatusUpdate: true }))
 );
 
 export function featureFlagsReducer(state: FeatureFlagState | undefined, action: Action) {

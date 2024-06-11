@@ -14,7 +14,7 @@
   <app-common-section-card-action-buttons
     header-right
     [showSlideToggle]="true"
-    [isEnableToggleChecked]="false"
+    [isEnableToggleChecked]="featureFlag.status === FEATURE_FLAG_STATUS.ENABLED"
     [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"

@@ -46,13 +46,13 @@ export class CommonSectionCardActionButtonsComponent {
   @Input() showMenuButton?: boolean = false;
   @Input() menuButtonItems?: IMenuButtonItem[] = [];
   @Input() isSectionCardExpanded?: boolean = true;
-  @Output() slideToggleChange = new EventEmitter<boolean>();
+  @Output() slideToggleChange = new EventEmitter<MatSlideToggleChange>();
   @Output() primaryButtonClick = new EventEmitter<void>();
   @Output() menuButtonItemClick = new EventEmitter<string>();
   @Output() sectionCardExpandChange = new EventEmitter<boolean>();
 
   onSlideToggleChange(event: MatSlideToggleChange): void {
-    this.slideToggleChange.emit(event.checked);
+    this.slideToggleChange.emit(event);
   }
 
   onPrimaryButtonClick(): void {

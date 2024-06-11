@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal-config';
-import { AddFeatureFlagModalComponent } from '../add-feature-flag-modal/add-feature-flag-modal.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { UpdateFeatureFlagStatusRequest } from '../../../../../core/feature-flags/store/feature-flags.model';
@@ -13,13 +12,12 @@ import { Subscription } from 'rxjs';
   selector: 'app-enable-feature-flag-modal-content',
   standalone: true,
   imports: [CommonModalComponent, TranslateModule],
-  templateUrl: './enable-feature-flag-modal-content.component.html',
-  styleUrl: './enable-feature-flag-modal-content.component.scss',
+  templateUrl: './enable-feature-flag-modal.component.html',
+  styleUrl: './enable-feature-flag-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EnableFeatureFlagModalContentComponent {
+export class EnableFeatureFlagModalComponent {
   isLoadingUpdateFeatureFlagStatus$ = this.featureFlagService.isLoadingUpdateFeatureFlagStatus$;
-  // isUpdateFeatureFlagStatusSuccess$ = this.featureFlagService.selectIsUpdateFeatureFlagStatusComplete$;
   subscriptions = new Subscription();
 
   featureFlagName: string;
@@ -30,7 +28,7 @@ export class EnableFeatureFlagModalContentComponent {
     public config: CommonModalConfig,
     public featureFlagService: FeatureFlagsService,
     public dialog: MatDialog,
-    public dialogRef: MatDialogRef<AddFeatureFlagModalComponent>
+    public dialogRef: MatDialogRef<EnableFeatureFlagModalComponent>
   ) {
     this.featureFlagName = this.config.payload.flagName as string;
     this.featureFlagId = this.config.payload.flagId as string;
@@ -49,7 +47,7 @@ export class EnableFeatureFlagModalContentComponent {
   }
 
   closeModal() {
-    this.dialogRef.close();
+    this.dialogRef.close('close modal');
   }
 
   ngOnDestroy() {

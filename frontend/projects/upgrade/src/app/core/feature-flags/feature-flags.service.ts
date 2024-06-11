@@ -28,6 +28,7 @@ export class FeatureFlagsService {
   isInitialFeatureFlagsLoading$ = this.store$.pipe(select(selectHasInitialFeatureFlagsDataLoaded));
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
+  // isUpdateFeatureFlagStatusComplete$ = this.store$.pipe(select(selectIsUpdateFeatureFlagStatusComplete));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
   searchString$ = this.store$.pipe(select(selectSearchString));
