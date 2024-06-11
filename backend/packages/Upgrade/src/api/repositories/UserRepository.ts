@@ -11,7 +11,7 @@ export class UserRepository extends Repository<User> {
       .insert()
       .into(User)
       .values(user)
-      .orUpdate(['firstName', 'lastName', 'imageUrl', 'localTimeZone'], 'id')
+      .orUpdate(['firstName', 'lastName', 'imageUrl', 'localTimeZone'], ['email'])
       .setParameter('firstName', user.firstName)
       .setParameter('lastName', user.lastName)
       .setParameter('imageUrl', user.imageUrl)

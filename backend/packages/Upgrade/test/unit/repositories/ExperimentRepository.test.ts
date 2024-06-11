@@ -2,8 +2,9 @@ import { DataSource } from 'typeorm';
 import { ExperimentRepository } from '../../../src/api/repositories/ExperimentRepository';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { EXPERIMENT_STATE } from 'upgrade_types';
-//import * as globalExcludeSegment from '../../../src/init/seed/globalExcludeSegment';
+import * as globalExcludeSegment from '../../../src/init/seed/globalExcludeSegment';
 import { Container } from '../../../src/typeorm-typedi-extensions';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { initializeMocks } from '../mockdata/mockRepo';
 
 let mock;
@@ -39,6 +40,7 @@ beforeEach(() => {
 
   manager = {
     createQueryBuilder: repo.createQueryBuilder,
+    connection: dataSource,
   };
 });
 
@@ -359,8 +361,7 @@ describe('ExperimentRepository Testing', () => {
     expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
-  // TODO: Work in progress for following test cases
-  /*it('should clear the database', async () => {
+  it('should clear the database', async () => {
     const entities = [
       {
         tableName: 'user',
@@ -371,19 +372,20 @@ describe('ExperimentRepository Testing', () => {
         name: 'Experiment',
       },
     ];
-    manager.connection = connection;
-    connection.entityMetadatas = entities;
-    connection.getRepository = sandbox.stub().returns(ExperimentRepository.prototype);
 
-    const queryStub = sandbox.stub(ExperimentRepository.prototype, 'query').returns(Promise.resolve());
+    repo.query = jest.fn().mockResolvedValue({});
+    manager.connection.entityMetadatas = entities;
+    manager.connection.getRepository = jest.fn().mockReturnValue(repo);
 
-    const segStub = sandbox.stub(globalExcludeSegment, 'createGlobalExcludeSegment').returns(Promise.resolve());
+    jest.spyOn(globalExcludeSegment, 'createGlobalExcludeSegment').mockResolvedValue(Promise.resolve());
 
     const res = await repo.clearDB(manager, new UpgradeLogger());
 
-    sinon.assert.calledOnce(queryStub);
-    sinon.assert.calledOnce(segStub);
+    expect(manager.connection.getRepository).toHaveBeenCalledTimes(1);
+    expect(manager.connection.getRepository).toHaveBeenCalledWith('Experiment');
 
+    expect(repo.query).toHaveBeenCalledTimes(1);
+    expect(repo.query).toHaveBeenCalledWith('TRUNCATE Experiment CASCADE;');
     expect(res).toBeUndefined();
   });
 
@@ -398,13 +400,21 @@ describe('ExperimentRepository Testing', () => {
         name: 'Experiment',
       },
     ];
-    manager.connection = connection;
-    connection.entityMetadatas = entities;
-    connection.getRepository = sandbox.stub().returns(ExperimentRepository.prototype);
-    sandbox.stub(ExperimentRepository.prototype, 'query').returns(Promise.reject(err));
 
-    expect(async () => {
+    repo.query = jest.fn().mockRejectedValue(err);
+    manager.connection.entityMetadatas = entities;
+    manager.connection.getRepository = jest.fn().mockReturnValue(repo);
+
+    jest.spyOn(globalExcludeSegment, 'createGlobalExcludeSegment').mockResolvedValue(Promise.resolve());
+
+    await expect(async () => {
       await repo.clearDB(manager, new UpgradeLogger());
     }).rejects.toThrow('test error');
-  });*/
+
+    expect(manager.connection.getRepository).toHaveBeenCalledTimes(1);
+    expect(manager.connection.getRepository).toHaveBeenCalledWith('Experiment');
+
+    expect(repo.query).toHaveBeenCalledTimes(1);
+    expect(repo.query).toHaveBeenCalledWith('TRUNCATE Experiment CASCADE;');
+  });
 });
