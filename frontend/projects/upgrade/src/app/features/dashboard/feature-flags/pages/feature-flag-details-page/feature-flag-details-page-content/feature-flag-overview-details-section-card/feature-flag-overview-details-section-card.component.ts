@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
@@ -29,6 +29,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagOverviewDetailsSectionCardComponent {
+  @Input() data: FeatureFlag;
   //temp mock data
   featureFlag: FeatureFlag = {
     createdAt: '2021-09-08T08:00:00.000Z',
@@ -59,15 +60,15 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   isSectionCardExpanded = true;
 
   ngOnInit() {
-    this.flagName = this.featureFlag.name;
-    this.flagCreatedAt = this.featureFlag.createdAt;
-    this.flagUpdatedAt = this.featureFlag.updatedAt;
-    this.flagStatus = this.featureFlag.status;
+    this.flagName = this.data.name;
+    this.flagCreatedAt = this.data.createdAt;
+    this.flagUpdatedAt = this.data.updatedAt;
+    this.flagStatus = this.data.status;
     this.flagOverviewDetails = {
-      ['Key']: this.featureFlag.key,
-      ['Description']: this.featureFlag.description,
-      ['App Context']: this.featureFlag.context[0],
-      ['Tags']: this.featureFlag.tags,
+      ['Key']: this.data.key,
+      ['Description']: this.data.description,
+      ['App Context']: this.data.context[0],
+      ['Tags']: this.data.tags,
     };
   }
 
