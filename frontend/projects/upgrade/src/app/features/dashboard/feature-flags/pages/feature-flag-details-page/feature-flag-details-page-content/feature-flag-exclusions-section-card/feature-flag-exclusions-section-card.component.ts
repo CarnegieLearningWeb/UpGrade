@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
@@ -7,7 +7,9 @@ import {
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
+import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { IMenuButtonItem } from 'upgrade_types';
+
 
 @Component({
   selector: 'app-feature-flag-exclusions-section-card',
@@ -24,6 +26,7 @@ import { IMenuButtonItem } from 'upgrade_types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagExclusionsSectionCardComponent {
+  @Input() data: FeatureFlag;
   tableRowCount$ = of(1);
   menuButtonItems: IMenuButtonItem[] = [
     { name: 'Edit', disabled: false },
