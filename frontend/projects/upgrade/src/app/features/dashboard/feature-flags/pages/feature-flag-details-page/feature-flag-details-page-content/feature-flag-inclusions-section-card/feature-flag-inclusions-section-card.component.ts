@@ -7,7 +7,11 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { of } from 'rxjs';
+
+import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
+
 import { IMenuButtonItem } from 'upgrade_types';
+
 
 @Component({
   selector: 'app-feature-flag-inclusions-section-card',
@@ -24,10 +28,14 @@ import { IMenuButtonItem } from 'upgrade_types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagInclusionsSectionCardComponent {
+
+  @Input() data: FeatureFlag;
+
   menuButtonItems: IMenuButtonItem[] = [
     { name: 'Edit', disabled: false },
     { name: 'Delete', disabled: false },
   ];
+
   tableRowCount$ = of(1);
   isSectionCardExpanded = true;
 
