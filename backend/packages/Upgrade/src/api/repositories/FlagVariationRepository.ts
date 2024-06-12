@@ -51,7 +51,7 @@ export class FlagVariationRepository extends Repository<FlagVariation> {
       .insert()
       .into(FlagVariation)
       .values(variationDoc)
-      .orUpdate(['value', 'name', 'description', 'defaultVariation'], 'id')
+      .orUpdate(['value', 'name', 'description', 'defaultVariation'], ['id'])
       .setParameter('value', variationDoc.value)
       .setParameter('name', variationDoc.name)
       .setParameter('description', variationDoc.description)

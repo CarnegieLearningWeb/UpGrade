@@ -34,7 +34,7 @@ export class SegmentRepository extends Repository<Segment> {
       .insert()
       .into(Segment)
       .values(data)
-      .orUpdate(['name', 'description', 'context'], 'id')
+      .orUpdate(['name', 'description', 'context'], ['id'])
       .setParameter('name', data.name)
       .setParameter('description', data.description)
       .setParameter('context', data.context)

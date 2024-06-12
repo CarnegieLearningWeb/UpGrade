@@ -24,7 +24,7 @@ export class QueryRepository extends Repository<Query> {
       .insert()
       .into(Query)
       .values(queryDoc)
-      .orUpdate(['query', 'name', 'repeatedMeasure'], 'id')
+      .orUpdate(['query', 'name', 'repeatedMeasure'], ['id'])
       .setParameter('query', queryDoc.query)
       .setParameter('name', queryDoc.name)
       .setParameter('metric', queryDoc.metric)

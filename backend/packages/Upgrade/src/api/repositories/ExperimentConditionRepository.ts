@@ -14,7 +14,7 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
       .insert()
       .into(ExperimentCondition)
       .values(conditionDoc)
-      .orUpdate(['name', 'description', 'conditionCode', 'assignmentWeight', 'order'], 'id')
+      .orUpdate(['name', 'description', 'conditionCode', 'assignmentWeight', 'order'], ['id'])
       .setParameter('name', conditionDoc.name)
       .setParameter('description', conditionDoc.description)
       .setParameter('conditionCode', conditionDoc.conditionCode)

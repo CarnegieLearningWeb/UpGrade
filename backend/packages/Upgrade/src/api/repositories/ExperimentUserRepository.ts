@@ -12,7 +12,7 @@ export class ExperimentUserRepository extends Repository<ExperimentUser> {
       .insert()
       .into(ExperimentUser)
       .values(rawData)
-      .orUpdate(['group'], 'id')
+      .orUpdate(['group'], ['id'])
       .setParameter('group', rawData.group)
       .returning('*')
       .execute()

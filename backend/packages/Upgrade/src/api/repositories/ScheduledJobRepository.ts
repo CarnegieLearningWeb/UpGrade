@@ -15,7 +15,7 @@ export class ScheduledJobRepository extends Repository<ScheduledJob> {
       .insert()
       .into(ScheduledJob)
       .values(scheduledJob)
-      .orUpdate(['timeStamp', 'executionArn'], 'id')
+      .orUpdate(['timeStamp', 'executionArn'], ['id'])
       .setParameter('timeStamp', scheduledJob.timeStamp)
       .setParameter('executionArn', scheduledJob.executionArn)
       .returning('*')

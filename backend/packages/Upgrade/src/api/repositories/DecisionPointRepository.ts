@@ -14,7 +14,7 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
       .insert()
       .into(DecisionPoint)
       .values(decisionPointDoc)
-      .orUpdate(['target', 'description', 'excludeIfReached', 'order'], 'id')
+      .orUpdate(['target', 'description', 'excludeIfReached', 'order'], ['id'])
       .setParameter('target', decisionPointDoc.target)
       .setParameter('description', decisionPointDoc.description)
       .setParameter('excludeIfReached', decisionPointDoc.excludeIfReached)
