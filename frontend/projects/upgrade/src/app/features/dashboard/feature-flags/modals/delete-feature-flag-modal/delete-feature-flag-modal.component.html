@@ -1,0 +1,31 @@
+<div class="modal-container">
+  <app-common-dialog
+    [title]="data.title"
+    [cancelBtnLabel]="data.cancelBtnLabel"
+    [primaryActionBtnLabel]="data.primaryActionBtnLabel"
+    [primaryActionBtnColor]="data.primaryActionBtnColor"
+    [primaryActionBtnDisabled$]="isDeleteNotTyped$"
+    (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+  >
+    <div mat-dialog-content class="dialog">
+      <div class="warning-msg">
+        <span>{{ 'feature-flags.delete-modal.warning-message.text' | translate }} "{{flagName}}"?</span>
+      </div>
+      <div class="ft-18-600 confirm-delete">
+        {{ 'global.delete-confirmation.message.text' | translate }}
+      </div>
+      <mat-form-field
+        class="dense-2 confirmation-field"
+        appearance="outline"
+      >
+        <input
+          class="ft-14-400 confirmation-text-input"
+          matInput
+          [placeholder]="'global.delete.input-placeholder.text' | translate"
+          [(ngModel)]="inputValue"
+          (ngModelChange)="onInputChange($event)"
+        />
+      </mat-form-field>
+    </div>
+  </app-common-dialog>
+</div>
