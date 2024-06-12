@@ -19,6 +19,9 @@ let repo: LogRepository;
 let queryRepo: QueryRepository;
 let metricRepo: MetricRepository;
 let experimentRepo: ExperimentRepository;
+let queryMock;
+let metricMock;
+let experimentMock;
 const err = new Error('test error');
 
 const log = new Log();
@@ -48,12 +51,21 @@ beforeEach(() => {
   queryRepo = Container.getCustomRepository(QueryRepository);
   metricRepo = Container.getCustomRepository(MetricRepository);
   experimentRepo = Container.getCustomRepository(ExperimentRepository);
+
   const commonMockData = initializeMocks(result);
+  const queryMockData = initializeMocks(result);
+  const metricMockData = initializeMocks(result);
+  const experimentMockData = initializeMocks(result);
+
   repo.createQueryBuilder = commonMockData.createQueryBuilder;
-  queryRepo.createQueryBuilder = commonMockData.createQueryBuilder;
-  metricRepo.createQueryBuilder = commonMockData.createQueryBuilder;
-  experimentRepo.createQueryBuilder = commonMockData.createQueryBuilder;
+  queryRepo.createQueryBuilder = queryMockData.createQueryBuilder;
+  metricRepo.createQueryBuilder = metricMockData.createQueryBuilder;
+  experimentRepo.createQueryBuilder = experimentMockData.createQueryBuilder;
+
   mock = commonMockData.mocks;
+  queryMock = queryMockData.mocks;
+  metricMock = metricMockData.mocks;
+  experimentMock = experimentMockData.mocks;
 
   manager = {
     createQueryBuilder: repo.createQueryBuilder,
@@ -155,51 +167,59 @@ describe('LogRepository Testing', () => {
 
   it('should delete by metric id', async () => {
     jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(queryRepo);
-    mock.execute.mockResolvedValueOnce([log]).mockResolvedValueOnce(result);
+    queryMock.execute.mockResolvedValue([log]);
+    mock.execute.mockResolvedValue(result);
 
     const res = await repo.deleteByMetricId('metrickey');
 
     expect(Container.getCustomRepository).toHaveBeenCalledWith(QueryRepository);
 
-    expect(queryRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+    expect(queryRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    expect(mock.select).toHaveBeenCalledTimes(1);
-    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
-    expect(mock.execute).toHaveBeenCalledTimes(2);
+    expect(queryMock.select).toHaveBeenCalledTimes(1);
+    expect(queryMock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(queryMock.execute).toHaveBeenCalledTimes(1);
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
     expect(mock.delete).toHaveBeenCalledTimes(1);
     expect(mock.from).toHaveBeenCalledTimes(1);
     expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should delete all logs when no metrics found', async () => {
     jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(queryRepo);
-    mock.execute.mockResolvedValueOnce([]).mockResolvedValueOnce(result);
+    queryMock.execute.mockResolvedValue([]);
+    mock.execute.mockResolvedValue(result);
 
     const res = await repo.deleteByMetricId('metrickey');
 
     expect(Container.getCustomRepository).toHaveBeenCalledWith(QueryRepository);
 
-    expect(queryRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+    expect(queryRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    expect(mock.select).toHaveBeenCalledTimes(1);
-    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
-    expect(mock.execute).toHaveBeenCalledTimes(2);
+    expect(queryMock.select).toHaveBeenCalledTimes(1);
+    expect(queryMock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(queryMock.execute).toHaveBeenCalledTimes(1);
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
     expect(mock.delete).toHaveBeenCalledTimes(1);
     expect(mock.from).toHaveBeenCalledTimes(1);
     expect(mock.where).not.toHaveBeenCalled();
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should throw an error when the metric query fails', async () => {
     jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(queryRepo);
-    mock.execute.mockRejectedValue(err);
+    queryMock.execute.mockRejectedValue(err);
 
-    expect(async () => {
+    await expect(async () => {
       await repo.deleteByMetricId('metrickey');
     }).rejects.toThrow(err);
 
@@ -207,17 +227,17 @@ describe('LogRepository Testing', () => {
 
     expect(queryRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    expect(mock.select).toHaveBeenCalledTimes(1);
-    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
-    expect(mock.execute).toHaveBeenCalledTimes(1);
+    expect(queryMock.select).toHaveBeenCalledTimes(1);
+    expect(queryMock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(queryMock.execute).toHaveBeenCalledTimes(1);
   });
 
-  //TODO: failing testcase
   it('should throw an error when delete by metric id fails', async () => {
     jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(queryRepo);
-    mock.execute.mockResolvedValueOnce([log]).mockRejectedValue(err);
+    queryMock.execute.mockResolvedValue([log]);
+    mock.execute.mockRejectedValue(err);
 
-    expect(async () => {
+    await expect(async () => {
       await repo.deleteByMetricId('metrickey');
     }).rejects.toThrow(err);
 
@@ -225,22 +245,24 @@ describe('LogRepository Testing', () => {
 
     expect(queryRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    console.log(mock.delete.mock.calls);
-    expect(mock.select).toHaveBeenCalledTimes(1);
-    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
-    expect(mock.execute).toHaveBeenCalledTimes(2);
+    expect(queryMock.select).toHaveBeenCalledTimes(1);
+    expect(queryMock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(queryMock.execute).toHaveBeenCalledTimes(1);
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
     expect(mock.delete).toHaveBeenCalledTimes(1);
     expect(mock.from).toHaveBeenCalledTimes(1);
     expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
-  //TODO: failing testcase
   it('should throw an error when delete all fails', async () => {
     jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(queryRepo);
-    mock.execute.mockResolvedValueOnce([]).mockRejectedValue(err);
+    queryMock.execute.mockResolvedValue([]);
+    mock.execute.mockRejectedValue(err);
 
-    expect(async () => {
+    await expect(async () => {
       await repo.deleteByMetricId('metrickey');
     }).rejects.toThrow(err);
 
@@ -248,9 +270,11 @@ describe('LogRepository Testing', () => {
 
     expect(queryRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    expect(mock.select).toHaveBeenCalledTimes(1);
-    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
-    expect(mock.execute).toHaveBeenCalledTimes(1);
+    expect(queryMock.select).toHaveBeenCalledTimes(1);
+    expect(queryMock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(queryMock.execute).toHaveBeenCalledTimes(1);
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
     expect(mock.delete).toHaveBeenCalledTimes(1);
     expect(mock.from).toHaveBeenCalledTimes(1);
