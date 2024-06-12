@@ -60,6 +60,7 @@ const reducer = createReducer(
       isLoadingAddFeatureFlag: false,
     });
   }),
+  on(FeatureFlagsActions.actionDeleteFeatureFlagSuccess, (state, { flag }) => adapter.removeOne(flag.id, state)),
   on(FeatureFlagsActions.actionAddFeatureFlagFailure, (state) => ({ ...state, isLoadingAddFeatureFlag: false })),
   on(FeatureFlagsActions.actionSetSkipFlags, (state, { skipFlags }) => ({ ...state, skipFlags })),
   on(FeatureFlagsActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),

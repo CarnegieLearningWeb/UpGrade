@@ -5,13 +5,13 @@ import {
   CommonSectionCardTitleHeaderComponent,
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { FeatureFlagOverviewDetailsFooterComponent } from './feature-flag-overview-details-footer/feature-flag-overview-details-footer.component';
-import { FEATURE_FLAG_STATUS, IMenuButtonItem } from 'upgrade_types';
-import { CommonModule } from '@angular/common';
-import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 
-import { CommonSectionCardOverviewDetailsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
+import { FEATURE_FLAG_STATUS, IMenuButtonItem } from 'upgrade_types';
+import { CommonModule } from '@angular/common';
+import { CommonSectionCardOverviewDetailsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
+import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,
@@ -64,12 +64,17 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
 
   openEnableConfirmModel(): void {
     this.dialogService.openEnableFeatureFlagConfirmModel();
+    //remove this?
     this.featureFlag$.subscribe((featureFlag) => console.log({ featureFlag }));
   }
 
   onMenuButtonItemClick(event) {
-    console.log('Menu button Clicked');
-    console.log(event);
+    if (event === 'Delete') {
+      this.dialogService.openDeleteFeatureFlagModal();
+    } else if (event === 'Edit') {
+      console.log('Menu button Clicked');
+      console.log(event);
+    }
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
