@@ -52,10 +52,6 @@ export const selectFeatureFlagOverviewDetails = createSelector(selectSelectedFea
   ['Tags']: featureFlag?.tags,
 }));
 
-// export const selectSelectedFeatureFlagStatusChanged = createSelector(selectSelectedFeatureFlag, (flag: FeatureFlag) =>
-//   flag ? flag.status : null
-// );
-
 export const selectSkipFlags = createSelector(selectFeatureFlagsState, (state) => state.skipFlags);
 
 export const selectTotalFlags = createSelector(selectFeatureFlagsState, (state) => state.totalFlags);
