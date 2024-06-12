@@ -29,6 +29,7 @@ export const initializeMocks = (result) => {
     getQuery: jest.fn().mockReturnValue(1),
     getCount: jest.fn().mockResolvedValue(5),
     getMany: jest.fn().mockResolvedValue(result),
+    getRawMany: jest.fn().mockResolvedValue(result),
     getOne: jest.fn().mockResolvedValue(result.raw[0]),
   };
 
@@ -62,6 +63,7 @@ export const initializeMocks = (result) => {
     getQuery: mocks.getQuery,
     getCount: mocks.getCount,
     getMany: mocks.getMany,
+    getRawMany: mocks.getRawMany,
     getOne: mocks.getOne,
   });
 

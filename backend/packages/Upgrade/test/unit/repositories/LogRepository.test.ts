@@ -20,7 +20,6 @@ let queryRepo: QueryRepository;
 let metricRepo: MetricRepository;
 let experimentRepo: ExperimentRepository;
 let queryMock;
-let metricMock;
 let experimentMock;
 const err = new Error('test error');
 
@@ -64,7 +63,6 @@ beforeEach(() => {
 
   mock = commonMockData.mocks;
   queryMock = queryMockData.mocks;
-  metricMock = metricMockData.mocks;
   experimentMock = experimentMockData.mocks;
 
   manager = {
@@ -309,8 +307,11 @@ describe('LogRepository Testing', () => {
   });
 
   // TODO: Work in progress
-  /*it('should analyse a continuous simple metric sum', async () => {
-    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(experimentRepo);
+  it('should analyse a continuous simple metric sum', async () => {
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(experimentRepo)
+      .mockReturnValueOnce(experimentRepo);
 
     const q = new Query();
     q.id = 'id1';
@@ -332,26 +333,24 @@ describe('LogRepository Testing', () => {
 
     expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
 
-    expect(experimentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
+    expect(experimentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
 
-    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
-    expect(mock.innerJoinAndSelect).toHaveBeenCalledTimes(3);
-    expect(mock.where).toHaveBeenCalledTimes(1);
-    expect(mock.andWhere).toHaveBeenCalledTimes(2);
-    expect(mock.getRawMany).toHaveBeenCalledTimes(1);
+    expect(experimentMock.innerJoin).toHaveBeenCalledTimes(6);
+    expect(experimentMock.innerJoinAndSelect).toHaveBeenCalledTimes(6);
+    expect(experimentMock.where).toHaveBeenCalledTimes(2);
+    expect(experimentMock.andWhere).toHaveBeenCalledTimes(8);
+    expect(experimentMock.groupBy).toHaveBeenCalledTimes(2);
+    expect(experimentMock.select).toHaveBeenCalledTimes(1);
+    expect(experimentMock.getRawMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should analyse a continuous simple metric median', async () => {
-    const experimentStub = sandbox
-      .stub(ExperimentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    const result = {
-      identifiers: [{ id: log.id }],
-      generatedMaps: [log],
-      raw: [log],
-    };
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(experimentRepo)
+      .mockReturnValueOnce(experimentRepo);
 
     const q = new Query();
     q.id = 'id1';
@@ -369,28 +368,28 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    selectMock.expects('innerJoin').exactly(6).returns(selectQueryBuilder);
-    selectMock.expects('innerJoinAndSelect').exactly(6).returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').exactly(8).returns(selectQueryBuilder);
-    selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
     const res = await repo.analysis(q);
 
-    sinon.assert.calledTwice(experimentStub);
-    selectMock.verify();
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+
+    expect(experimentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+
+    expect(experimentMock.innerJoin).toHaveBeenCalledTimes(6);
+    expect(experimentMock.innerJoinAndSelect).toHaveBeenCalledTimes(6);
+    expect(experimentMock.where).toHaveBeenCalledTimes(2);
+    expect(experimentMock.andWhere).toHaveBeenCalledTimes(8);
+    expect(experimentMock.groupBy).toHaveBeenCalledTimes(2);
+    expect(experimentMock.select).toHaveBeenCalledTimes(1);
+    expect(experimentMock.getRawMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should analyse a continuous simple metric mode', async () => {
-    const experimentStub = sandbox
-      .stub(ExperimentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    const result = {
-      identifiers: [{ id: log.id }],
-      generatedMaps: [log],
-      raw: [log],
-    };
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(experimentRepo)
+      .mockReturnValueOnce(experimentRepo);
 
     const q = new Query();
     q.id = 'id1';
@@ -408,28 +407,28 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    selectMock.expects('innerJoin').exactly(6).returns(selectQueryBuilder);
-    selectMock.expects('innerJoinAndSelect').exactly(6).returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').exactly(8).returns(selectQueryBuilder);
-    selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
     const res = await repo.analysis(q);
 
-    sinon.assert.calledTwice(experimentStub);
-    selectMock.verify();
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+
+    expect(experimentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+
+    expect(experimentMock.innerJoin).toHaveBeenCalledTimes(6);
+    expect(experimentMock.innerJoinAndSelect).toHaveBeenCalledTimes(6);
+    expect(experimentMock.where).toHaveBeenCalledTimes(2);
+    expect(experimentMock.andWhere).toHaveBeenCalledTimes(8);
+    expect(experimentMock.groupBy).toHaveBeenCalledTimes(2);
+    expect(experimentMock.select).toHaveBeenCalledTimes(1);
+    expect(experimentMock.getRawMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should analyse a continuous simple metric count', async () => {
-    const experimentStub = sandbox
-      .stub(ExperimentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    const result = {
-      identifiers: [{ id: log.id }],
-      generatedMaps: [log],
-      raw: [log],
-    };
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(experimentRepo)
+      .mockReturnValueOnce(experimentRepo);
 
     const q = new Query();
     q.id = 'id1';
@@ -447,28 +446,28 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    selectMock.expects('innerJoin').exactly(6).returns(selectQueryBuilder);
-    selectMock.expects('innerJoinAndSelect').exactly(6).returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').exactly(8).returns(selectQueryBuilder);
-    selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
     const res = await repo.analysis(q);
 
-    sinon.assert.calledTwice(experimentStub);
-    selectMock.verify();
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+
+    expect(experimentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+
+    expect(experimentMock.innerJoin).toHaveBeenCalledTimes(6);
+    expect(experimentMock.innerJoinAndSelect).toHaveBeenCalledTimes(6);
+    expect(experimentMock.where).toHaveBeenCalledTimes(2);
+    expect(experimentMock.andWhere).toHaveBeenCalledTimes(8);
+    expect(experimentMock.groupBy).toHaveBeenCalledTimes(2);
+    expect(experimentMock.select).toHaveBeenCalledTimes(1);
+    expect(experimentMock.getRawMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should analyse a continuous repeated metric most recent avg', async () => {
-    const experimentStub = sandbox
-      .stub(ExperimentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    const result = {
-      identifiers: [{ id: log.id }],
-      generatedMaps: [log],
-      raw: [log],
-    };
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(experimentRepo)
+      .mockReturnValueOnce(experimentRepo);
 
     const q = new Query();
     q.id = 'id1';
@@ -487,23 +486,29 @@ describe('LogRepository Testing', () => {
     };
     q.repeatedMeasure = REPEATED_MEASURE.mostRecent;
 
-    selectMock.expects('innerJoin').exactly(4).returns(selectQueryBuilder);
-    selectMock.expects('innerJoinAndSelect').exactly(6).returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').exactly(8).returns(selectQueryBuilder);
-    selectMock.expects('getRawMany').once().returns(Promise.resolve(result));
     const res = await repo.analysis(q);
 
-    sinon.assert.calledTwice(experimentStub);
-    selectMock.verify();
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+
+    expect(experimentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+
+    expect(experimentMock.innerJoin).toHaveBeenCalledTimes(4);
+    expect(experimentMock.innerJoinAndSelect).toHaveBeenCalledTimes(6);
+    expect(experimentMock.where).toHaveBeenCalledTimes(2);
+    expect(experimentMock.andWhere).toHaveBeenCalledTimes(8);
+    expect(experimentMock.groupBy).toHaveBeenCalledTimes(2);
+    expect(experimentMock.select).toHaveBeenCalledTimes(1);
+    expect(experimentMock.getRawMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should analyse a categorical repeated metric earliest percentage', async () => {
-    const experimentStub = sandbox
-      .stub(ExperimentRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
+    jest
+      .spyOn(Container, 'getCustomRepository')
+      .mockReturnValueOnce(experimentRepo)
+      .mockReturnValueOnce(experimentRepo);
+
     const data1 = {
       conditionId: 1,
       result: 10,
@@ -512,6 +517,7 @@ describe('LogRepository Testing', () => {
       conditionId: 2,
       result: 10,
     };
+    experimentMock.getRawMany.mockResolvedValue([data1, data2]);
 
     const q = new Query();
     q.id = 'id1';
@@ -530,23 +536,23 @@ describe('LogRepository Testing', () => {
     };
     q.repeatedMeasure = REPEATED_MEASURE.earliest;
 
-    selectMock.expects('innerJoin').exactly(4).returns(selectQueryBuilder);
-    selectMock.expects('innerJoinAndSelect').exactly(6).returns(selectQueryBuilder);
-    selectMock.expects('where').twice().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').exactly(8).returns(selectQueryBuilder);
-    selectMock.expects('addGroupBy').once().returns(selectQueryBuilder);
-    selectMock
-      .expects('getRawMany')
-      .twice()
-      .returns(Promise.resolve([data1, data2]));
     const res = await repo.analysis(q);
 
-    sinon.assert.calledTwice(experimentStub);
-    selectMock.verify();
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+
+    expect(experimentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+
+    expect(experimentMock.innerJoin).toHaveBeenCalledTimes(4);
+    expect(experimentMock.innerJoinAndSelect).toHaveBeenCalledTimes(6);
+    expect(experimentMock.where).toHaveBeenCalledTimes(2);
+    expect(experimentMock.andWhere).toHaveBeenCalledTimes(8);
+    expect(experimentMock.groupBy).toHaveBeenCalledTimes(2);
+    expect(experimentMock.select).toHaveBeenCalledTimes(2);
+    expect(experimentMock.getRawMany).toHaveBeenCalledTimes(2);
 
     expect(res).toEqual([
       { conditionId: 1, result: 100 },
       { conditionId: 2, result: 100 },
     ]);
-  });*/
+  });
 });
