@@ -14,7 +14,7 @@ export default async function MetricCRUD(): Promise<void> {
   await settingService.setClientCheck(false, true, new UpgradeLogger());
 
   // create metrics service
-  await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
+  await metricService.saveAllMetrics(metrics as any, ['home'], new UpgradeLogger());
 
   let findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(36);

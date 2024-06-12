@@ -56,8 +56,6 @@ export class NotificationService {
     if (snackBarDetail.type === NotificationType.Error) {
       snackBarDetail.title += ' See console for details.';
     }
-    if (!this.environment.production) {
-      this._notifications.create(snackBarDetail.title, snackBarDetail.content, snackBarDetail.type, snackBarDetail);
-    }
+    this._notifications.create(snackBarDetail.title, snackBarDetail.content, snackBarDetail.type, snackBarDetail);
   }
 }

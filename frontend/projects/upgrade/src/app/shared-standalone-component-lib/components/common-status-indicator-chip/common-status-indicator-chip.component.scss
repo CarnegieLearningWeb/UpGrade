@@ -1,0 +1,68 @@
+.mat-mdc-standard-chip {
+  border-radius: 5px;
+  --mdc-chip-elevated-container-color: transparent;
+}
+
+.status-indicator {
+  margin-bottom: 5px;
+}
+
+::ng-deep .status-indicator.global {
+  --mdc-chip-label-text-color: blue;
+  border: 1px solid blue;
+}
+
+::ng-deep .status-indicator.used {
+  --mdc-chip-label-text-color: green;
+  border: 1px solid green;
+}
+
+::ng-deep .status-indicator.unused {
+  --mdc-chip-label-text-color: grey;
+  border: 1px solid grey;
+}
+
+::ng-deep .status-indicator.enabled {
+  --mdc-chip-label-text-color: green;
+  border: 1px solid green;
+}
+
+::ng-deep .status-indicator.disabled {
+  --mdc-chip-label-text-color: red;
+  border: 1px solid red;
+}
+
+::ng-deep .status-indicator.draft {
+  --mdc-chip-label-text-color: orange;
+  border: 1px solid orange;
+}
+
+::ng-deep .status-indicator.archived {
+  --mdc-chip-label-text-color: black;
+  border: 1px solid black;
+}
+
+::ng-deep .status-indicator.inactive {
+  --mdc-chip-label-text-color: grey;
+  border: 1px solid grey;
+}
+
+::ng-deep .status-indicator.enrolling {
+  --mdc-chip-label-text-color: purple;
+  border: 1px solid purple;
+}
+
+::ng-deep .status-indicator.enrollment-complete {
+  --mdc-chip-label-text-color: teal;
+  border: 1px solid teal;
+}
+
+::ng-deep .status-indicator.cancelled {
+  --mdc-chip-label-text-color: red;
+  border: 1px solid red;
+}
+
+::ng-deep .status-indicator.scheduled {
+  --mdc-chip-label-text-color: blue;
+  border: 1px solid blue;
+}

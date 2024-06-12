@@ -53,7 +53,8 @@ export class CacheService {
   }
 
   public async wrapFunction<T>(prefix: CACHE_PREFIX, keys: string[], functionToCall: () => Promise<T[]>): Promise<T[]> {
-    const cachedData = this.memoryCache ? await this.memoryCache.store.mget(...keys) : [];
+    const keysWithPrefix = keys.map((key) => prefix + key);
+    const cachedData = this.memoryCache ? await this.memoryCache.store.mget(...keysWithPrefix) : [];
 
     const allCachedFound = cachedData.every((cached) => !!cached);
     if (allCachedFound && env.caching.enabled) {

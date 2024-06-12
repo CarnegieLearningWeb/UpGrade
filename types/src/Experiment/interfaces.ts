@@ -7,6 +7,7 @@ import {
   PAYLOAD_TYPE,
   SUPPORTED_CALIPER_EVENTS,
   SUPPORTED_CALIPER_PROFILES,
+  EXPERIMENT_TYPE,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -60,6 +61,7 @@ export interface IExperimentAssignmentv5 {
   target: string;
   assignedCondition: AssignedCondition[];
   assignedFactor?: Record<string, { level: string; payload: IPayload }>[];
+  experimentType: EXPERIMENT_TYPE;
 }
 
 export interface AssignedCondition {
@@ -110,6 +112,7 @@ export interface IExperimentSortParams {
 
 export interface IMetricUnit {
   key: string | string[];
+  context?: string[];
   children?: IMetricUnit[];
   metadata?: { type: IMetricMetaData };
   allowedData?: string[];
@@ -235,4 +238,9 @@ export interface CaliperEnvelope {
   sendTime: string;
   dataVersion: string;
   data: CaliperGradingProfile[];
+}
+
+export interface IMenuButtonItem {
+  name: string;
+  disabled: boolean;
 }

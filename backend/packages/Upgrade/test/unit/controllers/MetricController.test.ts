@@ -30,6 +30,7 @@ describe('Metric Controller Testing', () => {
       .post('/api/metric/save')
       .send({
         metricUnit: [],
+        context: [],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)

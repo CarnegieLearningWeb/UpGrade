@@ -26,7 +26,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { TranslateService } from '@ngx-translate/core';
 import { v4 as uuidv4 } from 'uuid';
 import { filter, map, startWith } from 'rxjs/operators';
-import { DialogService } from '../../../../../shared/services/dialog.service';
+import { DialogService } from '../../../../../shared/services/common-dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
   DecisionPointsTableRowData,
@@ -539,7 +539,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       !this.decisionPointErrors.length &&
       this.decisionPointCountError === null &&
       !this.factorPointErrors.length &&
-      this.factorialExperimentDesignForm.valid &&
+      (this.factorialExperimentDesignForm.valid || !this.isExperimentEditable) &&
       this.factorCountError === null &&
       this.levelCountError === null &&
       this.conditionCountError === null &&
@@ -703,26 +703,10 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         if (this.factorialExperimentDesignForm.dirty) {
           this.experimentDesignStepperService.experimentStepperDataChanged();
         }
-        if (!this.isExperimentEditable) {
-          this.emitExperimentDialogEvent.emit({
-            type: eventType,
-            formData: this.experimentInfo,
-            path: NewExperimentPaths.EXPERIMENT_DESIGN,
-          });
-          break;
-        }
         this.saveData(eventType);
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.handleConditionsButtonClick();
-        if (!this.isExperimentEditable) {
-          this.emitExperimentDialogEvent.emit({
-            type: eventType,
-            formData: this.experimentInfo,
-            path: NewExperimentPaths.EXPERIMENT_DESIGN,
-          });
-          break;
-        }
         this.saveData(eventType);
         break;
     }

@@ -38,6 +38,22 @@ export {
   DATE_RANGE,
 };
 
+export interface ExperimentConditionFilterOptions {
+  code: string;
+  id: string;
+}
+
+export interface ExperimentPartitionFilterOptions {
+  id: string;
+  point: string;
+  twoCharacterId: string;
+}
+
+export interface ExperimentDateFilterOptions {
+  value: DATE_RANGE;
+  viewValue: string;
+}
+
 export interface IEnrollmentStatByDate {
   date: string;
   stats: IExperimentEnrollmentDetailDateStats;
@@ -194,7 +210,7 @@ export interface ExperimentStateTimeLog {
   versionNumber: number;
 }
 
-export interface segmentNew {
+export interface SegmentNew {
   updatedAt: string;
   createdAt: string;
   versionNumber: number;
@@ -231,8 +247,8 @@ export interface Experiment {
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
   filterMode: FILTER_MODE;
-  experimentSegmentInclusion: segmentNew;
-  experimentSegmentExclusion: segmentNew;
+  experimentSegmentInclusion: SegmentNew;
+  experimentSegmentExclusion: SegmentNew;
   groupSatisfied?: number;
   backendVersion: string;
 }

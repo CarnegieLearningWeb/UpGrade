@@ -1,9 +1,10 @@
-import { IsNotEmpty, IsDefined, IsString, IsArray, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsDefined, IsString, IsArray, IsEnum, IsOptional, ValidateNested } from 'class-validator';
+import { ParticipantsValidator } from '../../DTO/ExperimentDTO';
 import { FILTER_MODE, FEATURE_FLAG_STATUS } from 'upgrade_types';
+import { Type } from 'class-transformer';
 
 export class FeatureFlagValidation {
-  @IsNotEmpty()
-  @IsDefined()
+  @IsOptional()
   @IsString()
   id: string;
 
@@ -12,8 +13,7 @@ export class FeatureFlagValidation {
   @IsString()
   name: string;
 
-  @IsNotEmpty()
-  @IsDefined()
+  @IsOptional()
   @IsString()
   description: string;
 
@@ -39,4 +39,14 @@ export class FeatureFlagValidation {
   @IsNotEmpty()
   @IsArray()
   public tags: string[];
+
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => ParticipantsValidator)
+  public featureFlagSegmentInclusion: ParticipantsValidator;
+
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => ParticipantsValidator)
+  public featureFlagSegmentExclusion: ParticipantsValidator;
 }

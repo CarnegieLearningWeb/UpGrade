@@ -1,0 +1,30 @@
+:host ::ng-deep .common-section-card {
+  width: 100%;
+  border: 1px solid var(--light-grey);
+  border-radius: 4px;
+  background-color: var(--white);
+  overflow: hidden;
+  .header {
+    height: 96px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 32px;
+    border-bottom: 1px solid var(--light-grey);
+  }
+
+  .content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 10px;
+    padding: 16px 32px 20px;
+  }
+
+  .footer {
+    border-top: 1px solid var(--light-grey);
+    padding: 0 32px;
+  }
+}

@@ -197,6 +197,10 @@ button,
   @include set-font(24, 700);
 }
 
+.ft-26-700 {
+  @include set-font(26, 700);
+}
+
 .ft-30-700 {
   @include set-font(30, 700);
 }

@@ -2,14 +2,14 @@ import { Container } from 'typedi';
 import { groupAssignmentWithIndividualConsistencyExperiment } from '../mockData/experiment';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { EXPERIMENT_STATE } from 'upgrade_types';
-import { getAllExperimentCondition, markExperimentPoint, checkDeletedExperiment } from '../utils';
+import { getAllExperimentCondition, markExperimentPoint, checkDeletedExperiment, updateExcludeIfReachedFlag } from '../utils';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNull,
-  checkExperimentAssignedIsNotDefault,
+  checkExperimentAssignedIsNotDefault
 } from '../utils/index';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
@@ -22,6 +22,7 @@ export default async function testCase(): Promise<void> {
 
   // experiment object
   const experimentObject = groupAssignmentWithIndividualConsistencyExperiment;
+  experimentObject.partitions = updateExcludeIfReachedFlag(experimentObject.partitions);
 
   const experimentName = experimentObject.partitions[0].target;
   const experimentPoint = experimentObject.partitions[0].site;

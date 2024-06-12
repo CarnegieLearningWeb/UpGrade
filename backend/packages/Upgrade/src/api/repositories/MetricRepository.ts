@@ -31,6 +31,16 @@ export class MetricRepository extends Repository<Metric> {
       });
   }
 
+  public async getMetricsByContext(context: string): Promise<Metric[]> {
+    return this.createQueryBuilder('metrics')
+      .where('context @> :searchContext', { searchContext: [context] })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(this.constructor.name, 'getMetricsByContext', { context }, errorMsg);
+        throw errorMsgString;
+      });
+  }
+
   public async findMetricsWithQueries(ids: string[]): Promise<Metric[]> {
     return this.createQueryBuilder('metrics')
       .innerJoin('metrics.queries', 'queries')
