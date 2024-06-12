@@ -72,40 +72,19 @@ const reducer = createReducer(
   })),
   on(FeatureFlagsActions.actionEnableFeatureFlag, (state) => ({
     ...state,
-    isLoadingStatusUpdate: true,
+    isLoadingUpdateFeatureFlagStatus: true,
   })),
   on(FeatureFlagsActions.actionEnableFeatureFlagSuccess, (state, { response }) => {
+    const flag = response[0];
     return adapter.updateOne(
-      {
-        id: response.id,
-        changes: {
-          status: response.status,
-        },
-      },
-      state
+      { id: flag?.id, changes: { status: flag?.status } },
+      { ...state, isLoadingUpdateFeatureFlagStatus: false }
     );
   }),
-  on(FeatureFlagsActions.actionEnableFeatureFlagFailure, (state) => ({ ...state, isLoadingStatusUpdate: true })),
-  on(FeatureFlagsActions.actionDisableFeatureFlag, (state) => ({
+  on(FeatureFlagsActions.actionEnableFeatureFlagFailure, (state) => ({
     ...state,
-    isLoadingStatusUpdate: true,
+    isLoadingUpdateFeatureFlagStatus: true,
   })),
-  on(FeatureFlagsActions.actionEnableFeatureFlag, (state) => ({
-    ...state,
-    isLoadingStatusUpdate: true,
-  })),
-  on(FeatureFlagsActions.actionEnableFeatureFlagSuccess, (state, { response }) => {
-    return adapter.updateOne(
-      {
-        id: response.id,
-        changes: {
-          status: response.status,
-        },
-      },
-      state
-    );
-  }),
-  on(FeatureFlagsActions.actionEnableFeatureFlagFailure, (state) => ({ ...state, isLoadingStatusUpdate: true })),
   on(FeatureFlagsActions.actionFetchFeatureFlagById, (state) => ({
     ...state,
     isLoadingFeatureFlags: true,

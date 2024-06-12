@@ -7,21 +7,25 @@ import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-f
 import { UpdateFeatureFlagStatusRequest } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { FEATURE_FLAG_STATUS } from '../../../../../../../../../../types/src';
 import { Subscription } from 'rxjs';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-enable-feature-flag-modal-content',
   standalone: true,
-  imports: [CommonModalComponent, TranslateModule],
+  imports: [CommonModalComponent, TranslateModule, CommonModule],
   templateUrl: './enable-feature-flag-modal.component.html',
   styleUrl: './enable-feature-flag-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EnableFeatureFlagModalComponent {
-  isLoadingUpdateFeatureFlagStatus$ = this.featureFlagService.isLoadingUpdateFeatureFlagStatus$;
   subscriptions = new Subscription();
+  selectedFlag$ = this.featureFlagService.selectedFeatureFlag$;
+  isLoadingUpdateFeatureFlagStatus$ = this.featureFlagService.isLoadingUpdateFeatureFlagStatus$;
+  selectedFlagStatusChange$ = this.featureFlagService.selectedFeatureFlagStatusChange$;
 
-  featureFlagName: string;
-  featureFlagId: string;
+  get FEATURE_FLAG_STATUS() {
+    return FEATURE_FLAG_STATUS;
+  }
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
@@ -29,20 +33,19 @@ export class EnableFeatureFlagModalComponent {
     public featureFlagService: FeatureFlagsService,
     public dialog: MatDialog,
     public dialogRef: MatDialogRef<EnableFeatureFlagModalComponent>
-  ) {
-    this.featureFlagName = this.config.payload.flagName as string;
-    this.featureFlagId = this.config.payload.flagId as string;
+  ) {}
+
+  ngOnInit() {
+    this.listenForFeatureFlagStatusChanges();
   }
 
   listenForFeatureFlagStatusChanges(): void {
-    this.subscriptions = this.isLoadingUpdateFeatureFlagStatus$.subscribe(() => this.closeModal());
+    this.subscriptions = this.selectedFlagStatusChange$.subscribe(() => {
+      this.closeModal();
+    });
   }
 
-  onPrimaryActionBtnClicked() {
-    const updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest = {
-      flagId: this.featureFlagId,
-      status: FEATURE_FLAG_STATUS.ENABLED,
-    };
+  onPrimaryActionBtnClicked(updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest) {
     this.featureFlagService.enableFeatureFlag(updateFeatureFlagStatusRequest);
   }
 

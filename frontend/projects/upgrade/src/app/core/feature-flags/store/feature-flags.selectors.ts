@@ -45,6 +45,13 @@ export const selectSelectedFeatureFlag = createSelector(
   ({ state: { params } }, featureFlagState) => featureFlagState.entities[params.flagId]
 );
 
+export const selectFeatureFlagOverviewDetails = createSelector(selectSelectedFeatureFlag, (featureFlag) => ({
+  ['Key']: featureFlag?.key,
+  ['Description']: featureFlag?.description,
+  ['App Context']: featureFlag?.context[0],
+  ['Tags']: featureFlag?.tags,
+}));
+
 // export const selectSelectedFeatureFlagStatusChanged = createSelector(selectSelectedFeatureFlag, (flag: FeatureFlag) =>
 //   flag ? flag.status : null
 // );

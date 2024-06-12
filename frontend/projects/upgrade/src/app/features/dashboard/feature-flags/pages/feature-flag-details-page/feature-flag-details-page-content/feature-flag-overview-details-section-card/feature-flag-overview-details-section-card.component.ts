@@ -1,20 +1,17 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
   CommonSectionCardTitleHeaderComponent,
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { FeatureFlagOverviewDetailsFooterComponent } from './feature-flag-overview-details-footer/feature-flag-overview-details-footer.component';
-import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
-import { FEATURE_FLAG_STATUS, FILTER_MODE, IMenuButtonItem } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, IMenuButtonItem } from 'upgrade_types';
 import { CommonModule } from '@angular/common';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 
-import {
-  CommonSectionCardOverviewDetailsComponent,
-  KeyValueFormat,
-} from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
+import { CommonSectionCardOverviewDetailsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,
@@ -31,30 +28,8 @@ import { MatSlideToggleChange } from '@angular/material/slide-toggle';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagOverviewDetailsSectionCardComponent {
-  @Input() data: FeatureFlag;
-  //temp mock data
-  featureFlag: FeatureFlag = {
-    createdAt: '2021-09-08T08:00:00.000Z',
-    updatedAt: '2021-09-08T08:00:00.000Z',
-    versionNumber: 1,
-    id: '38a29024-0edc-4a9e-83db-b966ae961304',
-    name: 'Feature Flag 1',
-    key: 'feature_flag_1',
-    description: 'Feature Flag 1 Description',
-    status: FEATURE_FLAG_STATUS.ENABLED,
-    filterMode: FILTER_MODE.INCLUDE_ALL,
-    context: ['context1', 'context2'],
-    tags: ['tag1', 'tag2'],
-    featureFlagSegmentInclusion: null,
-    featureFlagSegmentExclusion: null,
-  };
-  flagName: string;
-  flagHeaderSubtitle: string;
-  flagCreatedAt: string;
-  flagUpdatedAt: string;
-  flagStatus: FEATURE_FLAG_STATUS;
-  flagId: string;
-  flagOverviewDetails: KeyValueFormat;
+  featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
+  flagOverviewDetails$ = this.featureFlagService.selectedFlagOverviewDetails;
 
   menuButtonItems: IMenuButtonItem[] = [
     { name: 'Edit', disabled: false },
@@ -62,23 +37,10 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   ];
   isSectionCardExpanded = true;
 
-  constructor(private dialogService: DialogService) {}
+  constructor(private dialogService: DialogService, private featureFlagService: FeatureFlagsService) {}
 
   get FEATURE_FLAG_STATUS() {
     return FEATURE_FLAG_STATUS;
-  }
-
-  ngOnInit() {
-    this.flagName = this.data.name;
-    this.flagCreatedAt = this.data.createdAt;
-    this.flagUpdatedAt = this.data.updatedAt;
-    this.flagStatus = this.data.status;
-    this.flagOverviewDetails = {
-      ['Key']: this.data.key,
-      ['Description']: this.data.description,
-      ['App Context']: this.data.context[0],
-      ['Tags']: this.data.tags,
-    };
   }
 
   viewLogsClicked(event) {
@@ -92,7 +54,8 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
     if (slideToggleEvent.checked) {
       this.openEnableConfirmModel();
     } else {
-      this.openDisableConfirmModel();
+      // this.openDisableConfirmModel();
+      console.log('disable!');
     }
 
     // Note: we don't want the toggle to change state immediately because we have to pop a confirmation modal first, so we need override the default and flip it back
@@ -100,17 +63,8 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   }
 
   openEnableConfirmModel(): void {
-    this.dialogService.openEnableFeatureFlagConfirmModel({
-      flagName: this.flagName,
-      flagId: this.featureFlag.id,
-    });
-  }
-
-  openDisableConfirmModel(): void {
-    this.dialogService.openDisableFeatureFlagConfirmModel({
-      flagName: this.flagName,
-      flagId: this.featureFlag.id,
-    });
+    this.dialogService.openEnableFeatureFlagConfirmModel();
+    this.featureFlag$.subscribe((featureFlag) => console.log({ featureFlag }));
   }
 
   onMenuButtonItemClick(event) {
