@@ -13,7 +13,7 @@ export class MonitoredDecisionPointRepository extends Repository<MonitoredDecisi
       .insert()
       .into(MonitoredDecisionPoint)
       .values({ ...rawData })
-      .orUpdate(['site', 'target'], 'id')
+      .orUpdate(['site', 'target'], ['id'])
       .setParameter('site', rawData.site)
       .setParameter('target', rawData.target)
       .returning('*')
