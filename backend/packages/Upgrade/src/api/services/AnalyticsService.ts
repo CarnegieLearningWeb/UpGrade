@@ -14,7 +14,6 @@ import {
   ASSIGNMENT_UNIT,
   SERVER_ERROR,
   IExperimentEnrollmentStats,
-  ASSIGNMENT_ALGORITHM,
 } from 'upgrade_types';
 import { AnalyticsRepository, CSVExportDataRow } from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
@@ -30,10 +29,7 @@ import { getCustomRepository } from 'typeorm';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { ExperimentCondition } from '../models/ExperimentCondition';
-import { StateTimeLog } from '../models/StateTimeLogs';
-import { ConditionPayload } from '../models/ConditionPayload';
-import { DecisionPoint } from '../models/DecisionPoint';
+import { ExperimentService } from './ExperimentService';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -55,7 +51,8 @@ export class AnalyticsService {
     @InjectRepository()
     private logRepository: LogRepository,
     public awsService: AWSService,
-    public errorService: ErrorService
+    public errorService: ErrorService,
+    public experimentService: ExperimentService,
   ) {}
 
   public async getEnrollments(experimentIds: string[]): Promise<IExperimentEnrollmentStats[]> {
@@ -177,75 +174,59 @@ export class AnalyticsService {
       const simpleExportCSV = `${email}_simpleExport${timeStamp}.csv`;
 
       const userRepository: UserRepository = getCustomRepository(UserRepository, 'export');
-      const [experiment, user] = await Promise.all([
-        this.experimentRepository.findOne({
-          where: { id: experimentId },
-        }),
-        userRepository.findOne({ email }),
-      ]);
+      const user = await userRepository.findOne({ email });
 
       // make new query here
       let toLoop = true;
       let skip = 0;
       const take = 50;
+      
+      const experimentQueryResult = await this.experimentService.getExperimentDetailsForCSVDataExport(experimentId);
+      const formattedExperiments = experimentQueryResult.reduce((acc, item) => {
+        let experiment = acc.find(e => e.experimentId === item.experimentId);
+        if (!experiment) {
+          experiment = {
+            experimentId: item.experimentId,
+            experimentName: item.experimentName,
+            context: item.context,
+            assignmentUnit: item.assignmentUnit,
+            group: item.group,
+            consistencyRule: item.consistencyRule,
+            designType: item.designType,
+            algorithmType: item.algorithmType,
+            stratification: item.stratification,
+            postRule: item.postRule,
+            enrollmentStartDate: item.enrollmentStartDate,
+            enrollmentCompleteDate: item.enrollmentCompleteDate,
+            details: []
+          };
+          acc.push(experiment);
+        }
+        experiment.details.push({
+          expConditionId: item.expConditionId,
+          conditionName: item.conditionName,
+          revertTo: item.revertTo,
+          payloadValue: item.payload,
+          excludeIfReached: item.excludeIfReached,
+          expDecisionPointId: item.expDecisionPointId
+        });
+        return acc;
+      }, []);
       do {
         let csvExportData: CSVExportDataRow[];
-        if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+        if (experimentQueryResult[0].assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
           csvExportData = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentId, skip, take);
         } else {
-          // Get the experiment details
-          const experimentRepository = getCustomRepository(ExperimentRepository, 'export');
-          const experimentQuery = experimentRepository
-            .createQueryBuilder('experiment')
-            .select([
-              'experiment.id as "experimentId"',
-              'experiment.name as "experimentName"',
-              'experiment.context as "context"',
-              'experiment.assignmentUnit as "assignmentUnit"',
-              'experiment.group as "group"',
-              'experiment.consistencyRule as "consistencyRule"',
-              'experiment.type as "designType"',
-              'experiment.assignmentAlgorithm as "algorithmType"',
-              'experiment.stratificationFactorStratificationFactorName as "stratification"',
-              'experiment.postExperimentRule as "postRule"',
-              'experimentRevertCondition.conditionCode as "revertTo"',
-              '"enrollingStateTimeLog"."timeLog" as "enrollmentStartDate"',
-              '"enrollmentCompleteStateTimeLog"."timeLog" as "enrollmentCompleteDate"',
-              '"conditionPayload"."payloadValue" as "payload"',
-              '"decisionPointData"."excludeIfReached" as "excludeIfReached"',
-              '"decisionPointData"."id" as "expDecisionPointId"',
-              'experimentCondition.id as "expConditionId"',
-              'experimentCondition.conditionCode as "conditionName"',
-            ])
-            .leftJoin(ExperimentCondition, 'experimentCondition', 'experimentCondition.experimentId = experiment.id')
-            .leftJoin(ExperimentCondition, 'experimentRevertCondition', 'experimentRevertCondition.id = experiment.revertTo')
-            .leftJoin(DecisionPoint, 'decisionPointData', 'decisionPointData.experimentId = experiment.id')
-            .leftJoin(ConditionPayload, 'conditionPayload', 'conditionPayload.parentConditionId = experimentCondition.id AND conditionPayload.decisionPointId = decisionPointData.id')
-            .leftJoin(StateTimeLog, 'enrollingStateTimeLog', 'enrollingStateTimeLog.experimentId = experiment.id AND enrollingStateTimeLog.toState = \'enrolling\'')
-            .leftJoin(StateTimeLog, 'enrollmentCompleteStateTimeLog', 'enrollmentCompleteStateTimeLog.experimentId = experiment.id AND enrollmentCompleteStateTimeLog.toState = \'enrollmentComplete\'')
-            .groupBy('experiment.id')
-            .addGroupBy('experimentCondition.id')
-            .addGroupBy('experimentRevertCondition.conditionCode')
-            .addGroupBy('decisionPointData.id')
-            .addGroupBy('conditionPayload.payloadValue')
-            .addGroupBy('enrollingStateTimeLog.timeLog')
-            .addGroupBy('enrollmentCompleteStateTimeLog.timeLog')
-            .where('experiment.id = :experimentId', { experimentId });
-          
-          const experimentQueryResult = await experimentQuery.getRawMany();
-          let isSRSExperiment = false;
-          if (experimentQueryResult.length && experimentQueryResult[0].algorithmType === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
-            isSRSExperiment = true;
-          }
-          csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(experimentQueryResult, experimentId, isSRSExperiment, skip, take);
+          csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(formattedExperiments[0], experimentId, skip, take);
         }
         const userIds = csvExportData.map(({ userId }) => userId);
+        const uniqueUserIds = Array.from(new Set(userIds));
         // don't query if no data
-        if (!experimentId || (userIds && userIds.length === 0)) {
+        if (!experimentId || (uniqueUserIds && uniqueUserIds.length === 0)) {
           break;
         }
-        const queryData = await this.logRepository.getLogPerExperimentQueryForUser(experimentId, userIds);
-
+        
+        const queryData = await this.logRepository.getLogPerExperimentQueryForUser(experimentId, uniqueUserIds);
         // query name id mapping
         const queryNameIdMapping: Record<string, string> = {};
         queryData.forEach((singleRecord) => {
@@ -346,61 +327,46 @@ export class AnalyticsService {
         }
         // merge with data
         const csvRows = csvExportData.map((row) => {
-          const queryObject = logsUser[row.userId];
+          const queryObject = logsUser[row.userId] || {};
           const queryDataToAdd = {};
-          let postRule = '';
-          let revertToCondition = '';
-
+      
           for (const queryId in queryObject) {
-            if (queryObject[queryId]) {
-              queryDataToAdd[queryNameIdMapping[queryId]] = queryObject[queryId];
-            }
+              if (queryObject.hasOwnProperty(queryId) && queryObject[queryId]) {
+                  const queryName = queryNameIdMapping[queryId];
+                  if (queryName) {
+                      queryDataToAdd[queryName] = queryObject[queryId];
+                  }
+              }
           }
-          if (row.postRule === 'assign') {
-            if (row.revertTo !== null) {
-              revertToCondition = row.revertTo;
-            } else {
-              revertToCondition = 'Default';
-            }
-            postRule = 'Assign: ' + revertToCondition;
-          } else {
-            postRule = 'Continue';
-          }
-
-          let excludeIfReached = 'FALSE';
-          if (row.excludeIfReached) {
-            excludeIfReached = 'TRUE';
-          }
-
-          let stratification = 'NA';
-          if (row.stratification && row.stratificationValue) {
-            stratification = row.stratification + ': ' + row.stratificationValue;
-          }
+      
+          let revertToCondition = row.revertTo ? row.revertTo : 'Default';
+          const postRule = row.postRule === 'assign' ? `Assign: ${revertToCondition}` : 'Continue';
+          const excludeIfReached = row.excludeIfReached ? 'TRUE' : 'FALSE';
+          const stratification = row.stratification && row.stratificationValue ? `${row.stratification}: ${row.stratificationValue}` : 'NA';
+      
           return {
-            ExperimentId: row.experimentId,
-            ExperimentName: row.experimentName,
-            UserId: row.userId,
-            AppContext: row.context[0],
-            UnitOfAssignment: row.assignmentUnit,
-            GroupType: row.group ? row.group : 'NA',
-            GroupId: row.enrollmentGroupId ? row.enrollmentGroupId : 'NA',
-            ConsistencyRule: row.consistencyRule,
-            DesignType: row.designType,
-            AlgorithmType: row.algorithmType,
-            Stratification: stratification,
-            Site: row.site,
-            Target: row.target,
-            ExcludeifReached: excludeIfReached,
-            ConditionName: row.conditionName,
-            Payload: row.payload ? row.payload : row.conditionName,
-            PostRule: postRule,
-            EnrollmentStartDate: new Date(row.enrollmentStartDate).toISOString(),
-            EnrollmentCompleteDate: row.enrollmentCompleteDate
-              ? new Date(row.enrollmentCompleteDate).toISOString()
-              : 'NA',
-            MarkExperimentPointTime: new Date(row.markExperimentPointTime).toISOString(),
-            EnrollmentCode: row.enrollmentCode,
-            ...queryDataToAdd,
+              ExperimentId: row.experimentId,
+              ExperimentName: row.experimentName,
+              UserId: row.userId,
+              AppContext: row.context[0],
+              UnitOfAssignment: row.assignmentUnit,
+              GroupType: row.group ? row.group : 'NA',
+              GroupId: row.enrollmentGroupId ? row.enrollmentGroupId : 'NA',
+              ConsistencyRule: row.consistencyRule,
+              DesignType: row.designType,
+              AlgorithmType: row.algorithmType,
+              Stratification: stratification,
+              Site: row.site,
+              Target: row.target,
+              ExcludeifReached: excludeIfReached,
+              ConditionName: row.conditionName,
+              Payload: row.payload ? row.payload : row.conditionName,
+              PostRule: postRule,
+              EnrollmentStartDate: new Date(row.enrollmentStartDate).toISOString(),
+              EnrollmentCompleteDate: row.enrollmentCompleteDate ? new Date(row.enrollmentCompleteDate).toISOString() : 'NA',
+              MarkExperimentPointTime: new Date(row.markExperimentPointTime).toISOString(),
+              EnrollmentCode: row.enrollmentCode,
+              ...queryDataToAdd,
           };
         });
 
@@ -480,13 +446,13 @@ export class AnalyticsService {
       <br>
       <a href="${signedURLMonitored}">Monitored Experiment Data</a>`;
 
-      const emailSubject = `Exported Data for the experiment: ${experiment.name}`;
+      const emailSubject = `Exported Data for the experiment: ${experimentQueryResult[0].experimentName}`;
       // send email to the user
       logger.info({ message: `Sending export data email to ${email}` });
       await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
       await this.experimentAuditLogRepository.saveRawJson(
         EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
-        { experimentName: experiment.name },
+        { experimentName: experimentQueryResult[0].experimentName },
         user
       );
       logger.info({ message: `Exported Data emailed successfully to ${email}` });

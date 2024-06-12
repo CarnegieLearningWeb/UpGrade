@@ -19,6 +19,7 @@ import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { MonitoredDecisionPointRepository } from './MonitoredDecisionPointRepository';
 import { UserStratificationFactorRepository } from './UserStratificationRepository';
+import _ from 'lodash';
 
 export interface IEnrollmentByCondition {
   conditions_id: string;
@@ -73,6 +74,37 @@ export interface CSVExportDataRow {
   enrollmentCompleteDate: string;
   enrollmentGroupId: string;
   enrollmentCode: string;
+}
+
+export interface ConditionDecisionPointData {
+  revertTo: string,
+  payload: string,
+  excludeIfReached: boolean,
+  expDecisionPointId: string,
+  expConditionId: string,
+  conditionName: string
+}
+
+export interface ExperimentCSVData {
+  experimentId: string,
+  experimentName: string,
+  context: string[],
+  assignmentUnit: string,
+  group: string,
+  consistencyRule: string,
+  designType: string,
+  algorithmType: string,
+  stratification: string,
+  postRule: string,
+  enrollmentStartDate: string,
+  enrollmentCompleteDate: string,
+  revertTo: string,
+  payload: string,
+  excludeIfReached: boolean,
+  expDecisionPointId: string,
+  expConditionId: string,
+  conditionName: string,
+  details: ConditionDecisionPointData[],
 }
 
 @EntityRepository()
@@ -411,9 +443,8 @@ export class AnalyticsRepository {
   }
 
   public async getCSVDataForSimpleExport(
-    experimentsData: any,
+    experimentsData: ExperimentCSVData,
     experimentId: string,
-    isSRSExperiment: boolean,
     skip: number,
     take: number
   ): Promise<CSVExportDataRow[]> {
@@ -428,9 +459,8 @@ export class AnalyticsRepository {
         '"individualEnrollment"."experimentId" as "experimentId"',
         '"individualEnrollment"."conditionId" as "conditionId"',
         '"individualEnrollment"."partitionId" as "partitionId"',
-      ]);
-
-    individualEnrollmentQuery.groupBy('individualEnrollment.userId')
+      ])
+      .groupBy('individualEnrollment.userId')
       .addGroupBy('individualEnrollment.groupId')
       .addGroupBy('individualEnrollment.enrollmentCode')
       .addGroupBy('individualEnrollment.experimentId')
@@ -454,7 +484,13 @@ export class AnalyticsRepository {
       .orderBy('monitoredDecisionPoint.userId', 'ASC')
       .offset(skip)
       .limit(take)
-      .where('monitoredDecisionPoint.experimentId = :experimentId', { experimentId });
+      .where('monitoredDecisionPoint.experimentId = :experimentId', { experimentId })
+      .andWhere('monitoredDecisionPoint.userId IN (' +
+        individualEnrollmentRepository.createQueryBuilder('individualEnrollment')
+          .select('DISTINCT "individualEnrollment"."userId"')
+          .where('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
+          .getQuery() + ')')
+      .setParameters(individualEnrollmentQuery.getParameters());
     
     const [individualEnrollmentQueryResults, monitoredDecisionPointQueryResults] = await Promise.all([
       individualEnrollmentQuery.getRawMany(),
@@ -465,26 +501,31 @@ export class AnalyticsRepository {
 
     const individualEnrollmentExperimentData = [];
     individualEnrollmentQueryResults.forEach(individualEnrollmentQueryResult => {
-      experimentsData.forEach((experiment) => {
-        if (experiment.expDecisionPointId === individualEnrollmentQueryResult.partitionId &&
-            experiment.expConditionId === individualEnrollmentQueryResult.conditionId) {
+      experimentsData.details.forEach((detail) => {
+        const modifiedExperiments = [];
+        if (detail.expDecisionPointId === individualEnrollmentQueryResult.partitionId &&
+          detail.expConditionId === individualEnrollmentQueryResult.conditionId) {
           // prepare users list that have SRS experiment:
-          if (experiment.stratification) {
+          if (experimentsData.stratification) {
             userStratificationFactorUserList.push(individualEnrollmentQueryResult.userId)
           }
+          const { details, ...baseProperties } = experimentsData;
+
+          modifiedExperiments.push({ ...baseProperties, ...detail });
           individualEnrollmentExperimentData.push({
-            ...experiment,
+            ...modifiedExperiments[0],
             userId: individualEnrollmentQueryResult.userId,
             groupId: individualEnrollmentQueryResult.enrollmentGroupId,
             enrollmentCode: individualEnrollmentQueryResult.enrollmentCode,
-            stratification: experiment.stratification,
+            expDecisionPointId: individualEnrollmentQueryResult.partitionId,
+            expConditionId: individualEnrollmentQueryResult.conditionId
           });
         }
       });
     });
 
     let userStratificationFactorQueryResult = [];
-    if (isSRSExperiment) {
+    if (experimentsData.stratification) {
       // get users stratification factor values:
       const userStratificationFactorRepository = getCustomRepository(UserStratificationFactorRepository, 'export');
 
@@ -498,21 +539,21 @@ export class AnalyticsRepository {
       
       userStratificationFactorQueryResult = await userStratificationFactorQuery.getRawMany();
     }
-    // Combined results
-    const combinedCSVExportData = [];
 
-    individualEnrollmentExperimentData.forEach(individualEnrollmentExperiment => {
-      monitoredDecisionPointQueryResults.forEach(monitoredDecisionPointQueryResult => {
-        if (monitoredDecisionPointQueryResult.userId === individualEnrollmentExperiment.userId) {
-          combinedCSVExportData.push({
-            ...individualEnrollmentExperiment,
-            site: monitoredDecisionPointQueryResult.site,
-            target: monitoredDecisionPointQueryResult.target,
-            markExperimentPointTime: monitoredDecisionPointQueryResult.markExperimentPointTime,
-            stratificationValue: isSRSExperiment ? userStratificationFactorQueryResult.find(user => user.userId === individualEnrollmentExperiment.userId)?.stratificationFactorValue: null,
-          });
-        }
-      });
+    // Group monitoredDecisionPointQueryResults by userId
+    const groupedMonitoredDecisionPointQueryResults = _.groupBy(monitoredDecisionPointQueryResults, 'userId');
+
+    // Combine data in a single flatMap step
+    const combinedCSVExportData = _.flatMap(individualEnrollmentExperimentData, individualEnrollmentExperiment => {
+      const userMonitoredResults = groupedMonitoredDecisionPointQueryResults[individualEnrollmentExperiment.userId] || [];
+
+      return userMonitoredResults.map(monitoredDecisionPointQueryResult => ({
+        ...individualEnrollmentExperiment,
+        site: monitoredDecisionPointQueryResult.site,
+        target: monitoredDecisionPointQueryResult.target,
+        markExperimentPointTime: monitoredDecisionPointQueryResult.markExperimentPointTime,
+        stratificationValue: experimentsData.stratification ? userStratificationFactorQueryResult.find(user => user.userId === individualEnrollmentExperiment.userId)?.stratificationFactorValue : null,
+      }));
     });
     return combinedCSVExportData;
   }
