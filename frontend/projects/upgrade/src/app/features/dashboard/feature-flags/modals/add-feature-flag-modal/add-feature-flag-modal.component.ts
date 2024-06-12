@@ -24,6 +24,7 @@ import { FEATURE_FLAG_STATUS, SEGMENT_TYPE, FILTER_MODE } from '../../../../../.
 import { AddFeatureFlagRequest } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { Subscription } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
   selector: 'app-add-feature-flag-modal',
@@ -63,11 +64,13 @@ export class AddFeatureFlagModalComponent {
     public dialog: MatDialog,
     private formBuilder: FormBuilder,
     private featureFlagsService: FeatureFlagsService,
+    private experimentService: ExperimentService,
     private formHelpersService: CommonFormHelpersService,
     public dialogRef: MatDialogRef<AddFeatureFlagModalComponent>
   ) {}
 
   ngOnInit(): void {
+    this.experimentService.fetchContextMetaData();
     this.buildForm();
     this.listenForFeatureFlagListLengthChanges();
   }
