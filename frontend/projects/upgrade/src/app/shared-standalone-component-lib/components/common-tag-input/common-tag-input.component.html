@@ -1,0 +1,51 @@
+<!-- <mat-form-field class="dense-1 tags" appearance="outline" subscriptSizing="dynamic">
+  <mat-label class="ft-14-400">
+    {{ 'home.new-experiment.overview.tags.placeHolder' | translate }}
+  </mat-label>
+  <mat-chip-grid #tagsList class="chip-grid" aria-label="Tags">
+    <mat-chip-row
+      *ngFor="let experimentTag of tags.value"
+      [selectable]="isChipSelectable"
+      [removable]="isChipRemovable"
+      (removed)="removeChip(experimentTag)"
+    >
+      <span class="ft-12-600 chip-label">
+        {{ experimentTag }}
+      </span>
+      <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
+    </mat-chip-row>
+    <input
+      class="ft-14-400"
+      [matChipInputFor]="tagsList"
+      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+      [matChipInputAddOnBlur]="addChipOnBlur"
+      (matChipInputTokenEnd)="addChip($event)"
+    />
+  </mat-chip-grid>
+</mat-form-field> -->
+
+<mat-form-field class="dense-1 tags" appearance="outline" subscriptSizing="dynamic">
+  <mat-label class="ft-14-400">
+    {{ 'home.new-experiment.overview.tags.placeHolder' | translate }}
+  </mat-label>
+  <mat-chip-grid #tagsList class="chip-grid" aria-label="Tags" formControlName="tags">
+    <mat-chip-row
+      *ngFor="let componentTag of tags.value"
+      [selectable]="isChipSelectable"
+      [removable]="isChipRemovable"
+      (removed)="removeChip(componentTag)"
+    >
+      <span class="ft-12-600 chip-label">
+        {{ componentTag }}
+      </span>
+      <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
+    </mat-chip-row>
+    <input
+      class="ft-14-400"
+      [matChipInputFor]="tagsList"
+      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+      [matChipInputAddOnBlur]="addChipOnBlur"
+      (matChipInputTokenEnd)="addChip($event)"
+    />
+  </mat-chip-grid>
+</mat-form-field>
