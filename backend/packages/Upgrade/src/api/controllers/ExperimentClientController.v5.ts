@@ -207,6 +207,70 @@ export class ExperimentClientController {
 
   /**
    * @swagger
+   * /bulkSyncUserGroups:
+   *    post:
+   *       description: add multiple users to groups
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: experimentUser
+   *           required: true
+   *           schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *                properties:
+   *                 schoolId:
+   *                  type: array
+   *                   items:
+   *                     type: string
+   *                     example: school1
+   *                  classId:
+   *                    type: array
+   *                     items:
+   *                      type: string
+   *                      example: class1
+   *                  instructorId:
+   *                    type: array
+   *                     items:
+   *                      type: string
+   *                      example: instructor1
+   *       responses:
+   *          '200':
+   *            description: Uploading user groups
+   *            schema:
+   *              type: array
+   *              description: 'UsedIds'
+   *              uniqueItems: true
+   *              items:
+   *                type: string
+   *          '500':
+   *            description: user init failed
+   */
+  @Post('bulkSyncUserGroups')
+  public async bulkSyncUserGroups(
+    @Req()
+    request: AppRequest,
+    @Body()
+    experimentUsers: any
+  ): Promise<any> {
+    request.logger.info({ message: 'Starting the bulk sync call for user' });
+
+    const upsertResult = await this.experimentUserService.create(experimentUsers, request.logger);
+
+    if (!upsertResult) {
+      request.logger.error({
+        details: 'user upsert failed',
+      });
+      throw new InternalServerError('user sync failed');
+    }
+
+    return experimentUsers.map((eu) => eu.id);
+  }
+
+  /**
+   * @swagger
    * /groupmembership:
    *    patch:
    *       description: Set group membership for a user
