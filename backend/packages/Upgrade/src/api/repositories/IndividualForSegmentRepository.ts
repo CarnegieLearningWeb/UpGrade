@@ -78,12 +78,14 @@ export class IndividualForSegmentRepository extends Repository<IndividualForSegm
 
   public async deleteIndividualForSegmentById(
     segmentId: string,
+    entityManager: EntityManager,
     logger: UpgradeLogger
   ): Promise<IndividualForSegment[]> {
-    const result = await this.createQueryBuilder('individualForSegment')
+    const result = await entityManager
+      .createQueryBuilder()
       .delete()
       .from(IndividualForSegment)
-      .where('individualForSegment.segment=:segmentId', { segmentId })
+      .where('segment=:segmentId', { segmentId })
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

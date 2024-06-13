@@ -116,9 +116,9 @@ describe('IndividualForSegmentRepository Testing', () => {
   });
 
   it('should delete an individual for segment by id', async () => {
-    const res = await repo.deleteIndividualForSegmentById(segment.userId, logger);
+    const res = await repo.deleteIndividualForSegmentById(segment.userId, manager, logger);
 
-    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
 
     expect(mock.delete).toHaveBeenCalledTimes(1);
     expect(mock.from).toHaveBeenCalledTimes(1);
@@ -134,10 +134,10 @@ describe('IndividualForSegmentRepository Testing', () => {
     mock.execute.mockRejectedValue(err);
 
     expect(async () => {
-      await repo.deleteIndividualForSegmentById(segment.userId, logger);
+      await repo.deleteIndividualForSegmentById(segment.userId, manager, logger);
     }).rejects.toThrow(err);
 
-    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
 
     expect(mock.delete).toHaveBeenCalledTimes(1);
     expect(mock.from).toHaveBeenCalledTimes(1);
