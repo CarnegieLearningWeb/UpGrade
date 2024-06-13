@@ -482,8 +482,6 @@ export class AnalyticsRepository {
       ])
       .leftJoin('monitoredDecisionPoint.monitoredPointLogs', 'monitoredPointLogs')
       .orderBy('monitoredDecisionPoint.userId', 'ASC')
-      .offset(skip)
-      .limit(take)
       .where('monitoredDecisionPoint.experimentId = :experimentId', { experimentId })
       .andWhere('monitoredDecisionPoint.userId IN (' +
         individualEnrollmentRepository.createQueryBuilder('individualEnrollment')
