@@ -8,7 +8,7 @@ import {
   AfterViewInit,
 } from '@angular/core';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
-import { Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { MetricUnit } from '../../../../../core/analysis/store/analysis.models';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
@@ -42,7 +42,7 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
   isAnalysisMetricsLoading$ = this.analysisService.isMetricsLoading$;
 
   // For tree structure
-  // _dataChange = new BehaviorSubject<MetricUnit[]>([]);
+  _dataChange = new BehaviorSubject<MetricUnit[]>([]);
   nestedTreeControl = new NestedTreeControl<IMetricUnit>((node) => node.children);
   nestedDataSource = new MatTreeNestedDataSource<IMetricUnit>();
   insertNodeIndex = 0;
@@ -62,10 +62,13 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics) => {
       this.allMetrics = new MatTableDataSource();
-      this.allMetrics.data = metrics;
-      this.nestedDataSource.data = this.allMetrics.data;
+      this.allMetrics.data = metrics.map((item) => {
+        this.insertNodeIndex = 0;
+        return this.insertNode(item);
+      });
       this.extractContext(this.allMetrics.data);
     });
+
     this.applyFilter(this.searchValue);
   }
 
@@ -99,9 +102,9 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  deleteNode(nodeToBeDeleted: any) {
+  deleteNode(nodeToBeDeleted: any, index: number) {
     const data = {
-      children: this.nestedDataSource.data,
+      children: [this.allMetrics.data[index]],
     };
     const key = this.analysisService.findParents(data, nodeToBeDeleted.id);
     this.selectedMetricIndex = null;
