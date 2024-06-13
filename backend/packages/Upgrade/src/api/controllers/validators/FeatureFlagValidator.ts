@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsDefined, IsString, IsArray, IsEnum, IsOptional, ValidateNested } from 'class-validator';
 import { ParticipantsValidator } from '../../DTO/ExperimentDTO';
+import { Column } from 'typeorm';
 import { FILTER_MODE } from 'upgrade_types';
 import { FEATURE_FLAG_STATUS } from 'upgrade_types';
 import { Type } from 'class-transformer';
@@ -29,13 +30,12 @@ export class FeatureFlagValidation {
   status: FEATURE_FLAG_STATUS;
 
   @IsNotEmpty()
+  @Column('text', { array: true })
+  public context: string[];
+
   @IsDefined()
   @IsEnum(FILTER_MODE)
   filterMode: FILTER_MODE;
-
-  @IsNotEmpty()
-  @IsArray()
-  public context: string[];
 
   @IsNotEmpty()
   @IsArray()
@@ -50,4 +50,16 @@ export class FeatureFlagValidation {
   @ValidateNested()
   @Type(() => ParticipantsValidator)
   public featureFlagSegmentExclusion: ParticipantsValidator;
+}
+
+export class UserParamsValidator {
+  @IsNotEmpty()
+  @IsDefined()
+  @IsString()
+  public userId: string;
+
+  @IsNotEmpty()
+  @IsDefined()
+  @IsString()
+  public context: string;
 }
