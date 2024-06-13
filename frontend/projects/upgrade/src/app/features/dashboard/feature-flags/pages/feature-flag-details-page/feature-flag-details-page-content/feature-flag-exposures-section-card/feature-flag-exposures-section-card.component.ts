@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonSectionCardComponent } from '../../../../../../../shared-standalone-component-lib/components';
+import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 
 @Component({
   selector: 'app-feature-flag-exposures-section-card',
@@ -9,4 +10,6 @@ import { CommonSectionCardComponent } from '../../../../../../../shared-standalo
   styleUrl: './feature-flag-exposures-section-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeatureFlagExposuresSectionCardComponent {}
+export class FeatureFlagExposuresSectionCardComponent {
+  @Input() data: FeatureFlag;
+}

@@ -41,7 +41,9 @@
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
           <span [matTooltip]="FLAG_TRANSLATION_KEYS.STATUS | translate" matTooltipPosition="above">{{ FLAG_TRANSLATION_KEYS.STATUS | translate | uppercase }}</span>
         </th>
-        <td class="ft-12-600" mat-cell *matCellDef="let flag">{{ flag.status }}</td>
+        <td class="ft-12-600" mat-cell *matCellDef="let flag">
+          <app-common-status-indicator-chip [chipClass]="flag.status"></app-common-status-indicator-chip>
+        </td>
       </ng-container>
 
       <ng-container [matColumnDef]="FLAG_ROOT_COLUMN_NAMES.UPDATED_AT">
@@ -51,7 +53,7 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let flag">
-          {{ flag.updatedAt }}
+          {{ flag.updatedAt | date: 'MMM d, y h:mm a' }}
         </td>
       </ng-container>
 
