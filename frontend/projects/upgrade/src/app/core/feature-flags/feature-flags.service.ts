@@ -75,10 +75,6 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionEnableFeatureFlag({ updateFeatureFlagStatusRequest }));
   }
 
-  disableFeatureFlag(updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest) {
-    this.store$.dispatch(FeatureFlagsActions.actionDisableFeatureFlag({ updateFeatureFlagStatusRequest }));
-  }
-
   deleteFeatureFlag(flagId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlag({ flagId }));
   }
