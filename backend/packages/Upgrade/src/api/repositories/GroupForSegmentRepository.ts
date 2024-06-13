@@ -76,11 +76,16 @@ export class GroupForSegmentRepository extends Repository<GroupForSegment> {
     return result.raw;
   }
 
-  public async deleteGroupForSegmentById(segmentId: string, logger: UpgradeLogger): Promise<GroupForSegment[]> {
-    const result = await this.createQueryBuilder('groupForSegment')
+  public async deleteGroupForSegmentById(
+    segmentId: string,
+    entityManager: EntityManager,
+    logger: UpgradeLogger
+  ): Promise<GroupForSegment[]> {
+    const result = await entityManager
+      .createQueryBuilder()
       .delete()
       .from(GroupForSegment)
-      .where('groupForSegment.segment=:segmentId', { segmentId })
+      .where('segment=:segmentId', { segmentId })
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
