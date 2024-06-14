@@ -64,6 +64,10 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlag({ addFeatureFlagRequest }));
   }
 
+  deleteFeatureFlag(flagId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlag({ flagId }));
+  }
+
   setSearchKey(searchKey: FLAG_SEARCH_KEY) {
     this.store$.dispatch(FeatureFlagsActions.actionSetSearchKey({ searchKey }));
   }
