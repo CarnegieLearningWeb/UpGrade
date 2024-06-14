@@ -1,6 +1,6 @@
-import Constructable from 'typedi';
 import { DataSource, EntityManager, ObjectLiteral, Repository } from 'typeorm';
 
+type Constructable = new (...args: any[]) => any;
 // CustomRepository with Entity and Manager
 type CustomRepository<T extends ObjectLiteral> = new (target: new () => T, manager: EntityManager) => Repository<T>;
 
