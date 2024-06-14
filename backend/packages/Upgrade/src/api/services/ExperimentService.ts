@@ -498,9 +498,7 @@ export class ExperimentService {
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
     for (const experiment of experiments) {
-      const duplicateExperiment = await this.experimentRepository.findOne(({
-        where: { id: experiment.id }
-      }));
+      const duplicateExperiment = await this.experimentRepository.findOneBy({ id: experiment.id });
       if (duplicateExperiment && experiment.id) {
         const error = new Error('Duplicate experiment');
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
@@ -510,9 +508,7 @@ export class ExperimentService {
       let experimentDecisionPoints = experiment.partitions;
       // Remove the decision points which already exist
       for (const decisionPoint of experimentDecisionPoints) {
-        const decisionPointExists = await this.decisionPointRepository.findOne(({
-          where: { id: decisionPoint.id }
-        }));
+        const decisionPointExists = await this.decisionPointRepository.findOneBy({ id: decisionPoint.id });
         if (decisionPointExists) {
           // provide new uuid:
           experimentDecisionPoints[experimentDecisionPoints.indexOf(decisionPoint)].id = uuid();
