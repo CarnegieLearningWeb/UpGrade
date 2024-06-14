@@ -1,4 +1,4 @@
-import { JsonController, Post, Body, UseBefore, Get, Req, InternalServerError, Delete } from 'routing-controllers';
+import { JsonController, Post, Body, UseBefore, Req, InternalServerError, Delete } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -10,7 +10,6 @@ import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
 import { SERVER_ERROR, PAYLOAD_TYPE } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
-import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidator } from './validators/LogValidator';
@@ -828,8 +827,24 @@ export class ExperimentClientController {
   /**
    * @swagger
    * /featureflag:
-   *    get:
+   *    post:
    *       description: Get all feature flags using SDK
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: user
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *               userId:
+   *                 type: string
+   *                 example: user1
+   *               context:
+   *                 type: string
+   *                 example: add
+   *             description: User Document
    *       produces:
    *         - application/json
    *       tags:
@@ -838,9 +853,14 @@ export class ExperimentClientController {
    *          '200':
    *            description: Feature flags list
    */
-  @Get('featureflag')
-  public getAllFlags(@Req() request: AppRequest): Promise<FeatureFlag[]> {
-    return this.featureFlagService.find(request.logger);
+  @Post('featureflag')
+  public async getAllFlags(
+    @Req() request: AppRequest,
+    @Body({ validate: true })
+    experiment: ExperimentAssignmentValidator
+  ): Promise<string[]> {
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(experiment.userId, request.logger);
+    return this.featureFlagService.getKeys(experimentUserDoc, experiment.context, request.logger);
   }
 
   /**

@@ -1,0 +1,33 @@
+:host ::ng-deep .add-feature-flag-modal-container {
+  display: flex;
+  flex-direction: column;
+  align-items: space-between;
+  width: 100%;
+  height: 600px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+.mat-mdc-form-field:not(:last-child) {
+  margin-bottom: 15px;
+}
+
+.form-hint {
+  color: var(--grey-5);
+}
+
+.learn-more-link {
+  color: var(--blue);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
