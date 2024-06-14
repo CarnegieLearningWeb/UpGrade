@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
@@ -12,6 +12,8 @@ import { FEATURE_FLAG_STATUS, IMenuButtonItem } from 'upgrade_types';
 import { CommonModule } from '@angular/common';
 import { CommonSectionCardOverviewDetailsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
+import { MatDialogRef } from '@angular/material/dialog';
+import { UpdateFlagStatusConfirmationModalComponent } from '../../../../modals/update-flag-status-confirmation-modal/update-flag-status-confirmation-modal.component';
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,
@@ -37,7 +39,11 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   ];
   isSectionCardExpanded = true;
 
-  constructor(private dialogService: DialogService, private featureFlagService: FeatureFlagsService) {}
+  constructor(
+    private dialogService: DialogService,
+    private featureFlagService: FeatureFlagsService,
+    private changeDetectorRef: ChangeDetectorRef
+  ) {}
 
   get FEATURE_FLAG_STATUS() {
     return FEATURE_FLAG_STATUS;
@@ -54,18 +60,33 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
     if (slideToggleEvent.checked) {
       this.openEnableConfirmModel();
     } else {
-      // this.openDisableConfirmModel();
-      console.log('disable!');
+      this.openDisableConfirmModel();
     }
 
-    // Note: we don't want the toggle to change state immediately because we have to pop a confirmation modal first, so we need override the default and flip it back
+    // Note: we don't want the toggle to visibly change state immediately because we have to pop a confirmation modal first, so we need override the default and flip it back. I unfortunately couldn't find a better way to do this.
     slideToggleEvent.checked = !slideToggleEvent.checked;
   }
 
   openEnableConfirmModel(): void {
-    this.dialogService.openEnableFeatureFlagConfirmModel();
-    //remove this?
-    this.featureFlag$.subscribe((featureFlag) => console.log({ featureFlag }));
+    const dialogRef = this.dialogService.openEnableFeatureFlagConfirmModel();
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.changeDetectorRef.detectChanges();
+    });
+  }
+
+  openDisableConfirmModel(): void {
+    const dialogRef = this.dialogService.openDisableFeatureFlagConfirmModel();
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.changeDetectorRef.detectChanges();
+    });
+  }
+
+  listenForClosedModal(dialogRef: MatDialogRef<UpdateFlagStatusConfirmationModalComponent>): void {
+    dialogRef.afterClosed().subscribe(() => {
+      this.changeDetectorRef.detectChanges();
+    });
   }
 
   onMenuButtonItemClick(event) {

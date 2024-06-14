@@ -75,26 +75,14 @@ export const actionSetActiveDetailsTabIndex = createAction(
   props<{ activeDetailsTabIndex: number }>()
 );
 
-export const actionEnableFeatureFlag = createAction(
-  '[Feature Flags] Enable Feature Flag',
+export const actionUpdateFeatureFlagStatus = createAction(
+  '[Feature Flags] Update Feature Flag Status',
   props<{ updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest }>()
 );
 
-export const actionEnableFeatureFlagSuccess = createAction(
-  '[Feature Flags] Enable Feature Flag Success',
+export const actionUpdateFeatureFlagStatusSuccess = createAction(
+  '[Feature Flags] Update Feature Flag Status Success',
   props<{ response: FeatureFlag }>()
 );
 
-export const actionEnableFeatureFlagFailure = createAction('[Feature Flags] Enable Feature Flag Failure');
-
-export const actionDisableFeatureFlag = createAction(
-  '[Feature Flags] Disable Feature Flag',
-  props<{ updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest }>()
-);
-
-export const actionDisableFeatureFlagSuccess = createAction(
-  '[Feature Flags] Disable Feature Flag Success',
-  props<{ response: FeatureFlag }>()
-);
-
-export const actionDisableFeatureFlagFailure = createAction('[Feature Flags] Disable Feature Flag Failure');
+export const actionUpdateFeatureFlagStatusFailure = createAction('[Feature Flags] Update Feature Flag Status Failure');
