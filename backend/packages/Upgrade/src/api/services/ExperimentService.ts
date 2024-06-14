@@ -534,7 +534,7 @@ export class ExperimentService {
       return experiment;
     });
     for (const experiment of experiments) {
-      const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
+      const duplicateExperiment = await this.experimentRepository.findOneBy({ id: experiment.id });
       if (duplicateExperiment && experiment.id) {
         const error = new Error('Duplicate experiment');
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
@@ -544,7 +544,7 @@ export class ExperimentService {
       let experimentDecisionPoints = experiment.partitions;
       // Remove the decision points which already exist
       for (const decisionPoint of experimentDecisionPoints) {
-        const decisionPointExists = await this.decisionPointRepository.findOne(decisionPoint.id);
+        const decisionPointExists = await this.decisionPointRepository.findOneBy({ id: decisionPoint.id });
         if (decisionPointExists) {
           // provide new uuid:
           experimentDecisionPoints[experimentDecisionPoints.indexOf(decisionPoint)].id = uuid();
