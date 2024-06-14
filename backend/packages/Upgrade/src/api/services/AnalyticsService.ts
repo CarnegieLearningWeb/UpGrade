@@ -52,7 +52,7 @@ export class AnalyticsService {
     private logRepository: LogRepository,
     public awsService: AWSService,
     public errorService: ErrorService,
-    public experimentService: ExperimentService,
+    public experimentService: ExperimentService
   ) {}
 
   public async getEnrollments(experimentIds: string[]): Promise<IExperimentEnrollmentStats[]> {
@@ -176,14 +176,9 @@ export class AnalyticsService {
       const userRepository: UserRepository = getCustomRepository(UserRepository, 'export');
       const user = await userRepository.findOne({ email });
 
-      // make new query here
-      let toLoop = true;
-      let skip = 0;
-      const take = 50;
-      
       const experimentQueryResult = await this.experimentService.getExperimentDetailsForCSVDataExport(experimentId);
       const formattedExperiments = experimentQueryResult.reduce((acc, item) => {
-        let experiment = acc.find(e => e.experimentId === item.experimentId);
+        let experiment = acc.find((e) => e.experimentId === item.experimentId);
         if (!experiment) {
           experiment = {
             experimentId: item.experimentId,
@@ -198,7 +193,7 @@ export class AnalyticsService {
             postRule: item.postRule,
             enrollmentStartDate: item.enrollmentStartDate,
             enrollmentCompleteDate: item.enrollmentCompleteDate,
-            details: []
+            details: [],
           };
           acc.push(experiment);
         }
@@ -208,186 +203,173 @@ export class AnalyticsService {
           revertTo: item.revertTo,
           payloadValue: item.payload,
           excludeIfReached: item.excludeIfReached,
-          expDecisionPointId: item.expDecisionPointId
+          expDecisionPointId: item.expDecisionPointId,
         });
         return acc;
       }, []);
-      do {
-        let csvExportData: CSVExportDataRow[];
-        if (experimentQueryResult[0].assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
-          csvExportData = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentId, skip, take);
-        } else {
-          csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(formattedExperiments[0], experimentId, skip, take);
+      let csvExportData: CSVExportDataRow[];
+      if (experimentQueryResult[0].assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+        csvExportData = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentId);
+      } else {
+        csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(formattedExperiments[0], experimentId);
+      }
+
+      const queryData = await this.logRepository.getLogPerExperimentQuery(experimentId);
+      // query name id mapping
+      const queryNameIdMapping: Record<string, string> = {};
+      queryData.forEach((singleRecord) => {
+        queryNameIdMapping[singleRecord.id] = singleRecord.name;
+      });
+
+      type queryDataArrayType = typeof queryData;
+      type queryDataType = queryDataArrayType[0];
+
+      // filter and group data according to repeated measure
+      const groupedUser: Record<string, Record<string, queryDataType[]>> = {};
+      // group data according to user and query id
+      queryData.forEach((individualData) => {
+        groupedUser[individualData.userId] = groupedUser[individualData.userId] || {};
+        groupedUser[individualData.userId][individualData.id] =
+          groupedUser[individualData.userId][individualData.id] || [];
+        groupedUser[individualData.userId][individualData.id].push(individualData);
+      });
+
+      const logsUser: Record<string, Record<string, any>> = {};
+      // fix repeated measure
+      for (const userId in groupedUser) {
+        if (!groupedUser[userId]) {
+          continue;
         }
-        const userIds = csvExportData.map(({ userId }) => userId);
-        const uniqueUserIds = Array.from(new Set(userIds));
-        // don't query if no data
-        if (!experimentId || (uniqueUserIds && uniqueUserIds.length === 0)) {
-          break;
-        }
-        
-        const queryData = await this.logRepository.getLogPerExperimentQueryForUser(experimentId, uniqueUserIds);
-        // query name id mapping
-        const queryNameIdMapping: Record<string, string> = {};
-        queryData.forEach((singleRecord) => {
-          queryNameIdMapping[singleRecord.id] = singleRecord.name;
-        });
+        for (const queryId in groupedUser[userId]) {
+          if (groupedUser[userId][queryId].length > 0) {
+            const repeatedMeasure = groupedUser[userId][queryId][0].repeatedMeasure;
+            const key = groupedUser[userId][queryId][0].key;
+            const type = groupedUser[userId][queryId][0].type;
+            let metricKey;
 
-        type queryDataArrayType = typeof queryData;
-        type queryDataType = queryDataArrayType[0];
-
-        // filter and group data according to repeated measure
-        const groupedUser: Record<string, Record<string, queryDataType[]>> = {};
-        // group data according to user and query id
-        queryData.forEach((individualData) => {
-          groupedUser[individualData.userId] = groupedUser[individualData.userId] || {};
-          groupedUser[individualData.userId][individualData.id] =
-            groupedUser[individualData.userId][individualData.id] || [];
-          groupedUser[individualData.userId][individualData.id].push(individualData);
-        });
-
-        const logsUser: Record<string, Record<string, any>> = {};
-        // fix repeated measure
-        for (const userId in groupedUser) {
-          if (!groupedUser[userId]) {
-            continue;
-          }
-          for (const queryId in groupedUser[userId]) {
-            if (groupedUser[userId][queryId].length > 0) {
-              const repeatedMeasure = groupedUser[userId][queryId][0].repeatedMeasure;
-              const key = groupedUser[userId][queryId][0].key;
-              const type = groupedUser[userId][queryId][0].type;
-              let metricKey;
-
-              const keySplitArray = key.split(METRICS_JOIN_TEXT);
-              logsUser[userId] = logsUser[userId] || {};
-              logsUser[userId][queryId] = logsUser[userId][queryId] || {};
-              switch (repeatedMeasure) {
-                case REPEATED_MEASURE.earliest: {
-                  const jsonLog = groupedUser[userId][queryId].reduce(
-                    (accumulator: queryDataType | undefined, doc: queryDataType) => {
-                      if (accumulator) {
-                        return new Date(accumulator.updatedAt) > new Date(doc.updatedAt) ? doc : accumulator;
-                      }
-                      return doc;
-                    },
-                    undefined
-                  ).data;
-                  metricKey = Object.keys(jsonLog);
-                  if (type === IMetricMetaData.CONTINUOUS) {
-                    logsUser[userId][queryId] = +keySplitArray.reduce(
-                      (accumulator, attribute: string) => accumulator[attribute],
-                      jsonLog
-                    );
-                  } else {
-                    logsUser[userId][queryId] = keySplitArray.reduce(
-                      (accumulator, attribute: string) => accumulator[attribute],
-                      jsonLog
-                    );
-                  }
-                  break;
+            const keySplitArray = key.split(METRICS_JOIN_TEXT);
+            logsUser[userId] = logsUser[userId] || {};
+            logsUser[userId][queryId] = logsUser[userId][queryId] || {};
+            switch (repeatedMeasure) {
+              case REPEATED_MEASURE.earliest: {
+                const jsonLog = groupedUser[userId][queryId].reduce(
+                  (accumulator: queryDataType | undefined, doc: queryDataType) => {
+                    if (accumulator) {
+                      return new Date(accumulator.updatedAt) > new Date(doc.updatedAt) ? doc : accumulator;
+                    }
+                    return doc;
+                  },
+                  undefined
+                ).data;
+                metricKey = Object.keys(jsonLog);
+                if (type === IMetricMetaData.CONTINUOUS) {
+                  logsUser[userId][queryId] = +keySplitArray.reduce(
+                    (accumulator, attribute: string) => accumulator[attribute],
+                    jsonLog
+                  );
+                } else {
+                  logsUser[userId][queryId] = keySplitArray.reduce(
+                    (accumulator, attribute: string) => accumulator[attribute],
+                    jsonLog
+                  );
                 }
-                case REPEATED_MEASURE.mostRecent: {
-                  const jsonLog = groupedUser[userId][queryId].reduce(
-                    (accumulator: queryDataType | undefined, doc: queryDataType) => {
-                      if (accumulator) {
-                        return new Date(accumulator.updatedAt) < new Date(doc.updatedAt) ? doc : accumulator;
-                      }
-                      return doc;
-                    },
-                    undefined
-                  ).data;
-                  metricKey = Object.keys(jsonLog);
-                  if (type === IMetricMetaData.CONTINUOUS) {
-                    logsUser[userId][queryId] = +keySplitArray.reduce(
-                      (accumulator, attribute: string) => accumulator[attribute],
-                      jsonLog
-                    );
-                  } else {
-                    logsUser[userId][queryId] = keySplitArray.reduce(
-                      (accumulator, attribute: string) => accumulator[attribute],
-                      jsonLog
-                    );
-                  }
-                  break;
-                }
-                default: {
-                  const totalSum = groupedUser[userId][queryId].reduce((accumulator: number, doc: queryDataType) => {
-                    return (
-                      accumulator + +keySplitArray.reduce((total, attribute: string) => total[attribute], doc.data)
-                    );
-                  }, 0);
-                  logsUser[userId][queryId] = totalSum / groupedUser[userId][queryId].length;
-                  break;
-                }
+                break;
               }
-              logsUser[userId][queryId] = metricKey[0] + ': ' + logsUser[userId][queryId];
+              case REPEATED_MEASURE.mostRecent: {
+                const jsonLog = groupedUser[userId][queryId].reduce(
+                  (accumulator: queryDataType | undefined, doc: queryDataType) => {
+                    if (accumulator) {
+                      return new Date(accumulator.updatedAt) < new Date(doc.updatedAt) ? doc : accumulator;
+                    }
+                    return doc;
+                  },
+                  undefined
+                ).data;
+                metricKey = Object.keys(jsonLog);
+                if (type === IMetricMetaData.CONTINUOUS) {
+                  logsUser[userId][queryId] = +keySplitArray.reduce(
+                    (accumulator, attribute: string) => accumulator[attribute],
+                    jsonLog
+                  );
+                } else {
+                  logsUser[userId][queryId] = keySplitArray.reduce(
+                    (accumulator, attribute: string) => accumulator[attribute],
+                    jsonLog
+                  );
+                }
+                break;
+              }
+              default: {
+                const totalSum = groupedUser[userId][queryId].reduce((accumulator: number, doc: queryDataType) => {
+                  return accumulator + +keySplitArray.reduce((total, attribute: string) => total[attribute], doc.data);
+                }, 0);
+                logsUser[userId][queryId] = totalSum / groupedUser[userId][queryId].length;
+                break;
+              }
+            }
+            logsUser[userId][queryId] = metricKey[0] + ': ' + logsUser[userId][queryId];
+          }
+        }
+      }
+      // merge with data
+      const csvRows = csvExportData.map((row) => {
+        const queryObject = logsUser[row.userId] || {};
+        const queryDataToAdd = {};
+
+        for (const queryId in queryObject) {
+          if (queryObject[queryId]) {
+            const queryName = queryNameIdMapping[queryId];
+            if (queryName) {
+              queryDataToAdd[queryName] = queryObject[queryId];
             }
           }
         }
-        // merge with data
-        const csvRows = csvExportData.map((row) => {
-          const queryObject = logsUser[row.userId] || {};
-          const queryDataToAdd = {};
-      
-          for (const queryId in queryObject) {
-              if (queryObject.hasOwnProperty(queryId) && queryObject[queryId]) {
-                  const queryName = queryNameIdMapping[queryId];
-                  if (queryName) {
-                      queryDataToAdd[queryName] = queryObject[queryId];
-                  }
-              }
-          }
-      
-          let revertToCondition = row.revertTo ? row.revertTo : 'Default';
-          const postRule = row.postRule === 'assign' ? `Assign: ${revertToCondition}` : 'Continue';
-          const excludeIfReached = row.excludeIfReached ? 'TRUE' : 'FALSE';
-          const stratification = row.stratification && row.stratificationValue ? `${row.stratification}: ${row.stratificationValue}` : 'NA';
-      
-          return {
-              ExperimentId: row.experimentId,
-              ExperimentName: row.experimentName,
-              UserId: row.userId,
-              AppContext: row.context[0],
-              UnitOfAssignment: row.assignmentUnit,
-              GroupType: row.group ? row.group : 'NA',
-              GroupId: row.enrollmentGroupId ? row.enrollmentGroupId : 'NA',
-              ConsistencyRule: row.consistencyRule,
-              DesignType: row.designType,
-              AlgorithmType: row.algorithmType,
-              Stratification: stratification,
-              Site: row.site,
-              Target: row.target,
-              ExcludeifReached: excludeIfReached,
-              ConditionName: row.conditionName,
-              Payload: row.payload ? row.payload : row.conditionName,
-              PostRule: postRule,
-              EnrollmentStartDate: new Date(row.enrollmentStartDate).toISOString(),
-              EnrollmentCompleteDate: row.enrollmentCompleteDate ? new Date(row.enrollmentCompleteDate).toISOString() : 'NA',
-              MarkExperimentPointTime: new Date(row.markExperimentPointTime).toISOString(),
-              EnrollmentCode: row.enrollmentCode,
-              ...queryDataToAdd,
-          };
-        });
 
-        // write in the file
-        const csv = new ObjectsToCsv(csvRows);
-        try {
-          // TODO: check if this is needed
-          // if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
-          //   csv.delimiter = ',';
-          // }
-          await csv.toDisk(`${folderPath}${simpleExportCSV}`, { append: true });
-        } catch (err) {
-          console.log(err);
-        }
+        const revertToCondition = row.revertTo ? row.revertTo : 'Default';
+        const postRule = row.postRule === 'assign' ? `Assign: ${revertToCondition}` : 'Continue';
+        const excludeIfReached = row.excludeIfReached ? 'TRUE' : 'FALSE';
+        const stratification =
+          row.stratification && row.stratificationValue ? `${row.stratification}: ${row.stratificationValue}` : 'NA';
 
-        if (csvExportData.length === take) {
-          skip += take;
-        } else {
-          toLoop = false;
-        }
-      } while (toLoop);
+        return {
+          ExperimentId: row.experimentId,
+          ExperimentName: row.experimentName,
+          UserId: row.userId,
+          AppContext: row.context[0],
+          UnitOfAssignment: row.assignmentUnit,
+          GroupType: row.group ? row.group : 'NA',
+          GroupId: row.enrollmentGroupId ? row.enrollmentGroupId : 'NA',
+          ConsistencyRule: row.consistencyRule,
+          DesignType: row.designType,
+          AlgorithmType: row.algorithmType,
+          Stratification: stratification,
+          Site: row.site,
+          Target: row.target,
+          ExcludeifReached: excludeIfReached,
+          ConditionName: row.conditionName,
+          Payload: row.payload ? row.payload : row.conditionName,
+          PostRule: postRule,
+          EnrollmentStartDate: new Date(row.enrollmentStartDate).toISOString(),
+          EnrollmentCompleteDate: row.enrollmentCompleteDate
+            ? new Date(row.enrollmentCompleteDate).toISOString()
+            : 'NA',
+          MarkExperimentPointTime: new Date(row.markExperimentPointTime).toISOString(),
+          EnrollmentCode: row.enrollmentCode,
+          ...queryDataToAdd,
+        };
+      });
+
+      // write in the file
+      const csv = new ObjectsToCsv(csvRows);
+      try {
+        // TODO: check if this is needed
+        // if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+        //   csv.delimiter = ',';
+        // }
+        await csv.toDisk(`${folderPath}${simpleExportCSV}`, { append: true });
+      } catch (err) {
+        console.log(err);
+      }
 
       const email_export = env.email.emailBucket;
       const email_expiry_time = env.email.expireAfterSeconds;

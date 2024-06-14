@@ -77,34 +77,34 @@ export interface CSVExportDataRow {
 }
 
 export interface ConditionDecisionPointData {
-  revertTo: string,
-  payload: string,
-  excludeIfReached: boolean,
-  expDecisionPointId: string,
-  expConditionId: string,
-  conditionName: string
+  revertTo: string;
+  payload: string;
+  excludeIfReached: boolean;
+  expDecisionPointId: string;
+  expConditionId: string;
+  conditionName: string;
 }
 
 export interface ExperimentCSVData {
-  experimentId: string,
-  experimentName: string,
-  context: string[],
-  assignmentUnit: string,
-  group: string,
-  consistencyRule: string,
-  designType: string,
-  algorithmType: string,
-  stratification: string,
-  postRule: string,
-  enrollmentStartDate: string,
-  enrollmentCompleteDate: string,
-  revertTo: string,
-  payload: string,
-  excludeIfReached: boolean,
-  expDecisionPointId: string,
-  expConditionId: string,
-  conditionName: string,
-  details: ConditionDecisionPointData[],
+  experimentId: string;
+  experimentName: string;
+  context: string[];
+  assignmentUnit: string;
+  group: string;
+  consistencyRule: string;
+  designType: string;
+  algorithmType: string;
+  stratification: string;
+  postRule: string;
+  enrollmentStartDate: string;
+  enrollmentCompleteDate: string;
+  revertTo: string;
+  payload: string;
+  excludeIfReached: boolean;
+  expDecisionPointId: string;
+  expConditionId: string;
+  conditionName: string;
+  details: ConditionDecisionPointData[];
 }
 
 @EntityRepository()
@@ -444,9 +444,7 @@ export class AnalyticsRepository {
 
   public async getCSVDataForSimpleExport(
     experimentsData: ExperimentCSVData,
-    experimentId: string,
-    skip: number,
-    take: number
+    experimentId: string
   ): Promise<CSVExportDataRow[]> {
     // Get the individual enrollment-related data
     const individualEnrollmentRepository = getCustomRepository(IndividualEnrollmentRepository, 'export');
@@ -467,10 +465,8 @@ export class AnalyticsRepository {
       .addGroupBy('individualEnrollment.conditionId')
       .addGroupBy('individualEnrollment.partitionId')
       .orderBy('individualEnrollment.userId', 'ASC')
-      .offset(skip)
-      .limit(take)
       .where('individualEnrollment.experimentId = :experimentId', { experimentId });
-    
+
     const monitoredDecisionPointRepository = getCustomRepository(MonitoredDecisionPointRepository, 'export');
     const monitoredDecisionPointQuery = monitoredDecisionPointRepository
       .createQueryBuilder('monitoredDecisionPoint')
@@ -483,13 +479,17 @@ export class AnalyticsRepository {
       .leftJoin('monitoredDecisionPoint.monitoredPointLogs', 'monitoredPointLogs')
       .orderBy('monitoredDecisionPoint.userId', 'ASC')
       .where('monitoredDecisionPoint.experimentId = :experimentId', { experimentId })
-      .andWhere('monitoredDecisionPoint.userId IN (' +
-        individualEnrollmentRepository.createQueryBuilder('individualEnrollment')
-          .select('DISTINCT "individualEnrollment"."userId"')
-          .where('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
-          .getQuery() + ')')
+      .andWhere(
+        'monitoredDecisionPoint.userId IN (' +
+          individualEnrollmentRepository
+            .createQueryBuilder('individualEnrollment')
+            .select('DISTINCT "individualEnrollment"."userId"')
+            .where('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
+            .getQuery() +
+          ')'
+      )
       .setParameters(individualEnrollmentQuery.getParameters());
-    
+
     const [individualEnrollmentQueryResults, monitoredDecisionPointQueryResults] = await Promise.all([
       individualEnrollmentQuery.getRawMany(),
       monitoredDecisionPointQuery.getRawMany(),
@@ -498,14 +498,16 @@ export class AnalyticsRepository {
     const userStratificationFactorUserList = [];
 
     const individualEnrollmentExperimentData = [];
-    individualEnrollmentQueryResults.forEach(individualEnrollmentQueryResult => {
+    individualEnrollmentQueryResults.forEach((individualEnrollmentQueryResult) => {
       experimentsData.details.forEach((detail) => {
         const modifiedExperiments = [];
-        if (detail.expDecisionPointId === individualEnrollmentQueryResult.partitionId &&
-          detail.expConditionId === individualEnrollmentQueryResult.conditionId) {
+        if (
+          detail.expDecisionPointId === individualEnrollmentQueryResult.partitionId &&
+          detail.expConditionId === individualEnrollmentQueryResult.conditionId
+        ) {
           // prepare users list that have SRS experiment:
           if (experimentsData.stratification) {
-            userStratificationFactorUserList.push(individualEnrollmentQueryResult.userId)
+            userStratificationFactorUserList.push(individualEnrollmentQueryResult.userId);
           }
           const { details, ...baseProperties } = experimentsData;
 
@@ -516,7 +518,7 @@ export class AnalyticsRepository {
             groupId: individualEnrollmentQueryResult.enrollmentGroupId,
             enrollmentCode: individualEnrollmentQueryResult.enrollmentCode,
             expDecisionPointId: individualEnrollmentQueryResult.partitionId,
-            expConditionId: individualEnrollmentQueryResult.conditionId
+            expConditionId: individualEnrollmentQueryResult.conditionId,
           });
         }
       });
@@ -531,10 +533,12 @@ export class AnalyticsRepository {
         .createQueryBuilder('userStratificationFactor')
         .select([
           'userStratificationFactor.user as "userId"',
-          'userStratificationFactor.stratificationFactorValue as "stratificationFactorValue"'
+          'userStratificationFactor.stratificationFactorValue as "stratificationFactorValue"',
         ])
-        .where('userStratificationFactor.user IN (:...userIds)', { userIds: userStratificationFactorUserList.map((data) => data) });
-      
+        .where('userStratificationFactor.user IN (:...userIds)', {
+          userIds: userStratificationFactorUserList.map((data) => data),
+        });
+
       userStratificationFactorQueryResult = await userStratificationFactorQuery.getRawMany();
     }
 
@@ -542,25 +546,25 @@ export class AnalyticsRepository {
     const groupedMonitoredDecisionPointQueryResults = _.groupBy(monitoredDecisionPointQueryResults, 'userId');
 
     // Combine data in a single flatMap step
-    const combinedCSVExportData = _.flatMap(individualEnrollmentExperimentData, individualEnrollmentExperiment => {
-      const userMonitoredResults = groupedMonitoredDecisionPointQueryResults[individualEnrollmentExperiment.userId] || [];
+    const combinedCSVExportData = _.flatMap(individualEnrollmentExperimentData, (individualEnrollmentExperiment) => {
+      const userMonitoredResults =
+        groupedMonitoredDecisionPointQueryResults[individualEnrollmentExperiment.userId] || [];
 
-      return userMonitoredResults.map(monitoredDecisionPointQueryResult => ({
+      return userMonitoredResults.map((monitoredDecisionPointQueryResult) => ({
         ...individualEnrollmentExperiment,
         site: monitoredDecisionPointQueryResult.site,
         target: monitoredDecisionPointQueryResult.target,
         markExperimentPointTime: monitoredDecisionPointQueryResult.markExperimentPointTime,
-        stratificationValue: experimentsData.stratification ? userStratificationFactorQueryResult.find(user => user.userId === individualEnrollmentExperiment.userId)?.stratificationFactorValue : null,
+        stratificationValue: experimentsData.stratification
+          ? userStratificationFactorQueryResult.find((user) => user.userId === individualEnrollmentExperiment.userId)
+              ?.stratificationFactorValue
+          : null,
       }));
     });
     return combinedCSVExportData;
   }
 
-  public async getCSVDataForWithInSubExport(
-    experimentId: string,
-    skip: number,
-    take: number
-  ): Promise<CSVExportDataRow[]> {
+  public async getCSVDataForWithInSubExport(experimentId: string): Promise<CSVExportDataRow[]> {
     const individualEnrollmentRepository = getCustomRepository(IndividualEnrollmentRepository, 'export');
     return individualEnrollmentRepository
       .createQueryBuilder('individualEnrollment')
@@ -597,8 +601,6 @@ export class AnalyticsRepository {
       .addGroupBy('"individualEnrollment"."groupId"')
       .addGroupBy('"monitoredPointLogs"."condition"')
       .orderBy('"individualEnrollment"."userId"', 'ASC')
-      .offset(skip)
-      .limit(take)
       .where('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
       .execute();
   }
