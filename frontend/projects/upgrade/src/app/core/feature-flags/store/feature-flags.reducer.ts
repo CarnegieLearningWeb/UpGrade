@@ -2,6 +2,7 @@ import { createReducer, Action, on } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
 import { FeatureFlagState, FeatureFlag, FLAG_SEARCH_KEY } from './feature-flags.model';
 import * as FeatureFlagsActions from './feature-flags.actions';
+import { FEATURE_FLAG_STATUS } from '../../../../../../../../types/src';
 
 export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFlag>();
 
@@ -10,6 +11,7 @@ export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.get
 export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingAddFeatureFlag: false,
   isLoadingFeatureFlags: false,
+  isLoadingUpdateFeatureFlagStatus: false,
   isLoadingFeatureFlagDetail: false,
   hasInitialFeatureFlagsDataLoaded: false,
   activeDetailsTabIndex: 0,
@@ -58,6 +60,7 @@ const reducer = createReducer(
       isLoadingAddFeatureFlag: false,
     });
   }),
+  on(FeatureFlagsActions.actionDeleteFeatureFlagSuccess, (state, { flag }) => adapter.removeOne(flag.id, state)),
   on(FeatureFlagsActions.actionAddFeatureFlagFailure, (state) => ({ ...state, isLoadingAddFeatureFlag: false })),
   on(FeatureFlagsActions.actionSetSkipFlags, (state, { skipFlags }) => ({ ...state, skipFlags })),
   on(FeatureFlagsActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),
@@ -67,6 +70,21 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionSetActiveDetailsTabIndex, (state, { activeDetailsTabIndex }) => ({
     ...state,
     activeDetailsTabIndex,
+  })),
+  on(FeatureFlagsActions.actionEnableFeatureFlag, (state) => ({
+    ...state,
+    isLoadingUpdateFeatureFlagStatus: true,
+  })),
+  on(FeatureFlagsActions.actionEnableFeatureFlagSuccess, (state, { response }) => {
+    const flag = response[0];
+    return adapter.updateOne(
+      { id: flag?.id, changes: { status: flag?.status } },
+      { ...state, isLoadingUpdateFeatureFlagStatus: false }
+    );
+  }),
+  on(FeatureFlagsActions.actionEnableFeatureFlagFailure, (state) => ({
+    ...state,
+    isLoadingUpdateFeatureFlagStatus: true,
   })),
   on(FeatureFlagsActions.actionFetchFeatureFlagById, (state) => ({
     ...state,

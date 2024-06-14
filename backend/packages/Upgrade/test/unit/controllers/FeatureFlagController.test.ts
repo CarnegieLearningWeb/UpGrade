@@ -8,6 +8,8 @@ import FeatureFlagServiceMock from './mocks/FeatureFlagServiceMock';
 
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import { v4 as uuid } from 'uuid';
+import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
+import ExperimentUserServiceMock from './mocks/ExperimentUserServiceMock';
 
 describe('Feature Flag Controller Testing', () => {
   beforeAll(() => {
@@ -16,10 +18,23 @@ describe('Feature Flag Controller Testing', () => {
     classValidatorUseContainer(Container);
 
     Container.set(FeatureFlagService, new FeatureFlagServiceMock());
+    Container.set(ExperimentUserService, new ExperimentUserServiceMock());
   });
 
   afterAll(() => {
     Container.reset();
+  });
+
+  test('Post request for /api/flags/keys', () => {
+    return request(app)
+      .post('/api/flags/keys')
+      .send({
+        userId: 'user',
+        context: 'context',
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
   });
 
   test('Post request for /api/flags/paginated', () => {

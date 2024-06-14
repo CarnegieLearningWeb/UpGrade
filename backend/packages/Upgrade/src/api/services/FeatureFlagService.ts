@@ -9,7 +9,7 @@ import {
   IFeatureFlagSortParams,
   FLAG_SEARCH_KEY,
 } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
-import { SERVER_ERROR, FEATURE_FLAG_STATUS, SEGMENT_TYPE } from 'upgrade_types';
+import { SERVER_ERROR, FEATURE_FLAG_STATUS, SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
@@ -21,6 +21,8 @@ import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFl
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { SegmentService } from './SegmentService';
 import { ExperimentService } from './ExperimentService';
+import { ExperimentUser } from '../models/ExperimentUser';
+import { ExperimentAssignmentService } from './ExperimentAssignmentService';
 
 @Service()
 export class FeatureFlagService {
@@ -29,12 +31,23 @@ export class FeatureFlagService {
     @InjectRepository() private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
     @InjectRepository() private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
     public segmentService: SegmentService,
-    public experimentService: ExperimentService
+    public experimentService: ExperimentService,
+    public experimentAssignmentService: ExperimentAssignmentService
   ) {}
 
   public find(logger: UpgradeLogger): Promise<FeatureFlag[]> {
     logger.info({ message: 'Get all feature flags' });
     return this.featureFlagRepository.find();
+  }
+
+  public async getKeys(experimentUserDoc: ExperimentUser, context: string, logger: UpgradeLogger): Promise<string[]> {
+    logger.info({ message: 'Get all feature flags' });
+
+    const filteredFeatureFlags = await this.featureFlagRepository.getFlagsFromContext(context);
+
+    const includedFeatureFlags = await this.featureFlagLevelInclusionExclusion(filteredFeatureFlags, experimentUserDoc);
+
+    return includedFeatureFlags.map((flags) => flags.key);
   }
 
   public async findOne(id: string, logger?: UpgradeLogger): Promise<FeatureFlag | undefined> {
@@ -312,6 +325,38 @@ export class FeatureFlagService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { createdAt, updatedAt, versionNumber, ...newDoc } = doc;
     return newDoc;
+  }
+
+  private async featureFlagLevelInclusionExclusion(
+    featureFlags: FeatureFlag[],
+    experimentUser: ExperimentUser
+  ): Promise<FeatureFlag[]> {
+    const segmentObjMap = {};
+    featureFlags.forEach((flag) => {
+      const includeId = flag.featureFlagSegmentInclusion.segment.id;
+      const excludeId = flag.featureFlagSegmentExclusion.segment.id;
+
+      segmentObjMap[flag.id] = {
+        segmentIdsQueue: [includeId, excludeId],
+        currentIncludedSegmentIds: [includeId],
+        currentExcludedSegmentIds: [excludeId],
+        allIncludedSegmentIds: [includeId],
+        allExcludedSegmentIds: [excludeId],
+      };
+    });
+
+    const featureFlagIdsWithFilter: { id: string; filterMode: FILTER_MODE }[] = featureFlags.map(
+      ({ id, filterMode }) => ({ id, filterMode })
+    );
+
+    const [includedFeatureFlagIds] = await this.experimentAssignmentService.inclusionExclusionLogic(
+      segmentObjMap,
+      experimentUser,
+      featureFlagIdsWithFilter
+    );
+
+    const includedFeatureFlags = featureFlags.filter(({ id }) => includedFeatureFlagIds.includes(id));
+    return includedFeatureFlags;
   }
 
   private async addPrivateSegmentToDB(
