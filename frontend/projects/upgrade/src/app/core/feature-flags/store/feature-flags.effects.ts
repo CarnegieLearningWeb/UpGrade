@@ -15,6 +15,7 @@ import {
   selectSortAs,
   selectSearchString,
 } from './feature-flags.selectors';
+import { DialogService } from '../../../shared/services/common-dialog.service';
 
 @Injectable()
 export class FeatureFlagsEffects {
@@ -22,7 +23,8 @@ export class FeatureFlagsEffects {
     private store$: Store<AppState>,
     private actions$: Actions,
     private featureFlagsDataService: FeatureFlagsDataService,
-    private router: Router
+    private router: Router,
+    private dialogService: DialogService
   ) {}
 
   fetchFeatureFlags$ = createEffect(() =>
@@ -93,6 +95,20 @@ export class FeatureFlagsEffects {
             return FeatureFlagsActions.actionAddFeatureFlagSuccess({ response });
           }),
           catchError(() => [FeatureFlagsActions.actionAddFeatureFlagFailure()])
+        );
+      })
+    )
+  );
+
+  enableFeatureFlagStatus$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionEnableFeatureFlag),
+      switchMap((action) => {
+        return this.featureFlagsDataService.updateFeatureFlagStatus(action.updateFeatureFlagStatusRequest).pipe(
+          map((response) => {
+            return FeatureFlagsActions.actionEnableFeatureFlagSuccess({ response });
+          }),
+          catchError(() => [FeatureFlagsActions.actionEnableFeatureFlagFailure()])
         );
       })
     )
