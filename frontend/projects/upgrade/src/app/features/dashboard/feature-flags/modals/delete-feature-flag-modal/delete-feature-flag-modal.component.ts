@@ -15,6 +15,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { BehaviorSubject, Observable, map } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-add-feature-flag-modal',
@@ -28,14 +29,14 @@ import { TranslateModule } from '@ngx-translate/core';
     MatDialogClose,
     FormsModule,
     TranslateModule,
+    CommonModule,
   ],
   templateUrl: './delete-feature-flag-modal.component.html',
   styleUrl: './delete-feature-flag-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DeleteFeatureFlagModalComponent {
-  flagName: string;
-  flagId: string;
+  selectedFlag$ = this.featureFlagsService.selectedFeatureFlag$;
   inputValue = '';
   private inputSubject: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
@@ -50,17 +51,14 @@ export class DeleteFeatureFlagModalComponent {
     public dialog: MatDialog,
     private featureFlagsService: FeatureFlagsService,
     public dialogRef: MatDialogRef<DeleteFeatureFlagModalComponent>
-  ) {
-    this.flagName = data.flagName;
-    this.flagId = data.flagId;
-  }
+  ) {}
 
   onInputChange(value: string): void {
     this.inputSubject.next(value);
   }
 
-  onPrimaryActionBtnClicked() {
-    this.featureFlagsService.deleteFeatureFlag(this.flagId);
+  onPrimaryActionBtnClicked(flagId: string) {
+    this.featureFlagsService.deleteFeatureFlag(flagId);
     this.dialogRef.close();
   }
 

@@ -38,6 +38,11 @@ export interface AddFeatureFlagRequest {
   filterMode: FILTER_MODE;
 }
 
+export interface UpdateFeatureFlagStatusRequest {
+  flagId: string;
+  status: FEATURE_FLAG_STATUS;
+}
+
 export interface FeatureFlagFormData {
   name: string;
   key: string;
@@ -103,6 +108,7 @@ export const FLAG_ROOT_DISPLAYED_COLUMNS = Object.values(FLAG_ROOT_COLUMN_NAMES)
 export interface FeatureFlagState extends EntityState<FeatureFlag> {
   isLoadingAddFeatureFlag: boolean;
   isLoadingFeatureFlags: boolean;
+  isLoadingUpdateFeatureFlagStatus: boolean;
   hasInitialFeatureFlagsDataLoaded: boolean;
   activeDetailsTabIndex: number;
   skipFlags: number;
