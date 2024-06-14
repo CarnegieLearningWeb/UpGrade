@@ -1,7 +1,7 @@
 import { LogRepository } from './../repositories/LogRepository';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
-import { InjectRepository } from '../../typeorm-typedi-extensions';
+import { InjectRepository, Container } from '../../typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { AWSService } from './AWSService';
 import {
@@ -25,7 +25,6 @@ import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLog
 import { UserRepository } from '../repositories/UserRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { METRICS_JOIN_TEXT } from './MetricService';
-import { getCustomRepository } from 'typeorm';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -174,7 +173,7 @@ export class AnalyticsService {
       }
       const simpleExportCSV = `${email}_simpleExport${timeStamp}.csv`;
 
-      const userRepository: UserRepository = getCustomRepository(UserRepository, 'export');
+      const userRepository: UserRepository = Container.getCustomRepository(UserRepository, 'export');
       const [experiment, user] = await Promise.all([
         this.experimentRepository.findOne({
           where: { id: experimentId },
