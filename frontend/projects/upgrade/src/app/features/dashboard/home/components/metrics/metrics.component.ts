@@ -21,7 +21,7 @@ import { ExperimentVM } from '../../../../../core/experiments/store/experiments.
 import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray } from '@angular/forms';
 import { startWith, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
-import { DialogService } from '../../../../../shared/services/dialog.service';
+import { DialogService } from '../../../../../shared/services/common-dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 @Component({
   selector: 'home-monitored-metrics',

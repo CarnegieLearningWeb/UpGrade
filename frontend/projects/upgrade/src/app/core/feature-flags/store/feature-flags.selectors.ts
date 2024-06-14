@@ -1,5 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { FeatureFlagState } from './feature-flags.model';
+import { FLAG_SEARCH_KEY, FeatureFlagState } from './feature-flags.model';
 import { selectRouterState } from '../../core.state';
 import { selectAll } from './feature-flags.reducer';
 
@@ -34,6 +34,11 @@ export const selectIsInitialFeatureFlagsLoading = createSelector(
   (isLoading, featureFlags) => !isLoading || !!featureFlags.length
 );
 
+export const selectIsLoadingAddFeatureFlag = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingAddFeatureFlag
+);
+
 export const selectSelectedFeatureFlag = createSelector(
   selectRouterState,
   selectFeatureFlagsState,
@@ -52,7 +57,28 @@ export const selectIsAllFlagsFetched = createSelector(
 
 export const selectSearchKey = createSelector(selectFeatureFlagsState, (state) => state.searchKey);
 
-export const selectSearchString = createSelector(selectFeatureFlagsState, (state) => state.searchString);
+export const selectSearchString = createSelector(selectFeatureFlagsState, (state) => state.searchValue);
+
+export const selectSearchFeatureFlagParams = createSelector(
+  selectSearchKey,
+  selectSearchString,
+  (searchKey, searchString) => {
+    if (!!searchKey && (!!searchString || searchString === '')) {
+      return { searchKey, searchString };
+    }
+    return null;
+  }
+);
+
+export const selectRootTableState = createSelector(
+  selectAllFeatureFlags,
+  selectSearchFeatureFlagParams,
+  (tableData, searchParams) => ({
+    tableData,
+    searchParams,
+    allSearchableProperties: Object.values(FLAG_SEARCH_KEY),
+  })
+);
 
 export const selectSortKey = createSelector(selectFeatureFlagsState, (state) => state.sortKey);
 
