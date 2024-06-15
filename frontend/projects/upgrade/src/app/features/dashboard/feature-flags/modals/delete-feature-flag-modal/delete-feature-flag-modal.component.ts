@@ -62,15 +62,14 @@ export class DeleteFeatureFlagModalComponent {
   ) {}
 
   ngOnInit(): void {
-    this.listenForFeatureFlagListLengthChanges();
+    this.listenForSelectedFeatureFlagDeletion();
   }
 
   onInputChange(value: string): void {
     this.inputSubject.next(value);
   }
 
-  // Close the modal once the feature flag list length changes, as that indicates actual success
-  listenForFeatureFlagListLengthChanges(): void {
+  listenForSelectedFeatureFlagDeletion(): void {
     this.subscriptions = this.isSelectedFeatureFlagRemoved$.subscribe(() => this.closeModal());
   }
 

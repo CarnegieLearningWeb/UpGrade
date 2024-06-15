@@ -51,7 +51,7 @@ export class FeatureFlagsService {
   isSelectedFeatureFlagRemoved$ = this.store$.pipe(
     select(selectSelectedFeatureFlag),
     pairwise(),
-    filter(([prev, curr]) => prev !== null && prev !== undefined && (curr === null || curr === undefined))
+    filter(([prev, curr]) => prev && !curr)
   );
 
   selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));
