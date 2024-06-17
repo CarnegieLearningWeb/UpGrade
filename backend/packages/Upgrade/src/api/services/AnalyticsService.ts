@@ -170,7 +170,7 @@ export class AnalyticsService {
       }
       const simpleExportCSV = `${email}_simpleExport${timeStamp}.csv`;
 
-      const userRepository: UserRepository = Container.getCustomRepository(UserRepository, 'export');
+      const userRepository: UserRepository = Container.getCustomRepository(UserRepository);
       const [experiment, user] = await Promise.all([
         this.experimentRepository.findOne({
           where: { id: experimentId },

@@ -1,7 +1,8 @@
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 
 @EntityRepository(FeatureFlagSegmentInclusion)
 export class FeatureFlagSegmentInclusionRepository extends Repository<FeatureFlagSegmentInclusion> {
@@ -15,7 +16,7 @@ export class FeatureFlagSegmentInclusionRepository extends Repository<FeatureFla
       .insert()
       .into(FeatureFlagSegmentInclusion)
       .values(data)
-      .onConflict(`DO NOTHING`)
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

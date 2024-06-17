@@ -42,7 +42,7 @@ export class FactorRepository extends Repository<Factor> {
       .insert()
       .into(Factor)
       .values(factorDoc)
-      .onConflict(`("id") DO UPDATE SET "name" = :name`)
+      .orUpdate(['name'], ['id'])
       .setParameter('name', factorDoc.name)
       .returning('*')
       .execute()
