@@ -68,6 +68,7 @@ import { withInSubjectType } from '../Algorithms';
 import { CacheService } from './CacheService';
 import { UserStratificationFactorRepository } from '../repositories/UserStratificationRepository';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
+import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -114,19 +115,16 @@ export class ExperimentAssignmentService {
     public cacheService: CacheService
   ) {}
   public async markExperimentPoint(
-    userId: string,
+    userDoc: RequestedExperimentUser,
     site: string,
     status: MARKED_DECISION_POINT_STATUS | undefined,
     condition: string | null,
-    requestContext: { logger: UpgradeLogger; userDoc: any },
+    logger: UpgradeLogger,
     target?: string,
     experimentId?: string,
     uniquifier?: string,
     clientError?: string
   ): Promise<Omit<MonitoredDecisionPoint, 'createdAt | updatedAt | versionNumber'>> {
-    // find working group for user
-    const { logger, userDoc } = requestContext;
-
     // check error from client side
     if (clientError) {
       const error = new Error(clientError);
@@ -135,13 +133,15 @@ export class ExperimentAssignmentService {
     }
 
     // adding experiment error when user is not defined
-    if (!userDoc) {
-      const error = new Error(`User not defined in markExperimentPoint: ${userId}`);
+    if (!userDoc || !userDoc.id) {
+      const error = new Error(`User not defined in markExperimentPoint: ${userDoc.requestedUserId}`);
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
       (error as any).httpCode = 404;
       logger.error(error);
       throw error;
     }
+
+    const userId = userDoc.id;
 
     const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
 
@@ -333,39 +333,30 @@ export class ExperimentAssignmentService {
   }
 
   public async getAllExperimentConditions(
-    userId: string,
+    experimentUserDoc: RequestedExperimentUser,
     context: string,
-    requestContext: { logger: UpgradeLogger; userDoc: any }
+    logger: UpgradeLogger
   ): Promise<IExperimentAssignmentv5[]> {
-    const { logger, userDoc } = requestContext;
-    logger.info({ message: `getAllExperimentConditions: User: ${userId}` });
-
-    const [previewUser, experimentUserDoc] = await Promise.all([
-      this.previewUserService.findOne(userId, logger),
-      this.experimentUserService.getOriginalUserDoc(userId, logger),
-    ]);
+    logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc.requestedUserId}` });
 
     // throw error if user not defined
     if (!experimentUserDoc || !experimentUserDoc.id) {
-      logger.error({ message: `User not defined in getAllExperimentConditions: ${userId}` });
+      logger.error({ message: `User not defined in getAllExperimentConditions: ${experimentUserDoc.requestedUserId}` });
       const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined in getAllExperimentConditions: ${userId}`,
+          message: `User not defined in getAllExperimentConditions: ${experimentUserDoc.requestedUserId}`,
         })
       );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
       (error as any).httpCode = 404;
       throw error;
     }
+    const userId = experimentUserDoc?.id;
 
-    const experimentUser: ExperimentUser = userDoc || {
-      createdAt: experimentUserDoc.createdAt,
-      id: experimentUserDoc.id,
-      requestedUserId: userId,
-      group: experimentUserDoc.group,
-      workingGroup: experimentUserDoc.workingGroup,
-    };
+    const previewUser = await this.previewUserService.findOne(userId, logger);
+
+    const experimentUser: ExperimentUser = experimentUserDoc as ExperimentUser;
 
     // query all experiment and sub experiment
     // check if user or group is excluded
@@ -744,9 +735,13 @@ export class ExperimentAssignmentService {
   }
 
   // When browser will be sending the blob data
-  public async blobDataLog(userId: string, blobLog: ILogInput[], logger: UpgradeLogger): Promise<Log[]> {
+  public async blobDataLog(
+    userDoc: RequestedExperimentUser,
+    blobLog: ILogInput[],
+    logger: UpgradeLogger
+  ): Promise<Log[]> {
+    const userId = userDoc.id;
     logger.info({ message: `Add blob data userId ${userId}`, details: blobLog });
-    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId, logger);
     const keyUniqueArray = [];
 
     // throw error if user not defined
@@ -770,17 +765,13 @@ export class ExperimentAssignmentService {
   ): Promise<Log[]> {
     if (log.profile === SUPPORTED_CALIPER_PROFILES.GRADING && log.type === SUPPORTED_CALIPER_EVENTS.GRADE) {
       requestContext.logger.info({ message: 'Starting the Caliper log call for user' });
-      const userId = log.object.assignee.id;
 
       const logs: ILogInput = log.generated.attempt.extensions;
 
       logs.metrics.attributes['duration'] = toSeconds(parse(log.generated.attempt.duration));
       logs.metrics.attributes['scoreGiven'] = log.generated.scoreGiven;
 
-      return this.dataLog(userId, [logs], {
-        logger: requestContext.logger,
-        userDoc: requestContext.userDoc,
-      });
+      return this.dataLog(requestContext.userDoc, [logs], requestContext.logger);
     } else {
       const error = new Error(`Unsupported Caliper profile: ${log.profile} or type: ${log.type}`);
       (error as any).type = SERVER_ERROR.UNSUPPORTED_CALIPER;
@@ -789,12 +780,8 @@ export class ExperimentAssignmentService {
     }
   }
 
-  public async dataLog(
-    userId: string,
-    jsonLog: ILogInput[],
-    requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<Log[]> {
-    const { logger, userDoc } = requestContext;
+  public async dataLog(userDoc: RequestedExperimentUser, jsonLog: ILogInput[], logger: UpgradeLogger): Promise<Log[]> {
+    const userId = userDoc.id;
     logger.info({ message: `Add data log userId ${userId}`, details: jsonLog });
     const keyUniqueArray: { key: string; uniquifier: string }[] = [];
 
@@ -1714,9 +1701,9 @@ export class ExperimentAssignmentService {
     experiments: Experiment[],
     experimentUser: ExperimentUser
   ): Promise<[Experiment[], { experiment: Experiment; reason: string; matchedGroup: boolean }[]]> {
-    let segmentDetails: Segment[] = [];
-    let segmentObj = {};
+    const segmentObj = {};
 
+    // creates segment Object for all experiments
     experiments.forEach((exp) => {
       const includeId = exp.experimentSegmentInclusion.segment.id;
       const excludeId = exp.experimentSegmentExclusion.segment.id;
@@ -1730,62 +1717,48 @@ export class ExperimentAssignmentService {
       };
     });
 
-    const depth = 0;
-    [segmentObj, segmentDetails] = await this.resolveSegment(segmentObj, segmentDetails, depth);
+    const experimentIdsWithFilter: { id: string; filterMode: FILTER_MODE }[] = experiments.map(
+      ({ id, filterMode, group }) => ({ id, filterMode, group })
+    );
 
-    const explicitExperimentIndividualInclusionFilteredData: { userId: string; experimentId: string }[] = [];
-    const explicitExperimentIndividualExclusionFilteredData: { userId: string; experimentId: string }[] = [];
-    const explicitExperimentGroupInclusionFilteredData: { groupId: string; type: string; experimentId: string }[] = [];
-    const explicitExperimentGroupExclusionFilteredData: { groupId: string; type: string; experimentId: string }[] = [];
+    // runs resolveSegment and inclusionExclusion logic for all experiments
+    const [includedExperimentIds, excludedExperimentIds] = await this.inclusionExclusionLogic(
+      segmentObj,
+      experimentUser,
+      experimentIdsWithFilter
+    );
 
-    Object.keys(segmentObj).forEach((expId) => {
-      const exp = segmentObj[expId];
-
-      exp.allIncludedSegmentIds.forEach((includedSegmentId) => {
-        const foundSegment = segmentDetails.find(({ id }) => id === includedSegmentId);
-
-        foundSegment.individualForSegment.forEach((individual) => {
-          if (individual.userId === experimentUser.id) {
-            explicitExperimentIndividualInclusionFilteredData.push({
-              userId: individual.userId,
-              experimentId: expId,
-            });
-          }
-        });
-
-        foundSegment.groupForSegment.forEach((group) => {
-          explicitExperimentGroupInclusionFilteredData.push({
-            groupId: group.groupId,
-            type: group.type,
-            experimentId: expId,
-          });
-        });
-      });
-
-      exp.allExcludedSegmentIds.forEach((excludedSegmentId) => {
-        const foundSegment = segmentDetails.find(({ id }) => id === excludedSegmentId);
-
-        foundSegment.individualForSegment.forEach((individual) => {
-          if (individual.userId === experimentUser.id) {
-            explicitExperimentIndividualExclusionFilteredData.push({
-              userId: individual.userId,
-              experimentId: expId,
-            });
-          }
-        });
-
-        foundSegment.groupForSegment.forEach((group) => {
-          explicitExperimentGroupExclusionFilteredData.push({
-            groupId: group.groupId,
-            type: group.type,
-            experimentId: expId,
-          });
-        });
-      });
+    // mapping ids to experiments
+    const includedExperiments = experiments.filter(({ id }) => includedExperimentIds.includes(id));
+    const excludedExperiments = excludedExperimentIds.map((expIdWithReason) => {
+      return {
+        experiment: experiments.find(({ id }) => id === expIdWithReason.id),
+        reason: expIdWithReason.reason,
+        matchedGroup: expIdWithReason.matchedGroup,
+      };
     });
 
+    return [includedExperiments, excludedExperiments];
+  }
+
+  public async inclusionExclusionLogic(
+    segmentObjMap: object,
+    experimentUser: ExperimentUser,
+    modalIds: { id: string; filterMode: FILTER_MODE; group?: string }[] // can be experimentIds or FeatureFlagsIds
+  ): Promise<[string[], { id: string; reason: string; matchedGroup?: boolean }[]]> {
+    let segmentDetails: Segment[] = [];
+
+    // call resolveSegments from depth 0
+    [segmentObjMap, segmentDetails] = await this.resolveSegment(segmentObjMap, segmentDetails, 0);
+
+    // fill-up explicitInclude and explicitExclude data
+    const explicitIndividualInclusionFilteredData: { userId: string; id: string }[] = [];
+    const explicitIndividualExclusionFilteredData: { userId: string; id: string }[] = [];
+    const explicitGroupInclusionFilteredData: { groupId: string; type: string; id: string }[] = [];
+    const explicitGroupExclusionFilteredData: { groupId: string; type: string; id: string }[] = [];
+
     const userGroups = [];
-    if (experimentUser.group) {
+    if (experimentUser?.group) {
       Object.keys(experimentUser.group).forEach((type) => {
         experimentUser.group[type].forEach((groupId) => {
           userGroups.push({ type, groupId });
@@ -1793,86 +1766,136 @@ export class ExperimentAssignmentService {
       });
     }
 
-    // pseudocode for experiment level inclusion and exclusion
+    Object.keys(segmentObjMap).forEach((modalId) => {
+      const modalSegment = segmentObjMap[modalId];
+
+      modalSegment.allIncludedSegmentIds.forEach((includedSegmentId) => {
+        const foundSegment = segmentDetails.find(({ id }) => id === includedSegmentId);
+
+        foundSegment.individualForSegment.forEach((individual) => {
+          if (individual.userId === experimentUser.id) {
+            explicitIndividualInclusionFilteredData.push({
+              userId: individual.userId,
+              id: modalId,
+            });
+          }
+        });
+
+        foundSegment.groupForSegment.forEach((group) => {
+          if (userGroups.some((userGroup) => userGroup.groupId === group.groupId && userGroup.type === group.type)) {
+            explicitGroupInclusionFilteredData.push({
+              groupId: group.groupId,
+              type: group.type,
+              id: modalId,
+            });
+          }
+        });
+      });
+
+      modalSegment.allExcludedSegmentIds.forEach((excludedSegmentId) => {
+        const foundSegment = segmentDetails.find(({ id }) => id === excludedSegmentId);
+
+        foundSegment.individualForSegment.forEach((individual) => {
+          if (individual.userId === experimentUser.id) {
+            explicitIndividualExclusionFilteredData.push({
+              userId: individual.userId,
+              id: modalId,
+            });
+          }
+        });
+
+        foundSegment.groupForSegment.forEach((group) => {
+          if (userGroups.some((userGroup) => userGroup.groupId === group.groupId && userGroup.type === group.type)) {
+            explicitGroupExclusionFilteredData.push({
+              groupId: group.groupId,
+              type: group.type,
+              id: modalId,
+            });
+          }
+        });
+      });
+    });
+
+    // pseudocode for modal level inclusion and exclusion
     //
     // If the user or the user's group is on the global exclude list, exclude the user.
     //
-    // ELSE If the experiment default is "include all" then
+    // ELSE If the modal default is "include all" then
     //     If the user is on the exclude list, then exclude the user.
     //     Else if any of the user's groups is on the exclude list then
     //           If the user is on the include list, include the user
     //           Else exclude the user
     //     Else include the user.
-    // ELSE If the experiment default is "exclude all" then
+    // ELSE If the modal default is "exclude all" then
     //     If the user is on the include list, then include the user.
     //     Else if any of the user's groups are on the include list then
     //           If the user is on the exclude list, exclude the user
     //           Else include the user
     //     Else exclude the user
 
-    const includedExperiments: Experiment[] = [];
-    const excludedExperiments = [];
+    const userIncludedModals: string[] = [];
+    const userExcludedModals: { id: string; reason: string; matchedGroup?: boolean }[] = [];
 
-    experiments.forEach((experiment) => {
+    modalIds.forEach((modal) => {
       let inclusionFlag = false;
       let exclusionFlag = false;
       let sameGroupExclusionFlag = false;
 
-      if (experiment.filterMode === FILTER_MODE.INCLUDE_ALL) {
-        if (explicitExperimentIndividualExclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
-          excludedExperiments.push({ experiment: experiment, reason: 'user' });
-        } else if (explicitExperimentIndividualInclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
-          includedExperiments.push(experiment);
+      if (modal.filterMode === FILTER_MODE.INCLUDE_ALL) {
+        if (explicitIndividualExclusionFilteredData.some((x) => x.id === modal.id)) {
+          userExcludedModals.push({ id: modal.id, reason: 'user' });
+        } else if (explicitIndividualInclusionFilteredData.some((x) => x.id === modal.id)) {
+          userIncludedModals.push(modal.id);
         } else {
           for (const userGroup of userGroups) {
-            const matchingExclusionData = explicitExperimentGroupExclusionFilteredData.find(
-              (e) => e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id
+            const matchingExclusionData = explicitGroupExclusionFilteredData.find(
+              (x) => x.groupId === userGroup.groupId && x.type === userGroup.type && x.id === modal.id
             );
 
             if (matchingExclusionData) {
               inclusionFlag = true;
 
-              if (matchingExclusionData.type === experiment.group) {
+              if (matchingExclusionData.type === modal.group) {
                 sameGroupExclusionFlag = true;
               }
             }
           }
           if (!inclusionFlag) {
-            includedExperiments.push(experiment);
+            userIncludedModals.push(modal.id);
           } else {
             const matchedGroup = sameGroupExclusionFlag;
-            excludedExperiments.push({
-              experiment,
+            userExcludedModals.push({
+              id: modal.id,
               reason: 'group',
-              matchedGroup,
+              matchedGroup, // matchedExcludedGroup === experiment.group
             });
           }
         }
       } else {
-        if (explicitExperimentIndividualInclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
-          includedExperiments.push(experiment);
-        } else if (explicitExperimentIndividualExclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
-          excludedExperiments.push({ experiment: experiment, reason: 'filterMode' });
+        if (explicitIndividualInclusionFilteredData.some((x) => x.id === modal.id)) {
+          userIncludedModals.push(modal.id);
+        } else if (explicitIndividualExclusionFilteredData.some((x) => x.id === modal.id)) {
+          userExcludedModals.push({ id: modal.id, reason: 'filterMode' });
         } else {
           for (const userGroup of userGroups) {
             if (
-              explicitExperimentGroupInclusionFilteredData.some(
-                (e) => e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id
+              explicitGroupInclusionFilteredData.some(
+                (x) => x.groupId === userGroup.groupId && x.type === userGroup.type && x.id === modal.id
               )
             ) {
               exclusionFlag = true;
             }
           }
           if (!exclusionFlag) {
-            excludedExperiments.push({ experiment: experiment, reason: 'filterMode' });
+            userExcludedModals.push({ id: modal.id, reason: 'filterMode' });
           } else {
-            includedExperiments.push(experiment);
+            userIncludedModals.push(modal.id);
           }
         }
       }
     });
 
-    return [includedExperiments, excludedExperiments];
+    return [userIncludedModals, userExcludedModals];
   }
 
   private getFactorialCondition(

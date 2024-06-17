@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { FeatureFlag } from './feature-flags.model';
+import { AddFeatureFlagRequest, FeatureFlag, UpdateFeatureFlagStatusRequest } from './feature-flags.model';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 
 export const actionFetchFeatureFlags = createAction(
@@ -13,6 +13,38 @@ export const actionFetchFeatureFlagsSuccess = createAction(
 );
 
 export const actionFetchFeatureFlagsFailure = createAction('[Feature Flags] Fetch Feature Flags Paginated Failure');
+
+export const actionFetchFeatureFlagById = createAction(
+  '[Feature Flags] Fetch Feature Flags By Id',
+  props<{ featureFlagId: string }>()
+);
+
+export const actionFetchFeatureFlagByIdSuccess = createAction(
+  '[Feature Flags] Fetch Feature Flags By Id Success',
+  props<{ flag: FeatureFlag }>()
+);
+
+export const actionFetchFeatureFlagByIdFailure = createAction('[Feature Flags] Fetch Feature Flags By Id Failure');
+export const actionAddFeatureFlag = createAction(
+  '[Feature Flags] Add Feature Flag',
+  props<{ addFeatureFlagRequest: AddFeatureFlagRequest }>()
+);
+
+export const actionAddFeatureFlagSuccess = createAction(
+  '[Feature Flags] Add Feature Flag Success',
+  props<{ response: FeatureFlag }>()
+);
+
+export const actionAddFeatureFlagFailure = createAction('[Feature Flags] Add Feature Flag Failure');
+
+export const actionDeleteFeatureFlag = createAction('[Feature Flags] Delete Feature Flag', props<{ flagId: string }>());
+
+export const actionDeleteFeatureFlagSuccess = createAction(
+  '[Feature Flags] Delete Feature Flag Success',
+  props<{ flag: FeatureFlag }>()
+);
+
+export const actionDeleteFeatureFlagFailure = createAction('[Feature Flags] Delete Feature Flag Failure');
 
 export const actionSetIsLoadingFeatureFlags = createAction(
   '[Feature Flags] Set Is Loading Flags',
@@ -37,3 +69,32 @@ export const actionSetSortingType = createAction(
   '[Feature Flags] Set Sorting type',
   props<{ sortingType: SORT_AS_DIRECTION }>()
 );
+
+export const actionSetActiveDetailsTabIndex = createAction(
+  '[Feature Flags] Set Active Details Tab Index',
+  props<{ activeDetailsTabIndex: number }>()
+);
+
+export const actionEnableFeatureFlag = createAction(
+  '[Feature Flags] Enable Feature Flag',
+  props<{ updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest }>()
+);
+
+export const actionEnableFeatureFlagSuccess = createAction(
+  '[Feature Flags] Enable Feature Flag Success',
+  props<{ response: FeatureFlag }>()
+);
+
+export const actionEnableFeatureFlagFailure = createAction('[Feature Flags] Enable Feature Flag Failure');
+
+export const actionDisableFeatureFlag = createAction(
+  '[Feature Flags] Disable Feature Flag',
+  props<{ updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest }>()
+);
+
+export const actionDisableFeatureFlagSuccess = createAction(
+  '[Feature Flags] Disable Feature Flag Success',
+  props<{ response: FeatureFlag }>()
+);
+
+export const actionDisableFeatureFlagFailure = createAction('[Feature Flags] Disable Feature Flag Failure');

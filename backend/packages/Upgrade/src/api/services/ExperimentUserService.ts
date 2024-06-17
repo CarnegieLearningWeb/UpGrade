@@ -95,16 +95,16 @@ export class ExperimentUserService {
   }
 
   public async setAliasesForUser(
-    userId: string,
+    userDoc: RequestedExperimentUser,
     aliases: string[],
-    requestContext: { logger: UpgradeLogger; userDoc: any }
+    logger: UpgradeLogger
   ): Promise<IUserAliases> {
-    const { logger, userDoc } = requestContext;
+    const userId = userDoc.id;
     const userExist = userDoc;
     logger.info({ message: 'Set aliases for experiment user => ' + userId, details: aliases });
 
     // throw error if user not defined
-    if (!userExist) {
+    if (!userExist || !userExist.id) {
       logger.error({ message: 'User not defined setAliasesForUser' + userId, details: aliases });
 
       const error = new Error(
