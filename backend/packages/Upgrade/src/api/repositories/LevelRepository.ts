@@ -37,7 +37,7 @@ export class LevelRepository extends Repository<Level> {
       .insert()
       .into(Level)
       .values(levelDoc)
-      .onConflict(`("id") DO UPDATE SET "name" = :name`)
+      .orUpdate(['name'], ['id'])
       .setParameter('name', levelDoc.name)
       .returning('*')
       .execute()

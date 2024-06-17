@@ -53,7 +53,7 @@ export class LevelCombinationElementRepository extends Repository<LevelCombinati
       .insert()
       .into(LevelCombinationElement)
       .values(levelCombinationElementDoc)
-      .onConflict('DO NOTHING')
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((error: any) => {

@@ -48,7 +48,7 @@ export class ConditionPayloadRepository extends Repository<ConditionPayload> {
       .insert()
       .into(ConditionPayload)
       .values(conditionPayloadDoc)
-      .onConflict(`("id") DO UPDATE SET "payloadValue" = :payloadValue`)
+      .orUpdate(['payloadValue'], ['id'])
       .setParameter('payloadValue', conditionPayloadDoc.payloadValue)
       .returning('*')
       .execute()
