@@ -6,8 +6,9 @@ import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatus
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { SERVER_ERROR } from 'upgrade_types';
+import { FeatureFlagValidation, UserParamsValidator } from './validators/FeatureFlagValidator';
+import { ExperimentUserService } from '../services/ExperimentUserService';
 import { isUUID } from 'class-validator';
-import { FeatureFlagValidation } from './validators/FeatureFlagValidator';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -134,7 +135,7 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/flags')
 export class FeatureFlagsController {
-  constructor(public featureFlagService: FeatureFlagService) {}
+  constructor(public featureFlagService: FeatureFlagService, public experimentUserService: ExperimentUserService) {}
 
   /**
    * @swagger
@@ -159,6 +160,59 @@ export class FeatureFlagsController {
   @Get()
   public find(@Req() request: AppRequest): Promise<FeatureFlag[]> {
     return this.featureFlagService.find(request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags:
+   *    post:
+   *       description: Get feature flags for user
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: user
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *               userId:
+   *                 type: string
+   *                 example: user1
+   *               context:
+   *                 type: string
+   *                 example: add
+   *             description: User Document
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Feature Flag List
+   *            schema:
+   *              type: array
+   *              items:
+   *                $ref: '#/definitions/FeatureFlag'
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
+
+  @Post('/keys')
+  public async getKeys(
+    @Body({ validate: true })
+    userParams: UserParamsValidator,
+    @Req() request: AppRequest
+  ): Promise<string[]> {
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(userParams.userId, request.logger);
+    if (!experimentUserDoc) {
+      const error = new Error(`User not defined in markExperimentPoint: ${userParams.userId}`);
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404;
+      request.logger.error(error);
+      throw error;
+    }
+    return this.featureFlagService.getKeys(experimentUserDoc, userParams.context, request.logger);
   }
 
   /**

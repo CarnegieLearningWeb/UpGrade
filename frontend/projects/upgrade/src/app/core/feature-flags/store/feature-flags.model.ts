@@ -109,6 +109,7 @@ export interface FeatureFlagState extends EntityState<FeatureFlag> {
   isLoadingAddFeatureFlag: boolean;
   isLoadingFeatureFlags: boolean;
   isLoadingUpdateFeatureFlagStatus: boolean;
+  isLoadingFeatureFlagDelete: boolean;
   hasInitialFeatureFlagsDataLoaded: boolean;
   activeDetailsTabIndex: number;
   skipFlags: number;

@@ -94,6 +94,7 @@ import {
 } from './Experiment/stratification/index';
 import { IndividualExperimentEnrollmentCode, GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } from './Experiment/enrollmentCode';
 import { IndividualExperimentExclusionCode, GroupExperimentExclusionCode, ExperimentLevelExclusionCodeParticipant, ExperimentLevelExclusionCodeGroup, WithinSubjectExclusionCode }  from './Experiment/exclusionCode';
+import { FeatureFlagInclusionExclusion } from './FeatureFlags';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -475,6 +476,10 @@ describe('Integration Tests', () => {
 
   test('Working group change after user exclusion for group consistency', () => {
     return GroupConsistency();
+  });
+
+  test('Inclusion and Exclusion of user in FeatureFlags', () => {
+    return FeatureFlagInclusionExclusion();
   });
 
   // test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', () => {

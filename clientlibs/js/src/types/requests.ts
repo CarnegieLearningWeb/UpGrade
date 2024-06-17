@@ -23,6 +23,11 @@ export namespace UpGradeClientRequests {
     context: string;
   }
 
+  export interface IGetAllFeatureFlagsRequestBody {
+    userId: string;
+    context: string;
+  }
+
   export interface IMarkDecisionPointRequestBody {
     userId: string;
     status: MARKED_DECISION_POINT_STATUS;

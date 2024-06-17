@@ -102,55 +102,19 @@ describe('DataService', () => {
 
   describe('#getFeatureFlags', () => {
     it('should return the feature flags', () => {
-      const featureFlags: IFeatureFlag[] = [
-        {
-          id: 'abc123',
-          name: 'testFlag',
-          key: 'testFlagKey',
-          description: 'testFlagDescription',
-          variationType: 'test',
-          status: true,
-          variations: [
-            {
-              id: 'abc123',
-              value: 'flagVariation1',
-              name: 'flagVariation1',
-              description: 'flagVariation1',
-              defaultVariation: [true],
-            },
-          ],
-        },
-      ];
+      const featureFlagsKeys: string[] = ['testFlagKey'];
 
-      dataService.setFeatureFlags(featureFlags);
-      expect(dataService.getFeatureFlags()).toEqual(featureFlags);
+      dataService.setFeatureFlags(featureFlagsKeys);
+      expect(dataService.getFeatureFlags()).toEqual(featureFlagsKeys);
     });
   });
 
   describe('#setFeatureFlags', () => {
     it('should set the feature flags', () => {
-      const featureFlags: IFeatureFlag[] = [
-        {
-          id: 'abc123',
-          name: 'testFlag',
-          key: 'testFlagKey',
-          description: 'testFlagDescription',
-          variationType: 'test',
-          status: true,
-          variations: [
-            {
-              id: 'abc123',
-              value: 'flagVariation1',
-              name: 'flagVariation1',
-              description: 'flagVariation1',
-              defaultVariation: [true],
-            },
-          ],
-        },
-      ];
+      const featureFlagsKeys: string[] = ['testFlagKey'];
 
-      dataService.setFeatureFlags(featureFlags);
-      expect(dataService.getFeatureFlags()).toEqual(featureFlags);
+      dataService.setFeatureFlags(featureFlagsKeys);
+      expect(dataService.getFeatureFlags()).toEqual(featureFlagsKeys);
     });
   });
 
