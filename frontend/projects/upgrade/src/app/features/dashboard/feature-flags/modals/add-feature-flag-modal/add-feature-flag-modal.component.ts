@@ -85,7 +85,7 @@ export class AddFeatureFlagModalComponent {
       key: ['', Validators.required],
       description: [''],
       appContext: ['', Validators.required],
-      tags: [''],
+      tags: [],
     });
   }
 
