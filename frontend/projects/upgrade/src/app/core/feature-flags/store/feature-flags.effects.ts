@@ -23,6 +23,7 @@ export class FeatureFlagsEffects {
     private store$: Store<AppState>,
     private actions$: Actions,
     private featureFlagsDataService: FeatureFlagsDataService,
+    private router: Router,
     private dialogService: DialogService
   ) {}
 
@@ -124,6 +125,23 @@ export class FeatureFlagsEffects {
           catchError(() => [FeatureFlagsActions.actionEnableFeatureFlagFailure()])
         );
       })
+    )
+  );
+
+  deleteFeatureFlag$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionDeleteFeatureFlag),
+      map((action) => action.flagId),
+      filter((id) => !!id),
+      switchMap((id) =>
+        this.featureFlagsDataService.deleteFeatureFlag(id).pipe(
+          map((data: any) => {
+            this.router.navigate(['/featureflags']);
+            return FeatureFlagsActions.actionDeleteFeatureFlagSuccess({ flag: data[0] });
+          }),
+          catchError(() => [FeatureFlagsActions.actionDeleteFeatureFlagFailure()])
+        )
+      )
     )
   );
 

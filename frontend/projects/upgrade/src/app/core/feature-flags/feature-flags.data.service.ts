@@ -36,6 +36,11 @@ export class FeatureFlagsDataService {
     const url = this.environment.api.updateFlagStatus;
     return this.http.post<FeatureFlag>(url, params);
   }
+
+  deleteFeatureFlag(id: string) {
+    const url = `${this.environment.api.featureFlag}/${id}`;
+    return this.http.delete(url);
+  }
 }
 
 const mockFeatureFlags = [
