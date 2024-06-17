@@ -16,13 +16,15 @@ import {
   selectRootTableState,
   selectFeatureFlagOverviewDetails,
   selectIsLoadingFeatureFlagDelete,
+  selectFeatureFlagInclusions,
+  selectFeatureFlagExclusions,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 import { AddFeatureFlagRequest, UpdateFeatureFlagStatusRequest } from './store/feature-flags.model';
 import { ExperimentService } from '../experiments/experiments.service';
-import { filter, map, pairwise } from 'rxjs';
+import { filter, map, pairwise, tap } from 'rxjs';
 
 @Injectable()
 export class FeatureFlagsService {
@@ -63,6 +65,16 @@ export class FeatureFlagsService {
     map((contextMetaData) => {
       return Object.keys(contextMetaData?.contextMetadata ?? []);
     })
+  );
+  selectFeatureFlagInclusions$ = this.store$.pipe(select(selectFeatureFlagInclusions));
+  selectFeatureFlagInclusionsLength$ = this.store$.pipe(
+    select(selectFeatureFlagInclusions),
+    map((inclusions) => inclusions.length)
+  );
+  selectFeatureFlagExclusions$ = this.store$.pipe(select(selectFeatureFlagExclusions));
+  selectFeatureFlagExclusionsLength$ = this.store$.pipe(
+    select(selectFeatureFlagExclusions),
+    map((exclusions) => exclusions.length)
   );
 
   fetchFeatureFlags(fromStarting?: boolean) {

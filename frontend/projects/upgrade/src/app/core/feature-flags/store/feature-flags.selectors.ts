@@ -1,7 +1,15 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { FLAG_SEARCH_KEY, FeatureFlagState } from './feature-flags.model';
+import {
+  AnySegmentType,
+  EmptyPrivateSegment,
+  FLAG_SEARCH_KEY,
+  FeatureFlag,
+  FeatureFlagState,
+  PrivateSegment,
+} from './feature-flags.model';
 import { selectRouterState } from '../../core.state';
 import { selectAll } from './feature-flags.reducer';
+import { GroupForSegment, IndividualForSegment, Segment } from '../../segments/store/segments.model';
 
 export const selectFeatureFlagsState = createFeatureSelector<FeatureFlagState>('featureFlags');
 
@@ -110,3 +118,35 @@ export const selectIsLoadingFeatureFlagDelete = createSelector(
   selectFeatureFlagsState,
   (state) => state.isLoadingFeatureFlagDelete
 );
+
+export const selectFeatureFlagInclusions = createSelector(
+  selectSelectedFeatureFlag,
+  (featureFlag: FeatureFlag): AnySegmentType[] => getSegments(featureFlag, 'featureFlagSegmentInclusion')
+);
+
+export const selectFeatureFlagExclusions = createSelector(
+  selectSelectedFeatureFlag,
+  (featureFlag: FeatureFlag): AnySegmentType[] => getSegments(featureFlag, 'featureFlagSegmentExclusion')
+);
+
+function getSegments(
+  featureFlag: FeatureFlag,
+  key: 'featureFlagSegmentInclusion' | 'featureFlagSegmentExclusion'
+): AnySegmentType[] {
+  const privateSegment: PrivateSegment | EmptyPrivateSegment = featureFlag?.[key];
+  console.log('>> key', key);
+  console.log('>> privateSegment', privateSegment);
+
+  if (!privateSegment) return [];
+
+  // make sure this is not an empty private segment
+  if ('groupForSegment' in privateSegment.segment) {
+    const groups: GroupForSegment[] = privateSegment.segment.groupForSegment || [];
+    const subSegments: Segment[] = privateSegment.segment.subSegments || [];
+    const individuals: IndividualForSegment[] = privateSegment.segment.individualForSegment || [];
+
+    return [...groups, ...subSegments, ...individuals];
+  }
+
+  return [];
+}

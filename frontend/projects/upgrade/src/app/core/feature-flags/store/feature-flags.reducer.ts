@@ -43,7 +43,7 @@ const reducer = createReducer(
   }),
   on(FeatureFlagsActions.actionFetchFeatureFlagsFailure, (state) => ({ ...state, isLoadingFeatureFlags: false })),
   on(FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess, (state, { flag }) => {
-    return adapter.addOne(flag, {
+    return adapter.upsertOne(flag, {
       ...state,
       isLoadingFeatureFlags: false,
     });
