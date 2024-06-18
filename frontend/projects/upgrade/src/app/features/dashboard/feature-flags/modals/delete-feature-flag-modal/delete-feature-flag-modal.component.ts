@@ -13,8 +13,9 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
-import { BehaviorSubject, Observable, map } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, combineLatest, map } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-add-feature-flag-modal',
@@ -28,15 +29,18 @@ import { TranslateModule } from '@ngx-translate/core';
     MatDialogClose,
     FormsModule,
     TranslateModule,
+    CommonModule,
   ],
   templateUrl: './delete-feature-flag-modal.component.html',
   styleUrl: './delete-feature-flag-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DeleteFeatureFlagModalComponent {
-  flagName: string;
-  flagId: string;
+  selectedFlag$ = this.featureFlagsService.selectedFeatureFlag$;
   inputValue = '';
+  subscriptions = new Subscription();
+  isSelectedFeatureFlagRemoved$ = this.featureFlagsService.isSelectedFeatureFlagRemoved$;
+  IsLoadingFeatureFlagDelete$ = this.featureFlagsService.IsLoadingFeatureFlagDelete$;
   private inputSubject: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   // Observable that emits true if inputValue is 'delete', false otherwise
@@ -44,27 +48,40 @@ export class DeleteFeatureFlagModalComponent {
     .asObservable()
     .pipe(map((value) => value.toLowerCase() !== 'delete'));
 
+  isDeleteActionBtnDisabled$: Observable<boolean> = combineLatest([
+    this.isDeleteNotTyped$,
+    this.IsLoadingFeatureFlagDelete$,
+  ]).pipe(map(([isDeleteNotTyped, isLoading]) => isDeleteNotTyped || isLoading));
+
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public data: CommonModalConfig & { flagName: string; flagId: string },
     public dialog: MatDialog,
     private featureFlagsService: FeatureFlagsService,
     public dialogRef: MatDialogRef<DeleteFeatureFlagModalComponent>
-  ) {
-    this.flagName = data.flagName;
-    this.flagId = data.flagId;
+  ) {}
+
+  ngOnInit(): void {
+    this.listenForSelectedFeatureFlagDeletion();
   }
 
   onInputChange(value: string): void {
     this.inputSubject.next(value);
   }
 
-  onPrimaryActionBtnClicked() {
-    this.featureFlagsService.deleteFeatureFlag(this.flagId);
-    this.dialogRef.close();
+  listenForSelectedFeatureFlagDeletion(): void {
+    this.subscriptions = this.isSelectedFeatureFlagRemoved$.subscribe(() => this.closeModal());
+  }
+
+  onPrimaryActionBtnClicked(flagId: string) {
+    this.featureFlagsService.deleteFeatureFlag(flagId);
   }
 
   closeModal() {
     this.dialogRef.close();
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 }

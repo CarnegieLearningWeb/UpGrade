@@ -173,7 +173,7 @@ describe('FeatureFlagRepository Testing', () => {
     sinon.assert.calledOnce(createQueryBuilderStub);
     updateMock.verify();
 
-    expect(res).toEqual([flag]);
+    expect(res).toEqual(flag);
   });
 
   it('should throw an error when update flag fails', async () => {

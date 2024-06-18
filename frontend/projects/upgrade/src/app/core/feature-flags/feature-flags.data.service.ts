@@ -6,6 +6,7 @@ import {
   FeatureFlag,
   FeatureFlagsPaginationInfo,
   FeatureFlagsPaginationParams,
+  UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
 import { Observable } from 'rxjs';
 import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../types/src';
@@ -28,6 +29,11 @@ export class FeatureFlagsDataService {
 
   addFeatureFlag(params: AddFeatureFlagRequest): Observable<FeatureFlag> {
     const url = this.environment.api.featureFlag;
+    return this.http.post<FeatureFlag>(url, params);
+  }
+
+  updateFeatureFlagStatus(params: UpdateFeatureFlagStatusRequest): Observable<FeatureFlag> {
+    const url = this.environment.api.updateFlagStatus;
     return this.http.post<FeatureFlag>(url, params);
   }
 

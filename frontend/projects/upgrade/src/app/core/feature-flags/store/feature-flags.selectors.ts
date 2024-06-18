@@ -45,6 +45,13 @@ export const selectSelectedFeatureFlag = createSelector(
   ({ state: { params } }, featureFlagState) => featureFlagState.entities[params.flagId]
 );
 
+export const selectFeatureFlagOverviewDetails = createSelector(selectSelectedFeatureFlag, (featureFlag) => ({
+  ['Key']: featureFlag?.key,
+  ['Description']: featureFlag?.description,
+  ['App Context']: featureFlag?.context[0],
+  ['Tags']: featureFlag?.tags,
+}));
+
 export const selectSkipFlags = createSelector(selectFeatureFlagsState, (state) => state.skipFlags);
 
 export const selectTotalFlags = createSelector(selectFeatureFlagsState, (state) => state.totalFlags);
@@ -87,4 +94,19 @@ export const selectSortAs = createSelector(selectFeatureFlagsState, (state) => s
 export const selectActiveDetailsTabIndex = createSelector(
   selectFeatureFlagsState,
   (state) => state.activeDetailsTabIndex
+);
+
+export const selectFeatureFlagsListLength = createSelector(
+  selectAllFeatureFlags,
+  (featureFlags) => featureFlags.length
+);
+
+export const selectIsLoadingUpdateFeatureFlagStatus = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingUpdateFeatureFlagStatus
+);
+
+export const selectIsLoadingFeatureFlagDelete = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingFeatureFlagDelete
 );
