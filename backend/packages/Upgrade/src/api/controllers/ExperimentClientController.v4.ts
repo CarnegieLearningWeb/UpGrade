@@ -40,6 +40,8 @@ import { Log } from '../models/Log';
 import { flatten } from '@nestjs/common';
 import { CaliperLogEnvelope } from './validators/CaliperLogEnvelope';
 import { ExperimentUserValidator } from './validators/ExperimentUserValidator';
+import { MetricValidator } from './validators/MetricValidator';
+import { Metric } from '../models/Metric';
 
 interface IMonitoredDecisionPoint {
   id: string;
@@ -768,6 +770,42 @@ export class ExperimentClientController {
   @Get('featureflag')
   public getAllFlags(@Req() request: AppRequest): Promise<FeatureFlag[]> {
     return this.featureFlagService.find(request.logger);
+  }
+
+  /**
+   * @swagger
+   * /metric:
+   *    post:
+   *       description: Add filter metrics
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *          - in: body
+   *            name: params
+   *            schema:
+   *             type: object
+   *             properties:
+   *              metricUnit:
+   *                type: object
+   *            description: Filtered Metrics
+   *       tags:
+   *         - Client Side SDK
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Filtered Metrics
+   *          '500':
+   *            description: Insert error in database
+   */
+  @Post('metric')
+  public async filterMetrics(
+    @Req()
+    request: AppRequest,
+    @Body({ validate: false })
+    metric: MetricValidator
+  ): Promise<Metric[]> {
+    return await this.metricService.saveAllMetrics(metric.metricUnit, metric.context, request.logger);
   }
 
   /**
