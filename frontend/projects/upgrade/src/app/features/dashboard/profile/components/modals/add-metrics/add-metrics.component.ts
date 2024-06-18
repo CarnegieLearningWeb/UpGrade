@@ -3,8 +3,6 @@ import { JsonEditorOptions, JsonEditorComponent } from 'ang-jsoneditor';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AnalysisService } from '../../../../../../core/analysis/analysis.service';
 import { Subscription } from 'rxjs';
-// import { MetricUnit } from '../../../../../../core/analysis/store/analysis.models';
-
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { IContextMetaData } from '../../../../../../core/experiments/store/experiments.model';
 
@@ -19,7 +17,7 @@ export class AddMetricsComponent implements OnInit, OnDestroy {
 
   contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
-  allContexts = [];
+  allContexts: string[];
   selectedContextOption: string;
   isContextSelected = false;
 
@@ -39,6 +37,7 @@ export class AddMetricsComponent implements OnInit, OnDestroy {
         this.allContexts = Object.keys(this.contextMetaData.contextMetadata);
       }
     });
+
     this.options = new JsonEditorOptions();
     this.options.mode = 'code';
     this.options.statusBar = false;

@@ -120,10 +120,12 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   applyFilter(filterValue: string) {
     this.filterMetricsPredicate(this.selectedMetricFilterOption);
+
     if (typeof filterValue === 'string') {
       this.allMetrics.filter = filterValue.trim().toLowerCase();
     }
   }
+
   filterMetricsPredicate(type: METRIC_SEARCH_KEY) {
     this.allMetrics.filterPredicate = (data, filter: string): boolean => {
       switch (type) {
@@ -140,6 +142,7 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     };
   }
+
   changeMetricMode(event) {
     this.keyEditMode = !event.checked;
   }
