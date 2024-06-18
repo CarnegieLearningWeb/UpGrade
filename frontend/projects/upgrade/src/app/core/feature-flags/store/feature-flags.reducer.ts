@@ -2,7 +2,6 @@ import { createReducer, Action, on } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
 import { FeatureFlagState, FeatureFlag, FLAG_SEARCH_KEY } from './feature-flags.model';
 import * as FeatureFlagsActions from './feature-flags.actions';
-import { FEATURE_FLAG_STATUS } from '../../../../../../../../types/src';
 
 export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFlag>();
 
@@ -13,6 +12,7 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingFeatureFlags: false,
   isLoadingUpdateFeatureFlagStatus: false,
   isLoadingFeatureFlagDetail: false,
+  isLoadingFeatureFlagDelete: false,
   hasInitialFeatureFlagsDataLoaded: false,
   activeDetailsTabIndex: 0,
   skipFlags: 0,
@@ -60,7 +60,17 @@ const reducer = createReducer(
       isLoadingAddFeatureFlag: false,
     });
   }),
-  on(FeatureFlagsActions.actionDeleteFeatureFlagSuccess, (state, { flag }) => adapter.removeOne(flag.id, state)),
+  on(FeatureFlagsActions.actionDeleteFeatureFlag, (state) => ({ ...state, isLoadingFeatureFlagDelete: true })),
+  on(FeatureFlagsActions.actionDeleteFeatureFlagSuccess, (state, { flag }) => {
+    return adapter.removeOne(flag.id, {
+      ...state,
+      isLoadingFeatureFlagDelete: false,
+    });
+  }),
+  on(FeatureFlagsActions.actionDeleteFeatureFlagFailure, (state) => ({
+    ...state,
+    isLoadingFeatureFlagDelete: false,
+  })),
   on(FeatureFlagsActions.actionAddFeatureFlagFailure, (state) => ({ ...state, isLoadingAddFeatureFlag: false })),
   on(FeatureFlagsActions.actionSetSkipFlags, (state, { skipFlags }) => ({ ...state, skipFlags })),
   on(FeatureFlagsActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),

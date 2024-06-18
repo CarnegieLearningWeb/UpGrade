@@ -5,7 +5,7 @@
       [cancelBtnLabel]="data.cancelBtnLabel"
       [primaryActionBtnLabel]="data.primaryActionBtnLabel"
       [primaryActionBtnColor]="data.primaryActionBtnColor"
-      [primaryActionBtnDisabled$]="isDeleteNotTyped$"
+      [primaryActionBtnDisabled$]="isDeleteActionBtnDisabled$"
       (primaryActionBtnClicked)="onPrimaryActionBtnClicked(flag.id)"
     >
       <div mat-dialog-content class="dialog">
