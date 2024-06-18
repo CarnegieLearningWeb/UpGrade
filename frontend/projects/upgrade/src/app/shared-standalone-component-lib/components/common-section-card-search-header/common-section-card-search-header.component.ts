@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,12 +17,17 @@ import { TranslateModule } from '@ngx-translate/core';
  * ```
  * <app-common-section-card-search-header
  *   [filterOptions]="['Name', 'Status', 'Context']"
- *   [initialSearchValue]="'Experiment 1'"
- *   [initialFilterOption]="'Name'"
+ *   [searchString]="'Experiment 1'"
+ *   [searchKey]="'Name'"
  *   (search)="onSearch($event)"
  * ></app-common-section-card-search-header>
  * ```
  */
+
+export interface CommonSearchWidgetSearchParams<SearchKeyType> {
+  searchKey: SearchKeyType | string;
+  searchString: string;
+}
 
 @Component({
   standalone: true,
@@ -40,28 +45,16 @@ import { TranslateModule } from '@ngx-translate/core';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommonSectionCardSearchHeaderComponent implements OnInit {
-  @Input() filterOptions: string[] = [];
-  @Input() initialSearchValue = '';
-  @Input() initialFilterOption = '';
-  @Output() search = new EventEmitter<{ filterOption: string; searchValue: string }>();
-
-  selectedFilterOption = '';
-  searchValue = '';
-
-  ngOnInit(): void {
-    if (this.initialSearchValue) {
-      this.searchValue = this.initialSearchValue;
-    }
-    if (this.filterOptions.length > 0) {
-      this.selectedFilterOption = this.initialFilterOption;
-    }
-  }
+export class CommonSectionCardSearchHeaderComponent {
+  @Input() filterOptions: string[];
+  @Input() searchString: string;
+  @Input() searchKey: string;
+  @Output() search = new EventEmitter<CommonSearchWidgetSearchParams<string>>();
 
   onSearch(): void {
     this.search.emit({
-      filterOption: this.selectedFilterOption,
-      searchValue: this.searchValue,
+      searchKey: this.searchKey,
+      searchString: this.searchString,
     });
   }
 }

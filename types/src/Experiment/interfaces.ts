@@ -130,6 +130,7 @@ export interface IFeatureFlag {
   id: string;
   name: string;
   key: string;
+  context: string[];
   description: string;
   variationType: string;
   status: boolean;

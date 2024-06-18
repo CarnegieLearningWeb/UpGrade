@@ -1,0 +1,33 @@
+<div class="modal-container">
+  <ng-container *ngIf="selectedFlag$ | async as flag">
+    <app-common-dialog
+      [title]="data.title"
+      [cancelBtnLabel]="data.cancelBtnLabel"
+      [primaryActionBtnLabel]="data.primaryActionBtnLabel"
+      [primaryActionBtnColor]="data.primaryActionBtnColor"
+      [primaryActionBtnDisabled$]="isDeleteActionBtnDisabled$"
+      (primaryActionBtnClicked)="onPrimaryActionBtnClicked(flag.id)"
+    >
+      <div mat-dialog-content class="dialog">
+        <div class="warning-msg">
+          <span>{{ 'feature-flags.delete-modal.warning-message.text' | translate }} "{{flag.name}}"?</span>
+        </div>
+        <div class="ft-18-600 confirm-delete">
+          {{ 'global.delete-confirmation.message.text' | translate }}
+        </div>
+        <mat-form-field
+          class="dense-2 confirmation-field"
+          appearance="outline"
+        >
+          <input
+            class="ft-14-400 confirmation-text-input"
+            matInput
+            [placeholder]="'global.delete.input-placeholder.text' | translate"
+            [(ngModel)]="inputValue"
+            (ngModelChange)="onInputChange($event)"
+          />
+        </mat-form-field>
+      </div>
+    </app-common-dialog>
+  </ng-container>
+</div>

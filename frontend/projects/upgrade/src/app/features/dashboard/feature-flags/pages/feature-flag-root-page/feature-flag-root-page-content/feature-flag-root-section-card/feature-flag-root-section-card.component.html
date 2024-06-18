@@ -2,9 +2,9 @@
   <!-- header-left -->
   <app-common-section-card-search-header
     header-left
-    [filterOptions]="['All', 'Name', 'Status', 'Context']"
-    [initialFilterOption]="'All'"
-    [initialSearchValue]=""
+    [filterOptions]="featureFlagFilterOption"
+    [searchKey]="searchKey$ | async"
+    [searchString]="searchString$ | async"
     (search)="onSearch($event)"
   ></app-common-section-card-search-header>
 
@@ -27,9 +27,9 @@
     </ng-container>
 
     <ng-template #table>
-      <app-feature-flag-root-section-card-table
+      <app-feature-flag-root-section-card-table 
         class="full-width"
-        [dataSource$]="allFeatureFlags$"
+        [dataSource$]="dataSource$ | async"
         [isLoading$]="isLoadingFeatureFlags$"
       ></app-feature-flag-root-section-card-table>
     </ng-template>

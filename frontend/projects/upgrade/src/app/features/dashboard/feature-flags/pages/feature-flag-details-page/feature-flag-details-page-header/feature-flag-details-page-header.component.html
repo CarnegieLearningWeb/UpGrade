@@ -1,6 +1,6 @@
 <app-common-details-page-header
   rootName="feature-flags.title.text"
-  [detailsName]="flagName"
+  [detailsName]="(selectedFeatureFlag$ | async)?.name ?? ''"
   rootLink="featureflags"
 >
 </app-common-details-page-header>
