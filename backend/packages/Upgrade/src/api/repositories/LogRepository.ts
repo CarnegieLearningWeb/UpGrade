@@ -132,10 +132,7 @@ export class LogRepository extends Repository<Log> {
   }
 
   // TODO check if subQuery is better way of doing it
-  public async getLogPerExperimentQueryForUser(
-    experimentId: string,
-    userIds: string[]
-  ): Promise<
+  public async getLogPerExperimentQueryForUser(experimentId: string): Promise<
     Array<{
       data: Record<string, any>;
       id: string;
@@ -164,7 +161,6 @@ export class LogRepository extends Repository<Log> {
       .innerJoin('queries.metric', 'metric')
       .innerJoin('metric.logs', 'logs')
       .where('experiment.id=:experimentId', { experimentId })
-      .andWhere('logs."userId" IN (:...userIds)', { userIds })
       .execute();
   }
 
@@ -193,9 +189,7 @@ export class LogRepository extends Repository<Log> {
         };
       } else {
         const { conditionId } = res;
-        const percentageQueryConditionRes = percentQueryResult.find(
-          (queryRes) => queryRes.conditionId === conditionId
-        );
+        const percentageQueryConditionRes = percentQueryResult.find((queryRes) => queryRes.conditionId === conditionId);
         return {
           conditionId: conditionId,
           result: (res.result / percentageQueryConditionRes.result) * 100,
@@ -214,15 +208,16 @@ export class LogRepository extends Repository<Log> {
       query: { operationType, compareFn, compareValue },
       repeatedMeasure,
     } = query;
-  
+
     const metricId = metricKey.split(METRICS_JOIN_TEXT);
     const isFactorialExperiment = experimentType === EXPERIMENT_TYPE.FACTORIAL;
     const isContinuousMetric = metricType === 'continuous';
     const metricString = this.prepareMetricString(metricId, compareFn);
     const operation = repeatedMeasure === REPEATED_MEASURE.earliest ? 'min' : 'max';
     const queryFunction = operationType === OPERATION_TYPES.MEDIAN ? 'percentile_cont(0.5)' : 'mode()';
-  
-    const jsonDataValueLog = compareFn && metricId.length <= 1 ? `sqlog.data ->> ${metricString}` : `sqlog.data -> ${metricString}`;
+
+    const jsonDataValueLog =
+      compareFn && metricId.length <= 1 ? `sqlog.data ->> ${metricString}` : `sqlog.data -> ${metricString}`;
     const jsonDataValue = `logs.data -> ${metricString}`;
 
     // main query to execute:
@@ -234,8 +229,10 @@ export class LogRepository extends Repository<Log> {
       isFactorialExperiment,
       unitOfAssignment
     );
-    
-    let andQuery = isContinuousMetric ? `jsonb_typeof(${jsonDataValueLog}) = 'number'` : `${jsonDataValueLog} IS NOT NULL`;
+
+    const andQuery = isContinuousMetric
+      ? `jsonb_typeof(${jsonDataValueLog}) = 'number'`
+      : `${jsonDataValueLog} IS NOT NULL`;
 
     let valueToUse = this.addRepeatedMeasureQuery(
       repeatedMeasure,
@@ -249,19 +246,21 @@ export class LogRepository extends Repository<Log> {
 
     if (compareFn) {
       const castType = isContinuousMetric ? 'decimal' : 'text';
-      let castFn = `(cast(${valueToUse} as ${castType}))`;
-      
-      percentQuery = (unitOfAssignment !== 'within-subjects') ?
-        this.getCommonAnalyticQuery(
-          metricKey,
-          experimentId,
-          queryId,
-          jsonDataValue,
-          isFactorialExperiment,
-          unitOfAssignment
-        ).andWhere(`${castFn} In (:...allowedData)`, {
-          allowedData,
-        }) : this.getCommonAnalyticQuery(
+      const castFn = `(cast(${valueToUse} as ${castType}))`;
+
+      percentQuery =
+        unitOfAssignment !== 'within-subjects'
+          ? this.getCommonAnalyticQuery(
+              metricKey,
+              experimentId,
+              queryId,
+              jsonDataValue,
+              isFactorialExperiment,
+              unitOfAssignment
+            ).andWhere(`${castFn} In (:...allowedData)`, {
+              allowedData,
+            })
+          : this.getCommonAnalyticQuery(
               metricKey,
               experimentId,
               queryId,
@@ -278,12 +277,14 @@ export class LogRepository extends Repository<Log> {
         unitOfAssignment
       );
 
-      percentQuery = (unitOfAssignment !== 'within-subjects') ? (isFactorialExperiment
-        ? percentQuery.addGroupBy('"levelCombinationElement"."levelId"')
-        : percentQuery.addGroupBy('"individualEnrollment"."conditionId"')) : 
-        (isFactorialExperiment
-        ? percentQuery.addGroupBy('"levelCombinationElement"."levelId", "monitoredDecisionPoint"."userId"')
-        : percentQuery.addGroupBy('"experimentCondition"."conditionId", "monitoredDecisionPoint"."userId"'));
+      percentQuery =
+        unitOfAssignment !== 'within-subjects'
+          ? isFactorialExperiment
+            ? percentQuery.addGroupBy('"levelCombinationElement"."levelId"')
+            : percentQuery.addGroupBy('"individualEnrollment"."conditionId"')
+          : isFactorialExperiment
+          ? percentQuery.addGroupBy('"levelCombinationElement"."levelId", "monitoredDecisionPoint"."userId"')
+          : percentQuery.addGroupBy('"experimentCondition"."conditionId", "monitoredDecisionPoint"."userId"');
 
       executeQuery = executeQuery.andWhere(`${castFn} ${compareFn} :compareValue`, {
         compareValue,
@@ -297,15 +298,19 @@ export class LogRepository extends Repository<Log> {
     } else {
       if (operationType === OPERATION_TYPES.STDEV) {
         executeQuery = isFactorialExperiment
-        ? executeQuery.groupBy(`"levelCombinationElement"."levelId", "monitoredDecisionPoint"."userId", ${valueToUse}`)
-        : executeQuery.groupBy(`"experimentCondition"."conditionId", "monitoredDecisionPoint"."userId", ${valueToUse}`);
+          ? executeQuery.groupBy(
+              `"levelCombinationElement"."levelId", "monitoredDecisionPoint"."userId", ${valueToUse}`
+            )
+          : executeQuery.groupBy(
+              `"experimentCondition"."conditionId", "monitoredDecisionPoint"."userId", ${valueToUse}`
+            );
       } else {
         if (operationType !== OPERATION_TYPES.PERCENTAGE) {
           executeQuery = isFactorialExperiment
             ? executeQuery.groupBy('"levelCombinationElement"."levelId", "monitoredDecisionPoint"."userId"')
             : executeQuery.groupBy('"experimentCondition"."conditionId", "monitoredDecisionPoint"."userId"');
         }
-        }
+      }
     }
 
     if (operationType === OPERATION_TYPES.PERCENTAGE) {
@@ -324,8 +329,8 @@ export class LogRepository extends Repository<Log> {
             ]);
       } else {
         executeQuery = isFactorialExperiment
-            ? executeQuery.groupBy('"levelCombinationElement"."levelId"')
-            : executeQuery.groupBy('"experimentCondition"."conditionId"');
+          ? executeQuery.groupBy('"levelCombinationElement"."levelId"')
+          : executeQuery.groupBy('"experimentCondition"."conditionId"');
         executeQuery = isFactorialExperiment
           ? executeQuery.select([
               '"levelCombinationElement"."levelId"',
@@ -355,7 +360,7 @@ export class LogRepository extends Repository<Log> {
       percentQuery.addSelect('COUNT(DISTINCT "individualEnrollment"."userId") as "participantsLogged"');
 
       if (unitOfAssignment === 'within-subjects') {
-        let conditionOrLevelId = isFactorialExperiment ? "levelId" : "conditionId"; 
+        const conditionOrLevelId = isFactorialExperiment ? 'levelId' : 'conditionId';
         const withinSubjectPercentQuery = getManager()
           .createQueryBuilder()
           .select([
@@ -379,7 +384,6 @@ export class LogRepository extends Repository<Log> {
 
       // calculate percentage:
       return this.calculatePercentageResult(executeQueryResult, percentQueryResult, isFactorialExperiment);
-
     } else {
       // For Median, Mode, Count, Sum, Min, Max, Average/Mean, Standard Deviation
       if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
@@ -461,7 +465,8 @@ export class LogRepository extends Repository<Log> {
                   `${operation}("logs"."updatedAt")`,
                   `"monitoredDecisionPoint"."userId" as "userId"`,
                 ]);
-          } else { // for stdev dont have operationType in subquery
+          } else {
+            // for stdev dont have operationType in subquery
             executeQuery = isFactorialExperiment
               ? executeQuery.select([
                   '"levelCombinationElement"."levelId"',
@@ -483,7 +488,7 @@ export class LogRepository extends Repository<Log> {
 
       if (unitOfAssignment === 'within-subjects') {
         let withinSubjectExecuteQuery;
-        let conditionOrLevelId = isFactorialExperiment ? "levelId" : "conditionId"; 
+        const conditionOrLevelId = isFactorialExperiment ? 'levelId' : 'conditionId';
         if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
           withinSubjectExecuteQuery = getManager()
             .createQueryBuilder()
@@ -693,100 +698,125 @@ export class LogRepository extends Repository<Log> {
       .innerJoin('experiment.queries', 'queries')
       .innerJoin('queries.metric', 'metric')
       .innerJoinAndSelect('metric.logs', 'logs');
-  
+
     if (unitOfAssignment !== 'within-subjects') {
       analyticsQuery
         .innerJoinAndSelect(
-          (qb) => qb
-            .subQuery()
-            .select([
-              `"individualEnrollment"."userId" as "userId"`,
-              `"individualEnrollment"."experimentId" as "experimentId"`,
-              `"individualEnrollment"."conditionId" as "conditionId"`,
-            ])
-            .distinct()
-            .from(IndividualEnrollment, 'individualEnrollment')
-        , 'individualEnrollment', 'experiment.id = "individualEnrollment"."experimentId" AND logs."userId" = "individualEnrollment"."userId"')
+          (qb) =>
+            qb
+              .subQuery()
+              .select([
+                `"individualEnrollment"."userId" as "userId"`,
+                `"individualEnrollment"."experimentId" as "experimentId"`,
+                `"individualEnrollment"."conditionId" as "conditionId"`,
+              ])
+              .distinct()
+              .from(IndividualEnrollment, 'individualEnrollment'),
+          'individualEnrollment',
+          'experiment.id = "individualEnrollment"."experimentId" AND logs."userId" = "individualEnrollment"."userId"'
+        )
         .innerJoinAndSelect(
-          (qb) => qb
-            .subQuery()
-            .select([`${metricString} as value`, 'logs.id as id'])
-            .from(Log, 'logs')
-        , 'extracted', 'extracted.id = logs.id');
+          (qb) =>
+            qb
+              .subQuery()
+              .select([`${metricString} as value`, 'logs.id as id'])
+              .from(Log, 'logs'),
+          'extracted',
+          'extracted.id = logs.id'
+        );
     } else {
       analyticsQuery
         .innerJoinAndSelect(
-          (qb) => qb
-            .subQuery()
-            .select([
-              `"individualEnrollment"."userId" as "userId"`,
-              `"individualEnrollment"."experimentId" as "experimentId"`,
-            ])
-            .distinct()
-            .from(IndividualEnrollment, 'individualEnrollment')
-        , 'individualEnrollment', 'experiment.id = "individualEnrollment"."experimentId" AND logs."userId" = "individualEnrollment"."userId"')
+          (qb) =>
+            qb
+              .subQuery()
+              .select([
+                `"individualEnrollment"."userId" as "userId"`,
+                `"individualEnrollment"."experimentId" as "experimentId"`,
+              ])
+              .distinct()
+              .from(IndividualEnrollment, 'individualEnrollment'),
+          'individualEnrollment',
+          'experiment.id = "individualEnrollment"."experimentId" AND logs."userId" = "individualEnrollment"."userId"'
+        )
         .innerJoinAndSelect(
-          (qb) => qb
-            .subQuery()
-            .select([
-              `"monitoredDecisionPoint"."userId" as "userId"`,
-              `"monitoredDecisionPoint"."id" as "monitoredDecisionPointId"`,
-              `"monitoredDecisionPoint"."experimentId" as "experimentId"`,
-            ])
-            .distinct()
-            .from(MonitoredDecisionPoint, 'monitoredDecisionPoint')
-        , 'monitoredDecisionPoint', '"individualEnrollment"."userId" = "monitoredDecisionPoint"."userId" AND "experiment"."id"::text = "monitoredDecisionPoint"."experimentId"')
+          (qb) =>
+            qb
+              .subQuery()
+              .select([
+                `"monitoredDecisionPoint"."userId" as "userId"`,
+                `"monitoredDecisionPoint"."id" as "monitoredDecisionPointId"`,
+                `"monitoredDecisionPoint"."experimentId" as "experimentId"`,
+              ])
+              .distinct()
+              .from(MonitoredDecisionPoint, 'monitoredDecisionPoint'),
+          'monitoredDecisionPoint',
+          '"individualEnrollment"."userId" = "monitoredDecisionPoint"."userId" AND "experiment"."id"::text = "monitoredDecisionPoint"."experimentId"'
+        )
         .innerJoinAndSelect(
-          (qb) => qb
-            .subQuery()
-            .select([
-              `"monitoredDecisionPointLog"."uniquifier" as "uniquifier"`,
-              `"monitoredDecisionPointLog"."condition" as "condition"`,
-              `"monitoredDecisionPointLog"."monitoredDecisionPointId" as "monitoredDecisionPointId"`,
-            ])
-            .distinct()
-            .from(MonitoredDecisionPointLog, 'monitoredDecisionPointLog')
-        , 'monitoredDecisionPointLog', '"monitoredDecisionPoint"."monitoredDecisionPointId" = "monitoredDecisionPointLog"."monitoredDecisionPointId" AND logs."uniquifier" = "monitoredDecisionPointLog"."uniquifier"')
+          (qb) =>
+            qb
+              .subQuery()
+              .select([
+                `"monitoredDecisionPointLog"."uniquifier" as "uniquifier"`,
+                `"monitoredDecisionPointLog"."condition" as "condition"`,
+                `"monitoredDecisionPointLog"."monitoredDecisionPointId" as "monitoredDecisionPointId"`,
+              ])
+              .distinct()
+              .from(MonitoredDecisionPointLog, 'monitoredDecisionPointLog'),
+          'monitoredDecisionPointLog',
+          '"monitoredDecisionPoint"."monitoredDecisionPointId" = "monitoredDecisionPointLog"."monitoredDecisionPointId" AND logs."uniquifier" = "monitoredDecisionPointLog"."uniquifier"'
+        )
         .innerJoinAndSelect(
-          (qb) => qb
-            .subQuery()
-            .select([
-              `"experimentCondition"."conditionCode" as "condition"`,
-              `"experimentCondition"."id" as "conditionId"`,
-            ])
-            .distinct()
-            .from(ExperimentCondition, 'experimentCondition')
-        , 'experimentCondition', '"monitoredDecisionPointLog"."condition" = "experimentCondition"."condition"')
+          (qb) =>
+            qb
+              .subQuery()
+              .select([
+                `"experimentCondition"."conditionCode" as "condition"`,
+                `"experimentCondition"."id" as "conditionId"`,
+              ])
+              .distinct()
+              .from(ExperimentCondition, 'experimentCondition'),
+          'experimentCondition',
+          '"monitoredDecisionPointLog"."condition" = "experimentCondition"."condition"'
+        )
         .innerJoinAndSelect(
-          (qb) => qb
-            .subQuery()
-            .select([`${metricString} as value`, 'logs.id as id'])
-            .from(Log, 'logs')
-        , 'extracted', 'extracted.id = logs.id');
+          (qb) =>
+            qb
+              .subQuery()
+              .select([`${metricString} as value`, 'logs.id as id'])
+              .from(Log, 'logs'),
+          'extracted',
+          'extracted.id = logs.id'
+        );
     }
-  
+
     if (isFactorialExperiment) {
-      const conditionIdCondition = unitOfAssignment !== 'within-subjects' ?
-        '"levelCombinationElement"."LCEconditionId" = "individualEnrollment"."conditionId"' :
-        '"levelCombinationElement"."LCEconditionId" = "experimentCondition"."conditionId"';
-  
+      const conditionIdCondition =
+        unitOfAssignment !== 'within-subjects'
+          ? '"levelCombinationElement"."LCEconditionId" = "individualEnrollment"."conditionId"'
+          : '"levelCombinationElement"."LCEconditionId" = "experimentCondition"."conditionId"';
+
       analyticsQuery.innerJoinAndSelect(
-        (qb) => qb
-          .subQuery()
-          .select([
-            `"levelCombinationElement"."conditionId" as "LCEconditionId"`,
-            `"levelCombinationElement"."levelId" as "levelId"`,
-          ])
-          .distinct()
-          .from(LevelCombinationElement, 'levelCombinationElement')
-        , 'levelCombinationElement', conditionIdCondition);
+        (qb) =>
+          qb
+            .subQuery()
+            .select([
+              `"levelCombinationElement"."conditionId" as "LCEconditionId"`,
+              `"levelCombinationElement"."levelId" as "levelId"`,
+            ])
+            .distinct()
+            .from(LevelCombinationElement, 'levelCombinationElement'),
+        'levelCombinationElement',
+        conditionIdCondition
+      );
     }
-  
+
     analyticsQuery
       .where('metric.key = :metric', { metric })
       .andWhere('experiment.id = :experimentId', { experimentId })
       .andWhere('queries.id = :queryId', { queryId });
-  
+
     return analyticsQuery;
   }
 }
