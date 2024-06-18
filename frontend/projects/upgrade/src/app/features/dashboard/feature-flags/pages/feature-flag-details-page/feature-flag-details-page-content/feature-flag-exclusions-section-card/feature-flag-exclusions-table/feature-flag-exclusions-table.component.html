@@ -1,48 +1,7 @@
-<div class="flags-list-container">
-  <div scroll (scrolled)="fetchFlagsOnScroll()" class="flags-list-table-container" #tableContainer>
-    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
-    <table class="flags-list" mat-table [dataSource]="dataSource$" matSort (matSortChange)="changeSorting($event)">
-      
-      <!-- Name Column -->
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-        <td mat-cell *matCellDef="let flag">{{ flag.groupId }}</td>
-      </ng-container>
-
-      <!-- Type Column -->
-      <ng-container matColumnDef="type">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
-        <td mat-cell *matCellDef="let flag">{{ flag.type }}</td>
-      </ng-container>
-
-      <!-- Status Column -->
-      <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef>Status</th>
-        <td mat-cell *matCellDef="let flag">
-          <mat-slide-toggle></mat-slide-toggle>
-        </td>
-      </ng-container>
-
-      <!-- Actions Column -->
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Actions</th>
-        <td mat-cell *matCellDef="let flag">
-          <button class="table-row-action-button" mat-icon-button>
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button class="table-row-action-button" mat-icon-button>
-            <mat-icon>delete</mat-icon>
-          </button>
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      <tr *matNoDataRow>
-        <td class="no-data-row" [attr.colspan]="displayedColumns.length">
-          {{ 'feature-flags.details.exclusions.card.no-data-row.text' | translate }}
-        </td>
-      </tr>
-    </table>
-  </div>
+<div class="exclusions-table-container">
+  <app-common-details-participant-list-table
+    [dataSource]="dataSource$ | async"
+    [isLoading]="isLoading$ | async"
+    noDataRowText="feature-flags.details.exclusions.card.no-data-row.text"
+  ></app-common-details-participant-list-table>
 </div>
