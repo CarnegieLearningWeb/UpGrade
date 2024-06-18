@@ -39,11 +39,7 @@
         >
       </mat-form-field>
 
-      <!-- TODO: create a story to create a tag input common component, don't want to copy over the logic of the mat-tag-grid from experiment-overview here -->
-      <mat-form-field appearance="outline">
-        <mat-label>Tags (optional)</mat-label>
-        <input matInput formControlName="tags" placeholder="Tags separated by commas" />
-      </mat-form-field>
+      <app-common-tags-input formControlName="tags"></app-common-tags-input>
     </form>
   </app-common-dialog>
 </div>
