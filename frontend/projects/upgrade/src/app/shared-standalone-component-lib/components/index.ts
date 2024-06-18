@@ -9,6 +9,7 @@ import { CommonModalComponent } from './common-modal/common-modal.component';
 import { CommonStatusIndicatorChipComponent } from './common-status-indicator-chip/common-status-indicator-chip.component';
 import { CommonSectionCardTitleHeaderComponent } from './common-section-card-title-header/common-section-card-title-header.component';
 import { CommonSectionCardOverviewDetailsComponent } from './common-section-card-overview-details/common-section-card-overview-details.component';
+import { CommonTagsInputComponent } from './common-tag-input/common-tag-input.component';
 
 export {
   CommonPageComponent,
@@ -22,4 +23,5 @@ export {
   CommonSectionCardOverviewDetailsComponent,
   CommonModalComponent,
   CommonStatusIndicatorChipComponent,
+  CommonTagsInputComponent,
 };
