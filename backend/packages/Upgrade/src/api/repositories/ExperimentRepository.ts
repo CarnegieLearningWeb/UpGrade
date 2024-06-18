@@ -433,7 +433,7 @@ export class ExperimentRepository extends Repository<Experiment> {
     }
   }
 
-  public createBaseQueryBuilder() {
+  private createBaseQueryBuilder() {
     return this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
