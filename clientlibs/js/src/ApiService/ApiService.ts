@@ -3,8 +3,7 @@ import { DefaultHttpClient } from '../DefaultHttpClient/DefaultHttpClient';
 import {
   CaliperEnvelope,
   IExperimentAssignmentv5,
-  IFeatureFlag,
-  IFlagVariation,
+  IGroupMetric,
   ILogInput,
   IUserAliases,
   ILogRequestBody,
@@ -289,23 +288,28 @@ export default class ApiService {
     });
   }
 
-  public async getAllFeatureFlags(): Promise<IFeatureFlag[]> {
-    const response = await this.sendRequest<IFeatureFlag[], never>({
+  public addMetrics(metrics: (ISingleMetric | IGroupMetric)[]): Promise<UpGradeClientInterfaces.IMetric[]> {
+    const requestBody = { metricUnit: metrics };
+
+    return this.sendRequest<UpGradeClientInterfaces.IMetric[], UpGradeClientInterfaces.IMetric[]>({
+      path: this.api.addMetrics,
+      method: UpGradeClientEnums.REQUEST_METHOD.POST,
+      body: requestBody,
+    });
+  }
+
+  public async getAllFeatureFlags(): Promise<string[]> {
+    const requestBody: UpGradeClientRequests.IGetAllFeatureFlagsRequestBody = {
+      userId: this.userId,
+      context: this.context,
+    };
+
+    const response = await this.sendRequest<string[], never>({
       path: this.api.getAllFeatureFlag,
-      method: UpGradeClientEnums.REQUEST_METHOD.GET,
+      method: UpGradeClientEnums.REQUEST_METHOD.POST,
+      body: requestBody,
     });
 
-    return response.map((flag: IFeatureFlag) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { variations, ...rest } = flag;
-      const updatedVariations = variations.map((variation: IFlagVariation) => {
-        const { ...restVariation } = variation;
-        return restVariation;
-      });
-      return {
-        ...rest,
-        variations: updatedVariations,
-      };
-    });
+    return response;
   }
 }
