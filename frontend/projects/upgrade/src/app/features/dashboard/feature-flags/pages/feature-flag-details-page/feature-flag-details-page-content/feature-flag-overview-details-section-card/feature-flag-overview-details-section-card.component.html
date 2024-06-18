@@ -25,7 +25,10 @@
 
   <!-- content -->
   <ng-container content *ngIf="isSectionCardExpanded">
-    <div style="background-color: beige; height: 90px; width: 100%">content: Details Overview</div>
+    <app-common-section-card-overview-details
+      class="full-width"
+      [data]="flagOverviewDetails"
+    ></app-common-section-card-overview-details>
   </ng-container>
 
   <!-- footer -->

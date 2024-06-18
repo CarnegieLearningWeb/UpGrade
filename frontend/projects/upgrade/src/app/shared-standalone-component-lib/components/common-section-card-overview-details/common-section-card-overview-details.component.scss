@@ -1,0 +1,22 @@
+.content-section {
+  width: 100%;
+  background-color: var(--white);
+
+  .item-key-value {
+    display: flex;
+    align-items: center;
+    line-height: 2;
+  }
+
+  .item-key {
+    margin-right: 8px;
+  }
+
+  .item-value {
+    color: var(--dark-grey);
+  }
+
+  .chip {
+    margin-right: 5px;
+  }
+}

@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Injectable } from '@angular/core';
 import * as FeatureFlagsActions from './feature-flags.actions';
 import { catchError, switchMap, map, filter, withLatestFrom, tap, first } from 'rxjs/operators';
-import { FeatureFlagsPaginationParams, NUMBER_OF_FLAGS } from './feature-flags.model';
+import { FeatureFlag, FeatureFlagsPaginationParams, NUMBER_OF_FLAGS } from './feature-flags.model';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../../core.module';
@@ -92,13 +92,28 @@ export class FeatureFlagsEffects {
           map((response) => {
             return FeatureFlagsActions.actionAddFeatureFlagSuccess({ response });
           }),
-          // TODO: currently we are not handling errors #https://github.com/CarnegieLearningWeb/UpGrade/issues/1604
           catchError(() => [FeatureFlagsActions.actionAddFeatureFlagFailure()])
         );
       })
     )
   );
 
+  deleteFeatureFlag$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionDeleteFeatureFlag),
+      map((action) => action.flagId),
+      filter((id) => !!id),
+      switchMap((id) =>
+        this.featureFlagsDataService.deleteFeatureFlag(id).pipe(
+          map((data: any) => {
+            this.router.navigate(['/featureflags']);
+            return FeatureFlagsActions.actionDeleteFeatureFlagSuccess({ flag: data[0] });
+          }),
+          catchError(() => [FeatureFlagsActions.actionDeleteFeatureFlagFailure()])
+        )
+      )
+    )
+  );
 
   fetchFeatureFlagsOnSearchString$ = createEffect(
     () =>
@@ -127,6 +142,22 @@ export class FeatureFlagsEffects {
         })
       ),
     { dispatch: false }
+  );
+
+  fetchFeatureFlagById$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionFetchFeatureFlagById),
+      map((action) => action.featureFlagId),
+      filter((featureFlagId) => !!featureFlagId),
+      switchMap((featureFlagId) =>
+        this.featureFlagsDataService.fetchFeatureFlagById(featureFlagId).pipe(
+          map((data: FeatureFlag) => {
+            return FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess({ flag: data });
+          }),
+          catchError(() => [FeatureFlagsActions.actionFetchFeatureFlagByIdFailure()])
+        )
+      )
+    )
   );
 
   private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());

@@ -8,6 +8,7 @@ import { CommonSectionCardComponent } from './common-section-card/common-section
 import { CommonModalComponent } from './common-modal/common-modal.component';
 import { CommonStatusIndicatorChipComponent } from './common-status-indicator-chip/common-status-indicator-chip.component';
 import { CommonSectionCardTitleHeaderComponent } from './common-section-card-title-header/common-section-card-title-header.component';
+import { CommonSectionCardOverviewDetailsComponent } from './common-section-card-overview-details/common-section-card-overview-details.component';
 
 export {
   CommonPageComponent,
@@ -18,6 +19,7 @@ export {
   CommonSectionCardSearchHeaderComponent,
   CommonSectionCardTitleHeaderComponent,
   CommonSectionCardActionButtonsComponent,
+  CommonSectionCardOverviewDetailsComponent,
   CommonModalComponent,
   CommonStatusIndicatorChipComponent,
 };
