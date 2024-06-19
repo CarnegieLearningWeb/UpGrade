@@ -444,6 +444,7 @@
   "metric.read-mode.text": "Read mode",
   "metric.add-metrics.text": "ADD METRICS",
   "query.table-id.text": "ID",
+  "query.table-context.text": "CONTEXT",
   "query.metric.text": "METRIC",
   "query.table-name.text": "NAME",
   "query.query-name.text": "Name",
