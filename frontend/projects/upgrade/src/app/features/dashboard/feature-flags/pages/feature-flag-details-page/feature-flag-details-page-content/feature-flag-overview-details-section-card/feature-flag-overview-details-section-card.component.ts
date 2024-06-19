@@ -12,8 +12,6 @@ import { FEATURE_FLAG_STATUS, IMenuButtonItem } from 'upgrade_types';
 import { CommonModule } from '@angular/common';
 import { CommonSectionCardOverviewDetailsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
-import { MatDialogRef } from '@angular/material/dialog';
-import { UpdateFlagStatusConfirmationModalComponent } from '../../../../modals/update-flag-status-confirmation-modal/update-flag-status-confirmation-modal.component';
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,
@@ -68,25 +66,11 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   }
 
   openEnableConfirmModel(): void {
-    const dialogRef = this.dialogService.openEnableFeatureFlagConfirmModel();
-
-    dialogRef.afterClosed().subscribe(() => {
-      this.changeDetectorRef.detectChanges();
-    });
+    this.dialogService.openEnableFeatureFlagConfirmModel();
   }
 
   openDisableConfirmModel(): void {
-    const dialogRef = this.dialogService.openDisableFeatureFlagConfirmModel();
-
-    dialogRef.afterClosed().subscribe(() => {
-      this.changeDetectorRef.detectChanges();
-    });
-  }
-
-  listenForClosedModal(dialogRef: MatDialogRef<UpdateFlagStatusConfirmationModalComponent>): void {
-    dialogRef.afterClosed().subscribe(() => {
-      this.changeDetectorRef.detectChanges();
-    });
+    this.dialogService.openDisableFeatureFlagConfirmModel();
   }
 
   onMenuButtonItemClick(event) {
