@@ -10,14 +10,17 @@ import {
   selectSearchString,
   selectIsLoadingAddFeatureFlag,
   selectActiveDetailsTabIndex,
+  selectIsLoadingUpdateFeatureFlagStatus,
   selectSelectedFeatureFlag,
   selectSearchFeatureFlagParams,
   selectRootTableState,
+  selectFeatureFlagOverviewDetails,
+  selectIsLoadingFeatureFlagDelete,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
-import { AddFeatureFlagRequest } from './store/feature-flags.model';
+import { AddFeatureFlagRequest, UpdateFeatureFlagStatusRequest } from './store/feature-flags.model';
 import { ExperimentService } from '../experiments/experiments.service';
 import { filter, map, pairwise } from 'rxjs';
 
@@ -27,17 +30,31 @@ export class FeatureFlagsService {
 
   isInitialFeatureFlagsLoading$ = this.store$.pipe(select(selectHasInitialFeatureFlagsDataLoaded));
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
+  isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
   searchString$ = this.store$.pipe(select(selectSearchString));
   searchKey$ = this.store$.pipe(select(selectSearchKey));
   isLoadingAddFeatureFlag$ = this.store$.pipe(select(selectIsLoadingAddFeatureFlag));
+  IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
 
   featureFlagsListLengthChange$ = this.allFeatureFlags$.pipe(
     pairwise(),
     filter(([prevEntities, currEntities]) => prevEntities.length !== currEntities.length)
   );
+  selectedFeatureFlagStatusChange$ = this.store$.pipe(
+    select(selectSelectedFeatureFlag),
+    pairwise(),
+    filter(([prev, curr]) => prev.status !== curr.status)
+  );
+  // Observable to check if selectedFeatureFlag is removed from the store
+  isSelectedFeatureFlagRemoved$ = this.store$.pipe(
+    select(selectSelectedFeatureFlag),
+    pairwise(),
+    filter(([prev, curr]) => prev && !curr)
+  );
 
+  selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));
   selectedFeatureFlag$ = this.store$.pipe(select(selectSelectedFeatureFlag));
   searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
   selectRootTableState$ = this.store$.select(selectRootTableState);
@@ -62,6 +79,14 @@ export class FeatureFlagsService {
 
   addFeatureFlag(addFeatureFlagRequest: AddFeatureFlagRequest) {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlag({ addFeatureFlagRequest }));
+  }
+
+  enableFeatureFlag(updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionEnableFeatureFlag({ updateFeatureFlagStatusRequest }));
+  }
+
+  deleteFeatureFlag(flagId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlag({ flagId }));
   }
 
   setSearchKey(searchKey: FLAG_SEARCH_KEY) {

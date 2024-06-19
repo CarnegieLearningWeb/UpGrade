@@ -1,7 +1,6 @@
 import { Action } from 'routing-controllers';
 import { Container } from 'typedi';
 import { AuthService } from './AuthService';
-import { env } from '../env';
 import { UpgradeLogger } from '../lib/logger/UpgradeLogger';
 
 export function authorizationChecker(): (action: Action, roles: any[]) => Promise<boolean> | boolean {
@@ -13,11 +12,6 @@ export function authorizationChecker(): (action: Action, roles: any[]) => Promis
     // you can use them to provide granular access check
     // checker must return either boolean (true or false)
     // either promise that resolves a boolean value
-
-    // for testing don't check authorization
-    if (env.isTest) {
-      return true;
-    }
 
     const authService = Container.get<AuthService>(AuthService);
     const token = authService.parseBasicAuthFromRequest(action.request);

@@ -1,12 +1,12 @@
-<app-common-section-card class="details-overview-card">
+<app-common-section-card class="details-overview-card" *ngIf="featureFlag$ | async as flag">
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
-    [title]="flagName"
-    [createdAt]="flagCreatedAt"
-    [updatedAt]="flagUpdatedAt"
+    [title]="flag.name"
+    [createdAt]="flag.createdAt"
+    [updatedAt]="flag.updatedAt"
     [showViewLogs]="true"
-    [chipClass]="flagStatus"
+    [chipClass]="flag.status"
     (viewLogs)="viewLogsClicked($event)"
   ></app-common-section-card-title-header>
 
@@ -14,7 +14,7 @@
   <app-common-section-card-action-buttons
     header-right
     [showSlideToggle]="true"
-    [isEnableToggleChecked]="false"
+    [isEnableToggleChecked]="(featureFlag$ | async).status === FEATURE_FLAG_STATUS.ENABLED"
     [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
@@ -25,7 +25,10 @@
 
   <!-- content -->
   <ng-container content *ngIf="isSectionCardExpanded">
-    <app-common-section-card-overview-details class="full-width" [data]="flagOverviewDetails"></app-common-section-card-overview-details>
+    <app-common-section-card-overview-details
+      class="full-width"
+      [data]="flagOverviewDetails$ | async"
+    ></app-common-section-card-overview-details>
   </ng-container>
 
   <!-- footer -->
