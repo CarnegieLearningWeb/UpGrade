@@ -1,0 +1,28 @@
+<div class="title-header">
+  <h1 class="title ft-26-700">
+    {{ title | translate }} &nbsp;<span *ngIf="tableRowCount > 0">
+      ({{ tableRowCount }})
+  </span>
+    <ng-container *ngIf="chipClass">
+      <app-common-status-indicator-chip class="status-chip" [chipClass] = "chipClass" ></app-common-status-indicator-chip>
+    </ng-container>
+  </h1>
+  <h3 class="subtitle ft-16-400">
+    <ng-container *ngIf="subtitle">
+      {{ subtitle | translate }}
+    </ng-container>
+    <ng-container *ngIf="createdAt && updatedAt">
+      <span class="ft-16-600 segment-create-date">
+        {{ ('home.view-experiment.created-on.text' | translate) + (createdAt | formatDate: 'medium date') + ' | '}}
+      </span>
+      <span class="ft-16-600 segment-update-date">
+        {{
+          ('home.view-experiment.last-updated-on.text' | translate) + (updatedAt | formatDate: 'short date')
+        }}
+      </span>
+    </ng-container>
+    <ng-container *ngIf="showViewLogs">
+      <a [href]="" class="view-logs-link" (click)="viewLogsClicked()"> View logs</a>
+    </ng-container>
+  </h3>
+</div>

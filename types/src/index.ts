@@ -33,6 +33,7 @@ export {
   FLAG_SORT_KEY,
   FLAG_SEARCH_KEY,
   FEATURE_FLAG_STATUS,
+  STATUS_INDICATOR_CHIP_TYPE,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,

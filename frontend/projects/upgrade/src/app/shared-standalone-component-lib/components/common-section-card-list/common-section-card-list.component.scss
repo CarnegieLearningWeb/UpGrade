@@ -2,10 +2,10 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 20px;
   margin: 0;
-}
 
-.section-card {
-  margin-bottom: 20px;
+  // all direct children (section cards)
+  > * {
+    margin-bottom: 30px;
+  }
 }

@@ -112,6 +112,7 @@ export interface IExperimentSortParams {
 
 export interface IMetricUnit {
   key: string | string[];
+  context?: string[];
   children?: IMetricUnit[];
   metadata?: { type: IMetricMetaData };
   allowedData?: string[];
@@ -129,6 +130,7 @@ export interface IFeatureFlag {
   id: string;
   name: string;
   key: string;
+  context: string[];
   description: string;
   variationType: string;
   status: boolean;

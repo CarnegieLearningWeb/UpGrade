@@ -14,8 +14,7 @@ export class FeatureFlagValidation {
   @IsString()
   name: string;
 
-  @IsNotEmpty()
-  @IsDefined()
+  @IsOptional()
   @IsString()
   description: string;
 
@@ -30,16 +29,17 @@ export class FeatureFlagValidation {
   status: FEATURE_FLAG_STATUS;
 
   @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  public context: string[];
+
   @IsDefined()
   @IsEnum(FILTER_MODE)
   filterMode: FILTER_MODE;
 
   @IsNotEmpty()
   @IsArray()
-  public context: string[];
-
-  @IsNotEmpty()
-  @IsArray()
+  @IsString({ each: true })
   public tags: string[];
 
   @IsNotEmpty()
@@ -51,4 +51,16 @@ export class FeatureFlagValidation {
   @ValidateNested()
   @Type(() => ParticipantsValidator)
   public featureFlagSegmentExclusion: ParticipantsValidator;
+}
+
+export class UserParamsValidator {
+  @IsNotEmpty()
+  @IsDefined()
+  @IsString()
+  public userId: string;
+
+  @IsNotEmpty()
+  @IsDefined()
+  @IsString()
+  public context: string;
 }

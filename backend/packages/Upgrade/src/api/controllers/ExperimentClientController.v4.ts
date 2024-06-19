@@ -3,7 +3,6 @@ import {
   Post,
   Body,
   UseBefore,
-  Get,
   Req,
   InternalServerError,
   Delete,
@@ -25,7 +24,6 @@ import {
   PAYLOAD_TYPE,
   IPayload,
 } from 'upgrade_types';
-import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidator } from './validators/LogValidator';
@@ -434,14 +432,11 @@ export class ExperimentClientController {
       request.logger.info({ message: 'Got the original user doc' });
     }
     const { createdAt, updatedAt, versionNumber, ...rest } = await this.experimentAssignmentService.markExperimentPoint(
-      experiment.userId,
+      experimentUserDoc,
       experiment.data.site,
       experiment.status,
       experiment.data.assignedCondition.conditionCode,
-      {
-        logger: request.logger,
-        userDoc: experimentUserDoc,
-      },
+      request.logger,
       experiment.data.target,
       experiment.data.assignedCondition.experimentId ? experiment.data.assignedCondition.experimentId : null,
       experiment.clientError ? experiment.clientError : null
@@ -511,13 +506,11 @@ export class ExperimentClientController {
     experiment: ExperimentAssignmentValidator
   ): Promise<IExperimentAssignmentv4[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(experiment.userId, request.logger);
     const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
-      experiment.userId,
+      experimentUserDoc,
       experiment.context,
-      {
-        logger: request.logger,
-        userDoc: null,
-      }
+      request.logger
     );
 
     return assignedData.map(({ assignedFactor, assignedCondition, ...rest }) => {
@@ -639,10 +632,7 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    const logs = await this.experimentAssignmentService.dataLog(logData.userId, logData.value, {
-      logger: request.logger,
-      userDoc: experimentUserDoc,
-    });
+    const logs = await this.experimentAssignmentService.dataLog(experimentUserDoc, logData.value, request.logger);
     return logs.map(({ createdAt, updatedAt, versionNumber, ...rest }) => {
       return rest;
     });
@@ -738,7 +728,7 @@ export class ExperimentClientController {
             request.logger.info({ message: 'Got the original user doc' });
           }
           const response = await this.experimentAssignmentService.blobDataLog(
-            blobData.userId,
+            experimentUserDoc,
             blobData.value,
             request.logger
           );
@@ -765,8 +755,24 @@ export class ExperimentClientController {
   /**
    * @swagger
    * /featureflag:
-   *    get:
+   *    post:
    *       description: Get all feature flags using SDK
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: user
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *               userId:
+   *                 type: string
+   *                 example: user1
+   *               context:
+   *                 type: string
+   *                 example: add
+   *             description: User Document
    *       produces:
    *         - application/json
    *       tags:
@@ -775,9 +781,14 @@ export class ExperimentClientController {
    *          '200':
    *            description: Feature flags list
    */
-  @Get('featureflag')
-  public getAllFlags(@Req() request: AppRequest): Promise<FeatureFlag[]> {
-    return this.featureFlagService.find(request.logger);
+  @Post('featureflag')
+  public async getAllFlags(
+    @Req() request: AppRequest,
+    @Body({ validate: true })
+    experiment: ExperimentAssignmentValidator
+  ): Promise<string[]> {
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(experiment.userId, request.logger);
+    return this.featureFlagService.getKeys(experimentUserDoc, experiment.context, request.logger);
   }
 
   /**
@@ -813,7 +824,7 @@ export class ExperimentClientController {
     @Body({ validate: false })
     metric: MetricValidator
   ): Promise<Metric[]> {
-    return await this.metricService.saveAllMetrics(metric.metricUnit, request.logger);
+    return await this.metricService.saveAllMetrics(metric.metricUnit, metric.context, request.logger);
   }
 
   /**
@@ -878,10 +889,7 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    return this.experimentUserService.setAliasesForUser(user.userId, user.aliases, {
-      logger: request.logger,
-      userDoc: experimentUserDoc,
-    });
+    return this.experimentUserService.setAliasesForUser(experimentUserDoc, user.aliases, request.logger);
   }
 
   /**

@@ -1,0 +1,45 @@
+<div class="add-feature-flag-modal-container">
+  <app-common-dialog
+    [title]="config.title"
+    [cancelBtnLabel]="config.cancelBtnLabel"
+    [primaryActionBtnLabel]="config.primaryActionBtnLabel"
+    [primaryActionBtnColor]="config.primaryActionBtnColor"
+    [primaryActionBtnDisabled$]="isLoadingAddFeatureFlag$"
+    (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+  >
+    <form [formGroup]="featureFlagForm">
+      <mat-form-field appearance="outline">
+        <mat-label>Name</mat-label>
+        <input matInput formControlName="name" placeholder="e.g., My feature flag" />
+        <mat-hint class="form-hint ft-10-400">{{ 'feature-flags.add-flag-modal.name-hint.text' | translate }}</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Key</mat-label>
+        <input matInput formControlName="key" placeholder="Key for this feature flag" />
+        <mat-hint class="form-hint ft-10-400"
+          >{{ 'feature-flags.add-flag-modal.key-hint.text' | translate
+          }}<a class="learn-more-link" href="https://www.upgradeplatform.org/">Learn more</a></mat-hint
+        >
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Description (optional)</mat-label>
+        <input matInput formControlName="description" placeholder="Describe your feature flag" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>App Context</mat-label>
+        <mat-select formControlName="appContext">
+          <mat-option *ngFor="let context of appContexts$ | async" [value]="context">{{ context }}</mat-option>
+        </mat-select>
+        <mat-hint class="form-hint ft-10-400"
+          >{{ 'feature-flags.add-flag-modal.app-context-hint.text' | translate
+          }}<a class="learn-more-link" href="https://www.upgradeplatform.org/">Learn more</a></mat-hint
+        >
+      </mat-form-field>
+
+      <app-common-tags-input formControlName="tags"></app-common-tags-input>
+    </form>
+  </app-common-dialog>
+</div>

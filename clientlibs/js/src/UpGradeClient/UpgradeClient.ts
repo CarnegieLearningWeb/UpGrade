@@ -350,7 +350,7 @@ export default class UpgradeClient {
    * @ignore
    */
 
-  async getAllFeatureFlags(): Promise<IFeatureFlag[]> {
+  async getAllFeatureFlags(): Promise<string[]> {
     const response = await this.apiService.getAllFeatureFlags();
     if (response.length) {
       this.dataService.setFeatureFlags(response);
@@ -362,7 +362,10 @@ export default class UpgradeClient {
    * This feature is available but not recommended for use as it is not fully regression tested in recent releases.
    * @ignore
    */
-  public getFeatureFlag(key: string): IFeatureFlag {
+  public async getFeatureFlag(key: string): Promise<boolean> {
+    if (this.dataService.getFeatureFlags() == null) {
+      await this.getAllFeatureFlags();
+    }
     return this.dataService.getFeatureFlag(key);
   }
 

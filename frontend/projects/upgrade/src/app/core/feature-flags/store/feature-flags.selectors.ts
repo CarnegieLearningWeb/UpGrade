@@ -1,5 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { FeatureFlagState } from './feature-flags.model';
+import { FLAG_SEARCH_KEY, FeatureFlagState } from './feature-flags.model';
 import { selectRouterState } from '../../core.state';
 import { selectAll } from './feature-flags.reducer';
 
@@ -34,11 +34,23 @@ export const selectIsInitialFeatureFlagsLoading = createSelector(
   (isLoading, featureFlags) => !isLoading || !!featureFlags.length
 );
 
+export const selectIsLoadingAddFeatureFlag = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingAddFeatureFlag
+);
+
 export const selectSelectedFeatureFlag = createSelector(
   selectRouterState,
   selectFeatureFlagsState,
   ({ state: { params } }, featureFlagState) => featureFlagState.entities[params.flagId]
 );
+
+export const selectFeatureFlagOverviewDetails = createSelector(selectSelectedFeatureFlag, (featureFlag) => ({
+  ['Key']: featureFlag?.key,
+  ['Description']: featureFlag?.description,
+  ['App Context']: featureFlag?.context[0],
+  ['Tags']: featureFlag?.tags,
+}));
 
 export const selectSkipFlags = createSelector(selectFeatureFlagsState, (state) => state.skipFlags);
 
@@ -52,8 +64,49 @@ export const selectIsAllFlagsFetched = createSelector(
 
 export const selectSearchKey = createSelector(selectFeatureFlagsState, (state) => state.searchKey);
 
-export const selectSearchString = createSelector(selectFeatureFlagsState, (state) => state.searchString);
+export const selectSearchString = createSelector(selectFeatureFlagsState, (state) => state.searchValue);
+
+export const selectSearchFeatureFlagParams = createSelector(
+  selectSearchKey,
+  selectSearchString,
+  (searchKey, searchString) => {
+    if (!!searchKey && (!!searchString || searchString === '')) {
+      return { searchKey, searchString };
+    }
+    return null;
+  }
+);
+
+export const selectRootTableState = createSelector(
+  selectAllFeatureFlags,
+  selectSearchFeatureFlagParams,
+  (tableData, searchParams) => ({
+    tableData,
+    searchParams,
+    allSearchableProperties: Object.values(FLAG_SEARCH_KEY),
+  })
+);
 
 export const selectSortKey = createSelector(selectFeatureFlagsState, (state) => state.sortKey);
 
 export const selectSortAs = createSelector(selectFeatureFlagsState, (state) => state.sortAs);
+
+export const selectActiveDetailsTabIndex = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.activeDetailsTabIndex
+);
+
+export const selectFeatureFlagsListLength = createSelector(
+  selectAllFeatureFlags,
+  (featureFlags) => featureFlags.length
+);
+
+export const selectIsLoadingUpdateFeatureFlagStatus = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingUpdateFeatureFlagStatus
+);
+
+export const selectIsLoadingFeatureFlagDelete = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingFeatureFlagDelete
+);
