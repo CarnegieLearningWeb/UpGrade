@@ -4,6 +4,10 @@
     padding: 40px 40px 0;
     height: 108px;
   }
+  .filter-container {
+    margin: 16px;
+    padding: 16px;
+  }
 
   .json-editor-container {
     margin-top: 20px;
@@ -26,7 +30,7 @@
 
   ::ng-deep .ace-jsoneditor .ace_gutter-active-line,
   ::ng-deep .ace-jsoneditor .ace_marker-layer .ace_active-line {
-    background-color: var(--blue);
+    background-color: transparent;
   }
 
   .button-container {
