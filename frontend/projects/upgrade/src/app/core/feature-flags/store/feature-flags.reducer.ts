@@ -86,7 +86,7 @@ const reducer = createReducer(
     isLoadingUpdateFeatureFlagStatus: true,
   })),
   on(FeatureFlagsActions.actionEnableFeatureFlagSuccess, (state, { response }) => {
-    const flag = response[0];
+    const flag = response;
     return adapter.updateOne(
       { id: flag?.id, changes: { status: flag?.status } },
       { ...state, isLoadingUpdateFeatureFlagStatus: false }
