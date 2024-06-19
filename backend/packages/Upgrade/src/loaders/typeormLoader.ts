@@ -6,7 +6,6 @@ import { SERVER_ERROR } from 'upgrade_types';
 import { CONNECTION_NAME } from './enums';
 import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/PostgresConnectionCredentialsOptions';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
-import { Container } from 'typedi';
 import { Container as tteContainer } from '../typeorm-typedi-extensions';
 
 export const typeormLoader: MicroframeworkLoader = async (settings: MicroframeworkSettings | undefined) => {
@@ -54,7 +53,7 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     name: CONNECTION_NAME.REPLICA,
     type: env.db.type as 'postgres',
     replication: {
-      master: masterHost,
+      master: exportReplicaHost,
       slaves: exportReplicaSlaves,
     },
     synchronize: env.db.synchronize,
@@ -71,12 +70,9 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
 
     const exportDataSourceInstance = new DataSource(exportReplicaDBConnectionOptions);
     // register the data source instance in the typeorm-typeDI-extensions
-    tteContainer.setDataSource(CONNECTION_NAME.MAIN, appDataSourceInstance);
+    tteContainer.setDataSource(CONNECTION_NAME.REPLICA, exportDataSourceInstance);
     await Promise.all([appDataSourceInstance.initialize(), exportDataSourceInstance.initialize()]);
 
-    // adding the appDataSourceInstance in the typeDI
-    Container.set(CONNECTION_NAME.MAIN, appDataSourceInstance);
-    Container.set(CONNECTION_NAME.REPLICA, exportDataSourceInstance);
 
     if (settings) {
       // sending the connections to the next middleware
