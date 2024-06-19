@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
+import {
+  CommonModalComponent,
+  CommonTagsInputComponent,
+} from '../../../../../shared-standalone-component-lib/components';
 import {
   MAT_DIALOG_DATA,
   MatDialog,
@@ -45,6 +48,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
     MatIcon,
     ReactiveFormsModule,
     TranslateModule,
+    CommonTagsInputComponent,
   ],
   templateUrl: './add-feature-flag-modal.component.html',
   styleUrl: './add-feature-flag-modal.component.scss',
@@ -81,7 +85,7 @@ export class AddFeatureFlagModalComponent {
       key: ['', Validators.required],
       description: [''],
       appContext: ['', Validators.required],
-      tags: [null], // this will need corrected, it should be an array of strings, for now we're hackin
+      tags: [],
     });
   }
 
@@ -111,7 +115,7 @@ export class AddFeatureFlagModalComponent {
       description,
       status: FEATURE_FLAG_STATUS.DISABLED,
       context: [appContext],
-      tags: tags?.split(',').map((tag: string) => tag.trim()) ?? [], // this will need corrected, it should be an array of strings, for now we're hackin
+      tags: tags, // it is now an array of strings
       featureFlagSegmentInclusion: {
         segment: {
           type: SEGMENT_TYPE.PRIVATE,
