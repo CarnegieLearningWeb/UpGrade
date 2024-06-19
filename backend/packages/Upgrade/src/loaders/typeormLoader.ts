@@ -53,7 +53,7 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     name: CONNECTION_NAME.REPLICA,
     type: env.db.type as 'postgres',
     replication: {
-      master: exportReplicaHost,
+      master: exportReplicaHost ?? masterHost,
       slaves: exportReplicaSlaves,
     },
     synchronize: env.db.synchronize,
@@ -72,7 +72,6 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     // register the data source instance in the typeorm-typeDI-extensions
     tteContainer.setDataSource(CONNECTION_NAME.REPLICA, exportDataSourceInstance);
     await Promise.all([appDataSourceInstance.initialize(), exportDataSourceInstance.initialize()]);
-
 
     if (settings) {
       // sending the connections to the next middleware

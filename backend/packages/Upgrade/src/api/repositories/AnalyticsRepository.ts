@@ -405,7 +405,7 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
     skip: number,
     take: number
   ): Promise<CSVExportDataRow[]> {
-    const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository);
+    const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository, 'export');
     return individualEnrollmentRepository
       .createQueryBuilder('individualEnrollment')
       .select([
