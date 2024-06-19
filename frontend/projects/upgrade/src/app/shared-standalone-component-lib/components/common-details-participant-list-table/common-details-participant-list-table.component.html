@@ -11,14 +11,15 @@
       <!-- Name Column -->
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-        <td mat-cell *matCellDef="let segment">{{ segment.groupId || segment.userId || segment.id }}</td>
+        <!-- TODO this is placeholder logic, need to simplify -->
+        <td mat-cell *matCellDef="let segment">{{ segment.name }}</td>
       </ng-container>
 
       <!-- Type Column -->
       <ng-container matColumnDef="type">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
         <td mat-cell *matCellDef="let segment">
-          {{ segment.groupId ? segment.type + ' (group)' : segment.userId ? 'Individual' : 'Segment' }}
+          {{ segment.type }}
         </td>
       </ng-container>
 

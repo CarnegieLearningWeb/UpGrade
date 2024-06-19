@@ -75,11 +75,23 @@ interface IFeatureFlagsSortParams {
   sortAs: SORT_AS_DIRECTION;
 }
 
+export interface ParticipantListTableRow {
+  name: string;
+  type: string;
+  values: string;
+  status: string;
+}
+
 export interface FeatureFlagsPaginationParams {
   skip: number;
   take: number;
   searchParams?: IFeatureFlagsSearchParams;
   sortParams?: IFeatureFlagsSortParams;
+}
+
+export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
+  INCLUDE = 'featureFlagSegmentInclusion',
+  EXCLUDE = 'featureFlagSegmentExclusion',
 }
 
 export enum FLAG_SEARCH_KEY {

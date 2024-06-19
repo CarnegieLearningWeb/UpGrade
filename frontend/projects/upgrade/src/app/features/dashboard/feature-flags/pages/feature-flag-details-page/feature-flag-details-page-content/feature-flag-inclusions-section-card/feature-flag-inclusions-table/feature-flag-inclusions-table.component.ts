@@ -3,6 +3,7 @@ import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/
 import { CommonDetailsParticipantListTableComponent } from '../../../../../../../../shared-standalone-component-lib/components/common-details-participant-list-table/common-details-participant-list-table.component';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { tap } from 'rxjs';
 
 @Component({
   selector: 'app-feature-flag-inclusions-table',
@@ -13,7 +14,9 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [CommonDetailsParticipantListTableComponent, CommonModule, TranslateModule],
 })
 export class FeatureFlagInclusionsTableComponent {
-  @Input() dataSource$ = this.featureFlagService.selectFeatureFlagInclusions$;
+  @Input() dataSource$ = this.featureFlagService.selectFeatureFlagInclusions$.pipe(
+    tap((data) => console.log('>> inclusions table component', data))
+  );
   isLoading$ = this.featureFlagService.isLoadingFeatureFlags$;
 
   constructor(private featureFlagService: FeatureFlagsService) {}

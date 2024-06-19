@@ -22,7 +22,7 @@ import {
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
-import { AddFeatureFlagRequest, UpdateFeatureFlagStatusRequest } from './store/feature-flags.model';
+import { AddFeatureFlagRequest, AnySegmentType, UpdateFeatureFlagStatusRequest } from './store/feature-flags.model';
 import { ExperimentService } from '../experiments/experiments.service';
 import { filter, map, pairwise, tap } from 'rxjs';
 

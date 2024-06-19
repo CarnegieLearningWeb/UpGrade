@@ -5,11 +5,16 @@ import {
   FLAG_SEARCH_KEY,
   FeatureFlag,
   FeatureFlagState,
+  ParticipantListTableRow,
   PrivateSegment,
 } from './feature-flags.model';
 import { selectRouterState } from '../../core.state';
 import { selectAll } from './feature-flags.reducer';
 import { GroupForSegment, IndividualForSegment, Segment } from '../../segments/store/segments.model';
+import {
+  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
+  FEATURE_FLAG_STATUS,
+} from '../../../../../../../../types/src/Experiment/enums';
 
 export const selectFeatureFlagsState = createFeatureSelector<FeatureFlagState>('featureFlags');
 
@@ -121,21 +126,22 @@ export const selectIsLoadingFeatureFlagDelete = createSelector(
 
 export const selectFeatureFlagInclusions = createSelector(
   selectSelectedFeatureFlag,
-  (featureFlag: FeatureFlag): AnySegmentType[] => getSegments(featureFlag, 'featureFlagSegmentInclusion')
+  (featureFlag: FeatureFlag): ParticipantListTableRow[] =>
+    mapToParticipantTableRowStructure(featureFlag, FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE)
 );
 
 export const selectFeatureFlagExclusions = createSelector(
   selectSelectedFeatureFlag,
-  (featureFlag: FeatureFlag): AnySegmentType[] => getSegments(featureFlag, 'featureFlagSegmentExclusion')
+  (featureFlag: FeatureFlag): ParticipantListTableRow[] =>
+    mapToParticipantTableRowStructure(featureFlag, FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE)
 );
 
-function getSegments(
+// TODO: can we get rid of this ui discovery work and have the backend do it?
+function mapToParticipantTableRowStructure(
   featureFlag: FeatureFlag,
-  key: 'featureFlagSegmentInclusion' | 'featureFlagSegmentExclusion'
-): AnySegmentType[] {
+  key: FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE | FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE
+): ParticipantListTableRow[] {
   const privateSegment: PrivateSegment | EmptyPrivateSegment = featureFlag?.[key];
-  console.log('>> key', key);
-  console.log('>> privateSegment', privateSegment);
 
   if (!privateSegment) return [];
 
@@ -145,8 +151,41 @@ function getSegments(
     const subSegments: Segment[] = privateSegment.segment.subSegments || [];
     const individuals: IndividualForSegment[] = privateSegment.segment.individualForSegment || [];
 
-    return [...groups, ...subSegments, ...individuals];
+    const groupsRow = groups.map(mapGroupToRow);
+    const subSegmentsRow = subSegments.map(mapSubSegmentToRow);
+    const individualsRow = individuals.map(mapIndividualToRow);
+
+    const allSegments: ParticipantListTableRow[] = [...groupsRow, ...subSegmentsRow, ...individualsRow];
+
+    return allSegments;
   }
 
   return [];
+}
+
+function mapGroupToRow(group: GroupForSegment): ParticipantListTableRow {
+  return {
+    name: group.groupId,
+    type: group.type + ' (group)',
+    values: '?',
+    status: '?',
+  };
+}
+
+function mapSubSegmentToRow(subSegment: Segment): ParticipantListTableRow {
+  return {
+    name: subSegment.id,
+    type: 'Segment',
+    values: '?',
+    status: '?',
+  };
+}
+
+function mapIndividualToRow(individual: IndividualForSegment): ParticipantListTableRow {
+  return {
+    name: individual.userId,
+    type: 'Individual',
+    values: '?',
+    status: '?',
+  };
 }
