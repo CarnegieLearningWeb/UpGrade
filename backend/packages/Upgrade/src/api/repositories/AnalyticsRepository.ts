@@ -400,7 +400,7 @@ export class AnalyticsRepository {
 
   public async getCSVDataForSimpleExport(experimentId: string): Promise<CSVExportDataRow[]> {
     const individualEnrollmentRepository = getCustomRepository(IndividualEnrollmentRepository, 'export');
-    const query = individualEnrollmentRepository
+    return individualEnrollmentRepository
       .createQueryBuilder('individualEnrollment')
       .select([
         'experiment.id as "experimentId"',
@@ -435,10 +435,8 @@ export class AnalyticsRepository {
       .addGroupBy('"individualEnrollment"."groupId"')
       .addGroupBy('condition."conditionCode"')
       .orderBy('"individualEnrollment"."userId"', 'ASC')
-      .where('"individualEnrollment"."experimentId" = :experimentId', { experimentId });
-
-    console.log(query.getSql());
-    return query.execute();
+      .where('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
+      .execute();
   }
 
   public async getCSVDataForWithInSubExport(experimentId: string): Promise<CSVExportDataRow[]> {

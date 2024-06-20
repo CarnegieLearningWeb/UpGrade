@@ -162,6 +162,9 @@ export class AnalyticsService {
 
   public async getCSVData(experimentId: string, email: string, logger: UpgradeLogger): Promise<string> {
     logger.info({ message: `Inside getCSVData ${experimentId} , ${email}` });
+    if (!experimentId) {
+      return '';
+    }
     try {
       const timeStamp = new Date().toISOString();
       const folderPath = 'src/api/assets/files/';
@@ -186,6 +189,10 @@ export class AnalyticsService {
         csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(experimentId);
       }
 
+      const userIds = csvExportData.map(({ userId }) => userId);
+      if (userIds && userIds.length === 0) {
+        return '';
+      }
       const queryData = await this.logRepository.getLogPerExperimentQueryForUser(experimentId);
 
       // query name id mapping
