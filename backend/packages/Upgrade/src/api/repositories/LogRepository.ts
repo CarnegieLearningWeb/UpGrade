@@ -132,7 +132,7 @@ export class LogRepository extends Repository<Log> {
   }
 
   // TODO check if subQuery is better way of doing it
-  public async getLogPerExperimentQueryForUser(experimentId: string): Promise<
+  public async getLogPerExperimentQuery(experimentId: string): Promise<
     Array<{
       data: Record<string, any>;
       id: string;
@@ -692,7 +692,7 @@ export class LogRepository extends Repository<Log> {
     isFactorialExperiment: boolean,
     unitOfAssignment: string
   ): SelectQueryBuilder<Experiment> {
-    const experimentRepo = getRepository(Experiment);
+    const experimentRepo = getCustomRepository(ExperimentRepository, 'export');
     const analyticsQuery = experimentRepo
       .createQueryBuilder('experiment')
       .innerJoin('experiment.queries', 'queries')

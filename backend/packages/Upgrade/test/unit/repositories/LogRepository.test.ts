@@ -43,10 +43,15 @@ beforeEach(() => {
   repocallback.withArgs(Query).returns(QueryRepository.prototype);
   repocallback.withArgs(Metric).returns(MetricRepository.prototype);
   repocallback.withArgs(Experiment).returns(ExperimentRepository.prototype);
+  repocallback.withArgs(ExperimentRepository, 'export').returns(ExperimentRepository.prototype);
   repocallback.returns(LogRepository.prototype);
+
+  const customRepoCallback = sinon.stub();
+  customRepoCallback.returns(ExperimentRepository.prototype);
 
   sandbox.stub(ConnectionManager.prototype, 'get').returns({
     getRepository: repocallback,
+    getCustomRepository: customRepoCallback,
   } as unknown as Connection);
   updateMock = sandbox.mock(updateQueryBuilder);
   deleteMock = sandbox.mock(deleteQueryBuilder);

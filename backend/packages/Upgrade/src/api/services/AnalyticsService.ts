@@ -193,7 +193,7 @@ export class AnalyticsService {
       if (userIds && userIds.length === 0) {
         return '';
       }
-      const queryData = await this.logRepository.getLogPerExperimentQueryForUser(experimentId);
+      const queryData = await this.logRepository.getLogPerExperimentQuery(experimentId);
 
       // query name id mapping
       const queryNameIdMapping: Record<string, string> = {};

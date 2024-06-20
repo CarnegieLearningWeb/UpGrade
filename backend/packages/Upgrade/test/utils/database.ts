@@ -11,6 +11,19 @@ declare type LoggerOptions =
 export const createDatabaseConnection = async (): Promise<Connection> => {
   useContainer(Container);
   const connection = await createConnection({
+    name: 'default',
+    type: env.db.type as any, // See createConnection options for valid types
+    database: env.db.database,
+    host: env.db.host,
+    port: env.db.port,
+    username: env.db.username,
+    password: env.db.password,
+    logging: env.db.logging as LoggerOptions,
+    entities: env.app.dirs.entities,
+    migrations: env.app.dirs.migrations,
+  });
+  await createConnection({
+    name: 'export',
     type: env.db.type as any, // See createConnection options for valid types
     database: env.db.database,
     host: env.db.host,
