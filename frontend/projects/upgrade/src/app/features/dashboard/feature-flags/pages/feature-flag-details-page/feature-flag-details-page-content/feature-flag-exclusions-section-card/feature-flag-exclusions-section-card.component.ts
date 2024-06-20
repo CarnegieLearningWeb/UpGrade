@@ -10,7 +10,6 @@ import { of } from 'rxjs';
 import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { IMenuButtonItem } from 'upgrade_types';
 
-
 @Component({
   selector: 'app-feature-flag-exclusions-section-card',
   standalone: true,
