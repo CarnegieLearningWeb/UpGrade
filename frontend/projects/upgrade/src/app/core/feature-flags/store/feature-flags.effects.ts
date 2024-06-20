@@ -100,15 +100,15 @@ export class FeatureFlagsEffects {
     )
   );
 
-  enableFeatureFlagStatus$ = createEffect(() =>
+  updateFeatureFlagStatus$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(FeatureFlagsActions.actionEnableFeatureFlag),
+      ofType(FeatureFlagsActions.actionUpdateFeatureFlagStatus),
       switchMap((action) => {
         return this.featureFlagsDataService.updateFeatureFlagStatus(action.updateFeatureFlagStatusRequest).pipe(
           map((response) => {
-            return FeatureFlagsActions.actionEnableFeatureFlagSuccess({ response });
+            return FeatureFlagsActions.actionUpdateFeatureFlagStatusSuccess({ response });
           }),
-          catchError(() => [FeatureFlagsActions.actionEnableFeatureFlagFailure()])
+          catchError(() => [FeatureFlagsActions.actionUpdateFeatureFlagStatusFailure()])
         );
       })
     )

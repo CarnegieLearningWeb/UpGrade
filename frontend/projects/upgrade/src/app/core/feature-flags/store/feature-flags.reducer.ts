@@ -81,18 +81,18 @@ const reducer = createReducer(
     ...state,
     activeDetailsTabIndex,
   })),
-  on(FeatureFlagsActions.actionEnableFeatureFlag, (state) => ({
+  on(FeatureFlagsActions.actionUpdateFeatureFlagStatus, (state) => ({
     ...state,
     isLoadingUpdateFeatureFlagStatus: true,
   })),
-  on(FeatureFlagsActions.actionEnableFeatureFlagSuccess, (state, { response }) => {
+  on(FeatureFlagsActions.actionUpdateFeatureFlagStatusSuccess, (state, { response }) => {
     const flag = response;
     return adapter.updateOne(
       { id: flag?.id, changes: { status: flag?.status } },
       { ...state, isLoadingUpdateFeatureFlagStatus: false }
     );
   }),
-  on(FeatureFlagsActions.actionEnableFeatureFlagFailure, (state) => ({
+  on(FeatureFlagsActions.actionUpdateFeatureFlagStatusFailure, (state) => ({
     ...state,
     isLoadingUpdateFeatureFlagStatus: true,
   })),
