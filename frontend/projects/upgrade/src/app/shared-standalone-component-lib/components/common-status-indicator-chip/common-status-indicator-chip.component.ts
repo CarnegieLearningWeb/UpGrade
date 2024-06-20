@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, SimpleChanges } from '@angular/core';
 import { MatChipsModule } from '@angular/material/chips';
 import { TranslateModule } from '@ngx-translate/core';
 import { STATUS_INDICATOR_CHIP_TYPE } from 'upgrade_types';
@@ -28,6 +28,12 @@ export class CommonStatusIndicatorChipComponent {
 
   ngOnInit() {
     this.chipText = this.convertKebabToTitleCase(this.chipClass);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.chipClass && changes.chipClass.currentValue) {
+      this.chipText = this.convertKebabToTitleCase(changes.chipClass.currentValue);
+    }
   }
 
   convertKebabToTitleCase(kebabCaseStr: STATUS_INDICATOR_CHIP_TYPE): string {
