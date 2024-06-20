@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { MonitoredDecisionPoint } from './MonitoredDecisionPoint';
 
@@ -17,6 +17,7 @@ export class MonitoredDecisionPointLog extends BaseModel {
   })
   public uniquifier: string | null;
 
+  @Index()
   @ManyToOne(() => MonitoredDecisionPoint, { onDelete: 'CASCADE' })
   public monitoredDecisionPoint: MonitoredDecisionPoint;
 }
