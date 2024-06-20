@@ -6,8 +6,6 @@ import {
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
-import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { IMenuButtonItem } from 'upgrade_types';
 import { FeatureFlagExclusionsTableComponent } from './feature-flag-exclusions-table/feature-flag-exclusions-table.component';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
@@ -28,7 +26,6 @@ import { FeatureFlagsService } from '../../../../../../../core/feature-flags/fea
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagExclusionsSectionCardComponent {
-  featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
   tableRowCount$ = this.featureFlagService.selectFeatureFlagExclusionsLength$;
 
   constructor(private featureFlagService: FeatureFlagsService) {}

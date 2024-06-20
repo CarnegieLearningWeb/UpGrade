@@ -119,6 +119,11 @@ export const selectIsLoadingUpdateFeatureFlagStatus = createSelector(
   (state) => state.isLoadingUpdateFeatureFlagStatus
 );
 
+export const selectIsLoadingSelectedFeatureFlag = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingSelectedFeatureFlag
+);
+
 export const selectIsLoadingFeatureFlagDelete = createSelector(
   selectFeatureFlagsState,
   (state) => state.isLoadingFeatureFlagDelete

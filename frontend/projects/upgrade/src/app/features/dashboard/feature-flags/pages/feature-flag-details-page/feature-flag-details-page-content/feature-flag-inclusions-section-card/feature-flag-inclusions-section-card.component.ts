@@ -26,7 +26,6 @@ import { FeatureFlagsService } from '../../../../../../../core/feature-flags/fea
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagInclusionsSectionCardComponent {
-  featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
   tableRowCount$ = this.featureFlagService.selectFeatureFlagInclusionsLength$;
 
   constructor(private featureFlagService: FeatureFlagsService) {}

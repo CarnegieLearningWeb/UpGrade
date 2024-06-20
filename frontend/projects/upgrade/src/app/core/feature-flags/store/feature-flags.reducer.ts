@@ -13,6 +13,7 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingUpdateFeatureFlagStatus: false,
   isLoadingFeatureFlagDetail: false,
   isLoadingFeatureFlagDelete: false,
+  isLoadingSelectedFeatureFlag: false,
   hasInitialFeatureFlagsDataLoaded: false,
   activeDetailsTabIndex: 0,
   skipFlags: 0,

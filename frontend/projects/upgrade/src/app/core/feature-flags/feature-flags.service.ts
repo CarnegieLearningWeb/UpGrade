@@ -18,13 +18,14 @@ import {
   selectIsLoadingFeatureFlagDelete,
   selectFeatureFlagInclusions,
   selectFeatureFlagExclusions,
+  selectIsLoadingSelectedFeatureFlag,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
-import { AddFeatureFlagRequest, AnySegmentType, UpdateFeatureFlagStatusRequest } from './store/feature-flags.model';
+import { AddFeatureFlagRequest, UpdateFeatureFlagStatusRequest } from './store/feature-flags.model';
 import { ExperimentService } from '../experiments/experiments.service';
-import { filter, map, pairwise, tap } from 'rxjs';
+import { filter, map, pairwise } from 'rxjs';
 
 @Injectable()
 export class FeatureFlagsService {
@@ -32,6 +33,7 @@ export class FeatureFlagsService {
 
   isInitialFeatureFlagsLoading$ = this.store$.pipe(select(selectHasInitialFeatureFlagsDataLoaded));
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
+  isLoadingSelectedFeatureFlag$ = this.store$.pipe(select(selectIsLoadingSelectedFeatureFlag));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));

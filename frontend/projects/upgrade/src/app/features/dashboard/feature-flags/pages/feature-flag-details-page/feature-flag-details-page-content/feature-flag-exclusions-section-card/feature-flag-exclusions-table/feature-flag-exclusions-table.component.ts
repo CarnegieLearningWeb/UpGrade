@@ -14,7 +14,7 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class FeatureFlagExclusionsTableComponent {
   @Input() dataSource$ = this.featureFlagService.selectFeatureFlagExclusions$;
-  isLoading$ = this.featureFlagService.isLoadingFeatureFlags$;
+  isLoading$ = this.featureFlagService.isLoadingSelectedFeatureFlag$;
 
   constructor(private featureFlagService: FeatureFlagsService) {}
 }
