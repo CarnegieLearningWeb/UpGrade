@@ -76,7 +76,7 @@ export class SegmentService {
     return queryBuilder;
   }
 
-  public async getAllSegmentsAndSubsegments(logger: UpgradeLogger): Promise<Segment[]> {
+  public async getAllPublicSegmentsAndSubsegments(logger: UpgradeLogger): Promise<Segment[]> {
     logger.info({ message: `Find all segments and Subsegments` });
     const queryBuilder = await this.segmentRepository
       .createQueryBuilder('segment')
@@ -123,7 +123,7 @@ export class SegmentService {
   }
 
   public async getSingleSegmentWithStatus(segmentId: string, logger: UpgradeLogger): Promise<SegmentWithStatus> {
-    const allSegmentData = await this.getAllSegmentsAndSubsegments(logger);
+    const allSegmentData = await this.getAllPublicSegmentsAndSubsegments(logger);
     const segmentData = await this.getSegmentById(segmentId, logger);
     const segmentWithStatus = (await this.getSegmentStatus(allSegmentData)).segmentsData.find(
       (segment: Segment) => segment.id === segmentId
@@ -132,7 +132,7 @@ export class SegmentService {
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
-    const segmentsData = await this.getAllSegmentsAndSubsegments(logger);
+    const segmentsData = await this.getAllPublicSegmentsAndSubsegments(logger);
     return this.getSegmentStatus(segmentsData);
   }
 
@@ -145,14 +145,10 @@ export class SegmentService {
 
       const segmentMap = new Map<string, string[]>();
       segmentsData.forEach((segment) => {
-        if (segment.id === globalExcludeSegment.id) {
-          segmentMap.set(segment.id, []);
-        } else {
-          segmentMap.set(
-            segment.id,
-            segment.subSegments.map((subSegment) => subSegment.id)
-          );
-        }
+        segmentMap.set(
+          segment.id,
+          segment.subSegments.map((subSegment) => subSegment.id)
+        );
       });
 
       const segmentsUsedList = new Set<string>();
@@ -163,6 +159,8 @@ export class SegmentService {
         const subSegmentIds = segmentMap.get(segmentId) || [];
         subSegmentIds.forEach((subSegmentId) => collectSegmentIds(subSegmentId));
       };
+
+      collectSegmentIds(globalExcludeSegment.id);
 
       if (allExperimentSegmentsInclusion) {
         allExperimentSegmentsInclusion.forEach((ele) => {
