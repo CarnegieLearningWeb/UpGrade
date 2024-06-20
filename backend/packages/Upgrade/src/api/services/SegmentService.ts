@@ -80,6 +80,8 @@ export class SegmentService {
       .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segment.subSegments', 'subSegment')
+      .leftJoinAndSelect('segment.experimentSegmentInclusion', 'experimentSegmentInclusion')
+      .leftJoinAndSelect('segment.experimentSegmentExclusion', 'experimentSegmentExclusion')
       .where('segment.type != :private', { private: SEGMENT_TYPE.PRIVATE })
       .andWhere({ id })
       .getOne();
@@ -97,6 +99,8 @@ export class SegmentService {
         .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
         .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
         .leftJoinAndSelect('segment.subSegments', 'subSegment')
+        .leftJoinAndSelect('segment.experimentSegmentInclusion', 'experimentSegmentInclusion')
+        .leftJoinAndSelect('segment.experimentSegmentExclusion', 'experimentSegmentExclusion')
         .where('segment.id IN (:...ids)', { ids })
         .getMany();
 
@@ -434,6 +438,7 @@ export class SegmentService {
       segment.id = segment.id || uuid();
       const { id, name, description, context, type } = segment;
       const allSegments = await this.getSegmentByIds(segment.subSegmentIds);
+      console.log("allSegments: ", allSegments)
       const subSegmentData = segment.subSegmentIds
         .filter((subSegmentId) => {
           // check if segment exists:
@@ -485,6 +490,8 @@ export class SegmentService {
             logger
           ),
         ]);
+
+        this.updateEnrollmentAndExclusionDocuments(segment);
       } catch (err) {
         const error = err as Error;
         error.message = `Error in creating individualDocs, groupDocs in "addSegmentInDB"`;
@@ -501,5 +508,28 @@ export class SegmentService {
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
 
     return createdSegment;
+  }
+
+  public updateEnrollmentAndExclusionDocuments(segment: SegmentInputValidator) {
+    // for exclusion doc:
+    const segmentType = "exclude";
+    if (segmentType === 'exclude') {
+      // Scenario 1: Group Exclusion
+
+      // Case 1: Individual Consistency
+      // if user already visited earlier, show the previous experience:
+
+      // Case 2: Group Consistency
+      // 
+
+      // Scenario 2: Individual Exclusion
+
+      // Case 1: Individual Consistency
+      // 
+
+      // Case 2: Group Consistency
+      //
+
+    }
   }
 }

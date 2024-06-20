@@ -31,10 +31,8 @@ export default async function SubSegmentEnrollment(): Promise<void> {
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
-  experimentObject.filterMode = FILTER_MODE.INCLUDE_ALL;
   experimentObject.experimentSegmentInclusion = { ...experimentObject.experimentSegmentInclusion };
   const context = experimentObject.context[0];
-  console.log('context: ', context);
   // create experiment
   await experimentService.create(individualAssignmentExperiment as any, userIn, logger);
   let experiments = await experimentService.find(logger);

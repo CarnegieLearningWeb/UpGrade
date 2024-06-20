@@ -75,6 +75,10 @@ import {
   SegmentMemberGroupEnrollment,
   SegmentMemberUserEnrollment,
   SubSegmentEnrollment,
+  GroupExclusionSegmentGroupConsistency,
+  GroupExclusionSegmentIndividualConsistency,
+  IndividualExclusionSegmentGroupConsistency,
+  IndividualExclusionSegmentIndividualConsistency,
 } from './Segment/index';
 import { UpgradeLogger } from '../../src/lib/logger/UpgradeLogger';
 import { CompetingExperiment } from './Experiment/competingExperiment';
@@ -379,6 +383,22 @@ describe('Integration Tests', () => {
 
   test('Within Subject Exclusion Code', () => {
     return WithinSubjectExclusionCode();
+  });
+
+  test('For Individual Exclusion List added for Individual Consistency', () => {
+    return IndividualExclusionSegmentIndividualConsistency();
+  });
+
+  test('For Individual Exclusion List added for Group Consistency', () => {
+    return IndividualExclusionSegmentGroupConsistency();
+  });
+
+  test('For Group Exclusion List added for Individual Consistency', () => {
+    return GroupExclusionSegmentIndividualConsistency();
+  });
+
+ test('For Group Exclusion List added for Group Consistency', () => {
+    return GroupExclusionSegmentGroupConsistency();
   });
 
   test('Experiment Context Assignment', () => {
