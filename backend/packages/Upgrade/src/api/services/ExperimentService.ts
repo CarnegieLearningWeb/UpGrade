@@ -1655,6 +1655,9 @@ export class ExperimentService {
         lce.level.id = this.allIdMap[lce.level.id];
       });
     });
+    if (result.revertTo && this.allIdMap[result.revertTo]) {
+      result.revertTo = this.allIdMap[result.revertTo];
+    }
   }
 
   deduceConditionPayload(result) {
