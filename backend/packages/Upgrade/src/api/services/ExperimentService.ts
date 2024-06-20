@@ -1733,7 +1733,7 @@ export class ExperimentService {
         },
       };
     }
-    result.experimentSegmentInclusion.id = uuid();
+    result.experimentSegmentInclusion.segment.id = uuid();
 
     if (!result.experimentSegmentExclusion) {
       result.experimentSegmentExclusion = {
@@ -1745,7 +1745,7 @@ export class ExperimentService {
         },
       };
     }
-    result.experimentSegmentExclusion.id = uuid();
+    result.experimentSegmentExclusion.segment.id = uuid();
   }
 
   deduceQueries(result) {
