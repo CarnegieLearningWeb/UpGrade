@@ -77,15 +77,15 @@ describe('AnalysisService', () => {
     });
   });
 
-  describe('#executeQuery', () => {
-    xit('should dispatch executeQuery with the supplied string input array', () => {
-      const mockQueryIds = ['test', 'test2'];
+  // describe('#executeQuery', () => {
+  //   xit('should dispatch executeQuery with the supplied string input array', () => {
+  //     const mockQueryIds = ['test', 'test2'];
 
-      service.executeQuery(mockQueryIds);
+  //     service.executeQuery(mockQueryIds);
 
-      expect(mockStore.dispatch).toHaveBeenLastCalledWith(actionExecuteQuery({ queryIds: mockQueryIds }));
-    });
-  });
+  //     expect(mockStore.dispatch).toHaveBeenLastCalledWith(actionExecuteQuery({ queryIds: mockQueryIds }));
+  //   });
+  // });
 
   describe('#setQueryResult', () => {
     it('should dispatch setQueryResult with the supplied queryResult object input', () => {
