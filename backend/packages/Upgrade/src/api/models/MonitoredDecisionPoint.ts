@@ -18,6 +18,7 @@ export class MonitoredDecisionPoint extends BaseModel {
   @Column({ nullable: true })
   public target: string;
 
+  @Index()
   @Column({
     nullable: true,
   })

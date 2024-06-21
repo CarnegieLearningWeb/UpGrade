@@ -4,6 +4,11 @@ import { Experiment } from '../models/Experiment';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { createGlobalExcludeSegment } from '../../../src/init/seed/globalExcludeSegment';
+import { ExperimentCSVData } from './AnalyticsRepository';
+import { StateTimeLog } from '../models/StateTimeLogs';
+import { ConditionPayload } from '../models/ConditionPayload';
+import { DecisionPoint } from '../models/DecisionPoint';
+import { ExperimentCondition } from '../models/ExperimentCondition';
 
 @EntityRepository(Experiment)
 export class ExperimentRepository extends Repository<Experiment> {
@@ -426,5 +431,97 @@ export class ExperimentRepository extends Repository<Experiment> {
       logger.error(error);
       throw error;
     }
+  }
+
+  private createBaseQueryBuilder() {
+    return this.createQueryBuilder('experiment')
+      .leftJoinAndSelect('experiment.conditions', 'conditions')
+      .leftJoinAndSelect('experiment.partitions', 'partitions')
+      .leftJoinAndSelect('experiment.queries', 'queries')
+      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
+      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
+      .leftJoinAndSelect('experiment.factors', 'factors')
+      .leftJoinAndSelect('factors.levels', 'levels')
+      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
+      .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
+      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
+      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
+      .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
+      .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
+      .leftJoinAndSelect('queries.metric', 'metric')
+      .leftJoinAndSelect('partitions.conditionPayloads', 'ConditionPayloadsArray')
+      .leftJoinAndSelect('ConditionPayloadsArray.parentCondition', 'parentCondition')
+      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
+      .leftJoinAndSelect('levelCombinationElements.level', 'level')
+      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload');
+  }
+
+  public async findOneExperiment(id: string): Promise<Experiment> {
+    const experiment = await this.createBaseQueryBuilder()
+      .addOrderBy('conditions.order', 'ASC')
+      .addOrderBy('partitions.order', 'ASC')
+      .addOrderBy('factors.order', 'ASC')
+      .addOrderBy('levels.order', 'ASC')
+      .where({ id })
+      .getOne();
+    return experiment;
+  }
+
+  public async getExperimentCSVDataExport(experimentId: string): Promise<ExperimentCSVData[]> {
+    // Get the experiment details
+    const experimentQuery = await this.createBaseQueryBuilder()
+      .select([
+        'experiment.id as "experimentId"',
+        'experiment.name as "experimentName"',
+        'experiment.context as "context"',
+        'experiment.assignmentUnit as "assignmentUnit"',
+        'experiment.group as "group"',
+        'experiment.consistencyRule as "consistencyRule"',
+        'experiment.type as "designType"',
+        'experiment.assignmentAlgorithm as "algorithmType"',
+        'experiment.stratificationFactorStratificationFactorName as "stratification"',
+        'experiment.postExperimentRule as "postRule"',
+        'experimentRevertCondition.conditionCode as "revertTo"',
+        '"enrollingStateTimeLog"."timeLog" as "enrollmentStartDate"',
+        '"enrollmentCompleteStateTimeLog"."timeLog" as "enrollmentCompleteDate"',
+        '"conditionPayloadMain"."payloadValue" as "payload"',
+        '"decisionPointData"."excludeIfReached" as "excludeIfReached"',
+        '"decisionPointData"."id" as "expDecisionPointId"',
+        'experimentCondition.id as "expConditionId"',
+        'experimentCondition.conditionCode as "conditionName"',
+      ])
+      .leftJoin(ExperimentCondition, 'experimentCondition', 'experimentCondition.experimentId = experiment.id')
+      .leftJoin(ExperimentCondition, 'experimentRevertCondition', 'experimentRevertCondition.id = experiment.revertTo')
+      .leftJoin(DecisionPoint, 'decisionPointData', 'decisionPointData.experimentId = experiment.id')
+      .leftJoin(
+        ConditionPayload,
+        'conditionPayloadMain',
+        'conditionPayloadMain.parentConditionId = experimentCondition.id AND conditionPayloadMain.decisionPointId = decisionPointData.id'
+      )
+      .leftJoin(
+        StateTimeLog,
+        'enrollingStateTimeLog',
+        "enrollingStateTimeLog.experimentId = experiment.id AND enrollingStateTimeLog.toState = 'enrolling'"
+      )
+      .leftJoin(
+        StateTimeLog,
+        'enrollmentCompleteStateTimeLog',
+        "enrollmentCompleteStateTimeLog.experimentId = experiment.id AND enrollmentCompleteStateTimeLog.toState = 'enrollmentComplete'"
+      )
+      .groupBy('experiment.id')
+      .addGroupBy('experimentCondition.id')
+      .addGroupBy('experimentRevertCondition.conditionCode')
+      .addGroupBy('decisionPointData.id')
+      .addGroupBy('conditionPayloadMain.payloadValue')
+      .addGroupBy('enrollingStateTimeLog.timeLog')
+      .addGroupBy('enrollmentCompleteStateTimeLog.timeLog')
+      .where('experiment.id = :experimentId', { experimentId })
+      .getRawMany();
+
+    return experimentQuery;
   }
 }
