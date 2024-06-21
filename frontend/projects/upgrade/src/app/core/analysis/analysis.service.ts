@@ -35,7 +35,9 @@ export class AnalysisService {
   }
 
   executeQuery(queryIds: string[]) {
-    this.store$.dispatch(AnalysisActions.actionExecuteQuery({ queryIds }));
+    // disabling until UX issues with long-running-metrics are decided
+    console.warn('executeQuery is currently disabled');
+    // this.store$.dispatch(AnalysisActions.actionExecuteQuery({ queryIds }));
   }
 
   experimentQueryResult$(experimentId: string) {
