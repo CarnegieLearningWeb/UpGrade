@@ -30,6 +30,7 @@
     font-size: 14px;
   }
 }
+
 .input-container-header {
   position: absolute;
   top: 5px;
@@ -41,6 +42,14 @@
     font-size: 24px;
   }
 }
+
+.input-container-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 p {
   color: grey;
   font-size: 12px;

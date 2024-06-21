@@ -17,7 +17,7 @@
         <div class="input-container-header">
           <mat-icon>close</mat-icon>
         </div>
-        <div *ngIf="fileName; else uploadPrompt">
+        <div class="input-container-content" *ngIf="fileName; else uploadPrompt">
           <mat-icon>insert_drive_file</mat-icon>
           <p>{{ fileName }}</p>
         </div>
