@@ -46,10 +46,13 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess, (state, { flag }) => {
     return adapter.upsertOne(flag, {
       ...state,
-      isLoadingFeatureFlags: false,
+      isLoadingSelectedFeatureFlag: false,
     });
   }),
-  on(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure, (state) => ({ ...state, isLoadingFeatureFlags: false })),
+  on(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure, (state) => ({
+    ...state,
+    isLoadingSelectedFeatureFlag: false,
+  })),
   on(FeatureFlagsActions.actionSetIsLoadingFeatureFlags, (state, { isLoadingFeatureFlags }) => ({
     ...state,
     isLoadingFeatureFlags,
@@ -99,7 +102,7 @@ const reducer = createReducer(
   })),
   on(FeatureFlagsActions.actionFetchFeatureFlagById, (state) => ({
     ...state,
-    isLoadingFeatureFlags: true,
+    isLoadingSelectedFeatureFlag: true,
   }))
 );
 

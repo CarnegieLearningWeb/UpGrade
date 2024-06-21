@@ -17,7 +17,7 @@ export class FeatureFlagInclusionsTableComponent {
   @Input() dataSource$ = this.featureFlagService.selectFeatureFlagInclusions$.pipe(
     tap((data) => console.log('>> inclusions table component', data))
   );
-  isLoading$ = this.featureFlagService.isLoadingFeatureFlags$;
+  isLoading$ = this.featureFlagService.isLoadingSelectedFeatureFlag$;
 
   constructor(private featureFlagService: FeatureFlagsService) {}
 }
