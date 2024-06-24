@@ -7,6 +7,7 @@ import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/featur
 
 import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 import { UpdateFlagStatusConfirmationModalComponent } from '../../features/dashboard/feature-flags/modals/update-flag-status-confirmation-modal/update-flag-status-confirmation-modal.component';
+import { EditFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/edit-feature-flag-modal/edit-feature-flag-modal.component';
 
 @Injectable({
   providedIn: 'root',
@@ -35,6 +36,22 @@ export class DialogService {
       disableClose: true,
     };
     return this.dialog.open(AddFeatureFlagModalComponent, config);
+  }
+
+  openEditFeatureFlagModal() {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Edit Feature Flag',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+    };
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: '656px',
+      autoFocus: 'first-heading',
+      disableClose: true,
+    };
+    return this.dialog.open(EditFeatureFlagModalComponent, config);
   }
 
   openEnableFeatureFlagConfirmModel() {

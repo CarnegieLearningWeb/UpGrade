@@ -40,7 +40,6 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   constructor(
     private dialogService: DialogService,
     private featureFlagService: FeatureFlagsService,
-    private changeDetectorRef: ChangeDetectorRef
   ) {}
 
   get FEATURE_FLAG_STATUS() {
@@ -77,8 +76,7 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
     if (event === 'Delete') {
       this.dialogService.openDeleteFeatureFlagModal();
     } else if (event === 'Edit') {
-      console.log('Menu button Clicked');
-      console.log(event);
+      this.dialogService.openEditFeatureFlagModal();
     }
   }
 
