@@ -16,6 +16,9 @@ import {
   selectRootTableState,
   selectFeatureFlagOverviewDetails,
   selectIsLoadingFeatureFlagDelete,
+  selectFeatureFlagInclusions,
+  selectFeatureFlagExclusions,
+  selectIsLoadingSelectedFeatureFlag,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -30,6 +33,7 @@ export class FeatureFlagsService {
 
   isInitialFeatureFlagsLoading$ = this.store$.pipe(select(selectHasInitialFeatureFlagsDataLoaded));
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
+  isLoadingSelectedFeatureFlag$ = this.store$.pipe(select(selectIsLoadingSelectedFeatureFlag));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
@@ -64,6 +68,16 @@ export class FeatureFlagsService {
       return Object.keys(contextMetaData?.contextMetadata ?? []);
     })
   );
+  selectFeatureFlagInclusions$ = this.store$.pipe(select(selectFeatureFlagInclusions));
+  selectFeatureFlagInclusionsLength$ = this.store$.pipe(
+    select(selectFeatureFlagInclusions),
+    map((inclusions) => inclusions.length)
+  );
+  selectFeatureFlagExclusions$ = this.store$.pipe(select(selectFeatureFlagExclusions));
+  selectFeatureFlagExclusionsLength$ = this.store$.pipe(
+    select(selectFeatureFlagExclusions),
+    map((exclusions) => exclusions.length)
+  );
 
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
@@ -81,8 +95,8 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlag({ addFeatureFlagRequest }));
   }
 
-  enableFeatureFlag(updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest) {
-    this.store$.dispatch(FeatureFlagsActions.actionEnableFeatureFlag({ updateFeatureFlagStatusRequest }));
+  updateFeatureFlagStatus(updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagStatus({ updateFeatureFlagStatusRequest }));
   }
 
   deleteFeatureFlag(flagId: string) {
