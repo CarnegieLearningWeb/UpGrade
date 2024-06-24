@@ -41,82 +41,9 @@ export class FeatureFlagsDataService {
     const url = `${this.environment.api.featureFlag}/${id}`;
     return this.http.delete(url);
   }
-}
 
-const mockFeatureFlags = [
-  {
-    createdAt: '2021-09-08T08:00:00.000Z',
-    updatedAt: '2021-09-08T08:00:00.000Z',
-    versionNumber: 1,
-    id: '1',
-    name: 'Feature Flag 1',
-    key: 'feature_flag_1',
-    description: 'Feature Flag 1 Description',
-    status: FEATURE_FLAG_STATUS.ENABLED,
-    filterMode: FILTER_MODE.INCLUDE_ALL,
-    context: ['context1', 'context2'],
-    tags: ['tag1', 'tag2'],
-    featureFlagSegmentInclusion: null,
-    featureFlagSegmentExclusion: null,
-  },
-  {
-    createdAt: '2021-09-08T08:00:00.000Z',
-    updatedAt: '2021-09-08T08:00:00.000Z',
-    versionNumber: 1,
-    id: '2',
-    name: 'Feature Flag 2',
-    key: 'feature_flag_2',
-    description: 'Feature Flag 2 Description',
-    status: FEATURE_FLAG_STATUS.ENABLED,
-    filterMode: FILTER_MODE.INCLUDE_ALL,
-    context: ['context2'],
-    tags: ['tag1', 'tag2'],
-    featureFlagSegmentInclusion: null,
-    featureFlagSegmentExclusion: null,
-  },
-  {
-    createdAt: '2021-09-08T08:00:00.000Z',
-    updatedAt: '2021-09-08T08:00:00.000Z',
-    versionNumber: 1,
-    id: '3',
-    name: 'Feature Flag 3',
-    key: 'feature_flag_3',
-    description: 'Feature Flag 3 Description',
-    status: FEATURE_FLAG_STATUS.ENABLED,
-    filterMode: FILTER_MODE.INCLUDE_ALL,
-    context: ['context1', 'context3'],
-    tags: ['tag1', 'tag2'],
-    featureFlagSegmentInclusion: null,
-    featureFlagSegmentExclusion: null,
-  },
-  {
-    createdAt: '2021-09-08T08:00:00.000Z',
-    updatedAt: '2021-09-08T08:00:00.000Z',
-    versionNumber: 1,
-    id: '4',
-    name: 'Feature Flag 4',
-    key: 'feature_flag_4',
-    description: 'Feature Flag 4 Description',
-    status: FEATURE_FLAG_STATUS.ENABLED,
-    filterMode: FILTER_MODE.INCLUDE_ALL,
-    context: ['context2', 'context3'],
-    tags: ['tag1', 'tag2'],
-    featureFlagSegmentInclusion: null,
-    featureFlagSegmentExclusion: null,
-  },
-  {
-    createdAt: '2021-09-08T08:00:00.000Z',
-    updatedAt: '2021-09-08T08:00:00.000Z',
-    versionNumber: 1,
-    id: '5',
-    name: 'Feature Flag 5',
-    key: 'feature_flag_5',
-    description: 'Feature Flag 5 Description',
-    status: FEATURE_FLAG_STATUS.ENABLED,
-    filterMode: FILTER_MODE.INCLUDE_ALL,
-    context: ['context3'],
-    tags: ['tag1', 'tag2'],
-    featureFlagSegmentInclusion: null,
-    featureFlagSegmentExclusion: null,
-  },
-];
+  updateFeatureFlag(flag: FeatureFlag): Observable<FeatureFlag> {
+    const url = `${this.environment.api.featureFlag}/${flag.id}`;
+    return this.http.put<FeatureFlag>(url, flag);
+  }
+}

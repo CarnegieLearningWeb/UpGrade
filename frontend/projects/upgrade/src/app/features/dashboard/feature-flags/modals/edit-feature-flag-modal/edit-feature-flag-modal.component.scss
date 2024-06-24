@@ -1,4 +1,4 @@
-:host ::ng-deep .add-feature-flag-modal-container {
+:host ::ng-deep .edit-feature-flag-modal-container {
   display: flex;
   flex-direction: column;
   align-items: space-between;
@@ -16,7 +16,7 @@
 }
 
 .mat-mdc-form-field:not(:last-child) {
-  margin-bottom: 20px;
+  margin-bottom: 16.5px;
 }
 
 .form-hint {
