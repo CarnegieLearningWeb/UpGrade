@@ -1,0 +1,7 @@
+<div class="exclusions-table-container">
+  <app-common-details-participant-list-table
+    [dataSource]="dataSource$ | async"
+    [isLoading]="isLoading$ | async"
+    noDataRowText="feature-flags.details.exclusions.card.no-data-row.text"
+  ></app-common-details-participant-list-table>
+</div>

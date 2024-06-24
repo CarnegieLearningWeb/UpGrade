@@ -33,8 +33,6 @@ describe('Feature Flag Service Testing', () => {
   let flagSegmentInclusionRepo: FeatureFlagSegmentInclusionRepository;
   let flagSegmentExclusionRepo: FeatureFlagSegmentExclusionRepository;
   let segmentService: SegmentService;
-  let experimentService: ExperimentService;
-  let experimentAssignmentService: ExperimentAssignmentService;
 
   let module: Awaited<ReturnType<TestingModuleBuilder['compile']>>;
 

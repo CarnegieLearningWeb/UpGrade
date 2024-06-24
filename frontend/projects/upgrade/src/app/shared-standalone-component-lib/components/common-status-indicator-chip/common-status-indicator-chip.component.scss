@@ -23,13 +23,15 @@
 }
 
 ::ng-deep .status-indicator.enabled {
-  --mdc-chip-label-text-color: green;
-  border: 1px solid green;
+  // --mdc-chip-label-text-color: green;
+  --mdc-chip-label-text-color: rgba(51, 102, 255, 1);
+  border: 1px solid rgba(51, 102, 255, 1);
 }
 
 ::ng-deep .status-indicator.disabled {
-  --mdc-chip-label-text-color: red;
-  border: 1px solid red;
+  // --mdc-chip-label-text-color: red;
+  --mdc-chip-label-text-color: rgba(255, 153, 51, 1);
+  border: 1px solid rgba(255, 153, 51, 1);
 }
 
 ::ng-deep .status-indicator.draft {
