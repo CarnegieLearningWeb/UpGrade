@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
@@ -37,7 +37,11 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
   ];
   isSectionCardExpanded = true;
 
-  constructor(private dialogService: DialogService, private featureFlagService: FeatureFlagsService) {}
+  constructor(
+    private dialogService: DialogService,
+    private featureFlagService: FeatureFlagsService,
+    private changeDetectorRef: ChangeDetectorRef
+  ) {}
 
   get FEATURE_FLAG_STATUS() {
     return FEATURE_FLAG_STATUS;
@@ -54,18 +58,19 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
     if (slideToggleEvent.checked) {
       this.openEnableConfirmModel();
     } else {
-      // this.openDisableConfirmModel();
-      console.log('disable!');
+      this.openDisableConfirmModel();
     }
 
-    // Note: we don't want the toggle to change state immediately because we have to pop a confirmation modal first, so we need override the default and flip it back
+    // Note: we don't want the toggle to visibly change state immediately because we have to pop a confirmation modal first, so we need override the default and flip it back. I unfortunately couldn't find a better way to do this.
     slideToggleEvent.checked = !slideToggleEvent.checked;
   }
 
   openEnableConfirmModel(): void {
     this.dialogService.openEnableFeatureFlagConfirmModel();
-    //remove this?
-    this.featureFlag$.subscribe((featureFlag) => console.log({ featureFlag }));
+  }
+
+  openDisableConfirmModel(): void {
+    this.dialogService.openDisableFeatureFlagConfirmModel();
   }
 
   onMenuButtonItemClick(event) {

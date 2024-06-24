@@ -13,6 +13,7 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingUpdateFeatureFlagStatus: false,
   isLoadingFeatureFlagDetail: false,
   isLoadingFeatureFlagDelete: false,
+  isLoadingSelectedFeatureFlag: false,
   hasInitialFeatureFlagsDataLoaded: false,
   activeDetailsTabIndex: 0,
   skipFlags: 0,
@@ -43,12 +44,15 @@ const reducer = createReducer(
   }),
   on(FeatureFlagsActions.actionFetchFeatureFlagsFailure, (state) => ({ ...state, isLoadingFeatureFlags: false })),
   on(FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess, (state, { flag }) => {
-    return adapter.addOne(flag, {
+    return adapter.upsertOne(flag, {
       ...state,
-      isLoadingFeatureFlags: false,
+      isLoadingSelectedFeatureFlag: false,
     });
   }),
-  on(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure, (state) => ({ ...state, isLoadingFeatureFlags: false })),
+  on(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure, (state) => ({
+    ...state,
+    isLoadingSelectedFeatureFlag: false,
+  })),
   on(FeatureFlagsActions.actionSetIsLoadingFeatureFlags, (state, { isLoadingFeatureFlags }) => ({
     ...state,
     isLoadingFeatureFlags,
@@ -81,24 +85,24 @@ const reducer = createReducer(
     ...state,
     activeDetailsTabIndex,
   })),
-  on(FeatureFlagsActions.actionEnableFeatureFlag, (state) => ({
+  on(FeatureFlagsActions.actionUpdateFeatureFlagStatus, (state) => ({
     ...state,
     isLoadingUpdateFeatureFlagStatus: true,
   })),
-  on(FeatureFlagsActions.actionEnableFeatureFlagSuccess, (state, { response }) => {
+  on(FeatureFlagsActions.actionUpdateFeatureFlagStatusSuccess, (state, { response }) => {
     const flag = response;
     return adapter.updateOne(
       { id: flag?.id, changes: { status: flag?.status } },
       { ...state, isLoadingUpdateFeatureFlagStatus: false }
     );
   }),
-  on(FeatureFlagsActions.actionEnableFeatureFlagFailure, (state) => ({
+  on(FeatureFlagsActions.actionUpdateFeatureFlagStatusFailure, (state) => ({
     ...state,
     isLoadingUpdateFeatureFlagStatus: true,
   })),
   on(FeatureFlagsActions.actionFetchFeatureFlagById, (state) => ({
     ...state,
-    isLoadingFeatureFlags: true,
+    isLoadingSelectedFeatureFlag: true,
   }))
 );
 
