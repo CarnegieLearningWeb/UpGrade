@@ -127,10 +127,7 @@ export class LogRepository extends Repository<Log> {
   }
 
   // TODO check if subQuery is better way of doing it
-  public async getLogPerExperimentQueryForUser(
-    experimentId: string,
-    userIds: string[]
-  ): Promise<
+  public async getLogPerExperimentQuery(experimentId: string): Promise<
     Array<{
       data: Record<string, any>;
       id: string;
@@ -159,7 +156,6 @@ export class LogRepository extends Repository<Log> {
       .innerJoin('queries.metric', 'metric')
       .innerJoin('metric.logs', 'logs')
       .where('experiment.id=:experimentId', { experimentId })
-      .andWhere('logs."userId" IN (:...userIds)', { userIds })
       .execute();
   }
 

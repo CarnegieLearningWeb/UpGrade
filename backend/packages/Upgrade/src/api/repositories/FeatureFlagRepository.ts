@@ -49,7 +49,7 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
         throw errorMsgString;
       });
 
-    return result.raw;
+    return result.raw[0];
   }
 
   public async updateFeatureFlag(flagDoc: Partial<FeatureFlag>, entityManager: EntityManager): Promise<FeatureFlag> {

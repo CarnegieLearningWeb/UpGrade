@@ -1,5 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { FLAG_SEARCH_KEY, FeatureFlag, FeatureFlagState } from './feature-flags.model';
+import { FLAG_SEARCH_KEY, FeatureFlagState } from './feature-flags.model';
 import { selectRouterState } from '../../core.state';
 import { selectAll } from './feature-flags.reducer';
 
@@ -104,4 +104,9 @@ export const selectFeatureFlagsListLength = createSelector(
 export const selectIsLoadingUpdateFeatureFlagStatus = createSelector(
   selectFeatureFlagsState,
   (state) => state.isLoadingUpdateFeatureFlagStatus
+);
+
+export const selectIsLoadingFeatureFlagDelete = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingFeatureFlagDelete
 );

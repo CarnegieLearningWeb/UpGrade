@@ -157,7 +157,7 @@ describe('FeatureFlagRepository Testing', () => {
     expect(mock.returning).toHaveBeenCalledWith('*');
     expect(mock.execute).toHaveBeenCalledTimes(1);
 
-    expect(res).toEqual([flag]);
+    expect(res).toEqual(flag);
   });
 
   it('should throw an error when update flag fails', async () => {

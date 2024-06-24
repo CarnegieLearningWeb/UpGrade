@@ -41,13 +41,14 @@ describe('Stratification Controller Testing', () => {
     const tempCsvFilePath = path.join(__dirname, `${factorName}.csv`);
     fs.writeFileSync(tempCsvFilePath, csvData);
 
-    const requestBody = [
-      {
-        file: fs.readFileSync(tempCsvFilePath, 'utf-8'),
-      },
-    ];
+    const requestBody = { files: [{ file: fs.readFileSync(tempCsvFilePath, 'utf-8') }] };
 
-    await request(app).post(`/api/stratification`).send(requestBody).expect('Content-Type', /json/).expect(200);
+    await request(app)
+      .post(`/api/stratification`)
+      .send(requestBody)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
 
     fs.unlinkSync(tempCsvFilePath);
     return;

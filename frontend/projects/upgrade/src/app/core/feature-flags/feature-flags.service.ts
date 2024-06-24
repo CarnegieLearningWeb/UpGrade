@@ -15,6 +15,7 @@ import {
   selectSearchFeatureFlagParams,
   selectRootTableState,
   selectFeatureFlagOverviewDetails,
+  selectIsLoadingFeatureFlagDelete,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -35,6 +36,8 @@ export class FeatureFlagsService {
   searchString$ = this.store$.pipe(select(selectSearchString));
   searchKey$ = this.store$.pipe(select(selectSearchKey));
   isLoadingAddFeatureFlag$ = this.store$.pipe(select(selectIsLoadingAddFeatureFlag));
+  IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
+
   featureFlagsListLengthChange$ = this.allFeatureFlags$.pipe(
     pairwise(),
     filter(([prevEntities, currEntities]) => prevEntities.length !== currEntities.length)
@@ -44,6 +47,13 @@ export class FeatureFlagsService {
     pairwise(),
     filter(([prev, curr]) => prev.status !== curr.status)
   );
+  // Observable to check if selectedFeatureFlag is removed from the store
+  isSelectedFeatureFlagRemoved$ = this.store$.pipe(
+    select(selectSelectedFeatureFlag),
+    pairwise(),
+    filter(([prev, curr]) => prev && !curr)
+  );
+
   selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));
   selectedFeatureFlag$ = this.store$.pipe(select(selectSelectedFeatureFlag));
   searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
@@ -71,8 +81,8 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlag({ addFeatureFlagRequest }));
   }
 
-  enableFeatureFlag(updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest) {
-    this.store$.dispatch(FeatureFlagsActions.actionEnableFeatureFlag({ updateFeatureFlagStatusRequest }));
+  updateFeatureFlagStatus(updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagStatus({ updateFeatureFlagStatusRequest }));
   }
 
   deleteFeatureFlag(flagId: string) {
