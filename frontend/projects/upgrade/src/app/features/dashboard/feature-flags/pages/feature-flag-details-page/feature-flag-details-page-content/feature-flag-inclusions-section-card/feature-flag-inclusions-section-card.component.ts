@@ -12,7 +12,6 @@ import { FeatureFlag } from '../../../../../../../core/feature-flags/store/featu
 
 import { IMenuButtonItem } from 'upgrade_types';
 
-
 @Component({
   selector: 'app-feature-flag-inclusions-section-card',
   standalone: true,
@@ -28,7 +27,6 @@ import { IMenuButtonItem } from 'upgrade_types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagInclusionsSectionCardComponent {
-
   @Input() data: FeatureFlag;
 
   menuButtonItems: IMenuButtonItem[] = [
