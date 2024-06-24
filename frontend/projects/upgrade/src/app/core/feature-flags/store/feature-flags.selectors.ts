@@ -34,9 +34,9 @@ export const selectIsInitialFeatureFlagsLoading = createSelector(
   (isLoading, featureFlags) => !isLoading || !!featureFlags.length
 );
 
-export const selectIsLoadingAddFeatureFlag = createSelector(
+export const selectIsLoadingUpsertFeatureFlag = createSelector(
   selectFeatureFlagsState,
-  (state) => state.isLoadingAddFeatureFlag
+  (state) => state.isLoadingUpsertFeatureFlag
 );
 
 export const selectSelectedFeatureFlag = createSelector(

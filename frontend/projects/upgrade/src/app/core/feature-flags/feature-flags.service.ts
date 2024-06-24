@@ -8,7 +8,7 @@ import {
   selectHasInitialFeatureFlagsDataLoaded,
   selectSearchKey,
   selectSearchString,
-  selectIsLoadingAddFeatureFlag,
+  selectIsLoadingUpsertFeatureFlag,
   selectActiveDetailsTabIndex,
   selectIsLoadingUpdateFeatureFlagStatus,
   selectSelectedFeatureFlag,
@@ -20,7 +20,7 @@ import {
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
-import { AddFeatureFlagRequest, UpdateFeatureFlagStatusRequest } from './store/feature-flags.model';
+import { AddFeatureFlagRequest, FeatureFlag, UpdateFeatureFlagStatusRequest } from './store/feature-flags.model';
 import { ExperimentService } from '../experiments/experiments.service';
 import { filter, map, pairwise } from 'rxjs';
 
@@ -35,7 +35,7 @@ export class FeatureFlagsService {
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
   searchString$ = this.store$.pipe(select(selectSearchString));
   searchKey$ = this.store$.pipe(select(selectSearchKey));
-  isLoadingAddFeatureFlag$ = this.store$.pipe(select(selectIsLoadingAddFeatureFlag));
+  isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
   IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
 
   featureFlagsListLengthChange$ = this.allFeatureFlags$.pipe(
@@ -52,6 +52,13 @@ export class FeatureFlagsService {
     select(selectSelectedFeatureFlag),
     pairwise(),
     filter(([prev, curr]) => prev && !curr)
+  );
+
+  isSelectedFeatureFlagUpdated$ = this.store$.pipe(
+    select(selectSelectedFeatureFlag),
+    pairwise(),
+    filter(([prev, curr]) => prev && curr && JSON.stringify(prev) !== JSON.stringify(curr)),
+    map(([prev, curr]) => curr)
   );
 
   selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));
@@ -79,6 +86,10 @@ export class FeatureFlagsService {
 
   addFeatureFlag(addFeatureFlagRequest: AddFeatureFlagRequest) {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlag({ addFeatureFlagRequest }));
+  }
+
+  updateFeatureFlag(flag: FeatureFlag) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlag({ flag }));
   }
 
   updateFeatureFlagStatus(updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest) {
