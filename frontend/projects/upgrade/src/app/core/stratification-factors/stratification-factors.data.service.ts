@@ -13,7 +13,7 @@ export class StratificationFactorsDataService {
 
   importStratificationFactors(stratificationFactors) {
     const url = this.environment.api.stratification;
-    return this.http.post(url, stratificationFactors);
+    return this.http.post(url, { files: stratificationFactors });
   }
 
   deleteStratificationFactor(id: string) {
