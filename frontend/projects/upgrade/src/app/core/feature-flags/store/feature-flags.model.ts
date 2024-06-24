@@ -124,8 +124,8 @@ export const FLAG_TRANSLATION_KEYS = {
 export const FLAG_ROOT_DISPLAYED_COLUMNS = Object.values(FLAG_ROOT_COLUMN_NAMES);
 
 export interface FeatureFlagState extends EntityState<FeatureFlag> {
+  isLoadingUpsertFeatureFlag: boolean;
   isLoadingSelectedFeatureFlag: boolean;
-  isLoadingAddFeatureFlag: boolean;
   isLoadingFeatureFlags: boolean;
   isLoadingUpdateFeatureFlagStatus: boolean;
   isLoadingFeatureFlagDelete: boolean;
