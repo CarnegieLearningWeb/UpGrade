@@ -1,14 +1,6 @@
 import { UpGradeClientEnums, UpGradeClientInterfaces, UpGradeClientRequests } from '../types';
 import { DefaultHttpClient } from '../DefaultHttpClient/DefaultHttpClient';
-import {
-  CaliperEnvelope,
-  IExperimentAssignmentv5,
-  IGroupMetric,
-  ILogInput,
-  ISingleMetric,
-  IUserAliases,
-  ILogRequestBody,
-} from 'upgrade_types';
+import { CaliperEnvelope, IExperimentAssignmentv5, ILogInput, IUserAliases, ILogRequestBody } from 'upgrade_types';
 import { DataService } from 'DataService/DataService';
 import { IApiServiceRequestParams, IEndpoints } from './ApiService.types';
 import { IMarkDecisionPointParams } from 'UpGradeClient/UpGradeClient.types';
@@ -44,7 +36,6 @@ export default class ApiService {
       log: `${this.hostUrl}/api/${this.apiVersion}/log`,
       logCaliper: `${this.hostUrl}/api/${this.apiVersion}/log/caliper`,
       altUserIds: `${this.hostUrl}/api/${this.apiVersion}/useraliases`,
-      addMetrics: `${this.hostUrl}/api/${this.apiVersion}/metric`,
     };
     this.httpClient = this.setHttpClient(config.httpClient);
   }
@@ -285,16 +276,6 @@ export default class ApiService {
 
     return this.sendRequest<UpGradeClientInterfaces.ILogResponse[], UpGradeClientInterfaces.ILog[]>({
       path: this.api.logCaliper,
-      method: UpGradeClientEnums.REQUEST_METHOD.POST,
-      body: requestBody,
-    });
-  }
-
-  public addMetrics(metrics: (ISingleMetric | IGroupMetric)[]): Promise<UpGradeClientInterfaces.IMetric[]> {
-    const requestBody = { metricUnit: metrics };
-
-    return this.sendRequest<UpGradeClientInterfaces.IMetric[], UpGradeClientInterfaces.IMetric[]>({
-      path: this.api.addMetrics,
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,
     });
