@@ -1,8 +1,8 @@
 import { Service } from 'typedi';
 import { FeatureFlag } from '../models/FeatureFlag';
-import { InjectRepository } from '../../typeorm-typedi-extensions';
+import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
-import { getConnection } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import {
   IFeatureFlagSearchParams,
@@ -30,6 +30,7 @@ export class FeatureFlagService {
     @InjectRepository() private featureFlagRepository: FeatureFlagRepository,
     @InjectRepository() private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
     @InjectRepository() private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
+    @InjectDataSource() private dataSource: DataSource,
     public segmentService: SegmentService,
     public experimentService: ExperimentService,
     public experimentAssignmentService: ExperimentAssignmentService
@@ -136,7 +137,7 @@ export class FeatureFlagService {
   }
 
   private async addFeatureFlagInDB(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
-    const createdFeatureFlag = await getConnection().transaction(async (transactionalEntityManager) => {
+    const createdFeatureFlag = await this.dataSource.transaction(async (transactionalEntityManager) => {
       flag.id = uuid();
       // saving feature flag doc
       const { featureFlagSegmentExclusion, featureFlagSegmentInclusion, ...flagDoc } = flag;
@@ -212,7 +213,7 @@ export class FeatureFlagService {
     // get old feature flag document
     const oldFeatureFlag = await this.findOne(flag.id);
 
-    return getConnection().transaction(async (transactionalEntityManager) => {
+    return this.dataSource.transaction(async (transactionalEntityManager) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {
         featureFlagSegmentExclusion,
