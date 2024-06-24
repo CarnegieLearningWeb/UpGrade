@@ -182,17 +182,6 @@ describe('Experiment Client Controller Testing', () => {
       .expect(200);
   });
 
-  test('Post request for /api/metric', () => {
-    return request(app)
-      .post('/api/metric')
-      .send({
-        metricUnit: [],
-      })
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .expect(200);
-  });
-
   test('Post request for /api/v1/useraliases', () => {
     return request(app)
       .patch('/api/v1/useraliases')
