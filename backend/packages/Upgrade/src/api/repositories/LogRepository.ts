@@ -139,7 +139,7 @@ export class LogRepository extends Repository<Log> {
       type: IMetricMetaData;
     }>
   > {
-    const experimentRepo = Container.getCustomRepository(ExperimentRepository);
+    const experimentRepo = Container.getCustomRepository(ExperimentRepository, 'export');
     return experimentRepo
       .createQueryBuilder('experiment')
       .select([

@@ -1,6 +1,5 @@
 import { MicroframeworkLoader, MicroframeworkSettings } from 'microframework';
 import { DataSource, LogLevel } from 'typeorm';
-
 import { env } from '../env';
 import { SERVER_ERROR } from 'upgrade_types';
 import { CONNECTION_NAME } from './enums';
@@ -9,7 +8,9 @@ import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConne
 import { Container as tteContainer } from '../typeorm-typedi-extensions';
 
 export const typeormLoader: MicroframeworkLoader = async (settings: MicroframeworkSettings | undefined) => {
-  const replicaHosts = (env.db.host_replica ? JSON.parse(env.db.host_replica) : []) as string[];
+  const exportReplicaHostNames = (env.db.export_replica ? JSON.parse(env.db.export_replica) : []) as string[];
+
+  const replicaHostNames = (env.db.host_replica ? JSON.parse(env.db.host_replica) : []) as string[];
 
   const masterHost: PostgresConnectionCredentialsOptions = {
     host: env.db.host,
@@ -19,7 +20,8 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     database: env.db.database,
   };
 
-  const replicaHost: PostgresConnectionCredentialsOptions[] = replicaHosts.map((hostname) => {
+  // Dedicating a replica for export
+  const exportReplicaHosts: PostgresConnectionCredentialsOptions[] = exportReplicaHostNames.map((hostname) => {
     return {
       host: hostname,
       port: env.db.port,
@@ -29,9 +31,15 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     };
   });
 
-  // Dedicating a replica for export
-  const exportReplicaHost = replicaHost.shift();
-  const exportReplicaSlaves = exportReplicaHost ? [exportReplicaHost] : [];
+  const replicaHosts: PostgresConnectionCredentialsOptions[] = replicaHostNames.map((hostname) => {
+    return {
+      host: hostname,
+      port: env.db.port,
+      username: env.db.username,
+      password: env.db.password,
+      database: env.db.database,
+    };
+  });
 
   // connection options:
   const mainDBConnectionOptions: PostgresConnectionOptions = {
@@ -39,7 +47,7 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     type: env.db.type as 'postgres',
     replication: {
       master: masterHost,
-      slaves: replicaHost,
+      slaves: replicaHosts,
     },
     synchronize: env.db.synchronize,
     logging: env.db.logging as boolean | 'all' | LogLevel[],
@@ -53,8 +61,8 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     name: CONNECTION_NAME.REPLICA,
     type: env.db.type as 'postgres',
     replication: {
-      master: exportReplicaHost,
-      slaves: exportReplicaSlaves,
+      master: masterHost,
+      slaves: exportReplicaHosts ?? replicaHosts,
     },
     synchronize: env.db.synchronize,
     logging: env.db.logging as boolean | 'all' | LogLevel[],
@@ -72,7 +80,6 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     // register the data source instance in the typeorm-typeDI-extensions
     tteContainer.setDataSource(CONNECTION_NAME.REPLICA, exportDataSourceInstance);
     await Promise.all([appDataSourceInstance.initialize(), exportDataSourceInstance.initialize()]);
-
 
     if (settings) {
       // sending the connections to the next middleware

@@ -55,6 +55,8 @@ export const env = {
   db: {
     type: getOsEnv('TYPEORM_CONNECTION'),
     host: getOsEnvOptional('TYPEORM_HOST') || getOsEnvOptional('RDS_HOSTNAME'),
+    export_replica:
+      getOsEnvOptional('TYPEORM_HOSTNAME_EXPORT_REPLICA') || getOsEnvOptional('RDS_HOSTNAME_EXPORT_REPLICA'),
     host_replica: getOsEnvOptional('TYPEORM_HOSTNAME_REPLICAS') || getOsEnvOptional('RDS_HOSTNAME_REPLICAS'),
     port: toNumber(getOsEnvOptional('TYPEORM_PORT') || getOsEnvOptional('RDS_PORT')),
     username: getOsEnvOptional('TYPEORM_USERNAME') || getOsEnvOptional('RDS_USERNAME'),
