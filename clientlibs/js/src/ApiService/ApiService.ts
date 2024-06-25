@@ -91,6 +91,7 @@ export default class ApiService {
         'Session-Id': this.clientSessionId,
         'Client-source': IS_BROWSER ? 'browser' : 'node',
         URL: url,
+        'User-Id': this.userId,
       },
     };
 

@@ -24,6 +24,7 @@ import flatten from 'lodash.flatten';
 import { CaliperLogEnvelope } from './validators/CaliperLogEnvelope';
 import { ExperimentUserValidator } from './validators/ExperimentUserValidator';
 import { MetricValidator } from './validators/MetricValidator';
+import { UserCheckMiddleware } from '../middlewares/UserCheckMiddleware';
 
 interface IExperimentAssignment {
   expId: string;
@@ -97,6 +98,7 @@ interface IExperimentAssignment {
 
 @JsonController('/')
 @UseBefore(ClientLibMiddleware)
+@UseBefore(UserCheckMiddleware)
 export class ExperimentClientController {
   constructor(
     public experimentService: ExperimentService,
