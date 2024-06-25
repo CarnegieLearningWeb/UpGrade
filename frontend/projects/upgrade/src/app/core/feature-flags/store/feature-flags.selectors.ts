@@ -1,7 +1,20 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { FLAG_SEARCH_KEY, FeatureFlagState } from './feature-flags.model';
+import {
+  AnySegmentType,
+  EmptyPrivateSegment,
+  FLAG_SEARCH_KEY,
+  FeatureFlag,
+  FeatureFlagState,
+  ParticipantListTableRow,
+  PrivateSegment,
+} from './feature-flags.model';
 import { selectRouterState } from '../../core.state';
 import { selectAll } from './feature-flags.reducer';
+import { GroupForSegment, IndividualForSegment, Segment } from '../../segments/store/segments.model';
+import {
+  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
+  FEATURE_FLAG_STATUS,
+} from '../../../../../../../../types/src/Experiment/enums';
 
 export const selectFeatureFlagsState = createFeatureSelector<FeatureFlagState>('featureFlags');
 
@@ -34,9 +47,9 @@ export const selectIsInitialFeatureFlagsLoading = createSelector(
   (isLoading, featureFlags) => !isLoading || !!featureFlags.length
 );
 
-export const selectIsLoadingAddFeatureFlag = createSelector(
+export const selectIsLoadingUpsertFeatureFlag = createSelector(
   selectFeatureFlagsState,
-  (state) => state.isLoadingAddFeatureFlag
+  (state) => state.isLoadingUpsertFeatureFlag
 );
 
 export const selectSelectedFeatureFlag = createSelector(
@@ -106,7 +119,78 @@ export const selectIsLoadingUpdateFeatureFlagStatus = createSelector(
   (state) => state.isLoadingUpdateFeatureFlagStatus
 );
 
+export const selectIsLoadingSelectedFeatureFlag = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingSelectedFeatureFlag
+);
+
 export const selectIsLoadingFeatureFlagDelete = createSelector(
   selectFeatureFlagsState,
   (state) => state.isLoadingFeatureFlagDelete
 );
+
+export const selectFeatureFlagInclusions = createSelector(
+  selectSelectedFeatureFlag,
+  (featureFlag: FeatureFlag): ParticipantListTableRow[] =>
+    mapToParticipantTableRowStructure(featureFlag, FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE)
+);
+
+export const selectFeatureFlagExclusions = createSelector(
+  selectSelectedFeatureFlag,
+  (featureFlag: FeatureFlag): ParticipantListTableRow[] =>
+    mapToParticipantTableRowStructure(featureFlag, FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE)
+);
+
+// TODO: can we get rid of this ui discovery work and have the backend do it?
+function mapToParticipantTableRowStructure(
+  featureFlag: FeatureFlag,
+  key: FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE | FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE
+): ParticipantListTableRow[] {
+  const privateSegment: PrivateSegment | EmptyPrivateSegment = featureFlag?.[key];
+
+  if (!privateSegment) return [];
+
+  // make sure this is not an empty private segment
+  if ('groupForSegment' in privateSegment.segment) {
+    const groups: GroupForSegment[] = privateSegment.segment.groupForSegment || [];
+    const subSegments: Segment[] = privateSegment.segment.subSegments || [];
+    const individuals: IndividualForSegment[] = privateSegment.segment.individualForSegment || [];
+
+    const groupsRow = groups.map(mapGroupToRow);
+    const subSegmentsRow = subSegments.map(mapSubSegmentToRow);
+    const individualsRow = individuals.map(mapIndividualToRow);
+
+    const allSegments: ParticipantListTableRow[] = [...groupsRow, ...subSegmentsRow, ...individualsRow];
+
+    return allSegments;
+  }
+
+  return [];
+}
+
+function mapGroupToRow(group: GroupForSegment): ParticipantListTableRow {
+  return {
+    name: group.groupId,
+    type: group.type + ' (group)',
+    values: '?',
+    status: '?',
+  };
+}
+
+function mapSubSegmentToRow(subSegment: Segment): ParticipantListTableRow {
+  return {
+    name: subSegment.id,
+    type: 'Segment',
+    values: '?',
+    status: '?',
+  };
+}
+
+function mapIndividualToRow(individual: IndividualForSegment): ParticipantListTableRow {
+  return {
+    name: individual.userId,
+    type: 'Individual',
+    values: '?',
+    status: '?',
+  };
+}

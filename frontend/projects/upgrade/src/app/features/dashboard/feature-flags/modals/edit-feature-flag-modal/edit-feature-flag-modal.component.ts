@@ -24,13 +24,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
 import { FEATURE_FLAG_STATUS, SEGMENT_TYPE, FILTER_MODE } from '../../../../../../../../../../types/src';
-import { AddFeatureFlagRequest } from '../../../../../core/feature-flags/store/feature-flags.model';
+import { AddFeatureFlagRequest, FeatureFlag, FeatureFlagFormData } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { Subscription } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
-  selector: 'app-add-feature-flag-modal',
+  selector: 'edit-add-feature-flag-modal',
   standalone: true,
   imports: [
     CommonModalComponent,
@@ -50,15 +50,17 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
     TranslateModule,
     CommonTagsInputComponent,
   ],
-  templateUrl: './add-feature-flag-modal.component.html',
-  styleUrl: './add-feature-flag-modal.component.scss',
+  templateUrl: './edit-feature-flag-modal.component.html',
+  styleUrl: './edit-feature-flag-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AddFeatureFlagModalComponent {
+export class EditFeatureFlagModalComponent {
   isLoadingUpsertFeatureFlag$ = this.featureFlagsService.isLoadingUpsertFeatureFlag$;
+  isSelectedFeatureFlagUpdated$ = this.featureFlagsService.isSelectedFeatureFlagUpdated$;
+  selectedFlag$ = this.featureFlagsService.selectedFeatureFlag$;
   appContexts$ = this.featureFlagsService.appContexts$;
-  featureFlagsListLengthChange$ = this.featureFlagsService.featureFlagsListLengthChange$;
   subscriptions = new Subscription();
+  flag: FeatureFlag;
 
   featureFlagForm: FormGroup;
 
@@ -70,13 +72,14 @@ export class AddFeatureFlagModalComponent {
     private featureFlagsService: FeatureFlagsService,
     private experimentService: ExperimentService,
     private formHelpersService: CommonFormHelpersService,
-    public dialogRef: MatDialogRef<AddFeatureFlagModalComponent>
+    public dialogRef: MatDialogRef<EditFeatureFlagModalComponent>
   ) {}
 
   ngOnInit(): void {
     this.experimentService.fetchContextMetaData();
     this.buildForm();
-    this.listenForFeatureFlagListLengthChanges();
+    this.initializeFormValues();
+    this.listenForFeatureFlagGetUpdated();
   }
 
   buildForm(): void {
@@ -89,47 +92,51 @@ export class AddFeatureFlagModalComponent {
     });
   }
 
+  initializeFormValues(): void {
+    this.subscriptions.add(
+      this.selectedFlag$.subscribe((selectedFlag) => {
+        this.flag = selectedFlag;
+        if (selectedFlag) {
+          this.featureFlagForm.patchValue({
+            name: selectedFlag.name,
+            key: selectedFlag.key,
+            description: selectedFlag.description,
+            appContext: selectedFlag.context ? selectedFlag.context[0] : '',
+            tags: selectedFlag.tags,
+          });
+        }
+      })
+    );
+  }
+
   // Close the modal once the feature flag list length changes, as that indicates actual success
-  listenForFeatureFlagListLengthChanges(): void {
-    this.subscriptions = this.featureFlagsListLengthChange$.subscribe(() => this.closeModal());
+  listenForFeatureFlagGetUpdated(): void {
+    this.subscriptions = this.isSelectedFeatureFlagUpdated$.subscribe(() => this.closeModal());
   }
 
   onPrimaryActionBtnClicked(): void {
     if (this.featureFlagForm.valid) {
       // Handle extra form validation logic here?
-      this.createAddFeatureFlagRequest();
+      this.updateFeatureFlagRequest();
     } else {
       // If the form is invalid, manually mark all form controls as touched
       this.formHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);
     }
   }
 
-  createAddFeatureFlagRequest(): void {
-    // temporarily use any until tags feature is added
-    // const { name, key, description, appContext, tags }: FeatureFlagFormData = this.featureFlagForm.value;
-    const { name, key, description, appContext, tags }: any = this.featureFlagForm.value;
+  updateFeatureFlagRequest(): void {
+    const { name, key, description, appContext, tags }: FeatureFlagFormData = this.featureFlagForm.value;
 
-    const addFeatureFlagRequest: AddFeatureFlagRequest = {
+    this.flag = {
+      ...this.flag,
       name,
       key,
       description,
-      status: FEATURE_FLAG_STATUS.DISABLED,
       context: [appContext],
       tags: tags, // it is now an array of strings
-      featureFlagSegmentInclusion: {
-        segment: {
-          type: SEGMENT_TYPE.PRIVATE,
-        },
-      },
-      featureFlagSegmentExclusion: {
-        segment: {
-          type: SEGMENT_TYPE.PRIVATE,
-        },
-      },
-      filterMode: FILTER_MODE.INCLUDE_ALL,
     };
 
-    this.featureFlagsService.addFeatureFlag(addFeatureFlagRequest);
+    this.featureFlagsService.updateFeatureFlag(this.flag);
   }
 
   closeModal() {
