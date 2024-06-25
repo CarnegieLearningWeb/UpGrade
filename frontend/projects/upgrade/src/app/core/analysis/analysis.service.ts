@@ -36,7 +36,6 @@ export class AnalysisService {
   }
 
   executeQuery(queryIds: string[]) {
-    console.warn('>> store', this.store$);
     if (!this.environment.metricAnalyticsExperimentDisplayDisabledToggle) {
       this.store$.dispatch(AnalysisActions.actionExecuteQuery({ queryIds }));
     } else {

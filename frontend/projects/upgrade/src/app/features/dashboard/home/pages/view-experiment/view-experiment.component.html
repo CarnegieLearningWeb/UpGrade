@@ -945,7 +945,7 @@
           <ng-container *ngIf="experiment.queries.length">
             <div class="box-shadow"></div>
             <!-- Experiment queries results -->
-            <ng-container *ngIf="disableMetricAnalysisDisplay; else noMetricsAnalysisView">
+            <ng-container *ngIf="!disableMetricAnalysisDisplay; else noMetricsAnalysisView">
               <home-experiment-query-result [experiment]="experiment"></home-experiment-query-result>
             </ng-container>
             <ng-template #noMetricsAnalysisView>
