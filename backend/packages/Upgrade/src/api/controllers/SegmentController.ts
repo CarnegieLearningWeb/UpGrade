@@ -1,5 +1,5 @@
 import { JsonController, Get, Delete, Param, Authorized, Post, Req, Body, QueryParams } from 'routing-controllers';
-import { SegmentService } from '../services/SegmentService';
+import { SegmentService, SegmentWithStatus } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
 import { SERVER_ERROR } from 'upgrade_types';
 import { isUUID } from 'class-validator';
@@ -9,7 +9,7 @@ import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 
 export interface getSegmentData {
-  segmentsData: Segment[];
+  segmentsData: SegmentWithStatus[];
   experimentSegmentInclusionData: Partial<ExperimentSegmentInclusion>[];
   experimentSegmentExclusionData: Partial<ExperimentSegmentExclusion>[];
 }
