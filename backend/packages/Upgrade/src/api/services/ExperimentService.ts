@@ -1644,6 +1644,9 @@ export class ExperimentService {
         lce.level.id = this.allIdMap[lce.level.id];
       });
     });
+    if (result.revertTo && this.allIdMap[result.revertTo]) {
+      result.revertTo = this.allIdMap[result.revertTo];
+    }
   }
 
   deduceConditionPayload(result) {
@@ -1719,7 +1722,7 @@ export class ExperimentService {
         },
       };
     }
-    result.experimentSegmentInclusion.id = uuid();
+    result.experimentSegmentInclusion.segment.id = uuid();
 
     if (!result.experimentSegmentExclusion) {
       result.experimentSegmentExclusion = {
@@ -1731,7 +1734,7 @@ export class ExperimentService {
         },
       };
     }
-    result.experimentSegmentExclusion.id = uuid();
+    result.experimentSegmentExclusion.segment.id = uuid();
   }
 
   deduceQueries(result) {
