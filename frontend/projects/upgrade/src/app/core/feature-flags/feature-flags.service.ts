@@ -86,6 +86,12 @@ export class FeatureFlagsService {
     map((exclusions) => exclusions.length)
   );
 
+  convertNameStringToKey(name:string):string {
+    let upperCaseString = name.trim().toUpperCase();
+    let key = upperCaseString.replace(/ /g, '_');
+    return key;
+}
+
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
   }
