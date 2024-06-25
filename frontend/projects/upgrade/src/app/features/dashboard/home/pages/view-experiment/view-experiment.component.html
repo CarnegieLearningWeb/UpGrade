@@ -80,16 +80,11 @@
       </div>
     </div>
 
-    <mat-tab-group
-      [selectedIndex]="0"
-      [mat-stretch-tabs]="false"
-      [dynamicHeight]="true"
-      disableRipple
-    >
+    <mat-tab-group [selectedIndex]="0" [mat-stretch-tabs]="false" [dynamicHeight]="true" disableRipple>
       <mat-tab>
         <ng-template mat-tab-label>
           <span class="ft-22-600 tab-label">
-              {{ 'home.view-experiment.mattab.overview.text' | translate }}
+            {{ 'home.view-experiment.mattab.overview.text' | translate }}
           </span>
         </ng-template>
         <div class="experiment-secondary-info tab-body-container">
@@ -195,9 +190,7 @@
 
               <!-- Experiment Type-->
               <div class="section-data">
-                <span
-                  class="ft-16-600 section-data-title"
-                >
+                <span class="ft-16-600 section-data-title">
                   {{ 'home-global.design-type.text' | translate | uppercase }}
                 </span>
                 <span class="ft-18-700 section-data-value">{{ experiment.type | titlecase }} Experiment </span>
@@ -247,9 +240,7 @@
 
               <!-- Stratification Factor Assinment Algorithm -->
               <div class="section-data">
-                <span
-                  class="ft-16-600 section-data-title"
-                >
+                <span class="ft-16-600 section-data-title">
                   {{ 'home-global.assignment-algorithm.text' | translate | uppercase }}
                 </span>
                 <span class="ft-18-700 section-data-value">{{ experiment.assignmentAlgorithm | titlecase }} </span>
@@ -269,7 +260,9 @@
                     <span class="ft-18-700 end-criteria end-criteria--text"> ( </span>
                     <span
                       *ngIf="
-                        permissions?.experiments.update && !isExperimentStateCancelled && experiment.state !== ExperimentState.ARCHIVED;
+                        permissions?.experiments.update &&
+                          !isExperimentStateCancelled &&
+                          experiment.state !== ExperimentState.ARCHIVED;
                         else endingCriteriaCommonTempReadOnly
                       "
                       (click)="updateEndingCriteria()"
@@ -319,7 +312,14 @@
                     </ng-template>
 
                     <span class="ft-18-700 end-criteria end-criteria--text"> ) </span>
-                    <mat-icon class="edit-icon" *ngIf="permissions?.experiments.update && !isExperimentStateCancelled && experiment.state !== ExperimentState.ARCHIVED">
+                    <mat-icon
+                      class="edit-icon"
+                      *ngIf="
+                        permissions?.experiments.update &&
+                        !isExperimentStateCancelled &&
+                        experiment.state !== ExperimentState.ARCHIVED
+                      "
+                    >
                       create
                     </mat-icon>
                   </ng-container>
@@ -327,7 +327,12 @@
                   <!-- if we have end date -->
                   <span class="ft-18-700 end-criteria" *ngIf="experiment.endOn">
                     <ng-container
-                      *ngIf="permissions?.experiments.update && !isExperimentStateCancelled && experiment.state !== ExperimentState.ARCHIVED; else endOnReadOnly"
+                      *ngIf="
+                        permissions?.experiments.update &&
+                          !isExperimentStateCancelled &&
+                          experiment.state !== ExperimentState.ARCHIVED;
+                        else endOnReadOnly
+                      "
                     >
                       <span class="end-criteria-underline--grey" (click)="updateEndingCriteria()">
                         {{ experiment.endOn | formatDate: 'medium date' }}
@@ -346,7 +351,9 @@
                   <span
                     class="ft-18-700 end-criteria"
                     *ngIf="
-                      permissions?.experiments.update && !isExperimentStateCancelled  && experiment.state !== ExperimentState.ARCHIVED;
+                      permissions?.experiments.update &&
+                        !isExperimentStateCancelled &&
+                        experiment.state !== ExperimentState.ARCHIVED;
                       else noCriteriaTemplateReadOnly
                     "
                   >
@@ -369,8 +376,7 @@
                   {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let data; let groupIndex = index" style="margin-left: 25px">
-                  <mat-checkbox color="primary" [checked]="data.excludeIfReached" [disabled]="true">
-                  </mat-checkbox>
+                  <mat-checkbox color="primary" [checked]="data.excludeIfReached" [disabled]="true"> </mat-checkbox>
                 </mat-cell>
               </ng-container>
 
@@ -388,14 +394,13 @@
               </div>
 
               <!-- Stratification Factor-->
-              <div class="section-data"
-              *ngIf="(experiment.assignmentAlgorithm === 'stratified random sampling')">
-                <span
-                  class="ft-16-600 section-data-title"
-                >
+              <div class="section-data" *ngIf="experiment.assignmentAlgorithm === 'stratified random sampling'">
+                <span class="ft-16-600 section-data-title">
                   {{ 'home-global.stratification-factor.text' | translate | uppercase }}
                 </span>
-                <span class="ft-18-700 section-data-value">{{ experiment.stratificationFactor.stratificationFactorName }} </span>
+                <span class="ft-18-700 section-data-value"
+                  >{{ experiment.stratificationFactor.stratificationFactorName }}
+                </span>
               </div>
             </div>
           </div>
@@ -405,10 +410,7 @@
             <span class="ft-16-600 experiment-chips-title">{{ 'global.context.text' | translate }}</span>
             <ng-container *ngFor="let context of experiment.context">
               <mat-chip>
-                <span
-                  class="ft-12-600 chip-label"
-                  (click)="searchExperiment(ExperimentSearchKey.CONTEXT, context)"
-                >
+                <span class="ft-12-600 chip-label" (click)="searchExperiment(ExperimentSearchKey.CONTEXT, context)">
                   {{ context }}
                 </span>
               </mat-chip>
@@ -420,10 +422,7 @@
             <span class="ft-16-600 experiment-chips-title">{{ 'global.tags.text' | translate }}</span>
             <ng-container *ngFor="let tag of experiment.tags">
               <mat-chip>
-                <span
-                  class="ft-12-600 chip-label"
-                  (click)="searchExperiment(ExperimentSearchKey.TAG, tag)"
-                >
+                <span class="ft-12-600 chip-label" (click)="searchExperiment(ExperimentSearchKey.TAG, tag)">
                   {{ tag }}
                 </span>
               </mat-chip>
@@ -436,7 +435,9 @@
               [checked]="experiment.logging"
               color="primary"
               (change)="toggleVerboseLogging($event)"
-              [disabled]="experiment.state === ExperimentState.CANCELLED || experiment.state === ExperimentState.ARCHIVED"
+              [disabled]="
+                experiment.state === ExperimentState.CANCELLED || experiment.state === ExperimentState.ARCHIVED
+              "
             >
               <span class="ft-16-600 checkbox-label">
                 {{ 'home.view-experiment.logging.text' | translate | uppercase }}
@@ -449,7 +450,7 @@
       <mat-tab>
         <ng-template mat-tab-label>
           <span class="ft-22-600 tab-label">
-              {{ 'home.view-experiment.mattab.design.text' | translate }}
+            {{ 'home.view-experiment.mattab.design.text' | translate }}
           </span>
         </ng-template>
         <div class="tab-body-container tab-table-body-container">
@@ -497,8 +498,7 @@
                   {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let data; let groupIndex = index" style="margin-left: 25px">
-                  <mat-checkbox color="primary" [checked]="data.excludeIfReached" [disabled]="true">
-                  </mat-checkbox>
+                  <mat-checkbox color="primary" [checked]="data.excludeIfReached" [disabled]="true"> </mat-checkbox>
                 </mat-cell>
               </ng-container>
               <mat-header-row *matHeaderRowDef="displayedPartitionColumns"></mat-header-row>
@@ -767,7 +767,7 @@
       <mat-tab>
         <ng-template mat-tab-label>
           <span class="ft-22-600 tab-label">
-              {{ 'home.view-experiment.mattab.participants.text' | translate }}
+            {{ 'home.view-experiment.mattab.participants.text' | translate }}
           </span>
         </ng-template>
         <div class="tab-body-container tab-table-body-container">
@@ -862,7 +862,7 @@
       <mat-tab>
         <ng-template mat-tab-label>
           <span class="ft-22-600 tab-label">
-              {{ 'home.view-experiment.mattab.metrics.text' | translate }}
+            {{ 'home.view-experiment.mattab.metrics.text' | translate }}
           </span>
         </ng-template>
         <div class="tab-body-container tab-table-body-container">
@@ -925,7 +925,7 @@
       <mat-tab>
         <ng-template mat-tab-label>
           <span class="ft-22-600 tab-label">
-              {{ 'home.view-experiment.mattab.data.text' | translate }}
+            {{ 'home.view-experiment.mattab.data.text' | translate }}
           </span>
         </ng-template>
         <div class="tab-body-container">
@@ -945,7 +945,18 @@
           <ng-container *ngIf="experiment.queries.length">
             <div class="box-shadow"></div>
             <!-- Experiment queries results -->
-            <home-experiment-query-result [experiment]="experiment"></home-experiment-query-result>
+            <ng-container *ngIf="disableMetricAnalysisDisplay; else noMetricsAnalysisView">
+              <home-experiment-query-result [experiment]="experiment"></home-experiment-query-result>
+            </ng-container>
+            <ng-template #noMetricsAnalysisView>
+              <div class="disabled-analysis-view-messsage-container">
+                <mat-icon class="warning-icon" color="warn">warning</mat-icon>
+                <p class="message">
+                  {{ 'home.view-experiment.metrics-analysis-unavailable.text' | translate }}
+                </p>
+              </div>
+              <div class="box-shadow"></div>
+            </ng-template>
           </ng-container>
         </div>
       </mat-tab>
