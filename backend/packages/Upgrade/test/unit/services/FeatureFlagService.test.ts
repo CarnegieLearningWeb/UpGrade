@@ -1,34 +1,35 @@
-import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
-import * as sinon from 'sinon';
-import { Connection, ConnectionManager } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
-import { ErrorService } from '../../../src/api/services/ErrorService';
-import { FeatureFlagRepository } from '../../../src/api/repositories/FeatureFlagRepository';
+import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
+
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
+import { Segment } from '../../../src/api/models/Segment';
+
+import { FeatureFlagRepository } from '../../../src/api/repositories/FeatureFlagRepository';
+
+import { ErrorService } from '../../../src/api/services/ErrorService';
+import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
+import { SegmentService } from '../../../src/api/services/SegmentService';
+import { ExperimentService } from '../../../src/api/services/ExperimentService';
+
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { FlagVariationRepository } from '../../../src/api/repositories/FlagVariationRepository';
 import { FLAG_SEARCH_SORT_KEY } from '../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { EXPERIMENT_SORT_AS } from '../../../../../../types/src';
-import { FlagVariation } from '../../../src/api/models/FlagVariation';
 import { isUUID } from 'class-validator';
 import { v4 as uuid } from 'uuid';
 import { configureLogger } from '../../utils/logger';
+import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
+import { Container } from '../../../src/typeorm-typedi-extensions';
 
 describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
   let flagRepo: FeatureFlagRepository;
-  let flagVariationRepo: FlagVariationRepository;
+
   let module: Awaited<ReturnType<TestingModuleBuilder['compile']>>;
 
   const logger = new UpgradeLogger();
-  const var1 = new FlagVariation();
-  var1.id = uuid();
-  var1.value = 'value1';
-  const var2 = new FlagVariation();
-  var2.id = uuid();
-  var1.value = 'value2';
-  const var3 = new FlagVariation();
+  let dataSource: DataSource;
 
   const mockFlag1 = new FeatureFlag();
   mockFlag1.id = uuid();
@@ -37,7 +38,6 @@ describe('Feature Flag Service Testing', () => {
   mockFlag1.description = 'description';
   mockFlag1.variationType = 'variationType';
   mockFlag1.status = true;
-  mockFlag1.variations = [var1, var2, var3];
 
   const mockFlag2 = new FeatureFlag();
   mockFlag2.id = uuid();
@@ -46,8 +46,6 @@ describe('Feature Flag Service Testing', () => {
   mockFlag2.description = 'description';
   mockFlag2.variationType = 'variationType';
   mockFlag2.status = true;
-
-  mockFlag1.variations = [var2, var3];
 
   const mockFlag3 = new FeatureFlag();
 
@@ -71,21 +69,51 @@ describe('Feature Flag Service Testing', () => {
   };
 
   const entityManagerMock = { createQueryBuilder: () => queryBuilderMock };
-  const sandbox = sinon.createSandbox();
-  sandbox.stub(ConnectionManager.prototype, 'get').returns({
-    transaction: jest.fn(async (passedFunction) => await passedFunction(entityManagerMock)),
-  } as unknown as Connection);
 
   beforeAll(() => {
     configureLogger();
   });
 
   beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'postgres',
+      database: 'postgres',
+      entities: [FeatureFlag, Segment],
+      synchronize: true,
+    });
+
+    const mockTransaction = jest.fn(async (passedFunction) => await passedFunction(entityManagerMock));
+    dataSource.transaction = mockTransaction;
+    Container.setDataSource('default', dataSource);
+
     module = await Test.createTestingModule({
       providers: [
+        DataSource,
         FeatureFlagService,
-        FeatureFlagRepository,
-        FlagVariationRepository,
+        {
+          provide: getDataSourceToken('default'),
+          useValue: dataSource,
+        },
+        {
+          provide: ExperimentService,
+          useValue: {
+            includeExcludeSegmentCreation: jest.fn().mockResolvedValue({ subSegmentIds: [], userIds: [], groups: [] }),
+          },
+        },
+        {
+          provide: SegmentService,
+          useValue: {
+            upsertSegment: jest.fn().mockResolvedValue({ id: uuid() }),
+            addSegmentDataInDB: jest.fn().mockResolvedValue({ id: uuid() }),
+            find: jest.fn().mockResolvedValue([]),
+          },
+        },
+        {
+          provide: ExperimentAssignmentService,
+          useValue: {
+            inclusionExclusionLogic: jest.fn().mockResolvedValue([[mockFlag1.id]]),
+          },
+        },
         {
           provide: getRepositoryToken(FeatureFlagRepository),
           useValue: {
@@ -138,7 +166,6 @@ describe('Feature Flag Service Testing', () => {
 
     service = module.get<FeatureFlagService>(FeatureFlagService);
     flagRepo = module.get<FeatureFlagRepository>(getRepositoryToken(FeatureFlagRepository));
-    flagVariationRepo = module.get<FlagVariationRepository>(getRepositoryToken(FlagVariationRepository));
   });
 
   it('should be defined', async () => {
@@ -168,8 +195,6 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should throw an error when create variation fails', async () => {
-    const err = new Error('insert error');
-    flagVariationRepo.insertVariations = jest.fn().mockRejectedValue(err);
     expect(async () => {
       await service.create(mockFlag1, logger);
     }).rejects.toThrow(new Error('Error in creating variation "addFeatureFlagInDB" Error: insert error'));
@@ -281,7 +306,6 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should update the flag with no id', async () => {
-    mockFlag3.variations = [var3];
     const results = await service.update(mockFlag3, logger);
     expect(isUUID(results.id)).toBeTruthy();
   });
@@ -297,8 +321,6 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should throw an error when unable to update flag variation', async () => {
-    const err = new Error('insert error');
-    flagVariationRepo.upsertFlagVariation = jest.fn().mockRejectedValue(err);
     expect(async () => {
       await service.update(mockFlag1, logger);
     }).rejects.toThrow(new Error('Error in creating variations "updateFeatureFlagInDB" Error: insert error'));
