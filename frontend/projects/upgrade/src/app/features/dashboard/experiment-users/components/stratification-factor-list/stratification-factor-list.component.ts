@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ImportStratificationsComponent } from './import-stratifications/import-stratifications.component';
 import { MatDialog } from '@angular/material/dialog';
 import * as clonedeep from 'lodash.clonedeep';
@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { ExperimentNameVM } from '../../../../../core/experiments/store/experiments.model';
+import { MatTableDataSource } from '@angular/material/table';
 
 interface StratificationFactorsTableRow {
   factor: string;
@@ -26,14 +27,15 @@ export class StratificationComponent implements OnInit {
   allStratificationFactors: StratificationFactor[];
   allStratificationFactorsSub: Subscription;
   isLoading$ = this.stratificationFactorsService.isLoading$;
-  stratificationFactorsForTable: StratificationFactorsTableRow[] = [];
+  stratificationFactorsForTable: MatTableDataSource<StratificationFactorsTableRow>;
   displayedColumns: string[] = ['factor', 'status', 'summary', 'actions'];
   allExperimentsName: ExperimentNameVM[];
 
   constructor(
     private dialog: MatDialog,
     private stratificationFactorsService: StratificationFactorsService,
-    private experimentService: ExperimentService
+    private experimentService: ExperimentService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -43,9 +45,14 @@ export class StratificationComponent implements OnInit {
     this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(
       (allStratificationFactors) => {
         this.allStratificationFactors = allStratificationFactors;
-        this.stratificationFactorsForTable = this.convertToTableFormat();
+        this.updateTableData();
       }
     );
+  }
+
+  updateTableData() {
+    this.stratificationFactorsForTable = new MatTableDataSource(this.convertToTableFormat());
+    this.cdr.markForCheck();
   }
 
   convertToTableFormat() {
@@ -86,7 +93,7 @@ export class StratificationComponent implements OnInit {
       if (isImportButtonClicked) {
         setTimeout(() => {
           this.stratificationFactorsService.fetchStratificationFactors();
-        }, 1);
+        }, 100);
       }
     });
   }
