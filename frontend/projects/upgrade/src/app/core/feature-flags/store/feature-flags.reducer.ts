@@ -8,8 +8,12 @@ export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFl
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
 export const initialState: FeatureFlagState = adapter.getInitialState({
-  isLoadingAddFeatureFlag: false,
+  isLoadingUpsertFeatureFlag: false,
   isLoadingFeatureFlags: false,
+  isLoadingUpdateFeatureFlagStatus: false,
+  isLoadingFeatureFlagDetail: false,
+  isLoadingFeatureFlagDelete: false,
+  isLoadingSelectedFeatureFlag: false,
   hasInitialFeatureFlagsDataLoaded: false,
   activeDetailsTabIndex: 0,
   skipFlags: 0,
@@ -39,18 +43,47 @@ const reducer = createReducer(
     });
   }),
   on(FeatureFlagsActions.actionFetchFeatureFlagsFailure, (state) => ({ ...state, isLoadingFeatureFlags: false })),
+  on(FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess, (state, { flag }) => {
+    return adapter.upsertOne(flag, {
+      ...state,
+      isLoadingSelectedFeatureFlag: false,
+    });
+  }),
+  on(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure, (state) => ({
+    ...state,
+    isLoadingSelectedFeatureFlag: false,
+  })),
   on(FeatureFlagsActions.actionSetIsLoadingFeatureFlags, (state, { isLoadingFeatureFlags }) => ({
     ...state,
     isLoadingFeatureFlags,
   })),
-  on(FeatureFlagsActions.actionAddFeatureFlag, (state) => ({ ...state, isLoadingAddFeatureFlag: true })),
+  on(FeatureFlagsActions.actionAddFeatureFlag, (state) => ({ ...state, isLoadingUpsertFeatureFlag: true })),
   on(FeatureFlagsActions.actionAddFeatureFlagSuccess, (state, { response }) => {
     return adapter.addOne(response, {
       ...state,
-      isLoadingAddFeatureFlag: false,
+      isLoadingUpsertFeatureFlag: false,
     });
   }),
-  on(FeatureFlagsActions.actionAddFeatureFlagFailure, (state) => ({ ...state, isLoadingAddFeatureFlag: false })),
+  on(FeatureFlagsActions.actionUpdateFeatureFlag, (state) => ({ ...state, isLoadingUpsertFeatureFlag: true })),
+  on(FeatureFlagsActions.actionUpdateFeatureFlagSuccess, (state, { response }) => {
+    return adapter.upsertOne(response, {
+      ...state,
+      isLoadingUpsertFeatureFlag: false,
+    });
+  }),
+  on(FeatureFlagsActions.actionDeleteFeatureFlag, (state) => ({ ...state, isLoadingFeatureFlagDelete: true })),
+  on(FeatureFlagsActions.actionDeleteFeatureFlagSuccess, (state, { flag }) => {
+    return adapter.removeOne(flag.id, {
+      ...state,
+      isLoadingFeatureFlagDelete: false,
+    });
+  }),
+  on(FeatureFlagsActions.actionDeleteFeatureFlagFailure, (state) => ({
+    ...state,
+    isLoadingFeatureFlagDelete: false,
+  })),
+  on(FeatureFlagsActions.actionUpdateFeatureFlagFailure, (state) => ({ ...state, isLoadingUpsertFeatureFlag: false })),
+  on(FeatureFlagsActions.actionAddFeatureFlagFailure, (state) => ({ ...state, isLoadingUpsertFeatureFlag: false })),
   on(FeatureFlagsActions.actionSetSkipFlags, (state, { skipFlags }) => ({ ...state, skipFlags })),
   on(FeatureFlagsActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),
   on(FeatureFlagsActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchValue: searchString })),
@@ -59,6 +92,25 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionSetActiveDetailsTabIndex, (state, { activeDetailsTabIndex }) => ({
     ...state,
     activeDetailsTabIndex,
+  })),
+  on(FeatureFlagsActions.actionUpdateFeatureFlagStatus, (state) => ({
+    ...state,
+    isLoadingUpdateFeatureFlagStatus: true,
+  })),
+  on(FeatureFlagsActions.actionUpdateFeatureFlagStatusSuccess, (state, { response }) => {
+    const flag = response;
+    return adapter.updateOne(
+      { id: flag?.id, changes: { status: flag?.status } },
+      { ...state, isLoadingUpdateFeatureFlagStatus: false }
+    );
+  }),
+  on(FeatureFlagsActions.actionUpdateFeatureFlagStatusFailure, (state) => ({
+    ...state,
+    isLoadingUpdateFeatureFlagStatus: true,
+  })),
+  on(FeatureFlagsActions.actionFetchFeatureFlagById, (state) => ({
+    ...state,
+    isLoadingSelectedFeatureFlag: true,
   }))
 );
 

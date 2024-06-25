@@ -1,7 +1,7 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
 import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SORT_KEY, SEGMENT_TYPE, SORT_AS_DIRECTION } from 'upgrade_types';
-import { Segment } from '../../segments/store/segments.model';
+import { GroupForSegment, IndividualForSegment, Segment } from '../../segments/store/segments.model';
 
 export interface FeatureFlag {
   createdAt: string;
@@ -15,8 +15,8 @@ export interface FeatureFlag {
   filterMode: FILTER_MODE;
   context: string[];
   tags: string[];
-  featureFlagSegmentInclusion: EmptyPrivateSegment | Segment;
-  featureFlagSegmentExclusion: EmptyPrivateSegment | Segment;
+  featureFlagSegmentInclusion: PrivateSegment | EmptyPrivateSegment;
+  featureFlagSegmentExclusion: PrivateSegment | EmptyPrivateSegment;
 }
 
 export interface FeatureFlagsPaginationInfo {
@@ -33,9 +33,14 @@ export interface AddFeatureFlagRequest {
   status: FEATURE_FLAG_STATUS;
   context: string[];
   tags: string[];
-  featureFlagSegmentInclusion: EmptyPrivateSegment | Segment;
-  featureFlagSegmentExclusion: EmptyPrivateSegment | Segment;
+  featureFlagSegmentInclusion: PrivateSegment | EmptyPrivateSegment;
+  featureFlagSegmentExclusion: PrivateSegment | EmptyPrivateSegment;
   filterMode: FILTER_MODE;
+}
+
+export interface UpdateFeatureFlagStatusRequest {
+  flagId: string;
+  status: FEATURE_FLAG_STATUS;
 }
 
 export interface FeatureFlagFormData {
@@ -46,11 +51,17 @@ export interface FeatureFlagFormData {
   tags: string[];
 }
 
+export interface PrivateSegment {
+  segment: Segment;
+}
+
 export interface EmptyPrivateSegment {
   segment: {
-    type: SEGMENT_TYPE.PRIVATE;
+    type: SEGMENT_TYPE;
   };
 }
+
+export type AnySegmentType = Segment | PrivateSegment | EmptyPrivateSegment | GroupForSegment | IndividualForSegment;
 
 export const NUMBER_OF_FLAGS = 20;
 
@@ -64,11 +75,23 @@ interface IFeatureFlagsSortParams {
   sortAs: SORT_AS_DIRECTION;
 }
 
+export interface ParticipantListTableRow {
+  name: string;
+  type: string;
+  values: string;
+  status: string;
+}
+
 export interface FeatureFlagsPaginationParams {
   skip: number;
   take: number;
   searchParams?: IFeatureFlagsSearchParams;
   sortParams?: IFeatureFlagsSortParams;
+}
+
+export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
+  INCLUDE = 'featureFlagSegmentInclusion',
+  EXCLUDE = 'featureFlagSegmentExclusion',
 }
 
 export enum FLAG_SEARCH_KEY {
@@ -101,8 +124,11 @@ export const FLAG_TRANSLATION_KEYS = {
 export const FLAG_ROOT_DISPLAYED_COLUMNS = Object.values(FLAG_ROOT_COLUMN_NAMES);
 
 export interface FeatureFlagState extends EntityState<FeatureFlag> {
-  isLoadingAddFeatureFlag: boolean;
+  isLoadingUpsertFeatureFlag: boolean;
+  isLoadingSelectedFeatureFlag: boolean;
   isLoadingFeatureFlags: boolean;
+  isLoadingUpdateFeatureFlagStatus: boolean;
+  isLoadingFeatureFlagDelete: boolean;
   hasInitialFeatureFlagsDataLoaded: boolean;
   activeDetailsTabIndex: number;
   skipFlags: number;

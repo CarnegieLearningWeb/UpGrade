@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
+import {
+  CommonModalComponent,
+  CommonTagsInputComponent,
+} from '../../../../../shared-standalone-component-lib/components';
 import {
   MAT_DIALOG_DATA,
   MatDialog,
@@ -24,6 +27,7 @@ import { FEATURE_FLAG_STATUS, SEGMENT_TYPE, FILTER_MODE } from '../../../../../.
 import { AddFeatureFlagRequest } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { Subscription } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
   selector: 'app-add-feature-flag-modal',
@@ -44,13 +48,14 @@ import { TranslateModule } from '@ngx-translate/core';
     MatIcon,
     ReactiveFormsModule,
     TranslateModule,
+    CommonTagsInputComponent,
   ],
   templateUrl: './add-feature-flag-modal.component.html',
   styleUrl: './add-feature-flag-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddFeatureFlagModalComponent {
-  isLoadingAddFeatureFlag$ = this.featureFlagsService.isLoadingAddFeatureFlag$;
+  isLoadingUpsertFeatureFlag$ = this.featureFlagsService.isLoadingUpsertFeatureFlag$;
   appContexts$ = this.featureFlagsService.appContexts$;
   featureFlagsListLengthChange$ = this.featureFlagsService.featureFlagsListLengthChange$;
   subscriptions = new Subscription();
@@ -63,11 +68,13 @@ export class AddFeatureFlagModalComponent {
     public dialog: MatDialog,
     private formBuilder: FormBuilder,
     private featureFlagsService: FeatureFlagsService,
+    private experimentService: ExperimentService,
     private formHelpersService: CommonFormHelpersService,
     public dialogRef: MatDialogRef<AddFeatureFlagModalComponent>
   ) {}
 
   ngOnInit(): void {
+    this.experimentService.fetchContextMetaData();
     this.buildForm();
     this.listenForFeatureFlagListLengthChanges();
   }
@@ -78,7 +85,7 @@ export class AddFeatureFlagModalComponent {
       key: ['', Validators.required],
       description: [''],
       appContext: ['', Validators.required],
-      tags: [null], // this will need corrected, it should be an array of strings, for now we're hackin
+      tags: [],
     });
   }
 
@@ -108,7 +115,7 @@ export class AddFeatureFlagModalComponent {
       description,
       status: FEATURE_FLAG_STATUS.DISABLED,
       context: [appContext],
-      tags: tags?.split(',').map((tag: string) => tag.trim()) ?? [], // this will need corrected, it should be an array of strings, for now we're hackin
+      tags: tags, // it is now an array of strings
       featureFlagSegmentInclusion: {
         segment: {
           type: SEGMENT_TYPE.PRIVATE,

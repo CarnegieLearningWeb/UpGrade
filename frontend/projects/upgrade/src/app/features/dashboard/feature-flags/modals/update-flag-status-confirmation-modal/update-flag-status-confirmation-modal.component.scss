@@ -1,0 +1,24 @@
+:host ::ng-deep .update-feature-flag-status-modal-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: space-between;
+  justify-content: center;
+
+  .title {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .modal-content-text {
+    color: var(--grey-3);
+  }
+
+  .modal-content-text.info {
+    color: blue;
+  }
+
+  .modal-content-text.warn {
+    color: red;
+  }
+}

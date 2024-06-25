@@ -195,13 +195,6 @@ export enum SEGMENT_SORT_KEY {
   UPDATED_AT = 'updatedAt',
 }
 
-export enum FLAG_SORT_KEY {
-  NAME = 'name',
-  KEY = 'key',
-  STATUS = 'status',
-  UPDATED_AT = 'updatedAt',
-}
-
 export enum FLAG_SEARCH_KEY {
   ALL = 'all',
   NAME = 'name',
@@ -209,6 +202,19 @@ export enum FLAG_SEARCH_KEY {
   STATUS = 'status',
   TAG = 'tag',
   CONTEXT = 'context',
+}
+
+export enum METRIC_SEARCH_KEY {
+  ALL = 'all',
+  NAME = 'name',
+  CONTEXT = 'context',
+}
+
+export enum FLAG_SORT_KEY {
+  NAME = 'name',
+  KEY = 'key',
+  STATUS = 'status',
+  UPDATED_AT = 'updatedAt',
 }
 
 export enum INCLUSION_CRITERIA {
@@ -259,4 +265,9 @@ export enum STATUS_INDICATOR_CHIP_TYPE {
   ENROLLMENT_COMPLETE = 'enrollment-complete',
   CANCELLED = 'cancelled',
   SCHEDULED = 'scheduled',
+}
+
+export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
+  INCLUDE = 'featureFlagSegmentInclusion',
+  EXCLUDE = 'featureFlagSegmentExclusion',
 }

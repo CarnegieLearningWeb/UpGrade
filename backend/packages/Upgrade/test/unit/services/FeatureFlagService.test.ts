@@ -25,6 +25,7 @@ import { SORT_AS_DIRECTION } from '../../../../../../types/src';
 import { isUUID } from 'class-validator';
 import { v4 as uuid } from 'uuid';
 import { FEATURE_FLAG_STATUS } from 'upgrade_types';
+import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 
 describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
@@ -44,7 +45,7 @@ describe('Feature Flag Service Testing', () => {
   mockFlag1.name = 'name';
   mockFlag1.key = 'key';
   mockFlag1.description = 'description';
-  mockFlag1.context = ['context'];
+  mockFlag1.context = ['context1'];
   mockFlag1.status = FEATURE_FLAG_STATUS.ENABLED;
   mockFlag1.featureFlagSegmentExclusion = {
     createdAt: new Date(),
@@ -126,6 +127,12 @@ describe('Feature Flag Service Testing', () => {
             upsertSegment: jest.fn().mockResolvedValue({ id: uuid() }),
             addSegmentDataInDB: jest.fn().mockResolvedValue({ id: uuid() }),
             find: jest.fn().mockResolvedValue([]),
+          },
+        },
+        {
+          provide: ExperimentAssignmentService,
+          useValue: {
+            inclusionExclusionLogic: jest.fn().mockResolvedValue([[mockFlag1.id]]),
           },
         },
         {
@@ -382,5 +389,26 @@ describe('Feature Flag Service Testing', () => {
     flagRepo.find = jest.fn().mockResolvedValue(undefined);
     const results = await service.delete(mockFlag1.id, logger);
     expect(results).toEqual(undefined);
+  });
+
+  it('should return an empty array if there are no flags', async () => {
+    const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+    const context = 'context1';
+
+    flagRepo.getFlagsFromContext = jest.fn().mockResolvedValue([]);
+    const result = await service.getKeys(userDoc, context, logger);
+
+    expect(result).toEqual([]);
+  });
+
+  it('should return an flags belonging to context', async () => {
+    const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+    const context = 'context1';
+
+    flagRepo.getFlagsFromContext = jest.fn().mockResolvedValue([mockFlag1]);
+    const result = await service.getKeys(userDoc, context, logger);
+
+    expect(result.length).toEqual(1);
+    expect(result).toEqual([mockFlag1.key]);
   });
 });

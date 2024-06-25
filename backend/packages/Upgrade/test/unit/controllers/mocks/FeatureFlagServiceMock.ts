@@ -5,6 +5,7 @@ import {
 } from '../../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from 'src/api/controllers/validators/FeatureFlagValidator';
+import { RequestedExperimentUser } from 'src/api/controllers/validators/ExperimentUserValidator';
 
 @Service()
 export default class FeatureFlagServiceMock {
@@ -18,6 +19,10 @@ export default class FeatureFlagServiceMock {
     searchParams?: IFeatureFlagSearchParams,
     sortParams?: IFeatureFlagSortParams
   ): Promise<[]> {
+    return Promise.resolve([]);
+  }
+
+  public getKeys(experimentUser: RequestedExperimentUser, context: string, logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
   }
 

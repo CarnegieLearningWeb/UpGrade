@@ -170,15 +170,12 @@ describe('Experiment Client Controller Testing', () => {
       .expect(200);
   });
 
-  test('Get request for /api/featureflag', () => {
-    return request(app).get('/api/featureflag').expect('Content-Type', /json/).expect(200);
-  });
-
-  test('Post request for /api/metric', () => {
+  test('Post request for /api/featureflag', () => {
     return request(app)
-      .post('/api/metric')
+      .post('/api/featureflag')
       .send({
-        metricUnit: [],
+        userId: 'u21',
+        context: 'abc',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
