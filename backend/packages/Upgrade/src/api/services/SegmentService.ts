@@ -42,6 +42,9 @@ interface ValidSegmentDetail {
   segment: SegmentInputValidator;
 }
 
+export interface SegmentWithStatus extends Segment {
+  status: SEGMENT_STATUS;
+}
 @Service()
 export class SegmentService {
   constructor(
@@ -66,6 +69,17 @@ export class SegmentService {
       .createQueryBuilder('segment')
       .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segment.subSegments', 'subSegment')
+      .where('segment.type != :private', { private: SEGMENT_TYPE.PRIVATE })
+      .getMany();
+
+    return queryBuilder;
+  }
+
+  public async getAllPublicSegmentsAndSubsegments(logger: UpgradeLogger): Promise<Segment[]> {
+    logger.info({ message: `Find all segments and Subsegments` });
+    const queryBuilder = await this.segmentRepository
+      .createQueryBuilder('segment')
       .leftJoinAndSelect('segment.subSegments', 'subSegment')
       .where('segment.type != :private', { private: SEGMENT_TYPE.PRIVATE })
       .getMany();
@@ -108,13 +122,17 @@ export class SegmentService {
     });
   }
 
-  public async getSingleSegmentWithStatus(segmentId: string, logger: UpgradeLogger): Promise<Segment> {
+  public async getSingleSegmentWithStatus(segmentId: string, logger: UpgradeLogger): Promise<SegmentWithStatus> {
+    const allSegmentData = await this.getAllPublicSegmentsAndSubsegments(logger);
     const segmentData = await this.getSegmentById(segmentId, logger);
-    return (await this.getSegmentStatus([segmentData])).segmentsData[0];
+    const segmentWithStatus = (await this.getSegmentStatus(allSegmentData)).segmentsData.find(
+      (segment: Segment) => segment.id === segmentId
+    );
+    return { ...segmentData, status: segmentWithStatus.status };
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
-    const segmentsData = await this.getAllSegments(logger);
+    const segmentsData = await this.getAllPublicSegmentsAndSubsegments(logger);
     return this.getSegmentStatus(segmentsData);
   }
 
@@ -125,32 +143,43 @@ export class SegmentService {
         this.getExperimentSegmentExclusionData(),
       ]);
 
-      const segmentsUsedList = [];
+      const segmentMap = new Map<string, string[]>();
+      segmentsData.forEach((segment) => {
+        segmentMap.set(
+          segment.id,
+          segment.subSegments.map((subSegment) => subSegment.id)
+        );
+      });
+
+      const segmentsUsedList = new Set<string>();
+
+      const collectSegmentIds = (segmentId: string) => {
+        if (segmentsUsedList.has(segmentId)) return;
+        segmentsUsedList.add(segmentId);
+        const subSegmentIds = segmentMap.get(segmentId) || [];
+        subSegmentIds.forEach((subSegmentId) => collectSegmentIds(subSegmentId));
+      };
+
+      collectSegmentIds(globalExcludeSegment.id);
 
       if (allExperimentSegmentsInclusion) {
         allExperimentSegmentsInclusion.forEach((ele) => {
-          const subSegments = ele.segment.subSegments;
-          segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
+          collectSegmentIds(ele.segment.id);
+          ele.segment.subSegments.forEach((subSegment) => collectSegmentIds(subSegment.id));
         });
       }
 
       if (allExperimentSegmentsExclusion) {
         allExperimentSegmentsExclusion.forEach((ele) => {
-          const subSegments = ele.segment.subSegments;
-          segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
+          collectSegmentIds(ele.segment.id);
+          ele.segment.subSegments.forEach((subSegment) => collectSegmentIds(subSegment.id));
         });
       }
-
-      segmentsData.forEach((segment) => {
-        if (segmentsUsedList.includes(segment.id)) {
-          segmentsUsedList.push(...segment.subSegments.map((subSegment) => subSegment.id));
-        }
-      });
 
       const segmentsDataWithStatus = segmentsData.map((segment) => {
         if (segment.id === globalExcludeSegment.id) {
           return { ...segment, status: SEGMENT_STATUS.GLOBAL };
-        } else if (segmentsUsedList.includes(segment.id)) {
+        } else if (segmentsUsedList.has(segment.id)) {
           return { ...segment, status: SEGMENT_STATUS.USED };
         } else {
           return { ...segment, status: SEGMENT_STATUS.UNUSED };

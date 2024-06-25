@@ -6,11 +6,9 @@ import {
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { of } from 'rxjs';
-
-import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
-
 import { IMenuButtonItem } from 'upgrade_types';
+import { FeatureFlagInclusionsTableComponent } from './feature-flag-inclusions-table/feature-flag-inclusions-table.component';
+import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 
 @Component({
   selector: 'app-feature-flag-inclusions-section-card',
@@ -20,6 +18,7 @@ import { IMenuButtonItem } from 'upgrade_types';
     CommonSectionCardTitleHeaderComponent,
     CommonSectionCardActionButtonsComponent,
     CommonModule,
+    FeatureFlagInclusionsTableComponent,
     TranslateModule,
   ],
   templateUrl: './feature-flag-inclusions-section-card.component.html',
@@ -27,14 +26,15 @@ import { IMenuButtonItem } from 'upgrade_types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagInclusionsSectionCardComponent {
-  @Input() data: FeatureFlag;
+  tableRowCount$ = this.featureFlagService.selectFeatureFlagInclusionsLength$;
+
+  constructor(private featureFlagService: FeatureFlagsService) {}
 
   menuButtonItems: IMenuButtonItem[] = [
     { name: 'Edit', disabled: false },
     { name: 'Delete', disabled: false },
   ];
 
-  tableRowCount$ = of(1);
   isSectionCardExpanded = true;
 
   addIncludeListClicked() {

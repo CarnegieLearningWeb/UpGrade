@@ -46,6 +46,18 @@ export const actionDeleteFeatureFlagSuccess = createAction(
 
 export const actionDeleteFeatureFlagFailure = createAction('[Feature Flags] Delete Feature Flag Failure');
 
+export const actionUpdateFeatureFlag = createAction(
+  '[Feature Flags] Update Feature Flag',
+  props<{ flag: FeatureFlag }>()
+);
+
+export const actionUpdateFeatureFlagSuccess = createAction(
+  '[Feature Flags] Update Feature Flag Success',
+  props<{ response: FeatureFlag }>()
+);
+
+export const actionUpdateFeatureFlagFailure = createAction('[Feature Flags] Update Feature Flag Failure');
+
 export const actionSetIsLoadingFeatureFlags = createAction(
   '[Feature Flags] Set Is Loading Flags',
   props<{ isLoadingFeatureFlags: boolean }>()

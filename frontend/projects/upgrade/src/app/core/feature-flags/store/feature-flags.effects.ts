@@ -100,6 +100,20 @@ export class FeatureFlagsEffects {
     )
   );
 
+  updateFeatureFlag$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionUpdateFeatureFlag),
+      switchMap((action) => {
+        return this.featureFlagsDataService.updateFeatureFlag(action.flag).pipe(
+          map((response) => {
+            return FeatureFlagsActions.actionUpdateFeatureFlagSuccess({ response });
+          }),
+          catchError(() => [FeatureFlagsActions.actionUpdateFeatureFlagFailure()])
+        );
+      })
+    )
+  );
+
   updateFeatureFlagStatus$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionUpdateFeatureFlagStatus),
