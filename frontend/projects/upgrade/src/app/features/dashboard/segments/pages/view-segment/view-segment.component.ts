@@ -37,7 +37,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
     private segmentsService: SegmentsService,
     private dialog: MatDialog,
     private authService: AuthService,
-    private _Activatedroute: ActivatedRoute,
+    private activatedroute: ActivatedRoute,
     private router: Router
   ) {}
 
@@ -58,7 +58,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
       this.permissions = permission;
     });
 
-    this.segmentIdSub = this._Activatedroute.paramMap.subscribe((params) => {
+    this.segmentIdSub = this.activatedroute.paramMap.subscribe((params) => {
       const segmentIdFromParams = params.get('segmentId');
       this.segmentsService.fetchSegmentById(segmentIdFromParams);
     });
@@ -69,13 +69,13 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
         this.segment = { ...segment, status: segment.status || SEGMENT_STATUS.UNUSED };
 
         this.members = [];
-        this.segment.individualForSegment.forEach((user) => {
+        this.segment.individualForSegment?.forEach((user) => {
           this.members.push({ type: MemberTypes.INDIVIDUAL, id: user.userId });
         });
-        this.segment.groupForSegment.forEach((group) => {
+        this.segment.groupForSegment?.forEach((group) => {
           this.members.push({ type: group.type, id: group.groupId });
         });
-        this.segment.subSegments.forEach((subSegment) => {
+        this.segment.subSegments?.forEach((subSegment) => {
           this.members.push({ type: MemberTypes.SEGMENT, id: subSegment.name });
         });
       });
