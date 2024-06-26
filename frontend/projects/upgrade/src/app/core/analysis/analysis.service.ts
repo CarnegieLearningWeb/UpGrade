@@ -36,12 +36,12 @@ export class AnalysisService {
   }
 
   executeQuery(queryIds: string[]) {
-    if (!this.environment.metricAnalyticsExperimentDisplayDisabledToggle) {
+    if (this.environment.metricAnalyticsExperimentDisplayToggle) {
       this.store$.dispatch(AnalysisActions.actionExecuteQuery({ queryIds }));
     } else {
       console.warn(
-        'executeQuery is currently disabled via metricAnalyticsExperimentDisplayDisabledToggle:',
-        this.environment.metricAnalyticsExperimentDisplayDisabledToggle
+        'executeQuery is currently disabled via metricAnalyticsExperimentDisplayToggle:',
+        this.environment.metricAnalyticsExperimentDisplayToggle
       );
     }
   }

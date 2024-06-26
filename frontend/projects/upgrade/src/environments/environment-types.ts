@@ -57,7 +57,7 @@ export interface Environment {
   pollingLimit: number;
   api: APIEndpoints;
   withinSubjectExperimentSupportToggle: boolean;
-  metricAnalyticsExperimentDisplayDisabledToggle: boolean;
+  metricAnalyticsExperimentDisplayToggle: boolean;
 }
 
 export interface RuntimeEnvironmentConfig {

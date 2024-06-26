@@ -16,7 +16,7 @@ export const environment = {
   pollingInterval: 10 * 1000,
   pollingLimit: 600,
   withinSubjectExperimentSupportToggle: false,
-  metricAnalyticsExperimentDisplayDisabledToggle: true,
+  metricAnalyticsExperimentDisplayToggle: false,
   api: {
     getAllExperiments: '/experiments/paginated',
     createNewExperiments: '/experiments',

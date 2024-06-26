@@ -127,8 +127,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     return this.experiment.state === EXPERIMENT_STATE.CANCELLED;
   }
 
-  get disableMetricAnalysisDisplay() {
-    return this.environment.metricAnalyticsExperimentDisplayDisabledToggle;
+  get showMetricAnalysisDisplay() {
+    return this.environment.metricAnalyticsExperimentDisplayToggle;
   }
 
   ngOnInit() {

@@ -23,7 +23,7 @@ jest.mock('./store/analysis.selectors', () => ({
 
 describe('AnalysisService', () => {
   const mockStore: any = mockStateStore$;
-  let mockEnvironment: Environment = { metricAnalyticsExperimentDisplayDisabledToggle: false } as Environment;
+  let mockEnvironment: Environment = { metricAnalyticsExperimentDisplayToggle: false } as Environment;
   let service: AnalysisService;
 
   beforeEach(() => {
@@ -93,9 +93,9 @@ describe('AnalysisService', () => {
       mockEnvironment = { ...originalEnvironment };
     });
 
-    it('should dispatch executeQuery with the supplied string input array when metricAnalyticsExperimentDisplayDisabledToggle is false', () => {
-      // Mock environment with metricAnalyticsExperimentDisplayDisabledToggle as false
-      mockEnvironment = { metricAnalyticsExperimentDisplayDisabledToggle: false } as Environment;
+    it('should dispatch executeQuery with the supplied string input array when metricAnalyticsExperimentDisplayToggle is false', () => {
+      // Mock environment with metricAnalyticsExperimentDisplayToggle as false
+      mockEnvironment = { metricAnalyticsExperimentDisplayToggle: false } as Environment;
       const mockQueryIds = ['test', 'test2'];
 
       service.executeQuery(mockQueryIds);
@@ -103,9 +103,9 @@ describe('AnalysisService', () => {
       expect(mockStore.dispatch).toHaveBeenCalledWith(actionExecuteQuery({ queryIds: mockQueryIds }));
     });
 
-    it('should not dispatch executeQuery and log a warning when metricAnalyticsExperimentDisplayDisabledToggle is true', () => {
-      // Mock environment with metricAnalyticsExperimentDisplayDisabledToggle as true
-      mockEnvironment = { metricAnalyticsExperimentDisplayDisabledToggle: true } as Environment;
+    it('should not dispatch executeQuery and log a warning when metricAnalyticsExperimentDisplayToggle is true', () => {
+      // Mock environment with metricAnalyticsExperimentDisplayToggle as true
+      mockEnvironment = { metricAnalyticsExperimentDisplayToggle: true } as Environment;
       const mockQueryIds = ['test3', 'test4'];
 
       service.executeQuery(mockQueryIds);

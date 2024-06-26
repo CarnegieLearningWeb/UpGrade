@@ -31,8 +31,8 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
         env.googleClientId = config.gapiClientId || config.googleClientId;
         env.withinSubjectExperimentSupportToggle =
           config.withinSubjectExperimentSupportToggle ?? env.withinSubjectExperimentSupportToggle ?? false;
-        env.metricAnalyticsExperimentDisplayDisabledToggle =
-          config.metricAnalyticsExperimentDisplayToggle ?? env.metricAnalyticsExperimentDisplayDisabledToggle ?? false;
+        env.metricAnalyticsExperimentDisplayToggle =
+          config.metricAnalyticsExperimentDisplayToggle ?? env.metricAnalyticsExperimentDisplayToggle ?? false;
       })
       .catch((error) => {
         console.log({ error });
