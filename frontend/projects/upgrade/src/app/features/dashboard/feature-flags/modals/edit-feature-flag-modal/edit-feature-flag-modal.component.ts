@@ -80,6 +80,7 @@ export class EditFeatureFlagModalComponent {
     this.buildForm();
     this.initializeFormValues();
     this.listenForFeatureFlagGetUpdated();
+    this.listenOnNameChangesToUpdateKey();
   }
 
   buildForm(): void {
@@ -107,6 +108,15 @@ export class EditFeatureFlagModalComponent {
         }
       })
     );
+  }
+
+  listenOnNameChangesToUpdateKey(): void {
+    this.featureFlagForm.get('name')?.valueChanges.subscribe((name) => {
+      const keyControl = this.featureFlagForm.get('key');
+      if (keyControl && !keyControl.dirty) {
+        keyControl.setValue(this.featureFlagsService.convertNameStringToKey(name));
+      }
+    });
   }
 
   // Close the modal once the feature flag list length changes, as that indicates actual success
