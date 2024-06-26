@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation, Inject } from '@angular/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ExperimentStatusComponent } from '../../components/modal/experiment-status/experiment-status.component';
@@ -33,6 +33,7 @@ import {
   FactorialConditionTableDataFromConditionPayload,
   SimpleExperimentPayloadTableRowData,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+import { ENV, Environment } from '../../../../../../environments/environment-types';
 // Used in view-experiment component only
 enum DialogType {
   CHANGE_STATUS = 'Change status',
@@ -102,7 +103,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private authService: AuthService,
     private router: Router,
-    private _Activatedroute: ActivatedRoute
+    private _Activatedroute: ActivatedRoute,
+    @Inject(ENV) private environment: Environment
   ) {}
 
   get DialogType() {
@@ -123,6 +125,10 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   get isExperimentStateCancelled() {
     return this.experiment.state === EXPERIMENT_STATE.CANCELLED;
+  }
+
+  get showMetricAnalysisDisplay() {
+    return this.environment.metricAnalyticsExperimentDisplayToggle;
   }
 
   ngOnInit() {
@@ -276,7 +282,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
           statisticOperation.push(compareFn);
           statisticOperation.push(query.query.compareValue);
         }
-        const operationObject = this.queryOperations.find(op => op.value === query.query.operationType);
+        const operationObject = this.queryOperations.find((op) => op.value === query.query.operationType);
         statisticOperation.push(operationObject.viewValue);
         this.displayMetrics.push({
           metric_Key: rootKey,

@@ -29,7 +29,10 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
       .then((config: RuntimeEnvironmentConfig) => {
         env.apiBaseUrl = config.endpointApi || config.apiBaseUrl;
         env.googleClientId = config.gapiClientId || config.googleClientId;
-        env.withinSubjectExperimentSupportToggle = config.withinSubjectExperimentSupportToggle ?? env.withinSubjectExperimentSupportToggle ?? false;
+        env.withinSubjectExperimentSupportToggle =
+          config.withinSubjectExperimentSupportToggle ?? env.withinSubjectExperimentSupportToggle ?? false;
+        env.metricAnalyticsExperimentDisplayToggle =
+          config.metricAnalyticsExperimentDisplayToggle ?? env.metricAnalyticsExperimentDisplayToggle ?? false;
       })
       .catch((error) => {
         console.log({ error });
