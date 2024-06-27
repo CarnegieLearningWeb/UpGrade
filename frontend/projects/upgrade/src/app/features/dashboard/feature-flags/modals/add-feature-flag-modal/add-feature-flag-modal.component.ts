@@ -77,6 +77,7 @@ export class AddFeatureFlagModalComponent {
     this.experimentService.fetchContextMetaData();
     this.buildForm();
     this.listenForFeatureFlagListLengthChanges();
+    this.listenOnNameChangesToUpdateKey();
   }
 
   buildForm(): void {
@@ -92,6 +93,15 @@ export class AddFeatureFlagModalComponent {
   // Close the modal once the feature flag list length changes, as that indicates actual success
   listenForFeatureFlagListLengthChanges(): void {
     this.subscriptions = this.featureFlagsListLengthChange$.subscribe(() => this.closeModal());
+  }
+
+  listenOnNameChangesToUpdateKey(): void {
+    this.featureFlagForm.get('name')?.valueChanges.subscribe((name) => {
+      const keyControl = this.featureFlagForm.get('key');
+      if (keyControl && !keyControl.dirty) {
+        keyControl.setValue(this.featureFlagsService.convertNameStringToKey(name));
+      }
+    });
   }
 
   onPrimaryActionBtnClicked(): void {
