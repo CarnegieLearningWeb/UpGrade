@@ -22,7 +22,5 @@
   </app-common-section-card-action-buttons>
 
   <!-- content -->
-  <app-feature-flag-exclusions-table content
-    class="full-width"
-  ></app-feature-flag-exclusions-table>
+  <app-feature-flag-exclusions-table content *ngIf="isSectionCardExpanded" class="full-width"></app-feature-flag-exclusions-table>
 </app-common-section-card>

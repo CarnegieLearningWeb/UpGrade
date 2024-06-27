@@ -365,6 +365,8 @@
   "feature-flags.details.exclusions.card.no-data-row.text": "No Exclude Lists defined.",
   "feature-flags.details.exclusions.card.title.text": "Exclude Lists",
   "feature-flags.details.exclusions.card.subtitle.text": "Define Exclude lists for this feature flag",
+  "feature-flags.details.exposures.card.title.text": "Exposures",
+  "feature-flags.details.exposures.card.subtitle.text": "View total exposures for the feature flag during the specific period.",
   "feature-flags.details.add-exclude-list.button.text": "Add Exclude List",
   "feature-flags.table-variation-type.text": "Variation type",
   "feature-flags.overview.flag-variation-type.text": "Flag Variation Type",
