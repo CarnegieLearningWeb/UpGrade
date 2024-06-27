@@ -389,6 +389,17 @@ $font-size-small: 15px;
     margin-bottom: 24px;
     padding: 10px;
   }
+
+  .disabled-analysis-view-messsage-container {
+    padding-top: 50px;
+    padding-bottom: 20px;
+    display: flex;
+    justify-content: center;
+
+    .mat-icon {
+      margin-right: 20px;
+    }
+  }
 }
 
 ::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-selected {
