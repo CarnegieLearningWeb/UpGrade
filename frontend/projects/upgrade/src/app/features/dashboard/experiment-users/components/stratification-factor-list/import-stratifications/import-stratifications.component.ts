@@ -13,6 +13,7 @@ export class ImportStratificationsComponent {
   file: File;
   isStratificationCSVValid = true;
   csvData: CsvDataItem[] = [];
+  uploadedFileCount = 0;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   constructor(
@@ -52,5 +53,6 @@ export class ImportStratificationsComponent {
         }
       }
     }
+    this.uploadedFileCount = fileList.length;
   }
 }
