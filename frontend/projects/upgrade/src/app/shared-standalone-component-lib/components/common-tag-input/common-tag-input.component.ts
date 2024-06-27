@@ -61,15 +61,11 @@ export class CommonTagsInputComponent implements ControlValueAccessor {
 
   removeChip(tag: string) {
     const currentTags = this.tags.value || [];
-    const index = currentTags.indexOf(tag);
+    const newTags = currentTags.filter((t) => t !== tag);
 
-    if (index >= 0) {
-      currentTags.splice(index, 1);
-      this.tags.setValue(currentTags);
-      this.tags.updateValueAndValidity();
-    }
+    this.tags.setValue(newTags);
+    this.tags.updateValueAndValidity();
   }
-
   // Implement ControlValueAccessor methods
   writeValue(value: string[]) {
     this.tags.setValue(value || []);

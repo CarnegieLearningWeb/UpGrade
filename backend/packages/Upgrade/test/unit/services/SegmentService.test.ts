@@ -233,7 +233,7 @@ describe('Segment Service Testing', () => {
         {
           id: seg1.id,
           context: 'add',
-          status: 'Unused',
+          status: 'Used',
           subSegments: seg1.subSegments,
           groupForSegment: seg1.groupForSegment,
           individualForSegment: seg1.individualForSegment,
@@ -254,7 +254,7 @@ describe('Segment Service Testing', () => {
         {
           id: seg1.id,
           context: 'add',
-          status: 'Unused',
+          status: 'Used',
           subSegments: seg1.subSegments,
           groupForSegment: seg1.groupForSegment,
           individualForSegment: seg1.individualForSegment,
@@ -272,7 +272,7 @@ describe('Segment Service Testing', () => {
     const res = {
       id: seg1.id,
       context: 'add',
-      status: 'Unused',
+      status: 'Used',
       subSegments: seg1.subSegments,
       groupForSegment: seg1.groupForSegment,
       individualForSegment: seg1.individualForSegment,
