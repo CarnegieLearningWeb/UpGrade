@@ -27,6 +27,7 @@ import { FeatureFlagsService } from '../../../../../../../core/feature-flags/fea
 })
 export class FeatureFlagExclusionsSectionCardComponent {
   tableRowCount$ = this.featureFlagService.selectFeatureFlagExclusionsLength$;
+  isSectionCardExpanded = true;
 
   constructor(private featureFlagService: FeatureFlagsService) {}
 
@@ -34,8 +35,6 @@ export class FeatureFlagExclusionsSectionCardComponent {
     { name: 'Edit', disabled: false },
     { name: 'Delete', disabled: false },
   ];
-
-  isSectionCardExpanded = true;
 
   addExcludeListClicked() {
     console.log('add Exclude List Clicked');
