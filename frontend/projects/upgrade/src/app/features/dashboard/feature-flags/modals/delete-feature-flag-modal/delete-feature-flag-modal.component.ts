@@ -44,9 +44,7 @@ export class DeleteFeatureFlagModalComponent {
   private inputSubject: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   // Observable that emits true if inputValue is 'delete', false otherwise
-  isDeleteNotTyped$: Observable<boolean> = this.inputSubject
-    .asObservable()
-    .pipe(map((value) => value.toLowerCase() !== 'delete'));
+  isDeleteNotTyped$: Observable<boolean> = this.inputSubject.pipe(map((value) => value.toLowerCase() !== 'delete'));
 
   isDeleteActionBtnDisabled$: Observable<boolean> = combineLatest([
     this.isDeleteNotTyped$,
