@@ -35,7 +35,7 @@ export class CommonModalComponent {
   @Input() primaryActionBtnLabel = 'Submit';
   @Input() primaryActionBtnColor = 'primary';
   @Input() hideFooter = false;
-  @Input() primaryActionBtnDisabled$: Observable<boolean>;
+  @Input() primaryActionBtnDisabled = false;
   @Output() primaryActionBtnClicked = new EventEmitter<string>();
 
   onPrimaryActionBtnClicked() {
