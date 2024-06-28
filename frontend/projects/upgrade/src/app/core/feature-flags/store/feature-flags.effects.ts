@@ -91,8 +91,9 @@ export class FeatureFlagsEffects {
       ofType(FeatureFlagsActions.actionAddFeatureFlag),
       switchMap((action) => {
         return this.featureFlagsDataService.addFeatureFlag(action.addFeatureFlagRequest).pipe(
-          map((response) => {
-            return FeatureFlagsActions.actionAddFeatureFlagSuccess({ response });
+          map((response) => FeatureFlagsActions.actionAddFeatureFlagSuccess({ response })),
+          tap(({ response }) => {
+            this.router.navigate(['/featureflags', 'detail', response.id]);
           }),
           catchError(() => [FeatureFlagsActions.actionAddFeatureFlagFailure()])
         );
