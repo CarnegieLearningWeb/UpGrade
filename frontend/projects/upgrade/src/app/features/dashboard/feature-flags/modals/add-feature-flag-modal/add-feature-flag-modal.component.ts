@@ -86,7 +86,7 @@ export class AddFeatureFlagModalComponent {
       key: ['', Validators.required],
       description: [''],
       appContext: ['', Validators.required],
-      tags: [],
+      tags: [[]],
     });
   }
 
@@ -124,7 +124,7 @@ export class AddFeatureFlagModalComponent {
       description,
       status: FEATURE_FLAG_STATUS.DISABLED,
       context: [appContext],
-      tags: tags ? tags : [], // it is now an array of strings
+      tags: tags, // it is now an array of strings
       featureFlagSegmentInclusion: {
         segment: {
           type: SEGMENT_TYPE.PRIVATE,
