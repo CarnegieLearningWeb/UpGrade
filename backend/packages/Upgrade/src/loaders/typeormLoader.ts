@@ -72,6 +72,7 @@ import { userDefaultRoleReader1713260614311 } from '../database/migrations/17132
 import { featureFlagFilterMode1714680515570 } from '../database/migrations/1714680515570-featureFlagFilterMode';
 import { addingIndex1716191003726 } from '../database/migrations/1716191003726-addingIndex';
 import { monitoredIndexesForExport1718377498760 } from '../database/migrations/1718377498760-monitoredIndexesForExport';
+import { Typeorm1719738784139 } from '../database/migrations/1719738784139-Typeorm';
 
 const entities = [
   ArchivedStats,
@@ -113,7 +114,7 @@ const entities = [
   UserStratificationFactor,
 ];
 
-const migrations = [
+export const migrations = [
   baseSchema1656134880479,
   userTimeZone1660214866240,
   addExcludeIfReachedInDP1661416171909,
@@ -141,7 +142,24 @@ const migrations = [
   featureFlagFilterMode1714680515570,
   addingIndex1716191003726,
   monitoredIndexesForExport1718377498760,
+  Typeorm1719738784139,
 ];
+
+export const migrationDataSource = new DataSource({
+  name: CONNECTION_NAME.MAIN,
+  type: env.db.type as 'postgres',
+  host: env.db.host,
+  port: env.db.port,
+  username: env.db.username,
+  password: env.db.password,
+  database: env.db.database,
+  synchronize: env.db.synchronize,
+  logging: env.db.logging as boolean | 'all' | LogLevel[],
+  maxQueryExecutionTime: env.db.maxQueryExecutionTime,
+  entities: entities,
+  migrations: migrations,
+  extra: { max: env.db.maxConnectionPool },
+});
 
 export const typeormLoader: MicroframeworkLoader = async (settings: MicroframeworkSettings | undefined) => {
   const exportReplicaHostNames = (env.db.export_replica ? JSON.parse(env.db.export_replica) : []) as string[];
@@ -216,6 +234,11 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     // register the data source instance in the typeorm-typeDI-extensions
     tteContainer.setDataSource(CONNECTION_NAME.REPLICA, exportDataSourceInstance);
     await Promise.all([appDataSourceInstance.initialize(), exportDataSourceInstance.initialize()]);
+
+    if (!env.db.synchronize) {
+      await appDataSourceInstance.runMigrations();
+      await exportDataSourceInstance.runMigrations();
+    }
 
     if (settings) {
       // sending the connections to the next middleware
