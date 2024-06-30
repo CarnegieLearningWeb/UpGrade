@@ -21,9 +21,6 @@ import { ExperimentUser } from '../api/models/ExperimentUser';
 import { ExplicitIndividualAssignment } from '../api/models/ExplicitIndividualAssignment';
 import { Factor } from '../api/models/Factor';
 import { FeatureFlag } from '../api/models/FeatureFlag';
-import { FeatureFlagExposure } from '../api/models/FeatureFlagExposure';
-import { FeatureFlagSegmentInclusion } from '../api/models/FeatureFlagSegmentInclusion';
-import { FeatureFlagSegmentExclusion } from '../api/models/FeatureFlagSegmentExclusion';
 import { GroupEnrollment } from '../api/models/GroupEnrollment';
 import { GroupExclusion } from '../api/models/GroupExclusion';
 import { GroupForSegment } from '../api/models/GroupForSegment';
@@ -64,15 +61,8 @@ import { archivedState1692936809279 } from '../database/migrations/1692936809279
 import { stratificationFactorStatus1696829429134 } from '../database/migrations/1696829429134-stratificationFactorStatus';
 import { stratificationFactorFeature1696498128121 } from '../database/migrations/1696498128121-stratificationFactorFeature';
 import { addGroupIdForIndividualExclusion1710484793070 } from '../database/migrations/1710484793070-addGroupIdForIndividualExclusion';
-import { featureFlagSegmentInclusionExclusion1711566460836 } from '../database/migrations/1711566460836-featureFlagSegmentInclusionExclusion';
-import { featureFlagExposure1711569269846 } from '../database/migrations/1711569269846-featureFlagExposure';
-import { featureFlagContext1711569517358 } from '../database/migrations/1711569517358-featureFlagContext';
-import { featureFlagStatusTags1711652015345 } from '../database/migrations/1711652015345-featureFlagStatusTags';
-import { contextInMetric1712553037665 } from '../database/migrations/1712553037665-contextInMetric';
 import { userDefaultRoleReader1713260614311 } from '../database/migrations/1713260614311-userDefaultRoleReader';
-import { featureFlagFilterMode1714680515570 } from '../database/migrations/1714680515570-featureFlagFilterMode';
-import { addingIndex1716191003726 } from '../database/migrations/1716191003726-addingIndex';
-import { monitoredIndexesForExport1718377498760 } from '../database/migrations/1718377498760-monitoredIndexesForExport';
+import { Typeorm1719738784139 } from '../database/migrations/1719738784139-Typeorm';
 
 const entities = [
   ArchivedStats,
@@ -88,9 +78,6 @@ const entities = [
   ExplicitIndividualAssignment,
   Factor,
   FeatureFlag,
-  FeatureFlagExposure,
-  FeatureFlagSegmentInclusion,
-  FeatureFlagSegmentExclusion,
   GroupEnrollment,
   GroupExclusion,
   GroupForSegment,
@@ -114,7 +101,7 @@ const entities = [
   UserStratificationFactor,
 ];
 
-const migrations = [
+export const migrations = [
   baseSchema1656134880479,
   userTimeZone1660214866240,
   addExcludeIfReachedInDP1661416171909,
@@ -133,16 +120,25 @@ const migrations = [
   stratificationFactorStatus1696829429134,
   stratificationFactorFeature1696498128121,
   addGroupIdForIndividualExclusion1710484793070,
-  featureFlagSegmentInclusionExclusion1711566460836,
-  featureFlagExposure1711569269846,
-  featureFlagContext1711569517358,
-  featureFlagStatusTags1711652015345,
-  contextInMetric1712553037665,
   userDefaultRoleReader1713260614311,
-  featureFlagFilterMode1714680515570,
-  addingIndex1716191003726,
-  monitoredIndexesForExport1718377498760,
+  Typeorm1719738784139,
 ];
+
+export const migrationDataSource = new DataSource({
+  name: CONNECTION_NAME.MAIN,
+  type: env.db.type as 'postgres',
+  host: env.db.host,
+  port: env.db.port,
+  username: env.db.username,
+  password: env.db.password,
+  database: env.db.database,
+  synchronize: env.db.synchronize,
+  logging: env.db.logging as boolean | 'all' | LogLevel[],
+  maxQueryExecutionTime: env.db.maxQueryExecutionTime,
+  entities: entities,
+  migrations: migrations,
+  extra: { max: env.db.maxConnectionPool },
+});
 
 export const typeormLoader: MicroframeworkLoader = async (settings: MicroframeworkSettings | undefined) => {
   const replicaHosts = (env.db.host_replica ? JSON.parse(env.db.host_replica) : []) as string[];
@@ -209,6 +205,10 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     tteContainer.setDataSource(CONNECTION_NAME.REPLICA, exportDataSourceInstance);
     await Promise.all([appDataSourceInstance.initialize(), exportDataSourceInstance.initialize()]);
 
+    if (!env.db.synchronize) {
+      await appDataSourceInstance.runMigrations();
+      await exportDataSourceInstance.runMigrations();
+    }
 
     if (settings) {
       // sending the connections to the next middleware
