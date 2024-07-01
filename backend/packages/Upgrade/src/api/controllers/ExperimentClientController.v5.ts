@@ -38,6 +38,7 @@ import { MarkExperimentValidatorv5 } from './validators/MarkExperimentValidator.
 import { Log } from '../models/Log';
 import { ExperimentUserValidator } from './validators/ExperimentUserValidator';
 import { MetricValidator } from './validators/MetricValidator';
+import { UserCheckMiddleware } from '../middlewares/UserCheckMiddleware';
 
 interface IMonitoredDecisionPoint {
   id: string;
@@ -99,6 +100,7 @@ interface IMonitoredDecisionPoint {
 
 @JsonController('/v5/')
 @UseBefore(ClientLibMiddleware)
+@UseBefore(UserCheckMiddleware)
 export class ExperimentClientController {
   constructor(
     public experimentService: ExperimentService,

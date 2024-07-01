@@ -26,7 +26,7 @@ export class UserCheckMiddleware {
           return next(error);
         }
       }
-      // Continue to the next middleware
+      // Continue to the next middleware/controller
       next();
     } catch (error) {
       console.log(error);
