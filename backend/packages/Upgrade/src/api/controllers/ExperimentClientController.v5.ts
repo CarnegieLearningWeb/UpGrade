@@ -36,7 +36,6 @@ import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { MarkExperimentValidatorv5 } from './validators/MarkExperimentValidator.v5';
 import { Log } from '../models/Log';
 import { ExperimentUserValidator } from './validators/ExperimentUserValidator';
-import { MetricValidator } from './validators/MetricValidator';
 import { UserCheckMiddleware } from '../middlewares/UserCheckMiddleware';
 
 interface IMonitoredDecisionPoint {
