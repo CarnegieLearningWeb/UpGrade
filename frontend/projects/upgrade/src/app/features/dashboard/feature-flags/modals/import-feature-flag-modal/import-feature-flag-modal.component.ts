@@ -3,7 +3,7 @@ import { CommonModalComponent } from '../../../../../shared-standalone-component
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal-config';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
-import { BehaviorSubject, Observable, Subscription, combineLatest, map } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../../shared/shared.module';
 
@@ -12,73 +12,66 @@ import { SharedModule } from '../../../../../shared/shared.module';
   standalone: true,
   imports: [CommonModalComponent, CommonModule, SharedModule],
   templateUrl: './import-feature-flag-modal.component.html',
-  styleUrl: './import-feature-flag-modal.component.scss',
+  styleUrls: ['./import-feature-flag-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImportFeatureFlagModalComponent {
   @ViewChild('fileInput') fileInput: ElementRef<HTMLInputElement>;
 
   isImportActionBtnDisabled = new BehaviorSubject<boolean>(true);
-  isDragOver = false;
-  fileName: string | null = null;
+  isDragOver = new BehaviorSubject<boolean>(false);
+  fileName = new BehaviorSubject<string | null>(null);
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
-    public data: CommonModalConfig & { flagName: string; flagId: string },
+    public data: CommonModalConfig,
     public dialog: MatDialog,
-    private featureFlagsService: FeatureFlagsService,
     public dialogRef: MatDialogRef<ImportFeatureFlagModalComponent>
   ) {}
 
-  onDragOver(event: DragEvent): void {
+  onDragOver(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
-    this.isDragOver = true;
+    this.isDragOver.next(true);
   }
 
-  onDragLeave(event: DragEvent): void {
+  onDragLeave(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
-    this.isDragOver = false;
+    this.isDragOver.next(false);
   }
 
-  onDrop(event: DragEvent): void {
+  onDrop(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
-    this.isDragOver = false;
+    this.isDragOver.next(false);
 
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
-      const file = files[0];
-      if (file.type === 'application/json') {
-        this.fileName = file.name;
-        this.isImportActionBtnDisabled.next(false);
-        this.handleFileInput(file);
-      } else {
-        alert('Please upload a valid JSON file.');
-        this.fileName = null;
-        this.isImportActionBtnDisabled.next(true);
-      }
+      this.processFile(files[0]);
     }
   }
 
-  onFileSelected(event: Event): void {
+  onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      if (file.type === 'application/json') {
-        this.fileName = file.name;
-        this.isImportActionBtnDisabled.next(false);
-        this.handleFileInput(file);
-      } else {
-        alert('Please upload a valid JSON file.');
-        this.fileName = null;
-        this.isImportActionBtnDisabled.next(true);
-      }
+      this.processFile(input.files[0]);
     }
   }
 
-  handleFileInput(file: File): void {
+  processFile(file: File) {
+    if (file.type === 'application/json') {
+      this.fileName.next(file.name);
+      this.isImportActionBtnDisabled.next(false);
+      this.handleFileInput(file);
+    } else {
+      alert('Please upload a valid JSON file.');
+      this.fileName.next(null);
+      this.isImportActionBtnDisabled.next(true);
+    }
+  }
+
+  handleFileInput(file: File) {
     const reader = new FileReader();
     reader.onload = (e: any) => {
       const jsonContent = e.target.result;

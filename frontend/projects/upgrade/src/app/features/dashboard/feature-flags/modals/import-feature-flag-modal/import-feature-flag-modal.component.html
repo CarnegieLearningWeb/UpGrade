@@ -4,7 +4,7 @@
     [cancelBtnLabel]="data.cancelBtnLabel"
     [primaryActionBtnLabel]="data.primaryActionBtnLabel"
     [primaryActionBtnColor]="data.primaryActionBtnColor"
-    [primaryActionBtnDisabled$]="isImportActionBtnDisabled"
+    [primaryActionBtnDisabled]="isImportActionBtnDisabled | async"
   >
     <div class="drag-drop-container">
       <div
@@ -12,12 +12,12 @@
         (dragover)="onDragOver($event)"
         (dragleave)="onDragLeave($event)"
         (drop)="onDrop($event)"
-        [ngClass]="{ 'drag-over': isDragOver }"
+        [ngClass]="{ 'drag-over': (isDragOver | async) }"
       >
         <div class="input-container-header">
           <mat-icon>close</mat-icon>
         </div>
-        <div class="input-container-content" *ngIf="fileName; else uploadPrompt">
+        <div class="input-container-content" *ngIf="fileName | async as fileName; else uploadPrompt">
           <mat-icon>insert_drive_file</mat-icon>
           <p>{{ fileName }}</p>
         </div>
@@ -31,7 +31,7 @@
         </ng-template>
       </div>
       <p>
-        The Feature Flag JSON file should include the required properties for it to be imported.
+        {{ 'feature-flags.import-feature-flag.message.text' | translate }}
         <a href="">Learn More</a>
       </p>
     </div>
