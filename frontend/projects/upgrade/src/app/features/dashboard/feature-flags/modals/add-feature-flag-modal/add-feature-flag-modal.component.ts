@@ -24,7 +24,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
 import { FEATURE_FLAG_STATUS, SEGMENT_TYPE, FILTER_MODE } from '../../../../../../../../../../types/src';
-import { AddFeatureFlagRequest } from '../../../../../core/feature-flags/store/feature-flags.model';
+import { AddFeatureFlagRequest, FeatureFlagFormData } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { Subscription } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
@@ -55,7 +55,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddFeatureFlagModalComponent {
-  isLoadingAddFeatureFlag$ = this.featureFlagsService.isLoadingAddFeatureFlag$;
+  isLoadingUpsertFeatureFlag$ = this.featureFlagsService.isLoadingUpsertFeatureFlag$;
   appContexts$ = this.featureFlagsService.appContexts$;
   featureFlagsListLengthChange$ = this.featureFlagsService.featureFlagsListLengthChange$;
   subscriptions = new Subscription();
@@ -77,6 +77,7 @@ export class AddFeatureFlagModalComponent {
     this.experimentService.fetchContextMetaData();
     this.buildForm();
     this.listenForFeatureFlagListLengthChanges();
+    this.listenOnNameChangesToUpdateKey();
   }
 
   buildForm(): void {
@@ -85,13 +86,22 @@ export class AddFeatureFlagModalComponent {
       key: ['', Validators.required],
       description: [''],
       appContext: ['', Validators.required],
-      tags: [],
+      tags: [[]],
     });
   }
 
   // Close the modal once the feature flag list length changes, as that indicates actual success
   listenForFeatureFlagListLengthChanges(): void {
     this.subscriptions = this.featureFlagsListLengthChange$.subscribe(() => this.closeModal());
+  }
+
+  listenOnNameChangesToUpdateKey(): void {
+    this.featureFlagForm.get('name')?.valueChanges.subscribe((name) => {
+      const keyControl = this.featureFlagForm.get('key');
+      if (keyControl && !keyControl.dirty) {
+        keyControl.setValue(this.featureFlagsService.convertNameStringToKey(name));
+      }
+    });
   }
 
   onPrimaryActionBtnClicked(): void {
@@ -106,8 +116,7 @@ export class AddFeatureFlagModalComponent {
 
   createAddFeatureFlagRequest(): void {
     // temporarily use any until tags feature is added
-    // const { name, key, description, appContext, tags }: FeatureFlagFormData = this.featureFlagForm.value;
-    const { name, key, description, appContext, tags }: any = this.featureFlagForm.value;
+    const { name, key, description, appContext, tags }: FeatureFlagFormData = this.featureFlagForm.value;
 
     const addFeatureFlagRequest: AddFeatureFlagRequest = {
       name,

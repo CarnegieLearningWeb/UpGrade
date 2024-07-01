@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { AppState } from '../core.module';
 import { Store, select } from '@ngrx/store';
 import {
@@ -11,10 +11,11 @@ import {
 import * as AnalysisActions from './store/analysis.actions';
 import { UpsertMetrics } from './store/analysis.models';
 import { selectExperimentQueries } from '../experiments/store/experiments.selectors';
+import { ENV, Environment } from '../../../environments/environment-types';
 
 @Injectable()
 export class AnalysisService {
-  constructor(private store$: Store<AppState>) {}
+  constructor(private store$: Store<AppState>, @Inject(ENV) private environment: Environment) {}
 
   isMetricsLoading$ = this.store$.pipe(select(selectIsMetricsLoading));
   isQueryExecuting$ = this.store$.pipe(select(selectIsQueryExecuting));
@@ -35,7 +36,14 @@ export class AnalysisService {
   }
 
   executeQuery(queryIds: string[]) {
-    this.store$.dispatch(AnalysisActions.actionExecuteQuery({ queryIds }));
+    if (this.environment.metricAnalyticsExperimentDisplayToggle) {
+      this.store$.dispatch(AnalysisActions.actionExecuteQuery({ queryIds }));
+    } else {
+      console.warn(
+        'executeQuery is currently disabled via metricAnalyticsExperimentDisplayToggle:',
+        this.environment.metricAnalyticsExperimentDisplayToggle
+      );
+    }
   }
 
   experimentQueryResult$(experimentId: string) {

@@ -91,10 +91,25 @@ export class FeatureFlagsEffects {
       ofType(FeatureFlagsActions.actionAddFeatureFlag),
       switchMap((action) => {
         return this.featureFlagsDataService.addFeatureFlag(action.addFeatureFlagRequest).pipe(
-          map((response) => {
-            return FeatureFlagsActions.actionAddFeatureFlagSuccess({ response });
+          map((response) => FeatureFlagsActions.actionAddFeatureFlagSuccess({ response })),
+          tap(({ response }) => {
+            this.router.navigate(['/featureflags', 'detail', response.id]);
           }),
           catchError(() => [FeatureFlagsActions.actionAddFeatureFlagFailure()])
+        );
+      })
+    )
+  );
+
+  updateFeatureFlag$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionUpdateFeatureFlag),
+      switchMap((action) => {
+        return this.featureFlagsDataService.updateFeatureFlag(action.flag).pipe(
+          map((response) => {
+            return FeatureFlagsActions.actionUpdateFeatureFlagSuccess({ response });
+          }),
+          catchError(() => [FeatureFlagsActions.actionUpdateFeatureFlagFailure()])
         );
       })
     )

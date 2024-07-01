@@ -1529,36 +1529,50 @@ export class ExperimentService {
   ): Promise<ValidatedExperimentError[]> {
     logger.info({ message: `Validating experiments` });
 
-    const validationErrors = await Promise.all(
+    const validationErrors = await Promise.allSettled(
       experimentFiles.map(async (experimentFile) => {
         let experiment = JSON.parse(experimentFile.fileContent);
-        const fileName = experimentFile.fileName;
-
-        experiment = this.autoFillSomeMissingProperties(experiment);
-        experiment = this.deduceExperimentDetails(experiment);
 
         const newExperiment = plainToClass(ExperimentDTO, experiment);
-        let versionStatus = 0;
-        if (experiment.backendVersion) {
-          versionStatus = this.compareVersions(newExperiment.backendVersion, this.backendVersion);
-        }
 
         const experimentJSONValidationError = await this.validateExperimentJSON(newExperiment);
+        const fileName = experimentFile.fileName;
+        try {
+          experiment = this.autoFillSomeMissingProperties(experiment);
+          experiment = this.deduceExperimentDetails(experiment);
 
-        if (experimentJSONValidationError !== '') {
-          // If JSON is not valid, return error message
+          let versionStatus = 0;
+          if (experiment.backendVersion) {
+            versionStatus = this.compareVersions(newExperiment.backendVersion, this.backendVersion);
+          }
+
+          if (experimentJSONValidationError !== '') {
+            // If JSON is not valid, return error message
+            return { fileName: fileName, error: experimentJSONValidationError };
+          } else if (versionStatus !== 0) {
+            // If version is different, return appropriate warning message
+            const versionErrorMessage = versionStatus === 1 ? newVersionErrorMessage : oldVersionErrorMessage;
+            return { fileName: fileName, error: versionErrorMessage };
+          }
+          // If JSON is valid and version is the same, return null for no error
+          return { fileName: fileName, error: null };
+        } catch (error: any) {
           return { fileName: fileName, error: experimentJSONValidationError };
-        } else if (versionStatus !== 0) {
-          // If version is different, return appropriate warning message
-          const versionErrorMessage = versionStatus === 1 ? newVersionErrorMessage : oldVersionErrorMessage;
-          return { fileName: fileName, error: versionErrorMessage };
         }
-        // If JSON is valid and version is the same, don't add to errors
-        return { fileName: fileName, error: null };
       })
     );
 
-    return validationErrors;
+    // Filter out the files that have no errors
+    return validationErrors
+      .map((result) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        } else {
+          const { fileName, error } = result.reason;
+          return { fileName: fileName, error: error };
+        }
+      })
+      .filter((error) => error !== null);
   }
 
   private async validateExperimentJSON(experiment: ExperimentDTO): Promise<string> {
@@ -1630,6 +1644,9 @@ export class ExperimentService {
         lce.level.id = this.allIdMap[lce.level.id];
       });
     });
+    if (result.revertTo && this.allIdMap[result.revertTo]) {
+      result.revertTo = this.allIdMap[result.revertTo];
+    }
   }
 
   deduceConditionPayload(result) {
@@ -1705,7 +1722,7 @@ export class ExperimentService {
         },
       };
     }
-    result.experimentSegmentInclusion.id = uuid();
+    result.experimentSegmentInclusion.segment.id = uuid();
 
     if (!result.experimentSegmentExclusion) {
       result.experimentSegmentExclusion = {
@@ -1717,7 +1734,7 @@ export class ExperimentService {
         },
       };
     }
-    result.experimentSegmentExclusion.id = uuid();
+    result.experimentSegmentExclusion.segment.id = uuid();
   }
 
   deduceQueries(result) {

@@ -164,12 +164,17 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
           ) {
             this.subSegmentIds.push(segment.name);
             this.segmentNameId.set(segment.name, segment.id);
-          }
-        } else {
-          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.context === this.currentContext) {
+          } else if (
+            segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE &&
+            segment.id !== this.segmentInfo.id &&
+            this.currentContext === 'ALL'
+          ) {
             this.subSegmentIds.push(segment.name);
             this.segmentNameId.set(segment.name, segment.id);
           }
+        } else if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.context === this.currentContext) {
+          this.subSegmentIds.push(segment.name);
+          this.segmentNameId.set(segment.name, segment.id);
         }
       });
     }

@@ -266,3 +266,8 @@ export enum STATUS_INDICATOR_CHIP_TYPE {
   CANCELLED = 'cancelled',
   SCHEDULED = 'scheduled',
 }
+
+export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
+  INCLUDE = 'featureFlagSegmentInclusion',
+  EXCLUDE = 'featureFlagSegmentExclusion',
+}

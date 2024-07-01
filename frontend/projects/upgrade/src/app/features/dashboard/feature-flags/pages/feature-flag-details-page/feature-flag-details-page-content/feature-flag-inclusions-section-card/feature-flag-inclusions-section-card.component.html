@@ -22,5 +22,5 @@
   </app-common-section-card-action-buttons>
 
   <!-- content -->
-  <div content style="background-color: rgb(245, 220, 230); height: 90px; width: 100%">content: Inclusions</div>
+  <app-feature-flag-inclusions-table content *ngIf="isSectionCardExpanded" class="full-width"></app-feature-flag-inclusions-table>
 </app-common-section-card>

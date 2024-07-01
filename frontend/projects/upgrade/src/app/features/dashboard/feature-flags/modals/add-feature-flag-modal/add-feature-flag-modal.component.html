@@ -4,7 +4,7 @@
     [cancelBtnLabel]="config.cancelBtnLabel"
     [primaryActionBtnLabel]="config.primaryActionBtnLabel"
     [primaryActionBtnColor]="config.primaryActionBtnColor"
-    [primaryActionBtnDisabled$]="isLoadingAddFeatureFlag$"
+    [primaryActionBtnDisabled]="isLoadingUpsertFeatureFlag$ | async"
     (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
   >
     <form [formGroup]="featureFlagForm">

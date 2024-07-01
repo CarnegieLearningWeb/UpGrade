@@ -29,7 +29,6 @@ import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidator } from './validators/LogValidator';
 import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAliasesValidator';
-import { Metric } from '../models/Metric';
 import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
@@ -748,42 +747,6 @@ export class ExperimentClientController {
   ): Promise<string[]> {
     const experimentUserDoc = await this.experimentUserService.getUserDoc(experiment.userId, request.logger);
     return this.featureFlagService.getKeys(experimentUserDoc, experiment.context, request.logger);
-  }
-
-  /**
-   * @swagger
-   * /metric:
-   *    post:
-   *       description: Add filter metrics
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *          - in: body
-   *            name: params
-   *            schema:
-   *             type: object
-   *             properties:
-   *              metricUnit:
-   *                type: object
-   *            description: Filtered Metrics
-   *       tags:
-   *         - Client Side SDK
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: Filtered Metrics
-   *          '500':
-   *            description: Insert error in database
-   */
-  @Post('metric')
-  public async filterMetrics(
-    @Req()
-    request: AppRequest,
-    @Body({ validate: true })
-    metric: MetricValidator
-  ): Promise<Metric[]> {
-    return await this.metricService.saveAllMetrics(metric.metricUnit, metric.context, request.logger);
   }
 
   /**
