@@ -66,16 +66,6 @@ describe('Feature Flag Controller Testing', () => {
         status: 'enabled',
         context: ['foo'],
         tags: ['bar'],
-        featureFlagSegmentInclusion: {
-          segment: {
-            type: 'private',
-          },
-        },
-        featureFlagSegmentExclusion: {
-          segment: {
-            type: 'private',
-          },
-        },
         filterMode: 'includeAll',
       })
       .set('Accept', 'application/json')
@@ -114,22 +104,6 @@ describe('Feature Flag Controller Testing', () => {
         status: 'enabled',
         context: ['foo'],
         tags: ['bar'],
-        featureFlagSegmentInclusion: {
-          segment: {
-            type: 'private',
-            individualForSegment: [],
-            groupForSegment: [],
-            subSegments: [],
-          },
-        },
-        featureFlagSegmentExclusion: {
-          segment: {
-            type: 'private',
-            individualForSegment: [],
-            groupForSegment: [],
-            subSegments: [],
-          },
-        },
         filterMode: 'includeAll',
       })
       .set('Accept', 'application/json')

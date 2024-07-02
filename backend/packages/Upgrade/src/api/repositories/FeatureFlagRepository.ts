@@ -69,13 +69,11 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
 
   public async getFlagsFromContext(context: string): Promise<FeatureFlag[]> {
     const result = await this.createQueryBuilder('feature_flag')
-      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
-      .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
-      .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'featureFlagSegmentExclusion')
-      .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'segmentExclusion')
       .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')

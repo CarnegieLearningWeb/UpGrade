@@ -7,13 +7,9 @@ import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
 import { Segment } from '../../../src/api/models/Segment';
 
 import { FeatureFlagRepository } from '../../../src/api/repositories/FeatureFlagRepository';
-import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
-import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentExclusionRepository';
 
 import { ErrorService } from '../../../src/api/services/ErrorService';
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
-import { SegmentService } from '../../../src/api/services/SegmentService';
-import { ExperimentService } from '../../../src/api/services/ExperimentService';
 
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
@@ -30,9 +26,6 @@ import { ExperimentAssignmentService } from '../../../src/api/services/Experimen
 describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
   let flagRepo: FeatureFlagRepository;
-  let flagSegmentInclusionRepo: FeatureFlagSegmentInclusionRepository;
-  let flagSegmentExclusionRepo: FeatureFlagSegmentExclusionRepository;
-  let segmentService: SegmentService;
 
   let module: Awaited<ReturnType<TestingModuleBuilder['compile']>>;
 
@@ -47,20 +40,8 @@ describe('Feature Flag Service Testing', () => {
   mockFlag1.description = 'description';
   mockFlag1.context = ['context1'];
   mockFlag1.status = FEATURE_FLAG_STATUS.ENABLED;
-  mockFlag1.featureFlagSegmentExclusion = {
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    versionNumber: 1,
-    segment: seg1,
-    featureFlag: mockFlag1,
-  };
-  mockFlag1.featureFlagSegmentInclusion = {
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    versionNumber: 1,
-    segment: seg1,
-    featureFlag: mockFlag1,
-  };
+  mockFlag1.featureFlagSegmentExclusion = [];
+  mockFlag1.featureFlagSegmentInclusion = [seg1];
 
   const mockFlag2 = new FeatureFlag();
   mockFlag2.id = uuid();
@@ -69,20 +50,8 @@ describe('Feature Flag Service Testing', () => {
   mockFlag2.description = 'description';
   mockFlag2.context = ['context'];
   mockFlag2.status = FEATURE_FLAG_STATUS.ENABLED;
-  mockFlag2.featureFlagSegmentExclusion = {
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    versionNumber: 1,
-    segment: seg1,
-    featureFlag: mockFlag2,
-  };
-  mockFlag2.featureFlagSegmentInclusion = {
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    versionNumber: 1,
-    segment: seg1,
-    featureFlag: mockFlag2,
-  };
+  mockFlag2.featureFlagSegmentExclusion = [];
+  mockFlag2.featureFlagSegmentInclusion = [seg1];
 
   const mockFlag3 = new FeatureFlag();
 
@@ -115,20 +84,6 @@ describe('Feature Flag Service Testing', () => {
     module = await Test.createTestingModule({
       providers: [
         FeatureFlagService,
-        {
-          provide: ExperimentService,
-          useValue: {
-            includeExcludeSegmentCreation: jest.fn().mockResolvedValue({ subSegmentIds: [], userIds: [], groups: [] }),
-          },
-        },
-        {
-          provide: SegmentService,
-          useValue: {
-            upsertSegment: jest.fn().mockResolvedValue({ id: uuid() }),
-            addSegmentDataInDB: jest.fn().mockResolvedValue({ id: uuid() }),
-            find: jest.fn().mockResolvedValue([]),
-          },
-        },
         {
           provide: ExperimentAssignmentService,
           useValue: {
@@ -168,28 +123,6 @@ describe('Feature Flag Service Testing', () => {
           },
         },
         {
-          provide: getRepositoryToken(FeatureFlagSegmentInclusionRepository),
-          useValue: {
-            find: jest.fn().mockResolvedValue(''),
-            insertData: jest.fn().mockResolvedValue(''),
-            getFeatureFlagSegmentInclusionData: jest.fn().mockResolvedValue(''),
-            deleteData: jest.fn().mockImplementation((seg) => {
-              return seg;
-            }),
-          },
-        },
-        {
-          provide: getRepositoryToken(FeatureFlagSegmentExclusionRepository),
-          useValue: {
-            find: jest.fn().mockResolvedValue(''),
-            insertData: jest.fn().mockResolvedValue(''),
-            getFeatureFlagSegmentExclusionData: jest.fn().mockResolvedValue(''),
-            deleteData: jest.fn().mockImplementation((seg) => {
-              return seg;
-            }),
-          },
-        },
-        {
           provide: ErrorService,
           useValue: {
             create: jest.fn(),
@@ -200,13 +133,6 @@ describe('Feature Flag Service Testing', () => {
 
     service = module.get<FeatureFlagService>(FeatureFlagService);
     flagRepo = module.get<FeatureFlagRepository>(getRepositoryToken(FeatureFlagRepository));
-    flagSegmentInclusionRepo = module.get<FeatureFlagSegmentInclusionRepository>(
-      getRepositoryToken(FeatureFlagSegmentInclusionRepository)
-    );
-    flagSegmentExclusionRepo = module.get<FeatureFlagSegmentExclusionRepository>(
-      getRepositoryToken(FeatureFlagSegmentExclusionRepository)
-    );
-    segmentService = module.get<SegmentService>(SegmentService);
   });
 
   it('should be defined', async () => {
@@ -222,34 +148,12 @@ describe('Feature Flag Service Testing', () => {
     expect(results).toEqual(mockFlagArr);
   });
 
-  it('should create a feature flag with uuid', async () => {
-    const results = await service.create(mockFlag1, logger);
-    expect(isUUID(results.featureFlagSegmentInclusion.segment.id)).toBeTruthy();
-    expect(isUUID(results.featureFlagSegmentExclusion.segment.id)).toBeTruthy();
-  });
-
   it('should throw an error when create flag fails', async () => {
     const err = new Error('insert error');
     flagRepo.insertFeatureFlag = jest.fn().mockRejectedValue(err);
     expect(async () => {
       await service.create(mockFlag1, logger);
     }).rejects.toThrow(new Error('Error in creating feature flag document "addFeatureFlagInDB" Error: insert error'));
-  });
-
-  it('should throw an error when create segment inclusion fails', async () => {
-    const err = new Error('insert error');
-    flagSegmentInclusionRepo.insertData = jest.fn().mockRejectedValue(err);
-    expect(async () => {
-      await service.create(mockFlag1, logger);
-    }).rejects.toThrow(new Error('Error in creating inclusion or exclusion segments "addFeatureFlagInDB"'));
-  });
-
-  it('should throw an error when create segment exclusion fails', async () => {
-    const err = new Error('insert error');
-    flagSegmentExclusionRepo.insertData = jest.fn().mockRejectedValue(err);
-    expect(async () => {
-      await service.create(mockFlag1, logger);
-    }).rejects.toThrow(new Error('Error in creating inclusion or exclusion segments "addFeatureFlagInDB"'));
   });
 
   it('should return a count of feature flags', async () => {
@@ -367,14 +271,6 @@ describe('Feature Flag Service Testing', () => {
     );
   });
 
-  it('should throw an error when unable to update segment (for inclusion or exclusion', async () => {
-    const err = new Error('insert error');
-    segmentService.upsertSegment = jest.fn().mockRejectedValue(err);
-    expect(async () => {
-      await service.update(mockFlag1, logger);
-    }).rejects.toThrow(err);
-  });
-
   it('should update the flag state', async () => {
     const results = await service.updateState(mockFlag1.id, FEATURE_FLAG_STATUS.ENABLED);
     expect(results).toBeTruthy();
@@ -401,7 +297,7 @@ describe('Feature Flag Service Testing', () => {
     expect(result).toEqual([]);
   });
 
-  it('should return an flags belonging to context', async () => {
+  it('should return all flags belonging to context', async () => {
     const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
     const context = 'context1';
 

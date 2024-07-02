@@ -1,13 +1,12 @@
 import { Type } from 'class-transformer';
-import { Column, Entity, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
 import { SEGMENT_TYPE } from 'upgrade_types';
 import { BaseModel } from './base/BaseModel';
 import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
 import { ExperimentSegmentInclusion } from './ExperimentSegmentInclusion';
-import { FeatureFlagSegmentExclusion } from './FeatureFlagSegmentExclusion';
-import { FeatureFlagSegmentInclusion } from './FeatureFlagSegmentInclusion';
 import { GroupForSegment } from './GroupForSegment';
 import { IndividualForSegment } from './IndividualForSegment';
+import { FeatureFlag } from './FeatureFlag';
 
 @Entity()
 export class Segment extends BaseModel {
@@ -31,6 +30,11 @@ export class Segment extends BaseModel {
     default: SEGMENT_TYPE.PUBLIC,
   })
   public type: SEGMENT_TYPE;
+
+  @Column({
+    default: true,
+  })
+  public enabled: boolean;
 
   @OneToMany(() => IndividualForSegment, (individualForSegment) => individualForSegment.segment)
   @Type(() => IndividualForSegment)
@@ -68,11 +72,9 @@ export class Segment extends BaseModel {
   @Type(() => ExperimentSegmentExclusion)
   public experimentSegmentExclusion: ExperimentSegmentExclusion;
 
-  @OneToOne(() => FeatureFlagSegmentInclusion, (featureFlagSegmentInclusion) => featureFlagSegmentInclusion.segment)
-  @Type(() => FeatureFlagSegmentInclusion)
-  public featureFlagSegmentInclusion: FeatureFlagSegmentInclusion;
+  @ManyToOne(() => FeatureFlag, (featureFlag) => featureFlag.featureFlagSegmentInclusion, { onDelete: 'CASCADE' })
+  public includedInFeatureFlag: FeatureFlag;
 
-  @OneToOne(() => FeatureFlagSegmentExclusion, (featureFlagSegmentExclusion) => featureFlagSegmentExclusion.segment)
-  @Type(() => FeatureFlagSegmentExclusion)
-  public featureFlagSegmentExclusion: FeatureFlagSegmentExclusion;
+  @ManyToOne(() => FeatureFlag, (featureFlag) => featureFlag.featureFlagSegmentExclusion, { onDelete: 'CASCADE' })
+  public excludedFromFeatureFlag: FeatureFlag;
 }

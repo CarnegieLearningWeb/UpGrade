@@ -114,6 +114,10 @@ export class SegmentService {
         .where('segment.id IN (:...ids)', { ids })
         .getMany();
 
+      if (!result.length) {
+        return [];
+      }
+
       // sort according to ids
       const sortedData = ids.map((id) => {
         return result.find((data) => data.id === id);
@@ -461,12 +465,12 @@ export class SegmentService {
 
       // create/update segment document
       segment.id = segment.id || uuid();
-      const { id, name, description, context, type } = segment;
+      const { id, name, description, context, type, enabled, includedInFeatureFlag, excludedFromFeatureFlag } = segment;
       const allSegments = await this.getSegmentByIds(segment.subSegmentIds);
       const subSegmentData = segment.subSegmentIds
         .filter((subSegmentId) => {
           // check if segment exists:
-          const subSegment = allSegments.find((segmentId) => subSegmentId === segmentId.id);
+          const subSegment = allSegments.find((segment) => subSegmentId === segment.id);
           if (subSegment) {
             return true;
           } else {
@@ -481,9 +485,17 @@ export class SegmentService {
         .map((subSegmentId) => ({ id: subSegmentId }));
 
       try {
-        segmentDoc = await transactionalEntityManager
-          .getRepository(Segment)
-          .save({ id, name, description, context, type, subSegments: subSegmentData });
+        segmentDoc = await transactionalEntityManager.getRepository(Segment).save({
+          id,
+          name,
+          description,
+          context,
+          type,
+          enabled,
+          includedInFeatureFlag,
+          excludedFromFeatureFlag,
+          subSegments: subSegmentData,
+        });
       } catch (err) {
         const error = err as ErrorWithType;
         error.details = 'Error in saving segment in DB';

@@ -9,18 +9,9 @@ import {
   IFeatureFlagSortParams,
   FLAG_SEARCH_KEY,
 } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
-import { SERVER_ERROR, FEATURE_FLAG_STATUS, SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
+import { SERVER_ERROR, FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
-import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
-import { Segment } from '../models/Segment';
-import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
-import { ErrorWithType } from '../errors/ErrorWithType';
-import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
-import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
-import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
-import { SegmentService } from './SegmentService';
-import { ExperimentService } from './ExperimentService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentAssignmentService } from './ExperimentAssignmentService';
 
@@ -28,10 +19,6 @@ import { ExperimentAssignmentService } from './ExperimentAssignmentService';
 export class FeatureFlagService {
   constructor(
     @InjectRepository() private featureFlagRepository: FeatureFlagRepository,
-    @InjectRepository() private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
-    @InjectRepository() private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
-    public segmentService: SegmentService,
-    public experimentService: ExperimentService,
     public experimentAssignmentService: ExperimentAssignmentService
   ) {}
 
@@ -56,13 +43,11 @@ export class FeatureFlagService {
     }
     const featureFlag = await this.featureFlagRepository
       .createQueryBuilder('feature_flag')
-      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
-      .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
-      .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'featureFlagSegmentExclusion')
-      .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'segmentExclusion')
       .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
@@ -136,15 +121,13 @@ export class FeatureFlagService {
   }
 
   private async addFeatureFlagInDB(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
-    const createdFeatureFlag = await getConnection().transaction(async (transactionalEntityManager) => {
-      flag.id = uuid();
-      // saving feature flag doc
-      const { featureFlagSegmentExclusion, featureFlagSegmentInclusion, ...flagDoc } = flag;
-
-      let featureFlagDoc: FeatureFlag;
+    flag.id = uuid();
+    // saving feature flag doc
+    let featureFlagDoc: FeatureFlag;
+    await getConnection().transaction(async (transactionalEntityManager) => {
       try {
         featureFlagDoc = (
-          await this.featureFlagRepository.insertFeatureFlag(flagDoc as any, transactionalEntityManager)
+          await this.featureFlagRepository.insertFeatureFlag(flag as any, transactionalEntityManager)
         )[0];
       } catch (err) {
         const error = new Error(`Error in creating feature flag document "addFeatureFlagInDB" ${err}`);
@@ -152,66 +135,13 @@ export class FeatureFlagService {
         logger.error(error);
         throw error;
       }
-
-      const {
-        segmentExists: includeSegmentExists,
-        segmentDoc: segmentIncludeDoc,
-        segmentDocToSave: segmentIncludeDocToSave,
-      } = await this.addPrivateSegmentToDB(featureFlagSegmentInclusion, flag, 'Inclusion', logger);
-      const {
-        segmentExists: excludeSegmentExists,
-        segmentDoc: segmentExcludeDoc,
-        segmentDocToSave: segmentExcludeDocToSave,
-      } = await this.addPrivateSegmentToDB(featureFlagSegmentExclusion, flag, 'Exclusion', logger);
-
-      let featureFlagSegmentInclusionDoc: FeatureFlagSegmentInclusion;
-      let featureFlagSegmentExclusionDoc: FeatureFlagSegmentExclusion;
-
-      try {
-        [featureFlagSegmentInclusionDoc, featureFlagSegmentExclusionDoc] = await Promise.all([
-          includeSegmentExists
-            ? this.featureFlagSegmentInclusionRepository.insertData(
-                segmentIncludeDocToSave,
-                logger,
-                transactionalEntityManager
-              )
-            : (Promise.resolve([]) as any),
-          excludeSegmentExists
-            ? this.featureFlagSegmentExclusionRepository.insertData(
-                segmentExcludeDocToSave,
-                logger,
-                transactionalEntityManager
-              )
-            : (Promise.resolve([]) as any),
-        ]);
-      } catch (err) {
-        const error = err as Error;
-        error.message = `Error in creating inclusion or exclusion segments "addFeatureFlagInDB"`;
-        logger.error(error);
-        throw error;
-      }
-
-      const newFeatureFlagObject = {
-        ...featureFlagDoc,
-        ...(includeSegmentExists && {
-          featureFlagSegmentInclusion: { ...featureFlagSegmentInclusionDoc, segment: segmentIncludeDoc } as any,
-        }),
-        ...(excludeSegmentExists && {
-          featureFlagSegmentExclusion: { ...featureFlagSegmentExclusionDoc, segment: segmentExcludeDoc } as any,
-        }),
-      };
-
-      return newFeatureFlagObject;
     });
 
     // TODO: Add log for feature flag creation
-    return createdFeatureFlag;
+    return featureFlagDoc;
   }
 
   private async updateFeatureFlagInDB(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
-    // get old feature flag document
-    const oldFeatureFlag = await this.findOne(flag.id);
-
     return getConnection().transaction(async (transactionalEntityManager) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {
@@ -231,48 +161,6 @@ export class FeatureFlagService {
         logger.error(error);
         throw error;
       }
-      featureFlagDoc.featureFlagSegmentInclusion = oldFeatureFlag.featureFlagSegmentInclusion;
-      const segmentIncludeData = this.experimentService.includeExcludeSegmentCreation(
-        featureFlagSegmentInclusion,
-        featureFlagDoc.featureFlagSegmentInclusion,
-        flag.id,
-        flag.context,
-        true
-      );
-
-      featureFlagDoc.featureFlagSegmentExclusion = oldFeatureFlag.featureFlagSegmentExclusion;
-      const segmentExcludeData = this.experimentService.includeExcludeSegmentCreation(
-        featureFlagSegmentExclusion,
-        featureFlagDoc.featureFlagSegmentExclusion,
-        flag.id,
-        flag.context,
-        false
-      );
-
-      let segmentIncludeDoc: Segment;
-      try {
-        segmentIncludeDoc = await this.segmentService.upsertSegment(segmentIncludeData, logger);
-      } catch (err) {
-        const error = err as ErrorWithType;
-        error.details = 'Error in updating IncludeSegment in DB';
-        error.type = SERVER_ERROR.QUERY_FAILED;
-        logger.error(error);
-        throw error;
-      }
-
-      let segmentExcludeDoc: Segment;
-      try {
-        segmentExcludeDoc = await this.segmentService.upsertSegment(segmentExcludeData, logger);
-      } catch (err) {
-        const error = err as ErrorWithType;
-        error.details = 'Error in updating ExcludeSegment in DB';
-        error.type = SERVER_ERROR.QUERY_FAILED;
-        logger.error(error);
-        throw error;
-      }
-
-      featureFlagDoc.featureFlagSegmentInclusion.segment = segmentIncludeDoc;
-      featureFlagDoc.featureFlagSegmentExclusion.segment = segmentExcludeDoc;
       return featureFlagDoc;
     });
   }
@@ -313,18 +201,8 @@ export class FeatureFlagService {
     featureFlag.status = flagDTO.status;
     featureFlag.context = flagDTO.context;
     featureFlag.tags = flagDTO.tags;
-    const newExclusion = new FeatureFlagSegmentExclusion();
-    const newInclusion = new FeatureFlagSegmentInclusion();
-    featureFlag.featureFlagSegmentExclusion = { ...flagDTO.featureFlagSegmentExclusion, ...newExclusion };
-    featureFlag.featureFlagSegmentInclusion = { ...flagDTO.featureFlagSegmentInclusion, ...newInclusion };
     featureFlag.filterMode = flagDTO.filterMode;
     return featureFlag;
-  }
-
-  private getSegmentDoc(doc: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { createdAt, updatedAt, versionNumber, ...newDoc } = doc;
-    return newDoc;
   }
 
   private async featureFlagLevelInclusionExclusion(
@@ -333,15 +211,15 @@ export class FeatureFlagService {
   ): Promise<FeatureFlag[]> {
     const segmentObjMap = {};
     featureFlags.forEach((flag) => {
-      const includeId = flag.featureFlagSegmentInclusion.segment.id;
-      const excludeId = flag.featureFlagSegmentExclusion.segment.id;
+      const includeIds = flag.featureFlagSegmentInclusion.map((seg) => seg.id);
+      const excludeIds = flag.featureFlagSegmentExclusion.map((seg) => seg.id);
 
       segmentObjMap[flag.id] = {
-        segmentIdsQueue: [includeId, excludeId],
-        currentIncludedSegmentIds: [includeId],
-        currentExcludedSegmentIds: [excludeId],
-        allIncludedSegmentIds: [includeId],
-        allExcludedSegmentIds: [excludeId],
+        segmentIdsQueue: [...includeIds, ...excludeIds],
+        currentIncludedSegmentIds: includeIds,
+        currentExcludedSegmentIds: excludeIds,
+        allIncludedSegmentIds: includeIds,
+        allExcludedSegmentIds: excludeIds,
       };
     });
 
@@ -357,61 +235,5 @@ export class FeatureFlagService {
 
     const includedFeatureFlags = featureFlags.filter(({ id }) => includedFeatureFlagIds.includes(id));
     return includedFeatureFlags;
-  }
-
-  private async addPrivateSegmentToDB(
-    segmentInclusionExclusion: FeatureFlagSegmentExclusion | FeatureFlagSegmentInclusion,
-    flag: FeatureFlag,
-    type: string,
-    logger: UpgradeLogger
-  ) {
-    let segmentExists = true;
-    let segmentDoc: Segment;
-    let segmentDocToSave: Partial<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> = {};
-    if (segmentInclusionExclusion) {
-      const segment: any = this.setSegmentInclusionOrExclusion(segmentInclusionExclusion);
-      const segmentData: SegmentInputValidator = {
-        ...segment,
-        id: segment.id || uuid(),
-        name: flag.id + ' ' + type + ' Segment',
-        description: flag.id + ' ' + type + ' Segment',
-        context: flag.context[0],
-        type: SEGMENT_TYPE.PRIVATE,
-      };
-      try {
-        segmentDoc = await this.segmentService.upsertSegment(segmentData, logger);
-      } catch (err) {
-        const error = err as ErrorWithType;
-        error.details = 'Error in adding segment in DB';
-        error.type = SERVER_ERROR.QUERY_FAILED;
-        logger.error(error);
-        throw error;
-      }
-      // creating segment doc
-      const tempDoc = type === 'Inclusion' ? new FeatureFlagSegmentInclusion() : new FeatureFlagSegmentExclusion();
-      tempDoc.segment = segmentDoc;
-      tempDoc.featureFlag = flag;
-      segmentDocToSave = this.getSegmentDoc(tempDoc);
-    } else {
-      segmentExists = false;
-    }
-    return { segmentExists, segmentDoc, segmentDocToSave };
-  }
-
-  private setSegmentInclusionOrExclusion(
-    inclusionOrExclusion: FeatureFlagSegmentExclusion | FeatureFlagSegmentInclusion
-  ) {
-    const segment = inclusionOrExclusion.segment;
-    return segment
-      ? {
-          type: segment.type,
-          userIds: segment.individualForSegment?.map((x) => x.userId) || [],
-          groups:
-            segment.groupForSegment?.map((x) => {
-              return { type: x.type, groupId: x.groupId };
-            }) || [],
-          subSegmentIds: segment.subSegments?.map((x) => x.id) || [],
-        }
-      : inclusionOrExclusion;
   }
 }
