@@ -53,6 +53,12 @@ export interface getSegmentData {
  *         type: array
  *         items:
  *           type: string
+ *       enabled:
+ *         type: boolean
+ *       includedInFeatureFlag:
+ *         type: string
+ *       excludedFromFeatureFlag:
+ *         type: string
  *   segmentResponse:
  *     description: ''
  *     type: object

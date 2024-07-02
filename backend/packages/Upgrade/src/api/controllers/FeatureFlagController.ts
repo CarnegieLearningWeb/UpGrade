@@ -45,84 +45,9 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
  *         type: array
  *         items:
  *           type: string
- *       featureFlagSegmentInclusion:
- *          type: object
- *          properties:
- *              segment:
- *                type: object
- *                properties:
- *                  type:
- *                    type: string
- *                    example: private
- *                  individualForSegment:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        userId:
- *                          type: string
- *                          example: user1
- *                  groupForSegment:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        groupId:
- *                          type: string
- *                          example: school1
- *                        type:
- *                           type: string
- *                           example: schoolId
- *                  subSegments:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        id:
- *                          type: string
- *                        name:
- *                          type: string
- *                        context:
- *                          type: string
- *       featureFlagSegmentExclusion:
- *          type: object
- *          properties:
- *              segment:
- *                type: object
- *                properties:
- *                  type:
- *                    type: string
- *                    example: private
- *                  individualForSegment:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        userId:
- *                          type: string
- *                          example: user1
- *                  groupForSegment:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        groupId:
- *                          type: string
- *                          example: school1
- *                        type:
- *                           type: string
- *                           example: schoolId
- *                  subSegments:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        id:
- *                          type: string
- *                        name:
- *                          type: string
- *                        context:
- *                          type: string
+ *         filterMode:
+ *           type: string
+ *           enum: [includeAll, excludeAll]
  */
 
 /**
