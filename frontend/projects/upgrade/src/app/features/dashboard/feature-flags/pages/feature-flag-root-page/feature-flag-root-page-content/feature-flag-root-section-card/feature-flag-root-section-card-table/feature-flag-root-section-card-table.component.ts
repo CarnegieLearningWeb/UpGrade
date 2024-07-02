@@ -49,7 +49,7 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   constructor(private featureFlagsService: FeatureFlagsService) {}
 
   ngOnInit() {
-    if (this.dataSource$.data) {
+    if (this.dataSource$?.data) {
       this.dataSource$.sort = this.sort;
     }
   }
