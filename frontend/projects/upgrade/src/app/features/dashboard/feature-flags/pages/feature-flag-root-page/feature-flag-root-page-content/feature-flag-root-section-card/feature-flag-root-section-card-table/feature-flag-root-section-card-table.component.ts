@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Observable } from 'rxjs';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
 import {
   FLAG_ROOT_COLUMN_NAMES,
   FLAG_ROOT_DISPLAYED_COLUMNS,
@@ -13,6 +13,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { MatChipsModule } from '@angular/material/chips';
 import { RouterModule } from '@angular/router';
 import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shared-standalone-component-lib/components';
+import { SharedModule } from '../../../../../../../../shared/shared.module';
+import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/feature-flags.service';
 
 @Component({
   selector: 'app-feature-flag-root-section-card-table',
@@ -29,14 +31,36 @@ import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shar
     RouterModule,
     DatePipe,
     CommonStatusIndicatorChipComponent,
+    SharedModule,
   ],
   templateUrl: './feature-flag-root-section-card-table.component.html',
   styleUrl: './feature-flag-root-section-card-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeatureFlagRootSectionCardTableComponent {
+export class FeatureFlagRootSectionCardTableComponent implements OnInit, OnDestroy {
   @Input() dataSource$: MatTableDataSource<FeatureFlag[]>;
   @Input() isLoading$: Observable<boolean>;
+
+  isAllFeaturFlagFetched = false;
+  isAllFeatureFlagsFetchedSub = new Subscription();
+
+  constructor(private featureFlagsService: FeatureFlagsService) {}
+
+  ngOnInit(): void {
+    this.isAllFeatureFlagsFetchedSub = this.featureFlagsService.isAllFlagsFetched$.subscribe(
+      (value) => (this.isAllFeaturFlagFetched = value)
+    );
+  }
+
+  fetchFlagsOnScroll() {
+    if (!this.isAllFeaturFlagFetched) {
+      this.featureFlagsService.fetchFeatureFlags();
+    }
+  }
+
+  changeSorting($event) {
+    console.log('onSearch:', $event);
+  }
 
   get displayedColumns(): string[] {
     return FLAG_ROOT_DISPLAYED_COLUMNS;
@@ -50,11 +74,7 @@ export class FeatureFlagRootSectionCardTableComponent {
     return FLAG_ROOT_COLUMN_NAMES;
   }
 
-  fetchFlagsOnScroll() {
-    console.log('fetchFlagsOnScroll');
-  }
-
-  changeSorting($event) {
-    console.log('onSearch:', $event);
+  ngOnDestroy(): void {
+    this.isAllFeatureFlagsFetchedSub.unsubscribe();
   }
 }

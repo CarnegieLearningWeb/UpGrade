@@ -1,6 +1,6 @@
 <div class="flags-list-container">
-  <div scroll (scrolled)="fetchFlagsOnScroll()" class="flags-list-table-container" #tableContainer>
-    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
+  <div (wheel)="fetchFlagsOnScroll()" class="flags-list-table-container" #tableContainer>
+    <mat-spinner class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-spinner>
     <table class="flags-list" mat-table [dataSource]="dataSource$" matSort (matSortChange)="changeSorting($event)">
       <ng-container [matColumnDef]="FLAG_ROOT_COLUMN_NAMES.NAME">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
@@ -17,11 +17,7 @@
             {{ flag.name }}
           </a>
           <ng-template #flagNameEllipsis>
-            <span
-              [matTooltip]="flag.name"
-              class="flag-name",
-              matTooltipPosition="above"
-            >
+            <span [matTooltip]="flag.name" class="flag-name" , matTooltipPosition="above">
               {{ flag.name | truncate: 30 }}
             </span>
           </ng-template>
@@ -39,7 +35,9 @@
 
       <ng-container [matColumnDef]="FLAG_ROOT_COLUMN_NAMES.STATUS">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
-          <span [matTooltip]="FLAG_TRANSLATION_KEYS.STATUS | translate" matTooltipPosition="above">{{ FLAG_TRANSLATION_KEYS.STATUS | translate | uppercase }}</span>
+          <span [matTooltip]="FLAG_TRANSLATION_KEYS.STATUS | translate" matTooltipPosition="above">{{
+            FLAG_TRANSLATION_KEYS.STATUS | translate | uppercase
+          }}</span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let flag">
           <app-common-status-indicator-chip [chipClass]="flag.status"></app-common-status-indicator-chip>
@@ -70,7 +68,9 @@
 
       <ng-container [matColumnDef]="FLAG_ROOT_COLUMN_NAMES.TAGS">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
-          <span [matTooltip]="FLAG_TRANSLATION_KEYS.TAGS | translate" matTooltipPosition="above">{{ FLAG_TRANSLATION_KEYS.TAGS | translate | uppercase }}</span>
+          <span [matTooltip]="FLAG_TRANSLATION_KEYS.TAGS | translate" matTooltipPosition="above">{{
+            FLAG_TRANSLATION_KEYS.TAGS | translate | uppercase
+          }}</span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let flag">
           <mat-chip *ngFor="let tag of flag.tags" class="tag">{{ tag }}</mat-chip>
