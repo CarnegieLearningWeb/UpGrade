@@ -212,7 +212,6 @@ export enum METRIC_SEARCH_KEY {
 
 export enum FLAG_SORT_KEY {
   NAME = 'name',
-  KEY = 'key',
   STATUS = 'status',
   UPDATED_AT = 'updatedAt',
 }
