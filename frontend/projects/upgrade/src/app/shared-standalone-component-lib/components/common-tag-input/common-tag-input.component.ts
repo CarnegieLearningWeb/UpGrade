@@ -1,4 +1,4 @@
-import { Component, forwardRef } from '@angular/core';
+import { Component, EventEmitter, forwardRef, Input, Output } from '@angular/core';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormControl } from '@angular/forms';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
@@ -18,6 +18,17 @@ import { TranslateModule } from '@ngx-translate/core';
 // Example Usage:
 //   <app-common-tags-input formControlName="tags"></app-common-tags-input>
 
+// To add Import/Export button while using component
+// you can add the property 'showUploadIcon' or 'showDownloadIcon'
+// with its repective binding 'uploadClicked' or 'downloadClicked'
+
+//Example Usage for Export Button
+// <app-common-tags-input
+//         [showExportIcon]="true"
+//         (exportClicked)="onExportClick()"
+//         formControlName="tags"
+//       ></app-common-tags-input>
+
 @Component({
   selector: 'app-common-tags-input',
   templateUrl: './common-tag-input.component.html',
@@ -33,12 +44,25 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [CommonModule, MatChipsModule, MatFormFieldModule, MatIconModule, MatInputModule, TranslateModule],
 })
 export class CommonTagsInputComponent implements ControlValueAccessor {
+  @Input() showExportIcon = false;
+  @Output() exportClicked = new EventEmitter<void>();
+  @Input() showImportIcon = false;
+  @Output() importClicked = new EventEmitter<void>();
+
   isChipSelectable = true;
   isChipRemovable = true;
   addChipOnBlur = true;
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
   tags = new FormControl<string[]>([]);
+
+  onExportClick(): void {
+    this.exportClicked.emit();
+  }
+
+  onImportClick(): void {
+    this.importClicked.emit();
+  }
 
   addChip(event: MatChipInputEvent) {
     const input = event.chipInput;
