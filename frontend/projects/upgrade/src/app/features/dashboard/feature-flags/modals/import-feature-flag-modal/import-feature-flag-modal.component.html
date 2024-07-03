@@ -1,0 +1,39 @@
+<div class="modal-container">
+  <app-common-dialog
+    [title]="data.title"
+    [cancelBtnLabel]="data.cancelBtnLabel"
+    [primaryActionBtnLabel]="data.primaryActionBtnLabel"
+    [primaryActionBtnColor]="data.primaryActionBtnColor"
+    [primaryActionBtnDisabled]="isImportActionBtnDisabled | async"
+  >
+    <div class="drag-drop-container">
+      <div
+        class="input-container"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+        [ngClass]="{ 'drag-over': (isDragOver | async) }"
+      >
+        <div class="input-container-header">
+          <mat-icon>close</mat-icon>
+        </div>
+        <div class="input-container-content" *ngIf="fileName | async as fileName; else uploadPrompt">
+          <mat-icon>insert_drive_file</mat-icon>
+          <p>{{ fileName }}</p>
+        </div>
+        <ng-template #uploadPrompt>
+          <mat-icon>file_upload</mat-icon>
+          <p>Drag & drop or</p>
+          <button mat-flat-button color="primary" (click)="fileInput.click()">
+            <span>Choose JSON</span>
+          </button>
+          <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none" />
+        </ng-template>
+      </div>
+      <p>
+        {{ 'feature-flags.import-feature-flag.message.text' | translate }}
+        <a href="">Learn More</a>
+      </p>
+    </div>
+  </app-common-dialog>
+</div>
