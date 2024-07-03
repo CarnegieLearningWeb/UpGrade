@@ -15,17 +15,19 @@ import { TranslateModule } from '@ngx-translate/core';
 // registerOnChange(fn: any): Registers a callback for when the value changes.
 // registerOnTouched(fn: any): Registers a callback for when the component is touched.
 
-// Example Usage:
+// Typical usage
 //   <app-common-tags-input formControlName="tags"></app-common-tags-input>
 
 // To add Import/Export button while using component
-// you can add the property 'showUploadIcon' or 'showDownloadIcon'
-// with its repective binding 'uploadClicked' or 'downloadClicked'
+// you can add the property 'showExportIcon' or 'showImportIcon'
+// with its respective binding 'exportClicked' or 'importClicked'
 
-//Example Usage for Export Button
+// Manage built-in optional action buttons
 // <app-common-tags-input
 //         [showExportIcon]="true"
 //         (exportClicked)="onExportClick()"
+//         [showImportIcon]="false"
+//         (importClicked)="onImportClick()"
 //         formControlName="tags"
 //       ></app-common-tags-input>
 
@@ -49,7 +51,7 @@ export class CommonTagsInputComponent implements ControlValueAccessor {
   @Input() showImportIcon = false;
   @Output() importClicked = new EventEmitter<void>();
 
-  isChipSelectable = true;
+  isChipSelectable = false;
   isChipRemovable = true;
   addChipOnBlur = true;
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
