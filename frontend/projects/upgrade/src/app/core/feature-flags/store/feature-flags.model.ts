@@ -15,8 +15,7 @@ export interface FeatureFlag {
   filterMode: FILTER_MODE;
   context: string[];
   tags: string[];
-  featureFlagSegmentInclusion: PrivateSegment | EmptyPrivateSegment;
-  featureFlagSegmentExclusion: PrivateSegment | EmptyPrivateSegment;
+  enabled: boolean;
 }
 
 export interface FeatureFlagsPaginationInfo {
@@ -29,13 +28,32 @@ export interface FeatureFlagsPaginationInfo {
 export interface AddFeatureFlagRequest {
   name: string;
   key: string;
-  description: string;
-  status: FEATURE_FLAG_STATUS;
+  description?: string;
   context: string[];
   tags: string[];
-  featureFlagSegmentInclusion: PrivateSegment | EmptyPrivateSegment;
-  featureFlagSegmentExclusion: PrivateSegment | EmptyPrivateSegment;
-  filterMode: FILTER_MODE;
+}
+
+export interface ModifyFeatureFlagRequest {
+  id: string;
+  name?: string;
+  key?: string;
+  description?: string;
+  status?: FEATURE_FLAG_STATUS;
+  filterMode?: FILTER_MODE;
+  context?: string[];
+  tags?: string[];
+  enabled?: boolean;
+}
+
+export enum UpsertModalAction {
+  ADD = 'add',
+  EDIT = 'edit',
+  DUPLICATE = 'duplicate',
+}
+
+export interface UpsertModalParams {
+  sourceFlag: FeatureFlag;
+  action: UpsertModalAction;
 }
 
 export interface UpdateFeatureFlagStatusRequest {
@@ -43,6 +61,7 @@ export interface UpdateFeatureFlagStatusRequest {
   status: FEATURE_FLAG_STATUS;
 }
 
+export const DuplicateFeatureFlagSuffix = '_COPY_CHANGE_ME';
 export interface FeatureFlagFormData {
   name: string;
   key: string;

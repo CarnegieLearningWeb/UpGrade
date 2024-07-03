@@ -23,7 +23,11 @@ import {
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
-import { AddFeatureFlagRequest, FeatureFlag, UpdateFeatureFlagStatusRequest } from './store/feature-flags.model';
+import {
+  UpdateFeatureFlagStatusRequest,
+  AddFeatureFlagRequest,
+  ModifyFeatureFlagRequest,
+} from './store/feature-flags.model';
 import { ExperimentService } from '../experiments/experiments.service';
 import { filter, map, pairwise } from 'rxjs';
 
@@ -86,11 +90,11 @@ export class FeatureFlagsService {
     map((exclusions) => exclusions.length)
   );
 
-  convertNameStringToKey(name:string):string {
-    let upperCaseString = name.trim().toUpperCase();
-    let key = upperCaseString.replace(/ /g, '_');
+  convertNameStringToKey(name: string): string {
+    const upperCaseString = name.trim().toUpperCase();
+    const key = upperCaseString.replace(/ /g, '_');
     return key;
-}
+  }
 
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
@@ -108,7 +112,7 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlag({ addFeatureFlagRequest }));
   }
 
-  updateFeatureFlag(flag: FeatureFlag) {
+  updateFeatureFlag(flag: ModifyFeatureFlagRequest) {
     this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlag({ flag }));
   }
 

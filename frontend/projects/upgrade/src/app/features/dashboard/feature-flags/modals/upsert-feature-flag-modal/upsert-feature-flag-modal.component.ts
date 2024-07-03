@@ -23,13 +23,21 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
-import { FeatureFlag, FeatureFlagFormData } from '../../../../../core/feature-flags/store/feature-flags.model';
+import {
+  FeatureFlag,
+  FeatureFlagFormData,
+  AddFeatureFlagRequest,
+  UpsertModalParams,
+  UpsertModalAction,
+  DuplicateFeatureFlagSuffix,
+  ModifyFeatureFlagRequest,
+} from '../../../../../core/feature-flags/store/feature-flags.model';
 import { Subscription } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
-  selector: 'edit-add-feature-flag-modal',
+  selector: 'upsert-add-feature-flag-modal',
   standalone: true,
   imports: [
     CommonModalComponent,
@@ -49,68 +57,58 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
     TranslateModule,
     CommonTagsInputComponent,
   ],
-  templateUrl: './edit-feature-flag-modal.component.html',
-  styleUrl: './edit-feature-flag-modal.component.scss',
+  templateUrl: './upsert-feature-flag-modal.component.html',
+  styleUrl: './upsert-feature-flag-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EditFeatureFlagModalComponent {
+export class UpsertFeatureFlagModalComponent {
   isLoadingUpsertFeatureFlag$ = this.featureFlagsService.isLoadingUpsertFeatureFlag$;
   isSelectedFeatureFlagUpdated$ = this.featureFlagsService.isSelectedFeatureFlagUpdated$;
   selectedFlag$ = this.featureFlagsService.selectedFeatureFlag$;
   appContexts$ = this.featureFlagsService.appContexts$;
   subscriptions = new Subscription();
-  flag: FeatureFlag;
 
   featureFlagForm: FormGroup;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
-    public config: CommonModalConfig,
+    public config: CommonModalConfig<UpsertModalParams>,
     public dialog: MatDialog,
     private formBuilder: FormBuilder,
     private featureFlagsService: FeatureFlagsService,
     private experimentService: ExperimentService,
     private formHelpersService: CommonFormHelpersService,
-    public dialogRef: MatDialogRef<EditFeatureFlagModalComponent>
+    public dialogRef: MatDialogRef<UpsertFeatureFlagModalComponent>
   ) {}
 
   ngOnInit(): void {
     this.experimentService.fetchContextMetaData();
-    this.buildForm();
-    this.initializeFormValues();
+    this.createFeatureFlagForm();
     this.listenForFeatureFlagGetUpdated();
     this.listenOnNameChangesToUpdateKey();
   }
 
-  buildForm(): void {
+  createFeatureFlagForm(): void {
+    const { sourceFlag, action } = this.config.params;
+
+    const initialValues: FeatureFlag = { ...sourceFlag };
+
+    if (sourceFlag && action === UpsertModalAction.DUPLICATE) {
+      initialValues.name += DuplicateFeatureFlagSuffix;
+      initialValues.key += DuplicateFeatureFlagSuffix;
+    }
+
     this.featureFlagForm = this.formBuilder.group({
-      name: ['', Validators.required],
-      key: ['', Validators.required],
-      description: [''],
-      appContext: ['', Validators.required],
-      tags: [],
+      name: [initialValues.name || '', Validators.required],
+      key: [initialValues.key || '', Validators.required],
+      description: [initialValues.description || ''],
+      appContext: [initialValues.context?.[0] || '', Validators.required],
+      tags: [initialValues.tags || []],
     });
   }
 
-  initializeFormValues(): void {
-    this.subscriptions.add(
-      this.selectedFlag$.subscribe((selectedFlag) => {
-        this.flag = selectedFlag;
-        if (selectedFlag) {
-          this.featureFlagForm.patchValue({
-            name: selectedFlag.name,
-            key: selectedFlag.key,
-            description: selectedFlag.description,
-            appContext: selectedFlag.context ? selectedFlag.context[0] : '',
-            tags: selectedFlag.tags,
-          });
-        }
-      })
-    );
-  }
-
   listenOnNameChangesToUpdateKey(): void {
-    this.featureFlagForm.get('name')?.valueChanges.subscribe((name) => {
+    this.subscriptions = this.featureFlagForm.get('name')?.valueChanges.subscribe((name) => {
       const keyControl = this.featureFlagForm.get('key');
       if (keyControl && !keyControl.dirty) {
         keyControl.setValue(this.featureFlagsService.convertNameStringToKey(name));
@@ -125,27 +123,30 @@ export class EditFeatureFlagModalComponent {
 
   onPrimaryActionBtnClicked(): void {
     if (this.featureFlagForm.valid) {
-      // Handle extra form validation logic here?
-      this.updateFeatureFlagRequest();
+      // Handle extra frontend form validation logic here?
+      this.createRequest(this.config.params.action, this.config.params.sourceFlag);
     } else {
       // If the form is invalid, manually mark all form controls as touched
       this.formHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);
     }
   }
 
-  updateFeatureFlagRequest(): void {
+  createRequest(action: UpsertModalAction, sourceFlag?: FeatureFlag): void {
     const { name, key, description, appContext, tags }: FeatureFlagFormData = this.featureFlagForm.value;
-
-    this.flag = {
-      ...this.flag,
+    const flagRequest = {
       name,
       key,
       description,
       context: [appContext],
-      tags: tags, // it is now an array of strings
+      tags,
     };
 
-    this.featureFlagsService.updateFeatureFlag(this.flag);
+    if (action === UpsertModalAction.ADD || action === UpsertModalAction.DUPLICATE) {
+      this.featureFlagsService.addFeatureFlag(flagRequest);
+    } else if (action === UpsertModalAction.EDIT && sourceFlag) {
+      const updatedFlag = { ...sourceFlag, ...flagRequest };
+      this.featureFlagsService.updateFeatureFlag(updatedFlag);
+    }
   }
 
   closeModal() {

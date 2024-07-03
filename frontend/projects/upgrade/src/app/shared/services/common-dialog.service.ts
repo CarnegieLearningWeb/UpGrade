@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-confirm-dialog.component';
-import { AddFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/add-feature-flag-modal/add-feature-flag-modal.component';
 import { CommonModalConfig } from '../../shared-standalone-component-lib/components/common-modal/common-modal-config';
 import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/delete-feature-flag-modal/delete-feature-flag-modal.component';
 import { UpdateFlagStatusConfirmationModalComponent } from '../../features/dashboard/feature-flags/modals/update-flag-status-confirmation-modal/update-flag-status-confirmation-modal.component';
-import { EditFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/edit-feature-flag-modal/edit-feature-flag-modal.component';
+import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
+import { FeatureFlag, UpsertModalAction, UpsertModalParams } from '../../core/feature-flags/store/feature-flags.model';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +13,7 @@ import { EditFeatureFlagModalComponent } from '../../features/dashboard/feature-
 export class DialogService {
   constructor(private dialog: MatDialog) {}
 
+  // This method is used in the older ui
   openConfirmDialog() {
     return this.dialog.open(MatConfirmDialogComponent, {
       width: 'auto',
@@ -20,36 +21,47 @@ export class DialogService {
     });
   }
 
+  // Common modal flags ---------------------------------------- //
   openAddFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Add Feature Flag',
       primaryActionBtnLabel: 'Add',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
+      params: {
+        sourceFlag: null,
+        action: UpsertModalAction.ADD,
+      },
     };
-    const config: MatDialogConfig = {
-      data: commonModalConfig,
-      width: '656px',
-      autoFocus: 'first-heading',
-      disableClose: true,
-    };
-    return this.dialog.open(AddFeatureFlagModalComponent, config);
+    return this.openUpsertFeatureFlagModal(commonModalConfig);
   }
 
-  openEditFeatureFlagModal() {
-    const commonModalConfig: CommonModalConfig = {
+  openEditFeatureFlagModal(flag: FeatureFlag) {
+    const commonModalConfig: CommonModalConfig<UpsertModalParams> = {
       title: 'Edit Feature Flag',
       primaryActionBtnLabel: 'Save',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
+      params: {
+        sourceFlag: { ...flag },
+        action: UpsertModalAction.EDIT,
+      },
     };
-    const config: MatDialogConfig = {
-      data: commonModalConfig,
-      width: '656px',
-      autoFocus: 'first-heading',
-      disableClose: true,
+    return this.openUpsertFeatureFlagModal(commonModalConfig);
+  }
+
+  openDuplicateFeatureFlagModal(flag: FeatureFlag) {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Duplicate Feature Flag',
+      primaryActionBtnLabel: 'Add',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceFlag: { ...flag },
+        action: UpsertModalAction.DUPLICATE,
+      },
     };
-    return this.dialog.open(EditFeatureFlagModalComponent, config);
+    return this.openUpsertFeatureFlagModal(commonModalConfig);
   }
 
   openEnableFeatureFlagConfirmModel() {
@@ -72,6 +84,16 @@ export class DialogService {
     };
 
     return this.openUpdateFlagStatusConfirmationModal(disableFlagStatusModalConfig);
+  }
+
+  openUpsertFeatureFlagModal(commonModalConfig: CommonModalConfig) {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: '656px',
+      autoFocus: 'first-heading',
+      disableClose: true,
+    };
+    return this.dialog.open(UpsertFeatureFlagModalComponent, config);
   }
 
   openUpdateFlagStatusConfirmationModal(commonModalConfig: CommonModalConfig) {

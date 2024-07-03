@@ -6,10 +6,10 @@ import {
   FeatureFlag,
   FeatureFlagsPaginationInfo,
   FeatureFlagsPaginationParams,
+  ModifyFeatureFlagRequest,
   UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
 import { Observable } from 'rxjs';
-import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../types/src';
 
 @Injectable()
 export class FeatureFlagsDataService {
@@ -18,8 +18,6 @@ export class FeatureFlagsDataService {
   fetchFeatureFlagsPaginated(params: FeatureFlagsPaginationParams): Observable<FeatureFlagsPaginationInfo> {
     const url = this.environment.api.getPaginatedFlags;
     return this.http.post<FeatureFlagsPaginationInfo>(url, params);
-    // mock
-    // // return of({ nodes: mockFeatureFlags, total: 2 }).pipe(delay(2000));
   }
 
   fetchFeatureFlagById(id: string) {
@@ -27,23 +25,23 @@ export class FeatureFlagsDataService {
     return this.http.get(url);
   }
 
-  addFeatureFlag(params: AddFeatureFlagRequest): Observable<FeatureFlag> {
-    const url = this.environment.api.featureFlag;
-    return this.http.post<FeatureFlag>(url, params);
-  }
-
   updateFeatureFlagStatus(params: UpdateFeatureFlagStatusRequest): Observable<FeatureFlag> {
     const url = this.environment.api.updateFlagStatus;
     return this.http.post<FeatureFlag>(url, params);
   }
 
+  addFeatureFlag(params: AddFeatureFlagRequest): Observable<FeatureFlag> {
+    const url = this.environment.api.featureFlag;
+    return this.http.post<FeatureFlag>(url, params);
+  }
+
+  updateFeatureFlag(flag: ModifyFeatureFlagRequest): Observable<FeatureFlag> {
+    const url = `${this.environment.api.featureFlag}/${flag.id}`;
+    return this.http.put<FeatureFlag>(url, flag);
+  }
+
   deleteFeatureFlag(id: string) {
     const url = `${this.environment.api.featureFlag}/${id}`;
     return this.http.delete(url);
-  }
-
-  updateFeatureFlag(flag: FeatureFlag): Observable<FeatureFlag> {
-    const url = `${this.environment.api.featureFlag}/${flag.id}`;
-    return this.http.put<FeatureFlag>(url, flag);
   }
 }
