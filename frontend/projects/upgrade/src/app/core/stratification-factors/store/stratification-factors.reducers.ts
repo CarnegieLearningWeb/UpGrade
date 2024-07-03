@@ -12,18 +12,23 @@ export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.get
 export const initialState: StratificationFactorsState = adapter.getInitialState({
   isLoading: false,
   totalStratificationFactors: null,
+  isFactorAddRequestSuccess: false,
 });
 
 const reducer = createReducer(
   initialState,
   on(StratificationFactorsActions.actionFetchStratificationFactors, (state) => ({ ...state, isLoading: true })),
-  on(StratificationFactorsActions.actionFetchStratificationFactorsSuccess, (state, { stratificationFactors }) => {
-    const newState = {
-      ...state,
-      stratificationFactors,
-    };
-    return adapter.upsertMany(stratificationFactors, { ...newState, isLoading: false });
-  }),
+  on(
+    StratificationFactorsActions.actionFetchStratificationFactorsSuccess,
+    (state, { stratificationFactors, isFactorAddRequestSuccess }) => {
+      const newState = {
+        ...state,
+        stratificationFactors,
+        isFactorAddRequestSuccess,
+      };
+      return adapter.upsertMany(stratificationFactors, { ...newState, isLoading: false });
+    }
+  ),
   on(StratificationFactorsActions.actionDeleteStratificationFactorSuccess, (state, { stratificationFactor }) =>
     adapter.removeOne(stratificationFactor.factor, state)
   ),
@@ -35,6 +40,10 @@ const reducer = createReducer(
   on(StratificationFactorsActions.actionSetIsLoadingStratificationFactors, (state, { isLoading }) => ({
     ...state,
     isLoading,
+  })),
+  on(StratificationFactorsActions.actionImportStratificationFactorSuccess, (state, { isFactorAddRequestSuccess }) => ({
+    ...state,
+    isFactorAddRequestSuccess,
   }))
 );
 

@@ -24,6 +24,7 @@ export interface StratificationFactorSimple {
 export interface StratificationFactorsState extends EntityState<StratificationFactor> {
   isLoading: boolean;
   totalStratificationFactors: number;
+  isFactorAddRequestSuccess: boolean;
 }
 
 export interface CsvDataItem {

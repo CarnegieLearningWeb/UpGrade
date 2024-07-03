@@ -4,7 +4,11 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SERVER_ERROR } from 'upgrade_types';
 import { In, getConnection } from 'typeorm';
 import Papa from 'papaparse';
-import { FactorStrata, StratificationInputValidator } from '../controllers/validators/StratificationValidator';
+import {
+  FactorStrata,
+  StratificationInputValidator,
+  UploadedFilesValidator,
+} from '../controllers/validators/StratificationValidator';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { StratificationFactor } from '../models/StratificationFactor';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
@@ -219,5 +223,19 @@ export class StratificationService {
     });
 
     return createdStratificationData;
+  }
+
+  public async insertStratificationFiles(
+    files: UploadedFilesValidator[],
+    logger: UpgradeLogger
+  ): Promise<UserStratificationFactor[]> {
+    const stratificationResults: UserStratificationFactor[] = [];
+
+    for (const fileObj of files) {
+      const result = await this.insertStratification(fileObj.file, logger);
+      stratificationResults.push(...result);
+    }
+
+    return stratificationResults;
   }
 }

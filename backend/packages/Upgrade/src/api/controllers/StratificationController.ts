@@ -159,10 +159,7 @@ export class StratificationController {
     @Req() request: AppRequest,
     @Body({ validate: true }) body: UploadedFilesArrayValidator
   ): Promise<UserStratificationFactor[]> {
-    const promises = body.files.map((fileObj) => {
-      return this.stratificationService.insertStratification(fileObj.file, request.logger);
-    });
-    return (await Promise.all(promises)).flat();
+    return this.stratificationService.insertStratificationFiles(body.files, request.logger);
   }
 
   /**

@@ -27,6 +27,7 @@ export class StratificationComponent implements OnInit {
   allStratificationFactors: StratificationFactor[];
   allStratificationFactorsSub: Subscription;
   isLoading$ = this.stratificationFactorsService.isLoading$;
+  isFactorAddRequestSuccess$ = this.stratificationFactorsService.isFactorAddRequestSuccess$;
   stratificationFactorsForTable: MatTableDataSource<StratificationFactorsTableRow>;
   displayedColumns: string[] = ['factor', 'status', 'summary', 'actions'];
   allExperimentsName: ExperimentNameVM[];
@@ -91,9 +92,7 @@ export class StratificationComponent implements OnInit {
     });
     dialogRef.afterClosed().subscribe((isImportButtonClicked) => {
       if (isImportButtonClicked) {
-        setTimeout(() => {
-          this.stratificationFactorsService.fetchStratificationFactors();
-        }, 100);
+        this.stratificationFactorsService.fetchStratificationFactors();
       }
     });
   }
