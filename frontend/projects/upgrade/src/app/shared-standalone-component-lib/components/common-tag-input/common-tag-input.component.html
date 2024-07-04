@@ -24,10 +24,10 @@
       />
     </mat-chip-grid>
     <div class="sharing-icon-buttons">
-      <button *ngIf="showExportIcon" mat-icon-button class="icon-button" (click)="onExportClick()">
+      <button *ngIf="showImportIcon" mat-icon-button class="icon-button" (click)="onActionButtonClick()">
         <mat-icon>file_upload</mat-icon>
       </button>
-      <button *ngIf="showImportIcon" mat-icon-button class="icon-button" (click)="onImportClick()">
+      <button *ngIf="showExportIcon" mat-icon-button class="icon-button" (click)="onActionButtonClick()">
         <mat-icon>file_download</mat-icon>
       </button>
     </div>

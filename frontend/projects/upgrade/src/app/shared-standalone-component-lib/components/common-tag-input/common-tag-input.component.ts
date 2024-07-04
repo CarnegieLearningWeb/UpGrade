@@ -1,4 +1,4 @@
-import { Component, EventEmitter, forwardRef, Input, Output } from '@angular/core';
+import { Component, EventEmitter, forwardRef, Input, OnInit, Output } from '@angular/core';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormControl } from '@angular/forms';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
@@ -19,15 +19,14 @@ import { TranslateModule } from '@ngx-translate/core';
 //   <app-common-tags-input formControlName="tags"></app-common-tags-input>
 
 // To add Import/Export button while using component
-// you can add the property 'showExportIcon' or 'showImportIcon'
-// with its respective binding 'exportClicked' or 'importClicked'
+// you can add the property 'actionButtons' which will check for
+// tags value and will display Import/Export icon accordingly
+// and bind it with 'actionButtonClicked' to implement action
 
 // Manage built-in optional action buttons
 // <app-common-tags-input
-//         [showExportIcon]="true"
-//         (exportClicked)="onExportClick()"
-//         [showImportIcon]="false"
-//         (importClicked)="onImportClick()"
+//         [actionButtons]="true"
+//         (actionButtonClicked)="actionButton()"
 //         formControlName="tags"
 //       ></app-common-tags-input>
 
@@ -45,11 +44,11 @@ import { TranslateModule } from '@ngx-translate/core';
   ],
   imports: [CommonModule, MatChipsModule, MatFormFieldModule, MatIconModule, MatInputModule, TranslateModule],
 })
-export class CommonTagsInputComponent implements ControlValueAccessor {
-  @Input() showExportIcon = false;
-  @Output() exportClicked = new EventEmitter<void>();
-  @Input() showImportIcon = false;
-  @Output() importClicked = new EventEmitter<void>();
+export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
+  showExportIcon = false;
+  showImportIcon = false;
+  @Input() actionButtons = false;
+  @Output() actionButtonClicked = new EventEmitter<void>();
 
   isChipSelectable = false;
   isChipRemovable = true;
@@ -58,12 +57,27 @@ export class CommonTagsInputComponent implements ControlValueAccessor {
 
   tags = new FormControl<string[]>([]);
 
-  onExportClick(): void {
-    this.exportClicked.emit();
+  ngOnInit(): void {
+    this.checkTagValue();
   }
 
-  onImportClick(): void {
-    this.importClicked.emit();
+  checkTagValue(): void {
+    this.tags.valueChanges.subscribe((value) => {
+      if (this.actionButtons) {
+        // Update showExportIcon and showImportIcon based on tags value
+        if (value && value.length > 0) {
+          this.showExportIcon = true;
+          this.showImportIcon = false;
+        } else {
+          this.showImportIcon = true;
+          this.showExportIcon = false;
+        }
+      }
+    });
+  }
+
+  onActionButtonClick(): void {
+    this.actionButtonClicked.emit();
   }
 
   addChip(event: MatChipInputEvent) {
@@ -83,6 +97,8 @@ export class CommonTagsInputComponent implements ControlValueAccessor {
     if (input) {
       input.clear();
     }
+
+    this.checkTagValue();
   }
 
   removeChip(tag: string) {
@@ -91,6 +107,8 @@ export class CommonTagsInputComponent implements ControlValueAccessor {
 
     this.tags.setValue(newTags);
     this.tags.updateValueAndValidity();
+
+    this.checkTagValue();
   }
   // Implement ControlValueAccessor methods
   writeValue(value: string[]) {
