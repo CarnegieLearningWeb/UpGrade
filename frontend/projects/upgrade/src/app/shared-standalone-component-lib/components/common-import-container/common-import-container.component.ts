@@ -1,12 +1,30 @@
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Inject, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { BehaviorSubject } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { ImportFeatureFlagModalComponent } from '../../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 import { SharedModule } from '../../../shared/shared.module';
-import { CommonModalConfig } from '../common-modal/common-modal-config';
 import { CommonModalComponent } from '../common-modal/common-modal.component';
 
+/**
+ * A reusable component for drag-and-drop file import functionality.
+ * This component allows users to drag and drop files or select them via a file input.
+ * It supports specifying a file type and emits the selected files to the parent component.
+ *
+ * The component accepts the following inputs:
+ * - `fileType`: A string representing the accepted file type (e.g., '.json'). Only files with this extension can be selected or dropped.
+ * - `buttonLabel`: A string representing the label text of the button. Defaults to 'Upload File'.
+ *
+ * The component emits the following outputs:
+ * - `filesSelected`: An event that emits the selected files as an array of `File` objects.
+ *
+ * Example usage:
+ *
+ * ```
+ * <app-common-drag-and-drop-file-import
+ *   fileType=".json"
+ *   buttonLabel="Import JSON Files"
+ *   (filesSelected)="handleFilesSelected($event)"
+ * ></app-common-drag-and-drop-file-import>
+ * ```
+ */
 @Component({
   selector: 'app-common-import-container',
   standalone: true,
