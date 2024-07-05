@@ -376,8 +376,8 @@ export class AnalyticsService {
       const email_from = env.email.from;
 
       const fileName = `${folderPath}${simpleExportCSV}`;
-      if (!fs.existsSync(fileName)) {
-        // if file doesn't exist create a empty file
+      if (!fs.existsSync(fileName) || csvExportData.length === 0) {
+        // if file doesn't exist or no data, create an empty file
         const csvRows = [
           {
             ExperimentId: '',
@@ -431,13 +431,23 @@ export class AnalyticsService {
       const emailSubject = `Exported Data for the experiment: ${experimentQueryResult[0].experimentName}`;
       // send email to the user
       logger.info({ message: `Sending export data email to ${email}` });
-      await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
-      await this.experimentAuditLogRepository.saveRawJson(
-        EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
-        { experimentName: experimentQueryResult[0].experimentName },
-        user
-      );
-      logger.info({ message: `Exported Data emailed successfully to ${email}` });
+      try {
+        await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
+        await this.experimentAuditLogRepository.saveRawJson(
+          EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
+          { experimentName: experimentQueryResult[0].experimentName },
+          user
+        );
+        logger.info({ message: `Exported Data emailed successfully to ${email}` });
+      } catch (err) {
+        const error = {
+          type: SERVER_ERROR.EMAIL_SEND_ERROR,
+          message: 'Email send error',
+          httpCode: 500,
+        };
+        logger.error({ message: `Export Data email unsuccessful:`, details: error });
+        throw error;
+      }
     } catch (err) {
       const error = err as ErrorWithType;
       error.type = SERVER_ERROR.EMAIL_SEND_ERROR;
@@ -447,6 +457,6 @@ export class AnalyticsService {
 
     logger.info({ message: 'Completing experiment data export' });
 
-    return '';
+    return 'Exported CSV data sent, you should receive an email shortly.';
   }
 }
