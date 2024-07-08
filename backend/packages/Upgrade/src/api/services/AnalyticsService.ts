@@ -433,12 +433,6 @@ export class AnalyticsService {
       logger.info({ message: `Sending export data email to ${email}` });
       try {
         await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
-        await this.experimentAuditLogRepository.saveRawJson(
-          EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
-          { experimentName: experimentQueryResult[0].experimentName },
-          user
-        );
-        logger.info({ message: `Exported Data emailed successfully to ${email}` });
       } catch (err) {
         const error = {
           type: SERVER_ERROR.EMAIL_SEND_ERROR,
@@ -448,6 +442,12 @@ export class AnalyticsService {
         logger.error({ message: `Export Data email unsuccessful:`, details: error });
         throw error;
       }
+      await this.experimentAuditLogRepository.saveRawJson(
+        EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
+        { experimentName: experimentQueryResult[0].experimentName },
+        user
+      );
+      logger.info({ message: `Exported Data emailed successfully to ${email}` });
     } catch (err) {
       const error = err as ErrorWithType;
       error.type = SERVER_ERROR.EMAIL_SEND_ERROR;

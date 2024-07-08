@@ -66,8 +66,12 @@ export class AnalyticsController {
    *                    type: string
    *                    minLength: 1
    *                    example: exp01
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
    *          '401':
    *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('/enrollment')
   public async analyticsService(
@@ -159,8 +163,12 @@ export class AnalyticsController {
    *                            groups:
    *                              type: number
    *                              example: 3
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
    *          '401':
    *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('/enrollment/detail')
   public async analyticsDetailService(
@@ -251,8 +259,12 @@ export class AnalyticsController {
    *                    required:
    *                      - id
    *                      - conditions
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
    *          '401':
    *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('/enrollment/date')
   public async enrollmentByDate(
