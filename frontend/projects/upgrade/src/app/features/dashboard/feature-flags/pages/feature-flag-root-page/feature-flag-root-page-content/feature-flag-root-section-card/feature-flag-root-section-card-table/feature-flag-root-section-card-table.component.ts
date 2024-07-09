@@ -7,14 +7,12 @@ import {
   FeatureFlag,
 } from '../../../../../../../../core/feature-flags/store/feature-flags.model';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { AsyncPipe, NgIf, NgFor, UpperCasePipe, DatePipe, CommonModule } from '@angular/common';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { TranslateModule } from '@ngx-translate/core';
-import { MatChipsModule } from '@angular/material/chips';
+import { AsyncPipe, NgIf, NgFor, UpperCasePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatSort } from '@angular/material/sort';
 import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shared-standalone-component-lib/components';
 import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/feature-flags.service';
+import { SharedModule } from '../../../../../../../../shared/shared.module';
 
 @Component({
   selector: 'app-feature-flag-root-section-card-table',
@@ -24,14 +22,9 @@ import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/
     AsyncPipe,
     NgIf,
     NgFor,
-    MatSortModule,
-    MatTooltipModule,
-    CommonModule,
-    TranslateModule,
+    SharedModule,
     UpperCasePipe,
-    MatChipsModule,
     RouterModule,
-    DatePipe,
     CommonStatusIndicatorChipComponent,
   ],
   templateUrl: './feature-flag-root-section-card-table.component.html',
