@@ -114,7 +114,7 @@ export class DialogService {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: '670px',
-      height: '450px',
+      height: '460px',
       autoFocus: 'input',
       disableClose: true,
     };

@@ -5,32 +5,17 @@
     [primaryActionBtnLabel]="data.primaryActionBtnLabel"
     [primaryActionBtnColor]="data.primaryActionBtnColor"
     [primaryActionBtnDisabled]="isImportActionBtnDisabled | async"
+    (primaryActionBtnClicked)="importFiles()"
   >
     <div class="drag-drop-container">
-      <div
-        class="input-container"
-        (dragover)="onDragOver($event)"
-        (dragleave)="onDragLeave($event)"
-        (drop)="onDrop($event)"
-        [ngClass]="{ 'drag-over': (isDragOver | async) }"
+      <app-common-import-container
+        fileType=".json"
+        buttonLabel="Import Json"
+        (filesSelected)="handleFilesSelected($event)"
+        class="full-width"
       >
-        <div class="input-container-header">
-          <mat-icon>close</mat-icon>
-        </div>
-        <div class="input-container-content" *ngIf="fileName | async as fileName; else uploadPrompt">
-          <mat-icon>insert_drive_file</mat-icon>
-          <p>{{ fileName }}</p>
-        </div>
-        <ng-template #uploadPrompt>
-          <mat-icon>file_upload</mat-icon>
-          <p>Drag & drop or</p>
-          <button mat-flat-button color="primary" (click)="fileInput.click()">
-            <span>Choose JSON</span>
-          </button>
-          <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none" />
-        </ng-template>
-      </div>
-      <p>
+      </app-common-import-container>
+      <p class="ft-12-600 import-message">
         {{ 'feature-flags.import-feature-flag.message.text' | translate }}
         <a href="">Learn More</a>
       </p>
