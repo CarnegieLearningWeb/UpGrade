@@ -707,7 +707,7 @@ export class ExperimentClientController {
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Log data
+   *            description: Log Caliper data
    *          '400':
    *            description: BadRequestError - InvalidParameterValue
    *          '401':
