@@ -18,8 +18,6 @@ import { CommonImportContainerComponent } from '../../../../../shared-standalone
 export class ImportFeatureFlagModalComponent {
 
   isImportActionBtnDisabled = new BehaviorSubject<boolean>(true);
-  isDragOver = new BehaviorSubject<boolean>(false);
-  fileName = new BehaviorSubject<string | null>(null);
 
   constructor(
     @Inject(MAT_DIALOG_DATA)

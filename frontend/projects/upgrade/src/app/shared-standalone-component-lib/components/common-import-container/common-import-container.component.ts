@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Inject, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../shared/shared.module';
 import { CommonModalComponent } from '../common-modal/common-modal.component';
+import { BehaviorSubject } from 'rxjs';
+import { FILE_TYPE } from 'upgrade_types';
 
 /**
  * A reusable component for drag-and-drop file import functionality.
@@ -34,55 +36,44 @@ import { CommonModalComponent } from '../common-modal/common-modal.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonImportContainerComponent {
-  @Input() fileType!: string;
+  @Input() fileType!: FILE_TYPE;
   @Input() buttonLabel!: string;
   @Output() filesSelected = new EventEmitter<File[]>();
 
-  isDragOver = false;
+  isDragOver = new BehaviorSubject<boolean>(false);
 
   onDragOver(event: DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    this.isDragOver = true;
+    this.handleDragState(event, true);
   }
 
   onDragLeave(event: DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    this.isDragOver = false;
+    this.handleDragState(event, false);
   }
 
   onDrop(event: DragEvent) {
+    this.handleDragState(event, false);
+    this.handleFileSelection(event.dataTransfer?.files);
+  }
+
+  private handleDragState(event: DragEvent, isOver: boolean) {
     event.preventDefault();
     event.stopPropagation();
-    this.isDragOver = false;
-
-    const files = event.dataTransfer?.files;
-    if (files && files.length > 0) {
-      const validFiles = Array.from(files).filter(file => this.isValidFileType(file));
-      if (validFiles.length > 0) {
-        this.filesSelected.emit(validFiles);
-      } else {
-        console.error('Invalid file types.');
-      }
-    }
+    this.isDragOver.next(isOver);
   }
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    const files = input.files;
+    this.handleFileSelection(input.files);
+  }
+
+  private handleFileSelection(files: FileList | null) {
     if (files && files.length > 0) {
-      const validFiles = Array.from(files).filter(file => this.isValidFileType(file));
+      const validFiles = Array.from(files).filter(file => file.name.endsWith(this.fileType));
       if (validFiles.length > 0) {
         this.filesSelected.emit(validFiles);
       } else {
-        console.error('Invalid file types.');
+        console.error('Invalid file types...');
       }
     }
-  }
-
-  private isValidFileType(file: File): boolean {
-    const acceptedTypes = this.fileType.split(',').map(type => type.trim());
-    return acceptedTypes.some(type => file.name.endsWith(type));
   }
 }
