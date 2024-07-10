@@ -26,8 +26,8 @@ import { FeatureFlagsService } from '../../../../../../../core/feature-flags/fea
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagExclusionsSectionCardComponent {
+  @Input() isSectionCardExpanded;
   tableRowCount$ = this.featureFlagService.selectFeatureFlagExclusionsLength$;
-  isSectionCardExpanded = true;
 
   constructor(private featureFlagService: FeatureFlagsService) {}
 
