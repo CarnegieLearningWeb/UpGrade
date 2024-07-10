@@ -3,6 +3,8 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-confirm-dialog.component';
 import { CommonModalConfig } from '../../shared-standalone-component-lib/components/common-modal/common-modal-config';
 import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/delete-feature-flag-modal/delete-feature-flag-modal.component';
+
+import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 import { UpdateFlagStatusConfirmationModalComponent } from '../../features/dashboard/feature-flags/modals/update-flag-status-confirmation-modal/update-flag-status-confirmation-modal.component';
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import { FeatureFlag, UpsertModalAction, UpsertModalParams } from '../../core/feature-flags/store/feature-flags.model';
@@ -122,5 +124,22 @@ export class DialogService {
       disableClose: true,
     };
     return this.dialog.open(DeleteFeatureFlagModalComponent, config);
+  }
+
+  openImportFeatureFlagModal() {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Import Feature Flag',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+    };
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: '670px',
+      height: '460px',
+      autoFocus: 'input',
+      disableClose: true,
+    };
+    return this.dialog.open(ImportFeatureFlagModalComponent, config);
   }
 }

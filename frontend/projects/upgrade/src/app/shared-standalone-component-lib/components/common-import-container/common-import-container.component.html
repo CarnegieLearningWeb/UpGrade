@@ -1,0 +1,14 @@
+<div
+  class="input-container"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave($event)"
+  (drop)="onDrop($event)"
+  [ngClass]="{ 'drag-over': (isDragOver | async) }"
+>
+    <mat-icon>file_upload</mat-icon>
+    <p class="ft-14-600 drag-text">Drag & drop or</p>
+    <button mat-flat-button color="primary" (click)="fileInput.click()">
+      <span>{{ buttonLabel }}</span>
+    </button>
+    <input [accept]="fileType" type="file" multiple #fileInput style="display: none" (change)="onFileSelected($event)" />
+</div>

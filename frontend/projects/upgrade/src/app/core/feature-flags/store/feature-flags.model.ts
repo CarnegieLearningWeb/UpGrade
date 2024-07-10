@@ -123,12 +123,12 @@ export enum FLAG_SEARCH_KEY {
 }
 
 export const FLAG_ROOT_COLUMN_NAMES = {
-  NAME: 'Name',
-  STATUS: 'Status',
-  UPDATED_AT: 'Updated at',
-  APP_CONTEXT: 'App Context',
-  TAGS: 'Tags',
-  EXPOSURES: 'Exposures',
+  NAME: 'name',
+  STATUS: 'status',
+  UPDATED_AT: 'updatedAt',
+  APP_CONTEXT: 'appContext',
+  TAGS: 'tags',
+  EXPOSURES: 'exposures',
 };
 
 export const FLAG_TRANSLATION_KEYS = {

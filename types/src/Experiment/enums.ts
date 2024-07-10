@@ -212,7 +212,6 @@ export enum METRIC_SEARCH_KEY {
 
 export enum FLAG_SORT_KEY {
   NAME = 'name',
-  KEY = 'key',
   STATUS = 'status',
   UPDATED_AT = 'updatedAt',
 }
@@ -270,4 +269,9 @@ export enum STATUS_INDICATOR_CHIP_TYPE {
 export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
   INCLUDE = 'featureFlagSegmentInclusion',
   EXCLUDE = 'featureFlagSegmentExclusion',
+}
+
+export enum FILE_TYPE {
+  JSON = '.json',
+  CSV = '.csv',
 }

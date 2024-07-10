@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
@@ -29,6 +29,8 @@ import { FeatureFlag } from '../../../../../../../core/feature-flags/store/featu
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagOverviewDetailsSectionCardComponent {
+  isSectionCardExpanded = true;
+  @Output() sectionCardExpandChange = new EventEmitter<boolean>();
   featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
   flagOverviewDetails$ = this.featureFlagService.selectedFlagOverviewDetails;
 
@@ -37,7 +39,6 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
     { name: 'Delete', disabled: false },
     { name: 'Duplicate', disabled: false },
   ];
-  isSectionCardExpanded = true;
 
   constructor(private dialogService: DialogService, private featureFlagService: FeatureFlagsService) {}
 
@@ -83,5 +84,6 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
     this.isSectionCardExpanded = isSectionCardExpanded;
+    this.sectionCardExpandChange.emit(this.isSectionCardExpanded);
   }
 }
