@@ -271,3 +271,8 @@ export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
   INCLUDE = 'featureFlagSegmentInclusion',
   EXCLUDE = 'featureFlagSegmentExclusion',
 }
+
+export enum FILE_TYPE {
+  JSON = '.json',
+  CSV = '.csv',
+}
