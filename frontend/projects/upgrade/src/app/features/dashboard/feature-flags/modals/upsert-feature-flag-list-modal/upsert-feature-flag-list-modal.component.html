@@ -7,7 +7,7 @@
     (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
   >
     <form [formGroup]="featureFlagListForm" class="full-width">
-      <mat-form-field appearance="fill">
+      <mat-form-field appearance="outline">
         <mat-label>Type</mat-label>
         <mat-select formControlName="type">
           <mat-option *ngFor="let type of listOptionTypes$ | async" [value]="type.value">

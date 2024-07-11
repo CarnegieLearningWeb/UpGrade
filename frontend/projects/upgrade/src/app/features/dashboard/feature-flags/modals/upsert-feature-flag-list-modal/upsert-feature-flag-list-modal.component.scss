@@ -1,11 +1,14 @@
-@import '@angular/material/prebuilt-themes/indigo-pink.css';
-
 :host ::ng-deep .upsert-feature-flag-list-container {
   display: flex;
   flex-direction: column;
   align-items: space-between;
+  width: 100%;
 
-  form.full-width {
+  .mat-mdc-form-field {
     width: 100%;
+  }
+
+  .mat-mdc-form-field:not(:last-child) {
+    margin-bottom: 20px;
   }
 }
