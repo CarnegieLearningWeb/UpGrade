@@ -465,7 +465,7 @@ export class SegmentService {
 
       // create/update segment document
       segment.id = segment.id || uuid();
-      const { id, name, description, context, type, enabled, includedInFeatureFlag, excludedFromFeatureFlag } = segment;
+      const { id, name, description, context, type } = segment;
       const allSegments = await this.getSegmentByIds(segment.subSegmentIds);
       const subSegmentData = segment.subSegmentIds
         .filter((subSegmentId) => {
@@ -491,9 +491,6 @@ export class SegmentService {
           description,
           context,
           type,
-          enabled,
-          includedInFeatureFlag,
-          excludedFromFeatureFlag,
           subSegments: subSegmentData,
         });
       } catch (err) {

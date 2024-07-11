@@ -2,6 +2,9 @@ import { Service } from 'typedi';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { InjectRepository } from 'typeorm-typedi-extensions';
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
+import { SegmentRepository } from '../repositories/SegmentRepository';
+import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
+import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
 import { getConnection } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import {
@@ -9,17 +12,28 @@ import {
   IFeatureFlagSortParams,
   FLAG_SEARCH_KEY,
 } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
-import { SERVER_ERROR, FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
+import { SERVER_ERROR, FEATURE_FLAG_STATUS, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentAssignmentService } from './ExperimentAssignmentService';
+import { SegmentService } from './SegmentService';
+import { FeatureFlagSegmentInclusion } from 'src/api/models/FeatureFlagSegmentInclusion';
+import {
+  FeatureFlagListValidator,
+  ListEditRequestValidator,
+} from 'src/api/controllers/validators/FeatureFlagListValidator';
+import { FeatureFlagSegmentExclusion } from 'src/api/models/FeatureFlagSegmentExclusion';
 
 @Service()
 export class FeatureFlagService {
   constructor(
     @InjectRepository() private featureFlagRepository: FeatureFlagRepository,
-    public experimentAssignmentService: ExperimentAssignmentService
+    @InjectRepository() private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
+    @InjectRepository() private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
+    @InjectRepository() private segmentRepository: SegmentRepository,
+    public experimentAssignmentService: ExperimentAssignmentService,
+    public segmentService: SegmentService
   ) {}
 
   public find(logger: UpgradeLogger): Promise<FeatureFlag[]> {
@@ -43,11 +57,13 @@ export class FeatureFlagService {
     }
     const featureFlag = await this.featureFlagRepository
       .createQueryBuilder('feature_flag')
-      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'segmentInclusion')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
+      .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
-      .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'segmentExclusion')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'featureFlagSegmentExclusion')
+      .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion')
       .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
@@ -165,6 +181,64 @@ export class FeatureFlagService {
     });
   }
 
+  public async addList(
+    listInput: FeatureFlagListValidator,
+    listType: string,
+    logger: UpgradeLogger
+  ): Promise<FeatureFlagSegmentInclusion> {
+    logger.info({ message: `Add ${listType} list to feature flag` });
+    const featureFlagSegmentInclusionOrExclusion =
+      listType === 'inclusion' ? new FeatureFlagSegmentInclusion() : new FeatureFlagSegmentExclusion();
+    featureFlagSegmentInclusionOrExclusion.enabled = listInput.enabled;
+    const featureFlag = await this.featureFlagRepository.findOne(listInput.flagId);
+
+    featureFlagSegmentInclusionOrExclusion.featureFlag = featureFlag;
+
+    // do the following within the same transaction
+    if (listInput.segmentId) {
+      const existingSegment = await this.segmentRepository.getSegmentById(listInput.segmentId, logger);
+      featureFlagSegmentInclusionOrExclusion.segment = existingSegment;
+    } else {
+      // create a new segment
+      listInput.list.type = SEGMENT_TYPE.PRIVATE;
+      const newSegment = await this.segmentService.addSegmentDataInDB(listInput.list, logger);
+      featureFlagSegmentInclusionOrExclusion.segment = newSegment;
+    }
+    if (listType === 'inclusion') {
+      await this.featureFlagSegmentInclusionRepository.save(featureFlagSegmentInclusionOrExclusion);
+    } else {
+      await this.featureFlagSegmentExclusionRepository.save(featureFlagSegmentInclusionOrExclusion);
+    }
+    return featureFlagSegmentInclusionOrExclusion;
+  }
+
+  public async removeList(
+    featureFlagId: string,
+    segmentId: string,
+    listType: string,
+    logger: UpgradeLogger
+  ): Promise<any> {
+    logger.info({ message: `Remove ${listType} list from feature flag` });
+    const segment = await this.segmentRepository.getSegmentById(segmentId, logger);
+    if (segment.type === SEGMENT_TYPE.PRIVATE) {
+      return await this.segmentService.deleteSegment(segmentId, logger);
+    } else {
+      if (listType === 'inclusion') {
+        return await this.featureFlagSegmentInclusionRepository.deleteData(segmentId, featureFlagId, logger);
+      } else {
+        return await this.featureFlagSegmentExclusionRepository.deleteData(segmentId, featureFlagId, logger);
+      }
+    }
+  }
+
+  public async editList(editRequest: ListEditRequestValidator, listType: string, logger: UpgradeLogger) {
+    // If the old OR new list is of type 'segment' then remove the list
+    if (editRequest.oldType === 'segment' || editRequest.newType === 'segment') {
+      await this.removeList(editRequest.listInput.flagId, editRequest.oldSegmentId, listType, logger);
+    }
+    return await this.addList(editRequest.listInput, listType, logger);
+  }
+
   private postgresSearchString(type: FLAG_SEARCH_KEY): string {
     const searchString: string[] = [];
     switch (type) {
@@ -211,8 +285,8 @@ export class FeatureFlagService {
   ): Promise<FeatureFlag[]> {
     const segmentObjMap = {};
     featureFlags.forEach((flag) => {
-      const includeIds = flag.featureFlagSegmentInclusion.map((seg) => seg.id);
-      const excludeIds = flag.featureFlagSegmentExclusion.map((seg) => seg.id);
+      const includeIds = flag.featureFlagSegmentInclusion.map((segmentInclusion) => segmentInclusion.segment.id);
+      const excludeIds = flag.featureFlagSegmentExclusion.map((segmentExclusion) => segmentExclusion.segment.id);
 
       segmentObjMap[flag.id] = {
         segmentIdsQueue: [...includeIds, ...excludeIds],

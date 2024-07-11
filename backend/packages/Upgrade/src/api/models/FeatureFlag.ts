@@ -3,7 +3,8 @@ import { IsNotEmpty } from 'class-validator';
 import { BaseModel } from './base/BaseModel';
 import { Type } from 'class-transformer';
 import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
-import { Segment } from './Segment';
+import { FeatureFlagSegmentInclusion } from 'src/api/models/FeatureFlagSegmentInclusion';
+import { FeatureFlagSegmentExclusion } from 'src/api/models/FeatureFlagSegmentExclusion';
 @Entity()
 export class FeatureFlag extends BaseModel {
   @PrimaryColumn('uuid')
@@ -41,11 +42,17 @@ export class FeatureFlag extends BaseModel {
   })
   public filterMode: FILTER_MODE;
 
-  @OneToMany(() => Segment, (segment) => segment.includedInFeatureFlag)
-  @Type(() => Segment)
-  public featureFlagSegmentInclusion: Segment[];
+  @OneToMany(
+    () => FeatureFlagSegmentInclusion,
+    (featureFlagSegmentInclusion) => featureFlagSegmentInclusion.featureFlag
+  )
+  @Type(() => FeatureFlagSegmentInclusion)
+  public featureFlagSegmentInclusion: FeatureFlagSegmentInclusion[];
 
-  @OneToMany(() => Segment, (segment) => segment.excludedFromFeatureFlag)
-  @Type(() => Segment)
-  public featureFlagSegmentExclusion: Segment[];
+  @OneToMany(
+    () => FeatureFlagSegmentExclusion,
+    (featureFlagSegmentExclusion) => featureFlagSegmentExclusion.featureFlag
+  )
+  @Type(() => FeatureFlagSegmentExclusion)
+  public featureFlagSegmentExclusion: FeatureFlagSegmentExclusion[];
 }

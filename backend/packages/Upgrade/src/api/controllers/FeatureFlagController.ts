@@ -9,6 +9,13 @@ import { SERVER_ERROR } from 'upgrade_types';
 import { FeatureFlagValidation, UserParamsValidator } from './validators/FeatureFlagValidator';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { isUUID } from 'class-validator';
+import { FeatureFlagSegmentInclusion } from 'src/api/models/FeatureFlagSegmentInclusion';
+import {
+  FeatureFlagListValidator,
+  ListEditRequestValidator,
+  RemoveListValidator,
+} from 'src/api/controllers/validators/FeatureFlagListValidator';
+import { FeatureFlagSegmentExclusion } from 'src/api/models/FeatureFlagSegmentExclusion';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -48,11 +55,58 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
  *         filterMode:
  *           type: string
  *           enum: [includeAll, excludeAll]
+ *   FeatureFlagInclusionExclusionList:
+ *     required:
+ *      - name
+ *      - context
+ *      - userIds
+ *      - groups
+ *      - subSegmentIds
+ *     properties:
+ *       id:
+ *        type: string
+ *       name:
+ *        type: string
+ *       description:
+ *        type: string
+ *       context:
+ *        type: string
+ *       userIds:
+ *        type: array
+ *        items:
+ *          type: string
+ *       groups:
+ *        type: array
+ *        items:
+ *          type: object
+ *          properties:
+ *            groupId:
+ *              type: string
+ *            type:
+ *              type: string
+ *        subSegmentIds:
+ *          type: array
+ *          items:
+ *            type: string
+ *   FeatureFlagSegmentListInput:
+ *    required:
+ *      - flagId
+ *      - enabled
+ *    properties:
+ *      flagId:
+ *        type: string
+ *      enabled:
+ *        type: boolean
+ *      list:
+ *        type: object
+ *        $ref: '#/definitions/FeatureFlagInclusionExclusionList'
+ *      segmentId:
+ *        type: string
  */
 
 /**
  * @swagger
- * flags:
+ * tags:
  *   - name: Feature Flags
  *     description: Get Feature flags related data
  */
@@ -86,42 +140,6 @@ export class FeatureFlagsController {
   public find(@Req() request: AppRequest): Promise<FeatureFlag[]> {
     return this.featureFlagService.find(request.logger);
   }
-
-  /**
-   * @swagger
-   * /flags:
-   *    post:
-   *       description: Get feature flags for user
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *         - in: body
-   *           name: user
-   *           required: true
-   *           schema:
-   *             type: object
-   *             properties:
-   *               userId:
-   *                 type: string
-   *                 example: user1
-   *               context:
-   *                 type: string
-   *                 example: add
-   *             description: User Document
-   *       tags:
-   *         - Feature Flags
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: Feature Flag List
-   *            schema:
-   *              type: array
-   *              items:
-   *                $ref: '#/definitions/FeatureFlag'
-   *          '401':
-   *            description: AuthorizationRequiredError
-   */
 
   @Post('/keys')
   public async getKeys(
@@ -326,6 +344,244 @@ export class FeatureFlagsController {
     flag: FeatureFlagStatusUpdateValidator
   ): Promise<FeatureFlag> {
     return this.featureFlagService.updateState(flag.flagId, flag.status);
+  }
+
+  /**
+   * @swagger
+   * /flags/addInclusionList:
+   *    post:
+   *       description: Add Feature Flag Inclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: addinclusionList
+   *           description: Adding an inclusion list to the feature flag
+   *           schema:
+   *             type: object
+   *             $ref: '#/definitions/FeatureFlagSegmentListInput'
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: New Feature flag inclusion list is added
+   */
+  @Post('/addInclusionList')
+  public async addInclusionList(
+    @Body({ validate: false }) inclusionList: FeatureFlagListValidator,
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
+  ): Promise<FeatureFlagSegmentInclusion> {
+    return this.featureFlagService.addList(inclusionList, 'inclusion', request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/addExclusionList:
+   *    post:
+   *       description: Add Feature Flag Exclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: addExclusionList
+   *           description: Adding an exclusion list to the feature flag
+   *           schema:
+   *             type: object
+   *             $ref: '#/definitions/FeatureFlagSegmentListInput'
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: New Feature flag exclusion list is added
+   */
+  @Post('/addExclusionList')
+  public async addExclusionList(
+    @Body({ validate: false }) exclusionList: FeatureFlagListValidator,
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
+  ): Promise<FeatureFlagSegmentExclusion> {
+    return this.featureFlagService.addList(exclusionList, 'exclusion', request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/removeInclusionList:
+   *    post:
+   *       description: Remove Feature Flag Inclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: removeinclusionList
+   *           description: Removing an inclusion list to the feature flag
+   *           schema:
+   *             type: object
+   *             required:
+   *              - flagId
+   *              - segmentId
+   *             properties:
+   *              flagId:
+   *                type: string
+   *              segmentId:
+   *                type: string
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Inclusion list is removed from feature flag
+   */
+  @Post('/removeInclusionList')
+  public async removeInclusionList(
+    @Body({ validate: false }) removeInclusionList: RemoveListValidator,
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
+  ): Promise<FeatureFlagSegmentInclusion> {
+    return this.featureFlagService.removeList(
+      removeInclusionList.flagId,
+      removeInclusionList.segmentId,
+      'inclusion',
+      request.logger
+    );
+  }
+
+  /**
+   * @swagger
+   * /flags/removeExclusionList:
+   *    post:
+   *       description: Remove Feature Flag Exclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: removeexclusionList
+   *           description: Removing an exclusion list from the feature flag
+   *           schema:
+   *             type: object
+   *             required:
+   *              - flagId
+   *              - segmentId
+   *             properties:
+   *              flagId:
+   *                type: string
+   *              segmentId:
+   *                type: string
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Exclusion list is removed from feature flag
+   */
+  @Post('/removeExclusionList')
+  public async removeExclusionList(
+    @Body({ validate: false }) removeExclusionList: RemoveListValidator,
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
+  ): Promise<FeatureFlagSegmentInclusion> {
+    return this.featureFlagService.removeList(
+      removeExclusionList.flagId,
+      removeExclusionList.segmentId,
+      'exclusion',
+      request.logger
+    );
+  }
+
+  /**
+   * @swagger
+   * /flags/editInclusionList:
+   *    post:
+   *       description: Edit Feature Flag Inclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: editinclusionList
+   *           description: Updating an inclusion list on the feature flag
+   *           schema:
+   *             type: object
+   *             required:
+   *              - oldType
+   *              - newType
+   *              - oldSegmentId
+   *              - listInput
+   *             properties:
+   *              oldType:
+   *                type: string
+   *              newType:
+   *                type: string
+   *              oldSegmentId:
+   *                type: string
+   *              listInput:
+   *                type: object
+   *                $ref: '#/definitions/FeatureFlagSegmentListInput'
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Inclusion list is updated
+   */
+  @Post('/editInclusionList')
+  public async editInclusionList(
+    @Body({ validate: false }) editRequest: ListEditRequestValidator,
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
+  ): Promise<FeatureFlagSegmentInclusion> {
+    return this.featureFlagService.editList(editRequest, 'inclusion', request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/editExclusionList:
+   *    post:
+   *       description: Edit Feature Flag Exclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: editexclusionList
+   *           description: Updating an exclusion list on the feature flag
+   *           schema:
+   *             type: object
+   *             required:
+   *              - oldType
+   *              - newType
+   *              - oldSegmentId
+   *              - listInput
+   *             properties:
+   *              oldType:
+   *                type: string
+   *              newType:
+   *                type: string
+   *              oldSegmentId:
+   *                type: string
+   *              listInput:
+   *                type: object
+   *                $ref: '#/definitions/FeatureFlagSegmentListInput'
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Exclusion list is updated
+   */
+  @Post('/editExclusionList')
+  public async editExclusionList(
+    @Body({ validate: false }) editRequest: ListEditRequestValidator,
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
+  ): Promise<FeatureFlagSegmentExclusion> {
+    return this.featureFlagService.editList(editRequest, 'exclusion', request.logger);
   }
 
   /**

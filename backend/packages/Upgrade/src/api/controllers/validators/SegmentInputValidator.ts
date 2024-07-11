@@ -1,6 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
-import { FeatureFlag } from '../../../../src/api/models/FeatureFlag';
+import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { SEGMENT_TYPE } from 'upgrade_types';
 
 export class Group {
@@ -38,10 +37,6 @@ export class SegmentInputValidator {
   @IsString({ each: true })
   public userIds: string[];
 
-  @IsBoolean()
-  @IsOptional()
-  public enabled?: boolean;
-
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => Group)
@@ -50,14 +45,6 @@ export class SegmentInputValidator {
   @IsArray()
   @IsString({ each: true })
   public subSegmentIds: string[];
-
-  @IsOptional()
-  @Type(() => FeatureFlag)
-  public includedInFeatureFlag?: FeatureFlag;
-
-  @IsOptional()
-  @Type(() => FeatureFlag)
-  public excludedFromFeatureFlag?: FeatureFlag;
 }
 
 export class SegmentValidationObj {
