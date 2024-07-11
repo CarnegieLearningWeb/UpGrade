@@ -1,6 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
 import {
-  AnySegmentType,
   EmptyPrivateSegment,
   FLAG_SEARCH_KEY,
   FeatureFlag,
@@ -11,10 +10,7 @@ import {
 import { selectRouterState } from '../../core.state';
 import { selectAll } from './feature-flags.reducer';
 import { GroupForSegment, IndividualForSegment, Segment } from '../../segments/store/segments.model';
-import {
-  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
-  FEATURE_FLAG_STATUS,
-} from '../../../../../../../../types/src/Experiment/enums';
+import { FEATURE_FLAG_PARTICIPANT_LIST_KEY } from '../../../../../../../../types/src/Experiment/enums';
 
 export const selectFeatureFlagsState = createFeatureSelector<FeatureFlagState>('featureFlags');
 

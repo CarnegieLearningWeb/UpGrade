@@ -1,0 +1,20 @@
+<div class="upsert-feature-flag-list-container">
+  <app-common-dialog
+    [title]="config.title"
+    [cancelBtnLabel]="config.cancelBtnLabel"
+    [primaryActionBtnLabel]="config.primaryActionBtnLabel"
+    [primaryActionBtnColor]="config.primaryActionBtnColor"
+    (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+  >
+    <form [formGroup]="featureFlagListForm" class="full-width">
+      <mat-form-field appearance="fill">
+        <mat-label>Type</mat-label>
+        <mat-select formControlName="type">
+          <mat-option *ngFor="let type of listOptionTypes$ | async" [value]="type.value">
+            {{ type.viewValue }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </form>
+  </app-common-dialog>
+</div>

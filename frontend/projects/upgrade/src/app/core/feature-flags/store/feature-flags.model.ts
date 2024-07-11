@@ -43,6 +43,21 @@ export interface UpdateFeatureFlagStatusRequest {
   status: FEATURE_FLAG_STATUS;
 }
 
+export enum UpsertFeatureFlagListAction {
+  ADD = 'add',
+  EDIT = 'edit',
+}
+
+export interface UpsertFeatureFlagListParams {
+  sourceList: any; // TODO define me
+  action: UpsertFeatureFlagListAction;
+}
+
+export enum LIST_OPTION_TYPE {
+  INDIVIDUAL = 'Individual',
+  SEGMENT = 'Segment',
+}
+
 export interface FeatureFlagFormData {
   name: string;
   key: string;
