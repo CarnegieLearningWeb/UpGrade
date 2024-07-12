@@ -6,8 +6,8 @@ import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
 import { ExperimentSegmentInclusion } from './ExperimentSegmentInclusion';
 import { GroupForSegment } from './GroupForSegment';
 import { IndividualForSegment } from './IndividualForSegment';
-import { FeatureFlagSegmentInclusion } from 'src/api/models/FeatureFlagSegmentInclusion';
-import { FeatureFlagSegmentExclusion } from 'src/api/models/FeatureFlagSegmentExclusion';
+import { FeatureFlagSegmentInclusion } from './FeatureFlagSegmentInclusion';
+import { FeatureFlagSegmentExclusion } from './FeatureFlagSegmentExclusion';
 
 @Entity()
 export class Segment extends BaseModel {

@@ -18,4 +18,7 @@ export class FeatureFlagSegmentExclusion extends BaseModel {
 
   @Column()
   public enabled: boolean;
+
+  @Column()
+  public listType: string;
 }

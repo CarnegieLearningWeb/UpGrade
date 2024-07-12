@@ -3,8 +3,8 @@ import { IsNotEmpty } from 'class-validator';
 import { BaseModel } from './base/BaseModel';
 import { Type } from 'class-transformer';
 import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
-import { FeatureFlagSegmentInclusion } from 'src/api/models/FeatureFlagSegmentInclusion';
-import { FeatureFlagSegmentExclusion } from 'src/api/models/FeatureFlagSegmentExclusion';
+import { FeatureFlagSegmentInclusion } from './FeatureFlagSegmentInclusion';
+import { FeatureFlagSegmentExclusion } from './FeatureFlagSegmentExclusion';
 @Entity()
 export class FeatureFlag extends BaseModel {
   @PrimaryColumn('uuid')

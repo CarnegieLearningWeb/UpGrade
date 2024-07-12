@@ -1,15 +1,13 @@
 import Container from 'typedi';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
-import { SegmentService } from '../../../src/api/services/SegmentService';
 import { featureFlag } from '../mockData/featureFlag';
 import { experimentUsers } from '../mockData/experimentUsers/index';
-import { ExperimentUser } from 'src/api/models/ExperimentUser';
+import { ExperimentUser } from '../../../src/api/models/ExperimentUser';
 import { SEGMENT_TYPE } from '../../../../../../types/src';
 
 export default async function FeatureFlagInclusionExclusionLogic(): Promise<void> {
   const featureFlagService = Container.get<FeatureFlagService>(FeatureFlagService);
-  const segmentService = Container.get<SegmentService>(SegmentService);
 
   const featureFlagObject = featureFlag;
   const context = featureFlagObject.context;
@@ -19,31 +17,37 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
   const flag = await featureFlagService.create(featureFlagObject, new UpgradeLogger());
 
   const featureFlagSegmentInclusion = {
-    id: '2b0c0200-7a15-4e19-8688-f9ac283f18aa',
-    name: 'Feature Flag 1 Inclusion Segment',
-    description: 'Feature Flag 1 Inclusion Segment',
-    context: 'home',
-    type: SEGMENT_TYPE.PRIVATE,
-    userIds: ['student1'],
-    groups: [{ type: 'teacher', groupId: '1' }],
-    subSegmentIds: [],
-    includedInFeatureFlag: flag,
+    flagId: flag.id,
+    listType: 'group',
+    enabled: true,
+    list: {
+      name: 'Feature Flag 1 Inclusion Segment',
+      description: 'Feature Flag 1 Inclusion Segment',
+      context: 'home',
+      type: SEGMENT_TYPE.PRIVATE,
+      userIds: [],
+      groups: [{ type: 'teacher', groupId: '1' }],
+      subSegmentIds: [],
+    },
   };
 
   const featureFlagSegmentExclusion = {
-    id: '3b0c0200-7a15-4e19-8688-f9ac283f18aa',
-    name: 'Feature Flag 1 Exclusion Segment',
-    description: 'Feature Flag 1 Exclusion Segment',
-    context: 'home',
-    type: SEGMENT_TYPE.PRIVATE,
-    userIds: ['student3'],
-    groups: [],
-    subSegmentIds: [],
-    excludedFromFeatureFlag: flag,
+    flagId: flag.id,
+    listType: 'individual',
+    enabled: true,
+    list: {
+      name: 'Feature Flag 1 Exclusion Segment',
+      description: 'Feature Flag 1 Exclusion Segment',
+      context: 'home',
+      type: SEGMENT_TYPE.PRIVATE,
+      userIds: ['student3'],
+      groups: [],
+      subSegmentIds: [],
+    },
   };
 
-  await segmentService.upsertSegment(featureFlagSegmentExclusion, new UpgradeLogger());
-  await segmentService.upsertSegment(featureFlagSegmentInclusion, new UpgradeLogger());
+  await featureFlagService.addList(featureFlagSegmentExclusion, 'exclusion', new UpgradeLogger());
+  await featureFlagService.addList(featureFlagSegmentInclusion, 'inclusion', new UpgradeLogger());
 
   const featureFlags = await featureFlagService.find(new UpgradeLogger());
 
