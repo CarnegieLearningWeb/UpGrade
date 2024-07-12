@@ -6,7 +6,7 @@ import { ExperimentUserRepository } from '../repositories/ExperimentUserReposito
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, IUserAliases, SERVER_ERROR } from 'upgrade_types';
-import { getConnection, In, Not } from 'typeorm';
+import { getConnection, In, InsertResult, Not } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Experiment } from '../models/Experiment';
@@ -39,7 +39,7 @@ export class ExperimentUserService {
     oldExperimentUser: RequestedExperimentUser,
     newExperimentUser: Partial<ExperimentUser>,
     logger: UpgradeLogger
-  ): Promise<ExperimentUser[]> {
+  ): Promise<InsertResult | boolean> {
     if (!oldExperimentUser) {
       return this.create([newExperimentUser], logger);
     }
@@ -65,7 +65,7 @@ export class ExperimentUserService {
       return this.create([newExperimentUser], logger);
     }
 
-    return [oldExperimentUser];
+    return true;
   }
 
   private isGroupsEqual(oldUserData: RequestedExperimentUser, newUserData: Partial<ExperimentUser>): boolean {
@@ -88,23 +88,23 @@ export class ExperimentUserService {
     }
   }
 
-  public async create(users: Array<Partial<ExperimentUser>>, logger: UpgradeLogger): Promise<ExperimentUser[]> {
+  public async create(users: Array<Partial<ExperimentUser>>, logger: UpgradeLogger): Promise<InsertResult> {
     logger.info({ message: 'Create a new User. Metadata of the user =>', details: users });
     // insert or update in the database
-    return this.userRepository.save(users);
+    return this.userRepository.upsert(users, ['id']);
   }
 
   public async setAliasesForUser(
-    userId: string,
+    userDoc: RequestedExperimentUser,
     aliases: string[],
-    requestContext: { logger: UpgradeLogger; userDoc: any }
+    logger: UpgradeLogger
   ): Promise<IUserAliases> {
-    const { logger, userDoc } = requestContext;
+    const userId = userDoc.id;
     const userExist = userDoc;
     logger.info({ message: 'Set aliases for experiment user => ' + userId, details: aliases });
 
     // throw error if user not defined
-    if (!userExist) {
+    if (!userExist || !userExist.id) {
       logger.error({ message: 'User not defined setAliasesForUser' + userId, details: aliases });
 
       const error = new Error(
@@ -460,11 +460,12 @@ export class ExperimentUserService {
 
       // check if other individual exclusions are present for that group
       const otherExclusions = await this.individualExclusionRepository.find({
-        where: { experimentId: In(excludedExperimentIds) },
+        where: { experiment: { id: In(excludedExperimentIds) } },
+        relations: ['experiment'],
       });
       const otherExcludedExperimentIds = otherExclusions.map((otherExclusion) => otherExclusion.experiment.id);
       // remove group exclusion
-      const toRemoveExperimentFromGroupExclusions = otherExcludedExperimentIds.filter((experimentId) => {
+      const toRemoveExperimentFromGroupExclusions = excludedExperimentIds.filter((experimentId) => {
         return !otherExcludedExperimentIds.includes(experimentId);
       });
       if (toRemoveExperimentFromGroupExclusions.length > 0) {
@@ -488,13 +489,17 @@ export class ExperimentUserService {
 
     // remove individual exclusion related to that group
     const excludedExperimentIds = individualExclusions.map((individualExclusion) => individualExclusion.experiment.id);
+
     if (excludedExperimentIds.length > 0) {
+      await this.individualExclusionRepository.deleteExperimentsForUserId(userId, excludedExperimentIds);
+
       const otherExclusions = await this.individualExclusionRepository.find({
-        where: { experimentId: In(excludedExperimentIds), userId: Not(userId) },
+        where: { experiment: { id: In(excludedExperimentIds) }, user: { id: Not(userId) } },
+        relations: ['experiment', 'user'],
       });
       const otherExcludedExperimentIds = otherExclusions.map((otherExclusion) => otherExclusion.experiment.id);
       // remove group exclusion
-      const toRemoveExperimentFromGroupExclusions = otherExcludedExperimentIds.filter((experimentId) => {
+      const toRemoveExperimentFromGroupExclusions = excludedExperimentIds.filter((experimentId) => {
         return !otherExcludedExperimentIds.includes(experimentId);
       });
       if (toRemoveExperimentFromGroupExclusions.length > 0) {

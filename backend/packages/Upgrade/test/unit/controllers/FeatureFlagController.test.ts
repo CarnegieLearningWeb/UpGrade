@@ -9,6 +9,8 @@ import FeatureFlagServiceMock from './mocks/FeatureFlagServiceMock';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import { useContainer as ormUseContainer } from 'typeorm';
 import { v4 as uuid } from 'uuid';
+import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
+import ExperimentUserServiceMock from './mocks/ExperimentUserServiceMock';
 
 describe('Feature Flag Controller Testing', () => {
   beforeAll(() => {
@@ -18,10 +20,23 @@ describe('Feature Flag Controller Testing', () => {
     classValidatorUseContainer(Container);
 
     Container.set(FeatureFlagService, new FeatureFlagServiceMock());
+    Container.set(ExperimentUserService, new ExperimentUserServiceMock());
   });
 
   afterAll(() => {
     Container.reset();
+  });
+
+  test('Post request for /api/flags/keys', () => {
+    return request(app)
+      .post('/api/flags/keys')
+      .send({
+        userId: 'user',
+        context: 'context',
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
   });
 
   test('Post request for /api/flags/paginated', () => {
@@ -48,17 +63,20 @@ describe('Feature Flag Controller Testing', () => {
         name: 'string',
         key: 'string',
         description: 'string',
-        variationType: 'string',
-        status: true,
-        variations: [
-          {
-            id: 'string',
-            value: 'string',
-            name: 'string',
-            description: 'string',
-            defaultVariation: [],
+        status: 'enabled',
+        context: ['foo'],
+        tags: ['bar'],
+        featureFlagSegmentInclusion: {
+          segment: {
+            type: 'private',
           },
-        ],
+        },
+        featureFlagSegmentExclusion: {
+          segment: {
+            type: 'private',
+          },
+        },
+        filterMode: 'includeAll',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -70,7 +88,7 @@ describe('Feature Flag Controller Testing', () => {
       .post('/api/flags/status')
       .send({
         flagId: uuid(),
-        status: true,
+        status: 'enabled',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -93,17 +111,26 @@ describe('Feature Flag Controller Testing', () => {
         name: 'string',
         key: 'string',
         description: 'string',
-        variationType: 'string',
-        status: true,
-        variations: [
-          {
-            id: 'string',
-            value: 'string',
-            name: 'string',
-            description: 'string',
-            defaultVariation: [],
+        status: 'enabled',
+        context: ['foo'],
+        tags: ['bar'],
+        featureFlagSegmentInclusion: {
+          segment: {
+            type: 'private',
+            individualForSegment: [],
+            groupForSegment: [],
+            subSegments: [],
           },
-        ],
+        },
+        featureFlagSegmentExclusion: {
+          segment: {
+            type: 'private',
+            individualForSegment: [],
+            groupForSegment: [],
+            subSegments: [],
+          },
+        },
+        filterMode: 'includeAll',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)

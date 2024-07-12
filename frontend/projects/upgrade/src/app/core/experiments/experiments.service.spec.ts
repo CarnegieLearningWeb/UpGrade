@@ -10,7 +10,7 @@ import {
   ExperimentLocalStorageKeys,
   ExperimentVM,
   EXPERIMENT_SEARCH_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_STATE,
   POST_EXPERIMENT_RULE,
@@ -37,7 +37,7 @@ import {
 import { Environment } from '../../../environments/environment-types';
 import { environment } from '../../../environments/environment';
 import { ASSIGNMENT_ALGORITHM, CONDITION_ORDER, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
-import { segmentNew } from './store/experiments.model';
+import { SegmentNew } from './store/experiments.model';
 import { Segment } from '../segments/store/segments.model';
 
 const MockStateStore$ = new BehaviorSubject({});
@@ -74,14 +74,14 @@ describe('ExperimentService', () => {
     status: 'segment-status',
   };
 
-  const dummyInclusionData: segmentNew = {
+  const dummyInclusionData: SegmentNew = {
     updatedAt: '2022-06-20T13:14:52.900Z',
     createdAt: '2022-06-20T13:14:52.900Z',
     versionNumber: 1,
     segment: segmentData,
   };
 
-  const dummyExclusionData: segmentNew = {
+  const dummyExclusionData: SegmentNew = {
     updatedAt: '2022-06-20T13:14:52.900Z',
     createdAt: '2022-06-20T13:14:52.900Z',
     versionNumber: 1,
@@ -357,7 +357,6 @@ describe('ExperimentService', () => {
   describe('#importExperiment', () => {
     it('should dispatch actionUpsertExperiment with the given input', () => {
       const experiment = { ...mockExperiment };
-
       service.importExperiment([experiment]);
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
@@ -541,7 +540,7 @@ describe('ExperimentService', () => {
 
   describe('#setSortingType', () => {
     it('should set localStorage item and dispatch actionSetSortingType with the given input', () => {
-      const sortingType = EXPERIMENT_SORT_AS.ASCENDING;
+      const sortingType = SORT_AS_DIRECTION.ASCENDING;
 
       service.setSortingType(sortingType);
 

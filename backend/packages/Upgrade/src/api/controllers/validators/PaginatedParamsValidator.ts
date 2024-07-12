@@ -1,14 +1,14 @@
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsDefined, IsNumber, IsString, IsEnum, IsOptional, ValidateNested } from 'class-validator';
-import { EXPERIMENT_SORT_AS } from 'upgrade_types';
+import { SORT_AS_DIRECTION } from 'upgrade_types';
 class SortParamsValidator {
   @IsNotEmpty()
   @IsString()
   key: string;
 
   @IsNotEmpty()
-  @IsEnum(EXPERIMENT_SORT_AS)
-  sortAs: EXPERIMENT_SORT_AS;
+  @IsEnum(SORT_AS_DIRECTION)
+  sortAs: SORT_AS_DIRECTION;
 }
 
 class SearchParamsValidator {

@@ -1,0 +1,37 @@
+<div class="add-metrics">
+  <span class="ft-24-700 title">{{ 'metric.add-metrics.text' | translate | titlecase }}</span>
+  <div class="filter-container">
+    <mat-form-field class="dense-2 filter-options" subscriptSizing="dynamic">
+      <mat-select
+        class="ft-14-400"
+        placeholder="App Context"
+        [(ngModel)]="selectedContextOption"
+        (selectionChange)="contextIsSelected()"
+      >
+        <mat-option class="ft-14-400" *ngFor="let context of allContexts" [value]="context">
+          {{ context }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <div class="json-editor-container">
+    <json-editor #metricsEditor [options]="options"></json-editor>
+  </div>
+
+  <div class="button-container">
+    <button class="shared-modal--modal-btn" mat-raised-button (click)="onCancelClick()">
+      {{ 'global.cancel.text' | translate }}
+    </button>
+
+    <button
+      mat-raised-button
+      class="shared-modal--modal-btn default-button"
+      [ngClass]="{ 'default-button--disabled': metricsEditorError || !isContextSelected }"
+      [disabled]="metricsEditorError || !isContextSelected"
+      (click)="addMetrics()"
+      disabled
+    >
+      {{ 'global.save.text' | translate }}
+    </button>
+  </div>
+</div>

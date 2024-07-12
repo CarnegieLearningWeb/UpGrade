@@ -15,6 +15,8 @@ import { SegmentExperimentListComponent } from '../../components/modal/segment-e
 import { SEGMENT_STATUS } from 'upgrade_types';
 import { SegmentStatusPipeType } from '../../../../../shared/pipes/segment-status.pipe';
 import { ExportSegmentComponent } from '../../components/modal/export-segment/export-segment.component';
+import { ActivatedRoute, Router } from '@angular/router';
+import { SEGMENT_SEARCH_KEY } from '../../../../../../../../../../types/src/Experiment/enums';
 @Component({
   selector: 'view-segment',
   templateUrl: './view-segment.component.html',
@@ -22,6 +24,7 @@ import { ExportSegmentComponent } from '../../components/modal/export-segment/ex
 })
 export class ViewSegmentComponent implements OnInit, OnDestroy {
   permissions: UserPermission;
+  segmentIdSub: Subscription;
   permissionsSub: Subscription;
   segment: Segment;
   segmentSub: Subscription;
@@ -30,10 +33,20 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
 
   displayedVariationColumns: string[] = ['value', 'name'];
 
-  constructor(private segmentsService: SegmentsService, private dialog: MatDialog, private authService: AuthService) {}
+  constructor(
+    private segmentsService: SegmentsService,
+    private dialog: MatDialog,
+    private authService: AuthService,
+    private activatedroute: ActivatedRoute,
+    private router: Router
+  ) {}
 
   get SegmentStatus() {
     return SEGMENT_STATUS;
+  }
+
+  get SegmentType() {
+    return SEGMENT_TYPE;
   }
 
   get SegmentStatusPipeTypes() {
@@ -45,20 +58,24 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
       this.permissions = permission;
     });
 
+    this.segmentIdSub = this.activatedroute.paramMap.subscribe((params) => {
+      const segmentIdFromParams = params.get('segmentId');
+      this.segmentsService.fetchSegmentById(segmentIdFromParams);
+    });
+
     this.segmentSub = this.segmentsService.selectedSegment$
       .pipe(filter((segment) => !!segment))
       .subscribe((segment) => {
         this.segment = { ...segment, status: segment.status || SEGMENT_STATUS.UNUSED };
 
-        this.permissions.segments.delete = this.segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE;
         this.members = [];
-        this.segment.individualForSegment.forEach((user) => {
+        this.segment.individualForSegment?.forEach((user) => {
           this.members.push({ type: MemberTypes.INDIVIDUAL, id: user.userId });
         });
-        this.segment.groupForSegment.forEach((group) => {
+        this.segment.groupForSegment?.forEach((group) => {
           this.members.push({ type: group.type, id: group.groupId });
         });
-        this.segment.subSegments.forEach((subSegment) => {
+        this.segment.subSegments?.forEach((subSegment) => {
           this.members.push({ type: MemberTypes.SEGMENT, id: subSegment.name });
         });
       });
@@ -71,6 +88,12 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
       panelClass: 'new-segment-modal',
       data: { segmentInfo: clonedeep(this.segment) },
     });
+  }
+
+  searchSegment(type: SEGMENT_SEARCH_KEY, value: string) {
+    this.segmentsService.setSearchKey(type);
+    this.segmentsService.setSearchString(value);
+    this.router.navigate(['/segments']);
   }
 
   deleteSegment() {
@@ -116,5 +139,10 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.segmentSub.unsubscribe();
     this.permissionsSub.unsubscribe();
+    this.segmentIdSub.unsubscribe();
+  }
+
+  get SegmentSearchKey() {
+    return SEGMENT_SEARCH_KEY;
   }
 }

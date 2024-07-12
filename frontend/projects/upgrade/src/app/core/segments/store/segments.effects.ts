@@ -6,7 +6,7 @@ import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operato
 import { AppState, NotificationService } from '../../core.module';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
-import { Segment, SegmentReturnedObj, UpsertSegmentType } from './segments.model';
+import { Segment, UpsertSegmentType } from './segments.model';
 import { selectAllSegments } from './segments.selectors';
 import JSZip from 'jszip';
 
@@ -39,6 +39,22 @@ export class SegmentsEffects {
     )
   );
 
+  getSegmentById$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionGetSegmentById),
+      map((action) => action.segmentId),
+      filter((segmentId) => !!segmentId),
+      switchMap((segmentId) =>
+        this.segmentsDataService.getSegmentById(segmentId).pipe(
+          map((data: Segment) => {
+            return SegmentsActions.actionGetSegmentByIdSuccess({ segment: data });
+          }),
+          catchError(() => [SegmentsActions.actionGetSegmentByIdFailure()])
+        )
+      )
+    )
+  );
+
   upsertSegment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionUpsertSegment),
@@ -59,26 +75,6 @@ export class SegmentsEffects {
             return SegmentsActions.actionUpsertSegmentSuccess({ segment: data });
           }),
           catchError(() => [SegmentsActions.actionUpsertSegmentFailure()])
-        );
-      })
-    )
-  );
-
-  importSegments$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(SegmentsActions.actionImportSegments),
-      map((action) => ({ segments: action.segments })),
-      filter(({ segments }) => !!segments),
-      switchMap(({ segments }) => {
-        return this.segmentsDataService.importSegments(segments).pipe(
-          map((data: SegmentReturnedObj) => {
-            data.importErrors.forEach((error) => {
-              const errorMessage = error.fileName + ': ' + error.error;
-              this.notificationService.showError(errorMessage);
-            });
-            return SegmentsActions.actionImportSegmentSuccess({ segments: data.segments });
-          }),
-          catchError(() => [SegmentsActions.actionImportSegmentFailure()])
         );
       })
     )

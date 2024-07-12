@@ -1,0 +1,24 @@
+<div class="modal-container">
+  <app-common-dialog
+    [title]="data.title"
+    [cancelBtnLabel]="data.cancelBtnLabel"
+    [primaryActionBtnLabel]="data.primaryActionBtnLabel"
+    [primaryActionBtnColor]="data.primaryActionBtnColor"
+    [primaryActionBtnDisabled]="isImportActionBtnDisabled | async"
+    (primaryActionBtnClicked)="importFiles()"
+  >
+    <div class="drag-drop-container">
+      <app-common-import-container
+        fileType=".json"
+        buttonLabel="Import Json"
+        (filesSelected)="handleFilesSelected($event)"
+        class="full-width"
+      >
+      </app-common-import-container>
+      <p class="ft-12-600 import-message">
+        {{ 'feature-flags.import-feature-flag.message.text' | translate }}
+        <a href="">Learn More</a>
+      </p>
+    </div>
+  </app-common-dialog>
+</div>

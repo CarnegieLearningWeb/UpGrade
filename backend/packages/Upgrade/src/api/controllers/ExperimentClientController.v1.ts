@@ -3,7 +3,6 @@ import {
   Post,
   Body,
   UseBefore,
-  Get,
   Req,
   InternalServerError,
   Delete,
@@ -20,7 +19,6 @@ import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupVali
 import { SERVER_ERROR, IGroupMembership, IUserAliases, IWorkingGroup } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator.v1';
 import { ExperimentError } from '../models/ExperimentError';
-import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidator } from './validators/LogValidator';
@@ -170,6 +168,14 @@ export class ExperimentClientController {
    *            description: Set Group Membership
    *            schema:
    *              $ref: '#/definitions/initResponse'
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('init')
   public async init(
@@ -181,26 +187,30 @@ export class ExperimentClientController {
     request.logger.info({ message: 'Starting the init call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.experimentUserService.getUserDoc(experimentUser.id, request.logger);
+    // if reinit call is made with any of the below fields not included in the call,
+    // then we will fetch the stored values of the field and return them in the response
+    // for consistent init response with 3 fields ['userId', 'group', 'workingGroup']
+    const { id, group, workingGroup } = { ...experimentUserDoc, ...experimentUser };
+
     if (experimentUserDoc) {
       // append userDoc in logger
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    const userDocument = await this.experimentUserService.upsertOnChange(
+
+    const upsertResult = await this.experimentUserService.upsertOnChange(
       experimentUserDoc,
       experimentUser,
       request.logger
     );
-    if (!userDocument || !userDocument[0]) {
+
+    if (!upsertResult) {
       request.logger.error({
-        details: 'user document not present',
+        details: 'user upsert failed',
       });
-      throw new InternalServerError('user document not present');
+      throw new InternalServerError('user init failed');
     }
-    // if reinit call is made with any of the below fields not included in the call,
-    // then we will fetch the stored values of the field and return them in the response
-    // for consistent init response with 3 fields ['userId', 'group', 'workingGroup']
-    const { id, group, workingGroup } = userDocument[0];
+
     return { id, group, workingGroup };
   }
 
@@ -249,8 +259,14 @@ export class ExperimentClientController {
    *            description: Set Group Membership
    *            schema:
    *              $ref: '#/definitions/initResponse'
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
    *          '500':
-   *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
+   *            description: Internal Server Error
    */
   @Patch('groupmembership')
   public async setGroupMemberShip(
@@ -317,8 +333,14 @@ export class ExperimentClientController {
    *            description: Set Group Membership
    *            schema:
    *              $ref: '#/definitions/initResponse'
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
    *          '500':
-   *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
+   *            description: Internal Server Error
    */
   @Patch('workinggroup')
   public async setWorkingGroup(
@@ -412,8 +434,14 @@ export class ExperimentClientController {
    *                - enrollmentCode
    *                - userId
    *                - condition
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
    *          '500':
-   *            description: User not defined
+   *            description: Internal Server Error
    */
   @Post('mark')
   public async markExperimentPoint(
@@ -431,14 +459,11 @@ export class ExperimentClientController {
       request.logger.info({ message: 'Got the original user doc' });
     }
     const { createdAt, updatedAt, versionNumber, ...rest } = await this.experimentAssignmentService.markExperimentPoint(
-      experiment.userId,
+      experimentUserDoc,
       experiment.site,
       experiment.status,
       experiment.condition,
-      {
-        logger: request.logger,
-        userDoc: experimentUserDoc,
-      },
+      request.logger,
       experiment.target,
       experiment.experimentId ? experiment.experimentId : null
     );
@@ -494,10 +519,14 @@ export class ExperimentClientController {
    *                  condition:
    *                    type: string
    *                    minLength: 1
-   *          '500':
-   *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
    *          '404':
-   *            description: Experiment user not defined
+   *            description: Experiment User not defined
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('assign')
   public async getAllExperimentConditions(
@@ -507,13 +536,11 @@ export class ExperimentClientController {
     experiment: ExperimentAssignmentValidator
   ): Promise<IExperimentAssignment[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(experiment.userId, request.logger);
     const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
-      experiment.userId,
+      experimentUserDoc,
       experiment.context,
-      {
-        logger: request.logger,
-        userDoc: null,
-      }
+      request.logger
     );
 
     return assignedData.map(({ site, target, assignedCondition }) => {
@@ -597,8 +624,14 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Log data
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
    *          '500':
-   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
+   *            description: Internal Server Error
    */
   @Post('log')
   public async log(
@@ -615,10 +648,7 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    const logs = await this.experimentAssignmentService.dataLog(logData.userId, logData.value, {
-      logger: request.logger,
-      userDoc: experimentUserDoc,
-    });
+    const logs = await this.experimentAssignmentService.dataLog(experimentUserDoc, logData.value, request.logger);
     return logs.map(({ createdAt, updatedAt, versionNumber, ...rest }) => {
       return rest;
     });
@@ -642,9 +672,15 @@ export class ExperimentClientController {
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Log data
+   *            description: Log Caliper data
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
    *          '500':
-   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
+   *            description: Internal Server Error
    */
   @Post('log/caliper')
   public async caliperLog(
@@ -699,6 +735,14 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Log blob data
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('bloblog')
   public async blobLog(@Req() request: express.Request): Promise<any> {
@@ -714,7 +758,7 @@ export class ExperimentClientController {
             request.logger.info({ message: 'Got the original user doc' });
           }
           const response = await this.experimentAssignmentService.blobDataLog(
-            blobData.userId,
+            experimentUserDoc,
             blobData.value,
             request.logger
           );
@@ -768,8 +812,14 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Client side reported error
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
    *          '500':
-   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
+   *            description: Internal Server Error
    */
   @Post('failed')
   public async failedExperimentPoint(
@@ -799,8 +849,24 @@ export class ExperimentClientController {
   /**
    * @swagger
    * /featureflag:
-   *    get:
+   *    post:
    *       description: Get all feature flags using SDK
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: user
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *               userId:
+   *                 type: string
+   *                 example: user1
+   *               context:
+   *                 type: string
+   *                 example: add
+   *             description: User Document
    *       produces:
    *         - application/json
    *       tags:
@@ -808,10 +874,23 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Feature flags list
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
+   *          '500':
+   *            description: Internal Server Error
    */
-  @Get('featureflag')
-  public getAllFlags(@Req() request: AppRequest): Promise<FeatureFlag[]> {
-    return this.featureFlagService.find(request.logger);
+  @Post('featureflag')
+  public async getAllFlags(
+    @Req() request: AppRequest,
+    @Body({ validate: true })
+    experiment: ExperimentAssignmentValidator
+  ): Promise<string[]> {
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(experiment.userId, request.logger);
+    return this.featureFlagService.getKeys(experimentUserDoc, experiment.context, request.logger);
   }
 
   /**
@@ -837,6 +916,10 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Filtered Metrics
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
    *          '500':
    *            description: Insert error in database
    */
@@ -847,7 +930,7 @@ export class ExperimentClientController {
     @Body({ validate: false })
     metric: MetricValidator
   ): Promise<Metric[]> {
-    return await this.metricService.saveAllMetrics(metric.metricUnit, request.logger);
+    return await this.metricService.saveAllMetrics(metric.metricUnit, metric.context, request.logger);
   }
 
   /**
@@ -896,8 +979,14 @@ export class ExperimentClientController {
    *              required:
    *               - userId
    *               - userAliases
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
    *          '500':
-   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
+   *            description: Internal Server Error
    */
   @Patch('useraliases')
   public async setUserAliases(
@@ -912,10 +1001,7 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    return this.experimentUserService.setAliasesForUser(user.userId, user.aliases, {
-      logger: request.logger,
-      userDoc: experimentUserDoc,
-    });
+    return this.experimentUserService.setAliasesForUser(experimentUserDoc, user.aliases, request.logger);
   }
 
   /**
@@ -930,6 +1016,10 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Database cleared
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
    *          '500':
    *            description: DEMO mode is disabled
    */

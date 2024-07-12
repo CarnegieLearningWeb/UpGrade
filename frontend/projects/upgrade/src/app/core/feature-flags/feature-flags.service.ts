@@ -1,88 +1,130 @@
 import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
-import * as FeatureFlagsActions from './store/feature-flags.actions';
 import {
+  selectAllFeatureFlagsSortedByDate,
+  selectIsAllFlagsFetched,
   selectIsLoadingFeatureFlags,
-  selectAllFeatureFlags,
+  selectHasInitialFeatureFlagsDataLoaded,
+  selectSearchKey,
+  selectSearchString,
+  selectIsLoadingUpsertFeatureFlag,
+  selectActiveDetailsTabIndex,
+  selectIsLoadingUpdateFeatureFlagStatus,
   selectSelectedFeatureFlag,
-  selectTotalFlags,
-  selectSkipFlags,
+  selectSearchFeatureFlagParams,
+  selectRootTableState,
+  selectFeatureFlagOverviewDetails,
+  selectIsLoadingFeatureFlagDelete,
+  selectFeatureFlagInclusions,
+  selectFeatureFlagExclusions,
+  selectIsLoadingSelectedFeatureFlag,
+  selectSortKey,
+  selectSortAs,
 } from './store/feature-flags.selectors';
-import { FeatureFlag, UpsertFeatureFlagType, FLAG_SEARCH_SORT_KEY, SORT_AS } from './store/feature-flags.model';
-import { filter, map } from 'rxjs/operators';
-import { combineLatest } from 'rxjs';
+import * as FeatureFlagsActions from './store/feature-flags.actions';
+import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
+import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
+import { AddFeatureFlagRequest, FeatureFlag, UpdateFeatureFlagStatusRequest } from './store/feature-flags.model';
+import { ExperimentService } from '../experiments/experiments.service';
+import { filter, map, pairwise } from 'rxjs';
 
 @Injectable()
 export class FeatureFlagsService {
-  constructor(private store$: Store<AppState>) {}
+  constructor(private store$: Store<AppState>, private experimentService: ExperimentService) {}
 
+  isInitialFeatureFlagsLoading$ = this.store$.pipe(select(selectHasInitialFeatureFlagsDataLoaded));
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
+  isLoadingSelectedFeatureFlag$ = this.store$.pipe(select(selectIsLoadingSelectedFeatureFlag));
+  isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
+  allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
+  isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
+  searchString$ = this.store$.pipe(select(selectSearchString));
+  searchKey$ = this.store$.pipe(select(selectSearchKey));
+  sortKey$ = this.store$.pipe(select(selectSortKey));
+  sortAs$ = this.store$.pipe(select(selectSortAs));
+  isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
+  IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
+
+  featureFlagsListLengthChange$ = this.allFeatureFlags$.pipe(
+    pairwise(),
+    filter(([prevEntities, currEntities]) => prevEntities.length !== currEntities.length)
+  );
+  selectedFeatureFlagStatusChange$ = this.store$.pipe(
+    select(selectSelectedFeatureFlag),
+    pairwise(),
+    filter(([prev, curr]) => prev.status !== curr.status)
+  );
+  // Observable to check if selectedFeatureFlag is removed from the store
+  isSelectedFeatureFlagRemoved$ = this.store$.pipe(
+    select(selectSelectedFeatureFlag),
+    pairwise(),
+    filter(([prev, curr]) => prev && !curr)
+  );
+
+  isSelectedFeatureFlagUpdated$ = this.store$.pipe(
+    select(selectSelectedFeatureFlag),
+    pairwise(),
+    filter(([prev, curr]) => prev && curr && JSON.stringify(prev) !== JSON.stringify(curr)),
+    map(([prev, curr]) => curr)
+  );
+
+  selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));
   selectedFeatureFlag$ = this.store$.pipe(select(selectSelectedFeatureFlag));
-  allFeatureFlags$ = this.store$.pipe(
-    select(selectAllFeatureFlags),
-    filter((allFlags) => !!allFlags),
-    map((flags) =>
-      flags.sort((a, b) => {
-        const d1 = new Date(a.createdAt);
-        const d2 = new Date(b.createdAt);
-        return d1 < d2 ? 1 : d1 > d2 ? -1 : 0;
-      })
-    )
+  searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
+  selectRootTableState$ = this.store$.select(selectRootTableState);
+  activeDetailsTabIndex$ = this.store$.pipe(select(selectActiveDetailsTabIndex));
+  appContexts$ = this.experimentService.contextMetaData$.pipe(
+    map((contextMetaData) => {
+      return Object.keys(contextMetaData?.contextMetadata ?? []);
+    })
   );
-  allFlagsKeys$ = this.store$.pipe(
-    select(selectAllFeatureFlags),
-    filter((allFlags) => !!allFlags),
-    map((flags) => flags.map((flag) => flag.key))
+  selectFeatureFlagInclusions$ = this.store$.pipe(select(selectFeatureFlagInclusions));
+  selectFeatureFlagInclusionsLength$ = this.store$.pipe(
+    select(selectFeatureFlagInclusions),
+    map((inclusions) => inclusions.length)
+  );
+  selectFeatureFlagExclusions$ = this.store$.pipe(select(selectFeatureFlagExclusions));
+  selectFeatureFlagExclusionsLength$ = this.store$.pipe(
+    select(selectFeatureFlagExclusions),
+    map((exclusions) => exclusions.length)
   );
 
-  isInitialFeatureFlagsLoading() {
-    return combineLatest([this.store$.pipe(select(selectIsLoadingFeatureFlags)), this.allFeatureFlags$]).pipe(
-      map(([isLoading, experiments]) => !isLoading || !!experiments.length)
-    );
-  }
-
-  isAllFlagsFetched() {
-    return combineLatest([this.store$.pipe(select(selectSkipFlags)), this.store$.pipe(select(selectTotalFlags))]).pipe(
-      map(([skipFlags, totalFlags]) => skipFlags === totalFlags)
-    );
-  }
+  convertNameStringToKey(name:string):string {
+    let upperCaseString = name.trim().toUpperCase();
+    let key = upperCaseString.replace(/ /g, '_');
+    return key;
+}
 
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
   }
 
-  createNewFeatureFlag(flag: FeatureFlag) {
-    this.store$.dispatch(
-      FeatureFlagsActions.actionUpsertFeatureFlag({ flag, actionType: UpsertFeatureFlagType.CREATE_NEW_FLAG })
-    );
+  fetchFeatureFlagById(featureFlagId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlagById({ featureFlagId }));
   }
 
-  updateFeatureFlagStatus(flagId: string, status: boolean) {
-    this.store$.dispatch(FeatureFlagsActions.actionUpdateFlagStatus({ flagId, status }));
+  fetchContextMetaData() {
+    this.store$.dispatch(actionFetchContextMetaData({ isLoadingContextMetaData: true }));
+  }
+
+  addFeatureFlag(addFeatureFlagRequest: AddFeatureFlagRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlag({ addFeatureFlagRequest }));
+  }
+
+  updateFeatureFlag(flag: FeatureFlag) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlag({ flag }));
+  }
+
+  updateFeatureFlagStatus(updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagStatus({ updateFeatureFlagStatusRequest }));
   }
 
   deleteFeatureFlag(flagId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlag({ flagId }));
   }
 
-  updateFeatureFlag(flag: FeatureFlag) {
-    this.store$.dispatch(
-      FeatureFlagsActions.actionUpsertFeatureFlag({ flag, actionType: UpsertFeatureFlagType.UPDATE_FLAG })
-    );
-  }
-
-  getActiveVariation(flag: FeatureFlag, type?: boolean) {
-    const status = type === undefined ? flag.status : type;
-    const existedVariation = flag.variations.filter((variation) => {
-      if (variation.defaultVariation && variation.defaultVariation.includes(status)) {
-        return variation;
-      }
-    })[0];
-    return existedVariation ? existedVariation.value : '';
-  }
-
-  setSearchKey(searchKey: FLAG_SEARCH_SORT_KEY) {
+  setSearchKey(searchKey: FLAG_SEARCH_KEY) {
     this.store$.dispatch(FeatureFlagsActions.actionSetSearchKey({ searchKey }));
   }
 
@@ -90,11 +132,15 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionSetSearchString({ searchString }));
   }
 
-  setSortKey(sortKey: FLAG_SEARCH_SORT_KEY) {
+  setSortKey(sortKey: FLAG_SORT_KEY) {
     this.store$.dispatch(FeatureFlagsActions.actionSetSortKey({ sortKey }));
   }
 
-  setSortingType(sortingType: SORT_AS) {
+  setSortingType(sortingType: SORT_AS_DIRECTION) {
     this.store$.dispatch(FeatureFlagsActions.actionSetSortingType({ sortingType }));
+  }
+
+  setActiveDetailsTab(activeDetailsTabIndex: number) {
+    this.store$.dispatch(FeatureFlagsActions.actionSetActiveDetailsTabIndex({ activeDetailsTabIndex }));
   }
 }

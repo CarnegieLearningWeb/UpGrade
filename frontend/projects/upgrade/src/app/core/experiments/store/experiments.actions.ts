@@ -6,7 +6,7 @@ import {
   ExperimentNameVM,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
   IEnrollmentStatByDate,
@@ -117,7 +117,7 @@ export const actionSetSortKey = createAction(
 
 export const actionSetSortingType = createAction(
   '[Experiment] Set Sorting type',
-  props<{ sortingType: EXPERIMENT_SORT_AS }>()
+  props<{ sortingType: SORT_AS_DIRECTION }>()
 );
 
 export const actionFetchAllExperimentNames = createAction('[Experiment] Fetch All Experiment Names');

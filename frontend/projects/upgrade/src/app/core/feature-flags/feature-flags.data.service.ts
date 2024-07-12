@@ -1,25 +1,40 @@
 import { Inject, Injectable } from '@angular/core';
 import { ENV, Environment } from '../../../environments/environment-types';
-import { FeatureFlag, FeatureFlagsPaginationParams } from './store/feature-flags.model';
 import { HttpClient } from '@angular/common/http';
+import {
+  AddFeatureFlagRequest,
+  FeatureFlag,
+  FeatureFlagsPaginationInfo,
+  FeatureFlagsPaginationParams,
+  UpdateFeatureFlagStatusRequest,
+} from './store/feature-flags.model';
+import { Observable } from 'rxjs';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../types/src';
 
 @Injectable()
 export class FeatureFlagsDataService {
   constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
 
-  fetchFeatureFlags(params: FeatureFlagsPaginationParams) {
+  fetchFeatureFlagsPaginated(params: FeatureFlagsPaginationParams): Observable<FeatureFlagsPaginationInfo> {
     const url = this.environment.api.getPaginatedFlags;
-    return this.http.post(url, params);
+    return this.http.post<FeatureFlagsPaginationInfo>(url, params);
+    // mock
+    // // return of({ nodes: mockFeatureFlags, total: 2 }).pipe(delay(2000));
   }
 
-  createNewFeatureFlag(flag: FeatureFlag) {
+  fetchFeatureFlagById(id: string) {
+    const url = `${this.environment.api.featureFlag}/${id}`;
+    return this.http.get(url);
+  }
+
+  addFeatureFlag(params: AddFeatureFlagRequest): Observable<FeatureFlag> {
     const url = this.environment.api.featureFlag;
-    return this.http.post(url, flag);
+    return this.http.post<FeatureFlag>(url, params);
   }
 
-  updateFlagStatus(flagId: string, status: boolean) {
+  updateFeatureFlagStatus(params: UpdateFeatureFlagStatusRequest): Observable<FeatureFlag> {
     const url = this.environment.api.updateFlagStatus;
-    return this.http.post(url, { flagId, status });
+    return this.http.post<FeatureFlag>(url, params);
   }
 
   deleteFeatureFlag(id: string) {
@@ -27,8 +42,8 @@ export class FeatureFlagsDataService {
     return this.http.delete(url);
   }
 
-  updateFeatureFlag(flag: FeatureFlag) {
+  updateFeatureFlag(flag: FeatureFlag): Observable<FeatureFlag> {
     const url = `${this.environment.api.featureFlag}/${flag.id}`;
-    return this.http.put(url, flag);
+    return this.http.put<FeatureFlag>(url, flag);
   }
 }

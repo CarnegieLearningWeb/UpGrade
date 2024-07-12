@@ -55,7 +55,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   membersCountError: string = null;
   groupString = ' ( group )';
   membersValid = true;
-  isImportMemebervalid = true;
+  isImportMemberValid = true;
 
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
   constructor(
@@ -126,41 +126,50 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
 
   checkImportMemberValidation() {
     if (this.segmentMembersForm?.value) {
-      if (
-        this.segmentMembersForm.value.members.length === 0 ||
-        (this.segmentMembersForm.value.members.length === 1 &&
-          !this.segmentMembersForm.value.members[0].type &&
-          !this.segmentMembersForm.value.members[0].id)
+      if (this.segmentMembersForm.value.members.length === 0) {
+        this.isImportMemberValid = true;
+      } else if (
+        this.segmentMembersForm.value.members.length === 1 &&
+        !this.segmentMembersForm.value.members[0].type &&
+        !this.segmentMembersForm.value.members[0].id
       ) {
-        this.isImportMemebervalid = true;
+        this.isImportMemberValid = true;
+      } else if (this.segmentMembersForm.value.members.length > 1) {
+        const members = this.segmentMembersForm.value.members;
+        for (const member of members) {
+          if (!member.id && !member.type) {
+            this.isImportMemberValid = true;
+            continue;
+          } else {
+            this.isImportMemberValid = false;
+            break;
+          }
+        }
       } else {
-        this.isImportMemebervalid = false;
+        this.isImportMemberValid = false;
       }
     } else {
-      this.isImportMemebervalid = false;
+      this.isImportMemberValid = false;
     }
   }
 
   selectSubSegments(): void {
-    if (this.allSegments) {
-      this.allSegments.forEach((segment) => {
-        if (this.segmentInfo) {
-          if (
-            segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE &&
-            segment.id !== this.segmentInfo.id &&
-            segment.context === this.currentContext
-          ) {
-            this.subSegmentIds.push(segment.name);
-            this.segmentNameId.set(segment.name, segment.id);
-          }
-        } else {
-          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.context === this.currentContext) {
-            this.subSegmentIds.push(segment.name);
-            this.segmentNameId.set(segment.name, segment.id);
-          }
-        }
-      });
+    if (!this.allSegments) {
+      return;
     }
+
+    const isContextAll = this.currentContext === "ALL";
+
+    this.allSegments
+      .filter((segment) =>
+          segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE &&
+          (isContextAll || segment.context === this.currentContext) &&
+          (!this.segmentInfo || segment.id !== this.segmentInfo.id)
+      )
+      .forEach(segment => {
+          this.subSegmentIds.push(segment.name);
+          this.segmentNameId.set(segment.name, segment.id);
+      });
   }
 
   onFileSelected(event: any): void {
@@ -173,12 +182,17 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
         const fileContent = e.target?.result as string;
         this.addCSVMembersToTable(fileContent);
         this.updateView();
+
+        event.target.value = '';
       };
       reader.readAsText(file);
     }
   }
 
   addCSVMembersToTable(segmentMembers: string): void {
+    if (this.members.length > 0) {
+      this.members.clear();
+    }
     const rows = segmentMembers.replace(/"/g, '').split('\n');
     // const fileName = segment.fileName.split('.');
 

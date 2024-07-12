@@ -1,6 +1,6 @@
 import { createReducer, Action, on } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
-import { FeatureFlagState, FeatureFlag, FLAG_SEARCH_SORT_KEY } from './feature-flags.model';
+import { FeatureFlagState, FeatureFlag, FLAG_SEARCH_KEY } from './feature-flags.model';
 import * as FeatureFlagsActions from './feature-flags.actions';
 
 export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFlag>();
@@ -8,51 +8,110 @@ export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFl
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
 export const initialState: FeatureFlagState = adapter.getInitialState({
+  isLoadingUpsertFeatureFlag: false,
   isLoadingFeatureFlags: false,
+  isLoadingUpdateFeatureFlagStatus: false,
+  isLoadingFeatureFlagDetail: false,
+  isLoadingFeatureFlagDelete: false,
+  isLoadingSelectedFeatureFlag: false,
+  hasInitialFeatureFlagsDataLoaded: false,
+  activeDetailsTabIndex: 0,
   skipFlags: 0,
-  totalFlags: 0,
-  searchKey: FLAG_SEARCH_SORT_KEY.ALL,
-  searchString: null,
+  totalFlags: null,
+  searchKey: FLAG_SEARCH_KEY.ALL,
+  searchValue: null,
   sortKey: null,
   sortAs: null,
 });
 
 const reducer = createReducer(
   initialState,
-  on(FeatureFlagsActions.actionUpdateFlagStatus, FeatureFlagsActions.actionUpsertFeatureFlag, (state) => ({
+  on(FeatureFlagsActions.actionFetchFeatureFlags, (state) => ({
     ...state,
     isLoadingFeatureFlags: true,
   })),
   on(FeatureFlagsActions.actionFetchFeatureFlagsSuccess, (state, { flags, totalFlags }) => {
-    const newState = {
+    const newState: FeatureFlagState = {
       ...state,
       totalFlags,
       skipFlags: state.skipFlags + flags.length,
     };
-    return adapter.upsertMany(flags, { ...newState, isLoadingFeatureFlags: false });
+    return adapter.upsertMany(flags, {
+      ...newState,
+      isLoadingFeatureFlags: false,
+      hasInitialFeatureFlagsDataLoaded: true,
+    });
   }),
-  on(
-    FeatureFlagsActions.actionFetchFeatureFlagsFailure,
-    FeatureFlagsActions.actionUpdateFlagStatusFailure,
-    FeatureFlagsActions.actionUpsertFeatureFlagFailure,
-    (state) => ({ ...state, isLoadingFeatureFlags: false })
-  ),
-  on(FeatureFlagsActions.actionUpsertFeatureFlagSuccess, (state, { flag }) =>
-    adapter.upsertOne(flag, { ...state, isLoadingFeatureFlags: false })
-  ),
-  on(FeatureFlagsActions.actionUpdateFlagStatusSuccess, (state, { flag }) =>
-    adapter.updateOne({ id: flag.id, changes: flag }, { ...state, isLoadingFeatureFlags: false })
-  ),
-  on(FeatureFlagsActions.actionDeleteFeatureFlagSuccess, (state, { flag }) => adapter.removeOne(flag.id, state)),
+  on(FeatureFlagsActions.actionFetchFeatureFlagsFailure, (state) => ({ ...state, isLoadingFeatureFlags: false })),
+  on(FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess, (state, { flag }) => {
+    return adapter.upsertOne(flag, {
+      ...state,
+      isLoadingSelectedFeatureFlag: false,
+    });
+  }),
+  on(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure, (state) => ({
+    ...state,
+    isLoadingSelectedFeatureFlag: false,
+  })),
   on(FeatureFlagsActions.actionSetIsLoadingFeatureFlags, (state, { isLoadingFeatureFlags }) => ({
     ...state,
     isLoadingFeatureFlags,
   })),
+  on(FeatureFlagsActions.actionAddFeatureFlag, (state) => ({ ...state, isLoadingUpsertFeatureFlag: true })),
+  on(FeatureFlagsActions.actionAddFeatureFlagSuccess, (state, { response }) => {
+    return adapter.addOne(response, {
+      ...state,
+      isLoadingUpsertFeatureFlag: false,
+    });
+  }),
+  on(FeatureFlagsActions.actionUpdateFeatureFlag, (state) => ({ ...state, isLoadingUpsertFeatureFlag: true })),
+  on(FeatureFlagsActions.actionUpdateFeatureFlagSuccess, (state, { response }) => {
+    return adapter.upsertOne(response, {
+      ...state,
+      isLoadingUpsertFeatureFlag: false,
+    });
+  }),
+  on(FeatureFlagsActions.actionDeleteFeatureFlag, (state) => ({ ...state, isLoadingFeatureFlagDelete: true })),
+  on(FeatureFlagsActions.actionDeleteFeatureFlagSuccess, (state, { flag }) => {
+    return adapter.removeOne(flag.id, {
+      ...state,
+      isLoadingFeatureFlagDelete: false,
+    });
+  }),
+  on(FeatureFlagsActions.actionDeleteFeatureFlagFailure, (state) => ({
+    ...state,
+    isLoadingFeatureFlagDelete: false,
+  })),
+  on(FeatureFlagsActions.actionUpdateFeatureFlagFailure, (state) => ({ ...state, isLoadingUpsertFeatureFlag: false })),
+  on(FeatureFlagsActions.actionAddFeatureFlagFailure, (state) => ({ ...state, isLoadingUpsertFeatureFlag: false })),
   on(FeatureFlagsActions.actionSetSkipFlags, (state, { skipFlags }) => ({ ...state, skipFlags })),
   on(FeatureFlagsActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),
-  on(FeatureFlagsActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchString })),
+  on(FeatureFlagsActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchValue: searchString })),
   on(FeatureFlagsActions.actionSetSortKey, (state, { sortKey }) => ({ ...state, sortKey })),
-  on(FeatureFlagsActions.actionSetSortingType, (state, { sortingType }) => ({ ...state, sortAs: sortingType }))
+  on(FeatureFlagsActions.actionSetSortingType, (state, { sortingType }) => ({ ...state, sortAs: sortingType })),
+  on(FeatureFlagsActions.actionSetActiveDetailsTabIndex, (state, { activeDetailsTabIndex }) => ({
+    ...state,
+    activeDetailsTabIndex,
+  })),
+  on(FeatureFlagsActions.actionUpdateFeatureFlagStatus, (state) => ({
+    ...state,
+    isLoadingUpdateFeatureFlagStatus: true,
+  })),
+  on(FeatureFlagsActions.actionUpdateFeatureFlagStatusSuccess, (state, { response }) => {
+    const flag = response;
+    return adapter.updateOne(
+      { id: flag?.id, changes: { status: flag?.status } },
+      { ...state, isLoadingUpdateFeatureFlagStatus: false }
+    );
+  }),
+  on(FeatureFlagsActions.actionUpdateFeatureFlagStatusFailure, (state) => ({
+    ...state,
+    isLoadingUpdateFeatureFlagStatus: true,
+  })),
+  on(FeatureFlagsActions.actionFetchFeatureFlagById, (state) => ({
+    ...state,
+    isLoadingSelectedFeatureFlag: true,
+  }))
 );
 
 export function featureFlagsReducer(state: FeatureFlagState | undefined, action: Action) {

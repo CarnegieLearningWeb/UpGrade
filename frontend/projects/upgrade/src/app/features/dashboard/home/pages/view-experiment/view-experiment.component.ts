@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation, Inject } from '@angular/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ExperimentStatusComponent } from '../../components/modal/experiment-status/experiment-status.component';
@@ -23,9 +23,8 @@ import { QueriesModalComponent } from '../../components/modal/queries-modal/quer
 import { ExperimentEndCriteriaComponent } from '../../components/modal/experiment-end-criteria/experiment-end-criteria.component';
 import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/state-time-logs.component';
 import { ExportModalComponent } from '../../components/modal/export-experiment/export-experiment.component';
-import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-time/enrollment-over-time.component';
-import { EXPERIMENT_TYPE, IMetricMetaData, PAYLOAD_TYPE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, IMetricMetaData, OPERATION_TYPES, PAYLOAD_TYPE } from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
@@ -33,6 +32,7 @@ import {
   FactorialConditionTableDataFromConditionPayload,
   SimpleExperimentPayloadTableRowData,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+import { ENV, Environment } from '../../../../../../environments/environment-types';
 // Used in view-experiment component only
 enum DialogType {
   CHANGE_STATUS = 'Change status',
@@ -78,6 +78,19 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     { value: '<>', viewValue: 'not equal' },
   ];
 
+  queryOperations = [
+    { value: OPERATION_TYPES.SUM, viewValue: 'Sum' },
+    { value: OPERATION_TYPES.MIN, viewValue: 'Min' },
+    { value: OPERATION_TYPES.MAX, viewValue: 'Max' },
+    { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
+    { value: OPERATION_TYPES.AVERAGE, viewValue: 'Mean' },
+    { value: OPERATION_TYPES.MODE, viewValue: 'Mode' },
+    { value: OPERATION_TYPES.MEDIAN, viewValue: 'Median' },
+    { value: OPERATION_TYPES.STDEV, viewValue: 'Standard Deviation' },
+    { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
+    { value: OPERATION_TYPES.PERCENTAGE, viewValue: 'Percentage' },
+  ];
+
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
   displayMetrics: Metrics[] = [];
@@ -89,7 +102,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private authService: AuthService,
     private router: Router,
-    private _Activatedroute: ActivatedRoute
+    private _Activatedroute: ActivatedRoute,
+    @Inject(ENV) private environment: Environment
   ) {}
 
   get DialogType() {
@@ -110,6 +124,10 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   get isExperimentStateCancelled() {
     return this.experiment.state === EXPERIMENT_STATE.CANCELLED;
+  }
+
+  get showMetricAnalysisDisplay() {
+    return this.environment.metricAnalyticsExperimentDisplayToggle;
   }
 
   ngOnInit() {
@@ -181,7 +199,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       this.experiment.conditions?.forEach((condition) => {
         let conditionPayload: ExperimentConditionPayload;
         this.experiment.conditionPayloads.forEach((payloadcondition) => {
-          if (payloadcondition.parentCondition.id === condition.id) {
+          if (payloadcondition.parentCondition === condition.id) {
             conditionPayload = payloadcondition;
           }
         });
@@ -249,7 +267,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         }
         // separating keys from metric
         const rootKey: string[] = key.split(METRICS_JOIN_TEXT);
-        const statisticOperation: string[] = [query.query.operationType];
+        const statisticOperation: string[] = [];
         if (rootKey.length > 1) {
           statisticOperation.push(query.repeatedMeasure);
         }
@@ -263,6 +281,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
           statisticOperation.push(compareFn);
           statisticOperation.push(query.query.compareValue);
         }
+        const operationObject = this.queryOperations.find((op) => op.value === query.query.operationType);
+        statisticOperation.push(operationObject.viewValue);
         this.displayMetrics.push({
           metric_Key: rootKey,
           metric_Operation: statisticOperation,
@@ -293,7 +313,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     });
   }
 
-  searchExperiment(type: EXPERIMENT_SEARCH_KEY, value: FLAG_SEARCH_SORT_KEY) {
+  searchExperiment(type: EXPERIMENT_SEARCH_KEY, value: EXPERIMENT_SEARCH_KEY) {
     this.experimentService.setSearchKey(type);
     this.experimentService.setSearchString(value);
     this.router.navigate(['/home']);

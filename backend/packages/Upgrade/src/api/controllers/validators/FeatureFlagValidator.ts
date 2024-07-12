@@ -1,34 +1,11 @@
+import { IsNotEmpty, IsDefined, IsString, IsArray, IsEnum, IsOptional, ValidateNested } from 'class-validator';
+import { ParticipantsValidator } from '../../DTO/ExperimentDTO';
+import { FILTER_MODE } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS } from 'upgrade_types';
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsDefined, IsOptional, ValidateNested, IsString, IsBoolean, IsArray } from 'class-validator';
-
-class FlagVariationValidator {
-  @IsNotEmpty()
-  @IsDefined()
-  @IsString()
-  id: string;
-
-  @IsNotEmpty()
-  @IsDefined()
-  @IsString()
-  value: string;
-
-  @IsOptional()
-  @IsString()
-  name?: string;
-
-  @IsOptional()
-  @IsString()
-  description?: string;
-
-  @IsOptional()
-  @IsArray()
-  @IsBoolean({each: true})
-  defaultVariation?: boolean[];
-}
 
 export class FeatureFlagValidation {
-  @IsNotEmpty()
-  @IsDefined()
+  @IsOptional()
   @IsString()
   id: string;
 
@@ -36,9 +13,8 @@ export class FeatureFlagValidation {
   @IsDefined()
   @IsString()
   name: string;
-  
-  @IsNotEmpty()
-  @IsDefined()
+
+  @IsOptional()
   @IsString()
   description: string;
 
@@ -49,16 +25,42 @@ export class FeatureFlagValidation {
 
   @IsNotEmpty()
   @IsDefined()
+  @IsEnum(FEATURE_FLAG_STATUS)
+  status: FEATURE_FLAG_STATUS;
+
+  @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  public context: string[];
+
+  @IsDefined()
+  @IsEnum(FILTER_MODE)
+  filterMode: FILTER_MODE;
+
+  @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  public tags: string[];
+
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => ParticipantsValidator)
+  public featureFlagSegmentInclusion: ParticipantsValidator;
+
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => ParticipantsValidator)
+  public featureFlagSegmentExclusion: ParticipantsValidator;
+}
+
+export class UserParamsValidator {
+  @IsNotEmpty()
+  @IsDefined()
   @IsString()
-  variationType: string;
+  public userId: string;
 
   @IsNotEmpty()
   @IsDefined()
-  @IsBoolean()
-  status: boolean;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => FlagVariationValidator)
-  variations: FlagVariationValidator[];
+  @IsString()
+  public context: string;
 }

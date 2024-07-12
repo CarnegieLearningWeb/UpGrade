@@ -20,6 +20,7 @@ export const env = {
   isProduction: process.env.NODE_ENV === 'production',
   isTest: process.env.NODE_ENV === 'test',
   isDevelopment: process.env.NODE_ENV === 'development',
+  useNewRelic: toBool(getOsEnvOptional('USE_NEW_RELIC')) || false,
   app: {
     name: getOsEnv('APP_NAME'),
     version: (pkg as any).version,
@@ -79,9 +80,6 @@ export const env = {
   google: {
     clientId: getOsEnv('GOOGLE_CLIENT_ID'),
     domainName: getOsEnvOptional('DOMAIN_NAME'),
-  },
-  auth: {
-    authCheck: toBool(getOsEnvOptional('AUTH_CHECK')),
   },
   scheduler: {
     stepFunctionArn: getOsEnv('SCHEDULER_STEP_FUNCTION'),

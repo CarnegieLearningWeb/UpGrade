@@ -8,15 +8,18 @@ import {
   AfterViewInit,
 } from '@angular/core';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
-import { Subscription, BehaviorSubject, of } from 'rxjs';
-import { MetricUnit } from '../../../../../core/analysis/store/analysis.models';
+import { BehaviorSubject, Subscription } from 'rxjs';
+import { METRICS_JOIN_TEXT, MetricUnit } from '../../../../../core/analysis/store/analysis.models';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
-import { DeleteMetricsComponent } from '../modals/delete-metrics/delete-metrics.component';
+import { AddMetricsComponent } from '../modals/add-metrics/add-metrics.component';
+import { METRIC_SEARCH_KEY } from '../../../../../../../../../../types/src/Experiment/enums';
+import { IMetricUnit } from '../../../../../../../../../../types/src';
+import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
 
 @Component({
   selector: 'profile-metrics',
@@ -30,7 +33,7 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions: UserPermission;
   permissionSub: Subscription;
 
-  displayedColumns = ['id', 'metric'];
+  displayedColumns = ['metric', 'context'];
   keyEditMode = true;
 
   // Used for displaying metrics
@@ -40,11 +43,15 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // For tree structure
   _dataChange = new BehaviorSubject<MetricUnit[]>([]);
-  nestedTreeControl: NestedTreeControl<MetricUnit>;
-  nestedDataSource: MatTreeNestedDataSource<MetricUnit>;
+  nestedTreeControl = new NestedTreeControl<IMetricUnit>((node) => node.children);
+  nestedDataSource = new MatTreeNestedDataSource<IMetricUnit>();
   insertNodeIndex = 0;
 
   selectedMetricIndex = null;
+  metricFilterOptions = [METRIC_SEARCH_KEY.ALL, METRIC_SEARCH_KEY.NAME, METRIC_SEARCH_KEY.CONTEXT];
+  selectedMetricFilterOption = METRIC_SEARCH_KEY.ALL;
+  contextOptions: string[] = [];
+  searchValue: string;
 
   constructor(private analysisService: AnalysisService, private authService: AuthService, private dialog: MatDialog) {}
 
@@ -55,21 +62,17 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics) => {
       this.allMetrics = new MatTableDataSource();
-      this.allMetrics.data = metrics;
+      this.allMetrics.data = metrics.map((item) => {
+        this.insertNodeIndex = 0;
+        return this.insertNode(item);
+      });
+      this.extractContext(this.allMetrics.data);
     });
 
-    this.nestedTreeControl = new NestedTreeControl<MetricUnit>(this._getChildren);
-    this.nestedDataSource = new MatTreeNestedDataSource();
-
-    this._dataChange.subscribe((data) => (this.nestedDataSource.data = data));
+    this.applyFilter(this.searchValue);
   }
 
-  hasNestedChild = (_: number, nodeData: MetricUnit) => nodeData.children.length > 0;
-
-  createTree(metrics: MetricUnit[]): void {
-    const tree = metrics.map((metric) => this.insertNode(metric));
-    this._dataChange.next(tree);
-  }
+  hasNestedChild = (_: number, nodeData: IMetricUnit) => !!nodeData.children && nodeData.children.length > 0;
 
   insertNode(metrics: any): MetricUnit {
     if (!metrics.children.length) {
@@ -89,27 +92,60 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     return metrics;
   }
 
-  deleteNode(nodeToBeDeleted: any) {
-    const data = {
-      children: this.nestedDataSource.data,
-    };
-    const key = this.analysisService.findParents(data, nodeToBeDeleted.id);
+  openAddMetricDialog() {
     this.selectedMetricIndex = null;
-    this.dialog.open(DeleteMetricsComponent, {
-      panelClass: 'delete-modal',
-      data: { key },
+    const dialogRef = this.dialog.open(AddMetricsComponent, {
+      panelClass: 'add-metric-modal',
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      // Code will be executed after closing dialog
     });
   }
 
-  setTreeForMetric(index: number) {
-    this.selectedMetricIndex = index;
-    this.insertNodeIndex = 0;
-    this.createTree([this.allMetrics.data[index]]);
+  deleteNode(nodeToBeDeleted: any, index: number) {
+    const data = {
+      children: [this.allMetrics.data[index]],
+    };
+    const key = this.analysisService.findParents(data, nodeToBeDeleted.id);
+    this.selectedMetricIndex = null;
+    const dialogRef = this.dialog.open(DeleteComponent, {
+      panelClass: 'delete-modal',
+    });
+
+    dialogRef.afterClosed().subscribe((isDeleteButtonClicked) => {
+      if (isDeleteButtonClicked) {
+        this.analysisService.deleteMetric(key.join(METRICS_JOIN_TEXT));
+      }
+    });
+  }
+
+  setSearchKey(searchKey: METRIC_SEARCH_KEY) {
+    this.analysisService.setMetricsFilterValue(searchKey);
   }
 
   applyFilter(filterValue: string) {
-    this.selectedMetricIndex = null;
-    this.analysisService.setMetricsFilterValue(filterValue);
+    this.filterMetricsPredicate(this.selectedMetricFilterOption);
+
+    if (typeof filterValue === 'string') {
+      this.allMetrics.filter = filterValue.trim().toLowerCase();
+    }
+  }
+
+  filterMetricsPredicate(type: METRIC_SEARCH_KEY) {
+    this.allMetrics.filterPredicate = (data, filter: string): boolean => {
+      switch (type) {
+        case METRIC_SEARCH_KEY.ALL:
+          return (
+            (filter !== METRIC_SEARCH_KEY.ALL ? data.key.toLocaleLowerCase().includes(filter) : data.key) ||
+            !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length
+          );
+        case METRIC_SEARCH_KEY.NAME:
+          return filter !== METRIC_SEARCH_KEY.NAME ? data.key.toLocaleLowerCase().includes(filter) : data.key;
+
+        case METRIC_SEARCH_KEY.CONTEXT:
+          return !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length;
+      }
+    };
   }
 
   changeMetricMode(event) {
@@ -128,5 +164,21 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     this.permissionSub.unsubscribe();
   }
 
-  private _getChildren = (node: MetricUnit) => of(node.children);
+  extractContextRecursively(obj: any, contextValuesSet: Set<string>) {
+    if (obj.context && Array.isArray(obj.context)) {
+      obj.context.forEach((value: string) => contextValuesSet.add(value));
+    }
+    if (obj.children && Array.isArray(obj.children)) {
+      obj.children.forEach((child: any) => this.extractContextRecursively(child, contextValuesSet));
+    }
+  }
+
+  extractContext(data: any[]): void {
+    const contextValuesSet = new Set<string>(); // Using Set to automatically remove duplicates
+
+    // Call the recursive function
+    data.forEach((item) => this.extractContextRecursively(item, contextValuesSet));
+
+    this.contextOptions = Array.from(contextValuesSet); // Convert Set back to array
+  }
 }

@@ -2,7 +2,7 @@ import { Service } from 'typedi';
 import { ILogInput } from 'upgrade_types';
 
 @Service()
-export default class ExperimentAssignmentServieMock {
+export default class ExperimentAssignmentServiceMock {
   public markExperimentPoint(id: string, experimentPoint: string, condition: string, partitionId: string): Promise<[]> {
     return Promise.resolve([]);
   }

@@ -6,7 +6,7 @@ import {
   POST_EXPERIMENT_RULE,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   EXPERIMENT_STATE,
   IExperimentEnrollmentStats,
   IExperimentSearchParams,
@@ -31,12 +31,28 @@ export {
   IExperimentEnrollmentStats,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   IExperimentSearchParams,
   IExperimentSortParams,
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
 };
+
+export interface ExperimentConditionFilterOptions {
+  code: string;
+  id: string;
+}
+
+export interface ExperimentPartitionFilterOptions {
+  id: string;
+  point: string;
+  twoCharacterId: string;
+}
+
+export interface ExperimentDateFilterOptions {
+  value: DATE_RANGE;
+  viewValue: string;
+}
 
 export interface IEnrollmentStatByDate {
   date: string;
@@ -194,7 +210,7 @@ export interface ExperimentStateTimeLog {
   versionNumber: number;
 }
 
-export interface segmentNew {
+export interface SegmentNew {
   updatedAt: string;
   createdAt: string;
   versionNumber: number;
@@ -231,8 +247,8 @@ export interface Experiment {
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
   filterMode: FILTER_MODE;
-  experimentSegmentInclusion: segmentNew;
-  experimentSegmentExclusion: segmentNew;
+  experimentSegmentInclusion: SegmentNew;
+  experimentSegmentExclusion: SegmentNew;
   groupSatisfied?: number;
   backendVersion: string;
 }
@@ -249,8 +265,8 @@ export interface ExperimentConditionPayload {
     value: string;
   };
   // payload: string;
-  parentCondition: ExperimentCondition;
-  decisionPoint: ExperimentDecisionPoint;
+  parentCondition: string;
+  decisionPoint: string;
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;
@@ -292,7 +308,7 @@ export interface ExperimentState extends EntityState<Experiment> {
   searchKey: EXPERIMENT_SEARCH_KEY;
   searchString: string;
   sortKey: EXPERIMENT_SORT_KEY;
-  sortAs: EXPERIMENT_SORT_AS;
+  sortAs: SORT_AS_DIRECTION;
   stats: Record<string, IExperimentEnrollmentDetailStats>;
   graphInfo: IExperimentGraphInfo;
   graphRange: DATE_RANGE;

@@ -222,7 +222,11 @@ export class ExperimentDesignStepperService {
     const decisionPoints = experiment.partitions;
     const conditions = experiment.conditions;
     const conditionPayloads = experiment.conditionPayloads || [];
-    const conditionPayloadsRowData = this.getExistingConditionPayloadRowData(conditionPayloads);
+    const conditionPayloadsRowData = this.getExistingConditionPayloadRowData(
+      decisionPoints,
+      conditions,
+      conditionPayloads
+    );
     const payloadTableData = this.createPayloadTableData(decisionPoints, conditions, conditionPayloadsRowData);
 
     return payloadTableData;
@@ -282,12 +286,18 @@ export class ExperimentDesignStepperService {
   }
 
   getExistingConditionPayloadRowData(
+    decisionPoints: ExperimentDecisionPoint[],
+    conditions: ExperimentCondition[],
     preexistingConditionPayloadData: ExperimentConditionPayload[]
   ): SimpleExperimentPayloadTableRowData[] {
     const currentPayloadTableData = this.getSimpleExperimentPayloadTableData();
 
     if (preexistingConditionPayloadData.length) {
-      const payloadTableData = this.mapPreexistingConditionPayloadsToTableData(preexistingConditionPayloadData);
+      const payloadTableData = this.mapPreexistingConditionPayloadsToTableData(
+        decisionPoints,
+        conditions,
+        preexistingConditionPayloadData
+      );
       return payloadTableData;
     }
 
@@ -299,17 +309,23 @@ export class ExperimentDesignStepperService {
   }
 
   mapPreexistingConditionPayloadsToTableData(
+    decisionPoints: ExperimentDecisionPoint[],
+    conditions: ExperimentCondition[],
     conditionPayloads: ExperimentConditionPayload[]
   ): SimpleExperimentPayloadTableRowData[] {
     return conditionPayloads.map((conditionPayload) => {
+      const parentCondition = conditions.find((condition) => condition.id === conditionPayload.parentCondition);
+      const parentDecisionPoint = decisionPoints.find(
+        (decisionPoint) => decisionPoint.id === conditionPayload.decisionPoint
+      );
       return {
         id: conditionPayload.id,
-        designTableCombinationId: conditionPayload.decisionPoint.id + conditionPayload.parentCondition.id,
-        site: conditionPayload.decisionPoint.site,
-        target: conditionPayload.decisionPoint.target,
-        condition: conditionPayload.parentCondition.conditionCode,
+        designTableCombinationId: conditionPayload.decisionPoint + conditionPayload.parentCondition,
+        site: parentDecisionPoint.site,
+        target: parentDecisionPoint.target,
+        condition: parentCondition.conditionCode,
         payload: conditionPayload.payload.value,
-        useCustom: conditionPayload.payload.value !== conditionPayload.parentCondition.conditionCode,
+        useCustom: conditionPayload.payload.value !== parentCondition.conditionCode,
       };
     });
   }
@@ -322,16 +338,11 @@ export class ExperimentDesignStepperService {
     const payloadTableData = this.getSimpleExperimentPayloadTableData();
 
     payloadTableData.forEach((payloadRowData: SimpleExperimentPayloadTableRowData) => {
-      // if no custom payload, return early, do not add to array to send to backend
-      if (payloadRowData.payload === payloadRowData.condition) {
-        return;
-      }
-
-      const parentCondition = conditions.find((condition) => condition.conditionCode === payloadRowData.condition);
+      const parentCondition = conditions.find((condition) => condition.conditionCode === payloadRowData.condition).id;
 
       const decisionPoint = decisionPoints.find(
         (decisionPoint) => decisionPoint.target === payloadRowData.target && decisionPoint.site === payloadRowData.site
-      );
+      )?.id;
 
       conditionPayloads.push({
         id: payloadRowData.id || uuidv4(),
@@ -356,11 +367,43 @@ export class ExperimentDesignStepperService {
         id: uuidv4(), // TODO: maybe not the right place?
         levels: conditionLevelsData,
         condition: conditions,
-        payload: '',
+        payload: conditions,
         weight: '0.0',
         include: true,
       };
       tableData.push(tableRow);
+    });
+
+    return tableData;
+  }
+
+  editFactorialConditionTableData(
+    designData: ExperimentFactorialDesignData,
+    oldTableData: FactorialConditionTableRowData[]
+  ): FactorialConditionTableRowData[] {
+    const tableData: FactorialConditionTableRowData[] = [];
+    const requiredFactorialTableData = this.factorDataToConditions(designData.factors);
+
+    requiredFactorialTableData.map((conditionData) => {
+      const conditionLevelsData = this.filterLevelsData(conditionData);
+      const conditionstring = this.createConditionString(conditionData);
+      const condition = oldTableData.filter((conditionData) => {
+        return conditionData.condition === conditionstring;
+      });
+
+      if (condition.length) {
+        tableData.push({ ...condition[0], id: uuidv4() });
+      } else {
+        const tableRow: FactorialConditionTableRowData = {
+          id: uuidv4(), // TODO: maybe not the right place?
+          levels: conditionLevelsData,
+          condition: conditionstring,
+          payload: conditionstring,
+          weight: '0.0',
+          include: true,
+        };
+        tableData.push(tableRow);
+      }
     });
 
     return tableData;
@@ -425,7 +468,7 @@ export class ExperimentDesignStepperService {
 
     const tableData = existingConditions.map((factorialCondition) => {
       const conditionPayload = existingConditionPayloads?.find(
-        (conditionPayload) => conditionPayload?.parentCondition.id === factorialCondition.id
+        (conditionPayload) => conditionPayload?.parentCondition === factorialCondition.id
       );
 
       const payloadValue = conditionPayload ? conditionPayload.payload.value : '';
@@ -474,7 +517,7 @@ export class ExperimentDesignStepperService {
     let conditionIndex = 1;
     tableData.forEach((factorialConditionTableRow) => {
       factorialConditionsRequestObject.push({
-        id: factorialConditionTableRow.id,
+        id: factorialConditionTableRow.id || uuidv4(),
         name: factorialConditionTableRow.condition,
         conditionCode: factorialConditionTableRow.condition,
         assignmentWeight: parseFloat(factorialConditionTableRow.weight),
@@ -529,7 +572,7 @@ export class ExperimentDesignStepperService {
       factorialConditionPayloadsRequestObject.push({
         id: factorialConditionTableRow.conditionPayloadId || uuidv4(),
         payload: { type: PAYLOAD_TYPE.STRING, value: factorialConditionTableRow.payload },
-        parentCondition: currentConditions[index],
+        parentCondition: currentConditions[index].id,
       });
     });
 

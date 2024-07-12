@@ -17,6 +17,11 @@ export class SegmentsDataService {
     return this.http.post(url, segment);
   }
 
+  getSegmentById(id: string) {
+    const url = `${this.environment.api.segments}/status/${id}`;
+    return this.http.get(url);
+  }
+
   deleteSegment(id: string) {
     const url = `${this.environment.api.segments}/${id}`;
     return this.http.delete(url);
@@ -49,6 +54,11 @@ export class SegmentsDataService {
 
   importSegments(segments: SegmentFile[]) {
     const url = this.environment.api.importSegments;
+    return this.http.post(url, segments);
+  }
+
+  validateSegments(segments: SegmentFile[]) {
+    const url = this.environment.api.validateSegments;
     return this.http.post(url, segments);
   }
 }

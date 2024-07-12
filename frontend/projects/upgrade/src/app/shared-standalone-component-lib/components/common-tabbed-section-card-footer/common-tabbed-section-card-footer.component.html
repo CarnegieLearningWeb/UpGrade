@@ -1,0 +1,16 @@
+<div>
+  <mat-tab-group
+    mat-stretch-tabs="false"
+    mat-align-tabs="start"
+    animationDuration="0ms"
+    (selectedTabChange)="onSelectedTabChange($event)"
+  >
+    <mat-tab *ngFor="let label of tabLabels">
+      <ng-template mat-tab-label>
+        <span class="ft-18-600">
+          {{ label }}
+        </span>
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
+</div>

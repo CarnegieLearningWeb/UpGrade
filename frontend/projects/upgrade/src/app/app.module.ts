@@ -21,7 +21,7 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
   }
 
   // in a prod build, we currently need to fetch environment.json at runtime
-  // to provide apiBaseUrl and googleClientId
+  // to provide apiBaseUr, googleClientId, featureFlagNavToggle and withinSubjectExperimentSupportToggle
   return () =>
     http
       .get('/environment.json')
@@ -29,6 +29,12 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
       .then((config: RuntimeEnvironmentConfig) => {
         env.apiBaseUrl = config.endpointApi || config.apiBaseUrl;
         env.googleClientId = config.gapiClientId || config.googleClientId;
+        env.featureFlagNavToggle = config.featureFlagNavToggle ?? env.featureFlagNavToggle ?? false;
+        env.withinSubjectExperimentSupportToggle =
+          config.withinSubjectExperimentSupportToggle ?? env.withinSubjectExperimentSupportToggle ?? false;
+        env.errorLogsToggle = config.errorLogsToggle ?? env.errorLogsToggle ?? false;
+        env.metricAnalyticsExperimentDisplayToggle =
+          config.metricAnalyticsExperimentDisplayToggle ?? env.metricAnalyticsExperimentDisplayToggle ?? false;
       })
       .catch((error) => {
         console.log({ error });

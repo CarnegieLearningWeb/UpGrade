@@ -13,8 +13,9 @@ import {
   ExperimentStateInfo,
   EXPERIMENT_STATE,
   POST_EXPERIMENT_RULE,
-  segmentNew,
+  SegmentNew,
 } from './store/experiments.model';
+import { ExperimentFile } from '../../features/dashboard/home/components/modal/import-experiment/import-experiment.component';
 
 class MockHTTPClient {
   get = jest.fn().mockReturnValue(of());
@@ -59,14 +60,14 @@ describe('ExperimentDataService', () => {
       status: 'segment-status',
     };
 
-    const dummyInclusionData: segmentNew = {
+    const dummyInclusionData: SegmentNew = {
       updatedAt: '2022-06-20T13:14:52.900Z',
       createdAt: '2022-06-20T13:14:52.900Z',
       versionNumber: 1,
       segment: segmentData,
     };
 
-    const dummyExclusionData: segmentNew = {
+    const dummyExclusionData: SegmentNew = {
       updatedAt: '2022-06-20T13:14:52.900Z',
       createdAt: '2022-06-20T13:14:52.900Z',
       versionNumber: 1,
@@ -160,9 +161,10 @@ describe('ExperimentDataService', () => {
       const mockUrl = mockEnvironment.api.importExperiment;
       const experiment = { ...mockExperiment };
 
-      service.importExperiment([experiment]);
+      const experimentFile: ExperimentFile = { fileName: 'test.json', fileContent: JSON.stringify(experiment) };
+      service.importExperiment([experimentFile]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, [{ ...experiment }]);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, [experimentFile]);
     });
   });
 

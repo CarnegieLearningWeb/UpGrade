@@ -9,7 +9,7 @@ export {
   EXPERIMENT_LOG_TYPE,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   UserRole,
   OPERATION_TYPES,
   IMetricMetaData,
@@ -28,6 +28,13 @@ export {
   CONDITION_ORDER,
   CACHE_PREFIX,
   ASSIGNMENT_ALGORITHM,
+  SEGMENT_SEARCH_KEY,
+  SEGMENT_SORT_KEY,
+  FLAG_SORT_KEY,
+  FLAG_SEARCH_KEY,
+  FEATURE_FLAG_STATUS,
+  STATUS_INDICATOR_CHIP_TYPE,
+  FILE_TYPE,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,
@@ -58,4 +65,5 @@ export {
   ILogRequestBody,
   ILogMetrics,
   ILogGroupMetrics,
+  IMenuButtonItem,
 } from './Experiment/interfaces';

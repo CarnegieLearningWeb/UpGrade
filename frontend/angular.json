@@ -250,18 +250,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "upgrade:build"
+            "buildTarget": "upgrade:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "upgrade:build:production"
+              "buildTarget": "upgrade:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "upgrade:build"
+            "buildTarget": "upgrade:build"
           }
         },
         "e2e": {

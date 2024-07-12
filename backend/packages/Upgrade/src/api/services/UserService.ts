@@ -95,7 +95,7 @@ export class UserService {
       queryBuilder = queryBuilder.addOrderBy(`users.${sortParams.key}`, sortParams.sortAs);
     }
     const systemEmail = systemUserDoc.email;
-    queryBuilder = queryBuilder.where('users.email != :email', { email: systemEmail }).skip(skip).take(take);
+    queryBuilder = queryBuilder.where('users.email != :email', { email: systemEmail }).offset(skip).limit(take);
 
     return queryBuilder.getMany();
   }

@@ -2,11 +2,7 @@
   <span class="ft-24-700 title">{{ 'home.view-experiment.export-experiment.text' | translate | titlecase }}</span>
 
   <form [formGroup]="exportForm" class="export-experiment-container-form">
-    <mat-form-field
-      class="dense-2"
-      appearance="outline"
-      subscriptSizing="dynamic"
-    >
+    <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
       <mat-label class="ft-14-400">
         {{ 'home.view-experiment.export-method.text' | translate }}
       </mat-label>
@@ -36,9 +32,13 @@
       mat-raised-button
       [ngClass]="{
         'default-button--disabled':
-          exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1
+          (exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1) ||
+          !isExportMethodSelected
       }"
-      [disabled]="exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1"
+      [disabled]="
+        (exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1) ||
+        !isExportMethodSelected
+      "
       class="shared-modal--modal-btn default-button"
       (click)="exportExperiment()"
     >

@@ -1,7 +1,7 @@
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
 import { NotificationsService, NotificationType } from 'angular2-notifications';
-import { EMPTY, Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { AuthService } from '../auth/auth.service';
@@ -17,16 +17,11 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   openPopup(error) {
     const temp = {
       type: NotificationType.Error,
-      title: 'Network call failed.',
+      title: 'Network call failed. See console for details.',
       content: error.url,
       animate: 'fromRight',
     };
-    if (!this.environment.production) {
-      temp.title += ' See console for details.';
-    }
-    if (!(error.status === 401) && !this.environment.production) {
-      this._notifications.create(temp.title, temp.content, temp.type, temp);
-    }
+    this._notifications.create(temp.title, temp.content, temp.type, temp);
   }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -37,7 +32,9 @@ export class HttpErrorInterceptor implements HttpInterceptor {
           this.authService.authLogout();
         }
         this.openPopup(err);
-        return EMPTY; // returning EMPTY instead of throwError as Error is handled using snacker here itself
+
+        // re-throw to allow the error to be caught by the calling code
+        throw err;
       })
     );
   }

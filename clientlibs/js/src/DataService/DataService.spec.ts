@@ -1,4 +1,4 @@
-import { IExperimentAssignmentv5, IFeatureFlag, PAYLOAD_TYPE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, IExperimentAssignmentv5, IFeatureFlag, PAYLOAD_TYPE } from 'upgrade_types';
 import { DataService } from './DataService';
 
 describe('DataService', () => {
@@ -63,6 +63,7 @@ describe('DataService', () => {
               factor1: { level: 'level1', payload: { type: PAYLOAD_TYPE.STRING, value: 'testLevel' } },
             },
           ],
+          experimentType: EXPERIMENT_TYPE.FACTORIAL,
         },
       ];
 
@@ -90,6 +91,7 @@ describe('DataService', () => {
               factor1: { level: 'level1', payload: { type: PAYLOAD_TYPE.STRING, value: 'testLevel' } },
             },
           ],
+          experimentType: EXPERIMENT_TYPE.FACTORIAL,
         },
       ];
 
@@ -100,55 +102,19 @@ describe('DataService', () => {
 
   describe('#getFeatureFlags', () => {
     it('should return the feature flags', () => {
-      const featureFlags: IFeatureFlag[] = [
-        {
-          id: 'abc123',
-          name: 'testFlag',
-          key: 'testFlagKey',
-          description: 'testFlagDescription',
-          variationType: 'test',
-          status: true,
-          variations: [
-            {
-              id: 'abc123',
-              value: 'flagVariation1',
-              name: 'flagVariation1',
-              description: 'flagVariation1',
-              defaultVariation: [true],
-            },
-          ],
-        },
-      ];
+      const featureFlagsKeys: string[] = ['testFlagKey'];
 
-      dataService.setFeatureFlags(featureFlags);
-      expect(dataService.getFeatureFlags()).toEqual(featureFlags);
+      dataService.setFeatureFlags(featureFlagsKeys);
+      expect(dataService.getFeatureFlags()).toEqual(featureFlagsKeys);
     });
   });
 
   describe('#setFeatureFlags', () => {
     it('should set the feature flags', () => {
-      const featureFlags: IFeatureFlag[] = [
-        {
-          id: 'abc123',
-          name: 'testFlag',
-          key: 'testFlagKey',
-          description: 'testFlagDescription',
-          variationType: 'test',
-          status: true,
-          variations: [
-            {
-              id: 'abc123',
-              value: 'flagVariation1',
-              name: 'flagVariation1',
-              description: 'flagVariation1',
-              defaultVariation: [true],
-            },
-          ],
-        },
-      ];
+      const featureFlagsKeys: string[] = ['testFlagKey'];
 
-      dataService.setFeatureFlags(featureFlags);
-      expect(dataService.getFeatureFlags()).toEqual(featureFlags);
+      dataService.setFeatureFlags(featureFlagsKeys);
+      expect(dataService.getFeatureFlags()).toEqual(featureFlagsKeys);
     });
   });
 
@@ -179,6 +145,7 @@ describe('DataService', () => {
             factor2: { level: 'level2', payload: { type: PAYLOAD_TYPE.STRING, value: 'testLevel2' } },
           },
         ],
+        experimentType: EXPERIMENT_TYPE.FACTORIAL,
       };
 
       const expectedRotatedAssignmentList: IExperimentAssignmentv5 = {
@@ -206,6 +173,7 @@ describe('DataService', () => {
             factor1: { level: 'level1', payload: { type: PAYLOAD_TYPE.STRING, value: 'testLevel1' } },
           },
         ],
+        experimentType: EXPERIMENT_TYPE.FACTORIAL,
       };
 
       dataService.rotateAssignmentList(assignmentList);
@@ -232,6 +200,7 @@ describe('DataService', () => {
           },
         ],
         assignedFactor: [],
+        experimentType: EXPERIMENT_TYPE.SIMPLE,
       };
 
       const expectedRotatedAssignmentList: IExperimentAssignmentv5 = {
@@ -252,6 +221,7 @@ describe('DataService', () => {
           },
         ],
         assignedFactor: [],
+        experimentType: EXPERIMENT_TYPE.SIMPLE,
       };
 
       dataService.rotateAssignmentList(assignmentList);
@@ -265,6 +235,7 @@ describe('DataService', () => {
         target: 'target',
         assignedCondition: [],
         assignedFactor: [],
+        experimentType: EXPERIMENT_TYPE.SIMPLE,
       };
 
       const expectedRotatedAssignmentList: IExperimentAssignmentv5 = {
@@ -272,6 +243,7 @@ describe('DataService', () => {
         target: 'target',
         assignedCondition: [],
         assignedFactor: [],
+        experimentType: EXPERIMENT_TYPE.SIMPLE,
       };
 
       dataService.rotateAssignmentList(assignmentList);
@@ -299,6 +271,7 @@ describe('DataService', () => {
               factor1: { level: 'level1', payload: { type: PAYLOAD_TYPE.STRING, value: 'testLevel' } },
             },
           ],
+          experimentType: EXPERIMENT_TYPE.FACTORIAL,
         },
       ];
 
@@ -326,6 +299,7 @@ describe('DataService', () => {
               factor1: { level: 'level1', payload: { type: PAYLOAD_TYPE.STRING, value: 'testLevel' } },
             },
           ],
+          experimentType: EXPERIMENT_TYPE.FACTORIAL,
         },
       ];
 

@@ -1,0 +1,37 @@
+::ng-deep .title-header {
+  height: 112px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  .title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0;
+  }
+
+  .status-chip {
+    margin-left: 1rem;
+    vertical-align: middle;
+  }
+
+  .subtitle {
+    margin-bottom: 0;
+    color: var(--grey-3);
+  }
+
+  .view-logs-link {
+    margin-left: 0.5rem;
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .date {
+    color: rgba(100, 110, 123, 1);
+  }
+
+  .view-logs-link {
+    font-size: 14px;
+  }
+}

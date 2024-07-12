@@ -45,6 +45,8 @@
       }
 
       .mat-mdc-header-cell {
+        background-color: var(--white);
+
         &.mat-column-totalAssignedConditions {
           text-align: center;
         }
@@ -68,7 +70,7 @@
 
         .condition-selection {
           max-height: 100px;
-          overflow: scroll;
+          overflow: auto;
 
           .condition-container {
             margin-bottom: 10px;
@@ -95,7 +97,7 @@
 
         .assigned-condition-list {
           max-height: 100px;
-          overflow: scroll;
+          overflow: visible;
 
           .assigned-condition-info {
             display: flex;

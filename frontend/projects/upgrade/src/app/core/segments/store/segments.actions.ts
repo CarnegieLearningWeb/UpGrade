@@ -1,11 +1,10 @@
 import { createAction, props } from '@ngrx/store';
+import { Segment, SegmentInput, UpsertSegmentType, experimentSegmentInclusionExclusionData } from './segments.model';
 import {
-  Segment,
-  SegmentFile,
-  SegmentInput,
-  UpsertSegmentType,
-  experimentSegmentInclusionExclusionData,
-} from './segments.model';
+  SEGMENT_SEARCH_KEY,
+  SORT_AS_DIRECTION,
+  SEGMENT_SORT_KEY,
+} from '../../../../../../../../types/src/Experiment/enums';
 
 export const actionFetchSegments = createAction('[Segments] Segment', props<{ fromStarting?: boolean }>());
 
@@ -32,23 +31,14 @@ export const actionUpsertSegmentSuccess = createAction(
 
 export const actionUpsertSegmentFailure = createAction('[Segments] Upsert Segment Failure');
 
-export const actionImportSegments = createAction('[Segments] Import Segment', props<{ segments: SegmentFile[] }>());
-
-export const actionImportSegmentSuccess = createAction(
-  '[Segments] Import Segment Success',
-  props<{ segments: Segment[] }>()
-);
-
-export const actionImportSegmentFailure = createAction('[Segments] Import Segment Failure');
-
-export const actionGetSegmentById = createAction('[Experiment] Get Segment By Id', props<{ segmentId: string }>());
+export const actionGetSegmentById = createAction('[Segments] Get Segment By Id', props<{ segmentId: string }>());
 
 export const actionGetSegmentByIdSuccess = createAction(
-  '[Experiment] Get Segment By Id Success',
+  '[Segments] Get Segment By Id Success',
   props<{ segment: Segment }>()
 );
 
-export const actionGetSegmentByIdFailure = createAction('[Experiment] Get Segment By Id Failure');
+export const actionGetSegmentByIdFailure = createAction('[Segments] Get Segment By Id Failure');
 
 export const actionDeleteSegment = createAction('[Segments] Delete Segment', props<{ segmentId: string }>());
 
@@ -69,3 +59,17 @@ export const actionExportSegments = createAction('[Segments] Export Segment', pr
 export const actionExportSegmentSuccess = createAction('[Segments] Export Segment Success');
 
 export const actionExportSegmentFailure = createAction('[Segments] Export Segment Failure');
+
+export const actionSetSearchKey = createAction(
+  '[Segments] Set Search key value',
+  props<{ searchKey: SEGMENT_SEARCH_KEY }>()
+);
+
+export const actionSetSearchString = createAction('[Segments] Set Search String', props<{ searchString: string }>());
+
+export const actionSetSortKey = createAction('[Segments] Set Sort key value', props<{ sortKey: SEGMENT_SORT_KEY }>());
+
+export const actionSetSortingType = createAction(
+  '[Segments] Set Sorting type',
+  props<{ sortingType: SORT_AS_DIRECTION }>()
+);

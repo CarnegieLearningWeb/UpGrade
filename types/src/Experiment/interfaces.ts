@@ -2,11 +2,12 @@ import {
   EXPERIMENT_STATE,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS,
+  SORT_AS_DIRECTION,
   IMetricMetaData,
   PAYLOAD_TYPE,
   SUPPORTED_CALIPER_EVENTS,
   SUPPORTED_CALIPER_PROFILES,
+  EXPERIMENT_TYPE,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -60,6 +61,7 @@ export interface IExperimentAssignmentv5 {
   target: string;
   assignedCondition: AssignedCondition[];
   assignedFactor?: Record<string, { level: string; payload: IPayload }>[];
+  experimentType: EXPERIMENT_TYPE;
 }
 
 export interface AssignedCondition {
@@ -105,11 +107,12 @@ export interface IExperimentSearchParams {
 
 export interface IExperimentSortParams {
   key: EXPERIMENT_SORT_KEY;
-  sortAs: EXPERIMENT_SORT_AS;
+  sortAs: SORT_AS_DIRECTION;
 }
 
 export interface IMetricUnit {
   key: string | string[];
+  context?: string[];
   children?: IMetricUnit[];
   metadata?: { type: IMetricMetaData };
   allowedData?: string[];
@@ -127,6 +130,7 @@ export interface IFeatureFlag {
   id: string;
   name: string;
   key: string;
+  context: string[];
   description: string;
   variationType: string;
   status: boolean;
@@ -235,4 +239,9 @@ export interface CaliperEnvelope {
   sendTime: string;
   dataVersion: string;
   data: CaliperGradingProfile[];
+}
+
+export interface IMenuButtonItem {
+  name: string;
+  disabled: boolean;
 }

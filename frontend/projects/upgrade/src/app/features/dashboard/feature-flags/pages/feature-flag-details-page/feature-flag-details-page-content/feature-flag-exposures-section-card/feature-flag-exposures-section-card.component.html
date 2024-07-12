@@ -1,0 +1,19 @@
+<app-common-section-card>
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'feature-flags.details.exposures.card.title.text' | translate"
+    [subtitle]="'feature-flags.details.exposures.card.subtitle.text' | translate"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <app-feature-flag-exposures-data content *ngIf="isSectionCardExpanded" class="full-width"></app-feature-flag-exposures-data>
+</app-common-section-card>

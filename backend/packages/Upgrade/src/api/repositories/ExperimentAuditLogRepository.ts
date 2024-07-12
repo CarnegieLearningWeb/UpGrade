@@ -12,8 +12,8 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
     filter: EXPERIMENT_LOG_TYPE
   ): Promise<ExperimentAuditLog[]> {
     let queryBuilder = this.createQueryBuilder('audit')
-      .skip(offset)
-      .take(limit)
+      .offset(offset)
+      .limit(limit)
       .leftJoinAndSelect('audit.user', 'user')
       .orderBy('audit.createdAt', 'DESC');
 
@@ -63,7 +63,7 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
     const auditLogOffset = await this.createQueryBuilder('audit')
       .select('audit.id')
       .orderBy('audit.createdAt', 'DESC')
-      .take(limit);
+      .limit(limit);
 
     const result = await this.createQueryBuilder()
       .delete()

@@ -2,6 +2,8 @@ import { Container } from 'typedi';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { CheckService } from '../../../src/api/services/CheckService';
 import TestCase1 from './NoExperimentUserOnAssignment';
+import TestCase2 from './WorkingGroupChangeTest1';
+import TestCase3 from './WorkingGroupChangeTest2';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 const initialChecks = async () => {
@@ -31,4 +33,14 @@ const initialChecks = async () => {
 export const NoExperimentUserOnAssignment = async () => {
   await initialChecks();
   await TestCase1();
+};
+
+export const IndividualConsistency = async () => {
+  await initialChecks();
+  await TestCase2();
+};
+
+export const GroupConsistency = async () => {
+  await initialChecks();
+  await TestCase3();
 };

@@ -1,4 +1,4 @@
-import { JsonController, Authorized, Post, Body, CurrentUser, Delete, Param, Put, Req } from 'routing-controllers';
+import { JsonController, Authorized, Post, Body, CurrentUser, Delete, Param, Put, Req, Get } from 'routing-controllers';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { User } from '../models/User';
@@ -6,7 +6,9 @@ import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatus
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { SERVER_ERROR } from 'upgrade_types';
-import { FeatureFlagValidation } from './validators/FeatureFlagValidator';
+import { FeatureFlagValidation, UserParamsValidator } from './validators/FeatureFlagValidator';
+import { ExperimentUserService } from '../services/ExperimentUserService';
+import { isUUID } from 'class-validator';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -21,9 +23,8 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
  *       - name
  *       - key
  *       - description
- *       - variationType
  *       - status
- *       - variations
+ *       - context
  *     properties:
  *       id:
  *         type: string
@@ -33,36 +34,226 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
  *         type: string
  *       description:
  *         type: string
- *       variationType:
- *         type: string
  *       status:
- *         type: boolean
- *       variations:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               value:
- *                type: string
- *               name:
- *                type: string
- *               description:
- *                type: string
- *               defaultVariation:
- *                type: boolean[]
+ *         type: string
+ *         enum: [archived, enabled, disabled]
+ *       context:
+ *         type: array
+ *         items:
+ *           type: string
+ *       tags:
+ *         type: array
+ *         items:
+ *           type: string
+ *       featureFlagSegmentInclusion:
+ *          type: object
+ *          properties:
+ *              segment:
+ *                type: object
+ *                properties:
+ *                  type:
+ *                    type: string
+ *                    example: private
+ *                  individualForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        userId:
+ *                          type: string
+ *                          example: user1
+ *                  groupForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        groupId:
+ *                          type: string
+ *                          example: school1
+ *                        type:
+ *                           type: string
+ *                           example: schoolId
+ *                  subSegments:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        id:
+ *                          type: string
+ *                        name:
+ *                          type: string
+ *                        context:
+ *                          type: string
+ *       featureFlagSegmentExclusion:
+ *          type: object
+ *          properties:
+ *              segment:
+ *                type: object
+ *                properties:
+ *                  type:
+ *                    type: string
+ *                    example: private
+ *                  individualForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        userId:
+ *                          type: string
+ *                          example: user1
+ *                  groupForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        groupId:
+ *                          type: string
+ *                          example: school1
+ *                        type:
+ *                           type: string
+ *                           example: schoolId
+ *                  subSegments:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        id:
+ *                          type: string
+ *                        name:
+ *                          type: string
+ *                        context:
+ *                          type: string
  */
 
 /**
  * @swagger
  * flags:
- *   - name: Feature flags
+ *   - name: Feature Flags
  *     description: Get Feature flags related data
  */
 
 @Authorized()
 @JsonController('/flags')
 export class FeatureFlagsController {
-  constructor(public featureFlagService: FeatureFlagService) {}
+  constructor(public featureFlagService: FeatureFlagService, public experimentUserService: ExperimentUserService) {}
+
+  /**
+   * @swagger
+   * /flags:
+   *    get:
+   *       description: Get all the feature flags
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Feature Flag List
+   *            schema:
+   *              type: array
+   *              items:
+   *                $ref: '#/definitions/FeatureFlag'
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
+
+  @Get()
+  public find(@Req() request: AppRequest): Promise<FeatureFlag[]> {
+    return this.featureFlagService.find(request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags:
+   *    post:
+   *       description: Get feature flags for user
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: user
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *               userId:
+   *                 type: string
+   *                 example: user1
+   *               context:
+   *                 type: string
+   *                 example: add
+   *             description: User Document
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Feature Flag List
+   *            schema:
+   *              type: array
+   *              items:
+   *                $ref: '#/definitions/FeatureFlag'
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
+
+  @Post('/keys')
+  public async getKeys(
+    @Body({ validate: true })
+    userParams: UserParamsValidator,
+    @Req() request: AppRequest
+  ): Promise<string[]> {
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(userParams.userId, request.logger);
+    if (!experimentUserDoc) {
+      const error = new Error(`User not defined in markExperimentPoint: ${userParams.userId}`);
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404;
+      request.logger.error(error);
+      throw error;
+    }
+    return this.featureFlagService.getKeys(experimentUserDoc, userParams.context, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/{id}:
+   *    get:
+   *       description: Get feature flag by id
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Feature Flag Id
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get Feature Flag By Id
+   *            schema:
+   *                $ref: '#/definitions/FeatureFlag'
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Feature Flag not found
+   *          '500':
+   *            description: id should be of type UUID
+   */
+  @Get('/:id')
+  public findOne(@Param('id') id: string, @Req() request: AppRequest): Promise<FeatureFlag | undefined> {
+    if (!isUUID(id)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
+    return this.featureFlagService.findOne(id, request.logger);
+  }
 
   /**
    * @swagger
@@ -90,7 +281,7 @@ export class FeatureFlagsController {
    *                properties:
    *                  key:
    *                    type: string
-   *                    enum: [all, name, key, status, variation Type]
+   *                    enum: [all, name, key, status, tag, context]
    *                  string:
    *                    type: string
    *               sortParams:
@@ -98,18 +289,19 @@ export class FeatureFlagsController {
    *                  properties:
    *                    key:
    *                     type: string
-   *                     enum: [name, key, status, variationType]
+   *                     enum: [name, key, status, updatedAt]
    *                    sortAs:
    *                     type: string
    *                     enum: [ASC, DESC]
    *       tags:
-   *         - Feature flags
+   *         - Feature Flags
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Get Paginated Experiments
+   *            description: Get Paginated Feature Flags
    */
+
   @Post('/paginated')
   public async paginatedFind(
     @Body({ validate: true })
@@ -157,7 +349,7 @@ export class FeatureFlagsController {
    *             $ref: '#/definitions/FeatureFlag'
    *           description: Feature flag structure
    *       tags:
-   *         - Feature flags
+   *         - Feature Flags
    *       produces:
    *         - application/json
    *       responses:
@@ -182,19 +374,21 @@ export class FeatureFlagsController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: flagId
-   *           required: true
+   *           name: statusUpdate
+   *           description: Updating the featur flag's status
    *           schema:
-   *             type: string
-   *           description: Flag ID
-   *         - in: body
-   *           name: status
-   *           required: true
-   *           schema:
-   *             type: boolean
-   *           description: Flag State
+   *             type: object
+   *             required:
+   *              - flagId
+   *              - status
+   *             properties:
+   *              flagId:
+   *                type: string
+   *              status:
+   *                type: string
+   *                enum: [archived, enabled, disabled]
    *       tags:
-   *         - Feature flags
+   *         - Feature Flags
    *       produces:
    *         - application/json
    *       responses:
@@ -222,7 +416,7 @@ export class FeatureFlagsController {
    *             type: string
    *           description: Feature flag Id
    *       tags:
-   *         - Feature flags
+   *         - Feature Flags
    *       produces:
    *         - application/json
    *       responses:
@@ -265,7 +459,7 @@ export class FeatureFlagsController {
    *             $ref: '#/definitions/FeatureFlag'
    *           description: Feature Flag Structure
    *       tags:
-   *         - Feature flags
+   *         - Feature Flags
    *       produces:
    *         - application/json
    *       responses:

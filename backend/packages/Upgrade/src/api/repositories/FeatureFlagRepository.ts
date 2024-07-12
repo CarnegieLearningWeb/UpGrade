@@ -1,6 +1,7 @@
 import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { FeatureFlag } from '../models/FeatureFlag';
 import repositoryError from './utils/repositoryError';
+import { FEATURE_FLAG_STATUS } from 'upgrade_types';
 
 @EntityRepository(FeatureFlag)
 export class FeatureFlagRepository extends Repository<FeatureFlag> {
@@ -35,7 +36,7 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
     return result.raw;
   }
 
-  public async updateState(flagId: string, status: boolean): Promise<FeatureFlag> {
+  public async updateState(flagId: string, status: FEATURE_FLAG_STATUS): Promise<FeatureFlag> {
     const result = await this.createQueryBuilder('featureFlag')
       .update()
       .set({ status })
@@ -47,7 +48,7 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
         throw errorMsgString;
       });
 
-    return result.raw;
+    return result.raw[0];
   }
 
   public async updateFeatureFlag(flagDoc: Partial<FeatureFlag>, entityManager: EntityManager): Promise<FeatureFlag> {
@@ -64,5 +65,28 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
       });
 
     return result.raw;
+  }
+
+  public async getFlagsFromContext(context: string): Promise<FeatureFlag[]> {
+    const result = await this.createQueryBuilder('feature_flag')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
+      .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
+      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
+      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'featureFlagSegmentExclusion')
+      .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
+      .where('feature_flag.context @> :searchContext', { searchContext: [context] })
+      .andWhere('feature_flag.status = :status', { status: FEATURE_FLAG_STATUS.ENABLED })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('FeatureFlagRepository', 'getFlagsFromContext', { context }, errorMsg);
+        throw errorMsgString;
+      });
+
+    return result;
   }
 }

@@ -26,7 +26,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
 
   await settingService.setClientCheck(false, true, new UpgradeLogger());
   // create metrics service
-  await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
+  await metricService.saveAllMetrics(metrics as any, withinSubjectExperiment.context, new UpgradeLogger());
 
   // creating new user
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
@@ -412,7 +412,11 @@ export default async function MetricQueriesCheck(): Promise<void> {
   ];
 
   // experiment object
-  const experimentObject = { ...withinSubjectExperiment, queries: metricsQueries, conditionOrder: CONDITION_ORDER.ORDERED_ROUND_ROBIN };
+  const experimentObject = {
+    ...withinSubjectExperiment,
+    queries: metricsQueries,
+    conditionOrder: CONDITION_ORDER.ORDERED_ROUND_ROBIN,
+  };
   await experimentService.update(experimentObject as any, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
   const experimentTarget = experimentObject.partitions[0].target;
@@ -440,7 +444,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
 
   // log data here
   await experimentAssignmentService.dataLog(
-    experimentUsers[0].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -459,7 +463,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
 
   // mark experiment point
@@ -478,7 +482,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
 
   await experimentAssignmentService.dataLog(
-    experimentUsers[0].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -497,7 +501,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
 
   // mark experiment point
@@ -516,7 +520,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
 
   await experimentAssignmentService.dataLog(
-    experimentUsers[0].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -535,9 +539,9 @@ export default async function MetricQueriesCheck(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
-  
+
   const condition2 = experimentObject.conditions[1].conditionCode;
   // user 1 mark experiment point on condition2
   markedExperimentPoint = await markExperimentPoint(
@@ -556,7 +560,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
 
   // log data here
   await experimentAssignmentService.dataLog(
-    experimentUsers[0].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -575,7 +579,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
 
   // mark experiment point
@@ -594,7 +598,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
 
   await experimentAssignmentService.dataLog(
-    experimentUsers[0].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -613,7 +617,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
 
   // user 2 mark experiment point on condition1
@@ -633,7 +637,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
 
   // log data here
   await experimentAssignmentService.dataLog(
-    experimentUsers[1].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -652,7 +656,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
 
   // mark experiment point
@@ -671,7 +675,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[1].id, new UpgradeLogger());
 
   await experimentAssignmentService.dataLog(
-    experimentUsers[1].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[1].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -690,7 +694,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
 
   const allQuery = await queryService.find(new UpgradeLogger());
@@ -699,7 +703,6 @@ export default async function MetricQueriesCheck(): Promise<void> {
     const queryResult = await queryService.analyze([query.id], new UpgradeLogger());
     let expectedValue;
     switch (query.query.operationType) {
-
       case OPERATION_TYPES.SUM: {
         switch (query.repeatedMeasure) {
           case REPEATED_MEASURE.mostRecent: {
@@ -724,8 +727,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const sum = parseInt(condition.result, 10);
-        expect(sum).toEqual(expectedValue);
+        const sumValue = parseInt(condition.result, 10);
+        expect(sumValue).toEqual(expectedValue);
         break;
       }
 
@@ -809,8 +812,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const Average = parseInt(condition.result, 10);
-        expect(Average).toEqual(expectedValue);
+        const meanValue = parseInt(condition.result, 10);
+        expect(meanValue).toEqual(expectedValue);
         break;
       }
 
@@ -837,8 +840,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const Mode = parseInt(condition.result, 10);
-        expect(Mode).toEqual(expectedValue);
+        const modeValue = parseInt(condition.result, 10);
+        expect(modeValue).toEqual(expectedValue);
         break;
       }
 
@@ -865,8 +868,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const Median = parseInt(condition.result, 10);
-        expect(Median).toEqual(expectedValue);
+        const medianValue = parseInt(condition.result, 10);
+        expect(medianValue).toEqual(expectedValue);
         break;
       }
 
@@ -893,8 +896,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const StdDev = parseInt(condition.result, 10);
-        expect(StdDev).toEqual(expectedValue);
+        const stdDevValue = parseInt(condition.result, 10);
+        expect(stdDevValue).toEqual(expectedValue);
         break;
       }
 
@@ -938,8 +941,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const Count = parseInt(condition.result, 10);
-        expect(Count).toEqual(expectedValue);
+        const countValue = parseInt(condition.result, 10);
+        expect(countValue).toEqual(expectedValue);
         break;
       }
 
@@ -962,8 +965,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
             return condition;
           }
         });
-        const Percentage = parseInt(condition.result, 10);
-        expect(Percentage).toEqual(expectedValue);
+        const percentageValue = parseInt(condition.result, 10);
+        expect(percentageValue).toEqual(expectedValue);
         break;
       }
       default:

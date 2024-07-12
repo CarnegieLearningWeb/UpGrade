@@ -33,13 +33,28 @@ const routes: Routes = [
           title: 'app-header.title.logs',
         },
       },
-      // {
-      //   path: 'featureFlags',
-      //   loadChildren: () => import('./feature-flags/feature-flags.module').then(m => m.FeatureFlagsModule),
-      //   data: {
-      //     title: 'app-header.title.feature-flag'
-      //   }
-      // },
+      // feature-flags is built with standalone components instead of an ngModule, so we need to lazy load the component directly
+      // TODO: figure out how to load lazy-loaded child feature routes for feature flags if needed
+      {
+        path: 'featureflags',
+        loadComponent: () =>
+          import('./feature-flags/pages/feature-flag-root-page/feature-flag-root-page.component').then(
+            (c) => c.FeatureFlagRootPageComponent
+          ),
+        data: {
+          title: 'app-header.title.feature-flag',
+        },
+      },
+      {
+        path: 'featureflags/detail/:flagId',
+        loadComponent: () =>
+          import('./feature-flags/pages/feature-flag-details-page/feature-flag-details-page.component').then(
+            (c) => c.FeatureFlagDetailsPageComponent
+          ),
+        data: {
+          title: 'app-header.title.feature-flag',
+        },
+      },
       {
         path: 'segments',
         loadChildren: () => import('./segments/segments.module').then((m) => m.SegmentsModule),
