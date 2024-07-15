@@ -12,6 +12,7 @@ import { FeatureFlagValidation, UserParamsValidator } from './validators/Feature
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { isUUID } from 'class-validator';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
+import { Segment } from 'src/api/models/Segment';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -346,68 +347,6 @@ export class FeatureFlagsController {
 
   /**
    * @swagger
-   * /flags/addInclusionList:
-   *    post:
-   *       description: Add Feature Flag Inclusion List
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *         - in: body
-   *           name: addinclusionList
-   *           description: Adding an inclusion list to the feature flag
-   *           schema:
-   *             type: object
-   *             $ref: '#/definitions/FeatureFlagSegmentListInput'
-   *       tags:
-   *         - Feature Flags
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: New Feature flag inclusion list is added
-   */
-  @Post('/addInclusionList')
-  public async addInclusionList(
-    @Body({ validate: false }) inclusionList: FeatureFlagListValidator,
-    @CurrentUser() currentUser: User,
-    @Req() request: AppRequest
-  ): Promise<FeatureFlagSegmentInclusion> {
-    return this.featureFlagService.addList(inclusionList, 'inclusion', request.logger);
-  }
-
-  /**
-   * @swagger
-   * /flags/addExclusionList:
-   *    post:
-   *       description: Add Feature Flag Exclusion List
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *         - in: body
-   *           name: addExclusionList
-   *           description: Adding an exclusion list to the feature flag
-   *           schema:
-   *             type: object
-   *             $ref: '#/definitions/FeatureFlagSegmentListInput'
-   *       tags:
-   *         - Feature Flags
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: New Feature flag exclusion list is added
-   */
-  @Post('/addExclusionList')
-  public async addExclusionList(
-    @Body({ validate: false }) exclusionList: FeatureFlagListValidator,
-    @CurrentUser() currentUser: User,
-    @Req() request: AppRequest
-  ): Promise<FeatureFlagSegmentExclusion> {
-    return this.featureFlagService.addList(exclusionList, 'exclusion', request.logger);
-  }
-
-  /**
-   * @swagger
    * /flags/{id}:
    *    delete:
    *       description: Delete feature flag by id
@@ -430,13 +369,13 @@ export class FeatureFlagsController {
   @Delete('/:id')
   public delete(@Param('id') id: string, @Req() request: AppRequest): Promise<FeatureFlag | undefined> {
     // TODO: Add server error
-    // if (!isUUID(id)) {
-    //   return Promise.reject(
-    //     new Error(
-    //       JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-    //     )
-    //   );
-    // }
+    if (!isUUID(id)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
     return this.featureFlagService.delete(id, request.logger);
   }
 
@@ -478,13 +417,241 @@ export class FeatureFlagsController {
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
     // TODO: Add error log
-    // if (!isUUID(id)) {
-    //   return Promise.reject(
-    //     new Error(
-    //       JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-    //     )
-    //   );
-    // }
+    if (!isUUID(id)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
     return this.featureFlagService.update(flag, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/inclusionList:
+   *    post:
+   *       description: Add Feature Flag Inclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: addinclusionList
+   *           description: Adding an inclusion list to the feature flag
+   *           schema:
+   *             type: object
+   *             $ref: '#/definitions/FeatureFlagSegmentListInput'
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: New Feature flag inclusion list is added
+   */
+  @Post('/inclusionList')
+  public async addInclusionList(
+    @Body({ validate: true }) inclusionList: FeatureFlagListValidator,
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
+  ): Promise<FeatureFlagSegmentInclusion> {
+    return this.featureFlagService.addList(inclusionList, 'inclusion', request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/exclusionList:
+   *    post:
+   *       description: Add Feature Flag Exclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: addExclusionList
+   *           description: Adding an exclusion list to the feature flag
+   *           schema:
+   *             type: object
+   *             $ref: '#/definitions/FeatureFlagSegmentListInput'
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: New Feature flag exclusion list is added
+   */
+  @Post('/exclusionList')
+  public async addExclusionList(
+    @Body({ validate: true }) exclusionList: FeatureFlagListValidator,
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
+  ): Promise<FeatureFlagSegmentExclusion> {
+    return this.featureFlagService.addList(exclusionList, 'exclusion', request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/exclusionList:
+   *    put:
+   *       description: Update Feature Flag Exclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *        - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: ID of the segment
+   *         - in: body
+   *           name: updateExclusionList
+   *           description: Updating an exclusion list on the feature flag
+   *           schema:
+   *             type: object
+   *             $ref: '#/definitions/FeatureFlagSegmentListInput'
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Feature flag exclusion list is updated
+   */
+  @Put('/exclusionList/:id')
+  public async updateExclusionList(
+    @Param('id') segmentId: string,
+    @Body({ validate: true }) exclusionList: FeatureFlagListValidator,
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
+  ): Promise<FeatureFlagSegmentExclusion> {
+    if (!isUUID(segmentId)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
+    return this.featureFlagService.addList(exclusionList, 'exclusion', request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/exclusionList:
+   *    put:
+   *       description: Update Feature Flag Inclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: ID of the segment
+   *         - in: body
+   *           name: updateInclusionList
+   *           description: Updating an inclusion list on the feature flag
+   *           schema:
+   *             type: object
+   *             $ref: '#/definitions/FeatureFlagSegmentListInput'
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Feature flag inclusion list is updated
+   */
+  @Put('/inclusionList/:id')
+  public async updateInclusionList(
+    @Param('id') segmentId: string,
+    @Body({ validate: true }) inclusionList: FeatureFlagListValidator,
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
+  ): Promise<FeatureFlagSegmentInclusion> {
+    if (!isUUID(segmentId)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
+    return this.featureFlagService.addList(inclusionList, 'inclusion', request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/inclusionList:
+   *    delete:
+   *       description: Delete Feature Flag Inclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Segment Id of private segment
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Delete Feature Flag Inclusion List by segment Id
+   */
+  @Delete('/inclusionList/:id')
+  public async deleteInclusionList(
+    @Param('id') segmentId: string,
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    if (!isUUID(segmentId)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
+    return this.featureFlagService.deleteList(segmentId, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/exclusionList:
+   *    delete:
+   *       description: Delete Feature Flag Exclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Segment Id of private segment
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Delete Feature Flag Exclusion List by segment Id
+   */
+  @Delete('/exclusionList/:id')
+  public async deleteExclusionList(
+    @Param('id') segmentId: string,
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    if (!isUUID(segmentId)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
+    return this.featureFlagService.deleteList(segmentId, request.logger);
   }
 }

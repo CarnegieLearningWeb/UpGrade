@@ -4,7 +4,6 @@ import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
-// import { Segment } from '../../../src/api/models/Segment';
 
 import { FeatureFlagRepository } from '../../../src/api/repositories/FeatureFlagRepository';
 
@@ -18,21 +17,23 @@ import {
   FLAG_SORT_KEY,
 } from '../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { SORT_AS_DIRECTION } from '../../../../../../types/src';
-// import { isUUID } from 'class-validator';
+import { isUUID } from 'class-validator';
 import { v4 as uuid } from 'uuid';
 import { FEATURE_FLAG_STATUS } from 'upgrade_types';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
+import { FeatureFlagValidation } from '../../../src/api/controllers/validators/FeatureFlagValidator';
+import { FeatureFlagListValidator } from '../../../src/api/controllers/validators/FeatureFlagListValidator';
+import { SegmentService } from '../../../src/api/services/SegmentService';
+import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentExclusionRepository';
+import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
 
-// COMMENTING OUT TESTS TO PASS TYPECHECKING FOR NOW
-describe.skip('Feature Flag Service Testing', () => {
+describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
   let flagRepo: FeatureFlagRepository;
 
   let module: Awaited<ReturnType<TestingModuleBuilder['compile']>>;
 
   const logger = new UpgradeLogger();
-
-  // const seg1 = new Segment();
 
   const mockFlag1 = new FeatureFlag();
   mockFlag1.id = uuid();
@@ -41,21 +42,24 @@ describe.skip('Feature Flag Service Testing', () => {
   mockFlag1.description = 'description';
   mockFlag1.context = ['context1'];
   mockFlag1.status = FEATURE_FLAG_STATUS.ENABLED;
+  mockFlag1.featureFlagSegmentInclusion = [];
   mockFlag1.featureFlagSegmentExclusion = [];
-  // mockFlag1.featureFlagSegmentInclusion = [seg1];
 
-  const mockFlag2 = new FeatureFlag();
+  const mockFlag2 = new FeatureFlagValidation();
   mockFlag2.id = uuid();
   mockFlag2.name = 'name';
   mockFlag2.key = 'key';
   mockFlag2.description = 'description';
   mockFlag2.context = ['context'];
   mockFlag2.status = FEATURE_FLAG_STATUS.ENABLED;
-  mockFlag2.featureFlagSegmentExclusion = [];
-  // mockFlag2.featureFlagSegmentInclusion = [seg1];
 
-  const mockFlag3 = new FeatureFlag();
+  const mockFlag3 = new FeatureFlagValidation();
 
+  const mockList = new FeatureFlagListValidator();
+  mockList.enabled = true;
+  mockList.flagId = uuid();
+  mockList.listType = 'individual';
+  mockList.list = { name: 'name', id: uuid(), context: 'context', type: 'private' };
   const mockFlagArr = [mockFlag1, mockFlag2, mockFlag3];
 
   const limitSpy = jest.fn().mockReturnThis();
@@ -92,6 +96,13 @@ describe.skip('Feature Flag Service Testing', () => {
           },
         },
         {
+          provide: SegmentService,
+          useValue: {
+            upsertSegmentInPipeline: jest.fn().mockResolvedValue(mockList),
+            deleteSegment: jest.fn().mockResolvedValue(mockList),
+          },
+        },
+        {
           provide: getRepositoryToken(FeatureFlagRepository),
           useValue: {
             find: jest.fn().mockResolvedValue(mockFlagArr),
@@ -124,13 +135,30 @@ describe.skip('Feature Flag Service Testing', () => {
           },
         },
         {
+          provide: getRepositoryToken(FeatureFlagSegmentExclusionRepository),
+          useValue: {
+            insertData: jest.fn().mockResolvedValue(mockList),
+          },
+        },
+        {
+          provide: getRepositoryToken(FeatureFlagSegmentInclusionRepository),
+          useValue: {
+            insertData: jest.fn().mockResolvedValue(mockList),
+          },
+        },
+
+        {
           provide: ErrorService,
           useValue: {
             create: jest.fn(),
           },
         },
       ],
-    }).compile();
+    })
+      .useMocker((token) => {
+        return token;
+      })
+      .compile();
 
     service = module.get<FeatureFlagService>(FeatureFlagService);
     flagRepo = module.get<FeatureFlagRepository>(getRepositoryToken(FeatureFlagRepository));
@@ -149,13 +177,13 @@ describe.skip('Feature Flag Service Testing', () => {
     expect(results).toEqual(mockFlagArr);
   });
 
-  // it('should throw an error when create flag fails', async () => {
-  //   const err = new Error('insert error');
-  //   flagRepo.insertFeatureFlag = jest.fn().mockRejectedValue(err);
-  //   expect(async () => {
-  //     await service.create(mockFlag1, logger);
-  //   }).rejects.toThrow(new Error('Error in creating feature flag document "addFeatureFlagInDB" Error: insert error'));
-  // });
+  it('should throw an error when create flag fails', async () => {
+    const err = new Error('insert error');
+    flagRepo.insertFeatureFlag = jest.fn().mockRejectedValue(err);
+    expect(async () => {
+      await service.create(mockFlag2, logger);
+    }).rejects.toThrow(new Error('Error in creating feature flag document "addFeatureFlagInDB" Error: insert error'));
+  });
 
   it('should return a count of feature flags', async () => {
     const results = await service.getTotalCount();
@@ -252,25 +280,25 @@ describe.skip('Feature Flag Service Testing', () => {
     expect(results).toEqual(mockFlagArr);
   });
 
-  // it('should update the flag', async () => {
-  //   const results = await service.update(mockFlag1, logger);
-  //   expect(isUUID(results.id)).toBeTruthy();
-  // });
+  it('should update the flag', async () => {
+    const results = await service.update(mockFlag2, logger);
+    expect(isUUID(results.id)).toBeTruthy();
+  });
 
-  // it('should update the flag with no id and no context', async () => {
-  //   const results = await service.update(mockFlag3, logger);
-  //   expect(isUUID(results.id)).toBeTruthy();
-  // });
+  it('should update the flag with no id and no context', async () => {
+    const results = await service.update(mockFlag3, logger);
+    expect(isUUID(results.id)).toBeTruthy();
+  });
 
-  // it('should throw an error when unable to update flag', async () => {
-  //   const err = new Error('insert error');
-  //   flagRepo.updateFeatureFlag = jest.fn().mockRejectedValue(err);
-  //   expect(async () => {
-  //     await service.update(mockFlag1, logger);
-  //   }).rejects.toThrow(
-  //     new Error('Error in updating feature flag document "updateFeatureFlagInDB" Error: insert error')
-  //   );
-  // });
+  it('should throw an error when unable to update flag', async () => {
+    const err = new Error('insert error');
+    flagRepo.updateFeatureFlag = jest.fn().mockRejectedValue(err);
+    expect(async () => {
+      await service.update(mockFlag2, logger);
+    }).rejects.toThrow(
+      new Error('Error in updating feature flag document "updateFeatureFlagInDB" Error: insert error')
+    );
+  });
 
   it('should update the flag state', async () => {
     const results = await service.updateState(mockFlag1.id, FEATURE_FLAG_STATUS.ENABLED);
@@ -283,7 +311,7 @@ describe.skip('Feature Flag Service Testing', () => {
   });
 
   it('should return undefined when no flag to delete', async () => {
-    flagRepo.find = jest.fn().mockResolvedValue(undefined);
+    service.findOne = jest.fn().mockResolvedValue(undefined);
     const results = await service.delete(mockFlag1.id, logger);
     expect(results).toEqual(undefined);
   });
@@ -307,5 +335,17 @@ describe.skip('Feature Flag Service Testing', () => {
 
     expect(result.length).toEqual(1);
     expect(result).toEqual([mockFlag1.key]);
+  });
+
+  it('should add an include list', async () => {
+    const result = await service.addList(mockList, 'include', logger);
+
+    expect(result).toBeTruthy();
+  });
+
+  it('should delete an include list', async () => {
+    const result = await service.deleteList(mockList.list.id, logger);
+
+    expect(result).toBeTruthy();
   });
 });

@@ -200,47 +200,66 @@ export class FeatureFlagService {
     });
   }
 
+  public async deleteList(segmentId: string, logger: UpgradeLogger): Promise<Segment> {
+    return this.segmentService.deleteSegment(segmentId, logger);
+  }
+
   public async addList(
     listInput: FeatureFlagListValidator,
     filterType: string,
     logger: UpgradeLogger
-  ): Promise<FeatureFlagSegmentInclusion> {
+  ): Promise<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> {
     logger.info({ message: `Add ${filterType} list to feature flag` });
-    const featureFlagSegmentInclusionOrExclusion =
-      filterType === 'inclusion' ? new FeatureFlagSegmentInclusion() : new FeatureFlagSegmentExclusion();
-    featureFlagSegmentInclusionOrExclusion.enabled = listInput.enabled;
-    featureFlagSegmentInclusionOrExclusion.listType = listInput.listType;
-    const featureFlag = await this.featureFlagRepository.findOne(listInput.flagId);
+    const createdList = await getConnection().transaction(async (transactionalEntityManager) => {
+      const featureFlagSegmentInclusionOrExclusion =
+        filterType === 'inclusion' ? new FeatureFlagSegmentInclusion() : new FeatureFlagSegmentExclusion();
+      featureFlagSegmentInclusionOrExclusion.enabled = listInput.enabled;
+      featureFlagSegmentInclusionOrExclusion.listType = listInput.listType;
+      const featureFlag = await this.featureFlagRepository.findOne(listInput.flagId);
 
-    featureFlagSegmentInclusionOrExclusion.featureFlag = featureFlag;
+      featureFlagSegmentInclusionOrExclusion.featureFlag = featureFlag;
 
-    // create a new private segment
-    listInput.list.type = SEGMENT_TYPE.PRIVATE;
-    let newSegment: Segment;
-    try {
-      newSegment = await this.segmentService.addSegmentDataInDB(listInput.list, logger);
-    } catch (err) {
-      const error = new Error(`Error in creating private segment for feature flag ${filterType} list ${err}`);
-      (error as any).type = SERVER_ERROR.QUERY_FAILED;
-      logger.error(error);
-      throw error;
-    }
-    featureFlagSegmentInclusionOrExclusion.segment = newSegment;
-    // }
-
-    try {
-      if (filterType === 'inclusion') {
-        await this.featureFlagSegmentInclusionRepository.save(featureFlagSegmentInclusionOrExclusion);
-      } else {
-        await this.featureFlagSegmentExclusionRepository.save(featureFlagSegmentInclusionOrExclusion);
+      // create a new private segment
+      listInput.list.type = SEGMENT_TYPE.PRIVATE;
+      let newSegment: Segment;
+      try {
+        newSegment = await this.segmentService.upsertSegmentInPipeline(
+          listInput.list,
+          logger,
+          transactionalEntityManager
+        );
+      } catch (err) {
+        const error = new Error(`Error in creating private segment for feature flag ${filterType} list ${err}`);
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
       }
-    } catch (err) {
-      const error = new Error(`Error in adding segment for feature flag ${filterType} list ${err}`);
-      (error as any).type = SERVER_ERROR.QUERY_FAILED;
-      logger.error(error);
-      throw error;
-    }
-    return featureFlagSegmentInclusionOrExclusion;
+      featureFlagSegmentInclusionOrExclusion.segment = newSegment;
+      // }
+
+      try {
+        if (filterType === 'inclusion') {
+          await this.featureFlagSegmentInclusionRepository.insertData(
+            featureFlagSegmentInclusionOrExclusion,
+            logger,
+            transactionalEntityManager
+          );
+        } else {
+          await this.featureFlagSegmentExclusionRepository.insertData(
+            featureFlagSegmentInclusionOrExclusion,
+            logger,
+            transactionalEntityManager
+          );
+        }
+      } catch (err) {
+        const error = new Error(`Error in adding segment for feature flag ${filterType} list ${err}`);
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
+      return featureFlagSegmentInclusionOrExclusion;
+    });
+    return createdList;
   }
 
   private postgresSearchString(type: FLAG_SEARCH_KEY): string {
