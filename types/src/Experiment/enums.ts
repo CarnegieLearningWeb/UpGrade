@@ -58,6 +58,7 @@ export enum SERVER_ERROR {
   WORKING_GROUP_NOT_SUBSET_OF_GROUP = 'Working group is not a subset of user group',
   INVALID_TOKEN = 'Invalid token',
   TOKEN_NOT_PRESENT = 'Token is not present in request',
+  TOKEN_VALIDATION_FAILED = 'JWT Token validation failed',
   MIGRATION_ERROR = 'Error in migration',
   EMAIL_SEND_ERROR = 'Email send error',
   CONDITION_NOT_FOUND = 'Condition not found',
@@ -269,4 +270,9 @@ export enum STATUS_INDICATOR_CHIP_TYPE {
 export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
   INCLUDE = 'featureFlagSegmentInclusion',
   EXCLUDE = 'featureFlagSegmentExclusion',
+}
+
+export enum FILE_TYPE {
+  JSON = '.json',
+  CSV = '.csv',
 }

@@ -26,6 +26,7 @@ import { FeatureFlagsService } from '../../../../../../../core/feature-flags/fea
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagInclusionsSectionCardComponent {
+  @Input() isSectionCardExpanded;
   tableRowCount$ = this.featureFlagService.selectFeatureFlagInclusionsLength$;
 
   constructor(private featureFlagService: FeatureFlagsService) {}
@@ -34,8 +35,6 @@ export class FeatureFlagInclusionsSectionCardComponent {
     { name: 'Edit', disabled: false },
     { name: 'Delete', disabled: false },
   ];
-
-  isSectionCardExpanded = true;
 
   addIncludeListClicked() {
     console.log('add Include List Clicked');

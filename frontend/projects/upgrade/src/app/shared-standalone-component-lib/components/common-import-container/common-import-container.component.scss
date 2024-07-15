@@ -1,0 +1,29 @@
+.input-container {
+  /* Add your styles here */
+  height: 210px;
+  width: 592px;
+  border: 2px dashed #ccc;
+  padding: 20px;
+  text-align: center;
+  border-radius: 10px;
+  transition: background-color 0.3s;
+
+  &.drag-over {
+    background-color: #f0f0f0;
+  }
+
+  .drag-text {
+    margin-bottom: 0.7rem;
+  }
+
+  mat-icon {
+    height: 70px;
+    width: 70px;
+    font-size: 70px;
+    color: grey;
+  }
+
+  button {
+    font-size: 14px;
+  }
+}
