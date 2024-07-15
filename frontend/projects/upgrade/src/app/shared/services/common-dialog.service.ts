@@ -9,7 +9,7 @@ import { ImportFeatureFlagModalComponent } from '../../features/dashboard/featur
 import { UpdateFlagStatusConfirmationModalComponent } from '../../features/dashboard/feature-flags/modals/update-flag-status-confirmation-modal/update-flag-status-confirmation-modal.component';
 import { EditFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/edit-feature-flag-modal/edit-feature-flag-modal.component';
 import {
-  UpsertFeatureFlagListAction,
+  UPSERT_FEATURE_FLAG_LIST_ACTION,
   UpsertFeatureFlagListParams,
 } from '../../core/feature-flags/store/feature-flags.model';
 import { UpsertFeatureFlagListModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-list-modal/upsert-feature-flag-list-modal.component';
@@ -95,12 +95,12 @@ export class DialogService {
   openAddIncludeListModal() {
     const commonModalConfig: CommonModalConfig<UpsertFeatureFlagListParams> = {
       title: 'Add Include List',
-      primaryActionBtnLabel: 'Add',
+      primaryActionBtnLabel: 'Create',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
         sourceList: null,
-        action: UpsertFeatureFlagListAction.ADD,
+        action: UPSERT_FEATURE_FLAG_LIST_ACTION.ADD,
       },
     };
     return this.openAddFeatureFlagListModal(commonModalConfig);
