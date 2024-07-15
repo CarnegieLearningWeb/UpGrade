@@ -14,6 +14,7 @@ import {
   selectSortKey,
   selectSortAs,
   selectSearchString,
+  selectIsAllFlagsFetched,
 } from './feature-flags.selectors';
 import { DialogService } from '../../../shared/services/common-dialog.service';
 
@@ -36,9 +37,16 @@ export class FeatureFlagsEffects {
         this.store$.pipe(select(selectTotalFlags)),
         this.store$.pipe(select(selectSearchKey)),
         this.store$.pipe(select(selectSortKey)),
-        this.store$.pipe(select(selectSortAs))
+        this.store$.pipe(select(selectSortAs)),
+        this.store$.pipe(select(selectIsAllFlagsFetched))
       ),
-      filter(([fromStarting, skip, total]) => skip < total || total === null || fromStarting),
+      filter(([fromStarting, skip, total, searchKey, sortKey, sortAs, isAllFlagsFetched]) => {
+        if (isAllFlagsFetched) {
+          this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: false }));
+          return false; // Do not proceed if all flags are fetched
+        }
+        return skip < total || total === null || fromStarting;
+      }),
       tap(() => {
         this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: true }));
       }),

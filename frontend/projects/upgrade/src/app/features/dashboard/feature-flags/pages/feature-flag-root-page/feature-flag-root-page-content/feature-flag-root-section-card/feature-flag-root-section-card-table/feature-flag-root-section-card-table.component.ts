@@ -1,9 +1,6 @@
-
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 
 import { ChangeDetectionStrategy, Component, Input, OnInit, ViewChild } from '@angular/core';
-
 
 import {
   FLAG_ROOT_COLUMN_NAMES,
@@ -56,24 +53,6 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   isAllFeaturFlagFetched = false;
   isAllFeatureFlagsFetchedSub = new Subscription();
 
-  constructor(private featureFlagsService: FeatureFlagsService) {}
-
-  ngOnInit(): void {
-    this.isAllFeatureFlagsFetchedSub = this.featureFlagsService.isAllFlagsFetched$.subscribe(
-      (value) => (this.isAllFeaturFlagFetched = value)
-    );
-  }
-
-  fetchFlagsOnScroll() {
-    if (!this.isAllFeaturFlagFetched) {
-      this.featureFlagsService.fetchFeatureFlags();
-    }
-  }
-
-  changeSorting($event) {
-    console.log('onSearch:', $event);
-  }
-
   get displayedColumns(): string[] {
     return FLAG_ROOT_DISPLAYED_COLUMNS;
   }
@@ -85,7 +64,6 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   get FLAG_ROOT_COLUMN_NAMES() {
     return FLAG_ROOT_COLUMN_NAMES;
   }
-
 
   fetchFlagsOnScroll() {
     this.featureFlagsService.fetchFeatureFlags();
