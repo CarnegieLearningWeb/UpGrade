@@ -1,5 +1,10 @@
+
 import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
+
+import { ChangeDetectionStrategy, Component, Input, OnInit, ViewChild } from '@angular/core';
+
+
 import {
   FLAG_ROOT_COLUMN_NAMES,
   FLAG_ROOT_DISPLAYED_COLUMNS,
@@ -7,14 +12,12 @@ import {
   FeatureFlag,
 } from '../../../../../../../../core/feature-flags/store/feature-flags.model';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { AsyncPipe, NgIf, NgFor, UpperCasePipe, DatePipe } from '@angular/common';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { TranslateModule } from '@ngx-translate/core';
-import { MatChipsModule } from '@angular/material/chips';
+import { AsyncPipe, NgIf, NgFor, UpperCasePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { MatSort } from '@angular/material/sort';
 import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shared-standalone-component-lib/components';
-import { SharedModule } from '../../../../../../../../shared/shared.module';
 import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/feature-flags.service';
+import { SharedModule } from '../../../../../../../../shared/shared.module';
 
 @Component({
   selector: 'app-feature-flag-root-section-card-table',
@@ -24,12 +27,9 @@ import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/
     AsyncPipe,
     NgIf,
     NgFor,
-    MatTooltipModule,
-    TranslateModule,
+    SharedModule,
     UpperCasePipe,
-    MatChipsModule,
     RouterModule,
-    DatePipe,
     CommonStatusIndicatorChipComponent,
     SharedModule,
   ],
@@ -37,9 +37,21 @@ import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/
   styleUrl: './feature-flag-root-section-card-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeatureFlagRootSectionCardTableComponent implements OnInit, OnDestroy {
-  @Input() dataSource$: MatTableDataSource<FeatureFlag[]>;
+export class FeatureFlagRootSectionCardTableComponent implements OnInit {
+  @Input() dataSource$: MatTableDataSource<FeatureFlag>;
   @Input() isLoading$: Observable<boolean>;
+  flagSortKey$ = this.featureFlagsService.sortKey$;
+  flagSortAs$ = this.featureFlagsService.sortAs$;
+
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
+
+  constructor(private featureFlagsService: FeatureFlagsService) {}
+
+  ngOnInit() {
+    if (this.dataSource$?.data) {
+      this.dataSource$.sort = this.sort;
+    }
+  }
 
   isAllFeaturFlagFetched = false;
   isAllFeatureFlagsFetchedSub = new Subscription();
@@ -74,7 +86,13 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit, OnDestr
     return FLAG_ROOT_COLUMN_NAMES;
   }
 
-  ngOnDestroy(): void {
-    this.isAllFeatureFlagsFetchedSub.unsubscribe();
+
+  fetchFlagsOnScroll() {
+    this.featureFlagsService.fetchFeatureFlags();
+  }
+
+  changeSorting(event) {
+    this.featureFlagsService.setSortingType(event.direction ? event.direction.toUpperCase() : null);
+    this.featureFlagsService.setSortKey(event.direction ? event.active : null);
   }
 }
