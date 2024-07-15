@@ -43,14 +43,14 @@ export interface UpdateFeatureFlagStatusRequest {
   status: FEATURE_FLAG_STATUS;
 }
 
-export enum UpsertFeatureFlagListAction {
+export enum UPSERT_FEATURE_FLAG_LIST_ACTION {
   ADD = 'add',
   EDIT = 'edit',
 }
 
 export interface UpsertFeatureFlagListParams {
   sourceList: any; // TODO define me
-  action: UpsertFeatureFlagListAction;
+  action: UPSERT_FEATURE_FLAG_LIST_ACTION;
 }
 
 export enum LIST_OPTION_TYPE {
