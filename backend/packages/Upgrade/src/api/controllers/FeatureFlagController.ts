@@ -1,16 +1,14 @@
-import { JsonController, Authorized, Post, Body, CurrentUser, Delete, Param, Put, Req, Get } from 'routing-controllers';
+import { JsonController, Authorized, Post, Body, Delete, Put, Req, Get, Params } from 'routing-controllers';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { FeatureFlag } from '../models/FeatureFlag';
-import { User } from '../models/User';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatusUpdateValidator';
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { SERVER_ERROR } from 'upgrade_types';
-import { FeatureFlagValidation, UserParamsValidator } from './validators/FeatureFlagValidator';
+import { FeatureFlagValidation, IdValidator, UserParamsValidator } from './validators/FeatureFlagValidator';
 import { ExperimentUserService } from '../services/ExperimentUserService';
-import { isUUID } from 'class-validator';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
 import { Segment } from 'src/api/models/Segment';
 
@@ -186,14 +184,10 @@ export class FeatureFlagsController {
    *            description: id should be of type UUID
    */
   @Get('/:id')
-  public findOne(@Param('id') id: string, @Req() request: AppRequest): Promise<FeatureFlag | undefined> {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
+  public findOne(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<FeatureFlag | undefined> {
     return this.featureFlagService.findOne(id, request.logger);
   }
 
@@ -301,7 +295,6 @@ export class FeatureFlagsController {
   @Post()
   public create(
     @Body({ validate: true }) flag: FeatureFlagValidation,
-    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
     return this.featureFlagService.create(flag, request.logger);
@@ -367,15 +360,10 @@ export class FeatureFlagsController {
    */
 
   @Delete('/:id')
-  public delete(@Param('id') id: string, @Req() request: AppRequest): Promise<FeatureFlag | undefined> {
-    // TODO: Add server error
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
+  public delete(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<FeatureFlag | undefined> {
     return this.featureFlagService.delete(id, request.logger);
   }
 
@@ -410,20 +398,11 @@ export class FeatureFlagsController {
    */
   @Put('/:id')
   public update(
-    @Param('id') id: string,
+    @Params({ validate: true }) { id }: IdValidator,
     @Body({ validate: true })
     flag: FeatureFlagValidation,
-    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
-    // TODO: Add error log
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
     return this.featureFlagService.update(flag, request.logger);
   }
 
@@ -452,7 +431,6 @@ export class FeatureFlagsController {
   @Post('/inclusionList')
   public async addInclusionList(
     @Body({ validate: true }) inclusionList: FeatureFlagListValidator,
-    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentInclusion> {
     return this.featureFlagService.addList(inclusionList, 'inclusion', request.logger);
@@ -483,7 +461,6 @@ export class FeatureFlagsController {
   @Post('/exclusionList')
   public async addExclusionList(
     @Body({ validate: true }) exclusionList: FeatureFlagListValidator,
-    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentExclusion> {
     return this.featureFlagService.addList(exclusionList, 'exclusion', request.logger);
@@ -519,18 +496,10 @@ export class FeatureFlagsController {
    */
   @Put('/exclusionList/:id')
   public async updateExclusionList(
-    @Param('id') segmentId: string,
+    @Params({ validate: true }) { id }: IdValidator,
     @Body({ validate: true }) exclusionList: FeatureFlagListValidator,
-    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentExclusion> {
-    if (!isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
     return this.featureFlagService.addList(exclusionList, 'exclusion', request.logger);
   }
 
@@ -564,18 +533,10 @@ export class FeatureFlagsController {
    */
   @Put('/inclusionList/:id')
   public async updateInclusionList(
-    @Param('id') segmentId: string,
+    @Params({ validate: true }) { id }: IdValidator,
     @Body({ validate: true }) inclusionList: FeatureFlagListValidator,
-    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentInclusion> {
-    if (!isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
     return this.featureFlagService.addList(inclusionList, 'inclusion', request.logger);
   }
 
@@ -603,18 +564,10 @@ export class FeatureFlagsController {
    */
   @Delete('/inclusionList/:id')
   public async deleteInclusionList(
-    @Param('id') segmentId: string,
-    @CurrentUser() currentUser: User,
+    @Params({ validate: true }) { id }: IdValidator,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    if (!isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
-    return this.featureFlagService.deleteList(segmentId, request.logger);
+    return this.featureFlagService.deleteList(id, request.logger);
   }
 
   /**
@@ -641,17 +594,9 @@ export class FeatureFlagsController {
    */
   @Delete('/exclusionList/:id')
   public async deleteExclusionList(
-    @Param('id') segmentId: string,
-    @CurrentUser() currentUser: User,
+    @Params({ validate: true }) { id }: IdValidator,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    if (!isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
-    return this.featureFlagService.deleteList(segmentId, request.logger);
+    return this.featureFlagService.deleteList(id, request.logger);
   }
 }

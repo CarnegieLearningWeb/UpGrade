@@ -16,7 +16,9 @@ export class FeatureFlagSegmentExclusion extends BaseModel {
   @JoinColumn()
   public featureFlag: FeatureFlag;
 
-  @Column()
+  @Column({
+    default: false,
+  })
   public enabled: boolean;
 
   @Column()
