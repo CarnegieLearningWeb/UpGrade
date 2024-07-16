@@ -25,9 +25,15 @@ import {
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
-import { AddFeatureFlagRequest, FeatureFlag, UpdateFeatureFlagStatusRequest } from './store/feature-flags.model';
+import {
+  AddFeatureFlagRequest,
+  FeatureFlag,
+  LIST_OPTION_TYPE,
+  UpdateFeatureFlagStatusRequest,
+} from './store/feature-flags.model';
 import { ExperimentService } from '../experiments/experiments.service';
-import { filter, map, pairwise } from 'rxjs';
+import { filter, map, pairwise, withLatestFrom } from 'rxjs';
+import { selectContextMetaData } from '../experiments/store/experiments.selectors';
 
 @Injectable()
 export class FeatureFlagsService {
@@ -89,12 +95,46 @@ export class FeatureFlagsService {
     select(selectFeatureFlagExclusions),
     map((exclusions) => exclusions.length)
   );
+  // note: this comes from experiment service!
+  selectFeatureFlagListTypeOptions$ = this.store$.pipe(
+    select(selectContextMetaData),
+    withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
+    map(([contextMetaData, flag]) => {
+      // TODO: straighten out contextmetadata and it's selectors with a dedicated service
+      const flagAppContext = flag?.context?.[0];
+      const groupTypes = contextMetaData?.contextMetadata?.[flagAppContext]?.GROUP_TYPES ?? [];
+      const groupTypeSelectOptions = this.formatGroupTypes(groupTypes as string[]);
+      const listOptionTypes = [
+        {
+          value: LIST_OPTION_TYPE.SEGMENT,
+          viewValue: LIST_OPTION_TYPE.SEGMENT,
+        },
+        {
+          value: LIST_OPTION_TYPE.INDIVIDUAL,
+          viewValue: LIST_OPTION_TYPE.INDIVIDUAL,
+        },
+        ...groupTypeSelectOptions,
+      ];
 
-  convertNameStringToKey(name:string):string {
-    let upperCaseString = name.trim().toUpperCase();
-    let key = upperCaseString.replace(/ /g, '_');
+      return listOptionTypes;
+    })
+  );
+
+  formatGroupTypes(groupTypes: string[]): { value: string; viewValue: string }[] {
+    if (Array.isArray(groupTypes) && groupTypes.length > 0) {
+      return groupTypes.map((groupType) => {
+        return { value: groupType, viewValue: 'Group: "' + groupType + '"' };
+      });
+    } else {
+      return [];
+    }
+  }
+
+  convertNameStringToKey(name: string): string {
+    const upperCaseString = name.trim().toUpperCase();
+    const key = upperCaseString.replace(/ /g, '_');
     return key;
-}
+  }
 
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
