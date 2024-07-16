@@ -16,7 +16,7 @@ import {
   FLAG_SEARCH_KEY,
   FLAG_SORT_KEY,
 } from '../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
-import { SORT_AS_DIRECTION } from '../../../../../../types/src';
+import { SEGMENT_TYPE, SORT_AS_DIRECTION } from '../../../../../../types/src';
 import { isUUID } from 'class-validator';
 import { v4 as uuid } from 'uuid';
 import { FEATURE_FLAG_STATUS } from 'upgrade_types';
@@ -59,7 +59,15 @@ describe('Feature Flag Service Testing', () => {
   mockList.enabled = true;
   mockList.flagId = uuid();
   mockList.listType = 'individual';
-  mockList.list = { name: 'name', id: uuid(), context: 'context', type: 'private' };
+  mockList.list = {
+    name: 'name',
+    id: uuid(),
+    context: 'context',
+    type: SEGMENT_TYPE.PRIVATE,
+    userIds: ['user1'],
+    groups: [],
+    subSegmentIds: [],
+  };
   const mockFlagArr = [mockFlag1, mockFlag2, mockFlag3];
 
   const limitSpy = jest.fn().mockReturnThis();
