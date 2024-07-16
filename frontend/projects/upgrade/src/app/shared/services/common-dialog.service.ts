@@ -8,6 +8,8 @@ import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/featur
 import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 import { UpdateFlagStatusConfirmationModalComponent } from '../../features/dashboard/feature-flags/modals/update-flag-status-confirmation-modal/update-flag-status-confirmation-modal.component';
 import { EditFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/edit-feature-flag-modal/edit-feature-flag-modal.component';
+import { ExportConfirmationDialogComponent } from '../../features/dashboard/feature-flags/modals/export-feature-flag-confirmation-dialog/export-feature-flag-confirmation-dialog.component';
+import { EXPORT_MODAL_ACTION, FEATURE_FLAG_DETAILS_PAGE_ACTIONS, FeatureFlag } from '../../core/feature-flags/store/feature-flags.model';
 
 @Injectable({
   providedIn: 'root',
@@ -102,6 +104,59 @@ export class DialogService {
       disableClose: true,
     };
     return this.dialog.open(DeleteFeatureFlagModalComponent, config);
+  }
+
+  openExportAllFeatureFlagsModal(flags: FeatureFlag[]) {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Export All Feature Flag Designs',
+      primaryActionBtnLabel: 'Export',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceFlags: flags,
+        action: EXPORT_MODAL_ACTION.EXPORT,
+      },
+    };
+    return this.openExportConfirmationModal(commonModalConfig);
+  }
+
+  openExportFeatureFlagDesignModal(flag: FeatureFlag) {
+    const commonModalConfig: CommonModalConfig = {
+      title: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
+      primaryActionBtnLabel: 'Export',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceFlags: [flag],
+        action: EXPORT_MODAL_ACTION.EXPORT,
+      },
+    };
+    return this.openExportConfirmationModal(commonModalConfig);
+  }
+
+  openEmailFeatureFlagDataModal(flag: FeatureFlag) {
+    const commonModalConfig: CommonModalConfig = {
+      title: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
+      primaryActionBtnLabel: 'Email',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceFlags: [flag],
+        action: EXPORT_MODAL_ACTION.MAIL,
+      },
+    };
+    return this.openExportConfirmationModal(commonModalConfig);
+  }
+
+  openExportConfirmationModal(commonModalConfig: CommonModalConfig) {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: '670px',
+      autoFocus: 'first-heading',
+      disableClose: true,
+    };
+
+    return this.dialog.open(ExportConfirmationDialogComponent, config);
   }
 
   openImportFeatureFlagModal() {

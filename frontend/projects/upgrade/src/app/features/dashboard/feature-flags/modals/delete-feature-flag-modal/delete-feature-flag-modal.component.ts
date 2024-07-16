@@ -53,7 +53,7 @@ export class DeleteFeatureFlagModalComponent {
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
-    public data: CommonModalConfig & { flagName: string; flagId: string },
+    public data: CommonModalConfig,
     public dialog: MatDialog,
     private featureFlagsService: FeatureFlagsService,
     public dialogRef: MatDialogRef<DeleteFeatureFlagModalComponent>

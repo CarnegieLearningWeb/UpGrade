@@ -13,7 +13,7 @@ import { FLAG_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
 import { RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
-import { Observable, map } from 'rxjs';
+import { Observable, firstValueFrom, lastValueFrom, map } from 'rxjs';
 import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
 import {
@@ -65,7 +65,7 @@ export class FeatureFlagRootSectionCardComponent {
     },
     {
       name: this.translateService.instant('feature-flags.export-all-feature-flags.text'),
-      disabled: true,
+      disabled: false,
     },
   ];
 
@@ -100,9 +100,15 @@ export class FeatureFlagRootSectionCardComponent {
   onMenuButtonItemClick(menuButtonItemName: string) {
     if (menuButtonItemName === 'Import Feature Flag') {
       this.dialogService.openImportFeatureFlagModal();
-    } else if (menuButtonItemName === 'Export All Feature Flags') {
-      console.log('onMenuButtonItemClick:', menuButtonItemName);
+    } else if (menuButtonItemName === 'Export All Feature Flag Designs') {
+      this.openExportALLFeatureFlagModal();
     }
+  }
+
+  async openExportALLFeatureFlagModal() {
+    const dataSource = await firstValueFrom(this.dataSource$);
+    const data: FeatureFlag[] = dataSource.data;
+    this.dialogService.openExportAllFeatureFlagsModal(data);
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {

@@ -5,7 +5,7 @@
       [cancelBtnLabel]="config.cancelBtnLabel"
       [primaryActionBtnLabel]="config.primaryActionBtnLabel"
       [primaryActionBtnColor]="config.primaryActionBtnColor"
-      [primaryActionBtnDisabled$]="isLoadingUpdateFeatureFlagStatus$"
+      [primaryActionBtnDisabled$]="isLoadingUpdateFeatureFlagStatus$  | async"
       (primaryActionBtnClicked)="
         onPrimaryActionBtnClicked({
           flagId: flag.id,

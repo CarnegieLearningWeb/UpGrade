@@ -1,17 +1,18 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
   CommonSectionCardTitleHeaderComponent,
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { FeatureFlagOverviewDetailsFooterComponent } from './feature-flag-overview-details-footer/feature-flag-overview-details-footer.component';
-
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 import { FEATURE_FLAG_STATUS, IMenuButtonItem } from 'upgrade_types';
 import { CommonModule } from '@angular/common';
 import { CommonSectionCardOverviewDetailsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
+import { FEATURE_FLAG_DETAILS_PAGE_ACTIONS, FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
+import { Subscriber, Subscription, lastValueFrom } from 'rxjs';
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,
@@ -27,18 +28,28 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
   styleUrl: './feature-flag-overview-details-section-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeatureFlagOverviewDetailsSectionCardComponent {
+export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit{
   isSectionCardExpanded = true;
   @Output() sectionCardExpandChange = new EventEmitter<boolean>();
+  featureFlag: FeatureFlag;
+  flagSub = new Subscription();;
   featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
   flagOverviewDetails$ = this.featureFlagService.selectedFlagOverviewDetails;
 
   menuButtonItems: IMenuButtonItem[] = [
-    { name: 'Edit', disabled: false },
-    { name: 'Delete', disabled: false },
+    { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT, disabled: false },
+    { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DUPLICATE, disabled: false },
+    { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN, disabled: false },
+    { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA, disabled: false },
+    { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.ARCHIVE, disabled: false },
+    { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DELETE, disabled: false },
   ];
 
   constructor(private dialogService: DialogService, private featureFlagService: FeatureFlagsService) {}
+
+  ngOnInit(): void {
+    this.flagSub = this.featureFlagService.selectedFeatureFlag$.subscribe((flag) => this.featureFlag = flag);
+  }
 
   get FEATURE_FLAG_STATUS() {
     return FEATURE_FLAG_STATUS;
@@ -70,11 +81,28 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
     this.dialogService.openDisableFeatureFlagConfirmModel();
   }
 
-  onMenuButtonItemClick(event) {
-    if (event === 'Delete') {
-      this.dialogService.openDeleteFeatureFlagModal();
-    } else if (event === 'Edit') {
-      this.dialogService.openEditFeatureFlagModal();
+  onMenuButtonItemClick(event: FEATURE_FLAG_DETAILS_PAGE_ACTIONS, flag: FeatureFlag) {
+    switch (event) {
+      case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DELETE:
+        this.dialogService.openDeleteFeatureFlagModal();
+        break;
+      case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT:
+        this.dialogService.openEditFeatureFlagModal();
+        break;
+      case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DUPLICATE:
+        console.log('Duplicate feature flag');
+        break;
+      case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.ARCHIVE:
+        console.log('Archive feature flag');
+        break;
+      case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN:
+        this.dialogService.openExportFeatureFlagDesignModal(this.featureFlag);
+        break;
+      case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA:
+        this.dialogService.openEmailFeatureFlagDataModal(this.featureFlag);
+        break;
+      default:
+        console.log('Unknown action');
     }
   }
 

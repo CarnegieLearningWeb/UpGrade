@@ -1,0 +1,19 @@
+<div class="modal-container">
+    <app-common-dialog
+      [title]="data.title"
+      [cancelBtnLabel]="data.cancelBtnLabel"
+      [primaryActionBtnLabel]="data.primaryActionBtnLabel"
+      [primaryActionBtnColor]="data.primaryActionBtnColor"
+      [primaryActionBtnDisabled]="isLoadingFeatureFlagExport$ | async"
+      (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+    >
+      <div mat-dialog-content class="dialog">
+        <div class="ft-18-600 confirm-export">
+          {{ confirmationMessage | translate }}
+        </div>
+        <div class="ft-18-500 email-confirm" *ngIf="data.title === FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA">
+          {{ emailConfirmationMessage | translate }}
+        </div>
+      </div>
+    </app-common-dialog>
+</div>

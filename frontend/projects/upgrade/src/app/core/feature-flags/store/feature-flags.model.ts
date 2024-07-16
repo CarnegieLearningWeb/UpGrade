@@ -61,6 +61,16 @@ export interface EmptyPrivateSegment {
   };
 }
 
+export interface ExportModalParams {
+  sourceFlags: FeatureFlag[];
+  action: EXPORT_MODAL_ACTION;
+}
+
+export enum EXPORT_MODAL_ACTION {
+  MAIL = 'Email Data',
+  EXPORT = 'Export Design',
+}
+
 export type AnySegmentType = Segment | PrivateSegment | EmptyPrivateSegment | GroupForSegment | IndividualForSegment;
 
 export const NUMBER_OF_FLAGS = 20;
@@ -87,6 +97,15 @@ export interface FeatureFlagsPaginationParams {
   take: number;
   searchParams?: IFeatureFlagsSearchParams;
   sortParams?: IFeatureFlagsSortParams;
+}
+
+export enum FEATURE_FLAG_DETAILS_PAGE_ACTIONS {
+  EDIT = 'Edit Feature Flag',
+  DUPLICATE = 'Duplicate Feature Flag',
+  ARCHIVE = 'Archive Feature Flag',
+  DELETE = 'Delete Feature Flag',
+  EXPORT_DESIGN = 'Export Feature Flag Design',
+  EMAIL_DATA = 'Email Feature Flag Data'
 }
 
 export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
@@ -129,6 +148,8 @@ export interface FeatureFlagState extends EntityState<FeatureFlag> {
   isLoadingFeatureFlags: boolean;
   isLoadingUpdateFeatureFlagStatus: boolean;
   isLoadingFeatureFlagDelete: boolean;
+  isLoadingFeatureFlagExport: boolean;
+  exportFeatureFlagSuccess: boolean;
   hasInitialFeatureFlagsDataLoaded: boolean;
   activeDetailsTabIndex: number;
   skipFlags: number;

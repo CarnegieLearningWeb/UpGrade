@@ -129,6 +129,16 @@ export const selectIsLoadingFeatureFlagDelete = createSelector(
   (state) => state.isLoadingFeatureFlagDelete
 );
 
+export const selectIsLoadingFeatureFlagExport = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingFeatureFlagExport
+);
+
+export const selectExportFeatureFlagSuccess = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.exportFeatureFlagSuccess
+);
+
 export const selectFeatureFlagInclusions = createSelector(
   selectSelectedFeatureFlag,
   (featureFlag: FeatureFlag): ParticipantListTableRow[] =>

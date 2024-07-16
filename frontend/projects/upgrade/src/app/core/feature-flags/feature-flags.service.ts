@@ -21,6 +21,8 @@ import {
   selectIsLoadingSelectedFeatureFlag,
   selectSortKey,
   selectSortAs,
+  selectIsLoadingFeatureFlagExport,
+  selectExportFeatureFlagSuccess,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -36,15 +38,17 @@ export class FeatureFlagsService {
   isInitialFeatureFlagsLoading$ = this.store$.pipe(select(selectHasInitialFeatureFlagsDataLoaded));
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
   isLoadingSelectedFeatureFlag$ = this.store$.pipe(select(selectIsLoadingSelectedFeatureFlag));
+  isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
+  IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
+  isLoadingFeatureFlagExport$ = this.store$.pipe(select(selectIsLoadingFeatureFlagExport));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
+  exportFeatureFlagSuccessFlag$ = this.store$.pipe(select(selectExportFeatureFlagSuccess));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
   searchString$ = this.store$.pipe(select(selectSearchString));
   searchKey$ = this.store$.pipe(select(selectSearchKey));
   sortKey$ = this.store$.pipe(select(selectSortKey));
   sortAs$ = this.store$.pipe(select(selectSortAs));
-  isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
-  IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
 
   featureFlagsListLengthChange$ = this.allFeatureFlags$.pipe(
     pairwise(),
@@ -124,8 +128,20 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlag({ flagId }));
   }
 
+  emailFeatureFlagData(featureFlagId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionEmailFeatureFlagData({ featureFlagId }));
+  }
+
+  exportFeatureFlagsData(featureFlagIds: string[]) {
+    this.store$.dispatch(FeatureFlagsActions.actionExportFeatureFlagDesign({ featureFlagIds }));
+  }
+
   setSearchKey(searchKey: FLAG_SEARCH_KEY) {
     this.store$.dispatch(FeatureFlagsActions.actionSetSearchKey({ searchKey }));
+  }
+
+  setExportFeatureFlagsSuccessFlag(flag: boolean) {
+    this.store$.dispatch(FeatureFlagsActions.actionSetExportFeatureFlagsSuccessFlag({ flag }));
   }
 
   setSearchString(searchString: string) {
