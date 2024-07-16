@@ -97,7 +97,6 @@ export class DialogService {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: '670px',
-      height: '390px',
       autoFocus: 'input',
       disableClose: true,
     };
@@ -114,7 +113,6 @@ export class DialogService {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: '670px',
-      height: '460px',
       autoFocus: 'input',
       disableClose: true,
     };

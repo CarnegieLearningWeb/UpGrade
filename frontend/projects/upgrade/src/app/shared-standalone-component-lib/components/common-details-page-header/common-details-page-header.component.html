@@ -1,7 +1,8 @@
 <ng-container class="header">
   <div class="ft-14-400 breadcrumb">
-    <a [routerLink]="['/', rootLink]" class="root-link">{{ rootName | translate }} </a>
-    >
-    <span class="details-name">{{ detailsName | translate }}</span>
+    <span>
+      <a [routerLink]="['/', rootLink]" class="root-link">{{ rootName | translate }} </a>
+      > <b>{{ detailsName | translate }}</b>
+    </span>
   </div>
 </ng-container>
