@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { IMenuButtonItem } from 'upgrade_types';
 import { FeatureFlagInclusionsTableComponent } from './feature-flag-inclusions-table/feature-flag-inclusions-table.component';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
+import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 
 @Component({
   selector: 'app-feature-flag-inclusions-section-card',
@@ -29,7 +30,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
   @Input() isSectionCardExpanded;
   tableRowCount$ = this.featureFlagService.selectFeatureFlagInclusionsLength$;
 
-  constructor(private featureFlagService: FeatureFlagsService) {}
+  constructor(private featureFlagService: FeatureFlagsService, private dialogService: DialogService) {}
 
   menuButtonItems: IMenuButtonItem[] = [
     { name: 'Edit', disabled: false },
@@ -37,7 +38,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
   ];
 
   addIncludeListClicked() {
-    console.log('add Include List Clicked');
+    this.dialogService.openAddIncludeListModal();
   }
 
   onMenuButtonItemClick(event) {
