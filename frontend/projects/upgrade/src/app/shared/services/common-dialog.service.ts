@@ -8,14 +8,16 @@ import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/featur
 import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 import { UpdateFlagStatusConfirmationModalComponent } from '../../features/dashboard/feature-flags/modals/update-flag-status-confirmation-modal/update-flag-status-confirmation-modal.component';
 import { EditFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/edit-feature-flag-modal/edit-feature-flag-modal.component';
+import { UpsertFeatureFlagListModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-list-modal/upsert-feature-flag-list-modal.component';
+
+import { ExportConfirmationDialogComponent } from '../../features/dashboard/feature-flags/modals/export-feature-flag-confirmation-dialog/export-feature-flag-confirmation-dialog.component';
 import {
   EXPORT_MODAL_ACTION,
   FEATURE_FLAG_DETAILS_PAGE_ACTIONS,
+  FeatureFlag,
   UPSERT_FEATURE_FLAG_LIST_ACTION,
   UpsertFeatureFlagListParams,
 } from '../../core/feature-flags/store/feature-flags.model';
-import { UpsertFeatureFlagListModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-list-modal/upsert-feature-flag-list-modal.component';
-
 
 @Injectable({
   providedIn: 'root',
