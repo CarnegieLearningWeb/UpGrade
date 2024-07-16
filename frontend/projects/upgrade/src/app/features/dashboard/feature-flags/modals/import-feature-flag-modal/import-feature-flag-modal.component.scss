@@ -1,0 +1,22 @@
+.drag-drop-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  color: grey;
+
+  .full-width {
+    width: 100%;
+  }
+}
+
+.import-message {
+  margin-top: 5px;
+  color: grey;
+}
+
+a {
+  text-decoration: none;
+}

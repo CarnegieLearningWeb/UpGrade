@@ -23,8 +23,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
-import { FEATURE_FLAG_STATUS, SEGMENT_TYPE, FILTER_MODE } from '../../../../../../../../../../types/src';
-import { AddFeatureFlagRequest, FeatureFlag, FeatureFlagFormData } from '../../../../../core/feature-flags/store/feature-flags.model';
+import { FeatureFlag, FeatureFlagFormData } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { Subscription } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
@@ -80,6 +79,7 @@ export class EditFeatureFlagModalComponent {
     this.buildForm();
     this.initializeFormValues();
     this.listenForFeatureFlagGetUpdated();
+    this.listenOnNameChangesToUpdateKey();
   }
 
   buildForm(): void {
@@ -107,6 +107,15 @@ export class EditFeatureFlagModalComponent {
         }
       })
     );
+  }
+
+  listenOnNameChangesToUpdateKey(): void {
+    this.featureFlagForm.get('name')?.valueChanges.subscribe((name) => {
+      const keyControl = this.featureFlagForm.get('key');
+      if (keyControl && !keyControl.dirty) {
+        keyControl.setValue(this.featureFlagsService.convertNameStringToKey(name));
+      }
+    });
   }
 
   // Close the modal once the feature flag list length changes, as that indicates actual success

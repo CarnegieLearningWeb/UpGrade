@@ -9,17 +9,17 @@ import {
 } from '@angular/core';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { MetricUnit } from '../../../../../core/analysis/store/analysis.models';
+import { METRICS_JOIN_TEXT, MetricUnit } from '../../../../../core/analysis/store/analysis.models';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
-import { DeleteMetricsComponent } from '../modals/delete-metrics/delete-metrics.component';
 import { AddMetricsComponent } from '../modals/add-metrics/add-metrics.component';
 import { METRIC_SEARCH_KEY } from '../../../../../../../../../../types/src/Experiment/enums';
 import { IMetricUnit } from '../../../../../../../../../../types/src';
+import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
 
 @Component({
   selector: 'profile-metrics',
@@ -108,9 +108,14 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     };
     const key = this.analysisService.findParents(data, nodeToBeDeleted.id);
     this.selectedMetricIndex = null;
-    this.dialog.open(DeleteMetricsComponent, {
+    const dialogRef = this.dialog.open(DeleteComponent, {
       panelClass: 'delete-modal',
-      data: { key },
+    });
+
+    dialogRef.afterClosed().subscribe((isDeleteButtonClicked) => {
+      if (isDeleteButtonClicked) {
+        this.analysisService.deleteMetric(key.join(METRICS_JOIN_TEXT));
+      }
     });
   }
 
