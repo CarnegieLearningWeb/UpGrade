@@ -98,7 +98,11 @@ export class FeatureFlagRootSectionCardComponent {
   }
 
   onMenuButtonItemClick(menuButtonItemName: string) {
-    console.log('onMenuButtonItemClick:', menuButtonItemName);
+    if (menuButtonItemName === 'Import Feature Flag') {
+      this.dialogService.openImportFeatureFlagModal();
+    } else if (menuButtonItemName === 'Export All Feature Flags') {
+      console.log('onMenuButtonItemClick:', menuButtonItemName);
+    }
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {

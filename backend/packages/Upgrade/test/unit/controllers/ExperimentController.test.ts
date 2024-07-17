@@ -196,8 +196,10 @@ describe('Experiment Controller Testing', () => {
 
   test('Get request for /api/experiments/export', () => {
     return request(app)
-      .post('/api/experiments/import')
-      .send([experimentData.id])
+      .get('/api/experiments/export')
+      .query({
+        ids: [uuid()],
+      })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

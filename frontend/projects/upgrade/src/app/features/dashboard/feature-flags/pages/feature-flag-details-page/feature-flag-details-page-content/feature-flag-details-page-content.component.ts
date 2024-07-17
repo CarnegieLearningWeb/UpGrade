@@ -28,6 +28,7 @@ import { SharedModule } from '../../../../../../shared/shared.module';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy {
+  isSectionCardExpanded = true;
   activeTabIndex$ = this.featureFlagsService.activeDetailsTabIndex$;
   featureFlag$: Observable<FeatureFlag>;
 
@@ -42,6 +43,11 @@ export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy
 
     this.featureFlag$ = this.featureFlagsService.selectedFeatureFlag$;
   }
+
+  onSectionCardExpandChange(expanded: boolean) {
+    this.isSectionCardExpanded = expanded;
+  }
+
   ngOnDestroy() {
     this.featureFlagIdSub.unsubscribe();
   }

@@ -19,6 +19,8 @@ import {
   selectFeatureFlagInclusions,
   selectFeatureFlagExclusions,
   selectIsLoadingSelectedFeatureFlag,
+  selectSortKey,
+  selectSortAs,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -39,6 +41,8 @@ export class FeatureFlagsService {
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
   searchString$ = this.store$.pipe(select(selectSearchString));
   searchKey$ = this.store$.pipe(select(selectSearchKey));
+  sortKey$ = this.store$.pipe(select(selectSortKey));
+  sortAs$ = this.store$.pipe(select(selectSortAs));
   isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
   IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
 
@@ -85,6 +89,12 @@ export class FeatureFlagsService {
     select(selectFeatureFlagExclusions),
     map((exclusions) => exclusions.length)
   );
+
+  convertNameStringToKey(name:string):string {
+    let upperCaseString = name.trim().toUpperCase();
+    let key = upperCaseString.replace(/ /g, '_');
+    return key;
+}
 
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
