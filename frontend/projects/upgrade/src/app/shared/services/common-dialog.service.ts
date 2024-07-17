@@ -7,7 +7,11 @@ import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/featur
 import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 import { UpdateFlagStatusConfirmationModalComponent } from '../../features/dashboard/feature-flags/modals/update-flag-status-confirmation-modal/update-flag-status-confirmation-modal.component';
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
-import { FeatureFlag, UpsertModalAction, UpsertModalParams } from '../../core/feature-flags/store/feature-flags.model';
+import {
+  FeatureFlag,
+  UPSERT_MODAL_ACTION,
+  UpsertModalParams,
+} from '../../core/feature-flags/store/feature-flags.model';
 
 @Injectable({
   providedIn: 'root',
@@ -32,7 +36,7 @@ export class DialogService {
       cancelBtnLabel: 'Cancel',
       params: {
         sourceFlag: null,
-        action: UpsertModalAction.ADD,
+        action: UPSERT_MODAL_ACTION.ADD,
       },
     };
     return this.openUpsertFeatureFlagModal(commonModalConfig);
@@ -46,7 +50,7 @@ export class DialogService {
       cancelBtnLabel: 'Cancel',
       params: {
         sourceFlag: { ...flag },
-        action: UpsertModalAction.EDIT,
+        action: UPSERT_MODAL_ACTION.EDIT,
       },
     };
     return this.openUpsertFeatureFlagModal(commonModalConfig);
@@ -60,7 +64,7 @@ export class DialogService {
       cancelBtnLabel: 'Cancel',
       params: {
         sourceFlag: { ...flag },
-        action: UpsertModalAction.DUPLICATE,
+        action: UPSERT_MODAL_ACTION.DUPLICATE,
       },
     };
     return this.openUpsertFeatureFlagModal(commonModalConfig);

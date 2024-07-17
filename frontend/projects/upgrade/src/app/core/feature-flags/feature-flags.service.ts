@@ -21,6 +21,7 @@ import {
   selectIsLoadingSelectedFeatureFlag,
   selectSortKey,
   selectSortAs,
+  selectFeatureFlagListTypeOptions,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -73,6 +74,8 @@ export class FeatureFlagsService {
     map(([prev, curr]) => curr)
   );
 
+  selectFeatureFlagListTypeOptions$ = this.store$.pipe(select(selectFeatureFlagListTypeOptions));
+
   selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));
   selectedFeatureFlag$ = this.store$.pipe(select(selectSelectedFeatureFlag));
   searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
@@ -93,12 +96,6 @@ export class FeatureFlagsService {
     select(selectFeatureFlagExclusions),
     map((exclusions) => exclusions.length)
   );
-
-  convertNameStringToKey(name: string): string {
-    const upperCaseString = name.trim().toUpperCase();
-    const key = upperCaseString.replace(/ /g, '_');
-    return key;
-  }
 
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));

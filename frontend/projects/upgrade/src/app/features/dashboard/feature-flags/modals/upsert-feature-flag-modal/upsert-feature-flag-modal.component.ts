@@ -23,18 +23,20 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../../../../types/src';
 import {
+  AddFeatureFlagRequest,
+  DuplicateFeatureFlagSuffix,
   FeatureFlag,
   FeatureFlagFormData,
-  AddFeatureFlagRequest,
-  UpsertModalParams,
-  UpsertModalAction,
-  DuplicateFeatureFlagSuffix,
   ModifyFeatureFlagRequest,
+  UPSERT_MODAL_ACTION,
+  UpsertModalParams,
 } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { Subscription } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
+import { CommonTextHelpersService } from '../../../../../shared/services/common-text-helpers.service';
 
 @Component({
   selector: 'upsert-add-feature-flag-modal',
@@ -93,7 +95,7 @@ export class UpsertFeatureFlagModalComponent {
 
     const initialValues: FeatureFlag = { ...sourceFlag };
 
-    if (sourceFlag && action === UpsertModalAction.DUPLICATE) {
+    if (sourceFlag && action === UPSERT_MODAL_ACTION.DUPLICATE) {
       initialValues.name += DuplicateFeatureFlagSuffix;
       initialValues.key += DuplicateFeatureFlagSuffix;
     }
@@ -111,7 +113,7 @@ export class UpsertFeatureFlagModalComponent {
     this.subscriptions = this.featureFlagForm.get('name')?.valueChanges.subscribe((name) => {
       const keyControl = this.featureFlagForm.get('key');
       if (keyControl && !keyControl.dirty) {
-        keyControl.setValue(this.featureFlagsService.convertNameStringToKey(name));
+        keyControl.setValue(CommonTextHelpersService.convertStringToFeatureFlagKeyFormat(name));
       }
     });
   }
@@ -131,22 +133,52 @@ export class UpsertFeatureFlagModalComponent {
     }
   }
 
-  createRequest(action: UpsertModalAction, sourceFlag?: FeatureFlag): void {
-    const { name, key, description, appContext, tags }: FeatureFlagFormData = this.featureFlagForm.value;
-    const flagRequest = {
+  createRequest(action: UPSERT_MODAL_ACTION, sourceFlag?: FeatureFlag): void {
+    const formData: FeatureFlagFormData = this.featureFlagForm.value;
+
+    if (action === UPSERT_MODAL_ACTION.ADD || action === UPSERT_MODAL_ACTION.DUPLICATE) {
+      this.createAddRequest(formData);
+    } else if (action === UPSERT_MODAL_ACTION.EDIT && sourceFlag) {
+      this.createEditRequest(formData, sourceFlag);
+    } else {
+      console.error('UpsertFeatureFlagModalComponent: createRequest: Invalid action or missing sourceFlag');
+    }
+  }
+
+  private createAddRequest({ name, key, description, appContext, tags }: FeatureFlagFormData): void {
+    const flagRequest: AddFeatureFlagRequest = {
       name,
       key,
       description,
       context: [appContext],
       tags,
+      status: FEATURE_FLAG_STATUS.DISABLED,
+      filterMode: FILTER_MODE.INCLUDE_ALL,
+      featureFlagSegmentInclusion: [],
+      featureFlagSegmentExclusion: [],
     };
 
-    if (action === UpsertModalAction.ADD || action === UpsertModalAction.DUPLICATE) {
-      this.featureFlagsService.addFeatureFlag(flagRequest);
-    } else if (action === UpsertModalAction.EDIT && sourceFlag) {
-      const updatedFlag = { ...sourceFlag, ...flagRequest };
-      this.featureFlagsService.updateFeatureFlag(updatedFlag);
-    }
+    this.featureFlagsService.addFeatureFlag(flagRequest);
+  }
+
+  private createEditRequest(
+    { name, key, description, appContext, tags }: FeatureFlagFormData,
+    { id, status, filterMode, featureFlagSegmentInclusion, featureFlagSegmentExclusion }: FeatureFlag
+  ): void {
+    const flagRequest: ModifyFeatureFlagRequest = {
+      id,
+      name,
+      key,
+      description,
+      context: [appContext],
+      tags,
+      status,
+      filterMode,
+      featureFlagSegmentInclusion,
+      featureFlagSegmentExclusion,
+    };
+
+    this.featureFlagsService.updateFeatureFlag(flagRequest);
   }
 
   closeModal() {
