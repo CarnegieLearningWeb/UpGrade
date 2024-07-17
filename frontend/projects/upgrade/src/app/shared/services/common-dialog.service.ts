@@ -113,6 +113,32 @@ export class DialogService {
     return this.dialog.open(UpdateFlagStatusConfirmationModalComponent, config);
   }
 
+  openAddIncludeListModal() {
+    const commonModalConfig: CommonModalConfig<UpsertFeatureFlagListParams> = {
+      title: 'Add Include List',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList: null,
+        action: UPSERT_FEATURE_FLAG_LIST_ACTION.ADD,
+      },
+    };
+    return this.openAddFeatureFlagListModal(commonModalConfig);
+  }
+
+  openAddFeatureFlagListModal(commonModalConfig: CommonModalConfig) {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: '670px',
+      // height: '460px',
+      height: 'auto', // TODO: fixed height or not?
+      autoFocus: 'input',
+      disableClose: true,
+    };
+    return this.dialog.open(UpsertFeatureFlagListModalComponent, config);
+  }
+
   openDeleteFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Delete Feature Flag',
@@ -123,7 +149,6 @@ export class DialogService {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: '670px',
-      height: '390px',
       autoFocus: 'input',
       disableClose: true,
     };
@@ -140,7 +165,6 @@ export class DialogService {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: '670px',
-      height: '460px',
       autoFocus: 'input',
       disableClose: true,
     };

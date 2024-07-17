@@ -32,7 +32,8 @@ import {
   ModifyFeatureFlagRequest,
 } from './store/feature-flags.model';
 import { ExperimentService } from '../experiments/experiments.service';
-import { filter, map, pairwise } from 'rxjs';
+import { filter, map, pairwise, withLatestFrom } from 'rxjs';
+import { selectContextMetaData } from '../experiments/store/experiments.selectors';
 
 @Injectable()
 export class FeatureFlagsService {
@@ -75,7 +76,6 @@ export class FeatureFlagsService {
   );
 
   selectFeatureFlagListTypeOptions$ = this.store$.pipe(select(selectFeatureFlagListTypeOptions));
-
   selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));
   selectedFeatureFlag$ = this.store$.pipe(select(selectSelectedFeatureFlag));
   searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
@@ -96,6 +96,7 @@ export class FeatureFlagsService {
     select(selectFeatureFlagExclusions),
     map((exclusions) => exclusions.length)
   );
+  // note: this comes from experiment service!
 
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
