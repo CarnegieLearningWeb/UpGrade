@@ -1,7 +1,7 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
 import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SORT_KEY, SEGMENT_TYPE, SORT_AS_DIRECTION } from 'upgrade_types';
-import { GroupForSegment, IndividualForSegment, MemberTypes, Segment } from '../../segments/store/segments.model';
+import { MemberTypes, Segment } from '../../segments/store/segments.model';
 
 // This obviously is a more global type, but for now we're not about to refactor all of the things, so I'm just putting it here so I can create some more dev-friendly types to catch the small differences between some of these formats
 export interface GeneralCRUDResponseFields {
@@ -42,15 +42,25 @@ export interface FeatureFlagSegmentListDetails {
   listType: MemberTypes | string;
 }
 
-export enum UPSERT_MODAL_ACTION {
+export enum UPSERT_FEATURE_FLAG_ACTION {
   ADD = 'add',
   EDIT = 'edit',
   DUPLICATE = 'duplicate',
 }
 
-export interface UpsertModalParams {
+export interface UpsertFeatureFlagParams {
   sourceFlag: FeatureFlag;
-  action: UPSERT_MODAL_ACTION;
+  action: UPSERT_FEATURE_FLAG_ACTION;
+}
+
+export enum UPSERT_FEATURE_FLAG_LIST_ACTION {
+  ADD = 'add',
+  EDIT = 'edit',
+}
+
+export interface UpsertFeatureFlagListParams {
+  sourceList: FeatureFlagSegmentListDetails;
+  action: UPSERT_FEATURE_FLAG_LIST_ACTION;
 }
 
 export interface FeatureFlagsPaginationInfo {

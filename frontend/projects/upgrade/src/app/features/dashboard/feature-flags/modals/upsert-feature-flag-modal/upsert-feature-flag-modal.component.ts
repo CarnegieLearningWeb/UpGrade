@@ -30,8 +30,9 @@ import {
   FeatureFlag,
   FeatureFlagFormData,
   ModifyFeatureFlagRequest,
-  UPSERT_MODAL_ACTION,
-  UpsertModalParams,
+  UPSERT_FEATURE_FLAG_ACTION,
+  UPSERT_FEATURE_FLAG_LIST_ACTION,
+  UpsertFeatureFlagParams,
 } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { Subscription } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
@@ -74,7 +75,7 @@ export class UpsertFeatureFlagModalComponent {
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
-    public config: CommonModalConfig<UpsertModalParams>,
+    public config: CommonModalConfig<UpsertFeatureFlagParams>,
     public dialog: MatDialog,
     private formBuilder: FormBuilder,
     private featureFlagsService: FeatureFlagsService,
@@ -95,7 +96,7 @@ export class UpsertFeatureFlagModalComponent {
 
     const initialValues: FeatureFlag = { ...sourceFlag };
 
-    if (sourceFlag && action === UPSERT_MODAL_ACTION.DUPLICATE) {
+    if (sourceFlag && action === UPSERT_FEATURE_FLAG_ACTION.DUPLICATE) {
       initialValues.name += DuplicateFeatureFlagSuffix;
       initialValues.key += DuplicateFeatureFlagSuffix;
     }
@@ -133,12 +134,12 @@ export class UpsertFeatureFlagModalComponent {
     }
   }
 
-  createRequest(action: UPSERT_MODAL_ACTION, sourceFlag?: FeatureFlag): void {
+  createRequest(action: UPSERT_FEATURE_FLAG_ACTION, sourceFlag?: FeatureFlag): void {
     const formData: FeatureFlagFormData = this.featureFlagForm.value;
 
-    if (action === UPSERT_MODAL_ACTION.ADD || action === UPSERT_MODAL_ACTION.DUPLICATE) {
+    if (action === UPSERT_FEATURE_FLAG_ACTION.ADD || action === UPSERT_FEATURE_FLAG_ACTION.DUPLICATE) {
       this.createAddRequest(formData);
-    } else if (action === UPSERT_MODAL_ACTION.EDIT && sourceFlag) {
+    } else if (action === UPSERT_FEATURE_FLAG_ACTION.EDIT && sourceFlag) {
       this.createEditRequest(formData, sourceFlag);
     } else {
       console.error('UpsertFeatureFlagModalComponent: createRequest: Invalid action or missing sourceFlag');

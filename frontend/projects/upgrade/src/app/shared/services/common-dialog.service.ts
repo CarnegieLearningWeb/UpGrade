@@ -9,9 +9,12 @@ import { UpdateFlagStatusConfirmationModalComponent } from '../../features/dashb
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import {
   FeatureFlag,
-  UPSERT_MODAL_ACTION,
-  UpsertModalParams,
+  UPSERT_FEATURE_FLAG_ACTION,
+  UPSERT_FEATURE_FLAG_LIST_ACTION,
+  UpsertFeatureFlagListParams,
+  UpsertFeatureFlagParams,
 } from '../../core/feature-flags/store/feature-flags.model';
+import { UpsertFeatureFlagListModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-list-modal/upsert-feature-flag-list-modal.component';
 
 @Injectable({
   providedIn: 'root',
@@ -36,35 +39,35 @@ export class DialogService {
       cancelBtnLabel: 'Cancel',
       params: {
         sourceFlag: null,
-        action: UPSERT_MODAL_ACTION.ADD,
+        action: UPSERT_FEATURE_FLAG_LIST_ACTION.ADD,
       },
     };
     return this.openUpsertFeatureFlagModal(commonModalConfig);
   }
 
-  openEditFeatureFlagModal(flag: FeatureFlag) {
-    const commonModalConfig: CommonModalConfig<UpsertModalParams> = {
+  openEditFeatureFlagModal(sourceFlag: FeatureFlag) {
+    const commonModalConfig: CommonModalConfig<UpsertFeatureFlagParams> = {
       title: 'Edit Feature Flag',
       primaryActionBtnLabel: 'Save',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        sourceFlag: { ...flag },
-        action: UPSERT_MODAL_ACTION.EDIT,
+        sourceFlag: { ...sourceFlag },
+        action: UPSERT_FEATURE_FLAG_ACTION.EDIT,
       },
     };
     return this.openUpsertFeatureFlagModal(commonModalConfig);
   }
 
-  openDuplicateFeatureFlagModal(flag: FeatureFlag) {
+  openDuplicateFeatureFlagModal(sourceFlag: FeatureFlag) {
     const commonModalConfig: CommonModalConfig = {
       title: 'Duplicate Feature Flag',
       primaryActionBtnLabel: 'Add',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        sourceFlag: { ...flag },
-        action: UPSERT_MODAL_ACTION.DUPLICATE,
+        sourceFlag: { ...sourceFlag },
+        action: UPSERT_FEATURE_FLAG_ACTION.DUPLICATE,
       },
     };
     return this.openUpsertFeatureFlagModal(commonModalConfig);
