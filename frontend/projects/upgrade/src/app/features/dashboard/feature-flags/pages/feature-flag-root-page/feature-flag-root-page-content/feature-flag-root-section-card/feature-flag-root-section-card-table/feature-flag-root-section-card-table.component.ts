@@ -50,7 +50,6 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
     }
   }
 
-  isAllFeaturFlagFetched = false;
   isAllFeatureFlagsFetchedSub = new Subscription();
 
   get displayedColumns(): string[] {

@@ -26,10 +26,6 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
 
 const reducer = createReducer(
   initialState,
-  on(FeatureFlagsActions.actionFetchFeatureFlags, (state) => ({
-    ...state,
-    isLoadingFeatureFlags: true,
-  })),
   on(FeatureFlagsActions.actionFetchFeatureFlagsSuccess, (state, { flags, totalFlags }) => {
     const newState: FeatureFlagState = {
       ...state,

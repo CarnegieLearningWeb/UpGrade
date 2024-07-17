@@ -41,11 +41,7 @@ export class FeatureFlagsEffects {
         this.store$.pipe(select(selectIsAllFlagsFetched))
       ),
       filter(([fromStarting, skip, total, searchKey, sortKey, sortAs, isAllFlagsFetched]) => {
-        if (isAllFlagsFetched) {
-          this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: false }));
-          return false; // Do not proceed if all flags are fetched
-        }
-        return skip < total || total === null || fromStarting;
+        return !isAllFlagsFetched || skip < total || total === null || fromStarting;
       }),
       tap(() => {
         this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: true }));
