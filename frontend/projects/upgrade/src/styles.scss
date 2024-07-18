@@ -96,6 +96,10 @@
   @include mat.all-component-densities(-2);
 }
 
+.dense-3 {
+  @include mat.all-component-densities(-3);
+}
+
 // TODO material specific style which cannot be changed by scope
 .mat-drawer-inner-container {
   display: flex;

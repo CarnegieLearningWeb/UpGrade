@@ -10,7 +10,7 @@
         [removable]="isChipRemovable"
         (removed)="removeChip(componentTag)"
       >
-        <span class="ft-12-600 chip-label">
+        <span class="ft-12-400 chip-label">
           {{ componentTag }}
         </span>
         <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
@@ -21,6 +21,7 @@
         [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
         [matChipInputAddOnBlur]="addChipOnBlur"
         (matChipInputTokenEnd)="addChip($event)"
+        class="ft-14-400"
       />
     </mat-chip-grid>
     <div class="sharing-icon-buttons">

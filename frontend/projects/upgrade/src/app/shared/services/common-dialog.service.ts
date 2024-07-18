@@ -30,7 +30,7 @@ export class DialogService {
   openAddFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Add Feature Flag',
-      primaryActionBtnLabel: 'Add',
+      primaryActionBtnLabel: 'Create',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
     };
