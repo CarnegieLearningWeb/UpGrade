@@ -201,12 +201,12 @@ export class FeatureFlagsEffects {
       filter(([{ featureFlagId }, { email }]) => !!featureFlagId && !!email),
       switchMap(([{ featureFlagId }, { email }]) =>
         this.featureFlagsDataService.emailFeatureFlagData(featureFlagId, email).pipe(
-          tap(() => {
+          map(() => {
             email
               ? this.notificationService.showSuccess(`Email will be sent to ${email}`)
               : this.notificationService.showSuccess('Email will be sent to registered email');
+            return featureFlagsActions.actionEmailFeatureFlagDataSuccess();
           }),
-          map(() => featureFlagsActions.actionEmailFeatureFlagDataSuccess()),
           catchError(() => [featureFlagsActions.actionEmailFeatureFlagDataFailure()])
         )
       )
@@ -220,20 +220,20 @@ export class FeatureFlagsEffects {
       filter(({ featureFlagIds }) => !!featureFlagIds),
       switchMap(({ featureFlagIds }) =>
         this.featureFlagsDataService.exportFeatureFlagsDesign(featureFlagIds).pipe(
-          tap(() => {
-            this.notificationService.showSuccess('Feature Flag Design JSON downloaded!');
-          }),
           map((data: FeatureFlag[]) => {
-            if (data.length > 1) {
-              const zip = new JSZip();
-              data.forEach((flag, index) => {
-                zip.file(flag.name + ' (File ' + (index + 1) + ').json', JSON.stringify(flag));
-              });
-              zip.generateAsync({ type: 'base64' }).then((content) => {
-                this.download('FeatureFlags.zip', content, true);
-              });
-            } else {
-              this.download(data[0].name + '.json', data[0], false);
+            if (data) {
+              if (data.length > 1) {
+                const zip = new JSZip();
+                data.forEach((flag, index) => {
+                  zip.file(flag.name + ' (File ' + (index + 1) + ').json', JSON.stringify(flag));
+                });
+                zip.generateAsync({ type: 'base64' }).then((content) => {
+                  this.download('FeatureFlags.zip', content, true);
+                });
+              } else {
+                this.download(data[0].name + '.json', data[0], false);
+              }
+              this.notificationService.showSuccess('Feature Flag Design JSON downloaded!');
             }
             return featureFlagsActions.actionExportFeatureFlagDesignSuccess();
           }),

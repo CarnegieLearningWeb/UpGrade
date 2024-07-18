@@ -1,23 +1,20 @@
 import { Injectable } from '@angular/core';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-confirm-dialog.component';
 import { AddFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/add-feature-flag-modal/add-feature-flag-modal.component';
 import { CommonModalConfig } from '../../shared-standalone-component-lib/components/common-modal/common-modal-config';
 import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/delete-feature-flag-modal/delete-feature-flag-modal.component';
-
 import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 import { UpdateFlagStatusConfirmationModalComponent } from '../../features/dashboard/feature-flags/modals/update-flag-status-confirmation-modal/update-flag-status-confirmation-modal.component';
 import { EditFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/edit-feature-flag-modal/edit-feature-flag-modal.component';
 import { UpsertFeatureFlagListModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-list-modal/upsert-feature-flag-list-modal.component';
-
-import { ExportConfirmationDialogComponent } from '../../features/dashboard/feature-flags/modals/export-feature-flag-confirmation-dialog/export-feature-flag-confirmation-dialog.component';
 import {
-  EXPORT_MODAL_ACTION,
   FEATURE_FLAG_DETAILS_PAGE_ACTIONS,
   FeatureFlag,
   UPSERT_FEATURE_FLAG_LIST_ACTION,
   UpsertFeatureFlagListParams,
 } from '../../core/feature-flags/store/feature-flags.model';
+import { CommonConfirmationDialogTemplate } from '../../shared-standalone-component-lib/components/common-confirmation-template/common-confirmation-template.component';
 
 @Injectable({
   providedIn: 'root',
@@ -139,49 +136,48 @@ export class DialogService {
     return this.dialog.open(DeleteFeatureFlagModalComponent, config);
   }
 
-  openExportAllFeatureFlagsModal(flags: FeatureFlag[]) {
+  openExportAllFeatureFlagsModal(warning: string): MatDialogRef<CommonConfirmationDialogTemplate, boolean> {
     const commonModalConfig: CommonModalConfig = {
       title: 'Export All Feature Flag Designs',
       primaryActionBtnLabel: 'Export',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        sourceFlags: flags,
-        action: EXPORT_MODAL_ACTION.EXPORT,
+        message: warning,
       },
     };
-    return this.openExportConfirmationModal(commonModalConfig);
+    return this.openCommonConfirmationModal(commonModalConfig);
   }
 
-  openExportFeatureFlagDesignModal(flag: FeatureFlag) {
+  openExportFeatureFlagDesignModal(warning: string): MatDialogRef<CommonConfirmationDialogTemplate, boolean> {
     const commonModalConfig: CommonModalConfig = {
       title: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
       primaryActionBtnLabel: 'Export',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        sourceFlags: [flag],
-        action: EXPORT_MODAL_ACTION.EXPORT,
+        message: warning,
       },
     };
-    return this.openExportConfirmationModal(commonModalConfig);
+    return this.openCommonConfirmationModal(commonModalConfig);
   }
 
-  openEmailFeatureFlagDataModal(flag: FeatureFlag) {
+  openEmailFeatureFlagDataModal(warning: string, subtext: string): MatDialogRef<CommonConfirmationDialogTemplate, boolean> {
     const commonModalConfig: CommonModalConfig = {
       title: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
       primaryActionBtnLabel: 'Email',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        sourceFlags: [flag],
-        action: EXPORT_MODAL_ACTION.MAIL,
+        message: warning,
+        subMessage: subtext,
+        subMessageClass: "var(--blue)",
       },
     };
-    return this.openExportConfirmationModal(commonModalConfig);
+    return this.openCommonConfirmationModal(commonModalConfig);
   }
 
-  openExportConfirmationModal(commonModalConfig: CommonModalConfig) {
+  openCommonConfirmationModal(commonModalConfig: CommonModalConfig): MatDialogRef<CommonConfirmationDialogTemplate, boolean> {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: '670px',
@@ -189,7 +185,7 @@ export class DialogService {
       disableClose: true,
     };
 
-    return this.dialog.open(ExportConfirmationDialogComponent, config);
+    return this.dialog.open(CommonConfirmationDialogTemplate, config);
   }
 
   openImportFeatureFlagModal() {

@@ -15,8 +15,6 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingFeatureFlagDelete: false,
   isLoadingSelectedFeatureFlag: false,
   hasInitialFeatureFlagsDataLoaded: false,
-  isLoadingFeatureFlagExport: false,
-  exportFeatureFlagSuccess: false,
   activeDetailsTabIndex: 0,
   skipFlags: 0,
   totalFlags: null,
@@ -84,14 +82,6 @@ const reducer = createReducer(
     ...state,
     isLoadingFeatureFlagDelete: false,
   })),
-  on(FeatureFlagsActions.actionEmailFeatureFlagData, (state) => ({ ...state, isLoadingFeatureFlagExport: true })),
-  on(FeatureFlagsActions.actionEmailFeatureFlagDataSuccess, (state) => ({ ...state, isLoadingFeatureFlagExport: false, exportFeatureFlagSuccess: true })),
-  on(FeatureFlagsActions.actionEmailFeatureFlagDataFailure, (state) => ({ ...state, isLoadingFeatureFlagExport: false })),
-  on(FeatureFlagsActions.actionExportFeatureFlagDesign, (state) => (
-    { ...state, isLoadingFeatureFlagExport: true })
-  ),
-  on(FeatureFlagsActions.actionExportFeatureFlagDesignSuccess, (state) => ({ ...state, isLoadingFeatureFlagExport: false, exportFeatureFlagSuccess: true })),
-  on(FeatureFlagsActions.actionExportFeatureFlagDesignFailure, (state) => ({ ...state, isLoadingFeatureFlagExport: false })),
   on(FeatureFlagsActions.actionUpdateFeatureFlagFailure, (state) => ({ ...state, isLoadingUpsertFeatureFlag: false })),
   on(FeatureFlagsActions.actionAddFeatureFlagFailure, (state) => ({ ...state, isLoadingUpsertFeatureFlag: false })),
   on(FeatureFlagsActions.actionSetSkipFlags, (state, { skipFlags }) => ({ ...state, skipFlags })),
@@ -99,7 +89,6 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchValue: searchString })),
   on(FeatureFlagsActions.actionSetSortKey, (state, { sortKey }) => ({ ...state, sortKey })),
   on(FeatureFlagsActions.actionSetSortingType, (state, { sortingType }) => ({ ...state, sortAs: sortingType })),
-  on(FeatureFlagsActions.actionSetExportFeatureFlagsSuccessFlag, (state, { flag }) => ({ ...state, exportFeatureFlagSuccess: flag })),
   on(FeatureFlagsActions.actionSetActiveDetailsTabIndex, (state, { activeDetailsTabIndex }) => ({
     ...state,
     activeDetailsTabIndex,

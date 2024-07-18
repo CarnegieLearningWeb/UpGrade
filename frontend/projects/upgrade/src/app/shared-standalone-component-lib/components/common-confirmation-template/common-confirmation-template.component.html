@@ -4,15 +4,14 @@
       [cancelBtnLabel]="data.cancelBtnLabel"
       [primaryActionBtnLabel]="data.primaryActionBtnLabel"
       [primaryActionBtnColor]="data.primaryActionBtnColor"
-      [primaryActionBtnDisabled]="isLoadingFeatureFlagExport$ | async"
       (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
     >
       <div mat-dialog-content class="dialog">
-        <div class="ft-18-600 confirm-export">
-          {{ confirmationMessage | translate }}
+        <div class="ft-18-600 message">
+          {{ data.params.message | translate }}
         </div>
-        <div class="ft-18-500 email-confirm" *ngIf="data.title === FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA">
-          {{ emailConfirmationMessage | translate }}
+        <div class="ft-18-500 subMessage" [color]="data.params.subMessageColor" *ngIf="data.params.subMessage">
+          {{ data.params.subMessage | translate }}
         </div>
       </div>
     </app-common-dialog>

@@ -12,7 +12,8 @@ import { CommonModule } from '@angular/common';
 import { CommonSectionCardOverviewDetailsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { FEATURE_FLAG_DETAILS_PAGE_ACTIONS, FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
-import { Subscriber, Subscription, lastValueFrom } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
+import { AuthService } from '../../../../../../../core/auth/auth.service';
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,
@@ -32,7 +33,8 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit{
   isSectionCardExpanded = true;
   @Output() sectionCardExpandChange = new EventEmitter<boolean>();
   featureFlag: FeatureFlag;
-  flagSub = new Subscription();;
+  flagSub = new Subscription();
+  emailId = '';
   featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
   flagOverviewDetails$ = this.featureFlagService.selectedFlagOverviewDetails;
 
@@ -45,9 +47,10 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit{
     { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DELETE, disabled: false },
   ];
 
-  constructor(private dialogService: DialogService, private featureFlagService: FeatureFlagsService) {}
+  constructor(private dialogService: DialogService, private featureFlagService: FeatureFlagsService, private authService: AuthService,) {}
 
   ngOnInit(): void {
+    this.getUserEmail();
     this.flagSub = this.featureFlagService.selectedFeatureFlag$.subscribe((flag) => this.featureFlag = flag);
   }
 
@@ -96,13 +99,47 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit{
         console.log('Archive feature flag');
         break;
       case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN:
-        this.dialogService.openExportFeatureFlagDesignModal(this.featureFlag);
+        this.openConfirmExportDesignModal();
         break;
       case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA:
-        this.dialogService.openEmailFeatureFlagDataModal(this.featureFlag);
+        this.openConfirmEmailDataModal();
         break;
       default:
         console.log('Unknown action');
+    }
+  }
+
+  openConfirmExportDesignModal() {
+    const confirmMessage = 'feature-flags.export-feature-flag-design.confirmation-text.text';
+    this.dialogService.openExportFeatureFlagDesignModal(confirmMessage)
+      .afterClosed()
+      .subscribe((isEmailClicked: boolean) => {
+        if (isEmailClicked) {
+          this.featureFlagService.exportFeatureFlagsData([this.featureFlag.id]);
+        }
+      });
+  }
+
+  openConfirmEmailDataModal() {
+    const confirmMessage = 'feature-flags.export-feature-flags-data.confirmation-text.text';
+    const emailConfirmationMessage = "The feature flag will be sent to '" + this.emailId + "'." ;
+    this.dialogService.openEmailFeatureFlagDataModal(confirmMessage, emailConfirmationMessage)
+      .afterClosed()
+      .subscribe((isEmailClicked: boolean) => {
+        if (isEmailClicked) {
+          this.featureFlagService.emailFeatureFlagData(this.featureFlag.id);
+        }
+      });
+  }
+
+  async getUserEmail() {
+    try {
+      const userInfo = await firstValueFrom(this.authService.currentUser$);
+      if (userInfo.email) {
+        this.emailId = userInfo.email;
+      }
+    } catch (error) {
+      console.error('Error fetching user info:', error);
     }
   }
 

@@ -42,6 +42,7 @@ import {
 })
 export class FeatureFlagRootSectionCardComponent {
   dataSource$: Observable<MatTableDataSource<FeatureFlag>>;
+  allFeatureFlagIds: string[] = [];
   isLoadingFeatureFlags$ = this.featureFlagService.isLoadingFeatureFlags$;
   isInitialLoading$ = this.featureFlagService.isInitialFeatureFlagsLoading$;
   isAllFlagsFetched$ = this.featureFlagService.isAllFlagsFetched$;
@@ -77,6 +78,7 @@ export class FeatureFlagRootSectionCardComponent {
   ) {}
 
   ngOnInit() {
+    this.getAllFeatureFlagIds();
     this.featureFlagService.fetchFeatureFlags();
   }
 
@@ -86,6 +88,12 @@ export class FeatureFlagRootSectionCardComponent {
         return this.tableHelpersService.mapTableStateToDataSource<FeatureFlag>(tableState);
       })
     );
+  }
+
+  async getAllFeatureFlagIds() {
+    const dataSource = await firstValueFrom(this.dataSource$);
+    const allFeatureFlag = dataSource.data;
+    this.allFeatureFlagIds = allFeatureFlag.map((flag) => flag.id);
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<FLAG_SEARCH_KEY>) {
@@ -101,14 +109,19 @@ export class FeatureFlagRootSectionCardComponent {
     if (menuButtonItemName === 'Import Feature Flag') {
       this.dialogService.openImportFeatureFlagModal();
     } else if (menuButtonItemName === 'Export All Feature Flag Designs') {
-      this.openExportALLFeatureFlagModal();
+      this.openConfirmAllExportDesignModal();
     }
   }
 
-  async openExportALLFeatureFlagModal() {
-    const dataSource = await firstValueFrom(this.dataSource$);
-    const data: FeatureFlag[] = dataSource.data;
-    this.dialogService.openExportAllFeatureFlagsModal(data);
+  openConfirmAllExportDesignModal() {
+    const confirmMessage = 'feature-flags.export-feature-flag-design.confirmation-text.text';
+    this.dialogService.openExportFeatureFlagDesignModal(confirmMessage)
+      .afterClosed()
+      .subscribe((isEmailClicked: boolean) => {
+        if (isEmailClicked) {
+          this.featureFlagService.exportFeatureFlagsData(this.allFeatureFlagIds);
+        }
+      });
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
