@@ -76,7 +76,6 @@ export class SegmentRepository extends Repository<Segment> {
         logger.error(errorMsg);
         throw errorMsgString;
       });
-
     return result.raw;
   }
 }
