@@ -1,4 +1,4 @@
-import { Observable, Subscription } from 'rxjs';
+import { Observable } from 'rxjs';
 
 import { ChangeDetectionStrategy, Component, Input, OnInit, ViewChild } from '@angular/core';
 
@@ -49,8 +49,6 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
       this.dataSource$.sort = this.sort;
     }
   }
-
-  isAllFeatureFlagsFetchedSub = new Subscription();
 
   get displayedColumns(): string[] {
     return FLAG_ROOT_DISPLAYED_COLUMNS;
