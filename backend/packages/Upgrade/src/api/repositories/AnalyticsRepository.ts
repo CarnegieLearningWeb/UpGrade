@@ -486,7 +486,7 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
           individualEnrollmentRepository
             .createQueryBuilder('individualEnrollment')
             .select('DISTINCT "individualEnrollment"."userId"')
-            .where('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
+            .where('"individualEnrollment"."experimentId" = :experimentId::uuid', { experimentId })
             .getQuery() +
           ')'
       )
