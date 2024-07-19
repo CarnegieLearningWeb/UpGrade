@@ -31,7 +31,7 @@ export type FeatureFlag = BaseFeatureFlag & GeneralCRUDResponseFields;
 export type AddFeatureFlagRequest = BaseFeatureFlag;
 
 // so that we can throw an error if we try to update the id
-export interface ModifyFeatureFlagRequest extends AddFeatureFlagRequest {
+export interface UpdateFeatureFlagRequest extends AddFeatureFlagRequest {
   readonly id: string;
 }
 
@@ -75,7 +75,6 @@ export interface UpdateFeatureFlagStatusRequest {
   status: FEATURE_FLAG_STATUS;
 }
 
-export const DuplicateFeatureFlagSuffix = '_COPY_CHANGE_ME';
 export interface FeatureFlagFormData {
   name: string;
   key: string;

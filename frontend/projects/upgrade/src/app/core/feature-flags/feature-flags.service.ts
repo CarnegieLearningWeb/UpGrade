@@ -22,6 +22,7 @@ import {
   selectSortKey,
   selectSortAs,
   selectFeatureFlagListTypeOptions,
+  selectAppContexts,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -29,11 +30,12 @@ import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types
 import {
   UpdateFeatureFlagStatusRequest,
   AddFeatureFlagRequest,
-  ModifyFeatureFlagRequest,
+  UpdateFeatureFlagRequest,
 } from './store/feature-flags.model';
 import { ExperimentService } from '../experiments/experiments.service';
 import { filter, map, pairwise, withLatestFrom } from 'rxjs';
 import { selectContextMetaData } from '../experiments/store/experiments.selectors';
+import isEqual from 'lodash.isequal';
 
 @Injectable()
 export class FeatureFlagsService {
@@ -44,6 +46,7 @@ export class FeatureFlagsService {
   isLoadingSelectedFeatureFlag$ = this.store$.pipe(select(selectIsLoadingSelectedFeatureFlag));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
+  appContexts$ = this.store$.pipe(select(selectAppContexts));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
   searchString$ = this.store$.pipe(select(selectSearchString));
   searchKey$ = this.store$.pipe(select(selectSearchKey));
@@ -52,10 +55,11 @@ export class FeatureFlagsService {
   isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
   IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
 
-  featureFlagsListLengthChange$ = this.allFeatureFlags$.pipe(
+  hasFeatureFlagsCountChanged$ = this.allFeatureFlags$.pipe(
     pairwise(),
     filter(([prevEntities, currEntities]) => prevEntities.length !== currEntities.length)
   );
+
   selectedFeatureFlagStatusChange$ = this.store$.pipe(
     select(selectSelectedFeatureFlag),
     pairwise(),
@@ -71,8 +75,10 @@ export class FeatureFlagsService {
   isSelectedFeatureFlagUpdated$ = this.store$.pipe(
     select(selectSelectedFeatureFlag),
     pairwise(),
-    filter(([prev, curr]) => prev && curr && JSON.stringify(prev) !== JSON.stringify(curr)),
-    map(([prev, curr]) => curr)
+    filter(([prev, curr]) => {
+      return prev && curr && !isEqual(prev, curr);
+    }),
+    map(([, curr]) => curr)
   );
 
   selectFeatureFlagListTypeOptions$ = this.store$.pipe(select(selectFeatureFlagListTypeOptions));
@@ -81,11 +87,6 @@ export class FeatureFlagsService {
   searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
   selectRootTableState$ = this.store$.select(selectRootTableState);
   activeDetailsTabIndex$ = this.store$.pipe(select(selectActiveDetailsTabIndex));
-  appContexts$ = this.experimentService.contextMetaData$.pipe(
-    map((contextMetaData) => {
-      return Object.keys(contextMetaData?.contextMetadata ?? []);
-    })
-  );
   selectFeatureFlagInclusions$ = this.store$.pipe(select(selectFeatureFlagInclusions));
   selectFeatureFlagInclusionsLength$ = this.store$.pipe(
     select(selectFeatureFlagInclusions),
@@ -96,7 +97,6 @@ export class FeatureFlagsService {
     select(selectFeatureFlagExclusions),
     map((exclusions) => exclusions.length)
   );
-  // note: this comes from experiment service!
 
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
@@ -114,7 +114,7 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlag({ addFeatureFlagRequest }));
   }
 
-  updateFeatureFlag(flag: ModifyFeatureFlagRequest) {
+  updateFeatureFlag(flag: UpdateFeatureFlagRequest) {
     this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlag({ flag }));
   }
 

@@ -3,7 +3,7 @@ import {
   FeatureFlag,
   UpdateFeatureFlagStatusRequest,
   AddFeatureFlagRequest,
-  ModifyFeatureFlagRequest,
+  UpdateFeatureFlagRequest,
 } from './feature-flags.model';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 
@@ -53,7 +53,7 @@ export const actionDeleteFeatureFlagFailure = createAction('[Feature Flags] Dele
 
 export const actionUpdateFeatureFlag = createAction(
   '[Feature Flags] Update Feature Flag',
-  props<{ flag: ModifyFeatureFlagRequest }>()
+  props<{ flag: UpdateFeatureFlagRequest }>()
 );
 
 export const actionUpdateFeatureFlagSuccess = createAction(

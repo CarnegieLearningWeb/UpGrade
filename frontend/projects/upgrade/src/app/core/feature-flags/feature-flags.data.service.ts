@@ -6,7 +6,7 @@ import {
   FeatureFlag,
   FeatureFlagsPaginationInfo,
   FeatureFlagsPaginationParams,
-  ModifyFeatureFlagRequest,
+  UpdateFeatureFlagRequest,
   UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
 import { Observable } from 'rxjs';
@@ -35,7 +35,7 @@ export class FeatureFlagsDataService {
     return this.http.post<FeatureFlag>(url, params);
   }
 
-  updateFeatureFlag(flag: ModifyFeatureFlagRequest): Observable<FeatureFlag> {
+  updateFeatureFlag(flag: UpdateFeatureFlagRequest): Observable<FeatureFlag> {
     const url = `${this.environment.api.featureFlag}/${flag.id}`;
     return this.http.put<FeatureFlag>(url, flag);
   }

@@ -21,6 +21,10 @@ export const selectAllFeatureFlagsSortedByDate = createSelector(selectAllFeature
   });
 });
 
+export const selectAppContexts = createSelector(selectContextMetaData, (contextMetaData) =>
+  Object.keys(contextMetaData?.contextMetadata ?? [])
+);
+
 export const selectHasInitialFeatureFlagsDataLoaded = createSelector(
   selectFeatureFlagsState,
   (state) => state.hasInitialFeatureFlagsDataLoaded

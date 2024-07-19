@@ -26,18 +26,17 @@ import { CommonFormHelpersService } from '../../../../../shared/services/common-
 import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../../../../types/src';
 import {
   AddFeatureFlagRequest,
-  DuplicateFeatureFlagSuffix,
   FeatureFlag,
   FeatureFlagFormData,
-  ModifyFeatureFlagRequest,
+  UpdateFeatureFlagRequest,
   UPSERT_FEATURE_FLAG_ACTION,
-  UPSERT_FEATURE_FLAG_LIST_ACTION,
   UpsertFeatureFlagParams,
 } from '../../../../../core/feature-flags/store/feature-flags.model';
-import { Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatestWith, map, Observable, startWith, Subscription } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { CommonTextHelpersService } from '../../../../../shared/services/common-text-helpers.service';
+import isEqual from 'lodash.isequal';
 
 @Component({
   selector: 'upsert-add-feature-flag-modal',
@@ -69,7 +68,12 @@ export class UpsertFeatureFlagModalComponent {
   isSelectedFeatureFlagUpdated$ = this.featureFlagsService.isSelectedFeatureFlagUpdated$;
   selectedFlag$ = this.featureFlagsService.selectedFeatureFlag$;
   appContexts$ = this.featureFlagsService.appContexts$;
+
   subscriptions = new Subscription();
+  isInitialFormValueChanged$: Observable<boolean>;
+  isPrimaryButtonDisabled$: Observable<boolean>;
+
+  initialFormValues$ = new BehaviorSubject<FeatureFlagFormData>(null);
 
   featureFlagForm: FormGroup;
 
@@ -89,39 +93,85 @@ export class UpsertFeatureFlagModalComponent {
     this.createFeatureFlagForm();
     this.listenForFeatureFlagGetUpdated();
     this.listenOnNameChangesToUpdateKey();
+    this.listenForIsInitialFormValueChanged();
+    this.listenForPrimaryButtonDisabled();
   }
 
   createFeatureFlagForm(): void {
     const { sourceFlag, action } = this.config.params;
-
-    const initialValues: FeatureFlag = { ...sourceFlag };
-
-    if (sourceFlag && action === UPSERT_FEATURE_FLAG_ACTION.DUPLICATE) {
-      initialValues.name += DuplicateFeatureFlagSuffix;
-      initialValues.key += DuplicateFeatureFlagSuffix;
-    }
+    const initialValues = this.deriveInitialFormValues(sourceFlag, action);
 
     this.featureFlagForm = this.formBuilder.group({
-      name: [initialValues.name || '', Validators.required],
-      key: [initialValues.key || '', Validators.required],
-      description: [initialValues.description || ''],
-      appContext: [initialValues.context?.[0] || '', Validators.required],
-      tags: [initialValues.tags || []],
+      name: [initialValues.name, Validators.required],
+      key: [initialValues.key, Validators.required],
+      description: [initialValues.description],
+      appContext: [initialValues.appContext, Validators.required],
+      tags: [initialValues.tags],
     });
+
+    this.initialFormValues$.next(this.featureFlagForm.value);
+  }
+
+  deriveInitialFormValues(sourceFlag: FeatureFlag, action: string) {
+    const name = this.deriveName(sourceFlag, action);
+    const key = this.deriveKey(sourceFlag, action);
+    const description = this.deriveDescription(sourceFlag);
+    const appContext = this.deriveAppContext(sourceFlag);
+    const tags = this.deriveTags(sourceFlag);
+
+    return { name, key, description, appContext, tags };
+  }
+
+  deriveName(sourceFlag: FeatureFlag, action: string): string {
+    return action === UPSERT_FEATURE_FLAG_ACTION.EDIT ? sourceFlag?.name : '';
+  }
+
+  deriveKey(sourceFlag: FeatureFlag, action: string): string {
+    return action === UPSERT_FEATURE_FLAG_ACTION.EDIT ? sourceFlag?.key : '';
+  }
+
+  deriveDescription(sourceFlag: FeatureFlag): string {
+    return sourceFlag?.description || '';
+  }
+
+  deriveAppContext(sourceFlag: FeatureFlag): string {
+    return sourceFlag?.context?.[0] || '';
+  }
+
+  deriveTags(sourceFlag: FeatureFlag): string[] {
+    return sourceFlag?.tags || [];
   }
 
   listenOnNameChangesToUpdateKey(): void {
-    this.subscriptions = this.featureFlagForm.get('name')?.valueChanges.subscribe((name) => {
-      const keyControl = this.featureFlagForm.get('key');
-      if (keyControl && !keyControl.dirty) {
-        keyControl.setValue(CommonTextHelpersService.convertStringToFeatureFlagKeyFormat(name));
-      }
-    });
+    this.subscriptions.add(
+      this.featureFlagForm.get('name')?.valueChanges.subscribe((name) => {
+        const keyControl = this.featureFlagForm.get('key');
+        if (keyControl && !keyControl.dirty) {
+          keyControl.setValue(CommonTextHelpersService.convertStringToFeatureFlagKeyFormat(name));
+        }
+      })
+    );
+  }
+
+  listenForIsInitialFormValueChanged() {
+    this.isInitialFormValueChanged$ = this.featureFlagForm.valueChanges.pipe(
+      startWith(this.featureFlagForm.value),
+      map(() => !isEqual(this.featureFlagForm.value, this.initialFormValues$.value))
+    );
+    this.subscriptions.add(this.isInitialFormValueChanged$.subscribe());
+  }
+
+  listenForPrimaryButtonDisabled() {
+    this.isPrimaryButtonDisabled$ = this.isLoadingUpsertFeatureFlag$.pipe(
+      combineLatestWith(this.isInitialFormValueChanged$),
+      map(([isLoading, isInitialFormValueChanged]) => isLoading || !isInitialFormValueChanged)
+    );
+    this.subscriptions.add(this.isPrimaryButtonDisabled$.subscribe());
   }
 
   // Close the modal once the feature flag list length changes, as that indicates actual success
   listenForFeatureFlagGetUpdated(): void {
-    this.subscriptions = this.isSelectedFeatureFlagUpdated$.subscribe(() => this.closeModal());
+    this.subscriptions.add(this.isSelectedFeatureFlagUpdated$.subscribe(() => this.closeModal()));
   }
 
   onPrimaryActionBtnClicked(): void {
@@ -146,7 +196,7 @@ export class UpsertFeatureFlagModalComponent {
     }
   }
 
-  private createAddRequest({ name, key, description, appContext, tags }: FeatureFlagFormData): void {
+  createAddRequest({ name, key, description, appContext, tags }: FeatureFlagFormData): void {
     const flagRequest: AddFeatureFlagRequest = {
       name,
       key,
@@ -162,11 +212,11 @@ export class UpsertFeatureFlagModalComponent {
     this.featureFlagsService.addFeatureFlag(flagRequest);
   }
 
-  private createEditRequest(
+  createEditRequest(
     { name, key, description, appContext, tags }: FeatureFlagFormData,
     { id, status, filterMode, featureFlagSegmentInclusion, featureFlagSegmentExclusion }: FeatureFlag
   ): void {
-    const flagRequest: ModifyFeatureFlagRequest = {
+    const flagRequest: UpdateFeatureFlagRequest = {
       id,
       name,
       key,
