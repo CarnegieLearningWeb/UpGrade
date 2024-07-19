@@ -202,9 +202,7 @@ export class FeatureFlagsEffects {
       switchMap(([{ featureFlagId }, { email }]) =>
         this.featureFlagsDataService.emailFeatureFlagData(featureFlagId, email).pipe(
           map(() => {
-            email
-              ? this.notificationService.showSuccess(`Email will be sent to ${email}`)
-              : this.notificationService.showSuccess('Email will be sent to registered email');
+            this.notificationService.showSuccess(`Email will be sent to ${email}`);
             return featureFlagsActions.actionEmailFeatureFlagDataSuccess();
           }),
           catchError(() => [featureFlagsActions.actionEmailFeatureFlagDataFailure()])
