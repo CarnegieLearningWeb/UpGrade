@@ -34,7 +34,7 @@ export class DialogService {
   openAddFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Add Feature Flag',
-      primaryActionBtnLabel: 'Add',
+      primaryActionBtnLabel: 'Create',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
@@ -133,7 +133,7 @@ export class DialogService {
   openAddFeatureFlagListModal(commonModalConfig: CommonModalConfig) {
     const config: MatDialogConfig = {
       data: commonModalConfig,
-      width: '670px',
+      width: '656px',
       // height: '460px',
       height: 'auto', // TODO: fixed height or not?
       autoFocus: 'input',
@@ -151,7 +151,7 @@ export class DialogService {
     };
     const config: MatDialogConfig = {
       data: commonModalConfig,
-      width: '670px',
+      width: '480px',
       autoFocus: 'input',
       disableClose: true,
     };
@@ -167,7 +167,7 @@ export class DialogService {
     };
     const config: MatDialogConfig = {
       data: commonModalConfig,
-      width: '670px',
+      width: '656px',
       autoFocus: 'input',
       disableClose: true,
     };
