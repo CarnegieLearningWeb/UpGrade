@@ -1369,7 +1369,7 @@ export class ExperimentService {
           queries.length > 0 &&
           queries[0] &&
           queries.map((query: any) => {
-            promiseArray.push(this.metricRepository.findOne(query.metric.key));
+            promiseArray.push(this.metricRepository.findOne({ where: { key: query.metric.key } }));
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
             rest.experiment = experimentDoc;
