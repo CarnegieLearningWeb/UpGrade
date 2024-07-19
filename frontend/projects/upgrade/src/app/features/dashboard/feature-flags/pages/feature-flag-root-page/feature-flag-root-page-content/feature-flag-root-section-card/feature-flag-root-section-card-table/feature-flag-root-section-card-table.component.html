@@ -17,7 +17,6 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let flag">
-          <h1>{{ flag | json }}</h1>
           <a
             [routerLink]="['/featureflags', 'detail', flag.id]"
             *ngIf="flag.name?.length < 30; else flagNameEllipsis"
