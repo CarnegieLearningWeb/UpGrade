@@ -388,7 +388,7 @@
   "feature-flags.enable.text": "Enable",
   "feature-flags.add-feature-flag.text": "Add Feature Flag",
   "feature-flags.import-feature-flag.text": "Import Feature Flag",
-  "feature-flags.import-feature-flag.message.text": "The Feature Flag JSON file should include the required properties for it to be imported",
+  "feature-flags.import-feature-flag.message.text": "The Feature Flag JSON file should include the required properties for it to be imported.",
   "feature-flags.export-all-feature-flags.text": "Export All Feature Flags",
   "segments.title.text": "Segments",
   "segments.subtitle.text": "Define new segments to include or exclude from any experiment",
