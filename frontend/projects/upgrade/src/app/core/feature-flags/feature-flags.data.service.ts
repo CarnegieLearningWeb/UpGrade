@@ -30,9 +30,9 @@ export class FeatureFlagsDataService {
     return this.http.post<FeatureFlag>(url, params);
   }
 
-  addFeatureFlag(params: AddFeatureFlagRequest): Observable<FeatureFlag> {
+  addFeatureFlag(flag: AddFeatureFlagRequest): Observable<FeatureFlag> {
     const url = this.environment.api.featureFlag;
-    return this.http.post<FeatureFlag>(url, params);
+    return this.http.post<FeatureFlag>(url, flag);
   }
 
   updateFeatureFlag(flag: UpdateFeatureFlagRequest): Observable<FeatureFlag> {
