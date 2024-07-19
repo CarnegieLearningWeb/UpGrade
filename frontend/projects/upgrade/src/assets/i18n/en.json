@@ -354,7 +354,6 @@
   "feature-flags.no-flags-in-table.text": "No feature flags is defined. Create a new feature flag.",
   "feature-flags.delete-flag.message.text": "Type the name of feature flag to confirm deletion:",
   "feature-flags.delete-flag.input-placeholder.text": "Feature flag name",
-  "feature-flags.upsert-flag.text": "ADD FLAG",
   "feature-flags.upsert-flag-modal.name-hint.text": "The name for this feature flag.",
   "feature-flags.upsert-flag-modal.key-hint.text": "A unique key used to retrieve this feature flag from the client application.",
   "feature-flags.upsert-flag-modal.app-context-hint.text": "The App Context indicates where the feature flag will run, known to UpGrade.",

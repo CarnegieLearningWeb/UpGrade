@@ -19,11 +19,12 @@ export class CommonTextHelpersService {
    * to create an instance of the service.
    */
   public static formatGroupTypes(groupTypes: string[]): { value: string; viewValue: string }[] {
-    return (
-      groupTypes?.map((groupType) => {
-        return { value: groupType, viewValue: CommonTextHelpersService.formatGroupTypeViewValue(groupType) };
-      }) ?? []
-    );
+    if (!Array.isArray(groupTypes)) {
+      return [];
+    }
+    return groupTypes.map((groupType) => {
+      return { value: groupType, viewValue: CommonTextHelpersService.formatGroupTypeViewValue(groupType) };
+    });
   }
 
   /**

@@ -113,11 +113,11 @@ export class UpsertFeatureFlagModalComponent {
   }
 
   deriveInitialFormValues(sourceFlag: FeatureFlag, action: string) {
-    const name = this.deriveName(sourceFlag, action);
-    const key = this.deriveKey(sourceFlag, action);
-    const description = this.deriveDescription(sourceFlag);
-    const appContext = this.deriveAppContext(sourceFlag);
-    const tags = this.deriveTags(sourceFlag);
+    const name = action === UPSERT_FEATURE_FLAG_ACTION.EDIT ? sourceFlag?.name : '';
+    const key = action === UPSERT_FEATURE_FLAG_ACTION.EDIT ? sourceFlag?.key : '';
+    const description = sourceFlag?.description || '';
+    const appContext = sourceFlag?.context?.[0] || '';
+    const tags = sourceFlag?.tags || [];
 
     return { name, key, description, appContext, tags };
   }
@@ -184,7 +184,7 @@ export class UpsertFeatureFlagModalComponent {
     }
   }
 
-  createRequest(action: UPSERT_FEATURE_FLAG_ACTION, sourceFlag?: FeatureFlag): void {
+  sendRequest(action: UPSERT_FEATURE_FLAG_ACTION, sourceFlag?: FeatureFlag): void {
     const formData: FeatureFlagFormData = this.featureFlagForm.value;
 
     if (action === UPSERT_FEATURE_FLAG_ACTION.ADD || action === UPSERT_FEATURE_FLAG_ACTION.DUPLICATE) {
