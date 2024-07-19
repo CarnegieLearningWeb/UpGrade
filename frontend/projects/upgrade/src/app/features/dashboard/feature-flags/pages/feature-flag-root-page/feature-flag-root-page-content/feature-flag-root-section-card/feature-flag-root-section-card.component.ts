@@ -78,8 +78,8 @@ export class FeatureFlagRootSectionCardComponent {
   ) {}
 
   ngOnInit() {
-    this.getAllFeatureFlagIds();
     this.featureFlagService.fetchFeatureFlags();
+    this.getAllFeatureFlagIds();
   }
 
   ngAfterViewInit() {
@@ -91,9 +91,11 @@ export class FeatureFlagRootSectionCardComponent {
   }
 
   async getAllFeatureFlagIds() {
-    const dataSource = await firstValueFrom(this.dataSource$);
-    const allFeatureFlag = dataSource.data;
-    this.allFeatureFlagIds = allFeatureFlag.map((flag) => flag.id);
+    if (this.dataSource$) {
+      const dataSource = await firstValueFrom(this.dataSource$);
+      const allFeatureFlag = dataSource.data;
+      this.allFeatureFlagIds = allFeatureFlag.map((flag) => flag.id);
+    }
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<FLAG_SEARCH_KEY>) {
