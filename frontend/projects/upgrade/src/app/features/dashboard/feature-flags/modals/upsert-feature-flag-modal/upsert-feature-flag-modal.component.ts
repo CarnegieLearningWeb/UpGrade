@@ -177,7 +177,7 @@ export class UpsertFeatureFlagModalComponent {
   onPrimaryActionBtnClicked(): void {
     if (this.featureFlagForm.valid) {
       // Handle extra frontend form validation logic here?
-      this.createRequest(this.config.params.action, this.config.params.sourceFlag);
+      this.sendRequest(this.config.params.action, this.config.params.sourceFlag);
     } else {
       // If the form is invalid, manually mark all form controls as touched
       this.formHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);
@@ -192,7 +192,7 @@ export class UpsertFeatureFlagModalComponent {
     } else if (action === UPSERT_FEATURE_FLAG_ACTION.EDIT && sourceFlag) {
       this.createEditRequest(formData, sourceFlag);
     } else {
-      console.error('UpsertFeatureFlagModalComponent: createRequest: Invalid action or missing sourceFlag');
+      console.error('UpsertFeatureFlagModalComponent: sendRequest: Invalid action or missing sourceFlag');
     }
   }
 
