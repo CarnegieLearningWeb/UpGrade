@@ -4,10 +4,10 @@ import { SEGMENT_TYPE } from 'upgrade_types';
 import { BaseModel } from './base/BaseModel';
 import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
 import { ExperimentSegmentInclusion } from './ExperimentSegmentInclusion';
-import { FeatureFlagSegmentExclusion } from './FeatureFlagSegmentExclusion';
-import { FeatureFlagSegmentInclusion } from './FeatureFlagSegmentInclusion';
 import { GroupForSegment } from './GroupForSegment';
 import { IndividualForSegment } from './IndividualForSegment';
+import { FeatureFlagSegmentInclusion } from './FeatureFlagSegmentInclusion';
+import { FeatureFlagSegmentExclusion } from './FeatureFlagSegmentExclusion';
 
 @Entity()
 export class Segment extends BaseModel {

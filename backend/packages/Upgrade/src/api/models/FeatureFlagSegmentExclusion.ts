@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { FeatureFlag } from './FeatureFlag';
 import { Segment } from './Segment';
@@ -9,10 +9,18 @@ export class FeatureFlagSegmentExclusion extends BaseModel {
   @JoinColumn()
   public segment: Segment;
 
-  @OneToOne(() => FeatureFlag, (featureFlag) => featureFlag.featureFlagSegmentExclusion, {
+  @ManyToOne(() => FeatureFlag, (featureFlag) => featureFlag.featureFlagSegmentExclusion, {
     onDelete: 'CASCADE',
     primary: true,
   })
   @JoinColumn()
   public featureFlag: FeatureFlag;
+
+  @Column({
+    default: false,
+  })
+  public enabled: boolean;
+
+  @Column()
+  public listType: string;
 }
