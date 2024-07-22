@@ -1,24 +1,21 @@
-<div class="modal-container">
-  <app-common-dialog
-    [title]="data.title"
-    [cancelBtnLabel]="data.cancelBtnLabel"
-    [primaryActionBtnLabel]="data.primaryActionBtnLabel"
-    [primaryActionBtnColor]="data.primaryActionBtnColor"
-    [primaryActionBtnDisabled]="isImportActionBtnDisabled | async"
-    (primaryActionBtnClicked)="importFiles()"
-  >
-    <div class="drag-drop-container">
-      <app-common-import-container
-        fileType=".json"
-        buttonLabel="Import Json"
-        (filesSelected)="handleFilesSelected($event)"
-        class="full-width"
-      >
-      </app-common-import-container>
-      <p class="ft-12-600 import-message">
-        {{ 'feature-flags.import-feature-flag.message.text' | translate }}
-        <a href="">Learn More</a>
-      </p>
-    </div>
-  </app-common-dialog>
-</div>
+<app-common-dialog
+  [title]="data.title"
+  [cancelBtnLabel]="data.cancelBtnLabel"
+  [primaryActionBtnLabel]="data.primaryActionBtnLabel"
+  [primaryActionBtnColor]="data.primaryActionBtnColor"
+  [primaryActionBtnDisabled]="isImportActionBtnDisabled | async"
+  (primaryActionBtnClicked)="importFiles()"
+>
+  <div class="drag-drop-container">
+    <app-common-import-container
+      fileType=".json"
+      buttonLabel="Choose JSON"
+      (filesSelected)="handleFilesSelected($event)"
+    >
+    </app-common-import-container>
+    <p class="ft-12-400 form-hint">
+      {{ 'feature-flags.import-feature-flag.message.text' | translate }}
+      <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">Learn more</a>
+    </p>
+  </div>
+</app-common-dialog>
