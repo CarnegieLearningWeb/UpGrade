@@ -68,6 +68,7 @@ import { withInSubjectType } from '../Algorithms';
 import { CacheService } from './CacheService';
 import { UserStratificationFactorRepository } from '../repositories/UserStratificationRepository';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
+import { In } from 'typeorm';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -1717,17 +1718,31 @@ export class ExperimentAssignmentService {
     let segmentDetails: Segment[] = [];
     let segmentObj = {};
 
-    experiments.forEach((exp) => {
-      const includeId = exp.experimentSegmentInclusion.segment.id;
-      const excludeId = exp.experimentSegmentExclusion.segment.id;
+    const includedExperiments: Experiment[] = [];
+    const excludedExperiments = [];
 
-      segmentObj[exp.id] = {
-        segmentIdsQueue: [includeId, excludeId],
-        currentIncludedSegmentIds: [includeId],
-        currentExcludedSegmentIds: [excludeId],
-        allIncludedSegmentIds: [includeId],
-        allExcludedSegmentIds: [excludeId],
-      };
+    const experimentIds = experiments
+      .filter((experiment) => experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL)
+      .map((experiment) => experiment.id);
+    const experimentsEnrolled = await this.individualEnrollmentRepository.find({
+      where: { experiment: In(experimentIds), user: { id: experimentUser.id } },
+      relations: ['experiment'],
+    });
+    const experimentsEnrolledIds = experimentsEnrolled.map((enrollment) => enrollment.experiment.id);
+
+    experiments.forEach((exp) => {
+      if (!experimentsEnrolledIds.includes(exp.id)) {
+        const includeId = exp.experimentSegmentInclusion.segment.id;
+        const excludeId = exp.experimentSegmentExclusion.segment.id;
+
+        segmentObj[exp.id] = {
+          segmentIdsQueue: [includeId, excludeId],
+          currentIncludedSegmentIds: [includeId],
+          currentExcludedSegmentIds: [excludeId],
+          allIncludedSegmentIds: [includeId],
+          allExcludedSegmentIds: [excludeId],
+        };
+      }
     });
 
     const depth = 0;
@@ -1784,7 +1799,8 @@ export class ExperimentAssignmentService {
       });
     });
 
-    const userGroups = [];
+    const userGroups = [],
+      indirectExcludedExperiments = [];
     if (experimentUser.group) {
       Object.keys(experimentUser.group).forEach((type) => {
         experimentUser.group[type].forEach((groupId) => {
@@ -1809,9 +1825,6 @@ export class ExperimentAssignmentService {
     //           If the user is on the exclude list, exclude the user
     //           Else include the user
     //     Else exclude the user
-
-    const includedExperiments: Experiment[] = [];
-    const excludedExperiments = [];
 
     experiments.forEach((experiment) => {
       let inclusionFlag = false;
@@ -1846,6 +1859,9 @@ export class ExperimentAssignmentService {
               reason: 'group',
               matchedGroup,
             });
+            if (!matchedGroup) {
+              indirectExcludedExperiments.push(experiment.id);
+            }
           }
         }
       } else {
@@ -1870,6 +1886,28 @@ export class ExperimentAssignmentService {
           }
         }
       }
+    });
+
+    // const enrollments = await this.individualEnrollmentRepository.find({
+    //   where: { experiment: In(indirectExcludedExperiments), user: { id: experimentUser.id } },
+    //   relations: ['experiment'],
+    // });
+    // const enrollmentGroups = enrollments
+    //   .map((enrollment) => {
+    //     return { groupId: enrollment.groupId, experimentId: enrollment.experiment.id };
+    //   })
+    //   .filter((item) => item != null);
+
+    const userWorkingGroupIds = [];
+    if (experimentUser.workingGroup) {
+      Object.keys(experimentUser.workingGroup).forEach((type) => {
+        userWorkingGroupIds.push(experimentUser.workingGroup[type]);
+      });
+    }
+    // const userGroupIds = userGroups.map((group) => group.groupId);
+    await this.groupEnrollmentRepository.delete({
+      experiment: { id: In(indirectExcludedExperiments) },
+      groupId: In(userWorkingGroupIds),
     });
 
     return [includedExperiments, excludedExperiments];
