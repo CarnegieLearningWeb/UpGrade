@@ -122,26 +122,6 @@ export class UpsertFeatureFlagModalComponent {
     return { name, key, description, appContext, tags };
   }
 
-  deriveName(sourceFlag: FeatureFlag, action: string): string {
-    return action === UPSERT_FEATURE_FLAG_ACTION.EDIT ? sourceFlag?.name : '';
-  }
-
-  deriveKey(sourceFlag: FeatureFlag, action: string): string {
-    return action === UPSERT_FEATURE_FLAG_ACTION.EDIT ? sourceFlag?.key : '';
-  }
-
-  deriveDescription(sourceFlag: FeatureFlag): string {
-    return sourceFlag?.description || '';
-  }
-
-  deriveAppContext(sourceFlag: FeatureFlag): string {
-    return sourceFlag?.context?.[0] || '';
-  }
-
-  deriveTags(sourceFlag: FeatureFlag): string[] {
-    return sourceFlag?.tags || [];
-  }
-
   listenOnNameChangesToUpdateKey(): void {
     this.subscriptions.add(
       this.featureFlagForm.get('name')?.valueChanges.subscribe((name) => {
