@@ -21,19 +21,21 @@ import {
   selectIsLoadingSelectedFeatureFlag,
   selectSortKey,
   selectSortAs,
+  selectFeatureFlagListTypeOptions,
+  selectAppContexts,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 import {
-  AddFeatureFlagRequest,
-  FeatureFlag,
-  LIST_OPTION_TYPE,
   UpdateFeatureFlagStatusRequest,
+  AddFeatureFlagRequest,
+  UpdateFeatureFlagRequest,
 } from './store/feature-flags.model';
 import { ExperimentService } from '../experiments/experiments.service';
 import { filter, map, pairwise, withLatestFrom } from 'rxjs';
 import { selectContextMetaData } from '../experiments/store/experiments.selectors';
+import isEqual from 'lodash.isequal';
 
 @Injectable()
 export class FeatureFlagsService {
@@ -44,6 +46,7 @@ export class FeatureFlagsService {
   isLoadingSelectedFeatureFlag$ = this.store$.pipe(select(selectIsLoadingSelectedFeatureFlag));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
+  appContexts$ = this.store$.pipe(select(selectAppContexts));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
   searchString$ = this.store$.pipe(select(selectSearchString));
   searchKey$ = this.store$.pipe(select(selectSearchKey));
@@ -52,10 +55,11 @@ export class FeatureFlagsService {
   isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
   IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
 
-  featureFlagsListLengthChange$ = this.allFeatureFlags$.pipe(
+  hasFeatureFlagsCountChanged$ = this.allFeatureFlags$.pipe(
     pairwise(),
     filter(([prevEntities, currEntities]) => prevEntities.length !== currEntities.length)
   );
+
   selectedFeatureFlagStatusChange$ = this.store$.pipe(
     select(selectSelectedFeatureFlag),
     pairwise(),
@@ -71,20 +75,18 @@ export class FeatureFlagsService {
   isSelectedFeatureFlagUpdated$ = this.store$.pipe(
     select(selectSelectedFeatureFlag),
     pairwise(),
-    filter(([prev, curr]) => prev && curr && JSON.stringify(prev) !== JSON.stringify(curr)),
-    map(([prev, curr]) => curr)
+    filter(([prev, curr]) => {
+      return prev && curr && !isEqual(prev, curr);
+    }),
+    map(([, curr]) => curr)
   );
 
+  selectFeatureFlagListTypeOptions$ = this.store$.pipe(select(selectFeatureFlagListTypeOptions));
   selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));
   selectedFeatureFlag$ = this.store$.pipe(select(selectSelectedFeatureFlag));
   searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
   selectRootTableState$ = this.store$.select(selectRootTableState);
   activeDetailsTabIndex$ = this.store$.pipe(select(selectActiveDetailsTabIndex));
-  appContexts$ = this.experimentService.contextMetaData$.pipe(
-    map((contextMetaData) => {
-      return Object.keys(contextMetaData?.contextMetadata ?? []);
-    })
-  );
   selectFeatureFlagInclusions$ = this.store$.pipe(select(selectFeatureFlagInclusions));
   selectFeatureFlagInclusionsLength$ = this.store$.pipe(
     select(selectFeatureFlagInclusions),
@@ -95,46 +97,6 @@ export class FeatureFlagsService {
     select(selectFeatureFlagExclusions),
     map((exclusions) => exclusions.length)
   );
-  // note: this comes from experiment service!
-  selectFeatureFlagListTypeOptions$ = this.store$.pipe(
-    select(selectContextMetaData),
-    withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
-    map(([contextMetaData, flag]) => {
-      // TODO: straighten out contextmetadata and it's selectors with a dedicated service
-      const flagAppContext = flag?.context?.[0];
-      const groupTypes = contextMetaData?.contextMetadata?.[flagAppContext]?.GROUP_TYPES ?? [];
-      const groupTypeSelectOptions = this.formatGroupTypes(groupTypes as string[]);
-      const listOptionTypes = [
-        {
-          value: LIST_OPTION_TYPE.SEGMENT,
-          viewValue: LIST_OPTION_TYPE.SEGMENT,
-        },
-        {
-          value: LIST_OPTION_TYPE.INDIVIDUAL,
-          viewValue: LIST_OPTION_TYPE.INDIVIDUAL,
-        },
-        ...groupTypeSelectOptions,
-      ];
-
-      return listOptionTypes;
-    })
-  );
-
-  formatGroupTypes(groupTypes: string[]): { value: string; viewValue: string }[] {
-    if (Array.isArray(groupTypes) && groupTypes.length > 0) {
-      return groupTypes.map((groupType) => {
-        return { value: groupType, viewValue: 'Group: "' + groupType + '"' };
-      });
-    } else {
-      return [];
-    }
-  }
-
-  convertNameStringToKey(name: string): string {
-    const upperCaseString = name.trim().toUpperCase();
-    const key = upperCaseString.replace(/ /g, '_');
-    return key;
-  }
 
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
@@ -152,7 +114,7 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlag({ addFeatureFlagRequest }));
   }
 
-  updateFeatureFlag(flag: FeatureFlag) {
+  updateFeatureFlag(flag: UpdateFeatureFlagRequest) {
     this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlag({ flag }));
   }
 

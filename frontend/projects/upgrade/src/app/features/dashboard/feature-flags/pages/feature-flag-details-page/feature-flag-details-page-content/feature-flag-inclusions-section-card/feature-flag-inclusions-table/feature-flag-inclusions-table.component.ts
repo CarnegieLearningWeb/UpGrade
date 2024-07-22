@@ -14,9 +14,7 @@ import { tap } from 'rxjs';
   imports: [CommonDetailsParticipantListTableComponent, CommonModule, TranslateModule],
 })
 export class FeatureFlagInclusionsTableComponent {
-  @Input() dataSource$ = this.featureFlagService.selectFeatureFlagInclusions$.pipe(
-    tap((data) => console.log('>> inclusions table component', data))
-  );
+  @Input() dataSource$ = this.featureFlagService.selectFeatureFlagInclusions$;
   isLoading$ = this.featureFlagService.isLoadingSelectedFeatureFlag$;
 
   constructor(private featureFlagService: FeatureFlagsService) {}

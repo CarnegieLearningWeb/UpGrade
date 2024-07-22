@@ -1,17 +1,8 @@
-:host ::ng-deep .modal-container {
-  width: 100%;
-}
-
-.mat-mdc-form-field {
-  width: 100%;
-}
-
-.warning-msg {
-  font-size: 18px;
-  font-weight: 500;
-  margin-bottom: 14px;
-}
-
-.confirm-delete {
-  margin-bottom: 12px;
+.delete-container {
+  display: flex;
+  flex-direction: column;
+  row-gap: 16px;
+  color: var(--dark-grey);
+  padding: 40px 32px 24px;
+  margin: 0;
 }
