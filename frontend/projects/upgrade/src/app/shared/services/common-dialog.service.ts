@@ -15,6 +15,8 @@ import {
   UpsertFeatureFlagListParams,
 } from '../../core/feature-flags/store/feature-flags.model';
 import { CommonConfirmationDialogTemplate } from '../../shared-standalone-component-lib/components/common-confirmation-template/common-confirmation-template.component';
+import { UpsertFeatureFlagListModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-list-modal/upsert-feature-flag-list-modal.component';
+import { CommonSimpleConfirmationModal } from '../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
 
 @Injectable({
   providedIn: 'root',
@@ -202,5 +204,16 @@ export class DialogService {
       disableClose: true,
     };
     return this.dialog.open(ImportFeatureFlagModalComponent, config);
+  }
+
+  openCommonConfirmationModal(commonModalConfig: CommonModalConfig): MatDialogRef<CommonSimpleConfirmationModal, boolean> {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: '656px',
+      autoFocus: 'first-heading',
+      disableClose: true,
+    };
+
+    return this.dialog.open(CommonSimpleConfirmationModal, config);
   }
 }
