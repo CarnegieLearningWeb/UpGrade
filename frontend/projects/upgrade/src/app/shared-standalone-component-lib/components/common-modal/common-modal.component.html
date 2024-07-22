@@ -1,9 +1,9 @@
 <mat-card class="common-modal">
   <!-- top part of the dialog -->
-  <header class="header-container">
-    <h4 class="header-title">{{ title }}</h4>
+  <header class="header-container dense-2">
+    <h4 class="ft-22-700 header-title">{{ title }}</h4>
     <button mat-icon-button mat-dialog-close class="close-btn">
-      <mat-icon aria-label="Close dialog">close</mat-icon>
+      <mat-icon>close</mat-icon>
     </button>
   </header>
 
@@ -13,19 +13,17 @@
 
   <!-- bottom part of the dialog -->
   <section *ngIf="!hideFooter" class="footer-container">
-    <mat-dialog-actions style="align-self: end">
-      <button class="dialog-action-btn cancel-btn" mat-flat-button [mat-dialog-close]="'goodbye'">
-        {{ cancelBtnLabel }}
-      </button>
-      <button
-        class="dialog-action-btn primary-btn"
-        mat-flat-button
-        [color]="primaryActionBtnColor"
-        [disabled]="primaryActionBtnDisabled$ | async"
-        (click)="onPrimaryActionBtnClicked()"
-      >
-        {{ primaryActionBtnLabel }}
-      </button>
-    </mat-dialog-actions>
+    <button mat-flat-button mat-dialog-close class="dialog-action-btn cancel-btn" >
+      {{ cancelBtnLabel }}
+    </button>
+    <button
+      class="dialog-action-btn"
+      mat-flat-button
+      [color]="primaryActionBtnColor"
+      [disabled]="primaryActionBtnDisabled"
+      (click)="onPrimaryActionBtnClicked()"
+    >
+      {{ primaryActionBtnLabel }}
+    </button>
   </section>
 </mat-card>

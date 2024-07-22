@@ -1,3 +1,26 @@
-mat-form-field {
-  width: 100%;
+.input-container {
+  padding-bottom: 16px;
+
+  .chips-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    .icon-button {
+      background: none;
+      border: none;
+      box-shadow: none;
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dark-grey);
+      margin-right: -11px;
+
+      .material-symbols-outlined {
+        font-size: 20px;
+      }
+    }
+  }
 }

@@ -14,6 +14,7 @@ import {
   selectSortKey,
   selectSortAs,
   selectSearchString,
+  selectIsAllFlagsFetched,
 } from './feature-flags.selectors';
 import { DialogService } from '../../../shared/services/common-dialog.service';
 
@@ -36,9 +37,12 @@ export class FeatureFlagsEffects {
         this.store$.pipe(select(selectTotalFlags)),
         this.store$.pipe(select(selectSearchKey)),
         this.store$.pipe(select(selectSortKey)),
-        this.store$.pipe(select(selectSortAs))
+        this.store$.pipe(select(selectSortAs)),
+        this.store$.pipe(select(selectIsAllFlagsFetched))
       ),
-      filter(([fromStarting, skip, total]) => skip < total || total === null || fromStarting),
+      filter(([fromStarting, skip, total, searchKey, sortKey, sortAs, isAllFlagsFetched]) => {
+        return !isAllFlagsFetched || skip < total || total === null || fromStarting;
+      }),
       tap(() => {
         this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: true }));
       }),
@@ -91,8 +95,9 @@ export class FeatureFlagsEffects {
       ofType(FeatureFlagsActions.actionAddFeatureFlag),
       switchMap((action) => {
         return this.featureFlagsDataService.addFeatureFlag(action.addFeatureFlagRequest).pipe(
-          map((response) => {
-            return FeatureFlagsActions.actionAddFeatureFlagSuccess({ response });
+          map((response) => FeatureFlagsActions.actionAddFeatureFlagSuccess({ response })),
+          tap(({ response }) => {
+            this.router.navigate(['/featureflags', 'detail', response.id]);
           }),
           catchError(() => [FeatureFlagsActions.actionAddFeatureFlagFailure()])
         );

@@ -1,8 +1,8 @@
 <div *ngIf="!(isLoadingContextMetaData$ | async); else loadingExperimentOverview" class="shared-modal--step-container">
   <section class="shared-modal--form-container">
-    <form class="experiment-overview" [formGroup]="overviewForm">
+    <form class="experiment-overview dense-3" [formGroup]="overviewForm">
       <mat-form-field
-        class="dense-1 name"
+        class="name"
         appearance="outline"
         subscriptSizing="dynamic"
       >
@@ -19,7 +19,7 @@
       </mat-form-field>
 
       <mat-form-field
-        class="dense-1 description"
+        class="description"
         appearance="outline"
         subscriptSizing="dynamic"
       >
@@ -35,7 +35,7 @@
       </mat-form-field>
 
       <mat-form-field
-        class="dense-1 chips"
+        class="chips"
         appearance="outline"
         subscriptSizing="dynamic"
       >
@@ -51,7 +51,7 @@
 
       <div class="property-container">
         <mat-form-field
-          class="dense-1 unit-of-assignment"
+          class="unit-of-assignment"
           appearance="outline"
           subscriptSizing="dynamic"
         >
@@ -66,7 +66,7 @@
         </mat-form-field>
 
         <mat-form-field
-          class="dense-1 group-type"
+          class="group-type"
           appearance="outline"
           subscriptSizing="dynamic"
           *ngIf="unitOfAssignmentValue === ASSIGNMENT_UNIT.GROUP"
@@ -81,7 +81,7 @@
       </div>
 
       <mat-form-field
-        class="dense-1 consistency-rule"
+        class="consistency-rule"
         appearance="outline"
         subscriptSizing="dynamic"
         *ngIf="unitOfAssignmentValue !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS"
@@ -97,7 +97,7 @@
       </mat-form-field>
 
       <mat-form-field
-        class="dense-1 condition-order"
+        class="condition-order"
         appearance="outline"
         subscriptSizing="dynamic"
         *ngIf="unitOfAssignmentValue === ASSIGNMENT_UNIT.WITHIN_SUBJECTS"
@@ -113,7 +113,7 @@
       </mat-form-field>
 
       <mat-form-field
-        class="dense-1 design-type"
+        class="design-type"
         appearance="outline"
         subscriptSizing="dynamic"
       >
@@ -129,7 +129,7 @@
 
       <div class="stratification-container">
         <mat-form-field
-          class="dense-1 assignment-algorithm"
+          class="assignment-algorithm"
           appearance="outline"
           subscriptSizing="dynamic"
         >
@@ -144,7 +144,7 @@
         </mat-form-field>
 
         <mat-form-field
-          class="dense-1 stratification-factor"
+          class="stratification-factor"
           appearance="outline"
           subscriptSizing="dynamic"
           *ngIf="assignmentAlgorithmValue === 'stratified random sampling'"
@@ -161,7 +161,7 @@
       </div>
 
       <mat-form-field
-        class="dense-1 tags"
+        class="tags"
         appearance="outline"
         subscriptSizing="dynamic"
       >
