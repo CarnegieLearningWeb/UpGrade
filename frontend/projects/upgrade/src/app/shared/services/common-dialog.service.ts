@@ -154,7 +154,7 @@ export class DialogService {
   openCommonConfirmationModal(commonModalConfig: CommonModalConfig): MatDialogRef<CommonSimpleConfirmationModal, boolean> {
     const config: MatDialogConfig = {
       data: commonModalConfig,
-      width: '670px',
+      width: '656px',
       autoFocus: 'first-heading',
       disableClose: true,
     };
