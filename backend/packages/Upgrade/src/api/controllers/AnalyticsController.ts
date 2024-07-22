@@ -66,6 +66,12 @@ export class AnalyticsController {
    *                    type: string
    *                    minLength: 1
    *                    example: exp01
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('/enrollment')
   public async analyticsService(
@@ -157,6 +163,12 @@ export class AnalyticsController {
    *                            groups:
    *                              type: number
    *                              example: 3
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('/enrollment/detail')
   public async analyticsDetailService(
@@ -247,6 +259,12 @@ export class AnalyticsController {
    *                    required:
    *                      - id
    *                      - conditions
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('/enrollment/date')
   public async enrollmentByDate(
@@ -276,12 +294,18 @@ export class AnalyticsController {
    *                type: string
    *              email:
    *                type: string
-   *           description: Get Csv files in given mail id
+   *           description: Export CSV data file to the given mail id
    *       tags:
    *         - Analytics
    *       responses:
    *          '200':
-   *            description: Get CSV files
+   *            description: Export CSV data file to the given mail id
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
    */
   @Get('/csv')
   public async downloadCSV(
