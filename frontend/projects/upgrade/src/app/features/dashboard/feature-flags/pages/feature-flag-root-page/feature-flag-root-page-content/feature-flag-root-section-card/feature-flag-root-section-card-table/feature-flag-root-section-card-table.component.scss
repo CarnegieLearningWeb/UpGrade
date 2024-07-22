@@ -7,6 +7,10 @@
     margin-top: 8px;
     overflow: auto;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 
     .spinner {
       position: sticky;

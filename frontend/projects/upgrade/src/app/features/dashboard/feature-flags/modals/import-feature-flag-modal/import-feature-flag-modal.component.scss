@@ -1,0 +1,12 @@
+.drag-drop-container {
+  display: flex;
+  flex-direction: column;
+  row-gap: 2px;
+  padding: 40px 32px 24px;
+
+  .form-hint {
+    text-indent: 16px;
+    margin-bottom: 0;
+  }
+}
+

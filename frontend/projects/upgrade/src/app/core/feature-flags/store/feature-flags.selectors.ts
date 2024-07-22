@@ -1,20 +1,10 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import {
-  AnySegmentType,
-  EmptyPrivateSegment,
-  FLAG_SEARCH_KEY,
-  FeatureFlag,
-  FeatureFlagState,
-  ParticipantListTableRow,
-  PrivateSegment,
-} from './feature-flags.model';
+import { FLAG_SEARCH_KEY, FeatureFlag, FeatureFlagState, ParticipantListTableRow } from './feature-flags.model';
 import { selectRouterState } from '../../core.state';
 import { selectAll } from './feature-flags.reducer';
-import { GroupForSegment, IndividualForSegment, Segment } from '../../segments/store/segments.model';
-import {
-  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
-  FEATURE_FLAG_STATUS,
-} from '../../../../../../../../types/src/Experiment/enums';
+import { MemberTypes } from '../../segments/store/segments.model';
+import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
+import { CommonTextHelpersService } from '../../../shared/services/common-text-helpers.service';
 
 export const selectFeatureFlagsState = createFeatureSelector<FeatureFlagState>('featureFlags');
 
@@ -30,6 +20,10 @@ export const selectAllFeatureFlagsSortedByDate = createSelector(selectAllFeature
     return d1 < d2 ? 1 : d1 > d2 ? -1 : 0;
   });
 });
+
+export const selectAppContexts = createSelector(selectContextMetaData, (contextMetaData) =>
+  Object.keys(contextMetaData?.contextMetadata ?? [])
+);
 
 export const selectHasInitialFeatureFlagsDataLoaded = createSelector(
   selectFeatureFlagsState,
@@ -129,68 +123,38 @@ export const selectIsLoadingFeatureFlagDelete = createSelector(
   (state) => state.isLoadingFeatureFlagDelete
 );
 
+// TODO: will need reimplementation in the list table stories
 export const selectFeatureFlagInclusions = createSelector(
   selectSelectedFeatureFlag,
-  (featureFlag: FeatureFlag): ParticipantListTableRow[] =>
-    mapToParticipantTableRowStructure(featureFlag, FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE)
+  (featureFlag: FeatureFlag): ParticipantListTableRow[] => []
+  // mapToParticipantTableRowStructure(featureFlag, FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE)
 );
 
 export const selectFeatureFlagExclusions = createSelector(
   selectSelectedFeatureFlag,
-  (featureFlag: FeatureFlag): ParticipantListTableRow[] =>
-    mapToParticipantTableRowStructure(featureFlag, FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE)
+  (featureFlag: FeatureFlag): ParticipantListTableRow[] => []
+  // mapToParticipantTableRowStructure(featureFlag, FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE)
 );
 
-// TODO: can we get rid of this ui discovery work and have the backend do it?
-function mapToParticipantTableRowStructure(
-  featureFlag: FeatureFlag,
-  key: FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE | FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE
-): ParticipantListTableRow[] {
-  const privateSegment: PrivateSegment | EmptyPrivateSegment = featureFlag?.[key];
+export const selectFeatureFlagListTypeOptions = createSelector(
+  selectContextMetaData,
+  selectSelectedFeatureFlag,
+  (contextMetaData, flag) => {
+    const flagAppContext = flag?.context?.[0];
+    const groupTypes = contextMetaData?.contextMetadata?.[flagAppContext]?.GROUP_TYPES ?? [];
+    const groupTypeSelectOptions = CommonTextHelpersService.formatGroupTypes(groupTypes as string[]);
+    const listOptionTypes = [
+      {
+        value: MemberTypes.SEGMENT,
+        viewValue: MemberTypes.SEGMENT,
+      },
+      {
+        value: MemberTypes.INDIVIDUAL,
+        viewValue: MemberTypes.INDIVIDUAL,
+      },
+      ...groupTypeSelectOptions,
+    ];
 
-  if (!privateSegment) return [];
-
-  // make sure this is not an empty private segment
-  if ('groupForSegment' in privateSegment.segment) {
-    const groups: GroupForSegment[] = privateSegment.segment.groupForSegment || [];
-    const subSegments: Segment[] = privateSegment.segment.subSegments || [];
-    const individuals: IndividualForSegment[] = privateSegment.segment.individualForSegment || [];
-
-    const groupsRow = groups.map(mapGroupToRow);
-    const subSegmentsRow = subSegments.map(mapSubSegmentToRow);
-    const individualsRow = individuals.map(mapIndividualToRow);
-
-    const allSegments: ParticipantListTableRow[] = [...groupsRow, ...subSegmentsRow, ...individualsRow];
-
-    return allSegments;
+    return listOptionTypes;
   }
-
-  return [];
-}
-
-function mapGroupToRow(group: GroupForSegment): ParticipantListTableRow {
-  return {
-    name: group.groupId,
-    type: group.type + ' (group)',
-    values: '?',
-    status: '?',
-  };
-}
-
-function mapSubSegmentToRow(subSegment: Segment): ParticipantListTableRow {
-  return {
-    name: subSegment.id,
-    type: 'Segment',
-    values: '?',
-    status: '?',
-  };
-}
-
-function mapIndividualToRow(individual: IndividualForSegment): ParticipantListTableRow {
-  return {
-    name: individual.userId,
-    type: 'Individual',
-    values: '?',
-    status: '?',
-  };
-}
+);

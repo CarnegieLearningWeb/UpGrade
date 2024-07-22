@@ -462,12 +462,12 @@ export class ExperimentRepository extends Repository<Experiment> {
 
   public async findOneExperiment(id: string): Promise<Experiment> {
     const experiment = await this.createBaseQueryBuilder()
-    .addOrderBy('conditions.order', 'ASC')
-    .addOrderBy('partitions.order', 'ASC')
-    .addOrderBy('factors.order', 'ASC')
-    .addOrderBy('levels.order', 'ASC')
-    .where({ id })
-    .getOne();
+      .addOrderBy('conditions.order', 'ASC')
+      .addOrderBy('partitions.order', 'ASC')
+      .addOrderBy('factors.order', 'ASC')
+      .addOrderBy('levels.order', 'ASC')
+      .where({ id })
+      .getOne();
     return experiment;
   }
 
@@ -475,31 +475,43 @@ export class ExperimentRepository extends Repository<Experiment> {
     // Get the experiment details
     const experimentQuery = await this.createBaseQueryBuilder()
       .select([
-      'experiment.id as "experimentId"',
-      'experiment.name as "experimentName"',
-      'experiment.context as "context"',
-      'experiment.assignmentUnit as "assignmentUnit"',
-      'experiment.group as "group"',
-      'experiment.consistencyRule as "consistencyRule"',
-      'experiment.type as "designType"',
-      'experiment.assignmentAlgorithm as "algorithmType"',
-      'experiment.stratificationFactorStratificationFactorName as "stratification"',
-      'experiment.postExperimentRule as "postRule"',
-      'experimentRevertCondition.conditionCode as "revertTo"',
-      '"enrollingStateTimeLog"."timeLog" as "enrollmentStartDate"',
-      '"enrollmentCompleteStateTimeLog"."timeLog" as "enrollmentCompleteDate"',
-      '"conditionPayloadMain"."payloadValue" as "payload"',
-      '"decisionPointData"."excludeIfReached" as "excludeIfReached"',
-      '"decisionPointData"."id" as "expDecisionPointId"',
-      'experimentCondition.id as "expConditionId"',
-      'experimentCondition.conditionCode as "conditionName"',
+        'experiment.id as "experimentId"',
+        'experiment.name as "experimentName"',
+        'experiment.context as "context"',
+        'experiment.assignmentUnit as "assignmentUnit"',
+        'experiment.group as "group"',
+        'experiment.consistencyRule as "consistencyRule"',
+        'experiment.type as "designType"',
+        'experiment.assignmentAlgorithm as "algorithmType"',
+        'experiment.stratificationFactorStratificationFactorName as "stratification"',
+        'experiment.postExperimentRule as "postRule"',
+        'experimentRevertCondition.conditionCode as "revertTo"',
+        '"enrollingStateTimeLog"."timeLog" as "enrollmentStartDate"',
+        '"enrollmentCompleteStateTimeLog"."timeLog" as "enrollmentCompleteDate"',
+        '"conditionPayloadMain"."payloadValue" as "payload"',
+        '"decisionPointData"."excludeIfReached" as "excludeIfReached"',
+        '"decisionPointData"."id" as "expDecisionPointId"',
+        'experimentCondition.id as "expConditionId"',
+        'experimentCondition.conditionCode as "conditionName"',
       ])
       .leftJoin(ExperimentCondition, 'experimentCondition', 'experimentCondition.experimentId = experiment.id')
       .leftJoin(ExperimentCondition, 'experimentRevertCondition', 'experimentRevertCondition.id = experiment.revertTo')
       .leftJoin(DecisionPoint, 'decisionPointData', 'decisionPointData.experimentId = experiment.id')
-      .leftJoin(ConditionPayload, 'conditionPayloadMain', 'conditionPayloadMain.parentConditionId = experimentCondition.id AND conditionPayloadMain.decisionPointId = decisionPointData.id')
-      .leftJoin(StateTimeLog, 'enrollingStateTimeLog', 'enrollingStateTimeLog.experimentId = experiment.id AND enrollingStateTimeLog.toState = \'enrolling\'')
-      .leftJoin(StateTimeLog, 'enrollmentCompleteStateTimeLog', 'enrollmentCompleteStateTimeLog.experimentId = experiment.id AND enrollmentCompleteStateTimeLog.toState = \'enrollmentComplete\'')
+      .leftJoin(
+        ConditionPayload,
+        'conditionPayloadMain',
+        'conditionPayloadMain.parentConditionId = experimentCondition.id AND conditionPayloadMain.decisionPointId = decisionPointData.id'
+      )
+      .leftJoin(
+        StateTimeLog,
+        'enrollingStateTimeLog',
+        "enrollingStateTimeLog.experimentId = experiment.id AND enrollingStateTimeLog.toState = 'enrolling'"
+      )
+      .leftJoin(
+        StateTimeLog,
+        'enrollmentCompleteStateTimeLog',
+        "enrollmentCompleteStateTimeLog.experimentId = experiment.id AND enrollmentCompleteStateTimeLog.toState = 'enrollmentComplete'"
+      )
       .groupBy('experiment.id')
       .addGroupBy('experimentCondition.id')
       .addGroupBy('experimentRevertCondition.conditionCode')
@@ -509,7 +521,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .addGroupBy('enrollmentCompleteStateTimeLog.timeLog')
       .where('experiment.id = :experimentId', { experimentId })
       .getRawMany();
-    
+
     return experimentQuery;
   }
 }

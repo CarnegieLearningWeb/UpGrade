@@ -6,7 +6,7 @@ import { GroupForSegmentRepository } from '../repositories/GroupForSegmentReposi
 import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS, CACHE_PREFIX } from 'upgrade_types';
-import { getConnection } from 'typeorm';
+import { EntityManager, getConnection } from 'typeorm';
 import Papa from 'papaparse';
 import { env } from '../../env';
 import { v4 as uuid } from 'uuid';
@@ -44,6 +44,9 @@ interface ValidSegmentDetail {
   segment: SegmentInputValidator;
 }
 
+export interface SegmentWithStatus extends Segment {
+  status: SEGMENT_STATUS;
+}
 @Service()
 export class SegmentService {
   constructor(
@@ -66,6 +69,17 @@ export class SegmentService {
       .createQueryBuilder('segment')
       .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segment.subSegments', 'subSegment')
+      .where('segment.type != :private', { private: SEGMENT_TYPE.PRIVATE })
+      .getMany();
+
+    return queryBuilder;
+  }
+
+  public async getAllPublicSegmentsAndSubsegments(logger: UpgradeLogger): Promise<Segment[]> {
+    logger.info({ message: `Find all segments and Subsegments` });
+    const queryBuilder = await this.segmentRepository
+      .createQueryBuilder('segment')
       .leftJoinAndSelect('segment.subSegments', 'subSegment')
       .where('segment.type != :private', { private: SEGMENT_TYPE.PRIVATE })
       .getMany();
@@ -100,6 +114,10 @@ export class SegmentService {
         .where('segment.id IN (:...ids)', { ids })
         .getMany();
 
+      if (!result.length) {
+        return [];
+      }
+
       // sort according to ids
       const sortedData = ids.map((id) => {
         return result.find((data) => data.id === id);
@@ -108,13 +126,17 @@ export class SegmentService {
     });
   }
 
-  public async getSingleSegmentWithStatus(segmentId: string, logger: UpgradeLogger): Promise<Segment> {
+  public async getSingleSegmentWithStatus(segmentId: string, logger: UpgradeLogger): Promise<SegmentWithStatus> {
+    const allSegmentData = await this.getAllPublicSegmentsAndSubsegments(logger);
     const segmentData = await this.getSegmentById(segmentId, logger);
-    return (await this.getSegmentStatus([segmentData])).segmentsData[0];
+    const segmentWithStatus = (await this.getSegmentStatus(allSegmentData)).segmentsData.find(
+      (segment: Segment) => segment.id === segmentId
+    );
+    return { ...segmentData, status: segmentWithStatus.status };
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
-    const segmentsData = await this.getAllSegments(logger);
+    const segmentsData = await this.getAllPublicSegmentsAndSubsegments(logger);
     return this.getSegmentStatus(segmentsData);
   }
 
@@ -125,32 +147,43 @@ export class SegmentService {
         this.getExperimentSegmentExclusionData(),
       ]);
 
-      const segmentsUsedList = [];
+      const segmentMap = new Map<string, string[]>();
+      segmentsData.forEach((segment) => {
+        segmentMap.set(
+          segment.id,
+          segment.subSegments.map((subSegment) => subSegment.id)
+        );
+      });
+
+      const segmentsUsedList = new Set<string>();
+
+      const collectSegmentIds = (segmentId: string) => {
+        if (segmentsUsedList.has(segmentId)) return;
+        segmentsUsedList.add(segmentId);
+        const subSegmentIds = segmentMap.get(segmentId) || [];
+        subSegmentIds.forEach((subSegmentId) => collectSegmentIds(subSegmentId));
+      };
+
+      collectSegmentIds(globalExcludeSegment.id);
 
       if (allExperimentSegmentsInclusion) {
         allExperimentSegmentsInclusion.forEach((ele) => {
-          const subSegments = ele.segment.subSegments;
-          segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
+          collectSegmentIds(ele.segment.id);
+          ele.segment.subSegments.forEach((subSegment) => collectSegmentIds(subSegment.id));
         });
       }
 
       if (allExperimentSegmentsExclusion) {
         allExperimentSegmentsExclusion.forEach((ele) => {
-          const subSegments = ele.segment.subSegments;
-          segmentsUsedList.push(...subSegments.map((subSegment) => subSegment.id));
+          collectSegmentIds(ele.segment.id);
+          ele.segment.subSegments.forEach((subSegment) => collectSegmentIds(subSegment.id));
         });
       }
-
-      segmentsData.forEach((segment) => {
-        if (segmentsUsedList.includes(segment.id)) {
-          segmentsUsedList.push(...segment.subSegments.map((subSegment) => subSegment.id));
-        }
-      });
 
       const segmentsDataWithStatus = segmentsData.map((segment) => {
         if (segment.id === globalExcludeSegment.id) {
           return { ...segment, status: SEGMENT_STATUS.GLOBAL };
-        } else if (segmentsUsedList.includes(segment.id)) {
+        } else if (segmentsUsedList.has(segment.id)) {
           return { ...segment, status: SEGMENT_STATUS.USED };
         } else {
           return { ...segment, status: SEGMENT_STATUS.UNUSED };
@@ -180,6 +213,15 @@ export class SegmentService {
   public upsertSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}` });
     return this.addSegmentDataInDB(segment, logger);
+  }
+
+  public upsertSegmentInPipeline(
+    segment: SegmentInputValidator,
+    logger: UpgradeLogger,
+    transactionalEntityManager: EntityManager
+  ): Promise<Segment> {
+    logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}` });
+    return this.addSegmentDataWithPipeline(segment, logger, transactionalEntityManager);
   }
 
   public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
@@ -397,109 +439,122 @@ export class SegmentService {
 
   async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     const createdSegment = await getConnection().transaction(async (transactionalEntityManager) => {
-      let segmentDoc: Segment;
+      return this.addSegmentDataWithPipeline(segment, logger, transactionalEntityManager);
+    });
 
-      if (segment.id) {
-        try {
-          // get segment by ids
-          segmentDoc = await transactionalEntityManager
-            .getRepository(Segment)
-            .findOne(segment.id, { relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
+    return createdSegment;
+  }
 
-          // delete individual for segment
-          if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
-            const usersToDelete = segmentDoc.individualForSegment.map((individual) => {
-              return { userId: individual.userId, segment: segment.id };
-            });
-            await transactionalEntityManager.getRepository(IndividualForSegment).delete(usersToDelete as any);
-          }
+  async addSegmentDataWithPipeline(
+    segment: SegmentInputValidator,
+    logger: UpgradeLogger,
+    transactionalEntityManager: EntityManager
+  ): Promise<Segment> {
+    let segmentDoc: Segment;
 
-          // delete group for segment
-          if (segmentDoc && segmentDoc.groupForSegment && segmentDoc.groupForSegment.length > 0) {
-            const groupToDelete = segmentDoc.groupForSegment.map((group) => {
-              return { groupId: group.groupId, type: group.type, segment: segment.id };
-            });
-            await transactionalEntityManager.getRepository(GroupForSegment).delete(groupToDelete as any);
-          }
-        } catch (err) {
-          const error = err as ErrorWithType;
-          error.details = 'Error in deleting segment from DB';
-          error.type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-          throw error;
-        }
-      }
-
-      // create/update segment document
-      segment.id = segment.id || uuid();
-      const { id, name, description, context, type } = segment;
-      const allSegments = await this.getSegmentByIds(segment.subSegmentIds);
-      const subSegmentData = segment.subSegmentIds
-        .filter((subSegmentId) => {
-          // check if segment exists:
-          const subSegment = allSegments.find((segmentId) => subSegmentId === segmentId.id);
-          if (subSegment) {
-            return true;
-          } else {
-            const error = new Error(
-              'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
-            );
-            (error as any).type = SERVER_ERROR.QUERY_FAILED;
-            logger.error(error);
-            return false;
-          }
-        })
-        .map((subSegmentId) => ({ id: subSegmentId }));
-
+    if (segment.id) {
       try {
+        // get segment by ids
         segmentDoc = await transactionalEntityManager
           .getRepository(Segment)
-          .save({ id, name, description, context, type, subSegments: subSegmentData });
+          .findOne(segment.id, { relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
+
+        // delete individual for segment
+        if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
+          const usersToDelete = segmentDoc.individualForSegment.map((individual) => {
+            return { userId: individual.userId, segment: segment.id };
+          });
+          await transactionalEntityManager.getRepository(IndividualForSegment).delete(usersToDelete as any);
+        }
+
+        // delete group for segment
+        if (segmentDoc && segmentDoc.groupForSegment && segmentDoc.groupForSegment.length > 0) {
+          const groupToDelete = segmentDoc.groupForSegment.map((group) => {
+            return { groupId: group.groupId, type: group.type, segment: segment.id };
+          });
+          await transactionalEntityManager.getRepository(GroupForSegment).delete(groupToDelete as any);
+        }
       } catch (err) {
         const error = err as ErrorWithType;
-        error.details = 'Error in saving segment in DB';
+        error.details = 'Error in deleting segment from DB';
         error.type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);
         throw error;
       }
+    }
 
-      const individualForSegmentDocsToSave = segment.userIds.map((userId) => ({
-        userId,
-        segment: segmentDoc,
-      }));
+    // create/update segment document
+    segment.id = segment.id || uuid();
+    const { id, name, description, context, type } = segment;
+    const allSegments = await this.getSegmentByIds(segment.subSegmentIds);
+    const subSegmentData = segment.subSegmentIds
+      .filter((subSegmentId) => {
+        // check if segment exists:
+        const subSegment = allSegments.find((segment) => subSegmentId === segment.id);
+        if (subSegment) {
+          return true;
+        } else {
+          const error = new Error(
+            'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
+          );
+          (error as any).type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          return false;
+        }
+      })
+      .map((subSegmentId) => ({ id: subSegmentId }));
 
-      const groupForSegmentDocsToSave = segment.groups.map((group) => {
-        return { ...group, segment: segmentDoc };
+    try {
+      segmentDoc = await transactionalEntityManager.getRepository(Segment).save({
+        id,
+        name,
+        description,
+        context,
+        type,
+        subSegments: subSegmentData,
       });
+    } catch (err) {
+      const error = err as ErrorWithType;
+      error.details = 'Error in saving segment in DB';
+      error.type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(error);
+      throw error;
+    }
 
-      try {
-        await Promise.all([
-          this.individualForSegmentRepository.insertIndividualForSegment(
-            individualForSegmentDocsToSave,
-            transactionalEntityManager,
-            logger
-          ),
-          this.groupForSegmentRepository.insertGroupForSegment(
-            groupForSegmentDocsToSave,
-            transactionalEntityManager,
-            logger
-          ),
-        ]);
-      } catch (err) {
-        const error = err as Error;
-        error.message = `Error in creating individualDocs, groupDocs in "addSegmentInDB"`;
-        logger.error(error);
-        throw error;
-      }
+    const individualForSegmentDocsToSave = segment.userIds.map((userId) => ({
+      userId,
+      segment: segmentDoc,
+    }));
 
-      return transactionalEntityManager
-        .getRepository(Segment)
-        .findOne(segmentDoc.id, { relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
+    const groupForSegmentDocsToSave = segment.groups.map((group) => {
+      return { ...group, segment: segmentDoc };
     });
 
-    // reset caching
+    try {
+      await Promise.all([
+        this.individualForSegmentRepository.insertIndividualForSegment(
+          individualForSegmentDocsToSave,
+          transactionalEntityManager,
+          logger
+        ),
+        this.groupForSegmentRepository.insertGroupForSegment(
+          groupForSegmentDocsToSave,
+          transactionalEntityManager,
+          logger
+        ),
+      ]);
+    } catch (err) {
+      const error = err as Error;
+      error.message = `Error in creating individualDocs, groupDocs in "addSegmentInDB"`;
+      logger.error(error);
+      throw error;
+    }
+
+    // reset cache
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
 
-    return createdSegment;
+    return transactionalEntityManager
+      .getRepository(Segment)
+      .findOne(segmentDoc.id, { relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
   }
 }

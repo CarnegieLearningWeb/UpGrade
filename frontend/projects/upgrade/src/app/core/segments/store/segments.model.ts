@@ -53,9 +53,12 @@ export interface experimentSegmentInclusionExclusionData {
   };
 }
 
-export interface GroupForSegment {
+export interface Group {
   groupId: string;
   type: string;
+}
+
+export interface GroupForSegment extends Group {
   segmentId: string;
 }
 
@@ -93,7 +96,7 @@ export interface SegmentInput {
   context: string;
   description: string;
   userIds: string[];
-  groups: { groupId: string; type: string }[];
+  groups: Group[];
   subSegmentIds: string[];
   type: SEGMENT_TYPE;
 }

@@ -8,6 +8,7 @@ import {
   actionUpsertMetrics,
 } from './store/analysis.actions';
 import { UpsertMetrics } from './store/analysis.models';
+import { Environment } from '../../../environments/environment-types';
 
 const mockStateStore$ = new BehaviorSubject({});
 (mockStateStore$ as any).dispatch = jest.fn();
@@ -22,10 +23,12 @@ jest.mock('./store/analysis.selectors', () => ({
 
 describe('AnalysisService', () => {
   const mockStore: any = mockStateStore$;
+  let mockEnvironment: Environment = { metricAnalyticsExperimentDisplayToggle: true } as Environment;
   let service: AnalysisService;
 
   beforeEach(() => {
-    service = new AnalysisService(mockStore);
+    service = new AnalysisService(mockStore, mockEnvironment);
+    jest.resetAllMocks();
   });
 
   describe('#queryResultById$', () => {
@@ -78,12 +81,34 @@ describe('AnalysisService', () => {
   });
 
   describe('#executeQuery', () => {
-    it('should dispatch executeQuery with the supplied string input array', () => {
+    let originalEnvironment;
+
+    beforeEach(() => {
+      // Save the original environment to restore it after tests
+      originalEnvironment = { ...mockEnvironment };
+    });
+
+    afterEach(() => {
+      // Restore the original environment after each test
+      mockEnvironment = { ...originalEnvironment };
+    });
+
+    it('should dispatch executeQuery with the supplied string input array when metricAnalyticsExperimentDisplayToggle is true', () => {
+      mockEnvironment = { metricAnalyticsExperimentDisplayToggle: true } as Environment;
       const mockQueryIds = ['test', 'test2'];
 
       service.executeQuery(mockQueryIds);
 
-      expect(mockStore.dispatch).toHaveBeenLastCalledWith(actionExecuteQuery({ queryIds: mockQueryIds }));
+      expect(mockStore.dispatch).toHaveBeenCalledWith(actionExecuteQuery({ queryIds: mockQueryIds }));
+    });
+
+    it('should not dispatch executeQuery and log a warning when metricAnalyticsExperimentDisplayToggle is false', () => {
+      mockEnvironment = { metricAnalyticsExperimentDisplayToggle: false } as Environment;
+      const mockQueryIds = ['test3', 'test4'];
+
+      service.executeQuery(mockQueryIds);
+
+      expect(mockStore.dispatch).not.toHaveBeenCalledWith(mockQueryIds);
     });
   });
 

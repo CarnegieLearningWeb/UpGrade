@@ -47,22 +47,18 @@ export class FeatureFlagSegmentInclusionRepository extends Repository<FeatureFla
       });
   }
 
-  public async deleteData(
-    segmentId: string,
-    featureFlagId: string,
-    logger: UpgradeLogger
-  ): Promise<FeatureFlagSegmentInclusion> {
+  public async deleteData(segmentId: string, logger: UpgradeLogger): Promise<FeatureFlagSegmentInclusion> {
     const result = await this.createQueryBuilder()
       .delete()
       .from(FeatureFlagSegmentInclusion)
-      .where('segmentId=:segmentId AND featureFlagId=:featureFlagId', { segmentId, featureFlagId })
+      .where('segmentId=:segmentId', { segmentId })
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           'FeatureFlagSegmentInclusionRepository',
           'deleteFeatureFlagSegmentInclusion',
-          { segmentId, featureFlagId },
+          { segmentId },
           errorMsg
         );
         logger.error(errorMsg);

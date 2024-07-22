@@ -96,6 +96,10 @@
   @include mat.all-component-densities(-2);
 }
 
+.dense-3 {
+  @include mat.all-component-densities(-3);
+}
+
 // TODO material specific style which cannot be changed by scope
 .mat-drawer-inner-container {
   display: flex;
@@ -248,6 +252,27 @@ button[mat-icon-button] {
 .new-user-modal {
   width: 805px;
 }
+
+.full-width {
+  width: 100%;
+}
+
+.form-standard {
+  display: flex;
+  flex-direction: column;
+  row-gap: 16px;
+  padding: 32px 32px 16px;
+}
+
+.form-hint {
+  color: var(--dark-grey);
+}
+
+.learn-more-link {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
 
 .mat-mdc-checkbox {
   .mdc-checkbox {

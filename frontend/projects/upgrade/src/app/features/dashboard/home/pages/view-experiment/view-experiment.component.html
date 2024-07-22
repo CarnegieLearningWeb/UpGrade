@@ -952,7 +952,18 @@
           <ng-container *ngIf="experiment.queries.length">
             <div class="box-shadow"></div>
             <!-- Experiment queries results -->
-            <home-experiment-query-result [experiment]="experiment"></home-experiment-query-result>
+            <ng-container *ngIf="showMetricAnalysisDisplay; else noMetricsAnalysisView">
+              <home-experiment-query-result [experiment]="experiment"></home-experiment-query-result>
+            </ng-container>
+            <ng-template #noMetricsAnalysisView>
+              <div class="disabled-analysis-view-messsage-container">
+                <mat-icon class="warning-icon" color="warn">warning</mat-icon>
+                <p class="message">
+                  {{ 'home.view-experiment.metrics-analysis-unavailable.text' | translate }}
+                </p>
+              </div>
+              <div class="box-shadow"></div>
+            </ng-template>
           </ng-container>
         </div>
       </mat-tab>

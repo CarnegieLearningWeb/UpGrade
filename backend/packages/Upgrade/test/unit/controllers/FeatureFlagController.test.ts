@@ -66,16 +66,6 @@ describe('Feature Flag Controller Testing', () => {
         status: 'enabled',
         context: ['foo'],
         tags: ['bar'],
-        featureFlagSegmentInclusion: {
-          segment: {
-            type: 'private',
-          },
-        },
-        featureFlagSegmentExclusion: {
-          segment: {
-            type: 'private',
-          },
-        },
         filterMode: 'includeAll',
       })
       .set('Accept', 'application/json')
@@ -114,23 +104,110 @@ describe('Feature Flag Controller Testing', () => {
         status: 'enabled',
         context: ['foo'],
         tags: ['bar'],
-        featureFlagSegmentInclusion: {
-          segment: {
-            type: 'private',
-            individualForSegment: [],
-            groupForSegment: [],
-            subSegments: [],
-          },
-        },
-        featureFlagSegmentExclusion: {
-          segment: {
-            type: 'private',
-            individualForSegment: [],
-            groupForSegment: [],
-            subSegments: [],
-          },
-        },
         filterMode: 'includeAll',
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Post request for /api/flags/inclusionList', () => {
+    return request(app)
+      .post('/api/flags/inclusionList')
+      .send({
+        flagId: uuid(),
+        enabled: true,
+        listType: 'string',
+        list: {
+          name: 'string',
+          context: 'string',
+          type: 'private',
+          userIds: ['string'],
+          groups: [],
+          subSegmentIds: [],
+        },
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Post request for /api/flags/exclusionList', () => {
+    return request(app)
+      .post('/api/flags/exclusionList')
+      .send({
+        flagId: uuid(),
+        enabled: true,
+        listType: 'string',
+        list: {
+          name: 'string',
+          context: 'string',
+          type: 'private',
+          userIds: ['string'],
+          groups: [],
+          subSegmentIds: [],
+        },
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Delete request for /api/flags/inclusionList/id', () => {
+    return request(app)
+      .delete('/api/flags/inclusionList/' + uuid())
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Delete request for /api/flags/exclusionList/id', () => {
+    return request(app)
+      .delete('/api/flags/exclusionList/' + uuid())
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Put request for /api/flags/inclusionList/id', () => {
+    const segmentId = uuid();
+    return request(app)
+      .put('/api/flags/inclusionList/' + segmentId)
+      .send({
+        flagId: uuid(),
+        enabled: true,
+        listType: 'string',
+        list: {
+          id: segmentId,
+          name: 'string',
+          context: 'string',
+          type: 'private',
+          userIds: ['string'],
+          groups: [],
+          subSegmentIds: [],
+        },
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+  test('Put request for /api/flags/exclusionList/id', () => {
+    const segmentId = uuid();
+    return request(app)
+      .put('/api/flags/exclusionList/' + segmentId)
+      .send({
+        flagId: uuid(),
+        enabled: true,
+        listType: 'string',
+        list: {
+          id: segmentId,
+          name: 'string',
+          context: 'string',
+          type: 'private',
+          userIds: ['string'],
+          groups: [],
+          subSegmentIds: [],
+        },
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)

@@ -1,0 +1,29 @@
+.import-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+  border: 1px dashed var(--dark-grey);
+  border-radius: 4px;
+
+  &.drag-over {
+    background-color: var(--zircon);
+  }
+
+  .material-symbols-outlined {
+    font-size: 72px;
+    color: var(--dark-grey);
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  .drag-text {
+    margin-bottom: 8px;
+    color: var(--dark-grey);
+  }
+
+  .choose-json-btn {
+    padding: 0 16px;
+  }
+}
