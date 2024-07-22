@@ -4,6 +4,15 @@ import { CheckService } from '../../../src/api/services/CheckService';
 import TestCase1 from './NoExperimentUserOnAssignment';
 import TestCase2 from './WorkingGroupChangeTest1';
 import TestCase3 from './WorkingGroupChangeTest2';
+import TestCase4 from './Scenario1A';
+import TestCase5 from './Scenario1B';
+import TestCase6 from './Scenario1C';
+import TestCase7 from './Scenario2A';
+import TestCase8 from './Scenario2B';
+import TestCase9 from './Scenario2C';
+import TestCase10 from './Scenario3A';
+import TestCase11 from './Scenario3B';
+import TestCase12 from './Scenario3C';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 const initialChecks = async () => {
@@ -43,4 +52,49 @@ export const IndividualConsistency = async () => {
 export const GroupConsistency = async () => {
   await initialChecks();
   await TestCase3();
+};
+
+export const Scenario1A = async () => {
+  await initialChecks();
+  await TestCase4();
+};
+
+export const Scenario1B = async () => {
+  await initialChecks();
+  await TestCase5();
+};
+
+export const Scenario1C = async () => {
+  await initialChecks();
+  await TestCase6();
+};
+
+export const Scenario2A = async () => {
+  await initialChecks();
+  await TestCase7();
+};
+
+export const Scenario2B = async () => {
+  await initialChecks();
+  await TestCase8();
+};
+
+export const Scenario2C = async () => {
+  await initialChecks();
+  await TestCase9();
+};
+
+export const Scenario3A = async () => {
+  await initialChecks();
+  await TestCase10();
+};
+
+export const Scenario3B = async () => {
+  await initialChecks();
+  await TestCase11();
+};
+
+export const Scenario3C = async () => {
+  await initialChecks();
+  await TestCase12();
 };

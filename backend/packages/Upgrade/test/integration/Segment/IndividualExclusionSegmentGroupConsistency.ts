@@ -153,7 +153,7 @@ export default async function IndividualExclusionSegmentGroupConsistency(): Prom
 
   individualExclusions = await checkService.getAllIndividualExclusion();
   expect(individualExclusions.length).toEqual(1);
-  // TODO: update to 0
+
   individualAssignments = await checkService.getAllIndividualAssignment();
   expect(individualAssignments.length).toEqual(1);
 
@@ -179,7 +179,7 @@ export default async function IndividualExclusionSegmentGroupConsistency(): Prom
 
   groupExclusions = await checkService.getAllGroupExclusions();
   expect(groupExclusions.length).toEqual(1);
-  // TODO: update to 0
+
   individualAssignments = await checkService.getAllIndividualAssignment();
   expect(individualAssignments.length).toEqual(1);
 }

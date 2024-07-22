@@ -149,13 +149,12 @@ export default async function IndividualExclusionSegmentIndividualConsistency():
   );
 
   // the user should be still excluded:
-  // TODO: update to 1
   groupExclusions = await checkService.getAllGroupExclusions();
   expect(groupExclusions.length).toEqual(0);
 
   individualExclusions = await checkService.getAllIndividualExclusion();
   expect(individualExclusions.length).toEqual(1);
-  // TODO: update to 0
+
   individualAssignments = await checkService.getAllIndividualAssignment();
-  expect(individualAssignments.length).toEqual(1);
+  expect(individualAssignments.length).toEqual(0);
 }

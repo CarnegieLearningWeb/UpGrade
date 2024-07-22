@@ -51,7 +51,20 @@ import {
   DeletePreviewAssignmentOnExperimentDelete,
   DeletePreviewAssignmentWithPreviewUserDelete,
 } from './PreviewExperiment/index';
-import { GroupConsistency, IndividualConsistency, NoExperimentUserOnAssignment } from './ExperimentUser';
+import {
+  GroupConsistency,
+  IndividualConsistency,
+  NoExperimentUserOnAssignment,
+  Scenario1A,
+  Scenario1B,
+  Scenario1C,
+  Scenario2A,
+  Scenario2B,
+  Scenario2C,
+  Scenario3A,
+  Scenario3B,
+  Scenario3C,
+} from './ExperimentUser';
 import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
 import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalStateChange/index';
 import { StatsIndividualEnrollment, StatsGroupEnrollment, StatsWithinSubjectEnrollment } from './ExperimentStats/index';
@@ -397,7 +410,7 @@ describe('Integration Tests', () => {
     return GroupExclusionSegmentIndividualConsistency();
   });
 
- test('For Group Exclusion List added for Group Consistency', () => {
+  test('For Group Exclusion List added for Group Consistency', () => {
     return GroupExclusionSegmentGroupConsistency();
   });
 
@@ -496,6 +509,42 @@ describe('Integration Tests', () => {
   test('Working group change after user exclusion for group consistency', () => {
     return GroupConsistency();
   });
+
+  /*test('Excluding group of Enrolling Individual Experiment', () => {
+    return Scenario1A();
+  }, 99999);
+
+  test('Excluding group of Enrolling Group Experiment, Individual Consistency', () => {
+    return Scenario1B();
+  }, 99999);
+
+  test('Excluding group of Enrolling Group Experiment, Group Consistency', () => {
+    return Scenario1C();
+  }, 99999);
+
+  test('Excluding individual of Enrolling Individual Experiment', () => {
+    return Scenario2A();
+  }, 999999);
+
+  test('Excluding individual of Enrolling Group Experiment, Individual Consistency', () => {
+    return Scenario2B();
+  }, 999999);
+
+  test('Excluding individual of Enrolling Group Experiment, Group Consistency', () => {
+    return Scenario2C();
+  }, 999999);
+
+  test('Excluding indirect group of Enrolling Group Experiment, Group Consistency', () => {
+    return Scenario3A();
+  }, 999999);
+
+  test('Excluding indirect group of Enrolling Group Experiment, Individual Consistency', () => {
+    return Scenario3B();
+  }, 999999);
+
+  test('Excluding indirect group of Enrolling Group Experiment, Group Consistency', () => {
+    return Scenario3C();
+  }, 999999);*/
 
   // test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', () => {
   //   return PreviewScenario1();

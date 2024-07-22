@@ -155,7 +155,6 @@ export default async function GroupExclusionSegmentGroupConsistency(): Promise<v
   individualExclusions = await checkService.getAllIndividualExclusion();
   expect(individualExclusions.length).toEqual(1);
 
-  // TODO: update to 0  
   individualAssignments = await checkService.getAllIndividualAssignment();
-  expect(individualAssignments.length).toEqual(1);
+  expect(individualAssignments.length).toEqual(0);
 }
