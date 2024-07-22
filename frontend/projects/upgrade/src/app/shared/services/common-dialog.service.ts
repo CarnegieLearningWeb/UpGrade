@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-confirm-dialog.component';
-import { CommonModalConfig } from '../../shared-standalone-component-lib/components/common-modal/common-modal-config';
+import {
+  CommonModalConfig,
+  SimpleConfirmationModalParams,
+} from '../../shared-standalone-component-lib/components/common-modal/common-modal-config';
 import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/delete-feature-flag-modal/delete-feature-flag-modal.component';
 
 import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
@@ -15,7 +18,7 @@ import {
   UpsertFeatureFlagParams,
 } from '../../core/feature-flags/store/feature-flags.model';
 import { UpsertFeatureFlagListModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-list-modal/upsert-feature-flag-list-modal.component';
-import { CommonSimpleConfirmationModal } from '../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
+import { CommonSimpleConfirmationModalComponent } from '../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
 
 @Injectable({
   providedIn: 'root',
@@ -175,7 +178,9 @@ export class DialogService {
     return this.dialog.open(ImportFeatureFlagModalComponent, config);
   }
 
-  openCommonConfirmationModal(commonModalConfig: CommonModalConfig): MatDialogRef<CommonSimpleConfirmationModal, boolean> {
+  openSimpleCommonConfirmationModal(
+    commonModalConfig: CommonModalConfig
+  ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: '656px',
@@ -183,6 +188,6 @@ export class DialogService {
       disableClose: true,
     };
 
-    return this.dialog.open(CommonSimpleConfirmationModal, config);
+    return this.dialog.open(CommonSimpleConfirmationModalComponent, config);
   }
 }
