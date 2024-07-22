@@ -21,8 +21,9 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
     return result.raw;
   }
 
-  public async deleteById(id: string): Promise<FeatureFlag> {
-    const result = await this.createQueryBuilder('featureFlag')
+  public async deleteById(id: string, entityManager: EntityManager): Promise<FeatureFlag> {
+    const result = await entityManager
+      .createQueryBuilder()
       .delete()
       .from(FeatureFlag)
       .where('id = :id', { id })

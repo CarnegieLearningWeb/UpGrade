@@ -55,7 +55,7 @@ describe('Analytics Controller Testing', () => {
       .expect(200);
   });
 
-  test('Post request for /api/stats/csv', () => {
+  test('Get request for /api/stats/csv', () => {
     return request(app)
       .get('/api/stats/csv')
       .query({

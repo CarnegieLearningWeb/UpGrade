@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
@@ -12,6 +12,7 @@ import { FEATURE_FLAG_STATUS, IMenuButtonItem } from 'upgrade_types';
 import { CommonModule } from '@angular/common';
 import { CommonSectionCardOverviewDetailsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
+import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,
@@ -28,19 +29,18 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagOverviewDetailsSectionCardComponent {
+  isSectionCardExpanded = true;
+  @Output() sectionCardExpandChange = new EventEmitter<boolean>();
   featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
   flagOverviewDetails$ = this.featureFlagService.selectedFlagOverviewDetails;
 
   menuButtonItems: IMenuButtonItem[] = [
     { name: 'Edit', disabled: false },
     { name: 'Delete', disabled: false },
+    { name: 'Duplicate', disabled: false },
   ];
-  isSectionCardExpanded = true;
 
-  constructor(
-    private dialogService: DialogService,
-    private featureFlagService: FeatureFlagsService,
-  ) {}
+  constructor(private dialogService: DialogService, private featureFlagService: FeatureFlagsService) {}
 
   get FEATURE_FLAG_STATUS() {
     return FEATURE_FLAG_STATUS;
@@ -72,15 +72,18 @@ export class FeatureFlagOverviewDetailsSectionCardComponent {
     this.dialogService.openDisableFeatureFlagConfirmModel();
   }
 
-  onMenuButtonItemClick(event) {
+  onMenuButtonItemClick(event: 'Edit' | 'Delete' | 'Duplicate', flag: FeatureFlag) {
     if (event === 'Delete') {
       this.dialogService.openDeleteFeatureFlagModal();
     } else if (event === 'Edit') {
-      this.dialogService.openEditFeatureFlagModal();
+      this.dialogService.openEditFeatureFlagModal(flag);
+    } else if (event === 'Duplicate') {
+      this.dialogService.openDuplicateFeatureFlagModal(flag);
     }
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
     this.isSectionCardExpanded = isSectionCardExpanded;
+    this.sectionCardExpandChange.emit(this.isSectionCardExpanded);
   }
 }

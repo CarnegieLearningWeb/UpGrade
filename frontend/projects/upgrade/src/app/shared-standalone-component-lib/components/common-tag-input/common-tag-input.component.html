@@ -1,25 +1,36 @@
-<mat-form-field appearance="outline" subscriptSizing="dynamic">
+<mat-form-field class="input-container full-width" subscriptSizing="dynamic" appearance="outline">
   <mat-label class="ft-14-400">
     {{ 'home.new-experiment.overview.tags.placeHolder' | translate }}
   </mat-label>
-  <mat-chip-grid #tagsList class="chip-grid" aria-label="Tags" formControlName="tags">
-    <mat-chip-row
-      *ngFor="let componentTag of tags.value"
-      [selectable]="isChipSelectable"
-      [removable]="isChipRemovable"
-      (removed)="removeChip(componentTag)"
-    >
-      <span class="ft-12-600 chip-label">
-        {{ componentTag }}
-      </span>
-      <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
-    </mat-chip-row>
-    <input
-      class="ft-14-400"
-      [matChipInputFor]="tagsList"
-      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-      [matChipInputAddOnBlur]="addChipOnBlur"
-      (matChipInputTokenEnd)="addChip($event)"
-    />
-  </mat-chip-grid>
+  <div class="chips-container">
+    <mat-chip-grid #tagsList aria-label="Tags" formControlName="tags">
+      <mat-chip-row
+        *ngFor="let componentTag of tags.value"
+        [selectable]="isChipSelectable"
+        [removable]="isChipRemovable"
+        (removed)="removeChip(componentTag)"
+      >
+        <span class="ft-12-400 chip-label">
+          {{ componentTag }}
+        </span>
+        <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
+      </mat-chip-row>
+
+      <input
+        [matChipInputFor]="tagsList"
+        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+        [matChipInputAddOnBlur]="addChipOnBlur"
+        (matChipInputTokenEnd)="addChip($event)"
+        class="ft-14-400"
+      />
+    </mat-chip-grid>
+    <div class="sharing-icon-buttons">
+      <button *ngIf="showImportIcon" mat-icon-button class="icon-button" (click)="onActionButtonClick()">
+        <span class="material-symbols-outlined">upload</span>
+      </button>
+      <button *ngIf="showExportIcon" mat-icon-button class="icon-button" (click)="onActionButtonClick()">
+        <span class="material-symbols-outlined">download</span>
+      </button>
+    </div>
+  </div>
 </mat-form-field>

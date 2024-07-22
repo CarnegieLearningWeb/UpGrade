@@ -167,6 +167,14 @@ export class ExperimentClientController {
    *            description: Set Group Membership
    *            schema:
    *              $ref: '#/definitions/initResponse'
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('init')
   public async init(
@@ -250,8 +258,14 @@ export class ExperimentClientController {
    *            description: Set Group Membership
    *            schema:
    *              $ref: '#/definitions/initResponse'
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
    *          '500':
-   *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
+   *            description: Internal Server Error
    */
   @Patch('groupmembership')
   public async setGroupMemberShip(
@@ -318,8 +332,14 @@ export class ExperimentClientController {
    *            description: Set Group Membership
    *            schema:
    *              $ref: '#/definitions/initResponse'
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
    *          '500':
-   *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
+   *            description: Internal Server Error
    */
   @Patch('workinggroup')
   public async setWorkingGroup(
@@ -413,8 +433,14 @@ export class ExperimentClientController {
    *                - enrollmentCode
    *                - userId
    *                - condition
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
    *          '500':
-   *            description: User not defined
+   *            description: Internal Server Error
    */
   @Post('mark')
   public async markExperimentPoint(
@@ -493,10 +519,14 @@ export class ExperimentClientController {
    *                  condition:
    *                    type: string
    *                    minLength: 1
-   *          '500':
-   *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
    *          '404':
-   *            description: Experiment user not defined
+   *            description: Experiment User not defined
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('assign')
   public async getAllExperimentConditions(
@@ -614,8 +644,14 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Log data
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
    *          '500':
-   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
+   *            description: Internal Server Error
    */
   @Post('log')
   public async log(
@@ -656,9 +692,15 @@ export class ExperimentClientController {
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Log data
+   *            description: Log Caliper data
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
    *          '500':
-   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
+   *            description: Internal Server Error
    */
   @Post('log/caliper')
   public async caliperLog(
@@ -713,6 +755,14 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Log blob data
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('bloblog')
   public async blobLog(@Req() request: express.Request): Promise<any> {
@@ -780,6 +830,14 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Feature flags list
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('featureflag')
   public async getAllFlags(
@@ -814,6 +872,10 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Filtered Metrics
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
    *          '500':
    *            description: Insert error in database
    */
@@ -873,8 +935,14 @@ export class ExperimentClientController {
    *              required:
    *               - userId
    *               - userAliases
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
    *          '500':
-   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
+   *            description: Internal Server Error
    */
   @Patch('useraliases')
   public async setUserAliases(
@@ -904,6 +972,10 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Database cleared
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
    *          '500':
    *            description: DEMO mode is disabled
    */

@@ -38,11 +38,20 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
           req.logger.warn({ message: 'Token is not present in request header' });
           const error = new Error('Token is not present in request header from client');
           (error as any).type = SERVER_ERROR.TOKEN_NOT_PRESENT;
-          (error as any).httpCode = '401'
+          (error as any).httpCode = 401;
           throw error;
         }
         const { secret, key } = env.clientApi;
-        const decodeToken: any = jwt.verify(token, secret);
+        let decodeToken: any;
+        try {
+          decodeToken = jwt.verify(token, secret);
+        } catch (err) {
+          const error = err as ErrorWithType;
+          (error as any).type = SERVER_ERROR.TOKEN_VALIDATION_FAILED;
+          (error as any).httpCode = 401;
+          req.logger.error(error);
+          throw error;
+        }
         delete decodeToken.iat;
         delete decodeToken.exp;
 
@@ -51,7 +60,7 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
         } else {
           const error = new Error('Provided token is invalid');
           (error as any).type = SERVER_ERROR.INVALID_TOKEN;
-          (error as any).httpCode = '401'
+          (error as any).httpCode = 401;
           req.logger.error(error);
           throw error;
         }
@@ -62,7 +71,7 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
       const err = error as ErrorWithType;
       if (err.message === 'jwt expired' || err.message === 'invalid signature') {
         err.type = SERVER_ERROR.INVALID_TOKEN;
-        (error as any).httpCode = '401'
+        (error as any).httpCode = 401;
         req.logger.error(err);
         throw err;
       } else {

@@ -1232,6 +1232,46 @@ export class ExperimentController {
     return this.experimentService.importExperiment(experiments, currentUser, request.logger);
   }
 
+  /**
+   * @swagger
+   * /experiments/{export}:
+   *    get:
+   *       description: Export Experiment JSON
+   *       parameters:
+   *         - in: body
+   *           name: experiments
+   *           required: true
+   *           schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
+   *           description: Experiment Files
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Experiment is exported
+   *            schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 error:
+   *                   type: string
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
+   */
   @Get('/export')
   public exportExperiment(
     @QueryParams()

@@ -1,24 +1,19 @@
-:host ::ng-deep .update-feature-flag-status-modal-container {
+.confirm-modal-content {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  align-items: space-between;
-  justify-content: center;
+  row-gap: 16px;
+  padding: 40px 32px;
 
-  .title {
-    font-size: 18px;
-    font-weight: bold;
-  }
+  &-text {
+    color: var(--dark-grey);
+    margin-bottom: 0;
 
-  .modal-content-text {
-    color: var(--grey-3);
-  }
+    &.info {
+      color: var(--blue);
+    }
 
-  .modal-content-text.info {
-    color: blue;
-  }
-
-  .modal-content-text.warn {
-    color: red;
+    &.warn {
+      color: var(--red-2);
+    }
   }
 }

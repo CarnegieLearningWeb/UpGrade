@@ -7,10 +7,10 @@
   .breadcrumb {
     display: flex;
     column-gap: 8px;
+    color: var(--light-black);
 
-    .root-link,
-    .details-name {
-      color: var(--light-black);
+    .root-link {
+      text-decoration: none;
     }
   }
 }
