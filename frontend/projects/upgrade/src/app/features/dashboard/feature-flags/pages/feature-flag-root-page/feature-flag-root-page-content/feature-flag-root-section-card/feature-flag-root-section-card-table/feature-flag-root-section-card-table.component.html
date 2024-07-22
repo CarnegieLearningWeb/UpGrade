@@ -1,5 +1,5 @@
 <div class="flags-list-container">
-  <div scroll (scrolled)="fetchFlagsOnScroll()" class="flags-list-table-container" #tableContainer>
+  <div (wheel)="fetchFlagsOnScroll()" class="flags-list-table-container" #tableContainer>
     <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
     <table
       class="flags-list"
@@ -25,11 +25,7 @@
             {{ flag.name }}
           </a>
           <ng-template #flagNameEllipsis>
-            <span
-              [matTooltip]="flag.name"
-              class="flag-name"
-              matTooltipPosition="above"
-            >
+            <span [matTooltip]="flag.name" class="flag-name" matTooltipPosition="above">
               {{ flag.name | truncate: 30 }}
             </span>
           </ng-template>
