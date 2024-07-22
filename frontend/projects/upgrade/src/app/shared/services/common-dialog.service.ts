@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-confirm-dialog.component';
 import { AddFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/add-feature-flag-modal/add-feature-flag-modal.component';
 import { CommonModalConfig } from '../../shared-standalone-component-lib/components/common-modal/common-modal-config';
@@ -13,6 +13,7 @@ import {
   UpsertFeatureFlagListParams,
 } from '../../core/feature-flags/store/feature-flags.model';
 import { UpsertFeatureFlagListModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-list-modal/upsert-feature-flag-list-modal.component';
+import { CommonSimpleConfirmationModal } from '../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
 
 @Injectable({
   providedIn: 'root',
@@ -148,5 +149,16 @@ export class DialogService {
       disableClose: true,
     };
     return this.dialog.open(ImportFeatureFlagModalComponent, config);
+  }
+
+  openCommonConfirmationModal(commonModalConfig: CommonModalConfig): MatDialogRef<CommonSimpleConfirmationModal, boolean> {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: '670px',
+      autoFocus: 'first-heading',
+      disableClose: true,
+    };
+
+    return this.dialog.open(CommonSimpleConfirmationModal, config);
   }
 }

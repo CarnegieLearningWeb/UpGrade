@@ -1,0 +1,18 @@
+<div class="modal-container">
+    <app-common-dialog
+      [title]="data.title"
+      [cancelBtnLabel]="data.cancelBtnLabel"
+      [primaryActionBtnLabel]="data.primaryActionBtnLabel"
+      [primaryActionBtnColor]="data.primaryActionBtnColor"
+      (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+    >
+      <div mat-dialog-content class="dialog">
+        <div class="ft-18-600 message">
+          {{ data.params.message | translate }}
+        </div>
+        <div class="ft-18-500 subMessage" [color]="data.params.subMessageColor" *ngIf="data.params.subMessage">
+          {{ data.params.subMessage | translate }}
+        </div>
+      </div>
+    </app-common-dialog>
+</div>
