@@ -135,3 +135,18 @@ export enum EXPORT_SEGMENT_METHOD {
   JSON = 'Download Segment (JSON)',
   CSV = 'Download Segment Members (CSV)',
 }
+
+export enum UPSERT_PRIVATE_SEGMENT_LIST_ACTION {
+  ADD = 'add',
+  EDIT = 'edit',
+}
+
+export interface UpsertPrivateSegmentListParams {
+  sourceList: any; // TODO define me
+  action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION;
+}
+
+export enum LIST_OPTION_TYPE {
+  INDIVIDUAL = 'Individual',
+  SEGMENT = 'Segment',
+}

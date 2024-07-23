@@ -6,15 +6,18 @@ import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/featur
 
 import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 import { UpdateFlagStatusConfirmationModalComponent } from '../../features/dashboard/feature-flags/modals/update-flag-status-confirmation-modal/update-flag-status-confirmation-modal.component';
-import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
+import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
+import {
+  UPSERT_PRIVATE_SEGMENT_LIST_ACTION,
+  UpsertPrivateSegmentListParams,
+} from '../../core/segments/store/segments.model';
 import {
   FeatureFlag,
   UPSERT_FEATURE_FLAG_ACTION,
   UPSERT_FEATURE_FLAG_LIST_ACTION,
-  UpsertFeatureFlagListParams,
   UpsertFeatureFlagParams,
 } from '../../core/feature-flags/store/feature-flags.model';
-import { UpsertFeatureFlagListModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-list-modal/upsert-feature-flag-list-modal.component';
+import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import { CommonSimpleConfirmationModal } from '../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
 
 @Injectable({
@@ -118,29 +121,28 @@ export class DialogService {
   }
 
   openAddIncludeListModal() {
-    const commonModalConfig: CommonModalConfig<UpsertFeatureFlagListParams> = {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Add Include List',
       primaryActionBtnLabel: 'Create',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
         sourceList: null,
-        action: UPSERT_FEATURE_FLAG_LIST_ACTION.ADD,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD,
       },
     };
-    return this.openAddFeatureFlagListModal(commonModalConfig);
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
   }
 
-  openAddFeatureFlagListModal(commonModalConfig: CommonModalConfig) {
+  openUpsertPrivateSegmentListModal(commonModalConfig: CommonModalConfig) {
     const config: MatDialogConfig = {
       data: commonModalConfig,
-      width: '656px',
-      // height: '460px',
-      height: 'auto', // TODO: fixed height or not?
+      width: '670px',
+      height: 'auto',
       autoFocus: 'input',
       disableClose: true,
     };
-    return this.dialog.open(UpsertFeatureFlagListModalComponent, config);
+    return this.dialog.open(UpsertPrivateSegmentListModalComponent, config);
   }
 
   openDeleteFeatureFlagModal() {
@@ -175,7 +177,9 @@ export class DialogService {
     return this.dialog.open(ImportFeatureFlagModalComponent, config);
   }
 
-  openCommonConfirmationModal(commonModalConfig: CommonModalConfig): MatDialogRef<CommonSimpleConfirmationModal, boolean> {
+  openCommonConfirmationModal(
+    commonModalConfig: CommonModalConfig
+  ): MatDialogRef<CommonSimpleConfirmationModal, boolean> {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: '656px',

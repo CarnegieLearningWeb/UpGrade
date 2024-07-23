@@ -14,12 +14,15 @@ import {
   selectSortKey,
   selectSortAs,
 } from './store/segments.selectors';
-import { SegmentInput, SegmentLocalStorageKeys, UpsertSegmentType } from './store/segments.model';
-import { filter, first, map, tap } from 'rxjs/operators';
+import { LIST_OPTION_TYPE, SegmentInput, SegmentLocalStorageKeys, UpsertSegmentType } from './store/segments.model';
+import { filter, map, tap, withLatestFrom } from 'rxjs/operators';
 import { Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
 import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
 import { LocalStorageService } from '../local-storage/local-storage.service';
+import { selectContextMetaData } from '../experiments/store/experiments.selectors';
+import { selectSelectedFeatureFlag } from '../feature-flags/store/feature-flags.selectors';
+import { CommonTextHelpersService } from '../../shared/services/common-text-helpers.service';
 
 @Injectable({ providedIn: 'root' })
 export class SegmentsService {
@@ -67,6 +70,31 @@ export class SegmentsService {
         return d1 < d2 ? 1 : d1 > d2 ? -1 : 0;
       })
     )
+  );
+
+  // note: this comes from experiment service!
+  selectPrivateSegmentListTypeOptions$ = this.store$.pipe(
+    select(selectContextMetaData),
+    withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
+    map(([contextMetaData, flag]) => {
+      // TODO: straighten out contextmetadata and it's selectors with a dedicated service
+      const flagAppContext = flag?.context?.[0];
+      const groupTypes = contextMetaData?.contextMetadata?.[flagAppContext]?.GROUP_TYPES ?? [];
+      const groupTypeSelectOptions = CommonTextHelpersService.formatGroupTypes(groupTypes as string[]);
+      const listOptionTypes = [
+        {
+          value: LIST_OPTION_TYPE.SEGMENT,
+          viewValue: LIST_OPTION_TYPE.SEGMENT,
+        },
+        {
+          value: LIST_OPTION_TYPE.INDIVIDUAL,
+          viewValue: LIST_OPTION_TYPE.INDIVIDUAL,
+        },
+        ...groupTypeSelectOptions,
+      ];
+
+      return listOptionTypes;
+    })
   );
 
   fetchSegmentById(segmentId: string) {

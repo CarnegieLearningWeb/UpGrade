@@ -28,13 +28,13 @@ import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 import {
-  UpdateFeatureFlagStatusRequest,
   AddFeatureFlagRequest,
+  FeatureFlag,
   UpdateFeatureFlagRequest,
+  UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
 import { ExperimentService } from '../experiments/experiments.service';
-import { filter, map, pairwise, withLatestFrom } from 'rxjs';
-import { selectContextMetaData } from '../experiments/store/experiments.selectors';
+import { filter, map, pairwise } from 'rxjs';
 import isEqual from 'lodash.isequal';
 
 @Injectable()
