@@ -23,6 +23,7 @@ import {
   selectSortAs,
   selectFeatureFlagListTypeOptions,
   selectAppContexts,
+  selectFeatureFlagIds,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -36,11 +37,14 @@ import { ExperimentService } from '../experiments/experiments.service';
 import { filter, map, pairwise, withLatestFrom } from 'rxjs';
 import { selectContextMetaData } from '../experiments/store/experiments.selectors';
 import isEqual from 'lodash.isequal';
+import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 
 @Injectable()
 export class FeatureFlagsService {
-  constructor(private store$: Store<AppState>, private experimentService: ExperimentService) {}
+  constructor(private store$: Store<AppState>) {}
 
+  currentUserEmailAddress$ = this.store$.pipe(select(selectCurrentUserEmail));
+  allFeatureFlagsIds$ = this.store$.pipe(select(selectFeatureFlagIds));
   isInitialFeatureFlagsLoading$ = this.store$.pipe(select(selectHasInitialFeatureFlagsDataLoaded));
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
   isLoadingSelectedFeatureFlag$ = this.store$.pipe(select(selectIsLoadingSelectedFeatureFlag));
@@ -136,10 +140,6 @@ export class FeatureFlagsService {
 
   setSearchKey(searchKey: FLAG_SEARCH_KEY) {
     this.store$.dispatch(FeatureFlagsActions.actionSetSearchKey({ searchKey }));
-  }
-
-  setExportFeatureFlagsSuccessFlag(flag: boolean) {
-    this.store$.dispatch(FeatureFlagsActions.actionSetExportFeatureFlagsSuccessFlag({ flag }));
   }
 
   setSearchString(searchString: string) {

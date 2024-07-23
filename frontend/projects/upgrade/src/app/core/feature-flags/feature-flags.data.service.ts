@@ -44,8 +44,8 @@ export class FeatureFlagsDataService {
 
   emailFeatureFlagData(flagId: string, email: string){
     let featureFlagInfoParams = new HttpParams();
-    featureFlagInfoParams = featureFlagInfoParams.append('experimentId', flagId.toString());
-    featureFlagInfoParams = featureFlagInfoParams.append('email', email.toString());
+    featureFlagInfoParams = featureFlagInfoParams.append('experimentId', flagId);
+    featureFlagInfoParams = featureFlagInfoParams.append('email', email);
 
     const url = this.environment.api.emailFlagData;
     // return this.http.post(url, { params: featureFlagInfoParams });
@@ -57,7 +57,7 @@ export class FeatureFlagsDataService {
   exportFeatureFlagsDesign(flagIds: string[]) {
     let ids = new HttpParams();
     flagIds.forEach((id) => {
-      ids = ids.append('ids', id.toString());
+      ids = ids.append('ids', id);
     });
 
     const url = this.environment.api.exportFlagsDesign;

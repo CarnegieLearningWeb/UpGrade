@@ -13,7 +13,7 @@ import { FLAG_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
 import { RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
-import { Observable, firstValueFrom, lastValueFrom, map } from 'rxjs';
+import { Observable, Subscription, map } from 'rxjs';
 import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
 import {
@@ -41,6 +41,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagRootSectionCardComponent {
+  flagIdsSub = new Subscription();
   dataSource$: Observable<MatTableDataSource<FeatureFlag>>;
   allFeatureFlagIds: string[] = [];
   isLoadingFeatureFlags$ = this.featureFlagService.isLoadingFeatureFlags$;
@@ -90,12 +91,8 @@ export class FeatureFlagRootSectionCardComponent {
     );
   }
 
-  async getAllFeatureFlagIds() {
-    if (this.dataSource$) {
-      const dataSource = await firstValueFrom(this.dataSource$);
-      const allFeatureFlag = dataSource.data;
-      this.allFeatureFlagIds = allFeatureFlag.map((flag) => flag.id);
-    }
+  getAllFeatureFlagIds() {
+    this.flagIdsSub = this.featureFlagService.allFeatureFlagsIds$.subscribe((ids: string[]) => this.allFeatureFlagIds = ids);
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<FLAG_SEARCH_KEY>) {

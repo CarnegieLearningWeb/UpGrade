@@ -1,7 +1,7 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
 import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SORT_KEY, SEGMENT_TYPE, SORT_AS_DIRECTION } from 'upgrade_types';
-import { MemberTypes, Segment } from '../../segments/store/segments.model';
+import { GroupForSegment, IndividualForSegment, MemberTypes, Segment } from '../../segments/store/segments.model';
 
 // This obviously is a more global type, but for now we're not about to refactor all of the things, so I'm just putting it here so I can create some more dev-friendly types to catch the small differences between some of these formats
 export interface GeneralCRUDResponseFields {
@@ -91,16 +91,6 @@ export interface EmptyPrivateSegment {
   segment: {
     type: SEGMENT_TYPE;
   };
-}
-
-export interface ExportModalParams {
-  sourceFlags: FeatureFlag[];
-  action: EXPORT_MODAL_ACTION;
-}
-
-export enum EXPORT_MODAL_ACTION {
-  MAIL = 'Email Data',
-  EXPORT = 'Export Design',
 }
 
 export type AnySegmentType = Segment | PrivateSegment | EmptyPrivateSegment | GroupForSegment | IndividualForSegment;

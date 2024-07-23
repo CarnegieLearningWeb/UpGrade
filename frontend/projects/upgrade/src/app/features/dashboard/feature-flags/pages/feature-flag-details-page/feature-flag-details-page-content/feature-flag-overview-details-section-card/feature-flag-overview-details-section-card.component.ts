@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
 import { CommonSectionCardOverviewDetailsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { FEATURE_FLAG_DETAILS_PAGE_ACTIONS, FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
-import { Subscription, firstValueFrom } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
@@ -30,11 +30,12 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
   styleUrl: './feature-flag-overview-details-section-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit{
+export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, OnDestroy {
   isSectionCardExpanded = true;
   @Output() sectionCardExpandChange = new EventEmitter<boolean>();
   featureFlag: FeatureFlag;
   flagSub = new Subscription();
+  mailSub = new Subscription();
   emailId = '';
   featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
   flagOverviewDetails$ = this.featureFlagService.selectedFlagOverviewDetails;
@@ -51,8 +52,8 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit{
   constructor(private dialogService: DialogService, private featureFlagService: FeatureFlagsService, private authService: AuthService,) {}
 
   ngOnInit(): void {
-    this.getUserEmail();
     this.flagSub = this.featureFlagService.selectedFeatureFlag$.subscribe((flag) => this.featureFlag = flag);
+    this.mailSub = this.featureFlagService.currentUserEmailAddress$.subscribe((id) => this.emailId = id);
   }
 
   get FEATURE_FLAG_STATUS() {
@@ -91,10 +92,10 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit{
         this.dialogService.openDeleteFeatureFlagModal();
         break;
       case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT:
-        this.dialogService.openEditFeatureFlagModal();
+        this.dialogService.openEditFeatureFlagModal(flag);
         break;
       case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DUPLICATE:
-        console.log('Duplicate feature flag');
+        this.dialogService.openDuplicateFeatureFlagModal(flag);
         break;
       case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.ARCHIVE:
         console.log('Archive feature flag');
@@ -114,8 +115,8 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit{
     const confirmMessage = 'feature-flags.export-feature-flag-design.confirmation-text.text';
     this.dialogService.openExportFeatureFlagDesignModal(confirmMessage)
       .afterClosed()
-      .subscribe((isEmailClicked: boolean) => {
-        if (isEmailClicked) {
+      .subscribe((isExportClicked: boolean) => {
+        if (isExportClicked) {
           this.featureFlagService.exportFeatureFlagsData([this.featureFlag.id]);
         }
       });
@@ -133,19 +134,13 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit{
       });
   }
 
-  async getUserEmail() {
-    try {
-      const userInfo = await firstValueFrom(this.authService.currentUser$);
-      if (userInfo.email) {
-        this.emailId = userInfo.email;
-      }
-    } catch (error) {
-      console.error('Error fetching user info:', error);
-    }
-  }
-
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
     this.isSectionCardExpanded = isSectionCardExpanded;
     this.sectionCardExpandChange.emit(this.isSectionCardExpanded);
+  }
+
+  ngOnDestroy(): void {
+    this.flagSub.unsubscribe();
+    this.mailSub.unsubscribe();
   }
 }

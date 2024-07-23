@@ -16,9 +16,8 @@ import {
   selectSearchString,
   selectIsAllFlagsFetched,
 } from './feature-flags.selectors';
-import { DialogService } from '../../../shared/services/common-dialog.service';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
-import JSZip from 'jszip';
+import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
 
 @Injectable()
 export class FeatureFlagsEffects {
@@ -28,6 +27,7 @@ export class FeatureFlagsEffects {
     private featureFlagsDataService: FeatureFlagsDataService,
     private router: Router,
     private notificationService: NotificationService,
+    private commonExportHelpersService: CommonExportHelpersService,
   ) {}
 
   fetchFeatureFlags$ = createEffect(() =>
@@ -224,17 +224,7 @@ export class FeatureFlagsEffects {
         this.featureFlagsDataService.exportFeatureFlagsDesign(featureFlagIds).pipe(
           map((data: FeatureFlag[]) => {
             if (data) {
-              if (data.length > 1) {
-                const zip = new JSZip();
-                data.forEach((flag, index) => {
-                  zip.file(flag.name + ' (File ' + (index + 1) + ').json', JSON.stringify(flag));
-                });
-                zip.generateAsync({ type: 'base64' }).then((content) => {
-                  this.download('FeatureFlags.zip', content, true);
-                });
-              } else {
-                this.download(data[0].name + '.json', data[0], false);
-              }
+              this.commonExportHelpersService.convertDataToDownload(data, 'FeatureFlags' );
               this.notificationService.showSuccess('Feature Flag Design JSON downloaded!');
             }
             return featureFlagsActions.actionExportFeatureFlagDesignSuccess();
@@ -244,18 +234,6 @@ export class FeatureFlagsEffects {
       )
     )
   );
-
-  private download(filename, text, isZip: boolean) {
-    const element = document.createElement('a');
-    isZip
-      ? element.setAttribute('href', 'data:application/zip;base64,' + text)
-      : element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
-    element.setAttribute('download', filename);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  }
 
   private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());
 }
