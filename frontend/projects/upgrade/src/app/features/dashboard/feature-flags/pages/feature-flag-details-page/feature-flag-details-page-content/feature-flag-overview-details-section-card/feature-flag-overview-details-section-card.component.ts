@@ -14,6 +14,7 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
 import { FEATURE_FLAG_DETAILS_PAGE_ACTIONS, FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
+
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,

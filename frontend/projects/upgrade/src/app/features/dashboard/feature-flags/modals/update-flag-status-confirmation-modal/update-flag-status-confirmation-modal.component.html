@@ -1,36 +1,27 @@
-<div class="update-feature-flag-status-modal-container">
-  <ng-container *ngIf="selectedFlag$ | async as flag">
-    <app-common-dialog
-      [title]="config.title"
-      [cancelBtnLabel]="config.cancelBtnLabel"
-      [primaryActionBtnLabel]="config.primaryActionBtnLabel"
-      [primaryActionBtnColor]="config.primaryActionBtnColor"
-      [primaryActionBtnDisabled$]="isLoadingUpdateFeatureFlagStatus$  | async"
-      (primaryActionBtnClicked)="
-        onPrimaryActionBtnClicked({
-          flagId: flag.id,
-          status:
-            flag.status === FEATURE_FLAG_STATUS.DISABLED ? FEATURE_FLAG_STATUS.ENABLED : FEATURE_FLAG_STATUS.DISABLED
-        })
-      "
-    >
-      <div class="modal-content" *ngIf="flag.status === FEATURE_FLAG_STATUS.DISABLED">
-        <p class="modal-content-text">
-          {{ 'Are you sure you want to enable "' + flag.name + '"?' }}
-        </p>
-        <p class="modal-content-text info">
-          {{ '* Only the enabled include lists will be affected' }}
-        </p>
-      </div>
-
-      <div class="modal-content" *ngIf="flag.status === FEATURE_FLAG_STATUS.ENABLED">
-        <p class="modal-content-text">
-          {{ 'Are you sure you want to disable "' + flag.name + '"?' }}
-        </p>
-        <p class="modal-content-text warn">
-          {{ '* All disabled include lists will be affected.' }}
-        </p>
-      </div>
-    </app-common-dialog>
-  </ng-container>
-</div>
+<ng-container *ngIf="selectedFlag$ | async as flag">
+  <app-common-dialog
+    [title]="config.title"
+    [cancelBtnLabel]="config.cancelBtnLabel"
+    [primaryActionBtnLabel]="config.primaryActionBtnLabel"
+    [primaryActionBtnColor]="config.primaryActionBtnColor"
+    [primaryActionBtnDisabled$]="isLoadingUpdateFeatureFlagStatus$"
+    (primaryActionBtnClicked)="
+      onPrimaryActionBtnClicked({
+        flagId: flag.id,
+        status:
+          flag.status === FEATURE_FLAG_STATUS.DISABLED ? FEATURE_FLAG_STATUS.ENABLED : FEATURE_FLAG_STATUS.DISABLED
+      })
+    "
+  >
+    <div class="confirm-modal-content">
+      <p class="confirm-modal-content-text ft-16-400">
+        {{ 'Are you sure you want to ' + (flag.status === FEATURE_FLAG_STATUS.DISABLED ? 'enable' : 'disable') + ' "' + flag.name + '"?' }}
+      </p>
+      <p class="confirm-modal-content-text ft-14-400" [ngClass]="flag.status === FEATURE_FLAG_STATUS.DISABLED ? 'info' : 'warn'">
+        {{ flag.status === FEATURE_FLAG_STATUS.DISABLED ?
+          '* Only the enabled include lists will be affected.' :
+          '* All enabled include lists will be disabled.' }}
+      </p>
+    </div>
+  </app-common-dialog>
+</ng-container>

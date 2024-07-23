@@ -14,6 +14,7 @@ import {
   selectSortKey,
   selectSortAs,
   selectSearchString,
+  selectIsAllFlagsFetched,
 } from './feature-flags.selectors';
 import { DialogService } from '../../../shared/services/common-dialog.service';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
@@ -38,9 +39,12 @@ export class FeatureFlagsEffects {
         this.store$.pipe(select(selectTotalFlags)),
         this.store$.pipe(select(selectSearchKey)),
         this.store$.pipe(select(selectSortKey)),
-        this.store$.pipe(select(selectSortAs))
+        this.store$.pipe(select(selectSortAs)),
+        this.store$.pipe(select(selectIsAllFlagsFetched))
       ),
-      filter(([fromStarting, skip, total]) => skip < total || total === null || fromStarting),
+      filter(([fromStarting, skip, total, searchKey, sortKey, sortAs, isAllFlagsFetched]) => {
+        return !isAllFlagsFetched || skip < total || total === null || fromStarting;
+      }),
       tap(() => {
         this.store$.dispatch(featureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: true }));
       }),

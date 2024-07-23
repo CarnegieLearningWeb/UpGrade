@@ -22,5 +22,5 @@ export interface CommonDialogMatDialogConfig extends MatDialogConfig {
 export interface SimpleConfirmationModalParams {
   message: string;
   subMessage?: string;
-  subMessageColor?: string;
+  subMessageClass?: 'info' | 'warn';
 }

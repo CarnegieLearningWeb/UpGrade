@@ -1,5 +1,10 @@
 import { createAction, props } from '@ngrx/store';
-import { AddFeatureFlagRequest, FeatureFlag, UpdateFeatureFlagStatusRequest } from './feature-flags.model';
+import {
+  FeatureFlag,
+  UpdateFeatureFlagStatusRequest,
+  AddFeatureFlagRequest,
+  UpdateFeatureFlagRequest,
+} from './feature-flags.model';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 
 export const actionFetchFeatureFlags = createAction(
@@ -48,7 +53,7 @@ export const actionDeleteFeatureFlagFailure = createAction('[Feature Flags] Dele
 
 export const actionUpdateFeatureFlag = createAction(
   '[Feature Flags] Update Feature Flag',
-  props<{ flag: FeatureFlag }>()
+  props<{ flag: UpdateFeatureFlagRequest }>()
 );
 
 export const actionUpdateFeatureFlagSuccess = createAction(

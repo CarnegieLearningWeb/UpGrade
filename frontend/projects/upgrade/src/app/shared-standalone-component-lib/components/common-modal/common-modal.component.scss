@@ -1,50 +1,39 @@
 .common-modal {
-  background-color: #fff;
-  width: auto;
-  min-height: auto;
   display: flex;
+  flex-direction: column;
 
   .header-container {
     height: 80px;
-    padding: 0 30px;
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #ddd;
+    padding: 0 20px 0 32px;
+    border-bottom: 1px solid var(--light-grey-2);
 
     .header-title {
-      display: flex;
-      font-size: 24px;
-      font-weight: bold;
-      font-family: 'Open Sans';
-      flex-basis: 80%;
-      padding: 0;
       margin: 0;
     }
 
-    .close-button {
-      display: flex;
-      cursor: pointer;
-      flex-basis: 20%;
+    .close-btn {
+      color: var(--dark-grey);
     }
   }
 
-  .content-container {
-    padding: 30px 30px 20px 30px;
-    min-height: 80px;
-    display: flex;
-  }
-
   .footer-container {
-    padding: 0 30px;
-    border-top: 1px solid #ddd;
     height: 80px;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+    column-gap: 8px;
+    padding: 0 32px;
+    border-top: 1px solid var(--light-grey-2);
 
     .dialog-action-btn {
-      margin: 18px 0 15px 20px;
+      padding: 0 24px;
+
+      &.cancel-btn {
+        color: var(--disabled-text);
+      }
     }
   }
 }
