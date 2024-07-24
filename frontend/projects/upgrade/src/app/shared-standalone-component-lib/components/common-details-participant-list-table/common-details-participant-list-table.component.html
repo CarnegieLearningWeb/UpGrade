@@ -4,7 +4,7 @@
     class="participant-list-table"
     mat-table
     [dataSource]="dataSource"
-    [ngClass]="{'no-data': !dataSource?.length}"
+    [ngClass]="{'no-data': !dataSource?.length, 'no-enable-column': displayedColumns.length < 5}"
     matSort
     (matSortChange)="changeSorting($event)"
   >
