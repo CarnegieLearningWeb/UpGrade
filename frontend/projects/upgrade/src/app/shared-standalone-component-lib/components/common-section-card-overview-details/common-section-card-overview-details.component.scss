@@ -1,14 +1,18 @@
 .content-section {
-  padding: 16px 32px 20px;
+  padding: 22px 32px 20px;
 
   .item-key-value {
-    height: 32px;
+    min-height: 32px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     column-gap: 8px;
 
     .item-value {
       color: var(--dark-grey);
+    }
+
+    .chips-container {
+      margin-top: -4px;
     }
   }
 }
