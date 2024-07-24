@@ -75,6 +75,11 @@ export interface UpdateFeatureFlagStatusRequest {
   status: FEATURE_FLAG_STATUS;
 }
 
+export interface UpdateFilterModeRequest {
+  flagId: string;
+  filterMode: FILTER_MODE;
+}
+
 export interface FeatureFlagFormData {
   name: string;
   key: string;

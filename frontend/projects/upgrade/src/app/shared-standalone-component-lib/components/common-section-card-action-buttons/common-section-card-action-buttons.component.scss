@@ -4,6 +4,9 @@
   column-gap: 4px;
 
   .main-container {
+    display: flex;
+    align-items: center;
+    column-gap: 34px;
     padding: 0 16px;
 
     ::ng-deep .mat-mdc-slide-toggle .mdc-label {

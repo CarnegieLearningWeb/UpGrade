@@ -133,6 +133,20 @@ export class FeatureFlagsEffects {
     )
   );
 
+  updateFilterMode$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionUpdateFilterMode),
+      switchMap((action) => {
+        return this.featureFlagsDataService.updateFilterMode(action.updateFilterModeRequest).pipe(
+          map((response) => {
+            return FeatureFlagsActions.actionUpdateFilterModeSuccess({ response });
+          }),
+          catchError(() => [FeatureFlagsActions.actionUpdateFilterModeFailure()])
+        );
+      })
+    )
+  );
+
   deleteFeatureFlag$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionDeleteFeatureFlag),

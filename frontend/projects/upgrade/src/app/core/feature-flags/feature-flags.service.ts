@@ -31,10 +31,10 @@ import {
   UpdateFeatureFlagStatusRequest,
   AddFeatureFlagRequest,
   UpdateFeatureFlagRequest,
+  UpdateFilterModeRequest,
 } from './store/feature-flags.model';
 import { ExperimentService } from '../experiments/experiments.service';
-import { filter, map, pairwise, withLatestFrom } from 'rxjs';
-import { selectContextMetaData } from '../experiments/store/experiments.selectors';
+import { filter, map, pairwise } from 'rxjs';
 import isEqual from 'lodash.isequal';
 
 @Injectable()
@@ -64,6 +64,11 @@ export class FeatureFlagsService {
     select(selectSelectedFeatureFlag),
     pairwise(),
     filter(([prev, curr]) => prev.status !== curr.status)
+  );
+  selectedFeatureFlagFilterModeChange$ = this.store$.pipe(
+    select(selectSelectedFeatureFlag),
+    pairwise(),
+    filter(([prev, curr]) => prev.filterMode !== curr.filterMode)
   );
   // Observable to check if selectedFeatureFlag is removed from the store
   isSelectedFeatureFlagRemoved$ = this.store$.pipe(
@@ -120,6 +125,10 @@ export class FeatureFlagsService {
 
   updateFeatureFlagStatus(updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest) {
     this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagStatus({ updateFeatureFlagStatusRequest }));
+  }
+
+  updateFilterMode(updateFilterModeRequest: UpdateFilterModeRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFilterMode({ updateFilterModeRequest }));
   }
 
   deleteFeatureFlag(flagId: string) {

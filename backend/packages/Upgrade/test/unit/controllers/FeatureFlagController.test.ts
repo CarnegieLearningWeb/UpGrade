@@ -85,6 +85,18 @@ describe('Feature Flag Controller Testing', () => {
       .expect(200);
   });
 
+  test('Post request for /api/flags/filterMode', () => {
+    return request(app)
+      .post('/api/flags/filterMode')
+      .send({
+        flagId: uuid(),
+        filterMode: 'includeAll',
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
   test('Delete request for /api/flags/id', () => {
     return request(app)
       .delete('/api/flags/' + uuid())

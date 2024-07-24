@@ -30,6 +30,7 @@ export interface APIEndpoints {
   allExperimentNames: string;
   featureFlag: string;
   updateFlagStatus: string;
+  updateFilterMode: string;
   getPaginatedFlags: string;
   setting: string;
   metrics: string;

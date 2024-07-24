@@ -4,6 +4,7 @@ import {
   UpdateFeatureFlagStatusRequest,
   AddFeatureFlagRequest,
   UpdateFeatureFlagRequest,
+  UpdateFilterModeRequest,
 } from './feature-flags.model';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 
@@ -103,3 +104,15 @@ export const actionUpdateFeatureFlagStatusSuccess = createAction(
 );
 
 export const actionUpdateFeatureFlagStatusFailure = createAction('[Feature Flags] Update Feature Flag Status Failure');
+
+export const actionUpdateFilterMode = createAction(
+  '[Feature Flags] Update Filter Mode',
+  props<{ updateFilterModeRequest: UpdateFilterModeRequest }>()
+);
+
+export const actionUpdateFilterModeSuccess = createAction(
+  '[Feature Flags] Update Filter Mode Success',
+  props<{ response: FeatureFlag }>()
+);
+
+export const actionUpdateFilterModeFailure = createAction('[Feature Flags] Update Filter Mode Failure');

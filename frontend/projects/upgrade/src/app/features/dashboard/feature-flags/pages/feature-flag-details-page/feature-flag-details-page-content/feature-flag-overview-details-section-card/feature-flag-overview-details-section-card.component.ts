@@ -10,6 +10,7 @@ import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 import { FEATURE_FLAG_STATUS, IMenuButtonItem } from 'upgrade_types';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { CommonSectionCardOverviewDetailsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
@@ -26,6 +27,7 @@ import { Subscription } from 'rxjs';
     CommonSectionCardActionButtonsComponent,
     CommonSectionCardOverviewDetailsComponent,
     FeatureFlagOverviewDetailsFooterComponent,
+    TranslateModule,
   ],
   templateUrl: './feature-flag-overview-details-section-card.component.html',
   styleUrl: './feature-flag-overview-details-section-card.component.scss',

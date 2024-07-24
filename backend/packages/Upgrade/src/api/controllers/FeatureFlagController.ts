@@ -4,6 +4,7 @@ import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatusUpdateValidator';
+import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFilterModeUpdateValidator';
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { SERVER_ERROR } from 'upgrade_types';
@@ -336,6 +337,44 @@ export class FeatureFlagsController {
     flag: FeatureFlagStatusUpdateValidator
   ): Promise<FeatureFlag> {
     return this.featureFlagService.updateState(flag.flagId, flag.status);
+  }
+
+  /**
+   * @swagger
+   * /flags/filterMode:
+   *    post:
+   *       description: Update Feature flag Filter Mode
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: updateFilterMode
+   *           description: Updating the featur flag's filter mode
+   *           schema:
+   *             type: object
+   *             required:
+   *              - flagId
+   *              - filterMode
+   *             properties:
+   *              flagId:
+   *                type: string
+   *              filterMode:
+   *                type: string
+   *                enum: [includeAll, excludeAll]
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Feature flag filterMode is updated
+   */
+  @Post('/filterMode')
+  public async updateFilterMode(
+    @Body({ validate: true })
+    flag: FeatureFlagFilterModeUpdateValidator
+  ): Promise<FeatureFlag> {
+    return this.featureFlagService.updateFilterMode(flag.flagId, flag.filterMode);
   }
 
   /**

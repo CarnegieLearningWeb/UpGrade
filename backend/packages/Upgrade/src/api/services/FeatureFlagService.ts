@@ -149,6 +149,12 @@ export class FeatureFlagService {
     return updatedState;
   }
 
+  public async updateFilterMode(flagId: string, filterMode: FILTER_MODE): Promise<FeatureFlag> {
+    // TODO: Add log for updating filter mode
+    const updatedFilterMode = await this.featureFlagRepository.updateFilterMode(flagId, filterMode);
+    return updatedFilterMode;
+  }
+
   public update(flagDTO: FeatureFlagValidation, logger: UpgradeLogger): Promise<FeatureFlag> {
     logger.info({ message: `Update a Feature Flag => ${flagDTO.toString()}` });
     // TODO add entry in log of updating feature flag
