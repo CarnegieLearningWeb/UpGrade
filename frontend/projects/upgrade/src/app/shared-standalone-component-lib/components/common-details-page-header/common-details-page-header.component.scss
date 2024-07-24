@@ -1,4 +1,4 @@
-::ng-deep .header {
+.header {
   height: 64px;
   display: flex;
   flex-direction: column;
@@ -7,10 +7,14 @@
   .breadcrumb {
     display: flex;
     column-gap: 8px;
-    color: var(--light-black);
 
     .root-link {
       text-decoration: none;
+      color: var(--light-black);
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 }

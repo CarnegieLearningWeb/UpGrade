@@ -1,37 +1,29 @@
-::ng-deep .title-header {
-  height: 112px;
+.title-header {
   display: flex;
   flex-direction: column;
   justify-content: center;
 
   .title {
+    height: 32px;
     display: flex;
     align-items: center;
     margin-bottom: 0;
-  }
 
-  .status-chip {
-    margin-left: 1rem;
-    vertical-align: middle;
+    .status-chip {
+      margin-left: 8px;
+    }
   }
 
   .subtitle {
+    height: 24px;
     margin-bottom: 0;
-    color: var(--grey-3);
-  }
+    color: var(--dark-grey);
 
-  .view-logs-link {
-    margin-left: 0.5rem;
-    color: blue;
-    text-decoration: underline;
-    cursor: pointer;
-  }
-
-  .date {
-    color: rgba(100, 110, 123, 1);
-  }
-
-  .view-logs-link {
-    font-size: 14px;
+    .view-logs-link {
+      margin-left: 4px;
+      color: var(--blue);
+      text-decoration: underline;
+      cursor: pointer;
+    }
   }
 }

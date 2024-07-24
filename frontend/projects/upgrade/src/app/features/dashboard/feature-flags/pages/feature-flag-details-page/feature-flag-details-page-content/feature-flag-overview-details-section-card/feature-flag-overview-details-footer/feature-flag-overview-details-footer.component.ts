@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { CommonTabbedSectionCardFooterComponent } from '../../../../../../../../shared-standalone-component-lib/components/common-tabbed-section-card-footer/common-tabbed-section-card-footer.component';
 import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/feature-flags.service';
 
@@ -10,12 +10,16 @@ import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/
   styleUrl: './feature-flag-overview-details-footer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeatureFlagOverviewDetailsFooterComponent {
+export class FeatureFlagOverviewDetailsFooterComponent implements OnInit {
   tabLabels = ['Participants', 'Data'];
 
   constructor(private featureFlagsService: FeatureFlagsService) {}
 
   onSelectedTabChange(selectedTabIndex: number): void {
     this.featureFlagsService.setActiveDetailsTab(selectedTabIndex);
+  }
+
+  ngOnInit(): void {
+    this.featureFlagsService.setActiveDetailsTab(0);
   }
 }

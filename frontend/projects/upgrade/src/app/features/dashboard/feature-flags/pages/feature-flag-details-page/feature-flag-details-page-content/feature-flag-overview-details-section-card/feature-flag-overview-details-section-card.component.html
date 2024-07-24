@@ -24,9 +24,8 @@
   ></app-common-section-card-action-buttons>
 
   <!-- content -->
-  <ng-container content *ngIf="isSectionCardExpanded">
+  <ng-container content>
     <app-common-section-card-overview-details
-      class="full-width"
       [data]="flagOverviewDetails$ | async"
     ></app-common-section-card-overview-details>
   </ng-container>

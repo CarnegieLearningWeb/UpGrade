@@ -148,7 +148,7 @@ export class DialogService {
     const commonModalConfig: CommonModalConfig = {
       title: 'Delete Feature Flag',
       primaryActionBtnLabel: 'Delete',
-      primaryActionBtnColor: 'primary',
+      primaryActionBtnColor: 'warn',
       cancelBtnLabel: 'Cancel',
     };
     const config: MatDialogConfig = {

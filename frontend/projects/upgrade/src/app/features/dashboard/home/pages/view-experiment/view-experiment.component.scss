@@ -222,10 +222,13 @@ $font-size-small: 15px;
       }
 
       .experiment-chips {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        column-gap: 16px;
+        margin-bottom: 8px;
+
         &-title {
-          flex-shrink: 0;
-          padding-top: 12px;
-          width: 90px;
           color: var(--grey-5);
           font-size: $font-size-small !important;
         }
