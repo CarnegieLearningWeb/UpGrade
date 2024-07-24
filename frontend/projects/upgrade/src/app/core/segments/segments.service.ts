@@ -14,7 +14,13 @@ import {
   selectSortKey,
   selectSortAs,
 } from './store/segments.selectors';
-import { LIST_OPTION_TYPE, SegmentInput, SegmentLocalStorageKeys, UpsertSegmentType } from './store/segments.model';
+import {
+  LIST_OPTION_TYPE,
+  Segment,
+  SegmentInput,
+  SegmentLocalStorageKeys,
+  UpsertSegmentType,
+} from './store/segments.model';
 import { filter, map, tap, withLatestFrom } from 'rxjs/operators';
 import { Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
@@ -33,6 +39,7 @@ export class SegmentsService {
   ) {}
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
+  selectAllSegments$ = this.store$.pipe(select(selectAllSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
@@ -40,6 +47,7 @@ export class SegmentsService {
   selectSegmentSortAs$ = this.store$.pipe(select(selectSortAs));
   allExperimentSegmentsInclusion$ = this.store$.pipe(select(selectExperimentSegmentsInclusion));
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
+  select;
 
   selectSearchSegmentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
@@ -97,6 +105,17 @@ export class SegmentsService {
     })
   );
 
+  getSegmentsByContext(appContext: string): Observable<Segment[]> {
+    return this.selectAllSegments$.pipe(
+      map((segments) => {
+        const filteredSegments = segments.filter((segment) => {
+          return segment.context === appContext;
+        });
+        return filteredSegments;
+      })
+    );
+  }
+
   fetchSegmentById(segmentId: string) {
     this.store$.dispatch(SegmentsActions.actionGetSegmentById({ segmentId }));
   }
@@ -153,5 +172,9 @@ export class SegmentsService {
 
   exportSegmentCSV(segmentIds: string[]): Observable<any> {
     return this.segmentsDataService.exportSegmentCSV(segmentIds);
+  }
+
+  upsertPrivateSegmentList(list: any) {
+    this.store$.dispatch(SegmentsActions.actionAddFeatureFlagInclusionList({ list }));
   }
 }

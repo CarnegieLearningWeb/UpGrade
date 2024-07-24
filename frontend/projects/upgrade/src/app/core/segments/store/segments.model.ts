@@ -137,12 +137,17 @@ export enum EXPORT_SEGMENT_METHOD {
 }
 
 export enum UPSERT_PRIVATE_SEGMENT_LIST_ACTION {
-  ADD = 'add',
-  EDIT = 'edit',
+  ADD_FLAG_INCLUDE_LIST = 'add_flag_include',
+  EDIT_FLAG_INCLUDE_LIST = 'edit_flag_include',
+  ADD_FLAG_EXCLUDE_LIST = 'add_flag_exclude',
+  EDIT_FLAG_EXCLUDE_LIST = 'edit_flag_exclude',
+  ADD_SEGMENT_LIST = 'add_segment_list',
+  EDIT_SEGMENT_LIST = 'edit_segment_list',
 }
 
 export interface UpsertPrivateSegmentListParams {
   sourceList: any; // TODO define me
+  sourceAppContext: string;
   action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION;
 }
 

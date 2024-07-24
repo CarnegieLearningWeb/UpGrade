@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
+import {
+  CommonModalComponent,
+  CommonTagsInputComponent,
+} from '../../../../../shared-standalone-component-lib/components';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal-config';
 import { CommonModule } from '@angular/common';
@@ -16,10 +19,8 @@ import {
   Segment,
   UpsertPrivateSegmentListParams,
 } from '../../../../../core/segments/store/segments.model';
-import { Observable, of } from 'rxjs';
-import { S } from '@angular/cdk/keycodes';
-import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
-import { MatAutocomplete } from '@angular/material/autocomplete';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { map, Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'upsert-private-segment-list-modal',
@@ -29,7 +30,8 @@ import { MatAutocomplete } from '@angular/material/autocomplete';
     MatSelectModule,
     MatFormFieldModule,
     MatInputModule,
-    MatAutocomplete,
+    MatAutocompleteModule,
+    CommonTagsInputComponent,
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
@@ -40,50 +42,11 @@ import { MatAutocomplete } from '@angular/material/autocomplete';
 })
 export class UpsertPrivateSegmentListModalComponent {
   listOptionTypes$ = this.segmentsService.selectPrivateSegmentListTypeOptions$;
-  // export interface Segment {
-  //   createdAt: string;
-  //   updatedAt: string;
-  //   versionNumber: number;
-  //   id: string;
-  //   name: string;
-  //   context: string;
-  //   description: string;
-  //   individualForSegment: IndividualForSegment[];
-  //   groupForSegment: GroupForSegment[];
-  //   subSegments: Segment[];
-  //   type: SEGMENT_TYPE;
-  //   status: string;
-  // }
-  segments$: Observable<Segment[]> = of([
-    {
-      createdAt: '2021-09-07T12:00:00.000Z',
-      updatedAt: '2021-09-07T12:00:00.000Z',
-      versionNumber: 1,
-      id: '1',
-      name: 'Saskatchewan schools',
-      context: 'assign-prog',
-      description: 'Description 1',
-      individualForSegment: [],
-      groupForSegment: [],
-      subSegments: [],
-      type: SEGMENT_TYPE.PUBLIC,
-      status: 'active',
-    },
-    {
-      createdAt: '2021-09-07T12:00:00.000Z',
-      updatedAt: '2021-09-07T12:00:00.000Z',
-      versionNumber: 1,
-      id: '2',
-      name: 'Texas schools',
-      context: 'assign-prog',
-      description: 'Description 2',
-      individualForSegment: [],
-      groupForSegment: [],
-      subSegments: [],
-      type: SEGMENT_TYPE.PUBLIC,
-      status: 'active',
-    },
-  ]);
+
+  subscriptions = new Subscription();
+  segmentFilteredByContext$ = this.segmentsService.getSegmentsByContext(this.config.params.sourceAppContext);
+  isFormValid$: Observable<boolean>;
+  isPrimaryButtonDisabled$: Observable<boolean>;
 
   privateSegmentListForm: FormGroup;
 
@@ -101,6 +64,18 @@ export class UpsertPrivateSegmentListModalComponent {
   ngOnInit(): void {
     this.experimentService.fetchContextMetaData();
     this.createPrivateSegmentListForm();
+    this.segmentsService.fetchSegments();
+    this.listenForFilteredSegments();
+  }
+
+  listenForFilteredSegments(): void {
+    this.segmentFilteredByContext$.subscribe((segments) => {
+      console.log('>> segments', segments);
+    });
+  }
+
+  listenForIsFormValid(): void {
+    this.isFormValid$ = this.privateSegmentListForm.statusChanges.pipe(map((status) => status === 'VALID'));
   }
 
   get LIST_TYPES() {
@@ -111,14 +86,59 @@ export class UpsertPrivateSegmentListModalComponent {
     return this.privateSegmentListForm.get('listType').value;
   }
 
+  get valuesFormControl() {
+    return this.privateSegmentListForm.get('values');
+  }
+
   createPrivateSegmentListForm(): void {
     this.privateSegmentListForm = this.formBuilder.group({
       listType: ['', Validators.required],
-      segment: [''],
+      segment: [null],
+      values: [[]],
+      name: [''],
+      description: [''],
+    });
+
+    // Subscribe to changes in listType
+    this.privateSegmentListForm.get('listType').valueChanges.subscribe((type) => {
+      const currentListType = type; // Store the current listType value
+
+      // Reset all fields, but preserve the listType value
+      this.privateSegmentListForm.reset(
+        {
+          listType: currentListType,
+          segment: null,
+          values: [],
+          name: '',
+          description: '',
+        },
+        { emitEvent: false }
+      );
+      if (type === this.LIST_TYPES.SEGMENT) {
+        // If listType is SEGMENT, segment is required
+        this.privateSegmentListForm.get('segment').setValidators([Validators.required]);
+        this.privateSegmentListForm.get('values').setValidators(null); // Not required
+        this.privateSegmentListForm.get('name').setValidators(null); // Not required
+      } else {
+        // For other types, values and name are required
+        this.privateSegmentListForm.get('segment').setValidators(null); // Not required
+        this.privateSegmentListForm.get('values').setValidators([Validators.required]);
+        this.privateSegmentListForm.get('name').setValidators([Validators.required]);
+      }
+
+      // Update validity
+      this.privateSegmentListForm.get('segment').updateValueAndValidity({ emitEvent: false });
+      this.privateSegmentListForm.get('values').updateValueAndValidity({ emitEvent: false });
+      this.privateSegmentListForm.get('name').updateValueAndValidity({ emitEvent: false });
     });
   }
 
-  displaySegment(segment: Segment): string {
+  valueActionButtonClicked(): void {
+    console.log('valueActionButtonClicked');
+  }
+
+  // this
+  displayAsSegmentName(segment: Segment): string {
     return segment ? segment.name : '';
   }
 
@@ -127,10 +147,29 @@ export class UpsertPrivateSegmentListModalComponent {
       // Handle extra frontend form validation logic here?
       // TODO: create request
       console.log(this.privateSegmentListForm.value);
+      this.sendRequest();
     } else {
       // If the form is invalid, manually mark all form controls as touched
       this.formHelpersService.triggerTouchedToDisplayErrors(this.privateSegmentListForm);
     }
+  }
+
+  sendRequest(): void {
+    const { listType, segment, values, name, description } = this.privateSegmentListForm.value;
+    const listRequest = {
+      enabled: false,
+      listType,
+      list: {
+        name,
+        description,
+        context: 'mathstream',
+        userIds: [],
+        groups: [],
+        subSegmentIds: [segment.id],
+      },
+    };
+    console.log('>> listRequest', listRequest);
+    this.segmentsService.upsertPrivateSegmentList(listRequest);
   }
 
   closeModal() {

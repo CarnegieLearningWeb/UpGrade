@@ -3,6 +3,7 @@
   [cancelBtnLabel]="config.cancelBtnLabel"
   [primaryActionBtnLabel]="config.primaryActionBtnLabel"
   [primaryActionBtnColor]="config.primaryActionBtnColor"
+  [primaryActionBtnDisabled]="isPrimaryButtonDisabled$ | async"
   (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
 >
   <form [formGroup]="privateSegmentListForm" class="form-standard dense-3">
@@ -17,11 +18,25 @@
     <mat-form-field *ngIf="selectedListType === LIST_TYPES.SEGMENT" appearance="outline">
       <mat-label class="ft-14-400">Segment</mat-label>
       <input type="text" matInput formControlName="segment" [matAutocomplete]="auto" class="ft-14-400">
-      <mat-autocomplete #auto="matAutocomplete" [displayWith]="displaySegment()">
-        <mat-option *ngFor="let segment of segments$ | async" [value]="segment.id" class="ft-14-400">
+      <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayAsSegmentName">
+        <mat-option *ngFor="let segment of segmentFilteredByContext$ | async" [value]="segment" class="ft-14-400">
           {{ segment.name }}
         </mat-option>
       </mat-autocomplete>
     </mat-form-field>
+    <!-- Additional fields for when 'segment' is not the selected type -->
+    <ng-container *ngIf="selectedListType && selectedListType !== LIST_TYPES.SEGMENT">
+      <app-common-tags-input
+        formControlName="values"
+      ></app-common-tags-input>
+      <mat-form-field appearance="outline">
+        <mat-label class="ft-14-400">Name</mat-label>
+        <input matInput formControlName="name" class="ft-14-400">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label class="ft-14-400">Description</mat-label>
+        <input matInput formControlName="description" class="ft-14-400">
+      </mat-form-field>
+    </ng-container>
   </form>
 </app-common-dialog>

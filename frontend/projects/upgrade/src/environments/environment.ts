@@ -48,6 +48,8 @@ export const environment = {
     featureFlag: '/flags',
     updateFlagStatus: '/flags/status',
     getPaginatedFlags: '/flags/paginated',
+    addFlagInclusionList: '/flags/addInclusionList',
+    addFlagExclusionList: '/flags/addExclusionList',
     setting: '/setting',
     metrics: '/metric',
     metricsSave: '/metric/save',

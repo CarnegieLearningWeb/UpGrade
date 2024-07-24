@@ -2,13 +2,16 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
-import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operators';
+import { catchError, filter, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import { AppState, NotificationService } from '../../core.module';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
 import { Segment, UpsertSegmentType } from './segments.model';
 import { selectAllSegments } from './segments.selectors';
 import JSZip from 'jszip';
+import { of } from 'rxjs/internal/observable/of';
+import { selectSelectedFeatureFlag } from '../../feature-flags/store/feature-flags.selectors';
+import { FeatureFlagsDataService } from '../../feature-flags/feature-flags.data.service';
 
 @Injectable()
 export class SegmentsEffects {
@@ -16,9 +19,18 @@ export class SegmentsEffects {
     private store$: Store<AppState>,
     private actions$: Actions,
     private segmentsDataService: SegmentsDataService,
+    private featureFlagDataService: FeatureFlagsDataService,
     private router: Router,
     private notificationService: NotificationService
-  ) {}
+  ) {
+    this.actions$
+      .pipe(
+        tap((action) => {
+          console.log('>> action', action);
+        })
+      )
+      .subscribe();
+  }
 
   fetchSegments$ = createEffect(() =>
     this.actions$.pipe(
@@ -94,6 +106,26 @@ export class SegmentsEffects {
           catchError(() => [SegmentsActions.actionDeleteSegmentFailure()])
         )
       )
+    )
+  );
+
+  upsertFeatureFlagInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionAddFeatureFlagInclusionList),
+      map((action) => action.list),
+      withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
+      switchMap(([list, flag]) => {
+        console.log('>> got here');
+        // START HERE WHY IS THIS NOT WORKING
+        const request = {
+          flagId: flag.id,
+          ...list,
+        };
+        return this.featureFlagDataService.addInclusionList(request).pipe(
+          map((list) => SegmentsActions.actionAddFeatureFlagInclusionListSuccess({ list })),
+          catchError((error) => of(SegmentsActions.actionAddFeatureFlagInclusionListFailure({ error })))
+        );
+      })
     )
   );
 

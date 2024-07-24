@@ -45,8 +45,8 @@ export class FeatureFlagsDataService {
     return this.http.delete(url);
   }
 
-  // addInclusionList(list: ): Observable<> {
-  //   const url = this.environment.api.addInclusionList;
-  //   return this.http.post<>(url, list)
-  // }
+  addInclusionList(request: any): Observable<any> {
+    const url = this.environment.api.addFlagInclusionList;
+    return this.http.post(url, request);
+  }
 }

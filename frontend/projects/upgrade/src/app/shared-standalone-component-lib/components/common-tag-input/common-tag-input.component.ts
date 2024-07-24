@@ -1,5 +1,5 @@
 import { Component, EventEmitter, forwardRef, Input, OnInit, Output } from '@angular/core';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormControl } from '@angular/forms';
+import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormControl, ControlContainer, FormGroup } from '@angular/forms';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { CommonModule } from '@angular/common';
@@ -48,6 +48,7 @@ export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
   showExportIcon = false;
   showImportIcon = false;
   @Input() actionButtons = false;
+  @Input() formControlName = '';
   @Output() actionButtonClicked = new EventEmitter<void>();
 
   isChipSelectable = false;
@@ -57,8 +58,23 @@ export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
 
   tags = new FormControl<string[]>([]);
 
+  constructor(private controlContainer: ControlContainer) {}
+
   ngOnInit(): void {
-    this.checkTagValue();
+    // Ensure the formControlName is provided and the parent form group is accessible
+    if (this.formControlName && this.controlContainer && this.controlContainer.control) {
+      const formGroup = this.controlContainer.control as FormGroup;
+      // Access the form control using the provided name
+      const formControl = formGroup.get(this.formControlName) as FormControl;
+      if (formControl) {
+        this.tags = formControl;
+        this.checkTagValue();
+      } else {
+        console.warn(`FormControl with name '${this.formControlName}' not found in parent FormGroup`);
+      }
+    } else {
+      console.warn('ControlName or parent FormGroup is not available');
+    }
   }
 
   checkTagValue(): void {
@@ -88,7 +104,7 @@ export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
     if (value) {
       const currentTags = this.tags.value || [];
       if (!currentTags.includes(value)) {
-        this.tags.setValue([...currentTags, value]);
+        this.tags.setValue([...currentTags, value], { emitEvent: false });
         this.tags.updateValueAndValidity();
       }
     }
@@ -105,7 +121,7 @@ export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
     const currentTags = this.tags.value || [];
     const newTags = currentTags.filter((t) => t !== tag);
 
-    this.tags.setValue(newTags);
+    this.tags.setValue(newTags, { emitEvent: false });
     this.tags.updateValueAndValidity();
 
     this.checkTagValue();

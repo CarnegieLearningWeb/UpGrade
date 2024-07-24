@@ -120,7 +120,7 @@ export class DialogService {
     return this.dialog.open(UpdateFlagStatusConfirmationModalComponent, config);
   }
 
-  openAddIncludeListModal() {
+  openAddIncludeListModal(appContext: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Add Include List',
       primaryActionBtnLabel: 'Create',
@@ -128,7 +128,8 @@ export class DialogService {
       cancelBtnLabel: 'Cancel',
       params: {
         sourceList: null,
-        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST,
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
