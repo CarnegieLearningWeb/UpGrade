@@ -49,7 +49,14 @@ export const selectIsLoadingUpsertFeatureFlag = createSelector(
 export const selectSelectedFeatureFlag = createSelector(
   selectRouterState,
   selectFeatureFlagsState,
-  ({ state: { params } }, featureFlagState) => featureFlagState.entities[params.flagId]
+  (routerState, featureFlagState) => {
+    // be very defensive here to make sure routerState is correct
+    const flagId = routerState?.state?.params?.flagId;
+    if (flagId) {
+      return featureFlagState.entities[flagId];
+    }
+    return undefined;
+  }
 );
 
 export const selectFeatureFlagOverviewDetails = createSelector(selectSelectedFeatureFlag, (featureFlag) => ({

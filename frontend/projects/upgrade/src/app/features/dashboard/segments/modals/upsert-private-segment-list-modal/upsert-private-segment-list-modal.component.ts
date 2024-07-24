@@ -21,6 +21,8 @@ import {
 } from '../../../../../core/segments/store/segments.model';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { map, Observable, Subscription } from 'rxjs';
+import { SegmentsModule } from '../../segments.module';
+import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 
 @Component({
   selector: 'upsert-private-segment-list-modal',
@@ -35,6 +37,7 @@ import { map, Observable, Subscription } from 'rxjs';
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
+    SegmentsModule,
   ],
   templateUrl: './upsert-private-segment-list-modal.component.html',
   styleUrl: './upsert-private-segment-list-modal.component.scss',
@@ -155,7 +158,12 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   sendRequest(): void {
-    const { listType, segment, values, name, description } = this.privateSegmentListForm.value;
+    const { listType, segment, values } = this.privateSegmentListForm.value;
+    let { name, description } = this.privateSegmentListForm.value;
+    if (listType === this.LIST_TYPES.SEGMENT) {
+      name = segment.name;
+      description = segment.description;
+    }
     const listRequest = {
       enabled: false,
       listType,
@@ -166,6 +174,7 @@ export class UpsertPrivateSegmentListModalComponent {
         userIds: [],
         groups: [],
         subSegmentIds: [segment.id],
+        type: SEGMENT_TYPE.PRIVATE,
       },
     };
     console.log('>> listRequest', listRequest);

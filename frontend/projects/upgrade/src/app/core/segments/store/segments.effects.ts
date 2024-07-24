@@ -109,14 +109,15 @@ export class SegmentsEffects {
     )
   );
 
-  upsertFeatureFlagInclusionList$ = createEffect(() =>
+  uspertFeatureFlagInclusionList$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionAddFeatureFlagInclusionList),
       map((action) => action.list),
       withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
       switchMap(([list, flag]) => {
-        console.log('>> got here');
-        // START HERE WHY IS THIS NOT WORKING
+        console.log('>> e list', list);
+        console.log('>> e flag', flag);
+
         const request = {
           flagId: flag.id,
           ...list,

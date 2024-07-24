@@ -63,10 +63,12 @@ const reducer = createReducer(
     ...state,
     isLoadingUpsertPrivateSegmentList: true,
   })),
-  on(SegmentsActions.actionAddFeatureFlagInclusionListSuccess, (state, { list }) =>
-    adapter.upsertOne(list, { ...state, isLoadingUpsertPrivateSegmentList: false })
-  ),
+  on(SegmentsActions.actionAddFeatureFlagInclusionListSuccess, (state, { list }) => {
+    console.log('actionAddFeatureFlagInclusionListSuccess', list);
+    return adapter.upsertOne(list, { ...state, isLoadingUpsertPrivateSegmentList: false });
+  }),
   on(SegmentsActions.actionAddFeatureFlagInclusionListFailure, (state) => {
+    console.log('actionAddFeatureFlagInclusionListFailure');
     return { ...state, isLoadingUpsertPrivateSegmentList: false };
   })
 );
