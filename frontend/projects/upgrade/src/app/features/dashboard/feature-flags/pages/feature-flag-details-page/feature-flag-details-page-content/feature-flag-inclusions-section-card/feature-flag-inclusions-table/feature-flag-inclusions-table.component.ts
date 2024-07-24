@@ -15,7 +15,7 @@ import { tap } from 'rxjs';
   imports: [CommonDetailsParticipantListTableComponent, CommonModule, TranslateModule],
 })
 export class FeatureFlagInclusionsTableComponent {
-  listType$ = FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE;
+  tableType = FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE;
   dataSource$ = this.featureFlagService.selectFeatureFlagInclusions$;
   isLoading$ = this.featureFlagService.isLoadingSelectedFeatureFlag$;
 

@@ -46,7 +46,7 @@ import { FEATURE_FLAG_PARTICIPANT_LIST_KEY } from '../../../core/feature-flags/s
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonDetailsParticipantListTableComponent {
-  @Input() listType: FEATURE_FLAG_PARTICIPANT_LIST_KEY;
+  @Input() tableType: FEATURE_FLAG_PARTICIPANT_LIST_KEY;
   @Input() dataSource: any[];
   @Input() noDataRowText: string;
   @Input() isLoading: boolean;
@@ -71,7 +71,7 @@ export class CommonDetailsParticipantListTableComponent {
 
   ngOnInit() {
     this.displayedColumns =
-      this.listType === FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE
+      this.tableType === FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE
         ? ['type', 'values', 'name', 'enable', 'actions']
         : ['type', 'values', 'name', 'actions'];
   }

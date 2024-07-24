@@ -14,7 +14,7 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [CommonDetailsParticipantListTableComponent, CommonModule, TranslateModule],
 })
 export class FeatureFlagExclusionsTableComponent {
-  listType$ = FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE;
+  tableType = FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE;
   dataSource$ = this.featureFlagService.selectFeatureFlagExclusions$;
   isLoading$ = this.featureFlagService.isLoadingSelectedFeatureFlag$;
 
