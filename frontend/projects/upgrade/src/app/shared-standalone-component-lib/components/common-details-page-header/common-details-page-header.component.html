@@ -1,8 +1,7 @@
-<ng-container class="header">
-  <div class="ft-14-400 breadcrumb">
-    <span>
-      <a [routerLink]="['/', rootLink]" class="root-link">{{ rootName | translate }} </a>
-      > <b>{{ detailsName | translate }}</b>
-    </span>
-  </div>
-</ng-container>
+<div class="header">
+  <span class="ft-14-400 breadcrumb">
+    <a [routerLink]="['/', rootLink]" class="root-link">{{ rootName | translate }}</a>
+    >
+    <span>{{ detailsName | translate }}</span>
+  </span>
+</div>

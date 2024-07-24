@@ -9,6 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonStatusIndicatorChipComponent } from '../common-status-indicator-chip/common-status-indicator-chip.component';
+import { FEATURE_FLAG_PARTICIPANT_LIST_KEY } from '../../../core/feature-flags/store/feature-flags.model';
 
 /**
  * `CommonDetailsParticipantListTableComponent` is a reusable Angular component that displays a table with common details for participant lists.
@@ -45,17 +46,35 @@ import { CommonStatusIndicatorChipComponent } from '../common-status-indicator-c
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonDetailsParticipantListTableComponent {
+  @Input() listType: FEATURE_FLAG_PARTICIPANT_LIST_KEY;
   @Input() dataSource: any[];
   @Input() noDataRowText: string;
   @Input() isLoading: boolean;
 
-  displayedColumns: string[] = ['name', 'type', 'status', 'actions'];
-  columnNames = {
-    NAME: 'Name',
+  displayedColumns: string[];
+
+  PARTICIPANT_LIST_COLUMN_NAMES = {
+    TYPE: 'type',
+    VALUES: 'values',
+    NAME: 'name',
+    ENABLE: 'enable',
+    ACTIONS: 'actions',
+  };
+
+  PARTICIPANT_LIST_TRANSLATION_KEYS = {
     TYPE: 'Type',
-    STATUS: 'Status',
+    VALUES: 'Values',
+    NAME: 'Name',
+    ENABLE: 'Enable',
     ACTIONS: 'Actions',
   };
+
+  ngOnInit() {
+    this.displayedColumns =
+      this.listType === FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE
+        ? ['type', 'values', 'name', 'enable', 'actions']
+        : ['type', 'values', 'name', 'actions'];
+  }
 
   fetchFlagsOnScroll() {
     console.log('fetchFlagsOnScroll');
