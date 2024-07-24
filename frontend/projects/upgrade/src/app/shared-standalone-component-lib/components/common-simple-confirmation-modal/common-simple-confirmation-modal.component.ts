@@ -14,27 +14,16 @@ import { CommonModalConfig, SimpleConfirmationModalParams } from '../common-moda
 @Component({
   selector: 'common-simple-confirmation-modal',
   standalone: true,
-  imports: [
-    CommonModalComponent,
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogClose,
-    TranslateModule,
-    CommonModule,
-  ],
+  imports: [CommonModalComponent, MatDialogTitle, MatDialogContent, MatDialogClose, TranslateModule, CommonModule],
   templateUrl: './common-simple-confirmation-modal.component.html',
   styleUrl: './common-simple-confirmation-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommonSimpleConfirmationModal{
-  message: string = "";
-  subMessage: string = "";
-  subMessageColor: string = "";
-
+export class CommonSimpleConfirmationModalComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public data: CommonModalConfig<SimpleConfirmationModalParams>,
-    public dialogRef: MatDialogRef<CommonSimpleConfirmationModal>
+    public dialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>
   ) {}
 
   onPrimaryActionBtnClicked() {
