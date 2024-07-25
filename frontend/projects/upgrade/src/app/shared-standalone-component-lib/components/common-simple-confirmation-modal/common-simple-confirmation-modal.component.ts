@@ -9,7 +9,7 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { CommonModalComponent } from '../common-modal/common-modal.component';
-import { CommonModalConfig, SimpleConfirmationModalParams } from '../common-modal/common-modal-config';
+import { CommonModalConfig, SimpleConfirmationModalParams } from '../common-modal/common-modal.types';
 
 /**
  * CommonSimpleConfirmationModalComponent is a reusable modal component for simple confirmation dialogs.

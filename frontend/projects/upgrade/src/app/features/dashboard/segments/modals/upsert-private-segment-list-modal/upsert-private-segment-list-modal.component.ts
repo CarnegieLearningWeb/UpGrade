@@ -4,7 +4,6 @@ import {
   CommonTagsInputComponent,
 } from '../../../../../shared-standalone-component-lib/components';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal-config';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -32,6 +31,7 @@ import { SegmentsModule } from '../../segments.module';
 import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 import isEqual from 'lodash.isequal';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
+import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 
 @Component({
   selector: 'upsert-private-segment-list-modal',

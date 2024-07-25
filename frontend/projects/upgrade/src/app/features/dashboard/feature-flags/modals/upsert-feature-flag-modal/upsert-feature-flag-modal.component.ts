@@ -12,7 +12,6 @@ import {
   MatDialogRef,
   MatDialogTitle,
 } from '@angular/material/dialog';
-import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal-config';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -37,6 +36,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { CommonTextHelpersService } from '../../../../../shared/services/common-text-helpers.service';
 import isEqual from 'lodash.isequal';
+import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 
 @Component({
   selector: 'upsert-add-feature-flag-modal',

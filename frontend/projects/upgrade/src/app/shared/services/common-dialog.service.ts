@@ -1,10 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-confirm-dialog.component';
-import {
-  CommonModalConfig,
-  SimpleConfirmationModalParams,
-} from '../../shared-standalone-component-lib/components/common-modal/common-modal-config';
 import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/delete-feature-flag-modal/delete-feature-flag-modal.component';
 
 import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
@@ -21,6 +17,10 @@ import {
 } from '../../core/feature-flags/store/feature-flags.model';
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import { CommonSimpleConfirmationModalComponent } from '../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
+import {
+  CommonModalConfig,
+  SimpleConfirmationModalParams,
+} from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 
 @Injectable({
   providedIn: 'root',

@@ -3,8 +3,7 @@ import { HttpEvent, HttpInterceptor, HttpHandler, HttpRequest, HttpResponse } fr
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-
-const ENDPOINTS_TO_INTERCEPT_FOR_MODAL_CLOSE = ['/flags/inclusionList', '/flags/exclusionList'];
+import { ENDPOINTS_TO_INTERCEPT_FOR_MODAL_CLOSE } from '../../shared-standalone-component-lib/components/common-modal/common-modal-config';
 
 @Injectable()
 export class CloseModalInterceptor implements HttpInterceptor {
