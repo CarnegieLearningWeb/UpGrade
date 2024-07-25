@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-confirm-dialog.component';
-import { CommonModalConfig } from '../../shared-standalone-component-lib/components/common-modal/common-modal-config';
+import { CommonModalConfig, SimpleConfirmationModalParams } from '../../shared-standalone-component-lib/components/common-modal/common-modal-config';
 import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/delete-feature-flag-modal/delete-feature-flag-modal.component';
 import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
@@ -86,7 +86,7 @@ export class DialogService {
       },
     };
 
-    return this.openSimpleCommonConfirmationModal(enableFlagStatusModalConfig);
+    return this.CommonSimpleConfirmationModalComponent(enableFlagStatusModalConfig);
   }
 
   openDisableFeatureFlagConfirmModel(flagName: string) {
@@ -102,7 +102,7 @@ export class DialogService {
       },
     };
 
-    return this.openSimpleCommonConfirmationModal(disableFlagStatusModalConfig);
+    return this.CommonSimpleConfirmationModalComponent(disableFlagStatusModalConfig);
   }
 
   openUpsertFeatureFlagModal(commonModalConfig: CommonModalConfig) {
