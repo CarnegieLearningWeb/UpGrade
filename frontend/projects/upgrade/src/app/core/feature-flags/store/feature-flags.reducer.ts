@@ -3,7 +3,9 @@ import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
 import { FeatureFlagState, FeatureFlag, FLAG_SEARCH_KEY } from './feature-flags.model';
 import * as FeatureFlagsActions from './feature-flags.actions';
 
-export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFlag>();
+export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFlag>({
+  selectId: (featureFlag: FeatureFlag) => featureFlag.id,
+});
 
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
@@ -122,6 +124,7 @@ const reducer = createReducer(
   })),
   on(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListSuccess, (state, { listResponse }) => {
     const { featureFlag } = listResponse;
+    console.log('>> listResponse', listResponse);
     return adapter.upsertOne(featureFlag, { ...state, isLoadingUpsertPrivateSegmentList: false });
   }),
   on(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListFailure, (state) => {
