@@ -14,7 +14,8 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
 import { FEATURE_FLAG_DETAILS_PAGE_ACTIONS, FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
-
+import { MatDialogRef } from '@angular/material/dialog';
+import { CommonSimpleConfirmationModalComponent } from '../../../../../../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,
@@ -39,7 +40,8 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   emailId = '';
   featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
   flagOverviewDetails$ = this.featureFlagService.selectedFlagOverviewDetails;
-
+  subscriptions = new Subscription();
+  confirmStatusChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
   menuButtonItems: IMenuButtonItem[] = [
     { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT, disabled: false },
     { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DUPLICATE, disabled: false },
@@ -65,25 +67,45 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
     console.log(event);
   }
 
-  onSlideToggleChange(event: MatSlideToggleChange) {
+  onSlideToggleChange(event: MatSlideToggleChange, flag: FeatureFlag) {
     const slideToggleEvent = event.source;
+    const newStatus = slideToggleEvent.checked ? FEATURE_FLAG_STATUS.ENABLED : FEATURE_FLAG_STATUS.DISABLED;
 
     if (slideToggleEvent.checked) {
-      this.openEnableConfirmModel();
+      this.confirmStatusChangeDialogRef = this.openEnableConfirmModel(flag.name);
     } else {
-      this.openDisableConfirmModel();
+      this.confirmStatusChangeDialogRef = this.openDisableConfirmModel(flag.name);
     }
+
+    this.listenForConfirmStatusChangeDialogClose(flag, newStatus);
 
     // Note: we don't want the toggle to visibly change state immediately because we have to pop a confirmation modal first, so we need override the default and flip it back. I unfortunately couldn't find a better way to do this.
     slideToggleEvent.checked = !slideToggleEvent.checked;
   }
 
-  openEnableConfirmModel(): void {
-    this.dialogService.openEnableFeatureFlagConfirmModel();
+  listenForConfirmStatusChangeDialogClose(flag: FeatureFlag, newStatus: FEATURE_FLAG_STATUS): void {
+    this.subscriptions.add(
+      this.confirmStatusChangeDialogRef.afterClosed().subscribe((confirmClicked) => {
+        this.handleDialogClose(confirmClicked, flag, newStatus);
+      })
+    );
   }
 
-  openDisableConfirmModel(): void {
-    this.dialogService.openDisableFeatureFlagConfirmModel();
+  handleDialogClose(confirmClicked: boolean, flag: FeatureFlag, newStatus: FEATURE_FLAG_STATUS): void {
+    if (confirmClicked) {
+      this.featureFlagService.updateFeatureFlagStatus({
+        flagId: flag.id,
+        status: newStatus,
+      });
+    }
+  }
+
+  openEnableConfirmModel(flagName: string): MatDialogRef<CommonSimpleConfirmationModalComponent> {
+    return this.dialogService.openEnableFeatureFlagConfirmModel(flagName);
+  }
+
+  openDisableConfirmModel(flagName: string): MatDialogRef<CommonSimpleConfirmationModalComponent> {
+    return this.dialogService.openDisableFeatureFlagConfirmModel(flagName);
   }
 
   onMenuButtonItemClick(event: FEATURE_FLAG_DETAILS_PAGE_ACTIONS, flag: FeatureFlag) {
@@ -142,5 +164,6 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   ngOnDestroy(): void {
     this.flagSub.unsubscribe();
     this.mailSub.unsubscribe();
+    this.subscriptions.unsubscribe();
   }
 }

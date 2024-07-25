@@ -12,22 +12,25 @@
         [isSectionCardExpanded]="isSectionCardExpanded"
         *ngIf="(activeTabIndex$ | async) === 0"
         section-card
-        >inclusions-card</app-feature-flag-inclusions-section-card
       >
+        inclusions-card
+      </app-feature-flag-inclusions-section-card>
       <app-feature-flag-exclusions-section-card
         [data]="featureFlag"
         [isSectionCardExpanded]="isSectionCardExpanded"
         *ngIf="(activeTabIndex$ | async) === 0"
         section-card
-        >exclusions-card</app-feature-flag-exclusions-section-card
       >
+        exclusions-card
+      </app-feature-flag-exclusions-section-card>
       <app-feature-flag-exposures-section-card
         [data]="featureFlag"
         [isSectionCardExpanded]="isSectionCardExpanded"
         *ngIf="(activeTabIndex$ | async) === 1"
         section-card
-        >exposures-card</app-feature-flag-exposures-section-card
       >
+        exposures-card
+      </app-feature-flag-exposures-section-card>
     </app-common-section-card-list>
   </ng-container>
 

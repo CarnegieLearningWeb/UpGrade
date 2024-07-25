@@ -1,6 +1,5 @@
-.participant-segment-table-container {
+.participant-list-table-container {
   position: relative;
-  margin-top: 8px;
   overflow: auto;
   width: 100%;
 
@@ -9,50 +8,89 @@
     top: 0;
     z-index: 1111;
   }
-}
 
-.participant-segment-list {
-  width: 100%;
-
-  th {
-    color: var(--grey-2);
+  /* Add gap between header and body when no data exists */
+  ::ng-deep .no-data tbody:before {
+    display: block;
+    line-height: 8px;
+    content: '\200C';
   }
 
-  tr.mat-mdc-footer-row,
-  tr.mat-mdc-row {
-    height: 55px;
+  .participant-list-table {
+    ::ng-deep thead {
+      background-color: var(--zircon);
+
+      tr.mat-mdc-header-row {
+        height: 48px;
+        border: 0;
+
+        th {
+          padding-left: 0;
+          color: var(--darker-grey);
+
+          &:first-child {
+            border-top-left-radius: 4px;
+          }
+
+          &:last-child {
+            border-top-right-radius: 4px;
+          }
+        }
+      }
+    }
+
+    ::ng-deep tbody {
+      tr.mat-mdc-row {
+        height: 56px;
+
+        td {
+          min-width: 96px;
+          padding-left: 0;
+          color: var(--black-2);
+        }
+      }
+
+      tr.mat-mdc-no-data-row {
+        td {
+          height: 48px;
+          text-align: center;
+          border: 1.5px dashed var(--light-grey-2);
+          color: var(--dark-grey);
+        }
+      }
+    }
+
+    .type-column {
+      width: 25%;
+      padding-left: 32px;
+    }
+
+    .values-column {
+      width: 20%;
+    }
+
+    .name-column {
+      width: 25%;
+    }
+
+    .enable-column {
+      width: 20%;
+      text-align: center;
+    }
+
+    .actions-column {
+      width: 10%;
+      min-width: 96px;
+      text-align: center;
+      padding-right: 16px;
+
+      .action-button {
+        color: var(--dark-grey);
+      }
+    }
   }
 
-  .mat-mdc-cell,
-  .mat-mdc-header-cell {
-    padding: 10px 20px;
-    width: 30%;
-    word-break: break-word;
+  .no-enable-column .name-column {
+    width: 45%;
   }
-
-  .mat-mdc-cell:last-child,
-  .mat-mdc-header-cell:last-child {
-    text-align: right;
-  }
-
-  .mat-mdc-header-cell:last-child {
-    text-align: right;
-    padding-right: 45px;
-  }
-
-  .mat-mdc-header-cell {
-    background-color: var(--zircon);
-    margin-bottom: 10px;
-  }
-
-  .table-row-action-button {
-    color: var(--grey-6);
-  }
-}
-
-.no-data-row {
-  text-align: center;
-  font-size: 16px;
-  color: var(--dark-grey);
-  padding: 16px;
 }
