@@ -16,7 +16,6 @@ import { MatInputModule } from '@angular/material/input';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import {
   AddPrivateSegmentListRequest,
-  AddPrivateSegmentListRequestDetails,
   LIST_OPTION_TYPE,
   PRIVATE_SEGMENT_LIST_FORM_DEFAULTS,
   PRIVATE_SEGMENT_LIST_FORM_FIELDS,
@@ -32,6 +31,7 @@ import { BehaviorSubject, combineLatestWith, map, Observable, startWith, Subscri
 import { SegmentsModule } from '../../segments.module';
 import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 import isEqual from 'lodash.isequal';
+import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 
 @Component({
   selector: 'upsert-private-segment-list-modal',
@@ -54,7 +54,7 @@ import isEqual from 'lodash.isequal';
 })
 export class UpsertPrivateSegmentListModalComponent {
   listOptionTypes$ = this.segmentsService.selectPrivateSegmentListTypeOptions$;
-  isLoadingUpsertFeatureFlagList$ = this.segmentsService.isLoadingUpsertPrivateSegmentList$;
+  isLoadingUpsertFeatureFlagList$ = this.featureFlagService.isLoadingUpsertPrivateSegmentList$;
   initialFormValues$ = new BehaviorSubject<PrivateSegmentListFormData>(null);
 
   subscriptions = new Subscription();
@@ -72,6 +72,7 @@ export class UpsertPrivateSegmentListModalComponent {
     private formBuilder: FormBuilder,
     private segmentsService: SegmentsService,
     private experimentService: ExperimentService,
+    private featureFlagService: FeatureFlagsService,
     public dialogRef: MatDialogRef<UpsertPrivateSegmentListModalComponent>
   ) {
     this.segmentFilteredByContext$ = this.segmentsService.selectSegmentsByContext(this.config.params.sourceAppContext);
@@ -234,7 +235,7 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   sendAddFeatureFlagInclusionRequest(request: AddPrivateSegmentListRequest): void {
-    this.segmentsService.addFeatureFlagInclusionPrivateSegmentList(request);
+    this.featureFlagService.addFeatureFlagInclusionPrivateSegmentList(request);
   }
 
   closeModal() {

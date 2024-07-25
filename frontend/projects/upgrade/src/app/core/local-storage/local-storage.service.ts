@@ -55,7 +55,6 @@ export class LocalStorageService {
       ids: [],
       entities: {},
       isLoadingSegments: false,
-      isLoadingUpsertPrivateSegmentList: false,
       allExperimentSegmentsInclusion: null,
       allExperimentSegmentsExclusion: null,
       searchKey: segmentSearchKey as SEGMENT_SEARCH_KEY,

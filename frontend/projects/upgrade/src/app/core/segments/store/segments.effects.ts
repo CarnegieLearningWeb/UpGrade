@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
-import { catchError, filter, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
-import { AppState, NotificationService } from '../../core.module';
+import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operators';
+import { AppState } from '../../core.module';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
 import { Segment, UpsertSegmentType } from './segments.model';
@@ -12,6 +12,7 @@ import JSZip from 'jszip';
 import { of } from 'rxjs/internal/observable/of';
 import { selectSelectedFeatureFlag } from '../../feature-flags/store/feature-flags.selectors';
 import { FeatureFlagsDataService } from '../../feature-flags/feature-flags.data.service';
+import * as FeatureFlagsActions from '../../feature-flags/store/feature-flags.actions';
 
 @Injectable()
 export class SegmentsEffects {
@@ -102,7 +103,7 @@ export class SegmentsEffects {
 
   uspertFeatureFlagInclusionList$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(SegmentsActions.actionAddFeatureFlagInclusionList),
+      ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
       map((action) => action.list),
       withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
       switchMap(([list, flag]) => {
@@ -111,8 +112,8 @@ export class SegmentsEffects {
           ...list,
         };
         return this.featureFlagDataService.addInclusionList(request).pipe(
-          map((list) => SegmentsActions.actionAddFeatureFlagInclusionListSuccess({ list })),
-          catchError((error) => of(SegmentsActions.actionAddFeatureFlagInclusionListFailure({ error })))
+          map((listResponse) => FeatureFlagsActions.actionUpsertFeatureFlagInclusionListSuccess({ listResponse })),
+          catchError((error) => of(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListFailure({ error })))
         );
       })
     )

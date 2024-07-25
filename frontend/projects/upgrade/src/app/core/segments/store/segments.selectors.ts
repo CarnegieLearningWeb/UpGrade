@@ -70,8 +70,3 @@ export const selectPrivateSegmentListTypeOptions = createSelector(
     return listOptionTypes;
   }
 );
-
-export const selectIsLoadingUpsertPrivateSegmentList = createSelector(
-  selectSegmentsState,
-  (state) => state.isLoadingUpsertPrivateSegmentList
-);

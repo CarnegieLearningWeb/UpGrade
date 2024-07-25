@@ -103,7 +103,6 @@ export interface SegmentInput {
 
 export interface SegmentState extends EntityState<Segment> {
   isLoadingSegments: boolean;
-  isLoadingUpsertPrivateSegmentList: boolean;
   // TODO: remove any
   allExperimentSegmentsInclusion: any;
   allExperimentSegmentsExclusion: any;

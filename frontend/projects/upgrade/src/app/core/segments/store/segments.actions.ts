@@ -79,18 +79,3 @@ export const actionSetSortingType = createAction(
   '[Segments] Set Sorting type',
   props<{ sortingType: SORT_AS_DIRECTION }>()
 );
-
-export const actionAddFeatureFlagInclusionList = createAction(
-  '[Segments] Add Feature Flag Inclusion List',
-  props<{ list: PrivateSegmentListRequest }>()
-);
-
-export const actionAddFeatureFlagInclusionListSuccess = createAction(
-  '[Segments] Upsert Feature Flag Inclusion List',
-  props<{ list: any }>() // Replace 'any' with the actual type of your result
-);
-
-export const actionAddFeatureFlagInclusionListFailure = createAction(
-  '[Segments] Upsert Feature Flag Inclusion List',
-  props<{ error: any }>() // Replace 'any' with the actual type of your error
-);

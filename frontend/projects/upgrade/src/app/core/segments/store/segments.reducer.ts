@@ -14,7 +14,6 @@ export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.get
 
 export const initialState: SegmentState = adapter.getInitialState({
   isLoadingSegments: false,
-  isLoadingUpsertPrivateSegmentList: false,
   allExperimentSegmentsInclusion: null,
   allExperimentSegmentsExclusion: null,
   searchKey: SEGMENT_SEARCH_KEY.ALL,
@@ -58,19 +57,7 @@ const reducer = createReducer(
   on(SegmentsActions.actionSetSortKey, (state, { sortKey }) => ({ ...state, sortKey })),
   on(SegmentsActions.actionSetSortingType, (state, { sortingType }) => ({ ...state, sortAs: sortingType })),
   on(SegmentsActions.actionDeleteSegmentSuccess, (state, { segment }) => adapter.removeOne(segment.id, state)),
-  on(SegmentsActions.actionSetIsLoadingSegments, (state, { isLoadingSegments }) => ({ ...state, isLoadingSegments })),
-  on(SegmentsActions.actionAddFeatureFlagInclusionList, (state) => ({
-    ...state,
-    isLoadingUpsertPrivateSegmentList: true,
-  })),
-  on(SegmentsActions.actionAddFeatureFlagInclusionListSuccess, (state, { list }) => {
-    console.log('actionAddFeatureFlagInclusionListSuccess', list);
-    return adapter.upsertOne(list, { ...state, isLoadingUpsertPrivateSegmentList: false });
-  }),
-  on(SegmentsActions.actionAddFeatureFlagInclusionListFailure, (state) => {
-    console.log('actionAddFeatureFlagInclusionListFailure');
-    return { ...state, isLoadingUpsertPrivateSegmentList: false };
-  })
+  on(SegmentsActions.actionSetIsLoadingSegments, (state, { isLoadingSegments }) => ({ ...state, isLoadingSegments }))
 );
 
 export function segmentsReducer(state: SegmentState | undefined, action: Action) {

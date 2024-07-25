@@ -14,6 +14,7 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingFeatureFlagDetail: false,
   isLoadingFeatureFlagDelete: false,
   isLoadingSelectedFeatureFlag: false,
+  isLoadingUpsertPrivateSegmentList: false,
   hasInitialFeatureFlagsDataLoaded: false,
   activeDetailsTabIndex: 0,
   skipFlags: 0,
@@ -114,7 +115,18 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionSetActiveDetailsTabIndex, (state, { activeDetailsTabIndex }) => ({
     ...state,
     activeDetailsTabIndex,
-  }))
+  })),
+  on(FeatureFlagsActions.actionAddFeatureFlagInclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
+  on(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListSuccess, (state, { listResponse }) => {
+    const { featureFlag } = listResponse;
+    return adapter.upsertOne(featureFlag, { ...state, isLoadingUpsertPrivateSegmentList: false });
+  }),
+  on(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListFailure, (state) => {
+    return { ...state, isLoadingUpsertPrivateSegmentList: false };
+  })
 );
 
 export function featureFlagsReducer(state: FeatureFlagState | undefined, action: Action) {

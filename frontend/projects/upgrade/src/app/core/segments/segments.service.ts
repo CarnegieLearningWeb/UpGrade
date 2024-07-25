@@ -13,11 +13,9 @@ import {
   selectSearchKey,
   selectSortKey,
   selectSortAs,
-  selectIsLoadingUpsertPrivateSegmentList,
 } from './store/segments.selectors';
 import {
   LIST_OPTION_TYPE,
-  PrivateSegmentListRequest,
   Segment,
   SegmentInput,
   SegmentLocalStorageKeys,
@@ -49,8 +47,6 @@ export class SegmentsService {
   selectSegmentSortAs$ = this.store$.pipe(select(selectSortAs));
   allExperimentSegmentsInclusion$ = this.store$.pipe(select(selectExperimentSegmentsInclusion));
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
-  select;
-  isLoadingUpsertPrivateSegmentList$ = this.store$.pipe(select(selectIsLoadingUpsertPrivateSegmentList));
 
   selectSearchSegmentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
@@ -174,9 +170,5 @@ export class SegmentsService {
 
   exportSegmentCSV(segmentIds: string[]): Observable<any> {
     return this.segmentsDataService.exportSegmentCSV(segmentIds);
-  }
-
-  addFeatureFlagInclusionPrivateSegmentList(list: PrivateSegmentListRequest) {
-    this.store$.dispatch(SegmentsActions.actionAddFeatureFlagInclusionList({ list }));
   }
 }

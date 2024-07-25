@@ -103,6 +103,15 @@ export interface ParticipantListTableRow {
   enable: string;
 }
 
+// the request for for the upserting private segment is PrivateSegmentListRequest
+// there is no difference in that request and that which will be used for segment lists in the future
+export interface UpsertFeatureFlagPrivateSegmentListResponse {
+  featureFlag: FeatureFlag;
+  segment: Segment;
+  listType: MemberTypes | string;
+  enabled: boolean;
+}
+
 export interface FeatureFlagsPaginationParams {
   skip: number;
   take: number;
@@ -150,6 +159,7 @@ export interface FeatureFlagState extends EntityState<FeatureFlag> {
   isLoadingFeatureFlags: boolean;
   isLoadingUpdateFeatureFlagStatus: boolean;
   isLoadingFeatureFlagDelete: boolean;
+  isLoadingUpsertPrivateSegmentList: boolean;
   hasInitialFeatureFlagsDataLoaded: boolean;
   activeDetailsTabIndex: number;
   skipFlags: number;

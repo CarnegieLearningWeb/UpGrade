@@ -33,6 +33,7 @@ import {
 } from './store/feature-flags.model';
 import { filter, map, pairwise } from 'rxjs';
 import isEqual from 'lodash.isequal';
+import { PrivateSegmentListRequest } from '../segments/store/segments.model';
 
 @Injectable()
 export class FeatureFlagsService {
@@ -42,6 +43,7 @@ export class FeatureFlagsService {
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
   isLoadingSelectedFeatureFlag$ = this.store$.pipe(select(selectIsLoadingSelectedFeatureFlag));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
+  isLoadingUpsertPrivateSegmentList$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   appContexts$ = this.store$.pipe(select(selectAppContexts));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
@@ -140,5 +142,9 @@ export class FeatureFlagsService {
 
   setActiveDetailsTab(activeDetailsTabIndex: number) {
     this.store$.dispatch(FeatureFlagsActions.actionSetActiveDetailsTabIndex({ activeDetailsTabIndex }));
+  }
+
+  addFeatureFlagInclusionPrivateSegmentList(list: PrivateSegmentListRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlagInclusionList({ list }));
   }
 }
