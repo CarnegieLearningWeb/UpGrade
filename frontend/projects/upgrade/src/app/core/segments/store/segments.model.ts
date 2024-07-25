@@ -103,6 +103,7 @@ export interface SegmentInput {
 
 export interface SegmentState extends EntityState<Segment> {
   isLoadingSegments: boolean;
+  isLoadingUpsertPrivateSegmentList: boolean;
   // TODO: remove any
   allExperimentSegmentsInclusion: any;
   allExperimentSegmentsExclusion: any;
@@ -154,4 +155,12 @@ export interface UpsertPrivateSegmentListParams {
 export enum LIST_OPTION_TYPE {
   INDIVIDUAL = 'Individual',
   SEGMENT = 'Segment',
+}
+
+export interface PrivateSegmentListFormData {
+  listType: LIST_OPTION_TYPE;
+  segment?: Segment;
+  values?: string[];
+  name: string;
+  description?: string;
 }

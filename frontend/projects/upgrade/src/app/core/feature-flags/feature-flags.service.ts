@@ -29,17 +29,15 @@ import { actionFetchContextMetaData } from '../experiments/store/experiments.act
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 import {
   AddFeatureFlagRequest,
-  FeatureFlag,
   UpdateFeatureFlagRequest,
   UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
-import { ExperimentService } from '../experiments/experiments.service';
 import { filter, map, pairwise } from 'rxjs';
 import isEqual from 'lodash.isequal';
 
 @Injectable()
 export class FeatureFlagsService {
-  constructor(private store$: Store<AppState>, private experimentService: ExperimentService) {}
+  constructor(private store$: Store<AppState>) {}
 
   isInitialFeatureFlagsLoading$ = this.store$.pipe(select(selectHasInitialFeatureFlagsDataLoaded));
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));

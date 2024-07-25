@@ -13,6 +13,7 @@ import {
   selectSearchKey,
   selectSortKey,
   selectSortAs,
+  selectIsLoadingUpsertFeatureFlagList,
 } from './store/segments.selectors';
 import {
   LIST_OPTION_TYPE,
@@ -48,6 +49,7 @@ export class SegmentsService {
   allExperimentSegmentsInclusion$ = this.store$.pipe(select(selectExperimentSegmentsInclusion));
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
   select;
+  isLoadingUpsertFeatureFlagList$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlagList));
 
   selectSearchSegmentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
