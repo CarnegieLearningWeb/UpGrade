@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject } from '@angular/core';
 import {
   CommonModalComponent,
   CommonTagsInputComponent,
@@ -77,7 +77,7 @@ export class UpsertFeatureFlagModalComponent {
   initialFormValues$ = new BehaviorSubject<FeatureFlagFormData>(null);
 
   featureFlagForm: FormGroup;
-  validationError: boolean;
+  validationError = false;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
@@ -88,7 +88,8 @@ export class UpsertFeatureFlagModalComponent {
     private experimentService: ExperimentService,
     private formHelpersService: CommonFormHelpersService,
     private featureFlagDataService: FeatureFlagsDataService,
-    public dialogRef: MatDialogRef<UpsertFeatureFlagModalComponent>
+    public dialogRef: MatDialogRef<UpsertFeatureFlagModalComponent>,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -157,23 +158,24 @@ export class UpsertFeatureFlagModalComponent {
     this.subscriptions.add(this.isSelectedFeatureFlagUpdated$.subscribe(() => this.closeModal()));
   }
 
-  async onPrimaryActionBtnClicked(): Promise<void> {
+  onPrimaryActionBtnClicked() {
     if (this.featureFlagForm.valid) {
-      this.validationError = await this.sendValidateRequest();
-      if (!this.validationError) {
-        this.sendRequest(this.config.params.action, this.config.params.sourceFlag);
-      }
+      this.sendValidateRequest().then(validationError => {
+        this.validationError = validationError;
+        this.cdr.detectChanges();
+        if (!this.validationError) {
+          this.sendRequest(this.config.params.action, this.config.params.sourceFlag);
+        }
+      });
     } else {
       // If the form is invalid, manually mark all form controls as touched
       this.formHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);
     }
   }
 
-  async sendValidateRequest() {
+  sendValidateRequest() {
     const formData: FeatureFlagFormData = this.featureFlagForm.value;
-    const result = (await this.featureFlagDataService.validateFeatureFlag(formData).toPromise()) as string;
-
-    return !!result;
+    return this.featureFlagDataService.validateFeatureFlag(formData).toPromise().then((result: string) => !!result);
   }
 
   sendRequest(action: UPSERT_FEATURE_FLAG_ACTION, sourceFlag?: FeatureFlag): void {
