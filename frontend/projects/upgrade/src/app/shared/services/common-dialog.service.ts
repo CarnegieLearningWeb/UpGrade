@@ -181,7 +181,7 @@ export class DialogService {
 
   openSimpleCommonConfirmationModal(
     commonModalConfig: CommonModalConfig
-  ): MatDialogRef<CommonSimpleConfirmationModal, boolean> {
+  ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: '656px',

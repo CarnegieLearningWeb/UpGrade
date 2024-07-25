@@ -207,5 +207,5 @@ export interface AddPrivateSegmentListRequest extends PrivateSegmentListRequest 
 }
 
 export interface EditPrivateSegmentListRequest extends PrivateSegmentListRequest {
-  list: AddPrivateSegmentListRequestDetails;
+  list: EditPrivateSegmentListDetails;
 }
