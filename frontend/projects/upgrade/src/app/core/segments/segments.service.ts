@@ -13,10 +13,11 @@ import {
   selectSearchKey,
   selectSortKey,
   selectSortAs,
-  selectIsLoadingUpsertFeatureFlagList,
+  selectIsLoadingUpsertPrivateSegmentList,
 } from './store/segments.selectors';
 import {
   LIST_OPTION_TYPE,
+  PrivateSegmentListRequest,
   Segment,
   SegmentInput,
   SegmentLocalStorageKeys,
@@ -49,7 +50,7 @@ export class SegmentsService {
   allExperimentSegmentsInclusion$ = this.store$.pipe(select(selectExperimentSegmentsInclusion));
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
   select;
-  isLoadingUpsertFeatureFlagList$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlagList));
+  isLoadingUpsertPrivateSegmentList$ = this.store$.pipe(select(selectIsLoadingUpsertPrivateSegmentList));
 
   selectSearchSegmentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
@@ -82,12 +83,11 @@ export class SegmentsService {
     )
   );
 
-  // note: this comes from experiment service!
   selectPrivateSegmentListTypeOptions$ = this.store$.pipe(
     select(selectContextMetaData),
     withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
     map(([contextMetaData, flag]) => {
-      // TODO: straighten out contextmetadata and it's selectors with a dedicated service
+      // TODO: straighten out contextmetadata and it's selectors with a dedicated service to avoid this sweaty effort to get standard information
       const flagAppContext = flag?.context?.[0];
       const groupTypes = contextMetaData?.contextMetadata?.[flagAppContext]?.GROUP_TYPES ?? [];
       const groupTypeSelectOptions = CommonTextHelpersService.formatGroupTypes(groupTypes as string[]);
@@ -107,7 +107,7 @@ export class SegmentsService {
     })
   );
 
-  getSegmentsByContext(appContext: string): Observable<Segment[]> {
+  selectSegmentsByContext(appContext: string): Observable<Segment[]> {
     return this.selectAllSegments$.pipe(
       map((segments) => {
         const filteredSegments = segments.filter((segment) => {
@@ -176,7 +176,7 @@ export class SegmentsService {
     return this.segmentsDataService.exportSegmentCSV(segmentIds);
   }
 
-  upsertPrivateSegmentList(list: any) {
+  addFeatureFlagInclusionPrivateSegmentList(list: PrivateSegmentListRequest) {
     this.store$.dispatch(SegmentsActions.actionAddFeatureFlagInclusionList({ list }));
   }
 }

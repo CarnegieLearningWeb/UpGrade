@@ -10,6 +10,7 @@ import {
   UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
 import { Observable } from 'rxjs';
+import { PrivateSegmentListRequest } from '../segments/store/segments.model';
 
 @Injectable()
 export class FeatureFlagsDataService {
@@ -45,8 +46,8 @@ export class FeatureFlagsDataService {
     return this.http.delete(url);
   }
 
-  addInclusionList(request: any): Observable<any> {
+  addInclusionList(list: PrivateSegmentListRequest): Observable<any> {
     const url = this.environment.api.addFlagInclusionList;
-    return this.http.post(url, request);
+    return this.http.post(url, list);
   }
 }

@@ -84,7 +84,6 @@ export class UpsertFeatureFlagModalComponent {
     private formBuilder: FormBuilder,
     private featureFlagsService: FeatureFlagsService,
     private experimentService: ExperimentService,
-    private formHelpersService: CommonFormHelpersService,
     public dialogRef: MatDialogRef<UpsertFeatureFlagModalComponent>
   ) {}
 
@@ -160,7 +159,7 @@ export class UpsertFeatureFlagModalComponent {
       this.sendRequest(this.config.params.action, this.config.params.sourceFlag);
     } else {
       // If the form is invalid, manually mark all form controls as touched
-      this.formHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);
+      CommonFormHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);
     }
   }
 

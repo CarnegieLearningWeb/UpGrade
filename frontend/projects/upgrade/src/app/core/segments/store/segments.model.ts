@@ -157,10 +157,55 @@ export enum LIST_OPTION_TYPE {
   SEGMENT = 'Segment',
 }
 
+export const PRIVATE_SEGMENT_LIST_FORM_FIELDS = {
+  LIST_TYPE: 'listType',
+  SEGMENT: 'segment',
+  VALUES: 'values',
+  NAME: 'name',
+  DESCRIPTION: 'description',
+};
+
+export const PRIVATE_SEGMENT_LIST_FORM_DEFAULTS = {
+  LIST_TYPE: '',
+  SEGMENT: null,
+  VALUES: [],
+  NAME: '',
+  DESCRIPTION: '',
+};
+
 export interface PrivateSegmentListFormData {
   listType: LIST_OPTION_TYPE;
   segment?: Segment;
   values?: string[];
   name: string;
   description?: string;
+}
+
+export interface PrivateSegmentListRequestBase {
+  name: string;
+  description: string;
+  context: string;
+  type: SEGMENT_TYPE.PRIVATE;
+  userIds: string[];
+  groups: Group[];
+  subSegmentIds: string[];
+}
+
+export type AddPrivateSegmentListRequestDetails = PrivateSegmentListRequestBase;
+export interface EditPrivateSegmentListDetails extends PrivateSegmentListRequestBase {
+  id: string;
+}
+
+export interface PrivateSegmentListRequest {
+  enabled: false;
+  listType: string;
+  list: AddPrivateSegmentListRequestDetails | EditPrivateSegmentListDetails;
+}
+
+export interface AddPrivateSegmentListRequest extends PrivateSegmentListRequest {
+  list: AddPrivateSegmentListRequestDetails;
+}
+
+export interface EditPrivateSegmentListRequest extends PrivateSegmentListRequest {
+  list: AddPrivateSegmentListRequestDetails;
 }

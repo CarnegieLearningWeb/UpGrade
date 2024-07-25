@@ -1,5 +1,11 @@
 import { createAction, props } from '@ngrx/store';
-import { Segment, SegmentInput, UpsertSegmentType, experimentSegmentInclusionExclusionData } from './segments.model';
+import {
+  PrivateSegmentListRequest,
+  Segment,
+  SegmentInput,
+  UpsertSegmentType,
+  experimentSegmentInclusionExclusionData,
+} from './segments.model';
 import {
   SEGMENT_SEARCH_KEY,
   SORT_AS_DIRECTION,
@@ -76,7 +82,7 @@ export const actionSetSortingType = createAction(
 
 export const actionAddFeatureFlagInclusionList = createAction(
   '[Segments] Add Feature Flag Inclusion List',
-  props<{ list: any }>()
+  props<{ list: PrivateSegmentListRequest }>()
 );
 
 export const actionAddFeatureFlagInclusionListSuccess = createAction(

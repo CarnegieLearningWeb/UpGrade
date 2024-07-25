@@ -24,7 +24,6 @@
         </mat-option>
       </mat-autocomplete>
     </mat-form-field>
-    <!-- Additional fields for when 'segment' is not the selected type -->
     <ng-container *ngIf="selectedListType && selectedListType !== LIST_TYPES.SEGMENT">
       <app-common-tags-input
         formControlName="values"

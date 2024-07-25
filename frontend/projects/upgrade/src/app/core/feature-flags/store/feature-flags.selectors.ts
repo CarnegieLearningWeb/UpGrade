@@ -134,34 +134,9 @@ export const selectIsLoadingFeatureFlagDelete = createSelector(
 export const selectFeatureFlagInclusions = createSelector(
   selectSelectedFeatureFlag,
   (featureFlag: FeatureFlag): ParticipantListTableRow[] => []
-  // mapToParticipantTableRowStructure(featureFlag, FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE)
 );
 
 export const selectFeatureFlagExclusions = createSelector(
   selectSelectedFeatureFlag,
   (featureFlag: FeatureFlag): ParticipantListTableRow[] => []
-  // mapToParticipantTableRowStructure(featureFlag, FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE)
-);
-
-export const selectFeatureFlagListTypeOptions = createSelector(
-  selectContextMetaData,
-  selectSelectedFeatureFlag,
-  (contextMetaData, flag) => {
-    const flagAppContext = flag?.context?.[0];
-    const groupTypes = contextMetaData?.contextMetadata?.[flagAppContext]?.GROUP_TYPES ?? [];
-    const groupTypeSelectOptions = CommonTextHelpersService.formatGroupTypes(groupTypes as string[]);
-    const listOptionTypes = [
-      {
-        value: MemberTypes.SEGMENT,
-        viewValue: MemberTypes.SEGMENT,
-      },
-      {
-        value: MemberTypes.INDIVIDUAL,
-        viewValue: MemberTypes.INDIVIDUAL,
-      },
-      ...groupTypeSelectOptions,
-    ];
-
-    return listOptionTypes;
-  }
 );

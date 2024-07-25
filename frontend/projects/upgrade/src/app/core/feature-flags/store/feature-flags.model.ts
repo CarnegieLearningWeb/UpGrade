@@ -83,16 +83,6 @@ export interface FeatureFlagFormData {
   tags: string[];
 }
 
-export interface PrivateSegment {
-  segment: Segment;
-}
-
-export interface EmptyPrivateSegment {
-  segment: {
-    type: SEGMENT_TYPE;
-  };
-}
-
 // TODO: This should be probably be a part of env config
 export const NUMBER_OF_FLAGS = 20;
 

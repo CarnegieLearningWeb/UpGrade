@@ -71,7 +71,7 @@ export const selectPrivateSegmentListTypeOptions = createSelector(
   }
 );
 
-export const selectIsLoadingUpsertFeatureFlagList = createSelector(
+export const selectIsLoadingUpsertPrivateSegmentList = createSelector(
   selectSegmentsState,
   (state) => state.isLoadingUpsertPrivateSegmentList
 );
