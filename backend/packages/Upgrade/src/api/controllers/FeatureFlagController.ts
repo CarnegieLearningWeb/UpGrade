@@ -16,6 +16,14 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
 }
 
+export interface FeatureFlagFormData {
+  name: string;
+  key: string;
+  description: string;
+  appContext: string;
+  tags: string[];
+}
+
 /**
  * @swagger
  * definitions:
@@ -300,6 +308,38 @@ export class FeatureFlagsController {
     return this.featureFlagService.create(flag, request.logger);
   }
 
+  /**
+   * @swagger
+   * /flags/validation:
+   *    post:
+   *       description: Check for duplicate feature flags name or key
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: flag
+   *           required: true
+   *           schema:
+   *             type: object
+   *             $ref: '#/definitions/FeatureFlag'
+   *           description: Feature flag structure
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Feature flag name or key is unique
+   *          '409':
+   *            description: Feature flag name or key already exists
+   */
+  @Post('/validation')
+  public validateFeatureFlags(
+    @Body({ validate: false }) flag: FeatureFlagFormData,
+    @Req() request: AppRequest
+  ): Promise<string> {
+    return this.featureFlagService.validate(flag, request.logger);
+  }
   /**
    * @swagger
    * /flags/status:

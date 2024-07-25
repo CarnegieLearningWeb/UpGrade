@@ -36,6 +36,7 @@ import { BehaviorSubject, combineLatestWith, map, Observable, startWith, Subscri
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { CommonTextHelpersService } from '../../../../../shared/services/common-text-helpers.service';
+import { FeatureFlagsDataService } from '../../../../../core/feature-flags/feature-flags.data.service';
 import isEqual from 'lodash.isequal';
 
 @Component({
@@ -76,6 +77,7 @@ export class UpsertFeatureFlagModalComponent {
   initialFormValues$ = new BehaviorSubject<FeatureFlagFormData>(null);
 
   featureFlagForm: FormGroup;
+  validationError: boolean;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
@@ -85,6 +87,7 @@ export class UpsertFeatureFlagModalComponent {
     private featureFlagsService: FeatureFlagsService,
     private experimentService: ExperimentService,
     private formHelpersService: CommonFormHelpersService,
+    private featureFlagDataService: FeatureFlagsDataService,
     public dialogRef: MatDialogRef<UpsertFeatureFlagModalComponent>
   ) {}
 
@@ -154,14 +157,23 @@ export class UpsertFeatureFlagModalComponent {
     this.subscriptions.add(this.isSelectedFeatureFlagUpdated$.subscribe(() => this.closeModal()));
   }
 
-  onPrimaryActionBtnClicked(): void {
+  async onPrimaryActionBtnClicked(): Promise<void> {
     if (this.featureFlagForm.valid) {
-      // Handle extra frontend form validation logic here?
-      this.sendRequest(this.config.params.action, this.config.params.sourceFlag);
+      this.validationError = await this.sendValidateRequest();
+      if (!this.validationError) {
+        this.sendRequest(this.config.params.action, this.config.params.sourceFlag);
+      }
     } else {
       // If the form is invalid, manually mark all form controls as touched
       this.formHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);
     }
+  }
+
+  async sendValidateRequest() {
+    const formData: FeatureFlagFormData = this.featureFlagForm.value;
+    const result = (await this.featureFlagDataService.validateFeatureFlag(formData).toPromise()) as string;
+
+    return !!result;
   }
 
   sendRequest(action: UPSERT_FEATURE_FLAG_ACTION, sourceFlag?: FeatureFlag): void {

@@ -19,6 +19,9 @@
       <mat-label class="ft-14-400">Key</mat-label>
       <input matInput formControlName="key" placeholder="Key for this feature flag" class="ft-14-400"/>
       <mat-hint class="form-hint ft-12-400">
+        <span class="ft-14-600 validation-message" *ngIf="validationError">
+        {{ 'feature-flags.duplicate-key-error-text' | translate }}
+        </span>
         {{'feature-flags.upsert-flag-modal.key-hint.text' | translate}}
         <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">Learn more</a>
       </mat-hint>

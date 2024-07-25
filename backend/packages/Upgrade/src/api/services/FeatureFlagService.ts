@@ -22,6 +22,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentAssignmentService } from './ExperimentAssignmentService';
 import { SegmentService } from './SegmentService';
 import { ErrorWithType } from '../errors/ErrorWithType';
+import { FeatureFlagFormData } from '../controllers/FeatureFlagController';
 
 @Service()
 export class FeatureFlagService {
@@ -202,6 +203,26 @@ export class FeatureFlagService {
 
   public async deleteList(segmentId: string, logger: UpgradeLogger): Promise<Segment> {
     return this.segmentService.deleteSegment(segmentId, logger);
+  }
+
+  public async validate(flagDTO: FeatureFlagFormData, logger: UpgradeLogger): Promise<string> {
+    logger.info({ message: `Validating featureFlags` });
+    const result = await this.featureFlagRepository
+      .createQueryBuilder('feature_flag')
+      .where('feature_flag.key = :key', { key: flagDTO.key })
+      .andWhere('feature_flag.context = :context', { context: [flagDTO.appContext] })
+      .getOne();
+
+    if (result) {
+      return 'Feature Flag with this key already exists';
+      // const error = new Error('Feature Flag with this key already exists');{
+      // error.httpCode = 409;
+      const error = new Error(`A flag with this key already exists for this app-context`);
+      (error as any).type = SERVER_ERROR.UNSUPPORTED_CALIPER;
+      (error as any).httpCode = 409;
+      throw error;
+    }
+    return '';
   }
 
   public async addList(
