@@ -129,7 +129,6 @@ export class UpsertPrivateSegmentListModalComponent {
 
   subscribeToListTypeChanges(): void {
     this.privateSegmentListForm.get('listType').valueChanges.subscribe((type) => {
-      console.log('>>> hello', type);
       this.resetForm(type);
       this.setValidatorsBasedOnListType(type);
     });
@@ -229,7 +228,7 @@ export class UpsertPrivateSegmentListModalComponent {
         type: SEGMENT_TYPE.PRIVATE,
       },
     };
-    console.log('>> listRequest', listRequest);
+
     if (action === UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST) {
       this.segmentsService.upsertPrivateSegmentList(listRequest);
     }

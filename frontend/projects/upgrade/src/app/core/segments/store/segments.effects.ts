@@ -20,17 +20,8 @@ export class SegmentsEffects {
     private actions$: Actions,
     private segmentsDataService: SegmentsDataService,
     private featureFlagDataService: FeatureFlagsDataService,
-    private router: Router,
-    private notificationService: NotificationService
-  ) {
-    this.actions$
-      .pipe(
-        tap((action) => {
-          console.log('>> action', action);
-        })
-      )
-      .subscribe();
-  }
+    private router: Router
+  ) {}
 
   fetchSegments$ = createEffect(() =>
     this.actions$.pipe(
@@ -115,9 +106,6 @@ export class SegmentsEffects {
       map((action) => action.list),
       withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
       switchMap(([list, flag]) => {
-        console.log('>> e list', list);
-        console.log('>> e flag', flag);
-
         const request = {
           flagId: flag.id,
           ...list,

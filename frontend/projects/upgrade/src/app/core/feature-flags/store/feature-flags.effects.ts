@@ -24,17 +24,8 @@ export class FeatureFlagsEffects {
     private store$: Store<AppState>,
     private actions$: Actions,
     private featureFlagsDataService: FeatureFlagsDataService,
-    private router: Router,
-    private dialogService: DialogService
-  ) {
-    this.actions$
-      .pipe(
-        tap((action) => {
-          console.log('>> action', action);
-        })
-      )
-      .subscribe();
-  }
+    private router: Router
+  ) {}
 
   fetchFeatureFlags$ = createEffect(() =>
     this.actions$.pipe(
