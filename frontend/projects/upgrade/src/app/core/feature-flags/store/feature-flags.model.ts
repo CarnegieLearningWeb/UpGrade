@@ -97,10 +97,10 @@ interface IFeatureFlagsSortParams {
 }
 
 export interface ParticipantListTableRow {
-  name: string;
   type: string;
   values: string;
-  status: string;
+  name: string;
+  enable: string;
 }
 
 export interface FeatureFlagsPaginationParams {

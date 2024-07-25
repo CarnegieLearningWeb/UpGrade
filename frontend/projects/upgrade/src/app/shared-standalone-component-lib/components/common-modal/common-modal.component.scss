@@ -19,6 +19,11 @@
     }
   }
 
+  .content-container {
+    max-height: 480px;
+    overflow: scroll;
+  }
+
   .footer-container {
     height: 80px;
     display: flex;

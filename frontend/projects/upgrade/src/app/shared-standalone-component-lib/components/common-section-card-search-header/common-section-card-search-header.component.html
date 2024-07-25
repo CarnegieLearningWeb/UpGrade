@@ -1,14 +1,14 @@
 <div class="search-header">
-  <mat-form-field class="dense-2 filter-options" subscriptSizing="dynamic">
+  <mat-form-field class="dense-3 filter-options" subscriptSizing="dynamic">
     <mat-select class="ft-14-400" [(ngModel)]="searchKey" (selectionChange)="onSearch()">
       <mat-option class="ft-14-400" *ngFor="let filterOption of filterOptions" [value]="filterOption">
         {{ filterOption | titlecase }}
       </mat-option>
     </mat-select>
   </mat-form-field>
-  <mat-form-field class="dense-2" subscriptSizing="dynamic">
+  <mat-form-field class="dense-3 search-input" subscriptSizing="dynamic">
     <input
-      class="ft-14-400 search-input"
+      class="ft-14-400"
       matInput
       #searchInput
       [(ngModel)]="searchString"
