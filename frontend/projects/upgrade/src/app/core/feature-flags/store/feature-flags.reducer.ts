@@ -124,7 +124,15 @@ const reducer = createReducer(
   })),
   on(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListSuccess, (state, { listResponse }) => {
     const { featureFlag } = listResponse;
-    console.log('>> listResponse', listResponse);
+    const existingFlag = state.entities[featureFlag?.id];
+
+    return adapter.updateOne(
+      {
+        id: featureFlag?.id,
+        changes: { featureFlagSegmentInclusion: [listResponse, ...existingFlag.featureFlagSegmentInclusion] },
+      },
+      { ...state }
+    );
     return adapter.upsertOne(featureFlag, { ...state, isLoadingUpsertPrivateSegmentList: false });
   }),
   on(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListFailure, (state) => {
