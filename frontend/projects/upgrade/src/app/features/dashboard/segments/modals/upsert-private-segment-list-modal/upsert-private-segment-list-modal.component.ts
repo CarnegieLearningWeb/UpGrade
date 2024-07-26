@@ -61,6 +61,7 @@ export class UpsertPrivateSegmentListModalComponent {
   segmentsFilteredByContext$: Observable<Segment[]>;
   isPrimaryButtonDisabled$: Observable<boolean>;
   isInitialFormValueChanged$: Observable<boolean>;
+  isSegmentsListTypeEnabled$: Observable<boolean>;
 
   privateSegmentListForm: FormGroup;
 
@@ -73,17 +74,12 @@ export class UpsertPrivateSegmentListModalComponent {
     private experimentService: ExperimentService,
     private featureFlagService: FeatureFlagsService,
     public dialogRef: MatDialogRef<UpsertPrivateSegmentListModalComponent>
-  ) {
-    this.segmentsFilteredByContext$ = this.segmentsService.selectSegmentsByContext(this.config.params.sourceAppContext);
-  }
+  ) {}
 
   ngOnInit(): void {
-    this.experimentService.fetchContextMetaData();
-    this.segmentsService.fetchSegments();
+    this.fetchData();
     this.createPrivateSegmentListForm();
-    this.listenForIsInitialFormValueChanged();
-    this.listenForPrimaryButtonDisabled();
-    this.listenForFilteredSegments();
+    this.initializeListeners();
   }
 
   get LIST_TYPES() {
@@ -96,6 +92,35 @@ export class UpsertPrivateSegmentListModalComponent {
 
   get valuesFormControl() {
     return this.privateSegmentListForm?.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.VALUES);
+  }
+
+  fetchData() {
+    this.experimentService.fetchContextMetaData();
+    this.segmentsService.fetchSegments();
+  }
+
+  initializeListeners() {
+    this.listenForSegments();
+    this.listenForIsInitialFormValueChanged();
+    this.listenForPrimaryButtonDisabled();
+    this.listenForSegmentsFilteredByUserInput();
+  }
+
+  createPrivateSegmentListForm(): void {
+    this.privateSegmentListForm = this.formBuilder.group({
+      listType: [PRIVATE_SEGMENT_LIST_FORM_DEFAULTS.LIST_TYPE, Validators.required],
+      segment: [PRIVATE_SEGMENT_LIST_FORM_DEFAULTS.SEGMENT],
+      values: [PRIVATE_SEGMENT_LIST_FORM_DEFAULTS.VALUES],
+      name: [PRIVATE_SEGMENT_LIST_FORM_DEFAULTS.NAME],
+      description: [PRIVATE_SEGMENT_LIST_FORM_DEFAULTS.DESCRIPTION],
+    });
+    this.initialFormValues$.next(this.privateSegmentListForm.value);
+    this.listenToListTypeChanges();
+  }
+
+  listenForSegments() {
+    this.segmentsFilteredByContext$ = this.segmentsService.selectSegmentsByContext(this.config.params.sourceAppContext);
+    this.isSegmentsListTypeEnabled$ = this.segmentsFilteredByContext$.pipe(map((segments) => segments.length > 0));
   }
 
   listenForPrimaryButtonDisabled() {
@@ -114,7 +139,7 @@ export class UpsertPrivateSegmentListModalComponent {
     this.subscriptions.add(this.isInitialFormValueChanged$.subscribe());
   }
 
-  listenForFilteredSegments(): void {
+  listenForSegmentsFilteredByUserInput(): void {
     this.segmentsOptions$ = this.segmentsFilteredByContext$.pipe(
       combineLatestWith(
         this.privateSegmentListForm.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.SEGMENT).valueChanges.pipe(startWith(''))
@@ -126,18 +151,6 @@ export class UpsertPrivateSegmentListModalComponent {
         return segments.filter((segment) => segment?.name.toLowerCase().includes((filterValue ?? '').toLowerCase()));
       })
     );
-  }
-
-  createPrivateSegmentListForm(): void {
-    this.privateSegmentListForm = this.formBuilder.group({
-      listType: [PRIVATE_SEGMENT_LIST_FORM_DEFAULTS.LIST_TYPE, Validators.required],
-      segment: [PRIVATE_SEGMENT_LIST_FORM_DEFAULTS.SEGMENT],
-      values: [PRIVATE_SEGMENT_LIST_FORM_DEFAULTS.VALUES],
-      name: [PRIVATE_SEGMENT_LIST_FORM_DEFAULTS.NAME],
-      description: [PRIVATE_SEGMENT_LIST_FORM_DEFAULTS.DESCRIPTION],
-    });
-    this.initialFormValues$.next(this.privateSegmentListForm.value);
-    this.listenToListTypeChanges();
   }
 
   listenToListTypeChanges(): void {

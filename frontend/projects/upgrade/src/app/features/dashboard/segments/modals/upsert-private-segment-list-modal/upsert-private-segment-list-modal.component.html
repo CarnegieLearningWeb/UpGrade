@@ -10,7 +10,12 @@
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Type</mat-label>
       <mat-select formControlName="listType" class="ft-14-400">
-        <mat-option *ngFor="let type of listOptionTypes$ | async" [value]="type.value" class="ft-14-400">
+        <mat-option 
+          *ngFor="let type of listOptionTypes$ | async" 
+          [value]="type.value" 
+          class="ft-14-400"
+          [disabled]="(!isSegmentsListTypeEnabled$ | async) && type.value === LIST_TYPES.SEGMENT"
+        >
           {{ type.viewValue }}
         </mat-option>
       </mat-select>
@@ -18,6 +23,7 @@
     <mat-form-field *ngIf="selectedListType === LIST_TYPES.SEGMENT" appearance="outline">
       <mat-label class="ft-14-400">Segment</mat-label>
       <input type="text" matInput formControlName="segment" [matAutocomplete]="auto" class="ft-14-400">
+      <mat-hint class="form-hint ft-12-400">{{ "feature-flags.upsert-private-segment-list-modal" | translate }}</mat-hint>
       <mat-autocomplete 
         #auto="matAutocomplete"
         [displayWith]="displayAsSegmentName"
