@@ -6,13 +6,14 @@ import { SegmentsEffects } from './segments.effects';
 import { Segment, SegmentFile, SegmentInput, UpsertSegmentType } from './segments.model';
 import { selectAllSegments } from './segments.selectors';
 import * as SegmentsActions from './segments.actions';
+import { FeatureFlagsDataService } from '../../feature-flags/feature-flags.data.service';
 
 describe('SegmentsEffects', () => {
   let store$: any;
   let actions$: ActionsSubject;
   let segmentsDataService: any;
+  let featureFlagDataService: FeatureFlagsDataService;
   let router: any;
-  let notificationService: any;
   let service: SegmentsEffects;
   const mockSegment: Segment = {
     createdAt: 'test',
@@ -48,12 +49,12 @@ describe('SegmentsEffects', () => {
     store$ = new BehaviorSubject({});
     store$.dispatch = jest.fn();
     segmentsDataService = {};
+    featureFlagDataService = {} as FeatureFlagsDataService;
     router = {
       navigate: jest.fn(),
     };
-    notificationService = jest.fn();
 
-    service = new SegmentsEffects(store$, actions$, segmentsDataService, router, notificationService);
+    service = new SegmentsEffects(store$, actions$, segmentsDataService, featureFlagDataService, router);
   });
 
   describe('fetchSegments$', () => {
