@@ -1,23 +1,18 @@
 .content-section {
-  width: 100%;
-  background-color: var(--white);
+  padding: 22px 32px 20px;
 
   .item-key-value {
+    min-height: 32px;
     display: flex;
-    align-items: center;
-    line-height: 2;
-  }
+    align-items: flex-start;
+    column-gap: 8px;
 
-  .item-key {
-    margin-right: 8px;
-  }
+    .item-value {
+      color: var(--dark-grey);
+    }
 
-  .item-value {
-    color: var(--dark-grey);
-  }
-
-  .chip {
-    margin-right: 5px;
-    height: 24px;
+    .chips-container {
+      margin-top: -4px;
+    }
   }
 }
