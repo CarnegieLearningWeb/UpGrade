@@ -49,7 +49,6 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
     SegmentsModule,
   ],
   templateUrl: './upsert-private-segment-list-modal.component.html',
-  styleUrl: './upsert-private-segment-list-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UpsertPrivateSegmentListModalComponent {
@@ -58,8 +57,8 @@ export class UpsertPrivateSegmentListModalComponent {
   initialFormValues$ = new BehaviorSubject<PrivateSegmentListFormData>(null);
 
   subscriptions = new Subscription();
-  segmentFilteredByContext$: Observable<Segment[]>;
-  isFormValid$: Observable<boolean>;
+  segmentsOptions$: Observable<Segment[]>;
+  segmentsFilteredByContext$: Observable<Segment[]>;
   isPrimaryButtonDisabled$: Observable<boolean>;
   isInitialFormValueChanged$: Observable<boolean>;
 
@@ -75,13 +74,16 @@ export class UpsertPrivateSegmentListModalComponent {
     private featureFlagService: FeatureFlagsService,
     public dialogRef: MatDialogRef<UpsertPrivateSegmentListModalComponent>
   ) {
-    this.segmentFilteredByContext$ = this.segmentsService.selectSegmentsByContext(this.config.params.sourceAppContext);
+    this.segmentsFilteredByContext$ = this.segmentsService.selectSegmentsByContext(this.config.params.sourceAppContext);
   }
 
   ngOnInit(): void {
     this.experimentService.fetchContextMetaData();
     this.segmentsService.fetchSegments();
     this.createPrivateSegmentListForm();
+    this.listenForIsInitialFormValueChanged();
+    this.listenForPrimaryButtonDisabled();
+    this.listenForFilteredSegments();
   }
 
   get LIST_TYPES() {
@@ -89,11 +91,11 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   get selectedListType() {
-    return this.privateSegmentListForm?.get('listType').value;
+    return this.privateSegmentListForm?.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.LIST_TYPE).value;
   }
 
   get valuesFormControl() {
-    return this.privateSegmentListForm?.get('values');
+    return this.privateSegmentListForm?.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.VALUES);
   }
 
   listenForPrimaryButtonDisabled() {
@@ -112,8 +114,18 @@ export class UpsertPrivateSegmentListModalComponent {
     this.subscriptions.add(this.isInitialFormValueChanged$.subscribe());
   }
 
-  listenForIsFormValid(): void {
-    this.isFormValid$ = this.privateSegmentListForm.statusChanges.pipe(map((status) => status === 'VALID'));
+  listenForFilteredSegments(): void {
+    this.segmentsOptions$ = this.segmentsFilteredByContext$.pipe(
+      combineLatestWith(
+        this.privateSegmentListForm.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.SEGMENT).valueChanges.pipe(startWith(''))
+      ),
+      map(([segments, filterValue]) => {
+        if (!filterValue || typeof filterValue !== 'string') {
+          return segments;
+        }
+        return segments.filter((segment) => segment?.name.toLowerCase().includes((filterValue ?? '').toLowerCase()));
+      })
+    );
   }
 
   createPrivateSegmentListForm(): void {
@@ -125,14 +137,16 @@ export class UpsertPrivateSegmentListModalComponent {
       description: [PRIVATE_SEGMENT_LIST_FORM_DEFAULTS.DESCRIPTION],
     });
     this.initialFormValues$.next(this.privateSegmentListForm.value);
-    this.subscribeToListTypeChanges();
+    this.listenToListTypeChanges();
   }
 
-  subscribeToListTypeChanges(): void {
-    this.privateSegmentListForm.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.LIST_TYPE).valueChanges.subscribe((listType) => {
-      this.resetFormExceptSelectedListType(listType);
-      this.setValidatorsBasedOnListType(listType);
-    });
+  listenToListTypeChanges(): void {
+    this.subscriptions.add(
+      this.privateSegmentListForm.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.LIST_TYPE).valueChanges.subscribe((listType) => {
+        this.resetFormExceptSelectedListType(listType);
+        this.setValidatorsBasedOnListType(listType);
+      })
+    );
   }
 
   resetFormExceptSelectedListType(currentListType: string): void {
@@ -174,9 +188,6 @@ export class UpsertPrivateSegmentListModalComponent {
 
   onPrimaryActionBtnClicked(): void {
     if (this.privateSegmentListForm.valid) {
-      // Handle extra frontend form validation logic here?
-      // TODO: create request
-      console.log(this.privateSegmentListForm.value);
       this.sendRequest(this.config.params.action);
     } else {
       // If the form is invalid, manually mark all form controls as touched

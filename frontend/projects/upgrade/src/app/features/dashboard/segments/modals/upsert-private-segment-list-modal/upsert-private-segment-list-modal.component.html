@@ -18,8 +18,12 @@
     <mat-form-field *ngIf="selectedListType === LIST_TYPES.SEGMENT" appearance="outline">
       <mat-label class="ft-14-400">Segment</mat-label>
       <input type="text" matInput formControlName="segment" [matAutocomplete]="auto" class="ft-14-400">
-      <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayAsSegmentName">
-        <mat-option *ngFor="let segment of segmentFilteredByContext$ | async" [value]="segment" class="ft-14-400">
+      <mat-autocomplete 
+        #auto="matAutocomplete"
+        [displayWith]="displayAsSegmentName"
+        requireSelection= "true"
+      >
+        <mat-option *ngFor="let segment of segmentsOptions$ | async" [value]="segment" class="ft-14-400">
           {{ segment.name }}
         </mat-option>
       </mat-autocomplete>

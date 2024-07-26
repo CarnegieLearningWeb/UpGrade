@@ -6,7 +6,6 @@ import { SegmentsEffects } from './segments.effects';
 import { Segment, SegmentFile, SegmentInput, UpsertSegmentType } from './segments.model';
 import { selectAllSegments } from './segments.selectors';
 import * as SegmentsActions from './segments.actions';
-import { FeatureFlagsDataService } from '../../feature-flags/feature-flags.data.service';
 
 describe('SegmentsEffects', () => {
   let store$: any;
