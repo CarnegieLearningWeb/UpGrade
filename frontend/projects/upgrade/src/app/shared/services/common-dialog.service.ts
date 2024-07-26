@@ -139,7 +139,7 @@ export class DialogService {
   openUpsertPrivateSegmentListModal(commonModalConfig: CommonModalConfig) {
     const config: MatDialogConfig = {
       data: commonModalConfig,
-      width: '670px',
+      width: '656px',
       height: 'auto',
       autoFocus: 'input',
       disableClose: true,
