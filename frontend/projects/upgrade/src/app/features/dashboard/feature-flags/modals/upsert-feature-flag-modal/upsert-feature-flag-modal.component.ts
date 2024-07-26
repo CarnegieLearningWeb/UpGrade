@@ -88,8 +88,8 @@ export class UpsertFeatureFlagModalComponent {
     private experimentService: ExperimentService,
     private formHelpersService: CommonFormHelpersService,
     private featureFlagDataService: FeatureFlagsDataService,
-    public dialogRef: MatDialogRef<UpsertFeatureFlagModalComponent>,
     private cdr: ChangeDetectorRef,
+    public dialogRef: MatDialogRef<UpsertFeatureFlagModalComponent>
   ) {}
 
   ngOnInit(): void {
@@ -160,7 +160,7 @@ export class UpsertFeatureFlagModalComponent {
 
   onPrimaryActionBtnClicked() {
     if (this.featureFlagForm.valid) {
-      this.sendValidateRequest().then(validationError => {
+      this.sendValidateRequest().then((validationError) => {
         this.validationError = validationError;
         this.cdr.detectChanges();
         if (!this.validationError) {
@@ -173,9 +173,14 @@ export class UpsertFeatureFlagModalComponent {
     }
   }
 
-  sendValidateRequest() {
+  async sendValidateRequest() {
     const formData: FeatureFlagFormData = this.featureFlagForm.value;
-    return this.featureFlagDataService.validateFeatureFlag(formData).toPromise().then((result: string) => !!result);
+    try {
+      const result = (await this.featureFlagDataService.validateFeatureFlag(formData).toPromise()) as string;
+      return !!result;
+    } catch (error) {
+      return true;
+    }
   }
 
   sendRequest(action: UPSERT_FEATURE_FLAG_ACTION, sourceFlag?: FeatureFlag): void {

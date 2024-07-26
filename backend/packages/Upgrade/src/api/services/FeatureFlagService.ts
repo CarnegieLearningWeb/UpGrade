@@ -214,11 +214,8 @@ export class FeatureFlagService {
       .getOne();
 
     if (result) {
-      return 'Feature Flag with this key already exists';
-      // const error = new Error('Feature Flag with this key already exists');{
-      // error.httpCode = 409;
       const error = new Error(`A flag with this key already exists for this app-context`);
-      (error as any).type = SERVER_ERROR.UNSUPPORTED_CALIPER;
+      (error as any).type = SERVER_ERROR.DUPLICATE_KEY;
       (error as any).httpCode = 409;
       throw error;
     }
