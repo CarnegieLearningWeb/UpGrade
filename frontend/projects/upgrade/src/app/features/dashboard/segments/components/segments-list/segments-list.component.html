@@ -135,12 +135,12 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <mat-chip-listbox>
+          <mat-chip-listbox class="dense-2">
             <mat-chip
               *ngIf="segment.context != 'ALL'"
               (click)="filterSegmentsByChips(segment.context, SegmentSearchKey.CONTEXT)"
             >
-              <span class="ft-12-600 chip-label">
+              <span class="chip-label">
                 {{ segment.context }}
               </span>
             </mat-chip>

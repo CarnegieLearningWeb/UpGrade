@@ -8,7 +8,6 @@ import {
 import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/delete-feature-flag-modal/delete-feature-flag-modal.component';
 
 import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
-import { UpdateFlagStatusConfirmationModalComponent } from '../../features/dashboard/feature-flags/modals/update-flag-status-confirmation-modal/update-flag-status-confirmation-modal.component';
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import {
   FeatureFlag,
@@ -77,26 +76,36 @@ export class DialogService {
     return this.openUpsertFeatureFlagModal(commonModalConfig);
   }
 
-  openEnableFeatureFlagConfirmModel() {
-    const enableFlagStatusModalConfig: CommonModalConfig = {
+  openEnableFeatureFlagConfirmModel(flagName: string) {
+    const enableFlagStatusModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
       title: 'Enable Feature Flag',
       primaryActionBtnLabel: 'Enable',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to enable "${flagName}"?`,
+        subMessage: '* Only the enabled include lists will be affected.',
+        subMessageClass: 'info',
+      },
     };
 
-    return this.openUpdateFlagStatusConfirmationModal(enableFlagStatusModalConfig);
+    return this.openSimpleCommonConfirmationModal(enableFlagStatusModalConfig);
   }
 
-  openDisableFeatureFlagConfirmModel() {
-    const disableFlagStatusModalConfig: CommonModalConfig = {
+  openDisableFeatureFlagConfirmModel(flagName: string) {
+    const disableFlagStatusModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
       title: 'Disable Feature Flag',
       primaryActionBtnLabel: 'Disable',
       primaryActionBtnColor: 'warn',
       cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to disable "${flagName}"?`,
+        subMessage: '* All enabled include lists will be disabled.',
+        subMessageClass: 'warn',
+      },
     };
 
-    return this.openUpdateFlagStatusConfirmationModal(disableFlagStatusModalConfig);
+    return this.openSimpleCommonConfirmationModal(disableFlagStatusModalConfig);
   }
 
   openUpsertFeatureFlagModal(commonModalConfig: CommonModalConfig) {
@@ -107,17 +116,6 @@ export class DialogService {
       disableClose: true,
     };
     return this.dialog.open(UpsertFeatureFlagModalComponent, config);
-  }
-
-  openUpdateFlagStatusConfirmationModal(commonModalConfig: CommonModalConfig) {
-    const config: MatDialogConfig = {
-      data: commonModalConfig,
-      width: '560px',
-      autoFocus: 'first-heading',
-      disableClose: true,
-    };
-
-    return this.dialog.open(UpdateFlagStatusConfirmationModalComponent, config);
   }
 
   openAddIncludeListModal() {
@@ -150,7 +148,7 @@ export class DialogService {
     const commonModalConfig: CommonModalConfig = {
       title: 'Delete Feature Flag',
       primaryActionBtnLabel: 'Delete',
-      primaryActionBtnColor: 'primary',
+      primaryActionBtnColor: 'warn',
       cancelBtnLabel: 'Cancel',
     };
     const config: MatDialogConfig = {
