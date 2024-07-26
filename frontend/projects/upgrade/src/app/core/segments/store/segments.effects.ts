@@ -9,10 +9,6 @@ import * as SegmentsActions from './segments.actions';
 import { Segment, UpsertSegmentType } from './segments.model';
 import { selectAllSegments } from './segments.selectors';
 import JSZip from 'jszip';
-import { of } from 'rxjs/internal/observable/of';
-import { selectSelectedFeatureFlag } from '../../feature-flags/store/feature-flags.selectors';
-import { FeatureFlagsDataService } from '../../feature-flags/feature-flags.data.service';
-import * as FeatureFlagsActions from '../../feature-flags/store/feature-flags.actions';
 
 @Injectable()
 export class SegmentsEffects {
@@ -20,7 +16,6 @@ export class SegmentsEffects {
     private store$: Store<AppState>,
     private actions$: Actions,
     private segmentsDataService: SegmentsDataService,
-    private featureFlagDataService: FeatureFlagsDataService,
     private router: Router
   ) {}
 
@@ -98,24 +93,6 @@ export class SegmentsEffects {
           catchError(() => [SegmentsActions.actionDeleteSegmentFailure()])
         )
       )
-    )
-  );
-
-  uspertFeatureFlagInclusionList$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
-      map((action) => action.list),
-      withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
-      switchMap(([list, flag]) => {
-        const request = {
-          flagId: flag.id,
-          ...list,
-        };
-        return this.featureFlagDataService.addInclusionList(request).pipe(
-          map((listResponse) => FeatureFlagsActions.actionUpsertFeatureFlagInclusionListSuccess({ listResponse })),
-          catchError((error) => of(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListFailure({ error })))
-        );
-      })
     )
   );
 
