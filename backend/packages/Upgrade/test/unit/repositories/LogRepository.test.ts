@@ -5,8 +5,12 @@ import { ExperimentUser } from '../../../src/api/models/ExperimentUser';
 import { QueryRepository } from '../../../src/api/repositories/QueryRepository';
 import { MetricRepository } from '../../../src/api/repositories/MetricRepository';
 import { ExperimentRepository } from '../../../src/api/repositories/ExperimentRepository';
+import { Query } from '../../../src/api/models/Query';
+import { Metric } from '../../../src/api/models/Metric';
+import { Experiment } from '../../../src/api/models/Experiment';
 import { Container } from '../../../src/typeorm-typedi-extensions';
 import { initializeMocks } from '../mockdata/mockRepo';
+import { IMetricMetaData, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
 
 let mock;
 let manager;
