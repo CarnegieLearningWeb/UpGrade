@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs';
+
+import { ChangeDetectionStrategy, Component, Input, OnInit, ViewChild } from '@angular/core';
+
 import {
   FLAG_ROOT_COLUMN_NAMES,
   FLAG_ROOT_DISPLAYED_COLUMNS,
@@ -26,6 +28,7 @@ import { SharedModule } from '../../../../../../../../shared/shared.module';
     UpperCasePipe,
     RouterModule,
     CommonStatusIndicatorChipComponent,
+    SharedModule,
   ],
   templateUrl: './feature-flag-root-section-card-table.component.html',
   styleUrl: './feature-flag-root-section-card-table.component.scss',
@@ -60,7 +63,7 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   }
 
   fetchFlagsOnScroll() {
-    console.log('fetchFlagsOnScroll');
+    this.featureFlagsService.fetchFeatureFlags();
   }
 
   changeSorting(event) {

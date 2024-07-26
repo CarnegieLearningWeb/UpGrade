@@ -1,29 +1,29 @@
-.input-container {
-  /* Add your styles here */
-  height: 210px;
-  width: 592px;
-  border: 2px dashed #ccc;
-  padding: 20px;
-  text-align: center;
-  border-radius: 10px;
-  transition: background-color 0.3s;
+.import-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+  border: 1px dashed var(--dark-grey);
+  border-radius: 4px;
 
   &.drag-over {
-    background-color: #f0f0f0;
+    background-color: var(--zircon);
+  }
+
+  .material-symbols-outlined {
+    font-size: 72px;
+    color: var(--dark-grey);
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
 
   .drag-text {
-    margin-bottom: 0.7rem;
+    margin-bottom: 8px;
+    color: var(--dark-grey);
   }
 
-  mat-icon {
-    height: 70px;
-    width: 70px;
-    font-size: 70px;
-    color: grey;
-  }
-
-  button {
-    font-size: 14px;
+  .choose-json-btn {
+    padding: 0 16px;
   }
 }

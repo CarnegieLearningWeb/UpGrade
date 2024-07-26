@@ -6,6 +6,7 @@ import {
   FeatureFlag,
   FeatureFlagsPaginationInfo,
   FeatureFlagsPaginationParams,
+  UpdateFeatureFlagRequest,
   UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
 import { Observable } from 'rxjs';
@@ -18,8 +19,6 @@ export class FeatureFlagsDataService {
   fetchFeatureFlagsPaginated(params: FeatureFlagsPaginationParams): Observable<FeatureFlagsPaginationInfo> {
     const url = this.environment.api.getPaginatedFlags;
     return this.http.post<FeatureFlagsPaginationInfo>(url, params);
-    // mock
-    // // return of({ nodes: mockFeatureFlags, total: 2 }).pipe(delay(2000));
   }
 
   fetchFeatureFlagById(id: string) {
@@ -27,22 +26,17 @@ export class FeatureFlagsDataService {
     return this.http.get(url);
   }
 
-  addFeatureFlag(params: AddFeatureFlagRequest): Observable<FeatureFlag> {
-    const url = this.environment.api.featureFlag;
-    return this.http.post<FeatureFlag>(url, params);
-  }
-
   updateFeatureFlagStatus(params: UpdateFeatureFlagStatusRequest): Observable<FeatureFlag> {
     const url = this.environment.api.updateFlagStatus;
     return this.http.post<FeatureFlag>(url, params);
   }
 
-  deleteFeatureFlag(id: string) {
-    const url = `${this.environment.api.featureFlag}/${id}`;
-    return this.http.delete(url);
+  addFeatureFlag(flag: AddFeatureFlagRequest): Observable<FeatureFlag> {
+    const url = this.environment.api.featureFlag;
+    return this.http.post<FeatureFlag>(url, flag);
   }
 
-  updateFeatureFlag(flag: FeatureFlag): Observable<FeatureFlag> {
+  updateFeatureFlag(flag: UpdateFeatureFlagRequest): Observable<FeatureFlag> {
     const url = `${this.environment.api.featureFlag}/${flag.id}`;
     return this.http.put<FeatureFlag>(url, flag);
   }
@@ -50,5 +44,10 @@ export class FeatureFlagsDataService {
   validateFeatureFlag(featureFlag: FeatureFlagFile[]) {
     const url = this.environment.api.validateFeatureFlag;
     return this.http.post(url, featureFlag);
+  }
+
+  deleteFeatureFlag(id: string) {
+    const url = `${this.environment.api.featureFlag}/${id}`;
+    return this.http.delete(url);
   }
 }

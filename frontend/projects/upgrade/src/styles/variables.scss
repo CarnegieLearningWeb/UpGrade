@@ -4,18 +4,29 @@
   --water: #f0f2f9;
   --light-grey-2: #dce0e6;
   --grey-3: #929fae; /* same as --grey-3 */
+  --disabled-text: #8b8b8b;
   --dark-grey: #646e7b;
   --darker-grey: #444e5b;
   --light-black: #222b45; /* same as --black-2 */
   --red-2: #ff3333;
   --status-disabled: #ff9933;
   --status-enabled: #3366ff;
+  --status-draft: #cc66ff;
+  --status-inactive: #ff9933;
+  --status-enrolling: #3366ff;
+  --status-enrollment-complete: #33cc66;
+  --status-cancelled: #ff3333;
   --status-archived: #999999;
   --status-global: #ff3333;
   --status-unused: #999999;
   --status-used: #3366ff;
   --status-disabled-alpha: #ff99330c;
   --status-enabled-alpha: #3366ff0c;
+  --status-draft-alpha: #cc66ff0c;
+  --status-inactive-alpha: #ff99330c;
+  --status-enrolling-alpha: #3366ff0c;
+  --status-enrollment-complete-alpha: #33cc660c;
+  --status-cancelled-alpha: #ff33330c;
   --status-archived-alpha: #9999990c;
   --status-global-alpha: #ff33330c;
   --status-unused-alpha: #9999990c;
