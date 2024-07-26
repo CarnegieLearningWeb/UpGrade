@@ -61,7 +61,7 @@ export class UpsertPrivateSegmentListModalComponent {
   segmentsFilteredByContext$: Observable<Segment[]>;
   isPrimaryButtonDisabled$: Observable<boolean>;
   isInitialFormValueChanged$: Observable<boolean>;
-  isSegmentsListTypeEnabled$: Observable<boolean>;
+  isSegmentsListTypeDisabled$: Observable<boolean>;
 
   privateSegmentListForm: FormGroup;
 
@@ -120,7 +120,7 @@ export class UpsertPrivateSegmentListModalComponent {
 
   listenForSegments() {
     this.segmentsFilteredByContext$ = this.segmentsService.selectSegmentsByContext(this.config.params.sourceAppContext);
-    this.isSegmentsListTypeEnabled$ = this.segmentsFilteredByContext$.pipe(map((segments) => segments.length > 0));
+    this.isSegmentsListTypeDisabled$ = this.segmentsFilteredByContext$.pipe(map((segments) => segments.length === 0));
   }
 
   listenForPrimaryButtonDisabled() {

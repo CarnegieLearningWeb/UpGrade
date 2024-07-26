@@ -14,7 +14,7 @@
           *ngFor="let type of listOptionTypes$ | async" 
           [value]="type.value" 
           class="ft-14-400"
-          [disabled]="(!isSegmentsListTypeEnabled$ | async) && type.value === LIST_TYPES.SEGMENT"
+          [disabled]="(isSegmentsListTypeDisabled$ | async) && type.value === LIST_TYPES.SEGMENT"
         >
           {{ type.viewValue }}
         </mat-option>
@@ -43,7 +43,7 @@
         <input matInput formControlName="name" class="ft-14-400">
       </mat-form-field>
       <mat-form-field appearance="outline">
-        <mat-label class="ft-14-400">Description</mat-label>
+        <mat-label class="ft-14-400">Description (optional)</mat-label>
         <input matInput formControlName="description" class="ft-14-400">
       </mat-form-field>
     </ng-container>
