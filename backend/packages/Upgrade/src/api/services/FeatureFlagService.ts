@@ -13,6 +13,7 @@ import {
   IFeatureFlagSearchParams,
   IFeatureFlagSortParams,
   FLAG_SEARCH_KEY,
+  ValidatedFeatureFlagsError,
 } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
 import { SERVER_ERROR, FEATURE_FLAG_STATUS, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
@@ -332,5 +333,43 @@ export class FeatureFlagService {
 
     const includedFeatureFlags = featureFlags.filter(({ id }) => includedFeatureFlagIds.includes(id));
     return includedFeatureFlags;
+  }
+
+  public async validateImportFeatureFlags(featureFlagFiles: any, logger: UpgradeLogger): Promise<ValidatedFeatureFlagsError[]> {
+    logger.info({ message: 'Validate feature flags' });
+    const validationErrors = await Promise.allSettled(
+      featureFlagFiles.map(async (featureFlagFile) => {
+        let featureFlag = JSON.parse(featureFlagFile.fileContent);
+        // const newFeatureFlag = plainToClass(FeatureFlag, featureFlag);
+        const error = this.validateImportFeatureFlag(featureFlagFile.fileName, featureFlag);
+        return error;
+      })
+    );
+    // Filter out the files that have no promise rejection errors
+    return validationErrors
+      .map((result) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        } else {
+          const { fileName, compatibilityType } = result.reason;
+          return { fileName: fileName, compatibilityType: compatibilityType };
+        }
+      })
+      .filter((error) => error !== null);
+  }
+
+  private validateImportFeatureFlag(fileName: string, flag: any) {
+    let compatibilityType;
+
+    if (!flag.name || !flag.key || !flag.context) {
+        compatibilityType = 'incompatible';
+    } else {
+        compatibilityType = 'compatible';
+    }
+    // when should we get the 'warning' compatibility type?
+    return {
+        fileName: fileName,
+        compatibilityType: compatibilityType,
+      };
   }
 }

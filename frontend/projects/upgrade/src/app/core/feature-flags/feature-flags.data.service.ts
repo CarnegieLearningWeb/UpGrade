@@ -9,7 +9,7 @@ import {
   UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
 import { Observable } from 'rxjs';
-import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../types/src';
+import { FeatureFlagFile } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 
 @Injectable()
 export class FeatureFlagsDataService {
@@ -45,5 +45,10 @@ export class FeatureFlagsDataService {
   updateFeatureFlag(flag: FeatureFlag): Observable<FeatureFlag> {
     const url = `${this.environment.api.featureFlag}/${flag.id}`;
     return this.http.put<FeatureFlag>(url, flag);
+  }
+
+  validateFeatureFlag(featureFlag: FeatureFlagFile[]) {
+    const url = this.environment.api.validateFeatureFlag;
+    return this.http.post(url, featureFlag);
   }
 }

@@ -6,7 +6,17 @@ import { BehaviorSubject } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../../shared/shared.module';
 import { CommonImportContainerComponent } from '../../../../../shared-standalone-component-lib/components/common-import-container/common-import-container.component';
+import { FeatureFlagsDataService } from '../../../../../core/feature-flags/feature-flags.data.service';
 
+export interface FeatureFlagFile {
+  fileName: string;
+  fileContent: string | ArrayBuffer;
+}
+
+export interface ValidateFeatureFlagError {
+  fileName: string;
+  compatibilityType: string;
+}
 @Component({
   selector: 'app-import-feature-flag-modal',
   standalone: true,
@@ -18,29 +28,58 @@ import { CommonImportContainerComponent } from '../../../../../shared-standalone
 export class ImportFeatureFlagModalComponent {
 
   isImportActionBtnDisabled = new BehaviorSubject<boolean>(true);
+  importFileErrors: { fileName: string; compatibilityType: string }[] = [];
+  allFeatureFlags: FeatureFlagFile[] = [];
+  uploadedFileCount = 0;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public data: CommonModalConfig,
     public dialog: MatDialog,
+    public featureFlagsDataService: FeatureFlagsDataService,
     public dialogRef: MatDialogRef<ImportFeatureFlagModalComponent>
   ) {}
 
-  handleFilesSelected(files: File[]) {
-    if(files.length>0) {
+  async handleFilesSelected(event) {
+    if(event.target.files.length>0) {
       this.isImportActionBtnDisabled.next(false);
     }
-    console.log('Selected files:', files);
     //Send files to validation endpoint to receive data for table
+    this.uploadedFileCount = event.target.files.length;
+    this.importFileErrors = [];
+    this.allFeatureFlags = [];
+
+    if (this.uploadedFileCount === 0) return;
+
+    // Set loading to true before processing the files
+    // this.isLoadingExperiments$ = true;
+
+    const filesArray = Array.from(event.target.files) as any[];
+    await Promise.all(
+      filesArray.map((file) => {
+        return new Promise<void>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const fileContent = e.target.result;
+            this.allFeatureFlags.push({ fileName: file.name, fileContent: fileContent });
+            resolve();
+          };
+          reader.readAsText(file);
+        });
+      })
+    );
+
+    await this.checkValidation(this.allFeatureFlags);
+    // this.isLoadingFeatureFlag$ = false;
+    const compatibility = this.checkValidation(event.target.files);
   }
 
-  handleFileInput(file: File) {
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const jsonContent = e.target.result;
-      console.log(JSON.parse(jsonContent));
-    };
-    reader.readAsText(file);
+  async checkValidation(files) {
+    this.importFileErrors =
+      (
+        (await this.featureFlagsDataService.validateFeatureFlag(files).toPromise()) as ValidateFeatureFlagError[]
+      ).filter((data) => data.compatibilityType != null) || [];
+    console.log("Import file errors", this.importFileErrors);
   }
 
   importFiles() {
