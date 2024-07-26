@@ -48,6 +48,7 @@ export class CommonSectionCardActionButtonsComponent {
   @Input() menuButtonItems?: IMenuButtonItem[] = [];
   @Input() isSectionCardExpanded?: boolean = true;
   @Input() primaryActionBtnDisabled?: boolean = false;
+  @Input() sectionCardExpandBtnDisabled?: boolean = false;
   @Output() slideToggleChange = new EventEmitter<MatSlideToggleChange>();
   @Output() primaryButtonClick = new EventEmitter<void>();
   @Output() menuButtonItemClick = new EventEmitter<string>();

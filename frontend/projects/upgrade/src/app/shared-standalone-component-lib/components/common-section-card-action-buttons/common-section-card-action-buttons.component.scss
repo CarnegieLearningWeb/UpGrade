@@ -23,7 +23,7 @@
     display: flex;
     column-gap: 4px;
 
-    ::ng-deep .mat-mdc-icon-button .mat-icon {
+    .mat-mdc-icon-button:not(.mat-mdc-button-disabled) .mat-icon {
       color: var(--dark-grey);
     }
   }
