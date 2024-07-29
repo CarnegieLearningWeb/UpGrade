@@ -26,7 +26,6 @@ export interface ValidateFeatureFlagError {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImportFeatureFlagModalComponent {
-
   isImportActionBtnDisabled = new BehaviorSubject<boolean>(true);
   importFileErrors: { fileName: string; compatibilityType: string }[] = [];
   allFeatureFlags: FeatureFlagFile[] = [];
@@ -41,7 +40,7 @@ export class ImportFeatureFlagModalComponent {
   ) {}
 
   async handleFilesSelected(event) {
-    if(event.target.files.length>0) {
+    if (event.target.files.length > 0) {
       this.isImportActionBtnDisabled.next(false);
     }
     //Send files to validation endpoint to receive data for table
@@ -79,7 +78,7 @@ export class ImportFeatureFlagModalComponent {
       (
         (await this.featureFlagsDataService.validateFeatureFlag(files).toPromise()) as ValidateFeatureFlagError[]
       ).filter((data) => data.compatibilityType != null) || [];
-    console.log("Import file errors", this.importFileErrors);
+    console.log('Import file errors', this.importFileErrors);
   }
 
   importFiles() {

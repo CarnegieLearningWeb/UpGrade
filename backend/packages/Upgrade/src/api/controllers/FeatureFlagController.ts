@@ -4,7 +4,11 @@ import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatusUpdateValidator';
-import { FeatureFlagFile, FeatureFlagPaginatedParamsValidator, ValidatedFeatureFlagsError } from './validators/FeatureFlagsPaginatedParamsValidator';
+import {
+  FeatureFlagFile,
+  FeatureFlagPaginatedParamsValidator,
+  ValidatedFeatureFlagsError,
+} from './validators/FeatureFlagsPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { SERVER_ERROR } from 'upgrade_types';
 import { FeatureFlagValidation, IdValidator, UserParamsValidator } from './validators/FeatureFlagValidator';
@@ -600,7 +604,7 @@ export class FeatureFlagsController {
     return this.featureFlagService.deleteList(id, request.logger);
   }
 
-    /**
+  /**
    * @swagger
    * /experiments/{validation}:
    *    post:
@@ -643,7 +647,7 @@ export class FeatureFlagsController {
    *            description: Internal Server Error
    */
 
-   /**
+  /**
    * @swagger
    * /flags/{validation}:
    *    post:
@@ -686,11 +690,11 @@ export class FeatureFlagsController {
    *          '500':
    *            description: Internal Server Error
    */
-   @Post('/import/validation')
-   public async validateImportFeatureFlags(
-     @Body({ validate: true }) featureFlags: FeatureFlagFile[],
-     @Req() request: AppRequest
-   ): Promise<ValidatedFeatureFlagsError[]> {
+  @Post('/import/validation')
+  public async validateImportFeatureFlags(
+    @Body({ validate: true }) featureFlags: FeatureFlagFile[],
+    @Req() request: AppRequest
+  ): Promise<ValidatedFeatureFlagsError[]> {
     return await this.featureFlagService.validateImportFeatureFlags(featureFlags, request.logger);
-   }
+  }
 }

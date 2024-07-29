@@ -14,6 +14,7 @@ import {
   IFeatureFlagSortParams,
   FLAG_SEARCH_KEY,
   ValidatedFeatureFlagsError,
+  FF_COMPATIBILITY_TYPE,
 } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
 import { SERVER_ERROR, FEATURE_FLAG_STATUS, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
@@ -335,13 +336,16 @@ export class FeatureFlagService {
     return includedFeatureFlags;
   }
 
-  public async validateImportFeatureFlags(featureFlagFiles: any, logger: UpgradeLogger): Promise<ValidatedFeatureFlagsError[]> {
+  public async validateImportFeatureFlags(
+    featureFlagFiles: any,
+    logger: UpgradeLogger
+  ): Promise<ValidatedFeatureFlagsError[]> {
     logger.info({ message: 'Validate feature flags' });
     const validationErrors = await Promise.allSettled(
       featureFlagFiles.map(async (featureFlagFile) => {
-        let featureFlag = JSON.parse(featureFlagFile.fileContent);
+        const featureFlag = JSON.parse(featureFlagFile.fileContent);
         // const newFeatureFlag = plainToClass(FeatureFlag, featureFlag);
-        const error = this.validateImportFeatureFlag(featureFlagFile.fileName, featureFlag);
+        const error = await this.validateImportFeatureFlag(featureFlagFile.fileName, featureFlag);
         return error;
       })
     );
@@ -358,18 +362,28 @@ export class FeatureFlagService {
       .filter((error) => error !== null);
   }
 
-  private validateImportFeatureFlag(fileName: string, flag: any) {
-    let compatibilityType;
+  private async validateImportFeatureFlag(fileName: string, flag: any) {
+    let compatibilityType = FF_COMPATIBILITY_TYPE.COMPATIBLE;
 
     if (!flag.name || !flag.key || !flag.context) {
-        compatibilityType = 'incompatible';
+      compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
     } else {
-        compatibilityType = 'compatible';
+      const segmentIds = [
+        ...flag.featureFlagSegmentInclusion.map((segmentInclusion) => segmentInclusion.segment.id),
+        ...flag.featureFlagSegmentExclusion.map((segmentExclusion) => segmentExclusion.segment.id),
+      ];
+
+      const segments = await this.segmentService.getSegmentByIds(segmentIds);
+      segments.forEach((segment) => {
+        if (segment == undefined) {
+          compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
+        }
+      });
     }
-    // when should we get the 'warning' compatibility type?
+
     return {
-        fileName: fileName,
-        compatibilityType: compatibilityType,
-      };
+      fileName: fileName,
+      compatibilityType: compatibilityType,
+    };
   }
 }
