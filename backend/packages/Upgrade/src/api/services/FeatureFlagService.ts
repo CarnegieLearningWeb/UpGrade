@@ -22,7 +22,6 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentAssignmentService } from './ExperimentAssignmentService';
 import { SegmentService } from './SegmentService';
 import { ErrorWithType } from '../errors/ErrorWithType';
-import { FeatureFlagFormData } from '../controllers/FeatureFlagController';
 
 @Service()
 export class FeatureFlagService {
@@ -71,8 +70,9 @@ export class FeatureFlagService {
     return featureFlag;
   }
 
-  public create(flagDTO: FeatureFlagValidation, logger: UpgradeLogger): Promise<FeatureFlag> {
+  public async create(flagDTO: FeatureFlagValidation, logger: UpgradeLogger): Promise<FeatureFlag> {
     logger.info({ message: 'Create a new feature flag', details: flagDTO });
+    await this.validate(flagDTO, logger);
     return this.addFeatureFlagInDB(this.featureFlagValidatorToFlag(flagDTO), logger);
   }
 
@@ -150,8 +150,9 @@ export class FeatureFlagService {
     return updatedState;
   }
 
-  public update(flagDTO: FeatureFlagValidation, logger: UpgradeLogger): Promise<FeatureFlag> {
+  public async update(flagDTO: FeatureFlagValidation, logger: UpgradeLogger): Promise<FeatureFlag> {
     logger.info({ message: `Update a Feature Flag => ${flagDTO.toString()}` });
+    await this.validate(flagDTO, logger);
     // TODO add entry in log of updating feature flag
     return this.updateFeatureFlagInDB(this.featureFlagValidatorToFlag(flagDTO), logger);
   }
@@ -205,12 +206,12 @@ export class FeatureFlagService {
     return this.segmentService.deleteSegment(segmentId, logger);
   }
 
-  public async validate(flagDTO: FeatureFlagFormData, logger: UpgradeLogger): Promise<string> {
+  public async validate(flagDTO: FeatureFlagValidation, logger: UpgradeLogger) {
     logger.info({ message: `Validating featureFlags` });
     const result = await this.featureFlagRepository
       .createQueryBuilder('feature_flag')
       .where('feature_flag.key = :key', { key: flagDTO.key })
-      .andWhere('feature_flag.context = :context', { context: [flagDTO.appContext] })
+      .andWhere('feature_flag.context = :context', { context: flagDTO.context })
       .getOne();
 
     if (result) {
@@ -219,7 +220,7 @@ export class FeatureFlagService {
       (error as any).httpCode = 409;
       throw error;
     }
-    return '';
+    return;
   }
 
   public async addList(

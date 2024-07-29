@@ -17,7 +17,10 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   openPopup(error) {
     const temp = {
       type: NotificationType.Error,
-      title: 'Network call failed. See console for details.',
+      title:
+        error.status === 409
+          ? 'Flag with this key already exists for this app-context.'
+          : 'Network call failed. See console for details.',
       content: error.url,
       animate: 'fromRight',
     };

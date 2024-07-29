@@ -160,13 +160,14 @@ export class UpsertFeatureFlagModalComponent {
 
   onPrimaryActionBtnClicked() {
     if (this.featureFlagForm.valid) {
-      this.sendValidateRequest().then((validationError) => {
-        this.validationError = validationError;
-        this.cdr.detectChanges();
-        if (!this.validationError) {
-          this.sendRequest(this.config.params.action, this.config.params.sourceFlag);
-        }
-      });
+      this.sendRequest(this.config.params.action, this.config.params.sourceFlag);
+      // this.sendValidateRequest().then((validationError) => {
+      //   this.validationError = validationError;
+      //   this.cdr.detectChanges();
+      //   if (!this.validationError) {
+      //     this.sendRequest(this.config.params.action, this.config.params.sourceFlag);
+      //   }
+      // });
     } else {
       // If the form is invalid, manually mark all form controls as touched
       this.formHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);

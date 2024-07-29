@@ -333,13 +333,14 @@ export class FeatureFlagsController {
    *          '409':
    *            description: Feature flag name or key already exists
    */
-  @Post('/validation')
+  /*@Post('/validation')
   public validateFeatureFlags(
     @Body({ validate: false }) flag: FeatureFlagFormData,
     @Req() request: AppRequest
   ): Promise<string> {
     return this.featureFlagService.validate(flag, request.logger);
-  }
+  }*/
+
   /**
    * @swagger
    * /flags/status:
