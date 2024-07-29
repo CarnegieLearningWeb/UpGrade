@@ -133,6 +133,7 @@ describe('Feature Flag Service Testing', () => {
               addOrderBy: addOrderBySpy,
               setParameter: setParamaterSpy,
               where: jest.fn().mockReturnThis(),
+              andWhere: jest.fn().mockReturnThis(),
               offset: offsetSpy,
               limit: limitSpy,
               innerJoinAndSelect: jest.fn().mockReturnThis(),
@@ -169,6 +170,7 @@ describe('Feature Flag Service Testing', () => {
       .compile();
 
     service = module.get<FeatureFlagService>(FeatureFlagService);
+    service.validate = jest.fn().mockResolvedValue(null);
     flagRepo = module.get<FeatureFlagRepository>(getRepositoryToken(FeatureFlagRepository));
   });
 
