@@ -1,7 +1,7 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
 import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
-import { MemberTypes, Segment, SegmentInput } from '../../segments/store/segments.model';
+import { MemberTypes, Segment } from '../../segments/store/segments.model';
 
 // This obviously is a more global type, but for now we're not about to refactor all of the things, so I'm just putting it here so I can create some more dev-friendly types to catch the small differences between some of these formats
 export interface GeneralCRUDResponseFields {
@@ -112,13 +112,6 @@ export enum PARTICIPANT_LIST_ROW_ACTION {
 export interface ParticipantListRowActionEvent {
   action: PARTICIPANT_LIST_ROW_ACTION;
   rowData: ParticipantListTableRow;
-}
-
-export interface FeatureFlagListValidator {
-  flagId: string;
-  enabled: boolean;
-  listType: string;
-  list: SegmentInput;
 }
 
 export interface FeatureFlagsPaginationParams {
