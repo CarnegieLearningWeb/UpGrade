@@ -135,3 +135,76 @@ export enum EXPORT_SEGMENT_METHOD {
   JSON = 'Download Segment (JSON)',
   CSV = 'Download Segment Members (CSV)',
 }
+
+export enum UPSERT_PRIVATE_SEGMENT_LIST_ACTION {
+  ADD_FLAG_INCLUDE_LIST = 'add_flag_include',
+  EDIT_FLAG_INCLUDE_LIST = 'edit_flag_include',
+  ADD_FLAG_EXCLUDE_LIST = 'add_flag_exclude',
+  EDIT_FLAG_EXCLUDE_LIST = 'edit_flag_exclude',
+  ADD_SEGMENT_LIST = 'add_segment_list',
+  EDIT_SEGMENT_LIST = 'edit_segment_list',
+}
+
+export interface UpsertPrivateSegmentListParams {
+  sourceList: any; // TODO define me
+  sourceAppContext: string;
+  action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION;
+}
+
+export enum LIST_OPTION_TYPE {
+  INDIVIDUAL = 'Individual',
+  SEGMENT = 'Segment',
+}
+
+export const PRIVATE_SEGMENT_LIST_FORM_FIELDS = {
+  LIST_TYPE: 'listType',
+  SEGMENT: 'segment',
+  VALUES: 'values',
+  NAME: 'name',
+  DESCRIPTION: 'description',
+};
+
+export const PRIVATE_SEGMENT_LIST_FORM_DEFAULTS = {
+  LIST_TYPE: '',
+  SEGMENT: null,
+  VALUES: [],
+  NAME: '',
+  DESCRIPTION: '',
+};
+
+export interface PrivateSegmentListFormData {
+  listType: LIST_OPTION_TYPE;
+  segment?: Segment;
+  values?: string[];
+  name: string;
+  description?: string;
+}
+
+export interface PrivateSegmentListRequestBase {
+  name: string;
+  description: string;
+  context: string;
+  type: SEGMENT_TYPE.PRIVATE;
+  userIds: string[];
+  groups: Group[];
+  subSegmentIds: string[];
+}
+
+export type AddPrivateSegmentListRequestDetails = PrivateSegmentListRequestBase;
+export interface EditPrivateSegmentListDetails extends PrivateSegmentListRequestBase {
+  id: string;
+}
+
+export interface PrivateSegmentListRequest {
+  enabled: false;
+  listType: string;
+  list: AddPrivateSegmentListRequestDetails | EditPrivateSegmentListDetails;
+}
+
+export interface AddPrivateSegmentListRequest extends PrivateSegmentListRequest {
+  list: AddPrivateSegmentListRequestDetails;
+}
+
+export interface EditPrivateSegmentListRequest extends PrivateSegmentListRequest {
+  list: EditPrivateSegmentListDetails;
+}

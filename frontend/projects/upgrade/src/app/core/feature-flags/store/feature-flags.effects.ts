@@ -15,8 +15,9 @@ import {
   selectSortAs,
   selectSearchString,
   selectIsAllFlagsFetched,
+  selectSelectedFeatureFlag,
 } from './feature-flags.selectors';
-import { DialogService } from '../../../shared/services/common-dialog.service';
+import { of } from 'rxjs';
 
 @Injectable()
 export class FeatureFlagsEffects {
@@ -24,8 +25,7 @@ export class FeatureFlagsEffects {
     private store$: Store<AppState>,
     private actions$: Actions,
     private featureFlagsDataService: FeatureFlagsDataService,
-    private router: Router,
-    private dialogService: DialogService
+    private router: Router
   ) {}
 
   fetchFeatureFlags$ = createEffect(() =>
@@ -147,6 +147,24 @@ export class FeatureFlagsEffects {
           catchError(() => [FeatureFlagsActions.actionDeleteFeatureFlagFailure()])
         )
       )
+    )
+  );
+
+  uspertFeatureFlagInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
+      map((action) => action.list),
+      withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
+      switchMap(([list, flag]) => {
+        const request = {
+          flagId: flag.id,
+          ...list,
+        };
+        return this.featureFlagsDataService.addInclusionList(request).pipe(
+          map((listResponse) => FeatureFlagsActions.actionUpsertFeatureFlagInclusionListSuccess({ listResponse })),
+          catchError((error) => of(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListFailure({ error })))
+        );
+      })
     )
   );
 

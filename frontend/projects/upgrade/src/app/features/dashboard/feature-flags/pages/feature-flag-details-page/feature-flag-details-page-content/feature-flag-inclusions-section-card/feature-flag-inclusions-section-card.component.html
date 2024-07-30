@@ -1,4 +1,4 @@
-<app-common-section-card>
+<app-common-section-card *ngIf="featureFlag$ | async as flag">
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
@@ -15,7 +15,7 @@
     [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
-    (primaryButtonClick)="addIncludeListClicked()"
+    (primaryButtonClick)="addIncludeListClicked(flag.context[0])"
     (menuButtonItemClick)="onMenuButtonItemClick($event)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
