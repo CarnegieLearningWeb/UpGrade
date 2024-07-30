@@ -196,7 +196,8 @@ export interface EditPrivateSegmentListDetails extends PrivateSegmentListRequest
 }
 
 export interface PrivateSegmentListRequest {
-  enabled: false;
+  flagId?: string;
+  enabled: boolean;
   listType: string;
   list: AddPrivateSegmentListRequestDetails | EditPrivateSegmentListDetails;
 }

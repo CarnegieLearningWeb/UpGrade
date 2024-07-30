@@ -147,4 +147,12 @@ export class FeatureFlagsService {
   addFeatureFlagInclusionPrivateSegmentList(list: PrivateSegmentListRequest) {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlagInclusionList({ list }));
   }
+
+  updateFeatureFlagInclusionPrivateSegmentList(list: PrivateSegmentListRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagInclusionList({ list }));
+  }
+
+  deleteFeatureFlagInclusionPrivateSegmentList(segmentId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList({ segmentId }));
+  }
 }

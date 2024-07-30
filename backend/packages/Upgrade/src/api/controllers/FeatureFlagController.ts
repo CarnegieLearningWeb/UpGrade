@@ -500,12 +500,12 @@ export class FeatureFlagsController {
     @Body({ validate: true }) exclusionList: FeatureFlagListValidator,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentExclusion> {
-    return this.featureFlagService.addList(exclusionList, 'exclusion', request.logger);
+    return this.featureFlagService.updateList(exclusionList, 'exclusion', request.logger);
   }
 
   /**
    * @swagger
-   * /flags/exclusionList:
+   * /flags/inclusionList:
    *    put:
    *       description: Update Feature Flag Inclusion List
    *       consumes:
@@ -537,7 +537,14 @@ export class FeatureFlagsController {
     @Body({ validate: true }) inclusionList: FeatureFlagListValidator,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentInclusion> {
-    return this.featureFlagService.addList(inclusionList, 'inclusion', request.logger);
+    if (id !== inclusionList.flagId) {
+      return Promise.reject(
+        new Error(
+          SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : The id in the URL does not match the flagId in the request body.'
+        )
+      );
+    }
+    return this.featureFlagService.updateList(inclusionList, 'inclusion', request.logger);
   }
 
   /**

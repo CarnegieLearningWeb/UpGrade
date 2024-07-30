@@ -150,7 +150,7 @@ export class FeatureFlagsEffects {
     )
   );
 
-  uspertFeatureFlagInclusionList$ = createEffect(() =>
+  addFeatureFlagInclusionList$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
       map((action) => action.list),
@@ -161,8 +161,33 @@ export class FeatureFlagsEffects {
           ...list,
         };
         return this.featureFlagsDataService.addInclusionList(request).pipe(
-          map((listResponse) => FeatureFlagsActions.actionUpsertFeatureFlagInclusionListSuccess({ listResponse })),
-          catchError((error) => of(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListFailure({ error })))
+          map((listResponse) => FeatureFlagsActions.actionAddFeatureFlagInclusionListSuccess({ listResponse })),
+          catchError((error) => of(FeatureFlagsActions.actionAddFeatureFlagInclusionListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  updateFeatureFlagInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionUpdateFeatureFlagInclusionList),
+      switchMap((action) => {
+        return this.featureFlagsDataService.updateInclusionList(action.list).pipe(
+          map((listResponse) => FeatureFlagsActions.actionUpdateFeatureFlagInclusionListSuccess({ listResponse })),
+          catchError((error) => of(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  deleteFeatureFlagInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList),
+      map((action) => action.segmentId),
+      switchMap((segmentId) => {
+        return this.featureFlagsDataService.deleteInclusionList(segmentId).pipe(
+          map(() => FeatureFlagsActions.actionDeleteFeatureFlagInclusionListSuccess({ segmentId })),
+          catchError((error) => of(FeatureFlagsActions.actionDeleteFeatureFlagInclusionListFailure({ error })))
         );
       })
     )
