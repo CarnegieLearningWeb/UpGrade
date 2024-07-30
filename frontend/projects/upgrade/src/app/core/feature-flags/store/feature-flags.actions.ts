@@ -7,7 +7,7 @@ import {
   FeatureFlagSegmentListDetails,
 } from './feature-flags.model';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
-import { PrivateSegmentListRequest } from '../../segments/store/segments.model';
+import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../../segments/store/segments.model';
 
 export const actionFetchFeatureFlags = createAction(
   '[Feature Flags] Fetch Feature Flags Paginated',
@@ -108,7 +108,7 @@ export const actionUpdateFeatureFlagStatusFailure = createAction('[Feature Flags
 
 export const actionAddFeatureFlagInclusionList = createAction(
   '[Feature Flags] Add Feature Flag Inclusion List',
-  props<{ list: PrivateSegmentListRequest }>()
+  props<{ list: AddPrivateSegmentListRequest }>()
 );
 
 export const actionAddFeatureFlagInclusionListSuccess = createAction(
@@ -123,7 +123,7 @@ export const actionAddFeatureFlagInclusionListFailure = createAction(
 
 export const actionUpdateFeatureFlagInclusionList = createAction(
   '[Feature Flags] Update Feature Flag Inclusion List',
-  props<{ list: PrivateSegmentListRequest }>()
+  props<{ list: EditPrivateSegmentListRequest }>()
 );
 
 export const actionUpdateFeatureFlagInclusionListSuccess = createAction(

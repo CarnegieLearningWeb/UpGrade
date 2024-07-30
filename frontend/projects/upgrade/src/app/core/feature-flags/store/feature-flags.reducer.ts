@@ -135,7 +135,6 @@ const reducer = createReducer(
       },
       { ...state }
     );
-    return adapter.upsertOne(featureFlag, { ...state, isLoadingUpsertPrivateSegmentList: false });
   }),
   on(FeatureFlagsActions.actionAddFeatureFlagInclusionListFailure, (state) => {
     return { ...state, isLoadingUpsertPrivateSegmentList: false };

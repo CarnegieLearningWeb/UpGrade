@@ -537,10 +537,10 @@ export class FeatureFlagsController {
     @Body({ validate: true }) inclusionList: FeatureFlagListValidator,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentInclusion> {
-    if (id !== inclusionList.flagId) {
+    if (id !== inclusionList.list.id) {
       return Promise.reject(
         new Error(
-          SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : The id in the URL does not match the flagId in the request body.'
+          `${SERVER_ERROR.INCORRECT_PARAM_FORMAT}: The id in the URL (${id}) does not match the list id in the request body (${inclusionList.list.id}).`
         )
       );
     }
