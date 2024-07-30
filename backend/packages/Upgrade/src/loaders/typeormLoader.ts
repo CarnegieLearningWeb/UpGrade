@@ -21,6 +21,7 @@ import { ExperimentUser } from '../api/models/ExperimentUser';
 import { ExplicitIndividualAssignment } from '../api/models/ExplicitIndividualAssignment';
 import { Factor } from '../api/models/Factor';
 import { FeatureFlag } from '../api/models/FeatureFlag';
+import { FlagVariation } from '../api/models/FlagVariation';
 import { GroupEnrollment } from '../api/models/GroupEnrollment';
 import { GroupExclusion } from '../api/models/GroupExclusion';
 import { GroupForSegment } from '../api/models/GroupForSegment';
@@ -62,6 +63,7 @@ import { stratificationFactorStatus1696829429134 } from '../database/migrations/
 import { stratificationFactorFeature1696498128121 } from '../database/migrations/1696498128121-stratificationFactorFeature';
 import { addGroupIdForIndividualExclusion1710484793070 } from '../database/migrations/1710484793070-addGroupIdForIndividualExclusion';
 import { userDefaultRoleReader1713260614311 } from '../database/migrations/1713260614311-userDefaultRoleReader';
+import { revertIndividualExclusionGroupId1715937232092 } from '../database/migrations/1715937232092-revertIndividualExclusionGroupId';
 import { Typeorm1719738784139 } from '../database/migrations/1719738784139-Typeorm';
 
 const entities = [
@@ -78,6 +80,7 @@ const entities = [
   ExplicitIndividualAssignment,
   Factor,
   FeatureFlag,
+  FlagVariation,
   GroupEnrollment,
   GroupExclusion,
   GroupForSegment,
@@ -121,6 +124,7 @@ export const migrations = [
   stratificationFactorFeature1696498128121,
   addGroupIdForIndividualExclusion1710484793070,
   userDefaultRoleReader1713260614311,
+  revertIndividualExclusionGroupId1715937232092,
   Typeorm1719738784139,
 ];
 
