@@ -15,9 +15,11 @@ import {
   selectSortAs,
   selectSearchString,
   selectIsAllFlagsFetched,
+  selectSelectedFeatureFlag,
 } from './feature-flags.selectors';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
+import { of } from 'rxjs';
 
 @Injectable()
 export class FeatureFlagsEffects {
@@ -149,6 +151,24 @@ export class FeatureFlagsEffects {
           catchError(() => [featureFlagsActions.actionDeleteFeatureFlagFailure()])
         )
       )
+    )
+  );
+
+  uspertFeatureFlagInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
+      map((action) => action.list),
+      withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
+      switchMap(([list, flag]) => {
+        const request = {
+          flagId: flag.id,
+          ...list,
+        };
+        return this.featureFlagsDataService.addInclusionList(request).pipe(
+          map((listResponse) => FeatureFlagsActions.actionUpsertFeatureFlagInclusionListSuccess({ listResponse })),
+          catchError((error) => of(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListFailure({ error })))
+        );
+      })
     )
   );
 

@@ -33,6 +33,8 @@ export interface APIEndpoints {
   getPaginatedFlags: string;
   exportFlagsDesign: string,
   emailFlagData: string,
+  addFlagInclusionList: string;
+  addFlagExclusionList: string;
   setting: string;
   metrics: string;
   metricsSave: string;

@@ -1,4 +1,4 @@
-import { environment } from '../../../../environments/environment';
+import { MatDialogConfig } from '@angular/material/dialog';
 
 export interface CommonModalConfig<ParamsType = unknown> {
   title: string;
@@ -7,12 +7,6 @@ export interface CommonModalConfig<ParamsType = unknown> {
   primaryActionBtnColor?: string;
   hideFooter?: boolean;
   params?: ParamsType;
-}
-
-export interface SimpleConfirmationDialogTemplateParams {
-  message: string;
-  subMessage?: string;
-  subMessageColor?: string;
 }
 
 export interface CommonDialogMatDialogConfig extends MatDialogConfig {
@@ -24,10 +18,3 @@ export interface SimpleConfirmationModalParams {
   subMessage?: string;
   subMessageClass?: 'info' | 'warn';
 }
-
-// see close-modal.interceptor.ts
-export const ENDPOINTS_TO_INTERCEPT_FOR_MODAL_CLOSE = [
-  environment.api.addFlagInclusionList,
-  environment.api.addFlagExclusionList,
-];
-

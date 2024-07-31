@@ -21,7 +21,6 @@ import {
   selectIsLoadingSelectedFeatureFlag,
   selectSortKey,
   selectSortAs,
-  selectFeatureFlagListTypeOptions,
   selectAppContexts,
   selectFeatureFlagIds,
 } from './store/feature-flags.selectors';
@@ -29,15 +28,14 @@ import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 import {
-  UpdateFeatureFlagStatusRequest,
   AddFeatureFlagRequest,
   UpdateFeatureFlagRequest,
+  UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
-import { ExperimentService } from '../experiments/experiments.service';
-import { filter, map, pairwise, withLatestFrom } from 'rxjs';
-import { selectContextMetaData } from '../experiments/store/experiments.selectors';
+import { filter, map, pairwise } from 'rxjs';
 import isEqual from 'lodash.isequal';
 import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
+import { PrivateSegmentListRequest } from '../segments/store/segments.model';
 
 @Injectable()
 export class FeatureFlagsService {
@@ -51,6 +49,7 @@ export class FeatureFlagsService {
   isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
   IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
+  isLoadingUpsertPrivateSegmentList$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   appContexts$ = this.store$.pipe(select(selectAppContexts));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
@@ -85,7 +84,6 @@ export class FeatureFlagsService {
     map(([, curr]) => curr)
   );
 
-  selectFeatureFlagListTypeOptions$ = this.store$.pipe(select(selectFeatureFlagListTypeOptions));
   selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));
   selectedFeatureFlag$ = this.store$.pipe(select(selectSelectedFeatureFlag));
   searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
@@ -156,5 +154,9 @@ export class FeatureFlagsService {
 
   setActiveDetailsTab(activeDetailsTabIndex: number) {
     this.store$.dispatch(FeatureFlagsActions.actionSetActiveDetailsTabIndex({ activeDetailsTabIndex }));
+  }
+
+  addFeatureFlagInclusionPrivateSegmentList(list: PrivateSegmentListRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlagInclusionList({ list }));
   }
 }

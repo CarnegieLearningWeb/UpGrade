@@ -29,6 +29,7 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
 export class FeatureFlagInclusionsSectionCardComponent {
   @Input() isSectionCardExpanded;
   tableRowCount$ = this.featureFlagService.selectFeatureFlagInclusionsLength$;
+  featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
 
   constructor(private featureFlagService: FeatureFlagsService, private dialogService: DialogService) {}
 
@@ -37,8 +38,8 @@ export class FeatureFlagInclusionsSectionCardComponent {
     { name: 'Delete', disabled: false },
   ];
 
-  addIncludeListClicked() {
-    this.dialogService.openAddIncludeListModal();
+  addIncludeListClicked(appContext: string) {
+    this.dialogService.openAddIncludeListModal(appContext);
   }
 
   onMenuButtonItemClick(event) {
