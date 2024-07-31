@@ -18,7 +18,7 @@ projectBuilderV5 (
                 [file: "cloudformation/backend/app-infrastructure.yml"]
             ],
             s3Context: [
-                glob: "backend/**/*"
+                glob: "**/*"
             ],
             fileFilter: [
                 include: ["backend/.*"]
