@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
 import {
   CommonModalComponent,
   CommonTagsInputComponent,
@@ -7,7 +7,7 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dial
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
+import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
@@ -15,6 +15,7 @@ import { MatInputModule } from '@angular/material/input';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import {
   AddPrivateSegmentListRequest,
+  EditPrivateSegmentListRequest,
   LIST_OPTION_TYPE,
   PRIVATE_SEGMENT_LIST_FORM_DEFAULTS,
   PRIVATE_SEGMENT_LIST_FORM_FIELDS,
@@ -52,6 +53,7 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UpsertPrivateSegmentListModalComponent {
+  @ViewChild('typeSelectRef') typeSelectRef: MatSelect;
   listOptionTypes$ = this.segmentsService.selectPrivateSegmentListTypeOptions$;
   isLoadingUpsertFeatureFlagList$ = this.featureFlagService.isLoadingUpsertPrivateSegmentList$;
   initialFormValues$ = new BehaviorSubject<PrivateSegmentListFormData>(null);
@@ -80,6 +82,13 @@ export class UpsertPrivateSegmentListModalComponent {
     this.fetchData();
     this.createPrivateSegmentListForm();
     this.initializeListeners();
+    this.populateFormForEdit();
+  }
+
+  ngAfterViewInit() {
+    if (this.config.params.action === UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST) {
+      setTimeout(() => this.typeSelectRef.open(), 150);
+    }
   }
 
   get LIST_TYPES() {
@@ -116,6 +125,37 @@ export class UpsertPrivateSegmentListModalComponent {
     });
     this.initialFormValues$.next(this.privateSegmentListForm.value);
     this.listenToListTypeChanges();
+  }
+
+  populateFormForEdit(): void {
+    if (this.config.params.action !== UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST) {
+      return;
+    }
+
+    const sourceList = this.config.params.sourceList;
+    if (!sourceList) {
+      return;
+    }
+
+    const values = this.determineValues(sourceList.listType, sourceList.segment);
+    this.privateSegmentListForm.patchValue({
+      listType: sourceList.listType,
+      segment: sourceList.segment,
+      values,
+      name: sourceList.segment.name,
+      description: sourceList.segment.description,
+    });
+  }
+
+  determineValues(listType: string, segment: Segment): string[] {
+    switch (listType) {
+      case LIST_OPTION_TYPE.INDIVIDUAL:
+        return segment.individualForSegment.map((individual) => individual.userId);
+      case LIST_OPTION_TYPE.SEGMENT:
+        return [];
+      default:
+        return segment.groupForSegment.map((group) => group.groupId);
+    }
   }
 
   listenForSegments() {
@@ -215,13 +255,24 @@ export class UpsertPrivateSegmentListModalComponent {
     list = this.createRequestByListType(formData, listType);
 
     const listRequest: PrivateSegmentListRequest = {
-      enabled: false,
+      flagId: this.config.params.flagId,
+      enabled: this.config.params.sourceList?.enabled ?? false, // Maintain existing status for edits, default to false for new lists
       listType,
       list,
     };
 
     if (action === UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST) {
-      this.sendAddFeatureFlagInclusionRequest(listRequest);
+      const addListRequest: AddPrivateSegmentListRequest = listRequest;
+      this.sendAddFeatureFlagInclusionRequest(addListRequest);
+    } else if (action === UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST) {
+      const editRequest: EditPrivateSegmentListRequest = {
+        ...listRequest,
+        list: {
+          ...listRequest.list,
+          id: this.config.params.sourceList.segment.id,
+        },
+      };
+      this.sendUpdateFeatureFlagInclusionRequest(editRequest);
     }
   }
 
@@ -258,8 +309,12 @@ export class UpsertPrivateSegmentListModalComponent {
     return privateSegmentListRequestBase;
   }
 
-  sendAddFeatureFlagInclusionRequest(request: AddPrivateSegmentListRequest): void {
-    this.featureFlagService.addFeatureFlagInclusionPrivateSegmentList(request);
+  sendAddFeatureFlagInclusionRequest(addListRequest: AddPrivateSegmentListRequest): void {
+    this.featureFlagService.addFeatureFlagInclusionPrivateSegmentList(addListRequest);
+  }
+
+  sendUpdateFeatureFlagInclusionRequest(editListRequest: EditPrivateSegmentListRequest): void {
+    this.featureFlagService.updateFeatureFlagInclusionPrivateSegmentList(editListRequest);
   }
 
   closeModal() {

@@ -15,7 +15,7 @@
     [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
-    (primaryButtonClick)="onAddIncludeListClick(flag.context[0])"
+    (primaryButtonClick)="onAddIncludeListClick(flag.context[0], flag.id)"
     (menuButtonItemClick)="onMenuButtonItemClick($event)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >

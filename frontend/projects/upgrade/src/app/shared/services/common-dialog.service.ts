@@ -11,6 +11,7 @@ import {
 } from '../../core/segments/store/segments.model';
 import {
   FeatureFlag,
+  ParticipantListTableRow,
   UPSERT_FEATURE_FLAG_ACTION,
   UPSERT_FEATURE_FLAG_LIST_ACTION,
   UpsertFeatureFlagParams,
@@ -121,7 +122,7 @@ export class DialogService {
     return this.dialog.open(UpsertFeatureFlagModalComponent, config);
   }
 
-  openAddIncludeListModal(appContext: string) {
+  openAddIncludeListModal(appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Add Include List',
       primaryActionBtnLabel: 'Create',
@@ -131,21 +132,23 @@ export class DialogService {
         sourceList: null,
         sourceAppContext: appContext,
         action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST,
+        flagId: flagId,
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
   }
 
-  openEditIncludeListModal(appContext: string) {
+  openEditIncludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Edit Include List',
       primaryActionBtnLabel: 'Save',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        sourceList: null,
+        sourceList,
         sourceAppContext: appContext,
         action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST,
+        flagId: flagId,
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
@@ -156,7 +159,7 @@ export class DialogService {
       data: commonModalConfig,
       width: '656px',
       height: 'auto',
-      autoFocus: 'input',
+      autoFocus: false,
       disableClose: true,
     };
     return this.dialog.open(UpsertPrivateSegmentListModalComponent, config);

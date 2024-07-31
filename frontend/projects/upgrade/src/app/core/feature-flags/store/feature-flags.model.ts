@@ -58,11 +58,6 @@ export enum UPSERT_FEATURE_FLAG_LIST_ACTION {
   EDIT = 'edit',
 }
 
-export interface UpsertFeatureFlagListParams {
-  sourceList: FeatureFlagSegmentListDetails;
-  action: UPSERT_FEATURE_FLAG_LIST_ACTION;
-}
-
 export interface FeatureFlagsPaginationInfo {
   nodes: FeatureFlag[];
   total: number;

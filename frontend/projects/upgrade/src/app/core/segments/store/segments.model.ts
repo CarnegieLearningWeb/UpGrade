@@ -1,6 +1,7 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
 import { SEGMENT_TYPE, SEGMENT_STATUS, SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
+import { ParticipantListTableRow } from '../../feature-flags/store/feature-flags.model';
 export { SEGMENT_STATUS };
 
 export enum NewSegmentDialogEvents {
@@ -146,9 +147,10 @@ export enum UPSERT_PRIVATE_SEGMENT_LIST_ACTION {
 }
 
 export interface UpsertPrivateSegmentListParams {
-  sourceList: any; // TODO define me
+  sourceList: ParticipantListTableRow;
   sourceAppContext: string;
   action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION;
+  flagId: string;
 }
 
 export enum LIST_OPTION_TYPE {
@@ -196,7 +198,7 @@ export interface EditPrivateSegmentListDetails extends PrivateSegmentListRequest
 }
 
 export interface PrivateSegmentListRequest {
-  flagId?: string;
+  flagId: string;
   enabled: boolean;
   listType: string;
   list: AddPrivateSegmentListRequestDetails | EditPrivateSegmentListDetails;

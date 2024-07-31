@@ -9,7 +9,12 @@
   <form [formGroup]="privateSegmentListForm" class="form-standard dense-3">
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Type</mat-label>
-      <mat-select formControlName="listType" class="ft-14-400">
+      <mat-select
+        formControlName="listType"
+        class="ft-14-400"
+        placeholder="Select list type"
+        #typeSelectRef
+      >
         <mat-option
           *ngFor="let type of listOptionTypes$ | async"
           [value]="type.value"

@@ -15,7 +15,6 @@ import {
   selectSortAs,
   selectSearchString,
   selectIsAllFlagsFetched,
-  selectSelectedFeatureFlag,
 } from './feature-flags.selectors';
 import { of } from 'rxjs';
 
@@ -153,14 +152,8 @@ export class FeatureFlagsEffects {
   addFeatureFlagInclusionList$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
-      map((action) => action.list),
-      withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
-      switchMap(([list, flag]) => {
-        const request = {
-          flagId: flag.id,
-          ...list,
-        };
-        return this.featureFlagsDataService.addInclusionList(request).pipe(
+      switchMap((action) => {
+        return this.featureFlagsDataService.addInclusionList(action.list).pipe(
           map((listResponse) => FeatureFlagsActions.actionAddFeatureFlagInclusionListSuccess({ listResponse })),
           catchError((error) => of(FeatureFlagsActions.actionAddFeatureFlagInclusionListFailure({ error })))
         );

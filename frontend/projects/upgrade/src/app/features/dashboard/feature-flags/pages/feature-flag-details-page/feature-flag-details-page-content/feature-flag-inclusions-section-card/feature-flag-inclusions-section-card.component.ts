@@ -48,8 +48,8 @@ export class FeatureFlagInclusionsSectionCardComponent {
     { name: 'Delete', disabled: false },
   ];
 
-  onAddIncludeListClick(appContext: string) {
-    this.dialogService.openAddIncludeListModal(appContext);
+  onAddIncludeListClick(appContext: string, flagId: string) {
+    this.dialogService.openAddIncludeListModal(appContext, flagId);
   }
 
   onMenuButtonItemClick(event) {
@@ -102,8 +102,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
   }
 
   onEditIncludeList(rowData: ParticipantListTableRow, flagId: string): void {
-    // console.log('onEditIncludeList:', JSON.stringify(rowData, null, 2));
-    this.dialogService.openEditIncludeListModal(rowData.segment.context);
+    this.dialogService.openEditIncludeListModal(rowData, rowData.segment.context, flagId);
   }
 
   sendUpdateIncludeListRequest(flagId: string, enabled: boolean, listType: string, segment: Segment): void {
