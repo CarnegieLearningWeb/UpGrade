@@ -114,6 +114,15 @@ export interface ParticipantListRowActionEvent {
   rowData: ParticipantListTableRow;
 }
 
+// the request for for the upserting private segment is PrivateSegmentListRequest
+// there is no difference in that request and that which will be used for segment lists in the future
+export interface UpsertFeatureFlagPrivateSegmentListResponse {
+  featureFlag: FeatureFlag;
+  segment: Segment;
+  listType: MemberTypes | string;
+  enabled: boolean;
+}
+
 export interface FeatureFlagsPaginationParams {
   skip: number;
   take: number;
