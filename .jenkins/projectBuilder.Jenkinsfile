@@ -4,6 +4,11 @@ projectBuilderV5 (
         cpu: 2048,
         memory: 4096
     ],
+    initScripts: [[
+        script: 'npm ci --no-audit',
+        githubCheck: 'npm ci --no-audit',
+        log: 'npm-ci.log'
+    ]],
     projects: [
         "upgrade-service":[
             artifactType: "ecr",
@@ -14,6 +19,9 @@ projectBuilderV5 (
             ],
             s3Context: [
                 glob: "backend/**/*"
+            ],
+            fileFilter: [
+                include: ["backend/.*"]
             ],
             dockerConfig: [
                 dockerFile: "backend/Dockerfile",
@@ -28,11 +36,6 @@ projectBuilderV5 (
             versioning: 'calendar',
             oneArtifactPerEnvironment: false,
             buildScripts: [
-                [
-                    script: 'npm ci --no-audit --strict-peer-deps',
-                    log: '${projectName}-npm-ci.log',
-                    githubCheck: '${projectName}-npm-ci'
-                ],
                 [
                     script: 'npm run build:prod',
                     log: '${projectName}-build.log',
