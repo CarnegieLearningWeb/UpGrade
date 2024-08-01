@@ -140,13 +140,16 @@ export class UpsertPrivateSegmentListModalComponent {
     }
 
     const values = this.determineValues(sourceList.listType, sourceList.segment);
-    this.privateSegmentListForm.patchValue({
-      listType: sourceList.listType,
-      segment: sourceList.segment,
-      values,
-      name: sourceList.segment.name,
-      description: sourceList.segment.description,
-    });
+    this.privateSegmentListForm.patchValue(
+      {
+        listType: sourceList.listType,
+        segment: sourceList.segment,
+        values,
+        name: sourceList.segment.name,
+        description: sourceList.segment.description,
+      },
+      { emitEvent: false }
+    );
   }
 
   determineValues(listType: string, segment: Segment): string[] {
