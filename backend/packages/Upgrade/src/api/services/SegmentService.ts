@@ -306,7 +306,7 @@ export class SegmentService {
       const isDuplicateSegmentWithSameContext =
         isDuplicateSegment && duplicateSegmentsContexts ? duplicateSegmentsContexts.includes(segment.context) : false;
       if (isDuplicateSegment && isDuplicateSegmentWithSameContext && segment.id !== undefined) {
-        errorMessage = errorMessage + 'Duplicate segment with same context';
+        errorMessage = errorMessage + 'Duplicate segment with same context. ';
       }
 
       // import duplicate segment with different context:
@@ -437,7 +437,7 @@ export class SegmentService {
               transactionalEntityManager,
               logger
             );
-            //await transactionalEntityManager.getRepository(GroupForSegment).delete(groupToDelete as any);
+            // await transactionalEntityManager.getRepository(GroupForSegment).delete(groupToDelete as any);
           }
         } catch (err) {
           const error = err as ErrorWithType;

@@ -385,7 +385,7 @@ describe('Segment Service Testing', () => {
       importErrors: [
         {
           fileName: 'seg1',
-          error: 'Invalid Segment data: ' + 'Duplicate segment with same context',
+          error: 'Invalid Segment data: Duplicate segment with same context. Invalid Segment Name: seg1 is already used by another segment with same context. ',
         },
       ],
       segments: [],
@@ -401,8 +401,7 @@ describe('Segment Service Testing', () => {
         {
           fileName: 'seg1',
           error:
-            'Invalid Segment data: ' +
-            'SubSegment: seg2 not found. Please import subSegment with same context and link in segment. ',
+            'Invalid Segment data: Invalid Segment Name: seg1 is already used by another segment with same context. SubSegment: seg2 not found. Please import subSegment with same context and link in segment. ',
         },
       ],
       segments: [],
