@@ -1,23 +1,26 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-confirm-dialog.component';
-import {
-  CommonModalConfig,
-  SimpleConfirmationModalParams,
-} from '../../shared-standalone-component-lib/components/common-modal/common-modal-config';
 import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/delete-feature-flag-modal/delete-feature-flag-modal.component';
 
 import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
-import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
+import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
+import {
+  UPSERT_PRIVATE_SEGMENT_LIST_ACTION,
+  UpsertPrivateSegmentListParams,
+} from '../../core/segments/store/segments.model';
 import {
   FeatureFlag,
   UPSERT_FEATURE_FLAG_ACTION,
   UPSERT_FEATURE_FLAG_LIST_ACTION,
-  UpsertFeatureFlagListParams,
   UpsertFeatureFlagParams,
 } from '../../core/feature-flags/store/feature-flags.model';
-import { UpsertFeatureFlagListModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-list-modal/upsert-feature-flag-list-modal.component';
+import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import { CommonSimpleConfirmationModalComponent } from '../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
+import {
+  CommonModalConfig,
+  SimpleConfirmationModalParams,
+} from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 
 @Injectable({
   providedIn: 'root',
@@ -152,30 +155,30 @@ export class DialogService {
     return this.dialog.open(UpsertFeatureFlagModalComponent, config);
   }
 
-  openAddIncludeListModal() {
-    const commonModalConfig: CommonModalConfig<UpsertFeatureFlagListParams> = {
+  openAddIncludeListModal(appContext: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Add Include List',
       primaryActionBtnLabel: 'Create',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
         sourceList: null,
-        action: UPSERT_FEATURE_FLAG_LIST_ACTION.ADD,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST,
       },
     };
-    return this.openAddFeatureFlagListModal(commonModalConfig);
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
   }
 
-  openAddFeatureFlagListModal(commonModalConfig: CommonModalConfig) {
+  openUpsertPrivateSegmentListModal(commonModalConfig: CommonModalConfig) {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: '656px',
-      // height: '460px',
-      height: 'auto', // TODO: fixed height or not?
+      height: 'auto',
       autoFocus: 'input',
       disableClose: true,
     };
-    return this.dialog.open(UpsertFeatureFlagListModalComponent, config);
+    return this.dialog.open(UpsertPrivateSegmentListModalComponent, config);
   }
 
   openDeleteFeatureFlagModal() {

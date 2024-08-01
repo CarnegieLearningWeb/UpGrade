@@ -11,6 +11,7 @@ import {
   UpdateFilterModeRequest,
 } from './store/feature-flags.model';
 import { Observable } from 'rxjs';
+import { PrivateSegmentListRequest } from '../segments/store/segments.model';
 
 @Injectable()
 export class FeatureFlagsDataService {
@@ -49,5 +50,10 @@ export class FeatureFlagsDataService {
   deleteFeatureFlag(id: string) {
     const url = `${this.environment.api.featureFlag}/${id}`;
     return this.http.delete(url);
+  }
+
+  addInclusionList(list: PrivateSegmentListRequest): Observable<any> {
+    const url = this.environment.api.addFlagInclusionList;
+    return this.http.post(url, list);
   }
 }

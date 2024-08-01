@@ -32,6 +32,8 @@ export interface APIEndpoints {
   updateFlagStatus: string;
   updateFilterMode: string;
   getPaginatedFlags: string;
+  addFlagInclusionList: string;
+  addFlagExclusionList: string;
   setting: string;
   metrics: string;
   metricsSave: string;

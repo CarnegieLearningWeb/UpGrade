@@ -54,8 +54,8 @@ export class FeatureFlagInclusionsSectionCardComponent {
 
   confirmIncludeAllChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
 
-  addIncludeListClicked() {
-    this.dialogService.openAddIncludeListModal();
+  addIncludeListClicked(appContext: string) {
+    this.dialogService.openAddIncludeListModal(appContext);
   }
 
   onSlideToggleChange(event: MatSlideToggleChange, flagId: string): void {

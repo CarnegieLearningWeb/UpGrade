@@ -5,8 +5,10 @@ import {
   AddFeatureFlagRequest,
   UpdateFeatureFlagRequest,
   UpdateFilterModeRequest,
+  UpsertFeatureFlagPrivateSegmentListResponse,
 } from './feature-flags.model';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
+import { PrivateSegmentListRequest } from '../../segments/store/segments.model';
 
 export const actionFetchFeatureFlags = createAction(
   '[Feature Flags] Fetch Feature Flags Paginated',
@@ -116,3 +118,17 @@ export const actionUpdateFilterModeSuccess = createAction(
 );
 
 export const actionUpdateFilterModeFailure = createAction('[Feature Flags] Update Filter Mode Failure');
+export const actionAddFeatureFlagInclusionList = createAction(
+  '[Feature Flags] Add Feature Flag Inclusion List',
+  props<{ list: PrivateSegmentListRequest }>()
+);
+
+export const actionUpsertFeatureFlagInclusionListSuccess = createAction(
+  '[Feature Flags] Upsert Feature Flag Inclusion List Success',
+  props<{ listResponse: UpsertFeatureFlagPrivateSegmentListResponse }>()
+);
+
+export const actionUpsertFeatureFlagInclusionListFailure = createAction(
+  '[Feature Flags] Upsert Feature Flag Inclusion List',
+  props<{ error: any }>()
+);

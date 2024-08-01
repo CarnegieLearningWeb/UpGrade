@@ -88,16 +88,6 @@ export interface FeatureFlagFormData {
   tags: string[];
 }
 
-export interface PrivateSegment {
-  segment: Segment;
-}
-
-export interface EmptyPrivateSegment {
-  segment: {
-    type: SEGMENT_TYPE;
-  };
-}
-
 // TODO: This should be probably be a part of env config
 export const NUMBER_OF_FLAGS = 20;
 
@@ -116,6 +106,15 @@ export interface ParticipantListTableRow {
   values: string;
   name: string;
   enable: string;
+}
+
+// the request for for the upserting private segment is PrivateSegmentListRequest
+// there is no difference in that request and that which will be used for segment lists in the future
+export interface UpsertFeatureFlagPrivateSegmentListResponse {
+  featureFlag: FeatureFlag;
+  segment: Segment;
+  listType: MemberTypes | string;
+  enabled: boolean;
 }
 
 export interface FeatureFlagsPaginationParams {
@@ -165,6 +164,7 @@ export interface FeatureFlagState extends EntityState<FeatureFlag> {
   isLoadingFeatureFlags: boolean;
   isLoadingUpdateFeatureFlagStatus: boolean;
   isLoadingFeatureFlagDelete: boolean;
+  isLoadingUpsertPrivateSegmentList: boolean;
   hasInitialFeatureFlagsDataLoaded: boolean;
   activeDetailsTabIndex: number;
   skipFlags: number;

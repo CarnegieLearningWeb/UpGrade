@@ -3,7 +3,9 @@ import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
 import { FeatureFlagState, FeatureFlag, FLAG_SEARCH_KEY } from './feature-flags.model';
 import * as FeatureFlagsActions from './feature-flags.actions';
 
-export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFlag>();
+export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFlag>({
+  selectId: (featureFlag: FeatureFlag) => featureFlag.id,
+});
 
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
@@ -14,6 +16,7 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingFeatureFlagDetail: false,
   isLoadingFeatureFlagDelete: false,
   isLoadingSelectedFeatureFlag: false,
+  isLoadingUpsertPrivateSegmentList: false,
   hasInitialFeatureFlagsDataLoaded: false,
   activeDetailsTabIndex: 0,
   skipFlags: 0,
@@ -118,7 +121,27 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionSetActiveDetailsTabIndex, (state, { activeDetailsTabIndex }) => ({
     ...state,
     activeDetailsTabIndex,
-  }))
+  })),
+  on(FeatureFlagsActions.actionAddFeatureFlagInclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
+  on(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListSuccess, (state, { listResponse }) => {
+    const { featureFlag } = listResponse;
+    const existingFlag = state.entities[featureFlag?.id];
+
+    return adapter.updateOne(
+      {
+        id: featureFlag?.id,
+        changes: { featureFlagSegmentInclusion: [listResponse, ...existingFlag.featureFlagSegmentInclusion] },
+      },
+      { ...state }
+    );
+    return adapter.upsertOne(featureFlag, { ...state, isLoadingUpsertPrivateSegmentList: false });
+  }),
+  on(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListFailure, (state) => {
+    return { ...state, isLoadingUpsertPrivateSegmentList: false };
+  })
 );
 
 export function featureFlagsReducer(state: FeatureFlagState | undefined, action: Action) {
