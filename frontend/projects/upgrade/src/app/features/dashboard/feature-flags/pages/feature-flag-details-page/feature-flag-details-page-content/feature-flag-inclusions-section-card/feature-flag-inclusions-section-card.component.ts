@@ -37,7 +37,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
 
   rowCountWithInclude$: Observable<number> = combineLatest([this.tableRowCount$, this.selectedFlag$]).pipe(
     map(([tableRowCount, selectedFeatureFlag]) =>
-      selectedFeatureFlag.filterMode === FILTER_MODE.INCLUDE_ALL ? 0 : tableRowCount
+      selectedFeatureFlag?.filterMode === FILTER_MODE.INCLUDE_ALL ? 0 : tableRowCount
     )
   );
 
@@ -92,7 +92,12 @@ export class FeatureFlagInclusionsSectionCardComponent {
         flagId: flagId,
         filterMode: newFilterMode,
       });
+      this.updateSectionCardExpansion(newFilterMode);
     }
+  }
+
+  updateSectionCardExpansion(newFilterMode: FILTER_MODE): void {
+    this.isSectionCardExpanded = newFilterMode !== FILTER_MODE.INCLUDE_ALL;
   }
 
   onMenuButtonItemClick(event) {

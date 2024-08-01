@@ -35,7 +35,11 @@
       </button>
     </mat-menu>
 
-    <button mat-icon-button [disabled]="primaryActionBtnDisabled" (click)="onSectionCardExpandChange()">
+    <button
+      mat-icon-button
+      [disabled]="sectionCardExpandBtnDisabled"
+      (click)="onSectionCardExpandChange()"
+    >
       <mat-icon>{{ isSectionCardExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
     </button>
   </div>

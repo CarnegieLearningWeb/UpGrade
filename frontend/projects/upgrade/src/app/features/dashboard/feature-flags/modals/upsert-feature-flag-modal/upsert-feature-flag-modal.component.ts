@@ -184,7 +184,7 @@ export class UpsertFeatureFlagModalComponent {
       context: [appContext],
       tags,
       status: FEATURE_FLAG_STATUS.DISABLED,
-      filterMode: FILTER_MODE.INCLUDE_ALL,
+      filterMode: FILTER_MODE.EXCLUDE_ALL,
       featureFlagSegmentInclusion: [],
       featureFlagSegmentExclusion: [],
     };
