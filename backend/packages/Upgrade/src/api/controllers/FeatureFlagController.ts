@@ -500,6 +500,13 @@ export class FeatureFlagsController {
     @Body({ validate: true }) exclusionList: FeatureFlagListValidator,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentExclusion> {
+    if (id !== exclusionList.list.id) {
+      return Promise.reject(
+        new Error(
+          `${SERVER_ERROR.INCORRECT_PARAM_FORMAT}: The id in the URL (${id}) does not match the list id in the request body (${exclusionList.list.id}).`
+        )
+      );
+    }
     return this.featureFlagService.updateList(exclusionList, 'exclusion', request.logger);
   }
 
