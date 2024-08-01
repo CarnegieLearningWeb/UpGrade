@@ -27,7 +27,7 @@ import {
   UpsertPrivateSegmentListParams,
 } from '../../../../../core/segments/store/segments.model';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { BehaviorSubject, combineLatestWith, map, Observable, startWith, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatestWith, map, Observable, startWith, Subscription, timer } from 'rxjs';
 import { SegmentsModule } from '../../segments.module';
 import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 import isEqual from 'lodash.isequal';
@@ -87,7 +87,9 @@ export class UpsertPrivateSegmentListModalComponent {
 
   ngAfterViewInit() {
     if (this.config.params.action === UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST) {
-      setTimeout(() => this.typeSelectRef.open(), 150);
+      // Slight delay before opening the type select dropdown for a smoother UX
+      // This gives a brief moment for the modal to settle visually before presenting options
+      this.subscriptions.add(timer(150).subscribe(() => this.typeSelectRef.open()));
     }
   }
 
