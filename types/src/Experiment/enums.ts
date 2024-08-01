@@ -45,6 +45,7 @@ export enum FEATURE_FLAG_STATUS {
 }
 
 export enum SERVER_ERROR {
+  EXAMPLE_ERROR = 'Example error',
   DB_UNREACHABLE = 'Database not reachable',
   DB_AUTH_FAIL = 'Database auth fail',
   ASSIGNMENT_ERROR = 'Error in the assignment algorithm',

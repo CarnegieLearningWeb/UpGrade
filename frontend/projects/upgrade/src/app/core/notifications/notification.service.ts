@@ -1,12 +1,11 @@
-import { Inject, Injectable } from '@angular/core';
-import { NotificationsService, NotificationType } from 'angular2-notifications';
-import { ENV, Environment } from '../../../environments/environment-types';
+import { Injectable } from '@angular/core';
+import { NotificationsService as AngularNotificationService, NotificationType } from 'angular2-notifications';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotificationService {
-  constructor(private _notifications: NotificationsService, @Inject(ENV) private environment: Environment) {}
+  constructor(private angularNotificationService: AngularNotificationService) {}
 
   showInfo(message: string) {
     const temp = {
@@ -52,10 +51,15 @@ export class NotificationService {
     this.showSnackBar(temp);
   }
 
-  private showSnackBar(snackBarDetail: any) {
+  showSnackBar(snackBarDetail: any) {
     if (snackBarDetail.type === NotificationType.Error) {
       snackBarDetail.title += ' See console for details.';
     }
-    this._notifications.create(snackBarDetail.title, snackBarDetail.content, snackBarDetail.type, snackBarDetail);
+    this.angularNotificationService.create(
+      snackBarDetail.title,
+      snackBarDetail.content,
+      snackBarDetail.type,
+      snackBarDetail
+    );
   }
 }
