@@ -1,5 +1,4 @@
 import { NotificationType } from 'angular2-notifications';
-import { environment } from '../../../environments/environment';
 import { NotificationService } from './notification.service';
 
 class MockNotificationService {
@@ -8,14 +7,13 @@ class MockNotificationService {
 
 describe('#NotificationService', () => {
   const mockNotificationService: any = new MockNotificationService();
-  const mockEnvironment = { ...environment };
   const mockMessage = 'test123';
 
   let service: NotificationService;
 
   beforeEach(() => {
     mockNotificationService.create = jest.fn();
-    service = new NotificationService(mockNotificationService, mockEnvironment);
+    service = new NotificationService(mockNotificationService);
   });
 
   // describe('#default', () => {
