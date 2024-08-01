@@ -401,7 +401,7 @@ export class SegmentService {
   }
 
   async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
-    const manager = this.dataSource.manager;
+    const manager = this.dataSource;
     const createdSegment = await manager.transaction(async (transactionalEntityManager) => {
       let segmentDoc: Segment;
 
@@ -416,28 +416,20 @@ export class SegmentService {
 
           // delete individual for segment
           if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
-            // const usersToDelete = segmentDoc.individualForSegment.map((individual) => {
-            //   return { userId: individual.userId, segment: segment.id };
-            // });
             await this.individualForSegmentRepository.deleteIndividualForSegmentById(
               segmentDoc.id,
               transactionalEntityManager,
               logger
             );
-            // await transactionalEntityManager.getRepository(IndividualForSegment).delete(usersToDelete as any);
           }
 
           // delete group for segment
           if (segmentDoc && segmentDoc.groupForSegment && segmentDoc.groupForSegment.length > 0) {
-            // const groupToDelete = segmentDoc.groupForSegment.map((group) => {
-            //   return { groupId: group.groupId, type: group.type, segment: segment.id };
-            // });
             await this.groupForSegmentRepository.deleteGroupForSegmentById(
               segmentDoc.id,
               transactionalEntityManager,
               logger
             );
-            // await transactionalEntityManager.getRepository(GroupForSegment).delete(groupToDelete as any);
           }
         } catch (err) {
           const error = err as ErrorWithType;
