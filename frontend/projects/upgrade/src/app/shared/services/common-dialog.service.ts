@@ -159,7 +159,7 @@ export class DialogService {
       data: commonModalConfig,
       width: '656px',
       height: 'auto',
-      autoFocus: false,
+      autoFocus: 'first-heading',
       disableClose: true,
     };
     return this.dialog.open(UpsertPrivateSegmentListModalComponent, config);
