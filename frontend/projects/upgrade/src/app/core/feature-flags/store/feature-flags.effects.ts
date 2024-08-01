@@ -16,6 +16,7 @@ import {
   selectSearchString,
   selectIsAllFlagsFetched,
   selectSelectedFeatureFlag,
+  selectFeatureFlagIds,
 } from './feature-flags.selectors';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
@@ -154,9 +155,9 @@ export class FeatureFlagsEffects {
     )
   );
 
-  uspertFeatureFlagInclusionList$ = createEffect(() =>
+  upsertFeatureFlagInclusionList$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
+      ofType(featureFlagsActions.actionAddFeatureFlagInclusionList),
       map((action) => action.list),
       withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
       switchMap(([list, flag]) => {
@@ -165,8 +166,8 @@ export class FeatureFlagsEffects {
           ...list,
         };
         return this.featureFlagsDataService.addInclusionList(request).pipe(
-          map((listResponse) => FeatureFlagsActions.actionUpsertFeatureFlagInclusionListSuccess({ listResponse })),
-          catchError((error) => of(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListFailure({ error })))
+          map((listResponse) => featureFlagsActions.actionUpsertFeatureFlagInclusionListSuccess({ listResponse })),
+          catchError((error) => of(featureFlagsActions.actionUpsertFeatureFlagInclusionListFailure({ error })))
         );
       })
     )
@@ -236,23 +237,25 @@ export class FeatureFlagsEffects {
   );
 
   exportFeatureFlagsDesign$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(featureFlagsActions.actionExportFeatureFlagDesign),
-      map((action) => ({ featureFlagIds: action.featureFlagIds })),
-      filter(({ featureFlagIds }) => !!featureFlagIds),
-      switchMap(({ featureFlagIds }) =>
-        this.featureFlagsDataService.exportFeatureFlagsDesign(featureFlagIds).pipe(
-          map((data: FeatureFlag[]) => {
-            if (data) {
-              this.commonExportHelpersService.convertDataToDownload(data, 'FeatureFlags' );
-              this.notificationService.showSuccess('Feature Flag Design JSON downloaded!');
-            }
-            return featureFlagsActions.actionExportFeatureFlagDesignSuccess();
-          }),
-          catchError(() => [featureFlagsActions.actionExportFeatureFlagDesignFailure()])
-        )
+  this.actions$.pipe(
+    ofType(featureFlagsActions.actionExportFeatureFlagDesign),
+    withLatestFrom(this.store$.pipe(select(selectFeatureFlagIds))),
+    switchMap(([action, featureFlagIds]) =>
+      this.featureFlagsDataService.exportFeatureFlagsDesign(featureFlagIds as string[]).pipe(
+        map((data: FeatureFlag[]) => {
+          if (data) {
+            this.commonExportHelpersService.convertDataToDownload(data, 'FeatureFlags');
+            this.notificationService.showSuccess('Feature Flag Design JSON downloaded!');
+          }
+          return featureFlagsActions.actionExportFeatureFlagDesignSuccess();
+        }),
+        catchError(() => {
+          this.notificationService.showError('Failed to export Feature Flag Design');
+          return of(featureFlagsActions.actionExportFeatureFlagDesignFailure());
+        })
       )
     )
+  )
   );
 
   private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());

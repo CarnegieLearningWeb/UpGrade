@@ -34,9 +34,6 @@ import { CommonSimpleConfirmationModalComponent } from '../../../../../../../sha
 export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, OnDestroy {
   isSectionCardExpanded = true;
   @Output() sectionCardExpandChange = new EventEmitter<boolean>();
-  featureFlag: FeatureFlag;
-  flagSub = new Subscription();
-  mailSub = new Subscription();
   emailId = '';
   featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
   flagOverviewDetails$ = this.featureFlagService.selectedFlagOverviewDetails;
@@ -54,8 +51,7 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   constructor(private dialogService: DialogService, private featureFlagService: FeatureFlagsService, private authService: AuthService,) {}
 
   ngOnInit(): void {
-    this.flagSub = this.featureFlagService.selectedFeatureFlag$.subscribe((flag) => this.featureFlag = flag);
-    this.mailSub = this.featureFlagService.currentUserEmailAddress$.subscribe((id) => this.emailId = id);
+    this.subscriptions.add(this.featureFlagService.currentUserEmailAddress$.subscribe((id) => this.emailId = id));
   }
 
   get FEATURE_FLAG_STATUS() {
@@ -123,35 +119,35 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
         console.log('Archive feature flag');
         break;
       case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN:
-        this.openConfirmExportDesignModal();
+        this.openConfirmExportDesignModal(flag.id);
         break;
       case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA:
-        this.openConfirmEmailDataModal();
+        this.openConfirmEmailDataModal(flag.id);
         break;
       default:
         console.log('Unknown action');
     }
   }
 
-  openConfirmExportDesignModal() {
+  openConfirmExportDesignModal(id: string) {
     const confirmMessage = 'feature-flags.export-feature-flag-design.confirmation-text.text';
     this.dialogService.openExportFeatureFlagDesignModal(confirmMessage)
       .afterClosed()
       .subscribe((isExportClicked: boolean) => {
         if (isExportClicked) {
-          this.featureFlagService.exportFeatureFlagsData([this.featureFlag.id]);
+          this.featureFlagService.exportFeatureFlagsData([id]);
         }
       });
   }
 
-  openConfirmEmailDataModal() {
+  openConfirmEmailDataModal(id: string) {
     const confirmMessage = 'feature-flags.export-feature-flags-data.confirmation-text.text';
     const emailConfirmationMessage = "The feature flag will be sent to '" + this.emailId + "'." ;
     this.dialogService.openEmailFeatureFlagDataModal(confirmMessage, emailConfirmationMessage)
       .afterClosed()
       .subscribe((isEmailClicked: boolean) => {
         if (isEmailClicked) {
-          this.featureFlagService.emailFeatureFlagData(this.featureFlag.id);
+          this.featureFlagService.emailFeatureFlagData(id);
         }
       });
   }
@@ -162,8 +158,6 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   }
 
   ngOnDestroy(): void {
-    this.flagSub.unsubscribe();
-    this.mailSub.unsubscribe();
     this.subscriptions.unsubscribe();
   }
 }
