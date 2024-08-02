@@ -3,7 +3,9 @@ import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
 import { FeatureFlagState, FeatureFlag, FLAG_SEARCH_KEY } from './feature-flags.model';
 import * as FeatureFlagsActions from './feature-flags.actions';
 
-export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFlag>();
+export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFlag>({
+  selectId: (featureFlag: FeatureFlag) => featureFlag.id,
+});
 
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
@@ -14,6 +16,7 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingFeatureFlagDetail: false,
   isLoadingFeatureFlagDelete: false,
   isLoadingSelectedFeatureFlag: false,
+  isLoadingUpsertPrivateSegmentList: false,
   hasInitialFeatureFlagsDataLoaded: false,
   activeDetailsTabIndex: 0,
   skipFlags: 0,
@@ -114,6 +117,82 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionSetActiveDetailsTabIndex, (state, { activeDetailsTabIndex }) => ({
     ...state,
     activeDetailsTabIndex,
+  })),
+
+  // Feature Flag Inclusion List Add Actions
+  on(FeatureFlagsActions.actionAddFeatureFlagInclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
+  on(FeatureFlagsActions.actionAddFeatureFlagInclusionListSuccess, (state, { listResponse }) => {
+    const { featureFlag } = listResponse;
+    const existingFlag = state.entities[featureFlag?.id];
+
+    return adapter.updateOne(
+      {
+        id: featureFlag?.id,
+        changes: { featureFlagSegmentInclusion: [listResponse, ...existingFlag.featureFlagSegmentInclusion] },
+      },
+      { ...state }
+    );
+  }),
+  on(FeatureFlagsActions.actionAddFeatureFlagInclusionListFailure, (state) => {
+    return { ...state, isLoadingUpsertPrivateSegmentList: false };
+  }),
+
+  // Feature Flag Inclusion List Update Actions
+  on(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListSuccess, (state, { listResponse }) => {
+    const { featureFlag } = listResponse;
+    const existingFlag = state.entities[featureFlag?.id];
+
+    if (existingFlag) {
+      const updatedInclusions = existingFlag.featureFlagSegmentInclusion.map((inclusion) =>
+        inclusion.segment.id === listResponse.segment.id ? listResponse : inclusion
+      );
+
+      return adapter.updateOne(
+        {
+          id: featureFlag.id,
+          changes: { featureFlagSegmentInclusion: updatedInclusions },
+        },
+        { ...state, isLoadingUpsertPrivateSegmentList: false }
+      );
+    }
+
+    return state;
+  }),
+
+  // Feature Flag Inclusion List Delete Actions
+  on(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
+  on(FeatureFlagsActions.actionDeleteFeatureFlagInclusionListSuccess, (state, { segmentId }) => {
+    const updatedState = { ...state, isLoadingUpsertPrivateSegmentList: false };
+    const flagId = Object.keys(state.entities).find((id) =>
+      state.entities[id].featureFlagSegmentInclusion.some((inclusion) => inclusion.segment.id === segmentId)
+    );
+
+    if (flagId) {
+      const flag = state.entities[flagId];
+      const updatedInclusions = flag.featureFlagSegmentInclusion.filter(
+        (inclusion) => inclusion.segment.id !== segmentId
+      );
+
+      return adapter.updateOne(
+        {
+          id: flagId,
+          changes: { featureFlagSegmentInclusion: updatedInclusions },
+        },
+        updatedState
+      );
+    }
+
+    return updatedState;
+  }),
+  on(FeatureFlagsActions.actionDeleteFeatureFlagInclusionListFailure, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: false,
   }))
 );
 
