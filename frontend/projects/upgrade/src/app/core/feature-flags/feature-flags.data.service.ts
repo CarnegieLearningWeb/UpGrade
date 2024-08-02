@@ -30,7 +30,7 @@ export class FeatureFlagsDataService {
 
   updateFeatureFlagStatus(params: UpdateFeatureFlagStatusRequest): Observable<FeatureFlag> {
     const url = this.environment.api.updateFlagStatus;
-    return this.http.post<FeatureFlag>(url, params);
+    return this.http.patch<FeatureFlag>(url, params);
   }
 
   addFeatureFlag(flag: AddFeatureFlagRequest): Observable<FeatureFlag> {
@@ -45,7 +45,7 @@ export class FeatureFlagsDataService {
 
   updateFilterMode(params: UpdateFilterModeRequest): Observable<FeatureFlag> {
     const url = this.environment.api.updateFilterMode;
-    return this.http.post<FeatureFlag>(url, params);
+    return this.http.patch<FeatureFlag>(url, params);
   }
 
   deleteFeatureFlag(id: string) {

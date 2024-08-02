@@ -1,4 +1,4 @@
-import { JsonController, Authorized, Post, Body, Delete, Put, Req, Get, Params } from 'routing-controllers';
+import { JsonController, Authorized, Post, Body, Delete, Put, Req, Get, Params, Patch } from 'routing-controllers';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
@@ -304,7 +304,7 @@ export class FeatureFlagsController {
   /**
    * @swagger
    * /flags/status:
-   *    post:
+   *    patch:
    *       description: Update Feature flag State
    *       consumes:
    *         - application/json
@@ -331,7 +331,7 @@ export class FeatureFlagsController {
    *          '200':
    *            description: Feature flag state is updated
    */
-  @Post('/status')
+  @Patch('/status')
   public async updateState(
     @Body({ validate: true })
     flag: FeatureFlagStatusUpdateValidator
@@ -342,7 +342,7 @@ export class FeatureFlagsController {
   /**
    * @swagger
    * /flags/filterMode:
-   *    post:
+   *    patch:
    *       description: Update Feature flag Filter Mode
    *       consumes:
    *         - application/json
@@ -369,7 +369,7 @@ export class FeatureFlagsController {
    *          '200':
    *            description: Feature flag filterMode is updated
    */
-  @Post('/filterMode')
+  @Patch('/filterMode')
   public async updateFilterMode(
     @Body({ validate: true })
     flag: FeatureFlagFilterModeUpdateValidator

@@ -73,9 +73,9 @@ describe('Feature Flag Controller Testing', () => {
       .expect(200);
   });
 
-  test('Post request for /api/flags/status', () => {
+  test('Patch request for /api/flags/status', () => {
     return request(app)
-      .post('/api/flags/status')
+      .patch('/api/flags/status')
       .send({
         flagId: uuid(),
         status: 'enabled',
@@ -85,9 +85,9 @@ describe('Feature Flag Controller Testing', () => {
       .expect(200);
   });
 
-  test('Post request for /api/flags/filterMode', () => {
+  test('Patch request for /api/flags/filterMode', () => {
     return request(app)
-      .post('/api/flags/filterMode')
+      .patch('/api/flags/filterMode')
       .send({
         flagId: uuid(),
         filterMode: 'includeAll',

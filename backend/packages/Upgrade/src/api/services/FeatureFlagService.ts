@@ -145,7 +145,14 @@ export class FeatureFlagService {
 
   public async updateState(flagId: string, status: FEATURE_FLAG_STATUS): Promise<FeatureFlag> {
     // TODO: Add log for updating flag state
-    const updatedState = await this.featureFlagRepository.updateState(flagId, status);
+    let updatedState: FeatureFlag;
+    try {
+      updatedState = await this.featureFlagRepository.updateState(flagId, status);
+    } catch (err) {
+      const error = new Error(`Error in updating feature flag status ${err}`);
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      throw error;
+    }
     return updatedState;
   }
 
