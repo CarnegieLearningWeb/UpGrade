@@ -268,6 +268,70 @@ export class FeatureFlagService {
     return createdList;
   }
 
+  public async updateList(
+    listInput: FeatureFlagListValidator,
+    filterType: string,
+    logger: UpgradeLogger
+  ): Promise<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> {
+    logger.info({ message: `Update ${filterType} list for feature flag` });
+    return await getConnection().transaction(async (transactionalEntityManager) => {
+      // Find the existing record
+      let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
+      if (filterType === 'inclusion') {
+        existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
+          where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.list.id } },
+          relations: ['featureFlag', 'segment'],
+        });
+      } else {
+        existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
+          where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.list.id } },
+          relations: ['featureFlag', 'segment'],
+        });
+      }
+
+      if (!existingRecord) {
+        throw new Error(
+          `No existing ${filterType} record found for feature flag ${listInput.flagId} and segment ${listInput.list.id}`
+        );
+      }
+
+      // Update the existing record
+      existingRecord.enabled = listInput.enabled;
+      existingRecord.listType = listInput.listType;
+
+      // Update the segment
+      try {
+        const updatedSegment = await this.segmentService.upsertSegmentInPipeline(
+          listInput.list,
+          logger,
+          transactionalEntityManager
+        );
+        existingRecord.segment = updatedSegment;
+      } catch (err) {
+        const error = new Error(`Error in updating private segment for feature flag ${filterType} list: ${err}`);
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
+
+      // Save the updated record
+      try {
+        if (filterType === 'inclusion') {
+          await transactionalEntityManager.save(FeatureFlagSegmentInclusion, existingRecord);
+        } else {
+          await transactionalEntityManager.save(FeatureFlagSegmentExclusion, existingRecord);
+        }
+      } catch (err) {
+        const error = new Error(`Error in updating segment for feature flag ${filterType} list: ${err}`);
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
+
+      return existingRecord;
+    });
+  }
+
   private postgresSearchString(type: FLAG_SEARCH_KEY): string {
     const searchString: string[] = [];
     switch (type) {

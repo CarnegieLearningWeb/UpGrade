@@ -20,7 +20,7 @@
     [isSectionCardExpanded]="isSectionCardExpanded"
     [primaryActionBtnDisabled]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
     [sectionCardExpandBtnDisabled]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
-    (primaryButtonClick)="addIncludeListClicked(flag.context[0])"
+    (primaryButtonClick)="onAddIncludeListClick(flag.context[0], flag.id)"
     (slideToggleChange)="onSlideToggleChange($event, flag.id)"
     (menuButtonItemClick)="onMenuButtonItemClick($event)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
@@ -28,5 +28,9 @@
   </app-common-section-card-action-buttons>
 
   <!-- content -->
-  <app-feature-flag-inclusions-table content *ngIf="isSectionCardExpanded"></app-feature-flag-inclusions-table>
+  <app-feature-flag-inclusions-table
+    content
+    *ngIf="isSectionCardExpanded"
+    (rowAction)="onRowAction($event, flag.id)"
+  ></app-feature-flag-inclusions-table>
 </app-common-section-card>

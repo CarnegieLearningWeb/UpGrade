@@ -11,6 +11,7 @@ import {
 } from '../../core/segments/store/segments.model';
 import {
   FeatureFlag,
+  ParticipantListTableRow,
   UPSERT_FEATURE_FLAG_ACTION,
   UPSERT_FEATURE_FLAG_LIST_ACTION,
   UpsertFeatureFlagParams,
@@ -155,7 +156,7 @@ export class DialogService {
     return this.dialog.open(UpsertFeatureFlagModalComponent, config);
   }
 
-  openAddIncludeListModal(appContext: string) {
+  openAddIncludeListModal(appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Add Include List',
       primaryActionBtnLabel: 'Create',
@@ -165,6 +166,23 @@ export class DialogService {
         sourceList: null,
         sourceAppContext: appContext,
         action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST,
+        flagId: flagId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openEditIncludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Edit Include List',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST,
+        flagId: flagId,
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
@@ -175,10 +193,52 @@ export class DialogService {
       data: commonModalConfig,
       width: '656px',
       height: 'auto',
-      autoFocus: 'input',
+      autoFocus: 'first-heading',
       disableClose: true,
     };
     return this.dialog.open(UpsertPrivateSegmentListModalComponent, config);
+  }
+
+  openEnableIncludeListModal(segmentName: string) {
+    const enableIncludeListModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Enable Include List',
+      primaryActionBtnLabel: 'Enable',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to enable "${segmentName}"?`,
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(enableIncludeListModalConfig);
+  }
+
+  openDisableIncludeListModal(segmentName: string) {
+    const disableIncludeListModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Disable Include List',
+      primaryActionBtnLabel: 'Disable',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to disable "${segmentName}"?`,
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(disableIncludeListModalConfig);
+  }
+
+  openDeleteIncludeListModal(segmentName: string) {
+    const deleteIncludeListModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Delete Include List',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to delete "${segmentName}"?`,
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(deleteIncludeListModalConfig);
   }
 
   openDeleteFeatureFlagModal() {

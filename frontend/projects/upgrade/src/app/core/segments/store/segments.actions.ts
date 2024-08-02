@@ -1,11 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import {
-  PrivateSegmentListRequest,
-  Segment,
-  SegmentInput,
-  UpsertSegmentType,
-  experimentSegmentInclusionExclusionData,
-} from './segments.model';
+import { Segment, SegmentInput, UpsertSegmentType, experimentSegmentInclusionExclusionData } from './segments.model';
 import {
   SEGMENT_SEARCH_KEY,
   SORT_AS_DIRECTION,
