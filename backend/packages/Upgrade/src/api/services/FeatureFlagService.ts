@@ -151,7 +151,14 @@ export class FeatureFlagService {
 
   public async updateFilterMode(flagId: string, filterMode: FILTER_MODE): Promise<FeatureFlag> {
     // TODO: Add log for updating filter mode
-    const updatedFilterMode = await this.featureFlagRepository.updateFilterMode(flagId, filterMode);
+    let updatedFilterMode: FeatureFlag;
+    try {
+      updatedFilterMode = await this.featureFlagRepository.updateFilterMode(flagId, filterMode);
+    } catch (err) {
+      const error = new Error(`Error in updating feature flag filter mode ${err}`);
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      throw error;
+    }
     return updatedFilterMode;
   }
 

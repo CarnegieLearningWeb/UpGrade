@@ -4,7 +4,6 @@ import { FILTER_MODE } from 'upgrade_types';
 export class FeatureFlagFilterModeUpdateValidator {
   @IsNotEmpty()
   @IsUUID()
-  @IsDefined()
   public flagId: string;
 
   @IsDefined()
