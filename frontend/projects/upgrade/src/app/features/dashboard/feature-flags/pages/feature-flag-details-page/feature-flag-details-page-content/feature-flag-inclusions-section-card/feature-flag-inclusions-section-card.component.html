@@ -15,12 +15,16 @@
     [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
-    (primaryButtonClick)="addIncludeListClicked(flag.context[0])"
+    (primaryButtonClick)="onAddIncludeListClick(flag.context[0], flag.id)"
     (menuButtonItemClick)="onMenuButtonItemClick($event)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
 
   <!-- content -->
-  <app-feature-flag-inclusions-table content *ngIf="isSectionCardExpanded"></app-feature-flag-inclusions-table>
+  <app-feature-flag-inclusions-table
+    content
+    *ngIf="isSectionCardExpanded"
+    (rowAction)="onRowAction($event, flag.id)"
+  ></app-feature-flag-inclusions-table>
 </app-common-section-card>

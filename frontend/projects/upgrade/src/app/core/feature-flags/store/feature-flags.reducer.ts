@@ -118,11 +118,13 @@ const reducer = createReducer(
     ...state,
     activeDetailsTabIndex,
   })),
+
+  // Feature Flag Inclusion List Add Actions
   on(FeatureFlagsActions.actionAddFeatureFlagInclusionList, (state) => ({
     ...state,
     isLoadingUpsertPrivateSegmentList: true,
   })),
-  on(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListSuccess, (state, { listResponse }) => {
+  on(FeatureFlagsActions.actionAddFeatureFlagInclusionListSuccess, (state, { listResponse }) => {
     const { featureFlag } = listResponse;
     const existingFlag = state.entities[featureFlag?.id];
 
@@ -133,11 +135,65 @@ const reducer = createReducer(
       },
       { ...state }
     );
-    return adapter.upsertOne(featureFlag, { ...state, isLoadingUpsertPrivateSegmentList: false });
   }),
-  on(FeatureFlagsActions.actionUpsertFeatureFlagInclusionListFailure, (state) => {
+  on(FeatureFlagsActions.actionAddFeatureFlagInclusionListFailure, (state) => {
     return { ...state, isLoadingUpsertPrivateSegmentList: false };
-  })
+  }),
+
+  // Feature Flag Inclusion List Update Actions
+  on(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListSuccess, (state, { listResponse }) => {
+    const { featureFlag } = listResponse;
+    const existingFlag = state.entities[featureFlag?.id];
+
+    if (existingFlag) {
+      const updatedInclusions = existingFlag.featureFlagSegmentInclusion.map((inclusion) =>
+        inclusion.segment.id === listResponse.segment.id ? listResponse : inclusion
+      );
+
+      return adapter.updateOne(
+        {
+          id: featureFlag.id,
+          changes: { featureFlagSegmentInclusion: updatedInclusions },
+        },
+        { ...state, isLoadingUpsertPrivateSegmentList: false }
+      );
+    }
+
+    return state;
+  }),
+
+  // Feature Flag Inclusion List Delete Actions
+  on(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
+  on(FeatureFlagsActions.actionDeleteFeatureFlagInclusionListSuccess, (state, { segmentId }) => {
+    const updatedState = { ...state, isLoadingUpsertPrivateSegmentList: false };
+    const flagId = Object.keys(state.entities).find((id) =>
+      state.entities[id].featureFlagSegmentInclusion.some((inclusion) => inclusion.segment.id === segmentId)
+    );
+
+    if (flagId) {
+      const flag = state.entities[flagId];
+      const updatedInclusions = flag.featureFlagSegmentInclusion.filter(
+        (inclusion) => inclusion.segment.id !== segmentId
+      );
+
+      return adapter.updateOne(
+        {
+          id: flagId,
+          changes: { featureFlagSegmentInclusion: updatedInclusions },
+        },
+        updatedState
+      );
+    }
+
+    return updatedState;
+  }),
+  on(FeatureFlagsActions.actionDeleteFeatureFlagInclusionListFailure, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: false,
+  }))
 );
 
 export function featureFlagsReducer(state: FeatureFlagState | undefined, action: Action) {

@@ -2,9 +2,7 @@ import { createSelector, createFeatureSelector } from '@ngrx/store';
 import { FLAG_SEARCH_KEY, FeatureFlag, FeatureFlagState, ParticipantListTableRow } from './feature-flags.model';
 import { selectRouterState } from '../../core.state';
 import { selectAll } from './feature-flags.reducer';
-import { MemberTypes } from '../../segments/store/segments.model';
 import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
-import { CommonTextHelpersService } from '../../../shared/services/common-text-helpers.service';
 
 export const selectFeatureFlagsState = createFeatureSelector<FeatureFlagState>('featureFlags');
 
@@ -130,10 +128,22 @@ export const selectIsLoadingFeatureFlagDelete = createSelector(
   (state) => state.isLoadingFeatureFlagDelete
 );
 
-// TODO: will need reimplementation in the list table stories
 export const selectFeatureFlagInclusions = createSelector(
   selectSelectedFeatureFlag,
-  (featureFlag: FeatureFlag): ParticipantListTableRow[] => []
+  (featureFlag: FeatureFlag): ParticipantListTableRow[] => {
+    if (!featureFlag || !featureFlag.featureFlagSegmentInclusion) {
+      return [];
+    }
+    return [...featureFlag.featureFlagSegmentInclusion]
+      .sort((a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime())
+      .map((inclusion) => {
+        return {
+          segment: inclusion.segment,
+          listType: inclusion.listType,
+          enabled: inclusion.enabled,
+        };
+      });
+  }
 );
 
 export const selectFeatureFlagExclusions = createSelector(
