@@ -165,17 +165,13 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     };
   });
 
-  // Dedicating a replica for export
-  const exportReplicaHost = replicaHost.shift();
-  const exportReplicaSlaves = exportReplicaHost ? [exportReplicaHost] : [];
-
   // connection options:
   const mainDBConnectionOptions: PostgresConnectionOptions = {
     name: CONNECTION_NAME.MAIN,
     type: env.db.type as 'postgres',
     replication: {
-      master: masterHost,
-      slaves: replicaHost,
+      master: masterHost, // use the master connection for all DB read and write operations
+      slaves: [], // no slaves required
     },
     synchronize: env.db.synchronize,
     logging: env.db.logging as boolean | 'all' | LogLevel[],
@@ -189,8 +185,10 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     name: CONNECTION_NAME.REPLICA,
     type: env.db.type as 'postgres',
     replication: {
-      master: exportReplicaHost,
-      slaves: exportReplicaSlaves,
+      master: masterHost, // use the master connection for export CSV related write operations if any.
+      // by default we cannot perform write operations on replica, so no need to provide the master connection here.
+      slaves: replicaHost, // use the replica connection for export CSV related read operations.
+      // if no replica host is present, then the master connection will be used for read operations as well.
     },
     synchronize: env.db.synchronize,
     logging: env.db.logging as boolean | 'all' | LogLevel[],
