@@ -30,6 +30,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { ExperimentService } from './ExperimentService';
+import { QueryService } from './QueryService';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -52,7 +53,8 @@ export class AnalyticsService {
     private logRepository: LogRepository,
     public awsService: AWSService,
     public errorService: ErrorService,
-    public experimentService: ExperimentService
+    public experimentService: ExperimentService,
+    public queryService: QueryService
   ) {}
 
   public async getEnrollments(experimentIds: string[]): Promise<IExperimentEnrollmentStats[]> {
@@ -311,18 +313,32 @@ export class AnalyticsService {
           }
         }
       }
+
+      const allQuery = await this.queryService.find(new UpgradeLogger());
+      let queryNames: string[] = [];
+      if (allQuery) {
+        queryNames = allQuery.map((query) => {
+          return query.name;
+        });
+      }
       // merge with data
       const csvRows = csvExportData.map((row) => {
         const queryObject = logsUser[row.userId] || {};
         const queryDataToAdd = {};
 
-        for (const queryId in queryObject) {
-          if (queryObject[queryId]) {
-            const queryName = queryNameIdMapping[queryId];
-            if (queryName) {
-              queryDataToAdd[queryName] = queryObject[queryId];
+        if (Object.keys(queryObject).length) {
+          for (const queryId in queryObject) {
+            if (queryObject[queryId]) {
+              const queryName = queryNameIdMapping[queryId];
+              if (queryName) {
+                queryDataToAdd[queryName] = queryObject[queryId];
+              }
             }
           }
+        } else {
+          queryNames.forEach((queryName) => {
+            queryDataToAdd[queryName] = '';
+          });
         }
 
         const revertToCondition = row.revertTo ? row.revertTo : 'Default';
