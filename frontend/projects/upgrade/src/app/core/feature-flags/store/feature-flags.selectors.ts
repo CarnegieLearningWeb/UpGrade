@@ -132,10 +132,22 @@ export const selectIsLoadingFeatureFlagDelete = createSelector(
   (state) => state.isLoadingFeatureFlagDelete
 );
 
-// TODO: will need reimplementation in the list table stories
 export const selectFeatureFlagInclusions = createSelector(
   selectSelectedFeatureFlag,
-  (featureFlag: FeatureFlag): ParticipantListTableRow[] => []
+  (featureFlag: FeatureFlag): ParticipantListTableRow[] => {
+    if (!featureFlag || !featureFlag.featureFlagSegmentInclusion) {
+      return [];
+    }
+    return [...featureFlag.featureFlagSegmentInclusion]
+      .sort((a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime())
+      .map((inclusion) => {
+        return {
+          segment: inclusion.segment,
+          listType: inclusion.listType,
+          enabled: inclusion.enabled,
+        };
+      });
+  }
 );
 
 export const selectFeatureFlagExclusions = createSelector(

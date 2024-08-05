@@ -155,6 +155,7 @@ export class FeatureFlagsEffects {
     )
   );
 
+
   upsertFeatureFlagInclusionList$ = createEffect(() =>
     this.actions$.pipe(
       ofType(featureFlagsActions.actionAddFeatureFlagInclusionList),
@@ -168,6 +169,43 @@ export class FeatureFlagsEffects {
         return this.featureFlagsDataService.addInclusionList(request).pipe(
           map((listResponse) => featureFlagsActions.actionUpsertFeatureFlagInclusionListSuccess({ listResponse })),
           catchError((error) => of(featureFlagsActions.actionUpsertFeatureFlagInclusionListFailure({ error })))
+         );
+      })
+    )
+  );
+
+  addFeatureFlagInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
+      switchMap((action) => {
+        return this.featureFlagsDataService.addInclusionList(action.list).pipe(
+          map((listResponse) => FeatureFlagsActions.actionAddFeatureFlagInclusionListSuccess({ listResponse })),
+          catchError((error) => of(FeatureFlagsActions.actionAddFeatureFlagInclusionListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  updateFeatureFlagInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionUpdateFeatureFlagInclusionList),
+      switchMap((action) => {
+        return this.featureFlagsDataService.updateInclusionList(action.list).pipe(
+          map((listResponse) => FeatureFlagsActions.actionUpdateFeatureFlagInclusionListSuccess({ listResponse })),
+          catchError((error) => of(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  deleteFeatureFlagInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList),
+      map((action) => action.segmentId),
+      switchMap((segmentId) => {
+        return this.featureFlagsDataService.deleteInclusionList(segmentId).pipe(
+          map(() => FeatureFlagsActions.actionDeleteFeatureFlagInclusionListSuccess({ segmentId })),
+          catchError((error) => of(FeatureFlagsActions.actionDeleteFeatureFlagInclusionListFailure({ error })))
         );
       })
     )

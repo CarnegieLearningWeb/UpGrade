@@ -58,11 +58,6 @@ export enum UPSERT_FEATURE_FLAG_LIST_ACTION {
   EDIT = 'edit',
 }
 
-export interface UpsertFeatureFlagListParams {
-  sourceList: FeatureFlagSegmentListDetails;
-  action: UPSERT_FEATURE_FLAG_LIST_ACTION;
-}
-
 export interface FeatureFlagsPaginationInfo {
   nodes: FeatureFlag[];
   total: number;
@@ -97,10 +92,21 @@ interface IFeatureFlagsSortParams {
 }
 
 export interface ParticipantListTableRow {
-  type: string;
-  values: string;
-  name: string;
-  enable: string;
+  listType: MemberTypes | string;
+  segment: Segment;
+  enabled?: boolean;
+}
+
+export enum PARTICIPANT_LIST_ROW_ACTION {
+  ENABLE = 'enable',
+  DISABLE = 'disable',
+  EDIT = 'edit',
+  DELETE = 'delete',
+}
+
+export interface ParticipantListRowActionEvent {
+  action: PARTICIPANT_LIST_ROW_ACTION;
+  rowData: ParticipantListTableRow;
 }
 
 // the request for for the upserting private segment is PrivateSegmentListRequest

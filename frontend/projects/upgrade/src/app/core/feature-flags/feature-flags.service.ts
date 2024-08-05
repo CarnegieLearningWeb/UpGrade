@@ -36,6 +36,7 @@ import { filter, map, pairwise } from 'rxjs';
 import isEqual from 'lodash.isequal';
 import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 import { PrivateSegmentListRequest } from '../segments/store/segments.model';
+import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
 
 @Injectable()
 export class FeatureFlagsService {
@@ -156,7 +157,15 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionSetActiveDetailsTabIndex({ activeDetailsTabIndex }));
   }
 
-  addFeatureFlagInclusionPrivateSegmentList(list: PrivateSegmentListRequest) {
+  addFeatureFlagInclusionPrivateSegmentList(list: AddPrivateSegmentListRequest) {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlagInclusionList({ list }));
+  }
+
+  updateFeatureFlagInclusionPrivateSegmentList(list: EditPrivateSegmentListRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagInclusionList({ list }));
+  }
+
+  deleteFeatureFlagInclusionPrivateSegmentList(segmentId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList({ segmentId }));
   }
 }
