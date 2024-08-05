@@ -113,6 +113,11 @@ export const selectFeatureFlagsListLength = createSelector(
   (featureFlags) => featureFlags.length
 );
 
+export const selectIsLoadingImportFeatureFlag = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingImportFeatureFlag
+);
+
 export const selectIsLoadingUpdateFeatureFlagStatus = createSelector(
   selectFeatureFlagsState,
   (state) => state.isLoadingUpdateFeatureFlagStatus

@@ -27,7 +27,7 @@ export class ImportSegmentComponent {
     private segmentsService: SegmentsService,
     private translate: TranslateService,
     private notificationService: NotificationService,
-    private segmentdataService: SegmentsDataService,
+    private segmentDataService: SegmentsDataService,
     public dialogRef: MatDialogRef<ImportSegmentComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
@@ -38,7 +38,7 @@ export class ImportSegmentComponent {
 
   async importSegments() {
     this.onCancelClick();
-    const importResult = (await this.segmentdataService
+    const importResult = (await this.segmentDataService
       .importSegments(this.fileData)
       .toPromise()) as SegmentImportError[];
 
@@ -90,7 +90,7 @@ export class ImportSegmentComponent {
 
   async validateFiles() {
     this.importFileErrors =
-      ((await this.segmentdataService.validateSegments(this.fileData).toPromise()) as SegmentImportError[]) || [];
+      ((await this.segmentDataService.validateSegments(this.fileData).toPromise()) as SegmentImportError[]) || [];
     this.importFileErrorsDataSource.data = this.importFileErrors;
 
     this.nonErrorSegments = this.uploadedFileCount - this.importFileErrors.length;

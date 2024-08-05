@@ -11,6 +11,7 @@ export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.get
 
 export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingUpsertFeatureFlag: false,
+  isLoadingImportFeatureFlag: false,
   isLoadingFeatureFlags: false,
   isLoadingUpdateFeatureFlagStatus: false,
   isLoadingFeatureFlagDetail: false,
@@ -108,6 +109,10 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionSetIsLoadingFeatureFlags, (state, { isLoadingFeatureFlags }) => ({
     ...state,
     isLoadingFeatureFlags,
+  })),
+  on(FeatureFlagsActions.actionSetIsLoadingImportFeatureFlag, (state, { isLoadingImportFeatureFlag }) => ({
+    ...state,
+    isLoadingImportFeatureFlag,
   })),
   on(FeatureFlagsActions.actionSetSkipFlags, (state, { skipFlags }) => ({ ...state, skipFlags })),
   on(FeatureFlagsActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),

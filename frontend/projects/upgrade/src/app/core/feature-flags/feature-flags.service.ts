@@ -22,6 +22,7 @@ import {
   selectSortKey,
   selectSortAs,
   selectAppContexts,
+  selectIsLoadingImportFeatureFlag,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -52,7 +53,8 @@ export class FeatureFlagsService {
   sortKey$ = this.store$.pipe(select(selectSortKey));
   sortAs$ = this.store$.pipe(select(selectSortAs));
   isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
-  IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
+  isLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
+  isLoadingImportFeatureFlag$ = this.store$.pipe(select(selectIsLoadingImportFeatureFlag));
 
   hasFeatureFlagsCountChanged$ = this.allFeatureFlags$.pipe(
     pairwise(),
@@ -122,6 +124,10 @@ export class FeatureFlagsService {
 
   deleteFeatureFlag(flagId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlag({ flagId }));
+  }
+
+  setIsLoadingImportFeatureFlag(isLoadingImportFeatureFlag: boolean) {
+    this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingImportFeatureFlag({ isLoadingImportFeatureFlag }));
   }
 
   setSearchKey(searchKey: FLAG_SEARCH_KEY) {

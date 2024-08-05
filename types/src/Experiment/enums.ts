@@ -265,6 +265,9 @@ export enum STATUS_INDICATOR_CHIP_TYPE {
   ENROLLMENT_COMPLETE = 'enrollment-complete',
   CANCELLED = 'cancelled',
   SCHEDULED = 'scheduled',
+  COMPATIBLE = 'compatible',
+  INCOMPATIBLE = 'incompatible',
+  WARNING = 'warning',
 }
 
 export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {

@@ -24,7 +24,7 @@
       background-color: var(--status-draft-alpha);
     }
 
-    &.inactive {
+    &.inactive, &.warning {
       --mdc-chip-label-text-color: var(--status-inactive);
       border: 1px solid var(--status-inactive);
       background-color: var(--status-inactive-alpha);
@@ -36,13 +36,13 @@
       background-color: var(--status-enrolling-alpha);
     }
 
-    &.enrollment-complete {
+    &.enrollment-complete, &.compatible {
       --mdc-chip-label-text-color: var(--status-enrollment-complete);
       border: 1px solid var(--status-enrollment-complete);
       background-color: var(--status-enrollment-complete-alpha);
     }
 
-    &.cancelled {
+    &.cancelled, &.incompatible {
       --mdc-chip-label-text-color: var(--status-cancelled);
       border: 1px solid var(--status-cancelled);
       background-color: var(--status-cancelled-alpha);
