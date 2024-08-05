@@ -1,6 +1,6 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
-import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SORT_KEY, SEGMENT_TYPE, SORT_AS_DIRECTION } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 import { MemberTypes, Segment } from '../../segments/store/segments.model';
 
 // This obviously is a more global type, but for now we're not about to refactor all of the things, so I'm just putting it here so I can create some more dev-friendly types to catch the small differences between some of these formats
@@ -58,11 +58,6 @@ export enum UPSERT_FEATURE_FLAG_LIST_ACTION {
   EDIT = 'edit',
 }
 
-export interface UpsertFeatureFlagListParams {
-  sourceList: FeatureFlagSegmentListDetails;
-  action: UPSERT_FEATURE_FLAG_LIST_ACTION;
-}
-
 export interface FeatureFlagsPaginationInfo {
   nodes: FeatureFlag[];
   total: number;
@@ -83,16 +78,6 @@ export interface FeatureFlagFormData {
   tags: string[];
 }
 
-export interface PrivateSegment {
-  segment: Segment;
-}
-
-export interface EmptyPrivateSegment {
-  segment: {
-    type: SEGMENT_TYPE;
-  };
-}
-
 // TODO: This should be probably be a part of env config
 export const NUMBER_OF_FLAGS = 20;
 
@@ -107,10 +92,30 @@ interface IFeatureFlagsSortParams {
 }
 
 export interface ParticipantListTableRow {
-  type: string;
-  values: string;
-  name: string;
-  enable: string;
+  listType: MemberTypes | string;
+  segment: Segment;
+  enabled?: boolean;
+}
+
+export enum PARTICIPANT_LIST_ROW_ACTION {
+  ENABLE = 'enable',
+  DISABLE = 'disable',
+  EDIT = 'edit',
+  DELETE = 'delete',
+}
+
+export interface ParticipantListRowActionEvent {
+  action: PARTICIPANT_LIST_ROW_ACTION;
+  rowData: ParticipantListTableRow;
+}
+
+// the request for for the upserting private segment is PrivateSegmentListRequest
+// there is no difference in that request and that which will be used for segment lists in the future
+export interface UpsertFeatureFlagPrivateSegmentListResponse {
+  featureFlag: FeatureFlag;
+  segment: Segment;
+  listType: MemberTypes | string;
+  enabled: boolean;
 }
 
 export interface FeatureFlagsPaginationParams {
@@ -160,6 +165,7 @@ export interface FeatureFlagState extends EntityState<FeatureFlag> {
   isLoadingFeatureFlags: boolean;
   isLoadingUpdateFeatureFlagStatus: boolean;
   isLoadingFeatureFlagDelete: boolean;
+  isLoadingUpsertPrivateSegmentList: boolean;
   hasInitialFeatureFlagsDataLoaded: boolean;
   activeDetailsTabIndex: number;
   skipFlags: number;

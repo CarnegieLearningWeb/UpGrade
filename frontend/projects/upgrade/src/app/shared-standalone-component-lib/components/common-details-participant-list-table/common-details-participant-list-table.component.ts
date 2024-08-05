@@ -1,15 +1,21 @@
 import { CommonModule, UpperCasePipe, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, Output, EventEmitter } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleChange, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonStatusIndicatorChipComponent } from '../common-status-indicator-chip/common-status-indicator-chip.component';
-import { FEATURE_FLAG_PARTICIPANT_LIST_KEY } from '../../../core/feature-flags/store/feature-flags.model';
+import {
+  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
+  PARTICIPANT_LIST_ROW_ACTION,
+  ParticipantListRowActionEvent,
+  ParticipantListTableRow,
+} from '../../../core/feature-flags/store/feature-flags.model';
+import { MemberTypes } from '../../../core/segments/store/segments.model';
 
 /**
  * `CommonDetailsParticipantListTableComponent` is a reusable Angular component that displays a table with common details for participant lists.
@@ -50,8 +56,10 @@ export class CommonDetailsParticipantListTableComponent {
   @Input() dataSource: any[];
   @Input() noDataRowText: string;
   @Input() isLoading: boolean;
+  @Output() rowAction = new EventEmitter<ParticipantListRowActionEvent>();
 
   displayedColumns: string[];
+  memberTypes = MemberTypes;
 
   PARTICIPANT_LIST_COLUMN_NAMES = {
     TYPE: 'type',
@@ -76,11 +84,20 @@ export class CommonDetailsParticipantListTableComponent {
         : ['type', 'values', 'name', 'actions'];
   }
 
-  fetchFlagsOnScroll() {
-    console.log('fetchFlagsOnScroll');
+  onSlideToggleChange(event: MatSlideToggleChange, rowData: ParticipantListTableRow): void {
+    const slideToggleEvent = event.source;
+    const action = slideToggleEvent.checked ? PARTICIPANT_LIST_ROW_ACTION.ENABLE : PARTICIPANT_LIST_ROW_ACTION.DISABLE;
+    this.rowAction.emit({ action, rowData });
+
+    // Note: we don't want the toggle to visibly change state immediately because we have to pop a confirmation modal first, so we need override the default and flip it back. I unfortunately couldn't find a better way to do this.
+    slideToggleEvent.checked = !slideToggleEvent.checked;
   }
 
-  changeSorting($event) {
-    console.log('onSearch:', $event);
+  onEditButtonClick(rowData: ParticipantListTableRow): void {
+    this.rowAction.emit({ action: PARTICIPANT_LIST_ROW_ACTION.EDIT, rowData });
+  }
+
+  onDeleteButtonClick(rowData: ParticipantListTableRow): void {
+    this.rowAction.emit({ action: PARTICIPANT_LIST_ROW_ACTION.DELETE, rowData });
   }
 }

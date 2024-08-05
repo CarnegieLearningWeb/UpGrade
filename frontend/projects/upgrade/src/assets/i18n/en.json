@@ -391,6 +391,7 @@
   "feature-flags.import-feature-flag.text": "Import Feature Flag",
   "feature-flags.import-feature-flag.message.text": "The Feature Flag JSON file should include the required properties for it to be imported.",
   "feature-flags.export-all-feature-flags.text": "Export All Feature Flags",
+  "feature-flags.upsert-private-segment-list-modal": "Please select an available segment from the dropdown.",
   "segments.title.text": "Segments",
   "segments.subtitle.text": "Define new segments to include or exclude from any experiment",
   "segments.no-segments.text": "Welcome! <br> Let's start by creating a new segment!",

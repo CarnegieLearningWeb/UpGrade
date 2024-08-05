@@ -16,7 +16,7 @@ import {
   selectSearchString,
   selectIsAllFlagsFetched,
 } from './feature-flags.selectors';
-import { DialogService } from '../../../shared/services/common-dialog.service';
+import { of } from 'rxjs';
 
 @Injectable()
 export class FeatureFlagsEffects {
@@ -24,8 +24,7 @@ export class FeatureFlagsEffects {
     private store$: Store<AppState>,
     private actions$: Actions,
     private featureFlagsDataService: FeatureFlagsDataService,
-    private router: Router,
-    private dialogService: DialogService
+    private router: Router
   ) {}
 
   fetchFeatureFlags$ = createEffect(() =>
@@ -147,6 +146,43 @@ export class FeatureFlagsEffects {
           catchError(() => [FeatureFlagsActions.actionDeleteFeatureFlagFailure()])
         )
       )
+    )
+  );
+
+  addFeatureFlagInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
+      switchMap((action) => {
+        return this.featureFlagsDataService.addInclusionList(action.list).pipe(
+          map((listResponse) => FeatureFlagsActions.actionAddFeatureFlagInclusionListSuccess({ listResponse })),
+          catchError((error) => of(FeatureFlagsActions.actionAddFeatureFlagInclusionListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  updateFeatureFlagInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionUpdateFeatureFlagInclusionList),
+      switchMap((action) => {
+        return this.featureFlagsDataService.updateInclusionList(action.list).pipe(
+          map((listResponse) => FeatureFlagsActions.actionUpdateFeatureFlagInclusionListSuccess({ listResponse })),
+          catchError((error) => of(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  deleteFeatureFlagInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList),
+      map((action) => action.segmentId),
+      switchMap((segmentId) => {
+        return this.featureFlagsDataService.deleteInclusionList(segmentId).pipe(
+          map(() => FeatureFlagsActions.actionDeleteFeatureFlagInclusionListSuccess({ segmentId })),
+          catchError((error) => of(FeatureFlagsActions.actionDeleteFeatureFlagInclusionListFailure({ error })))
+        );
+      })
     )
   );
 

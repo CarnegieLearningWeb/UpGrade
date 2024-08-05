@@ -4,5 +4,6 @@
     [dataSource]="dataSource$ | async"
     [isLoading]="isLoading$ | async"
     noDataRowText="feature-flags.details.inclusions.card.no-data-row.text"
+    (rowAction)="onRowAction($event)"
   ></app-common-details-participant-list-table>
 </div>
