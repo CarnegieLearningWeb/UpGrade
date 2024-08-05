@@ -11,11 +11,8 @@ import {
   UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
 import { Observable } from 'rxjs';
-<<<<<<< HEAD
 import { FeatureFlagFile } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
-=======
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
->>>>>>> cd2e80f22666b0e4270b9f12ab77aa8b195f8cba
 
 @Injectable()
 export class FeatureFlagsDataService {
