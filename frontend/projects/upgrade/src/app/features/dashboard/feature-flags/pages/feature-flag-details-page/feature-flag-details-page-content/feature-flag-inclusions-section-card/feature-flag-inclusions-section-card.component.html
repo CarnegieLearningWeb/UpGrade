@@ -17,7 +17,7 @@
     [primaryButtonText]="'feature-flags.details.add-include-list.button.text' | translate"
     [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems"
-    [isSectionCardExpanded]="isSectionCardExpanded"
+    [isSectionCardExpanded]="isSectionCardExpanded && flag.filterMode !== FILTER_MODE.INCLUDE_ALL"
     [primaryActionBtnDisabled]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
     [sectionCardExpandBtnDisabled]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
     (primaryButtonClick)="onAddIncludeListClick(flag.context[0], flag.id)"
@@ -30,7 +30,7 @@
   <!-- content -->
   <app-feature-flag-inclusions-table
     content
-    *ngIf="isSectionCardExpanded"
+    *ngIf="isSectionCardExpanded && flag.filterMode !== FILTER_MODE.INCLUDE_ALL"
     (rowAction)="onRowAction($event, flag.id)"
   ></app-feature-flag-inclusions-table>
 </app-common-section-card>
