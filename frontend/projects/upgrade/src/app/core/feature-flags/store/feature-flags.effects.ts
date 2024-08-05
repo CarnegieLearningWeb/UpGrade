@@ -1,7 +1,7 @@
 import { FeatureFlagsDataService } from '../feature-flags.data.service';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Injectable } from '@angular/core';
-import * as featureFlagsActions from './feature-flags.actions';
+import * as FeatureFlagsActions from './feature-flags.actions';
 import { catchError, switchMap, map, filter, withLatestFrom, tap, first } from 'rxjs/operators';
 import { FeatureFlag, FeatureFlagsPaginationParams, NUMBER_OF_FLAGS } from './feature-flags.model';
 import { Router } from '@angular/router';
@@ -16,7 +16,6 @@ import {
   selectSearchString,
   selectIsAllFlagsFetched,
   selectSelectedFeatureFlag,
-  selectFeatureFlagIds,
 } from './feature-flags.selectors';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
@@ -35,7 +34,7 @@ export class FeatureFlagsEffects {
 
   fetchFeatureFlags$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(featureFlagsActions.actionFetchFeatureFlags),
+      ofType(FeatureFlagsActions.actionFetchFeatureFlags),
       map((action) => action.fromStarting),
       withLatestFrom(
         this.store$.pipe(select(selectSkipFlags)),
@@ -49,7 +48,7 @@ export class FeatureFlagsEffects {
         return !isAllFlagsFetched || skip < total || total === null || fromStarting;
       }),
       tap(() => {
-        this.store$.dispatch(featureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: true }));
+        this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: true }));
       }),
       switchMap(([fromStarting, skip, _, searchKey, sortKey, sortAs]) => {
         let searchString = null;
@@ -82,13 +81,13 @@ export class FeatureFlagsEffects {
         }
         return this.featureFlagsDataService.fetchFeatureFlagsPaginated(params).pipe(
           switchMap((data: any) => {
-            const actions = fromStarting ? [featureFlagsActions.actionSetSkipFlags({ skipFlags: 0 })] : [];
+            const actions = fromStarting ? [FeatureFlagsActions.actionSetSkipFlags({ skipFlags: 0 })] : [];
             return [
               ...actions,
-              featureFlagsActions.actionFetchFeatureFlagsSuccess({ flags: data.nodes, totalFlags: data.total }),
+              FeatureFlagsActions.actionFetchFeatureFlagsSuccess({ flags: data.nodes, totalFlags: data.total }),
             ];
           }),
-          catchError(() => [featureFlagsActions.actionFetchFeatureFlagsFailure()])
+          catchError(() => [FeatureFlagsActions.actionFetchFeatureFlagsFailure()])
         );
       })
     )
@@ -97,14 +96,14 @@ export class FeatureFlagsEffects {
   // actionCreateFeatureFlag dispatch POST feature flag
   addFeatureFlag$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(featureFlagsActions.actionAddFeatureFlag),
+      ofType(FeatureFlagsActions.actionAddFeatureFlag),
       switchMap((action) => {
         return this.featureFlagsDataService.addFeatureFlag(action.addFeatureFlagRequest).pipe(
-          map((response) => featureFlagsActions.actionAddFeatureFlagSuccess({ response })),
+          map((response) => FeatureFlagsActions.actionAddFeatureFlagSuccess({ response })),
           tap(({ response }) => {
             this.router.navigate(['/featureflags', 'detail', response.id]);
           }),
-          catchError(() => [featureFlagsActions.actionAddFeatureFlagFailure()])
+          catchError(() => [FeatureFlagsActions.actionAddFeatureFlagFailure()])
         );
       })
     )
@@ -112,13 +111,13 @@ export class FeatureFlagsEffects {
 
   updateFeatureFlag$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(featureFlagsActions.actionUpdateFeatureFlag),
+      ofType(FeatureFlagsActions.actionUpdateFeatureFlag),
       switchMap((action) => {
         return this.featureFlagsDataService.updateFeatureFlag(action.flag).pipe(
           map((response) => {
-            return featureFlagsActions.actionUpdateFeatureFlagSuccess({ response });
+            return FeatureFlagsActions.actionUpdateFeatureFlagSuccess({ response });
           }),
-          catchError(() => [featureFlagsActions.actionUpdateFeatureFlagFailure()])
+          catchError(() => [FeatureFlagsActions.actionUpdateFeatureFlagFailure()])
         );
       })
     )
@@ -126,13 +125,13 @@ export class FeatureFlagsEffects {
 
   updateFeatureFlagStatus$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(featureFlagsActions.actionUpdateFeatureFlagStatus),
+      ofType(FeatureFlagsActions.actionUpdateFeatureFlagStatus),
       switchMap((action) => {
         return this.featureFlagsDataService.updateFeatureFlagStatus(action.updateFeatureFlagStatusRequest).pipe(
           map((response) => {
-            return featureFlagsActions.actionUpdateFeatureFlagStatusSuccess({ response });
+            return FeatureFlagsActions.actionUpdateFeatureFlagStatusSuccess({ response });
           }),
-          catchError(() => [featureFlagsActions.actionUpdateFeatureFlagStatusFailure()])
+          catchError(() => [FeatureFlagsActions.actionUpdateFeatureFlagStatusFailure()])
         );
       })
     )
@@ -140,16 +139,16 @@ export class FeatureFlagsEffects {
 
   deleteFeatureFlag$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(featureFlagsActions.actionDeleteFeatureFlag),
+      ofType(FeatureFlagsActions.actionDeleteFeatureFlag),
       map((action) => action.flagId),
       filter((id) => !!id),
       switchMap((id) =>
         this.featureFlagsDataService.deleteFeatureFlag(id).pipe(
           map((data: any) => {
             this.router.navigate(['/featureflags']);
-            return featureFlagsActions.actionDeleteFeatureFlagSuccess({ flag: data[0] });
+            return FeatureFlagsActions.actionDeleteFeatureFlagSuccess({ flag: data[0] });
           }),
-          catchError(() => [featureFlagsActions.actionDeleteFeatureFlagFailure()])
+          catchError(() => [FeatureFlagsActions.actionDeleteFeatureFlagFailure()])
         )
       )
     )
@@ -158,7 +157,7 @@ export class FeatureFlagsEffects {
 
   upsertFeatureFlagInclusionList$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(featureFlagsActions.actionAddFeatureFlagInclusionList),
+      ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
       map((action) => action.list),
       withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
       switchMap(([list, flag]) => {
@@ -167,8 +166,8 @@ export class FeatureFlagsEffects {
           ...list,
         };
         return this.featureFlagsDataService.addInclusionList(request).pipe(
-          map((listResponse) => featureFlagsActions.actionUpsertFeatureFlagInclusionListSuccess({ listResponse })),
-          catchError((error) => of(featureFlagsActions.actionUpsertFeatureFlagInclusionListFailure({ error })))
+          map((listResponse) => FeatureFlagsActions.actionUpdateFeatureFlagInclusionListSuccess({ listResponse })),
+          catchError((error) => of(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListFailure({ error })))
          );
       })
     )
@@ -214,12 +213,12 @@ export class FeatureFlagsEffects {
   fetchFeatureFlagsOnSearchString$ = createEffect(
     () =>
       this.actions$.pipe(
-        ofType(featureFlagsActions.actionSetSearchString),
+        ofType(FeatureFlagsActions.actionSetSearchString),
         map((action) => action.searchString),
         tap((searchString) => {
           // Allow empty string as we erasing text from search input
           if (searchString !== null) {
-            this.store$.dispatch(featureFlagsActions.actionFetchFeatureFlags({ fromStarting: true }));
+            this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting: true }));
           }
         })
       ),
@@ -229,11 +228,11 @@ export class FeatureFlagsEffects {
   fetchFlagsOnSearchKeyChange$ = createEffect(
     () =>
       this.actions$.pipe(
-        ofType(featureFlagsActions.actionSetSearchKey),
+        ofType(FeatureFlagsActions.actionSetSearchKey),
         withLatestFrom(this.store$.pipe(select(selectSearchString))),
         tap(([_, searchString]) => {
           if (searchString) {
-            this.store$.dispatch(featureFlagsActions.actionFetchFeatureFlags({ fromStarting: true }));
+            this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting: true }));
           }
         })
       ),
@@ -242,15 +241,15 @@ export class FeatureFlagsEffects {
 
   fetchFeatureFlagById$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(featureFlagsActions.actionFetchFeatureFlagById),
+      ofType(FeatureFlagsActions.actionFetchFeatureFlagById),
       map((action) => action.featureFlagId),
       filter((featureFlagId) => !!featureFlagId),
       switchMap((featureFlagId) =>
         this.featureFlagsDataService.fetchFeatureFlagById(featureFlagId).pipe(
           map((data: FeatureFlag) => {
-            return featureFlagsActions.actionFetchFeatureFlagByIdSuccess({ flag: data });
+            return FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess({ flag: data });
           }),
-          catchError(() => [featureFlagsActions.actionFetchFeatureFlagByIdFailure()])
+          catchError(() => [FeatureFlagsActions.actionFetchFeatureFlagByIdFailure()])
         )
       )
     )
@@ -258,7 +257,7 @@ export class FeatureFlagsEffects {
 
   emailFeatureFlagData$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(featureFlagsActions.actionEmailFeatureFlagData),
+      ofType(FeatureFlagsActions.actionEmailFeatureFlagData),
       map((action) => ({ featureFlagId: action.featureFlagId })),
       withLatestFrom(this.store$.pipe(select(selectCurrentUser))),
       filter(([{ featureFlagId }, { email }]) => !!featureFlagId && !!email),
@@ -266,30 +265,30 @@ export class FeatureFlagsEffects {
         this.featureFlagsDataService.emailFeatureFlagData(featureFlagId, email).pipe(
           map(() => {
             this.notificationService.showSuccess(`Email will be sent to ${email}`);
-            return featureFlagsActions.actionEmailFeatureFlagDataSuccess();
+            return FeatureFlagsActions.actionEmailFeatureFlagDataSuccess();
           }),
-          catchError(() => [featureFlagsActions.actionEmailFeatureFlagDataFailure()])
+          catchError(() => [FeatureFlagsActions.actionEmailFeatureFlagDataFailure()])
         )
       )
     )
   );
-
   exportFeatureFlagsDesign$ = createEffect(() =>
   this.actions$.pipe(
-    ofType(featureFlagsActions.actionExportFeatureFlagDesign),
-    withLatestFrom(this.store$.pipe(select(selectFeatureFlagIds))),
-    switchMap(([action, featureFlagIds]) =>
-      this.featureFlagsDataService.exportFeatureFlagsDesign(featureFlagIds as string[]).pipe(
+    ofType(FeatureFlagsActions.actionExportFeatureFlagDesign),
+    map((action) => ({ featureFlagId: action.featureFlagId })),
+    filter(({ featureFlagId }) => !!featureFlagId),
+    switchMap(({ featureFlagId }) =>
+      this.featureFlagsDataService.exportFeatureFlagsDesign(featureFlagId).pipe(
         map((data: FeatureFlag[]) => {
-          if (data) {
+          if (data.length) {
             this.commonExportHelpersService.convertDataToDownload(data, 'FeatureFlags');
             this.notificationService.showSuccess('Feature Flag Design JSON downloaded!');
           }
-          return featureFlagsActions.actionExportFeatureFlagDesignSuccess();
+          return FeatureFlagsActions.actionExportFeatureFlagDesignSuccess();
         }),
-        catchError(() => {
+        catchError((error) => {
           this.notificationService.showError('Failed to export Feature Flag Design');
-          return of(featureFlagsActions.actionExportFeatureFlagDesignFailure());
+          return of(FeatureFlagsActions.actionExportFeatureFlagDesignFailure());
         })
       )
     )

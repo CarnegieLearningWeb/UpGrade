@@ -76,7 +76,7 @@ export const actionEmailFeatureFlagDataFailure = createAction('[Feature Flags] E
 
 export const actionExportFeatureFlagDesign = createAction(
   '[Feature Flags] Export Feature Flag Design',
-  props<{ featureFlagIds: string[] }>()
+  props<{ featureFlagId: string }>()
 );
 
 export const actionExportFeatureFlagDesignSuccess = createAction('[Feature Flags] Export Feature Flag Design Success');

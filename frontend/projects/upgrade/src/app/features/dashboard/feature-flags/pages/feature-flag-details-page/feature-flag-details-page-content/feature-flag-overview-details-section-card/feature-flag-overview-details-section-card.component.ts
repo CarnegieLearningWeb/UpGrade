@@ -135,7 +135,7 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
       .afterClosed()
       .subscribe((isExportClicked: boolean) => {
         if (isExportClicked) {
-          this.featureFlagService.exportFeatureFlagsData([id]);
+          this.featureFlagService.exportFeatureFlagsData(id);
         }
       });
   }

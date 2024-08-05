@@ -93,7 +93,7 @@ export class DialogService {
       },
     };
 
-    return this.CommonSimpleConfirmationModalComponent(enableFlagStatusModalConfig);
+    return this.openSimpleCommonConfirmationModal(enableFlagStatusModalConfig);
   }
 
   openDisableFeatureFlagConfirmModel(flagName: string) {
@@ -109,7 +109,7 @@ export class DialogService {
       },
     };
 
-    return this.CommonSimpleConfirmationModalComponent(disableFlagStatusModalConfig);
+    return this.openSimpleCommonConfirmationModal(disableFlagStatusModalConfig);
   }
 
   openUpsertFeatureFlagModal(commonModalConfig: CommonModalConfig) {
@@ -223,19 +223,6 @@ export class DialogService {
     return this.dialog.open(DeleteFeatureFlagModalComponent, config);
   }
 
-  openExportAllFeatureFlagsModal(warning: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
-    const commonModalConfig: CommonModalConfig = {
-      title: 'Export All Feature Flag Designs',
-      primaryActionBtnLabel: 'Export',
-      primaryActionBtnColor: 'primary',
-      cancelBtnLabel: 'Cancel',
-      params: {
-        message: warning,
-      },
-    };
-    return this.openCommonConfirmationModal(commonModalConfig);
-  }
-
   openExportFeatureFlagDesignModal(warning: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
       title: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
@@ -246,7 +233,7 @@ export class DialogService {
         message: warning,
       },
     };
-    return this.openCommonConfirmationModal(commonModalConfig);
+    return this.openSimpleCommonConfirmationModal(commonModalConfig);
   }
 
   openEmailFeatureFlagDataModal(warning: string, subtext: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
@@ -261,19 +248,9 @@ export class DialogService {
         subMessageClass: 'info',
       },
     };
-    return this.openCommonConfirmationModal(commonModalConfig);
+    return this.openSimpleCommonConfirmationModal(commonModalConfig);
   }
 
-  openCommonConfirmationModal(commonModalConfig: CommonModalConfig): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
-    const config: MatDialogConfig = {
-      data: commonModalConfig,
-      width: '656px',
-      autoFocus: 'first-heading',
-      disableClose: true,
-    };
-
-    return this.dialog.open(CommonSimpleConfirmationModalComponent, config);
-  }
   openImportFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Import Feature Flag',
@@ -290,9 +267,7 @@ export class DialogService {
     return this.dialog.open(ImportFeatureFlagModalComponent, config);
   }
 
-  CommonSimpleConfirmationModalComponent(
-    commonModalConfig: CommonModalConfig
-  ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openSimpleCommonConfirmationModal(commonModalConfig: CommonModalConfig): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: '656px',

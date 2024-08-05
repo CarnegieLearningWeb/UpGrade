@@ -11,7 +11,6 @@ import {
   UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
 import { Observable, delay, of } from 'rxjs';
-import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../types/src';
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
 
 @Injectable()
@@ -56,14 +55,12 @@ export class FeatureFlagsDataService {
     return of(true).pipe(delay(2000));
   }
 
-  exportFeatureFlagsDesign(flagIds: string[]) {
-    let ids = new HttpParams();
-    flagIds.forEach((id) => {
-      ids = ids.append('ids', id);
-    });
+  exportFeatureFlagsDesign(flagId: string) {
+    let id = new HttpParams();
+    id = id.append('ids', flagId);
 
     const url = this.environment.api.exportFlagsDesign;
-    // return this.http.post<FeatureFlag[]>(url, { params: ids });
+    // return this.http.post<FeatureFlag[]>(url, { params: id });
     // mock
     return of(this.mockFeatureFlags).pipe(delay(2000));
   }
