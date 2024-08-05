@@ -8,7 +8,7 @@ import {
   AfterViewInit,
 } from '@angular/core';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
 import { METRICS_JOIN_TEXT, MetricUnit } from '../../../../../core/analysis/store/analysis.models';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
@@ -20,6 +20,11 @@ import { AddMetricsComponent } from '../modals/add-metrics/add-metrics.component
 import { METRIC_SEARCH_KEY } from '../../../../../../../../../../types/src/Experiment/enums';
 import { IMetricUnit } from '../../../../../../../../../../types/src';
 import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
+
+// Extend IMetricUnit to include a function for lazy loading children
+type LazyLoadingMetric = IMetricUnit & {
+  loadChildren?: () => Promise<IMetricUnit[]>;
+};
 
 @Component({
   selector: 'profile-metrics',
@@ -36,16 +41,15 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
   displayedColumns = ['metric', 'context'];
   keyEditMode = true;
 
-  // Used for displaying metrics
+  // For displaying metrics
   allMetrics: any;
   allMetricsSub: Subscription;
   isAnalysisMetricsLoading$ = this.analysisService.isMetricsLoading$;
 
   // For tree structure
   _dataChange = new BehaviorSubject<MetricUnit[]>([]);
-  nestedTreeControl = new NestedTreeControl<IMetricUnit>((node) => node.children);
-  nestedDataSource = new MatTreeNestedDataSource<IMetricUnit>();
-  insertNodeIndex = 0;
+  nestedTreeControl: NestedTreeControl<MetricUnit | LazyLoadingMetric>;
+  nestedDataSource = new MatTreeNestedDataSource<MetricUnit | LazyLoadingMetric>();
 
   selectedMetricIndex = null;
   metricFilterOptions = [METRIC_SEARCH_KEY.ALL, METRIC_SEARCH_KEY.NAME, METRIC_SEARCH_KEY.CONTEXT];
@@ -53,7 +57,10 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
   contextOptions: string[] = [];
   searchValue: string;
 
-  constructor(private analysisService: AnalysisService, private authService: AuthService, private dialog: MatDialog) {}
+  constructor(private analysisService: AnalysisService, private authService: AuthService, private dialog: MatDialog) {
+    // Initialize NestedTreeControl with custom getChildren method for lazy loading
+    this.nestedTreeControl = new NestedTreeControl<MetricUnit | LazyLoadingMetric>(this.getChildren);
+  }
 
   ngOnInit() {
     this.permissionSub = this.authService.userPermissions$.subscribe((permission) => {
@@ -61,35 +68,56 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     });
 
     this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics) => {
-      this.allMetrics = new MatTableDataSource();
-      this.allMetrics.data = metrics.map((item) => {
-        this.insertNodeIndex = 0;
-        return this.insertNode(item);
-      });
+      this.allMetrics = new MatTableDataSource<LazyLoadingMetric>();
+      // Process metrics data to prepare for lazy loading
+      this.allMetrics.data = this.processMetricsData(metrics);
       this.extractContext(this.allMetrics.data);
     });
 
     this.applyFilter(this.searchValue);
   }
 
-  hasNestedChild = (_: number, nodeData: IMetricUnit) => !!nodeData.children && nodeData.children.length > 0;
+  // Determine if a node has nested children (either loadable or already loaded)
+  hasNestedChild = (_: number, node: LazyLoadingMetric): boolean =>
+    !!node.loadChildren || (node.children && node.children.length > 0);
 
-  insertNode(metrics: any): MetricUnit {
-    if (!metrics.children.length) {
-      const data = { id: this.insertNodeIndex, ...metrics };
-      this.insertNodeIndex += 1;
-      return data;
-    }
-    metrics = {
-      id: this.insertNodeIndex,
-      ...metrics,
-      children: metrics.children.map((data) => {
-        this.insertNodeIndex += 1;
-        data = this.insertNode(data);
-        return data;
-      }),
+  // Process a single metric node, setting up lazy loading for its children
+  private insertNode(metric: IMetricUnit): LazyLoadingMetric {
+    const processedMetric: LazyLoadingMetric = {
+      ...metric,
+      children: [],
     };
-    return metrics;
+
+    // If the node has children, create a loadChildren function instead of processing them immediately
+    if (metric.children && metric.children.length > 0) {
+      processedMetric.loadChildren = () => Promise.resolve(metric.children?.map((child) => this.insertNode(child)));
+    }
+
+    return processedMetric;
+  }
+
+  // Custom method to get children for a node, supporting lazy loading
+  private getChildren = (node: LazyLoadingMetric): Observable<LazyLoadingMetric[]> => {
+    if (node.loadChildren) {
+      return new Observable<LazyLoadingMetric[]>((observer) => {
+        node
+          .loadChildren()
+          .then((children) => {
+            node.children = children;
+            observer.next(children);
+            observer.complete();
+          })
+          .catch((error) => {
+            observer.error(error);
+          });
+      });
+    }
+    return of(node.children || []);
+  };
+
+  // Process the entire metrics data to prepare for lazy loading
+  private processMetricsData(metrics: IMetricUnit[]): LazyLoadingMetric[] {
+    return metrics.map((item) => this.insertNode(item));
   }
 
   openAddMetricDialog() {
