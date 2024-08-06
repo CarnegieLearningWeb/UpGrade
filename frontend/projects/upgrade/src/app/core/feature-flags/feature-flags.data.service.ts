@@ -56,13 +56,7 @@ export class FeatureFlagsDataService {
   }
 
   exportFeatureFlagsDesign(flagId: string) {
-    let id = new HttpParams();
-    id = id.append('ids', flagId);
-
-    const url = this.environment.api.exportFlagsDesign;
-    // return this.http.post<FeatureFlag[]>(url, { params: id });
-    // mock
-    return of(this.mockFeatureFlags).pipe(delay(2000));
+    return this.fetchFeatureFlagById(flagId);
   }
 
   deleteFeatureFlag(id: string) {
