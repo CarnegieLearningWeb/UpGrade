@@ -15,6 +15,7 @@ import {
   FLAG_SEARCH_KEY,
   ValidatedFeatureFlagsError,
   FF_COMPATIBILITY_TYPE,
+  FeatureFlagFile,
 } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
 import { SERVER_ERROR, FEATURE_FLAG_STATUS, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
@@ -276,12 +277,12 @@ export class FeatureFlagService {
       if (filterType === 'inclusion') {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
           where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.list.id } },
-          relations: ['featureFlag', 'segment']
+          relations: ['featureFlag', 'segment'],
         });
       } else {
         existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
           where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.list.id } },
-          relations: ['featureFlag', 'segment']
+          relations: ['featureFlag', 'segment'],
         });
       }
 
@@ -401,14 +402,23 @@ export class FeatureFlagService {
   }
 
   public async validateImportFeatureFlags(
-    featureFlagFiles: any,
+    featureFlagFiles: FeatureFlagFile[],
     logger: UpgradeLogger
   ): Promise<ValidatedFeatureFlagsError[]> {
     logger.info({ message: 'Validate feature flags' });
     const validationErrors = await Promise.allSettled(
       featureFlagFiles.map(async (featureFlagFile) => {
-        const featureFlag = JSON.parse(featureFlagFile.fileContent);
-        // const newFeatureFlag = plainToClass(FeatureFlag, featureFlag);
+        let featureFlag: FeatureFlag;
+        try {
+          featureFlag = JSON.parse(featureFlagFile.fileContent);
+        } catch (parseError) {
+          logger.error({ message: 'Error in parsing feature flag file', details: parseError });
+          return {
+            fileName: featureFlagFile.fileName,
+            compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+          };
+        }
+
         const error = await this.validateImportFeatureFlag(featureFlagFile.fileName, featureFlag);
         return error;
       })
@@ -426,7 +436,7 @@ export class FeatureFlagService {
       .filter((error) => error !== null);
   }
 
-  private async validateImportFeatureFlag(fileName: string, flag: any) {
+  private async validateImportFeatureFlag(fileName: string, flag: FeatureFlag) {
     let compatibilityType = FF_COMPATIBILITY_TYPE.COMPATIBLE;
 
     if (!flag.name || !flag.key || !flag.context) {
