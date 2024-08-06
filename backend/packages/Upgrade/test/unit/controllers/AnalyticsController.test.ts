@@ -14,7 +14,6 @@ describe('Analytics Controller Testing', () => {
   beforeAll(() => {
     configureLogger();
     routingUseContainer(Container);
-    //ormUseContainer(Container);
     classValidatorUseContainer(Container);
 
     // set mock container

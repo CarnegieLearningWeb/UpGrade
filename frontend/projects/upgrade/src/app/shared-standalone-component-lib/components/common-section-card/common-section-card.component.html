@@ -1,11 +1,7 @@
 <div class="common-section-card">
   <header class="header">
-    <div class="header-left">
-      <ng-content select="[header-left]"></ng-content>
-    </div>
-    <div class="header-right">
-      <ng-content select="[header-right]"></ng-content>
-    </div>
+    <ng-content select="[header-left]"></ng-content>
+    <ng-content select="[header-right]"></ng-content>
   </header>
   <section class="content">
     <ng-content select="[content]"></ng-content>

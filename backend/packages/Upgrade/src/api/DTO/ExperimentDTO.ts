@@ -296,6 +296,14 @@ export class ParticipantsValidator {
   public segment: SegmentValidator;
 }
 
+export class ParticipantsArrayValidator {
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SegmentValidator)
+  public segments: SegmentValidator[];
+}
+
 class StateTimeLogValidator {
   @IsNotEmpty()
   @IsString()

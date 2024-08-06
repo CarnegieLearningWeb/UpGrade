@@ -21,35 +21,48 @@ import {
   selectIsLoadingSelectedFeatureFlag,
   selectSortKey,
   selectSortAs,
+  selectAppContexts,
+  selectFeatureFlagIds,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
-import { AddFeatureFlagRequest, FeatureFlag, UpdateFeatureFlagStatusRequest } from './store/feature-flags.model';
-import { ExperimentService } from '../experiments/experiments.service';
+import {
+  AddFeatureFlagRequest,
+  UpdateFeatureFlagRequest,
+  UpdateFeatureFlagStatusRequest,
+} from './store/feature-flags.model';
 import { filter, map, pairwise } from 'rxjs';
+import isEqual from 'lodash.isequal';
+import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
+import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
 
 @Injectable()
 export class FeatureFlagsService {
-  constructor(private store$: Store<AppState>, private experimentService: ExperimentService) {}
+  constructor(private store$: Store<AppState>) {}
 
+  currentUserEmailAddress$ = this.store$.pipe(select(selectCurrentUserEmail));
+  allFeatureFlagsIds$ = this.store$.pipe(select(selectFeatureFlagIds));
   isInitialFeatureFlagsLoading$ = this.store$.pipe(select(selectHasInitialFeatureFlagsDataLoaded));
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
   isLoadingSelectedFeatureFlag$ = this.store$.pipe(select(selectIsLoadingSelectedFeatureFlag));
+  isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
+  IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
+  isLoadingUpsertPrivateSegmentList$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
+  appContexts$ = this.store$.pipe(select(selectAppContexts));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
   searchString$ = this.store$.pipe(select(selectSearchString));
   searchKey$ = this.store$.pipe(select(selectSearchKey));
   sortKey$ = this.store$.pipe(select(selectSortKey));
   sortAs$ = this.store$.pipe(select(selectSortAs));
-  isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
-  IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
 
-  featureFlagsListLengthChange$ = this.allFeatureFlags$.pipe(
+  hasFeatureFlagsCountChanged$ = this.allFeatureFlags$.pipe(
     pairwise(),
     filter(([prevEntities, currEntities]) => prevEntities.length !== currEntities.length)
   );
+
   selectedFeatureFlagStatusChange$ = this.store$.pipe(
     select(selectSelectedFeatureFlag),
     pairwise(),
@@ -65,8 +78,10 @@ export class FeatureFlagsService {
   isSelectedFeatureFlagUpdated$ = this.store$.pipe(
     select(selectSelectedFeatureFlag),
     pairwise(),
-    filter(([prev, curr]) => prev && curr && JSON.stringify(prev) !== JSON.stringify(curr)),
-    map(([prev, curr]) => curr)
+    filter(([prev, curr]) => {
+      return prev && curr && !isEqual(prev, curr);
+    }),
+    map(([, curr]) => curr)
   );
 
   selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));
@@ -74,11 +89,6 @@ export class FeatureFlagsService {
   searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
   selectRootTableState$ = this.store$.select(selectRootTableState);
   activeDetailsTabIndex$ = this.store$.pipe(select(selectActiveDetailsTabIndex));
-  appContexts$ = this.experimentService.contextMetaData$.pipe(
-    map((contextMetaData) => {
-      return Object.keys(contextMetaData?.contextMetadata ?? []);
-    })
-  );
   selectFeatureFlagInclusions$ = this.store$.pipe(select(selectFeatureFlagInclusions));
   selectFeatureFlagInclusionsLength$ = this.store$.pipe(
     select(selectFeatureFlagInclusions),
@@ -89,12 +99,6 @@ export class FeatureFlagsService {
     select(selectFeatureFlagExclusions),
     map((exclusions) => exclusions.length)
   );
-
-  convertNameStringToKey(name:string):string {
-    let upperCaseString = name.trim().toUpperCase();
-    let key = upperCaseString.replace(/ /g, '_');
-    return key;
-}
 
   fetchFeatureFlags(fromStarting?: boolean) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
@@ -112,7 +116,7 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlag({ addFeatureFlagRequest }));
   }
 
-  updateFeatureFlag(flag: FeatureFlag) {
+  updateFeatureFlag(flag: UpdateFeatureFlagRequest) {
     this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlag({ flag }));
   }
 
@@ -122,6 +126,14 @@ export class FeatureFlagsService {
 
   deleteFeatureFlag(flagId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlag({ flagId }));
+  }
+
+  emailFeatureFlagData(featureFlagId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionEmailFeatureFlagData({ featureFlagId }));
+  }
+
+  exportFeatureFlagsData(featureFlagId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionExportFeatureFlagDesign({ featureFlagId }));
   }
 
   setSearchKey(searchKey: FLAG_SEARCH_KEY) {
@@ -142,5 +154,17 @@ export class FeatureFlagsService {
 
   setActiveDetailsTab(activeDetailsTabIndex: number) {
     this.store$.dispatch(FeatureFlagsActions.actionSetActiveDetailsTabIndex({ activeDetailsTabIndex }));
+  }
+
+  addFeatureFlagInclusionPrivateSegmentList(list: AddPrivateSegmentListRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlagInclusionList({ list }));
+  }
+
+  updateFeatureFlagInclusionPrivateSegmentList(list: EditPrivateSegmentListRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagInclusionList({ list }));
+  }
+
+  deleteFeatureFlagInclusionPrivateSegmentList(segmentId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList({ segmentId }));
   }
 }

@@ -86,8 +86,6 @@ import { MoocletTestService } from './MoocletTestService';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
-import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
-import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { ExperimentCSVData } from '../repositories/AnalyticsRepository';
 
 const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
@@ -1894,11 +1892,7 @@ export class ExperimentService {
 
   public includeExcludeSegmentCreation(
     experimentSegment: ParticipantsValidator,
-    experimentDocSegmentData:
-      | ExperimentSegmentInclusion
-      | ExperimentSegmentExclusion
-      | FeatureFlagSegmentExclusion
-      | FeatureFlagSegmentInclusion,
+    experimentDocSegmentData: ExperimentSegmentInclusion | ExperimentSegmentExclusion,
     experimentId: string,
     context: string[],
     isIncludeMode: boolean

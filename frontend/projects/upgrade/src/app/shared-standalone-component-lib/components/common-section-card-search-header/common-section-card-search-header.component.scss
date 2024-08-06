@@ -1,22 +1,16 @@
 .search-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 94px;
+  column-gap: 16px;
 
   .filter-options {
-    flex: 1;
-    margin-right: 20px;
+    width: 120px;
   }
 
   .search-input {
-    flex: 2;
-    line-height: 20px;
-  }
+    width: 240px;
 
-  .search-icon {
-    margin-top: -6px;
-    height: 16px;
-    cursor: pointer;
+    .search-icon {
+      color: var(--dark-grey);
+    }
   }
 }

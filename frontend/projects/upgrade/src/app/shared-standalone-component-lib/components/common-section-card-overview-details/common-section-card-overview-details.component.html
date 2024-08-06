@@ -1,16 +1,15 @@
-<div class="content-section">
+<div class="content-section dense-2">
   <div *ngFor="let item of data | keyvalue: noSort">
     <div class="item-key-value">
-      <span class="ft-14-600 item-key">{{ item.key }}:</span>
-      <ng-container *ngIf="item.key !== 'Tags'; else chipSection">
-        <span class="ft-14-400 item-value">{{ item.value }}</span>
-      </ng-container>
-
-      <ng-template #chipSection>
-        <mat-chip-list>
-          <mat-chip *ngFor="let tag of item.value" class="ft-12-400 chip">{{ tag }}</mat-chip>
-        </mat-chip-list>
-      </ng-template>
+      <span class="ft-14-600">{{ item.key }}:</span>
+      <span *ngIf="item.key !== 'Tags'" class="ft-14-400 item-value">{{ item.value }}</span>
+      <mat-chip-listbox *ngIf="item.key === 'Tags'" class="chips-container">
+        <mat-chip *ngFor="let tag of item.value">
+          <span class="chip-label">
+            {{ tag }}
+          </span>
+        </mat-chip>
+      </mat-chip-listbox>
     </div>
   </div>
 </div>

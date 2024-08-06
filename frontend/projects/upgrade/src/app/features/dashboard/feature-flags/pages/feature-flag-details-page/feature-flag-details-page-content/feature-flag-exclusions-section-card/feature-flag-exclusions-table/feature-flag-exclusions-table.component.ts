@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/feature-flags.service';
+import { FEATURE_FLAG_PARTICIPANT_LIST_KEY } from '../../../../../../../../core/feature-flags/store/feature-flags.model';
 import { CommonDetailsParticipantListTableComponent } from '../../../../../../../../shared-standalone-component-lib/components/common-details-participant-list-table/common-details-participant-list-table.component';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
@@ -13,7 +14,8 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [CommonDetailsParticipantListTableComponent, CommonModule, TranslateModule],
 })
 export class FeatureFlagExclusionsTableComponent {
-  @Input() dataSource$ = this.featureFlagService.selectFeatureFlagExclusions$;
+  tableType = FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE;
+  dataSource$ = this.featureFlagService.selectFeatureFlagExclusions$;
   isLoading$ = this.featureFlagService.isLoadingSelectedFeatureFlag$;
 
   constructor(private featureFlagService: FeatureFlagsService) {}

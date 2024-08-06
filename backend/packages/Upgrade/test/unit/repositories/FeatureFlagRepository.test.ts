@@ -73,9 +73,7 @@ describe('FeatureFlagRepository Testing', () => {
   });
 
   it('should delete a flag', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(FeatureFlagRepository.prototype, 'createQueryBuilder')
-      .returns(deleteQueryBuilder);
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
     const result = {
       identifiers: [{ id: flag.id }],
       generatedMaps: [flag],
@@ -88,16 +86,16 @@ describe('FeatureFlagRepository Testing', () => {
     deleteMock.expects('returning').once().returns(deleteQueryBuilder);
     deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    await repo.deleteById(flag.id);
+    const res = await repo.deleteById(flag.id, manager);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     deleteMock.verify();
+
+    expect(res).toEqual([flag]);
   });
 
   it('should throw an error when delete fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(FeatureFlagRepository.prototype, 'createQueryBuilder')
-      .returns(deleteQueryBuilder);
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
 
     deleteMock.expects('delete').once().returns(deleteQueryBuilder);
     deleteMock.expects('from').once().returns(deleteQueryBuilder);
@@ -106,7 +104,7 @@ describe('FeatureFlagRepository Testing', () => {
     deleteMock.expects('execute').once().returns(Promise.reject(err));
 
     expect(async () => {
-      await repo.deleteById(flag.id);
+      await repo.deleteById(flag.id, manager);
     }).rejects.toThrow(err);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
