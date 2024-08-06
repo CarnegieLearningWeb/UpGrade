@@ -158,7 +158,7 @@ export class StratificationController {
   public async insertStratification(
     @Req() request: AppRequest,
     @Body({ validate: true }) body: UploadedFilesArrayValidator
-  ): Promise<UserStratificationFactor[]> {
+  ): Promise<UserStratificationFactor[][]> {
     return this.stratificationService.insertStratificationFiles(body.files, request.logger);
   }
 
