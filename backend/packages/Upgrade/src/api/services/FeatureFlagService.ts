@@ -274,12 +274,12 @@ export class FeatureFlagService {
       if (filterType === 'inclusion') {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
           where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.list.id } },
-          relations: ['featureFlag', 'segment']
+          relations: ['featureFlag', 'segment'],
         });
       } else {
         existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
           where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.list.id } },
-          relations: ['featureFlag', 'segment']
+          relations: ['featureFlag', 'segment'],
         });
       }
 
@@ -372,8 +372,12 @@ export class FeatureFlagService {
   ): Promise<FeatureFlag[]> {
     const segmentObjMap = {};
     featureFlags.forEach((flag) => {
-      const includeIds = flag.featureFlagSegmentInclusion.map((segmentInclusion) => segmentInclusion.segment.id);
-      const excludeIds = flag.featureFlagSegmentExclusion.map((segmentExclusion) => segmentExclusion.segment.id);
+      const includeIds = flag.featureFlagSegmentInclusion
+        .filter((inclusion) => inclusion.enabled)
+        .map((segmentInclusion) => segmentInclusion.segment.id);
+      const excludeIds = flag.featureFlagSegmentExclusion
+        .filter((exclusion) => exclusion.enabled)
+        .map((segmentExclusion) => segmentExclusion.segment.id);
 
       segmentObjMap[flag.id] = {
         segmentIdsQueue: [...includeIds, ...excludeIds],
