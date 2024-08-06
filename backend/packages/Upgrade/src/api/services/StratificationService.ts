@@ -228,14 +228,10 @@ export class StratificationService {
   public async insertStratificationFiles(
     files: UploadedFilesValidator[],
     logger: UpgradeLogger
-  ): Promise<UserStratificationFactor[]> {
-    const stratificationResults: UserStratificationFactor[] = [];
+  ): Promise<UserStratificationFactor[][]> {
 
-    for (const fileObj of files) {
-      const result = await this.insertStratification(fileObj.file, logger);
-      stratificationResults.push(...result);
-    }
-
-    return stratificationResults;
+    return await Promise.all(files.map(async (fileObj) => {
+      return await this.insertStratification(fileObj.file, logger);
+    }));
   }
 }
