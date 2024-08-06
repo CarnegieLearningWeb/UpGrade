@@ -165,13 +165,13 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
         case METRIC_SEARCH_KEY.ALL:
           return (
             (filter !== METRIC_SEARCH_KEY.ALL ? data.key.toLocaleLowerCase().includes(filter) : data.key) ||
-            !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length
+            !!data.context?.filter((context) => context.toLocaleLowerCase().includes(filter)).length
           );
         case METRIC_SEARCH_KEY.NAME:
           return filter !== METRIC_SEARCH_KEY.NAME ? data.key.toLocaleLowerCase().includes(filter) : data.key;
 
         case METRIC_SEARCH_KEY.CONTEXT:
-          return !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length;
+          return !!data.context?.filter((context) => context.toLocaleLowerCase().includes(filter)).length;
       }
     };
   }
