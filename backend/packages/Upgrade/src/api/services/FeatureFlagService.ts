@@ -39,7 +39,21 @@ export class FeatureFlagService {
   }
 
   public async getKeys(experimentUserDoc: ExperimentUser, context: string, logger: UpgradeLogger): Promise<string[]> {
-    logger.info({ message: 'Get all feature flags' });
+    logger.info({ message: `Get all feature flag keys: User: ${experimentUserDoc?.id}` });
+
+    // throw error if user not defined
+    if (!experimentUserDoc || !experimentUserDoc.id) {
+      logger.error({ message: `User not defined in getAllExperimentConditions: ${experimentUserDoc?.id}` });
+      const error = new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+          message: `User not defined in getAllExperimentConditions: ${experimentUserDoc?.id}`,
+        })
+      );
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404;
+      throw error;
+    }
 
     const filteredFeatureFlags = await this.featureFlagRepository.getFlagsFromContext(context);
 
