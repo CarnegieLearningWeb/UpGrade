@@ -336,15 +336,17 @@ export class ExperimentAssignmentService {
     context: string,
     logger: UpgradeLogger
   ): Promise<IExperimentAssignmentv5[]> {
-    logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc.requestedUserId}` });
+    logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc?.requestedUserId}` });
 
     // throw error if user not defined
     if (!experimentUserDoc || !experimentUserDoc.id) {
-      logger.error({ message: `User not defined in getAllExperimentConditions: ${experimentUserDoc.requestedUserId}` });
+      logger.error({
+        message: `User not defined in getAllExperimentConditions: ${experimentUserDoc?.requestedUserId}`,
+      });
       const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined in getAllExperimentConditions: ${experimentUserDoc.requestedUserId}`,
+          message: `User not defined in getAllExperimentConditions: ${experimentUserDoc?.requestedUserId}`,
         })
       );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
