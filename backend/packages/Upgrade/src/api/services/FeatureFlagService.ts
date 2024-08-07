@@ -439,6 +439,41 @@ export class FeatureFlagService {
   private async validateImportFeatureFlag(fileName: string, flag: FeatureFlag) {
     let compatibilityType = FF_COMPATIBILITY_TYPE.COMPATIBLE;
 
+    // check for subSegmentIds
+    let segmentValidator = false;
+    flag.featureFlagSegmentInclusion.forEach((segmentInclusion) => {
+      if (!segmentInclusion.segment.subSegments) {
+        segmentValidator = true;
+        return;
+      }
+      segmentInclusion.segment.subSegments.forEach((subSegment) => {
+        if (subSegment.id == undefined) {
+          segmentValidator = true;
+          return;
+        }
+      });
+    });
+
+    flag.featureFlagSegmentExclusion.forEach((segmentExclusion) => {
+      if (!segmentExclusion.segment.subSegments) {
+        segmentValidator = true;
+        return;
+      }
+      segmentExclusion.segment.subSegments.forEach((subSegment) => {
+        if (subSegment.id == undefined) {
+          segmentValidator = true;
+          return;
+        }
+      });
+    });
+
+    if (segmentValidator) {
+      return {
+        fileName: fileName,
+        compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+      };
+    }
+
     if (!flag.name || !flag.key || !flag.context) {
       compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
     } else {
