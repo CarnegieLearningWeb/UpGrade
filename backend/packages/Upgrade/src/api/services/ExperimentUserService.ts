@@ -295,16 +295,12 @@ export class ExperimentUserService {
     return this.userRepository.save(newDocument);
   }
 
-  public async getUserDoc(experimentUserId, logger): Promise<RequestedExperimentUser> {
+  public async getUserDoc(experimentUserId: string, logger: UpgradeLogger): Promise<RequestedExperimentUser | null> {
     try {
       const experimentUserDoc = await this.getOriginalUserDoc(experimentUserId, logger);
-      if (experimentUserDoc) {
-        const userDoc = { ...experimentUserDoc, requestedUserId: experimentUserId };
-        logger.info({ message: 'Got the user doc', details: userDoc });
-        return userDoc;
-      } else {
-        return null;
-      }
+      const userDoc = { ...experimentUserDoc, requestedUserId: experimentUserId };
+      logger.info({ message: 'Got the user doc', details: userDoc });
+      return userDoc;
     } catch (error) {
       logger.error({ message: `Error in getting user doc for user => ${experimentUserId}`, error });
       return null;
