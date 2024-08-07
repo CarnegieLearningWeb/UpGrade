@@ -112,6 +112,40 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(disableFlagStatusModalConfig);
   }
 
+  openDisableIncludeAllConfirmModal() {
+    const disableIncludeAllModalConfig: CommonModalConfig = {
+      title: 'Disable Include All',
+      primaryActionBtnLabel: 'Disable',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: 'Are you sure you want to disable "Include All"?',
+        subMessage:
+          '* Disabling this will revert to the previously defined include lists, if any. Ensure the lists are updated as needed.',
+        subMessageClass: 'warn',
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(disableIncludeAllModalConfig);
+  }
+
+  openEnableIncludeAllConfirmModel() {
+    const enableIncludeAllModalConfig: CommonModalConfig = {
+      title: 'Enable Include All',
+      primaryActionBtnLabel: 'Enable',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: 'Are you sure you want to enable "Include All"?',
+        subMessage:
+          '* Enabling this will include all participants. Any existing lists, if defined, will be ignored until this is turned off again.',
+        subMessageClass: 'info',
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(enableIncludeAllModalConfig);
+  }
+
   openUpsertFeatureFlagModal(commonModalConfig: CommonModalConfig) {
     const config: MatDialogConfig = {
       data: commonModalConfig,
@@ -236,7 +270,10 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(commonModalConfig);
   }
 
-  openEmailFeatureFlagDataModal(warning: string, subtext: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openEmailFeatureFlagDataModal(
+    warning: string,
+    subtext: string
+  ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
       title: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
       primaryActionBtnLabel: 'Email',
@@ -267,7 +304,9 @@ export class DialogService {
     return this.dialog.open(ImportFeatureFlagModalComponent, config);
   }
 
-  openSimpleCommonConfirmationModal(commonModalConfig: CommonModalConfig): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openSimpleCommonConfirmationModal(
+    commonModalConfig: CommonModalConfig
+  ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: '656px',

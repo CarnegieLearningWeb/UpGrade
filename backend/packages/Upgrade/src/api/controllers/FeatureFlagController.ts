@@ -1,9 +1,10 @@
-import { JsonController, Authorized, Post, Body, Delete, Put, Req, Get, Params } from 'routing-controllers';
+import { JsonController, Authorized, Post, Body, Delete, Put, Req, Get, Params, Patch } from 'routing-controllers';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatusUpdateValidator';
+import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFilterModeUpdateValidator';
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { SERVER_ERROR } from 'upgrade_types';
@@ -303,7 +304,7 @@ export class FeatureFlagsController {
   /**
    * @swagger
    * /flags/status:
-   *    post:
+   *    patch:
    *       description: Update Feature flag State
    *       consumes:
    *         - application/json
@@ -330,12 +331,50 @@ export class FeatureFlagsController {
    *          '200':
    *            description: Feature flag state is updated
    */
-  @Post('/status')
+  @Patch('/status')
   public async updateState(
     @Body({ validate: true })
     flag: FeatureFlagStatusUpdateValidator
   ): Promise<FeatureFlag> {
     return this.featureFlagService.updateState(flag.flagId, flag.status);
+  }
+
+  /**
+   * @swagger
+   * /flags/filterMode:
+   *    patch:
+   *       description: Update Feature flag Filter Mode
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: updateFilterMode
+   *           description: Updating the featur flag's filter mode
+   *           schema:
+   *             type: object
+   *             required:
+   *              - flagId
+   *              - filterMode
+   *             properties:
+   *              flagId:
+   *                type: string
+   *              filterMode:
+   *                type: string
+   *                enum: [includeAll, excludeAll]
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Feature flag filterMode is updated
+   */
+  @Patch('/filterMode')
+  public async updateFilterMode(
+    @Body({ validate: true })
+    flag: FeatureFlagFilterModeUpdateValidator
+  ): Promise<FeatureFlag> {
+    return this.featureFlagService.updateFilterMode(flag.flagId, flag.filterMode);
   }
 
   /**
