@@ -49,6 +49,8 @@ export const environment = {
     featureFlag: '/flags',
     updateFlagStatus: '/flags/status',
     getPaginatedFlags: '/flags/paginated',
+    exportFlagsDesign: '/flags/export',
+    emailFlagData: '/flags/mail',
     addFlagInclusionList: '/flags/inclusionList',
     addFlagExclusionList: '/flags/exclusionList',
     setting: '/setting',
