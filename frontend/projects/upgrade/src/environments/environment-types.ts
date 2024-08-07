@@ -32,6 +32,8 @@ export interface APIEndpoints {
   validateFeatureFlag: string;
   updateFlagStatus: string;
   getPaginatedFlags: string;
+  exportFlagsDesign: string,
+  emailFlagData: string,
   addFlagInclusionList: string;
   addFlagExclusionList: string;
   setting: string;

@@ -125,6 +125,15 @@ export interface FeatureFlagsPaginationParams {
   sortParams?: IFeatureFlagsSortParams;
 }
 
+export enum FEATURE_FLAG_DETAILS_PAGE_ACTIONS {
+  EDIT = 'Edit Feature Flag',
+  DUPLICATE = 'Duplicate Feature Flag',
+  ARCHIVE = 'Archive Feature Flag',
+  DELETE = 'Delete Feature Flag',
+  EXPORT_DESIGN = 'Export Feature Flag Design',
+  EMAIL_DATA = 'Email Feature Flag Data'
+}
+
 export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
   INCLUDE = 'featureFlagSegmentInclusion',
   EXCLUDE = 'featureFlagSegmentExclusion',

@@ -50,6 +50,8 @@ export const environment = {
     updateFlagStatus: '/flags/status',
     getPaginatedFlags: '/flags/paginated',
     validateFeatureFlag: '/flags/import/validation',
+    exportFlagsDesign: '/flags/export',
+    emailFlagData: '/flags/mail',
     addFlagInclusionList: '/flags/inclusionList',
     addFlagExclusionList: '/flags/exclusionList',
     setting: '/setting',
