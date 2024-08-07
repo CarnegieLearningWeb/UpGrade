@@ -12,7 +12,7 @@
         <app-common-import-container
           fileType=".json"
           buttonLabel="Choose JSON"
-          (change)="handleFilesSelected($event)"
+          (filesSelected)="handleFilesSelected($event)"
         >
         </app-common-import-container>
         <p class="ft-12-400 import-message">
@@ -21,7 +21,7 @@
         </p>
       </ng-container>
       <ng-template #validationTable>
-        <table mat-table class="file-compatibility-table" [dataSource]="importFileErrorsDataSource" multiTemplateDataRows>
+        <table mat-table class="file-compatibility-table" [dataSource]="fileValidationErrorDataSource" multiTemplateDataRows>
           <!-- Actions Column -->
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef></th>

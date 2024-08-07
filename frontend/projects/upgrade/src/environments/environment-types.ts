@@ -30,6 +30,7 @@ export interface APIEndpoints {
   allExperimentNames: string;
   featureFlag: string;
   validateFeatureFlag: string;
+  importFeatureFlag: string;
   updateFlagStatus: string;
   getPaginatedFlags: string;
   exportFlagsDesign: string,

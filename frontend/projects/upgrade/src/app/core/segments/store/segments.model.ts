@@ -122,12 +122,7 @@ export interface SegmentFile {
   fileContent: string | ArrayBuffer;
 }
 
-export interface SegmentReturnedObj {
-  segments: Segment[];
-  importErrors: SegmentImportError[];
-}
-
-export interface SegmentImportError {
+export interface importError {
   fileName: string;
   error: string;
 }

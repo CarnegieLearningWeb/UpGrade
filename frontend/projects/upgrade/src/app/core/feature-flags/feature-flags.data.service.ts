@@ -49,6 +49,11 @@ export class FeatureFlagsDataService {
     return this.http.post(url, featureFlag);
   }
 
+  importFeatureFlag(featureFlag: FeatureFlagFile[]) {
+    const url = this.environment.api.importFeatureFlag;
+    return this.http.post(url, featureFlag);
+  }
+
   emailFeatureFlagData(flagId: string, email: string){
     let featureFlagInfoParams = new HttpParams();
     featureFlagInfoParams = featureFlagInfoParams.append('experimentId', flagId);

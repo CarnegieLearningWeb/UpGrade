@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { CommonModalComponent, CommonStatusIndicatorChipComponent } from '../../../../../shared-standalone-component-lib/components';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { BehaviorSubject, Observable, combineLatest, map } from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest, firstValueFrom, map } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../../shared/shared.module';
 import { CommonImportContainerComponent } from '../../../../../shared-standalone-component-lib/components/common-import-container/common-import-container.component';
@@ -10,6 +10,8 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { ValidateFeatureFlagError, FeatureFlagFile } from '../../../../../core/feature-flags/store/feature-flags.model';
+import { importError } from '../../../../../core/segments/store/segments.model';
+import { NotificationService } from '../../../../../core/notifications/notification.service';
 
 @Component({
   selector: 'app-import-feature-flag-modal',
@@ -24,8 +26,8 @@ export class ImportFeatureFlagModalComponent {
   compatibilityDescription = '';
   displayedColumns: string[] = ['actions', 'fileName', 'compatibilityType'];
   isImportActionBtnDisabled = new BehaviorSubject<boolean>(true);
-  importFileErrorsDataSource = new MatTableDataSource<ValidateFeatureFlagError>();
-  importFileErrors: ValidateFeatureFlagError[] = [];
+  fileValidationErrorDataSource = new MatTableDataSource<ValidateFeatureFlagError>();
+  fileValidationErrors: ValidateFeatureFlagError[] = [];
   fileData: FeatureFlagFile[] = [];
   uploadedFileCount = new BehaviorSubject<number>(0);
   isLoadingImportFeatureFlag$ = this.featureFlagsService.isLoadingImportFeatureFlag$;
@@ -38,22 +40,23 @@ export class ImportFeatureFlagModalComponent {
     @Inject(MAT_DIALOG_DATA) public data: CommonModalConfig,
     public featureFlagsService: FeatureFlagsService,
     public featureFlagsDataService: FeatureFlagsDataService,
-    public dialogRef: MatDialogRef<ImportFeatureFlagModalComponent>
+    public dialogRef: MatDialogRef<ImportFeatureFlagModalComponent>,
+    private notificationService: NotificationService,
   ) {}
 
   async handleFilesSelected(event) {
-    if (event.target.files.length > 0) {
+    if (event.length > 0) {
       this.isImportActionBtnDisabled.next(false);
       this.featureFlagsService.setIsLoadingImportFeatureFlag(true);
     }
 
-    this.uploadedFileCount.next(event.target.files.length);
-    this.importFileErrors = [];
+    this.uploadedFileCount.next(event.length);
+    this.fileValidationErrors = [];
     this.fileData = [];
 
-    if (event.target.files.length === 0) return;
+    if (event.length === 0) return;
 
-    const filesArray = Array.from(event.target.files) as any[];
+    const filesArray = Array.from(event) as any[];
     await Promise.all(
       filesArray.map((file) => {
         return new Promise<void>((resolve) => {
@@ -72,18 +75,22 @@ export class ImportFeatureFlagModalComponent {
   }
 
   async checkValidation(files: FeatureFlagFile[]) {
-    this.importFileErrors =
-      (
-        (await this.featureFlagsDataService.validateFeatureFlag(files).toPromise()) as ValidateFeatureFlagError[]
-      ).filter((data) => data.compatibilityType != null) || [];
-    this.importFileErrorsDataSource.data = this.importFileErrors;
-    this.featureFlagsService.setIsLoadingImportFeatureFlag(false);
-    if (this.importFileErrors.length > 0) {
-      this.importFileErrors.forEach(error => {
-        if (error.compatibilityType === 'incompatible') {
-          this.isImportActionBtnDisabled.next(true);
-        };
-      });
+    try {
+      const validationErrors = await firstValueFrom(this.featureFlagsDataService.validateFeatureFlag(files)) as ValidateFeatureFlagError[];
+      this.fileValidationErrors = validationErrors.filter((data) => data.compatibilityType != null) || [];
+      this.fileValidationErrorDataSource.data = this.fileValidationErrors;
+      this.featureFlagsService.setIsLoadingImportFeatureFlag(false);
+
+      if (this.fileValidationErrors.length > 0) {
+        this.fileValidationErrors.forEach(error => {
+          if (error.compatibilityType === 'incompatible') {
+            this.isImportActionBtnDisabled.next(true);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error during validation:', error);
+      this.featureFlagsService.setIsLoadingImportFeatureFlag(false);
     }
   }
 
@@ -91,8 +98,36 @@ export class ImportFeatureFlagModalComponent {
     this.isDescriptionExpanded = !this.isDescriptionExpanded;
   }
 
-  importFiles() {
-    console.log('Import feature flags');
+  async importFiles() {
+    try {
+      this.isImportActionBtnDisabled.next(true);
+      const importResult = await firstValueFrom(this.featureFlagsDataService.importFeatureFlag(this.fileData)) as importError[];
+
+      this.showNotification(importResult);
+      this.isImportActionBtnDisabled.next(false);
+      this.uploadedFileCount.next(0);
+      this.fileData = [];
+    } catch (error) {
+      console.error('Error during import:', error);
+      this.isImportActionBtnDisabled.next(false);
+    }
+  }
+
+  showNotification(importResult: importError[]) {
+    const importSuccessFiles = importResult.filter((data) => data.error == null).map((data) => data.fileName);
+
+    let importSuccessMsg = '';
+    if ( importSuccessFiles.length > 0) {
+      importSuccessMsg =`Successfully imported ${importSuccessFiles.length} file/s: ${importSuccessFiles.join(', ')}`
+      this.closeModal();
+    }
+
+    this.notificationService.showSuccess(importSuccessMsg);
+
+    const importFailedFiles = importResult.filter((data) => data.error != null);
+    importFailedFiles.forEach((data) => {
+      this.notificationService.showError(`Failed to import ${data.fileName}: ${data.error}`);
+    });
   }
 
   closeModal() {
