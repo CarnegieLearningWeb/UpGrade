@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@angular/core';
 import { ENV, Environment } from '../../../environments/environment-types';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import {
   AddFeatureFlagRequest,
   FeatureFlag,
@@ -11,11 +11,12 @@ import {
   UpdateFeatureFlagStatusRequest,
   UpdateFilterModeRequest,
 } from './store/feature-flags.model';
-import { Observable } from 'rxjs';
+import { Observable, delay, of } from 'rxjs';
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
 
 @Injectable()
 export class FeatureFlagsDataService {
+  mockFeatureFlags: FeatureFlag[] = [];
   constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
 
   fetchFeatureFlagsPaginated(params: FeatureFlagsPaginationParams): Observable<FeatureFlagsPaginationInfo> {
@@ -46,6 +47,22 @@ export class FeatureFlagsDataService {
   updateFilterMode(params: UpdateFilterModeRequest): Observable<FeatureFlag> {
     const url = this.environment.api.updateFilterMode;
     return this.http.patch<FeatureFlag>(url, params);
+  }
+
+  emailFeatureFlagData(flagId: string, email: string) {
+    let featureFlagInfoParams = new HttpParams();
+    featureFlagInfoParams = featureFlagInfoParams.append('experimentId', flagId);
+    featureFlagInfoParams = featureFlagInfoParams.append('email', email);
+
+    const url = this.environment.api.emailFlagData;
+    // return this.http.post(url, { params: featureFlagInfoParams });
+
+    // mock
+    return of(true).pipe(delay(2000));
+  }
+
+  exportFeatureFlagsDesign(flagId: string) {
+    return this.fetchFeatureFlagById(flagId);
   }
 
   deleteFeatureFlag(id: string) {

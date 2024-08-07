@@ -66,6 +66,24 @@ export const actionUpdateFeatureFlagSuccess = createAction(
 
 export const actionUpdateFeatureFlagFailure = createAction('[Feature Flags] Update Feature Flag Failure');
 
+export const actionEmailFeatureFlagData = createAction(
+  '[Feature Flags] Email Feature Flag Data',
+  props<{ featureFlagId: string }>()
+);
+
+export const actionEmailFeatureFlagDataSuccess = createAction('[Feature Flags] Email Feature Flag Data Success');
+
+export const actionEmailFeatureFlagDataFailure = createAction('[Feature Flags] Email Feature Flag Data Failure');
+
+export const actionExportFeatureFlagDesign = createAction(
+  '[Feature Flags] Export Feature Flag Design',
+  props<{ featureFlagId: string }>()
+);
+
+export const actionExportFeatureFlagDesignSuccess = createAction('[Feature Flags] Export Feature Flag Design Success');
+
+export const actionExportFeatureFlagDesignFailure = createAction('[Feature Flags] Export Feature Flag Design Failure');
+
 export const actionSetIsLoadingFeatureFlags = createAction(
   '[Feature Flags] Set Is Loading Flags',
   props<{ isLoadingFeatureFlags: boolean }>()
