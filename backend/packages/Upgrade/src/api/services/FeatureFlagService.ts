@@ -148,8 +148,28 @@ export class FeatureFlagService {
 
   public async updateState(flagId: string, status: FEATURE_FLAG_STATUS): Promise<FeatureFlag> {
     // TODO: Add log for updating flag state
-    const updatedState = await this.featureFlagRepository.updateState(flagId, status);
+    let updatedState: FeatureFlag;
+    try {
+      updatedState = await this.featureFlagRepository.updateState(flagId, status);
+    } catch (err) {
+      const error = new Error(`Error in updating feature flag status ${err}`);
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      throw error;
+    }
     return updatedState;
+  }
+
+  public async updateFilterMode(flagId: string, filterMode: FILTER_MODE): Promise<FeatureFlag> {
+    // TODO: Add log for updating filter mode
+    let updatedFilterMode: FeatureFlag;
+    try {
+      updatedFilterMode = await this.featureFlagRepository.updateFilterMode(flagId, filterMode);
+    } catch (err) {
+      const error = new Error(`Error in updating feature flag filter mode ${err}`);
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      throw error;
+    }
+    return updatedFilterMode;
   }
 
   public update(flagDTO: FeatureFlagValidation, logger: UpgradeLogger): Promise<FeatureFlag> {
@@ -375,8 +395,12 @@ export class FeatureFlagService {
   ): Promise<FeatureFlag[]> {
     const segmentObjMap = {};
     featureFlags.forEach((flag) => {
-      const includeIds = flag.featureFlagSegmentInclusion.map((segmentInclusion) => segmentInclusion.segment.id);
-      const excludeIds = flag.featureFlagSegmentExclusion.map((segmentExclusion) => segmentExclusion.segment.id);
+      const includeIds = flag.featureFlagSegmentInclusion
+        .filter((inclusion) => inclusion.enabled)
+        .map((segmentInclusion) => segmentInclusion.segment.id);
+      const excludeIds = flag.featureFlagSegmentExclusion
+        .filter((exclusion) => exclusion.enabled)
+        .map((segmentExclusion) => segmentExclusion.segment.id);
 
       segmentObjMap[flag.id] = {
         segmentIdsQueue: [...includeIds, ...excludeIds],

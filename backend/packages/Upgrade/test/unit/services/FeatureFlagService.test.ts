@@ -19,7 +19,7 @@ import {
 import { SEGMENT_TYPE, SORT_AS_DIRECTION } from '../../../../../../types/src';
 import { isUUID } from 'class-validator';
 import { v4 as uuid } from 'uuid';
-import { FEATURE_FLAG_STATUS } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { FeatureFlagValidation } from '../../../src/api/controllers/validators/FeatureFlagValidator';
 import { FeatureFlagListValidator } from '../../../src/api/controllers/validators/FeatureFlagListValidator';
@@ -123,6 +123,9 @@ describe('Feature Flag Service Testing', () => {
             deleteById: jest.fn().mockResolvedValue(mockFlag1.id),
             updateState: jest.fn().mockImplementation((id, status) => {
               return status;
+            }),
+            updateFilterMode: jest.fn().mockImplementation((id, filterMode) => {
+              return filterMode;
             }),
             updateFeatureFlag: jest.fn().mockResolvedValue(mockFlagArr),
             save: jest.fn().mockImplementation((flag: Partial<FeatureFlag>) => {
@@ -310,6 +313,11 @@ describe('Feature Flag Service Testing', () => {
 
   it('should update the flag state', async () => {
     const results = await service.updateState(mockFlag1.id, FEATURE_FLAG_STATUS.ENABLED);
+    expect(results).toBeTruthy();
+  });
+
+  it('should update the filter mode', async () => {
+    const results = await service.updateFilterMode(mockFlag1.id, FILTER_MODE.EXCLUDE_ALL);
     expect(results).toBeTruthy();
   });
 
