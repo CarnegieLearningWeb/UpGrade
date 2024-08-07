@@ -12,6 +12,7 @@ import {
   CACHE_PREFIX,
   CONSISTENCY_RULE,
   ASSIGNMENT_UNIT,
+  EXCLUSION_CODE,
 } from 'upgrade_types';
 import { In, getConnection } from 'typeorm';
 import Papa from 'papaparse';
@@ -39,6 +40,8 @@ import { IndividualEnrollment } from '../models/IndividualEnrollment';
 import { GroupEnrollment } from '../models/GroupEnrollment';
 import { GroupEnrollmentRepository } from '../repositories/GroupEnrollmentRepository';
 import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
+import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
+import { ExperimentUser } from '../models/ExperimentUser';
 
 interface IsSegmentValidWithError {
   missingProperty: string;
@@ -72,6 +75,8 @@ export class SegmentService {
     private individualEnrollmentRepository: IndividualEnrollmentRepository,
     @InjectRepository()
     private groupEnrollmentRepository: GroupEnrollmentRepository,
+    @InjectRepository()
+    private individualExclusionRepository: IndividualExclusionRepository,
     private cacheService: CacheService
   ) {}
 
@@ -617,6 +622,16 @@ export class SegmentService {
               experiment: { id: experiment.id },
               groupId: In(excludedUsersGroups),
             });
+          } else {
+            const exclusionDocs = newUsers.map((userId) => {
+              return {
+                user: { id: userId } as ExperimentUser,
+                experiment,
+                groupId: null,
+                exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
+              };
+            });
+            await this.individualExclusionRepository.saveRawJson(exclusionDocs);
           }
           // Delete group enrollment of all groups
           if (experimentSegment.experiment.assignmentUnit == ASSIGNMENT_UNIT.GROUP) {
