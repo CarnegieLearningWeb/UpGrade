@@ -54,9 +54,7 @@
               <mat-tree [dataSource]="[element]" [treeControl]="nestedTreeControl" class="mat-nested-tree">
                 <!-- Leaf node template -->
                 <mat-tree-node *matTreeNodeDef="let node">
-                  <button mat-icon-button disabled>
-                    <mat-icon class="leaf-node-button-icon">fiber_manual_record</mat-icon>
-                  </button>
+                  <mat-icon class="leaf-node-icon">fiber_manual_record</mat-icon>
                   {{ node.key }}
                   <mat-icon
                     *ngIf="permissions.metrics.delete && keyEditMode"
