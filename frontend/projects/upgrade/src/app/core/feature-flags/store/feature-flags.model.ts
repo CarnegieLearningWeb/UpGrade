@@ -58,6 +58,16 @@ export enum UPSERT_FEATURE_FLAG_LIST_ACTION {
   EDIT = 'edit',
 }
 
+export interface FeatureFlagFile {
+  fileName: string;
+  fileContent: string | ArrayBuffer;
+}
+
+export interface ValidateFeatureFlagError {
+  fileName: string;
+  compatibilityType: string;
+}
+
 export interface FeatureFlagsPaginationInfo {
   nodes: FeatureFlag[];
   total: number;

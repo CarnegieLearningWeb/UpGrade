@@ -4,13 +4,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import {
   AddFeatureFlagRequest,
   FeatureFlag,
+  FeatureFlagFile,
   FeatureFlagSegmentListDetails,
   FeatureFlagsPaginationInfo,
   FeatureFlagsPaginationParams,
   UpdateFeatureFlagRequest,
   UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
-import { FeatureFlagFile } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 import { Observable, delay, of } from 'rxjs';
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
 

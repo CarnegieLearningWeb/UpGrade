@@ -9,16 +9,7 @@ import { FeatureFlagsDataService } from '../../../../../core/feature-flags/featu
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { MatTableDataSource } from '@angular/material/table';
-
-export interface FeatureFlagFile {
-  fileName: string;
-  fileContent: string | ArrayBuffer;
-}
-
-export interface ValidateFeatureFlagError {
-  fileName: string;
-  compatibilityType: string;
-}
+import { ValidateFeatureFlagError, FeatureFlagFile } from '../../../../../core/feature-flags/store/feature-flags.model';
 
 @Component({
   selector: 'app-import-feature-flag-modal',
