@@ -443,8 +443,12 @@ export class FeatureFlagService {
       compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
     } else {
       const segmentIds = [
-        ...flag.featureFlagSegmentInclusion.map((segmentInclusion) => segmentInclusion.segment.id),
-        ...flag.featureFlagSegmentExclusion.map((segmentExclusion) => segmentExclusion.segment.id),
+        ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) =>
+          segmentInclusion.segment.subSegments.map((subSegment) => subSegment.id)
+        ),
+        ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) =>
+          segmentExclusion.segment.subSegments.map((subSegment) => subSegment.id)
+        ),
       ];
 
       const segments = await this.segmentService.getSegmentByIds(segmentIds);
