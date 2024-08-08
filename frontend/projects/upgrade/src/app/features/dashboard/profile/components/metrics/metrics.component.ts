@@ -44,10 +44,10 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // For tree structure
   _dataChange = new BehaviorSubject<MetricUnit[]>([]);
-  nestedTreeControl: NestedTreeControl<MetricUnit | LazyLoadingMetric>;
-  nestedDataSource = new MatTreeNestedDataSource<MetricUnit | LazyLoadingMetric>();
+  nestedTreeControl: NestedTreeControl<LazyLoadingMetric>;
+  nestedDataSource = new MatTreeNestedDataSource<LazyLoadingMetric>();
+  insertNodeIndex = 0;
 
-  selectedMetricIndex = null;
   metricFilterOptions = [METRIC_SEARCH_KEY.ALL, METRIC_SEARCH_KEY.NAME, METRIC_SEARCH_KEY.CONTEXT];
   selectedMetricFilterOption = METRIC_SEARCH_KEY.ALL;
   contextOptions: string[] = [];
@@ -55,7 +55,7 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor(private analysisService: AnalysisService, private authService: AuthService, private dialog: MatDialog) {
     // Initialize NestedTreeControl with custom getChildren method for lazy loading
-    this.nestedTreeControl = new NestedTreeControl<MetricUnit | LazyLoadingMetric>(this.getChildren);
+    this.nestedTreeControl = new NestedTreeControl<LazyLoadingMetric>(this.getChildren);
   }
 
   ngOnInit() {
@@ -81,10 +81,10 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
   private insertNode(metric: IMetricUnit): LazyLoadingMetric {
     const processedMetric: LazyLoadingMetric = {
       ...metric,
+      id: this.insertNodeIndex++,
       children: [],
     };
 
-    // If the node has children, create a loadChildren function instead of processing them immediately
     if (metric.children && metric.children.length > 0) {
       processedMetric.loadChildren = () => of(metric.children?.map((child) => this.insertNode(child)));
     }
@@ -101,16 +101,16 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
         })
       );
     }
-    return of(node.children || []);
+    return of(node.children);
   };
 
   // Process the entire metrics data to prepare for lazy loading
   private processMetricsData(metrics: IMetricUnit[]): LazyLoadingMetric[] {
+    this.insertNodeIndex = 0;
     return metrics.map((item) => this.insertNode(item));
   }
 
   openAddMetricDialog() {
-    this.selectedMetricIndex = null;
     const dialogRef = this.dialog.open(AddMetricsComponent, {
       panelClass: 'add-metric-modal',
     });
@@ -119,12 +119,11 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  deleteNode(nodeToBeDeleted: any, index: number) {
+  deleteNode(nodeToBeDeleted: LazyLoadingMetric, index: number) {
     const data = {
       children: [this.allMetrics.data[index]],
     };
     const key = this.analysisService.findParents(data, nodeToBeDeleted.id);
-    this.selectedMetricIndex = null;
     const dialogRef = this.dialog.open(DeleteComponent, {
       panelClass: 'delete-modal',
     });
