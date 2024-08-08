@@ -8,6 +8,11 @@ projectBuilderV5 (
         script: 'npm ci --no-audit',
         githubCheck: 'npm ci --no-audit',
         log: 'npm-ci.log'
+    ],
+    [
+        script: 'cd ./types && npm ci --no-audit',
+        githubCheck: 'types init',
+        log: 'npm-ci.log'
     ]],
     projects: [
         "upgrade-service":[
@@ -35,13 +40,14 @@ projectBuilderV5 (
             artifactDir: 'dist/upgrade',
             versioning: 'calendar',
             oneArtifactPerEnvironment: false,
+            runInProjectDir: true,
             buildScripts: [[
                     script: 'npm ci --no-audit',
                     githubCheck: '${projectName} npm ci --no-audit',
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
-                    script: 'npm run build:prod',
+                    script: 'npm run cl:build',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
                 ]
