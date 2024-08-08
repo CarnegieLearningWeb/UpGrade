@@ -12,7 +12,7 @@ projectBuilderV5 (
     [
         script: 'cd ./types && npm ci --no-audit',
         githubCheck: 'types init',
-        log: 'npm-ci.log'
+        log: 'types-npm-ci.log'
     ]],
     projects: [
         "upgrade-service":[
