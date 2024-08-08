@@ -33,7 +33,7 @@ projectBuilderV5 (
             projectDir: 'frontend',
             artifactDir: 'dist/upgrade/browser',
             versioning: 'calendar',
-            artifactPrefis: 'upgrade-frontend',
+            artifactPrefix: 'upgrade-frontend',
             oneArtifactPerEnvironment: false,
             runInProjectDir: true,
             buildScripts: [[
@@ -47,7 +47,7 @@ projectBuilderV5 (
                     githubCheck: '${projectName}-build'
                 ],
                 [
-                    script: 'ls -al',
+                    script: 'ls -al dist/upgrade',
                     githubCheck: 'list dirs',
                     log: '${projectName}-list-dir.log'
                 ],
