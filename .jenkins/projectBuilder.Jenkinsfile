@@ -45,7 +45,12 @@ projectBuilderV5 (
                     script: 'npm run build:prod',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
-                ]
+                ],
+                [
+                    script: 'ls -al',
+                    githubCheck: 'list dirs',
+                    log: '${projectName}-list-dir.log'
+                ],
             ]
         ]
         
