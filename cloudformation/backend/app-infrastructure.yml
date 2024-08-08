@@ -1,0 +1,223 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Upgrade Service Blue/Green Deployment
+Parameters:
+  appName:
+    Description: Name of the application (used for naming resources)
+    Type: String
+    Default: upgrade-service
+  environment:
+    Description: Name of the environment being deployed to.
+    Type: String
+    Default: qa
+    AllowedValues:
+      - qa
+      - staging
+      - prod
+  cluster:
+    Description: Cluster to deploy to (green or blue)
+    Type: String
+    Default: blue
+    AllowedValues:
+      - blue
+      - green
+  version:
+    Description: Version of the service managed by this CF Stack
+    Type: String
+  servicePort:
+    Description: Port that the application is listening on in the container
+    Type: String
+    Default: 3030
+  sharedEcsResourcesPrefix:
+    Description: Prefix for the CloudFormation stack that contains shared resources for ECS.
+    Type: String
+    Default: shared-ecs-resources
+  sharedLoggingPrefix:
+    Description: Prefix for the CloudFormation stack that contains S3 logging buckets
+    Type: String
+    Default: shared-logging-infrastructure
+  sharedNetworkingPrefix:
+    Description: Prefix for the CloudFormation stack that contains shared networking resources
+    Type: String
+    Default: shared-networking-infrastructure
+  sharedResourcesPrefix:
+    Description: Prefix of the shared network and ECS resources to use
+    Type: String
+    Default: upgrade-service-shared-infrastructure
+Conditions:
+  IsProd: !Equals
+    - !Ref environment
+    - prod
+Resources:
+  ecsTaskDef:
+    Type: AWS::ECS::TaskDefinition
+    UpdateReplacePolicy: Retain
+    Properties:
+      ContainerDefinitions:
+        - Name: log_router
+          Image: 467155500999.dkr.ecr.us-east-1.amazonaws.com/splunk/fluentd-hec:latest
+          Essential: 'true'
+          MemoryReservation: 64
+          ReadonlyRootFilesystem: true
+          Environment:
+            - Name: HEC_HOST
+              Value: '{{resolve:ssm:HEC_HOST}}'
+            - Name: SPLUNK_INDEX
+              Value: '{{resolve:ssm:SPLUNK_INDEX}}'
+            - Name: VERSION
+              Value: !Ref version
+          Secrets:
+            - Name: HEC_TOKEN
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/HEC_TOKEN
+          FirelensConfiguration:
+            Type: fluentd
+            Options:
+              config-file-type: file
+              config-file-value: /fluentd_configs/default-fluent.conf
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group:
+                Fn::ImportValue: !Sub ${sharedLoggingPrefix}-${environment}-cloudwatchLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: !Ref appName
+          MountPoints:
+            - ContainerPath: /tmp
+              SourceVolume: log_router_tmp
+            - ContainerPath: /fluentd_configs
+              SourceVolume: fluentd_configs
+              ReadOnly: true
+        - Name: !Ref appName
+          Essential: 'true'
+          Image: !Sub 467155500999.dkr.ecr.us-east-1.amazonaws.com/microservices/${appName}:${version}
+          Environment:
+            - Name: TYPEORM_HOST
+              Value: '{{resolve:ssm:UPGRADE_DB_HOST}}'
+            - Name: TYPEORM_DATABASE
+              Value: '{{resolve:ssm:UPGRADE_DATABASE_NAME}}'
+          Secrets:
+            - Name: NEW_RELIC_LICENSE_KEY
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/NEW_RELIC_LICENSE_KEY
+            - Name: TYPEORM_USERNAME
+              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_DB_USER}}
+            - Name: TYPEORM_PASSWORD
+              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_DB_USER_PASSWORD}}
+            - Name: MONITOR_USERNAME
+              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_MONITOR_USER}}
+            - Name: MONITOR_PASSWORD
+              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_MONITOR_USER_PASSWORD}}
+          LogConfiguration:
+            LogDriver: awsfirelens
+          MemoryReservation: 256
+          ReadonlyRootFilesystem: true
+          PortMappings:
+            - ContainerPort: !Ref servicePort
+      Cpu: 1024
+      ExecutionRoleArn:
+        Fn::ImportValue: !Sub ${sharedEcsResourcesPrefix}-${environment}-ecsExecutionRoleArn
+      Family: !Sub ${appName}-${environment}-${cluster}
+      Memory: 2048
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      RuntimePlatform:
+        CpuArchitecture: X86_64
+        OperatingSystemFamily: LINUX
+      Volumes:
+        - Name: log_router_tmp
+        - Name: fluentd_configs
+          EFSVolumeConfiguration:
+            TransitEncryption: ENABLED
+            FilesystemId:
+              Fn::ImportValue: !Sub ${sharedEcsResourcesPrefix}-${environment}-fluentdConfigFilesystemId
+      TaskRoleArn: 
+        Fn::ImportValue: !Sub ${sharedResourcesPrefix}-${environment}-ecsTaskRoleArn
+  ecsService:
+    Type: AWS::ECS::Service
+    DependsOn: alblistenerrule
+    Properties:
+      ServiceName: !Sub ${appName}-${environment}-${cluster}
+      Cluster: 
+        Fn::ImportValue: !Sub ${sharedResourcesPrefix}-${environment}-ecsClusterName
+      DesiredCount: !If [IsProd, 2, 1]
+      EnableECSManagedTags: 'true'
+      HealthCheckGracePeriodSeconds: 60
+      LoadBalancers:
+        - ContainerName: !Ref appName
+          ContainerPort: !Ref servicePort
+          TargetGroupArn: !Ref ecsTargetGroup
+      DeploymentConfiguration:
+        DeploymentCircuitBreaker:
+            Enable: 'true'
+            Rollback: 'true'
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - Fn::ImportValue: !Sub ${sharedResourcesPrefix}-${environment}-ecsSecurityGroupName
+            - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-vpcEndpointSecurityGroupId
+          Subnets:
+            - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-privatesubnet1
+            - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-privatesubnet2
+            - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-privatesubnet3
+      PropagateTags: TASK_DEFINITION
+      TaskDefinition: !Ref ecsTaskDef
+  ecsScaling:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    DependsOn: ecsScalingTarget
+    Properties:
+      PolicyName: !Sub ${appName}-${environment}-${cluster}
+      PolicyType: TargetTrackingScaling
+      ResourceId: !Join [ '/', [ 'service', Fn::ImportValue: !Sub '${sharedResourcesPrefix}-${environment}-ecsClusterName', !GetAtt 'ecsService.Name' ]]
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 90.0
+        ScaleInCooldown: 300
+        ScaleOutCooldown: 300
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+  ecsScalingTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn: ecsService
+    Properties:
+      MaxCapacity: !If [IsProd, 16, 2]
+      MinCapacity: !If [IsProd, 2, 1]
+      ResourceId: !Join [ '/', [ 'service', Fn::ImportValue: !Sub '${sharedResourcesPrefix}-${environment}-ecsClusterName', !GetAtt 'ecsService.Name' ]]
+      RoleARN: !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+  ecsTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${appName}-${environment}-${cluster}
+      HealthCheckEnabled: 'true'
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /api/
+      HealthCheckPort: traffic-port
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: !Ref servicePort
+      Matcher:
+        HttpCode: '200'
+      Protocol: HTTP
+      ProtocolVersion: HTTP1
+      TargetGroupAttributes:
+        - Key: load_balancing.algorithm.type
+          Value: least_outstanding_requests
+        - Key: deregistration_delay.timeout_seconds
+          Value: 30
+      TargetType: ip
+      UnhealthyThresholdCount: 2
+      VpcId:
+        Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-vpcid
+  alblistenerrule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    DependsOn: ecsTargetGroup
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref ecsTargetGroup
+          Type: forward
+      ListenerArn:
+        Fn::ImportValue: !Sub ${sharedResourcesPrefix}-${environment}-albListenerArn-${cluster}
+      Priority: 1
