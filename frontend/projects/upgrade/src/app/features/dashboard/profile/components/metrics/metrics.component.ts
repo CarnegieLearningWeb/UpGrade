@@ -8,7 +8,7 @@ import {
   AfterViewInit,
 } from '@angular/core';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
-import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subscription, tap } from 'rxjs';
 import { METRICS_JOIN_TEXT, MetricUnit } from '../../../../../core/analysis/store/analysis.models';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
@@ -20,11 +20,7 @@ import { AddMetricsComponent } from '../modals/add-metrics/add-metrics.component
 import { METRIC_SEARCH_KEY } from '../../../../../../../../../../types/src/Experiment/enums';
 import { IMetricUnit } from '../../../../../../../../../../types/src';
 import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
-
-// Extend IMetricUnit to include a function for lazy loading children
-type LazyLoadingMetric = IMetricUnit & {
-  loadChildren?: () => Promise<IMetricUnit[]>;
-};
+import { LazyLoadingMetric } from './metrics.model';
 
 @Component({
   selector: 'profile-metrics',
@@ -90,7 +86,7 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // If the node has children, create a loadChildren function instead of processing them immediately
     if (metric.children && metric.children.length > 0) {
-      processedMetric.loadChildren = () => Promise.resolve(metric.children?.map((child) => this.insertNode(child)));
+      processedMetric.loadChildren = () => of(metric.children?.map((child) => this.insertNode(child)));
     }
 
     return processedMetric;
@@ -99,18 +95,11 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
   // Custom method to get children for a node, supporting lazy loading
   private getChildren = (node: LazyLoadingMetric): Observable<LazyLoadingMetric[]> => {
     if (node.loadChildren) {
-      return new Observable<LazyLoadingMetric[]>((observer) => {
-        node
-          .loadChildren()
-          .then((children) => {
-            node.children = children;
-            observer.next(children);
-            observer.complete();
-          })
-          .catch((error) => {
-            observer.error(error);
-          });
-      });
+      return node.loadChildren().pipe(
+        tap((children) => {
+          node.children = children;
+        })
+      );
     }
     return of(node.children || []);
   };
