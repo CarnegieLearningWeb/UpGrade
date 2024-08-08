@@ -9,6 +9,7 @@ import {
   FeatureFlagsPaginationParams,
   UpdateFeatureFlagRequest,
   UpdateFeatureFlagStatusRequest,
+  UpdateFilterModeRequest,
 } from './store/feature-flags.model';
 import { Observable, delay, of } from 'rxjs';
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
@@ -30,7 +31,7 @@ export class FeatureFlagsDataService {
 
   updateFeatureFlagStatus(params: UpdateFeatureFlagStatusRequest): Observable<FeatureFlag> {
     const url = this.environment.api.updateFlagStatus;
-    return this.http.post<FeatureFlag>(url, params);
+    return this.http.patch<FeatureFlag>(url, params);
   }
 
   addFeatureFlag(flag: AddFeatureFlagRequest): Observable<FeatureFlag> {
@@ -43,7 +44,12 @@ export class FeatureFlagsDataService {
     return this.http.put<FeatureFlag>(url, flag);
   }
 
-  emailFeatureFlagData(flagId: string, email: string){
+  updateFilterMode(params: UpdateFilterModeRequest): Observable<FeatureFlag> {
+    const url = this.environment.api.updateFilterMode;
+    return this.http.patch<FeatureFlag>(url, params);
+  }
+
+  emailFeatureFlagData(flagId: string, email: string) {
     let featureFlagInfoParams = new HttpParams();
     featureFlagInfoParams = featureFlagInfoParams.append('experimentId', flagId);
     featureFlagInfoParams = featureFlagInfoParams.append('email', email);

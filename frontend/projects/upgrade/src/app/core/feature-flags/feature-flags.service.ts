@@ -30,6 +30,7 @@ import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types
 import {
   AddFeatureFlagRequest,
   UpdateFeatureFlagRequest,
+  UpdateFilterModeRequest,
   UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
 import { filter, map, pairwise } from 'rxjs';
@@ -67,6 +68,11 @@ export class FeatureFlagsService {
     select(selectSelectedFeatureFlag),
     pairwise(),
     filter(([prev, curr]) => prev.status !== curr.status)
+  );
+  selectedFeatureFlagFilterModeChange$ = this.store$.pipe(
+    select(selectSelectedFeatureFlag),
+    pairwise(),
+    filter(([prev, curr]) => prev.filterMode !== curr.filterMode)
   );
   // Observable to check if selectedFeatureFlag is removed from the store
   isSelectedFeatureFlagRemoved$ = this.store$.pipe(
@@ -122,6 +128,10 @@ export class FeatureFlagsService {
 
   updateFeatureFlagStatus(updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest) {
     this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagStatus({ updateFeatureFlagStatusRequest }));
+  }
+
+  updateFilterMode(updateFilterModeRequest: UpdateFilterModeRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFilterMode({ updateFilterModeRequest }));
   }
 
   deleteFeatureFlag(flagId: string) {

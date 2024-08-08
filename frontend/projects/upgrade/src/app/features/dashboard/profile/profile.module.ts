@@ -11,13 +11,7 @@ import { AddMetricsComponent } from './components/modals/add-metrics/add-metrics
 import { NgJsonEditorModule } from 'ang-jsoneditor';
 
 @NgModule({
-  declarations: [
-    ProfileRootComponent,
-    NewUserComponent,
-    ProfileInfoComponent,
-    MetricsComponent,
-    AddMetricsComponent,
-  ],
+  declarations: [ProfileRootComponent, NewUserComponent, ProfileInfoComponent, MetricsComponent, AddMetricsComponent],
   imports: [CommonModule, ProfileRoutingModule, SharedModule, NgJsonEditorModule],
 })
 export class ProfileModule {}

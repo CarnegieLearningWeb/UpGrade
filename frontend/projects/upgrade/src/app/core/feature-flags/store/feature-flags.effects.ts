@@ -29,7 +29,7 @@ export class FeatureFlagsEffects {
     private featureFlagsDataService: FeatureFlagsDataService,
     private router: Router,
     private notificationService: NotificationService,
-    private commonExportHelpersService: CommonExportHelpersService,
+    private commonExportHelpersService: CommonExportHelpersService
   ) {}
 
   fetchFeatureFlags$ = createEffect(() =>
@@ -137,6 +137,20 @@ export class FeatureFlagsEffects {
     )
   );
 
+  updateFilterMode$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionUpdateFilterMode),
+      switchMap((action) => {
+        return this.featureFlagsDataService.updateFilterMode(action.updateFilterModeRequest).pipe(
+          map((response) => {
+            return FeatureFlagsActions.actionUpdateFilterModeSuccess({ response });
+          }),
+          catchError(() => [FeatureFlagsActions.actionUpdateFilterModeFailure()])
+        );
+      })
+    )
+  );
+
   deleteFeatureFlag$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionDeleteFeatureFlag),
@@ -154,7 +168,6 @@ export class FeatureFlagsEffects {
     )
   );
 
-
   upsertFeatureFlagInclusionList$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
@@ -168,7 +181,7 @@ export class FeatureFlagsEffects {
         return this.featureFlagsDataService.addInclusionList(request).pipe(
           map((listResponse) => FeatureFlagsActions.actionUpdateFeatureFlagInclusionListSuccess({ listResponse })),
           catchError((error) => of(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListFailure({ error })))
-         );
+        );
       })
     )
   );
@@ -273,26 +286,26 @@ export class FeatureFlagsEffects {
     )
   );
   exportFeatureFlagsDesign$ = createEffect(() =>
-  this.actions$.pipe(
-    ofType(FeatureFlagsActions.actionExportFeatureFlagDesign),
-    map((action) => ({ featureFlagId: action.featureFlagId })),
-    filter(({ featureFlagId }) => !!featureFlagId),
-    switchMap(({ featureFlagId }) =>
-      this.featureFlagsDataService.exportFeatureFlagsDesign(featureFlagId).pipe(
-        map((data) => {
-          if (data) {
-            this.commonExportHelpersService.convertDataToDownload([data], 'FeatureFlags');
-            this.notificationService.showSuccess('Feature Flag Design JSON downloaded!');
-          }
-          return FeatureFlagsActions.actionExportFeatureFlagDesignSuccess();
-        }),
-        catchError((error) => {
-          this.notificationService.showError('Failed to export Feature Flag Design');
-          return of(FeatureFlagsActions.actionExportFeatureFlagDesignFailure());
-        })
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionExportFeatureFlagDesign),
+      map((action) => ({ featureFlagId: action.featureFlagId })),
+      filter(({ featureFlagId }) => !!featureFlagId),
+      switchMap(({ featureFlagId }) =>
+        this.featureFlagsDataService.exportFeatureFlagsDesign(featureFlagId).pipe(
+          map((data) => {
+            if (data) {
+              this.commonExportHelpersService.convertDataToDownload([data], 'FeatureFlags');
+              this.notificationService.showSuccess('Feature Flag Design JSON downloaded!');
+            }
+            return FeatureFlagsActions.actionExportFeatureFlagDesignSuccess();
+          }),
+          catchError((error) => {
+            this.notificationService.showError('Failed to export Feature Flag Design');
+            return of(FeatureFlagsActions.actionExportFeatureFlagDesignFailure());
+          })
+        )
       )
     )
-  )
   );
 
   private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());
