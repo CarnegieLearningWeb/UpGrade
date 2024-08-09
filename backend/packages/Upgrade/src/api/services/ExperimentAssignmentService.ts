@@ -134,7 +134,7 @@ export class ExperimentAssignmentService {
 
     // adding experiment error when user is not defined
     if (!userDoc || !userDoc.id) {
-      const error = new Error(`User not defined in markExperimentPoint: ${userDoc.requestedUserId}`);
+      const error = new Error('User not defined in markExperimentPoint');
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
       (error as any).httpCode = 404;
       logger.error(error);
