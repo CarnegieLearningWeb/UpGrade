@@ -105,6 +105,10 @@ const reducer = createReducer(
   })),
 
   // UI State Update Actions
+  on(FeatureFlagsActions.actionUpdateFilterModeSuccess, (state, { response }) => {
+    const flag = response;
+    return adapter.updateOne({ id: flag?.id, changes: { filterMode: flag?.filterMode } }, { ...state });
+  }),
   on(FeatureFlagsActions.actionSetIsLoadingFeatureFlags, (state, { isLoadingFeatureFlags }) => ({
     ...state,
     isLoadingFeatureFlags,

@@ -158,17 +158,18 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
       return;
     }
 
-    const isContextAll = this.currentContext === "ALL";
+    const isContextAll = this.currentContext === 'ALL';
 
     this.allSegments
-      .filter((segment) =>
+      .filter(
+        (segment) =>
           segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE &&
           (isContextAll || segment.context === this.currentContext) &&
           (!this.segmentInfo || segment.id !== this.segmentInfo.id)
       )
-      .forEach(segment => {
-          this.subSegmentIds.push(segment.name);
-          this.segmentNameId.set(segment.name, segment.id);
+      .forEach((segment) => {
+        this.subSegmentIds.push(segment.name);
+        this.segmentNameId.set(segment.name, segment.id);
       });
   }
 

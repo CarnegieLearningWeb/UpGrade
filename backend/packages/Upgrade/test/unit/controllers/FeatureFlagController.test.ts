@@ -73,12 +73,24 @@ describe('Feature Flag Controller Testing', () => {
       .expect(200);
   });
 
-  test('Post request for /api/flags/status', () => {
+  test('Patch request for /api/flags/status', () => {
     return request(app)
-      .post('/api/flags/status')
+      .patch('/api/flags/status')
       .send({
         flagId: uuid(),
         status: 'enabled',
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Patch request for /api/flags/filterMode', () => {
+    return request(app)
+      .patch('/api/flags/filterMode')
+      .send({
+        flagId: uuid(),
+        filterMode: 'includeAll',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)

@@ -2,7 +2,7 @@ import { Connection, DeleteQueryBuilder, EntityManager, InsertQueryBuilder, Upda
 import * as sinon from 'sinon';
 import { FeatureFlagRepository } from '../../../src/api/repositories/FeatureFlagRepository';
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
-import { FEATURE_FLAG_STATUS } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 
 let sandbox;
 let connection;
@@ -167,6 +167,30 @@ describe('FeatureFlagRepository Testing', () => {
     updateMock.expects('execute').once().returns(Promise.resolve(result));
 
     const res = await repo.updateState(flag.id, FEATURE_FLAG_STATUS.ENABLED);
+
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    updateMock.verify();
+
+    expect(res).toEqual(flag);
+  });
+
+  it('should update filter mode', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(FeatureFlagRepository.prototype, 'createQueryBuilder')
+      .returns(updateQueryBuilder);
+    const result = {
+      identifiers: [{ id: flag.id }],
+      generatedMaps: [flag],
+      raw: [flag],
+    };
+
+    updateMock.expects('update').once().returns(updateQueryBuilder);
+    updateMock.expects('set').once().returns(updateQueryBuilder);
+    updateMock.expects('where').once().returns(updateQueryBuilder);
+    updateMock.expects('returning').once().returns(updateQueryBuilder);
+    updateMock.expects('execute').once().returns(Promise.resolve(result));
+
+    const res = await repo.updateFilterMode(flag.id, FILTER_MODE.INCLUDE_ALL);
 
     sinon.assert.calledOnce(createQueryBuilderStub);
     updateMock.verify();

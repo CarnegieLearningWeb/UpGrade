@@ -68,7 +68,7 @@ export class CommonImportContainerComponent {
 
   private handleFileSelection(files: FileList | null) {
     if (files && files.length > 0) {
-      const validFiles = Array.from(files).filter(file => file.name.endsWith(this.fileType));
+      const validFiles = Array.from(files).filter((file) => file.name.endsWith(this.fileType));
       if (validFiles.length > 0) {
         this.filesSelected.emit(validFiles);
       } else {
