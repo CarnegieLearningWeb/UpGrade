@@ -31,7 +31,7 @@ projectBuilderV5 (
         "upgrade-frontend":[
             artifactType: 'codeartifact',
             projectDir: 'frontend',
-            artifactDir: 'dist/upgrade/',
+            artifactDir: 'upgrade-frontend/dist/upgrade/',
             versioning: 'calendar',
             artifactPrefix: 'upgrade-frontend',
             oneArtifactPerEnvironment: false,
