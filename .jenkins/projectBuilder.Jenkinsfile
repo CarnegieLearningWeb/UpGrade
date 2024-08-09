@@ -42,12 +42,12 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
-                    script: 'npm run build:prod',
+                    script: 'npm run cl:build',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
                 ],
                 [
-                    script: 'pwd',
+                    script: 'ls -al',
                     githubCheck: 'list dirs',
                     log: '${projectName}-list-dir.log'
                 ],
