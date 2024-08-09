@@ -453,7 +453,7 @@ export class ExperimentParticipantsComponent implements OnInit {
           groupForSegment: this.groupsToSend,
           subSegments: this.subSegmentIdsToSend,
           type: SEGMENT_TYPE.PRIVATE,
-        }
+        },
       };
       this.gettingMembersValueToSend(members2);
       const segmentMembers2FormData = {
@@ -462,7 +462,7 @@ export class ExperimentParticipantsComponent implements OnInit {
           groupForSegment: this.groupsToSend,
           subSegments: this.subSegmentIdsToSend,
           type: SEGMENT_TYPE.PRIVATE,
-        }
+        },
       };
       this.emitExperimentDialogEvent.emit({
         type: eventType,

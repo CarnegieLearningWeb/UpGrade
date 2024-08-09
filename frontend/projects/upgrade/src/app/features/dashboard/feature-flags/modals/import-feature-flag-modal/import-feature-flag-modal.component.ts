@@ -16,7 +16,6 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImportFeatureFlagModalComponent {
-
   isImportActionBtnDisabled = new BehaviorSubject<boolean>(true);
 
   constructor(
@@ -27,7 +26,7 @@ export class ImportFeatureFlagModalComponent {
   ) {}
 
   handleFilesSelected(files: File[]) {
-    if(files.length>0) {
+    if (files.length > 0) {
       this.isImportActionBtnDisabled.next(false);
     }
     console.log('Selected files:', files);
