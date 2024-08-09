@@ -70,6 +70,11 @@ export interface UpdateFeatureFlagStatusRequest {
   status: FEATURE_FLAG_STATUS;
 }
 
+export interface UpdateFilterModeRequest {
+  flagId: string;
+  filterMode: FILTER_MODE;
+}
+
 export interface FeatureFlagFormData {
   name: string;
   key: string;
@@ -123,6 +128,15 @@ export interface FeatureFlagsPaginationParams {
   take: number;
   searchParams?: IFeatureFlagsSearchParams;
   sortParams?: IFeatureFlagsSortParams;
+}
+
+export enum FEATURE_FLAG_DETAILS_PAGE_ACTIONS {
+  EDIT = 'Edit Feature Flag',
+  DUPLICATE = 'Duplicate Feature Flag',
+  ARCHIVE = 'Archive Feature Flag',
+  DELETE = 'Delete Feature Flag',
+  EXPORT_DESIGN = 'Export Feature Flag Design',
+  EMAIL_DATA = 'Email Feature Flag Data',
 }
 
 export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {

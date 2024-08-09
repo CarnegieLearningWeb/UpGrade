@@ -22,6 +22,7 @@ import {
   selectSortKey,
   selectSortAs,
   selectAppContexts,
+  selectFeatureFlagIds,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -29,19 +30,25 @@ import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types
 import {
   AddFeatureFlagRequest,
   UpdateFeatureFlagRequest,
+  UpdateFilterModeRequest,
   UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
 import { filter, map, pairwise } from 'rxjs';
 import isEqual from 'lodash.isequal';
+import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
 
 @Injectable()
 export class FeatureFlagsService {
   constructor(private store$: Store<AppState>) {}
 
+  currentUserEmailAddress$ = this.store$.pipe(select(selectCurrentUserEmail));
+  allFeatureFlagsIds$ = this.store$.pipe(select(selectFeatureFlagIds));
   isInitialFeatureFlagsLoading$ = this.store$.pipe(select(selectHasInitialFeatureFlagsDataLoaded));
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
   isLoadingSelectedFeatureFlag$ = this.store$.pipe(select(selectIsLoadingSelectedFeatureFlag));
+  isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
+  IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
   isLoadingUpsertPrivateSegmentList$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
@@ -51,8 +58,6 @@ export class FeatureFlagsService {
   searchKey$ = this.store$.pipe(select(selectSearchKey));
   sortKey$ = this.store$.pipe(select(selectSortKey));
   sortAs$ = this.store$.pipe(select(selectSortAs));
-  isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
-  IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
 
   hasFeatureFlagsCountChanged$ = this.allFeatureFlags$.pipe(
     pairwise(),
@@ -63,6 +68,11 @@ export class FeatureFlagsService {
     select(selectSelectedFeatureFlag),
     pairwise(),
     filter(([prev, curr]) => prev.status !== curr.status)
+  );
+  selectedFeatureFlagFilterModeChange$ = this.store$.pipe(
+    select(selectSelectedFeatureFlag),
+    pairwise(),
+    filter(([prev, curr]) => prev.filterMode !== curr.filterMode)
   );
   // Observable to check if selectedFeatureFlag is removed from the store
   isSelectedFeatureFlagRemoved$ = this.store$.pipe(
@@ -120,8 +130,20 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagStatus({ updateFeatureFlagStatusRequest }));
   }
 
+  updateFilterMode(updateFilterModeRequest: UpdateFilterModeRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFilterMode({ updateFilterModeRequest }));
+  }
+
   deleteFeatureFlag(flagId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlag({ flagId }));
+  }
+
+  emailFeatureFlagData(featureFlagId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionEmailFeatureFlagData({ featureFlagId }));
+  }
+
+  exportFeatureFlagsData(featureFlagId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionExportFeatureFlagDesign({ featureFlagId }));
   }
 
   setSearchKey(searchKey: FLAG_SEARCH_KEY) {

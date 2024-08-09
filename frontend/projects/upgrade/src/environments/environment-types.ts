@@ -30,7 +30,10 @@ export interface APIEndpoints {
   allExperimentNames: string;
   featureFlag: string;
   updateFlagStatus: string;
+  updateFilterMode: string;
   getPaginatedFlags: string;
+  exportFlagsDesign: string;
+  emailFlagData: string;
   addFlagInclusionList: string;
   addFlagExclusionList: string;
   setting: string;
