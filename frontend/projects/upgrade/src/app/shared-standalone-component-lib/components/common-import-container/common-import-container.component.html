@@ -12,6 +12,6 @@
   </button>
   <input [accept]="fileType" type="file" multiple #fileInput style="display: none" (change)="onFileSelected($event)" />
   <div *ngIf="showParseFailedError" class="ft-14-500 parse-error">
-    Error: invalid {{ getFileTypeSubstring() }}
+    Error: Invalid {{ getFileTypeSubstring() }}
   </div>
 </div>
