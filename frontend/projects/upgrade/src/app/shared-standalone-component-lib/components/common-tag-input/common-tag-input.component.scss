@@ -2,11 +2,19 @@
   width: 100%;
   padding-bottom: 16px;
 
+  ::ng-deep .mdc-text-field {
+    padding-right: 5px;
+
+    .mat-mdc-form-field-infix {
+      padding: 6px 0;
+    }
+  }
+
   .chips-container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     max-height: 64px;
     overflow: auto;
 
@@ -15,18 +23,24 @@
     }
 
     .icon-button {
+      width: 32px;
+      height: 32px;
       background: none;
       border: none;
+      border-radius: 20px;
       box-shadow: none;
       outline: none;
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--dark-grey);
-      margin-right: -11px;
 
       .material-symbols-outlined {
         font-size: 20px;
+      }
+
+      &:hover {
+        background: #f0f0f0;
       }
     }
   }

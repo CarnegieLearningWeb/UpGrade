@@ -79,6 +79,11 @@ export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
   }
 
   onActionButtonClick(): void {
+    if (this.showImportIcon) {
+      console.log('Import values from CSV!');
+    } else if (this.showExportIcon) {
+      console.log('Export values to CSV!');
+    }
     this.actionButtonClicked.emit();
   }
 
