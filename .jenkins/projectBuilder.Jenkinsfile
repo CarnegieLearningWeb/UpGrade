@@ -42,9 +42,14 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
-                    script: 'npm run cl:build',
+                    script: 'npm run build:prod',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
+                ],
+                [
+                    script: 'npm run cl:copy-package-json',
+                    log: '${projectName}-copy-package.log',
+                    githubCheck: '${projectName}-copy-package'
                 ],
                 [
                     script: 'ls -al',
