@@ -31,7 +31,7 @@ projectBuilderV5 (
         "upgrade-frontend":[
             artifactType: 'codeartifact',
             projectDir: 'frontend',
-            artifactDir: 'dist/upgrade/browser',
+            artifactDir: 'dist/upgrade/',
             versioning: 'calendar',
             artifactPrefix: 'upgrade-frontend',
             oneArtifactPerEnvironment: false,
@@ -47,7 +47,7 @@ projectBuilderV5 (
                     githubCheck: '${projectName}-build'
                 ],
                 [
-                    script: 'ls -al dist/upgrade',
+                    script: 'ls -al ./dist/upgrade',
                     githubCheck: 'list dirs',
                     log: '${projectName}-list-dir.log'
                 ],
