@@ -418,7 +418,7 @@ describe('Experiment Assignment Service Test', () => {
     const userId = 'testUser';
     const site = 'testSite';
     const clientError = 'Client error message';
-    const err = new Error(`User not defined in markExperimentPoint: ${userId}`);
+    const err = new Error('User not defined in markExperimentPoint');
     const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
 
     try {
