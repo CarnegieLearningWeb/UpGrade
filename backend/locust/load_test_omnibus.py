@@ -137,7 +137,7 @@ def getSchools(schoolCount):
         #     while schoolId in retSchools:
         #         schoolId = random.choice(list(schools.keys()))
         # retSchools.append(schoolId)
-    isGreenvilleWauekgaen = random.randint(1,100) <= 50
+    isGreenvilleWauekgaen = random.randint(1,100) <= 3
     if isGreenvilleWauekgaen:
         retSchools.append("1740734k62m")
     else:
@@ -313,7 +313,7 @@ class UpgradeUserTask(SequentialTaskSet):
         #   site = markPartitionIDConditionPair['site']
         #   target = markPartitionIDConditionPair['target']
         # else:
-        weights = [0.9, 0.1]
+        weights = [0.1, 0.9]
         choice = random.choices(['experiment_found', 'no_active_experiment'], weights, k=1)[0]
 
         if choice == 'experiment_found':
