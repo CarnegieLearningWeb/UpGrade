@@ -2,7 +2,7 @@
   width: 100%;
   padding-bottom: 16px;
 
-  ::ng-deep .mdc-text-field {
+  ::ng-deep .mat-mdc-text-field-wrapper {
     padding-right: 5px;
 
     .mat-mdc-form-field-infix {
@@ -40,7 +40,7 @@
       }
 
       &:hover {
-        background: #f0f0f0;
+        background: #f5f5f5;
       }
     }
   }
