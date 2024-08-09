@@ -8,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { TranslateModule } from '@ngx-translate/core';
+import { CommonTagInputType } from '../../../core/feature-flags/store/feature-flags.model';
 
 // This Component is made to manage a list of tags using mat-chips.
 // It uses ControlValueAccessor which implements methods to synchronize the component's value with the parent form control.
@@ -45,11 +46,12 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [CommonModule, MatChipsModule, MatFormFieldModule, MatIconModule, MatInputModule, TranslateModule],
 })
 export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
-  showExportIcon = false;
-  showImportIcon = false;
+  @Input() inputType: CommonTagInputType = CommonTagInputType.TAGS;
   @Input() actionButtons = false;
   @Output() actionButtonClicked = new EventEmitter<void>();
 
+  showExportIcon = false;
+  showImportIcon = false;
   isChipSelectable = false;
   isChipRemovable = true;
   addChipOnBlur = true;

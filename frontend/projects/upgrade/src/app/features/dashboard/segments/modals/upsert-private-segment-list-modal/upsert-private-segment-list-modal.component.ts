@@ -33,6 +33,7 @@ import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 import isEqual from 'lodash.isequal';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { CommonTagInputType } from '../../../../../core/feature-flags/store/feature-flags.model';
 
 @Component({
   selector: 'upsert-private-segment-list-modal',
@@ -66,6 +67,7 @@ export class UpsertPrivateSegmentListModalComponent {
   isSegmentsListTypeDisabled$: Observable<boolean>;
 
   privateSegmentListForm: FormGroup;
+  CommonTagInputType = CommonTagInputType;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)

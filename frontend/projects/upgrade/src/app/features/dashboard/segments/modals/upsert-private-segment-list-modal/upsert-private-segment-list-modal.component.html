@@ -33,7 +33,10 @@
       </mat-autocomplete>
     </mat-form-field>
     <ng-container *ngIf="selectedListType && selectedListType !== LIST_TYPES.SEGMENT">
-      <app-common-tags-input formControlName="values"></app-common-tags-input>
+      <app-common-tags-input
+        formControlName="values"
+        [inputType]="CommonTagInputType.VALUES"
+      ></app-common-tags-input>
       <mat-form-field appearance="outline">
         <mat-label class="ft-14-400">Name</mat-label>
         <input matInput formControlName="name" class="ft-14-400" />
