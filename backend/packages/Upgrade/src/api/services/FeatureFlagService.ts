@@ -44,15 +44,15 @@ export class FeatureFlagService {
     context: string,
     logger: UpgradeLogger
   ): Promise<string[]> {
-    logger.info({ message: `Get all feature flag keys: User: ${experimentUserDoc?.requestedUserId}` });
+    logger.info({ message: `getKeys: User: ${experimentUserDoc?.requestedUserId}` });
 
     // throw error if user not defined
     if (!experimentUserDoc || !experimentUserDoc.id) {
-      logger.error({ message: `User not defined in getKeys: ${experimentUserDoc?.requestedUserId}` });
+      logger.error({ message: 'User not defined in getKeys' });
       const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined in getKeys: ${experimentUserDoc?.requestedUserId}`,
+          message: 'User not defined in getKeys',
         })
       );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
