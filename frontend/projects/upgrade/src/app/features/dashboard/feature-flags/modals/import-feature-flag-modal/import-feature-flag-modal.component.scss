@@ -1,60 +1,12 @@
 .drag-drop-container {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  color: grey;
+  row-gap: 2px;
+  padding: 40px 32px 24px;
 
-  mat-icon {
-    height: 70px;
-    width: 70px;
-    font-size: 70px;
-    color: grey;
+  .form-hint {
+    text-indent: 16px;
+    margin-bottom: 0;
   }
 }
 
-.input-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  border: 1px dashed grey;
-  border-radius: 4px;
-  height: 206px;
-  width: 592px;
-  position: relative;
-
-  button {
-    font-size: 14px;
-  }
-}
-
-.input-container-header {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-
-  mat-icon {
-    height: 24px;
-    width: 24px;
-    font-size: 24px;
-  }
-}
-
-.input-container-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-p {
-  color: grey;
-  font-size: 12px;
-}
-
-a {
-  text-decoration: none;
-}

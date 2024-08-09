@@ -28,7 +28,6 @@ export class FeatureFlagSegmentExclusionRepository extends Repository<FeatureFla
         logger.error(errorMsg);
         throw errorMsgString;
       });
-
     return result.raw;
   }
 
@@ -48,22 +47,18 @@ export class FeatureFlagSegmentExclusionRepository extends Repository<FeatureFla
       });
   }
 
-  public async deleteData(
-    segmentId: string,
-    featureFlagId: string,
-    logger: UpgradeLogger
-  ): Promise<FeatureFlagSegmentExclusion> {
+  public async deleteData(segmentId: string, logger: UpgradeLogger): Promise<FeatureFlagSegmentExclusion> {
     const result = await this.createQueryBuilder()
       .delete()
       .from(FeatureFlagSegmentExclusion)
-      .where('segmentId=:segmentId AND featureFlagId=:featureFlagId', { segmentId, featureFlagId })
+      .where('segmentId=:segmentId', { segmentId })
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           'FeatureFlagSegmentExclusionRepository',
           'deleteFeatureFlagSegmentExclusion',
-          { segmentId, featureFlagId },
+          { segmentId },
           errorMsg
         );
         logger.error(errorMsg);

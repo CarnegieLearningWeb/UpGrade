@@ -1,6 +1,14 @@
 import { createAction, props } from '@ngrx/store';
-import { AddFeatureFlagRequest, FeatureFlag, UpdateFeatureFlagStatusRequest } from './feature-flags.model';
+import {
+  FeatureFlag,
+  UpdateFeatureFlagStatusRequest,
+  AddFeatureFlagRequest,
+  UpdateFeatureFlagRequest,
+  UpdateFilterModeRequest,
+  FeatureFlagSegmentListDetails,
+} from './feature-flags.model';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
+import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../../segments/store/segments.model';
 
 export const actionFetchFeatureFlags = createAction(
   '[Feature Flags] Fetch Feature Flags Paginated',
@@ -48,7 +56,7 @@ export const actionDeleteFeatureFlagFailure = createAction('[Feature Flags] Dele
 
 export const actionUpdateFeatureFlag = createAction(
   '[Feature Flags] Update Feature Flag',
-  props<{ flag: FeatureFlag }>()
+  props<{ flag: UpdateFeatureFlagRequest }>()
 );
 
 export const actionUpdateFeatureFlagSuccess = createAction(
@@ -57,6 +65,24 @@ export const actionUpdateFeatureFlagSuccess = createAction(
 );
 
 export const actionUpdateFeatureFlagFailure = createAction('[Feature Flags] Update Feature Flag Failure');
+
+export const actionEmailFeatureFlagData = createAction(
+  '[Feature Flags] Email Feature Flag Data',
+  props<{ featureFlagId: string }>()
+);
+
+export const actionEmailFeatureFlagDataSuccess = createAction('[Feature Flags] Email Feature Flag Data Success');
+
+export const actionEmailFeatureFlagDataFailure = createAction('[Feature Flags] Email Feature Flag Data Failure');
+
+export const actionExportFeatureFlagDesign = createAction(
+  '[Feature Flags] Export Feature Flag Design',
+  props<{ featureFlagId: string }>()
+);
+
+export const actionExportFeatureFlagDesignSuccess = createAction('[Feature Flags] Export Feature Flag Design Success');
+
+export const actionExportFeatureFlagDesignFailure = createAction('[Feature Flags] Export Feature Flag Design Failure');
 
 export const actionSetIsLoadingFeatureFlags = createAction(
   '[Feature Flags] Set Is Loading Flags',
@@ -98,3 +124,59 @@ export const actionUpdateFeatureFlagStatusSuccess = createAction(
 );
 
 export const actionUpdateFeatureFlagStatusFailure = createAction('[Feature Flags] Update Feature Flag Status Failure');
+
+export const actionUpdateFilterMode = createAction(
+  '[Feature Flags] Update Filter Mode',
+  props<{ updateFilterModeRequest: UpdateFilterModeRequest }>()
+);
+
+export const actionUpdateFilterModeSuccess = createAction(
+  '[Feature Flags] Update Filter Mode Success',
+  props<{ response: FeatureFlag }>()
+);
+
+export const actionUpdateFilterModeFailure = createAction('[Feature Flags] Update Filter Mode Failure');
+export const actionAddFeatureFlagInclusionList = createAction(
+  '[Feature Flags] Add Feature Flag Inclusion List',
+  props<{ list: AddPrivateSegmentListRequest }>()
+);
+
+export const actionAddFeatureFlagInclusionListSuccess = createAction(
+  '[Feature Flags] Add Feature Flag Inclusion List Success',
+  props<{ listResponse: FeatureFlagSegmentListDetails }>()
+);
+
+export const actionAddFeatureFlagInclusionListFailure = createAction(
+  '[Feature Flags] Add Feature Flag Inclusion List Failure',
+  props<{ error: any }>()
+);
+
+export const actionUpdateFeatureFlagInclusionList = createAction(
+  '[Feature Flags] Update Feature Flag Inclusion List',
+  props<{ list: EditPrivateSegmentListRequest }>()
+);
+
+export const actionUpdateFeatureFlagInclusionListSuccess = createAction(
+  '[Feature Flags] Update Feature Flag Inclusion List Success',
+  props<{ listResponse: FeatureFlagSegmentListDetails }>()
+);
+
+export const actionUpdateFeatureFlagInclusionListFailure = createAction(
+  '[Feature Flags] Update Feature Flag Inclusion List Failure',
+  props<{ error: any }>()
+);
+
+export const actionDeleteFeatureFlagInclusionList = createAction(
+  '[Feature Flags] Delete Feature Flag Inclusion List',
+  props<{ segmentId: string }>()
+);
+
+export const actionDeleteFeatureFlagInclusionListSuccess = createAction(
+  '[Feature Flags] Delete Feature Flag Inclusion List Success',
+  props<{ segmentId: string }>()
+);
+
+export const actionDeleteFeatureFlagInclusionListFailure = createAction(
+  '[Feature Flags] Delete Feature Flag Inclusion List Failure',
+  props<{ error: any }>()
+);

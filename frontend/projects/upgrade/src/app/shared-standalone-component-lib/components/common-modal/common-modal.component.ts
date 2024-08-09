@@ -7,7 +7,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialogActions, MatDialogClose, MatDialogContent, MatDialogTitle } from '@angular/material/dialog';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-common-dialog',

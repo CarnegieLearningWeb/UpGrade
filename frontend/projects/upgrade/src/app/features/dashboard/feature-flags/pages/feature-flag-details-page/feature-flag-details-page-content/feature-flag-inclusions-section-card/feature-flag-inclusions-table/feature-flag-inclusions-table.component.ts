@@ -1,9 +1,14 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angular/core';
 import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/feature-flags.service';
+import {
+  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
+  ParticipantListRowActionEvent,
+} from '../../../../../../../../core/feature-flags/store/feature-flags.model';
 import { CommonDetailsParticipantListTableComponent } from '../../../../../../../../shared-standalone-component-lib/components/common-details-participant-list-table/common-details-participant-list-table.component';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { tap } from 'rxjs';
+import { CommonSimpleConfirmationModalComponent } from '../../../../../../../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-feature-flag-inclusions-table',
@@ -14,10 +19,16 @@ import { tap } from 'rxjs';
   imports: [CommonDetailsParticipantListTableComponent, CommonModule, TranslateModule],
 })
 export class FeatureFlagInclusionsTableComponent {
-  @Input() dataSource$ = this.featureFlagService.selectFeatureFlagInclusions$.pipe(
-    tap((data) => console.log('>> inclusions table component', data))
-  );
+  tableType = FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE;
+  dataSource$ = this.featureFlagService.selectFeatureFlagInclusions$;
   isLoading$ = this.featureFlagService.isLoadingSelectedFeatureFlag$;
+  @Output() rowAction = new EventEmitter<ParticipantListRowActionEvent>();
+
+  confirmStatusChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
 
   constructor(private featureFlagService: FeatureFlagsService) {}
+
+  onRowAction(event: ParticipantListRowActionEvent): void {
+    this.rowAction.emit(event);
+  }
 }

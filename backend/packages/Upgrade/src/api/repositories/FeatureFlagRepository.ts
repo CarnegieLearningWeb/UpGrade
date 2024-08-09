@@ -2,6 +2,7 @@ import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { FeatureFlag } from '../models/FeatureFlag';
 import repositoryError from './utils/repositoryError';
 import { FEATURE_FLAG_STATUS } from 'upgrade_types';
+import { FILTER_MODE } from 'types/src';
 
 @EntityRepository(FeatureFlag)
 export class FeatureFlagRepository extends Repository<FeatureFlag> {
@@ -21,8 +22,9 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
     return result.raw;
   }
 
-  public async deleteById(id: string): Promise<FeatureFlag> {
-    const result = await this.createQueryBuilder('featureFlag')
+  public async deleteById(id: string, entityManager: EntityManager): Promise<FeatureFlag> {
+    const result = await entityManager
+      .createQueryBuilder()
       .delete()
       .from(FeatureFlag)
       .where('id = :id', { id })
@@ -45,6 +47,26 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('FeatureFlagRepository', 'updateState', { flagId, status }, errorMsg);
+        throw errorMsgString;
+      });
+
+    return result.raw[0];
+  }
+
+  public async updateFilterMode(flagId: string, filterMode: FILTER_MODE): Promise<FeatureFlag> {
+    const result = await this.createQueryBuilder('featureFlag')
+      .update()
+      .set({ filterMode })
+      .where({ id: flagId })
+      .returning('*')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'FeatureFlagRepository',
+          'updateFilterMode',
+          { flagId, filterMode },
+          errorMsg
+        );
         throw errorMsgString;
       });
 

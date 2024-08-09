@@ -1,13 +1,7 @@
-import { MatDialogConfig } from '@angular/material/dialog';
+import { environment } from '../../../../environments/environment';
 
-export interface CommonModalConfig {
-  title: string;
-  cancelBtnLabel?: string;
-  primaryActionBtnLabel?: string;
-  primaryActionBtnColor?: string; // TODO mat-button enum? or just string?
-  hideFooter?: boolean;
-}
-
-export interface CommonDialogMatDialogConfig extends MatDialogConfig {
-  data: CommonModalConfig;
-}
+// see close-modal.interceptor.ts
+export const ENDPOINTS_TO_INTERCEPT_FOR_MODAL_CLOSE = [
+  environment.api.addFlagInclusionList,
+  environment.api.addFlagExclusionList,
+];

@@ -30,6 +30,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { ExperimentService } from './ExperimentService';
+import { QueryService } from './QueryService';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -52,7 +53,8 @@ export class AnalyticsService {
     private logRepository: LogRepository,
     public awsService: AWSService,
     public errorService: ErrorService,
-    public experimentService: ExperimentService
+    public experimentService: ExperimentService,
+    public queryService: QueryService
   ) {}
 
   public async getEnrollments(experimentIds: string[]): Promise<IExperimentEnrollmentStats[]> {
@@ -311,18 +313,32 @@ export class AnalyticsService {
           }
         }
       }
+
+      const allQuery = await this.queryService.find(new UpgradeLogger());
+      let queryNames: string[] = [];
+      if (allQuery) {
+        queryNames = allQuery.map((query) => {
+          return query.name;
+        });
+      }
       // merge with data
       const csvRows = csvExportData.map((row) => {
         const queryObject = logsUser[row.userId] || {};
         const queryDataToAdd = {};
 
-        for (const queryId in queryObject) {
-          if (queryObject[queryId]) {
-            const queryName = queryNameIdMapping[queryId];
-            if (queryName) {
-              queryDataToAdd[queryName] = queryObject[queryId];
+        if (Object.keys(queryObject).length) {
+          for (const queryId in queryObject) {
+            if (queryObject[queryId]) {
+              const queryName = queryNameIdMapping[queryId];
+              if (queryName) {
+                queryDataToAdd[queryName] = queryObject[queryId];
+              }
             }
           }
+        } else {
+          queryNames.forEach((queryName) => {
+            queryDataToAdd[queryName] = '';
+          });
         }
 
         const revertToCondition = row.revertTo ? row.revertTo : 'Default';
@@ -376,8 +392,8 @@ export class AnalyticsService {
       const email_from = env.email.from;
 
       const fileName = `${folderPath}${simpleExportCSV}`;
-      if (!fs.existsSync(fileName)) {
-        // if file doesn't exist create a empty file
+      if (!fs.existsSync(fileName) || csvExportData.length === 0) {
+        // if file doesn't exist or no data, create an empty file
         const csvRows = [
           {
             ExperimentId: '',
@@ -431,7 +447,17 @@ export class AnalyticsService {
       const emailSubject = `Exported Data for the experiment: ${experimentQueryResult[0].experimentName}`;
       // send email to the user
       logger.info({ message: `Sending export data email to ${email}` });
-      await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
+      try {
+        await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
+      } catch (err) {
+        const error = {
+          type: SERVER_ERROR.EMAIL_SEND_ERROR,
+          message: 'Email send error',
+          httpCode: 500,
+        };
+        logger.error({ message: `Export Data email unsuccessful:`, details: error });
+        throw error;
+      }
       await this.experimentAuditLogRepository.saveRawJson(
         EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
         { experimentName: experimentQueryResult[0].experimentName },
@@ -447,6 +473,6 @@ export class AnalyticsService {
 
     logger.info({ message: 'Completing experiment data export' });
 
-    return '';
+    return 'Exported CSV data sent, you should receive an email shortly.';
   }
 }
