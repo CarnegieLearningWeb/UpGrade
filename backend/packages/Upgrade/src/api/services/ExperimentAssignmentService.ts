@@ -341,12 +341,12 @@ export class ExperimentAssignmentService {
     // throw error if user not defined
     if (!experimentUserDoc || !experimentUserDoc.id) {
       logger.error({
-        message: `User not defined in getAllExperimentConditions: ${experimentUserDoc?.requestedUserId}`,
+        message: 'User not defined in getAllExperimentConditions',
       });
       const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined in getAllExperimentConditions: ${experimentUserDoc?.requestedUserId}`,
+          message: 'User not defined in getAllExperimentConditions',
         })
       );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
