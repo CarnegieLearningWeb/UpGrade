@@ -134,7 +134,7 @@ export class ExperimentAssignmentService {
 
     // adding experiment error when user is not defined
     if (!userDoc || !userDoc.id) {
-      const error = new Error(`User not defined in markExperimentPoint: ${userDoc.requestedUserId}`);
+      const error = new Error('User not defined in markExperimentPoint');
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
       (error as any).httpCode = 404;
       logger.error(error);
@@ -336,15 +336,17 @@ export class ExperimentAssignmentService {
     context: string,
     logger: UpgradeLogger
   ): Promise<IExperimentAssignmentv5[]> {
-    logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc.requestedUserId}` });
+    logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc?.requestedUserId}` });
 
     // throw error if user not defined
     if (!experimentUserDoc || !experimentUserDoc.id) {
-      logger.error({ message: `User not defined in getAllExperimentConditions: ${experimentUserDoc.requestedUserId}` });
+      logger.error({
+        message: 'User not defined in getAllExperimentConditions',
+      });
       const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined in getAllExperimentConditions: ${experimentUserDoc.requestedUserId}`,
+          message: 'User not defined in getAllExperimentConditions',
         })
       );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;

@@ -58,6 +58,7 @@ describe('StratificationFactorsEffects', () => {
 
       const expectedAction = StratificationFactorsActions.actionFetchStratificationFactorsSuccess({
         stratificationFactors: [mockData],
+        isFactorAddRequestSuccess: false,
       });
 
       service.fetchStratificationFactors$.subscribe((result) => {
@@ -126,7 +127,9 @@ describe('StratificationFactorsEffects', () => {
       const mockCSVData = [{ file: 'data,test' }];
       stratificationFactorsDataService.importStratificationFactors = jest.fn().mockReturnValue(of(null));
 
-      const expectedAction = StratificationFactorsActions.actionImportStratificationFactorSuccess();
+      const expectedAction = StratificationFactorsActions.actionImportStratificationFactorSuccess({
+        isFactorAddRequestSuccess: true,
+      });
 
       service.importStratificationFactor$.subscribe((result) => {
         expect(result).toEqual(expectedAction);

@@ -125,7 +125,7 @@ export class Experiment extends BaseModel {
   @Column({
     type: 'enum',
     enum: FILTER_MODE,
-    default: FILTER_MODE.INCLUDE_ALL,
+    default: FILTER_MODE.EXCLUDE_ALL,
   })
   public filterMode: FILTER_MODE;
 
