@@ -326,16 +326,16 @@ export class UpsertPrivateSegmentListModalComponent {
     this.featureFlagService.updateFeatureFlagInclusionPrivateSegmentList(editListRequest);
   }
 
-  onDownloadRequested(tags: string[]) {
+  onDownloadRequested(values: string[]) {
     if (this.privateSegmentListForm.get('name').valid) {
-      this.downloadTagsAsCSV(tags, this.privateSegmentListForm.get('name').value);
+      this.downloadValuesAsCSV(values, this.privateSegmentListForm.get('name').value);
     } else {
       this.privateSegmentListForm.get('name').markAsTouched();
     }
   }
 
-  private downloadTagsAsCSV(tags: string[], fileName: string): void {
-    const csvContent = tags.join('\n');
+  private downloadValuesAsCSV(values: string[], fileName: string): void {
+    const csvContent = values.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     if (link.download !== undefined) {
