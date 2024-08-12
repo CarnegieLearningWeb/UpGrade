@@ -60,7 +60,6 @@ export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
 
   tagsExist = false;
   isTouched = false;
-  isFocused = false;
   showImportHelper = false;
   private importFailedSubject = new BehaviorSubject<boolean>(false);
   importFailed$ = this.importFailedSubject.asObservable();
@@ -79,13 +78,11 @@ export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
   }
 
   onFocus() {
-    this.isFocused = true;
-    this.isTouched = true;
     this.onTouched();
   }
 
   onBlur() {
-    this.isFocused = false;
+    this.isTouched = true;
     this.onTouched();
   }
 
@@ -94,9 +91,7 @@ export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
       return false;
     }
 
-    return (
-      (this.isTouched || this.forceValidation) && !this.isFocused && (!this.tags.value || this.tags.value.length === 0)
-    );
+    return (this.isTouched || this.forceValidation) && (!this.tags.value || this.tags.value.length === 0);
   }
 
   onActionButtonClick(event: MouseEvent): void {
