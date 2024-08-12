@@ -15,10 +15,9 @@ import {
   FLAG_SEARCH_KEY,
   ValidatedFeatureFlagsError,
   FF_COMPATIBILITY_TYPE,
-  FeatureFlagFile,
 } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
-import { SERVER_ERROR, FEATURE_FLAG_STATUS, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { SERVER_ERROR, FEATURE_FLAG_STATUS, FILTER_MODE, SEGMENT_TYPE, IFeatureFlagFile } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
 import { ExperimentUser } from '../models/ExperimentUser';
@@ -426,7 +425,7 @@ export class FeatureFlagService {
   }
 
   public async validateImportFeatureFlags(
-    featureFlagFiles: FeatureFlagFile[],
+    featureFlagFiles: IFeatureFlagFile[],
     logger: UpgradeLogger
   ): Promise<ValidatedFeatureFlagsError[]> {
     logger.info({ message: 'Validate feature flags' });
@@ -434,7 +433,7 @@ export class FeatureFlagService {
       featureFlagFiles.map(async (featureFlagFile) => {
         let featureFlag: FeatureFlag;
         try {
-          featureFlag = JSON.parse(featureFlagFile.fileContent);
+          featureFlag = JSON.parse(featureFlagFile.fileContent as string);
         } catch (parseError) {
           logger.error({ message: 'Error in parsing feature flag file', details: parseError });
           return {

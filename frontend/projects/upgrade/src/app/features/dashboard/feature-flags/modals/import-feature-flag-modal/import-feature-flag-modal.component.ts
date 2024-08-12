@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { CommonModalComponent, CommonStatusIndicatorChipComponent } from '../../../../../shared-standalone-component-lib/components';
+import {
+  CommonModalComponent,
+  CommonStatusIndicatorChipComponent,
+} from '../../../../../shared-standalone-component-lib/components';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject, Observable, combineLatest, firstValueFrom, map } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -9,14 +12,21 @@ import { FeatureFlagsDataService } from '../../../../../core/feature-flags/featu
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { MatTableDataSource } from '@angular/material/table';
-import { ValidateFeatureFlagError, FeatureFlagFile } from '../../../../../core/feature-flags/store/feature-flags.model';
+import { ValidateFeatureFlagError } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { importError } from '../../../../../core/segments/store/segments.model';
 import { NotificationService } from '../../../../../core/notifications/notification.service';
+import { IFeatureFlagFile } from 'upgrade_types';
 
 @Component({
   selector: 'app-import-feature-flag-modal',
   standalone: true,
-  imports: [CommonModalComponent, CommonModule, SharedModule, CommonImportContainerComponent, CommonStatusIndicatorChipComponent],
+  imports: [
+    CommonModalComponent,
+    CommonModule,
+    SharedModule,
+    CommonImportContainerComponent,
+    CommonStatusIndicatorChipComponent,
+  ],
   templateUrl: './import-feature-flag-modal.component.html',
   styleUrls: ['./import-feature-flag-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,7 +38,7 @@ export class ImportFeatureFlagModalComponent {
   isImportActionBtnDisabled = new BehaviorSubject<boolean>(true);
   fileValidationErrorDataSource = new MatTableDataSource<ValidateFeatureFlagError>();
   fileValidationErrors: ValidateFeatureFlagError[] = [];
-  fileData: FeatureFlagFile[] = [];
+  fileData: IFeatureFlagFile[] = [];
   uploadedFileCount = new BehaviorSubject<number>(0);
   isLoadingImportFeatureFlag$ = this.featureFlagsService.isLoadingImportFeatureFlag$;
   isImportActionBtnDisabled$: Observable<boolean> = combineLatest([
@@ -41,7 +51,7 @@ export class ImportFeatureFlagModalComponent {
     public featureFlagsService: FeatureFlagsService,
     public featureFlagsDataService: FeatureFlagsDataService,
     public dialogRef: MatDialogRef<ImportFeatureFlagModalComponent>,
-    private notificationService: NotificationService,
+    private notificationService: NotificationService
   ) {}
 
   async handleFilesSelected(event) {
@@ -74,15 +84,17 @@ export class ImportFeatureFlagModalComponent {
     await this.checkValidation(this.fileData);
   }
 
-  async checkValidation(files: FeatureFlagFile[]) {
+  async checkValidation(files: IFeatureFlagFile[]) {
     try {
-      const validationErrors = await firstValueFrom(this.featureFlagsDataService.validateFeatureFlag(files)) as ValidateFeatureFlagError[];
+      const validationErrors = (await firstValueFrom(
+        this.featureFlagsDataService.validateFeatureFlag(files)
+      )) as ValidateFeatureFlagError[];
       this.fileValidationErrors = validationErrors.filter((data) => data.compatibilityType != null) || [];
       this.fileValidationErrorDataSource.data = this.fileValidationErrors;
       this.featureFlagsService.setIsLoadingImportFeatureFlag(false);
 
       if (this.fileValidationErrors.length > 0) {
-        this.fileValidationErrors.forEach(error => {
+        this.fileValidationErrors.forEach((error) => {
           if (error.compatibilityType === 'incompatible') {
             this.isImportActionBtnDisabled.next(true);
           }
@@ -101,7 +113,9 @@ export class ImportFeatureFlagModalComponent {
   async importFiles() {
     try {
       this.isImportActionBtnDisabled.next(true);
-      const importResult = await firstValueFrom(this.featureFlagsDataService.importFeatureFlag(this.fileData)) as importError[];
+      const importResult = (await firstValueFrom(
+        this.featureFlagsDataService.importFeatureFlag(this.fileData)
+      )) as importError[];
 
       this.showNotification(importResult);
       this.isImportActionBtnDisabled.next(false);
@@ -117,8 +131,8 @@ export class ImportFeatureFlagModalComponent {
     const importSuccessFiles = importResult.filter((data) => data.error == null).map((data) => data.fileName);
 
     let importSuccessMsg = '';
-    if ( importSuccessFiles.length > 0) {
-      importSuccessMsg =`Successfully imported ${importSuccessFiles.length} file/s: ${importSuccessFiles.join(', ')}`
+    if (importSuccessFiles.length > 0) {
+      importSuccessMsg = `Successfully imported ${importSuccessFiles.length} file/s: ${importSuccessFiles.join(', ')}`;
       this.closeModal();
     }
 

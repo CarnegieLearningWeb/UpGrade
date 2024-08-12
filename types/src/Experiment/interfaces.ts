@@ -245,3 +245,8 @@ export interface IMenuButtonItem {
   name: string;
   disabled: boolean;
 }
+
+export interface IFeatureFlagFile {
+  fileName: string;
+  fileContent: string | ArrayBuffer;
+}
