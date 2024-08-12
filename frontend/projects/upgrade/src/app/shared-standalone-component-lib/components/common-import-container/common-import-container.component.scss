@@ -2,12 +2,30 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 30px;
+  padding-bottom: 36px;
   border: 1px dashed var(--dark-grey);
   border-radius: 4px;
 
   &.drag-over {
     background-color: var(--zircon);
+  }
+
+  .close-btn-container {
+    width: 100%;
+    height: 36px;
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px;
+
+    .close-btn {
+      color: var(--dark-grey);
+
+      .close-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
   }
 
   .material-symbols-outlined {
@@ -23,7 +41,15 @@
     color: var(--dark-grey);
   }
 
-  .choose-json-btn {
+  .choose-file-btn {
+    height: 36px;
     padding: 0 16px;
+  }
+
+  .import-failed-msg {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 12px;
+    color: var(--red);
   }
 }

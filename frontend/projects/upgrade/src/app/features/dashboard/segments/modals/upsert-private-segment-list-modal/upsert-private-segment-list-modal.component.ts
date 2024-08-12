@@ -68,6 +68,7 @@ export class UpsertPrivateSegmentListModalComponent {
 
   privateSegmentListForm: FormGroup;
   CommonTagInputType = CommonTagInputType;
+  forceValidation = false;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
@@ -247,6 +248,7 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   onPrimaryActionBtnClicked(): void {
+    this.forceValidation = true;
     if (this.privateSegmentListForm.valid) {
       this.sendRequest(this.config.params.action);
     } else {
@@ -322,6 +324,30 @@ export class UpsertPrivateSegmentListModalComponent {
 
   sendUpdateFeatureFlagInclusionRequest(editListRequest: EditPrivateSegmentListRequest): void {
     this.featureFlagService.updateFeatureFlagInclusionPrivateSegmentList(editListRequest);
+  }
+
+  onDownloadRequested(tags: string[]) {
+    if (this.privateSegmentListForm.get('name').valid) {
+      this.downloadTagsAsCSV(tags, this.privateSegmentListForm.get('name').value);
+    } else {
+      this.privateSegmentListForm.get('name').markAsTouched();
+    }
+  }
+
+  private downloadTagsAsCSV(tags: string[], fileName: string): void {
+    const csvContent = tags.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${fileName}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
   }
 
   closeModal() {
