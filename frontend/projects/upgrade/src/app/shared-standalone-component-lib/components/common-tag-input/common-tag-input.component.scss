@@ -13,11 +13,11 @@
   &.invalid-field {
     ::ng-deep .mat-mdc-text-field-wrapper {
       .mdc-notched-outline > * {
-        border-color: var(--red);
+        border-color: var(--red) !important;
       }
 
       .mdc-floating-label {
-        color: var(--red);
+        color: var(--red) !important;
       }
     }
   }
