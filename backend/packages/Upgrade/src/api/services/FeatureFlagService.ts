@@ -258,7 +258,6 @@ export class FeatureFlagService {
         throw error;
       }
       featureFlagSegmentInclusionOrExclusion.segment = newSegment;
-      // }
 
       try {
         if (filterType === 'inclusion') {
@@ -425,6 +424,56 @@ export class FeatureFlagService {
     return includedFeatureFlags;
   }
 
+  public async importFeatureFlags(featureFlagFiles: FeatureFlagFile[], logger: UpgradeLogger): Promise<FeatureFlag[]> {
+    logger.info({ message: 'Import feature flags' });
+    const validatedFlags = await this.validateImportFeatureFlags(featureFlagFiles, logger);
+
+    const validFiles: FeatureFlag[] = featureFlagFiles
+      .filter((file) => {
+        const validation = validatedFlags.find((error) => error.fileName === file.fileName);
+        return validation && validation.compatibilityType !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+      })
+      .map((featureFlagFile) => {
+        return JSON.parse(featureFlagFile.fileContent);
+      });
+
+    const createdFlags = await Promise.all(
+      validFiles.map(async (featureFlag) => {
+        const { featureFlagSegmentInclusion, featureFlagSegmentExclusion, ...rest } = featureFlag;
+        const newFlag = await this.addFeatureFlagInDB(rest as any, logger);
+
+        const inclusionDoc = await Promise.all(
+          featureFlagSegmentInclusion.map(async (segmentInclusion) => {
+            segmentInclusion.segment.id = uuid();
+            const listInput = {
+              flagId: newFlag.id,
+              enabled: false,
+              listType: segmentInclusion.listType,
+              list: this.segmentService.convertJSONStringToSegInputValFormat(JSON.stringify(segmentInclusion.segment)),
+            };
+            return await this.addList(listInput, 'inclusion', logger);
+          })
+        );
+
+        const exclusionDoc = await Promise.all(
+          featureFlagSegmentExclusion.map(async (segmentExclusion) => {
+            segmentExclusion.segment.id = uuid();
+            const listInput = {
+              flagId: newFlag.id,
+              enabled: false,
+              listType: segmentExclusion.listType,
+              list: this.segmentService.convertJSONStringToSegInputValFormat(JSON.stringify(segmentExclusion.segment)),
+            };
+            return await this.addList(listInput, 'exclusion', logger);
+          })
+        );
+
+        return { ...newFlag, featureFlagSegmentInclusion: inclusionDoc, featureFlagSegmentExclusion: exclusionDoc };
+      })
+    );
+
+    return createdFlags;
+  }
   public async validateImportFeatureFlags(
     featureFlagFiles: FeatureFlagFile[],
     logger: UpgradeLogger
@@ -491,31 +540,31 @@ export class FeatureFlagService {
       });
     });
 
-    if (segmentValidator) {
-      return {
-        fileName: fileName,
-        compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
-      };
-    }
-
-    if (!flag.name || !flag.key || !flag.context) {
+    // check for missing fields
+    if (!flag.name || !flag.key || !flag.context || segmentValidator) {
       compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
     } else {
-      const segmentIds = [
-        ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) =>
-          segmentInclusion.segment.subSegments.map((subSegment) => subSegment.id)
-        ),
-        ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) =>
-          segmentExclusion.segment.subSegments.map((subSegment) => subSegment.id)
-        ),
-      ];
+      const keyExists = await this.featureFlagRepository.findOne({ key: flag.key });
 
-      const segments = await this.segmentService.getSegmentByIds(segmentIds);
-      segments.forEach((segment) => {
-        if (segment == undefined) {
-          compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
-        }
-      });
+      if (keyExists) {
+        compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+      } else {
+        const segmentIds = [
+          ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) =>
+            segmentInclusion.segment.subSegments.map((subSegment) => subSegment.id)
+          ),
+          ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) =>
+            segmentExclusion.segment.subSegments.map((subSegment) => subSegment.id)
+          ),
+        ];
+
+        const segments = await this.segmentService.getSegmentByIds(segmentIds);
+        segments.forEach((segment) => {
+          if (segment == undefined) {
+            compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
+          }
+        });
+      }
     }
 
     return {

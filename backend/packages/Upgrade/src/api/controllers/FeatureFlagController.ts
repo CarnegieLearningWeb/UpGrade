@@ -659,50 +659,7 @@ export class FeatureFlagsController {
 
   /**
    * @swagger
-   * /experiments/{validation}:
-   *    post:
-   *       description: Validating Experiment
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *         - in: body
-   *           name: experiments
-   *           required: true
-   *           schema:
-   *             type: array
-   *             items:
-   *               type: object
-   *               properties:
-   *                 fileName:
-   *                   type: string
-   *                 fileContent:
-   *                   type: string
-   *           description: Experiment Files
-   *       tags:
-   *         - Experiments
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: Validations are completed
-   *            schema:
-   *             type: array
-   *             items:
-   *               type: object
-   *               properties:
-   *                 fileName:
-   *                   type: string
-   *                 error:
-   *                   type: string
-   *          '401':
-   *            description: AuthorizationRequiredError
-   *          '500':
-   *            description: Internal Server Error
-   */
-
-  /**
-   * @swagger
-   * /flags/{validation}:
+   * /flags/import/validation:
    *    post:
    *       description: Validating Feature Flag
    *       consumes:
@@ -749,5 +706,56 @@ export class FeatureFlagsController {
     @Req() request: AppRequest
   ): Promise<ValidatedFeatureFlagsError[]> {
     return await this.featureFlagService.validateImportFeatureFlags(featureFlags, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/import:
+   *    post:
+   *       description: Validating Feature Flag
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: featureFlags
+   *           required: true
+   *           schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
+   *           description: Import FeatureFlag Files
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Validations are completed
+   *            schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 compatibilityType:
+   *                   type: string
+   *                   enum: [compatible, warning, incompatible]
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
+   */
+  @Post('/import')
+  public async importFeatureFlags(
+    @Body({ validate: true }) featureFlags: FeatureFlagFile[],
+    @Req() request: AppRequest
+  ): Promise<FeatureFlag[]> {
+    return await this.featureFlagService.importFeatureFlags(featureFlags, request.logger);
   }
 }
