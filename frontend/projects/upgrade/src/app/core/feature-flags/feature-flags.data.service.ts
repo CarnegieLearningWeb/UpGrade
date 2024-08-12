@@ -4,7 +4,6 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import {
   AddFeatureFlagRequest,
   FeatureFlag,
-  FeatureFlagFile,
   FeatureFlagSegmentListDetails,
   FeatureFlagsPaginationInfo,
   FeatureFlagsPaginationParams,
@@ -14,6 +13,7 @@ import {
 } from './store/feature-flags.model';
 import { Observable, delay, of } from 'rxjs';
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
+import { IFeatureFlagFile } from 'upgrade_types';
 
 @Injectable()
 export class FeatureFlagsDataService {
@@ -45,12 +45,12 @@ export class FeatureFlagsDataService {
     return this.http.put<FeatureFlag>(url, flag);
   }
 
-  validateFeatureFlag(featureFlag: FeatureFlagFile[]) {
+  validateFeatureFlag(featureFlag: IFeatureFlagFile[]) {
     const url = this.environment.api.validateFeatureFlag;
     return this.http.post(url, featureFlag);
   }
 
-  importFeatureFlag(featureFlag: FeatureFlagFile[]) {
+  importFeatureFlag(featureFlag: IFeatureFlagFile[]) {
     const url = this.environment.api.importFeatureFlag;
     return this.http.post(url, featureFlag);
   }

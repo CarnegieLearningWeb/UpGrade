@@ -66,4 +66,5 @@ export {
   ILogMetrics,
   ILogGroupMetrics,
   IMenuButtonItem,
+  IFeatureFlagFile,
 } from './Experiment/interfaces';
