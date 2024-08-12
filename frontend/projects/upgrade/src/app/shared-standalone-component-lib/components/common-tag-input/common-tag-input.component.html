@@ -8,7 +8,7 @@
   <mat-label class="ft-14-400">
     {{
       (inputType === CommonTagInputType.TAGS
-        ? 'feature-flags.upsert-list-modal.tags-label.text'
+        ? 'feature-flags.upsert-flag-modal.tags-label.text'
         : 'feature-flags.upsert-list-modal.values-label.text'
       ) | translate
     }}
@@ -37,7 +37,7 @@
         (blur)="onBlur()"
         [placeholder]="tagsExist ? '' :
           (inputType === CommonTagInputType.TAGS
-            ? 'feature-flags.upsert-list-modal.tags-placeholder.text'
+            ? 'feature-flags.upsert-flag-modal.tags-placeholder.text'
             : 'feature-flags.upsert-list-modal.values-placeholder.text'
           ) | translate"
         class="ft-14-400"

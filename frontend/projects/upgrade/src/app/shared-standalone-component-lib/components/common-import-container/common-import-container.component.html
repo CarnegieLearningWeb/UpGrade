@@ -20,7 +20,7 @@
     <button mat-flat-button color="primary" class="choose-file-btn" (click)="onChooseFileButtonClick($event)">
       <span>{{ buttonLabel }}</span>
     </button>
-    <span *ngIf="importFailed" class="import-failed-msg">
+    <span *ngIf="importFailed" class="ft-12-400 import-failed-msg">
       {{ 'feature-flags.upsert-list-modal.import-csv.error.message.text' | translate }}
     </span>
     <input [accept]="fileType" type="file" multiple #fileInput style="display: none" (change)="onFileSelected($event)" />
