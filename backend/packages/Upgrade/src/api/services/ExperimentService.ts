@@ -1629,7 +1629,7 @@ export class ExperimentService {
     return {
       ...experiment,
       backendVersion: experiment.backendVersion || this.backendVersion.toString(),
-      filterMode: experiment.filterMode || FILTER_MODE.INCLUDE_ALL,
+      filterMode: experiment.filterMode || FILTER_MODE.EXCLUDE_ALL,
     };
   }
 
