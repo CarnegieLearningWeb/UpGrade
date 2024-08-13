@@ -168,24 +168,6 @@ export class FeatureFlagsEffects {
     )
   );
 
-  upsertFeatureFlagInclusionList$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
-      map((action) => action.list),
-      withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
-      switchMap(([list, flag]) => {
-        const request = {
-          flagId: flag.id,
-          ...list,
-        };
-        return this.featureFlagsDataService.addInclusionList(request).pipe(
-          map((listResponse) => FeatureFlagsActions.actionUpdateFeatureFlagInclusionListSuccess({ listResponse })),
-          catchError((error) => of(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListFailure({ error })))
-        );
-      })
-    )
-  );
-
   addFeatureFlagInclusionList$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),

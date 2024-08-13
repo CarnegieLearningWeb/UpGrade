@@ -24,6 +24,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentAssignmentService } from './ExperimentAssignmentService';
 import { SegmentService } from './SegmentService';
 import { ErrorWithType } from '../errors/ErrorWithType';
+import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 
 @Service()
 export class FeatureFlagService {
@@ -40,8 +41,26 @@ export class FeatureFlagService {
     return this.featureFlagRepository.find();
   }
 
-  public async getKeys(experimentUserDoc: ExperimentUser, context: string, logger: UpgradeLogger): Promise<string[]> {
-    logger.info({ message: 'Get all feature flags' });
+  public async getKeys(
+    experimentUserDoc: RequestedExperimentUser,
+    context: string,
+    logger: UpgradeLogger
+  ): Promise<string[]> {
+    logger.info({ message: `getKeys: User: ${experimentUserDoc?.requestedUserId}` });
+
+    // throw error if user not defined
+    if (!experimentUserDoc || !experimentUserDoc.id) {
+      logger.error({ message: 'User not defined in getKeys' });
+      const error = new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+          message: 'User not defined in getKeys',
+        })
+      );
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404;
+      throw error;
+    }
 
     const filteredFeatureFlags = await this.featureFlagRepository.getFlagsFromContext(context);
 
