@@ -67,4 +67,5 @@ export {
   ILogGroupMetrics,
   IMenuButtonItem,
   IFeatureFlagFile,
+  IImportError,
 } from './Experiment/interfaces';

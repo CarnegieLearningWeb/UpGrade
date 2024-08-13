@@ -10,7 +10,7 @@ import {
 } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFilterModeUpdateValidator';
 import { AppRequest, PaginationResponse } from '../../types';
-import { SERVER_ERROR, IFeatureFlagFile } from 'upgrade_types';
+import { SERVER_ERROR, IFeatureFlagFile, IImportError } from 'upgrade_types';
 import { FeatureFlagValidation, IdValidator, UserParamsValidator } from './validators/FeatureFlagValidator';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
@@ -754,7 +754,7 @@ export class FeatureFlagsController {
   public async importFeatureFlags(
     @Body({ validate: true }) featureFlags: IFeatureFlagFile[],
     @Req() request: AppRequest
-  ): Promise<FeatureFlag[]> {
+  ): Promise<IImportError[]> {
     return await this.featureFlagService.importFeatureFlags(featureFlags, request.logger);
   }
 }

@@ -17,7 +17,14 @@ import {
   FF_COMPATIBILITY_TYPE,
 } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
-import { SERVER_ERROR, FEATURE_FLAG_STATUS, FILTER_MODE, SEGMENT_TYPE, IFeatureFlagFile } from 'upgrade_types';
+import {
+  SERVER_ERROR,
+  FEATURE_FLAG_STATUS,
+  FILTER_MODE,
+  SEGMENT_TYPE,
+  IFeatureFlagFile,
+  IImportError,
+} from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
 import { ExperimentUser } from '../models/ExperimentUser';
@@ -423,16 +430,27 @@ export class FeatureFlagService {
     return includedFeatureFlags;
   }
 
-  public async importFeatureFlags(featureFlagFiles: IFeatureFlagFile[], logger: UpgradeLogger): Promise<FeatureFlag[]> {
+  public async importFeatureFlags(
+    featureFlagFiles: IFeatureFlagFile[],
+    logger: UpgradeLogger
+  ): Promise<IImportError[]> {
     logger.info({ message: 'Import feature flags' });
     const validatedFlags = await this.validateImportFeatureFlags(featureFlagFiles, logger);
 
-    const validFiles: FeatureFlag[] = featureFlagFiles
-      .filter((file) => {
-        const validation = validatedFlags.find((error) => error.fileName === file.fileName);
-        return validation && validation.compatibilityType !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
-      })
-      .map((featureFlagFile) => {
+    const fileStatusArray = featureFlagFiles.map((file) => {
+      const validation = validatedFlags.find((error) => error.fileName === file.fileName);
+      const isCompatible = validation && validation.compatibilityType !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+
+      return {
+        fileName: file.fileName,
+        error: isCompatible ? null : FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+      };
+    });
+
+    const validFiles: FeatureFlag[] = fileStatusArray
+      .filter((fileStatus) => fileStatus.error === null)
+      .map((fileStatus) => {
+        const featureFlagFile = featureFlagFiles.find((file) => file.fileName === fileStatus.fileName);
         return JSON.parse(featureFlagFile.fileContent as string);
       });
 
@@ -470,8 +488,9 @@ export class FeatureFlagService {
         return { ...newFlag, featureFlagSegmentInclusion: inclusionDoc, featureFlagSegmentExclusion: exclusionDoc };
       })
     );
+    logger.info({ message: 'Imported feature flags', details: createdFlags });
 
-    return createdFlags;
+    return fileStatusArray;
   }
   public async validateImportFeatureFlags(
     featureFlagFiles: IFeatureFlagFile[],

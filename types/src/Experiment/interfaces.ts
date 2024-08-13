@@ -250,3 +250,8 @@ export interface IFeatureFlagFile {
   fileName: string;
   fileContent: string | ArrayBuffer;
 }
+
+export interface IImportError {
+  fileName: string;
+  error: string | null;
+}
