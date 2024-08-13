@@ -19,10 +19,10 @@ projectBuilderV5 (
                 [file: "cloudformation/backend/app-infrastructure.yml"]
             ],
             s3Context: [
-                glob: "**/*"
+                glob: "backend/**/*,types/**/*"
             ],
             fileFilter: [
-                include: ["backend/.*", "types/.*"]
+                include: ["types/.*","cloudformation/backend/app-infrastructure.yml"]
             ],
             dockerConfig: [
                 dockerFile: "backend/Dockerfile",
