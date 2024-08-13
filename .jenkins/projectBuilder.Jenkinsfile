@@ -26,7 +26,7 @@ projectBuilderV5 (
             ],
             dockerConfig: [
                 dockerFile: "backend/Dockerfile",
-                requiresCodeArtifactToken: true
+                requiresCodeArtifactToken: true,
                 subPath: "backend"
             ]
         ],
