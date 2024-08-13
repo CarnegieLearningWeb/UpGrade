@@ -60,7 +60,6 @@ export class FeatureFlagsService {
   searchKey$ = this.store$.pipe(select(selectSearchKey));
   sortKey$ = this.store$.pipe(select(selectSortKey));
   sortAs$ = this.store$.pipe(select(selectSortAs));
-  
 
   hasFeatureFlagsCountChanged$ = this.allFeatureFlags$.pipe(
     pairwise(),
