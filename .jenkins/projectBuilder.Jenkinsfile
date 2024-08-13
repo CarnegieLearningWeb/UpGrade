@@ -27,6 +27,7 @@ projectBuilderV5 (
             dockerConfig: [
                 dockerFile: "backend/Dockerfile",
                 requiresCodeArtifactToken: true
+                subPath: "backend"
             ]
         ],
         "upgrade-frontend":[
