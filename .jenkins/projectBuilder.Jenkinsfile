@@ -13,6 +13,7 @@ projectBuilderV5 (
         "upgrade-service":[
             artifactType: "ecr",
             projectDir: "backend",
+            runInProjectDir: true,
             versioning: "calendar",
             appInfrastructure: [
                 [file: "cloudformation/backend/app-infrastructure.yml"]
