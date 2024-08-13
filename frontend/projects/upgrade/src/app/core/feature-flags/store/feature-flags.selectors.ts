@@ -53,7 +53,23 @@ export const selectSelectedFeatureFlag = createSelector(
     // be very defensive here to make sure routerState is correct
     const flagId = routerState?.state?.params?.flagId;
     if (flagId) {
-      return featureFlagState.entities[flagId];
+      const featureFlag = featureFlagState.entities[flagId];
+      if (featureFlag) {
+        return {
+          ...featureFlag,
+          featureFlagSegmentInclusion: featureFlag.featureFlagSegmentInclusion
+            ? [...featureFlag.featureFlagSegmentInclusion].sort(
+                (a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime()
+              )
+            : [],
+          featureFlagSegmentExclusion: featureFlag.featureFlagSegmentExclusion
+            ? [...featureFlag.featureFlagSegmentExclusion].sort(
+                (a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime()
+              )
+            : [],
+        };
+      }
+      return featureFlag;
     }
     return undefined;
   }
@@ -136,15 +152,11 @@ export const selectFeatureFlagInclusions = createSelector(
     if (!featureFlag || !featureFlag.featureFlagSegmentInclusion) {
       return [];
     }
-    return [...featureFlag.featureFlagSegmentInclusion]
-      .sort((a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime())
-      .map((inclusion) => {
-        return {
-          segment: inclusion.segment,
-          listType: inclusion.listType,
-          enabled: inclusion.enabled,
-        };
-      });
+    return featureFlag.featureFlagSegmentInclusion.map((inclusion) => ({
+      segment: inclusion.segment,
+      listType: inclusion.listType,
+      enabled: inclusion.enabled,
+    }));
   }
 );
 
@@ -154,13 +166,9 @@ export const selectFeatureFlagExclusions = createSelector(
     if (!featureFlag || !featureFlag.featureFlagSegmentExclusion) {
       return [];
     }
-    return [...featureFlag.featureFlagSegmentExclusion]
-      .sort((a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime())
-      .map((exclusion) => {
-        return {
-          segment: exclusion.segment,
-          listType: exclusion.listType,
-        };
-      });
+    return featureFlag.featureFlagSegmentExclusion.map((exclusion) => ({
+      segment: exclusion.segment,
+      listType: exclusion.listType,
+    }));
   }
 );
