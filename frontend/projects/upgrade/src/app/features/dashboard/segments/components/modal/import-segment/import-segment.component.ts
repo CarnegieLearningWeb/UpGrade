@@ -6,6 +6,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { TranslateService } from '@ngx-translate/core';
 import { SegmentsDataService } from '../../../../../../core/segments/segments.data.service';
 import { NotificationService } from '../../../../../../core/notifications/notification.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-import-segment',
@@ -37,14 +38,14 @@ export class ImportSegmentComponent {
   }
 
   async importSegments() {
-    this.onCancelClick();
-    const importResult = (await this.segmentDataService
-      .importSegments(this.fileData)
-      .toPromise()) as importError[];
-
-    this.showNotification(importResult);
-
-    this.segmentsService.fetchSegments(true);
+    try {
+      this.onCancelClick();
+      const importResult = await firstValueFrom(this.segmentDataService.importSegments(this.fileData)) as importError[];
+      this.showNotification(importResult);
+      this.segmentsService.fetchSegments(true);
+    } catch (error) {
+      console.error('Error during segment import:', error);
+    }
   }
 
   showNotification(importResult: importError[]) {
