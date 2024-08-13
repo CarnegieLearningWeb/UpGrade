@@ -150,5 +150,17 @@ export const selectFeatureFlagInclusions = createSelector(
 
 export const selectFeatureFlagExclusions = createSelector(
   selectSelectedFeatureFlag,
-  (featureFlag: FeatureFlag): ParticipantListTableRow[] => []
+  (featureFlag: FeatureFlag): ParticipantListTableRow[] => {
+    if (!featureFlag || !featureFlag.featureFlagSegmentExclusion) {
+      return [];
+    }
+    return [...featureFlag.featureFlagSegmentExclusion]
+      .sort((a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime())
+      .map((exclusion) => {
+        return {
+          segment: exclusion.segment,
+          listType: exclusion.listType,
+        };
+      });
+  }
 );

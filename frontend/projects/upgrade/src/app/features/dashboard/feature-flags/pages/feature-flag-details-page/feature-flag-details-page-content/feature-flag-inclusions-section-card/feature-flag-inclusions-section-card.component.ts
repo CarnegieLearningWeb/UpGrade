@@ -58,8 +58,8 @@ export class FeatureFlagInclusionsSectionCardComponent {
   constructor(private featureFlagService: FeatureFlagsService, private dialogService: DialogService) {}
   subscriptions = new Subscription();
   menuButtonItems: IMenuButtonItem[] = [
-    { name: 'Edit', disabled: false },
-    { name: 'Delete', disabled: false },
+    // { name: 'Import Include List', disabled: false },
+    // { name: 'Export All Include Lists', disabled: false },
   ];
 
   confirmIncludeAllChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
@@ -111,8 +111,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
   }
 
   onMenuButtonItemClick(event) {
-    console.log('Menu button Clicked');
-    console.log(event);
+    console.log('Menu Button Item Clicked:', event);
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
