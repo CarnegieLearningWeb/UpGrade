@@ -60,6 +60,10 @@ export class CommonImportContainerComponent {
     this.handleFileSelection(event.dataTransfer?.files);
   }
 
+  getFileTypeSubstring(): string {
+    return this.fileType.substring(1).toUpperCase();
+  }
+
   private handleDragState(event: DragEvent, isOver: boolean) {
     event.preventDefault();
     event.stopPropagation();
