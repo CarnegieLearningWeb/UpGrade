@@ -43,8 +43,8 @@
       <app-common-tags-input
         formControlName="values"
         [inputType]="CommonTagInputType.VALUES"
-        label="feature-flags.upsert-list-modal.values-label.text"
-        placeholder="feature-flags.upsert-list-modal.values-placeholder.text"
+        [label]="config.valuesLabel"
+        [placeholder]="config.valuesPlaceholder"
         [forceValidation]="forceValidation"
         (downloadRequested)="onDownloadRequested($event)"
       ></app-common-tags-input>

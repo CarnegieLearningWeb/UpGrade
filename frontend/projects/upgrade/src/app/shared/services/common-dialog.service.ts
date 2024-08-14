@@ -41,6 +41,8 @@ export class DialogService {
   openAddFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Add Feature Flag',
+      tagsLabel: 'feature-flags.upsert-flag-modal.tags-label.text',
+      tagsPlaceholder: 'feature-flags.upsert-flag-modal.tags-placeholder.text',
       primaryActionBtnLabel: 'Create',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -55,6 +57,8 @@ export class DialogService {
   openEditFeatureFlagModal(sourceFlag: FeatureFlag) {
     const commonModalConfig: CommonModalConfig<UpsertFeatureFlagParams> = {
       title: 'Edit Feature Flag',
+      tagsLabel: 'feature-flags.upsert-flag-modal.tags-label.text',
+      tagsPlaceholder: 'feature-flags.upsert-flag-modal.tags-placeholder.text',
       primaryActionBtnLabel: 'Save',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -69,6 +73,8 @@ export class DialogService {
   openDuplicateFeatureFlagModal(sourceFlag: FeatureFlag) {
     const commonModalConfig: CommonModalConfig = {
       title: 'Duplicate Feature Flag',
+      tagsLabel: 'feature-flags.upsert-flag-modal.tags-label.text',
+      tagsPlaceholder: 'feature-flags.upsert-flag-modal.tags-placeholder.text',
       primaryActionBtnLabel: 'Add',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -160,6 +166,8 @@ export class DialogService {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Add Include List',
       nameHint: 'feature-flags.upsert-include-list-modal.name-hint.text',
+      valuesLabel: 'feature-flags.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'feature-flags.upsert-list-modal.values-placeholder.text',
       primaryActionBtnLabel: 'Create',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -177,6 +185,8 @@ export class DialogService {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Edit Include List',
       nameHint: 'feature-flags.upsert-include-list-modal.name-hint.text',
+      valuesLabel: 'feature-flags.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'feature-flags.upsert-list-modal.values-placeholder.text',
       primaryActionBtnLabel: 'Save',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',

@@ -22,15 +22,15 @@ import { BehaviorSubject, from, mergeMap, Observable, reduce } from 'rxjs';
 // <app-common-tags-input
 //   formControlName="tags"
 //   [inputType]="CommonTagInputType.TAGS"
-//   label="feature-flags.upsert-flag-modal.tags-label.text"
-//   placeholder="feature-flags.upsert-flag-modal.tags-placeholder.text"
+//   [label]="config.tagsLabel"
+//   [placeholder]="config.tagsPlaceholder"
 // ></app-common-tags-input>
 
 // <app-common-tags-input
 //   formControlName="values"
 //   [inputType]="CommonTagInputType.VALUES"
-//   label="feature-flags.upsert-list-modal.values-label.text"
-//   placeholder="feature-flags.upsert-list-modal.values-placeholder.text"
+//   [label]="config.valuesLabel"
+//   [placeholder]="config.valuesPlaceholder"
 //   [forceValidation]="forceValidation"
 //   (downloadRequested)="onDownloadRequested($event)"
 // ></app-common-tags-input>
