@@ -3,8 +3,8 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
 import { featureFlag } from '../mockData/featureFlag';
 import { experimentUsers } from '../mockData/experimentUsers/index';
-import { ExperimentUser } from '../../../src/api/models/ExperimentUser';
 import { SEGMENT_TYPE } from '../../../../../../types/src';
+import { RequestedExperimentUser } from 'src/api/controllers/validators/ExperimentUserValidator';
 
 export default async function FeatureFlagInclusionExclusionLogic(): Promise<void> {
   const featureFlagService = Container.get<FeatureFlagService>(FeatureFlagService);
@@ -68,7 +68,7 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
 
   // get keys for user1
   let keysAssign = await featureFlagService.getKeys(
-    experimentUsers[0] as ExperimentUser,
+    experimentUsers[0] as RequestedExperimentUser,
     context[0],
     new UpgradeLogger()
   );
@@ -77,13 +77,13 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
   expect(keysAssign).toEqual(expect.arrayContaining([key]));
 
   // get keys for user2
-  keysAssign = await featureFlagService.getKeys(experimentUsers[1] as ExperimentUser, context[0], new UpgradeLogger());
+  keysAssign = await featureFlagService.getKeys(experimentUsers[1] as RequestedExperimentUser, context[0], new UpgradeLogger());
 
   expect(keysAssign.length).toEqual(1);
   expect(keysAssign).toEqual(expect.arrayContaining([key]));
 
   // get keys for user3
-  keysAssign = await featureFlagService.getKeys(experimentUsers[2] as ExperimentUser, context[0], new UpgradeLogger());
+  keysAssign = await featureFlagService.getKeys(experimentUsers[2] as RequestedExperimentUser, context[0], new UpgradeLogger());
 
   expect(keysAssign.length).toEqual(0);
 }

@@ -61,8 +61,9 @@ export class FeatureFlagsDataService {
     return of(true).pipe(delay(2000));
   }
 
-  exportFeatureFlagsDesign(flagId: string) {
-    return this.fetchFeatureFlagById(flagId);
+  exportFeatureFlagsDesign(id: string) {
+    const url = `${this.environment.api.exportFlagsDesign}/${id}`;
+    return this.http.get(url);
   }
 
   deleteFeatureFlag(id: string) {
