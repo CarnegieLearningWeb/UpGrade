@@ -86,7 +86,12 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   ngAfterViewInit() {
-    if (this.config.params.action === UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST) {
+    if (
+      [
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST,
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_EXCLUDE_LIST,
+      ].includes(this.config.params.action)
+    ) {
       // Slight delay before opening the type select dropdown for a smoother UX
       // This gives a brief moment for the modal to settle visually before presenting options
       this.subscriptions.add(timer(150).subscribe(() => this.typeSelectRef.open()));
@@ -130,7 +135,12 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   populateFormForEdit(): void {
-    if (this.config.params.action !== UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST) {
+    if (
+      ![
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST,
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST,
+      ].includes(this.config.params.action)
+    ) {
       return;
     }
 
@@ -266,18 +276,28 @@ export class UpsertPrivateSegmentListModalComponent {
       list,
     };
 
-    if (action === UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST) {
-      const addListRequest: AddPrivateSegmentListRequest = listRequest;
-      this.sendAddFeatureFlagInclusionRequest(addListRequest);
-    } else if (action === UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST) {
-      const editRequest: EditPrivateSegmentListRequest = {
-        ...listRequest,
-        list: {
-          ...listRequest.list,
-          id: this.config.params.sourceList.segment.id,
-        },
-      };
-      this.sendUpdateFeatureFlagInclusionRequest(editRequest);
+    const addListRequest: AddPrivateSegmentListRequest = listRequest;
+    const editRequest: EditPrivateSegmentListRequest = {
+      ...listRequest,
+      list: {
+        ...listRequest.list,
+        id: this.config.params.sourceList?.segment?.id,
+      },
+    };
+
+    switch (action) {
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST:
+        this.sendAddFeatureFlagInclusionRequest(addListRequest);
+        break;
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST:
+        this.sendUpdateFeatureFlagInclusionRequest(editRequest);
+        break;
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_EXCLUDE_LIST:
+        this.sendAddFeatureFlagExclusionRequest(addListRequest);
+        break;
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST:
+        this.sendUpdateFeatureFlagExclusionRequest(editRequest);
+        break;
     }
   }
 
@@ -320,6 +340,14 @@ export class UpsertPrivateSegmentListModalComponent {
 
   sendUpdateFeatureFlagInclusionRequest(editListRequest: EditPrivateSegmentListRequest): void {
     this.featureFlagService.updateFeatureFlagInclusionPrivateSegmentList(editListRequest);
+  }
+
+  sendAddFeatureFlagExclusionRequest(addListRequest: AddPrivateSegmentListRequest): void {
+    this.featureFlagService.addFeatureFlagExclusionPrivateSegmentList(addListRequest);
+  }
+
+  sendUpdateFeatureFlagExclusionRequest(editListRequest: EditPrivateSegmentListRequest): void {
+    this.featureFlagService.updateFeatureFlagExclusionPrivateSegmentList(editListRequest);
   }
 
   closeModal() {
