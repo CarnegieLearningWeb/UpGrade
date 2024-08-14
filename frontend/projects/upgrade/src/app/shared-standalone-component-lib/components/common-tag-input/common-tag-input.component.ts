@@ -22,11 +22,15 @@ import { BehaviorSubject, from, mergeMap, Observable, reduce } from 'rxjs';
 // <app-common-tags-input
 //   formControlName="tags"
 //   [inputType]="CommonTagInputType.TAGS"
+//   label="feature-flags.upsert-flag-modal.tags-label.text"
+//   placeholder="feature-flags.upsert-flag-modal.tags-placeholder.text"
 // ></app-common-tags-input>
 
 // <app-common-tags-input
 //   formControlName="values"
 //   [inputType]="CommonTagInputType.VALUES"
+//   label="feature-flags.upsert-list-modal.values-label.text"
+//   placeholder="feature-flags.upsert-list-modal.values-placeholder.text"
 //   [forceValidation]="forceValidation"
 //   (downloadRequested)="onDownloadRequested($event)"
 // ></app-common-tags-input>
@@ -55,6 +59,8 @@ import { BehaviorSubject, from, mergeMap, Observable, reduce } from 'rxjs';
 })
 export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
   @Input() inputType: CommonTagInputType = CommonTagInputType.TAGS;
+  @Input() label = '';
+  @Input() placeholder = '';
   @Input() forceValidation = false;
   @Output() downloadRequested = new EventEmitter<string[]>();
 

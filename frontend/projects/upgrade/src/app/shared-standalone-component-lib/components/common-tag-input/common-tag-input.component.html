@@ -6,12 +6,7 @@
   [ngClass]="{'invalid-field': isInvalid()}"
 >
   <mat-label class="ft-14-400">
-    {{
-      (inputType === CommonTagInputType.TAGS
-        ? 'feature-flags.upsert-flag-modal.tags-label.text'
-        : 'feature-flags.upsert-list-modal.values-label.text'
-      ) | translate
-    }}
+    {{ label | translate }}
     <span *ngIf="inputType === CommonTagInputType.VALUES" class="required-asterisk">*</span>
   </mat-label>
   <div class="chips-container dense-2">
@@ -35,11 +30,8 @@
         (matChipInputTokenEnd)="addChip($event)"
         (focus)="onFocus()"
         (blur)="onBlur()"
-        [placeholder]="tagsExist ? '' :
-          (inputType === CommonTagInputType.TAGS
-            ? 'feature-flags.upsert-flag-modal.tags-placeholder.text'
-            : 'feature-flags.upsert-list-modal.values-placeholder.text'
-          ) | translate"
+        [placeholder]="tagsExist ? '' : (placeholder | translate)"
+        autocomplete="off"
         class="ft-14-400"
       />
     </mat-chip-grid>

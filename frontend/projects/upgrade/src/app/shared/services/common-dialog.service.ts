@@ -159,6 +159,7 @@ export class DialogService {
   openAddIncludeListModal(appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Add Include List',
+      nameHint: 'feature-flags.upsert-include-list-modal.name-hint.text',
       primaryActionBtnLabel: 'Create',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -175,6 +176,7 @@ export class DialogService {
   openEditIncludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Edit Include List',
+      nameHint: 'feature-flags.upsert-include-list-modal.name-hint.text',
       primaryActionBtnLabel: 'Save',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',

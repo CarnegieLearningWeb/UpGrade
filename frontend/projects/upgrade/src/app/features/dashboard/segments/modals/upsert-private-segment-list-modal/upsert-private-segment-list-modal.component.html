@@ -43,6 +43,8 @@
       <app-common-tags-input
         formControlName="values"
         [inputType]="CommonTagInputType.VALUES"
+        label="feature-flags.upsert-list-modal.values-label.text"
+        placeholder="feature-flags.upsert-list-modal.values-placeholder.text"
         [forceValidation]="forceValidation"
         (downloadRequested)="onDownloadRequested($event)"
       ></app-common-tags-input>
@@ -50,12 +52,7 @@
         <mat-label class="ft-14-400">Name</mat-label>
         <input matInput formControlName="name" placeholder="e.g., My schools" class="ft-14-400" />
         <mat-hint class="form-hint ft-12-400">
-          {{
-            (config.title === 'Add Include List'
-              ? 'feature-flags.upsert-include-list-modal.name-hint.text'
-              : 'feature-flags.upsert-exclude-list-modal.name-hint.text'
-            ) | translate
-          }}
+          {{ config.nameHint | translate }}
         </mat-hint>
       </mat-form-field>
       <mat-form-field appearance="outline">

@@ -2,6 +2,7 @@ import { MatDialogConfig } from '@angular/material/dialog';
 
 export interface CommonModalConfig<ParamsType = unknown> {
   title: string;
+  nameHint?: string;
   cancelBtnLabel?: string;
   primaryActionBtnLabel?: string;
   primaryActionBtnColor?: string;
