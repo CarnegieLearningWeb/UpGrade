@@ -203,6 +203,9 @@ export class DialogService {
   openAddExcludeListModal(appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Add Exclude List',
+      nameHint: 'feature-flags.upsert-exclude-list-modal.name-hint.text',
+      valuesLabel: 'feature-flags.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'feature-flags.upsert-list-modal.values-placeholder.text',
       primaryActionBtnLabel: 'Create',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -219,6 +222,9 @@ export class DialogService {
   openEditExcludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Edit Exclude List',
+      nameHint: 'feature-flags.upsert-exclude-list-modal.name-hint.text',
+      valuesLabel: 'feature-flags.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'feature-flags.upsert-list-modal.values-placeholder.text',
       primaryActionBtnLabel: 'Save',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
