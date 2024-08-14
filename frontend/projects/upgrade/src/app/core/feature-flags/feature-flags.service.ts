@@ -177,4 +177,16 @@ export class FeatureFlagsService {
   deleteFeatureFlagInclusionPrivateSegmentList(segmentId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList({ segmentId }));
   }
+
+  addFeatureFlagExclusionPrivateSegmentList(list: AddPrivateSegmentListRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlagExclusionList({ list }));
+  }
+
+  updateFeatureFlagExclusionPrivateSegmentList(list: EditPrivateSegmentListRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagExclusionList({ list }));
+  }
+
+  deleteFeatureFlagExclusionPrivateSegmentList(segmentId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagExclusionList({ segmentId }));
+  }
 }
