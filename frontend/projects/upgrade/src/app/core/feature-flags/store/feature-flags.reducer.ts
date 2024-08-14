@@ -197,6 +197,82 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionDeleteFeatureFlagInclusionListFailure, (state) => ({
     ...state,
     isLoadingUpsertPrivateSegmentList: false,
+  })),
+
+  // Feature Flag Exclusion List Add Actions
+  on(FeatureFlagsActions.actionAddFeatureFlagExclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
+  on(FeatureFlagsActions.actionAddFeatureFlagExclusionListSuccess, (state, { listResponse }) => {
+    const { featureFlag } = listResponse;
+    const existingFlag = state.entities[featureFlag?.id];
+
+    return adapter.updateOne(
+      {
+        id: featureFlag?.id,
+        changes: { featureFlagSegmentExclusion: [listResponse, ...existingFlag.featureFlagSegmentExclusion] },
+      },
+      { ...state }
+    );
+  }),
+  on(FeatureFlagsActions.actionAddFeatureFlagExclusionListFailure, (state) => {
+    return { ...state, isLoadingUpsertPrivateSegmentList: false };
+  }),
+
+  // Feature Flag Exclusion List Update Actions
+  on(FeatureFlagsActions.actionUpdateFeatureFlagExclusionListSuccess, (state, { listResponse }) => {
+    const { featureFlag } = listResponse;
+    const existingFlag = state.entities[featureFlag?.id];
+
+    if (existingFlag) {
+      const updatedExclusions = existingFlag.featureFlagSegmentExclusion.map((exclusion) =>
+        exclusion.segment.id === listResponse.segment.id ? listResponse : exclusion
+      );
+
+      return adapter.updateOne(
+        {
+          id: featureFlag.id,
+          changes: { featureFlagSegmentExclusion: updatedExclusions },
+        },
+        { ...state, isLoadingUpsertPrivateSegmentList: false }
+      );
+    }
+
+    return state;
+  }),
+
+  // Feature Flag Exclusion List Delete Actions
+  on(FeatureFlagsActions.actionDeleteFeatureFlagExclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
+  on(FeatureFlagsActions.actionDeleteFeatureFlagExclusionListSuccess, (state, { segmentId }) => {
+    const updatedState = { ...state, isLoadingUpsertPrivateSegmentList: false };
+    const flagId = Object.keys(state.entities).find((id) =>
+      state.entities[id].featureFlagSegmentExclusion.some((exclusion) => exclusion.segment.id === segmentId)
+    );
+
+    if (flagId) {
+      const flag = state.entities[flagId];
+      const updatedExclusions = flag.featureFlagSegmentExclusion.filter(
+        (exclusion) => exclusion.segment.id !== segmentId
+      );
+
+      return adapter.updateOne(
+        {
+          id: flagId,
+          changes: { featureFlagSegmentExclusion: updatedExclusions },
+        },
+        updatedState
+      );
+    }
+
+    return updatedState;
+  }),
+  on(FeatureFlagsActions.actionDeleteFeatureFlagExclusionListFailure, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: false,
   }))
 );
 
