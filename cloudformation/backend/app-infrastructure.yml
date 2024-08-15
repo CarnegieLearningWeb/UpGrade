@@ -89,6 +89,22 @@ Resources:
         - Name: !Ref appName
           Essential: 'true'
           Image: !Sub 467155500999.dkr.ecr.us-east-1.amazonaws.com/microservices/${appName}:${version}
+          Environment:
+            - Name: TYPEORM_HOST
+              Value: '{{resolve:ssm:UPGRADE_DB_HOST}}'
+            - Name: TYPEORM_DATABASE
+              Value: '{{resolve:ssm:UPGRADE_DATABASE_NAME}}'
+          Secrets:
+            - Name: NEW_RELIC_LICENSE_KEY
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/NEW_RELIC_LICENSE_KEY
+            - Name: TYPEORM_USERNAME
+              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_DB_USER}}
+            - Name: TYPEORM_PASSWORD
+              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_DB_USER_PASSWORD}}
+            - Name: MONITOR_USERNAME
+              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_MONITOR_USER}}
+            - Name: MONITOR_PASSWORD
+              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_MONITOR_USER_PASSWORD}}
           LogConfiguration:
             LogDriver: awsfirelens
           MemoryReservation: 256
