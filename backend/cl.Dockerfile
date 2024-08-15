@@ -7,7 +7,6 @@ RUN ls
 RUN npm ci --no-audit
 WORKDIR /usr/src/app/types
 RUN npm ci --no-audit
-RUN cat package.json
 RUN cp -R . ../backend/packages/Upgrade/types
 # ARG CODEARTIFACT_AUTH_TOKEN
 # ARG CODEARTIFACT_REGISTRY="//cli-467155500999.d.codeartifact.us-east-1.amazonaws.com/npm/cli-npm-artifacts/"
