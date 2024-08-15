@@ -38,6 +38,7 @@ import { FILE_TYPE } from 'upgrade_types';
 export class CommonImportContainerComponent {
   @Input() fileType!: FILE_TYPE;
   @Input() buttonLabel!: string;
+  @Input() showParseFailedError?: boolean;
   @Output() filesSelected = new EventEmitter<File[]>();
 
   isDragOver = new BehaviorSubject<boolean>(false);
@@ -53,6 +54,10 @@ export class CommonImportContainerComponent {
   onDrop(event: DragEvent) {
     this.handleDragState(event, false);
     this.handleFileSelection(event.dataTransfer?.files);
+  }
+
+  getFileTypeSubstring(): string {
+    return this.fileType.substring(1).toUpperCase();
   }
 
   private handleDragState(event: DragEvent, isOver: boolean) {
