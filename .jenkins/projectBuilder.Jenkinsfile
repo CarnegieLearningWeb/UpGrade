@@ -4,11 +4,11 @@ projectBuilderV5 (
         cpu: 2048,
         memory: 4096
     ],
-    initScripts: [[
-        script: 'npm ci --no-audit',
-        githubCheck: 'npm ci --no-audit',
-        log: 'npm-ci.log'
-    ]],
+    // initScripts: [[
+    //     script: 'npm ci --no-audit',
+    //     githubCheck: 'npm ci --no-audit',
+    //     log: 'npm-ci.log'
+    // ]],
     projects: [
         "upgrade-service":[
             artifactType: "ecr",
@@ -25,9 +25,8 @@ projectBuilderV5 (
                 include: ["types/.*","cloudformation/backend/app-infrastructure.yml"]
             ],
             dockerConfig: [
-                dockerFile: "backend/Dockerfile",
+                dockerFile: "backend/cl.Dockerfile",
                 requiresCodeArtifactToken: true,
-                subPath: "backend"
             ]
         ],
         "upgrade-frontend":[
