@@ -153,16 +153,18 @@ export class UpsertPrivateSegmentListModalComponent {
     }
 
     const values = this.determineValues(sourceList.listType, sourceList.segment);
-    this.privateSegmentListForm.patchValue(
-      {
-        listType: sourceList.listType,
-        segment: sourceList.segment,
-        values,
-        name: sourceList.segment.name,
-        description: sourceList.segment.description,
-      },
-      { emitEvent: false }
-    );
+    const formValue: PrivateSegmentListFormData = {
+      listType: sourceList.listType as LIST_OPTION_TYPE,
+      segment: sourceList.segment,
+      values,
+      name: sourceList.segment.name,
+      description: sourceList.segment.description,
+    };
+
+    this.privateSegmentListForm.patchValue(formValue, { emitEvent: false });
+
+    // Update the initialFormValues$ with the populated form value
+    this.initialFormValues$.next(formValue);
 
     // Trigger validators after populating the form
     this.setValidatorsBasedOnListType(sourceList.listType);
