@@ -7,7 +7,7 @@ import {
 import { FeatureFlagOverviewDetailsFooterComponent } from './feature-flag-overview-details-footer/feature-flag-overview-details-footer.component';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
-import { FEATURE_FLAG_STATUS, IMenuButtonItem } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, IMenuButtonItem } from 'upgrade_types';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonSectionCardOverviewDetailsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
@@ -65,6 +65,10 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
 
   get FEATURE_FLAG_STATUS() {
     return FEATURE_FLAG_STATUS;
+  }
+
+  get FILTER_MODE() {
+    return FILTER_MODE;
   }
 
   viewLogsClicked(event) {

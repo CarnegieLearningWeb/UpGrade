@@ -7,6 +7,11 @@
     [updatedAt]="flag.updatedAt"
     [showViewLogs]="true"
     [chipClass]="flag.status"
+    [showWarning]="
+      flag.status === FEATURE_FLAG_STATUS.ENABLED &&
+      flag.filterMode !== FILTER_MODE.INCLUDE_ALL &&
+      !flag.featureFlagSegmentInclusion?.length
+    "
     (viewLogs)="viewLogsClicked($event)"
   ></app-common-section-card-title-header>
 

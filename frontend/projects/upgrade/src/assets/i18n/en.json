@@ -342,6 +342,7 @@
   "feature-flags.details-updated-at.text": "Updated at: ",
   "feature-flags.global-name.text": "Name",
   "feature-flags.global-status.text": "Status",
+  "feature-flags.global-status-warning-tooltip.text": "No include lists defined",
   "feature-flags.global-updated-at.text": "Updated at",
   "feature-flags.global-app-context.text": "App Context",
   "feature-flags.global-tags.text": "Tags",
