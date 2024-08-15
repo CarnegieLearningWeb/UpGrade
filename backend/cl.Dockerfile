@@ -22,6 +22,6 @@ ENV NODE_OPTIONS=--max_old_space_size=4096
 
 WORKDIR /usr/src/app
 COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/backend ./backend
+COPY --from=build /usr/src/app/packages ./packages
 EXPOSE 3030
 CMD ["npm", "run", "--silent", "production:upgrade"]
