@@ -163,6 +163,9 @@ export class UpsertPrivateSegmentListModalComponent {
       },
       { emitEvent: false }
     );
+
+    // Trigger validators after populating the form
+    this.setValidatorsBasedOnListType(sourceList.listType);
   }
 
   determineValues(listType: string, segment: Segment): string[] {
@@ -345,7 +348,7 @@ export class UpsertPrivateSegmentListModalComponent {
   sendUpdateFeatureFlagInclusionRequest(editListRequest: EditPrivateSegmentListRequest): void {
     this.featureFlagService.updateFeatureFlagInclusionPrivateSegmentList(editListRequest);
   }
-  
+
   sendAddFeatureFlagExclusionRequest(addListRequest: AddPrivateSegmentListRequest): void {
     this.featureFlagService.addFeatureFlagExclusionPrivateSegmentList(addListRequest);
   }
