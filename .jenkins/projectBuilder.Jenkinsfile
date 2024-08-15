@@ -34,6 +34,7 @@ projectBuilderV5 (
             projectDir: 'frontend',
             artifactDir: 'dist/upgrade',
             publishDir:'dist/upgrade',
+            artifactPrefix: "upgrade-frontend",
             versioning: 'calendar',
             oneArtifactPerEnvironment: false,
             runInProjectDir: true,
@@ -53,7 +54,7 @@ projectBuilderV5 (
                     githubCheck: '${projectName}-copy-package'
                 ],
                 [
-                    script: 'ls -al',
+                    script: 'ls',
                     githubCheck: 'list dirs',
                     log: '${projectName}-list-dir.log'
                 ],
