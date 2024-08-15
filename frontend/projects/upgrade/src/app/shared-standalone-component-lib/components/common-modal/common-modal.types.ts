@@ -23,3 +23,10 @@ export interface SimpleConfirmationModalParams {
   subMessage?: string;
   subMessageClass?: 'info' | 'warn';
 }
+
+export enum ModalSize {
+  SMALL = '480px',
+  MEDIUM = '560px',
+  STANDARD = '656px',
+  LARGE = '864px',
+}
