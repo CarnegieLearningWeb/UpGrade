@@ -23,6 +23,8 @@ import {
   selectSortAs,
   selectAppContexts,
   selectFeatureFlagIds,
+  selectShouldShowWarningForSelectedFlag,
+  selectWarningStatusForAllFlags,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -30,6 +32,7 @@ import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types
 import {
   AddFeatureFlagRequest,
   UpdateFeatureFlagRequest,
+  UpdateFilterModeRequest,
   UpdateFeatureFlagStatusRequest,
 } from './store/feature-flags.model';
 import { filter, map, pairwise } from 'rxjs';
@@ -57,6 +60,8 @@ export class FeatureFlagsService {
   searchKey$ = this.store$.pipe(select(selectSearchKey));
   sortKey$ = this.store$.pipe(select(selectSortKey));
   sortAs$ = this.store$.pipe(select(selectSortAs));
+  shouldShowWarningForSelectedFlag$ = this.store$.pipe(select(selectShouldShowWarningForSelectedFlag));
+  warningStatusForAllFlags$ = this.store$.pipe(select(selectWarningStatusForAllFlags));
 
   hasFeatureFlagsCountChanged$ = this.allFeatureFlags$.pipe(
     pairwise(),
@@ -67,6 +72,11 @@ export class FeatureFlagsService {
     select(selectSelectedFeatureFlag),
     pairwise(),
     filter(([prev, curr]) => prev.status !== curr.status)
+  );
+  selectedFeatureFlagFilterModeChange$ = this.store$.pipe(
+    select(selectSelectedFeatureFlag),
+    pairwise(),
+    filter(([prev, curr]) => prev.filterMode !== curr.filterMode)
   );
   // Observable to check if selectedFeatureFlag is removed from the store
   isSelectedFeatureFlagRemoved$ = this.store$.pipe(
@@ -124,6 +134,10 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagStatus({ updateFeatureFlagStatusRequest }));
   }
 
+  updateFilterMode(updateFilterModeRequest: UpdateFilterModeRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFilterMode({ updateFilterModeRequest }));
+  }
+
   deleteFeatureFlag(flagId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlag({ flagId }));
   }
@@ -166,5 +180,17 @@ export class FeatureFlagsService {
 
   deleteFeatureFlagInclusionPrivateSegmentList(segmentId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList({ segmentId }));
+  }
+
+  addFeatureFlagExclusionPrivateSegmentList(list: AddPrivateSegmentListRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlagExclusionList({ list }));
+  }
+
+  updateFeatureFlagExclusionPrivateSegmentList(list: EditPrivateSegmentListRequest) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagExclusionList({ list }));
+  }
+
+  deleteFeatureFlagExclusionPrivateSegmentList(segmentId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagExclusionList({ segmentId }));
   }
 }

@@ -43,6 +43,7 @@ export const environment = {
     allExperimentNames: '/experiments/names',
     featureFlag: '/flags',
     updateFlagStatus: '/flags/status',
+    updateFilterMode: '/flags/filterMode',
     getPaginatedFlags: '/flags/paginated',
     exportFlagsDesign: '/flags/export',
     emailFlagData: '/flags/mail',

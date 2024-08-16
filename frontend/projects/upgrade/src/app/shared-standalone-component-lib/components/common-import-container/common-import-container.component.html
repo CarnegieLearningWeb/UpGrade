@@ -5,10 +5,13 @@
   (drop)="onDrop($event)"
   [ngClass]="{ 'drag-over': (isDragOver | async) }"
 >
-    <span class="material-symbols-outlined">upload</span>
-    <p class="ft-12-600 drag-text">Drag and drop or</p>
-    <button mat-flat-button color="primary" class="choose-json-btn" (click)="fileInput.click()">
-      <span>{{ buttonLabel }}</span>
-    </button>
-    <input [accept]="fileType" type="file" multiple #fileInput style="display: none" (change)="onFileSelected($event)" />
+  <span class="material-symbols-outlined">upload</span>
+  <p class="ft-12-600 drag-text">Drag and drop or</p>
+  <button mat-flat-button color="primary" class="choose-json-btn" (click)="fileInput.click()">
+    <span>{{ buttonLabel }}</span>
+  </button>
+  <input [accept]="fileType" type="file" multiple #fileInput style="display: none" (change)="onFileSelected($event)" />
+  <div *ngIf="showParseFailedError" class="ft-14-500 parse-error">
+    Error: Invalid {{ getFileTypeSubstring() }}
+  </div>
 </div>

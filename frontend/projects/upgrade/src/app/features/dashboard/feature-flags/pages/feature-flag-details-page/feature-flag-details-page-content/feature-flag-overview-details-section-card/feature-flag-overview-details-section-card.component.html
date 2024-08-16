@@ -7,6 +7,7 @@
     [updatedAt]="flag.updatedAt"
     [showViewLogs]="true"
     [chipClass]="flag.status"
+    [showWarning]="shouldShowWarning$ | async"
     (viewLogs)="viewLogsClicked($event)"
   ></app-common-section-card-title-header>
 
@@ -15,6 +16,7 @@
     header-right
     [showSlideToggle]="true"
     [isEnableToggleChecked]="flag.status === FEATURE_FLAG_STATUS.ENABLED"
+    [slideToggleText]="'feature-flags.enable.text' | translate"
     [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"

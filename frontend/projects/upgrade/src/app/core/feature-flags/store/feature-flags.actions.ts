@@ -4,6 +4,7 @@ import {
   UpdateFeatureFlagStatusRequest,
   AddFeatureFlagRequest,
   UpdateFeatureFlagRequest,
+  UpdateFilterModeRequest,
   FeatureFlagSegmentListDetails,
 } from './feature-flags.model';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
@@ -124,6 +125,18 @@ export const actionUpdateFeatureFlagStatusSuccess = createAction(
 
 export const actionUpdateFeatureFlagStatusFailure = createAction('[Feature Flags] Update Feature Flag Status Failure');
 
+export const actionUpdateFilterMode = createAction(
+  '[Feature Flags] Update Filter Mode',
+  props<{ updateFilterModeRequest: UpdateFilterModeRequest }>()
+);
+
+export const actionUpdateFilterModeSuccess = createAction(
+  '[Feature Flags] Update Filter Mode Success',
+  props<{ response: FeatureFlag }>()
+);
+
+export const actionUpdateFilterModeFailure = createAction('[Feature Flags] Update Filter Mode Failure');
+
 export const actionAddFeatureFlagInclusionList = createAction(
   '[Feature Flags] Add Feature Flag Inclusion List',
   props<{ list: AddPrivateSegmentListRequest }>()
@@ -166,5 +179,50 @@ export const actionDeleteFeatureFlagInclusionListSuccess = createAction(
 
 export const actionDeleteFeatureFlagInclusionListFailure = createAction(
   '[Feature Flags] Delete Feature Flag Inclusion List Failure',
+  props<{ error: any }>()
+);
+
+export const actionAddFeatureFlagExclusionList = createAction(
+  '[Feature Flags] Add Feature Flag Exclusion List',
+  props<{ list: AddPrivateSegmentListRequest }>()
+);
+
+export const actionAddFeatureFlagExclusionListSuccess = createAction(
+  '[Feature Flags] Add Feature Flag Exclusion List Success',
+  props<{ listResponse: FeatureFlagSegmentListDetails }>()
+);
+
+export const actionAddFeatureFlagExclusionListFailure = createAction(
+  '[Feature Flags] Add Feature Flag Exclusion List Failure',
+  props<{ error: any }>()
+);
+
+export const actionUpdateFeatureFlagExclusionList = createAction(
+  '[Feature Flags] Update Feature Flag Exclusion List',
+  props<{ list: EditPrivateSegmentListRequest }>()
+);
+
+export const actionUpdateFeatureFlagExclusionListSuccess = createAction(
+  '[Feature Flags] Update Feature Flag Exclusion List Success',
+  props<{ listResponse: FeatureFlagSegmentListDetails }>()
+);
+
+export const actionUpdateFeatureFlagExclusionListFailure = createAction(
+  '[Feature Flags] Update Feature Flag Exclusion List Failure',
+  props<{ error: any }>()
+);
+
+export const actionDeleteFeatureFlagExclusionList = createAction(
+  '[Feature Flags] Delete Feature Flag Exclusion List',
+  props<{ segmentId: string }>()
+);
+
+export const actionDeleteFeatureFlagExclusionListSuccess = createAction(
+  '[Feature Flags] Delete Feature Flag Exclusion List Success',
+  props<{ segmentId: string }>()
+);
+
+export const actionDeleteFeatureFlagExclusionListFailure = createAction(
+  '[Feature Flags] Delete Feature Flag Exclusion List Failure',
   props<{ error: any }>()
 );
