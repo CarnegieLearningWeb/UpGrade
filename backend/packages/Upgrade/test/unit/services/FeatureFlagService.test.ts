@@ -16,10 +16,9 @@ import {
   FLAG_SEARCH_KEY,
   FLAG_SORT_KEY,
 } from '../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
-import { SEGMENT_TYPE, SORT_AS_DIRECTION } from '../../../../../../types/src';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, SEGMENT_TYPE, SORT_AS_DIRECTION } from 'upgrade_types';
 import { isUUID } from 'class-validator';
 import { v4 as uuid } from 'uuid';
-import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { FeatureFlagValidation } from '../../../src/api/controllers/validators/FeatureFlagValidator';
 import { FeatureFlagListValidator } from '../../../src/api/controllers/validators/FeatureFlagListValidator';
