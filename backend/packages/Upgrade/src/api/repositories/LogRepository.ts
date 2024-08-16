@@ -687,7 +687,7 @@ export class LogRepository extends Repository<Log> {
     isFactorialExperiment: boolean,
     unitOfAssignment: string
   ): SelectQueryBuilder<Experiment> {
-    const experimentRepo = Container.getCustomRepository(ExperimentRepository);
+    const experimentRepo = Container.getCustomRepository(ExperimentRepository, 'export');
     const analyticsQuery = experimentRepo
       .createQueryBuilder('experiment')
       .innerJoin('experiment.queries', 'queries')

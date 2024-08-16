@@ -92,7 +92,7 @@ import {
   StratificationMetricQueriesCheck,
   StratificationRandomAlgorithmCheck,
 } from './Experiment/stratification/index';
-import { IndividualExperimentEnrollmentCode, GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } from './Experiment/enrollmentCode';
+// import { IndividualExperimentEnrollmentCode, GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } from './Experiment/enrollmentCode';
 
 describe('Integration Tests', () => {
   jest.setTimeout(100000000);
@@ -100,17 +100,19 @@ describe('Integration Tests', () => {
   // Setup up
   // -------------------------------------------------------------------------
 
-  let connection: Connection;
+  let defaultConnection: Connection;
+  let exportConnection: Connection;
   beforeAll(async () => {
     configureLogger();
-    connection = await createDatabaseConnection();
+    [defaultConnection, exportConnection]  = await createDatabaseConnection();
 
     // Mocking AWS Service
     Container.set(AWSService, new AWSServiceMock());
   });
 
   beforeEach(async () => {
-    await migrateDatabase(connection);
+    await migrateDatabase(defaultConnection);
+    await migrateDatabase(exportConnection);
     const cacheManager = Container.get(CacheService);
     await cacheManager.resetAllCache();
 
@@ -123,7 +125,8 @@ describe('Integration Tests', () => {
   // Tear down
   // -------------------------------------------------------------------------
 
-  afterAll(() => closeDatabase(connection));
+  afterAll(() => closeDatabase(defaultConnection));
+  afterAll(() => closeDatabase(exportConnection));
 
   // -------------------------------------------------------------------------
   // Test cases

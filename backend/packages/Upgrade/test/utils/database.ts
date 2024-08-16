@@ -11,8 +11,8 @@ declare type LoggerOptions =
   | 'all'
   | Array<'query' | 'schema' | 'error' | 'warn' | 'info' | 'log' | 'migration'>;
 
-export const createDatabaseConnection = async (): Promise<DataSource> => {
-  const connection: PostgresConnectionOptions = {
+export const createDatabaseConnection = async (): Promise<DataSource[]> => {
+  const defaultConnection: PostgresConnectionOptions = {
     name: CONNECTION_NAME.MAIN,
     type: env.db.type as any, // See createConnection options for valid types
     database: env.db.database,
@@ -25,9 +25,27 @@ export const createDatabaseConnection = async (): Promise<DataSource> => {
     migrations: migrations,
   };
 
-  const appDataSourceInstance = new DataSource(connection);
-  tteContainer.setDataSource(CONNECTION_NAME.MAIN, appDataSourceInstance);
-  return appDataSourceInstance.initialize();
+  const exportConnection: PostgresConnectionOptions = {
+    name: CONNECTION_NAME.REPLICA,
+    type: env.db.type as any, // See createConnection options for valid types
+    database: env.db.database,
+    host: env.db.host,
+    port: env.db.port,
+    username: env.db.username,
+    password: env.db.password,
+    logging: env.db.logging as LoggerOptions,
+    entities: env.app.dirs.entities,
+    migrations: migrations,
+  };
+
+  const defaultAppDataSourceInstance = new DataSource(defaultConnection);
+  tteContainer.setDataSource(CONNECTION_NAME.MAIN, defaultAppDataSourceInstance);
+
+  const exportAppDataSourceInstance = new DataSource(exportConnection);
+  tteContainer.setDataSource(CONNECTION_NAME.REPLICA, exportAppDataSourceInstance);
+  await defaultAppDataSourceInstance.initialize();
+  await exportAppDataSourceInstance.initialize();
+  return [defaultAppDataSourceInstance, exportAppDataSourceInstance];
 };
 
 export const synchronizeDatabase = async (connection: DataSource) => {
