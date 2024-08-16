@@ -112,6 +112,38 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(disableFlagStatusModalConfig);
   }
 
+  openDisableIncludeAllConfirmModal() {
+    const disableIncludeAllModalConfig: CommonModalConfig = {
+      title: 'Disable Include All',
+      primaryActionBtnLabel: 'Disable',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: 'Are you sure you want to disable "Include All"?',
+        subMessage: '* Disabling this will revert to the previously defined include lists, if any.',
+        subMessageClass: 'warn',
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(disableIncludeAllModalConfig);
+  }
+
+  openEnableIncludeAllConfirmModel() {
+    const enableIncludeAllModalConfig: CommonModalConfig = {
+      title: 'Enable Include All',
+      primaryActionBtnLabel: 'Enable',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: 'Are you sure you want to enable "Include All"?',
+        subMessage: '* Enabling this will include all participants except those explicitly excluded.',
+        subMessageClass: 'info',
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(enableIncludeAllModalConfig);
+  }
+
   openUpsertFeatureFlagModal(commonModalConfig: CommonModalConfig) {
     const config: MatDialogConfig = {
       data: commonModalConfig,
@@ -148,6 +180,38 @@ export class DialogService {
         sourceList,
         sourceAppContext: appContext,
         action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST,
+        flagId: flagId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openAddExcludeListModal(appContext: string, flagId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Add Exclude List',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList: null,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_EXCLUDE_LIST,
+        flagId: flagId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openEditExcludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Edit Exclude List',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST,
         flagId: flagId,
       },
     };
@@ -207,6 +271,20 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(deleteIncludeListModalConfig);
   }
 
+  openDeleteExcludeListModal(segmentName: string) {
+    const deleteIncludeListModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Delete Exclude List',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to delete "${segmentName}"?`,
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(deleteIncludeListModalConfig);
+  }
+
   openDeleteFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Delete Feature Flag',
@@ -236,7 +314,10 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(commonModalConfig);
   }
 
-  openEmailFeatureFlagDataModal(warning: string, subtext: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openEmailFeatureFlagDataModal(
+    warning: string,
+    subtext: string
+  ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
       title: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
       primaryActionBtnLabel: 'Email',
@@ -267,7 +348,9 @@ export class DialogService {
     return this.dialog.open(ImportFeatureFlagModalComponent, config);
   }
 
-  openSimpleCommonConfirmationModal(commonModalConfig: CommonModalConfig): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openSimpleCommonConfirmationModal(
+    commonModalConfig: CommonModalConfig
+  ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: '656px',

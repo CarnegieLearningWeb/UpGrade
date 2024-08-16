@@ -16,3 +16,8 @@ export const selectTotalStratificationFactors = createSelector(
   selectStratificationFactorsState,
   (state) => state.totalStratificationFactors
 );
+
+export const selectIsFactorAddRequestSuccess = createSelector(
+  selectStratificationFactorsState,
+  (state) => state.isFactorAddRequestSuccess
+);

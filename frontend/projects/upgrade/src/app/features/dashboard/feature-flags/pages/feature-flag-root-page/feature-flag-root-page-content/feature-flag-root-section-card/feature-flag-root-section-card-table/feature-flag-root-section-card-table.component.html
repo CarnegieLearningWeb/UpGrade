@@ -33,7 +33,10 @@
         {{ FLAG_TRANSLATION_KEYS.STATUS | translate }}
       </th>
       <td mat-cell *matCellDef="let flag" class="status-column ft-14-400">
-        <app-common-status-indicator-chip [chipClass]="flag.status"></app-common-status-indicator-chip>
+        <app-common-status-indicator-chip
+          [chipClass]="flag.status"
+          [showWarning]="(warningStatusForAllFlags$ | async)[flag.id]"
+        ></app-common-status-indicator-chip>
       </td>
     </ng-container>
 

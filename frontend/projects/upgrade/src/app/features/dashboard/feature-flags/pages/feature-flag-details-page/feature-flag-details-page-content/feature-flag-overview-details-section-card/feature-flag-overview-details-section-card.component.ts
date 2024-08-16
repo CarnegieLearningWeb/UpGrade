@@ -7,11 +7,15 @@ import {
 import { FeatureFlagOverviewDetailsFooterComponent } from './feature-flag-overview-details-footer/feature-flag-overview-details-footer.component';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
-import { FEATURE_FLAG_STATUS, IMenuButtonItem } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, IMenuButtonItem } from 'upgrade_types';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { CommonSectionCardOverviewDetailsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
-import { FEATURE_FLAG_DETAILS_PAGE_ACTIONS, FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
+import {
+  FEATURE_FLAG_DETAILS_PAGE_ACTIONS,
+  FeatureFlag,
+} from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -26,6 +30,7 @@ import { CommonSimpleConfirmationModalComponent } from '../../../../../../../sha
     CommonSectionCardActionButtonsComponent,
     CommonSectionCardOverviewDetailsComponent,
     FeatureFlagOverviewDetailsFooterComponent,
+    TranslateModule,
   ],
   templateUrl: './feature-flag-overview-details-section-card.component.html',
   styleUrl: './feature-flag-overview-details-section-card.component.scss',
@@ -37,6 +42,7 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   emailId = '';
   featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
   flagOverviewDetails$ = this.featureFlagService.selectedFlagOverviewDetails;
+  shouldShowWarning$ = this.featureFlagService.shouldShowWarningForSelectedFlag$;
   subscriptions = new Subscription();
   confirmStatusChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
   menuButtonItems: IMenuButtonItem[] = [
@@ -48,14 +54,22 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
     { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DELETE, disabled: false },
   ];
 
-  constructor(private dialogService: DialogService, private featureFlagService: FeatureFlagsService, private authService: AuthService,) {}
+  constructor(
+    private dialogService: DialogService,
+    private featureFlagService: FeatureFlagsService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-    this.subscriptions.add(this.featureFlagService.currentUserEmailAddress$.subscribe((id) => this.emailId = id));
+    this.subscriptions.add(this.featureFlagService.currentUserEmailAddress$.subscribe((id) => (this.emailId = id)));
   }
 
   get FEATURE_FLAG_STATUS() {
     return FEATURE_FLAG_STATUS;
+  }
+
+  get FILTER_MODE() {
+    return FILTER_MODE;
   }
 
   viewLogsClicked(event) {
@@ -131,7 +145,8 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
 
   openConfirmExportDesignModal(id: string) {
     const confirmMessage = 'feature-flags.export-feature-flag-design.confirmation-text.text';
-    this.dialogService.openExportFeatureFlagDesignModal(confirmMessage)
+    this.dialogService
+      .openExportFeatureFlagDesignModal(confirmMessage)
       .afterClosed()
       .subscribe((isExportClicked: boolean) => {
         if (isExportClicked) {
@@ -142,8 +157,9 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
 
   openConfirmEmailDataModal(id: string) {
     const confirmMessage = 'feature-flags.export-feature-flags-data.confirmation-text.text';
-    const emailConfirmationMessage = "The feature flag will be sent to '" + this.emailId + "'." ;
-    this.dialogService.openEmailFeatureFlagDataModal(confirmMessage, emailConfirmationMessage)
+    const emailConfirmationMessage = "The feature flag will be sent to '" + this.emailId + "'.";
+    this.dialogService
+      .openEmailFeatureFlagDataModal(confirmMessage, emailConfirmationMessage)
       .afterClosed()
       .subscribe((isEmailClicked: boolean) => {
         if (isEmailClicked) {

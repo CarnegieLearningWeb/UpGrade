@@ -22,7 +22,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
-import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../../../../types/src';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 import {
   AddFeatureFlagRequest,
   FeatureFlag,
@@ -183,7 +183,7 @@ export class UpsertFeatureFlagModalComponent {
       context: [appContext],
       tags,
       status: FEATURE_FLAG_STATUS.DISABLED,
-      filterMode: FILTER_MODE.INCLUDE_ALL,
+      filterMode: FILTER_MODE.EXCLUDE_ALL,
       featureFlagSegmentInclusion: [],
       featureFlagSegmentExclusion: [],
     };

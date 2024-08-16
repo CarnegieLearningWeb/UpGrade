@@ -6,13 +6,14 @@
       [checked]="isEnableToggleChecked"
       (change)="onSlideToggleChange($event)"
     >
-      {{ 'feature-flags.enable.text' | translate }}
+      {{ slideToggleText }}
     </mat-slide-toggle>
 
     <button
       *ngIf="showPrimaryButton"
       mat-flat-button
       color="primary"
+      [disabled]="primaryActionBtnDisabled"
       (click)="onPrimaryButtonClick()"
     >
       <span class="primary-button-text">{{ primaryButtonText }}</span>
@@ -24,6 +25,7 @@
       *ngIf="showMenuButton"
       mat-icon-button
       [matMenuTriggerFor]="menu"
+      [disabled]="!menuButtonItems.length"
     >
       <mat-icon>more_vert</mat-icon>
     </button>
@@ -40,6 +42,7 @@
 
     <button
       mat-icon-button
+      [disabled]="sectionCardExpandBtnDisabled"
       (click)="onSectionCardExpandChange()"
     >
       <mat-icon>{{ isSectionCardExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>

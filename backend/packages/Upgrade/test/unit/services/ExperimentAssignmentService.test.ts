@@ -152,7 +152,7 @@ describe('Experiment Assignment Service Test', () => {
     const err = new Error(
       JSON.stringify({
         type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-        message: `User not defined in getAllExperimentConditions: ${userId}`,
+        message: 'User not defined in getAllExperimentConditions',
       })
     );
     (err as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
@@ -418,7 +418,7 @@ describe('Experiment Assignment Service Test', () => {
     const userId = 'testUser';
     const site = 'testSite';
     const clientError = 'Client error message';
-    const err = new Error(`User not defined in markExperimentPoint: ${userId}`);
+    const err = new Error('User not defined in markExperimentPoint');
     const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
 
     try {
