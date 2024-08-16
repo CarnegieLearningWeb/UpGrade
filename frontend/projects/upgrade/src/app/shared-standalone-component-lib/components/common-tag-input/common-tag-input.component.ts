@@ -121,61 +121,67 @@ export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
     from(files)
       .pipe(
         mergeMap((file) => this.readAndParseFile(file)),
-        reduce<{ success: boolean; ids: string[] }, { ids: string[]; allValid: boolean }>(
-          (acc, result) => {
-            if (result.success) {
-              return {
-                ids: [...new Set([...acc.ids, ...result.ids])],
-                allValid: acc.allValid,
-              };
-            } else {
-              return { ids: acc.ids, allValid: false };
-            }
-          },
-          { ids: [], allValid: true }
-        )
+        reduce(this.reduceFileResults, { ids: [], allValid: true })
       )
       .subscribe({
-        next: (result) => {
-          if (result.allValid && result.ids.length > 0) {
-            this.tags.setValue(result.ids);
-            this.tags.updateValueAndValidity();
-            this.tagsExist = true;
-            this.showImportHelper = false;
-            this.importFailedSubject.next(false);
-          } else {
-            // No valid IDs found in any file
-            this.importFailedSubject.next(true);
-          }
-        },
-        error: () => {
-          // Unexpected error during file reading or parsing
-          this.importFailedSubject.next(true);
-        },
+        next: this.handleFileProcessingResult,
+        error: this.handleFileProcessingError,
       });
   }
 
   private readAndParseFile = (file: File): Observable<{ success: boolean; ids: string[] }> => {
     return new Observable((observer) => {
       const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const content = reader.result as string;
-          const ids = this.parseCSVContent(content);
-          observer.next({ success: true, ids });
-        } catch (error) {
-          // Invalid file content (empty or multiple columns)
-          observer.next({ success: false, ids: [] });
-        }
-        observer.complete();
-      };
-      reader.onerror = () => {
-        // Error reading file
-        observer.next({ success: false, ids: [] });
-        observer.complete();
-      };
+      reader.onload = () => this.handleFileLoad(reader, observer);
+      reader.onerror = () => this.handleFileError(observer);
       reader.readAsText(file);
     });
+  };
+
+  private handleFileLoad = (reader: FileReader, observer: any) => {
+    try {
+      const content = reader.result as string;
+      const ids = this.parseCSVContent(content);
+      observer.next({ success: true, ids });
+    } catch (error) {
+      observer.next({ success: false, ids: [] });
+    }
+    observer.complete();
+  };
+
+  private handleFileError = (observer: any) => {
+    observer.next({ success: false, ids: [] });
+    observer.complete();
+  };
+
+  private reduceFileResults = (
+    acc: { ids: string[]; allValid: boolean },
+    result: { success: boolean; ids: string[] }
+  ) => {
+    if (result.success) {
+      return {
+        ids: [...new Set([...acc.ids, ...result.ids])],
+        allValid: acc.allValid,
+      };
+    } else {
+      return { ids: acc.ids, allValid: false };
+    }
+  };
+
+  private handleFileProcessingResult = (result: { ids: string[]; allValid: boolean }) => {
+    if (result.allValid && result.ids.length > 0) {
+      this.tags.setValue(result.ids);
+      this.tags.updateValueAndValidity();
+      this.tagsExist = true;
+      this.showImportHelper = false;
+      this.importFailedSubject.next(false);
+    } else {
+      this.importFailedSubject.next(true);
+    }
+  };
+
+  private handleFileProcessingError = () => {
+    this.importFailedSubject.next(true);
   };
 
   private parseCSVContent(content: string): string[] {
