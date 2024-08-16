@@ -35,11 +35,7 @@
       <td mat-cell *matCellDef="let flag" class="status-column ft-14-400">
         <app-common-status-indicator-chip
           [chipClass]="flag.status"
-          [showWarning]="
-            flag.status === FEATURE_FLAG_STATUS.ENABLED &&
-            flag.filterMode !== FILTER_MODE.INCLUDE_ALL &&
-            !flag.featureFlagSegmentInclusion?.length
-          "
+          [showWarning]="(warningStatusForAllFlags$ | async)[flag.id]"
         ></app-common-status-indicator-chip>
       </td>
     </ng-container>

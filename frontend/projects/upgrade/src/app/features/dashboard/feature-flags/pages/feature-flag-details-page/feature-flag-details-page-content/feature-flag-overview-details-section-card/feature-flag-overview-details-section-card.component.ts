@@ -42,6 +42,7 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   emailId = '';
   featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
   flagOverviewDetails$ = this.featureFlagService.selectedFlagOverviewDetails;
+  shouldShowWarning$ = this.featureFlagService.shouldShowWarningForSelectedFlag$;
   subscriptions = new Subscription();
   confirmStatusChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
   menuButtonItems: IMenuButtonItem[] = [

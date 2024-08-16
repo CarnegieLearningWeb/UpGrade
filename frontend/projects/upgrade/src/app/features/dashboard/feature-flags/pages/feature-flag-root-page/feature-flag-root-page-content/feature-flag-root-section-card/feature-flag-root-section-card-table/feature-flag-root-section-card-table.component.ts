@@ -39,6 +39,7 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   @Input() isLoading$: Observable<boolean>;
   flagSortKey$ = this.featureFlagsService.sortKey$;
   flagSortAs$ = this.featureFlagsService.sortAs$;
+  warningStatusForAllFlags$ = this.featureFlagsService.warningStatusForAllFlags$;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 

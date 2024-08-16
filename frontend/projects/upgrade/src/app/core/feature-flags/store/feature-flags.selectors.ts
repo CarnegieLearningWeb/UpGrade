@@ -3,6 +3,7 @@ import { FLAG_SEARCH_KEY, FeatureFlag, FeatureFlagState, ParticipantListTableRow
 import { selectRouterState } from '../../core.state';
 import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
 import { selectAll, selectIds } from './feature-flags.reducer';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 
 export const selectFeatureFlagsState = createFeatureSelector<FeatureFlagState>('featureFlags');
 
@@ -164,3 +165,25 @@ export const selectFeatureFlagExclusions = createSelector(
       });
   }
 );
+
+// Helper function to determine if warning should be shown for a given flag
+const shouldShowWarningForFlag = (flag: FeatureFlag) =>
+  flag?.status === FEATURE_FLAG_STATUS.ENABLED &&
+  flag?.filterMode !== FILTER_MODE.INCLUDE_ALL &&
+  !flag?.featureFlagSegmentInclusion?.length;
+
+// Selector for the selected feature flag
+export const selectShouldShowWarningForSelectedFlag = createSelector(selectSelectedFeatureFlag, (flag: FeatureFlag) =>
+  shouldShowWarningForFlag(flag)
+);
+
+// Selector for all feature flags
+export const selectWarningStatusForAllFlags = createSelector(selectFeatureFlagsState, (state: FeatureFlagState) => {
+  const warningStatus = {};
+  Object.values(state.entities).forEach((flag) => {
+    if (flag) {
+      warningStatus[flag.id] = shouldShowWarningForFlag(flag);
+    }
+  });
+  return warningStatus;
+});
