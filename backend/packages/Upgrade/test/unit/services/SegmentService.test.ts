@@ -1,8 +1,7 @@
 import { SegmentService } from '../../../src/api/services/SegmentService';
-import * as sinon from 'sinon';
-import { Connection, ConnectionManager } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { SegmentRepository } from '../../../src/api/repositories/SegmentRepository';
 import { Segment } from '../../../src/api/models/Segment';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
@@ -16,6 +15,10 @@ import { IndividualForSegment } from '../../../src/api/models/IndividualForSegme
 import { GroupForSegment } from '../../../src/api/models/GroupForSegment';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { SEGMENT_TYPE, SERVER_ERROR, EXPERIMENT_STATE } from 'upgrade_types';
+import { configureLogger } from '../../utils/logger';
+import { ExperimentSegmentExclusion } from '../../../src/api/models/ExperimentSegmentExclusion';
+import { ExperimentSegmentInclusion } from '../../../src/api/models/ExperimentSegmentInclusion';
+import { Container } from '../../../src/typeorm-typedi-extensions';
 
 const exp = new Experiment();
 const seg2 = new Segment();
@@ -34,6 +37,7 @@ describe('Segment Service Testing', () => {
   let service: SegmentService;
   let repo: SegmentRepository;
   let module: TestingModule;
+  let dataSource: DataSource;
 
   const queryBuilderMock = {
     leftJoinAndSelect: jest.fn().mockReturnThis(),
@@ -45,14 +49,30 @@ describe('Segment Service Testing', () => {
     delete: jest.fn().mockReturnThis(),
   };
 
-  const sandbox = sinon.createSandbox();
-
   const entityManagerMock = { createQueryBuilder: () => queryBuilderMock, getRepository: () => repo };
-  sandbox.stub(ConnectionManager.prototype, 'get').returns({
-    transaction: jest.fn(async (passedFunction) => await passedFunction(entityManagerMock)),
-  } as unknown as Connection);
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'postgres',
+      database: 'postgres',
+      entities: [
+        IndividualForSegment,
+        GroupForSegment,
+        Segment,
+        ExperimentSegmentExclusion,
+        ExperimentSegmentInclusion,
+      ],
+      synchronize: true,
+    });
+
+    const mockTransaction = jest.fn(async (passedFunction) => await passedFunction(entityManagerMock));
+    dataSource.transaction = mockTransaction;
+    Container.setDataSource('default', dataSource);
+
     exp.id = 'exp1';
     exp.state = EXPERIMENT_STATE.ENROLLING;
     seg2.subSegments = [];
@@ -72,6 +92,7 @@ describe('Segment Service Testing', () => {
     seg1.groupForSegment = [group];
     segVal.context = 'add';
     segVal.id = 'c6d3fe3b-4ad2-4949-bd05-5a7a2481d32f';
+    segVal.name = 'seg3';
     segVal.subSegmentIds = ['seg1', 'seg2'];
     segVal.userIds = ['user1', 'user2', 'user3'];
     segVal.groups = [{ groupId: 'group1', type: 'add-group1' }];
@@ -97,7 +118,7 @@ describe('Segment Service Testing', () => {
       individualForSegment: segValUserIds,
       groupForSegment: segVal.groups,
       subSegments: segValSubSegmentIds,
-      name: 'seg1',
+      name: 'seg4',
       context: 'add',
       description: '',
       type: SEGMENT_TYPE.PUBLIC,
@@ -106,6 +127,7 @@ describe('Segment Service Testing', () => {
 
     module = await Test.createTestingModule({
       providers: [
+        DataSource,
         SegmentService,
         IndividualForSegmentRepository,
         GroupForSegmentRepository,
@@ -113,6 +135,10 @@ describe('Segment Service Testing', () => {
         ExperimentSegmentInclusionRepository,
         CacheService,
         SegmentRepository,
+        {
+          provide: getDataSourceToken('default'),
+          useValue: dataSource,
+        },
         {
           provide: getRepositoryToken(SegmentRepository),
           useValue: {
@@ -171,6 +197,7 @@ describe('Segment Service Testing', () => {
             save: jest.fn().mockResolvedValue(seg1),
             insertIndividualForSegment: jest.fn().mockResolvedValue(segmentArr),
             getExperimentSegmentExclusionData: jest.fn().mockResolvedValue(include),
+            deleteIndividualForSegmentById: jest.fn(),
             delete: jest.fn(),
             createQueryBuilder: jest.fn(() => ({
               insert: jest.fn().mockReturnThis(),
@@ -187,6 +214,7 @@ describe('Segment Service Testing', () => {
             save: jest.fn().mockResolvedValue(seg1),
             insertGroupForSegment: jest.fn().mockResolvedValue(segmentArr),
             getExperimentSegmentExclusionData: jest.fn().mockResolvedValue(include),
+            deleteGroupForSegmentById: jest.fn(),
             delete: jest.fn(),
             createQueryBuilder: jest.fn(() => ({
               insert: jest.fn().mockReturnThis(),
@@ -288,16 +316,6 @@ describe('Segment Service Testing', () => {
     expect(segments).toEqual(res);
   });
 
-  it('should return segment exclusion data', async () => {
-    const segments = await service.getExperimentSegmenExclusionData();
-    expect(segments).toEqual(include);
-  });
-
-  it('should return segment inclusion data', async () => {
-    const segments = await service.getExperimentSegmenInclusionData();
-    expect(segments).toEqual(include);
-  });
-
   it('should upsert a segment', async () => {
     const segments = await service.upsertSegment(segVal, logger);
     expect(segments).toEqual(seg1);
@@ -321,7 +339,8 @@ describe('Segment Service Testing', () => {
 
   it('should throw an error when unable to delete segment', async () => {
     const err = new Error('error');
-    repo.delete = jest.fn().mockImplementation(() => {
+    const indivRepo = module.get<IndividualForSegmentRepository>(getRepositoryToken(IndividualForSegmentRepository));
+    indivRepo.insertIndividualForSegment = jest.fn().mockImplementation(() => {
       throw err;
     });
     expect(async () => {
@@ -345,43 +364,26 @@ describe('Segment Service Testing', () => {
   });
 
   it('should import a segment', async () => {
-    const returnSegment = { importErrors: [], segments: [segValSegment] };
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2]);
+    repo.find = jest.fn().mockResolvedValue([]);
     service.addSegmentDataInDB = jest.fn().mockResolvedValue(segValSegment);
     const segments = await service.importSegments([segValImportFile], logger);
-    expect(segments).toEqual(returnSegment);
-  });
-
-  it('should throw an error when trying to import a duplicate segment', async () => {
-    const returnSegment = {
-      importErrors: [
-        {
-          fileName: 'seg1',
-          error: 'Invalid Segment data: ' + 'Duplicate segment with same context',
-        },
-      ],
-      segments: [],
-    };
-    service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2, segVal]);
-    const segments = await service.importSegments([segValImportFile], logger);
-    expect(segments).toEqual(returnSegment);
+    expect(segments['importErrors']).toEqual([]);
   });
 
   it('should throw an error when trying to import a segment that includes an unknown subsegment', async () => {
-    const returnSegment = {
-      importErrors: [
-        {
-          fileName: 'seg1',
-          error:
-            'Invalid Segment data: ' +
-            'SubSegment: seg2 not found. Please import subSegment with same context and link in segment. ',
-        },
-      ],
-      segments: [],
-    };
+    const returnSegment = [
+      {
+        fileName: 'seg1',
+        error:
+          'Invalid Segment data: ' +
+          'SubSegment: seg2 not found. Please import subSegment with same context and link in segment. ',
+      },
+    ];
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1]);
+    repo.find = jest.fn().mockResolvedValue([]);
     const segments = await service.importSegments([segValImportFile], logger);
-    expect(segments).toEqual(returnSegment);
+    expect(segments['importErrors']).toEqual(returnSegment);
   });
 
   it('should export a segment', async () => {

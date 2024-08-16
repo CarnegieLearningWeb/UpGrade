@@ -1,4 +1,5 @@
-import { EXPERIMENT_TYPE, FILTER_MODE } from 'upgrade_types';
+import { METRICS_JOIN_TEXT } from '../../../../src/api/services/MetricService';
+import { EXPERIMENT_TYPE, FILTER_MODE, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
 
 export const revertToExperiment = {
   id: 'be3ae74f-370a-4015-93f3-7761d16f8b11',
@@ -13,7 +14,23 @@ export const revertToExperiment = {
   group: 'teacher',
   context: ['home'],
   tags: [],
-  queries: [],
+  queries: [
+      {
+        name: 'Percent of times the Most Recent workspaceCompletionStatus=GRADUATED for level1 (addWorkspace)',
+        query: {
+          operationType: OPERATION_TYPES.PERCENTAGE,
+          compareFn: '=',
+          compareValue: 'GRADUATED',
+        },
+        repeatedMeasure: REPEATED_MEASURE.mostRecent,
+        metric: {
+          key: `addWorkspace${METRICS_JOIN_TEXT}level1${METRICS_JOIN_TEXT}workspaceCompletionStatus`,
+          type: 'categorical',
+          allowedData: ['GRADUATED', 'PROMOTED'],
+        },
+        experimentId: 'be3ae74f-370a-4015-93f3-7761d16f8b11',
+      }
+  ],
   filterMode: FILTER_MODE.INCLUDE_ALL,
   experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },

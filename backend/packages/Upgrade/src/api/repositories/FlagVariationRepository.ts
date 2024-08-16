@@ -1,4 +1,5 @@
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { FlagVariation } from '../models/FlagVariation';
 
@@ -50,9 +51,7 @@ export class FlagVariationRepository extends Repository<FlagVariation> {
       .insert()
       .into(FlagVariation)
       .values(variationDoc)
-      .onConflict(
-        `("id") DO UPDATE SET "value" = :value, "name" = :name, "description" = :description, "defaultVariation" = :defaultVariation`
-      )
+      .orUpdate(['value', 'name', 'description', 'defaultVariation'], ['id'])
       .setParameter('value', variationDoc.value)
       .setParameter('name', variationDoc.name)
       .setParameter('description', variationDoc.description)

@@ -1,22 +1,22 @@
+import { Container as tteContainer } from './../../../../src/typeorm-typedi-extensions';
 import Container from 'typedi';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { individualAssignmentExperiment } from '../../mockData/experiment/index';
 import { UserService } from '../../../../src/api/services/UserService';
-import { getRepository } from 'typeorm';
 import { MetricService, METRICS_JOIN_TEXT } from '../../../../src/api/services/MetricService';
 import { SettingService } from '../../../../src/api/services/SettingService';
 import { QueryService } from '../../../../src/api/services/QueryService';
 import { systemUser } from '../../mockData/user/index';
-import { Metric } from '../../../../src/api/models/Metric';
 import { metrics } from '../../mockData/metric/index';
 import { EXPERIMENT_STATE, IMetricMetaData, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
 import { checkMarkExperimentPointForUser, getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import { checkExperimentAssignedIsNotDefault } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
-import { Log } from '../../../../src/api/models/Log';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
+import { MetricRepository } from '../../../../src/api/repositories/MetricRepository';
+import { LogRepository } from '../../../../src/api/repositories/LogRepository';
 
 export default async function RepeatedMeasure(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
@@ -24,11 +24,11 @@ export default async function RepeatedMeasure(): Promise<void> {
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   let experimentObject = individualAssignmentExperiment;
   const userService = Container.get<UserService>(UserService);
-  const metricRepository = getRepository(Metric);
+  const metricRepository = tteContainer.getCustomRepository(MetricRepository);
   const metricService = Container.get<MetricService>(MetricService);
   const settingService = Container.get<SettingService>(SettingService);
   const queryService = Container.get<QueryService>(QueryService);
-  const logRepository = getRepository(Log);
+  const logRepository = tteContainer.getCustomRepository(LogRepository);
 
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 

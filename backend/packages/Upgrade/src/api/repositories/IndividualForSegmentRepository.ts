@@ -1,4 +1,5 @@
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { IndividualForSegment } from '../models/IndividualForSegment';
@@ -33,7 +34,7 @@ export class IndividualForSegmentRepository extends Repository<IndividualForSegm
       .insert()
       .into(IndividualForSegment)
       .values(data)
-      .onConflict(`DO NOTHING`)
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
@@ -77,12 +78,14 @@ export class IndividualForSegmentRepository extends Repository<IndividualForSegm
 
   public async deleteIndividualForSegmentById(
     segmentId: string,
+    entityManager: EntityManager,
     logger: UpgradeLogger
   ): Promise<IndividualForSegment[]> {
-    const result = await this.createQueryBuilder('individualForSegment')
+    const result = await entityManager
+      .createQueryBuilder()
       .delete()
       .from(IndividualForSegment)
-      .where('individualForSegment.segment=:segmentId', { segmentId })
+      .where('segment=:segmentId', { segmentId })
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

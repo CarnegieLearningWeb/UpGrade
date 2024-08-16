@@ -1,4 +1,5 @@
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { Level } from '../models/Level';
@@ -36,7 +37,7 @@ export class LevelRepository extends Repository<Level> {
       .insert()
       .into(Level)
       .values(levelDoc)
-      .onConflict(`("id") DO UPDATE SET "name" = :name`)
+      .orUpdate(['name'], ['id'])
       .setParameter('name', levelDoc.name)
       .returning('*')
       .execute()

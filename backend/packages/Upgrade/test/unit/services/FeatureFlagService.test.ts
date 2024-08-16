@@ -1,18 +1,20 @@
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
-import * as sinon from 'sinon';
-import { Connection, ConnectionManager } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ErrorService } from '../../../src/api/services/ErrorService';
 import { FeatureFlagRepository } from '../../../src/api/repositories/FeatureFlagRepository';
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
+import { Segment } from '../../../src/api/models/Segment';
 import { FlagVariationRepository } from '../../../src/api/repositories/FlagVariationRepository';
 import { FLAG_SEARCH_SORT_KEY } from '../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { EXPERIMENT_SORT_AS } from '../../../../../../types/src';
 import { FlagVariation } from '../../../src/api/models/FlagVariation';
 import { isUUID } from 'class-validator';
 import { v4 as uuid } from 'uuid';
+import { configureLogger } from '../../utils/logger';
+import { Container } from '../../../src/typeorm-typedi-extensions';
 
 describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
@@ -21,6 +23,7 @@ describe('Feature Flag Service Testing', () => {
   let module: Awaited<ReturnType<TestingModuleBuilder['compile']>>;
 
   const logger = new UpgradeLogger();
+  let dataSource: DataSource;
   const var1 = new FlagVariation();
   var1.id = uuid();
   var1.value = 'value1';
@@ -70,15 +73,30 @@ describe('Feature Flag Service Testing', () => {
   };
 
   const entityManagerMock = { createQueryBuilder: () => queryBuilderMock };
-  const sandbox = sinon.createSandbox();
-  sandbox.stub(ConnectionManager.prototype, 'get').returns({
-    transaction: jest.fn(async (passedFunction) => await passedFunction(entityManagerMock)),
-  } as unknown as Connection);
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'postgres',
+      database: 'postgres',
+      entities: [FeatureFlag, Segment],
+      synchronize: true,
+    });
+
+    const mockTransaction = jest.fn(async (passedFunction) => await passedFunction(entityManagerMock));
+    dataSource.transaction = mockTransaction;
+    Container.setDataSource('default', dataSource);
     module = await Test.createTestingModule({
       providers: [
+        DataSource,
         FeatureFlagService,
+        {
+          provide: getDataSourceToken('default'),
+          useValue: dataSource,
+        },
         FeatureFlagRepository,
         FlagVariationRepository,
         {

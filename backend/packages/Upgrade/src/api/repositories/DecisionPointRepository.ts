@@ -1,5 +1,6 @@
 import { DecisionPoint } from '../models/DecisionPoint';
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 
 @EntityRepository(DecisionPoint)
@@ -13,9 +14,7 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
       .insert()
       .into(DecisionPoint)
       .values(decisionPointDoc)
-      .onConflict(
-        `("id") DO UPDATE SET "target" = :target, "description" = :description, "excludeIfReached" = :excludeIfReached, "order" = :order`
-      )
+      .orUpdate(['target', 'description', 'excludeIfReached', 'order'], ['id'])
       .setParameter('target', decisionPointDoc.target)
       .setParameter('description', decisionPointDoc.description)
       .setParameter('excludeIfReached', decisionPointDoc.excludeIfReached)

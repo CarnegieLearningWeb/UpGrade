@@ -16,13 +16,11 @@ import MetricServiceMock from './mocks/MetricServiceMock';
 import ClientLibMiddlewareMock from './mocks/ClientLibMiddlewareMock';
 
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-import { useContainer as ormUseContainer } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 
 describe('Experiment Client Controller Testing', () => {
   beforeAll(() => {
     routingUseContainer(Container);
-    ormUseContainer(Container);
     classValidatorUseContainer(Container);
 
     Container.set(ExperimentService, new ExperimentServieMock());

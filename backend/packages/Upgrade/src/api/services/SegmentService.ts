@@ -1,18 +1,16 @@
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository, InjectDataSource } from '../../typeorm-typedi-extensions';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { IndividualForSegmentRepository } from '../repositories/IndividualForSegmentRepository';
 import { GroupForSegmentRepository } from '../repositories/GroupForSegmentRepository';
 import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS, CACHE_PREFIX } from 'upgrade_types';
-import { getConnection } from 'typeorm';
+import { DataSource } from 'typeorm';
 import Papa from 'papaparse';
 import { env } from '../../env';
 import { v4 as uuid } from 'uuid';
 import { ErrorWithType } from '../errors/ErrorWithType';
-import { IndividualForSegment } from '../models/IndividualForSegment';
-import { GroupForSegment } from '../models/GroupForSegment';
 import {
   SegmentInputValidator,
   SegmentReturnObj,
@@ -45,6 +43,8 @@ interface SegmentParticipantsRow {
 @Service()
 export class SegmentService {
   constructor(
+    @InjectDataSource()
+    private dataSource: DataSource,
     @InjectRepository()
     private segmentRepository: SegmentRepository,
     @InjectRepository()
@@ -107,7 +107,8 @@ export class SegmentService {
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
-    const segmentsData = await getConnection().transaction(async () => {
+    const connection = this.dataSource.manager.connection;
+    const segmentsData = await connection.transaction(async () => {
       const [segmentsData, allExperimentSegmentsInclusion, allExperimentSegmentsExclusion] = await Promise.all([
         this.getAllSegments(logger),
         this.getExperimentSegmenInclusionData(),
@@ -305,7 +306,7 @@ export class SegmentService {
       const isDuplicateSegmentWithSameContext =
         isDuplicateSegment && duplicateSegmentsContexts ? duplicateSegmentsContexts.includes(segment.context) : false;
       if (isDuplicateSegment && isDuplicateSegmentWithSameContext && segment.id !== undefined) {
-        errorMessage = errorMessage + 'Duplicate segment with same context';
+        errorMessage = errorMessage + 'Duplicate segment with same context. ';
       }
 
       // import duplicate segment with different context:
@@ -314,7 +315,9 @@ export class SegmentService {
         segment.id = !isDuplicateSegment ? segment.id : uuid();
       }
 
-      const duplicateName = allSegments.filter((seg) => seg.name === segment.name && seg.context === segment.context);
+      const duplicateName = await this.segmentRepository.find({
+        where: { name: segment.name, context: segment.context },
+      });
       if (duplicateName.length) {
         errorMessage =
           errorMessage +
@@ -398,30 +401,35 @@ export class SegmentService {
   }
 
   async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
-    const createdSegment = await getConnection().transaction(async (transactionalEntityManager) => {
+    const manager = this.dataSource;
+    const createdSegment = await manager.transaction(async (transactionalEntityManager) => {
       let segmentDoc: Segment;
 
       if (segment.id) {
         try {
+          const segmentRepository = await transactionalEntityManager.getRepository(Segment);
           // get segment by ids
-          segmentDoc = await transactionalEntityManager
-            .getRepository(Segment)
-            .findOne(segment.id, { relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
+          segmentDoc = await segmentRepository.findOne({
+            where: { id: segment.id },
+            relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+          });
 
           // delete individual for segment
           if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
-            const usersToDelete = segmentDoc.individualForSegment.map((individual) => {
-              return { userId: individual.userId, segment: segment.id };
-            });
-            await transactionalEntityManager.getRepository(IndividualForSegment).delete(usersToDelete as any);
+            await this.individualForSegmentRepository.deleteIndividualForSegmentById(
+              segmentDoc.id,
+              transactionalEntityManager,
+              logger
+            );
           }
 
           // delete group for segment
           if (segmentDoc && segmentDoc.groupForSegment && segmentDoc.groupForSegment.length > 0) {
-            const groupToDelete = segmentDoc.groupForSegment.map((group) => {
-              return { groupId: group.groupId, type: group.type, segment: segment.id };
-            });
-            await transactionalEntityManager.getRepository(GroupForSegment).delete(groupToDelete as any);
+            await this.groupForSegmentRepository.deleteGroupForSegmentById(
+              segmentDoc.id,
+              transactionalEntityManager,
+              logger
+            );
           }
         } catch (err) {
           const error = err as ErrorWithType;
@@ -494,9 +502,10 @@ export class SegmentService {
         throw error;
       }
 
-      return transactionalEntityManager
-        .getRepository(Segment)
-        .findOne(segmentDoc.id, { relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
+      return transactionalEntityManager.getRepository(Segment).findOne({
+        where: { id: segmentDoc.id },
+        relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+      });
     });
 
     // reset caching

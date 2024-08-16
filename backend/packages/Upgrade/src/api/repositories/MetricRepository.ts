@@ -1,5 +1,6 @@
 import { Metric } from '../models/Metric';
-import { EntityRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 
