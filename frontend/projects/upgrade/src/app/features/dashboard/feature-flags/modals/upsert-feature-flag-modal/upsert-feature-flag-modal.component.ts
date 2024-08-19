@@ -25,6 +25,7 @@ import { CommonFormHelpersService } from '../../../../../shared/services/common-
 import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 import {
   AddFeatureFlagRequest,
+  CommonTagInputType,
   FeatureFlag,
   FeatureFlagFormData,
   UpdateFeatureFlagRequest,
@@ -76,6 +77,7 @@ export class UpsertFeatureFlagModalComponent {
   initialFormValues$ = new BehaviorSubject<FeatureFlagFormData>(null);
 
   featureFlagForm: FormGroup;
+  CommonTagInputType = CommonTagInputType;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
