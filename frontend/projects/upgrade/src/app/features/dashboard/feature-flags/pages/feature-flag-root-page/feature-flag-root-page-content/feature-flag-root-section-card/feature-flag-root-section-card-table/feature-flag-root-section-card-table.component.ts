@@ -15,6 +15,7 @@ import { MatSort } from '@angular/material/sort';
 import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shared-standalone-component-lib/components';
 import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/feature-flags.service';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 
 @Component({
   selector: 'app-feature-flag-root-section-card-table',
@@ -28,7 +29,6 @@ import { SharedModule } from '../../../../../../../../shared/shared.module';
     UpperCasePipe,
     RouterModule,
     CommonStatusIndicatorChipComponent,
-    SharedModule,
   ],
   templateUrl: './feature-flag-root-section-card-table.component.html',
   styleUrl: './feature-flag-root-section-card-table.component.scss',
@@ -39,6 +39,7 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   @Input() isLoading$: Observable<boolean>;
   flagSortKey$ = this.featureFlagsService.sortKey$;
   flagSortAs$ = this.featureFlagsService.sortAs$;
+  warningStatusForAllFlags$ = this.featureFlagsService.warningStatusForAllFlags$;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 
@@ -48,6 +49,14 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
     if (this.dataSource$?.data) {
       this.dataSource$.sort = this.sort;
     }
+  }
+
+  get FEATURE_FLAG_STATUS() {
+    return FEATURE_FLAG_STATUS;
+  }
+
+  get FILTER_MODE() {
+    return FILTER_MODE;
   }
 
   get displayedColumns(): string[] {

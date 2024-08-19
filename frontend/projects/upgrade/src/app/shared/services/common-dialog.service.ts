@@ -127,8 +127,7 @@ export class DialogService {
       cancelBtnLabel: 'Cancel',
       params: {
         message: 'Are you sure you want to enable "Include All"?',
-        subMessage:
-          '* Enabling this will include all participants. Any existing lists, if defined, will be ignored until this is turned off again.',
+        subMessage: '* Enabling this will include all participants except those explicitly excluded.',
         subMessageClass: 'info',
       },
     };
@@ -145,7 +144,7 @@ export class DialogService {
       params: {
         message: 'Are you sure you want to disable "Include All"?',
         subMessage:
-          '* Disabling this will revert to the previously defined include lists, if any. Ensure the lists are updated as needed.',
+          '* Disabling this will revert to the previously defined include lists, if any.',
         subMessageClass: 'warn',
       },
     };
