@@ -1,9 +1,9 @@
 .chip-container {
   display: flex;
   align-items: center;
-  pointer-events: none;
 
   .status-indicator {
+    pointer-events: none;
     --mdc-chip-container-shape-radius: 4px;
 
     &.disabled {
@@ -71,5 +71,13 @@
       border: 1px solid var(--status-used);
       background-color: var(--status-used-alpha);
     }
+  }
+
+  .warning-icon {
+    margin-left: 6px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: var(--status-disabled);
   }
 }

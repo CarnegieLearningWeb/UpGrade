@@ -3,6 +3,7 @@ import { FLAG_SEARCH_KEY, FeatureFlag, FeatureFlagState, ParticipantListTableRow
 import { selectRouterState } from '../../core.state';
 import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
 import { selectAll, selectIds } from './feature-flags.reducer';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 
 export const selectFeatureFlagsState = createFeatureSelector<FeatureFlagState>('featureFlags');
 
@@ -155,5 +156,39 @@ export const selectFeatureFlagInclusions = createSelector(
 
 export const selectFeatureFlagExclusions = createSelector(
   selectSelectedFeatureFlag,
-  (featureFlag: FeatureFlag): ParticipantListTableRow[] => []
+  (featureFlag: FeatureFlag): ParticipantListTableRow[] => {
+    if (!featureFlag || !featureFlag.featureFlagSegmentExclusion) {
+      return [];
+    }
+    return [...featureFlag.featureFlagSegmentExclusion]
+      .sort((a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime())
+      .map((exclusion) => {
+        return {
+          segment: exclusion.segment,
+          listType: exclusion.listType,
+        };
+      });
+  }
 );
+
+// Helper function to determine if warning should be shown for a given flag
+const shouldShowWarningForFlag = (flag: FeatureFlag) =>
+  flag?.status === FEATURE_FLAG_STATUS.ENABLED &&
+  flag?.filterMode !== FILTER_MODE.INCLUDE_ALL &&
+  !flag?.featureFlagSegmentInclusion?.length;
+
+// Selector for the selected feature flag
+export const selectShouldShowWarningForSelectedFlag = createSelector(selectSelectedFeatureFlag, (flag: FeatureFlag) =>
+  shouldShowWarningForFlag(flag)
+);
+
+// Selector for all feature flags
+export const selectWarningStatusForAllFlags = createSelector(selectFeatureFlagsState, (state: FeatureFlagState) => {
+  const warningStatus = {};
+  Object.values(state.entities).forEach((flag) => {
+    if (flag) {
+      warningStatus[flag.id] = shouldShowWarningForFlag(flag);
+    }
+  });
+  return warningStatus;
+});
