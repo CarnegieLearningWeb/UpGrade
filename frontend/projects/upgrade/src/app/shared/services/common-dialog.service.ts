@@ -20,6 +20,7 @@ import {
 import { CommonSimpleConfirmationModalComponent } from '../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
 import {
   CommonModalConfig,
+  ModalSize,
   SimpleConfirmationModalParams,
 } from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 
@@ -41,6 +42,8 @@ export class DialogService {
   openAddFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Add Feature Flag',
+      tagsLabel: 'feature-flags.upsert-flag-modal.tags-label.text',
+      tagsPlaceholder: 'feature-flags.upsert-flag-modal.tags-placeholder.text',
       primaryActionBtnLabel: 'Create',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -55,6 +58,8 @@ export class DialogService {
   openEditFeatureFlagModal(sourceFlag: FeatureFlag) {
     const commonModalConfig: CommonModalConfig<UpsertFeatureFlagParams> = {
       title: 'Edit Feature Flag',
+      tagsLabel: 'feature-flags.upsert-flag-modal.tags-label.text',
+      tagsPlaceholder: 'feature-flags.upsert-flag-modal.tags-placeholder.text',
       primaryActionBtnLabel: 'Save',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -69,6 +74,8 @@ export class DialogService {
   openDuplicateFeatureFlagModal(sourceFlag: FeatureFlag) {
     const commonModalConfig: CommonModalConfig = {
       title: 'Duplicate Feature Flag',
+      tagsLabel: 'feature-flags.upsert-flag-modal.tags-label.text',
+      tagsPlaceholder: 'feature-flags.upsert-flag-modal.tags-placeholder.text',
       primaryActionBtnLabel: 'Add',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -93,7 +100,7 @@ export class DialogService {
       },
     };
 
-    return this.openSimpleCommonConfirmationModal(enableFlagStatusModalConfig);
+    return this.openSimpleCommonConfirmationModal(enableFlagStatusModalConfig, ModalSize.MEDIUM);
   }
 
   openDisableFeatureFlagConfirmModel(flagName: string) {
@@ -109,7 +116,23 @@ export class DialogService {
       },
     };
 
-    return this.openSimpleCommonConfirmationModal(disableFlagStatusModalConfig);
+    return this.openSimpleCommonConfirmationModal(disableFlagStatusModalConfig, ModalSize.MEDIUM);
+  }
+
+  openEnableIncludeAllConfirmModel() {
+    const enableIncludeAllModalConfig: CommonModalConfig = {
+      title: 'Enable Include All',
+      primaryActionBtnLabel: 'Enable',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: 'Are you sure you want to enable "Include All"?',
+        subMessage: '* Enabling this will include all participants except those explicitly excluded.',
+        subMessageClass: 'info',
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(enableIncludeAllModalConfig, ModalSize.MEDIUM);
   }
 
   openDisableIncludeAllConfirmModal() {
@@ -121,35 +144,18 @@ export class DialogService {
       params: {
         message: 'Are you sure you want to disable "Include All"?',
         subMessage:
-          '* Disabling this will revert to the previously defined include lists, if any. Ensure the lists are updated as needed.',
+          '* Disabling this will revert to the previously defined include lists, if any.',
         subMessageClass: 'warn',
       },
     };
 
-    return this.openSimpleCommonConfirmationModal(disableIncludeAllModalConfig);
-  }
-
-  openEnableIncludeAllConfirmModel() {
-    const enableIncludeAllModalConfig: CommonModalConfig = {
-      title: 'Enable Include All',
-      primaryActionBtnLabel: 'Enable',
-      primaryActionBtnColor: 'primary',
-      cancelBtnLabel: 'Cancel',
-      params: {
-        message: 'Are you sure you want to enable "Include All"?',
-        subMessage:
-          '* Enabling this will include all participants. Any existing lists, if defined, will be ignored until this is turned off again.',
-        subMessageClass: 'info',
-      },
-    };
-
-    return this.openSimpleCommonConfirmationModal(enableIncludeAllModalConfig);
+    return this.openSimpleCommonConfirmationModal(disableIncludeAllModalConfig, ModalSize.MEDIUM);
   }
 
   openUpsertFeatureFlagModal(commonModalConfig: CommonModalConfig) {
     const config: MatDialogConfig = {
       data: commonModalConfig,
-      width: '656px',
+      width: ModalSize.STANDARD,
       autoFocus: 'first-heading',
       disableClose: true,
     };
@@ -159,6 +165,9 @@ export class DialogService {
   openAddIncludeListModal(appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Add Include List',
+      nameHint: 'feature-flags.upsert-include-list-modal.name-hint.text',
+      valuesLabel: 'feature-flags.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'feature-flags.upsert-list-modal.values-placeholder.text',
       primaryActionBtnLabel: 'Create',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -175,6 +184,9 @@ export class DialogService {
   openEditIncludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Edit Include List',
+      nameHint: 'feature-flags.upsert-include-list-modal.name-hint.text',
+      valuesLabel: 'feature-flags.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'feature-flags.upsert-list-modal.values-placeholder.text',
       primaryActionBtnLabel: 'Save',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -191,6 +203,9 @@ export class DialogService {
   openAddExcludeListModal(appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Add Exclude List',
+      nameHint: 'feature-flags.upsert-exclude-list-modal.name-hint.text',
+      valuesLabel: 'feature-flags.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'feature-flags.upsert-list-modal.values-placeholder.text',
       primaryActionBtnLabel: 'Create',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -207,6 +222,9 @@ export class DialogService {
   openEditExcludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Edit Exclude List',
+      nameHint: 'feature-flags.upsert-exclude-list-modal.name-hint.text',
+      valuesLabel: 'feature-flags.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'feature-flags.upsert-list-modal.values-placeholder.text',
       primaryActionBtnLabel: 'Save',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -223,7 +241,7 @@ export class DialogService {
   openUpsertPrivateSegmentListModal(commonModalConfig: CommonModalConfig) {
     const config: MatDialogConfig = {
       data: commonModalConfig,
-      width: '656px',
+      width: ModalSize.STANDARD,
       height: 'auto',
       autoFocus: 'first-heading',
       disableClose: true,
@@ -242,7 +260,7 @@ export class DialogService {
       },
     };
 
-    return this.openSimpleCommonConfirmationModal(enableIncludeListModalConfig);
+    return this.openSimpleCommonConfirmationModal(enableIncludeListModalConfig, ModalSize.SMALL);
   }
 
   openDisableIncludeListModal(segmentName: string) {
@@ -256,7 +274,7 @@ export class DialogService {
       },
     };
 
-    return this.openSimpleCommonConfirmationModal(disableIncludeListModalConfig);
+    return this.openSimpleCommonConfirmationModal(disableIncludeListModalConfig, ModalSize.SMALL);
   }
 
   openDeleteIncludeListModal(segmentName: string) {
@@ -270,7 +288,7 @@ export class DialogService {
       },
     };
 
-    return this.openSimpleCommonConfirmationModal(deleteIncludeListModalConfig);
+    return this.openSimpleCommonConfirmationModal(deleteIncludeListModalConfig, ModalSize.SMALL);
   }
 
   openDeleteExcludeListModal(segmentName: string) {
@@ -284,7 +302,7 @@ export class DialogService {
       },
     };
 
-    return this.openSimpleCommonConfirmationModal(deleteIncludeListModalConfig);
+    return this.openSimpleCommonConfirmationModal(deleteIncludeListModalConfig, ModalSize.SMALL);
   }
 
   openDeleteFeatureFlagModal() {
@@ -296,7 +314,7 @@ export class DialogService {
     };
     const config: MatDialogConfig = {
       data: commonModalConfig,
-      width: '480px',
+      width: ModalSize.SMALL,
       autoFocus: 'input',
       disableClose: true,
     };
@@ -313,7 +331,7 @@ export class DialogService {
         message: warning,
       },
     };
-    return this.openSimpleCommonConfirmationModal(commonModalConfig);
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
   }
 
   openEmailFeatureFlagDataModal(
@@ -331,7 +349,7 @@ export class DialogService {
         subMessageClass: 'info',
       },
     };
-    return this.openSimpleCommonConfirmationModal(commonModalConfig);
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
   }
 
   openImportFeatureFlagModal() {
@@ -343,7 +361,7 @@ export class DialogService {
     };
     const config: MatDialogConfig = {
       data: commonModalConfig,
-      width: '656px',
+      width: ModalSize.STANDARD,
       autoFocus: 'input',
       disableClose: true,
     };
@@ -351,11 +369,12 @@ export class DialogService {
   }
 
   openSimpleCommonConfirmationModal(
-    commonModalConfig: CommonModalConfig
+    commonModalConfig: CommonModalConfig,
+    modalSize: ModalSize
   ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const config: MatDialogConfig = {
       data: commonModalConfig,
-      width: '656px',
+      width: modalSize,
       autoFocus: 'first-heading',
       disableClose: true,
     };
