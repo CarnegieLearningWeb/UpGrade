@@ -73,3 +73,22 @@ export class IdValidator {
   @IsUUID()
   public id: string;
 }
+
+export class FeatureFlagImportValidation {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FeatureFlagFile)
+  public files: FeatureFlagFile[];
+}
+
+class FeatureFlagFile {
+  @IsString()
+  @IsNotEmpty()
+  @IsDefined()
+  public fileName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsDefined()
+  public fileContent: string;
+}

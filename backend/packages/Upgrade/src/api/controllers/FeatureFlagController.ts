@@ -10,8 +10,13 @@ import {
 } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFilterModeUpdateValidator';
 import { AppRequest, PaginationResponse } from '../../types';
-import { SERVER_ERROR, IFeatureFlagFile } from 'upgrade_types';
-import { FeatureFlagValidation, IdValidator, UserParamsValidator } from './validators/FeatureFlagValidator';
+import { SERVER_ERROR } from 'upgrade_types';
+import {
+  FeatureFlagImportValidation,
+  FeatureFlagValidation,
+  IdValidator,
+  UserParamsValidator,
+} from './validators/FeatureFlagValidator';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
 import { Segment } from 'src/api/models/Segment';
@@ -314,7 +319,7 @@ export class FeatureFlagsController {
    *       parameters:
    *         - in: body
    *           name: statusUpdate
-   *           description: Updating the featur flag's status
+   *           description: Updating the feature flag's status
    *           schema:
    *             type: object
    *             required:
@@ -352,7 +357,7 @@ export class FeatureFlagsController {
    *       parameters:
    *         - in: body
    *           name: updateFilterMode
-   *           description: Updating the featur flag's filter mode
+   *           description: Updating the feature flag's filter mode
    *           schema:
    *             type: object
    *             required:
@@ -457,7 +462,7 @@ export class FeatureFlagsController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: addinclusionList
+   *           name: add inclusionList
    *           description: Adding an inclusion list to the feature flag
    *           schema:
    *             type: object
@@ -701,9 +706,9 @@ export class FeatureFlagsController {
    */
   @Post('/import/validation')
   public async validateImportFeatureFlags(
-    @Body({ validate: true }) featureFlags: IFeatureFlagFile[],
+    @Body({ validate: true }) featureFlags: FeatureFlagImportValidation,
     @Req() request: AppRequest
   ): Promise<ValidatedFeatureFlagsError[]> {
-    return await this.featureFlagService.validateImportFeatureFlags(featureFlags, request.logger);
+    return await this.featureFlagService.validateImportFeatureFlags(featureFlags.files, request.logger);
   }
 }

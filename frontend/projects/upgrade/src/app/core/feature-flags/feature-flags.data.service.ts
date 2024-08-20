@@ -45,12 +45,12 @@ export class FeatureFlagsDataService {
     return this.http.put<FeatureFlag>(url, flag);
   }
 
-  validateFeatureFlag(featureFlag: IFeatureFlagFile[]) {
+  validateFeatureFlag(featureFlag: { files: IFeatureFlagFile[] }) {
     const url = this.environment.api.validateFeatureFlag;
     return this.http.post(url, featureFlag);
   }
 
-  importFeatureFlag(featureFlag: IFeatureFlagFile[]) {
+  importFeatureFlag(featureFlag: { files: IFeatureFlagFile[] }) {
     const url = this.environment.api.importFeatureFlag;
     return this.http.post(url, featureFlag);
   }

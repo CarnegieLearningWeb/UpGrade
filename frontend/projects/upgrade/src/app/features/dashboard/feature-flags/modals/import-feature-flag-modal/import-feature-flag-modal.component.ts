@@ -4,7 +4,7 @@ import {
   CommonStatusIndicatorChipComponent,
 } from '../../../../../shared-standalone-component-lib/components';
 import { BehaviorSubject, Observable, combineLatest, firstValueFrom, map } from 'rxjs';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../../shared/shared.module';
 import { CommonImportContainerComponent } from '../../../../../shared-standalone-component-lib/components/common-import-container/common-import-container.component';
@@ -87,7 +87,7 @@ export class ImportFeatureFlagModalComponent {
   async checkValidation(files: IFeatureFlagFile[]) {
     try {
       const validationErrors = (await firstValueFrom(
-        this.featureFlagsDataService.validateFeatureFlag(files)
+        this.featureFlagsDataService.validateFeatureFlag({ files: files })
       )) as ValidateFeatureFlagError[];
       this.fileValidationErrors = validationErrors.filter((data) => data.compatibilityType != null) || [];
       this.fileValidationErrorDataSource.data = this.fileValidationErrors;
@@ -114,7 +114,7 @@ export class ImportFeatureFlagModalComponent {
     try {
       this.isImportActionBtnDisabled.next(true);
       const importResult = (await firstValueFrom(
-        this.featureFlagsDataService.importFeatureFlag(this.fileData)
+        this.featureFlagsDataService.importFeatureFlag({ files: this.fileData })
       )) as importError[];
 
       this.showNotification(importResult);
