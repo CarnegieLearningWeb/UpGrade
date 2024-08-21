@@ -31,7 +31,7 @@ projectBuilderV5 (
         ],
         "upgrade":[
             artifactType: 'codeartifact',
-            projectDir: 'frontend/',
+            projectDir: 'frontend',
             runInProjectDir: true,
             artifactDir: 'dist/upgrade',
             versioning: 'calendar',
@@ -40,7 +40,7 @@ projectBuilderV5 (
                 include: ['settings.env.js','set_build_variables.js']
             ],
             buildScripts: [[
-                    script: 'npm ci --no-audit',
+                    script: 'cd ./frontend &&npm ci --no-audit',
                     githubCheck: '${projectName} npm ci --no-audit',
                     log: '${projectName}-npm-ci.log'
                 ],
