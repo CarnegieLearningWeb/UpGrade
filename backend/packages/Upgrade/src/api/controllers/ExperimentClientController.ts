@@ -6,7 +6,7 @@ import {
   Req,
   InternalServerError,
   Delete,
-  OnUndefined,
+  Authorized,
 } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
@@ -1098,8 +1098,8 @@ export class ExperimentClientController {
    *          '500':
    *            description: DEMO mode is disabled
    */
+  @Authorized()
   @Delete('clearDB')
-  @OnUndefined(204)
   public async clearDB(@Req() request: AppRequest): Promise<string> {
     return this.experimentUserService.clearDB(request.logger);
   }
