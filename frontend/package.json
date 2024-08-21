@@ -11,7 +11,7 @@
     "start:prod": "npm run build:prod && npm run server",
     "prebuild": "npm run test",
     "build": "ng build",
-    "build:project": "node set_build_variables.js ng build --configuration ${ENV:-develop}",
+    "build:project": "node set_build_variables.js && ng build --configuration ${ENV:-develop}",
     "prebuild:prod": "npm run test",
     "build:prod": "ng build --configuration production",
     "build:demo": "ng build --configuration demo --base-href /upgrade/",
