@@ -49,15 +49,13 @@ projectBuilderV5 (
                     script: 'npm ci --no-audit',
                     githubCheck: '${projectName} npm ci --no-audit',
                     log: '${projectName}-npm-ci.log'
-                ],
-                
+                ]
                 // [
                 //     script: 'npm run build:project',
                 //     log: '${projectName}-build.log',
                 //     githubCheck: '${projectName}-build'
                 // ]
-            
+            ]
         ]
-        
     ]
 )
