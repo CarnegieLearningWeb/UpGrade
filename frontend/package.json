@@ -105,6 +105,7 @@
     "ts-jest": "^29.0.8",
     "ts-node": "~10.8.0",
     "typescript": "~5.3.3",
-    "webpack-bundle-analyzer": "^4.6.1"
+    "webpack-bundle-analyzer": "^4.6.1",
+    "replace-in-file": "^6.1.0"
   }
 }
