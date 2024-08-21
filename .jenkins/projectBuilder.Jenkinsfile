@@ -55,7 +55,13 @@ projectBuilderV5 (
                     script: 'npm run build:project',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
+                ],
+                [
+                    script: 'ls -al && ls -al dist/upgrade/',
+                    log: '${projectName}-post-build.log',
+                    githubCheck: '${projectName}-post-build'
                 ]
+            
             ]
         ]
     ]
