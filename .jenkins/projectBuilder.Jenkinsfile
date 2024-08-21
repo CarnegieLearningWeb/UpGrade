@@ -33,7 +33,7 @@ projectBuilderV5 (
             artifactType: 'codeartifact',
             projectDir: 'frontend',
             runInProjectDir: true,
-            artifactDir: 'dist/upgrade/',
+            artifactDir: 'dist/upgrade',
             versioning: 'calendar',
             oneArtifactPerEnvironment: true,
             fileFilter: [
@@ -57,7 +57,7 @@ projectBuilderV5 (
                     githubCheck: '${projectName}-build'
                 ],
                 [
-                    script: 'ls -al && ls -al dist/upgrade/',
+                    script: 'ls -al',
                     log: '${projectName}-post-build.log',
                     githubCheck: '${projectName}-post-build'
                 ]
