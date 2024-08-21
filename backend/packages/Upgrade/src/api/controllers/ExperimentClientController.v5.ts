@@ -31,7 +31,6 @@ import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAliasesValidator';
 import * as express from 'express';
 import { AppRequest } from '../../types';
-import { env } from '../../env';
 import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { MarkExperimentValidatorv5 } from './validators/MarkExperimentValidator.v5';
 import { Log } from '../models/Log';
@@ -891,12 +890,6 @@ export class ExperimentClientController {
   @Delete('clearDB')
   @OnUndefined(204)
   public clearDB(@Req() request: AppRequest) {
-    // if DEMO mode is enabled, then clear the database:
-    if (!env.app.demo) {
-      this.experimentUserService.clearDB(request.logger);
-    } else {
-      request.logger.error({ message: 'DEMO mode is disabled. You cannot clear DB.' });
-    }
-    return;
+    return this.experimentUserService.clearDB(request.logger);
   }
 }
