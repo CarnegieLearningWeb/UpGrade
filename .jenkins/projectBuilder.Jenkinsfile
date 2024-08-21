@@ -39,22 +39,24 @@ projectBuilderV5 (
             fileFilter: [
                 include: ['settings.env.js','set_build_variables.js']
             ],
-            buildScripts: [[
+            buildScripts: [
+                [
                     script: 'cd frontend/',
                     githubCheck: '${projectName} cd dir',
                     log: '${projectName}-cd-dir.log'
-                ],[
+                ],
+                [
                     script: 'npm ci --no-audit',
                     githubCheck: '${projectName} npm ci --no-audit',
                     log: '${projectName}-npm-ci.log'
                 ],
-                [
+                
                 // [
                 //     script: 'npm run build:project',
                 //     log: '${projectName}-build.log',
                 //     githubCheck: '${projectName}-build'
                 // ]
-            ]
+            
         ]
         
     ]
