@@ -311,9 +311,9 @@ export class FeatureFlagsEffects {
       filter(({ featureFlagId }) => !!featureFlagId),
       switchMap(({ featureFlagId }) =>
         this.featureFlagsDataService.exportFeatureFlagsDesign(featureFlagId).pipe(
-          map((data: FeatureFlag) => {
-            if (data) {
-              this.commonExportHelpersService.convertDataToDownload([data], 'FeatureFlags');
+          map((exportFeatureFlagsDesign: FeatureFlag) => {
+            if (exportFeatureFlagsDesign) {
+              this.commonExportHelpersService.convertDataToDownload([exportFeatureFlagsDesign], 'FeatureFlags');
               this.notificationService.showSuccess('Feature Flag Design JSON downloaded!');
             }
             return FeatureFlagsActions.actionExportFeatureFlagDesignSuccess();
