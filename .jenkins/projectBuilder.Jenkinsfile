@@ -37,7 +37,7 @@ projectBuilderV5 (
             versioning: 'calendar',
             oneArtifactPerEnvironment: true,
             fileFilter: [
-                include: ['settings.env.js','set_build_variables.js']
+                include: ['./settings.env.js','./set_build_variables.js']
             ],
             buildScripts: [
 
