@@ -656,7 +656,7 @@ export class FeatureFlagsController {
 
   /**
    * @swagger
-   * /flags/export/json:
+   * /flags/export:
    *    get:
    *      description: Export Feature Flags JSON
    *      tags:
@@ -680,7 +680,7 @@ export class FeatureFlagsController {
    *        '500':
    *          description: Internal Server Error
    */
-  @Get('/export/json/:id')
+  @Get('/export/:id')
   public async exportFeatureFlag(
     @Params({ validate: true }) { id }: IdValidator,
     @Req() request: AppRequest,
