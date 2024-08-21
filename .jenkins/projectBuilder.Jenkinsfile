@@ -29,12 +29,12 @@ projectBuilderV5 (
                 requiresCodeArtifactToken: true,
             ]
         ],
-        "upgrade-frontend":[
+        "upgrade":[
             artifactType: 'codeartifact',
             projectDir: 'frontend',
             artifactDir: 'dist/upgrade',
             publishDir:'dist/upgrade',
-            artifactPrefix: "upgrade-frontend",
+            artifactPrefix: "upgrade",
             versioning: 'calendar',
             oneArtifactPerEnvironment: false,
             runInProjectDir: true,
@@ -47,17 +47,7 @@ projectBuilderV5 (
                     script: 'npm run build:prod',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
-                ],
-                [
-                    script: 'npm run cl:copy-package-json',
-                    log: '${projectName}-copy-package.log',
-                    githubCheck: '${projectName}-copy-package'
-                ],
-                [
-                    script: 'ls',
-                    githubCheck: 'list dirs',
-                    log: '${projectName}-list-dir.log'
-                ],
+                ]
             ]
         ]
         
