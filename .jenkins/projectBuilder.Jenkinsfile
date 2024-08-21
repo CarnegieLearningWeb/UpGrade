@@ -42,15 +42,15 @@ projectBuilderV5 (
             buildScripts: [
 
                 [
-                    script: 'pwd',
-                    githubCheck: '${projectName} pwd',
-                    log: '${projectName}-pwd-ci.log'
+                    script: 'ls -al',
+                    githubCheck: '${projectName} ls',
+                    log: '${projectName}-ls-ci.log'
+                ],
+                [
+                    script: 'npm ci --no-audit',
+                    githubCheck: '${projectName} npm ci --no-audit',
+                    log: '${projectName}-npm-ci.log'
                 ]
-                // [
-                //     script: 'cd frontend/ && npm ci --no-audit',
-                //     githubCheck: '${projectName} npm ci --no-audit',
-                //     log: '${projectName}-npm-ci.log'
-                // ]
                 // [
                 //     script: 'npm run build:project',
                 //     log: '${projectName}-build.log',
