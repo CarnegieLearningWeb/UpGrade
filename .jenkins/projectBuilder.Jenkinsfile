@@ -4,11 +4,11 @@ projectBuilderV5 (
         cpu: 2048,
         memory: 4096
     ],
-    // initScripts: [[
-    //     script: 'npm ci --no-audit',
-    //     githubCheck: 'npm ci --no-audit',
-    //     log: 'npm-ci.log'
-    // ]],
+    initScripts: [[
+        script: 'npm ci --no-audit',
+        githubCheck: 'npm ci --no-audit',
+        log: 'npm-ci.log'
+    ]],
     projects: [
         "upgrade-service":[
             artifactType: "ecr",
