@@ -1,8 +1,7 @@
 import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { FeatureFlag } from '../models/FeatureFlag';
 import repositoryError from './utils/repositoryError';
-import { FEATURE_FLAG_STATUS } from 'upgrade_types';
-import { FILTER_MODE } from 'types/src';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 
 @EntityRepository(FeatureFlag)
 export class FeatureFlagRepository extends Repository<FeatureFlag> {

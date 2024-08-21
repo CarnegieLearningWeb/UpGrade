@@ -1,7 +1,13 @@
-<div class="chip-container dense-2">
+<div
+  [matTooltip]="'feature-flags.global-status-warning-tooltip.text' | translate"
+  [matTooltipDisabled]="!showWarning"
+  matTooltipPosition="above"
+  class="chip-container dense-2"
+>
   <mat-chip class="status-indicator" [ngClass]="chipClass">
     <span class="chip-label">
       {{ chipText }}
     </span>
   </mat-chip>
+  <mat-icon *ngIf="showWarning" class="warning-icon">warning_amber</mat-icon>
 </div>

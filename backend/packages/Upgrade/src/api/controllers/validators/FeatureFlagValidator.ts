@@ -1,8 +1,8 @@
 import { IsNotEmpty, IsDefined, IsString, IsArray, IsEnum, IsOptional, ValidateNested, IsUUID } from 'class-validator';
-import { ParticipantsArrayValidator } from '../../DTO/ExperimentDTO';
 import { FILTER_MODE } from 'upgrade_types';
 import { FEATURE_FLAG_STATUS } from 'upgrade_types';
 import { Type } from 'class-transformer';
+import { FeatureFlagListValidator } from './FeatureFlagListValidator';
 
 export class FeatureFlagValidation {
   @IsOptional()
@@ -43,14 +43,16 @@ export class FeatureFlagValidation {
   public tags: string[];
 
   @IsOptional()
-  @ValidateNested()
-  @Type(() => ParticipantsArrayValidator)
-  public featureFlagSegmentInclusion?: ParticipantsArrayValidator;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FeatureFlagListValidator)
+  public featureFlagSegmentInclusion?: FeatureFlagListValidator[];
 
   @IsOptional()
-  @ValidateNested()
-  @Type(() => ParticipantsArrayValidator)
-  public featureFlagSegmentExclusion?: ParticipantsArrayValidator;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FeatureFlagListValidator)
+  public featureFlagSegmentExclusion?: FeatureFlagListValidator[];
 }
 
 export class UserParamsValidator {
@@ -70,4 +72,23 @@ export class IdValidator {
   @IsDefined()
   @IsUUID()
   public id: string;
+}
+
+export class FeatureFlagImportValidation {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FeatureFlagFile)
+  public files: FeatureFlagFile[];
+}
+
+class FeatureFlagFile {
+  @IsString()
+  @IsNotEmpty()
+  @IsDefined()
+  public fileName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsDefined()
+  public fileContent: string;
 }

@@ -15,7 +15,15 @@
     <button class="shared-modal--modal-btn" mat-raised-button (click)="onCancelClick()">
       {{ 'global.cancel.text' | translate }}
     </button>
-    <button mat-raised-button class="shared-modal--modal-btn default-button" (click)="importStratification()">
+    <button
+      mat-raised-button
+      class="shared-modal--modal-btn default-button"
+      [ngClass]="{
+        'default-button--disabled': uploadedFileCount === 0
+      }"
+      [disabled]="uploadedFileCount === 0"
+      (click)="importStratification()"
+    >
       {{ 'global.import.text' | translate }}
     </button>
   </div>

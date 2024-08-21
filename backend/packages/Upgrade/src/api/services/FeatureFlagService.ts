@@ -31,6 +31,9 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentAssignmentService } from './ExperimentAssignmentService';
 import { SegmentService } from './SegmentService';
 import { ErrorWithType } from '../errors/ErrorWithType';
+import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
+import { validate } from 'class-validator';
+import { plainToClass } from 'class-transformer';
 
 @Service()
 export class FeatureFlagService {
@@ -47,8 +50,26 @@ export class FeatureFlagService {
     return this.featureFlagRepository.find();
   }
 
-  public async getKeys(experimentUserDoc: ExperimentUser, context: string, logger: UpgradeLogger): Promise<string[]> {
-    logger.info({ message: 'Get all feature flags' });
+  public async getKeys(
+    experimentUserDoc: RequestedExperimentUser,
+    context: string,
+    logger: UpgradeLogger
+  ): Promise<string[]> {
+    logger.info({ message: `getKeys: User: ${experimentUserDoc?.requestedUserId}` });
+
+    // throw error if user not defined
+    if (!experimentUserDoc || !experimentUserDoc.id) {
+      logger.error({ message: 'User not defined in getKeys' });
+      const error = new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+          message: 'User not defined in getKeys',
+        })
+      );
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404;
+      throw error;
+    }
 
     const filteredFeatureFlags = await this.featureFlagRepository.getFlagsFromContext(context);
 
@@ -128,7 +149,7 @@ export class FeatureFlagService {
             await transactionalEntityManager.getRepository(Segment).delete(segmentInclusion.segment.id);
           } catch (err) {
             const error = err as ErrorWithType;
-            error.details = 'Error in deleting Feature Flag Included Segment fron DB';
+            error.details = 'Error in deleting Feature Flag Included Segment from DB';
             error.type = SERVER_ERROR.QUERY_FAILED;
             logger.error(error);
             throw error;
@@ -139,7 +160,7 @@ export class FeatureFlagService {
             await transactionalEntityManager.getRepository(Segment).delete(segmentExclusion.segment.id);
           } catch (err) {
             const error = err as ErrorWithType;
-            error.details = 'Error in deleting Feature Flag Excluded Segment fron DB';
+            error.details = 'Error in deleting Feature Flag Excluded Segment from DB';
             error.type = SERVER_ERROR.QUERY_FAILED;
             logger.error(error);
             throw error;
@@ -499,7 +520,7 @@ export class FeatureFlagService {
     logger.info({ message: 'Validate feature flags' });
     const validationErrors = await Promise.allSettled(
       featureFlagFiles.map(async (featureFlagFile) => {
-        let featureFlag: FeatureFlag;
+        let featureFlag: FeatureFlagValidation;
         try {
           featureFlag = JSON.parse(featureFlagFile.fileContent as string);
         } catch (parseError) {
@@ -527,53 +548,29 @@ export class FeatureFlagService {
       .filter((error) => error !== null);
   }
 
-  private async validateImportFeatureFlag(fileName: string, flag: FeatureFlag) {
+  private async validateImportFeatureFlag(fileName: string, flag: FeatureFlagValidation) {
     let compatibilityType = FF_COMPATIBILITY_TYPE.COMPATIBLE;
 
-    // check for subSegmentIds
-    let segmentValidator = false;
-    flag.featureFlagSegmentInclusion.forEach((segmentInclusion) => {
-      if (!segmentInclusion.segment.subSegments) {
-        segmentValidator = true;
-        return;
+    flag = plainToClass(FeatureFlagValidation, flag);
+    await validate(flag).then((errors) => {
+      if (errors.length > 0) {
+        compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
       }
-      segmentInclusion.segment.subSegments.forEach((subSegment) => {
-        if (subSegment.id == undefined) {
-          segmentValidator = true;
-          return;
-        }
-      });
     });
 
-    flag.featureFlagSegmentExclusion.forEach((segmentExclusion) => {
-      if (!segmentExclusion.segment.subSegments) {
-        segmentValidator = true;
-        return;
-      }
-      segmentExclusion.segment.subSegments.forEach((subSegment) => {
-        if (subSegment.id == undefined) {
-          segmentValidator = true;
-          return;
-        }
-      });
-    });
-
-    // check for missing fields
-    if (!flag.name || !flag.key || !flag.context || segmentValidator) {
-      compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
-    } else {
+    if (compatibilityType === FF_COMPATIBILITY_TYPE.COMPATIBLE) {
       const keyExists = await this.featureFlagRepository.findOne({ key: flag.key });
 
       if (keyExists) {
         compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
       } else {
         const segmentIds = [
-          ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) =>
-            segmentInclusion.segment.subSegments.map((subSegment) => subSegment.id)
-          ),
-          ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) =>
-            segmentExclusion.segment.subSegments.map((subSegment) => subSegment.id)
-          ),
+          ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
+            return segmentInclusion.list.subSegmentIds;
+          }),
+          ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) => {
+            return segmentExclusion.list.subSegmentIds;
+          }),
         ];
 
         const segments = await this.segmentService.getSegmentByIds(segmentIds);

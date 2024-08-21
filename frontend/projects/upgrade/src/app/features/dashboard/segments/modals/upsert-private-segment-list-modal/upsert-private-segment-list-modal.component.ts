@@ -33,6 +33,7 @@ import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 import isEqual from 'lodash.isequal';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { CommonTagInputType } from '../../../../../core/feature-flags/store/feature-flags.model';
 
 @Component({
   selector: 'upsert-private-segment-list-modal',
@@ -66,6 +67,8 @@ export class UpsertPrivateSegmentListModalComponent {
   isSegmentsListTypeDisabled$: Observable<boolean>;
 
   privateSegmentListForm: FormGroup;
+  CommonTagInputType = CommonTagInputType;
+  forceValidation = false;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
@@ -86,7 +89,12 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   ngAfterViewInit() {
-    if (this.config.params.action === UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST) {
+    if (
+      [
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST,
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_EXCLUDE_LIST,
+      ].includes(this.config.params.action)
+    ) {
       // Slight delay before opening the type select dropdown for a smoother UX
       // This gives a brief moment for the modal to settle visually before presenting options
       this.subscriptions.add(timer(150).subscribe(() => this.typeSelectRef.open()));
@@ -130,7 +138,12 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   populateFormForEdit(): void {
-    if (this.config.params.action !== UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST) {
+    if (
+      ![
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST,
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST,
+      ].includes(this.config.params.action)
+    ) {
       return;
     }
 
@@ -140,16 +153,21 @@ export class UpsertPrivateSegmentListModalComponent {
     }
 
     const values = this.determineValues(sourceList.listType, sourceList.segment);
-    this.privateSegmentListForm.patchValue(
-      {
-        listType: sourceList.listType,
-        segment: sourceList.segment,
-        values,
-        name: sourceList.segment.name,
-        description: sourceList.segment.description,
-      },
-      { emitEvent: false }
-    );
+    const formValue: PrivateSegmentListFormData = {
+      listType: sourceList.listType as LIST_OPTION_TYPE,
+      segment: sourceList.segment,
+      values,
+      name: sourceList.segment.name,
+      description: sourceList.segment.description,
+    };
+
+    this.privateSegmentListForm.patchValue(formValue, { emitEvent: false });
+
+    // Update the initialFormValues$ with the populated form value
+    this.initialFormValues$.next(formValue);
+
+    // Trigger validators after populating the form
+    this.setValidatorsBasedOnListType(sourceList.listType);
   }
 
   determineValues(listType: string, segment: Segment): string[] {
@@ -245,6 +263,7 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   onPrimaryActionBtnClicked(): void {
+    this.forceValidation = true;
     if (this.privateSegmentListForm.valid) {
       this.sendRequest(this.config.params.action);
     } else {
@@ -266,18 +285,28 @@ export class UpsertPrivateSegmentListModalComponent {
       list,
     };
 
-    if (action === UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST) {
-      const addListRequest: AddPrivateSegmentListRequest = listRequest;
-      this.sendAddFeatureFlagInclusionRequest(addListRequest);
-    } else if (action === UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST) {
-      const editRequest: EditPrivateSegmentListRequest = {
-        ...listRequest,
-        list: {
-          ...listRequest.list,
-          id: this.config.params.sourceList.segment.id,
-        },
-      };
-      this.sendUpdateFeatureFlagInclusionRequest(editRequest);
+    const addListRequest: AddPrivateSegmentListRequest = listRequest;
+    const editRequest: EditPrivateSegmentListRequest = {
+      ...listRequest,
+      list: {
+        ...listRequest.list,
+        id: this.config.params.sourceList?.segment?.id,
+      },
+    };
+
+    switch (action) {
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST:
+        this.sendAddFeatureFlagInclusionRequest(addListRequest);
+        break;
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST:
+        this.sendUpdateFeatureFlagInclusionRequest(editRequest);
+        break;
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_EXCLUDE_LIST:
+        this.sendAddFeatureFlagExclusionRequest(addListRequest);
+        break;
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST:
+        this.sendUpdateFeatureFlagExclusionRequest(editRequest);
+        break;
     }
   }
 
@@ -320,6 +349,38 @@ export class UpsertPrivateSegmentListModalComponent {
 
   sendUpdateFeatureFlagInclusionRequest(editListRequest: EditPrivateSegmentListRequest): void {
     this.featureFlagService.updateFeatureFlagInclusionPrivateSegmentList(editListRequest);
+  }
+
+  sendAddFeatureFlagExclusionRequest(addListRequest: AddPrivateSegmentListRequest): void {
+    this.featureFlagService.addFeatureFlagExclusionPrivateSegmentList(addListRequest);
+  }
+
+  sendUpdateFeatureFlagExclusionRequest(editListRequest: EditPrivateSegmentListRequest): void {
+    this.featureFlagService.updateFeatureFlagExclusionPrivateSegmentList(editListRequest);
+  }
+
+  onDownloadRequested(values: string[]) {
+    if (this.privateSegmentListForm.get('name').valid) {
+      this.downloadValuesAsCSV(values, this.privateSegmentListForm.get('name').value);
+    } else {
+      this.privateSegmentListForm.get('name').markAsTouched();
+    }
+  }
+
+  private downloadValuesAsCSV(values: string[], fileName: string): void {
+    const csvContent = values.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${fileName}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
   }
 
   closeModal() {

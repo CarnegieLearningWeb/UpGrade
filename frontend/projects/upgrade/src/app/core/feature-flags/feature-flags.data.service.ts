@@ -45,12 +45,12 @@ export class FeatureFlagsDataService {
     return this.http.put<FeatureFlag>(url, flag);
   }
 
-  validateFeatureFlag(featureFlag: IFeatureFlagFile[]) {
+  validateFeatureFlag(featureFlag: { files: IFeatureFlagFile[] }) {
     const url = this.environment.api.validateFeatureFlag;
     return this.http.post(url, featureFlag);
   }
 
-  importFeatureFlag(featureFlag: IFeatureFlagFile[]) {
+  importFeatureFlag(featureFlag: { files: IFeatureFlagFile[] }) {
     const url = this.environment.api.importFeatureFlag;
     return this.http.post(url, featureFlag);
   }
@@ -93,6 +93,21 @@ export class FeatureFlagsDataService {
 
   deleteInclusionList(segmentId: string) {
     const url = `${this.environment.api.addFlagInclusionList}/${segmentId}`;
+    return this.http.delete(url);
+  }
+
+  addExclusionList(list: AddPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
+    const url = this.environment.api.addFlagExclusionList;
+    return this.http.post<FeatureFlagSegmentListDetails>(url, list);
+  }
+
+  updateExclusionList(list: EditPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
+    const url = `${this.environment.api.addFlagExclusionList}/${list.list.id}`;
+    return this.http.put<FeatureFlagSegmentListDetails>(url, list);
+  }
+
+  deleteExclusionList(segmentId: string) {
+    const url = `${this.environment.api.addFlagExclusionList}/${segmentId}`;
     return this.http.delete(url);
   }
 }

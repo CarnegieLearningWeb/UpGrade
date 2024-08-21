@@ -119,6 +119,11 @@ export interface ParticipantListRowActionEvent {
   rowData: ParticipantListTableRow;
 }
 
+export enum CommonTagInputType {
+  TAGS = 'tags',
+  VALUES = 'values',
+}
+
 // the request for for the upserting private segment is PrivateSegmentListRequest
 // there is no difference in that request and that which will be used for segment lists in the future
 export interface UpsertFeatureFlagPrivateSegmentListResponse {
