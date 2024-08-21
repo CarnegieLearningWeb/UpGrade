@@ -31,7 +31,6 @@ export class StratificationFactorsEffects {
           map((data: StratificationFactor[]) =>
             StratificationFactorsActions.actionFetchStratificationFactorsSuccess({
               stratificationFactors: data,
-              isFactorAddRequestSuccess: false,
             })
           ),
           catchError(() => [StratificationFactorsActions.actionFetchStratificationFactorsFailure()])
@@ -83,9 +82,7 @@ export class StratificationFactorsEffects {
             this.notificationService.showSuccess(
               this.translate.instant('Stratification factor imported successfully!')
             );
-            return StratificationFactorsActions.actionImportStratificationFactorSuccess({
-              isFactorAddRequestSuccess: true,
-            });
+            return StratificationFactorsActions.actionImportStratificationFactorSuccess();
           }),
           catchError(() => [StratificationFactorsActions.actionImportStratificationFactorFailure()])
         )

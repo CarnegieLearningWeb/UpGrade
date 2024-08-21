@@ -22,10 +22,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
-import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../../../../types/src';
 import {
   AddFeatureFlagRequest,
-  CommonTagInputType,
   FeatureFlag,
   FeatureFlagFormData,
   UpdateFeatureFlagRequest,
@@ -77,7 +76,6 @@ export class UpsertFeatureFlagModalComponent {
   initialFormValues$ = new BehaviorSubject<FeatureFlagFormData>(null);
 
   featureFlagForm: FormGroup;
-  CommonTagInputType = CommonTagInputType;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)

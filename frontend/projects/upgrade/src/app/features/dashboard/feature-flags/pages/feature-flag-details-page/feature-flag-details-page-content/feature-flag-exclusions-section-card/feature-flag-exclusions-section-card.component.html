@@ -1,4 +1,4 @@
-<app-common-section-card *ngIf="selectedFlag$ | async as flag">
+<app-common-section-card>
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
@@ -15,16 +15,12 @@
     [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
-    (primaryButtonClick)="onAddExcludeListClick(flag.context[0], flag.id)"
+    (primaryButtonClick)="addExcludeListClicked()"
     (menuButtonItemClick)="onMenuButtonItemClick($event)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
 
   <!-- content -->
-  <app-feature-flag-exclusions-table
-    content
-    *ngIf="isSectionCardExpanded"
-    (rowAction)="onRowAction($event, flag.id)"
-  ></app-feature-flag-exclusions-table>
+  <app-feature-flag-exclusions-table content *ngIf="isSectionCardExpanded"></app-feature-flag-exclusions-table>
 </app-common-section-card>

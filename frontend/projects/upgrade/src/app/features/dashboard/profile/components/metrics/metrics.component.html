@@ -52,9 +52,11 @@
           <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
             <ng-container *ngIf="element">
               <mat-tree [dataSource]="[element]" [treeControl]="nestedTreeControl" class="mat-nested-tree">
-                <!-- Leaf node template -->
+                <!-- This is the tree node template for leaf nodes -->
                 <mat-tree-node *matTreeNodeDef="let node">
-                  <mat-icon class="leaf-node-icon">fiber_manual_record</mat-icon>
+                  <button mat-icon-button>
+                    <mat-icon class="leaf-node-button-icon"> fiber_manual_record</mat-icon>
+                  </button>
                   {{ node.key }}
                   <mat-icon
                     *ngIf="permissions.metrics.delete && keyEditMode"
@@ -64,8 +66,7 @@
                     delete_outline
                   </mat-icon>
                 </mat-tree-node>
-
-                <!-- Expandable node template -->
+                <!-- This is the tree node template for expandable nodes -->
                 <mat-nested-tree-node *matTreeNodeDef="let node; when: hasNestedChild">
                   <div class="mat-tree-node">
                     <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.key">
@@ -78,9 +79,10 @@
                       *ngIf="permissions.metrics.delete && keyEditMode"
                       class="delete-icon"
                       (click)="deleteNode(node, index)"
-                    >delete_outline</mat-icon>
+                      >delete_outline</mat-icon
+                    >
                   </div>
-                  <div *ngIf="nestedTreeControl.isExpanded(node)" role="group">
+                  <div [class.mat-nested-tree-invisible]="!nestedTreeControl.isExpanded(node)" role="group">
                     <ng-container matTreeNodeOutlet></ng-container>
                   </div>
                 </mat-nested-tree-node>

@@ -168,6 +168,24 @@ export class FeatureFlagsEffects {
     )
   );
 
+  upsertFeatureFlagInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
+      map((action) => action.list),
+      withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
+      switchMap(([list, flag]) => {
+        const request = {
+          flagId: flag.id,
+          ...list,
+        };
+        return this.featureFlagsDataService.addInclusionList(request).pipe(
+          map((listResponse) => FeatureFlagsActions.actionUpdateFeatureFlagInclusionListSuccess({ listResponse })),
+          catchError((error) => of(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListFailure({ error })))
+        );
+      })
+    )
+  );
+
   addFeatureFlagInclusionList$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
@@ -200,43 +218,6 @@ export class FeatureFlagsEffects {
         return this.featureFlagsDataService.deleteInclusionList(segmentId).pipe(
           map(() => FeatureFlagsActions.actionDeleteFeatureFlagInclusionListSuccess({ segmentId })),
           catchError((error) => of(FeatureFlagsActions.actionDeleteFeatureFlagInclusionListFailure({ error })))
-        );
-      })
-    )
-  );
-
-  addFeatureFlagExclusionList$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(FeatureFlagsActions.actionAddFeatureFlagExclusionList),
-      switchMap((action) => {
-        return this.featureFlagsDataService.addExclusionList(action.list).pipe(
-          map((listResponse) => FeatureFlagsActions.actionAddFeatureFlagExclusionListSuccess({ listResponse })),
-          catchError((error) => of(FeatureFlagsActions.actionAddFeatureFlagExclusionListFailure({ error })))
-        );
-      })
-    )
-  );
-
-  updateFeatureFlagExclusionList$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(FeatureFlagsActions.actionUpdateFeatureFlagExclusionList),
-      switchMap((action) => {
-        return this.featureFlagsDataService.updateExclusionList(action.list).pipe(
-          map((listResponse) => FeatureFlagsActions.actionUpdateFeatureFlagExclusionListSuccess({ listResponse })),
-          catchError((error) => of(FeatureFlagsActions.actionUpdateFeatureFlagExclusionListFailure({ error })))
-        );
-      })
-    )
-  );
-
-  deleteFeatureFlagExclusionList$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(FeatureFlagsActions.actionDeleteFeatureFlagExclusionList),
-      map((action) => action.segmentId),
-      switchMap((segmentId) => {
-        return this.featureFlagsDataService.deleteExclusionList(segmentId).pipe(
-          map(() => FeatureFlagsActions.actionDeleteFeatureFlagExclusionListSuccess({ segmentId })),
-          catchError((error) => of(FeatureFlagsActions.actionDeleteFeatureFlagExclusionListFailure({ error })))
         );
       })
     )

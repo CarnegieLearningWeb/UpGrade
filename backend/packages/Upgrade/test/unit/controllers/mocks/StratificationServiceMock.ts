@@ -20,7 +20,7 @@ export default class StratificationServiceMock {
     return Promise.resolve([]);
   }
 
-  public insertStratificationFiles(
+  public insertStratification(
     userStratificationData: StratificationInputValidator[],
     logger: UpgradeLogger
   ): Promise<[]> {

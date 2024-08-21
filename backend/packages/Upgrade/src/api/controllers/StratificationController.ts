@@ -158,8 +158,11 @@ export class StratificationController {
   public async insertStratification(
     @Req() request: AppRequest,
     @Body({ validate: true }) body: UploadedFilesArrayValidator
-  ): Promise<UserStratificationFactor[][]> {
-    return this.stratificationService.insertStratificationFiles(body.files, request.logger);
+  ): Promise<UserStratificationFactor[]> {
+    const promises = body.files.map((fileObj) => {
+      return this.stratificationService.insertStratification(fileObj.file, request.logger);
+    });
+    return (await Promise.all(promises)).flat();
   }
 
   /**

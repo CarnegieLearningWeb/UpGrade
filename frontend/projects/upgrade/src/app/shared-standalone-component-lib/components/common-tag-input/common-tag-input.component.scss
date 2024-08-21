@@ -1,83 +1,29 @@
 .input-container {
   width: 100%;
-  padding-bottom: 22px;
-
-  ::ng-deep .mat-mdc-text-field-wrapper {
-    padding-right: 5px;
-
-    .mat-mdc-form-field-infix {
-      padding: 6px 0;
-    }
-  }
-
-  &.invalid-field {
-    ::ng-deep .mat-mdc-text-field-wrapper {
-      .mdc-notched-outline > * {
-        border-color: var(--red) !important;
-      }
-
-      .mdc-floating-label {
-        color: var(--red) !important;
-      }
-    }
-  }
-
-  .required-asterisk {
-    margin-left: -3px;
-  }
+  padding-bottom: 16px;
 
   .chips-container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     max-height: 64px;
     overflow: auto;
 
-    .mat-mdc-chip-grid {
-      width: 100%;
-
-      .mat-mdc-chip-input {
-        min-height: 32px;
-      }
-    }
-
     .icon-button {
-      width: 32px;
-      height: 32px;
       background: none;
       border: none;
-      border-radius: 20px;
       box-shadow: none;
       outline: none;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: var(--dark-grey);
+      margin-right: -11px;
 
       .material-symbols-outlined {
         font-size: 20px;
-        color: var(--dark-grey);
-      }
-
-      &:hover {
-        background: #f5f5f5;
-      }
-
-      &:active {
-        background: #dfdfdf;
       }
     }
-  }
-}
-
-.drag-drop-container {
-  display: flex;
-  flex-direction: column;
-  row-gap: 2px;
-  padding-bottom: 2px;
-
-  .form-hint {
-    text-indent: 18px;
-    margin-bottom: 0;
   }
 }

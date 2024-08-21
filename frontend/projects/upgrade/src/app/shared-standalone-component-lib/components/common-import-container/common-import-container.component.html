@@ -5,23 +5,10 @@
   (drop)="onDrop($event)"
   [ngClass]="{ 'drag-over': (isDragOver | async) }"
 >
-    <div class="close-btn-container dense-4">
-      <button
-        *ngIf="fileType === FILE_TYPE.CSV"
-        mat-icon-button
-        class="close-btn"
-        (click)="onCloseButtonClick($event)"
-      >
-        <mat-icon class="close-icon">close</mat-icon>
-      </button>
-    </div>
     <span class="material-symbols-outlined">upload</span>
     <p class="ft-12-600 drag-text">Drag and drop or</p>
-    <button mat-flat-button color="primary" class="choose-file-btn" (click)="onChooseFileButtonClick($event)">
+    <button mat-flat-button color="primary" class="choose-json-btn" (click)="fileInput.click()">
       <span>{{ buttonLabel }}</span>
     </button>
-    <span *ngIf="importFailed" class="ft-12-400 import-failed-msg">
-      {{ 'feature-flags.upsert-list-modal.import-csv.error.message.text' | translate }}
-    </span>
     <input [accept]="fileType" type="file" multiple #fileInput style="display: none" (change)="onFileSelected($event)" />
 </div>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../shared/shared.module';
 import { CommonModalComponent } from '../common-modal/common-modal.component';
@@ -15,7 +15,6 @@ import { FILE_TYPE } from 'upgrade_types';
  * - `buttonLabel`: A string representing the label text of the button. Defaults to 'Upload File'.
  *
  * The component emits the following outputs:
- * - `closeButtonClick`: A mouse event when the close button is clicked (only used for CSV file type).
  * - `filesSelected`: An event that emits the selected files as an array of `File` objects.
  *
  * Example usage:
@@ -39,13 +38,9 @@ import { FILE_TYPE } from 'upgrade_types';
 export class CommonImportContainerComponent {
   @Input() fileType!: FILE_TYPE;
   @Input() buttonLabel!: string;
-  @Input() importFailed = false;
-  @Output() closeButtonClick = new EventEmitter<MouseEvent>();
   @Output() filesSelected = new EventEmitter<File[]>();
-  @ViewChild('fileInput') fileInput: ElementRef;
 
   isDragOver = new BehaviorSubject<boolean>(false);
-  FILE_TYPE = FILE_TYPE;
 
   onDragOver(event: DragEvent) {
     this.handleDragState(event, true);
@@ -64,15 +59,6 @@ export class CommonImportContainerComponent {
     event.preventDefault();
     event.stopPropagation();
     this.isDragOver.next(isOver);
-  }
-
-  onCloseButtonClick(event: MouseEvent) {
-    this.closeButtonClick.emit(event);
-  }
-
-  onChooseFileButtonClick(event: MouseEvent) {
-    event.preventDefault();
-    this.fileInput.nativeElement.click();
   }
 
   onFileSelected(event: Event) {

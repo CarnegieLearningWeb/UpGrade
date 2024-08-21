@@ -136,7 +136,6 @@ export const actionUpdateFilterModeSuccess = createAction(
 );
 
 export const actionUpdateFilterModeFailure = createAction('[Feature Flags] Update Filter Mode Failure');
-
 export const actionAddFeatureFlagInclusionList = createAction(
   '[Feature Flags] Add Feature Flag Inclusion List',
   props<{ list: AddPrivateSegmentListRequest }>()
@@ -179,50 +178,5 @@ export const actionDeleteFeatureFlagInclusionListSuccess = createAction(
 
 export const actionDeleteFeatureFlagInclusionListFailure = createAction(
   '[Feature Flags] Delete Feature Flag Inclusion List Failure',
-  props<{ error: any }>()
-);
-
-export const actionAddFeatureFlagExclusionList = createAction(
-  '[Feature Flags] Add Feature Flag Exclusion List',
-  props<{ list: AddPrivateSegmentListRequest }>()
-);
-
-export const actionAddFeatureFlagExclusionListSuccess = createAction(
-  '[Feature Flags] Add Feature Flag Exclusion List Success',
-  props<{ listResponse: FeatureFlagSegmentListDetails }>()
-);
-
-export const actionAddFeatureFlagExclusionListFailure = createAction(
-  '[Feature Flags] Add Feature Flag Exclusion List Failure',
-  props<{ error: any }>()
-);
-
-export const actionUpdateFeatureFlagExclusionList = createAction(
-  '[Feature Flags] Update Feature Flag Exclusion List',
-  props<{ list: EditPrivateSegmentListRequest }>()
-);
-
-export const actionUpdateFeatureFlagExclusionListSuccess = createAction(
-  '[Feature Flags] Update Feature Flag Exclusion List Success',
-  props<{ listResponse: FeatureFlagSegmentListDetails }>()
-);
-
-export const actionUpdateFeatureFlagExclusionListFailure = createAction(
-  '[Feature Flags] Update Feature Flag Exclusion List Failure',
-  props<{ error: any }>()
-);
-
-export const actionDeleteFeatureFlagExclusionList = createAction(
-  '[Feature Flags] Delete Feature Flag Exclusion List',
-  props<{ segmentId: string }>()
-);
-
-export const actionDeleteFeatureFlagExclusionListSuccess = createAction(
-  '[Feature Flags] Delete Feature Flag Exclusion List Success',
-  props<{ segmentId: string }>()
-);
-
-export const actionDeleteFeatureFlagExclusionListFailure = createAction(
-  '[Feature Flags] Delete Feature Flag Exclusion List Failure',
   props<{ error: any }>()
 );

@@ -7,6 +7,8 @@ import {
 import { CommonDetailsParticipantListTableComponent } from '../../../../../../../../shared-standalone-component-lib/components/common-details-participant-list-table/common-details-participant-list-table.component';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { CommonSimpleConfirmationModalComponent } from '../../../../../../../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-feature-flag-inclusions-table',
@@ -21,6 +23,8 @@ export class FeatureFlagInclusionsTableComponent {
   dataSource$ = this.featureFlagService.selectFeatureFlagInclusions$;
   isLoading$ = this.featureFlagService.isLoadingSelectedFeatureFlag$;
   @Output() rowAction = new EventEmitter<ParticipantListRowActionEvent>();
+
+  confirmStatusChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
 
   constructor(private featureFlagService: FeatureFlagsService) {}
 

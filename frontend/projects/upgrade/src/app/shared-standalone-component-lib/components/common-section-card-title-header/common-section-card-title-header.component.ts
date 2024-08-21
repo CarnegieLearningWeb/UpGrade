@@ -25,7 +25,6 @@ import { SharedModule } from '../../../shared/shared.module';
  *   [subtitle]="subtitle"
  *   [showViewLogs]="true"
  *   [chipClass]="STATUS_INDICATOR_CHIP_TYPE.ENROLLMENT_COMPLETE"
- *   [showWarning]="false"
  *   (viewLogs)="viewLogsClicked($event)"
  * ></app-common-section-card-title-header>
  * ```
@@ -46,7 +45,6 @@ export class CommonSectionCardTitleHeaderComponent {
   @Input() createdAt?: string;
   @Input() updatedAt?: string;
   @Input() chipClass?: STATUS_INDICATOR_CHIP_TYPE;
-  @Input() showWarning?: boolean;
   @Input() showViewLogs?: boolean;
   @Output() viewLogs = new EventEmitter<{ clicked: boolean }>();
 

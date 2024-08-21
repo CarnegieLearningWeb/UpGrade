@@ -8,7 +8,7 @@ export const actionFetchStratificationFactors = createAction(
 
 export const actionFetchStratificationFactorsSuccess = createAction(
   '[Stratification Factors] Fetch Stratification Factors Success',
-  props<{ stratificationFactors: StratificationFactor[]; isFactorAddRequestSuccess?: boolean }>()
+  props<{ stratificationFactors: StratificationFactor[] }>()
 );
 
 export const actionFetchStratificationFactorsFailure = createAction(
@@ -35,8 +35,7 @@ export const actionImportStratificationFactor = createAction(
 );
 
 export const actionImportStratificationFactorSuccess = createAction(
-  '[Stratification Factors] Import Stratification Factor Success',
-  props<{ isFactorAddRequestSuccess: boolean }>()
+  '[Stratification Factors] Import Stratification Factor Success'
 );
 
 export const actionImportStratificationFactorFailure = createAction(

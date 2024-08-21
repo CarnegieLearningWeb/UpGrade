@@ -23,8 +23,6 @@ import {
   selectSortAs,
   selectAppContexts,
   selectFeatureFlagIds,
-  selectShouldShowWarningForSelectedFlag,
-  selectWarningStatusForAllFlags,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -60,8 +58,6 @@ export class FeatureFlagsService {
   searchKey$ = this.store$.pipe(select(selectSearchKey));
   sortKey$ = this.store$.pipe(select(selectSortKey));
   sortAs$ = this.store$.pipe(select(selectSortAs));
-  shouldShowWarningForSelectedFlag$ = this.store$.pipe(select(selectShouldShowWarningForSelectedFlag));
-  warningStatusForAllFlags$ = this.store$.pipe(select(selectWarningStatusForAllFlags));
 
   hasFeatureFlagsCountChanged$ = this.allFeatureFlags$.pipe(
     pairwise(),
@@ -180,17 +176,5 @@ export class FeatureFlagsService {
 
   deleteFeatureFlagInclusionPrivateSegmentList(segmentId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList({ segmentId }));
-  }
-
-  addFeatureFlagExclusionPrivateSegmentList(list: AddPrivateSegmentListRequest) {
-    this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlagExclusionList({ list }));
-  }
-
-  updateFeatureFlagExclusionPrivateSegmentList(list: EditPrivateSegmentListRequest) {
-    this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagExclusionList({ list }));
-  }
-
-  deleteFeatureFlagExclusionPrivateSegmentList(segmentId: string) {
-    this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagExclusionList({ segmentId }));
   }
 }
