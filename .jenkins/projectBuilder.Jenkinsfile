@@ -4,11 +4,11 @@ projectBuilderV5 (
         cpu: 2048,
         memory: 4096
     ],
-    // initScripts: [[
-    //     script: 'npm ci --no-audit',
-    //     githubCheck: 'npm ci --no-audit',
-    //     log: 'npm-ci.log'
-    // ]],
+    initScripts: [[
+        script: 'npm ci --no-audit',
+        githubCheck: 'npm ci --no-audit',
+        log: 'npm-ci.log'
+    ]],
     projects: [
         "upgrade-service":[
             artifactType: "ecr",
@@ -29,12 +29,11 @@ projectBuilderV5 (
                 requiresCodeArtifactToken: true,
             ]
         ],
-        "upgrade-frontend":[
+        "upgrade":[
             artifactType: 'codeartifact',
             projectDir: 'frontend',
             artifactDir: 'dist/upgrade',
-            publishDir:'dist/upgrade',
-            artifactPrefix: "upgrade-frontend",
+            artifactPrefix: "upgrade",
             versioning: 'calendar',
             oneArtifactPerEnvironment: false,
             runInProjectDir: true,
@@ -47,17 +46,7 @@ projectBuilderV5 (
                     script: 'npm run build:prod',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
-                ],
-                [
-                    script: 'npm run cl:copy-package-json',
-                    log: '${projectName}-copy-package.log',
-                    githubCheck: '${projectName}-copy-package'
-                ],
-                [
-                    script: 'ls',
-                    githubCheck: 'list dirs',
-                    log: '${projectName}-list-dir.log'
-                ],
+                ]
             ]
         ]
         
