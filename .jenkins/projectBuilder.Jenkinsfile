@@ -35,7 +35,7 @@ projectBuilderV5 (
             artifactDir: 'dist/upgrade',
             artifactPrefix: "upgrade",
             versioning: 'calendar',
-            oneArtifactPerEnvironment: false,
+            oneArtifactPerEnvironment: true,
             runInProjectDir: true,
             buildScripts: [[
                     script: 'npm ci --no-audit',
@@ -43,7 +43,7 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
-                    script: 'npm run build:prod',
+                    script: 'npm run build:project',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
                 ]

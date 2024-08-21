@@ -16,7 +16,8 @@
     "lint-staged": "^13.0.3",
     "nps": "^5.10.0",
     "nps-utils": "^1.7.0",
-    "prettier": "^2.7.1"
+    "prettier": "^2.7.1",
+    "replace-in-file": "^6.1.0"
   },
   "scripts": {
     "prepare": "is-ci || husky install",
