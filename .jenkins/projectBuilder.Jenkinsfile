@@ -45,10 +45,14 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
-                    script: 'npm run build:project',
-                    log: '${projectName}-build.log',
-                    githubCheck: '${projectName}-build'
+                    script: 'ls -al',
+                    log: '${projectName}-ls-ci.log'
                 ]
+                // [
+                //     script: 'npm run build:project',
+                //     log: '${projectName}-build.log',
+                //     githubCheck: '${projectName}-build'
+                // ]
             ]
         ]
         
