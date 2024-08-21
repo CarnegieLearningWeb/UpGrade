@@ -57,9 +57,14 @@ projectBuilderV5 (
                     githubCheck: '${projectName}-build'
                 ],
                 [
-                    script: 'ls -al',
-                    log: '${projectName}-post-build.log',
-                    githubCheck: '${projectName}-post-build'
+                    script: 'ls -al dist/',
+                    log: '${projectName}-post-build-dist.log',
+          
+                ]
+                [
+                    script: 'ls -al dist/upgrade-qa/',
+                    log: '${projectName}-post-build-dist-qa.log',
+
                 ]
             
             ]
