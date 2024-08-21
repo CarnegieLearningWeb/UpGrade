@@ -33,10 +33,8 @@ projectBuilderV5 (
             artifactType: 'codeartifact',
             projectDir: 'frontend',
             artifactDir: 'dist/upgrade',
-            artifactPrefix: "upgrade",
             versioning: 'calendar',
             oneArtifactPerEnvironment: true,
-            runInProjectDir: true,
             fileFilter: [
                 include: ['./settings.env.js','./set_build_variables.js']
             ],
