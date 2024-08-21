@@ -155,9 +155,10 @@ const reducer = createReducer(
     const existingFlag = state.entities[featureFlag?.id];
 
     if (existingFlag) {
-      const updatedInclusions = existingFlag.featureFlagSegmentInclusion.map((inclusion) =>
-        inclusion.segment.id === listResponse.segment.id ? listResponse : inclusion
-      );
+      const updatedInclusions =
+        existingFlag.featureFlagSegmentInclusion?.map((inclusion) =>
+          inclusion.segment.id === listResponse.segment.id ? listResponse : inclusion
+        ) ?? [];
 
       return adapter.updateOne(
         {
@@ -179,14 +180,13 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionDeleteFeatureFlagInclusionListSuccess, (state, { segmentId }) => {
     const updatedState = { ...state, isLoadingUpsertPrivateSegmentList: false };
     const flagId = Object.keys(state.entities).find((id) =>
-      state.entities[id].featureFlagSegmentInclusion.some((inclusion) => inclusion.segment.id === segmentId)
+      state.entities[id].featureFlagSegmentInclusion?.some((inclusion) => inclusion.segment.id === segmentId)
     );
 
     if (flagId) {
       const flag = state.entities[flagId];
-      const updatedInclusions = flag.featureFlagSegmentInclusion.filter(
-        (inclusion) => inclusion.segment.id !== segmentId
-      );
+      const updatedInclusions =
+        flag.featureFlagSegmentInclusion?.filter((inclusion) => inclusion.segment.id !== segmentId) ?? [];
 
       return adapter.updateOne(
         {
@@ -231,9 +231,10 @@ const reducer = createReducer(
     const existingFlag = state.entities[featureFlag?.id];
 
     if (existingFlag) {
-      const updatedExclusions = existingFlag.featureFlagSegmentExclusion.map((exclusion) =>
-        exclusion.segment.id === listResponse.segment.id ? listResponse : exclusion
-      );
+      const updatedExclusions =
+        existingFlag.featureFlagSegmentExclusion?.map((exclusion) =>
+          exclusion.segment.id === listResponse.segment.id ? listResponse : exclusion
+        ) ?? [];
 
       return adapter.updateOne(
         {
@@ -255,14 +256,13 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionDeleteFeatureFlagExclusionListSuccess, (state, { segmentId }) => {
     const updatedState = { ...state, isLoadingUpsertPrivateSegmentList: false };
     const flagId = Object.keys(state.entities).find((id) =>
-      state.entities[id].featureFlagSegmentExclusion.some((exclusion) => exclusion.segment.id === segmentId)
+      state.entities[id].featureFlagSegmentExclusion?.some((exclusion) => exclusion.segment.id === segmentId)
     );
 
     if (flagId) {
       const flag = state.entities[flagId];
-      const updatedExclusions = flag.featureFlagSegmentExclusion.filter(
-        (exclusion) => exclusion.segment.id !== segmentId
-      );
+      const updatedExclusions =
+        flag.featureFlagSegmentExclusion?.filter((exclusion) => exclusion.segment.id !== segmentId) ?? [];
 
       return adapter.updateOne(
         {
