@@ -60,7 +60,7 @@ projectBuilderV5 (
                     script: 'ls -al dist/',
                     log: '${projectName}-post-build-dist.log',
           
-                ]
+                ],
                 [
                     script: 'ls -al dist/upgrade-qa/',
                     log: '${projectName}-post-build-dist-qa.log',
