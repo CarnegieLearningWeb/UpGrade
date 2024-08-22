@@ -6,7 +6,7 @@ import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusi
 @EntityRepository(FeatureFlagSegmentExclusion)
 export class FeatureFlagSegmentExclusionRepository extends Repository<FeatureFlagSegmentExclusion> {
   public async insertData(
-    data: Partial<FeatureFlagSegmentExclusion>,
+    data: Partial<FeatureFlagSegmentExclusion>[],
     logger: UpgradeLogger,
     entityManager: EntityManager
   ): Promise<FeatureFlagSegmentExclusion> {

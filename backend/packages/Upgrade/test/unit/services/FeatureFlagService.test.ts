@@ -353,7 +353,7 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should add an include list', async () => {
-    const result = await service.addList(mockList, 'include', logger);
+    const result = await service.addList([mockList], 'include', logger);
 
     expect(result).toBeTruthy();
   });
