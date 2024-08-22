@@ -4,6 +4,7 @@ projectBuilderV5 (
         cpu: 2048,
         memory: 4096
     ],
+
     projects: [
         "upgrade-service":[
             artifactType: "ecr",
@@ -35,7 +36,6 @@ projectBuilderV5 (
                 include: ['./settings.env.js','./set_build_variables.js']
             ],
             buildScripts: [
-
                 [
                     script: 'npm ci --no-audit',
                     githubCheck: '${projectName} npm ci --no-audit',
@@ -46,8 +46,11 @@ projectBuilderV5 (
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
                 ]
-            
-            ]
+            ],
+            envVars: [
+                API_BASE_URL: '@vault(secret/configs/upgrade/${environment}/API_BASE_URL)',
+                BASE_HREF_PREFIX: '@vault(secret/configs/upgrade/${environment}/BASE_HREF_PREFIX)',
+            ],
         ]
     ]
 )
