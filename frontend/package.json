@@ -12,7 +12,7 @@
     "prebuild": "npm run test",
     "build": "ng build",
     "prebuild:prod": "npm run test",
-    "build:project": "ls -al && node set_build_variables.js && ng build --configuration ${ENV:-develop} --base-href /upgrade/",
+    "build:project": "node set_build_variables.js && ng build --configuration ${ENV:-develop} --base-href /upgrade/",
     "build:prod": "ng build --configuration production",
     "build:demo": "ng build --configuration demo --base-href /upgrade/",
     "build:dev": "ng build -c=development",
