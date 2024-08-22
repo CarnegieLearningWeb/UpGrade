@@ -77,13 +77,21 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
   expect(keysAssign).toEqual(expect.arrayContaining([key]));
 
   // get keys for user2
-  keysAssign = await featureFlagService.getKeys(experimentUsers[1] as RequestedExperimentUser, context[0], new UpgradeLogger());
+  keysAssign = await featureFlagService.getKeys(
+    experimentUsers[1] as RequestedExperimentUser,
+    context[0],
+    new UpgradeLogger()
+  );
 
   expect(keysAssign.length).toEqual(1);
   expect(keysAssign).toEqual(expect.arrayContaining([key]));
 
   // get keys for user3
-  keysAssign = await featureFlagService.getKeys(experimentUsers[2] as RequestedExperimentUser, context[0], new UpgradeLogger());
+  keysAssign = await featureFlagService.getKeys(
+    experimentUsers[2] as RequestedExperimentUser,
+    context[0],
+    new UpgradeLogger()
+  );
 
   expect(keysAssign.length).toEqual(0);
 }

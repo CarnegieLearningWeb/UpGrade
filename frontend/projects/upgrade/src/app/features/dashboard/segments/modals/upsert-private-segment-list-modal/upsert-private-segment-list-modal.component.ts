@@ -275,12 +275,16 @@ export class UpsertPrivateSegmentListModalComponent {
   sendRequest(action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION): void {
     const formData = this.privateSegmentListForm.value;
     const listType = formData.listType;
+    const isExcludeList = [
+      UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_EXCLUDE_LIST,
+      UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST,
+    ].includes(action);
     let list: PrivateSegmentListRequestBase = this.createPrivateSegmentListBaseRequest(formData);
     list = this.createRequestByListType(formData, listType);
 
     const listRequest: PrivateSegmentListRequest = {
       flagId: this.config.params.flagId,
-      enabled: this.config.params.sourceList?.enabled ?? false, // Maintain existing status for edits, default to false for new lists
+      enabled: this.config.params.sourceList?.enabled || isExcludeList, // Maintain existing status for edits, default to false for new include lists, true for all exclude lists
       listType,
       list,
     };
