@@ -225,8 +225,6 @@ Resources:
             TransitEncryption: ENABLED
             FilesystemId:
               Fn::ImportValue: !Sub ${sharedEcsResourcesPrefix}-${environment}-fluentdConfigFilesystemId
-      TaskRoleArn: 
-        Fn::ImportValue: !Sub ${sharedResourcesPrefix}-${environment}-ecsTaskRoleArn
   ecsService:
     Type: AWS::ECS::Service
     DependsOn: alblistenerrule
