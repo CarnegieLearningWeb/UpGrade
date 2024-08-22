@@ -480,7 +480,7 @@ export class FeatureFlagsController {
     @Body({ validate: true }) inclusionList: FeatureFlagListValidator,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentInclusion> {
-    return this.featureFlagService.addList([inclusionList], 'inclusion', request.logger)[0];
+    return (await this.featureFlagService.addList([inclusionList], 'inclusion', request.logger))[0];
   }
 
   /**
@@ -510,7 +510,7 @@ export class FeatureFlagsController {
     @Body({ validate: true }) exclusionList: FeatureFlagListValidator,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentExclusion> {
-    return this.featureFlagService.addList([exclusionList], 'exclusion', request.logger)[0];
+    return (await this.featureFlagService.addList([exclusionList], 'exclusion', request.logger))[0];
   }
 
   /**

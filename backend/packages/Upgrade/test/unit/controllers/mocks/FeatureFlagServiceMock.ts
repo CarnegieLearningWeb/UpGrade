@@ -7,6 +7,7 @@ import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../../../../src/api/controllers/validators/FeatureFlagValidator';
 import { RequestedExperimentUser } from '../../../../src/api/controllers/validators/ExperimentUserValidator';
 import { FeatureFlagListValidator } from '../../../../src/api/controllers/validators/FeatureFlagListValidator';
+import { FeatureFlagSegmentInclusion } from '../../../../src/api/models/FeatureFlagSegmentInclusion';
 
 @Service()
 export default class FeatureFlagServiceMock {
@@ -49,8 +50,9 @@ export default class FeatureFlagServiceMock {
     return Promise.resolve([]);
   }
 
-  public addList(listInput: FeatureFlagListValidator, filterType: string, logger: UpgradeLogger): Promise<[]> {
-    return Promise.resolve([]);
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  public addList(listInput: FeatureFlagListValidator[], filterType: string, logger: UpgradeLogger): Promise<{}[]> {
+    return Promise.resolve([{}]);
   }
 
   public deleteList(segmentId: string, logger: UpgradeLogger): Promise<[]> {
