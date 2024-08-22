@@ -18,7 +18,7 @@ console.log(
 for (var i in replacements) {
   try {
     const changedFiles = replace.sync({
-      files: ['/projects/**/environment.*.ts'],
+      files: ['/projects/**/environment.*'],
       from: replacements[i].search,
       to: replacements[i].replace,
       allowEmptyPaths: false,
