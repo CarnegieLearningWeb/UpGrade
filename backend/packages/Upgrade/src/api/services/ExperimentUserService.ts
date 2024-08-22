@@ -12,6 +12,7 @@ import { GroupExclusionRepository } from '../repositories/GroupExclusionReposito
 import { Experiment } from '../models/Experiment';
 import isEqual from 'lodash/isEqual';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
+import { env } from '../../env';
 
 @Service()
 export class ExperimentUserService {
@@ -345,10 +346,16 @@ export class ExperimentUserService {
     }
   }
 
-  public async clearDB(logger: UpgradeLogger): Promise<void> {
+  public async clearDB(logger: UpgradeLogger): Promise<string> {
+    if (!env.app.demo) {
+      return 'DEMO mode is disabled. You cannot clear DB.';
+    }
+
     await getConnection().transaction(async (transactionalEntityManager) => {
       await this.experimentRepository.clearDB(transactionalEntityManager, logger);
     });
+
+    return 'DB truncate successful';
   }
 
   /**
