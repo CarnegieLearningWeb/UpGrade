@@ -12,6 +12,7 @@
     "prebuild": "npm run test",
     "build": "ng build",
     "prebuild:prod": "npm run test",
+    "build:project": "node set_build_variables.js && ng build --configuration ${ENV:-develop} --base-href /upgrade/",
     "build:prod": "ng build --configuration production",
     "build:demo": "ng build --configuration demo --base-href /upgrade/",
     "build:dev": "ng build -c=development",
@@ -104,6 +105,7 @@
     "ts-jest": "^29.0.8",
     "ts-node": "~10.8.0",
     "typescript": "~5.3.3",
-    "webpack-bundle-analyzer": "^4.6.1"
+    "webpack-bundle-analyzer": "^4.6.1",
+    "replace-in-file": "^6.1.0"
   }
 }
