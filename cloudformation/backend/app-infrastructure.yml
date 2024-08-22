@@ -186,21 +186,21 @@ Resources:
             - Name: NEW_RELIC_LICENSE_KEY
               ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/NEW_RELIC_LICENSE_KEY
             - Name: CLIENT_API_KEY
-              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_CLIENT_API_KEY}}
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_CLIENT_API_KEY
             - Name: CLIENT_API_SECRET
-              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_CLIENT_API_SECRET}}
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_CLIENT_API_SECRET
             - Name: GOOGLE_CLIENT_ID
-              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_GOOGLE_CLIENT_ID}}
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_GOOGLE_CLIENT_ID
             - Name: RDS_PASSWORD
-              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_DB_PASSWORD}}
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_DB_PASSWORD
             - Name: RDS_USERNAME
               ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_RDS_USERNAME
             - Name: SWAGGER_PASSWORD
-              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_SWAGGER_PASSWORD}}
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_SWAGGER_PASSWORD
             - Name: SWAGGER_USERNAME
-              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_SWAGGER_USERNAME}}
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_SWAGGER_USERNAME
             - Name: TOKEN_SECRET_KEY
-              Value: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_TOKEN_SECRET_KEY}}
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_TOKEN_SECRET_KEY
           LogConfiguration:
             LogDriver: awsfirelens
           MemoryReservation: 256
