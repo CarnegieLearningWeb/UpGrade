@@ -4,11 +4,6 @@ projectBuilderV5 (
         cpu: 2048,
         memory: 4096
     ],
-    initScripts: [[
-        script: 'npm ci --no-audit',
-        githubCheck: 'npm ci --no-audit',
-        log: 'npm-ci.log'
-    ]],
     projects: [
         "upgrade-service":[
             artifactType: "ecr",
@@ -42,11 +37,6 @@ projectBuilderV5 (
             buildScripts: [
 
                 [
-                    script: 'ls -al',
-                    githubCheck: '${projectName} ls',
-                    log: '${projectName}-ls-ci.log'
-                ],
-                [
                     script: 'npm ci --no-audit',
                     githubCheck: '${projectName} npm ci --no-audit',
                     log: '${projectName}-npm-ci.log'
@@ -55,11 +45,6 @@ projectBuilderV5 (
                     script: 'npm run build:project',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
-                ],
-                [
-                    script: 'ls -al dist/',
-                    log: '${projectName}-post-build-dist.log',
-          
                 ]
             
             ]
