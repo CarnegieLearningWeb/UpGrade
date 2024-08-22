@@ -19,9 +19,9 @@ for (var i in replacements) {
   try {
     const changedFiles = replace.sync({
       files: [
-        '/projects/upgrade/src/environments/environment.prod.ts',
-        '/projects/upgrade/src/environments/environment.qa.ts',
-        '/projects/upgrade/src/environments/environment.staging.ts',
+        'projects/upgrade/src/environments/environment.prod.ts',
+        'projects/upgrade/src/environments/environment.qa.ts',
+        'projects/upgrade/src/environments/environment.staging.ts',
       ],
       from: replacements[i].search,
       to: replacements[i].replace,
