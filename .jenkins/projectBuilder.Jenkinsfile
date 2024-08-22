@@ -32,9 +32,6 @@ projectBuilderV5 (
             artifactDir: 'dist/upgrade',
             versioning: 'calendar',
             oneArtifactPerEnvironment: true,
-            fileFilter: [
-                include: ['./settings.env.js','./set_build_variables.js']
-            ],
             buildScripts: [
                 [
                     script: 'npm ci --no-audit',
