@@ -50,5 +50,36 @@ projectBuilderV5 (
                 GOOGLE_CLIEND_ID: '@vault(secret/configs/upgrade/${environment}/GOOGLE_CLIEND_ID)',
             ],
         ]
+    ],
+    deployments: [
+        UpgradeService: [
+            projects: ["upgrade-service"],
+            automated: [
+                [
+                    type: "defaultBranch",
+                    environment: "qa"
+                ]
+            ],
+            jobs: [
+                [
+                    job: "Upgrade-Service-Deploy",
+                    type: "bluegreen"
+                ]
+            ]
+        ],
+        Upgrade: [
+            projects: ["upgrade"],
+            automated: [
+                [
+                    type: "defaultBranch",
+                    environment: "qa"
+                ]
+            ],
+            jobs: [
+                [
+                    job: "Upgrade-Frontend-Deploy"
+                ]
+            ]
+        ],
     ]
 )
