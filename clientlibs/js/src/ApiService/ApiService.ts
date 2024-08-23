@@ -1,12 +1,13 @@
 import { UpGradeClientEnums, UpGradeClientInterfaces, UpGradeClientRequests } from '../types';
 import { DefaultHttpClient } from '../DefaultHttpClient/DefaultHttpClient';
+import { FetchHttpClient } from '../DefaultHttpClient/FetchHttpClient';
 import { CaliperEnvelope, IExperimentAssignmentv5, ILogInput, IUserAliases, ILogRequestBody } from 'upgrade_types';
 import { DataService } from 'DataService/DataService';
 import { IApiServiceRequestParams, IEndpoints } from './ApiService.types';
 import { IMarkDecisionPointParams } from 'UpGradeClient/UpGradeClient.types';
 
 // this variable is used by webpack to replace the value of USE_CUSTOM_HTTP_CLIENT with true or false to create two different builds
-declare const USE_CUSTOM_HTTP_CLIENT: boolean;
+declare const USE_FETCH_DEFAULT_HTTP_CLIENT: boolean;
 declare const IS_BROWSER: boolean;
 
 export default class ApiService {
@@ -41,29 +42,18 @@ export default class ApiService {
   }
 
   private setHttpClient(httpClient: UpGradeClientInterfaces.IHttpClientWrapper) {
-    if (USE_CUSTOM_HTTP_CLIENT && !httpClient) {
-      throw new Error(
-        'Please provide valid httpClient, or use the default (non-"lite") version of the library to our default httpClient.'
-      );
-    }
-
-    if (!USE_CUSTOM_HTTP_CLIENT && httpClient) {
-      throw new Error('Please import "lite" version of the to use custom httpClient.');
-    }
-
-    if (USE_CUSTOM_HTTP_CLIENT && httpClient) {
+    if (httpClient) {
       return httpClient;
     }
 
-    if (!USE_CUSTOM_HTTP_CLIENT && !httpClient) {
-      return new DefaultHttpClient();
+    if (USE_FETCH_DEFAULT_HTTP_CLIENT) {
+      return new FetchHttpClient();
     }
+
+    return new DefaultHttpClient();
   }
 
   private validateClient() {
-    if (!USE_CUSTOM_HTTP_CLIENT && !this.hostUrl) {
-      throw new Error('Please set application host URL first.');
-    }
     if (!this.userId) {
       throw new Error('Please provide valid user id.');
     }
