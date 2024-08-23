@@ -204,7 +204,7 @@ Resources:
           LogConfiguration:
             LogDriver: awsfirelens
           MemoryReservation: 256
-          ReadonlyRootFilesystem: true
+          ReadonlyRootFilesystem: false
           PortMappings:
             - ContainerPort: !Ref servicePort
       Cpu: 1024
