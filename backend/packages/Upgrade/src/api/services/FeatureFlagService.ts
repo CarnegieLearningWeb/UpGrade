@@ -7,7 +7,7 @@ import { InjectRepository } from 'typeorm-typedi-extensions';
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
-import { EntityManager, getConnection } from 'typeorm';
+import { EntityManager, getConnection, In } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import {
   IFeatureFlagSearchParams,
@@ -522,12 +522,6 @@ export class FeatureFlagService {
               return segmentInclusionList;
             }
           );
-          const inclusionDoc = await this.addList(
-            featureFlagSegmentInclusionList,
-            'inclusion',
-            logger,
-            transactionalEntityManager
-          );
 
           const featureFlagSegmentExclusionList = featureFlag.featureFlagSegmentExclusion.map(
             (segmentExclusionList) => {
@@ -536,12 +530,11 @@ export class FeatureFlagService {
               return segmentExclusionList;
             }
           );
-          const exclusionDoc = await await this.addList(
-            featureFlagSegmentExclusionList,
-            'exclusion',
-            logger,
-            transactionalEntityManager
-          );
+
+          const [inclusionDoc, exclusionDoc] = await Promise.all([
+            this.addList(featureFlagSegmentInclusionList, 'inclusion', logger, transactionalEntityManager),
+            this.addList(featureFlagSegmentExclusionList, 'exclusion', logger, transactionalEntityManager),
+          ]);
 
           return { ...newFlag, featureFlagSegmentInclusion: inclusionDoc, featureFlagSegmentExclusion: exclusionDoc };
         })
@@ -555,6 +548,18 @@ export class FeatureFlagService {
     logger: UpgradeLogger
   ): Promise<ValidatedFeatureFlagsError[]> {
     logger.info({ message: 'Validate feature flags' });
+
+    const featureFlagsIds = featureFlagFiles
+      .map((featureFlagFile) => {
+        try {
+          return JSON.parse(featureFlagFile.fileContent as string).key;
+        } catch (parseError) {
+          return null;
+        }
+      })
+      .filter((key) => key !== null);
+    const existingFeatureFlags = await this.featureFlagRepository.find({ key: In(featureFlagsIds) });
+
     const validationErrors = await Promise.allSettled(
       featureFlagFiles.map(async (featureFlagFile) => {
         let featureFlag: FeatureFlagValidation;
@@ -568,7 +573,7 @@ export class FeatureFlagService {
           };
         }
 
-        const error = await this.validateImportFeatureFlag(featureFlagFile.fileName, featureFlag);
+        const error = await this.validateImportFeatureFlag(featureFlagFile.fileName, featureFlag, existingFeatureFlags);
         return error;
       })
     );
@@ -585,7 +590,11 @@ export class FeatureFlagService {
       .filter((error) => error !== null);
   }
 
-  private async validateImportFeatureFlag(fileName: string, flag: FeatureFlagValidation) {
+  private async validateImportFeatureFlag(
+    fileName: string,
+    flag: FeatureFlagValidation,
+    existingFeatureFlags: FeatureFlag[]
+  ) {
     let compatibilityType = FF_COMPATIBILITY_TYPE.COMPATIBLE;
 
     flag = plainToClass(FeatureFlagValidation, flag);
@@ -596,7 +605,7 @@ export class FeatureFlagService {
     });
 
     if (compatibilityType === FF_COMPATIBILITY_TYPE.COMPATIBLE) {
-      const keyExists = await this.featureFlagRepository.findOne({ key: flag.key });
+      const keyExists = existingFeatureFlags.find((existingFlag) => existingFlag.key === flag.key);
 
       if (keyExists) {
         compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
