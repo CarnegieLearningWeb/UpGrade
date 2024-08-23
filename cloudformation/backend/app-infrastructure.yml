@@ -312,6 +312,11 @@ Resources:
       Actions:
         - TargetGroupArn: !Ref ecsTargetGroup
           Type: forward
+      Conditions:
+        - Field: path-pattern
+          PathPatternConfig:
+            Values:
+              - /upgrade-service* 
       ListenerArn:
         Fn::ImportValue: !Sub ${sharedResourcesPrefix}-${environment}-albListenerArn-${cluster}
       Priority: 1
