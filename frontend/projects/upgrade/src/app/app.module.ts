@@ -12,11 +12,13 @@ import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule } from '@angular/common
 import { SimpleNotificationsModule } from 'angular2-notifications';
 import { environment } from '../environments/environment';
 import { ENV, Environment, RuntimeEnvironmentConfig } from '../environments/environment-types';
-import { CloseModalInterceptor } from './core/http-interceptors/close-modal.interceptor';
 
 export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
   // in non-prod build, all env vars can be provided on .environment.ts,
   // so skip fetch
+  console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+  console.log({ environment });
+
   if (!environment.production || (environment.apiBaseUrl && environment.googleClientId)) {
     return () => Promise.resolve();
   }

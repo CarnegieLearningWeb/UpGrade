@@ -10,7 +10,7 @@ export const environment = {
   production: false,
   test: false,
   baseHrefPrefix: '',
-  googleClientId: '135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com',
+  googleClientId: '656936260684-hdsihcgcdrcbeom72n56o8n5rb2mtc58.apps.googleusercontent.com',
   domainName: '',
   pollingEnabled: true,
   pollingInterval: 10 * 1000,
