@@ -6,7 +6,7 @@ import { DataService } from 'DataService/DataService';
 import { IApiServiceRequestParams, IEndpoints } from './ApiService.types';
 import { IMarkDecisionPointParams } from 'UpGradeClient/UpGradeClient.types';
 
-// this variable is used by webpack to replace the value of USE_CUSTOM_HTTP_CLIENT with true or false to create two different builds
+// this variable is used by webpack to replace the value of USE_FETCH_DEFAULT_HTTP_CLIENT with true or false to create two different builds
 declare const USE_FETCH_DEFAULT_HTTP_CLIENT: boolean;
 declare const IS_BROWSER: boolean;
 

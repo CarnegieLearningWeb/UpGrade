@@ -11,7 +11,7 @@ const config: Config.InitialOptions = {
       isolatedModules: true,
       diagnostics: false,
     },
-    USE_CUSTOM_HTTP_CLIENT: true,
+    USE_FETCH_DEFAULT_HTTP_CLIENT: true,
     IS_BROWSER: true,
     API_VERSION: 5,
   },
