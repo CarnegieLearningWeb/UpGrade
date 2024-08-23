@@ -1,4 +1,4 @@
-import { JsonController, Post, Body, Authorized, Req } from 'routing-controllers';
+import { JsonController, Post, Body, Req, Authorized } from 'routing-controllers';
 import { AppRequest } from '../../types';
 import { User } from '../models/User';
 import { UserService } from '../services/UserService';
@@ -61,6 +61,8 @@ export class LoginController {
    */
   @Post('/user')
   public upsertUser(@Body({ validate: true }) user: UserDetailsValidator, @Req() request: AppRequest): Promise<User> {
+    console.log('DEBUGG user', user);
+    console.log('DEBUGG request', request);
     if (user.role) {
       // Create a user with default role reader if user doesn't exist as anyone with accepted google account domain can login
       // Role can be updated later by admin users only
