@@ -5,6 +5,7 @@ import { Type } from 'class-transformer';
 import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 import { FeatureFlagSegmentInclusion } from './FeatureFlagSegmentInclusion';
 import { FeatureFlagSegmentExclusion } from './FeatureFlagSegmentExclusion';
+import { FeatureFlagExposure } from './FeatureFlagExposure';
 @Entity()
 export class FeatureFlag extends BaseModel {
   @PrimaryColumn('uuid')
@@ -55,4 +56,7 @@ export class FeatureFlag extends BaseModel {
   )
   @Type(() => FeatureFlagSegmentExclusion)
   public featureFlagSegmentExclusion: FeatureFlagSegmentExclusion[];
+
+  @OneToMany(() => FeatureFlagExposure, (featureFlagExposure) => featureFlagExposure.featureFlag)
+  public featureFlagExposures: FeatureFlagExposure[];
 }

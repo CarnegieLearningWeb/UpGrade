@@ -1,14 +1,18 @@
-import { Entity, Index, ManyToOne } from 'typeorm';
+import { Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { FeatureFlag } from './FeatureFlag';
 import { ExperimentUser } from './ExperimentUser';
 
 @Entity()
 export class FeatureFlagExposure extends BaseModel {
+  @PrimaryGeneratedColumn('uuid')
+  public id: string;
+
   @Index()
-  @ManyToOne(() => FeatureFlag, { onDelete: 'CASCADE', primary: true })
+  @ManyToOne(() => FeatureFlag, { onDelete: 'CASCADE' })
   public featureFlag: FeatureFlag;
+
   @Index()
-  @ManyToOne(() => FeatureFlag, { onDelete: 'CASCADE', primary: true })
+  @ManyToOne(() => ExperimentUser, { onDelete: 'CASCADE' })
   public experimentUser: ExperimentUser;
 }

@@ -86,10 +86,12 @@ describe('Feature Flag Service Testing', () => {
     getMany: jest.fn().mockResolvedValue(mockFlagArr),
   };
 
+  const exposureRepoMock = { save: jest.fn() };
   const entityManagerMock = { createQueryBuilder: () => queryBuilderMock };
   const sandbox = sinon.createSandbox();
   sandbox.stub(ConnectionManager.prototype, 'get').returns({
     transaction: jest.fn(async (passedFunction) => await passedFunction(entityManagerMock)),
+    getRepository: () => exposureRepoMock,
   } as unknown as Connection);
 
   beforeEach(async () => {
@@ -350,6 +352,7 @@ describe('Feature Flag Service Testing', () => {
 
     expect(result.length).toEqual(1);
     expect(result).toEqual([mockFlag1.key]);
+    expect(exposureRepoMock.save).toHaveBeenCalledTimes(1);
   });
 
   it('should add an include list', async () => {

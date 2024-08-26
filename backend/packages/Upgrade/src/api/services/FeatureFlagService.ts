@@ -1,13 +1,14 @@
 import { Service } from 'typedi';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { Segment } from '../models/Segment';
+import { FeatureFlagExposure } from '../models/FeatureFlagExposure';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
 import { InjectRepository } from 'typeorm-typedi-extensions';
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
-import { getConnection } from 'typeorm';
+import { getConnection, getRepository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import {
   IFeatureFlagSearchParams,
@@ -64,6 +65,21 @@ export class FeatureFlagService {
 
     const includedFeatureFlags = await this.featureFlagLevelInclusionExclusion(filteredFeatureFlags, experimentUserDoc);
 
+    // save exposures in db
+    try {
+      const exposureRepo = getRepository(FeatureFlagExposure);
+
+      await Promise.all(
+        includedFeatureFlags.map((flag) => {
+          return exposureRepo.save({ featureFlag: flag, experimentUser: experimentUserDoc });
+        })
+      );
+    } catch (err) {
+      const error = new Error(`Error in saving feature flag exposure records ${err}`);
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      throw error;
+    }
+
     return includedFeatureFlags.map((flags) => flags.key);
   }
 
@@ -107,7 +123,9 @@ export class FeatureFlagService {
   ): Promise<FeatureFlag[]> {
     logger.info({ message: 'Find paginated Feature flags' });
 
-    let queryBuilder = this.featureFlagRepository.createQueryBuilder('feature_flag');
+    let queryBuilder = this.featureFlagRepository
+      .createQueryBuilder('feature_flag')
+      .leftJoinAndSelect('feature_flag.featureFlagExposures', 'featureFlagExposures');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
       // add search query
