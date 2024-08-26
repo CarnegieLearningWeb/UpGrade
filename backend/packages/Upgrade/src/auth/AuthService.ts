@@ -20,10 +20,6 @@ export class AuthService {
   }
 
   public async validateUser(token: string, request: express.Request): Promise<User> {
-    console.log('DEBUGG token', token);
-    console.log('DEBUGG request', request);
-    console.log('DEBUGG env.google.clientId', env.google.clientId);
-
     const client = new OAuth2Client(env.google.clientId);
     request.logger.info({ message: 'Validating Token' });
 
