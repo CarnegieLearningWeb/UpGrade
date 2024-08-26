@@ -506,40 +506,38 @@ export class FeatureFlagService {
         return JSON.parse(featureFlagFile.fileContent as string);
       });
 
-    const createdFlags = await getConnection().transaction(async (transactionalEntityManager) => {
-      return await Promise.all(
-        validFiles.map(async (featureFlag) => {
-          const newFlag = await this.addFeatureFlagInDB(
-            this.featureFlagValidatorToFlag(featureFlag),
-            logger,
-            transactionalEntityManager
-          );
+    const createdFlags = [];
 
-          const featureFlagSegmentInclusionList = featureFlag.featureFlagSegmentInclusion.map(
-            (segmentInclusionList) => {
-              segmentInclusionList.list.id = uuid();
-              segmentInclusionList.flagId = newFlag.id;
-              return segmentInclusionList;
-            }
-          );
+    for (const featureFlag of validFiles) {
+      const createdFlag = await getConnection().transaction(async (transactionalEntityManager) => {
+        const newFlag = await this.addFeatureFlagInDB(
+          this.featureFlagValidatorToFlag(featureFlag),
+          logger,
+          transactionalEntityManager
+        );
 
-          const featureFlagSegmentExclusionList = featureFlag.featureFlagSegmentExclusion.map(
-            (segmentExclusionList) => {
-              segmentExclusionList.list.id = uuid();
-              segmentExclusionList.flagId = newFlag.id;
-              return segmentExclusionList;
-            }
-          );
+        const featureFlagSegmentInclusionList = featureFlag.featureFlagSegmentInclusion.map((segmentInclusionList) => {
+          segmentInclusionList.list.id = uuid();
+          segmentInclusionList.flagId = newFlag.id;
+          return segmentInclusionList;
+        });
 
-          const [inclusionDoc, exclusionDoc] = await Promise.all([
-            this.addList(featureFlagSegmentInclusionList, 'inclusion', logger, transactionalEntityManager),
-            this.addList(featureFlagSegmentExclusionList, 'exclusion', logger, transactionalEntityManager),
-          ]);
+        const featureFlagSegmentExclusionList = featureFlag.featureFlagSegmentExclusion.map((segmentExclusionList) => {
+          segmentExclusionList.list.id = uuid();
+          segmentExclusionList.flagId = newFlag.id;
+          return segmentExclusionList;
+        });
 
-          return { ...newFlag, featureFlagSegmentInclusion: inclusionDoc, featureFlagSegmentExclusion: exclusionDoc };
-        })
-      );
-    });
+        const [inclusionDoc, exclusionDoc] = await Promise.all([
+          this.addList(featureFlagSegmentInclusionList, 'inclusion', logger, transactionalEntityManager),
+          this.addList(featureFlagSegmentExclusionList, 'exclusion', logger, transactionalEntityManager),
+        ]);
+
+        return { ...newFlag, featureFlagSegmentInclusion: inclusionDoc, featureFlagSegmentExclusion: exclusionDoc };
+      });
+
+      createdFlags.push(createdFlag);
+    }
     logger.info({ message: 'Imported feature flags', details: createdFlags });
     return fileStatusArray;
   }
