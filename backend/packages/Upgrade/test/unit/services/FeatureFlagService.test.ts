@@ -1,5 +1,5 @@
 import * as sinon from 'sinon';
-import { Connection, ConnectionManager } from 'typeorm';
+import { Connection, ConnectionManager, getRepository } from 'typeorm';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
@@ -56,7 +56,7 @@ describe('Feature Flag Service Testing', () => {
 
   const mockList = new FeatureFlagListValidator();
   mockList.enabled = true;
-  mockList.flagId = uuid();
+  mockList.flagId = mockFlag1.id;
   mockList.listType = 'individual';
   mockList.list = {
     name: 'name',
@@ -86,7 +86,11 @@ describe('Feature Flag Service Testing', () => {
     getMany: jest.fn().mockResolvedValue(mockFlagArr),
   };
 
-  const entityManagerMock = { createQueryBuilder: () => queryBuilderMock };
+  const entityManagerMock = {
+    createQueryBuilder: () => queryBuilderMock,
+    getRepository: jest.fn().mockReturnThis(),
+    findByIds: jest.fn().mockResolvedValue([mockFlag1]),
+  };
   const sandbox = sinon.createSandbox();
   sandbox.stub(ConnectionManager.prototype, 'get').returns({
     transaction: jest.fn(async (passedFunction) => await passedFunction(entityManagerMock)),
@@ -353,7 +357,7 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should add an include list', async () => {
-    const result = await service.addList(mockList, 'include', logger);
+    const result = await service.addList([mockList], 'include', logger);
 
     expect(result).toBeTruthy();
   });

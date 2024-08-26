@@ -134,6 +134,7 @@ export class ImportFeatureFlagModalComponent {
     if (importSuccessFiles.length > 0) {
       importSuccessMsg = `Successfully imported ${importSuccessFiles.length} file/s: ${importSuccessFiles.join(', ')}`;
       this.closeModal();
+      this.featureFlagsService.fetchFeatureFlags(true);
     }
 
     this.notificationService.showSuccess(importSuccessMsg);

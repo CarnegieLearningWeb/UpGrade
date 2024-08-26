@@ -6,7 +6,7 @@ import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusi
 @EntityRepository(FeatureFlagSegmentInclusion)
 export class FeatureFlagSegmentInclusionRepository extends Repository<FeatureFlagSegmentInclusion> {
   public async insertData(
-    data: Partial<FeatureFlagSegmentInclusion>,
+    data: Partial<FeatureFlagSegmentInclusion>[],
     logger: UpgradeLogger,
     entityManager: EntityManager
   ): Promise<FeatureFlagSegmentInclusion> {

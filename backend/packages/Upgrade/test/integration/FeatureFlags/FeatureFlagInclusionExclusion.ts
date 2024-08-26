@@ -46,8 +46,8 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
     },
   };
 
-  await featureFlagService.addList(featureFlagSegmentExclusion, 'exclusion', new UpgradeLogger());
-  await featureFlagService.addList(featureFlagSegmentInclusion, 'inclusion', new UpgradeLogger());
+  await featureFlagService.addList([featureFlagSegmentExclusion], 'exclusion', new UpgradeLogger());
+  await featureFlagService.addList([featureFlagSegmentInclusion], 'inclusion', new UpgradeLogger());
 
   const featureFlags = await featureFlagService.find(new UpgradeLogger());
 
