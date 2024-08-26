@@ -13,6 +13,7 @@ export class AuthService {
   constructor(@InjectRepository() private userRepository: UserRepository) {}
 
   public parseBasicAuthFromRequest(req: express.Request): string {
+    console.log('DEBUGG Inside parseBasicAuthFromRequest');
     req.logger.info({ message: 'Inside parseBasicAuthFromRequest' });
 
     const authorization = req.header('authorization');
