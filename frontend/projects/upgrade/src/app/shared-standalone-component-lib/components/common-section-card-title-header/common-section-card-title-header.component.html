@@ -23,8 +23,5 @@
         {{ ('feature-flags.details-updated-at.text' | translate) + (updatedAt | formatDate: 'short date') + '.' }}
       </span>
     </ng-container>
-    <ng-container *ngIf="showViewLogs">
-      <a class="view-logs-link ft-14-400" [href]="" (click)="viewLogsClicked()">View logs</a>
-    </ng-container>
   </p>
 </div>
