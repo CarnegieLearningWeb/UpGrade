@@ -335,8 +335,17 @@
             "buildTarget": "upgrade:build"
           },
           "configurations": {
-            "production": {
-              "buildTarget": "upgrade:build:production"
+            "prod": {
+              "buildTarget": "upgrade:build:prod"
+            },
+            "staging": {
+              "buildTarget": "upgrade:build:staging"
+            },
+            "qa": {
+              "buildTarget": "upgrade:build:qa"
+            },
+            "beanstalk": {
+              "buildTarget": "upgrade:build:beanstalk"
             }
           }
         },
@@ -353,8 +362,17 @@
             "devServerTarget": "upgrade:serve"
           },
           "configurations": {
-            "production": {
-              "devServerTarget": "upgrade:serve:production"
+            "prod": {
+              "devServerTarget": "upgrade:serve:prod"
+            },
+            "staging": {
+              "devServerTarget": "upgrade:serve:staging"
+            },
+            "qa": {
+              "devServerTarget": "upgrade:serve:qa"
+            },
+            "beanstalk": {
+              "devServerTarget": "upgrade:serve:beanstalk"
             }
           }
         }
