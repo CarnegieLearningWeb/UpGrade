@@ -39,7 +39,48 @@
             "namedChunks": true
           },
           "configurations": {
-            "production": {
+            "beanstalk": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/upgrade/src/environments/environment.ts",
+                  "with": "projects/upgrade/src/environments/environment.beanstalk.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "budgets": [
+                {
+                  "type": "bundle",
+                  "name": "polyfills",
+                  "baseline": "150kb",
+                  "maximumWarning": "50kb",
+                  "maximumError": "100kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "styles",
+                  "baseline": "1mb",
+                  "maximumWarning": "2mb",
+                  "maximumError": "100kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "main",
+                  "baseline": "2mb",
+                  "maximumWarning": "3mb",
+                  "maximumError": "200kb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
+            },
+            "prod": {
               "fileReplacements": [
                 {
                   "replace": "projects/upgrade/src/environments/environment.ts",
@@ -126,6 +167,47 @@
                 {
                   "replace": "projects/upgrade/src/environments/environment.ts",
                   "with": "projects/upgrade/src/environments/environment.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "budgets": [
+                {
+                  "type": "bundle",
+                  "name": "polyfills",
+                  "baseline": "150kb",
+                  "maximumWarning": "50kb",
+                  "maximumError": "100kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "styles",
+                  "baseline": "1mb",
+                  "maximumWarning": "2mb",
+                  "maximumError": "100kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "main",
+                  "baseline": "2mb",
+                  "maximumWarning": "3mb",
+                  "maximumError": "200kb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
+            },
+            "qa": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/upgrade/src/environments/environment.ts",
+                  "with": "projects/upgrade/src/environments/environment.qa.ts"
                 }
               ],
               "optimization": true,
@@ -253,8 +335,17 @@
             "buildTarget": "upgrade:build"
           },
           "configurations": {
-            "production": {
-              "buildTarget": "upgrade:build:production"
+            "prod": {
+              "buildTarget": "upgrade:build:prod"
+            },
+            "staging": {
+              "buildTarget": "upgrade:build:staging"
+            },
+            "qa": {
+              "buildTarget": "upgrade:build:qa"
+            },
+            "beanstalk": {
+              "buildTarget": "upgrade:build:beanstalk"
             }
           }
         },
@@ -271,8 +362,17 @@
             "devServerTarget": "upgrade:serve"
           },
           "configurations": {
-            "production": {
-              "devServerTarget": "upgrade:serve:production"
+            "prod": {
+              "devServerTarget": "upgrade:serve:prod"
+            },
+            "staging": {
+              "devServerTarget": "upgrade:serve:staging"
+            },
+            "qa": {
+              "devServerTarget": "upgrade:serve:qa"
+            },
+            "beanstalk": {
+              "devServerTarget": "upgrade:serve:beanstalk"
             }
           }
         }
