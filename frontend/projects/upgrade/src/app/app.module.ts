@@ -8,11 +8,11 @@ import { CoreModule } from './core/core.module';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { SimpleNotificationsModule } from 'angular2-notifications';
 import { environment } from '../environments/environment';
 import { ENV, Environment, RuntimeEnvironmentConfig } from '../environments/environment-types';
-import { CloseModalInterceptor } from './core/http-interceptors/close-modal.interceptor';
+import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 
 export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
   // in non-prod build, all env vars can be provided on .environment.ts,
@@ -73,6 +73,7 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
       multi: true,
       deps: [HttpClient, ENV],
     },
+    { provide: LocationStrategy, useClass: PathLocationStrategy },
   ],
   declarations: [AppComponent],
   bootstrap: [AppComponent],
