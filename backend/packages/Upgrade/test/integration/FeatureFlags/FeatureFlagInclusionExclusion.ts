@@ -67,7 +67,7 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
   );
 
   // get keys for user1
-  const keysAssign = await featureFlagService.getKeys(
+  let keysAssign = await featureFlagService.getKeys(
     experimentUsers[0] as RequestedExperimentUser,
     context[0],
     new UpgradeLogger()
@@ -76,26 +76,26 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
   expect(keysAssign.length).toEqual(1);
   expect(keysAssign).toEqual(expect.arrayContaining([key]));
 
-  // // get keys for user2
-  const keysAssign2 = await featureFlagService.getKeys(
+  // get keys for user2
+  keysAssign = await featureFlagService.getKeys(
     experimentUsers[1] as RequestedExperimentUser,
     context[0],
     new UpgradeLogger()
   );
 
-  expect(keysAssign2.length).toEqual(1);
-  expect(keysAssign2).toEqual(expect.arrayContaining([key]));
+  expect(keysAssign.length).toEqual(1);
+  expect(keysAssign).toEqual(expect.arrayContaining([key]));
 
-  // // get keys for user3
-  const keysAssign3 = await featureFlagService.getKeys(
+  // get keys for user3
+  keysAssign = await featureFlagService.getKeys(
     experimentUsers[2] as RequestedExperimentUser,
     context[0],
     new UpgradeLogger()
   );
 
-  expect(keysAssign3.length).toEqual(0);
+  expect(keysAssign.length).toEqual(0);
 
   // Check the number of exposures
   const paginatedFind = await featureFlagService.findPaginated(0, 5, new UpgradeLogger());
-  expect(paginatedFind[0].featureFlagExposures.length).toEqual(2);
+  expect(paginatedFind[0].featureFlagExposures).toEqual(2);
 }

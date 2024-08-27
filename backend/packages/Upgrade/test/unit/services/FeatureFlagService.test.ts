@@ -141,6 +141,7 @@ describe('Feature Flag Service Testing', () => {
               limit: limitSpy,
               innerJoinAndSelect: jest.fn().mockReturnThis(),
               leftJoinAndSelect: jest.fn().mockReturnThis(),
+              loadRelationCountAndMap: jest.fn().mockReturnThis(),
               getMany: jest.fn().mockResolvedValue(mockFlagArr),
               getOne: jest.fn().mockResolvedValue(mockFlag1),
             })),

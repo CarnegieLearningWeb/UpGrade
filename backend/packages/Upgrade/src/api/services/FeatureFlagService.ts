@@ -68,16 +68,17 @@ export class FeatureFlagService {
     // save exposures in db
     try {
       const exposureRepo = getRepository(FeatureFlagExposure);
-
-      await Promise.all(
-        includedFeatureFlags.map((flag) => {
-          return exposureRepo.save({ featureFlag: flag, experimentUser: experimentUserDoc });
-        })
-      );
+      const exposuresToSave = includedFeatureFlags.map((flag) => ({
+        featureFlag: flag,
+        experimentUser: experimentUserDoc,
+      }));
+      if (exposuresToSave.length > 0) {
+        await exposureRepo.save(exposuresToSave);
+      }
     } catch (err) {
       const error = new Error(`Error in saving feature flag exposure records ${err}`);
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
-      throw error;
+      logger.error(error);
     }
 
     return includedFeatureFlags.map((flags) => flags.key);
@@ -125,7 +126,7 @@ export class FeatureFlagService {
 
     let queryBuilder = this.featureFlagRepository
       .createQueryBuilder('feature_flag')
-      .leftJoinAndSelect('feature_flag.featureFlagExposures', 'featureFlagExposures');
+      .loadRelationCountAndMap('feature_flag.featureFlagExposures', 'feature_flag.featureFlagExposures');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
       // add search query

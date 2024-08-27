@@ -246,10 +246,9 @@ export class FeatureFlagsController {
       ),
       this.featureFlagService.getTotalCount(),
     ]);
-    const nodes = featureFlags.map((flag) => ({ ...flag, exposures: flag.featureFlagExposures.length }));
     return {
       total: count,
-      nodes,
+      nodes: featureFlags,
       ...paginatedParams,
     };
   }
