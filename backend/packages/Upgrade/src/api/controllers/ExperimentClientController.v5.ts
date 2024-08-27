@@ -49,7 +49,7 @@ interface IMonitoredDecisionPoint {
 /**
  * @swagger
  * definitions:
- *   initResponse:
+ *   v5initResponse:
  *     type: object
  *     properties:
  *       id:
@@ -61,8 +61,7 @@ interface IMonitoredDecisionPoint {
  *           class:
  *             type: array
  *             items:
- *               required: []
- *               properties: {}
+ *               type: string
  *         required:
  *           - class
  *       workingGroup:
@@ -107,7 +106,7 @@ export class ExperimentClientController {
 
   /**
    * @swagger
-   * /init:
+   * /v5/init:
    *    post:
    *       description: Create/Update Experiment User
    *       consumes:
@@ -161,7 +160,7 @@ export class ExperimentClientController {
    *          '200':
    *            description: Set Group Membership
    *            schema:
-   *              $ref: '#/definitions/initResponse'
+   *              $ref: '#/definitions/v5initResponse'
    *          '400':
    *            description: BadRequestError - InvalidParameterValue
    *          '401':
@@ -210,7 +209,7 @@ export class ExperimentClientController {
 
   /**
    * @swagger
-   * /groupmembership:
+   * /v5/groupmembership:
    *    patch:
    *       description: Set group membership for a user
    *       consumes:
@@ -252,7 +251,7 @@ export class ExperimentClientController {
    *          '200':
    *            description: Set Group Membership
    *            schema:
-   *              $ref: '#/definitions/initResponse'
+   *              $ref: '#/definitions/v5initResponse'
    *          '400':
    *            description: BadRequestError - InvalidParameterValue
    *          '401':
@@ -290,7 +289,7 @@ export class ExperimentClientController {
 
   /**
    * @swagger
-   * /workinggroup:
+   * /v5/workinggroup:
    *    patch:
    *       description: Set working group for a user
    *       consumes:
@@ -326,7 +325,7 @@ export class ExperimentClientController {
    *          '200':
    *            description: Set Group Membership
    *            schema:
-   *              $ref: '#/definitions/initResponse'
+   *              $ref: '#/definitions/v5initResponse'
    *          '400':
    *            description: BadRequestError - InvalidParameterValue
    *          '401':
@@ -364,7 +363,7 @@ export class ExperimentClientController {
 
   /**
    * @swagger
-   * /mark:
+   * /v5/mark:
    *    post:
    *       description: Mark a Experiment Point
    *       consumes:
@@ -377,25 +376,30 @@ export class ExperimentClientController {
    *             type: object
    *             required:
    *                - userId
-   *                - experimentPoint
-   *                - condition
+   *                - data
    *             properties:
    *               userId:
    *                 type: string
-   *               site:
-   *                 type: string
-   *               target:
-   *                 type: string
-   *                 example: partition1
-   *               condition:
-   *                 type: string
-   *                 example: control
+   *               data:
+   *                type: object
+   *                properties:
+   *                  site:
+   *                    type: string
+   *                  target:
+   *                    type: string
+   *                    example: partition1
+   *                  assignedCondition:
+   *                    type: object
+   *                    properties:
+   *                      conditionCode:
+   *                        type: string
+   *                        example: control
+   *                  experimentId:
+   *                    type: string
+   *                    example: exp1
    *               status:
    *                 type: string
    *                 example: condition applied
-   *               experimentId:
-   *                 type: string
-   *                 example: exp1
    *           description: ExperimentUser
    *       tags:
    *         - Client Side SDK
@@ -408,6 +412,9 @@ export class ExperimentClientController {
    *              type: object
    *              properties:
    *                id:
+   *                  type: string
+   *                  minLength: 1
+   *                userId:
    *                  type: string
    *                  minLength: 1
    *                experimentId:
@@ -468,7 +475,7 @@ export class ExperimentClientController {
 
   /**
    * @swagger
-   * /assign:
+   * /v5/assign:
    *    post:
    *       description: Assign a Experiment Point
    *       consumes:
@@ -512,9 +519,28 @@ export class ExperimentClientController {
    *                  target:
    *                    type: string
    *                    minLength: 1
-   *                  condition:
+   *                  experimentType:
    *                    type: string
-   *                    minLength: 1
+   *                    enum: [Simple, Factorial]
+   *                  assignedCondition:
+   *                    type: array
+   *                    items:
+   *                      type: object
+   *                      properties:
+   *                         conditionCode:
+   *                          type: string
+   *                          minLength: 1
+   *                         payload:
+   *                          type: object
+   *                          properties:
+   *                            type:
+   *                              type: string
+   *                            value:
+   *                              type: string
+   *                         id:
+   *                          type: string
+   *                         experimentId:
+   *                          type: string
    *          '400':
    *            description: BadRequestError - InvalidParameterValue
    *          '401':
@@ -575,7 +601,7 @@ export class ExperimentClientController {
 
   /**
    * @swagger
-   * /log:
+   * /v5/log:
    *    post:
    *       description: Post log data
    *       consumes:
@@ -596,9 +622,8 @@ export class ExperimentClientController {
    *                 items:
    *                   type: object
    *                   properties:
-   *                      userId:
-   *                         type: string
-   *                         example: user1
+   *                      timestamp:
+   *                        type: string
    *                      metrics:
    *                         type: object
    *                         properties:
@@ -677,7 +702,7 @@ export class ExperimentClientController {
 
   /**
    * @swagger
-   * /bloblog:
+   * /v5/bloblog:
    *    post:
    *       description: Post blob log data
    *       consumes:
@@ -752,7 +777,7 @@ export class ExperimentClientController {
 
   /**
    * @swagger
-   * /featureflag:
+   * /v5/featureflag:
    *    post:
    *       description: Get all feature flags using SDK
    *       consumes:
@@ -799,7 +824,7 @@ export class ExperimentClientController {
 
   /**
    * @swagger
-   * /useraliases:
+   * /v5/useraliases:
    *    patch:
    *       description: Set aliases for current user
    *       consumes:
