@@ -5,7 +5,7 @@ export const environment = {
   production: true,
   test: false,
   baseHrefPrefix: '%BASE_HREF_PREFIX%',
-  googleClientId: '%GOOGLE_CLIEND_ID%',
+  googleClientId: '%GOOGLE_CLIENT_ID%',
   domainName: '',
   pollingEnabled: true,
   pollingInterval: 10 * 1000,

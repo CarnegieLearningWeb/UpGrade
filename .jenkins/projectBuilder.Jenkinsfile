@@ -47,7 +47,7 @@ projectBuilderV5 (
             envVars: [
                 API_BASE_URL: '@vault(secret/configs/upgrade/${environment}/API_BASE_URL)',
                 BASE_HREF_PREFIX: '@vault(secret/configs/upgrade/${environment}/BASE_HREF_PREFIX)',
-                GOOGLE_CLIEND_ID: '@vault(secret/configs/upgrade/${environment}/GOOGLE_CLIEND_ID)',
+                GOOGLE_CLIENT_ID: '@vault(secret/configs/upgrade/${environment}/GOOGLE_CLIENT_ID)',
             ],
         ]
     ],
