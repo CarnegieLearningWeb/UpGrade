@@ -117,7 +117,7 @@ Resources:
             - Name: CONTROLLERS
               Value: '{{resolve:ssm:UPGRADE_CONTROLLERS}}'
             - Name: DOMAIN_NAME
-              Value: '{{resolve:ssm:DOMAIN}}'
+              Value: '{{resolve:ssm:UPGRADE_DOMAIN_NAME}}'
             - Name: EMAIL_BUCKET
               Value: '{{resolve:ssm:UPGRADE_EMAIL_BUCKET}}'
             - Name: EMAIL_EXPIRE_AFTER_SECONDS
