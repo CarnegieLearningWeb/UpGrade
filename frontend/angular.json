@@ -39,11 +39,11 @@
             "namedChunks": true
           },
           "configurations": {
-            "production": {
+            "beanstalk": {
               "fileReplacements": [
                 {
                   "replace": "projects/upgrade/src/environments/environment.ts",
-                  "with": "projects/upgrade/src/environments/environment.prod.ts"
+                  "with": "projects/upgrade/src/environments/environment.beanstalk.prod.ts"
                 }
               ],
               "optimization": true,

@@ -13,7 +13,7 @@
     "build": "ng build",
     "prebuild:prod": "npm run test",
     "build:project": "node set_build_variables.js && ng build --configuration ${ENV:-develop} --base-href /upgrade/",
-    "build:prod": "ng build --configuration production",
+    "build:prod": "ng build --configuration beanstalk",
     "build:demo": "ng build --configuration demo --base-href /upgrade/",
     "build:dev": "ng build -c=development",
     "clean": "rimraf node_modules && rm package-lock.json && npm update && npm i",
