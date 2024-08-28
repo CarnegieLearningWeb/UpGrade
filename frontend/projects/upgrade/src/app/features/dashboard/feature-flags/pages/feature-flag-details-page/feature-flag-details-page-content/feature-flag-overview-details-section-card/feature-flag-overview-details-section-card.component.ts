@@ -71,11 +71,6 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
     return FILTER_MODE;
   }
 
-  viewLogsClicked(event) {
-    console.log('viewLogs Clicked');
-    console.log(event);
-  }
-
   onSlideToggleChange(event: MatSlideToggleChange, flag: FeatureFlag) {
     const slideToggleEvent = event.source;
     const newStatus = slideToggleEvent.checked ? FEATURE_FLAG_STATUS.ENABLED : FEATURE_FLAG_STATUS.DISABLED;
