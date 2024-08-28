@@ -5,10 +5,8 @@
     [title]="flag.name"
     [createdAt]="flag.createdAt"
     [updatedAt]="flag.updatedAt"
-    [showViewLogs]="true"
     [chipClass]="flag.status"
     [showWarning]="shouldShowWarning$ | async"
-    (viewLogs)="viewLogsClicked($event)"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->

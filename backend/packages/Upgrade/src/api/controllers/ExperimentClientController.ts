@@ -1,4 +1,13 @@
-import { JsonController, Post, Body, UseBefore, Req, InternalServerError, Delete } from 'routing-controllers';
+import {
+  JsonController,
+  Post,
+  Body,
+  UseBefore,
+  Req,
+  InternalServerError,
+  Delete,
+  Authorized,
+} from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -19,7 +28,6 @@ import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAlias
 import { Metric } from '../models/Metric';
 import * as express from 'express';
 import { AppRequest } from '../../types';
-import { env } from '../../env';
 import flatten from 'lodash.flatten';
 import { CaliperLogEnvelope } from './validators/CaliperLogEnvelope';
 import { ExperimentUserValidator } from './validators/ExperimentUserValidator';
@@ -1092,14 +1100,10 @@ export class ExperimentClientController {
    *          '500':
    *            description: DEMO mode is disabled
    */
+  @Authorized()
   @Delete('clearDB')
   public async clearDB(@Req() request: AppRequest): Promise<string> {
-    // if DEMO mode is enabled, then clear the database:
-    if (env.app.demo) {
-      await this.experimentUserService.clearDB(request.logger);
-      return 'DB truncate successful';
-    }
-    return Promise.resolve('DEMO mode is disabled. You cannot clear DB.');
+    return this.experimentUserService.clearDB(request.logger);
   }
 
   /**

@@ -1,6 +1,6 @@
 export const environment = {
   appName: 'UpGrade',
-  envName: 'staging',
+  envName: 'qa',
   apiBaseUrl: '%API_BASE_URL%',
   production: true,
   test: false,
@@ -10,8 +10,8 @@ export const environment = {
   pollingEnabled: true,
   pollingInterval: 10 * 1000,
   pollingLimit: 600,
-  featureFlagNavToggle: false,
-  withinSubjectExperimentSupportToggle: false,
+  featureFlagNavToggle: true,
+  withinSubjectExperimentSupportToggle: true,
   errorLogsToggle: false,
   metricAnalyticsExperimentDisplayToggle: false,
   api: {

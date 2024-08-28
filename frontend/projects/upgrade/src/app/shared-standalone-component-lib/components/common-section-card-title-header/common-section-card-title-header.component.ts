@@ -11,10 +11,7 @@ import { SharedModule } from '../../../shared/shared.module';
  * - `title`: The title of the section card.
  * - `tableRowCount`: The count of rows in the table. If it's falsy, nothing will be displayed. If it's greater than 1, the count will be displayed in parentheses.
  * - `subtitle`: The subtitle of the section card.
- * - `showViewLogs`: A boolean that determines whether to show the "View Logs" text anchor tag.
  * - `chipClass`: The class for the status chip. For example, `STATUS_INDICATOR_CHIP_TYPE.ENROLLMENT_COMPLETE`.
- *
- * The component emits a `viewLogs` event when the "View Logs" text is clicked. This event can be used to notify a parent component.
  *
  * Example usage:
  *
@@ -23,10 +20,8 @@ import { SharedModule } from '../../../shared/shared.module';
  *   [title]="title"
  *   [tableRowCount]="tableRowCount"
  *   [subtitle]="subtitle"
- *   [showViewLogs]="true"
  *   [chipClass]="STATUS_INDICATOR_CHIP_TYPE.ENROLLMENT_COMPLETE"
  *   [showWarning]="false"
- *   (viewLogs)="viewLogsClicked($event)"
  * ></app-common-section-card-title-header>
  * ```
  */
@@ -47,12 +42,4 @@ export class CommonSectionCardTitleHeaderComponent {
   @Input() updatedAt?: string;
   @Input() chipClass?: STATUS_INDICATOR_CHIP_TYPE;
   @Input() showWarning?: boolean;
-  @Input() showViewLogs?: boolean;
-  @Output() viewLogs = new EventEmitter<{ clicked: boolean }>();
-
-  viewLogsClicked(): void {
-    this.viewLogs.emit({
-      clicked: true,
-    });
-  }
 }

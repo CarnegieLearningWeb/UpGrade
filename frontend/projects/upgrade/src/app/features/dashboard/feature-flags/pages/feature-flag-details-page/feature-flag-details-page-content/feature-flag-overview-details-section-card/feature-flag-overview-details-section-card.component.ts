@@ -49,15 +49,14 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
     { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT, disabled: false },
     { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DUPLICATE, disabled: false },
     { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN, disabled: false },
-    { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA, disabled: false },
-    { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.ARCHIVE, disabled: false },
+    { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA, disabled: true },
+    { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.ARCHIVE, disabled: true },
     { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DELETE, disabled: false },
   ];
 
   constructor(
     private dialogService: DialogService,
     private featureFlagService: FeatureFlagsService,
-    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -70,11 +69,6 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
 
   get FILTER_MODE() {
     return FILTER_MODE;
-  }
-
-  viewLogsClicked(event) {
-    console.log('viewLogs Clicked');
-    console.log(event);
   }
 
   onSlideToggleChange(event: MatSlideToggleChange, flag: FeatureFlag) {
