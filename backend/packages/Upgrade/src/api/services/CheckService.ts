@@ -1,6 +1,6 @@
 import { GroupEnrollment } from './../models/GroupEnrollment';
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusion } from '../models/GroupExclusion';
@@ -18,7 +18,7 @@ export class CheckService {
     private groupEnrollmentRepository: GroupEnrollmentRepository,
     @InjectRepository()
     private individualEnrollmentRepository: IndividualEnrollmentRepository,
-    @InjectRepository() 
+    @InjectRepository()
     private groupExclusionRepository: GroupExclusionRepository,
     @InjectRepository()
     private individualExclusionRepository: IndividualExclusionRepository,

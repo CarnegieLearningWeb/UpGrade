@@ -2,7 +2,7 @@ import { MonitoredDecisionPoint } from './../models/MonitoredDecisionPoint';
 import { Experiment } from '../models/Experiment';
 import { IndividualExclusionRepository } from './IndividualExclusionRepository';
 import { IndividualEnrollmentRepository } from './IndividualEnrollmentRepository';
-import { EntityRepository, EntityManager, getCustomRepository } from 'typeorm';
+import { Container, EntityRepository } from '../../typeorm-typedi-extensions';
 import { ExperimentRepository } from './ExperimentRepository';
 import { PreviewUser } from '../models/PreviewUser';
 import {
@@ -20,6 +20,7 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
 import { MonitoredDecisionPointRepository } from './MonitoredDecisionPointRepository';
 import { UserStratificationFactorRepository } from './UserStratificationRepository';
 import _ from 'lodash';
+import { Repository } from 'typeorm';
 
 export interface IEnrollmentByCondition {
   conditions_id: string;
@@ -107,12 +108,10 @@ export interface ExperimentCSVData {
   details: ConditionDecisionPointData[];
 }
 
-@EntityRepository()
-export class AnalyticsRepository {
-  constructor(private manager: EntityManager) {}
-
+@EntityRepository(AnalyticsRepository)
+export class AnalyticsRepository extends Repository<AnalyticsRepository> {
   public async getEnrollmentCountPerGroup(experimentId: string): Promise<Array<{ groupId: string; count: number }>> {
-    const individualEnrollmentRepository = this.manager.getCustomRepository(IndividualEnrollmentRepository);
+    const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository);
     return individualEnrollmentRepository
       .createQueryBuilder('individualEnrollment')
       .select([
@@ -126,13 +125,16 @@ export class AnalyticsRepository {
   }
 
   public async getEnrollmentPerPartitionCondition(experimentId: string): Promise<IExperimentEnrollmentDetailStats> {
-    const experimentRepository = this.manager.getCustomRepository(ExperimentRepository);
-    const individualEnrollmentRepository = this.manager.getCustomRepository(IndividualEnrollmentRepository);
-    const individualExclusionRepository = this.manager.getCustomRepository(IndividualExclusionRepository);
-    const groupExclusionRepository = this.manager.getCustomRepository(GroupExclusionRepository);
+    const experimentRepository = Container.getCustomRepository(ExperimentRepository);
+    const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository);
+    const individualExclusionRepository = Container.getCustomRepository(IndividualExclusionRepository);
+    const groupExclusionRepository = Container.getCustomRepository(GroupExclusionRepository);
 
     // find experiment data
-    const experiment = await experimentRepository.findOne(experimentId, { relations: ['partitions', 'conditions'] });
+    const experiment = await experimentRepository.findOne({
+      where: { id: experimentId },
+      relations: ['partitions', 'conditions'],
+    });
 
     if (experiment && experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL) {
       const [includedUser, usersPerCondition, perConditionDecisionPoint, excludedUser]: [
@@ -399,8 +401,8 @@ export class AnalyticsRepository {
     if (!experimentIds.length) {
       return [];
     }
-    const individualEnrollmentRepository = this.manager.getCustomRepository(IndividualEnrollmentRepository);
-    const groupEnrollmentRepository = this.manager.getCustomRepository(GroupEnrollmentRepository);
+    const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository);
+    const groupEnrollmentRepository = Container.getCustomRepository(GroupEnrollmentRepository);
 
     const [individualEnrollmentPerExperiment, groupEnrollmentPerExperiment]: [
       Array<{ id: string; users: string }>,
@@ -447,7 +449,7 @@ export class AnalyticsRepository {
     experimentId: string
   ): Promise<CSVExportDataRow[]> {
     // Get the individual enrollment-related data
-    const individualEnrollmentRepository = getCustomRepository(IndividualEnrollmentRepository, 'export');
+    const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository, 'export');
     const individualEnrollmentQuery = individualEnrollmentRepository
       .createQueryBuilder('individualEnrollment')
       .select([
@@ -465,9 +467,9 @@ export class AnalyticsRepository {
       .addGroupBy('individualEnrollment.conditionId')
       .addGroupBy('individualEnrollment.partitionId')
       .orderBy('individualEnrollment.userId', 'ASC')
-      .where('individualEnrollment.experimentId = :experimentId', { experimentId });
+      .where('individualEnrollment.experimentId = :experimentId::uuid', { experimentId });
 
-    const monitoredDecisionPointRepository = getCustomRepository(MonitoredDecisionPointRepository, 'export');
+    const monitoredDecisionPointRepository = Container.getCustomRepository(MonitoredDecisionPointRepository, 'export');
     const monitoredDecisionPointQuery = monitoredDecisionPointRepository
       .createQueryBuilder('monitoredDecisionPoint')
       .select([
@@ -484,7 +486,7 @@ export class AnalyticsRepository {
           individualEnrollmentRepository
             .createQueryBuilder('individualEnrollment')
             .select('DISTINCT "individualEnrollment"."userId"')
-            .where('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
+            .where('"individualEnrollment"."experimentId" = :experimentId::uuid', { experimentId })
             .getQuery() +
           ')'
       )
@@ -527,7 +529,10 @@ export class AnalyticsRepository {
     let userStratificationFactorQueryResult = [];
     if (experimentsData.stratification) {
       // get users stratification factor values:
-      const userStratificationFactorRepository = getCustomRepository(UserStratificationFactorRepository, 'export');
+      const userStratificationFactorRepository = Container.getCustomRepository(
+        UserStratificationFactorRepository,
+        'export'
+      );
 
       const userStratificationFactorQuery = userStratificationFactorRepository
         .createQueryBuilder('userStratificationFactor')
@@ -565,7 +570,7 @@ export class AnalyticsRepository {
   }
 
   public async getCSVDataForWithInSubExport(experimentId: string): Promise<CSVExportDataRow[]> {
-    const individualEnrollmentRepository = getCustomRepository(IndividualEnrollmentRepository, 'export');
+    const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository, 'export');
     return individualEnrollmentRepository
       .createQueryBuilder('individualEnrollment')
       .select([
@@ -601,7 +606,7 @@ export class AnalyticsRepository {
       .addGroupBy('"individualEnrollment"."groupId"')
       .addGroupBy('"monitoredPointLogs"."condition"')
       .orderBy('"individualEnrollment"."userId"', 'ASC')
-      .where('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
+      .where('"individualEnrollment"."experimentId" = :experimentId::uuid', { experimentId })
       .execute();
   }
 
@@ -610,9 +615,9 @@ export class AnalyticsRepository {
     dateRange: DATE_RANGE,
     clientOffset: number
   ): Promise<[IEnrollmentConditionAndPartitionDate[], IEnrollmentConditionAndPartitionDate[]]> {
-    const experimentRepository = this.manager.getCustomRepository(ExperimentRepository);
-    const individualEnrollmentRepository = this.manager.getCustomRepository(IndividualEnrollmentRepository);
-    const groupEnrollmentRepository = this.manager.getCustomRepository(GroupEnrollmentRepository);
+    const experimentRepository = Container.getCustomRepository(ExperimentRepository);
+    const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository);
+    const groupEnrollmentRepository = Container.getCustomRepository(GroupEnrollmentRepository);
 
     const groupByRange = `date_range`;
     const { whereDate: individualWhereDate, selectRange: individualSelectRange } = this.getDateVariables(
@@ -621,7 +626,7 @@ export class AnalyticsRepository {
       'individualEnrollment'
     );
 
-    const experiment = await experimentRepository.findOne(experimentId);
+    const experiment = await experimentRepository.findOneBy({ id: experimentId });
     let individualEnrollmentConditionAndDecisionPoint: Promise<any>;
     if (experiment && experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
       individualEnrollmentConditionAndDecisionPoint = individualEnrollmentRepository

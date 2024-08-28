@@ -8,13 +8,11 @@ import { ErrorService } from '../../../src/api/services/ErrorService';
 import ErrorServiceMock from './mocks/ErrorServiceMock';
 import AuditServiceMock from './mocks/AuditServiceMock';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-import { useContainer as ormUseContainer } from 'typeorm';
 
 describe('Log Controller Testing', () => {
   beforeAll(() => {
     configureLogger();
     routingUseContainer(Container);
-    ormUseContainer(Container);
     classValidatorUseContainer(Container);
 
     Container.set(AuditService, new AuditServiceMock());
