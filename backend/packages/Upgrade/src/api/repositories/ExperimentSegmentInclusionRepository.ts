@@ -1,4 +1,5 @@
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
@@ -15,7 +16,7 @@ export class ExperimentSegmentInclusionRepository extends Repository<ExperimentS
       .insert()
       .into(ExperimentSegmentInclusion)
       .values(data)
-      .onConflict(`DO NOTHING`)
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

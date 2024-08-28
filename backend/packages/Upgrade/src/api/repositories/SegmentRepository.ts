@@ -1,4 +1,5 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { Segment } from '../models/Segment';
@@ -33,7 +34,7 @@ export class SegmentRepository extends Repository<Segment> {
       .insert()
       .into(Segment)
       .values(data)
-      .onConflict(`("id") DO UPDATE SET "name" = :name, "description" = :description, "context" = :context`)
+      .orUpdate(['name', 'description', 'context'], ['id'])
       .setParameter('name', data.name)
       .setParameter('description', data.description)
       .setParameter('context', data.context)
@@ -52,7 +53,7 @@ export class SegmentRepository extends Repository<Segment> {
       .insert()
       .into(Segment)
       .values(data)
-      .onConflict(`DO NOTHING`)
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

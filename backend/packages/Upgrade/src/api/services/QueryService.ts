@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
@@ -52,7 +52,8 @@ export class QueryService {
   public async analyze(queryIds: string[], logger: UpgradeLogger): Promise<any> {
     logger.info({ message: `Get analysis of query with queryIds ${queryIds}` });
     const promiseArray = queryIds.map((queryId) =>
-      this.queryRepository.findOne(queryId, {
+      this.queryRepository.findOne({
+        where: { id: queryId },
         relations: [
           'metric',
           'experiment',

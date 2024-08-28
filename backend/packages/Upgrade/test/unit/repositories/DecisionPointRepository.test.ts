@@ -1,24 +1,13 @@
-import {
-  Connection,
-  ConnectionManager,
-  DeleteQueryBuilder,
-  EntityManager,
-  InsertQueryBuilder,
-  SelectQueryBuilder,
-} from 'typeorm';
-import * as sinon from 'sinon';
+import { DataSource } from 'typeorm';
 import { DecisionPointRepository } from '../../../src/api/repositories/DecisionPointRepository';
 import { DecisionPoint } from '../../../src/api/models/DecisionPoint';
+import { Container } from '../../../src/typeorm-typedi-extensions';
+import { initializeMocks } from '../mockdata/mockRepo';
 
-let sandbox;
-let connection;
+let mock;
 let manager;
-let createQueryBuilderStub;
-let insertMock, deleteMock, selectMock;
-const insertQueryBuilder = new InsertQueryBuilder<DecisionPointRepository>(null);
-const deleteQueryBuilder = new DeleteQueryBuilder<DecisionPointRepository>(null);
-const selectQueryBuilder = new SelectQueryBuilder<DecisionPointRepository>(null);
-const repo = new DecisionPointRepository();
+let repo: DecisionPointRepository;
+let dataSource: DataSource;
 const err = new Error('test error');
 
 const decisionPoint = new DecisionPoint();
@@ -31,230 +20,204 @@ const result = {
   raw: [decisionPoint],
 };
 
+beforeAll(() => {
+  dataSource = new DataSource({
+    type: 'postgres',
+    database: 'postgres',
+    entities: [DecisionPointRepository],
+    synchronize: true,
+  });
+  Container.setDataSource('default', dataSource);
+});
+
 beforeEach(() => {
-  sandbox = sinon.createSandbox();
+  repo = Container.getCustomRepository(DecisionPointRepository);
+  const commonMockData = initializeMocks(result);
+  repo.createQueryBuilder = commonMockData.createQueryBuilder;
+  mock = commonMockData.mocks;
 
-  const repocallback = sinon.stub();
-  repocallback.returns(DecisionPointRepository.prototype);
-
-  sandbox.stub(ConnectionManager.prototype, 'get').returns({
-    getRepository: repocallback,
-  } as unknown as Connection);
-
-  connection = sinon.createStubInstance(Connection);
-  manager = new EntityManager(connection);
-
-  insertMock = sandbox.mock(insertQueryBuilder);
-  deleteMock = sandbox.mock(deleteQueryBuilder);
-  selectMock = sandbox.mock(selectQueryBuilder);
+  manager = {
+    createQueryBuilder: repo.createQueryBuilder,
+  };
 });
 
 afterEach(() => {
-  sandbox.restore();
+  jest.clearAllMocks();
 });
 
 describe('DecisionPointRepository Testing', () => {
   it('should upsert a new decision point', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-    insertMock.expects('setParameter').exactly(4).returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.upsertDecisionPoint(decisionPoint, manager);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith(decisionPoint);
+    expect(mock.orUpdate).toHaveBeenCalledTimes(1);
+    expect(mock.setParameter).toHaveBeenCalledTimes(4);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(decisionPoint);
   });
 
   it('should throw an error when upsert fails', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-    insertMock.expects('setParameter').exactly(4).returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.upsertDecisionPoint(decisionPoint, manager);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith(decisionPoint);
+    expect(mock.orUpdate).toHaveBeenCalledTimes(1);
+    expect(mock.setParameter).toHaveBeenCalledTimes(4);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should insert new decision points', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.insertDecisionPoint([decisionPoint], manager);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith([decisionPoint]);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([decisionPoint]);
   });
 
   it('should throw an error when insert fails', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.insertDecisionPoint([decisionPoint], manager);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith([decisionPoint]);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should delete decision points', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
-
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.deleteByIds([decisionPoint.id], manager);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    deleteMock.verify();
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([decisionPoint]);
   });
 
   it('should throw an error when delete fails', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
-
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.deleteByIds([decisionPoint.id], manager);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    deleteMock.verify();
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should delete an decision point', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
-
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.resolve(result));
-
     await repo.deleteDecisionPoint(decisionPoint.id, manager);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    deleteMock.verify();
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should throw an error when delete fails', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
-
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.deleteDecisionPoint(decisionPoint.id, manager);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    deleteMock.verify();
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should get all unique decision points', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(DecisionPointRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-
-    selectMock.expects('select').once().returns(selectQueryBuilder);
-    selectMock
-      .expects('getMany')
-      .once()
-      .returns(Promise.resolve([decisionPoint, decisionPoint]));
-
+    mock.getMany.mockResolvedValue([decisionPoint, decisionPoint]);
     const res = await repo.getAllUniqueIdentifier();
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([decisionPoint.twoCharacterId, decisionPoint.twoCharacterId]);
   });
 
   it('should throw an error when get unique decision points fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(DecisionPointRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-
-    selectMock.expects('select').once().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.reject(err));
+    mock.getMany.mockRejectedValue(err);
 
     expect(async () => {
       await repo.getAllUniqueIdentifier();
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
   });
 
   it('should get decision point and name', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(DecisionPointRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-
-    selectMock.expects('select').once().returns(selectQueryBuilder);
-    selectMock
-      .expects('getMany')
-      .once()
-      .returns(Promise.resolve([decisionPoint, decisionPoint]));
-
+    mock.getMany.mockResolvedValue([decisionPoint, decisionPoint]);
     const res = await repo.partitionPointAndName();
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([decisionPoint, decisionPoint]);
   });
 
   it('should throw an error when get decision point and name fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(DecisionPointRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-
-    selectMock.expects('select').once().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.reject(err));
+    mock.getMany.mockRejectedValue(err);
 
     expect(async () => {
       await repo.partitionPointAndName();
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
   });
 });

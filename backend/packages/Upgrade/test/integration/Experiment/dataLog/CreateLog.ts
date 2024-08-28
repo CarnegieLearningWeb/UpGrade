@@ -1,9 +1,7 @@
+import { Container as tteContainer } from './../../../../src/typeorm-typedi-extensions/Container';
 import Container from 'typedi';
-import { getRepository } from 'typeorm';
-import { Metric } from '../../../../src/api/models/Metric';
 import { MetricService, METRICS_JOIN_TEXT } from '../../../../src/api/services/MetricService';
 import { SettingService } from '../../../../src/api/services/SettingService';
-import { Log } from '../../../../src/api/models/Log';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { IMetricMetaData, OPERATION_TYPES } from 'upgrade_types';
@@ -14,17 +12,19 @@ import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
+import { MetricRepository } from '../../../../src/api/repositories/MetricRepository';
+import { LogRepository } from '../../../../src/api/repositories/LogRepository';
 
 export default async function CreateLog(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
-  const metricRepository = getRepository(Metric);
+  const metricRepository = tteContainer.getCustomRepository(MetricRepository);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   const metricService = Container.get<MetricService>(MetricService);
   const settingService = Container.get<SettingService>(SettingService);
   let experimentObject: any = individualAssignmentExperiment;
   const userService = Container.get<UserService>(UserService);
-  const logRepository = getRepository(Log);
+  const logRepository = tteContainer.getCustomRepository(LogRepository);
 
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 

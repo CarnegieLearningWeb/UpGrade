@@ -1,4 +1,4 @@
-import Container from 'typedi';
+import { Container } from 'typedi';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
 import { featureFlag } from '../mockData/featureFlag';

@@ -9,13 +9,11 @@ import { Container } from 'typedi';
 import StratificationServiceMock from './mocks/StratificationServiceMock';
 import { StratificationService } from '../../../src/api/services/StratificationService';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-import { useContainer as ormUseContainer } from 'typeorm';
 
 describe('Stratification Controller Testing', () => {
   beforeAll(() => {
     configureLogger();
     routingUseContainer(Container);
-    ormUseContainer(Container);
     classValidatorUseContainer(Container);
 
     Container.set(StratificationService, new StratificationServiceMock());

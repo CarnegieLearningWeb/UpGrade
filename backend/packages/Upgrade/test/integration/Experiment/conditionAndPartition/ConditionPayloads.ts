@@ -1,17 +1,17 @@
+import { Container as tteContainer } from './../../../../src/typeorm-typedi-extensions';
 import { payloadConditionExperiment } from '../../mockData/experiment/index';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
-import { getManager } from 'typeorm';
 import { ExperimentCondition } from '../../../../src/api/models/ExperimentCondition';
 import { DecisionPoint } from '../../../../src/api/models/DecisionPoint';
 import { PAYLOAD_TYPE } from '../../../../../../../types/src';
 
 export default async function ConditionPayload(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
-  const entityManager = getManager();
+  const entityManager = tteContainer.getDataSource().manager;
 
   // experiment object
   const experimentObject = payloadConditionExperiment;
@@ -93,7 +93,7 @@ export default async function ConditionPayload(): Promise<void> {
     ])
   );
 
-  // delete first conditionpayload
+  // delete first condition payload
   updatedExperimentDoc.conditions.sort((a, b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
   });
@@ -124,7 +124,7 @@ export default async function ConditionPayload(): Promise<void> {
   });
   await entityManager.delete(DecisionPoint, updatedExperimentDoc.partitions[1].id);
 
-  // conditionPayload related to decitionPoint should also gets deleted
+  // conditionPayload related to decisionPoint should also gets deleted
   updatedExperimentDoc = await experimentService.getSingleExperiment(
     updatedExperimentDoc.id as any,
     new UpgradeLogger()

@@ -1,17 +1,14 @@
-import { DeleteQueryBuilder, InsertQueryBuilder, UpdateQueryBuilder } from 'typeorm';
-import * as sinon from 'sinon';
+import { DataSource } from 'typeorm';
 import { UserRepository } from '../../../src/api/repositories/UserRepository';
 import { User } from '../../../src/api/models/User';
 import { UserRole } from 'upgrade_types';
+import { Container } from '../../../src/typeorm-typedi-extensions';
+import { initializeMocks } from '../mockdata/mockRepo';
 
-let sandbox;
-let createQueryBuilderStub;
-let insertMock, deleteMock, updateMock;
-const insertQueryBuilder = new InsertQueryBuilder<UserRepository>(null);
-const deleteQueryBuilder = new DeleteQueryBuilder<UserRepository>(null);
-const updateQueryBuilder = new UpdateQueryBuilder<UserRepository>(null);
+let mock;
+let dataSource: DataSource;
 
-const repo = new UserRepository();
+let repo: UserRepository;
 const err = new Error('test error');
 
 const individual = new User();
@@ -21,77 +18,73 @@ individual.lastName = 'last';
 individual.role = UserRole.ADMIN;
 individual.localTimeZone = 'Asia/Kolkata';
 
-beforeEach(() => {
-  sandbox = sinon.createSandbox();
+const result = {
+  identifiers: [{ id: individual.email }],
+  generatedMaps: [individual],
+  raw: [individual],
+};
 
-  insertMock = sandbox.mock(insertQueryBuilder);
-  deleteMock = sandbox.mock(deleteQueryBuilder);
-  updateMock = sandbox.mock(updateQueryBuilder);
+beforeAll(() => {
+  dataSource = new DataSource({
+    type: 'postgres',
+    database: 'postgres',
+    entities: [UserRepository],
+    synchronize: true,
+  });
+  Container.setDataSource('default', dataSource);
+});
+
+beforeEach(() => {
+  repo = Container.getCustomRepository(UserRepository);
+  const commonMockData = initializeMocks(result);
+  repo.createQueryBuilder = commonMockData.createQueryBuilder;
+  mock = commonMockData.mocks;
 });
 
 afterEach(() => {
-  sandbox.restore();
+  jest.clearAllMocks();
 });
 
 describe('UserRepository Testing', () => {
   it('should upsert a new user', async () => {
-    createQueryBuilderStub = sandbox.stub(UserRepository.prototype, 'createQueryBuilder').returns(insertQueryBuilder);
-    const result = {
-      identifiers: [{ id: individual.email }],
-      generatedMaps: [individual],
-      raw: [individual],
-    };
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('setParameter').exactly(4).returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.upsertUser(individual);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith(individual);
+    expect(mock.orUpdate).toHaveBeenCalledTimes(1);
+    expect(mock.setParameter).toHaveBeenCalledTimes(4);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(individual);
   });
 
   it('should throw an error when upsert fails', async () => {
-    createQueryBuilderStub = sandbox.stub(UserRepository.prototype, 'createQueryBuilder').returns(insertQueryBuilder);
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('setParameter').exactly(4).returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.upsertUser(individual);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith(individual);
+    expect(mock.orUpdate).toHaveBeenCalledTimes(1);
+    expect(mock.setParameter).toHaveBeenCalledTimes(4);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should update user details', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(UserRepository.prototype, 'createQueryBuilder')
-      .withArgs('user')
-      .returns(updateQueryBuilder);
-    const result = {
-      identifiers: [{ id: individual.email }],
-      generatedMaps: [individual],
-      raw: [individual],
-    };
-
-    updateMock.expects('update').once().returns(updateQueryBuilder);
-    updateMock.expects('set').once().returns(updateQueryBuilder);
-    updateMock.expects('where').once().returns(updateQueryBuilder);
-    updateMock.expects('returning').once().returns(updateQueryBuilder);
-    updateMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.updateUserDetails(
       individual.firstName,
       individual.lastName,
@@ -99,68 +92,63 @@ describe('UserRepository Testing', () => {
       individual.role
     );
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    updateMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.update).toHaveBeenCalledTimes(1);
+    expect(mock.set).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([individual]);
   });
 
   it('should throw an error when update user details fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(UserRepository.prototype, 'createQueryBuilder')
-      .withArgs('user')
-      .returns(updateQueryBuilder);
-
-    updateMock.expects('update').once().returns(updateQueryBuilder);
-    updateMock.expects('set').once().returns(updateQueryBuilder);
-    updateMock.expects('where').once().returns(updateQueryBuilder);
-    updateMock.expects('returning').once().returns(updateQueryBuilder);
-    updateMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.updateUserDetails(individual.firstName, individual.lastName, individual.email, individual.role);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    updateMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.update).toHaveBeenCalledTimes(1);
+    expect(mock.set).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should delete a user', async () => {
-    createQueryBuilderStub = sandbox.stub(UserRepository.prototype, 'createQueryBuilder').returns(deleteQueryBuilder);
-    const result = {
-      identifiers: [{ id: individual.email }],
-      generatedMaps: [individual],
-      raw: [individual],
-    };
-
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.deleteUserByEmail(individual.email);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    deleteMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([individual]);
   });
 
   it('should throw an error when delete fails', async () => {
-    createQueryBuilderStub = sandbox.stub(UserRepository.prototype, 'createQueryBuilder').returns(deleteQueryBuilder);
-
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.deleteUserByEmail(individual.email);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    deleteMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 });
