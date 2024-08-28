@@ -15,14 +15,11 @@
     [isEnableToggleChecked]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
     [showPrimaryButton]="true"
     [primaryButtonText]="'feature-flags.details.add-include-list.button.text' | translate"
-    [showMenuButton]="true"
-    [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded && flag.filterMode !== FILTER_MODE.INCLUDE_ALL"
     [primaryActionBtnDisabled]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
     [sectionCardExpandBtnDisabled]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
     (primaryButtonClick)="onAddIncludeListClick(flag.context[0], flag.id)"
     (slideToggleChange)="onSlideToggleChange($event, flag.id)"
-    (menuButtonItemClick)="onMenuButtonItemClick($event)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>

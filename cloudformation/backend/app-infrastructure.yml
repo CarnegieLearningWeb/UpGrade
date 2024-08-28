@@ -117,7 +117,7 @@ Resources:
             - Name: CONTROLLERS
               Value: '{{resolve:ssm:UPGRADE_CONTROLLERS}}'
             - Name: DOMAIN_NAME
-              Value: '{{resolve:ssm:DOMAIN}}'
+              Value: '{{resolve:ssm:UPGRADE_DOMAIN_NAME}}'
             - Name: EMAIL_BUCKET
               Value: '{{resolve:ssm:UPGRADE_EMAIL_BUCKET}}'
             - Name: EMAIL_EXPIRE_AFTER_SECONDS
@@ -182,6 +182,8 @@ Resources:
               Value: '{{resolve:ssm:UPGRADE_CONTEXT_METADATA}}'
             - Name: METRICS
               Value: '{{resolve:ssm:UPGRADE_METRICS}}'
+            - Name: MIDDLEWARES
+              Value: '{{resolve:ssm:UPGRADE_MIDDLEWARES}}'
           Secrets:
             - Name: NEW_RELIC_LICENSE_KEY
               ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/NEW_RELIC_LICENSE_KEY
