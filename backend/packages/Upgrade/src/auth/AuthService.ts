@@ -37,7 +37,10 @@ export class AuthService {
     } catch (error) {
       // If ID token verification fails, try to verify it as an access token
       try {
-        await client.getTokenInfo(token);
+        const tokenInfo = await client.getTokenInfo(token);
+        if (!tokenInfo || tokenInfo.aud !== env.google.serviceAccountId) {
+          throw new Error('Invalid or unauthorized access token');
+        }
         request.logger.info({ message: 'Access Token Validated' });
         // For service account access tokens, we'll return null
         // We might want to implement specific handling for service accounts here

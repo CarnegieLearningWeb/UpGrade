@@ -48,6 +48,7 @@ projectBuilderV5 (
                 API_BASE_URL: '@vault(secret/configs/upgrade/${environment}/API_BASE_URL)',
                 BASE_HREF_PREFIX: '@vault(secret/configs/upgrade/${environment}/BASE_HREF_PREFIX)',
                 GOOGLE_CLIENT_ID: '@vault(secret/configs/upgrade/${environment}/GOOGLE_CLIENT_ID)',
+                SERVICE_ACCOUNT_ID: '@vault(secret/configs/upgrade/${environment}/SERVICE_ACCOUNT_ID)',
             ],
         ]
     ],
