@@ -286,14 +286,14 @@ export class UpsertPrivateSegmentListModalComponent {
       flagId: this.config.params.flagId,
       enabled: this.config.params.sourceList?.enabled || isExcludeList, // Maintain existing status for edits, default to false for new include lists, true for all exclude lists
       listType,
-      list,
+      segment: list,
     };
 
     const addListRequest: AddPrivateSegmentListRequest = listRequest;
     const editRequest: EditPrivateSegmentListRequest = {
       ...listRequest,
-      list: {
-        ...listRequest.list,
+      segment: {
+        ...listRequest.segment,
         id: this.config.params.sourceList?.segment?.id,
       },
     };
