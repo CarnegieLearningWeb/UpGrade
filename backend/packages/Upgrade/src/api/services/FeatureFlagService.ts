@@ -141,6 +141,10 @@ export class FeatureFlagService {
     }
 
     queryBuilder = queryBuilder.offset(skip).limit(take);
+
+    // TODO: the type of queryBuilder.getMany() is Promise<FeatureFlag[]>
+    // However, the above query returns Promise<(Omit<FeatureFlag, 'featureFlagExposures'> & { featureFlagExposures: number })[]>
+    // This can be fixed by using a @VirtualColumn in the FeatureFlag entity, when we are on TypeORM 0.3
     return queryBuilder.getMany();
   }
 
