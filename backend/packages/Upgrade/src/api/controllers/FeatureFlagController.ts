@@ -656,7 +656,7 @@ export class FeatureFlagsController {
 
   /**
    * @swagger
-   * /flags/export:
+   * /flags/export/{id}:
    *    get:
    *      description: Export Feature Flags JSON
    *      tags:
