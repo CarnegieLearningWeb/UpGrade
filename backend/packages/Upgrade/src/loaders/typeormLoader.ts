@@ -64,6 +64,7 @@ import { stratificationFactorFeature1696498128121 } from '../database/migrations
 import { addGroupIdForIndividualExclusion1710484793070 } from '../database/migrations/1710484793070-addGroupIdForIndividualExclusion';
 import { userDefaultRoleReader1713260614311 } from '../database/migrations/1713260614311-userDefaultRoleReader';
 import { revertIndividualExclusionGroupId1715937232092 } from '../database/migrations/1715937232092-revertIndividualExclusionGroupId';
+import { addingIndex1716191003726 } from '../database/migrations/1716191003726-addingIndex';
 import { Typeorm1719738784139 } from '../database/migrations/1719738784139-Typeorm';
 
 const entities = [
@@ -126,6 +127,7 @@ export const migrations = [
   userDefaultRoleReader1713260614311,
   revertIndividualExclusionGroupId1715937232092,
   Typeorm1719738784139,
+  addingIndex1716191003726,
 ];
 
 export const migrationDataSource = new DataSource({
