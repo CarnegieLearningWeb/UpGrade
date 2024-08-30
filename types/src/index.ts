@@ -7,6 +7,8 @@ export {
   EXCLUSION_CODE,
   SERVER_ERROR,
   EXPERIMENT_LOG_TYPE,
+  FEATURE_FLAG_LIST_OPERATION,
+  FEATURE_FLAG_LIST_FILTER_MODE,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
   SORT_AS_DIRECTION,
@@ -66,4 +68,9 @@ export {
   ILogMetrics,
   ILogGroupMetrics,
   IMenuButtonItem,
+  ListOperationsData,
+  FeatureFlagCreatedData,
+  FeatureFlagUpdatedData,
+  FeatureFlagStateChangedData,
+  FeatureFlagDeletedData,
 } from './Experiment/interfaces';
