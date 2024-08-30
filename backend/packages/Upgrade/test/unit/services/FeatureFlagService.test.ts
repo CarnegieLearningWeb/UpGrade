@@ -1,5 +1,5 @@
 import * as sinon from 'sinon';
-import { Connection, ConnectionManager, getRepository } from 'typeorm';
+import { Connection, ConnectionManager } from 'typeorm';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
@@ -58,7 +58,7 @@ describe('Feature Flag Service Testing', () => {
   mockList.enabled = true;
   mockList.flagId = mockFlag1.id;
   mockList.listType = 'individual';
-  mockList.list = {
+  mockList.segment = {
     name: 'name',
     id: uuid(),
     context: 'context',
@@ -363,7 +363,7 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should delete an include list', async () => {
-    const result = await service.deleteList(mockList.list.id, logger);
+    const result = await service.deleteList(mockList.segment.id, logger);
 
     expect(result).toBeTruthy();
   });
