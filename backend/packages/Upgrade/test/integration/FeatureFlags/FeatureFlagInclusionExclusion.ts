@@ -20,7 +20,7 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
     flagId: flag.id,
     listType: 'group',
     enabled: true,
-    list: {
+    segment: {
       name: 'Feature Flag 1 Inclusion Segment',
       description: 'Feature Flag 1 Inclusion Segment',
       context: 'home',
@@ -35,7 +35,7 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
     flagId: flag.id,
     listType: 'individual',
     enabled: true,
-    list: {
+    segment: {
       name: 'Feature Flag 1 Exclusion Segment',
       description: 'Feature Flag 1 Exclusion Segment',
       context: 'home',

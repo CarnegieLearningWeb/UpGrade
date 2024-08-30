@@ -87,7 +87,7 @@ export class FeatureFlagsDataService {
   }
 
   updateInclusionList(list: EditPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
-    const url = `${this.environment.api.addFlagInclusionList}/${list.list.id}`;
+    const url = `${this.environment.api.addFlagInclusionList}/${list.segment.id}`;
     return this.http.put<FeatureFlagSegmentListDetails>(url, list);
   }
 
@@ -102,7 +102,7 @@ export class FeatureFlagsDataService {
   }
 
   updateExclusionList(list: EditPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
-    const url = `${this.environment.api.addFlagExclusionList}/${list.list.id}`;
+    const url = `${this.environment.api.addFlagExclusionList}/${list.segment.id}`;
     return this.http.put<FeatureFlagSegmentListDetails>(url, list);
   }
 

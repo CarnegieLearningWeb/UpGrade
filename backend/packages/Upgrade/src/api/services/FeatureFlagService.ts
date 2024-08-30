@@ -276,8 +276,8 @@ export class FeatureFlagService {
     const executeTransaction = async (manager: EntityManager) => {
       // create a new private segment
       const segmentsToCreate = listsInput.map((listInput) => {
-        listInput.list.type = SEGMENT_TYPE.PRIVATE;
-        return listInput.list;
+        listInput.segment.type = SEGMENT_TYPE.PRIVATE;
+        return listInput.segment;
       });
 
       let newSegments: Segment[];
@@ -303,7 +303,7 @@ export class FeatureFlagService {
         featureFlagSegmentInclusionOrExclusion.listType = listInput.listType;
         featureFlagSegmentInclusionOrExclusion.featureFlag = featureFlags.find((flag) => flag.id === listInput.flagId);
         featureFlagSegmentInclusionOrExclusion.segment = newSegments.find(
-          (segment) => segment.id === listInput.list.id
+          (segment) => segment.id === listInput.segment.id
         );
         return featureFlagSegmentInclusionOrExclusion;
       });
@@ -353,19 +353,19 @@ export class FeatureFlagService {
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
       if (filterType === 'inclusion') {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
-          where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.list.id } },
+          where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.segment.id } },
           relations: ['featureFlag', 'segment'],
         });
       } else {
         existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
-          where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.list.id } },
+          where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.segment.id } },
           relations: ['featureFlag', 'segment'],
         });
       }
 
       if (!existingRecord) {
         throw new Error(
-          `No existing ${filterType} record found for feature flag ${listInput.flagId} and segment ${listInput.list.id}`
+          `No existing ${filterType} record found for feature flag ${listInput.flagId} and segment ${listInput.segment.id}`
         );
       }
 
@@ -376,7 +376,7 @@ export class FeatureFlagService {
       // Update the segment
       try {
         const updatedSegment = await this.segmentService.upsertSegmentInPipeline(
-          listInput.list,
+          listInput.segment,
           logger,
           transactionalEntityManager
         );
@@ -517,13 +517,13 @@ export class FeatureFlagService {
         );
 
         const featureFlagSegmentInclusionList = featureFlag.featureFlagSegmentInclusion.map((segmentInclusionList) => {
-          segmentInclusionList.list.id = uuid();
+          segmentInclusionList.segment.id = uuid();
           segmentInclusionList.flagId = newFlag.id;
           return segmentInclusionList;
         });
 
         const featureFlagSegmentExclusionList = featureFlag.featureFlagSegmentExclusion.map((segmentExclusionList) => {
-          segmentExclusionList.list.id = uuid();
+          segmentExclusionList.segment.id = uuid();
           segmentExclusionList.flagId = newFlag.id;
           return segmentExclusionList;
         });
@@ -610,10 +610,10 @@ export class FeatureFlagService {
       } else {
         const segmentIds = [
           ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
-            return segmentInclusion.list.subSegmentIds;
+            return segmentInclusion.segment.subSegmentIds;
           }),
           ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) => {
-            return segmentExclusion.list.subSegmentIds;
+            return segmentExclusion.segment.subSegmentIds;
           }),
         ];
 

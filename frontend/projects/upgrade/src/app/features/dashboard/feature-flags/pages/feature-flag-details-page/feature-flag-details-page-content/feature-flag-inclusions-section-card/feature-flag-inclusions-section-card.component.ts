@@ -169,7 +169,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
       flagId,
       enabled,
       listType,
-      list,
+      segment: list,
     };
 
     this.sendUpdateFeatureFlagInclusionRequest(listRequest);

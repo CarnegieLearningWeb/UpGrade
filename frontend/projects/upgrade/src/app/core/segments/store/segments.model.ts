@@ -196,13 +196,13 @@ export interface PrivateSegmentListRequest {
   flagId: string;
   enabled: boolean;
   listType: string;
-  list: AddPrivateSegmentListRequestDetails | EditPrivateSegmentListDetails;
+  segment: AddPrivateSegmentListRequestDetails | EditPrivateSegmentListDetails;
 }
 
 export interface AddPrivateSegmentListRequest extends PrivateSegmentListRequest {
-  list: AddPrivateSegmentListRequestDetails;
+  segment: AddPrivateSegmentListRequestDetails;
 }
 
 export interface EditPrivateSegmentListRequest extends PrivateSegmentListRequest {
-  list: EditPrivateSegmentListDetails;
+  segment: EditPrivateSegmentListDetails;
 }
