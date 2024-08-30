@@ -122,7 +122,7 @@ export class StratificationController {
 
     // return csv file with appropriate headers to request;
     res.setHeader('Content-Type', 'text/csv; charset=UTF-8');
-    res.setHeader('Content-Disposition', `attachment; filename=data-${factor}.csv`);
+    res.setHeader('Content-Disposition', `attachment; filename="${factor}.csv"`);
     return res.send(csvData);
   }
 
