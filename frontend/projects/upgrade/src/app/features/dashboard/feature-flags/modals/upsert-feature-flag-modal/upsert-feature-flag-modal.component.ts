@@ -195,7 +195,7 @@ export class UpsertFeatureFlagModalComponent {
 
   createEditRequest(
     { name, key, description, appContext, tags }: FeatureFlagFormData,
-    { id, status, filterMode, featureFlagSegmentInclusion, featureFlagSegmentExclusion }: FeatureFlag
+    { id, status, filterMode }: FeatureFlag
   ): void {
     const flagRequest: UpdateFeatureFlagRequest = {
       id,
@@ -206,8 +206,8 @@ export class UpsertFeatureFlagModalComponent {
       tags,
       status,
       filterMode,
-      featureFlagSegmentInclusion,
-      featureFlagSegmentExclusion,
+      featureFlagSegmentInclusion: [],
+      featureFlagSegmentExclusion: [],
     };
 
     this.featureFlagsService.updateFeatureFlag(flagRequest);
