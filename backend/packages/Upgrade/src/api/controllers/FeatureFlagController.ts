@@ -8,7 +8,7 @@ import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFi
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { SERVER_ERROR } from 'upgrade_types';
-import { FeatureFlagValidation, IdValidator, UserParamsValidator } from './validators/FeatureFlagValidator';
+import { FeatureFlagValidation, IdValidator } from './validators/FeatureFlagValidator';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
 import { Segment } from 'src/api/models/Segment';
@@ -138,23 +138,6 @@ export class FeatureFlagsController {
   @Get()
   public find(@Req() request: AppRequest): Promise<FeatureFlag[]> {
     return this.featureFlagService.find(request.logger);
-  }
-
-  @Post('/keys')
-  public async getKeys(
-    @Body({ validate: true })
-    userParams: UserParamsValidator,
-    @Req() request: AppRequest
-  ): Promise<string[]> {
-    const experimentUserDoc = await this.experimentUserService.getUserDoc(userParams.userId, request.logger);
-    if (!experimentUserDoc) {
-      const error = new Error(`User not defined in markExperimentPoint: ${userParams.userId}`);
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404;
-      request.logger.error(error);
-      throw error;
-    }
-    return this.featureFlagService.getKeys(experimentUserDoc, userParams.context, request.logger);
   }
 
   /**
