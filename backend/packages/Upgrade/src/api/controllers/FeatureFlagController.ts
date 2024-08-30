@@ -1,4 +1,4 @@
-import { JsonController, Authorized, Post, Body, Delete, Put, Req, Get, Params, Patch } from 'routing-controllers';
+import { JsonController, Authorized, Post, Body, Delete, Put, Req, Get, Params, Patch, Res } from 'routing-controllers';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
@@ -12,6 +12,7 @@ import { FeatureFlagValidation, IdValidator } from './validators/FeatureFlagVali
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
 import { Segment } from 'src/api/models/Segment';
+import { Response } from 'express';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -634,5 +635,45 @@ export class FeatureFlagsController {
     @Req() request: AppRequest
   ): Promise<Segment> {
     return this.featureFlagService.deleteList(id, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/export/{id}:
+   *    get:
+   *      description: Export Feature Flags JSON
+   *      tags:
+   *        - Feature Flags
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: path
+   *          flagId: Id
+   *          description: Feature Flag Id
+   *          required: true
+   *          schema:
+   *            type: string
+   *      responses:
+   *        '200':
+   *          description: Get Feature Flag JSON
+   *        '401':
+   *          description: Authorization Required Error
+   *        '404':
+   *          description: Feature Flag Id not found
+   *        '500':
+   *          description: Internal Server Error
+   */
+  @Get('/export/:id')
+  public async exportFeatureFlag(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest,
+    @Res() response: Response
+  ): Promise<Response> {
+    const featureFlag = await this.featureFlagService.findOne(id, request.logger);
+    // download JSON file with appropriate headers to response body;
+    response.setHeader('Content-Disposition', `attachment; filename="${featureFlag.name}.json"`);
+    response.setHeader('Content-Type', 'application/json');
+    const plainFeatureFlag = JSON.stringify(featureFlag, null, 2); // Convert to JSON string
+    return response.send(plainFeatureFlag);
   }
 }
