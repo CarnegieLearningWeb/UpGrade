@@ -1867,21 +1867,22 @@ export class ExperimentAssignmentService {
           }
         }
       } else {
-        if (explicitIndividualInclusionFilteredData.some((x) => x.id === modal.id)) {
-          userIncludedModals.push(modal.id);
-        } else if (explicitIndividualExclusionFilteredData.some((x) => x.id === modal.id)) {
+        if (explicitIndividualExclusionFilteredData.some((x) => x.id === modal.id)) {
           userExcludedModals.push({ id: modal.id, reason: 'filterMode' });
+        } else if (explicitIndividualInclusionFilteredData.some((x) => x.id === modal.id)) {
+          userIncludedModals.push(modal.id);
         } else {
+          console.log('ELSE', userGroups);
           for (const userGroup of userGroups) {
             if (
-              explicitGroupInclusionFilteredData.some(
+              explicitGroupExclusionFilteredData.some(
                 (x) => x.groupId === userGroup.groupId && x.type === userGroup.type && x.id === modal.id
               )
             ) {
               exclusionFlag = true;
             }
           }
-          if (!exclusionFlag) {
+          if (exclusionFlag) {
             userExcludedModals.push({ id: modal.id, reason: 'filterMode' });
           } else {
             userIncludedModals.push(modal.id);
