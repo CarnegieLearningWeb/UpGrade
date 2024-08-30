@@ -4,7 +4,7 @@
     class="flag-list-table"
     mat-table
     [dataSource]="dataSource$"
-    [ngClass]="{'no-data': !dataSource$?.data?.length}"
+    [ngClass]="{ 'no-data': !dataSource$?.data?.length }"
     matSort
     (matSortChange)="changeSorting($event)"
     [matSortActive]="flagSortKey$ | async"
@@ -82,7 +82,7 @@
         {{ FLAG_TRANSLATION_KEYS.EXPOSURES | translate }}
       </th>
       <td mat-cell *matCellDef="let flag" class="exposures-column ft-14-400">
-        <span *ngFor="let exposure of flag.exposures" class="exposure">{{ exposure }}</span>
+        <span class="exposure">{{ flag.featureFlagExposures }}</span>
       </td>
     </ng-container>
 
