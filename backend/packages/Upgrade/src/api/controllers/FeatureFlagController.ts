@@ -7,15 +7,13 @@ import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatus
 import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFilterModeUpdateValidator';
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
-import { EXPERIMENT_LOG_TYPE, FEATURE_FLAG_LIST_FILTER_MODE, FeatureFlagDeletedData, SERVER_ERROR } from 'upgrade_types';
+import { FEATURE_FLAG_LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
 import { FeatureFlagValidation, IdValidator, UserParamsValidator } from './validators/FeatureFlagValidator';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
 import { Segment } from 'src/api/models/Segment';
 import { Response } from 'express';
 import { User } from '../models/User';
-import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
-import { InjectRepository } from 'typeorm-typedi-extensions';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -116,7 +114,7 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/flags')
 export class FeatureFlagsController {
-  constructor(@InjectRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository, public featureFlagService: FeatureFlagService, public experimentUserService: ExperimentUserService) {}
+  constructor(public featureFlagService: FeatureFlagService, public experimentUserService: ExperimentUserService) {}
 
   /**
    * @swagger
@@ -706,15 +704,8 @@ export class FeatureFlagsController {
     response.setHeader('Content-Disposition', `attachment; filename="${featureFlag.name}.json"`);
     response.setHeader('Content-Type', 'application/json');
     const plainFeatureFlag = JSON.stringify(featureFlag, null, 2); // Convert to JSON string
-    const exportAuditLog: FeatureFlagDeletedData = {
-      flagName: featureFlag.name,
-    };
 
-    await this.experimentAuditLogRepository.saveRawJson(
-      EXPERIMENT_LOG_TYPE.FEATURE_FLAG_DESIGN_EXPORTED,
-      exportAuditLog,
-      currentUser,
-    );
+    this.featureFlagService.exportDesignLog(featureFlag.name, currentUser)
     return response.send(plainFeatureFlag);
   }
 }

@@ -239,6 +239,18 @@ export class FeatureFlagService {
     return updatedFilterMode;
   }
 
+  public async exportDesignLog(flagName, currentUser) {
+    const exportAuditLog: FeatureFlagDeletedData = {
+      flagName: flagName,
+    };
+
+    return await this.experimentAuditLogRepository.saveRawJson(
+      EXPERIMENT_LOG_TYPE.FEATURE_FLAG_DESIGN_EXPORTED,
+      exportAuditLog,
+      currentUser,
+    );
+  }
+
   public update(flagDTO: FeatureFlagValidation, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag> {
     logger.info({ message: `Update a Feature Flag => ${flagDTO.toString()}` });
     // TODO add entry in log of updating feature flag
