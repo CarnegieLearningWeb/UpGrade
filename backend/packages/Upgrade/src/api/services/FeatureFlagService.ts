@@ -1,13 +1,14 @@
 import { Service } from 'typedi';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { Segment } from '../models/Segment';
+import { FeatureFlagExposure } from '../models/FeatureFlagExposure';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
 import { InjectRepository } from 'typeorm-typedi-extensions';
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
-import { getConnection } from 'typeorm';
+import { getConnection, getRepository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import {
   IFeatureFlagSearchParams,
@@ -81,6 +82,22 @@ export class FeatureFlagService {
 
     const includedFeatureFlags = await this.featureFlagLevelInclusionExclusion(filteredFeatureFlags, experimentUserDoc);
 
+    // save exposures in db
+    try {
+      const exposureRepo = getRepository(FeatureFlagExposure);
+      const exposuresToSave = includedFeatureFlags.map((flag) => ({
+        featureFlag: flag,
+        experimentUser: experimentUserDoc,
+      }));
+      if (exposuresToSave.length > 0) {
+        await exposureRepo.save(exposuresToSave);
+      }
+    } catch (err) {
+      const error = new Error(`Error in saving feature flag exposure records ${err}`);
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(error);
+    }
+
     return includedFeatureFlags.map((flags) => flags.key);
   }
 
@@ -124,7 +141,9 @@ export class FeatureFlagService {
   ): Promise<FeatureFlag[]> {
     logger.info({ message: 'Find paginated Feature flags' });
 
-    let queryBuilder = this.featureFlagRepository.createQueryBuilder('feature_flag');
+    let queryBuilder = this.featureFlagRepository
+      .createQueryBuilder('feature_flag')
+      .loadRelationCountAndMap('feature_flag.featureFlagExposures', 'feature_flag.featureFlagExposures');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
       // add search query
@@ -139,6 +158,10 @@ export class FeatureFlagService {
     }
 
     queryBuilder = queryBuilder.offset(skip).limit(take);
+
+    // TODO: the type of queryBuilder.getMany() is Promise<FeatureFlag[]>
+    // However, the above query returns Promise<(Omit<FeatureFlag, 'featureFlagExposures'> & { featureFlagExposures: number })[]>
+    // This can be fixed by using a @VirtualColumn in the FeatureFlag entity, when we are on TypeORM 0.3
     return queryBuilder.getMany();
   }
 

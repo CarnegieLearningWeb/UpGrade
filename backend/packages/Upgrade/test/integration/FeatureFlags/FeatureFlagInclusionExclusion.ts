@@ -100,4 +100,8 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
   );
 
   expect(keysAssign.length).toEqual(0);
+
+  // Check the number of exposures
+  const paginatedFind = await featureFlagService.findPaginated(0, 5, new UpgradeLogger());
+  expect(paginatedFind[0].featureFlagExposures).toEqual(2);
 }
