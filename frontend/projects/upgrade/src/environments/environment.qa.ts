@@ -1,22 +1,17 @@
-// The file contents for the current environment will overwrite these during build.
-// The build system defaults to the dev environment which uses 'environment.ts', but if you do
-// `ng build --env=prod` then `environment.prod.ts` will be used instead.
-// The list of which env maps to which file can be found in `.angular-cli.json`.
-
 export const environment = {
   appName: 'UpGrade',
-  envName: 'DEV',
-  apiBaseUrl: 'http://localhost:3030/api',
-  production: false,
+  envName: 'qa',
+  apiBaseUrl: '%API_BASE_URL%',
+  production: true,
   test: false,
-  baseHrefPrefix: '',
-  googleClientId: '135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com',
+  baseHrefPrefix: '%BASE_HREF_PREFIX%',
+  googleClientId: '%GOOGLE_CLIENT_ID%',
   domainName: '',
   pollingEnabled: true,
   pollingInterval: 10 * 1000,
   pollingLimit: 600,
   featureFlagNavToggle: true,
-  withinSubjectExperimentSupportToggle: false,
+  withinSubjectExperimentSupportToggle: true,
   errorLogsToggle: false,
   metricAnalyticsExperimentDisplayToggle: false,
   api: {
@@ -50,10 +45,8 @@ export const environment = {
     updateFlagStatus: '/flags/status',
     updateFilterMode: '/flags/filterMode',
     getPaginatedFlags: '/flags/paginated',
-    validateFeatureFlag: '/flags/import/validation',
-    importFeatureFlag: '/flags/import',
     exportFlagsDesign: '/flags/export',
-    emailFlagData: '/flags/email',
+    emailFlagData: '/flags/mail',
     addFlagInclusionList: '/flags/inclusionList',
     addFlagExclusionList: '/flags/exclusionList',
     setting: '/setting',
@@ -66,6 +59,7 @@ export const environment = {
     validateSegments: '/segments/validation',
     importSegments: '/segments/import',
     exportSegments: '/segments/export/json',
+    exportSegment: '/segments/export',
     exportSegmentCSV: '/segments/export/csv',
     getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
   },

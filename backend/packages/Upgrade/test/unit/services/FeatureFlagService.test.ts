@@ -91,9 +91,11 @@ describe('Feature Flag Service Testing', () => {
     getRepository: jest.fn().mockReturnThis(),
     findByIds: jest.fn().mockResolvedValue([mockFlag1]),
   };
+  const exposureRepoMock = { save: jest.fn() };
   const sandbox = sinon.createSandbox();
   sandbox.stub(ConnectionManager.prototype, 'get').returns({
     transaction: jest.fn(async (passedFunction) => await passedFunction(entityManagerMock)),
+    getRepository: () => exposureRepoMock,
   } as unknown as Connection);
 
   beforeEach(async () => {
@@ -143,6 +145,7 @@ describe('Feature Flag Service Testing', () => {
               limit: limitSpy,
               innerJoinAndSelect: jest.fn().mockReturnThis(),
               leftJoinAndSelect: jest.fn().mockReturnThis(),
+              loadRelationCountAndMap: jest.fn().mockReturnThis(),
               getMany: jest.fn().mockResolvedValue(mockFlagArr),
               getOne: jest.fn().mockResolvedValue(mockFlag1),
             })),
@@ -354,6 +357,7 @@ describe('Feature Flag Service Testing', () => {
 
     expect(result.length).toEqual(1);
     expect(result).toEqual([mockFlag1.key]);
+    expect(exposureRepoMock.save).toHaveBeenCalledTimes(1);
   });
 
   it('should add an include list', async () => {

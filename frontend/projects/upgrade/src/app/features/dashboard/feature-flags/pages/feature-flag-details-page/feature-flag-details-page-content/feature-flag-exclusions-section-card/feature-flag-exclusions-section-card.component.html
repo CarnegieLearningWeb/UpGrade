@@ -12,11 +12,8 @@
     header-right
     [showPrimaryButton]="true"
     [primaryButtonText]="'feature-flags.details.add-exclude-list.button.text' | translate"
-    [showMenuButton]="true"
-    [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddExcludeListClick(flag.context[0], flag.id)"
-    (menuButtonItemClick)="onMenuButtonItemClick($event)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>

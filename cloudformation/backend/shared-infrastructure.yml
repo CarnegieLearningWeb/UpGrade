@@ -1,0 +1,210 @@
+# This template is manually deployed to three environments:
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: Upgrade Service Shared Infrastructure
+Parameters:
+  appName:
+    Description: Name of the application (used for naming resources)
+    Type: String
+    Default: upgrade-service
+  environment:
+    Description: Name of the environment being deployed to.
+    Type: String
+    Default: qa
+    AllowedValues:
+      - qa
+      - staging
+      - prod
+  servicePort:
+    Description: Port that the application is listening on in the container
+    Type: String
+    Default: 3030
+  sharedCertificatesPrefix:
+    Description: Prefix for the CloudFormation stack that contains shared SSL certificates
+    Type: String
+    Default: shared-certificates-infrastructure
+  sharedLoggingPrefix:
+    Description: Prefix for the CloudFormation stack that contains S3 logging buckets
+    Type: String
+    Default: shared-logging-infrastructure
+  sharedNetworkingPrefix:
+    Description: Prefix for the CloudFormation stack that contains shared networking resources
+    Type: String
+    Default: shared-networking-infrastructure
+Conditions:
+  IsProd: !Equals
+    - !Ref environment
+    - prod
+Resources:
+  ecsServiceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${appName}-${environment}-sg
+      GroupDescription: !Sub Security group for ${appName} ECS containers and ALB
+      VpcId:
+        Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-vpcid
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref servicePort
+          ToPort: !Ref servicePort
+          SourceSecurityGroupId: !Ref albSecurityGroup
+  albSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${appName}-${environment}-alb-sg
+      GroupDescription: !Sub Security group for green/blue load balancers for ${appName}
+      VpcId:
+        Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-vpcid
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+  albGreen:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub ${appName}-alb-green
+      IpAddressType: ipv4
+      LoadBalancerAttributes:
+        - Key: access_logs.s3.enabled
+          Value: 'true'
+        - Key: access_logs.s3.bucket
+          Value: !ImportValue
+            Fn::Sub: ${sharedLoggingPrefix}-${environment}-s3LogBucketName
+        - Key: access_logs.s3.prefix
+          Value: !Sub ${appName}-alb
+      Subnets:
+        - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-publicsubnet1
+        - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-publicsubnet2
+        - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-publicsubnet3
+      SecurityGroups:
+        - !Ref albSecurityGroup
+  albListenerGreen:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      Certificates:
+        - CertificateArn:
+            Fn::ImportValue: !Sub ${sharedCertificatesPrefix}-${environment}-microservicesCertificateArn
+      DefaultActions:
+        - FixedResponseConfig:
+            ContentType: text/plain
+            MessageBody: Route Not found
+            StatusCode: 404
+          Order: 500
+          Type: fixed-response
+      LoadBalancerArn: !Ref albGreen
+      Port: 443
+      Protocol: HTTPS
+  albListenerCertificatesGreen:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Properties:
+      Certificates:
+        - CertificateArn:
+            Fn::ImportValue: !Sub ${sharedCertificatesPrefix}-${environment}-certificateArn
+      ListenerArn: !Ref albListenerGreen
+  albBlue:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub ${appName}-alb-blue
+      IpAddressType: ipv4
+      LoadBalancerAttributes:
+        - Key: access_logs.s3.enabled
+          Value: 'true'
+        - Key: access_logs.s3.bucket
+          Value:
+            Fn::ImportValue: !Sub ${sharedLoggingPrefix}-${environment}-s3LogBucketName
+        - Key: access_logs.s3.prefix
+          Value: !Sub ${appName}-alb
+      Subnets:
+        - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-publicsubnet1
+        - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-publicsubnet2
+        - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-publicsubnet3
+      SecurityGroups:
+        - !Ref albSecurityGroup
+  albListenerBlue:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      Certificates:
+        - CertificateArn:
+            Fn::ImportValue: !Sub ${sharedCertificatesPrefix}-${environment}-microservicesCertificateArn
+      DefaultActions:
+        - FixedResponseConfig:
+            ContentType: text/plain
+            MessageBody: Route Not found
+            StatusCode: 404
+          Order: 500
+          Type: fixed-response
+      LoadBalancerArn: !Ref albBlue
+      Port: 443
+      Protocol: HTTPS
+  albListenerCertificatesBlue:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Properties:
+      Certificates:
+        - CertificateArn:
+            Fn::ImportValue: !Sub ${sharedCertificatesPrefix}-${environment}-certificateArn
+      ListenerArn: !Ref albListenerBlue
+  # Production gets one non-spot task for every 10 spot tasks
+  # QA/Staging are all spot
+  ecsCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub ${appName}-${environment}
+      CapacityProviders:
+        - FARGATE
+        - FARGATE_SPOT
+      DefaultCapacityProviderStrategy:
+        - !If
+          - IsProd
+          - CapacityProvider: FARGATE
+            Base: 1
+            Weight: 1
+          - !Ref AWS::NoValue
+        - CapacityProvider: FARGATE_SPOT
+          Weight: !If [IsProd, 10, 1]
+Outputs:
+  ecsSecurityGroupName:
+    Description: Security group name for ECS tasks
+    Value: !Ref ecsServiceSecurityGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-ecsSecurityGroupName
+  ecsClusterName:
+    Description: Name of the ECS cluster
+    Value: !Ref ecsCluster
+    Export:
+      Name: !Sub ${AWS::StackName}-ecsClusterName
+  servicePort:
+    Description: Port that the application is listening on in the container
+    Value: !Ref servicePort
+    Export:
+      Name: !Sub ${AWS::StackName}-servicePort
+  albListenerArnBlue:
+    Description: Blue Application Load Balancer Listener Arn
+    Value: !Ref albListenerBlue
+    Export:
+      Name: !Sub ${AWS::StackName}-albListenerArn-blue
+  albListenerArnGreen:
+    Description: Green Application Load Balancer Listener Arn
+    Value: !Ref albListenerGreen
+    Export:
+      Name: !Sub ${AWS::StackName}-albListenerArn-green
+  albDnsBlue:
+    Description: Blue Application Load Balancer DNS name
+    Value: !GetAtt albBlue.DNSName
+    Export:
+      Name: !Sub ${AWS::StackName}-albDns-blue
+  albDnsGreen:
+    Description: Green Application Load Balancer DNS name
+    Value: !GetAtt albGreen.DNSName
+    Export:
+      Name: !Sub ${AWS::StackName}-albDns-green
+  albHostedZoneBlue:
+    Description: The ID of the hosted zone associated with the blue load balancer.
+    Value: !GetAtt albBlue.CanonicalHostedZoneID
+    Export:
+      Name: !Sub ${AWS::StackName}-albHostedZone-blue
+  albHostedZoneGreen:
+    Description: The ID of the hosted zone associated with the green load balancer.
+    Value: !GetAtt albGreen.CanonicalHostedZoneID
+    Export:
+      Name: !Sub ${AWS::StackName}-albHostedZone-green
