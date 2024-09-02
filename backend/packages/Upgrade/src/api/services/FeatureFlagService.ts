@@ -34,6 +34,7 @@ import { ErrorWithType } from '../errors/ErrorWithType';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
+import { FeatureFlagImportDataValidation } from '../controllers/validators/FeatureFlagImportValidator';
 
 @Service()
 export class FeatureFlagService {
@@ -433,7 +434,7 @@ export class FeatureFlagService {
     return searchStringConcatenated;
   }
 
-  private featureFlagValidatorToFlag(flagDTO: FeatureFlagValidation) {
+  private featureFlagValidatorToFlag(flagDTO: FeatureFlagValidation | FeatureFlagImportDataValidation) {
     const featureFlag = new FeatureFlag();
     featureFlag.name = flagDTO.name;
     featureFlag.description = flagDTO.description;
@@ -499,7 +500,7 @@ export class FeatureFlagService {
       };
     });
 
-    const validFiles: FeatureFlagValidation[] = fileStatusArray
+    const validFiles: FeatureFlagImportDataValidation[] = fileStatusArray
       .filter((fileStatus) => fileStatus.error === null)
       .map((fileStatus) => {
         const featureFlagFile = featureFlagFiles.find((file) => file.fileName === fileStatus.fileName);
@@ -518,14 +519,42 @@ export class FeatureFlagService {
 
         const featureFlagSegmentInclusionList = featureFlag.featureFlagSegmentInclusion.map((segmentInclusionList) => {
           segmentInclusionList.segment.id = uuid();
-          segmentInclusionList.flagId = newFlag.id;
-          return segmentInclusionList;
+
+          const userIds = segmentInclusionList.segment.individualForSegment.map((individual) =>
+            individual.userId ? individual.userId : null
+          );
+          const subSegmentIds = segmentInclusionList.segment.subSegments.map((subSegment) =>
+            subSegment.id ? subSegment.id : null
+          );
+          const groups = segmentInclusionList.segment.groupForSegment.map((group) => {
+            return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
+          });
+
+          return {
+            ...segmentInclusionList,
+            flagId: newFlag.id,
+            segment: { ...segmentInclusionList.segment, userIds, subSegmentIds, groups },
+          };
         });
 
         const featureFlagSegmentExclusionList = featureFlag.featureFlagSegmentExclusion.map((segmentExclusionList) => {
           segmentExclusionList.segment.id = uuid();
-          segmentExclusionList.flagId = newFlag.id;
-          return segmentExclusionList;
+
+          const userIds = segmentExclusionList.segment.individualForSegment.map((individual) =>
+            individual.userId ? individual.userId : null
+          );
+          const subSegmentIds = segmentExclusionList.segment.subSegments.map((subSegment) =>
+            subSegment.id ? subSegment.id : null
+          );
+          const groups = segmentExclusionList.segment.groupForSegment.map((group) => {
+            return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
+          });
+
+          return {
+            ...segmentExclusionList,
+            flagId: newFlag.id,
+            segment: { ...segmentExclusionList.segment, userIds, subSegmentIds, groups },
+          };
         });
 
         const [inclusionDoc, exclusionDoc] = await Promise.all([
@@ -560,7 +589,7 @@ export class FeatureFlagService {
 
     const validationErrors = await Promise.allSettled(
       featureFlagFiles.map(async (featureFlagFile) => {
-        let featureFlag: FeatureFlagValidation;
+        let featureFlag: FeatureFlagImportDataValidation;
         try {
           featureFlag = JSON.parse(featureFlagFile.fileContent as string);
         } catch (parseError) {
@@ -590,12 +619,12 @@ export class FeatureFlagService {
 
   private async validateImportFeatureFlag(
     fileName: string,
-    flag: FeatureFlagValidation,
+    flag: FeatureFlagImportDataValidation,
     existingFeatureFlags: FeatureFlag[]
   ) {
     let compatibilityType = FF_COMPATIBILITY_TYPE.COMPATIBLE;
 
-    flag = plainToClass(FeatureFlagValidation, flag);
+    flag = plainToClass(FeatureFlagImportDataValidation, flag);
     await validate(flag).then((errors) => {
       if (errors.length > 0) {
         compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
@@ -610,10 +639,10 @@ export class FeatureFlagService {
       } else {
         const segmentIds = [
           ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
-            return segmentInclusion.segment.subSegmentIds;
+            return segmentInclusion.segment.subSegments.map((subSegment) => subSegment.id);
           }),
           ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) => {
-            return segmentExclusion.segment.subSegmentIds;
+            return segmentExclusion.segment.subSegments.map((subSegment) => subSegment.id);
           }),
         ];
 
