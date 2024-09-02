@@ -52,8 +52,18 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
     },
   };
 
-  await featureFlagService.addList(featureFlagSegmentExclusion, FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, user, new UpgradeLogger());
-  await featureFlagService.addList(featureFlagSegmentInclusion, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, user, new UpgradeLogger());
+  await featureFlagService.addList(
+    featureFlagSegmentExclusion,
+    FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+    user,
+    new UpgradeLogger()
+  );
+  await featureFlagService.addList(
+    featureFlagSegmentInclusion,
+    FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+    user,
+    new UpgradeLogger()
+  );
 
   const featureFlags = await featureFlagService.find(new UpgradeLogger());
 

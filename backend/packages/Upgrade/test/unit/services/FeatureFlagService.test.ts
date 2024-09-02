@@ -11,7 +11,13 @@ import {
   FLAG_SEARCH_KEY,
   FLAG_SORT_KEY,
 } from '../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
-import { FEATURE_FLAG_LIST_FILTER_MODE, FEATURE_FLAG_STATUS, FILTER_MODE, SEGMENT_TYPE, SORT_AS_DIRECTION } from 'upgrade_types';
+import {
+  FEATURE_FLAG_LIST_FILTER_MODE,
+  FEATURE_FLAG_STATUS,
+  FILTER_MODE,
+  SEGMENT_TYPE,
+  SORT_AS_DIRECTION,
+} from 'upgrade_types';
 import { isUUID } from 'class-validator';
 import { v4 as uuid } from 'uuid';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
@@ -381,7 +387,12 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should delete an include list', async () => {
-    const result = await service.deleteList(mockList.list.id, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
+    const result = await service.deleteList(
+      mockList.list.id,
+      FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+      mockUser1,
+      logger
+    );
 
     expect(result).toBeTruthy();
   });

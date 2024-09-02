@@ -28,7 +28,7 @@ import {
   FeatureFlagUpdatedData,
   FEATURE_FLAG_LIST_FILTER_MODE,
   FEATURE_FLAG_LIST_OPERATION,
-  ListOperationsData
+  ListOperationsData,
 } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
@@ -165,7 +165,11 @@ export class FeatureFlagService {
     return queryBuilder.getMany();
   }
 
-  public async delete(featureFlagId: string, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag | undefined> {
+  public async delete(
+    featureFlagId: string,
+    currentUser: User,
+    logger: UpgradeLogger
+  ): Promise<FeatureFlag | undefined> {
     logger.info({ message: `Delete Feature Flag => ${featureFlagId}` });
     return getConnection().transaction(async (transactionalEntityManager) => {
       const featureFlag = await this.findOne(featureFlagId, logger);
@@ -222,7 +226,7 @@ export class FeatureFlagService {
     }
 
     // TODO: Add log for updating flag state
-    let data: FeatureFlagStateChangedData = {
+    const data: FeatureFlagStateChangedData = {
       flagId,
       flagName: oldFeatureFlag.name,
       previousState: oldFeatureFlag.status,
@@ -248,17 +252,13 @@ export class FeatureFlagService {
     }
 
     // TODO: Add log for updating filter mode
-    let data: FeatureFlagUpdatedData = {
+    const data: FeatureFlagUpdatedData = {
       flagId,
       flagName: updatedFilterMode.name,
       filterMode: filterMode,
     };
 
-    await this.experimentAuditLogRepository.saveRawJson(
-      EXPERIMENT_LOG_TYPE.FEATURE_FLAG_UPDATED,
-      data,
-      currentUser
-    );
+    await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.FEATURE_FLAG_UPDATED, data, currentUser);
     return updatedFilterMode;
   }
 
@@ -270,7 +270,7 @@ export class FeatureFlagService {
     return await this.experimentAuditLogRepository.saveRawJson(
       EXPERIMENT_LOG_TYPE.FEATURE_FLAG_DESIGN_EXPORTED,
       exportAuditLog,
-      currentUser,
+      currentUser
     );
   }
 
@@ -356,7 +356,12 @@ export class FeatureFlagService {
     });
   }
 
-  public async deleteList(segmentId: string, filterType: FEATURE_FLAG_LIST_FILTER_MODE, currentUser: User, logger: UpgradeLogger): Promise<Segment> {
+  public async deleteList(
+    segmentId: string,
+    filterType: FEATURE_FLAG_LIST_FILTER_MODE,
+    currentUser: User,
+    logger: UpgradeLogger
+  ): Promise<Segment> {
     let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
     if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
       existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
@@ -385,7 +390,7 @@ export class FeatureFlagService {
     await this.experimentAuditLogRepository.saveRawJson(
       EXPERIMENT_LOG_TYPE.FEATURE_FLAG_UPDATED,
       updateAuditLog,
-      currentUser,
+      currentUser
     );
 
     return this.segmentService.deleteSegment(segmentId, logger);
@@ -400,7 +405,9 @@ export class FeatureFlagService {
     logger.info({ message: `Add ${filterType} list to feature flag` });
     const createdList = await getConnection().transaction(async (transactionalEntityManager) => {
       const featureFlagSegmentInclusionOrExclusion =
-        filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION ? new FeatureFlagSegmentInclusion() : new FeatureFlagSegmentExclusion();
+        filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION
+          ? new FeatureFlagSegmentInclusion()
+          : new FeatureFlagSegmentExclusion();
       featureFlagSegmentInclusionOrExclusion.enabled = listInput.enabled;
       featureFlagSegmentInclusionOrExclusion.listType = listInput.listType;
       const featureFlag = await this.featureFlagRepository.findOne(listInput.flagId);
@@ -461,7 +468,7 @@ export class FeatureFlagService {
       await this.experimentAuditLogRepository.saveRawJson(
         EXPERIMENT_LOG_TYPE.FEATURE_FLAG_UPDATED,
         updateAuditLog,
-        currentUser,
+        currentUser
       );
       return featureFlagSegmentInclusionOrExclusion;
     });
@@ -503,13 +510,7 @@ export class FeatureFlagService {
       existingRecord.enabled = listInput.enabled;
       existingRecord.listType = listInput.listType;
 
-      const {
-        versionNumber,
-        createdAt,
-        updatedAt,
-        type,
-        ...oldSegmentDoc
-      } = existingRecord.segment;
+      const { versionNumber, createdAt, updatedAt, type, ...oldSegmentDoc } = existingRecord.segment;
 
       const oldSegmentDocClone = JSON.parse(JSON.stringify(oldSegmentDoc));
       let newSegmentDocClone;
@@ -560,20 +561,20 @@ export class FeatureFlagService {
 
       if (statusChanged) {
         listData = {
-            listId: existingRecord.segment.id,
-            listName: existingRecord.segment.name,
-            filterType: filterType,
-            enabled: listInput.enabled,
-            operation: FEATURE_FLAG_LIST_OPERATION.STATUS_CHANGED,
-          }
+          listId: existingRecord.segment.id,
+          listName: existingRecord.segment.name,
+          filterType: filterType,
+          enabled: listInput.enabled,
+          operation: FEATURE_FLAG_LIST_OPERATION.STATUS_CHANGED,
+        };
       } else {
         listData = {
-            listId: existingRecord.segment.id,
-            listName: existingRecord.segment.name,
-            filterType: filterType,
-            operation: FEATURE_FLAG_LIST_OPERATION.UPDATED,
-            diff: diffString(newSegmentDocClone, oldSegmentDocClone),
-          }
+          listId: existingRecord.segment.id,
+          listName: existingRecord.segment.name,
+          filterType: filterType,
+          operation: FEATURE_FLAG_LIST_OPERATION.UPDATED,
+          diff: diffString(newSegmentDocClone, oldSegmentDocClone),
+        };
       }
 
       // update list AuditLogs here
@@ -586,7 +587,7 @@ export class FeatureFlagService {
       await this.experimentAuditLogRepository.saveRawJson(
         EXPERIMENT_LOG_TYPE.FEATURE_FLAG_UPDATED,
         updateAuditLog,
-        currentUser,
+        currentUser
       );
 
       return existingRecord;
