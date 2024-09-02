@@ -1,4 +1,17 @@
-import { JsonController, Authorized, Post, Body, Delete, Put, Req, Get, Params, Patch, Res, CurrentUser } from 'routing-controllers';
+import {
+  JsonController,
+  Authorized,
+  Post,
+  Body,
+  Delete,
+  Put,
+  Req,
+  Get,
+  Params,
+  Patch,
+  Res,
+  CurrentUser,
+} from 'routing-controllers';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
@@ -321,7 +334,7 @@ export class FeatureFlagsController {
   public async updateState(
     @Body({ validate: true })
     flag: FeatureFlagStatusUpdateValidator,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: User
   ): Promise<FeatureFlag> {
     return this.featureFlagService.updateState(flag.flagId, flag.status, currentUser);
   }
@@ -360,7 +373,7 @@ export class FeatureFlagsController {
   public async updateFilterMode(
     @Body({ validate: true })
     flag: FeatureFlagFilterModeUpdateValidator,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: User
   ): Promise<FeatureFlag> {
     return this.featureFlagService.updateFilterMode(flag.flagId, flag.filterMode, currentUser);
   }
@@ -463,7 +476,12 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentInclusion> {
-    return this.featureFlagService.addList(inclusionList, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
+    return this.featureFlagService.addList(
+      inclusionList,
+      FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+      currentUser,
+      request.logger
+    );
   }
 
   /**
@@ -494,7 +512,12 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentExclusion> {
-    return this.featureFlagService.addList(exclusionList, FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
+    return this.featureFlagService.addList(
+      exclusionList,
+      FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+      currentUser,
+      request.logger
+    );
   }
 
   /**
@@ -539,7 +562,12 @@ export class FeatureFlagsController {
         )
       );
     }
-    return this.featureFlagService.updateList(exclusionList, FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
+    return this.featureFlagService.updateList(
+      exclusionList,
+      FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+      currentUser,
+      request.logger
+    );
   }
 
   /**
@@ -584,7 +612,12 @@ export class FeatureFlagsController {
         )
       );
     }
-    return this.featureFlagService.updateList(inclusionList, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
+    return this.featureFlagService.updateList(
+      inclusionList,
+      FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+      currentUser,
+      request.logger
+    );
   }
 
   /**
@@ -688,7 +721,7 @@ export class FeatureFlagsController {
     response.setHeader('Content-Type', 'application/json');
     const plainFeatureFlag = JSON.stringify(featureFlag, null, 2); // Convert to JSON string
 
-    this.featureFlagService.exportDesignLog(featureFlag.name, currentUser)
+    this.featureFlagService.exportDesignLog(featureFlag.name, currentUser);
     return response.send(plainFeatureFlag);
   }
 }
