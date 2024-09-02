@@ -186,8 +186,6 @@ export class UpsertFeatureFlagModalComponent {
       tags,
       status: FEATURE_FLAG_STATUS.DISABLED,
       filterMode: FILTER_MODE.EXCLUDE_ALL,
-      featureFlagSegmentInclusion: [],
-      featureFlagSegmentExclusion: [],
     };
 
     this.featureFlagsService.addFeatureFlag(flagRequest);
@@ -206,8 +204,6 @@ export class UpsertFeatureFlagModalComponent {
       tags,
       status,
       filterMode,
-      featureFlagSegmentInclusion: [],
-      featureFlagSegmentExclusion: [],
     };
 
     this.featureFlagsService.updateFeatureFlag(flagRequest);

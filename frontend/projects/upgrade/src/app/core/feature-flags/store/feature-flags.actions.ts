@@ -71,7 +71,6 @@ export const actionSetIsLoadingImportFeatureFlag = createAction(
   props<{ isLoadingImportFeatureFlag: boolean }>()
 );
 
-
 export const actionEmailFeatureFlagData = createAction(
   '[Feature Flags] Email Feature Flag Data',
   props<{ featureFlagId: string }>()
