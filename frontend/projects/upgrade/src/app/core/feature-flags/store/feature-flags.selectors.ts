@@ -166,24 +166,20 @@ export const selectFeatureFlagExclusions = createSelector(
   }
 );
 
-// Helper function to determine if warning should be shown for a given flag
-const shouldShowWarningForFlag = (flag: FeatureFlag) =>
-  flag?.status === FEATURE_FLAG_STATUS.ENABLED &&
-  flag?.filterMode !== FILTER_MODE.INCLUDE_ALL &&
-  !flag?.featureFlagSegmentInclusion?.length;
-
-// Selector for the selected feature flag
-export const selectShouldShowWarningForSelectedFlag = createSelector(selectSelectedFeatureFlag, (flag: FeatureFlag) =>
-  shouldShowWarningForFlag(flag)
-);
-
-// Selector for all feature flags
 export const selectWarningStatusForAllFlags = createSelector(selectFeatureFlagsState, (state: FeatureFlagState) => {
   const warningStatus = {};
   Object.values(state.entities).forEach((flag) => {
     if (flag) {
-      warningStatus[flag.id] = shouldShowWarningForFlag(flag);
+      warningStatus[flag.id] = flag?.status === FEATURE_FLAG_STATUS.ENABLED && !flag?.hasEnabledIncludeList;
     }
   });
   return warningStatus;
 });
+
+export const selectShouldShowWarningForSelectedFlag = createSelector(
+  selectSelectedFeatureFlag,
+  (flag: FeatureFlag) =>
+    flag?.status === FEATURE_FLAG_STATUS.ENABLED &&
+    flag?.filterMode !== FILTER_MODE.INCLUDE_ALL &&
+    !flag?.featureFlagSegmentInclusion?.some((inclusion) => inclusion.enabled)
+);

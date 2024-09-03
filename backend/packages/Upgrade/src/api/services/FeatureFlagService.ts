@@ -115,7 +115,7 @@ export class FeatureFlagService {
     return this.featureFlagRepository.count();
   }
 
-  public findPaginated(
+  public async findPaginated(
     skip: number,
     take: number,
     logger: UpgradeLogger,
@@ -126,6 +126,7 @@ export class FeatureFlagService {
 
     let queryBuilder = this.featureFlagRepository
       .createQueryBuilder('feature_flag')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
       .loadRelationCountAndMap('feature_flag.featureFlagExposures', 'feature_flag.featureFlagExposures');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
@@ -145,7 +146,16 @@ export class FeatureFlagService {
     // TODO: the type of queryBuilder.getMany() is Promise<FeatureFlag[]>
     // However, the above query returns Promise<(Omit<FeatureFlag, 'featureFlagExposures'> & { featureFlagExposures: number })[]>
     // This can be fixed by using a @VirtualColumn in the FeatureFlag entity, when we are on TypeORM 0.3
-    return queryBuilder.getMany();
+    const featureFlags = await queryBuilder.getMany();
+
+    // Calculate hasEnabledIncludeList
+    return featureFlags.map((flag) => ({
+      ...flag,
+      hasEnabledIncludeList:
+        flag.filterMode === FILTER_MODE.INCLUDE_ALL ||
+        flag.featureFlagSegmentInclusion.some((inclusion) => inclusion.enabled),
+      featureFlagSegmentInclusion: undefined, // Remove this property from the result
+    }));
   }
 
   public async delete(featureFlagId: string, logger: UpgradeLogger): Promise<FeatureFlag | undefined> {

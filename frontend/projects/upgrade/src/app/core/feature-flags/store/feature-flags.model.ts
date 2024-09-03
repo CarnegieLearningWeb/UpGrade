@@ -22,6 +22,7 @@ export interface BaseFeatureFlag {
   filterMode: FILTER_MODE;
   featureFlagSegmentInclusion: FeatureFlagSegmentListDetails[];
   featureFlagSegmentExclusion: FeatureFlagSegmentListDetails[];
+  hasEnabledIncludeList?: boolean;
 }
 
 // Feature Flag entity = base + db-generated fields (we depend on createdOn for sorting, for instance, but it's not truly part of the feature flag base)
