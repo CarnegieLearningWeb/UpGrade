@@ -715,13 +715,11 @@ export class FeatureFlagsController {
     @Req() request: AppRequest,
     @Res() response: Response
   ): Promise<Response> {
-    const featureFlag = await this.featureFlagService.findOne(id, request.logger);
+    const featureFlag = await this.featureFlagService.exportDesign(id, currentUser, request.logger);
     // download JSON file with appropriate headers to response body;
     response.setHeader('Content-Disposition', `attachment; filename="${featureFlag.name}.json"`);
     response.setHeader('Content-Type', 'application/json');
     const plainFeatureFlag = JSON.stringify(featureFlag, null, 2); // Convert to JSON string
-
-    this.featureFlagService.exportDesignLog(featureFlag.name, currentUser);
     return response.send(plainFeatureFlag);
   }
 }

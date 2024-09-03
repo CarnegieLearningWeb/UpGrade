@@ -262,16 +262,19 @@ export class FeatureFlagService {
     return updatedFilterMode;
   }
 
-  public async exportDesignLog(flagName, currentUser) {
+  public async exportDesign(id, currentUser, logger): Promise<FeatureFlag> {
+    const featureFlag = await this.findOne(id, logger);
     const exportAuditLog: FeatureFlagDeletedData = {
-      flagName: flagName,
+      flagName: featureFlag.name,
     };
 
-    return await this.experimentAuditLogRepository.saveRawJson(
+    await this.experimentAuditLogRepository.saveRawJson(
       EXPERIMENT_LOG_TYPE.FEATURE_FLAG_DESIGN_EXPORTED,
       exportAuditLog,
       currentUser
     );
+
+    return featureFlag;
   }
 
   public update(flagDTO: FeatureFlagValidation, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag> {
