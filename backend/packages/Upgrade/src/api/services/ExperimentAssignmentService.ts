@@ -1872,7 +1872,6 @@ export class ExperimentAssignmentService {
         } else if (explicitIndividualInclusionFilteredData.some((x) => x.id === modal.id)) {
           userIncludedModals.push(modal.id);
         } else {
-          console.log('ELSE', userGroups);
           for (const userGroup of userGroups) {
             if (
               explicitGroupExclusionFilteredData.some(
@@ -1881,11 +1880,18 @@ export class ExperimentAssignmentService {
             ) {
               exclusionFlag = true;
             }
+            if (
+              explicitGroupInclusionFilteredData.some(
+                (x) => x.groupId === userGroup.groupId && x.type === userGroup.type && x.id === modal.id
+              )
+            ) {
+              inclusionFlag = true;
+            }
           }
-          if (exclusionFlag) {
-            userExcludedModals.push({ id: modal.id, reason: 'filterMode' });
-          } else {
+          if (inclusionFlag && !exclusionFlag) {
             userIncludedModals.push(modal.id);
+          } else {
+            userExcludedModals.push({ id: modal.id, reason: 'filterMode' });
           }
         }
       }
