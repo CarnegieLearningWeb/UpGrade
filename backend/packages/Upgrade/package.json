@@ -19,10 +19,10 @@
         "seed": "npm start db.seed",
         "drop": "npm start db.drop",
         "help": "npm start help",
-        "migration:generate": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:generate -d src/loaders/typeormLoader.ts",
-        "migration:create": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:create -d src/loaders/typeormLoader.ts",
+        "migration:generate": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:generate src/database/migrations/$name -d src/loaders/typeormLoader.ts",
+        "migration:create": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:create src/database/migrations/$name",
         "migration:run": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:run -d src/loaders/typeormLoader.ts",
-        "migration:revert": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:revert"
+        "migration:revert": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:revert -d src/loaders/typeormLoader.ts"
     },
     "keywords": [],
     "author": "",

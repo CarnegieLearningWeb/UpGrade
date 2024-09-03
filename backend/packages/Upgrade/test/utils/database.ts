@@ -4,7 +4,6 @@ import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConne
 import { env } from '../../src/env';
 import { CONNECTION_NAME } from '../../src/loaders/enums';
 import { Container as tteContainer } from '../../src/typeorm-typedi-extensions';
-import { migrations } from '../../src/loaders/typeormLoader';
 
 declare type LoggerOptions =
   | boolean
@@ -22,7 +21,7 @@ export const createDatabaseConnection = async (): Promise<DataSource[]> => {
     password: env.db.password,
     logging: env.db.logging as LoggerOptions,
     entities: env.app.dirs.entities,
-    migrations: migrations,
+    migrations: env.app.dirs.migrations,
   };
 
   const exportConnection: PostgresConnectionOptions = {
@@ -35,7 +34,7 @@ export const createDatabaseConnection = async (): Promise<DataSource[]> => {
     password: env.db.password,
     logging: env.db.logging as LoggerOptions,
     entities: env.app.dirs.entities,
-    migrations: migrations,
+    migrations: env.app.dirs.migrations,
   };
 
   const defaultAppDataSourceInstance = new DataSource(defaultConnection);

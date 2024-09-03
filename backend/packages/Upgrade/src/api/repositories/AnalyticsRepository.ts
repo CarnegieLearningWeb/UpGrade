@@ -108,7 +108,7 @@ export interface ExperimentCSVData {
   details: ConditionDecisionPointData[];
 }
 
-@EntityRepository(AnalyticsRepository)
+@EntityRepository()
 export class AnalyticsRepository extends Repository<AnalyticsRepository> {
   public async getEnrollmentCountPerGroup(experimentId: string): Promise<Array<{ groupId: string; count: number }>> {
     const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository);
