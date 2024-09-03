@@ -41,8 +41,6 @@ describe('Feature Flag Service Testing', () => {
   mockFlag1.description = 'description';
   mockFlag1.context = ['context1'];
   mockFlag1.status = FEATURE_FLAG_STATUS.ENABLED;
-  mockFlag1.featureFlagSegmentInclusion = [];
-  mockFlag1.featureFlagSegmentExclusion = [];
 
   const mockFlag2 = new FeatureFlagValidation();
   mockFlag2.id = uuid();
@@ -67,7 +65,11 @@ describe('Feature Flag Service Testing', () => {
     groups: [],
     subSegmentIds: [],
   };
-  const mockFlagArr = [mockFlag1, mockFlag2, mockFlag3];
+  const mockFlagArr = [
+    { ...mockFlag1, hasEnabledIncludeList: false },
+    { ...mockFlag2, hasEnabledIncludeList: false },
+    { ...mockFlag3, hasEnabledIncludeList: false },
+  ];
 
   const limitSpy = jest.fn().mockReturnThis();
   const offsetSpy = jest.fn().mockReturnThis();

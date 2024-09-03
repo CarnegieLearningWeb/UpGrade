@@ -153,7 +153,7 @@ export class FeatureFlagService {
       ...flag,
       hasEnabledIncludeList:
         flag.filterMode === FILTER_MODE.INCLUDE_ALL ||
-        flag.featureFlagSegmentInclusion.some((inclusion) => inclusion.enabled),
+        (flag.featureFlagSegmentInclusion?.some((inclusion) => inclusion.enabled) ?? false),
       featureFlagSegmentInclusion: undefined, // Remove this property from the result
     }));
   }
@@ -166,7 +166,7 @@ export class FeatureFlagService {
       if (featureFlag) {
         const deletedFlag = await this.featureFlagRepository.deleteById(featureFlagId, transactionalEntityManager);
 
-        featureFlag.featureFlagSegmentInclusion.forEach(async (segmentInclusion) => {
+        featureFlag.featureFlagSegmentInclusion?.forEach(async (segmentInclusion) => {
           try {
             await transactionalEntityManager.getRepository(Segment).delete(segmentInclusion.segment.id);
           } catch (err) {
@@ -177,7 +177,7 @@ export class FeatureFlagService {
             throw error;
           }
         });
-        featureFlag.featureFlagSegmentExclusion.forEach(async (segmentExclusion) => {
+        featureFlag.featureFlagSegmentExclusion?.forEach(async (segmentExclusion) => {
           try {
             await transactionalEntityManager.getRepository(Segment).delete(segmentExclusion.segment.id);
           } catch (err) {
@@ -445,11 +445,15 @@ export class FeatureFlagService {
     const segmentObjMap = {};
     featureFlags.forEach((flag) => {
       const includeIds = flag.featureFlagSegmentInclusion
-        .filter((inclusion) => inclusion.enabled)
-        .map((segmentInclusion) => segmentInclusion.segment.id);
+        ? flag.featureFlagSegmentInclusion
+            .filter((inclusion) => inclusion.enabled)
+            .map((segmentInclusion) => segmentInclusion.segment.id)
+        : [];
       const excludeIds = flag.featureFlagSegmentExclusion
-        .filter((exclusion) => exclusion.enabled)
-        .map((segmentExclusion) => segmentExclusion.segment.id);
+        ? flag.featureFlagSegmentExclusion
+            .filter((exclusion) => exclusion.enabled)
+            .map((segmentExclusion) => segmentExclusion.segment.id)
+        : [];
 
       segmentObjMap[flag.id] = {
         segmentIdsQueue: [...includeIds, ...excludeIds],
