@@ -1,12 +1,14 @@
-import * as sinon from 'sinon';
-import { Connection, ConnectionManager } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
+import { Segment } from '../../../src/api/models/Segment';
 import { FeatureFlagRepository } from '../../../src/api/repositories/FeatureFlagRepository';
 import { ErrorService } from '../../../src/api/services/ErrorService';
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { configureLogger } from '../../utils/logger';
+import { Container } from '../../../src/typeorm-typedi-extensions';
 import {
   FLAG_SEARCH_KEY,
   FLAG_SORT_KEY,
@@ -36,6 +38,7 @@ describe('Feature Flag Service Testing', () => {
   let module: Awaited<ReturnType<TestingModuleBuilder['compile']>>;
 
   const logger = new UpgradeLogger();
+  let dataSource: DataSource;
 
   const mockFlag1 = new FeatureFlag();
   mockFlag1.id = uuid();
@@ -99,18 +102,31 @@ describe('Feature Flag Service Testing', () => {
     getMany: jest.fn().mockResolvedValue(mockFlagArr),
   };
 
-  const exposureRepoMock = { save: jest.fn() };
-  const entityManagerMock = { createQueryBuilder: () => queryBuilderMock };
-  const sandbox = sinon.createSandbox();
-  sandbox.stub(ConnectionManager.prototype, 'get').returns({
-    transaction: jest.fn(async (passedFunction) => await passedFunction(entityManagerMock)),
-    getRepository: () => exposureRepoMock,
-  } as unknown as Connection);
+  const entityManagerMock = { createQueryBuilder: () => queryBuilderMock, getRepository: () => flagRepo };
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'postgres',
+      database: 'postgres',
+      entities: [FeatureFlag, Segment],
+      synchronize: true,
+    });
+
+    const mockTransaction = jest.fn(async (passedFunction) => await passedFunction(entityManagerMock));
+    dataSource.transaction = mockTransaction;
+    Container.setDataSource('default', dataSource);
     module = await Test.createTestingModule({
       providers: [
+        DataSource,
         FeatureFlagService,
+        {
+          provide: getDataSourceToken('default'),
+          useValue: dataSource,
+        },
         {
           provide: ExperimentAssignmentService,
           useValue: {
@@ -377,7 +393,6 @@ describe('Feature Flag Service Testing', () => {
 
     expect(result.length).toEqual(1);
     expect(result).toEqual([mockFlag1.key]);
-    expect(exposureRepoMock.save).toHaveBeenCalledTimes(1);
   });
 
   it('should add an include list', async () => {

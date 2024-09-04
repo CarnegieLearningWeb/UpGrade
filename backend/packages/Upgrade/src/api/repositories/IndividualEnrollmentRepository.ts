@@ -1,5 +1,7 @@
-import { EntityRepository, Repository, In, DeleteResult } from 'typeorm';
+import { Repository, In, DeleteResult } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { IndividualEnrollment } from '../models/IndividualEnrollment';
+
 @EntityRepository(IndividualEnrollment)
 export class IndividualEnrollmentRepository extends Repository<IndividualEnrollment> {
   public findEnrollments(userId: string, experimentIds: string[]): Promise<IndividualEnrollment[]> {

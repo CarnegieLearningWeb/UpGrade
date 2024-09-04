@@ -43,6 +43,7 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
  *       - description
  *       - status
  *       - context
+ *       - filterMode
  *     properties:
  *       id:
  *         type: string
@@ -63,13 +64,14 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
  *         type: array
  *         items:
  *           type: string
- *         filterMode:
- *           type: string
- *           enum: [includeAll, excludeAll]
+ *       filterMode:
+ *        type: string
+ *        enum: [includeAll, excludeAll]
  *   FeatureFlagInclusionExclusionList:
  *     required:
  *      - name
  *      - context
+ *      - type
  *      - userIds
  *      - groups
  *      - subSegmentIds
@@ -82,6 +84,9 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
  *        type: string
  *       context:
  *        type: string
+ *       type:
+ *        type: string
+ *        enum: [private]
  *       userIds:
  *        type: array
  *        items:
@@ -528,7 +533,7 @@ export class FeatureFlagsController {
    *       consumes:
    *         - application/json
    *       parameters:
-   *        - in: path
+   *         - in: path
    *           name: id
    *           required: true
    *           schema:

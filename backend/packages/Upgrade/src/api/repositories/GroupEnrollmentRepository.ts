@@ -1,4 +1,5 @@
-import { EntityRepository, In, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { GroupEnrollment } from '../models/GroupEnrollment';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';

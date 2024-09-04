@@ -1,137 +1,124 @@
-import { DeleteQueryBuilder, SelectQueryBuilder } from 'typeorm';
-import * as sinon from 'sinon';
+import { DataSource } from 'typeorm';
 import { MetricRepository } from '../../../src/api/repositories/MetricRepository';
 import { Metric } from '../../../src/api/models/Metric';
+import { Container } from '../../../src/typeorm-typedi-extensions';
+import { initializeMocks } from '../mockdata/mockRepo';
 
-let sandbox;
-let createQueryBuilderStub;
-let deleteMock, selectMock;
-const deleteQueryBuilder = new DeleteQueryBuilder<MetricRepository>(null);
-const selectQueryBuilder = new SelectQueryBuilder<MetricRepository>(null);
-const repo = new MetricRepository();
+let mock;
+let dataSource: DataSource;
+let repo: MetricRepository;
 const err = new Error('test error');
 
 const metric = new Metric();
 metric.key = 'key1';
 
-beforeEach(() => {
-  sandbox = sinon.createSandbox();
+const result = {
+  identifiers: [{ id: metric.key }],
+  generatedMaps: [metric],
+  raw: [metric],
+};
 
-  deleteMock = sandbox.mock(deleteQueryBuilder);
-  selectMock = sandbox.mock(selectQueryBuilder);
+beforeAll(() => {
+  dataSource = new DataSource({
+    type: 'postgres',
+    database: 'postgres',
+    entities: [MetricRepository],
+    synchronize: true,
+  });
+  Container.setDataSource('default', dataSource);
+});
+
+beforeEach(() => {
+  repo = Container.getCustomRepository(MetricRepository);
+  const commonMockData = initializeMocks(result);
+  repo.createQueryBuilder = commonMockData.createQueryBuilder;
+  mock = commonMockData.mocks;
 });
 
 afterEach(() => {
-  sandbox.restore();
+  jest.clearAllMocks();
 });
 
 describe('MetricRepository Testing', () => {
   it('should delete a metric', async () => {
-    createQueryBuilderStub = sandbox.stub(MetricRepository.prototype, 'createQueryBuilder').returns(deleteQueryBuilder);
-    const result = {
-      identifiers: [{ id: metric.key }],
-      generatedMaps: [metric],
-      raw: [metric],
-    };
-
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.deleteMetricsByKeys(metric.key, 'jointext');
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    deleteMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([metric]);
   });
 
   it('should throw an error when delete fails', async () => {
-    createQueryBuilderStub = sandbox.stub(MetricRepository.prototype, 'createQueryBuilder').returns(deleteQueryBuilder);
-
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.deleteMetricsByKeys(metric.key, 'jointext');
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    deleteMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should get metrics by key', async () => {
-    createQueryBuilderStub = sandbox.stub(MetricRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
-    const result = {
-      identifiers: [{ id: metric.key }],
-      generatedMaps: [metric],
-      raw: [metric],
-    };
-
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.resolve(result));
-
     const res = await repo.getMetricsByKeys(metric.key, 'jointext');
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should throw an error when get metric by key fails', async () => {
-    createQueryBuilderStub = sandbox.stub(MetricRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
-
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.reject(err));
+    mock.getMany.mockRejectedValue(err);
 
     expect(async () => {
       await repo.getMetricsByKeys(metric.key, 'jointext');
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
   });
 
   it('should get find metrics with queries', async () => {
-    createQueryBuilderStub = sandbox.stub(MetricRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
-    const result = {
-      identifiers: [{ id: metric.key }],
-      generatedMaps: [metric],
-      raw: [metric],
-    };
-
-    selectMock.expects('innerJoin').twice().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').once().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.resolve(result));
-
     const res = await repo.findMetricsWithQueries([metric.key]);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.andWhere).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should throw an error when get monitored experiment metric by date range fails', async () => {
-    createQueryBuilderStub = sandbox.stub(MetricRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
-
-    selectMock.expects('innerJoin').twice().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('andWhere').once().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.reject(err));
+    mock.getMany.mockRejectedValue(err);
 
     expect(async () => {
       await repo.findMetricsWithQueries([metric.key]);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.andWhere).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
   });
 });

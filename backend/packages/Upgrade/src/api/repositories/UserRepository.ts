@@ -1,4 +1,5 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { User } from '../models/User';
 import repositoryError from './utils/repositoryError';
 import { UserRole } from 'upgrade_types';
@@ -10,9 +11,7 @@ export class UserRepository extends Repository<User> {
       .insert()
       .into(User)
       .values(user)
-      .onConflict(
-        `("email") DO UPDATE SET "firstName" = :firstName, "lastName" = :lastName, "imageUrl" = :imageUrl, "localTimeZone" = :localTimeZone`
-      )
+      .orUpdate(['firstName', 'lastName', 'imageUrl', 'localTimeZone'], ['email'])
       .setParameter('firstName', user.firstName)
       .setParameter('lastName', user.lastName)
       .setParameter('imageUrl', user.imageUrl)
