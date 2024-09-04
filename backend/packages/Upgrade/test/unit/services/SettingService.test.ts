@@ -5,6 +5,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { SettingRepository } from '../../../src/api/repositories/SettingRepository';
 import { Setting } from '../../../src/api/models/Setting';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { configureLogger } from '../../utils/logger';
 
 const setting = new Setting();
 const settingArr = [setting];
@@ -14,6 +15,10 @@ describe('Setting Service Testing', () => {
   let service: SettingService;
   let repo: Repository<SettingRepository>;
   let module: TestingModule;
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
     module = await Test.createTestingModule({

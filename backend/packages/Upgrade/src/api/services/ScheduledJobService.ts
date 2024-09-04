@@ -1,5 +1,5 @@
 import Container, { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
 import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { ScheduledJob, SCHEDULE_TYPE } from '../models/ScheduledJob';
 import { Experiment } from '../models/Experiment';
@@ -10,8 +10,7 @@ import { systemUserDoc } from '../../init/seed/systemUser';
 import { ExperimentService } from './ExperimentService';
 import { ErrorRepository } from '../repositories/ErrorRepository';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
-import { EntityManager } from 'typeorm';
-import { getConnection } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { User } from '../models/User';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
@@ -21,14 +20,15 @@ export class ScheduledJobService {
     @InjectRepository() private scheduledJobRepository: ScheduledJobRepository,
     @InjectRepository() private errorRepository: ErrorRepository,
     @InjectRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
+    @InjectDataSource() private dataSource: DataSource,
     private awsService: AWSService
   ) {}
 
   public async startExperiment(id: string, logger: UpgradeLogger): Promise<any> {
-    return await getConnection().transaction(async (transactionalEntityManager) => {
+    return await this.dataSource.transaction(async (transactionalEntityManager) => {
       try {
         const scheduledJobRepository = transactionalEntityManager.getRepository(ScheduledJob);
-        const scheduledJob = await scheduledJobRepository.findOne(id, { relations: ['experiment'] });
+        const scheduledJob = await scheduledJobRepository.findOne({ where: { id }, relations: ['experiment'] });
 
         const currentDate = new Date();
         const timeDiff = Math.abs(currentDate.getTime() - scheduledJob.timeStamp.getTime());
@@ -43,11 +43,11 @@ export class ScheduledJobService {
 
         if (scheduledJob && scheduledJob.experiment) {
           const experimentRepository = transactionalEntityManager.getRepository(Experiment);
-          const experiment = await experimentRepository.findOne(scheduledJob.experiment.id);
+          const experiment = await experimentRepository.findOneBy({ id: scheduledJob.experiment.id });
           if (scheduledJob && experiment) {
             const systemUser = await transactionalEntityManager
               .getRepository(User)
-              .findOne({ email: systemUserDoc.email });
+              .findOneBy({ email: systemUserDoc.email });
             const experimentService = Container.get<ExperimentService>(ExperimentService);
             // update experiment startOn
             await experimentRepository.update({ id: experiment.id }, { startOn: null });
@@ -72,12 +72,12 @@ export class ScheduledJobService {
   }
 
   public async endExperiment(id: string, logger: UpgradeLogger): Promise<any> {
-    return await getConnection().transaction(async (transactionalEntityManager) => {
+    return await this.dataSource.transaction(async (transactionalEntityManager) => {
       try {
         const scheduledJobRepository = transactionalEntityManager.getRepository(ScheduledJob);
-        const scheduledJob = await scheduledJobRepository.findOne(id, { relations: ['experiment'] });
+        const scheduledJob = await scheduledJobRepository.findOne({ where: { id }, relations: ['experiment'] });
         const experimentRepository = transactionalEntityManager.getRepository(Experiment);
-        const experiment = await experimentRepository.findOne(scheduledJob.experiment.id);
+        const experiment = await experimentRepository.findOneBy({ id: scheduledJob.experiment.id });
 
         const currentDate = new Date();
         const timeDiff = Math.abs(currentDate.getTime() - scheduledJob.timeStamp.getTime());
@@ -93,7 +93,7 @@ export class ScheduledJobService {
         if (scheduledJob && experiment) {
           const systemUser = await transactionalEntityManager
             .getRepository(User)
-            .findOne({ email: systemUserDoc.email });
+            .findOneBy({ email: systemUserDoc.email });
           const experimentService = Container.get<ExperimentService>(ExperimentService);
           // update experiment startOn
           await experimentRepository.update({ id: experiment.id }, { endOn: null });
@@ -145,7 +145,7 @@ export class ScheduledJobService {
       const experimentEndCondition =
         !(state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE || state === EXPERIMENT_STATE.CANCELLED) && endOn;
       // query experiment schedules
-      const scheduledJobs = await scheduledJobRepo.find({ experiment });
+      const scheduledJobs = await scheduledJobRepo.findBy({ experiment: { id: experiment.id } });
       const startExperimentDoc = scheduledJobs.find(({ type }) => {
         return type === SCHEDULE_TYPE.START_EXPERIMENT;
       });
