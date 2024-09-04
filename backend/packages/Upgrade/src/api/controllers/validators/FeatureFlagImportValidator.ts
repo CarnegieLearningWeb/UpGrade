@@ -9,9 +9,9 @@ import {
   IsUUID,
   IsBoolean,
 } from 'class-validator';
-import { FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
-import { FEATURE_FLAG_STATUS } from 'upgrade_types';
+import { SEGMENT_TYPE } from 'upgrade_types';
 import { Type } from 'class-transformer';
+import { FeatureFlagCoreValidation } from './FeatureFlagValidator';
 
 class IndividualValidator {
   @IsNotEmpty()
@@ -104,44 +104,7 @@ class FeatureFlagListImportValidator {
   public segment: SegmentImportValidator;
 }
 
-export class FeatureFlagImportDataValidation {
-  @IsOptional()
-  @IsString()
-  id: string;
-
-  @IsNotEmpty()
-  @IsDefined()
-  @IsString()
-  name: string;
-
-  @IsOptional()
-  @IsString()
-  description: string;
-
-  @IsNotEmpty()
-  @IsDefined()
-  @IsString()
-  key: string;
-
-  @IsNotEmpty()
-  @IsDefined()
-  @IsEnum(FEATURE_FLAG_STATUS)
-  status: FEATURE_FLAG_STATUS;
-
-  @IsNotEmpty()
-  @IsArray()
-  @IsString({ each: true })
-  public context: string[];
-
-  @IsDefined()
-  @IsEnum(FILTER_MODE)
-  filterMode: FILTER_MODE;
-
-  @IsNotEmpty()
-  @IsArray()
-  @IsString({ each: true })
-  public tags: string[];
-
+export class FeatureFlagImportDataValidation extends FeatureFlagCoreValidation {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })

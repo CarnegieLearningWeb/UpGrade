@@ -4,29 +4,29 @@ import { FEATURE_FLAG_STATUS } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { FeatureFlagListValidator } from './FeatureFlagListValidator';
 
-export class FeatureFlagValidation {
+export class FeatureFlagCoreValidation {
   @IsOptional()
   @IsString()
-  id: string;
+  public id: string;
 
   @IsNotEmpty()
   @IsDefined()
   @IsString()
-  name: string;
+  public name: string;
 
   @IsOptional()
   @IsString()
-  description: string;
+  public description: string;
 
   @IsNotEmpty()
   @IsDefined()
   @IsString()
-  key: string;
+  public key: string;
 
   @IsNotEmpty()
   @IsDefined()
   @IsEnum(FEATURE_FLAG_STATUS)
-  status: FEATURE_FLAG_STATUS;
+  public status: FEATURE_FLAG_STATUS;
 
   @IsNotEmpty()
   @IsArray()
@@ -35,13 +35,15 @@ export class FeatureFlagValidation {
 
   @IsDefined()
   @IsEnum(FILTER_MODE)
-  filterMode: FILTER_MODE;
+  public filterMode: FILTER_MODE;
 
   @IsNotEmpty()
   @IsArray()
   @IsString({ each: true })
   public tags: string[];
+}
 
+export class FeatureFlagValidation extends FeatureFlagCoreValidation {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
