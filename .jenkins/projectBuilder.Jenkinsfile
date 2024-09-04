@@ -70,7 +70,12 @@ projectBuilderV5 (
                     script: 'npm run build:cl',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
+                ],
+                [
+                    script: 'npm run postbuild',
+                    log: '${projectName}-post-build.log'
                 ]
+
             ]
         ],
     ],
