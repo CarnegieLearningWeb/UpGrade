@@ -8,7 +8,7 @@
     "build": "webpack",
     "build:prod": "NODE_ENV=production npm run build",
     "build:cl": "NODE_ENV=production npm run build",
-    "postbuild": "cd ./dist && zip -r -q scheduler-lambda.zip schedule ../node_modules",
+    "postbuild": "zip -r -q ./dist/scheduler-lambda.zip ./dist/schedule node_modules",
     "lint": "eslint -c ../../../.eslintrc.js --ext .ts './src' && npm run prettier:write",
     "lint:fix": "eslint -c ../../../.eslintrc.js --ext .ts './src' --fix && npm run prettier:check",
     "prettier:check": "prettier --config ../../../.prettierrc './src/**/*.ts' --check",
