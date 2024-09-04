@@ -1,8 +1,7 @@
 import { SegmentService } from '../../../src/api/services/SegmentService';
-import * as sinon from 'sinon';
-import { Connection, ConnectionManager } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { SegmentRepository } from '../../../src/api/repositories/SegmentRepository';
 import { Segment } from '../../../src/api/models/Segment';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
@@ -16,6 +15,10 @@ import { IndividualForSegment } from '../../../src/api/models/IndividualForSegme
 import { GroupForSegment } from '../../../src/api/models/GroupForSegment';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { SEGMENT_TYPE, SERVER_ERROR, EXPERIMENT_STATE } from 'upgrade_types';
+import { configureLogger } from '../../utils/logger';
+import { ExperimentSegmentExclusion } from '../../../src/api/models/ExperimentSegmentExclusion';
+import { ExperimentSegmentInclusion } from '../../../src/api/models/ExperimentSegmentInclusion';
+import { Container } from '../../../src/typeorm-typedi-extensions';
 
 const exp = new Experiment();
 const seg2 = new Segment();
@@ -34,6 +37,7 @@ describe('Segment Service Testing', () => {
   let service: SegmentService;
   let repo: SegmentRepository;
   let module: TestingModule;
+  let dataSource: DataSource;
 
   const queryBuilderMock = {
     leftJoinAndSelect: jest.fn().mockReturnThis(),
@@ -45,14 +49,30 @@ describe('Segment Service Testing', () => {
     delete: jest.fn().mockReturnThis(),
   };
 
-  const sandbox = sinon.createSandbox();
-
   const entityManagerMock = { createQueryBuilder: () => queryBuilderMock, getRepository: () => repo };
-  sandbox.stub(ConnectionManager.prototype, 'get').returns({
-    transaction: jest.fn(async (passedFunction) => await passedFunction(entityManagerMock)),
-  } as unknown as Connection);
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'postgres',
+      database: 'postgres',
+      entities: [
+        IndividualForSegment,
+        GroupForSegment,
+        Segment,
+        ExperimentSegmentExclusion,
+        ExperimentSegmentInclusion,
+      ],
+      synchronize: true,
+    });
+
+    const mockTransaction = jest.fn(async (passedFunction) => await passedFunction(entityManagerMock));
+    dataSource.transaction = mockTransaction;
+    Container.setDataSource('default', dataSource);
+
     exp.id = 'exp1';
     exp.state = EXPERIMENT_STATE.ENROLLING;
     seg2.subSegments = [];
@@ -107,6 +127,7 @@ describe('Segment Service Testing', () => {
 
     module = await Test.createTestingModule({
       providers: [
+        DataSource,
         SegmentService,
         IndividualForSegmentRepository,
         GroupForSegmentRepository,
@@ -114,6 +135,10 @@ describe('Segment Service Testing', () => {
         ExperimentSegmentInclusionRepository,
         CacheService,
         SegmentRepository,
+        {
+          provide: getDataSourceToken('default'),
+          useValue: dataSource,
+        },
         {
           provide: getRepositoryToken(SegmentRepository),
           useValue: {
@@ -172,6 +197,7 @@ describe('Segment Service Testing', () => {
             save: jest.fn().mockResolvedValue(seg1),
             insertIndividualForSegment: jest.fn().mockResolvedValue(segmentArr),
             getExperimentSegmentExclusionData: jest.fn().mockResolvedValue(include),
+            deleteIndividualForSegmentById: jest.fn(),
             delete: jest.fn(),
             createQueryBuilder: jest.fn(() => ({
               insert: jest.fn().mockReturnThis(),
@@ -188,6 +214,7 @@ describe('Segment Service Testing', () => {
             save: jest.fn().mockResolvedValue(seg1),
             insertGroupForSegment: jest.fn().mockResolvedValue(segmentArr),
             getExperimentSegmentExclusionData: jest.fn().mockResolvedValue(include),
+            deleteGroupForSegmentById: jest.fn(),
             delete: jest.fn(),
             createQueryBuilder: jest.fn(() => ({
               insert: jest.fn().mockReturnThis(),
@@ -335,7 +362,8 @@ describe('Segment Service Testing', () => {
 
   it('should throw an error when unable to delete segment', async () => {
     const err = new Error('error');
-    repo.delete = jest.fn().mockImplementation(() => {
+    const indivRepo = module.get<IndividualForSegmentRepository>(getRepositoryToken(IndividualForSegmentRepository));
+    indivRepo.insertIndividualForSegment = jest.fn().mockImplementation(() => {
       throw err;
     });
     expect(async () => {

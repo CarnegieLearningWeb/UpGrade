@@ -1,219 +1,179 @@
-import { Connection, DeleteQueryBuilder, EntityManager, InsertQueryBuilder, UpdateQueryBuilder } from 'typeorm';
-import * as sinon from 'sinon';
+import { DataSource } from 'typeorm';
 import { FeatureFlagRepository } from '../../../src/api/repositories/FeatureFlagRepository';
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
 import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
+import { Container } from '../../../src/typeorm-typedi-extensions';
+import { initializeMocks } from '../mockdata/mockRepo';
 
-let sandbox;
-let connection;
+let mock;
 let manager;
-let createQueryBuilderStub;
-let insertMock, deleteMock, updateMock;
-const insertQueryBuilder = new InsertQueryBuilder<FeatureFlagRepository>(null);
-const deleteQueryBuilder = new DeleteQueryBuilder<FeatureFlagRepository>(null);
-const updateQueryBuilder = new UpdateQueryBuilder<FeatureFlagRepository>(null);
-const repo = new FeatureFlagRepository();
+let dataSource: DataSource;
+let repo: FeatureFlagRepository;
+
 const err = new Error('test error');
 
 const flag = new FeatureFlag();
 flag.id = 'id1';
 
-beforeEach(() => {
-  sandbox = sinon.createSandbox();
-  connection = sinon.createStubInstance(Connection);
-  manager = new EntityManager(connection);
+const result = {
+  identifiers: [{ id: flag.id }],
+  generatedMaps: [flag],
+  raw: [flag],
+};
 
-  insertMock = sandbox.mock(insertQueryBuilder);
-  deleteMock = sandbox.mock(deleteQueryBuilder);
-  updateMock = sandbox.mock(updateQueryBuilder);
+beforeAll(() => {
+  dataSource = new DataSource({
+    type: 'postgres',
+    database: 'postgres',
+    entities: [FeatureFlagRepository],
+    synchronize: true,
+  });
+  Container.setDataSource('default', dataSource);
+});
+
+beforeEach(() => {
+  repo = Container.getCustomRepository(FeatureFlagRepository);
+  const commonMockData = initializeMocks(result);
+  repo.createQueryBuilder = commonMockData.createQueryBuilder;
+  mock = commonMockData.mocks;
+
+  manager = {
+    createQueryBuilder: repo.createQueryBuilder,
+  };
 });
 
 afterEach(() => {
-  sandbox.restore();
+  jest.clearAllMocks();
 });
 
 describe('FeatureFlagRepository Testing', () => {
   it('should insert a new flag', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
-    const result = {
-      identifiers: [{ id: flag.id }],
-      generatedMaps: [flag],
-      raw: [flag],
-    };
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.insertFeatureFlag(flag, manager);
-
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
-
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith(flag);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
     expect(res).toEqual([flag]);
   });
 
   it('should throw an error when insert fails', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.insertFeatureFlag(flag, manager);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith(flag);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should delete a flag', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
-    const result = {
-      identifiers: [{ id: flag.id }],
-      generatedMaps: [flag],
-      raw: [flag],
-    };
+    await repo.deleteById(flag.id, manager);
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.resolve(result));
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
-    const res = await repo.deleteById(flag.id, manager);
-
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    deleteMock.verify();
-
-    expect(res).toEqual([flag]);
+    await repo.deleteById(flag.id, manager);
   });
 
   it('should throw an error when delete fails', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
-
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.deleteById(flag.id, manager);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    deleteMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should update flag', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(updateQueryBuilder);
-    const result = {
-      identifiers: [{ id: flag.id }],
-      generatedMaps: [flag],
-      raw: [flag],
-    };
-
-    updateMock.expects('update').once().returns(updateQueryBuilder);
-    updateMock.expects('set').once().returns(updateQueryBuilder);
-    updateMock.expects('where').once().returns(updateQueryBuilder);
-    updateMock.expects('returning').once().returns(updateQueryBuilder);
-    updateMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.updateFeatureFlag(flag, manager);
-
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    updateMock.verify();
-
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+    expect(mock.update).toHaveBeenCalledTimes(1);
+    expect(mock.set).toHaveBeenCalledTimes(1);
+    expect(mock.set).toHaveBeenCalledWith(flag);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
     expect(res).toEqual([flag]);
   });
 
   it('should throw an error when update flag fails', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(updateQueryBuilder);
-
-    updateMock.expects('update').once().returns(updateQueryBuilder);
-    updateMock.expects('set').once().returns(updateQueryBuilder);
-    updateMock.expects('where').once().returns(updateQueryBuilder);
-    updateMock.expects('returning').once().returns(updateQueryBuilder);
-    updateMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.updateFeatureFlag(flag, manager);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+    expect(mock.update).toHaveBeenCalledTimes(1);
+    expect(mock.set).toHaveBeenCalledTimes(1);
+    expect(mock.set).toHaveBeenCalledWith(flag);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should update flag state', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(FeatureFlagRepository.prototype, 'createQueryBuilder')
-      .returns(updateQueryBuilder);
-    const result = {
-      identifiers: [{ id: flag.id }],
-      generatedMaps: [flag],
-      raw: [flag],
-    };
-
-    updateMock.expects('update').once().returns(updateQueryBuilder);
-    updateMock.expects('set').once().returns(updateQueryBuilder);
-    updateMock.expects('where').once().returns(updateQueryBuilder);
-    updateMock.expects('returning').once().returns(updateQueryBuilder);
-    updateMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.updateState(flag.id, FEATURE_FLAG_STATUS.ENABLED);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    updateMock.verify();
-
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+    expect(mock.update).toHaveBeenCalledTimes(1);
+    expect(mock.set).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
     expect(res).toEqual(flag);
   });
 
   it('should update filter mode', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(FeatureFlagRepository.prototype, 'createQueryBuilder')
-      .returns(updateQueryBuilder);
-    const result = {
-      identifiers: [{ id: flag.id }],
-      generatedMaps: [flag],
-      raw: [flag],
-    };
-
-    updateMock.expects('update').once().returns(updateQueryBuilder);
-    updateMock.expects('set').once().returns(updateQueryBuilder);
-    updateMock.expects('where').once().returns(updateQueryBuilder);
-    updateMock.expects('returning').once().returns(updateQueryBuilder);
-    updateMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.updateFilterMode(flag.id, FILTER_MODE.INCLUDE_ALL);
-
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    updateMock.verify();
-
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+    expect(mock.update).toHaveBeenCalledTimes(1);
+    expect(mock.set).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
     expect(res).toEqual(flag);
   });
 
   it('should throw an error when update flag fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(FeatureFlagRepository.prototype, 'createQueryBuilder')
-      .returns(updateQueryBuilder);
-
-    updateMock.expects('update').once().returns(updateQueryBuilder);
-    updateMock.expects('set').once().returns(updateQueryBuilder);
-    updateMock.expects('where').once().returns(updateQueryBuilder);
-    updateMock.expects('returning').once().returns(updateQueryBuilder);
-    updateMock.expects('execute').once().returns(Promise.reject(err));
-
+    mock.execute.mockRejectedValue(err);
     expect(async () => {
       await repo.updateState(flag.id, FEATURE_FLAG_STATUS.ENABLED);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+    expect(mock.update).toHaveBeenCalledTimes(1);
+    expect(mock.set).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 });

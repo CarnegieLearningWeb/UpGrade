@@ -1,17 +1,14 @@
-import { Connection, ConnectionManager, DeleteQueryBuilder, InsertQueryBuilder, EntityManager } from 'typeorm';
-import * as sinon from 'sinon';
+import { DataSource } from 'typeorm';
 import { StratificationFactorRepository } from '../../../src/api/repositories/StratificationFactorRepository';
 import { StratificationFactor } from '../../../src/api/models/StratificationFactor';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { Container } from '../../../src/typeorm-typedi-extensions';
+import { initializeMocks } from '../mockdata/mockRepo';
 
-let sandbox;
-let connection;
+let mock;
 let manager;
-let createQueryBuilderStub;
-let insertMock, deleteMock;
-const insertQueryBuilder = new InsertQueryBuilder<StratificationFactorRepository>(null);
-const deleteQueryBuilder = new DeleteQueryBuilder<StratificationFactorRepository>(null);
-const repo = new StratificationFactorRepository();
+let dataSource: DataSource;
+let repo: StratificationFactorRepository;
 const err = new Error('test error');
 const logger = new UpgradeLogger();
 
@@ -24,89 +21,95 @@ const result = {
   raw: [stratificationFactor],
 };
 
+beforeAll(() => {
+  dataSource = new DataSource({
+    type: 'postgres',
+    database: 'postgres',
+    entities: [StratificationFactorRepository],
+    synchronize: true,
+  });
+  Container.setDataSource('default', dataSource);
+});
+
 beforeEach(() => {
-  sandbox = sinon.createSandbox();
+  repo = Container.getCustomRepository(StratificationFactorRepository);
+  const commonMockData = initializeMocks(result);
+  repo.createQueryBuilder = commonMockData.createQueryBuilder;
+  mock = commonMockData.mocks;
 
-  const repocallback = sinon.stub();
-  repocallback.returns(StratificationFactorRepository.prototype);
-
-  sandbox.stub(ConnectionManager.prototype, 'get').returns({
-    getRepository: repocallback,
-  } as unknown as Connection);
-
-  connection = sinon.createStubInstance(Connection);
-  manager = new EntityManager(connection);
-
-  insertMock = sandbox.mock(insertQueryBuilder);
-  deleteMock = sandbox.mock(deleteQueryBuilder);
+  manager = {
+    createQueryBuilder: repo.createQueryBuilder,
+  };
 });
 
 afterEach(() => {
-  sandbox.restore();
+  jest.clearAllMocks();
 });
 
 describe('StratificationFactorRepository Testing', () => {
   it('should insert a new stratification factor', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.insertStratificationFactor([stratificationFactor], manager);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith([stratificationFactor]);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
+
     expect(res).toEqual([stratificationFactor]);
   });
 
   it('should throw an error when insert fails', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValueOnce(err);
 
     expect(async () => {
       await repo.insertStratificationFactor([stratificationFactor], manager);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith([stratificationFactor]);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should delete stratification factor', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(StratificationFactorRepository.prototype, 'createQueryBuilder')
-      .returns(deleteQueryBuilder);
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.resolve(result));
     const res = await repo.deleteStratificationFactorByName(stratificationFactor.stratificationFactorName, logger);
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    deleteMock.verify();
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
+
     expect(res).toEqual(stratificationFactor);
   });
 
   it('should throw an error when delete fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(StratificationFactorRepository.prototype, 'createQueryBuilder')
-      .returns(deleteQueryBuilder);
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValueOnce(err);
+
     expect(async () => {
       await repo.deleteStratificationFactorByName(stratificationFactor.stratificationFactorName, logger);
     }).rejects.toThrow(err);
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    deleteMock.verify();
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 });

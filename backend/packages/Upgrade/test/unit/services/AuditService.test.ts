@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
 import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
+import { configureLogger } from '../../utils/logger';
 
 const auditArr = [1, 2, 3];
 
@@ -11,6 +12,10 @@ describe('Audit Service Testing', () => {
   let service: AuditService;
   let repo: Repository<ExperimentAuditLogRepository>;
   let module: TestingModule;
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
     module = await Test.createTestingModule({

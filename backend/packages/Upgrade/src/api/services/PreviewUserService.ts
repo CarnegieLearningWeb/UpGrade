@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { v4 as uuid } from 'uuid';
 import { PreviewUser } from '../models/PreviewUser';
 import { PreviewUserRepository } from '../repositories/PreviewUserRepository';
@@ -32,7 +32,7 @@ export class PreviewUserService {
   public async findOne(id: string, logger: UpgradeLogger): Promise<PreviewUser | undefined> {
     logger.info({ message: `Find user by id => ${id}` });
     const [previewUser, assignments] = await Promise.all([
-      this.userRepository.findOne({ id }),
+      this.userRepository.findOneBy({ id }),
       this.userRepository.findOneById(id),
     ]);
     return assignments ? assignments : previewUser;
