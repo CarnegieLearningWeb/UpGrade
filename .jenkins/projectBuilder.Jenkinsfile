@@ -54,7 +54,7 @@ projectBuilderV5 (
             artifactType: "s3",
             versioning: "calendar",
             projectDir: "backend/packages/Scheduler",
-            artifactDir: "dist/schedule",
+            artifactDir: "dist",
             runInProjectDir: true,
             s3Config: [
                 file: "scheduler-lambda.zip",
@@ -67,7 +67,7 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
-                    script: 'npm run build:prod',
+                    script: 'npm run build:cl',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
                 ]
