@@ -47,6 +47,10 @@ Parameters:
     Description: Prefix of the shared network and ECS resources to use
     Type: String
     Default: scheduler-lambda
+  emailBucketResourcesPrefix:
+    Description: Prefix of the shared network and ECS resources to use
+    Type: String
+    Default: upgrade-email
 Conditions:
   IsProd: !Equals
     - !Ref environment
@@ -123,7 +127,9 @@ Resources:
             - Name: DOMAIN_NAME
               Value: '{{resolve:ssm:UPGRADE_DOMAIN_NAME}}'
             - Name: EMAIL_BUCKET
-              Value: '{{resolve:ssm:UPGRADE_EMAIL_BUCKET}}'
+              Value: 
+                Fn::ImportValue: 
+                  !Sub ${emailBucketResourcesPrefix}-${environment}-upgradeEmailBucketName
             - Name: EMAIL_EXPIRE_AFTER_SECONDS
               Value: '{{resolve:ssm:UPGRADE_EMAIL_EXPIRE_AFTER_SECONDS}}'
             - Name: EMAIL_FROM
