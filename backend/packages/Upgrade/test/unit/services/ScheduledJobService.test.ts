@@ -1,7 +1,7 @@
 import { ScheduledJobService } from '../../../src/api/services/ScheduledJobService';
-import { Connection, ConnectionManager, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ScheduledJobRepository } from '../../../src/api/repositories/ScheduledJobRepository';
 import { ErrorRepository } from '../../../src/api/repositories/ErrorRepository';
@@ -11,18 +11,22 @@ import { SCHEDULE_TYPE } from '../../../src/api/models/ScheduledJob';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { ScheduledJob } from '../../../src/api/models/ScheduledJob';
-import * as sinon from 'sinon';
 import { ExperimentRepository } from '../../../src/api/repositories/ExperimentRepository';
 import { UserRepository } from '../../../src/api/repositories/UserRepository';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import Container from 'typedi';
 import ExperimentServiceMock from '../controllers/mocks/ExperimentServiceMock';
+import { Container as tteContainer } from '../../../src/typeorm-typedi-extensions';
+import { configureLogger } from '../../utils/logger';
+import { ExperimentAuditLog } from '../../../src/api/models/ExperimentAuditLog';
+import { ExperimentError } from '../../../src/api/models/ExperimentError';
 
 describe('Scheduled Job Service Testing', () => {
   let service: ScheduledJobService;
   let scheduledJobRepo: Repository<ScheduledJobRepository>;
   let awsService: AWSService;
   let module: TestingModule;
+  let dataSource: DataSource;
   const logger = new UpgradeLogger();
 
   const mockjob1 = new ScheduledJob();
@@ -54,30 +58,45 @@ describe('Scheduled Job Service Testing', () => {
     getMany: jest.fn().mockResolvedValue([mockjob1]),
   };
 
-  const sandbox = sinon.createSandbox();
-
-  const entityManagerMock = { createQueryBuilder: () => queryBuilderMock, getRepository: () => scheduledJobRepo };
-  sandbox.stub(ConnectionManager.prototype, 'get').returns({
-    transaction: jest.fn(async (passedFunction) => await passedFunction(entityManagerMock)),
-  } as unknown as Connection);
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'postgres',
+      database: 'postgres',
+      entities: [ScheduledJob, ExperimentAuditLog, ExperimentError],
+      synchronize: true,
+    });
+    const entityManagerMock = { createQueryBuilder: () => queryBuilderMock, getRepository: () => scheduledJobRepo };
+    const mockTransaction = jest.fn(async (passedFunction) => await passedFunction(entityManagerMock));
+    dataSource.transaction = mockTransaction;
+    tteContainer.setDataSource('default', dataSource);
+
     Container.set(ExperimentService, new ExperimentServiceMock());
 
     module = await Test.createTestingModule({
       providers: [
+        DataSource,
         ScheduledJobService,
         ScheduledJobRepository,
         ExperimentAuditLogRepository,
         ErrorRepository,
         AWSService,
         {
+          provide: getDataSourceToken('default'),
+          useValue: dataSource,
+        },
+        {
           provide: getRepositoryToken(ScheduledJobRepository),
           useValue: {
             find: jest.fn().mockResolvedValue(scheduledJobArr),
+            findBy: jest.fn().mockResolvedValue(scheduledJobArr),
             delete: jest.fn().mockReturnThis(),
             upsertScheduledJob: jest.fn().mockResolvedValue(true),
             findOne: jest.fn().mockResolvedValue(mockjob1),
+            findOneBy: jest.fn().mockResolvedValue(mockjob1),
             update: jest.fn().mockResolvedValue(true),
           },
         },
@@ -157,7 +176,7 @@ describe('Scheduled Job Service Testing', () => {
     const exp = new Experiment();
     exp.state = EXPERIMENT_STATE.SCHEDULED;
     exp.endOn = new Date('2019-01-20');
-    scheduledJobRepo.find = jest.fn().mockResolvedValue([]);
+    scheduledJobRepo.findBy = jest.fn().mockResolvedValue([]);
     await service.updateExperimentSchedules(exp, logger);
     expect(awsService.stepFunctionStartExecution).toBeCalled();
   });
@@ -194,7 +213,7 @@ describe('Scheduled Job Service Testing', () => {
   it('should do nothing for enrollment complete with no found scheduled jobs', async () => {
     const exp = new Experiment();
     exp.state = EXPERIMENT_STATE.ENROLLMENT_COMPLETE;
-    scheduledJobRepo.find = jest.fn().mockResolvedValue([]);
+    scheduledJobRepo.findBy = jest.fn().mockResolvedValue([]);
     await service.updateExperimentSchedules(exp, logger);
     expect(scheduledJobRepo.delete).not.toBeCalled();
     expect(awsService.stepFunctionStartExecution).not.toBeCalled();
@@ -288,7 +307,8 @@ describe('Scheduled Job Service Testing', () => {
     exp.state = EXPERIMENT_STATE.SCHEDULED;
     mockjob1.timeStamp = new Date();
 
-    scheduledJobRepo.findOne = jest.fn().mockResolvedValueOnce(mockjob1).mockResolvedValueOnce(null);
+    scheduledJobRepo.findOne = jest.fn().mockResolvedValueOnce(mockjob1);
+    scheduledJobRepo.findOneBy = jest.fn().mockResolvedValueOnce(null);
     const res = await service.endExperiment(exp.id, logger);
     expect(res).toStrictEqual({});
   });

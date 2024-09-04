@@ -4,11 +4,11 @@ import { Segment } from '../models/Segment';
 import { FeatureFlagExposure } from '../models/FeatureFlagExposure';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
-import { InjectRepository } from 'typeorm-typedi-extensions';
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
-import { getConnection, getRepository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
+import { DataSource } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import {
   IFeatureFlagSearchParams,
@@ -31,6 +31,7 @@ export class FeatureFlagService {
     @InjectRepository() private featureFlagRepository: FeatureFlagRepository,
     @InjectRepository() private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
     @InjectRepository() private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
+    @InjectDataSource() private dataSource: DataSource,
     public experimentAssignmentService: ExperimentAssignmentService,
     public segmentService: SegmentService
   ) {}
@@ -67,14 +68,16 @@ export class FeatureFlagService {
 
     // save exposures in db
     try {
-      const exposureRepo = getRepository(FeatureFlagExposure);
-      const exposuresToSave = includedFeatureFlags.map((flag) => ({
-        featureFlag: flag,
-        experimentUser: experimentUserDoc,
-      }));
-      if (exposuresToSave.length > 0) {
-        await exposureRepo.save(exposuresToSave);
-      }
+      await this.dataSource.transaction(async (transactionalEntityManager) => {
+        const exposureRepo = transactionalEntityManager.getRepository(FeatureFlagExposure);
+        const exposuresToSave = includedFeatureFlags.map((flag) => ({
+          featureFlag: flag,
+          experimentUser: experimentUserDoc,
+        }));
+        if (exposuresToSave.length > 0) {
+          await exposureRepo.save(exposuresToSave);
+        }
+      });
     } catch (err) {
       const error = new Error(`Error in saving feature flag exposure records ${err}`);
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
@@ -150,7 +153,7 @@ export class FeatureFlagService {
 
   public async delete(featureFlagId: string, logger: UpgradeLogger): Promise<FeatureFlag | undefined> {
     logger.info({ message: `Delete Feature Flag => ${featureFlagId}` });
-    return getConnection().transaction(async (transactionalEntityManager) => {
+    return await this.dataSource.transaction(async (transactionalEntityManager) => {
       const featureFlag = await this.findOne(featureFlagId, logger);
 
       if (featureFlag) {
@@ -221,7 +224,7 @@ export class FeatureFlagService {
     flag.id = uuid();
     // saving feature flag doc
     let featureFlagDoc: FeatureFlag;
-    await getConnection().transaction(async (transactionalEntityManager) => {
+    await this.dataSource.transaction(async (transactionalEntityManager) => {
       try {
         featureFlagDoc = (
           await this.featureFlagRepository.insertFeatureFlag(flag as any, transactionalEntityManager)
@@ -239,7 +242,7 @@ export class FeatureFlagService {
   }
 
   private async updateFeatureFlagInDB(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
-    return getConnection().transaction(async (transactionalEntityManager) => {
+    return await this.dataSource.transaction(async (transactionalEntityManager) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {
         featureFlagSegmentExclusion,
@@ -272,12 +275,12 @@ export class FeatureFlagService {
     logger: UpgradeLogger
   ): Promise<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> {
     logger.info({ message: `Add ${filterType} list to feature flag` });
-    const createdList = await getConnection().transaction(async (transactionalEntityManager) => {
+    const createdList = await this.dataSource.transaction(async (transactionalEntityManager) => {
       const featureFlagSegmentInclusionOrExclusion =
         filterType === 'inclusion' ? new FeatureFlagSegmentInclusion() : new FeatureFlagSegmentExclusion();
       featureFlagSegmentInclusionOrExclusion.enabled = listInput.enabled;
       featureFlagSegmentInclusionOrExclusion.listType = listInput.listType;
-      const featureFlag = await this.featureFlagRepository.findOne(listInput.flagId);
+      const featureFlag = await this.featureFlagRepository.findOne({ where: { id: listInput.flagId } });
 
       featureFlagSegmentInclusionOrExclusion.featureFlag = featureFlag;
 
@@ -330,7 +333,7 @@ export class FeatureFlagService {
     logger: UpgradeLogger
   ): Promise<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> {
     logger.info({ message: `Update ${filterType} list for feature flag` });
-    return await getConnection().transaction(async (transactionalEntityManager) => {
+    return await this.dataSource.transaction(async (transactionalEntityManager) => {
       // Find the existing record
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
       if (filterType === 'inclusion') {

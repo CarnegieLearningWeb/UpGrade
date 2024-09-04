@@ -1,26 +1,15 @@
-import {
-  Connection,
-  ConnectionManager,
-  DeleteQueryBuilder,
-  EntityManager,
-  InsertQueryBuilder,
-  SelectQueryBuilder,
-} from 'typeorm';
-import * as sinon from 'sinon';
+import { DataSource } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
 import { ExperimentAuditLog } from '../../../src/api/models/ExperimentAuditLog';
 import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
 import { User } from '../../../src/api/models/User';
+import { Container } from '../../../src/typeorm-typedi-extensions';
+import { initializeMocks } from '../mockdata/mockRepo';
 
-let sandbox;
-let connection;
+let mock;
 let manager;
-let createQueryBuilderStub;
-let insertMock, deleteMock, selectMock;
-const insertQueryBuilder = new InsertQueryBuilder<ExperimentAuditLogRepository>(null);
-const deleteQueryBuilder = new DeleteQueryBuilder<ExperimentAuditLogRepository>(null);
-const selectQueryBuilder = new SelectQueryBuilder<ExperimentAuditLogRepository>(null);
-const repo = new ExperimentAuditLogRepository();
+let dataSource: DataSource;
+let repo: ExperimentAuditLogRepository;
 const err = new Error('test error');
 
 const experiment = new ExperimentAuditLog();
@@ -32,217 +21,187 @@ const result = {
   raw: [experiment],
 };
 
+beforeAll(() => {
+  dataSource = new DataSource({
+    type: 'postgres',
+    database: 'postgres',
+    entities: [ExperimentAuditLogRepository],
+    synchronize: true,
+  });
+  Container.setDataSource('default', dataSource);
+});
+
 beforeEach(() => {
-  sandbox = sinon.createSandbox();
+  repo = Container.getCustomRepository(ExperimentAuditLogRepository);
+  const commonMockData = initializeMocks(result);
+  repo.createQueryBuilder = commonMockData.createQueryBuilder;
+  mock = commonMockData.mocks;
 
-  const repocallback = sinon.stub();
-  repocallback.returns(ExperimentAuditLogRepository.prototype);
-
-  sandbox.stub(ConnectionManager.prototype, 'get').returns({
-    getRepository: repocallback,
-  } as unknown as Connection);
-
-  connection = sinon.createStubInstance(Connection);
-  manager = new EntityManager(connection);
-
-  insertMock = sandbox.mock(insertQueryBuilder);
-  deleteMock = sandbox.mock(deleteQueryBuilder);
-  selectMock = sandbox.mock(selectQueryBuilder);
+  manager = {
+    createQueryBuilder: repo.createQueryBuilder,
+  };
 });
 
 afterEach(() => {
-  sandbox.restore();
+  jest.clearAllMocks();
 });
 
 describe('ExperimentAuditLogRepository Testing', () => {
   it('should save new audit log', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, experiment, new User(), manager);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([experiment]);
   });
 
   it('should save new audit log without entity manager', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(ExperimentAuditLogRepository.prototype, 'createQueryBuilder')
-      .returns(insertQueryBuilder);
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, experiment, new User(), null);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([experiment]);
   });
 
   it('should throw an error when insert fails', async () => {
-    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, experiment, new User(), manager);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should clear logs', async () => {
-    const stub = sandbox.stub(ExperimentAuditLogRepository.prototype, 'createQueryBuilder');
-    stub.withArgs('audit').returns(selectQueryBuilder);
-    stub.withArgs().returns(deleteQueryBuilder);
-
-    selectMock.expects('select').once().returns(selectQueryBuilder);
-    selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-    selectMock.expects('limit').once().returns(selectQueryBuilder);
-    selectMock.expects('getQuery').once().returns(experiment.id);
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.clearLogs(4);
 
-    sinon.assert.calledTwice(stub);
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(2);
 
-    deleteMock.verify();
-    selectMock.verify();
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.orderBy).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledWith(4);
+    expect(mock.getQuery).toHaveBeenCalledTimes(1);
+
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([experiment]);
   });
 
   it('should throw an error when clear fails', async () => {
-    const stub = sandbox.stub(ExperimentAuditLogRepository.prototype, 'createQueryBuilder');
-    stub.withArgs('audit').returns(selectQueryBuilder);
-    stub.withArgs().returns(deleteQueryBuilder);
+    mock.execute.mockRejectedValue(err);
 
-    selectMock.expects('select').once().returns(selectQueryBuilder);
-    selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-    selectMock.expects('limit').once().returns(selectQueryBuilder);
-    selectMock.expects('getQuery').once().returns(experiment.id);
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.reject(err));
+    await expect(repo.clearLogs(4)).rejects.toThrow(err);
 
-    await expect(() => repo.clearLogs(4)).rejects.toThrow();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(2);
 
-    sinon.assert.calledTwice(stub);
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.orderBy).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledWith(4);
+    expect(mock.getQuery).toHaveBeenCalledTimes(1);
 
-    selectMock.verify();
-    deleteMock.verify();
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should get total logs', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(ExperimentAuditLogRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('getCount').once().returns(Promise.resolve(5));
-
     const res = await repo.getTotalLogs(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.getCount).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(5);
   });
 
   it('should throw an error when get total logs fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(ExperimentAuditLogRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
+    mock.getCount.mockRejectedValue(err);
 
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('getCount').once().returns(Promise.reject(err));
+    await expect(repo.getTotalLogs(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED)).rejects.toThrow(err);
 
-    expect(async () => {
-      await repo.getTotalLogs(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
-    }).rejects.toThrow(err);
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.getCount).toHaveBeenCalledTimes(1);
   });
 
   it('should find paginated', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(ExperimentAuditLogRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-
-    selectMock.expects('offset').once().returns(selectQueryBuilder);
-    selectMock.expects('limit').once().returns(selectQueryBuilder);
-    selectMock.expects('leftJoinAndSelect').once().returns(selectQueryBuilder);
-    selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.resolve(result));
-
     const res = await repo.paginatedFind(3, 0, EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.offset).toHaveBeenCalledTimes(1);
+    expect(mock.offset).toHaveBeenCalledWith(0);
+    expect(mock.limit).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledWith(3);
+    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(1);
+    expect(mock.orderBy).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should find paginated with no filter', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(ExperimentAuditLogRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-
-    selectMock.expects('offset').once().returns(selectQueryBuilder);
-    selectMock.expects('limit').once().returns(selectQueryBuilder);
-    selectMock.expects('leftJoinAndSelect').once().returns(selectQueryBuilder);
-    selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-    selectMock.expects('where').never().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.resolve(result));
-
     const res = await repo.paginatedFind(3, 0, null);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.offset).toHaveBeenCalledTimes(1);
+    expect(mock.offset).toHaveBeenCalledWith(0);
+    expect(mock.limit).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledWith(3);
+    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(1);
+    expect(mock.orderBy).toHaveBeenCalledTimes(1);
+    expect(mock.where).not.toHaveBeenCalled();
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should throw an error when find paginated fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(ExperimentAuditLogRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
+    mock.getMany.mockRejectedValue(err);
 
-    selectMock.expects('offset').once().returns(selectQueryBuilder);
-    selectMock.expects('limit').once().returns(selectQueryBuilder);
-    selectMock.expects('leftJoinAndSelect').once().returns(selectQueryBuilder);
-    selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.reject(err));
+    await expect(repo.paginatedFind(3, 0, EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED)).rejects.toThrow(err);
 
-    expect(async () => {
-      await repo.paginatedFind(3, 0, EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
-    }).rejects.toThrow(err);
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(mock.offset).toHaveBeenCalledTimes(1);
+    expect(mock.offset).toHaveBeenCalledWith(0);
+    expect(mock.limit).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledWith(3);
+    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(1);
+    expect(mock.orderBy).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,19 +1,18 @@
+import { Container as tteContainer } from './../../../../src/typeorm-typedi-extensions/Container';
 import { scheduleJobUpdateExperiment } from '../../mockData/experiment/index';
-// import { Logger as WinstonLogger } from '../../../../src/lib/logger';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
-import { IndividualEnrollment } from '../../../../src/api/models/IndividualEnrollment';
-import { getRepository } from 'typeorm';
 import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../../utils/index';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { IndividualEnrollmentRepository } from '../../../../src/api/repositories/IndividualEnrollmentRepository';
 
 export default async function UpdateExperimentState(): Promise<void> {
-  const individualEnrollmentRepository = getRepository(IndividualEnrollment);
+  const individualEnrollmentRepository = tteContainer.getCustomRepository(IndividualEnrollmentRepository);
 
   // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);

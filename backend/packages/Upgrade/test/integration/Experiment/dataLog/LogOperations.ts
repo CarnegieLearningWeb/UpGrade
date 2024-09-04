@@ -1,8 +1,8 @@
+import { Container as ExtContainer } from './../../../../src/typeorm-typedi-extensions/Container';
 import Container from 'typedi';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { individualAssignmentExperiment } from '../../mockData/experiment/index';
 import { UserService } from '../../../../src/api/services/UserService';
-import { getRepository } from 'typeorm';
 import { Metric } from '../../../../src/api/models/Metric';
 import { systemUser } from '../../mockData/user/index';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
@@ -23,7 +23,8 @@ export default async function LogOperations(): Promise<void> {
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   let experimentObject = individualAssignmentExperiment;
   const userService = Container.get<UserService>(UserService);
-  const metricRepository = getRepository(Metric);
+  const dataSource = ExtContainer.getDataSource();
+  const metricRepository = dataSource.getRepository(Metric);
   const metricService = Container.get<MetricService>(MetricService);
   const settingService = Container.get<SettingService>(SettingService);
   const queryService = Container.get<QueryService>(QueryService);
@@ -609,17 +610,18 @@ export default async function LogOperations(): Promise<void> {
         break;
       }
       // Can not check exact values for below operations
-      case OPERATION_TYPES.COUNT:
+      case OPERATION_TYPES.COUNT: {
         const countValue = res.reduce((accu, data) => {
           return accu + data;
         }, 0);
         expectedValue = 4;
-        if(query.metric.type === 'categorical'){
+        if (query.metric.type === 'categorical') {
           expectedValue = 5; // For completion metric
         }
         expect(countValue).toEqual(expectedValue);
         break;
-      case OPERATION_TYPES.AVERAGE:
+      }
+      case OPERATION_TYPES.AVERAGE: {
         const avgValue = (res.reduce((accu, data) => {
           return accu + data;
         }, 0))/res.length;
@@ -629,7 +631,8 @@ export default async function LogOperations(): Promise<void> {
         }
         expect(avgValue).toEqual(expectedValue);
         break;
-      case OPERATION_TYPES.MODE:
+      }
+      case OPERATION_TYPES.MODE: {
         const modeValue = res[1];
         expectedValue = 20;
         if (query.metric.key !== 'totalProblemsCompleted') {
@@ -637,7 +640,8 @@ export default async function LogOperations(): Promise<void> {
         }
         expect(modeValue).toEqual(expectedValue);
         break;
-      case OPERATION_TYPES.MEDIAN:
+      }
+      case OPERATION_TYPES.MEDIAN: {
         const medianValue = res[1];
         expectedValue = 50;
         if (query.metric.key !== 'totalProblemsCompleted') {
@@ -645,7 +649,8 @@ export default async function LogOperations(): Promise<void> {
         }
         expect(medianValue).toEqual(expectedValue);
         break;
-      case OPERATION_TYPES.STDEV:
+      }
+      case OPERATION_TYPES.STDEV: {
         const stdValue = res[1];
         expectedValue = 40;
         if (query.metric.key !== 'totalProblemsCompleted') {
@@ -653,11 +658,13 @@ export default async function LogOperations(): Promise<void> {
         }
         expect(stdValue).toEqual(expectedValue);
         break;
-      case OPERATION_TYPES.PERCENTAGE:
+      }
+      case OPERATION_TYPES.PERCENTAGE: {
         const perValue = res[1];
         expectedValue = 33;
         expect(perValue).toEqual(expectedValue);
         break;
+      }
       default:
         break;
     }

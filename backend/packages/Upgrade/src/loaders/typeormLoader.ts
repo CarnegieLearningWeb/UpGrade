@@ -1,94 +1,93 @@
 import { MicroframeworkLoader, MicroframeworkSettings } from 'microframework';
-import { createConnection, getConnectionOptions, ConnectionOptions } from 'typeorm';
-
+import { DataSource, LogLevel } from 'typeorm';
 import { env } from '../env';
 import { SERVER_ERROR } from 'upgrade_types';
 import { CONNECTION_NAME } from './enums';
+import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/PostgresConnectionCredentialsOptions';
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
+import { Container as tteContainer } from '../typeorm-typedi-extensions';
 
-export const typeormLoader: MicroframeworkLoader = async (settings: MicroframeworkSettings | undefined) => {
-  const loadedConnectionOptions = await getConnectionOptions();
-  const loadedreplicaConnectionOptions = await getConnectionOptions();
-  const replica_hostnames: string[] = (env.db.host_replica && JSON.parse(env.db.host_replica)) || [];
+const replicaHosts = (env.db.host_replica ? JSON.parse(env.db.host_replica) : []) as string[];
 
-  const master_host = {
-    host: env.db.host,
+const masterHost: PostgresConnectionCredentialsOptions = {
+  host: env.db.host,
+  port: env.db.port,
+  username: env.db.username,
+  password: env.db.password,
+  database: env.db.database,
+};
+
+const replicaHost: PostgresConnectionCredentialsOptions[] = replicaHosts.map((hostname) => {
+  return {
+    host: hostname,
     port: env.db.port,
     username: env.db.username,
     password: env.db.password,
     database: env.db.database,
   };
-  const replica_hosts = replica_hostnames.map((hostname) => {
-    return {
-      host: hostname,
-      port: env.db.port,
-      username: env.db.username,
-      password: env.db.password,
-      database: env.db.database,
-    };
-  });
+});
 
-  // connection options:
-  const mainDBConnectionOptions = {
-    name: CONNECTION_NAME.MAIN,
-    type: env.db.type, // See createConnection options for valid types
-    replication: {
-      master: master_host,
-      slaves: [],
-    },
-    synchronize: env.db.synchronize,
-    logging: env.db.logging,
-    maxQueryExecutionTime: env.db.maxQueryExecutionTime,
-    entities: env.app.dirs.entities,
-    migrations: env.app.dirs.migrations,
-    extra: { max: env.db.maxConnectionPool },
-  };
+// connection options:
+const mainDBConnectionOptions: PostgresConnectionOptions = {
+  name: CONNECTION_NAME.MAIN,
+  type: env.db.type as 'postgres',
+  replication: {
+    master: masterHost, // use the master connection for all DB read and write operations
+    slaves: [], // no slaves required
+  },
+  synchronize: env.db.synchronize,
+  logging: env.db.logging as boolean | 'all' | LogLevel[],
+  maxQueryExecutionTime: env.db.maxQueryExecutionTime,
+  entities: env.app.dirs.entities,
+  migrations: env.app.dirs.migrations,
+  extra: { max: env.db.maxConnectionPool },
+};
 
-  const exportReplicaDBConnectionOptions = {
-    name: CONNECTION_NAME.REPLICA,
-    type: env.db.type, // See createConnection options for valid types
-    replication: {
-      master: master_host,
-      slaves: [],
-    },
-    synchronize: env.db.synchronize,
-    logging: env.db.logging,
-    maxQueryExecutionTime: env.db.maxQueryExecutionTime,
-    entities: env.app.dirs.entities,
-    migrations: env.app.dirs.migrations,
-  };
+const exportReplicaDBConnectionOptions: PostgresConnectionOptions = {
+  name: CONNECTION_NAME.REPLICA,
+  type: env.db.type as 'postgres',
+  replication: {
+    master: masterHost, // use the master connection for export CSV related write operations if any.
+    // by default we cannot perform write operations on replica, so no need to provide the master connection here.
+    slaves: replicaHost, // use the replica connection for export CSV related read operations.
+    // if no replica host is present, then the master connection will be used for read operations as well.
+  },
+  synchronize: env.db.synchronize,
+  logging: env.db.logging as boolean | 'all' | LogLevel[],
+  maxQueryExecutionTime: env.db.maxQueryExecutionTime,
+  entities: env.app.dirs.entities,
+  migrations: env.app.dirs.migrations,
+};
 
-  if (replica_hostnames.length === 0) {
-    // if no read replica is defined, then we use master host for replica connection to handle export data
-    exportReplicaDBConnectionOptions.replication.slaves[0] = master_host;
-  } else {
-    // if a single read replica is defined, then we use the first read replica host to handle export data
-    const replica_host = replica_hosts.shift();
-    exportReplicaDBConnectionOptions.replication.slaves[0] = replica_host; // .shift() is like .pop() but for first item
+const appDataSourceInstance = new DataSource(mainDBConnectionOptions);
+const exportDataSourceInstance = new DataSource(exportReplicaDBConnectionOptions);
+// Export only the primary DataSource instance
+export default appDataSourceInstance;
 
-    // if more than one read replica is defined, then we use all the remaining read replica hosts
-    // as extra read replica db connections to handle load on master db connection.
-    mainDBConnectionOptions.replication.slaves = replica_hosts;
-  }
-
-  const mainConnectionOptions: ConnectionOptions = Object.assign(loadedConnectionOptions, mainDBConnectionOptions);
-  const exportReplicaConnectionOptions: ConnectionOptions = Object.assign(
-    loadedreplicaConnectionOptions,
-    exportReplicaDBConnectionOptions
-  );
-
+export const typeormLoader: MicroframeworkLoader = async (settings: MicroframeworkSettings | undefined) => {
   try {
-    const connection = await createConnection(mainConnectionOptions);
-    const replicaConnection = await createConnection(exportReplicaConnectionOptions);
-    // run the migrations
-    await connection.runMigrations();
+    // register the data source instance in the typeorm-typeDI-extensions
+    tteContainer.setDataSource(CONNECTION_NAME.MAIN, appDataSourceInstance);
+
+    // register the data source instance in the typeorm-typeDI-extensions
+    tteContainer.setDataSource(CONNECTION_NAME.REPLICA, exportDataSourceInstance);
+    await Promise.all([appDataSourceInstance.initialize(), exportDataSourceInstance.initialize()]);
+
+    if (!env.db.synchronize) {
+      await appDataSourceInstance.runMigrations();
+      await exportDataSourceInstance.runMigrations();
+    }
 
     if (settings) {
-      settings.setData('connection', connection);
-      settings.setData('replicaConnection', replicaConnection);
-      settings.onShutdown(() => connection.close());
-      settings.onShutdown(() => replicaConnection.close());
+      // sending the connections to the next middleware
+      settings.setData('connection', appDataSourceInstance);
+      // settings.setData('replicaConnection', exportDataSourceInstance);
+      settings.onShutdown(() => {
+        [appDataSourceInstance.destroy()];
+      });
     }
   } catch (err) {
+    // TODO: use logger to log the error
     const error = err as any;
     if (error.code === 'ECONNREFUSED') {
       error.type = SERVER_ERROR.DB_UNREACHABLE;
@@ -97,7 +96,7 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
       error.type = SERVER_ERROR.MIGRATION_ERROR;
       throw error;
     } else {
-      error.type = SERVER_ERROR.DB_AUTH_FAIL;
+      // throw the error as it is
       throw error;
     }
   }

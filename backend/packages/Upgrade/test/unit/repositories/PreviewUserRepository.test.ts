@@ -1,246 +1,194 @@
-import { DeleteQueryBuilder, InsertQueryBuilder, SelectQueryBuilder } from 'typeorm';
-import * as sinon from 'sinon';
+import { DataSource } from 'typeorm';
 import { PreviewUserRepository } from '../../../src/api/repositories/PreviewUserRepository';
 import { PreviewUser } from '../../../src/api/models/PreviewUser';
+import { Container } from '../../../src/typeorm-typedi-extensions';
+import { initializeMocks } from '../mockdata/mockRepo';
 
-let sandbox;
-let createQueryBuilderStub;
-let insertMock, deleteMock, selectMock;
-const insertQueryBuilder = new InsertQueryBuilder<PreviewUserRepository>(null);
-const deleteQueryBuilder = new DeleteQueryBuilder<PreviewUserRepository>(null);
-const selectQueryBuilder = new SelectQueryBuilder<PreviewUserRepository>(null);
-const repo = new PreviewUserRepository();
+let mock;
+let dataSource: DataSource;
+let repo: PreviewUserRepository;
 const err = new Error('test error');
 
 const user = new PreviewUser();
 user.id = 'id1';
 
-beforeEach(() => {
-  sandbox = sinon.createSandbox();
+const result = {
+  identifiers: [{ id: user.id }],
+  generatedMaps: [user],
+  raw: [user],
+};
 
-  insertMock = sandbox.mock(insertQueryBuilder);
-  deleteMock = sandbox.mock(deleteQueryBuilder);
-  selectMock = sandbox.mock(selectQueryBuilder);
+beforeAll(() => {
+  dataSource = new DataSource({
+    type: 'postgres',
+    database: 'postgres',
+    entities: [PreviewUserRepository],
+    synchronize: true,
+  });
+  Container.setDataSource('default', dataSource);
+});
+
+beforeEach(() => {
+  repo = Container.getCustomRepository(PreviewUserRepository);
+  const commonMockData = initializeMocks(result);
+  repo.createQueryBuilder = commonMockData.createQueryBuilder;
+  mock = commonMockData.mocks;
 });
 
 afterEach(() => {
-  sandbox.restore();
+  jest.clearAllMocks();
 });
-
 describe('PreviewUserRepository Testing', () => {
   it('should insert a new preview user', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(PreviewUserRepository.prototype, 'createQueryBuilder')
-      .returns(insertQueryBuilder);
-    const result = {
-      identifiers: [{ id: user.id }],
-      generatedMaps: [user],
-      raw: [user],
-    };
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.saveRawJson(user);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith(user);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([user]);
   });
 
   it('should throw an error when insert fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(PreviewUserRepository.prototype, 'createQueryBuilder')
-      .returns(insertQueryBuilder);
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.saveRawJson(user);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith(user);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should delete a preview user', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(PreviewUserRepository.prototype, 'createQueryBuilder')
-      .returns(deleteQueryBuilder);
-    const result = {
-      identifiers: [{ id: user.id }],
-      generatedMaps: [user],
-      raw: [user],
-    };
-
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.deleteById(user.id);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    deleteMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([user]);
   });
 
   it('should throw an error when delete fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(PreviewUserRepository.prototype, 'createQueryBuilder')
-      .returns(deleteQueryBuilder);
-
-    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-    deleteMock.expects('from').once().returns(deleteQueryBuilder);
-    deleteMock.expects('where').once().returns(deleteQueryBuilder);
-    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-    deleteMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.deleteById(user.id);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    deleteMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.delete).toHaveBeenCalledTimes(1);
+    expect(mock.from).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should find user by id', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(PreviewUserRepository.prototype, 'createQueryBuilder')
-      .returns(selectQueryBuilder);
-    const result = {
-      identifiers: [{ id: user.id }],
-      generatedMaps: [user],
-      raw: [user],
-    };
-
-    selectMock.expects('innerJoinAndSelect').once().returns(selectQueryBuilder);
-    selectMock.expects('innerJoin').twice().returns(selectQueryBuilder);
-    selectMock.expects('addSelect').twice().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('getOne').once().returns(Promise.resolve(result));
-
     const res = await repo.findOneById(user.id);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    expect(res).toEqual(result);
+    expect(mock.innerJoinAndSelect).toHaveBeenCalledTimes(1);
+    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(mock.addSelect).toHaveBeenCalledTimes(2);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.getOne).toHaveBeenCalledTimes(1);
+
+    expect(res).toEqual(result.raw[0]);
   });
 
   it('should throw an error when find user by id fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(PreviewUserRepository.prototype, 'createQueryBuilder')
-      .withArgs('user')
-      .returns(selectQueryBuilder);
-
-    selectMock.expects('innerJoinAndSelect').once().returns(selectQueryBuilder);
-    selectMock.expects('innerJoin').twice().returns(selectQueryBuilder);
-    selectMock.expects('addSelect').twice().returns(selectQueryBuilder);
-    selectMock.expects('where').once().returns(selectQueryBuilder);
-    selectMock.expects('getOne').once().returns(Promise.reject(err));
+    mock.getOne.mockRejectedValue(err);
 
     expect(async () => {
       await repo.findOneById(user.id);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.innerJoinAndSelect).toHaveBeenCalledTimes(1);
+    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(mock.addSelect).toHaveBeenCalledTimes(2);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.getOne).toHaveBeenCalledTimes(1);
   });
 
   it('should find with names', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(PreviewUserRepository.prototype, 'createQueryBuilder')
-      .withArgs('user')
-      .returns(selectQueryBuilder);
-    const result = {
-      identifiers: [{ id: user.id }],
-      generatedMaps: [user],
-      raw: [user],
-    };
-
-    selectMock.expects('innerJoinAndSelect').once().returns(selectQueryBuilder);
-    selectMock.expects('innerJoin').twice().returns(selectQueryBuilder);
-    selectMock.expects('addSelect').twice().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.resolve(result));
-
     const res = await repo.findWithNames();
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.innerJoinAndSelect).toHaveBeenCalledTimes(1);
+    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(mock.addSelect).toHaveBeenCalledTimes(2);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should throw an error when find with names fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(PreviewUserRepository.prototype, 'createQueryBuilder')
-      .withArgs('user')
-      .returns(selectQueryBuilder);
-
-    selectMock.expects('innerJoinAndSelect').once().returns(selectQueryBuilder);
-    selectMock.expects('innerJoin').twice().returns(selectQueryBuilder);
-    selectMock.expects('addSelect').twice().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.reject(err));
+    mock.getMany.mockRejectedValue(err);
 
     expect(async () => {
       await repo.findWithNames();
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.innerJoinAndSelect).toHaveBeenCalledTimes(1);
+    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(mock.addSelect).toHaveBeenCalledTimes(2);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
   });
 
   it('should find paginated', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(PreviewUserRepository.prototype, 'createQueryBuilder')
-      .withArgs('user')
-      .returns(selectQueryBuilder);
-    const result = {
-      identifiers: [{ id: user.id }],
-      generatedMaps: [user],
-      raw: [user],
-    };
-
-    selectMock.expects('offset').once().returns(selectQueryBuilder);
-    selectMock.expects('limit').once().returns(selectQueryBuilder);
-    selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.resolve(result));
-
     const res = await repo.findPaginated(1, 1);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.offset).toHaveBeenCalledTimes(1);
+    expect(mock.offset).toHaveBeenCalledWith(1);
+    expect(mock.limit).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledWith(1);
+    expect(mock.orderBy).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should throw an error when find paginated fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(PreviewUserRepository.prototype, 'createQueryBuilder')
-      .withArgs('user')
-      .returns(selectQueryBuilder);
-
-    selectMock.expects('offset').once().returns(selectQueryBuilder);
-    selectMock.expects('limit').once().returns(selectQueryBuilder);
-    selectMock.expects('orderBy').once().returns(selectQueryBuilder);
-    selectMock.expects('getMany').once().returns(Promise.reject(err));
+    mock.getMany.mockRejectedValue(err);
 
     expect(async () => {
       await repo.findPaginated(1, 1);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    selectMock.verify();
+    expect(mock.offset).toHaveBeenCalledTimes(1);
+    expect(mock.offset).toHaveBeenCalledWith(1);
+    expect(mock.limit).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledWith(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
   });
 });

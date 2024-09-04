@@ -1,118 +1,112 @@
-import { InsertQueryBuilder, UpdateQueryBuilder } from 'typeorm';
-import * as sinon from 'sinon';
+import { DataSource } from 'typeorm';
 import { ExperimentUserRepository } from '../../../src/api/repositories/ExperimentUserRepository';
 import { ExperimentUser } from '../../../src/api/models/ExperimentUser';
+import { Container } from '../../../src/typeorm-typedi-extensions';
+import { initializeMocks } from '../mockdata/mockRepo';
 
-let sandbox;
-let createQueryBuilderStub;
-let insertMock, updateMock;
-const insertQueryBuilder = new InsertQueryBuilder<ExperimentUserRepository>(null);
-const updateQueryBuilder = new UpdateQueryBuilder<ExperimentUserRepository>(null);
-const repo = new ExperimentUserRepository();
+let mock;
+let dataSource: DataSource;
+let repo: ExperimentUserRepository;
 const err = new Error('test error');
 
 const user = new ExperimentUser();
 user.id = 'user1';
 
-beforeEach(() => {
-  sandbox = sinon.createSandbox();
+const result = {
+  identifiers: [{ id: user.id }],
+  generatedMaps: [user],
+  raw: [user],
+};
 
-  insertMock = sandbox.mock(insertQueryBuilder);
-  updateMock = sandbox.mock(updateQueryBuilder);
+beforeAll(() => {
+  dataSource = new DataSource({
+    type: 'postgres',
+    database: 'postgres',
+    entities: [ExperimentUserRepository],
+    synchronize: true,
+  });
+  Container.setDataSource('default', dataSource);
+});
+
+beforeEach(() => {
+  repo = Container.getCustomRepository(ExperimentUserRepository);
+  const commonMockData = initializeMocks(result);
+  repo.createQueryBuilder = commonMockData.createQueryBuilder;
+  mock = commonMockData.mocks;
 });
 
 afterEach(() => {
-  sandbox.restore();
+  jest.clearAllMocks();
 });
 
 describe('ExperimentUserRepository Testing', () => {
   it('should insert a new experiment user', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(ExperimentUserRepository.prototype, 'createQueryBuilder')
-      .returns(insertQueryBuilder);
-    const result = {
-      identifiers: [{ id: user.id }],
-      generatedMaps: [user],
-      raw: [user],
-    };
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-    insertMock.expects('setParameter').once().returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.saveRawJson(user);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith(user);
+    expect(mock.orUpdate).toHaveBeenCalledTimes(1);
+    expect(mock.setParameter).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([user]);
   });
 
   it('should throw an error when insert fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(ExperimentUserRepository.prototype, 'createQueryBuilder')
-      .returns(insertQueryBuilder);
-
-    insertMock.expects('insert').once().returns(insertQueryBuilder);
-    insertMock.expects('into').once().returns(insertQueryBuilder);
-    insertMock.expects('values').once().returns(insertQueryBuilder);
-    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-    insertMock.expects('setParameter').once().returns(insertQueryBuilder);
-    insertMock.expects('returning').once().returns(insertQueryBuilder);
-    insertMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.saveRawJson(user);
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    insertMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.insert).toHaveBeenCalledTimes(1);
+    expect(mock.into).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledTimes(1);
+    expect(mock.values).toHaveBeenCalledWith(user);
+    expect(mock.orUpdate).toHaveBeenCalledTimes(1);
+    expect(mock.setParameter).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should update working group', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(ExperimentUserRepository.prototype, 'createQueryBuilder')
-      .returns(updateQueryBuilder);
-    const result = {
-      identifiers: [{ id: user.id }],
-      generatedMaps: [user],
-      raw: [user],
-    };
-
-    updateMock.expects('update').once().returns(updateQueryBuilder);
-    updateMock.expects('set').once().returns(updateQueryBuilder);
-    updateMock.expects('where').once().returns(updateQueryBuilder);
-    updateMock.expects('returning').once().returns(updateQueryBuilder);
-    updateMock.expects('execute').once().returns(Promise.resolve(result));
-
     const res = await repo.updateWorkingGroup(user.id, 'group1');
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    updateMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.update).toHaveBeenCalledTimes(1);
+    expect(mock.set).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(user);
   });
 
   it('should throw an error when update working group fails', async () => {
-    createQueryBuilderStub = sandbox
-      .stub(ExperimentUserRepository.prototype, 'createQueryBuilder')
-      .returns(updateQueryBuilder);
-
-    updateMock.expects('update').once().returns(updateQueryBuilder);
-    updateMock.expects('set').once().returns(updateQueryBuilder);
-    updateMock.expects('where').once().returns(updateQueryBuilder);
-    updateMock.expects('returning').once().returns(updateQueryBuilder);
-    updateMock.expects('execute').once().returns(Promise.reject(err));
+    mock.execute.mockRejectedValue(err);
 
     expect(async () => {
       await repo.updateWorkingGroup(user.id, 'group1');
     }).rejects.toThrow(err);
 
-    sinon.assert.calledOnce(createQueryBuilderStub);
-    updateMock.verify();
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.update).toHaveBeenCalledTimes(1);
+    expect(mock.set).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledTimes(1);
+    expect(mock.returning).toHaveBeenCalledWith('*');
+    expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 });
