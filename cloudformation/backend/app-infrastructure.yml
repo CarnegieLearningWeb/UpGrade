@@ -234,8 +234,7 @@ Resources:
             FilesystemId:
               Fn::ImportValue: !Sub ${sharedEcsResourcesPrefix}-${environment}-fluentdConfigFilesystemId
       TaskRoleArn: 
-        Fn::ImportValue: 
-          !Sub ${sharedResourcesPrefix}-${environment}-taskRoleArn
+        Fn::ImportValue: !Sub ${sharedResourcesPrefix}-${environment}-taskRoleArn
   ecsService:
     Type: AWS::ECS::Service
     DependsOn: alblistenerrule
