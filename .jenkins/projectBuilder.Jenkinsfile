@@ -109,5 +109,19 @@ projectBuilderV5 (
                 ]
             ]
         ],
+        "Scheduler-Lambda": [
+            projects: ["scheduler-lambda"],
+            automated: [
+                [
+                    type: "defaultBranch",
+                    environment: "qa"
+                ]
+            ],
+            jobs: [
+                [
+                    job: "Upgrade-Scheduler-Lambda-Deploy"
+                ]
+            ]
+        ],
     ]
 )
