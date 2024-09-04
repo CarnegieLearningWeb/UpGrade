@@ -49,7 +49,30 @@ projectBuilderV5 (
                 BASE_HREF_PREFIX: '@vault(secret/configs/upgrade/${environment}/BASE_HREF_PREFIX)',
                 GOOGLE_CLIENT_ID: '@vault(secret/configs/upgrade/${environment}/GOOGLE_CLIENT_ID)',
             ],
-        ]
+        ],
+         "scheduler-lambda": [
+            artifactType: "s3",
+            versioning: "calendar",
+            projectDir: "backend/packages/Scheduler",
+            artifactDir: "dist/schedule",
+            runInProjectDir: true,
+            s3Config: [
+                file: "scheduler-lambda.zip",
+                path: "scheduler-lambda/"
+            ],
+            buildScripts: [
+                [
+                    script: 'npm ci --no-audit',
+                    githubCheck: '${projectName} npm ci --no-audit',
+                    log: '${projectName}-npm-ci.log'
+                ],
+                [
+                    script: 'npm run build:prod',
+                    log: '${projectName}-build.log',
+                    githubCheck: '${projectName}-build'
+                ]
+            ]
+        ],
     ],
     deployments: [
         UpgradeService: [
