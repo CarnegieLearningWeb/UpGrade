@@ -43,6 +43,10 @@ Parameters:
     Description: Prefix of the shared network and ECS resources to use
     Type: String
     Default: upgrade-service-shared-infrastructure
+  lambdaResourcesPrefix:
+    Description: Prefix of the shared network and ECS resources to use
+    Type: String
+    Default: scheduler-lambda
 Conditions:
   IsProd: !Equals
     - !Ref environment
@@ -143,7 +147,9 @@ Resources:
             - Name: RDS_PORT
               Value: '{{resolve:ssm:UPGRADE_RDS_PORT}}'
             - Name: SCHEDULER_STEP_FUNCTION
-              Value: '{{resolve:ssm:UPGRADE_SCHEDULER_STEP_FUNCTION}}'  
+              Value: 
+                Fn::ImportValue: 
+                  !Sub lambdaResourcesPrefix-${environment}-stepFunctionArn
             - Name: SWAGGER_API
               Value: '{{resolve:ssm:UPGRADE_SWAGGER_API}}'
             - Name: SWAGGER_ENABLED
