@@ -17,6 +17,6 @@ export class FeatureFlagExposure extends BaseModel {
   @ManyToOne(() => FeatureFlag, { onDelete: 'CASCADE' })
   public featureFlag: FeatureFlag;
   @Index()
-  @ManyToOne(() => FeatureFlag, { onDelete: 'CASCADE' })
+  @ManyToOne(() => ExperimentUser, { onDelete: 'CASCADE' })
   public experimentUser: ExperimentUser;
 }
