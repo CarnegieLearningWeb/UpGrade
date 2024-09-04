@@ -67,7 +67,7 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
-                    script: 'npm run build:cl',
+                    script: 'npm run build:prod',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
                 ],
