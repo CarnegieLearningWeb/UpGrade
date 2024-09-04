@@ -68,14 +68,16 @@ export class FeatureFlagService {
 
     // save exposures in db
     try {
-      const exposureRepo = this.dataSource.getRepository(FeatureFlagExposure);
-      const exposuresToSave = includedFeatureFlags.map((flag) => ({
-        featureFlag: flag,
-        experimentUser: experimentUserDoc,
-      }));
-      if (exposuresToSave.length > 0) {
-        await exposureRepo.save(exposuresToSave);
-      }
+      await this.dataSource.transaction(async (transactionalEntityManager) => {
+        const exposureRepo = transactionalEntityManager.getRepository(FeatureFlagExposure);
+        const exposuresToSave = includedFeatureFlags.map((flag) => ({
+          featureFlag: flag,
+          experimentUser: experimentUserDoc,
+        }));
+        if (exposuresToSave.length > 0) {
+          await exposureRepo.save(exposuresToSave);
+        }
+      });
     } catch (err) {
       const error = new Error(`Error in saving feature flag exposure records ${err}`);
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
