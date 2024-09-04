@@ -491,7 +491,7 @@ export class FeatureFlagService {
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
       // Find the existing record
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
-      const featureFlag = await this.featureFlagRepository.findOne(listInput.flagId);
+      const featureFlag = await this.findOne(listInput.flagId);
 
       if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
