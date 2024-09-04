@@ -6,6 +6,7 @@ import { ErrorRepository } from '../../../src/api/repositories/ErrorRepository';
 import { ExperimentError } from '../../../src/api/models/ExperimentError';
 import { SERVER_ERROR } from 'upgrade_types';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { configureLogger } from '../../utils/logger';
 
 const errorArr = [1, 2, 3];
 const error = new ExperimentError();
@@ -15,6 +16,10 @@ describe('Error Service Testing', () => {
   let service: ErrorService;
   let repo: Repository<ErrorRepository>;
   let module: TestingModule;
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
     module = await Test.createTestingModule({

@@ -1,7 +1,7 @@
 import { LogRepository } from './../repositories/LogRepository';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository, Container } from '../../typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { AWSService } from './AWSService';
 import {
@@ -25,7 +25,6 @@ import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLog
 import { UserRepository } from '../repositories/UserRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { METRICS_JOIN_TEXT } from './MetricService';
-import { getCustomRepository } from 'typeorm';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -114,7 +113,7 @@ export class AnalyticsService {
     }
 
     const promiseArray = await Promise.all([
-      this.experimentRepository.findOne(experimentId, { relations: ['conditions', 'partitions'] }),
+      this.experimentRepository.findOne({ where: { id: experimentId }, relations: ['conditions', 'partitions'] }),
       this.analyticsRepository.getEnrollmentByDateRange(experimentId, dateRange, clientOffset),
     ]);
 
@@ -166,6 +165,9 @@ export class AnalyticsService {
 
   public async getCSVData(experimentId: string, email: string, logger: UpgradeLogger): Promise<string> {
     logger.info({ message: `Inside getCSVData ${experimentId} , ${email}` });
+    if (!experimentId) {
+      return '';
+    }
     try {
       const timeStamp = new Date().toISOString();
       const folderPath = 'src/api/assets/files/';
@@ -175,8 +177,8 @@ export class AnalyticsService {
       }
       const simpleExportCSV = `${email}_simpleExport${timeStamp}.csv`;
 
-      const userRepository: UserRepository = getCustomRepository(UserRepository, 'export');
-      const user = await userRepository.findOne({ email });
+      const userRepository: UserRepository = Container.getCustomRepository(UserRepository, 'export');
+      const user = await userRepository.findOneBy({ email });
 
       const experimentQueryResult = await this.experimentService.getExperimentDetailsForCSVDataExport(experimentId);
       const formattedExperiments = experimentQueryResult.reduce((acc, item) => {
@@ -209,6 +211,7 @@ export class AnalyticsService {
         });
         return acc;
       }, []);
+
       let csvExportData: CSVExportDataRow[];
       if (experimentQueryResult[0].assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
         csvExportData = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentId);

@@ -1,4 +1,5 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { PreviewUser } from '../models/PreviewUser';
 

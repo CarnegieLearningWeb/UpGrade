@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { UserRepository } from '../repositories/UserRepository';
 import { User } from '../models/User';
 import { SERVER_ERROR, UserRole } from 'upgrade_types';

@@ -1,4 +1,5 @@
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { ScheduledJob } from '../models/ScheduledJob';
 import repositoryError from './utils/repositoryError';
 
@@ -14,7 +15,7 @@ export class ScheduledJobRepository extends Repository<ScheduledJob> {
       .insert()
       .into(ScheduledJob)
       .values(scheduledJob)
-      .onConflict(`("id") DO UPDATE SET "timeStamp" = :timeStamp, "executionArn" = :executionArn`)
+      .orUpdate(['timeStamp', 'executionArn'], ['id'])
       .setParameter('timeStamp', scheduledJob.timeStamp)
       .setParameter('executionArn', scheduledJob.executionArn)
       .returning('*')

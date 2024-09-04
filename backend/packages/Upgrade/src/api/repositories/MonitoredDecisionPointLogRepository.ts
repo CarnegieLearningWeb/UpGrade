@@ -1,5 +1,6 @@
 import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 
