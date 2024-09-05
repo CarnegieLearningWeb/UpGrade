@@ -337,7 +337,7 @@ export class ExperimentService {
               .delete(experiment.experimentSegmentInclusion.segment.id);
           } catch (err) {
             const error = err as ErrorWithType;
-            error.details = 'Error in deleting Include Segment fron DB';
+            error.details = 'Error in deleting Include Segment from DB';
             error.type = SERVER_ERROR.QUERY_FAILED;
             logger.error(error);
             throw error;
@@ -589,7 +589,7 @@ export class ExperimentService {
         'stratificationFactor',
       ],
     });
-    const formatedExperiments = experimentDetails.map((experiment) => {
+    const formattedExperiments = experimentDetails.map((experiment) => {
       experiment.backendVersion = env.app.version;
       this.experimentAuditLogRepository.saveRawJson(
         EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
@@ -599,7 +599,7 @@ export class ExperimentService {
       return this.reducedConditionPayload(this.formatingPayload(this.formatingConditionPayload(experiment)));
     });
 
-    return formatedExperiments;
+    return formattedExperiments;
   }
 
   private async updateExperimentSchedules(
