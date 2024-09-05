@@ -16,6 +16,7 @@ import { combineLatest } from 'rxjs';
 import { selectAllExperiment } from '../experiments/store/experiments.selectors';
 import { map } from 'rxjs/operators';
 import { AuditLogs, SERVER_ERROR, EXPERIMENT_LOG_TYPE } from './store/logs.model';
+import { selectAllFeatureFlags } from '../feature-flags/store/feature-flags.selectors';
 
 @Injectable()
 export class LogsService {
@@ -29,8 +30,9 @@ export class LogsService {
     return combineLatest([
       this.store$.pipe(select(selectAllAuditLogs)),
       this.store$.pipe(select(selectAllExperiment)),
+      this.store$.pipe(select(selectAllFeatureFlags)),
     ]).pipe(
-      map(([auditLogs, experiments]) =>
+      map(([auditLogs, experiments, featureFlags]) =>
         auditLogs.map((log: AuditLogs) => {
           const clonedLog = { ...log };
           if (log.data.experimentId) {
@@ -43,6 +45,17 @@ export class LogsService {
               : { ...log.data, isExperimentExist: false };
           } else {
             clonedLog.data = { ...log.data, isExperimentExist: false };
+          }
+          if (log.data.flagId) {
+            const result = featureFlags.find((featureFlag) => featureFlag.id === log.data.flagId);
+            clonedLog.data = result
+              ? {
+                  ...clonedLog.data,
+                  isFlagExist: true,
+                }
+              : { ...clonedLog.data, isFlagExist: false };
+          } else {
+            clonedLog.data = { ...clonedLog.data, isFlagExist: false };
           }
           return clonedLog;
         })

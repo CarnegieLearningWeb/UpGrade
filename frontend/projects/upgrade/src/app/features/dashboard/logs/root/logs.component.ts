@@ -19,6 +19,12 @@ export class LogsComponent implements OnInit, OnDestroy {
     { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED, viewValue: 'Experiment Data Exported' },
     { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_REQUESTED, viewValue: 'Experiment Data Requested' },
     { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED, viewValue: 'Experiment Design Exported' },
+    { value: EXPERIMENT_LOG_TYPE.FEATURE_FLAG_CREATED, viewValue: 'Feature Flag Created' },
+    { value: EXPERIMENT_LOG_TYPE.FEATURE_FLAG_UPDATED, viewValue: 'Feature Flag Updated' },
+    { value: EXPERIMENT_LOG_TYPE.FEATURE_FLAG_STATUS_CHANGED, viewValue: 'Feature Flag Status Changed' },
+    { value: EXPERIMENT_LOG_TYPE.FEATURE_FLAG_DELETED, viewValue: 'Feature Flag Deleted' },
+    { value: EXPERIMENT_LOG_TYPE.FEATURE_FLAG_DATA_EXPORTED, viewValue: 'Feature Flag Data Exported' },
+    { value: EXPERIMENT_LOG_TYPE.FEATURE_FLAG_DESIGN_EXPORTED, viewValue: 'Feature Flag Design Exported' },
   ];
 
   // Error log tab filter options

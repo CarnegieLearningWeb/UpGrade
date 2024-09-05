@@ -1,8 +1,8 @@
 import { AppState } from '../../core.module';
 import { EntityState } from '@ngrx/entity';
-import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
+import { EXPERIMENT_LOG_TYPE, FEATURE_FLAG_LIST_OPERATION, SERVER_ERROR } from 'upgrade_types';
 
-export { EXPERIMENT_LOG_TYPE, SERVER_ERROR };
+export { EXPERIMENT_LOG_TYPE, SERVER_ERROR, FEATURE_FLAG_LIST_OPERATION };
 
 export const NUMBER_OF_LOGS = 20;
 
