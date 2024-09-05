@@ -50,12 +50,12 @@ export class LogsService {
             const result = featureFlags.find((featureFlag) => featureFlag.id === log.data.flagId);
             clonedLog.data = result
               ? {
-                  ...clonedLog.data,
+                  ...log.data,
                   isFlagExist: true,
                 }
-              : { ...clonedLog.data, isFlagExist: false };
+              : { ...log.data, isFlagExist: false };
           } else {
-            clonedLog.data = { ...clonedLog.data, isFlagExist: false };
+            clonedLog.data = { ...log.data, isFlagExist: false };
           }
           return clonedLog;
         })

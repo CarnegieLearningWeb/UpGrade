@@ -1,7 +1,6 @@
 import { fakeAsync, tick } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 import * as ExperimentSelectors from '../experiments/store/experiments.selectors';
-import * as FeatureFlagSelectors from '../feature-flags/store/feature-flags.selectors';
 import { LogsService } from './logs.service';
 import * as LogActions from './store/logs.actions';
 import { AuditLogs, EXPERIMENT_LOG_TYPE, SERVER_ERROR } from './store/logs.model';
@@ -36,7 +35,6 @@ describe('LogsService', () => {
           data: {
             experimentId: null,
             isExperimentExist: false,
-            isFlagExist: false,
           },
         },
         logs: [
@@ -52,7 +50,6 @@ describe('LogsService', () => {
             id: null,
           },
         ],
-        featureFlags: [],
       },
       {
         whenCondition: 'experimentId matched, set log to isExperimentExist true',
@@ -61,7 +58,6 @@ describe('LogsService', () => {
           data: {
             experimentId: '1',
             isExperimentExist: true,
-            isFlagExist: false,
           },
         },
         logs: [
@@ -77,7 +73,6 @@ describe('LogsService', () => {
             id: '1',
           },
         ],
-        featureFlags: [],
       },
       {
         whenCondition: 'experimentId NOT matched, set log to isExperimentExist false',
@@ -86,7 +81,6 @@ describe('LogsService', () => {
           data: {
             experimentId: '1',
             isExperimentExist: false,
-            isFlagExist: false,
           },
         },
         logs: [
@@ -102,25 +96,20 @@ describe('LogsService', () => {
             id: '2',
           },
         ],
-        featureFlags: [],
       },
     ];
 
     testCases.forEach((testCase) => {
-      const { whenCondition, expectedValue, logs, experiments, featureFlags } = testCase;
+      const { whenCondition, expectedValue, logs, experiments } = testCase;
 
       it(`WHEN ${whenCondition}, THEN expected value is ${JSON.stringify(expectedValue)}`, fakeAsync(() => {
-        // Mock the selectors with the new feature flags
         LogSelectors.selectAllAuditLogs.setResult([...logs]);
         ExperimentSelectors.selectAllExperiment.setResult([...experiments] as any);
-        FeatureFlagSelectors.selectAllFeatureFlags.setResult([...featureFlags] as any);
 
         service.getAuditLogs().subscribe((val) => {
           tick(0);
           expect(val[0]).toEqual(expectedValue);
         });
-
-        tick();
       }));
     });
   });
