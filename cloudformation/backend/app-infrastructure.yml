@@ -301,7 +301,7 @@ Resources:
     Properties:
       Name: !Sub ${appName}-${environment}-${cluster}
       HealthCheckEnabled: 'true'
-      HealthCheckIntervalSeconds: 60
+      HealthCheckIntervalSeconds: 120
       HealthCheckPath: /upgrade-service/api/
       HealthCheckPort: traffic-port
       HealthCheckProtocol: HTTP
