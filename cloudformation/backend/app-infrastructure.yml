@@ -316,7 +316,7 @@ Resources:
         - Key: load_balancing.algorithm.type
           Value: least_outstanding_requests
         - Key: deregistration_delay.timeout_seconds
-          Value: 30
+          Value: 1800
       TargetType: ip
       UnhealthyThresholdCount: 2
       VpcId:
