@@ -1,4 +1,5 @@
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { Factor } from '../models/Factor';
@@ -41,7 +42,7 @@ export class FactorRepository extends Repository<Factor> {
       .insert()
       .into(Factor)
       .values(factorDoc)
-      .onConflict(`("id") DO UPDATE SET "name" = :name`)
+      .orUpdate(['name'], ['id'])
       .setParameter('name', factorDoc.name)
       .returning('*')
       .execute()

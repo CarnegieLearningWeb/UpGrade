@@ -50,7 +50,35 @@ projectBuilderV5 (
                 GOOGLE_CLIENT_ID: '@vault(secret/configs/upgrade/${environment}/GOOGLE_CLIENT_ID)',
                 GOOGLE_SERVICE_ACCOUNT_ID: '@vault(secret/configs/upgrade/${environment}/GOOGLE_SERVICE_ACCOUNT_ID)',
             ],
-        ]
+        ],
+         "scheduler-lambda": [
+            artifactType: "s3",
+            versioning: "calendar",
+            projectDir: "backend/packages/Scheduler",
+            artifactDir: "dist",
+            runInProjectDir: true,
+            s3Config: [
+                file: "scheduler-lambda.zip",
+                path: "scheduler-lambda/"
+            ],
+            buildScripts: [
+                [
+                    script: 'npm ci --no-audit',
+                    githubCheck: '${projectName} npm ci --no-audit',
+                    log: '${projectName}-npm-ci.log'
+                ],
+                [
+                    script: 'npm run build:prod',
+                    log: '${projectName}-build.log',
+                    githubCheck: '${projectName}-build'
+                ],
+                [
+                    script: 'npm run postbuild',
+                    log: '${projectName}-post-build.log'
+                ]
+
+            ]
+        ],
     ],
     deployments: [
         UpgradeService: [
@@ -79,6 +107,20 @@ projectBuilderV5 (
             jobs: [
                 [
                     job: "Upgrade-Frontend-Deploy"
+                ]
+            ]
+        ],
+        "Scheduler-Lambda": [
+            projects: ["scheduler-lambda"],
+            automated: [
+                [
+                    type: "defaultBranch",
+                    environment: "qa"
+                ]
+            ],
+            jobs: [
+                [
+                    job: "Upgrade-Scheduler-Lambda-Deploy"
                 ]
             ]
         ],

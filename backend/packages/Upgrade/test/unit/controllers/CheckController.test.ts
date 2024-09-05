@@ -6,14 +6,12 @@ import { Container } from 'typedi';
 import { CheckService } from '../../../src/api/services/CheckService';
 
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-import { useContainer as ormUseContainer } from 'typeorm';
 import CheckServiceMock from './mocks/CheckServiceMock';
 
 describe('Check Controller Testing', () => {
   beforeAll(() => {
     configureLogger();
     routingUseContainer(Container);
-    ormUseContainer(Container);
     classValidatorUseContainer(Container);
 
     // set mock container

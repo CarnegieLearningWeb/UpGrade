@@ -1,4 +1,5 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { ExperimentError } from '../models/ExperimentError';
 import repositoryError from './utils/repositoryError';
 import { SERVER_ERROR } from 'upgrade_types';
