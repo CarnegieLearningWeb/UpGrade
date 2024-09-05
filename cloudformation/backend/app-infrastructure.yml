@@ -193,8 +193,8 @@ Resources:
               ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_CLIENT_API_SECRET
             - Name: GOOGLE_CLIENT_ID
               ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_GOOGLE_CLIENT_ID
-            - Name: SERVICE_ACCOUNT_ID
-              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_SERVICE_ACCOUNT_ID
+            - Name: GOOGLE_SERVICE_ACCOUNT_ID
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_GOOGLE_SERVICE_ACCOUNT_ID
             - Name: RDS_PASSWORD
               ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_DB_PASSWORD
             - Name: RDS_USERNAME
