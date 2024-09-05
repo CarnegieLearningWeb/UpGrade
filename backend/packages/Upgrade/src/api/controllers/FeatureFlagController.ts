@@ -1,4 +1,17 @@
-import { JsonController, Authorized, Post, Body, Delete, Put, Req, Get, Params, Patch, Res } from 'routing-controllers';
+import {
+  JsonController,
+  Authorized,
+  Post,
+  Body,
+  Delete,
+  Put,
+  Req,
+  Get,
+  Params,
+  Patch,
+  Res,
+  CurrentUser,
+} from 'routing-controllers';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
@@ -7,12 +20,13 @@ import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatus
 import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFilterModeUpdateValidator';
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
-import { SERVER_ERROR } from 'upgrade_types';
+import { FEATURE_FLAG_LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
 import { FeatureFlagValidation, IdValidator } from './validators/FeatureFlagValidator';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
 import { Segment } from 'src/api/models/Segment';
 import { Response } from 'express';
+import { User } from '../models/User';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -285,9 +299,10 @@ export class FeatureFlagsController {
   @Post()
   public create(
     @Body({ validate: true }) flag: FeatureFlagValidation,
+    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
-    return this.featureFlagService.create(flag, request.logger);
+    return this.featureFlagService.create(flag, currentUser, request.logger);
   }
 
   /**
@@ -300,7 +315,7 @@ export class FeatureFlagsController {
    *       parameters:
    *         - in: body
    *           name: statusUpdate
-   *           description: Updating the featur flag's status
+   *           description: Updating the feature flag's status
    *           schema:
    *             type: object
    *             required:
@@ -323,9 +338,10 @@ export class FeatureFlagsController {
   @Patch('/status')
   public async updateState(
     @Body({ validate: true })
-    flag: FeatureFlagStatusUpdateValidator
+    flag: FeatureFlagStatusUpdateValidator,
+    @CurrentUser() currentUser: User
   ): Promise<FeatureFlag> {
-    return this.featureFlagService.updateState(flag.flagId, flag.status);
+    return this.featureFlagService.updateState(flag.flagId, flag.status, currentUser);
   }
 
   /**
@@ -338,7 +354,7 @@ export class FeatureFlagsController {
    *       parameters:
    *         - in: body
    *           name: updateFilterMode
-   *           description: Updating the featur flag's filter mode
+   *           description: Updating the feature flag's filter mode
    *           schema:
    *             type: object
    *             required:
@@ -361,9 +377,10 @@ export class FeatureFlagsController {
   @Patch('/filterMode')
   public async updateFilterMode(
     @Body({ validate: true })
-    flag: FeatureFlagFilterModeUpdateValidator
+    flag: FeatureFlagFilterModeUpdateValidator,
+    @CurrentUser() currentUser: User
   ): Promise<FeatureFlag> {
-    return this.featureFlagService.updateFilterMode(flag.flagId, flag.filterMode);
+    return this.featureFlagService.updateFilterMode(flag.flagId, flag.filterMode, currentUser);
   }
 
   /**
@@ -390,9 +407,10 @@ export class FeatureFlagsController {
   @Delete('/:id')
   public delete(
     @Params({ validate: true }) { id }: IdValidator,
+    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlag | undefined> {
-    return this.featureFlagService.delete(id, request.logger);
+    return this.featureFlagService.delete(id, currentUser, request.logger);
   }
 
   /**
@@ -429,9 +447,10 @@ export class FeatureFlagsController {
     @Params({ validate: true }) { id }: IdValidator,
     @Body({ validate: true })
     flag: FeatureFlagValidation,
+    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
-    return this.featureFlagService.update(flag, request.logger);
+    return this.featureFlagService.update(flag, currentUser, request.logger);
   }
 
   /**
@@ -443,7 +462,7 @@ export class FeatureFlagsController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: addinclusionList
+   *           name: addInclusionList
    *           description: Adding an inclusion list to the feature flag
    *           schema:
    *             type: object
@@ -459,9 +478,15 @@ export class FeatureFlagsController {
   @Post('/inclusionList')
   public async addInclusionList(
     @Body({ validate: true }) inclusionList: FeatureFlagListValidator,
+    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentInclusion> {
-    return this.featureFlagService.addList(inclusionList, 'inclusion', request.logger);
+    return this.featureFlagService.addList(
+      inclusionList,
+      FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+      currentUser,
+      request.logger
+    );
   }
 
   /**
@@ -489,9 +514,15 @@ export class FeatureFlagsController {
   @Post('/exclusionList')
   public async addExclusionList(
     @Body({ validate: true }) exclusionList: FeatureFlagListValidator,
+    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentExclusion> {
-    return this.featureFlagService.addList(exclusionList, 'exclusion', request.logger);
+    return this.featureFlagService.addList(
+      exclusionList,
+      FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+      currentUser,
+      request.logger
+    );
   }
 
   /**
@@ -526,6 +557,7 @@ export class FeatureFlagsController {
   public async updateExclusionList(
     @Params({ validate: true }) { id }: IdValidator,
     @Body({ validate: true }) exclusionList: FeatureFlagListValidator,
+    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentExclusion> {
     if (id !== exclusionList.list.id) {
@@ -535,7 +567,12 @@ export class FeatureFlagsController {
         )
       );
     }
-    return this.featureFlagService.updateList(exclusionList, 'exclusion', request.logger);
+    return this.featureFlagService.updateList(
+      exclusionList,
+      FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+      currentUser,
+      request.logger
+    );
   }
 
   /**
@@ -570,6 +607,7 @@ export class FeatureFlagsController {
   public async updateInclusionList(
     @Params({ validate: true }) { id }: IdValidator,
     @Body({ validate: true }) inclusionList: FeatureFlagListValidator,
+    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentInclusion> {
     if (id !== inclusionList.list.id) {
@@ -579,7 +617,12 @@ export class FeatureFlagsController {
         )
       );
     }
-    return this.featureFlagService.updateList(inclusionList, 'inclusion', request.logger);
+    return this.featureFlagService.updateList(
+      inclusionList,
+      FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+      currentUser,
+      request.logger
+    );
   }
 
   /**
@@ -607,9 +650,10 @@ export class FeatureFlagsController {
   @Delete('/inclusionList/:id')
   public async deleteInclusionList(
     @Params({ validate: true }) { id }: IdValidator,
+    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.featureFlagService.deleteList(id, request.logger);
+    return this.featureFlagService.deleteList(id, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
   }
 
   /**
@@ -637,9 +681,10 @@ export class FeatureFlagsController {
   @Delete('/exclusionList/:id')
   public async deleteExclusionList(
     @Params({ validate: true }) { id }: IdValidator,
+    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.featureFlagService.deleteList(id, request.logger);
+    return this.featureFlagService.deleteList(id, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
   }
 
   /**
@@ -671,10 +716,11 @@ export class FeatureFlagsController {
   @Get('/export/:id')
   public async exportFeatureFlag(
     @Params({ validate: true }) { id }: IdValidator,
+    @CurrentUser() currentUser: User,
     @Req() request: AppRequest,
     @Res() response: Response
   ): Promise<Response> {
-    const featureFlag = await this.featureFlagService.findOne(id, request.logger);
+    const featureFlag = await this.featureFlagService.exportDesign(id, currentUser, request.logger);
     // download JSON file with appropriate headers to response body;
     response.setHeader('Content-Disposition', `attachment; filename="${featureFlag.name}.json"`);
     response.setHeader('Content-Type', 'application/json');
