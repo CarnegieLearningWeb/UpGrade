@@ -122,7 +122,7 @@ export class StratificationController {
 
     // return csv file with appropriate headers to request;
     res.setHeader('Content-Type', 'text/csv; charset=UTF-8');
-    res.setHeader('Content-Disposition', `attachment; filename=data-${factor}.csv`);
+    res.setHeader('Content-Disposition', `attachment; filename="${factor}.csv"`);
     return res.send(csvData);
   }
 
@@ -158,11 +158,8 @@ export class StratificationController {
   public async insertStratification(
     @Req() request: AppRequest,
     @Body({ validate: true }) body: UploadedFilesArrayValidator
-  ): Promise<UserStratificationFactor[]> {
-    const promises = body.files.map((fileObj) => {
-      return this.stratificationService.insertStratification(fileObj.file, request.logger);
-    });
-    return (await Promise.all(promises)).flat();
+  ): Promise<UserStratificationFactor[][]> {
+    return this.stratificationService.insertStratificationFiles(body.files, request.logger);
   }
 
   /**

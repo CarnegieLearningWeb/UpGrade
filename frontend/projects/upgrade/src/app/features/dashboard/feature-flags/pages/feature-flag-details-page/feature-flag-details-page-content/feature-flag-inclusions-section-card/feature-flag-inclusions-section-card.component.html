@@ -1,26 +1,33 @@
-<app-common-section-card>
+<app-common-section-card *ngIf="selectedFlag$ | async as flag">
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
     [title]="'feature-flags.details.inclusions.card.title.text' | translate"
     [subtitle]="'feature-flags.details.inclusions.card.subtitle.text' | translate"
-    [tableRowCount]="tableRowCount$ | async"
+    [tableRowCount]="rowCountWithInclude$ | async"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
+    [showSlideToggle]="true"
+    [slideToggleText]="'feature-flags.details.inclusions.include-all.toggle.text' | translate"
+    [isEnableToggleChecked]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
     [showPrimaryButton]="true"
     [primaryButtonText]="'feature-flags.details.add-include-list.button.text' | translate"
-    [showMenuButton]="true"
-    [menuButtonItems]="menuButtonItems"
-    [isSectionCardExpanded]="isSectionCardExpanded"
-    (primaryButtonClick)="addIncludeListClicked()"
-    (menuButtonItemClick)="onMenuButtonItemClick($event)"
+    [isSectionCardExpanded]="isSectionCardExpanded && flag.filterMode !== FILTER_MODE.INCLUDE_ALL"
+    [primaryActionBtnDisabled]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
+    [sectionCardExpandBtnDisabled]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
+    (primaryButtonClick)="onAddIncludeListClick(flag.context[0], flag.id)"
+    (slideToggleChange)="onSlideToggleChange($event, flag.id)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
 
   <!-- content -->
-  <app-feature-flag-inclusions-table content *ngIf="isSectionCardExpanded" class="full-width"></app-feature-flag-inclusions-table>
+  <app-feature-flag-inclusions-table
+    content
+    *ngIf="isSectionCardExpanded && flag.filterMode !== FILTER_MODE.INCLUDE_ALL"
+    (rowAction)="onRowAction($event, flag.id)"
+  ></app-feature-flag-inclusions-table>
 </app-common-section-card>

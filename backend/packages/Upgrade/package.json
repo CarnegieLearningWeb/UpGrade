@@ -1,6 +1,6 @@
 {
     "name": "ab_testing_backend",
-    "version": "5.2.0",
+    "version": "6.0.0",
     "description": "Backend for A/B Testing Project",
     "main": "index.js",
     "scripts": {
@@ -19,10 +19,10 @@
         "seed": "npm start db.seed",
         "drop": "npm start db.drop",
         "help": "npm start help",
-        "migration:generate": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:generate -n",
-        "migration:create": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:create -n",
-        "migration:run": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:run",
-        "migration:revert": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:revert"
+        "migration:generate": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:generate src/database/migrations/$name -d src/loaders/typeormLoader.ts",
+        "migration:create": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:create src/database/migrations/$name",
+        "migration:run": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:run -d src/loaders/typeormLoader.ts",
+        "migration:revert": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:revert -d src/loaders/typeormLoader.ts"
     },
     "keywords": [],
     "author": "",
@@ -53,18 +53,18 @@
         "ts-node": "^10.9.2",
         "tsconfig-paths": "^4.2.0",
         "tslib": "^2.3.1",
-        "typeorm-seeding": "^1.2.0"
+        "typeorm-seeding": "^1.6.1"
     },
     "dependencies": {
-        "@aws-sdk/client-s3": "^3.485.0",
-        "@aws-sdk/client-ses": "^3.485.0",
-        "@aws-sdk/client-sfn": "^3.485.0",
+        "@aws-sdk/client-s3": "^3.633.0",
+        "@aws-sdk/client-ses": "^3.632.0",
+        "@aws-sdk/client-sfn": "^3.632.0",
         "@aws-sdk/lib-storage": "^3.485.0",
         "@aws-sdk/s3-request-presigner": "^3.485.0",
         "@golevelup/ts-jest": "^0.4.0",
         "@nestjs/common": "^10.3.0",
         "@nestjs/testing": "^10.3.0",
-        "@nestjs/typeorm": "^10.0.1",
+        "@nestjs/typeorm": "^10.0.2",
         "@types/supertest": "^6.0.2",
         "body-parser": "^1.20.1",
         "cache-manager": "^5.3.2",
@@ -107,8 +107,7 @@
         "swagger-ui-express": "^5.0.0",
         "ts-jest": "^29.1.1",
         "typedi": "^0.8.0",
-        "typeorm": "^0.2.20",
-        "typeorm-typedi-extensions": "^0.4.1",
+        "typeorm": "^0.3.20",
         "typescript": "^5.3.3",
         "uuid": "^9.0.1",
         "winston": "^3.2.1",

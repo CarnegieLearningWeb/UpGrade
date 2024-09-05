@@ -35,6 +35,10 @@ export default class FeatureFlagServiceMock {
     return Promise.resolve([]);
   }
 
+  public updateFilterMode(flagId: string, filterMode: boolean, logger: UpgradeLogger): Promise<[]> {
+    return Promise.resolve([]);
+  }
+
   public getTotalCount(): Promise<[]> {
     return Promise.resolve([]);
   }

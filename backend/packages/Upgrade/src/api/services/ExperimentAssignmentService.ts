@@ -2,7 +2,7 @@ import { GroupEnrollmentRepository } from './../repositories/GroupEnrollmentRepo
 import { IndividualEnrollmentRepository } from './../repositories/IndividualEnrollmentRepository';
 import { IndividualEnrollment } from './../models/IndividualEnrollment';
 import { ErrorWithType } from './../errors/ErrorWithType';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { DecisionPoint } from '../models/DecisionPoint';
 import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import {
@@ -69,6 +69,7 @@ import { CacheService } from './CacheService';
 import { UserStratificationFactorRepository } from '../repositories/UserStratificationRepository';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
+import { In } from 'typeorm';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -134,7 +135,7 @@ export class ExperimentAssignmentService {
 
     // adding experiment error when user is not defined
     if (!userDoc || !userDoc.id) {
-      const error = new Error(`User not defined in markExperimentPoint: ${userDoc.requestedUserId}`);
+      const error = new Error('User not defined in markExperimentPoint');
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
       (error as any).httpCode = 404;
       logger.error(error);
@@ -218,7 +219,7 @@ export class ExperimentAssignmentService {
       where: {
         site: site,
         target: target,
-        user: userDoc,
+        user: { id: userDoc.id },
       },
     });
     if (experimentId && experiments.length) {
@@ -336,15 +337,17 @@ export class ExperimentAssignmentService {
     context: string,
     logger: UpgradeLogger
   ): Promise<IExperimentAssignmentv5[]> {
-    logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc.requestedUserId}` });
+    logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc?.requestedUserId}` });
 
     // throw error if user not defined
     if (!experimentUserDoc || !experimentUserDoc.id) {
-      logger.error({ message: `User not defined in getAllExperimentConditions: ${experimentUserDoc.requestedUserId}` });
+      logger.error({
+        message: 'User not defined in getAllExperimentConditions',
+      });
       const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined in getAllExperimentConditions: ${experimentUserDoc.requestedUserId}`,
+          message: 'User not defined in getAllExperimentConditions',
         })
       );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
@@ -1066,7 +1069,7 @@ export class ExperimentAssignmentService {
     // get groupAssignment and individual assignment details
     const decisionPoints = experimentDoc.partitions;
     const individualAssignments = await this.individualEnrollmentRepository.find({
-      where: { experiment: experimentDoc },
+      where: { experiment: { id: experimentDoc.id } },
       relations: ['user'],
     });
 
@@ -1091,7 +1094,7 @@ export class ExperimentAssignmentService {
             where: {
               site: (await experimentDecisionPointId).site,
               target: (await experimentDecisionPointId).target,
-              user: individualAssignment.user.id,
+              user: { id: individualAssignment.user.id },
             },
           })
         );
@@ -1099,7 +1102,8 @@ export class ExperimentAssignmentService {
     });
 
     // fetch all the monitored document if exist
-    const monitoredDocuments = await this.monitoredDecisionPointRepository.findByIds(monitoredDocumentIds, {
+    const monitoredDocuments = await this.monitoredDecisionPointRepository.find({
+      where: { id: In(monitoredDocumentIds) },
       relations: ['user'],
     });
 
@@ -1865,24 +1869,31 @@ export class ExperimentAssignmentService {
           }
         }
       } else {
-        if (explicitIndividualInclusionFilteredData.some((x) => x.id === modal.id)) {
-          userIncludedModals.push(modal.id);
-        } else if (explicitIndividualExclusionFilteredData.some((x) => x.id === modal.id)) {
+        if (explicitIndividualExclusionFilteredData.some((x) => x.id === modal.id)) {
           userExcludedModals.push({ id: modal.id, reason: 'filterMode' });
+        } else if (explicitIndividualInclusionFilteredData.some((x) => x.id === modal.id)) {
+          userIncludedModals.push(modal.id);
         } else {
           for (const userGroup of userGroups) {
             if (
-              explicitGroupInclusionFilteredData.some(
+              explicitGroupExclusionFilteredData.some(
                 (x) => x.groupId === userGroup.groupId && x.type === userGroup.type && x.id === modal.id
               )
             ) {
               exclusionFlag = true;
             }
+            if (
+              explicitGroupInclusionFilteredData.some(
+                (x) => x.groupId === userGroup.groupId && x.type === userGroup.type && x.id === modal.id
+              )
+            ) {
+              inclusionFlag = true;
+            }
           }
-          if (!exclusionFlag) {
-            userExcludedModals.push({ id: modal.id, reason: 'filterMode' });
-          } else {
+          if (inclusionFlag && !exclusionFlag) {
             userIncludedModals.push(modal.id);
+          } else {
+            userExcludedModals.push({ id: modal.id, reason: 'filterMode' });
           }
         }
       }

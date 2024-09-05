@@ -12,7 +12,6 @@ import {
   MatDialogRef,
   MatDialogTitle,
 } from '@angular/material/dialog';
-import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal-config';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,9 +22,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
-import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../../../../types/src';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 import {
   AddFeatureFlagRequest,
+  CommonTagInputType,
   FeatureFlag,
   FeatureFlagFormData,
   UpdateFeatureFlagRequest,
@@ -37,6 +37,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { CommonTextHelpersService } from '../../../../../shared/services/common-text-helpers.service';
 import isEqual from 'lodash.isequal';
+import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 
 @Component({
   selector: 'upsert-add-feature-flag-modal',
@@ -76,6 +77,7 @@ export class UpsertFeatureFlagModalComponent {
   initialFormValues$ = new BehaviorSubject<FeatureFlagFormData>(null);
 
   featureFlagForm: FormGroup;
+  CommonTagInputType = CommonTagInputType;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
@@ -84,7 +86,6 @@ export class UpsertFeatureFlagModalComponent {
     private formBuilder: FormBuilder,
     private featureFlagsService: FeatureFlagsService,
     private experimentService: ExperimentService,
-    private formHelpersService: CommonFormHelpersService,
     public dialogRef: MatDialogRef<UpsertFeatureFlagModalComponent>
   ) {}
 
@@ -160,7 +161,7 @@ export class UpsertFeatureFlagModalComponent {
       this.sendRequest(this.config.params.action, this.config.params.sourceFlag);
     } else {
       // If the form is invalid, manually mark all form controls as touched
-      this.formHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);
+      CommonFormHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);
     }
   }
 
@@ -184,7 +185,7 @@ export class UpsertFeatureFlagModalComponent {
       context: [appContext],
       tags,
       status: FEATURE_FLAG_STATUS.DISABLED,
-      filterMode: FILTER_MODE.INCLUDE_ALL,
+      filterMode: FILTER_MODE.EXCLUDE_ALL,
       featureFlagSegmentInclusion: [],
       featureFlagSegmentExclusion: [],
     };

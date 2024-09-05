@@ -1,3 +1,8 @@
-::ng-deep .mat-mdc-tab-group .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab-labels .mat-mdc-tab:first-of-type {
-    margin-left: 0;
+.footer-container {
+  padding: 0 32px;
+  border-top: 1px solid var(--light-grey-2);
+
+  ::ng-deep .mat-mdc-tab-disabled .mdc-tab__text-label {
+    opacity: 0.5; // Makes the disabled status more apparent
+  }
 }

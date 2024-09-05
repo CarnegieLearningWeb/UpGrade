@@ -5,28 +5,27 @@
     [title]="flag.name"
     [createdAt]="flag.createdAt"
     [updatedAt]="flag.updatedAt"
-    [showViewLogs]="true"
     [chipClass]="flag.status"
-    (viewLogs)="viewLogsClicked($event)"
+    [showWarning]="shouldShowWarning$ | async"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
     [showSlideToggle]="true"
-    [isEnableToggleChecked]="(featureFlag$ | async).status === FEATURE_FLAG_STATUS.ENABLED"
+    [isEnableToggleChecked]="flag.status === FEATURE_FLAG_STATUS.ENABLED"
+    [slideToggleText]="'feature-flags.enable.text' | translate"
     [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
-    (slideToggleChange)="onSlideToggleChange($event)"
+    (slideToggleChange)="onSlideToggleChange($event, flag)"
     (menuButtonItemClick)="onMenuButtonItemClick($event, flag)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   ></app-common-section-card-action-buttons>
 
   <!-- content -->
-  <ng-container content *ngIf="isSectionCardExpanded">
+  <ng-container content>
     <app-common-section-card-overview-details
-      class="full-width"
       [data]="flagOverviewDetails$ | async"
     ></app-common-section-card-overview-details>
   </ng-container>

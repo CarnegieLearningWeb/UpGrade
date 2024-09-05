@@ -1,5 +1,6 @@
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
-import { EntityRepository, Repository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
 import { User } from '../models/User';
 import repositoryError from './utils/repositoryError';

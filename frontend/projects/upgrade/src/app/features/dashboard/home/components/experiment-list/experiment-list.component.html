@@ -216,13 +216,13 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let experiment">
-          <mat-chip-listbox>
+          <mat-chip-listbox class="dense-2">
             <ng-container *ngFor="let context of experiment.context; let contextIndex = index">
               <mat-chip
                 *ngIf="contextIndex < 2; else moreContextTemplate"
                 (click)="filterExperimentByChips(context, ExperimentSearchKey.CONTEXT)"
               >
-                <span class="ft-12-600 chip-label">
+                <span class="chip-label">
                   {{ context }}
                 </span>
               </mat-chip>
@@ -231,7 +231,7 @@
                   *ngIf="isAllChipsVisible(experiment.id, 'contextVisibility')"
                   (click)="filterExperimentByChips(context, ExperimentSearchKey.CONTEXT)"
                 >
-                  <span class="ft-12-600 chip-label">
+                  <span class="chip-label">
                     {{ context }}
                   </span>
                 </mat-chip>
@@ -241,7 +241,7 @@
               *ngIf="experiment.context.length > 2 && !isAllChipsVisible(experiment.id, 'contextVisibility')"
               (click)="setChipsVisible(experiment.id, 'contextVisibility')"
             >
-              <span class="ft-12-600 chip-label">
+              <span class="chip-label">
                 {{ '+' + (experiment.context.length - 2) }}
               </span>
             </mat-chip>
@@ -256,13 +256,13 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let experiment">
-          <mat-chip-listbox>
+          <mat-chip-listbox class="dense-2">
             <ng-container *ngFor="let tag of experiment?.tags; let tagIndex = index">
               <mat-chip
                 *ngIf="tagIndex < 2; else moreTagsTemplate"
                 (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
               >
-                <span class="ft-12-600 chip-label">
+                <span class="chip-label">
                   {{ tag }}
                 </span>
               </mat-chip>
@@ -271,7 +271,7 @@
                   *ngIf="isAllChipsVisible(experiment.id, 'tagsVisibility')"
                   (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
                 >
-                  <span class="ft-12-600 chip-label">
+                  <span class="chip-label">
                     {{ tag }}
                   </span>
                 </mat-chip>
@@ -281,7 +281,7 @@
               *ngIf="experiment.tags?.length > 2 && !isAllChipsVisible(experiment.id, 'tagsVisibility')"
               (click)="setChipsVisible(experiment.id, 'tagsVisibility')"
             >
-              <span class="ft-12-600 chip-label">
+              <span class="chip-label">
                 {{ '+' + (experiment.tags.length - 2) }}
               </span>
             </mat-chip>

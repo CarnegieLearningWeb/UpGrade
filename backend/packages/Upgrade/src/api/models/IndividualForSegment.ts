@@ -1,12 +1,16 @@
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { Segment } from './Segment';
 
 @Entity()
 export class IndividualForSegment extends BaseModel {
-  @ManyToOne(() => Segment, (segment) => segment.individualForSegment, { onDelete: 'CASCADE', primary: true })
+  @PrimaryColumn()
+  public segmentId: string;
+
+  @ManyToOne(() => Segment, (segment) => segment.individualForSegment, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'segmentId' })
   public segment: Segment;
 
-  @Column({ primary: true })
+  @PrimaryColumn()
   public userId: string;
 }

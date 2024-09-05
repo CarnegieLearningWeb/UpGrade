@@ -1,11 +1,12 @@
-<div>
+<div class="footer-container">
   <mat-tab-group
     mat-stretch-tabs="false"
     mat-align-tabs="start"
-    animationDuration="0ms"
+    animationDuration="250ms"
     (selectedTabChange)="onSelectedTabChange($event)"
+    class="new-tab-group"
   >
-    <mat-tab *ngFor="let label of tabLabels">
+    <mat-tab *ngFor="let label of tabLabels" [disabled]="label === 'Data'">
       <ng-template mat-tab-label>
         <span class="ft-18-600">
           {{ label }}

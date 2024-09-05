@@ -1,10 +1,14 @@
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SERVER_ERROR } from 'upgrade_types';
-import { In, getConnection } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 import Papa from 'papaparse';
-import { FactorStrata, StratificationInputValidator } from '../controllers/validators/StratificationValidator';
+import {
+  FactorStrata,
+  StratificationInputValidator,
+  UploadedFilesValidator,
+} from '../controllers/validators/StratificationValidator';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { StratificationFactor } from '../models/StratificationFactor';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
@@ -14,7 +18,8 @@ import { ErrorWithType } from '../errors/ErrorWithType';
 export class StratificationService {
   constructor(
     @InjectRepository()
-    private stratificationFactorRepository: StratificationFactorRepository
+    private stratificationFactorRepository: StratificationFactorRepository,
+    @InjectDataSource() private dataSource: DataSource
   ) {}
 
   private calculateStratificationResult(
@@ -128,7 +133,7 @@ export class StratificationService {
 
     logger.info({ message: `Insert stratification => ${JSON.stringify(userStratificationData, undefined, 2)}` });
 
-    const createdStratificationData = await getConnection().transaction(async (transactionalEntityManager) => {
+    const createdStratificationData = await this.dataSource.transaction(async (transactionalEntityManager) => {
       if (userStratificationData.length > 0) {
         try {
           await transactionalEntityManager
@@ -219,5 +224,16 @@ export class StratificationService {
     });
 
     return createdStratificationData;
+  }
+
+  public async insertStratificationFiles(
+    files: UploadedFilesValidator[],
+    logger: UpgradeLogger
+  ): Promise<UserStratificationFactor[][]> {
+    return await Promise.all(
+      files.map(async (fileObj) => {
+        return await this.insertStratification(fileObj.file, logger);
+      })
+    );
   }
 }

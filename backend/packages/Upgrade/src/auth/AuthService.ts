@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../typeorm-typedi-extensions';
 
 import { User } from '../api/models/User';
 import { UserRepository } from '../api/repositories/UserRepository';
@@ -21,16 +21,32 @@ export class AuthService {
 
   public async validateUser(token: string, request: express.Request): Promise<User> {
     const client = new OAuth2Client(env.google.clientId);
-    request.logger.info({ message: 'Validating ID Token' });
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: env.google.clientId, // Specify the CLIENT_ID of the app that accesses the backend
-      // Or, if multiple clients access the backend:
-      // [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
-    });
-    request.logger.info({ message: 'Token Validated' });
+    request.logger.info({ message: 'Validating Token' });
 
-    const payload = ticket.getPayload();
+    let payload;
+    try {
+      // First, try to verify the token as an ID token
+      const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: env.google.clientId, // Specify the CLIENT_ID of the app that accesses the backend
+        // Or, if multiple clients access the backend:
+        // [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
+      });
+      payload = ticket.getPayload();
+      request.logger.info({ message: 'ID Token Validated' });
+    } catch (error) {
+      // If ID token verification fails, try to verify it as an access token
+      try {
+        await client.getTokenInfo(token);
+        request.logger.info({ message: 'Access Token Validated' });
+        // For service account access tokens, we'll return null
+        // We might want to implement specific handling for service accounts here
+        return null;
+      } catch (error) {
+        request.logger.error(error);
+        throw error;
+      }
+    }
 
     // check if user exist in the user repo
     const email = payload.email;
@@ -60,7 +76,7 @@ export class AuthService {
       return null;
     }
     // add local cache for validating user for each request
-    const document = await this.userRepository.find({ email });
+    const document = await this.userRepository.find({ where: { email } });
     request.logger.child({ client_session_id: session_id, user: document });
     request.logger.info({ message: 'User document fetched' });
     if (document.length === 0) {

@@ -40,12 +40,15 @@ import { IMenuButtonItem } from 'upgrade_types';
 })
 export class CommonSectionCardActionButtonsComponent {
   @Input() showSlideToggle?: boolean = false;
+  @Input() slideToggleText?: string;
   @Input() isEnableToggleChecked?: boolean = false;
   @Input() showPrimaryButton?: boolean = false;
   @Input() primaryButtonText?: string;
   @Input() showMenuButton?: boolean = false;
   @Input() menuButtonItems?: IMenuButtonItem[] = [];
   @Input() isSectionCardExpanded?: boolean = true;
+  @Input() primaryActionBtnDisabled?: boolean = false;
+  @Input() sectionCardExpandBtnDisabled?: boolean = false;
   @Output() slideToggleChange = new EventEmitter<MatSlideToggleChange>();
   @Output() primaryButtonClick = new EventEmitter<void>();
   @Output() menuButtonItemClick = new EventEmitter<string>();

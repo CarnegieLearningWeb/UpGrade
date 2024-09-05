@@ -1,4 +1,4 @@
-<div class="modal-container">
+<div>
     <app-common-dialog
       [title]="data.title"
       [cancelBtnLabel]="data.cancelBtnLabel"
@@ -6,13 +6,13 @@
       [primaryActionBtnColor]="data.primaryActionBtnColor"
       (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
     >
-      <div mat-dialog-content class="dialog">
-        <div class="ft-18-600 message">
+      <div class="confirm-modal-content">
+        <p class="confirm-modal-content-text ft-16-400">
           {{ data.params.message | translate }}
-        </div>
-        <div class="ft-18-500 subMessage" [color]="data.params.subMessageColor" *ngIf="data.params.subMessage">
+        </p>
+        <p class="confirm-modal-content-text ft-14-400" [ngClass]="data.params.subMessageClass" *ngIf="data.params.subMessage">
           {{ data.params.subMessage | translate }}
-        </div>
+        </p>
       </div>
     </app-common-dialog>
 </div>

@@ -5,17 +5,14 @@
   padding: 0;
   height: 100%;
 
-  .mat-nested-tree-invisible {
-    display: none;
-  }
-
   .mat-nested-tree ul,
   .mat-nested-tree li {
     margin-top: 0;
     margin-bottom: 0;
     list-style-type: none;
   }
-  .leaf-node-button-icon {
+  .leaf-node-icon {
+    width: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -29,10 +26,6 @@
   }
   .mat-nested-tree div[role='group'] > .mat-tree-node {
     padding-left: 40px;
-  }
-
-  .mat-nested-tree-invisible {
-    display: none;
   }
 
   .header {

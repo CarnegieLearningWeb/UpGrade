@@ -28,11 +28,13 @@
     </ng-container>
 
     <ng-template #table>
-      <app-feature-flag-root-section-card-table
-        class="full-width"
+      <div class="table-container">
+        <app-feature-flag-root-section-card-table
         [dataSource$]="dataSource$ | async"
         [isLoading$]="isLoadingFeatureFlags$"
-      ></app-feature-flag-root-section-card-table>
+        >
+        </app-feature-flag-root-section-card-table>
+      </div>
     </ng-template>
   </ng-container>
 </app-common-section-card>
