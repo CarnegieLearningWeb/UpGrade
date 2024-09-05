@@ -67,6 +67,7 @@
             </span>
             <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
           </div>
+
           <div
             class="log-text"
             *ngSwitchCase="
@@ -89,8 +90,8 @@
                 *ngIf="log.data.isExperimentExist; else experimentNotExist"
                 [routerLink]="['/home', 'detail', log.data.experimentId]"
                 >{{ log.data.experimentName }}</a
-              ></span
-            >
+              >
+            </span>
             <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
           </div>
 
@@ -106,8 +107,8 @@
                         *ngIf="log.data.isExperimentExist; else experimentNotExist"
                         [routerLink]="['/home', 'detail', log.data.experimentId]"
                         >{{ log.data.experimentName }}</a
-                      ></span
-                    >
+                      >
+                    </span>
                     <span class="ft-12-600 view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
                   </mat-panel-title>
                   <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
@@ -117,10 +118,176 @@
               </mat-expansion-panel>
             </mat-accordion>
           </div>
+
+          <div *ngSwitchCase="ExperimentLogType.FEATURE_FLAG_DELETED" class="log-text">
+            <span class="ft-16-600 action action-msg">
+              {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
+            </span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+          </div>
+
+          <div *ngSwitchCase="ExperimentLogType.FEATURE_FLAG_DATA_EXPORTED" class="log-text">
+            <span class="ft-16-600 action action-msg">
+              {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
+            </span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+          </div>
+
+          <div *ngSwitchCase="ExperimentLogType.FEATURE_FLAG_DESIGN_EXPORTED" class="log-text">
+            <span class="ft-16-600 action action-msg">
+              {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
+            </span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+          </div>
+
+          <div
+            class="log-text"
+            *ngSwitchCase="
+              log.type === ExperimentLogType.FEATURE_FLAG_STATUS_CHANGED ||
+              log.type === ExperimentLogType.FEATURE_FLAG_CREATED
+                ? log.type
+                : ''
+            "
+          >
+            <span class="ft-16-600 action action-msg">
+              {{
+                log.type
+                  | experimentActionMessage
+                  | translate
+                    : { previousState: log.data.previousState | titlecase, newState: log.data.newState | titlecase }
+              }}
+              <a
+                class="link"
+                *ngIf="log.data.isFlagExist; else flagNotExist"
+                [routerLink]="['/featureflags', 'detail', log.data.flagId]"
+                >{{ log.data.flagName }}</a
+              >
+            </span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+          </div>
+
+          <div class="full-width" *ngSwitchCase="ExperimentLogType.FEATURE_FLAG_UPDATED">
+            <ng-container *ngIf="log.data.list; else flagPropertiesUpdated">
+              <ng-container [ngSwitch]="log.data.list.operation">
+                <!-- Case for CREATED OR DELETED OR STATUS_CHANGED -->
+                <div
+                  class="log-text"
+                  *ngSwitchCase="
+                    log.data.list.operation === FEATURE_FLAG_LIST_OPERATION.CREATED ||
+                    log.data.list.operation === FEATURE_FLAG_LIST_OPERATION.DELETED ||
+                    log.data.list.operation === FEATURE_FLAG_LIST_OPERATION.STATUS_CHANGED
+                      ? log.data.list.operation
+                      : ''
+                  "
+                >
+                  <span class="ft-16-600 action action-msg">
+                    {{ log.type | experimentActionMessage | translate }}
+                    <a
+                      class="link"
+                      *ngIf="log.data.isFlagExist; else flagNotExist"
+                      [routerLink]="['/featureflags', 'detail', log.data.flagId]"
+                      >{{ log.data.flagName }}</a
+                    >
+                    -
+                    {{
+                      log.data.list.operation
+                        | featureFlagListOperationsMessage
+                        | translate
+                          : {
+                              listTableType: log.data.list.filterType === 'inclusion' ? 'include' : 'exclude',
+                              listName: log.data.list.listName,
+                              status: log.data.list.enabled ? 'enabled' : 'disabled'
+                            }
+                    }}
+                  </span>
+                  <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                </div>
+
+                <!-- Case for UPDATED -->
+                <div *ngSwitchCase="FEATURE_FLAG_LIST_OPERATION.UPDATED">
+                  <!-- Content for UPDATED operation -->
+                  <mat-accordion class="accordion">
+                    <mat-expansion-panel hideToggle="true">
+                      <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
+                        <mat-panel-title>
+                          <span class="ft-16-600 action-msg">
+                            {{ log.type | experimentActionMessage | translate }}
+                            <a
+                              class="link"
+                              *ngIf="log.data.isFlagExist; else flagNotExist"
+                              [routerLink]="['/featureflags', 'detail', log.data.flagId]"
+                              >{{ log.data.flagName }}</a
+                            >
+                            -
+                            {{
+                              log.data.list.operation
+                                | featureFlagListOperationsMessage
+                                | translate
+                                  : {
+                                      listTableType: log.data.list.filterType === 'inclusion' ? 'include' : 'exclude',
+                                      listName: log.data.list.listName,
+                                    }
+                            }}
+                          </span>
+                          <span
+                            class="ft-12-600 view-diff"
+                            [innerHTML]="'logs-global.log-view-diff.text' | translate"
+                          ></span>
+                        </mat-panel-title>
+                        <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                      </mat-expansion-panel-header>
+
+                      <pre><div
+                        class="ft-14-400 diff-container"
+                        [id]="log.id"
+                        >{{ getHtmlFormedLogData(log.id, log.data.list.diff) }}</div
+                      ></pre>
+                    </mat-expansion-panel>
+                  </mat-accordion>
+                </div>
+              </ng-container>
+            </ng-container>
+
+            <!-- Default log view if log.data.list does not exist -->
+            <ng-template #flagPropertiesUpdated>
+              <mat-accordion class="accordion">
+                <mat-expansion-panel hideToggle="true">
+                  <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
+                    <mat-panel-title>
+                      <span class="ft-16-600 action-msg">
+                        {{ log.type | experimentActionMessage | translate }}
+                        <a
+                          class="link"
+                          *ngIf="log.data.isFlagExist; else flagNotExist"
+                          [routerLink]="['/featureflags', 'detail', log.data.flagId]"
+                          >{{ log.data.flagName }}</a
+                        >
+                      </span>
+                      <span
+                        class="ft-12-600 view-diff"
+                        [innerHTML]="'logs-global.log-view-diff.text' | translate"
+                      ></span>
+                    </mat-panel-title>
+                    <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                  </mat-expansion-panel-header>
+
+                  <pre><div
+                    class="ft-14-400 diff-container"
+                    [id]="log.id"
+                    >{{ getHtmlFormedLogData(log.id, log.data.diff) }}</div
+                  ></pre>
+                </mat-expansion-panel>
+              </mat-accordion>
+            </ng-template>
+          </div>
         </ng-container>
 
         <ng-template #experimentNotExist>
           <span class="ft-16-600 action-msg">{{ ' ' + log.data.experimentName }}</span>
+        </ng-template>
+
+        <ng-template #flagNotExist>
+          <span class="ft-16-600 action-msg">{{ log.data.flagName }}</span>
         </ng-template>
       </div>
 
