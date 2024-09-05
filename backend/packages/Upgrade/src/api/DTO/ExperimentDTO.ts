@@ -36,6 +36,7 @@ import {
   ASSIGNMENT_ALGORITHM,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
+import { MoocletExperimentRef } from 'upgrade_types';
 
 export {
   EXPERIMENT_SEARCH_KEY,
@@ -463,6 +464,9 @@ export class ExperimentDTO {
   @IsNotEmpty()
   @IsEnum(EXPERIMENT_TYPE)
   public type: EXPERIMENT_TYPE;
+
+  @IsOptional()
+  public moocletDetails?: MoocletExperimentRef;
 }
 
 export interface ExperimentFile {

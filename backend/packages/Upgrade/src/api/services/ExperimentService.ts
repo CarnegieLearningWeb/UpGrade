@@ -28,6 +28,7 @@ import {
   SEGMENT_TYPE,
   EXPERIMENT_TYPE,
   CACHE_PREFIX,
+  ASSIGNMENT_ALGORITHM,
   ASSIGNMENT_UNIT,
   FILTER_MODE,
 } from 'upgrade_types';
@@ -81,6 +82,7 @@ import { CacheService } from './CacheService';
 import { QueryService } from './QueryService';
 import { ArchivedStats } from '../models/ArchivedStats';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
+import { MoocletService } from './MoocletService';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
@@ -124,7 +126,8 @@ export class ExperimentService {
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
     public cacheService: CacheService,
-    public queryService: QueryService
+    public queryService: QueryService,
+    public moocletService: MoocletService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
@@ -283,6 +286,7 @@ export class ExperimentService {
       experiment.partitions[index] = newDecisionPoint;
     });
     experiment.backendVersion = env.app.version;
+
     return this.addExperimentInDB(experiment, currentUser, logger);
   }
 
@@ -1200,6 +1204,12 @@ export class ExperimentService {
       })
     );
     const createdExperiment = await this.dataSource.transaction(async (transactionalEntityManager) => {
+      // sync experiment with mooclet and attach mooclet details to experiment
+      // if any part of this fails, will error and upgrade experiment should not be created either
+      if (env.mooclets?.enabled && experiment.moocletDetails) {
+        experiment.moocletDetails = await this.moocletService.orchestrateMoocletCreation(experiment, logger);
+      }
+
       experiment.id = experiment.id || uuid();
       experiment.description = experiment.description || '';
 
@@ -1504,6 +1514,7 @@ export class ExperimentService {
       const newExperiment = newExperimentObject;
       return newExperiment;
     });
+
     // create schedules to start experiment and end experiment
     if (this.scheduledJobService) {
       await this.scheduledJobService.updateExperimentSchedules(createdExperiment, logger);

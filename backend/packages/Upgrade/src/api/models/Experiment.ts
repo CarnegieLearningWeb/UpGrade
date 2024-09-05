@@ -27,6 +27,7 @@ import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
 import { ConditionPayload } from 'src/api/models/ConditionPayload';
 import { Factor } from './Factor';
 import { StratificationFactor } from './StratificationFactor';
+import { MoocletExperimentRef } from 'types/src/Mooclet/interfaces';
 
 export {
   EXPERIMENT_SEARCH_KEY,
@@ -175,5 +176,11 @@ export class Experiment extends BaseModel {
     enum: EXPERIMENT_TYPE,
     default: EXPERIMENT_TYPE.SIMPLE,
   })
-  public type: EXPERIMENT_TYPE;
+  public type: string;
+
+  @Column({
+    nullable: true,
+    type: 'json',
+  })
+  public moocletDetails?: MoocletExperimentRef;
 }
