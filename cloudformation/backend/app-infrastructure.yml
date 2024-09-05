@@ -301,12 +301,12 @@ Resources:
     Properties:
       Name: !Sub ${appName}-${environment}-${cluster}
       HealthCheckEnabled: 'true'
-      HealthCheckIntervalSeconds: 30
+      HealthCheckIntervalSeconds: 60
       HealthCheckPath: /upgrade-service/api/
       HealthCheckPort: traffic-port
       HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 5
-      HealthyThresholdCount: 2
+      HealthCheckTimeoutSeconds: 120
+      HealthyThresholdCount: 10
       Port: !Ref servicePort
       Matcher:
         HttpCode: '200'
@@ -318,7 +318,7 @@ Resources:
         - Key: deregistration_delay.timeout_seconds
           Value: 1800
       TargetType: ip
-      UnhealthyThresholdCount: 2
+      UnhealthyThresholdCount: 10
       VpcId:
         Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-vpcid
   alblistenerrule:
