@@ -74,3 +74,25 @@ export {
   FeatureFlagStateChangedData,
   FeatureFlagDeletedData,
 } from './Experiment/interfaces';
+export {
+  MoocletProxyRequestParams,
+  MoocletRequestBody,
+  MoocletResponseDetails,
+  MoocletVersionRequestBody,
+  MoocletVersionResponseDetails,
+  MoocletPolicyParametersRequestBody,
+  MoocletPolicyParametersResponseDetails,
+  MoocletVariableRequestBody,
+  MoocletVariableResponseDetails,
+  MoocletValueRequestBody,
+  MoocletValueResponseDetails,
+  ExperimentCondtitionToMoocletVersionParams,
+  MoocletWeightedRandomPolicyParameters,
+  MoocletThompsonSamplingConfigurablePolicyParameters,
+  MoocletThompsonSamplingConfigurableCurrentPosteriors,
+  MoocletPolicyParameters,
+  MoocletPolicyResponseDetails,
+  MoocletExperimentRef,
+  MoocletBatchResponse,
+  SupportedMoocletPolicyNames
+} from './Mooclet/interfaces';

@@ -3,11 +3,8 @@
  */
 export interface MoocletProxyRequestParams {
   method: string;
-
   url: string;
-
   apiToken: string;
-
   body?: MoocletRequestBody | MoocletPolicyParametersRequestBody | MoocletValueRequestBody | MoocletVariableRequestBody;
 }
 
@@ -141,7 +138,7 @@ export interface MoocletPolicyResponseDetails {
 export interface MoocletExperimentRef {
   mooclet: MoocletResponseDetails;
   versions: MoocletVersionResponseDetails[];
-  policyParameters: MoocletPolicyParametersResponseDetails;
+  policyParameters: MoocletPolicyParameters;
 }
 
 export interface MoocletBatchResponse<T> {
