@@ -306,7 +306,7 @@ Resources:
       HealthCheckPort: traffic-port
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 120
-      HealthyThresholdCount: 10
+      HealthyThresholdCount: 2
       Port: !Ref servicePort
       Matcher:
         HttpCode: '200'
