@@ -18,6 +18,7 @@ import {
   EXPERIMENT_TYPE,
   CONDITION_ORDER,
   ASSIGNMENT_ALGORITHM,
+  MoocletExperimentRef,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { Query } from './Query';
@@ -27,7 +28,6 @@ import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
 import { ConditionPayload } from 'src/api/models/ConditionPayload';
 import { Factor } from './Factor';
 import { StratificationFactor } from './StratificationFactor';
-import { MoocletExperimentRef } from 'types/src/Mooclet/interfaces';
 
 export {
   EXPERIMENT_SEARCH_KEY,
