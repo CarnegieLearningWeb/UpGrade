@@ -128,7 +128,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         id: experiments[0].id + "_" + experimentUsers[3].id,
-        exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC 
+        exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC
       })
     ])
   );

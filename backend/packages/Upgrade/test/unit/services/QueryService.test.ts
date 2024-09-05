@@ -11,6 +11,7 @@ import { ErrorService } from '../../../src/api/services/ErrorService';
 import { ErrorRepository } from '../../../src/api/repositories/ErrorRepository';
 import { ArchivedStatsRepository } from '../../../src/api/repositories/ArchivedStatsRepository';
 import { ArchivedStats } from '../../../src/api/models/ArchivedStats';
+import { configureLogger } from '../../utils/logger';
 
 const logger = new UpgradeLogger();
 
@@ -51,6 +52,10 @@ describe('Query Service Testing', () => {
   mockArchiveData.id = 'id1';
   mockArchiveData.query = mockquery1;
   mockArchiveData.result = { mainEffect: logResult, interactionEffect: null };
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
     module = await Test.createTestingModule({

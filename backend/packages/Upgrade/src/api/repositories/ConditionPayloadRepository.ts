@@ -1,4 +1,5 @@
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { ConditionPayload } from '../models/ConditionPayload';
@@ -47,7 +48,7 @@ export class ConditionPayloadRepository extends Repository<ConditionPayload> {
       .insert()
       .into(ConditionPayload)
       .values(conditionPayloadDoc)
-      .onConflict(`("id") DO UPDATE SET "payloadValue" = :payloadValue`)
+      .orUpdate(['payloadValue'], ['id'])
       .setParameter('payloadValue', conditionPayloadDoc.payloadValue)
       .returning('*')
       .execute()

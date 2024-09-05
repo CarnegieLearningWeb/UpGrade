@@ -8,6 +8,10 @@ import {
   SUPPORTED_CALIPER_EVENTS,
   SUPPORTED_CALIPER_PROFILES,
   EXPERIMENT_TYPE,
+  FEATURE_FLAG_LIST_OPERATION,
+  FEATURE_FLAG_STATUS,
+  FILTER_MODE,
+  FEATURE_FLAG_LIST_FILTER_MODE,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -94,11 +98,48 @@ interface ExperimentDeletedData {
   experimentName: string;
 }
 
+export interface FeatureFlagCreatedData {
+  flagId: string;
+  flagName: string;
+}
+
+export interface FeatureFlagUpdatedData {
+  flagId: string;
+  flagName: string;
+  filterMode?: FILTER_MODE;
+  list?: ListOperationsData;
+  diff?: string;
+}
+
+export interface ListOperationsData {
+  listId: string;
+  listName: string;
+  filterType: FEATURE_FLAG_LIST_FILTER_MODE;
+  operation: FEATURE_FLAG_LIST_OPERATION;
+  enabled?: boolean;
+  diff?: string;
+}
+
+export interface FeatureFlagStateChangedData {
+  flagId: string;
+  flagName: string;
+  previousState: FEATURE_FLAG_STATUS;
+  newState: FEATURE_FLAG_STATUS;
+}
+
+export interface FeatureFlagDeletedData {
+  flagName: string;
+}
+
 export type AuditLogData =
   | ExperimentCreatedData
   | ExperimentUpdatedData
   | ExperimentStateChangedData
-  | ExperimentDeletedData;
+  | ExperimentDeletedData
+  | FeatureFlagCreatedData
+  | FeatureFlagUpdatedData
+  | FeatureFlagStateChangedData
+  | FeatureFlagDeletedData;
 
 export interface IExperimentSearchParams {
   key: EXPERIMENT_SEARCH_KEY;

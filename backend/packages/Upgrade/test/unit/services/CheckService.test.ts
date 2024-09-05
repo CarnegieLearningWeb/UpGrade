@@ -7,6 +7,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { GroupExclusionRepository } from '../../../src/api/repositories/GroupExclusionRepository';
 import { IndividualExclusionRepository } from '../../../src/api/repositories/IndividualExclusionRepository';
 import { MonitoredDecisionPointRepository } from '../../../src/api/repositories/MonitoredDecisionPointRepository';
+import { configureLogger } from '../../utils/logger';
 
 const checkArr = [1, 2, 3];
 
@@ -18,6 +19,10 @@ describe('Check Service Testing', () => {
   let individualExclusionRepository: Repository<IndividualExclusionRepository>;
   let monitoredDecisionPointRepository: Repository<MonitoredDecisionPointRepository>;
   let module: TestingModule;
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
     module = await Test.createTestingModule({

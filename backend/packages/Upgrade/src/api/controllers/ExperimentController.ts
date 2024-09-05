@@ -34,9 +34,54 @@ interface ExperimentPaginationInfo extends PaginationResponse {
 /**
  * @swagger
  * definitions:
+ *   InclusionExclusionList:
+ *     required:
+ *      - name
+ *      - context
+ *      - type
+ *      - individualForSegment
+ *      - groupForSegment
+ *      - subSegments
+ *     properties:
+ *       name:
+ *        type: string
+ *       description:
+ *        type: string
+ *       context:
+ *        type: string
+ *       type:
+ *        type: string
+ *        enum: [private]
+ *       individualForSegment:
+ *        type: array
+ *        items:
+ *          type: object
+ *          properties:
+ *            userId:
+ *              type: string
+ *       groupForSegment:
+ *        type: array
+ *        items:
+ *          type: object
+ *          properties:
+ *            groupId:
+ *              type: string
+ *            type:
+ *              type: string
+ *       subSegments:
+ *        type: array
+ *        items:
+ *          type: object
+ *          properties:
+ *            id:
+ *              type: string
+ *              example: 218dc2d8-a833-4e06-b3e3-d3adf74bffd6
+ *            name:
+ *              type: string
+ *            context:
+ *              type: string
  *   Experiment:
  *     required:
- *       - id
  *       - name
  *       - context
  *       - state
@@ -53,7 +98,7 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *     properties:
  *       id:
  *         type: string
- *         example: exp01
+ *         example: aa309c70-00cb-4b6c-8a43-5df4a8f033f0
  *       name:
  *         type: string
  *         example: TextExp1
@@ -91,12 +136,18 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *          format: date-time
  *       revertTo:
  *          type: string
+ *          example: c4cc5b08-1c10-4179-a291-a05cde6ce86b
  *       tags:
  *          type: array
  *          items:
  *            type: string
  *       group:
  *         type: string
+ *       logging:
+ *         type: boolean
+ *       assignmentAlgorithm:
+ *         type: string
+ *         enum: [random, stratified random sampling]
  *       filterMode:
  *         type: string
  *         enum: [includeAll, excludeAll]
@@ -117,6 +168,11 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *               conditionCode:
  *                type: string
  *                example: control
+ *               id:
+ *                type: string
+ *                example: 7bc4b206-a3a2-403d-9b86-f62495f13d39
+ *               order:
+ *                type: number
  *       partitions:
  *         type: array
  *         items:
@@ -134,6 +190,11 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *               type: string
  *             excludeIfReached:
  *                type: boolean
+ *             id:
+ *                type: string
+ *                example: 4b4cc8da-d9d0-4148-b79d-a03a4af34535
+ *             order:
+ *                type: number
  *       factors:
  *         type: array
  *         items:
@@ -143,99 +204,60 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *               type: string
  *             description:
  *               type: string
+ *             order:
+ *               type: number
  *             levels:
- *               type: object
- *               properties:
- *                 name:
- *                   type: string
- *                 description:
- *                   type: string
- *                 payload:
- *                   type: object
- *                   properties:
- *                     type:
- *                       type: string
- *                       enum: [string, json, csv]
- *                     value:
- *                       type:string
+ *               type: array
+ *               items:
+ *                type: object
+ *                properties:
+ *                  id:
+ *                    type: string
+ *                    example: 09a93774-04d0-4005-87cc-1b94a454703a
+ *                  name:
+ *                    type: string
+ *                  description:
+ *                    type: string
+ *                  payload:
+ *                    type: object
+ *                    properties:
+ *                      type:
+ *                        type: string
+ *                        enum: [string, json, csv]
+ *                      value:
+ *                        type: string
  *       queries:
  *         type: array
  *         items:
  *           type: object
+ *           properties:
+ *            name:
+ *              type: string
+ *            query:
+ *              type: object
+ *            metric:
+ *              type: object
+ *              properties:
+ *                key:
+ *                  type: string
+ *            repeatedMeasure:
+ *              type: string
+ *              enum: [MEAN, EARLIEST, PERCENTAGE]
  *       experimentSegmentInclusion:
  *          type: object
  *          properties:
  *              segment:
  *                type: object
- *                properties:
- *                  individualForSegment:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        userId:
- *                          type: string
- *                          example: user1
- *                  groupForSegment:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        groupId:
- *                          type: string
- *                          example: school1
- *                        type:
- *                           type: string
- *                           example: schoolId
- *                  subSegments:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        id:
- *                          type: string
- *                        name:
- *                          type: string
- *                        context:
- *                          type: string
+ *                $ref: '#/definitions/InclusionExclusionList'
  *       experimentSegmentExclusion:
  *          type: object
  *          properties:
  *              segment:
  *                type: object
- *                properties:
- *                  individualForSegment:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        userId:
- *                          type: string
- *                          example: user1
- *                  groupForSegment:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        groupId:
- *                          type: string
- *                          example: school1
- *                        type:
- *                           type: string
- *                           example: schoolId
- *                  subSegments:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        id:
- *                          type: string
- *                        name:
- *                          type: string
- *                        context:
- *                          type: string
+ *                $ref: '#/definitions/InclusionExclusionList'
  *       type:
  *         type: string
+ *         enum: [Simple, Factorial]
  *       conditionPayloads:
  *         type: array
  *         items:
@@ -243,6 +265,13 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *             properties:
  *               id:
  *                 type: string
+ *                 example: 0e0dd761-b570-4cb9-b0b7-d60bd3a64141
+ *               parentCondition:
+ *                 type: string
+ *                 example: 7bc4b206-a3a2-403d-9b86-f62495f13d39
+ *               decisionPoint:
+ *                 type: string
+ *                 example: 4b4cc8da-d9d0-4148-b79d-a03a4af34535
  *               payload:
  *                 type: object
  *                 properties:
@@ -250,7 +279,7 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *                     type: string
  *                     enum: [string, json, csv]
  *                   value:
- *                     type:string
+ *                     type: string
  *   ExperimentResponse:
  *     description: ''
  *     type: object

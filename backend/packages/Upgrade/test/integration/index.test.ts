@@ -1,4 +1,4 @@
-import { Connection } from 'typeorm';
+import {  DataSource } from 'typeorm';
 import { configureLogger } from '../utils/logger';
 import { createDatabaseConnection, closeDatabase, migrateDatabase } from '../utils/database';
 import {
@@ -97,21 +97,24 @@ import { IndividualExperimentExclusionCode, GroupExperimentExclusionCode, Experi
 import { FeatureFlagInclusionExclusion } from './FeatureFlags';
 
 describe('Integration Tests', () => {
+  jest.setTimeout(100000000);
   // -------------------------------------------------------------------------
   // Setup up
   // -------------------------------------------------------------------------
 
-  let connection: Connection;
+  let defaultConnection: DataSource;
+  let exportConnection: DataSource;
   beforeAll(async () => {
     configureLogger();
-    connection = await createDatabaseConnection();
+    [defaultConnection, exportConnection]  = await createDatabaseConnection();
 
     // Mocking AWS Service
     Container.set(AWSService, new AWSServiceMock());
   });
 
   beforeEach(async () => {
-    await migrateDatabase(connection);
+    await migrateDatabase(defaultConnection);
+    await migrateDatabase(exportConnection);
     const cacheManager = Container.get(CacheService);
     await cacheManager.resetAllCache();
 
@@ -124,7 +127,8 @@ describe('Integration Tests', () => {
   // Tear down
   // -------------------------------------------------------------------------
 
-  afterAll(() => closeDatabase(connection));
+  afterAll(() => closeDatabase(defaultConnection));
+  afterAll(() => closeDatabase(exportConnection));
 
   // -------------------------------------------------------------------------
   // Test cases

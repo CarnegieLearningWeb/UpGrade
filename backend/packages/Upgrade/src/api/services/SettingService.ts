@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { SettingRepository } from '../repositories/SettingRepository';
 import { Setting } from '../models/Setting';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
@@ -14,7 +14,7 @@ export class SettingService {
     logger: UpgradeLogger
   ): Promise<Setting> {
     logger.info({ message: `Update project setting: checkAuth ${checkAuth}, filterMetric ${filterMetric}` });
-    const settingDoc: Setting = await this.settingRepository.findOne();
+    const [settingDoc] = await this.settingRepository.find();
     const newDoc = {
       ...settingDoc,
       toCheckAuth: checkAuth === undefined ? (settingDoc && settingDoc.toCheckAuth) || false : checkAuth,
