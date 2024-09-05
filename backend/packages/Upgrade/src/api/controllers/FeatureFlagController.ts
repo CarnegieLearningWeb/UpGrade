@@ -684,7 +684,7 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.featureFlagService.deleteList(id, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
+    return this.featureFlagService.deleteList(id, FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
   }
 
   /**
