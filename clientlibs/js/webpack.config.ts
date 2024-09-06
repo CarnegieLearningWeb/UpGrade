@@ -1,6 +1,6 @@
-const path = require('path');
-const webpack = require('webpack');
-const packageJson = require('./package.json');
+import path = require('path');
+import webpack = require('webpack');
+import packageJson = require('./package.json');
 
 const version = packageJson.version.split('.')[0];
 
