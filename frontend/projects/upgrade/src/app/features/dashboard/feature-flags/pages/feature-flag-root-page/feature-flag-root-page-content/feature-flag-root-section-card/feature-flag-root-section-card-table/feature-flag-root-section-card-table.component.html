@@ -92,7 +92,12 @@
     <!-- No Data Row -->
     <tr *matNoDataRow>
       <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
-        {{ 'feature-flags.no-flags-in-table.text' | translate }}
+        <ng-container *ngIf="(isSearchActive$ | async); else noFlags">
+          {{ 'feature-flags.no-matching-flags.text' | translate }}
+        </ng-container>
+        <ng-template #noFlags>
+          {{ 'feature-flags.no-flags-in-table.text' | translate }}
+        </ng-template>
       </td>
     </tr>
   </table>

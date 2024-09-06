@@ -37,6 +37,7 @@ import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   @Input() dataSource$: MatTableDataSource<FeatureFlag>;
   @Input() isLoading$: Observable<boolean>;
+  @Input() isSearchActive$: Observable<boolean>;
   flagSortKey$ = this.featureFlagsService.sortKey$;
   flagSortAs$ = this.featureFlagsService.sortAs$;
   warningStatusForAllFlags$ = this.featureFlagsService.warningStatusForAllFlags$;
