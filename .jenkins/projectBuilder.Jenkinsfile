@@ -32,6 +32,7 @@ projectBuilderV5 (
             artifactDir: 'dist/upgrade',
             versioning: 'calendar',
             oneArtifactPerEnvironment: true,
+            environments: ["staging", "qa", "prod"],
             buildScripts: [
                 [
                     script: 'npm ci --no-audit',
@@ -44,7 +45,15 @@ projectBuilderV5 (
                     githubCheck: '${projectName}-build'
                 ],
                 [
-                    script: 'cat /projects/upgrade/src/environments/environment.staging.ts',
+                    script: 'echo $ENV',
+                    log: 'echo-test.log'
+                ],
+                [
+                    script: 'ls ./projects/upgrade/src/environments',
+                    log: 'ls-test.log'
+                ],
+                [
+                    script: 'cat ./projects/upgrade/src/environments/environment.staging.ts',
                     log: 'cat-test.log'
                 ]
             ],
