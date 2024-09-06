@@ -42,6 +42,10 @@ projectBuilderV5 (
                     script: 'npm run build:project',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
+                ],
+                [
+                    script: 'cat /projects/upgrade/src/environments/environment.staging.ts',
+                    log: 'cat-test.log'
                 ]
             ],
             envVars: [
