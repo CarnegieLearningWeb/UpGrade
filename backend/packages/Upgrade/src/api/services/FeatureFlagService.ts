@@ -7,7 +7,7 @@ import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusi
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
-import { EntityManager, getConnection, In, DataSource } from 'typeorm';
+import { EntityManager, In, DataSource } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
 import { v4 as uuid } from 'uuid';
 import {
@@ -331,7 +331,7 @@ export class FeatureFlagService {
       return await executeTransaction(entityManager);
     } else {
       // Create a new transaction if no entity manager is provided
-      return await getConnection().transaction(async (manager) => {
+      return await this.dataSource.transaction(async (manager) => {
         return await executeTransaction(manager);
       });
     }
@@ -505,7 +505,7 @@ export class FeatureFlagService {
       return await executeTransaction(transactionalEntityManager);
     } else {
       // Create a new transaction if no entity manager is provided
-      return await getConnection().transaction(async (manager) => {
+      return await this.dataSource.transaction(async (manager) => {
         return await executeTransaction(manager);
       });
     }
@@ -708,10 +708,10 @@ export class FeatureFlagService {
 
   public async importFeatureFlags(
     featureFlagFiles: IFeatureFlagFile[],
+    currentUser: User,
     logger: UpgradeLogger
   ): Promise<IImportError[]> {
     logger.info({ message: 'Import feature flags' });
-    const currentUser: User; // TODO: Get the current user from the request
     const validatedFlags = await this.validateImportFeatureFlags(featureFlagFiles, logger);
 
     const fileStatusArray = featureFlagFiles.map((file) => {
@@ -734,7 +734,7 @@ export class FeatureFlagService {
     const createdFlags = [];
 
     for (const featureFlag of validFiles) {
-      const createdFlag = await getConnection().transaction(async (transactionalEntityManager) => {
+      const createdFlag = await this.dataSource.transaction(async (transactionalEntityManager) => {
         const newFlag = await this.addFeatureFlagInDB(
           this.featureFlagValidatorToFlag(featureFlag),
           currentUser,
@@ -822,7 +822,7 @@ export class FeatureFlagService {
         }
       })
       .filter((key) => key !== null);
-    const existingFeatureFlags = await this.featureFlagRepository.find({ key: In(featureFlagsIds) });
+    const existingFeatureFlags = await this.featureFlagRepository.findBy({ key: In(featureFlagsIds) });
 
     const validationErrors = await Promise.allSettled(
       featureFlagFiles.map(async (featureFlagFile) => {

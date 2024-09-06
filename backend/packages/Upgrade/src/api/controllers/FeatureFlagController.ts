@@ -791,9 +791,10 @@ export class FeatureFlagsController {
   @Post('/import')
   public async importFeatureFlags(
     @Body({ validate: true }) featureFlags: FeatureFlagImportValidation,
+    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<IImportError[]> {
-    return await this.featureFlagService.importFeatureFlags(featureFlags.files, request.logger);
+    return await this.featureFlagService.importFeatureFlags(featureFlags.files, currentUser, request.logger);
   }
   /**
    * @swagger
