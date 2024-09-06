@@ -305,7 +305,7 @@ Resources:
       HealthCheckPath: /upgrade-service/api/
       HealthCheckPort: traffic-port
       HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 120
+      HealthCheckTimeoutSeconds: 90
       HealthyThresholdCount: 2
       Port: !Ref servicePort
       Matcher:
