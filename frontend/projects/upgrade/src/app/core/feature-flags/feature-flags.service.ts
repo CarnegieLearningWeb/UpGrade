@@ -22,6 +22,7 @@ import {
   selectSortKey,
   selectSortAs,
   selectAppContexts,
+  selectIsLoadingImportFeatureFlag,
   selectFeatureFlagIds,
   selectShouldShowWarningForSelectedFlag,
   selectWarningStatusForAllFlags,
@@ -50,7 +51,8 @@ export class FeatureFlagsService {
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
   isLoadingSelectedFeatureFlag$ = this.store$.pipe(select(selectIsLoadingSelectedFeatureFlag));
   isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
-  IsLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
+  isLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
+  isLoadingImportFeatureFlag$ = this.store$.pipe(select(selectIsLoadingImportFeatureFlag));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
   isLoadingUpsertPrivateSegmentList$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
@@ -140,6 +142,10 @@ export class FeatureFlagsService {
 
   deleteFeatureFlag(flagId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlag({ flagId }));
+  }
+
+  setIsLoadingImportFeatureFlag(isLoadingImportFeatureFlag: boolean) {
+    this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingImportFeatureFlag({ isLoadingImportFeatureFlag }));
   }
 
   emailFeatureFlagData(featureFlagId: string) {

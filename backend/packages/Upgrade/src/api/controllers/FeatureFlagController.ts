@@ -17,11 +17,14 @@ import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatusUpdateValidator';
+import {
+  FeatureFlagPaginatedParamsValidator,
+  ValidatedFeatureFlagsError,
+} from './validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFilterModeUpdateValidator';
-import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
-import { FEATURE_FLAG_LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
-import { FeatureFlagValidation, IdValidator } from './validators/FeatureFlagValidator';
+import { IImportError, FEATURE_FLAG_LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
+import { FeatureFlagImportValidation, FeatureFlagValidation, IdValidator } from './validators/FeatureFlagValidator';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
 import { Segment } from 'src/api/models/Segment';
@@ -462,7 +465,7 @@ export class FeatureFlagsController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: addInclusionList
+   *           name: add inclusionList
    *           description: Adding an inclusion list to the feature flag
    *           schema:
    *             type: object
@@ -481,12 +484,14 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentInclusion> {
-    return this.featureFlagService.addList(
-      inclusionList,
-      FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
-      currentUser,
-      request.logger
-    );
+    return (
+      await this.featureFlagService.addList(
+        [inclusionList],
+        FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+        currentUser,
+        request.logger
+      )
+    )[0];
   }
 
   /**
@@ -517,12 +522,14 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentExclusion> {
-    return this.featureFlagService.addList(
-      exclusionList,
-      FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
-      currentUser,
-      request.logger
-    );
+    return (
+      await this.featureFlagService.addList(
+        [exclusionList],
+        FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+        currentUser,
+        request.logger
+      )
+    )[0];
   }
 
   /**
@@ -560,10 +567,10 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentExclusion> {
-    if (id !== exclusionList.list.id) {
+    if (id !== exclusionList.segment.id) {
       return Promise.reject(
         new Error(
-          `${SERVER_ERROR.INCORRECT_PARAM_FORMAT}: The id in the URL (${id}) does not match the list id in the request body (${exclusionList.list.id}).`
+          `${SERVER_ERROR.INCORRECT_PARAM_FORMAT}: The id in the URL (${id}) does not match the list id in the request body (${exclusionList.segment.id}).`
         )
       );
     }
@@ -610,10 +617,10 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentInclusion> {
-    if (id !== inclusionList.list.id) {
+    if (id !== inclusionList.segment.id) {
       return Promise.reject(
         new Error(
-          `${SERVER_ERROR.INCORRECT_PARAM_FORMAT}: The id in the URL (${id}) does not match the list id in the request body (${inclusionList.list.id}).`
+          `${SERVER_ERROR.INCORRECT_PARAM_FORMAT}: The id in the URL (${id}) does not match the list id in the request body (${inclusionList.segment.id}).`
         )
       );
     }
@@ -687,6 +694,108 @@ export class FeatureFlagsController {
     return this.featureFlagService.deleteList(id, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
   }
 
+  /**
+   * @swagger
+   * /flags/import/validation:
+   *    post:
+   *       description: Validating Feature Flag
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: featureFlags
+   *           required: true
+   *           schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
+   *           description: Import FeatureFlag Files
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Validations are completed
+   *            schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 compatibilityType:
+   *                   type: string
+   *                   enum: [compatible, warning, incompatible]
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
+   */
+  @Post('/import/validation')
+  public async validateImportFeatureFlags(
+    @Body({ validate: true }) featureFlags: FeatureFlagImportValidation,
+    @Req() request: AppRequest
+  ): Promise<ValidatedFeatureFlagsError[]> {
+    return await this.featureFlagService.validateImportFeatureFlags(featureFlags.files, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/import:
+   *    post:
+   *       description: Validating Feature Flag
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: featureFlags
+   *           required: true
+   *           schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
+   *           description: Import FeatureFlag Files
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Validations are completed
+   *            schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 compatibilityType:
+   *                   type: string
+   *                   enum: [compatible, warning, incompatible]
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
+   */
+  @Post('/import')
+  public async importFeatureFlags(
+    @Body({ validate: true }) featureFlags: FeatureFlagImportValidation,
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
+  ): Promise<IImportError[]> {
+    return await this.featureFlagService.importFeatureFlags(featureFlags.files, currentUser, request.logger);
+  }
   /**
    * @swagger
    * /flags/export/{id}:
