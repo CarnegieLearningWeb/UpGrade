@@ -3,8 +3,10 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
 import { featureFlag } from '../mockData/featureFlag';
 import { experimentUsers } from '../mockData/experimentUsers/index';
-import { SEGMENT_TYPE } from '../../../../../../types/src';
+import { FEATURE_FLAG_LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { RequestedExperimentUser } from 'src/api/controllers/validators/ExperimentUserValidator';
+import { systemUser } from '../mockData/user';
+import { UserService } from '../../../src/api/services/UserService';
 
 export default async function FeatureFlagInclusionExclusionLogic(): Promise<void> {
   const featureFlagService = Container.get<FeatureFlagService>(FeatureFlagService);
@@ -12,15 +14,19 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
   const featureFlagObject = featureFlag;
   const context = featureFlagObject.context;
   const key = featureFlagObject.key;
+  const userService = Container.get<UserService>(UserService);
+
+  // creating new user
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // create feature flag
-  const flag = await featureFlagService.create(featureFlagObject, new UpgradeLogger());
+  const flag = await featureFlagService.create(featureFlagObject, user, new UpgradeLogger());
 
   const featureFlagSegmentInclusion = {
     flagId: flag.id,
     listType: 'group',
     enabled: true,
-    list: {
+    segment: {
       name: 'Feature Flag 1 Inclusion Segment',
       description: 'Feature Flag 1 Inclusion Segment',
       context: 'home',
@@ -35,7 +41,7 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
     flagId: flag.id,
     listType: 'individual',
     enabled: true,
-    list: {
+    segment: {
       name: 'Feature Flag 1 Exclusion Segment',
       description: 'Feature Flag 1 Exclusion Segment',
       context: 'home',
@@ -46,8 +52,18 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
     },
   };
 
-  await featureFlagService.addList(featureFlagSegmentExclusion, 'exclusion', new UpgradeLogger());
-  await featureFlagService.addList(featureFlagSegmentInclusion, 'inclusion', new UpgradeLogger());
+  await featureFlagService.addList(
+    [featureFlagSegmentExclusion],
+    FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+    user,
+    new UpgradeLogger()
+  );
+  await featureFlagService.addList(
+    [featureFlagSegmentInclusion],
+    FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+    user,
+    new UpgradeLogger()
+  );
 
   const featureFlags = await featureFlagService.find(new UpgradeLogger());
 

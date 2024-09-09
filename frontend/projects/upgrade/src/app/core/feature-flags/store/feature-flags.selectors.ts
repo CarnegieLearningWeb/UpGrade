@@ -116,6 +116,11 @@ export const selectFeatureFlagsListLength = createSelector(
   (featureFlags) => featureFlags.length
 );
 
+export const selectIsLoadingImportFeatureFlag = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingImportFeatureFlag
+);
+
 export const selectIsLoadingUpdateFeatureFlagStatus = createSelector(
   selectFeatureFlagsState,
   (state) => state.isLoadingUpdateFeatureFlagStatus
@@ -170,7 +175,7 @@ export const selectFeatureFlagExclusions = createSelector(
 const shouldShowWarningForFlag = (flag: FeatureFlag) =>
   flag?.status === FEATURE_FLAG_STATUS.ENABLED &&
   flag?.filterMode !== FILTER_MODE.INCLUDE_ALL &&
-  !flag?.featureFlagSegmentInclusion?.length;
+  !flag?.featureFlagSegmentInclusion?.some((inclusion) => inclusion.enabled);
 
 // Selector for the selected feature flag
 export const selectShouldShowWarningForSelectedFlag = createSelector(selectSelectedFeatureFlag, (flag: FeatureFlag) =>

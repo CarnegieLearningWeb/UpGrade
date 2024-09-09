@@ -1,23 +1,26 @@
-import { DataSource } from 'typeorm';
+import * as sinon from 'sinon';
+import { Connection, ConnectionManager, DataSource } from 'typeorm';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
-
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
 import { Segment } from '../../../src/api/models/Segment';
 import { FeatureFlagRepository } from '../../../src/api/repositories/FeatureFlagRepository';
-
 import { ErrorService } from '../../../src/api/services/ErrorService';
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
-
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { configureLogger } from '../../utils/logger';
 import { Container } from '../../../src/typeorm-typedi-extensions';
-
 import {
   FLAG_SEARCH_KEY,
   FLAG_SORT_KEY,
 } from '../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
-import { FEATURE_FLAG_STATUS, FILTER_MODE, SEGMENT_TYPE, SORT_AS_DIRECTION } from 'upgrade_types';
+import {
+  FEATURE_FLAG_LIST_FILTER_MODE,
+  FEATURE_FLAG_STATUS,
+  FILTER_MODE,
+  SEGMENT_TYPE,
+  SORT_AS_DIRECTION,
+} from 'upgrade_types';
 import { isUUID } from 'class-validator';
 import { v4 as uuid } from 'uuid';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
@@ -26,6 +29,8 @@ import { FeatureFlagListValidator } from '../../../src/api/controllers/validator
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentExclusionRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
+import { User } from '../../../src/api/models/User';
+import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
 
 describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
@@ -58,9 +63,9 @@ describe('Feature Flag Service Testing', () => {
 
   const mockList = new FeatureFlagListValidator();
   mockList.enabled = true;
-  mockList.flagId = uuid();
+  mockList.flagId = mockFlag1.id;
   mockList.listType = 'individual';
-  mockList.list = {
+  mockList.segment = {
     name: 'name',
     id: uuid(),
     context: 'context',
@@ -71,16 +76,26 @@ describe('Feature Flag Service Testing', () => {
   };
   const mockFlagArr = [mockFlag1, mockFlag2, mockFlag3];
 
+  const mockUser1 = new User();
+  mockUser1.firstName = 'Bruce';
+  mockUser1.lastName = 'Banner';
+  mockUser1.email = 'bb@email.com';
+
+  // Add this mock for the experimentAuditLogRepository
+  const mockExperimentAuditLogRepository = {
+    saveRawJson: jest.fn().mockResolvedValue({}), // Mock the method
+  };
+
   const limitSpy = jest.fn().mockReturnThis();
   const offsetSpy = jest.fn().mockReturnThis();
   const addSelectSpy = jest.fn().mockReturnThis();
-  const setParamaterSpy = jest.fn().mockReturnThis();
+  const setParameterSpy = jest.fn().mockReturnThis();
   const addOrderBySpy = jest.fn().mockReturnThis();
 
   const queryBuilderMock = {
     addSelect: addSelectSpy,
     addOrderBy: addOrderBySpy,
-    setParameter: setParamaterSpy,
+    setParameter: setParameterSpy,
     where: jest.fn().mockReturnThis(),
     offset: offsetSpy,
     limit: limitSpy,
@@ -88,7 +103,17 @@ describe('Feature Flag Service Testing', () => {
     getMany: jest.fn().mockResolvedValue(mockFlagArr),
   };
 
-  const entityManagerMock = { createQueryBuilder: () => queryBuilderMock, getRepository: () => flagRepo };
+  const entityManagerMock = {
+    createQueryBuilder: () => queryBuilderMock,
+    getRepository: jest.fn().mockReturnThis(),
+    findByIds: jest.fn().mockResolvedValue([mockFlag1]),
+  };
+  const exposureRepoMock = { save: jest.fn() };
+  const sandbox = sinon.createSandbox();
+  sandbox.stub(ConnectionManager.prototype, 'get').returns({
+    transaction: jest.fn(async (passedFunction) => await passedFunction(entityManagerMock)),
+    getRepository: () => exposureRepoMock,
+  } as unknown as Connection);
 
   beforeAll(() => {
     configureLogger();
@@ -150,7 +175,7 @@ describe('Feature Flag Service Testing', () => {
             createQueryBuilder: jest.fn(() => ({
               addSelect: addSelectSpy,
               addOrderBy: addOrderBySpy,
-              setParameter: setParamaterSpy,
+              setParameter: setParameterSpy,
               where: jest.fn().mockReturnThis(),
               offset: offsetSpy,
               limit: limitSpy,
@@ -165,21 +190,32 @@ describe('Feature Flag Service Testing', () => {
         {
           provide: getRepositoryToken(FeatureFlagSegmentExclusionRepository),
           useValue: {
+            findOne: jest.fn().mockResolvedValue({
+              featureFlag: { id: uuid(), name: 'flag' },
+              segment: { id: uuid(), name: 'name' },
+            }),
             insertData: jest.fn().mockResolvedValue(mockList),
           },
         },
         {
           provide: getRepositoryToken(FeatureFlagSegmentInclusionRepository),
           useValue: {
+            findOne: jest.fn().mockResolvedValue({
+              featureFlag: { id: uuid(), name: 'flag' },
+              segment: { id: uuid(), name: 'name' },
+            }),
             insertData: jest.fn().mockResolvedValue(mockList),
           },
         },
-
         {
           provide: ErrorService,
           useValue: {
             create: jest.fn(),
           },
+        },
+        {
+          provide: getRepositoryToken(ExperimentAuditLogRepository),
+          useValue: mockExperimentAuditLogRepository,
         },
       ],
     })
@@ -209,7 +245,7 @@ describe('Feature Flag Service Testing', () => {
     const err = new Error('insert error');
     flagRepo.insertFeatureFlag = jest.fn().mockRejectedValue(err);
     expect(async () => {
-      await service.create(mockFlag2, logger);
+      await service.create(mockFlag2, mockUser1, logger);
     }).rejects.toThrow(new Error('Error in creating feature flag document "addFeatureFlagInDB" Error: insert error'));
   });
 
@@ -309,12 +345,12 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should update the flag', async () => {
-    const results = await service.update(mockFlag2, logger);
+    const results = await service.update(mockFlag2, mockUser1, logger);
     expect(isUUID(results.id)).toBeTruthy();
   });
 
   it('should update the flag with no id and no context', async () => {
-    const results = await service.update(mockFlag3, logger);
+    const results = await service.update(mockFlag3, mockUser1, logger);
     expect(isUUID(results.id)).toBeTruthy();
   });
 
@@ -322,30 +358,30 @@ describe('Feature Flag Service Testing', () => {
     const err = new Error('insert error');
     flagRepo.updateFeatureFlag = jest.fn().mockRejectedValue(err);
     expect(async () => {
-      await service.update(mockFlag2, logger);
+      await service.update(mockFlag2, mockUser1, logger);
     }).rejects.toThrow(
       new Error('Error in updating feature flag document "updateFeatureFlagInDB" Error: insert error')
     );
   });
 
   it('should update the flag state', async () => {
-    const results = await service.updateState(mockFlag1.id, FEATURE_FLAG_STATUS.ENABLED);
+    const results = await service.updateState(mockFlag1.id, FEATURE_FLAG_STATUS.ENABLED, mockUser1);
     expect(results).toBeTruthy();
   });
 
   it('should update the filter mode', async () => {
-    const results = await service.updateFilterMode(mockFlag1.id, FILTER_MODE.EXCLUDE_ALL);
+    const results = await service.updateFilterMode(mockFlag1.id, FILTER_MODE.EXCLUDE_ALL, mockUser1);
     expect(results).toBeTruthy();
   });
 
   it('should delete the flag', async () => {
-    const results = await service.delete(mockFlag1.id, logger);
+    const results = await service.delete(mockFlag1.id, mockUser1, logger);
     expect(results).toEqual(mockFlag1.id);
   });
 
   it('should return undefined when no flag to delete', async () => {
     service.findOne = jest.fn().mockResolvedValue(undefined);
-    const results = await service.delete(mockFlag1.id, logger);
+    const results = await service.delete(mockFlag1.id, mockUser1, logger);
     expect(results).toEqual(undefined);
   });
 
@@ -371,13 +407,18 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should add an include list', async () => {
-    const result = await service.addList(mockList, 'include', logger);
+    const result = await service.addList([mockList], FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
 
     expect(result).toBeTruthy();
   });
 
   it('should delete an include list', async () => {
-    const result = await service.deleteList(mockList.list.id, logger);
+    const result = await service.deleteList(
+      mockList.segment.id,
+      FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+      mockUser1,
+      logger
+    );
 
     expect(result).toBeTruthy();
   });

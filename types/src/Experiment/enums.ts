@@ -103,6 +103,24 @@ export enum EXPERIMENT_LOG_TYPE {
   EXPERIMENT_DATA_EXPORTED = 'experimentDataExported',
   EXPERIMENT_DATA_REQUESTED = 'experimentDataRequested',
   EXPERIMENT_DESIGN_EXPORTED = 'experimentDesignExported',
+  FEATURE_FLAG_CREATED = 'featureFlagCreated',
+  FEATURE_FLAG_UPDATED = 'featureFlagUpdated',
+  FEATURE_FLAG_STATUS_CHANGED = 'featureFlagStatusChanged',
+  FEATURE_FLAG_DELETED = 'featureFlagDeleted',
+  FEATURE_FLAG_DATA_EXPORTED = 'featureFlagDataExported',
+  FEATURE_FLAG_DESIGN_EXPORTED = 'featureFlagDesignExported',
+}
+
+export enum FEATURE_FLAG_LIST_OPERATION {
+  CREATED = 'created',
+  UPDATED = 'updated',
+  DELETED = 'deleted',
+  STATUS_CHANGED = 'statusChanged',
+}
+
+export enum FEATURE_FLAG_LIST_FILTER_MODE {
+  INCLUSION = 'inclusion',
+  EXCLUSION = 'exclusion',
 }
 
 export enum EXPERIMENT_SEARCH_KEY {
@@ -265,6 +283,9 @@ export enum STATUS_INDICATOR_CHIP_TYPE {
   ENROLLMENT_COMPLETE = 'enrollment-complete',
   CANCELLED = 'cancelled',
   SCHEDULED = 'scheduled',
+  COMPATIBLE = 'compatible',
+  INCOMPATIBLE = 'incompatible',
+  WARNING = 'warning',
 }
 
 export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
