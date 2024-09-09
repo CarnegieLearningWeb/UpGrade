@@ -7,7 +7,6 @@ import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../../../../src/api/controllers/validators/FeatureFlagValidator';
 import { RequestedExperimentUser } from '../../../../src/api/controllers/validators/ExperimentUserValidator';
 import { FeatureFlagListValidator } from '../../../../src/api/controllers/validators/FeatureFlagListValidator';
-import { FeatureFlagSegmentInclusion } from '../../../../src/api/models/FeatureFlagSegmentInclusion';
 
 @Service()
 export default class FeatureFlagServiceMock {
