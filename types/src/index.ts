@@ -68,6 +68,8 @@ export {
   ILogMetrics,
   ILogGroupMetrics,
   IMenuButtonItem,
+  IFeatureFlagFile,
+  IImportError,
   ListOperationsData,
   FeatureFlagCreatedData,
   FeatureFlagUpdatedData,

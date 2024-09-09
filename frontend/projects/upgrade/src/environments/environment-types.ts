@@ -28,6 +28,8 @@ export interface APIEndpoints {
   allPartitions: string;
   allExperimentNames: string;
   featureFlag: string;
+  validateFeatureFlag: string;
+  importFeatureFlag: string;
   updateFlagStatus: string;
   updateFilterMode: string;
   getPaginatedFlags: string;
