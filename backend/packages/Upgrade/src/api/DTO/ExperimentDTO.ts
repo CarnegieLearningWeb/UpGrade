@@ -43,6 +43,7 @@ export {
   EXPERIMENT_SORT_KEY,
   IExperimentSearchParams,
   IExperimentSortParams,
+  SegmentValidator,
 };
 
 class PayloadValidator {
@@ -294,14 +295,6 @@ export class ParticipantsValidator {
   @ValidateNested()
   @Type(() => SegmentValidator)
   public segment: SegmentValidator;
-}
-
-export class ParticipantsArrayValidator {
-  @IsNotEmpty()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => SegmentValidator)
-  public segments: SegmentValidator[];
 }
 
 class StateTimeLogValidator {

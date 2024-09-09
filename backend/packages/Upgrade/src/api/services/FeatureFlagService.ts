@@ -7,13 +7,15 @@ import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusi
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
+import { EntityManager, In, DataSource } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
-import { DataSource } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import {
   IFeatureFlagSearchParams,
   IFeatureFlagSortParams,
   FLAG_SEARCH_KEY,
+  ValidatedFeatureFlagsError,
+  FF_COMPATIBILITY_TYPE,
 } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
 import {
@@ -21,6 +23,8 @@ import {
   FEATURE_FLAG_STATUS,
   FILTER_MODE,
   SEGMENT_TYPE,
+  IFeatureFlagFile,
+  IImportError,
   EXPERIMENT_LOG_TYPE,
   FeatureFlagDeletedData,
   FeatureFlagCreatedData,
@@ -37,6 +41,9 @@ import { ExperimentAssignmentService } from './ExperimentAssignmentService';
 import { SegmentService } from './SegmentService';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
+import { validate } from 'class-validator';
+import { plainToClass } from 'class-transformer';
+import { FeatureFlagImportDataValidation } from '../controllers/validators/FeatureFlagImportValidator';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { User } from '../models/User';
 import { diffString } from 'json-diff';
@@ -185,7 +192,7 @@ export class FeatureFlagService {
             await transactionalEntityManager.getRepository(Segment).delete(segmentInclusion.segment.id);
           } catch (err) {
             const error = err as ErrorWithType;
-            error.details = 'Error in deleting Feature Flag Included Segment fron DB';
+            error.details = 'Error in deleting Feature Flag Included Segment from DB';
             error.type = SERVER_ERROR.QUERY_FAILED;
             logger.error(error);
             throw error;
@@ -196,7 +203,7 @@ export class FeatureFlagService {
             await transactionalEntityManager.getRepository(Segment).delete(segmentExclusion.segment.id);
           } catch (err) {
             const error = err as ErrorWithType;
-            error.details = 'Error in deleting Feature Flag Excluded Segment fron DB';
+            error.details = 'Error in deleting Feature Flag Excluded Segment from DB';
             error.type = SERVER_ERROR.QUERY_FAILED;
             logger.error(error);
             throw error;
@@ -286,34 +293,48 @@ export class FeatureFlagService {
     return this.updateFeatureFlagInDB(this.featureFlagValidatorToFlag(flagDTO), currentUser, logger);
   }
 
-  private async addFeatureFlagInDB(flag: FeatureFlag, user: User, logger: UpgradeLogger): Promise<FeatureFlag> {
+  private async addFeatureFlagInDB(
+    flag: FeatureFlag,
+    user: User,
+    logger: UpgradeLogger,
+    entityManager?: EntityManager
+  ): Promise<FeatureFlag> {
     flag.id = uuid();
     // saving feature flag doc
-    let featureFlagDoc: FeatureFlag;
-    await this.dataSource.transaction(async (transactionalEntityManager) => {
+
+    const executeTransaction = async (manager: EntityManager): Promise<FeatureFlag> => {
+      let featureFlagDoc;
       try {
-        featureFlagDoc = (
-          await this.featureFlagRepository.insertFeatureFlag(flag as any, transactionalEntityManager)
-        )[0];
+        featureFlagDoc = (await this.featureFlagRepository.insertFeatureFlag(flag as any, manager))[0];
+        // return featureFlagDoc;
       } catch (err) {
         const error = new Error(`Error in creating feature flag document "addFeatureFlagInDB" ${err}`);
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);
         throw error;
       }
-    });
 
-    // TODO: Add log for feature flag creation
-    const createAuditLogData: FeatureFlagCreatedData = {
-      flagId: featureFlagDoc.id,
-      flagName: featureFlagDoc.name,
+      const createAuditLogData: FeatureFlagCreatedData = {
+        flagId: featureFlagDoc.id,
+        flagName: featureFlagDoc.name,
+      };
+      await this.experimentAuditLogRepository.saveRawJson(
+        EXPERIMENT_LOG_TYPE.FEATURE_FLAG_CREATED,
+        createAuditLogData,
+        user
+      );
+      return featureFlagDoc;
     };
-    await this.experimentAuditLogRepository.saveRawJson(
-      EXPERIMENT_LOG_TYPE.FEATURE_FLAG_CREATED,
-      createAuditLogData,
-      user
-    );
-    return featureFlagDoc;
+
+    if (entityManager) {
+      // Use the provided entity manager
+      return await executeTransaction(entityManager);
+    } else {
+      // Create a new transaction if no entity manager is provided
+      return await this.dataSource.transaction(async (manager) => {
+        return await executeTransaction(manager);
+      });
+    }
   }
 
   private async updateFeatureFlagInDB(flag: FeatureFlag, user: User, logger: UpgradeLogger): Promise<FeatureFlag> {
@@ -403,31 +424,25 @@ export class FeatureFlagService {
   }
 
   public async addList(
-    listInput: FeatureFlagListValidator,
+    listsInput: FeatureFlagListValidator[],
     filterType: FEATURE_FLAG_LIST_FILTER_MODE,
     currentUser: User,
-    logger: UpgradeLogger
-  ): Promise<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> {
+    logger: UpgradeLogger,
+    transactionalEntityManager?: EntityManager
+  ): Promise<(FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion)[]> {
     logger.info({ message: `Add ${filterType} list to feature flag` });
-    const createdList = await this.dataSource.transaction(async (transactionalEntityManager) => {
-      const featureFlagSegmentInclusionOrExclusion =
-        filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION
-          ? new FeatureFlagSegmentInclusion()
-          : new FeatureFlagSegmentExclusion();
-      featureFlagSegmentInclusionOrExclusion.enabled = listInput.enabled;
-      featureFlagSegmentInclusionOrExclusion.listType = listInput.listType;
-      const featureFlag = await this.featureFlagRepository.findOne({ where: { id: listInput.flagId } });
 
-      featureFlagSegmentInclusionOrExclusion.featureFlag = featureFlag;
-
+    const executeTransaction = async (manager: EntityManager) => {
       // create a new private segment
-      listInput.list.type = SEGMENT_TYPE.PRIVATE;
-      let newSegment: Segment;
+      const segmentsToCreate = listsInput.map((listInput) => {
+        listInput.segment.type = SEGMENT_TYPE.PRIVATE;
+        return listInput.segment;
+      });
+
+      let newSegments: Segment[];
       try {
-        newSegment = await this.segmentService.upsertSegmentInPipeline(
-          listInput.list,
-          logger,
-          transactionalEntityManager
+        newSegments = await Promise.all(
+          segmentsToCreate.map((segment) => this.segmentService.upsertSegmentInPipeline(segment, logger, manager))
         );
       } catch (err) {
         const error = new Error(`Error in creating private segment for feature flag ${filterType} list ${err}`);
@@ -435,21 +450,35 @@ export class FeatureFlagService {
         logger.error(error);
         throw error;
       }
-      featureFlagSegmentInclusionOrExclusion.segment = newSegment;
-      // }
+
+      const featureFlags = await manager
+        .getRepository(FeatureFlag)
+        .findByIds(listsInput.map((listInput) => listInput.flagId));
+
+      const featureFlagSegmentInclusionOrExclusionArray = listsInput.map((listInput) => {
+        const featureFlagSegmentInclusionOrExclusion =
+          filterType === 'inclusion' ? new FeatureFlagSegmentInclusion() : new FeatureFlagSegmentExclusion();
+        featureFlagSegmentInclusionOrExclusion.enabled = listInput.enabled;
+        featureFlagSegmentInclusionOrExclusion.listType = listInput.listType;
+        featureFlagSegmentInclusionOrExclusion.featureFlag = featureFlags.find((flag) => flag.id === listInput.flagId);
+        featureFlagSegmentInclusionOrExclusion.segment = newSegments.find(
+          (segment) => segment.id === listInput.segment.id
+        );
+        return featureFlagSegmentInclusionOrExclusion;
+      });
 
       try {
         if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
           await this.featureFlagSegmentInclusionRepository.insertData(
-            featureFlagSegmentInclusionOrExclusion,
+            featureFlagSegmentInclusionOrExclusionArray,
             logger,
-            transactionalEntityManager
+            manager
           );
         } else {
           await this.featureFlagSegmentExclusionRepository.insertData(
-            featureFlagSegmentInclusionOrExclusion,
+            featureFlagSegmentInclusionOrExclusionArray,
             logger,
-            transactionalEntityManager
+            manager
           );
         }
       } catch (err) {
@@ -459,26 +488,27 @@ export class FeatureFlagService {
         throw error;
       }
 
-      // add list AuditLogs here
-      const updateAuditLog: FeatureFlagUpdatedData = {
-        flagId: featureFlag.id,
-        flagName: featureFlag.name,
-        list: {
-          listId: featureFlagSegmentInclusionOrExclusion.segment.id,
-          listName: featureFlagSegmentInclusionOrExclusion.segment.name,
-          filterType: filterType,
-          operation: FEATURE_FLAG_LIST_OPERATION.CREATED,
-        },
-      };
+      for (const updateAuditLog of featureFlagSegmentInclusionOrExclusionArray) {
+        await this.experimentAuditLogRepository.saveRawJson(
+          EXPERIMENT_LOG_TYPE.FEATURE_FLAG_UPDATED,
+          updateAuditLog,
+          currentUser,
+          transactionalEntityManager
+        );
+      }
 
-      await this.experimentAuditLogRepository.saveRawJson(
-        EXPERIMENT_LOG_TYPE.FEATURE_FLAG_UPDATED,
-        updateAuditLog,
-        currentUser
-      );
-      return featureFlagSegmentInclusionOrExclusion;
-    });
-    return createdList;
+      return featureFlagSegmentInclusionOrExclusionArray;
+    };
+
+    if (transactionalEntityManager) {
+      // Use the provided entity manager
+      return await executeTransaction(transactionalEntityManager);
+    } else {
+      // Create a new transaction if no entity manager is provided
+      return await this.dataSource.transaction(async (manager) => {
+        return await executeTransaction(manager);
+      });
+    }
   }
 
   public async updateList(
@@ -495,19 +525,19 @@ export class FeatureFlagService {
 
       if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
-          where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.list.id } },
+          where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.segment.id } },
           relations: ['featureFlag', 'segment'],
         });
       } else {
         existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
-          where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.list.id } },
+          where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.segment.id } },
           relations: ['featureFlag', 'segment'],
         });
       }
 
       if (!existingRecord) {
         throw new Error(
-          `No existing ${filterType} record found for feature flag ${listInput.flagId} and segment ${listInput.list.id}`
+          `No existing ${filterType} record found for feature flag ${listInput.flagId} and segment ${listInput.segment.id}`
         );
       }
 
@@ -524,7 +554,7 @@ export class FeatureFlagService {
       // Update the segment
       try {
         const updatedSegment = await this.segmentService.upsertSegmentInPipeline(
-          listInput.list,
+          listInput.segment,
           logger,
           transactionalEntityManager
         );
@@ -627,7 +657,7 @@ export class FeatureFlagService {
     return searchStringConcatenated;
   }
 
-  private featureFlagValidatorToFlag(flagDTO: FeatureFlagValidation) {
+  private featureFlagValidatorToFlag(flagDTO: FeatureFlagValidation | FeatureFlagImportDataValidation) {
     const featureFlag = new FeatureFlag();
     featureFlag.name = flagDTO.name;
     featureFlag.description = flagDTO.description;
@@ -674,5 +704,197 @@ export class FeatureFlagService {
 
     const includedFeatureFlags = featureFlags.filter(({ id }) => includedFeatureFlagIds.includes(id));
     return includedFeatureFlags;
+  }
+
+  public async importFeatureFlags(
+    featureFlagFiles: IFeatureFlagFile[],
+    currentUser: User,
+    logger: UpgradeLogger
+  ): Promise<IImportError[]> {
+    logger.info({ message: 'Import feature flags' });
+    const validatedFlags = await this.validateImportFeatureFlags(featureFlagFiles, logger);
+
+    const fileStatusArray = featureFlagFiles.map((file) => {
+      const validation = validatedFlags.find((error) => error.fileName === file.fileName);
+      const isCompatible = validation && validation.compatibilityType !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+
+      return {
+        fileName: file.fileName,
+        error: isCompatible ? null : FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+      };
+    });
+
+    const validFiles: FeatureFlagImportDataValidation[] = fileStatusArray
+      .filter((fileStatus) => fileStatus.error === null)
+      .map((fileStatus) => {
+        const featureFlagFile = featureFlagFiles.find((file) => file.fileName === fileStatus.fileName);
+        return JSON.parse(featureFlagFile.fileContent as string);
+      });
+
+    const createdFlags = [];
+
+    for (const featureFlag of validFiles) {
+      const createdFlag = await this.dataSource.transaction(async (transactionalEntityManager) => {
+        const newFlag = await this.addFeatureFlagInDB(
+          this.featureFlagValidatorToFlag(featureFlag),
+          currentUser,
+          logger,
+          transactionalEntityManager
+        );
+
+        const featureFlagSegmentInclusionList = featureFlag.featureFlagSegmentInclusion.map((segmentInclusionList) => {
+          segmentInclusionList.segment.id = uuid();
+
+          const userIds = segmentInclusionList.segment.individualForSegment.map((individual) =>
+            individual.userId ? individual.userId : null
+          );
+          const subSegmentIds = segmentInclusionList.segment.subSegments.map((subSegment) =>
+            subSegment.id ? subSegment.id : null
+          );
+          const groups = segmentInclusionList.segment.groupForSegment.map((group) => {
+            return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
+          });
+
+          return {
+            ...segmentInclusionList,
+            flagId: newFlag.id,
+            segment: { ...segmentInclusionList.segment, userIds, subSegmentIds, groups },
+          };
+        });
+
+        const featureFlagSegmentExclusionList = featureFlag.featureFlagSegmentExclusion.map((segmentExclusionList) => {
+          segmentExclusionList.segment.id = uuid();
+
+          const userIds = segmentExclusionList.segment.individualForSegment.map((individual) =>
+            individual.userId ? individual.userId : null
+          );
+          const subSegmentIds = segmentExclusionList.segment.subSegments.map((subSegment) =>
+            subSegment.id ? subSegment.id : null
+          );
+          const groups = segmentExclusionList.segment.groupForSegment.map((group) => {
+            return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
+          });
+
+          return {
+            ...segmentExclusionList,
+            flagId: newFlag.id,
+            segment: { ...segmentExclusionList.segment, userIds, subSegmentIds, groups },
+          };
+        });
+
+        const [inclusionDoc, exclusionDoc] = await Promise.all([
+          this.addList(
+            featureFlagSegmentInclusionList,
+            FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+            currentUser,
+            logger,
+            transactionalEntityManager
+          ),
+          this.addList(
+            featureFlagSegmentExclusionList,
+            FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+            currentUser,
+            logger,
+            transactionalEntityManager
+          ),
+        ]);
+
+        return { ...newFlag, featureFlagSegmentInclusion: inclusionDoc, featureFlagSegmentExclusion: exclusionDoc };
+      });
+
+      createdFlags.push(createdFlag);
+    }
+    logger.info({ message: 'Imported feature flags', details: createdFlags });
+    return fileStatusArray;
+  }
+  public async validateImportFeatureFlags(
+    featureFlagFiles: IFeatureFlagFile[],
+    logger: UpgradeLogger
+  ): Promise<ValidatedFeatureFlagsError[]> {
+    logger.info({ message: 'Validate feature flags' });
+
+    const featureFlagsIds = featureFlagFiles
+      .map((featureFlagFile) => {
+        try {
+          return JSON.parse(featureFlagFile.fileContent as string).key;
+        } catch (parseError) {
+          return null;
+        }
+      })
+      .filter((key) => key !== null);
+    const existingFeatureFlags = await this.featureFlagRepository.findBy({ key: In(featureFlagsIds) });
+
+    const validationErrors = await Promise.allSettled(
+      featureFlagFiles.map(async (featureFlagFile) => {
+        let featureFlag: FeatureFlagImportDataValidation;
+        try {
+          featureFlag = JSON.parse(featureFlagFile.fileContent as string);
+        } catch (parseError) {
+          logger.error({ message: 'Error in parsing feature flag file', details: parseError });
+          return {
+            fileName: featureFlagFile.fileName,
+            compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+          };
+        }
+
+        const error = await this.validateImportFeatureFlag(featureFlagFile.fileName, featureFlag, existingFeatureFlags);
+        return error;
+      })
+    );
+    // Filter out the files that have no promise rejection errors
+    return validationErrors
+      .map((result) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        } else {
+          const { fileName, compatibilityType } = result.reason;
+          return { fileName: fileName, compatibilityType: compatibilityType };
+        }
+      })
+      .filter((error) => error !== null);
+  }
+
+  private async validateImportFeatureFlag(
+    fileName: string,
+    flag: FeatureFlagImportDataValidation,
+    existingFeatureFlags: FeatureFlag[]
+  ) {
+    let compatibilityType = FF_COMPATIBILITY_TYPE.COMPATIBLE;
+
+    flag = plainToClass(FeatureFlagImportDataValidation, flag);
+    await validate(flag).then((errors) => {
+      if (errors.length > 0) {
+        compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+      }
+    });
+
+    if (compatibilityType === FF_COMPATIBILITY_TYPE.COMPATIBLE) {
+      const keyExists = existingFeatureFlags.find((existingFlag) => existingFlag.key === flag.key);
+
+      if (keyExists) {
+        compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+      } else {
+        const segmentIds = [
+          ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
+            return segmentInclusion.segment.subSegments.map((subSegment) => subSegment.id);
+          }),
+          ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) => {
+            return segmentExclusion.segment.subSegments.map((subSegment) => subSegment.id);
+          }),
+        ];
+
+        const segments = await this.segmentService.getSegmentByIds(segmentIds);
+        segments.forEach((segment) => {
+          if (segment == undefined) {
+            compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
+          }
+        });
+      }
+    }
+
+    return {
+      fileName: fileName,
+      compatibilityType: compatibilityType,
+    };
   }
 }
