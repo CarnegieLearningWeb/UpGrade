@@ -1,11 +1,12 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
-import { Segment, SegmentFile, SegmentImportError } from '../../../../../../core/segments/store/segments.model';
+import { Segment, SegmentFile, importError } from '../../../../../../core/segments/store/segments.model';
 import { MatTableDataSource } from '@angular/material/table';
 import { TranslateService } from '@ngx-translate/core';
 import { SegmentsDataService } from '../../../../../../core/segments/segments.data.service';
 import { NotificationService } from '../../../../../../core/notifications/notification.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-import-segment',
@@ -19,15 +20,15 @@ export class ImportSegmentComponent {
   isLoadingSegments$ = false;
   fileData: SegmentFile[] = [];
   nonErrorSegments: number;
-  importFileErrorsDataSource = new MatTableDataSource<SegmentImportError>();
-  importFileErrors: SegmentImportError[] = [];
+  importFileErrorsDataSource = new MatTableDataSource<importError>();
+  importFileErrors: importError[] = [];
   displayedColumns: string[] = ['File Name', 'Error'];
 
   constructor(
     private segmentsService: SegmentsService,
     private translate: TranslateService,
     private notificationService: NotificationService,
-    private segmentdataService: SegmentsDataService,
+    private segmentDataService: SegmentsDataService,
     public dialogRef: MatDialogRef<ImportSegmentComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
@@ -37,17 +38,17 @@ export class ImportSegmentComponent {
   }
 
   async importSegments() {
-    this.onCancelClick();
-    const importResult = (await this.segmentdataService
-      .importSegments(this.fileData)
-      .toPromise()) as SegmentImportError[];
-
-    this.showNotification(importResult);
-
-    this.segmentsService.fetchSegments(true);
+    try {
+      this.onCancelClick();
+      const importResult = await firstValueFrom(this.segmentDataService.importSegments(this.fileData)) as importError[];
+      this.showNotification(importResult);
+      this.segmentsService.fetchSegments(true);
+    } catch (error) {
+      console.error('Error during segment import:', error);
+    }
   }
 
-  showNotification(importResult: SegmentImportError[]) {
+  showNotification(importResult: importError[]) {
     const importSuccessFiles = importResult.filter((data) => data.error == null).map((data) => data.fileName);
 
     const importSuccessMsg =
@@ -90,7 +91,7 @@ export class ImportSegmentComponent {
 
   async validateFiles() {
     this.importFileErrors =
-      ((await this.segmentdataService.validateSegments(this.fileData).toPromise()) as SegmentImportError[]) || [];
+      ((await this.segmentDataService.validateSegments(this.fileData).toPromise()) as importError[]) || [];
     this.importFileErrorsDataSource.data = this.importFileErrors;
 
     this.nonErrorSegments = this.uploadedFileCount - this.importFileErrors.length;

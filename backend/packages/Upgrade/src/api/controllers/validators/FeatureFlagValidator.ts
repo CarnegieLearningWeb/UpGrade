@@ -1,32 +1,32 @@
 import { IsNotEmpty, IsDefined, IsString, IsArray, IsEnum, IsOptional, ValidateNested, IsUUID } from 'class-validator';
-import { ParticipantsArrayValidator } from '../../DTO/ExperimentDTO';
 import { FILTER_MODE } from 'upgrade_types';
 import { FEATURE_FLAG_STATUS } from 'upgrade_types';
 import { Type } from 'class-transformer';
+import { FeatureFlagListValidator } from './FeatureFlagListValidator';
 
-export class FeatureFlagValidation {
+export class FeatureFlagCoreValidation {
   @IsOptional()
   @IsString()
-  id: string;
+  public id: string;
 
   @IsNotEmpty()
   @IsDefined()
   @IsString()
-  name: string;
+  public name: string;
 
   @IsOptional()
   @IsString()
-  description: string;
+  public description: string;
 
   @IsNotEmpty()
   @IsDefined()
   @IsString()
-  key: string;
+  public key: string;
 
   @IsNotEmpty()
   @IsDefined()
   @IsEnum(FEATURE_FLAG_STATUS)
-  status: FEATURE_FLAG_STATUS;
+  public status: FEATURE_FLAG_STATUS;
 
   @IsNotEmpty()
   @IsArray()
@@ -35,22 +35,26 @@ export class FeatureFlagValidation {
 
   @IsDefined()
   @IsEnum(FILTER_MODE)
-  filterMode: FILTER_MODE;
+  public filterMode: FILTER_MODE;
 
   @IsNotEmpty()
   @IsArray()
   @IsString({ each: true })
   public tags: string[];
+}
+
+export class FeatureFlagValidation extends FeatureFlagCoreValidation {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FeatureFlagListValidator)
+  public featureFlagSegmentInclusion?: FeatureFlagListValidator[];
 
   @IsOptional()
-  @ValidateNested()
-  @Type(() => ParticipantsArrayValidator)
-  public featureFlagSegmentInclusion?: ParticipantsArrayValidator;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => ParticipantsArrayValidator)
-  public featureFlagSegmentExclusion?: ParticipantsArrayValidator;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FeatureFlagListValidator)
+  public featureFlagSegmentExclusion?: FeatureFlagListValidator[];
 }
 
 export class UserParamsValidator {
@@ -70,4 +74,23 @@ export class IdValidator {
   @IsDefined()
   @IsUUID()
   public id: string;
+}
+
+export class FeatureFlagImportValidation {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FeatureFlagFile)
+  public files: FeatureFlagFile[];
+}
+
+class FeatureFlagFile {
+  @IsString()
+  @IsNotEmpty()
+  @IsDefined()
+  public fileName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsDefined()
+  public fileContent: string;
 }
