@@ -469,7 +469,7 @@ export class SegmentService {
         // delete individual for segment
         if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
           const usersToDelete = segmentDoc.individualForSegment.map((individual) => {
-            return { userId: individual.userId, segment: { id: segment.id } };
+            return { userId: individual.userId, segment: segment };
           });
           await transactionalEntityManager.getRepository(IndividualForSegment).delete(usersToDelete as any);
         }
@@ -477,7 +477,7 @@ export class SegmentService {
         // delete group for segment
         if (segmentDoc && segmentDoc.groupForSegment && segmentDoc.groupForSegment.length > 0) {
           const groupToDelete = segmentDoc.groupForSegment.map((group) => {
-            return { groupId: group.groupId, type: group.type, segment: { id: segment.id } };
+            return { groupId: group.groupId, type: group.type, segment: segment };
           });
           await transactionalEntityManager.getRepository(GroupForSegment).delete(groupToDelete as any);
         }
