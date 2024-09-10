@@ -139,35 +139,33 @@ export const selectIsLoadingFeatureFlagDelete = createSelector(
 export const selectFeatureFlagInclusions = createSelector(
   selectSelectedFeatureFlag,
   (featureFlag: FeatureFlag): ParticipantListTableRow[] => {
-    if (!featureFlag || !featureFlag.featureFlagSegmentInclusion) {
+    if (!featureFlag?.featureFlagSegmentInclusion?.length) {
       return [];
     }
-    return [...featureFlag.featureFlagSegmentInclusion]
+    return featureFlag.featureFlagSegmentInclusion
+      .filter((inclusion) => inclusion.segment)
       .sort((a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime())
-      .map((inclusion) => {
-        return {
-          segment: inclusion.segment,
-          listType: inclusion.listType,
-          enabled: inclusion.enabled,
-        };
-      });
+      .map((inclusion) => ({
+        segment: inclusion.segment,
+        listType: inclusion.listType,
+        enabled: inclusion.enabled,
+      }));
   }
 );
 
 export const selectFeatureFlagExclusions = createSelector(
   selectSelectedFeatureFlag,
   (featureFlag: FeatureFlag): ParticipantListTableRow[] => {
-    if (!featureFlag || !featureFlag.featureFlagSegmentExclusion) {
+    if (!featureFlag?.featureFlagSegmentExclusion?.length) {
       return [];
     }
-    return [...featureFlag.featureFlagSegmentExclusion]
+    return featureFlag.featureFlagSegmentExclusion
+      .filter((exclusion) => exclusion.segment)
       .sort((a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime())
-      .map((exclusion) => {
-        return {
-          segment: exclusion.segment,
-          listType: exclusion.listType,
-        };
-      });
+      .map((exclusion) => ({
+        segment: exclusion.segment,
+        listType: exclusion.listType,
+      }));
   }
 );
 
