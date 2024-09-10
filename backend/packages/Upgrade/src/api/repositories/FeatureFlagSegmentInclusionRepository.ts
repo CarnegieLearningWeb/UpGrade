@@ -1,4 +1,5 @@
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
@@ -6,7 +7,7 @@ import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusi
 @EntityRepository(FeatureFlagSegmentInclusion)
 export class FeatureFlagSegmentInclusionRepository extends Repository<FeatureFlagSegmentInclusion> {
   public async insertData(
-    data: Partial<FeatureFlagSegmentInclusion>,
+    data: Partial<FeatureFlagSegmentInclusion>[],
     logger: UpgradeLogger,
     entityManager: EntityManager
   ): Promise<FeatureFlagSegmentInclusion> {

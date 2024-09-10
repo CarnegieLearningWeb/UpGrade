@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../typeorm-typedi-extensions';
 
 import { User } from '../api/models/User';
 import { UserRepository } from '../api/repositories/UserRepository';
@@ -76,7 +76,7 @@ export class AuthService {
       return null;
     }
     // add local cache for validating user for each request
-    const document = await this.userRepository.find({ email });
+    const document = await this.userRepository.find({ where: { email } });
     request.logger.child({ client_session_id: session_id, user: document });
     request.logger.info({ message: 'User document fetched' });
     if (document.length === 0) {

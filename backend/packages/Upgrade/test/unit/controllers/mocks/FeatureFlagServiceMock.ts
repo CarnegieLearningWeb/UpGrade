@@ -49,8 +49,9 @@ export default class FeatureFlagServiceMock {
     return Promise.resolve([]);
   }
 
-  public addList(listInput: FeatureFlagListValidator, filterType: string, logger: UpgradeLogger): Promise<[]> {
-    return Promise.resolve([]);
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  public addList(listInput: FeatureFlagListValidator[], filterType: string, logger: UpgradeLogger): Promise<{}[]> {
+    return Promise.resolve([{}]);
   }
 
   public deleteList(segmentId: string, logger: UpgradeLogger): Promise<[]> {

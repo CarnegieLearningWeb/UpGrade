@@ -1,4 +1,5 @@
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { LevelCombinationElement } from '../models/LevelCombinationElement';
@@ -52,7 +53,7 @@ export class LevelCombinationElementRepository extends Repository<LevelCombinati
       .insert()
       .into(LevelCombinationElement)
       .values(levelCombinationElementDoc)
-      .onConflict('DO NOTHING')
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((error: any) => {
