@@ -1,10 +1,10 @@
 import { fakeAsync, tick } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 import * as ExperimentSelectors from '../experiments/store/experiments.selectors';
-import * as FeatureFlagSelectors from '../feature-flags/store/feature-flags.selectors';
+import { selectAllFeatureFlags } from '../feature-flags/store/feature-flags.selectors';
 import { LogsService } from './logs.service';
 import * as LogActions from './store/logs.actions';
-import { AuditLogs, EXPERIMENT_LOG_TYPE, SERVER_ERROR } from './store/logs.model';
+import { AuditLogs, LOG_TYPE, SERVER_ERROR } from './store/logs.model';
 import * as LogSelectors from './store/logs.selectors';
 
 const MockStateStore$ = new BehaviorSubject({});
@@ -18,7 +18,7 @@ describe('LogsService', () => {
     createdAt: 'test',
     updatedAt: 'test',
     versionNumber: 2,
-    type: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
+    type: LOG_TYPE.EXPERIMENT_CREATED,
     data: {},
   };
 
@@ -36,7 +36,6 @@ describe('LogsService', () => {
           data: {
             experimentId: null,
             isExperimentExist: false,
-            isFlagExist: false,
           },
         },
         logs: [
@@ -61,7 +60,6 @@ describe('LogsService', () => {
           data: {
             experimentId: '1',
             isExperimentExist: true,
-            isFlagExist: false,
           },
         },
         logs: [
@@ -86,7 +84,6 @@ describe('LogsService', () => {
           data: {
             experimentId: '1',
             isExperimentExist: false,
-            isFlagExist: false,
           },
         },
         logs: [
@@ -113,7 +110,7 @@ describe('LogsService', () => {
         // Mock the selectors with the new feature flags
         LogSelectors.selectAllAuditLogs.setResult([...logs]);
         ExperimentSelectors.selectAllExperiment.setResult([...experiments] as any);
-        FeatureFlagSelectors.selectAllFeatureFlags.setResult([...featureFlags] as any);
+        selectAllFeatureFlags.setResult([...featureFlags] as any);
 
         service.getAuditLogs().subscribe((val) => {
           tick(0);
@@ -221,7 +218,7 @@ describe('LogsService', () => {
 
   describe('#setAuditLogFilter', () => {
     it('should dispatch actionSetAuditLogFilter with filterType', () => {
-      const filterType = EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED;
+      const filterType = LOG_TYPE.EXPERIMENT_CREATED;
 
       service.setAuditLogFilter(filterType);
 

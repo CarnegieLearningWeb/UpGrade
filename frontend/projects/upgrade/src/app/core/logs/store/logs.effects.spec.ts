@@ -3,7 +3,7 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 import { LogsEffects } from './logs.effects';
 import * as LogsActions from './logs.actions';
 import * as LogsSelectors from './logs.selectors';
-import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from './logs.model';
+import { LOG_TYPE, SERVER_ERROR } from './logs.model';
 import { fakeAsync, tick } from '@angular/core/testing';
 
 describe('LogsEffects', () => {
@@ -19,7 +19,7 @@ describe('LogsEffects', () => {
     logsDataService = {};
 
     LogsSelectors.selectSkipAuditLog.setResult(0);
-    LogsSelectors.selectAuditFilterType.setResult(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+    LogsSelectors.selectAuditFilterType.setResult(LOG_TYPE.EXPERIMENT_CREATED);
     LogsSelectors.selectIsAuditLogLoading.setResult(false);
     LogsSelectors.selectTotalAuditLogs.setResult(10);
     LogsSelectors.selectSkipErrorLog.setResult(0);
@@ -55,7 +55,7 @@ describe('LogsEffects', () => {
       LogsSelectors.selectIsAuditLogLoading.setResult(false);
       LogsSelectors.selectSkipAuditLog.setResult(1);
       LogsSelectors.selectTotalAuditLogs.setResult(10);
-      LogsSelectors.selectAuditFilterType.setResult(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+      LogsSelectors.selectAuditFilterType.setResult(LOG_TYPE.EXPERIMENT_CREATED);
 
       service.getAllAuditLogs$.subscribe();
 
@@ -71,7 +71,7 @@ describe('LogsEffects', () => {
       LogsSelectors.selectIsAuditLogLoading.setResult(false);
       LogsSelectors.selectSkipAuditLog.setResult(1);
       LogsSelectors.selectTotalAuditLogs.setResult(10);
-      LogsSelectors.selectAuditFilterType.setResult(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+      LogsSelectors.selectAuditFilterType.setResult(LOG_TYPE.EXPERIMENT_CREATED);
 
       service.getAllAuditLogs$.subscribe();
 
@@ -87,7 +87,7 @@ describe('LogsEffects', () => {
       LogsSelectors.selectIsAuditLogLoading.setResult(false);
       LogsSelectors.selectSkipAuditLog.setResult(1);
       LogsSelectors.selectTotalAuditLogs.setResult(10);
-      LogsSelectors.selectAuditFilterType.setResult(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+      LogsSelectors.selectAuditFilterType.setResult(LOG_TYPE.EXPERIMENT_CREATED);
 
       const mockReturnData = {
         nodes: [],
@@ -114,7 +114,7 @@ describe('LogsEffects', () => {
       LogsSelectors.selectIsAuditLogLoading.setResult(false);
       LogsSelectors.selectSkipAuditLog.setResult(1);
       LogsSelectors.selectTotalAuditLogs.setResult(10);
-      LogsSelectors.selectAuditFilterType.setResult(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+      LogsSelectors.selectAuditFilterType.setResult(LOG_TYPE.EXPERIMENT_CREATED);
 
       logsDataService.getAllAuditLogs = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
@@ -250,7 +250,7 @@ describe('LogsEffects', () => {
 
       actions$.next(
         LogsActions.actionSetAuditLogFilter({
-          filterType: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
+          filterType: LOG_TYPE.EXPERIMENT_CREATED,
         })
       );
 

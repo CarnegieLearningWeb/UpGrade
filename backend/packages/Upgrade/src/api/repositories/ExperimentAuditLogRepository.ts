@@ -1,17 +1,13 @@
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { Repository, EntityManager } from 'typeorm';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
-import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
+import { LOG_TYPE } from 'upgrade_types';
 import { User } from '../models/User';
 import repositoryError from './utils/repositoryError';
 
 @EntityRepository(ExperimentAuditLog)
 export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog> {
-  public async paginatedFind(
-    limit: number,
-    offset: number,
-    filter: EXPERIMENT_LOG_TYPE
-  ): Promise<ExperimentAuditLog[]> {
+  public async paginatedFind(limit: number, offset: number, filter: LOG_TYPE): Promise<ExperimentAuditLog[]> {
     let queryBuilder = this.createQueryBuilder('audit')
       .offset(offset)
       .limit(limit)
@@ -27,7 +23,7 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
     });
   }
 
-  public getTotalLogs(filter: EXPERIMENT_LOG_TYPE): Promise<number> {
+  public getTotalLogs(filter: LOG_TYPE): Promise<number> {
     return this.createQueryBuilder('audit')
       .where('audit.type = :filter', { filter })
       .getCount()
@@ -38,7 +34,7 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
   }
 
   public async saveRawJson(
-    type: EXPERIMENT_LOG_TYPE,
+    type: LOG_TYPE,
     data: any,
     user: User,
     entityManger?: EntityManager

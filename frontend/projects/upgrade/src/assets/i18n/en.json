@@ -303,6 +303,7 @@
   "logs.audit-log-feature-flag-data-exported.text": "Successfully sent mail for exported data of ",
   "logs.audit-log-feature-flag-design-exported.text": "Successfully exported design of ",
   "logs.audit-log-feature-flag-state-changed.text": "Successfully changed status from {{ previousState }} to {{ newState }} in ",
+  "logs.audit-log-feature-flag-updated-filterMode-changed.text": "The include all filter has been {{status}}.",
   "logs.audit-log-feature-flag-updated-list-created.text": "The {{ listTableType }} list {{listName}} has been added.",
   "logs.audit-log-feature-flag-updated-list-deleted.text": "The {{ listTableType }} list {{listName}} has been deleted.",
   "logs.audit-log-feature-flag-updated-list-updated.text": "The {{ listTableType }} list {{listName}} has been updated.",

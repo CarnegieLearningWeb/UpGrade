@@ -1,4 +1,4 @@
-import { AuditLogs, EXPERIMENT_LOG_TYPE, ErrorLogs, SERVER_ERROR } from './logs.model';
+import { AuditLogs, LOG_TYPE, ErrorLogs, SERVER_ERROR } from './logs.model';
 import { initialState } from './logs.reducer';
 import * as LogsSelectors from './logs.selectors';
 
@@ -30,19 +30,19 @@ describe('LogsSelectors', () => {
   describe('#selectAllAuditLogs', () => {
     it('should return an array of logs that contain the filtertype given', () => {
       const state = { ...mockState };
-      state.auditLogFilter = EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED;
+      state.auditLogFilter = LOG_TYPE.EXPERIMENT_CREATED;
       const mockAuditLog: AuditLogs = {
         id: 'abc',
         createdAt: '2020-10-10',
         updatedAt: '2020-10-10',
         data: {},
         versionNumber: 1,
-        type: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
+        type: LOG_TYPE.EXPERIMENT_CREATED,
       };
 
       const result = LogsSelectors.selectAllAuditLogs.projector(state, [
-        { ...mockAuditLog, type: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED },
-        { ...mockAuditLog, type: EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED },
+        { ...mockAuditLog, type: LOG_TYPE.EXPERIMENT_CREATED },
+        { ...mockAuditLog, type: LOG_TYPE.EXPERIMENT_DATA_EXPORTED },
       ]);
 
       expect(result).toEqual([mockAuditLog]);
@@ -119,13 +119,13 @@ describe('LogsSelectors', () => {
   });
 
   describe('#selectAuditFilterType', () => {
-    it('should return a EXPERIMENT_LOG_TYPE from auditLogFilter', () => {
+    it('should return a LOG_TYPE from auditLogFilter', () => {
       const state = { ...mockState };
-      state.auditLogFilter = EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED;
+      state.auditLogFilter = LOG_TYPE.EXPERIMENT_CREATED;
 
       const result = LogsSelectors.selectAuditFilterType.projector(state);
 
-      expect(result).toEqual(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+      expect(result).toEqual(LOG_TYPE.EXPERIMENT_CREATED);
     });
   });
 

@@ -1,8 +1,8 @@
 import { AppState } from '../../core.module';
 import { EntityState } from '@ngrx/entity';
-import { EXPERIMENT_LOG_TYPE, FEATURE_FLAG_LIST_OPERATION, SERVER_ERROR } from 'upgrade_types';
+import { LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 
-export { EXPERIMENT_LOG_TYPE, SERVER_ERROR, FEATURE_FLAG_LIST_OPERATION };
+export { LOG_TYPE, SERVER_ERROR };
 
 export const NUMBER_OF_LOGS = 20;
 
@@ -19,7 +19,7 @@ export enum LogDateFormatType {
 export interface AuditLogParams {
   skip: number;
   take: number;
-  filter?: EXPERIMENT_LOG_TYPE;
+  filter?: LOG_TYPE;
 }
 
 export interface ErrorLogParams {
@@ -33,7 +33,7 @@ export interface AuditLogs {
   createdAt: string;
   updatedAt: string;
   versionNumber: number;
-  type: EXPERIMENT_LOG_TYPE;
+  type: LOG_TYPE;
   data: any;
 }
 
@@ -56,7 +56,7 @@ export interface LogState extends EntityState<AuditLogs | ErrorLogs> {
   totalAuditLogs: number;
   skipErrorLog: number;
   totalErrorLogs: number;
-  auditLogFilter: EXPERIMENT_LOG_TYPE;
+  auditLogFilter: LOG_TYPE;
   errorLogFilter: SERVER_ERROR;
 }
 

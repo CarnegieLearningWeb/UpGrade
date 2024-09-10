@@ -15,7 +15,7 @@ import {
 import { combineLatest } from 'rxjs';
 import { selectAllExperiment } from '../experiments/store/experiments.selectors';
 import { map } from 'rxjs/operators';
-import { AuditLogs, SERVER_ERROR, EXPERIMENT_LOG_TYPE } from './store/logs.model';
+import { AuditLogs, SERVER_ERROR, LOG_TYPE } from './store/logs.model';
 import { selectAllFeatureFlags } from '../feature-flags/store/feature-flags.selectors';
 
 @Injectable()
@@ -35,7 +35,8 @@ export class LogsService {
       map(([auditLogs, experiments, featureFlags]) =>
         auditLogs.map((log: AuditLogs) => {
           const clonedLog = { ...log };
-          if (log.data.experimentId) {
+
+          if (log.data.experimentId && this.isExperimentType(log.type)) {
             const result = experiments.find((experiment) => experiment.id === log.data.experimentId);
             clonedLog.data = result
               ? {
@@ -43,25 +44,45 @@ export class LogsService {
                   isExperimentExist: true,
                 }
               : { ...log.data, isExperimentExist: false };
-          } else {
+          } else if (!log.data.experimentId || this.isExperimentLogTypeWithoutId(log.type)) {
             clonedLog.data = { ...log.data, isExperimentExist: false };
           }
-          if (log.data.flagId) {
+
+          if (log.data.flagId && this.isFeatureFlagType(log.type)) {
             const result = featureFlags.find((featureFlag) => featureFlag.id === log.data.flagId);
             clonedLog.data = result
               ? {
-                  ...clonedLog.data,
+                  ...log.data,
                   isFlagExist: true,
                 }
-              : { ...clonedLog.data, isFlagExist: false };
-          } else {
-            clonedLog.data = { ...clonedLog.data, isFlagExist: false };
+              : { ...log.data, isFlagExist: false };
+          } else if (!log.data.flagId && this.isFeatureFlagLogTypeWithoutId(log.type)) {
+            clonedLog.data = { ...log.data, isFlagExist: false };
           }
+
           return clonedLog;
         })
       )
     );
   }
+
+  isExperimentType = (type: LOG_TYPE) =>
+    [LOG_TYPE.EXPERIMENT_CREATED, LOG_TYPE.EXPERIMENT_UPDATED, LOG_TYPE.EXPERIMENT_STATE_CHANGED].includes(type);
+
+  isExperimentLogTypeWithoutId = (type: LOG_TYPE) =>
+    [LOG_TYPE.EXPERIMENT_DELETED, LOG_TYPE.EXPERIMENT_DATA_EXPORTED, LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED].includes(
+      type
+    );
+
+  isFeatureFlagType = (type: LOG_TYPE) =>
+    [LOG_TYPE.FEATURE_FLAG_CREATED, LOG_TYPE.FEATURE_FLAG_UPDATED, LOG_TYPE.FEATURE_FLAG_STATUS_CHANGED].includes(type);
+
+  isFeatureFlagLogTypeWithoutId = (type: LOG_TYPE) =>
+    [
+      LOG_TYPE.FEATURE_FLAG_DELETED,
+      LOG_TYPE.FEATURE_FLAG_DATA_EXPORTED,
+      LOG_TYPE.FEATURE_FLAG_DESIGN_EXPORTED,
+    ].includes(type);
 
   isAllAuditLogsFetched() {
     return combineLatest([
@@ -85,7 +106,7 @@ export class LogsService {
     this.store$.dispatch(logsActions.actionGetErrorLogs({ fromStart }));
   }
 
-  setAuditLogFilter(filterType: EXPERIMENT_LOG_TYPE) {
+  setAuditLogFilter(filterType: LOG_TYPE) {
     this.store$.dispatch(logsActions.actionSetAuditLogFilter({ filterType }));
   }
 

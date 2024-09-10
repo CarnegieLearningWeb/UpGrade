@@ -1,6 +1,6 @@
 import { initialState, logsReducer } from './logs.reducer';
 import * as LogsActions from './logs.actions';
-import { AuditLogs, ErrorLogs, EXPERIMENT_LOG_TYPE, SERVER_ERROR } from './logs.model';
+import { AuditLogs, ErrorLogs, LOG_TYPE, SERVER_ERROR } from './logs.model';
 
 describe('LogsReducer', () => {
   const mockAuditLogs: AuditLogs[] = [
@@ -9,7 +9,7 @@ describe('LogsReducer', () => {
       createdAt: 'test',
       updatedAt: 'test',
       versionNumber: 0,
-      type: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
+      type: LOG_TYPE.EXPERIMENT_CREATED,
       data: 'test1',
     },
     {
@@ -17,7 +17,7 @@ describe('LogsReducer', () => {
       createdAt: 'test',
       updatedAt: 'test',
       versionNumber: 0,
-      type: EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED,
+      type: LOG_TYPE.EXPERIMENT_DELETED,
       data: 'test2',
     },
   ];
@@ -191,14 +191,14 @@ describe('LogsReducer', () => {
 
   it('should handle actionSetAuditLogFilter by setting filterType to provided value', () => {
     const previousState = { ...initialState };
-    previousState.auditLogFilter = EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED;
+    previousState.auditLogFilter = LOG_TYPE.EXPERIMENT_UPDATED;
     const testAction = LogsActions.actionSetAuditLogFilter({
-      filterType: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
+      filterType: LOG_TYPE.EXPERIMENT_CREATED,
     });
 
     const newState = logsReducer(previousState, testAction);
 
-    expect(newState.auditLogFilter).toEqual(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+    expect(newState.auditLogFilter).toEqual(LOG_TYPE.EXPERIMENT_CREATED);
   });
 
   it('should handle actionSetErrorLogFilter by setting filterType to provided value', () => {

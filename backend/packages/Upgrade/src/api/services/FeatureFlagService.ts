@@ -25,7 +25,7 @@ import {
   SEGMENT_TYPE,
   IFeatureFlagFile,
   IImportError,
-  EXPERIMENT_LOG_TYPE,
+  LOG_TYPE,
   FeatureFlagDeletedData,
   FeatureFlagCreatedData,
   FeatureFlagStateChangedData,
@@ -215,7 +215,7 @@ export class FeatureFlagService {
           flagName: featureFlag.name,
         };
         await this.experimentAuditLogRepository.saveRawJson(
-          EXPERIMENT_LOG_TYPE.FEATURE_FLAG_DELETED,
+          LOG_TYPE.FEATURE_FLAG_DELETED,
           createAuditLogData,
           currentUser
         );
@@ -244,11 +244,7 @@ export class FeatureFlagService {
       newState: status,
     };
 
-    await this.experimentAuditLogRepository.saveRawJson(
-      EXPERIMENT_LOG_TYPE.FEATURE_FLAG_STATUS_CHANGED,
-      data,
-      currentUser
-    );
+    await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_STATUS_CHANGED, data, currentUser);
     return updatedState;
   }
 
@@ -269,7 +265,7 @@ export class FeatureFlagService {
       filterMode: filterMode,
     };
 
-    await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.FEATURE_FLAG_UPDATED, data, currentUser);
+    await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, data, currentUser);
     return updatedFilterMode;
   }
 
@@ -280,7 +276,7 @@ export class FeatureFlagService {
     };
 
     await this.experimentAuditLogRepository.saveRawJson(
-      EXPERIMENT_LOG_TYPE.FEATURE_FLAG_DESIGN_EXPORTED,
+      LOG_TYPE.FEATURE_FLAG_DESIGN_EXPORTED,
       exportAuditLog,
       currentUser
     );
@@ -307,7 +303,6 @@ export class FeatureFlagService {
       let featureFlagDoc;
       try {
         featureFlagDoc = (await this.featureFlagRepository.insertFeatureFlag(flag as any, manager))[0];
-        // return featureFlagDoc;
       } catch (err) {
         const error = new Error(`Error in creating feature flag document "addFeatureFlagInDB" ${err}`);
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
@@ -319,11 +314,7 @@ export class FeatureFlagService {
         flagId: featureFlagDoc.id,
         flagName: featureFlagDoc.name,
       };
-      await this.experimentAuditLogRepository.saveRawJson(
-        EXPERIMENT_LOG_TYPE.FEATURE_FLAG_CREATED,
-        createAuditLogData,
-        user
-      );
+      await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_CREATED, createAuditLogData, user);
       return featureFlagDoc;
     };
 
@@ -375,11 +366,7 @@ export class FeatureFlagService {
         diff: diffString(newFlagDocClone, oldFlagDocClone),
       };
 
-      await this.experimentAuditLogRepository.saveRawJson(
-        EXPERIMENT_LOG_TYPE.FEATURE_FLAG_UPDATED,
-        updateAuditLog,
-        user
-      );
+      await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, user);
       return featureFlagDoc;
     });
   }
@@ -415,11 +402,7 @@ export class FeatureFlagService {
       },
     };
 
-    await this.experimentAuditLogRepository.saveRawJson(
-      EXPERIMENT_LOG_TYPE.FEATURE_FLAG_UPDATED,
-      updateAuditLog,
-      currentUser
-    );
+    await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, currentUser);
 
     return this.segmentService.deleteSegment(segmentId, logger);
   }
@@ -434,7 +417,7 @@ export class FeatureFlagService {
     logger.info({ message: `Add ${filterType} list to feature flag` });
 
     const executeTransaction = async (manager: EntityManager) => {
-      // create a new private segment
+      // Create a new private segment
       const segmentsToCreate = listsInput.map((listInput) => {
         listInput.segment.type = SEGMENT_TYPE.PRIVATE;
         return listInput.segment;
@@ -446,7 +429,7 @@ export class FeatureFlagService {
           segmentsToCreate.map((segment) => this.segmentService.upsertSegmentInPipeline(segment, logger, manager))
         );
       } catch (err) {
-        const error = new Error(`Error in creating private segment for feature flag ${filterType} list ${err}`);
+        const error = new Error(`Error in creating private segment for feature flag ${filterType} list: ${err}`);
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);
         throw error;
@@ -483,15 +466,25 @@ export class FeatureFlagService {
           );
         }
       } catch (err) {
-        const error = new Error(`Error in adding segment for feature flag ${filterType} list ${err}`);
+        const error = new Error(`Error in adding segment for feature flag ${filterType} list: ${err}`);
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);
         throw error;
       }
 
-      for (const updateAuditLog of featureFlagSegmentInclusionOrExclusionArray) {
+      for (const list of featureFlagSegmentInclusionOrExclusionArray) {
+        const updateAuditLog: FeatureFlagUpdatedData = {
+          flagId: list.featureFlag.id,
+          flagName: list.featureFlag.name,
+          list: {
+            listId: list.segment?.id,
+            listName: list.segment?.name,
+            filterType: filterType,
+            operation: FEATURE_FLAG_LIST_OPERATION.CREATED,
+          },
+        };
         await this.experimentAuditLogRepository.saveRawJson(
-          EXPERIMENT_LOG_TYPE.FEATURE_FLAG_UPDATED,
+          LOG_TYPE.FEATURE_FLAG_UPDATED,
           updateAuditLog,
           currentUser,
           transactionalEntityManager
@@ -621,11 +614,7 @@ export class FeatureFlagService {
         list: listData,
       };
 
-      await this.experimentAuditLogRepository.saveRawJson(
-        EXPERIMENT_LOG_TYPE.FEATURE_FLAG_UPDATED,
-        updateAuditLog,
-        currentUser
-      );
+      await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, currentUser);
 
       return existingRecord;
     });
