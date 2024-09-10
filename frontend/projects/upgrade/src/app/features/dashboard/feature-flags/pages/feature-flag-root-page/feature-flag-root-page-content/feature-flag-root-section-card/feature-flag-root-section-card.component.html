@@ -24,7 +24,9 @@
   <!-- content -->
   <ng-container content *ngIf="isSectionCardExpanded">
     <ng-container *ngIf="!(isInitialLoading$ | async); else table">
-      <mat-spinner></mat-spinner>
+      <div class="mat-spinner-container">
+        <mat-spinner diameter="60"></mat-spinner>
+      </div>
     </ng-container>
 
     <ng-template #table>

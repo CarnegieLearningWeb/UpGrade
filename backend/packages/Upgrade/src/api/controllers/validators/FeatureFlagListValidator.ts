@@ -18,5 +18,5 @@ export class FeatureFlagListValidator {
 
   @ValidateNested()
   @Type(() => SegmentInputValidator)
-  public list: SegmentInputValidator;
+  public segment: SegmentInputValidator;
 }

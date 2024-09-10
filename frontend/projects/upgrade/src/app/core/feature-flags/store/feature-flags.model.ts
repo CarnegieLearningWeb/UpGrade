@@ -10,8 +10,7 @@ export interface GeneralCRUDResponseFields {
   versionNumber: number;
 }
 
-// Fields belonging to the FeatureFlag entity itself that are not part of the CRUD response
-export interface BaseFeatureFlag {
+export interface CoreFeatureFlagDetails {
   id?: string;
   name: string;
   key: string;
@@ -20,6 +19,10 @@ export interface BaseFeatureFlag {
   tags: string[];
   status: FEATURE_FLAG_STATUS;
   filterMode: FILTER_MODE;
+}
+
+// Fields belonging to the FeatureFlag entity itself that are not part of the CRUD response
+export interface BaseFeatureFlag extends CoreFeatureFlagDetails {
   featureFlagSegmentInclusion: FeatureFlagSegmentListDetails[];
   featureFlagSegmentExclusion: FeatureFlagSegmentListDetails[];
 }
@@ -28,7 +31,7 @@ export interface BaseFeatureFlag {
 export type FeatureFlag = BaseFeatureFlag & GeneralCRUDResponseFields;
 
 // Currently there is no difference between these types, but they semantically different and could diverge later
-export type AddFeatureFlagRequest = BaseFeatureFlag;
+export type AddFeatureFlagRequest = CoreFeatureFlagDetails;
 
 // so that we can throw an error if we try to update the id
 export interface UpdateFeatureFlagRequest extends AddFeatureFlagRequest {
@@ -56,6 +59,11 @@ export interface UpsertFeatureFlagParams {
 export enum UPSERT_FEATURE_FLAG_LIST_ACTION {
   ADD = 'add',
   EDIT = 'edit',
+}
+
+export interface ValidateFeatureFlagError {
+  fileName: string;
+  compatibilityType: string;
 }
 
 export interface FeatureFlagsPaginationInfo {
@@ -180,6 +188,7 @@ export const FLAG_ROOT_DISPLAYED_COLUMNS = Object.values(FLAG_ROOT_COLUMN_NAMES)
 
 export interface FeatureFlagState extends EntityState<FeatureFlag> {
   isLoadingUpsertFeatureFlag: boolean;
+  isLoadingImportFeatureFlag: boolean;
   isLoadingSelectedFeatureFlag: boolean;
   isLoadingFeatureFlags: boolean;
   isLoadingUpdateFeatureFlagStatus: boolean;
