@@ -153,6 +153,7 @@ export class FeatureFlagService {
 
     let queryBuilder = this.featureFlagRepository
       .createQueryBuilder('feature_flag')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
       .loadRelationCountAndMap('feature_flag.featureFlagExposures', 'feature_flag.featureFlagExposures');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);

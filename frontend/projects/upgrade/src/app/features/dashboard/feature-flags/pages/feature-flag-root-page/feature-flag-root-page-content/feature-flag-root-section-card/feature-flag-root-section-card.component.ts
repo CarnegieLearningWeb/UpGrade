@@ -77,7 +77,7 @@ export class FeatureFlagRootSectionCardComponent {
   ) {}
 
   ngOnInit() {
-    this.featureFlagService.fetchFeatureFlags();
+    this.featureFlagService.fetchFeatureFlags(true);
   }
 
   ngAfterViewInit() {
