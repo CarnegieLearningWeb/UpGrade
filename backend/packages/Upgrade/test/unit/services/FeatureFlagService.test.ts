@@ -61,11 +61,7 @@ describe('Feature Flag Service Testing', () => {
 
   const mockFlag3 = new FeatureFlagValidation();
 
-  const mockList = new FeatureFlagListValidator();
-  mockList.enabled = true;
-  mockList.flagId = mockFlag1.id;
-  mockList.listType = 'individual';
-  mockList.segment = {
+  const mockSegment = {
     name: 'name',
     id: uuid(),
     context: 'context',
@@ -74,6 +70,13 @@ describe('Feature Flag Service Testing', () => {
     groups: [],
     subSegmentIds: [],
   };
+
+  const mockList = new FeatureFlagListValidator();
+  mockList.enabled = true;
+  mockList.flagId = mockFlag1.id;
+  mockList.listType = 'individual';
+  mockList.segment = mockSegment;
+
   const mockFlagArr = [mockFlag1, mockFlag2, mockFlag3];
 
   const mockUser1 = new User();
@@ -81,7 +84,6 @@ describe('Feature Flag Service Testing', () => {
   mockUser1.lastName = 'Banner';
   mockUser1.email = 'bb@email.com';
 
-  // Add this mock for the experimentAuditLogRepository
   const mockExperimentAuditLogRepository = {
     saveRawJson: jest.fn().mockResolvedValue({}), // Mock the method
   };

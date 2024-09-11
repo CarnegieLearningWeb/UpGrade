@@ -8,7 +8,7 @@ import {
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
   IExperimentEnrollmentDetailDateStats,
-  EXPERIMENT_LOG_TYPE,
+  LOG_TYPE,
   REPEATED_MEASURE,
   IMetricMetaData,
   ASSIGNMENT_UNIT,
@@ -462,7 +462,7 @@ export class AnalyticsService {
         throw error;
       }
       await this.experimentAuditLogRepository.saveRawJson(
-        EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
+        LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
         { experimentName: experimentQueryResult[0].experimentName },
         user
       );
