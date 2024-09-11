@@ -13,7 +13,7 @@ import { FLAG_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
 import { RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
-import { Observable, Subscription, map, of } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
 import {
@@ -49,7 +49,7 @@ export class FeatureFlagRootSectionCardComponent {
   searchKey$ = this.featureFlagService.searchKey$;
   searchParams$ = this.featureFlagService.searchParams$;
   selectRootTableState$ = this.featureFlagService.selectRootTableState$;
-  isSearchActive$ = of(false);
+  isSearchActive$: Observable<boolean> = this.searchString$.pipe(map((searchString) => !!searchString));
 
   featureFlagFilterOption = [
     FLAG_SEARCH_KEY.ALL,
@@ -92,7 +92,6 @@ export class FeatureFlagRootSectionCardComponent {
   onSearch(params: CommonSearchWidgetSearchParams<FLAG_SEARCH_KEY>) {
     this.featureFlagService.setSearchString(params.searchString);
     this.featureFlagService.setSearchKey(params.searchKey as FLAG_SEARCH_KEY);
-    this.isSearchActive$ = of(!!params.searchString);
   }
 
   onAddFeatureFlagButtonClick() {
