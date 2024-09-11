@@ -1,7 +1,7 @@
 import { BaseModel } from './base/BaseModel';
 import { PrimaryGeneratedColumn, Column, Entity, ManyToOne } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
-import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
+import { LOG_TYPE } from 'upgrade_types';
 import { User } from './User';
 
 @Entity()
@@ -12,9 +12,9 @@ export class ExperimentAuditLog extends BaseModel {
   @IsNotEmpty()
   @Column({
     type: 'enum',
-    enum: EXPERIMENT_LOG_TYPE,
+    enum: LOG_TYPE,
   })
-  public type: EXPERIMENT_LOG_TYPE;
+  public type: LOG_TYPE;
 
   @ManyToOne(() => User, (user) => user.auditLogs, { onDelete: 'CASCADE' })
   public user: User;

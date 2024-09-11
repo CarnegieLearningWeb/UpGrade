@@ -10,6 +10,7 @@ import { ImportExperimentComponent } from '../components/modal/import-experiment
 import { SegmentsService } from '../../../../core/segments/segments.service';
 import { StratificationFactorsService } from '../../../../core/stratification-factors/stratification-factors.service';
 import { PreviewUsersService } from '../../../../core/preview-users/preview-users.service';
+import { FeatureFlagsService } from '../../../../core/feature-flags/feature-flags.service';
 
 @Component({
   selector: 'app-home',
@@ -28,7 +29,8 @@ export class HomeComponent implements OnInit {
     private segmentsService: SegmentsService,
     private stratificationFactorsService: StratificationFactorsService,
     private authService: AuthService,
-    private previewUsersService: PreviewUsersService
+    private previewUsersService: PreviewUsersService,
+    private featherFlagsService: FeatureFlagsService
   ) {}
 
   ngOnInit() {
@@ -38,6 +40,7 @@ export class HomeComponent implements OnInit {
     this.stratificationFactorsService.fetchStratificationFactors(true);
     this.experimentService.fetchAllExperimentNames();
     this.previewUsersService.fetchPreviewUsers(true);
+    this.featherFlagsService.fetchFeatureFlags(true);
   }
 
   openNewExperimentDialog() {

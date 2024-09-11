@@ -20,7 +20,7 @@ import { In, EntityManager, DataSource } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
 import {
-  EXPERIMENT_LOG_TYPE,
+  LOG_TYPE,
   EXPERIMENT_STATE,
   CONSISTENCY_RULE,
   SERVER_ERROR,
@@ -321,11 +321,7 @@ export class ExperimentService {
         };
 
         // Add log for experiment deleted
-        this.experimentAuditLogRepository.saveRawJson(
-          EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED,
-          deleteAuditLogData,
-          currentUser
-        );
+        this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_DELETED, deleteAuditLogData, currentUser);
         if (experiment.experimentSegmentInclusion) {
           try {
             await transactionalEntityManager
@@ -452,12 +448,7 @@ export class ExperimentService {
       data = { ...data, startOn: scheduleDate };
     }
     // add experiment audit logs
-    await this.experimentAuditLogRepository.saveRawJson(
-      EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED,
-      data,
-      user,
-      entityManager
-    );
+    await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user, entityManager);
 
     const timeLogDate = new Date();
 
@@ -588,7 +579,7 @@ export class ExperimentService {
     const formattedExperiments = experimentDetails.map((experiment) => {
       experiment.backendVersion = env.app.version;
       this.experimentAuditLogRepository.saveRawJson(
-        EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
+        LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
         { experimentName: experiment.name },
         user
       );
@@ -1129,11 +1120,7 @@ export class ExperimentService {
           diff: diffString(newExperimentClone, oldExperimentClone),
         };
 
-        await this.experimentAuditLogRepository.saveRawJson(
-          EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED,
-          updateAuditLog,
-          user
-        );
+        await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, user);
         return { updatedExperiment, toDeleteQueriesDoc };
       })
       .then(async ({ updatedExperiment }) => {
@@ -1514,11 +1501,7 @@ export class ExperimentService {
       experimentId: createdExperiment.id,
       experimentName: createdExperiment.name,
     };
-    await this.experimentAuditLogRepository.saveRawJson(
-      EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
-      createAuditLogData,
-      user
-    );
+    await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData, user);
     return this.reducedConditionPayload(this.formatingPayload(createdExperiment));
   }
 

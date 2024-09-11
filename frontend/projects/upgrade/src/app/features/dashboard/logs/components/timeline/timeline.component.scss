@@ -77,7 +77,7 @@ $action-msg-font-size: 15px;
         display: flex;
         flex-grow: 1;
         justify-content: space-between;
-        max-width: calc(100% - 125px);
+        max-width: 100%;
       }
 
       .error-type,
@@ -132,6 +132,10 @@ $action-msg-font-size: 15px;
         margin-left: 5px;
         text-align: right;
       }
+
+      .full-width {
+        width: 100%;
+      }
     }
   }
 }
@@ -159,6 +163,10 @@ $action-msg-font-size: 15px;
   &:hover {
     background-color: unset !important;
   }
+}
+
+::ng-deep .mat-content.mat-content-hide-toggle {
+  margin-right: 0 !important;
 }
 
 ::ng-deep .mat-expansion-panel-header-title {
