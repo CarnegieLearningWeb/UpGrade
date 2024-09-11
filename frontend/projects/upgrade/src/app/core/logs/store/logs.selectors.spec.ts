@@ -1,6 +1,7 @@
-import { AuditLogs, LOG_TYPE, ErrorLogs, SERVER_ERROR } from './logs.model';
+import { AuditLogs, ErrorLogs } from './logs.model';
 import { initialState } from './logs.reducer';
 import * as LogsSelectors from './logs.selectors';
+import { LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 
 describe('LogsSelectors', () => {
   const mockState = { ...initialState };

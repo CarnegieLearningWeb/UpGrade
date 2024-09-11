@@ -4,7 +4,8 @@ import * as ExperimentSelectors from '../experiments/store/experiments.selectors
 import { selectAllFeatureFlags } from '../feature-flags/store/feature-flags.selectors';
 import { LogsService } from './logs.service';
 import * as LogActions from './store/logs.actions';
-import { AuditLogs, LOG_TYPE, SERVER_ERROR } from './store/logs.model';
+import { AuditLogs } from './store/logs.model';
+import { LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 import * as LogSelectors from './store/logs.selectors';
 
 const MockStateStore$ = new BehaviorSubject({});

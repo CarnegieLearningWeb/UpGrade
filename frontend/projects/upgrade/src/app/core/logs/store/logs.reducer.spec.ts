@@ -1,6 +1,7 @@
 import { initialState, logsReducer } from './logs.reducer';
 import * as LogsActions from './logs.actions';
-import { AuditLogs, ErrorLogs, LOG_TYPE, SERVER_ERROR } from './logs.model';
+import { AuditLogs, ErrorLogs } from './logs.model';
+import { LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 
 describe('LogsReducer', () => {
   const mockAuditLogs: AuditLogs[] = [

@@ -3,7 +3,7 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 import { LogsEffects } from './logs.effects';
 import * as LogsActions from './logs.actions';
 import * as LogsSelectors from './logs.selectors';
-import { LOG_TYPE, SERVER_ERROR } from './logs.model';
+import { LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 import { fakeAsync, tick } from '@angular/core/testing';
 
 describe('LogsEffects', () => {
