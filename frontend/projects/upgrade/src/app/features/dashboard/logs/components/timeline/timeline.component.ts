@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 import * as env from '../../../../../../environments/environment';
-import { LogType, SERVER_ERROR } from '../../../../../core/logs/store/logs.model';
-import { FEATURE_FLAG_LIST_OPERATION, LOG_TYPE } from 'upgrade_types';
+import { LogType } from '../../../../../core/logs/store/logs.model';
+import { FEATURE_FLAG_LIST_OPERATION, LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 import Convert from 'ansi-to-html';
 
 @Component({

@@ -2,8 +2,6 @@ import { AppState } from '../../core.module';
 import { EntityState } from '@ngrx/entity';
 import { LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 
-export { LOG_TYPE, SERVER_ERROR };
-
 export const NUMBER_OF_LOGS = 20;
 
 export enum LogType {

@@ -1,5 +1,6 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { LogState, LOG_TYPE, AuditLogs, ErrorLogs, SERVER_ERROR } from './logs.model';
+import { LogState, AuditLogs, ErrorLogs } from './logs.model';
+import { SERVER_ERROR, LOG_TYPE } from 'upgrade_types';
 import { selectAll } from './logs.reducer';
 
 export const selectLogState = createFeatureSelector<LogState>('logs');

@@ -15,7 +15,8 @@ import {
 import { combineLatest } from 'rxjs';
 import { selectAllExperiment } from '../experiments/store/experiments.selectors';
 import { map } from 'rxjs/operators';
-import { AuditLogs, SERVER_ERROR, LOG_TYPE } from './store/logs.model';
+import { AuditLogs } from './store/logs.model';
+import { SERVER_ERROR, LOG_TYPE } from 'upgrade_types';
 import { selectAllFeatureFlags } from '../feature-flags/store/feature-flags.selectors';
 
 @Injectable()
