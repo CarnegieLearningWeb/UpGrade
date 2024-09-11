@@ -180,7 +180,7 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionDeleteFeatureFlagInclusionListSuccess, (state, { segmentId }) => {
     const updatedState = { ...state, isLoadingUpsertPrivateSegmentList: false };
     const flagId = Object.keys(state.entities).find((id) =>
-      state.entities[id].featureFlagSegmentInclusion?.some((inclusion) => inclusion.segment.id === segmentId)
+      state.entities[id].featureFlagSegmentInclusion?.some((inclusion) => inclusion.segment?.id === segmentId)
     );
 
     if (flagId) {
