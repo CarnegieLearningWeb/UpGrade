@@ -3,7 +3,7 @@ import { scheduleJobUpdateExperiment } from '../../mockData/experiment/index';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { AuditService } from '../../../../src/api/services/AuditService';
-import { EXPERIMENT_STATE, EXPERIMENT_LOG_TYPE } from 'upgrade_types';
+import { EXPERIMENT_STATE, LOG_TYPE } from 'upgrade_types';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
@@ -36,12 +36,12 @@ export default async function UpdateExperimentState(): Promise<void> {
   );
 
   await new Promise((r) => setTimeout(r, 1000));
-  const createAuditLog = await auditLogService.getAuditLogByType(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+  const createAuditLog = await auditLogService.getAuditLogByType(LOG_TYPE.EXPERIMENT_CREATED);
 
   expect(createAuditLog).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        type: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
+        type: LOG_TYPE.EXPERIMENT_CREATED,
       }),
     ])
   );
@@ -65,12 +65,12 @@ export default async function UpdateExperimentState(): Promise<void> {
   );
 
   await new Promise((r) => setTimeout(r, 1000));
-  const updateAuditLog = await auditLogService.getAuditLogByType(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED);
+  const updateAuditLog = await auditLogService.getAuditLogByType(LOG_TYPE.EXPERIMENT_UPDATED);
 
   expect(updateAuditLog).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        type: EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED,
+        type: LOG_TYPE.EXPERIMENT_UPDATED,
       }),
     ])
   );
@@ -81,12 +81,12 @@ export default async function UpdateExperimentState(): Promise<void> {
 
   await new Promise((r) => setTimeout(r, 1000));
 
-  const updateStateAuditLog = await auditLogService.getAuditLogByType(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED);
+  const updateStateAuditLog = await auditLogService.getAuditLogByType(LOG_TYPE.EXPERIMENT_STATE_CHANGED);
 
   expect(updateStateAuditLog).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        type: EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED,
+        type: LOG_TYPE.EXPERIMENT_STATE_CHANGED,
       }),
     ])
   );

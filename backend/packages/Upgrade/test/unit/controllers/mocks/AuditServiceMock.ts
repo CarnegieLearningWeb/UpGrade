@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
 import { DATE_RANGE } from 'upgrade_types';
-import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
+import { LOG_TYPE } from 'upgrade_types';
 
 @Service()
 export default class AuditServiceMock {
@@ -20,11 +20,11 @@ export default class AuditServiceMock {
     return Promise.resolve([]);
   }
 
-  public getTotalLogs(filter: EXPERIMENT_LOG_TYPE): Promise<[]> {
+  public getTotalLogs(filter: LOG_TYPE): Promise<[]> {
     return Promise.resolve([]);
   }
 
-  public getAuditLogs(limit: number, offset: number, filter?: EXPERIMENT_LOG_TYPE): Promise<[]> {
+  public getAuditLogs(limit: number, offset: number, filter?: LOG_TYPE): Promise<[]> {
     return Promise.resolve([]);
   }
 }

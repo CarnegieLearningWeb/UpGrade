@@ -204,6 +204,7 @@ export class UpsertPrivateSegmentListModalComponent {
 
   listenForSegmentsFilteredByUserInput(): void {
     this.segmentsOptions$ = this.segmentsFilteredByContext$.pipe(
+      map((segments) => segments.sort((a, b) => a.name.localeCompare(b.name))),
       combineLatestWith(
         this.privateSegmentListForm.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.SEGMENT).valueChanges.pipe(startWith(''))
       ),
