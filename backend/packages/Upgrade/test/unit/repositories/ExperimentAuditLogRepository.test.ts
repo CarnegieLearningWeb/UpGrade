@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
 import { ExperimentAuditLog } from '../../../src/api/models/ExperimentAuditLog';
-import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
+import { LOG_TYPE } from 'upgrade_types';
 import { User } from '../../../src/api/models/User';
 import { Container } from '../../../src/typeorm-typedi-extensions';
 import { initializeMocks } from '../mockdata/mockRepo';
@@ -48,7 +48,7 @@ afterEach(() => {
 
 describe('ExperimentAuditLogRepository Testing', () => {
   it('should save new audit log', async () => {
-    const res = await repo.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, experiment, new User(), manager);
+    const res = await repo.saveRawJson(LOG_TYPE.EXPERIMENT_UPDATED, experiment, new User(), manager);
 
     expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
 
@@ -63,7 +63,7 @@ describe('ExperimentAuditLogRepository Testing', () => {
   });
 
   it('should save new audit log without entity manager', async () => {
-    const res = await repo.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, experiment, new User(), null);
+    const res = await repo.saveRawJson(LOG_TYPE.EXPERIMENT_UPDATED, experiment, new User(), null);
 
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
@@ -81,7 +81,7 @@ describe('ExperimentAuditLogRepository Testing', () => {
     mock.execute.mockRejectedValue(err);
 
     expect(async () => {
-      await repo.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, experiment, new User(), manager);
+      await repo.saveRawJson(LOG_TYPE.EXPERIMENT_UPDATED, experiment, new User(), manager);
     }).rejects.toThrow(err);
 
     expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
@@ -133,7 +133,7 @@ describe('ExperimentAuditLogRepository Testing', () => {
   });
 
   it('should get total logs', async () => {
-    const res = await repo.getTotalLogs(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+    const res = await repo.getTotalLogs(LOG_TYPE.EXPERIMENT_CREATED);
 
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
@@ -146,7 +146,7 @@ describe('ExperimentAuditLogRepository Testing', () => {
   it('should throw an error when get total logs fails', async () => {
     mock.getCount.mockRejectedValue(err);
 
-    await expect(repo.getTotalLogs(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED)).rejects.toThrow(err);
+    await expect(repo.getTotalLogs(LOG_TYPE.EXPERIMENT_CREATED)).rejects.toThrow(err);
 
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
@@ -155,7 +155,7 @@ describe('ExperimentAuditLogRepository Testing', () => {
   });
 
   it('should find paginated', async () => {
-    const res = await repo.paginatedFind(3, 0, EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+    const res = await repo.paginatedFind(3, 0, LOG_TYPE.EXPERIMENT_CREATED);
 
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
@@ -191,7 +191,7 @@ describe('ExperimentAuditLogRepository Testing', () => {
   it('should throw an error when find paginated fails', async () => {
     mock.getMany.mockRejectedValue(err);
 
-    await expect(repo.paginatedFind(3, 0, EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED)).rejects.toThrow(err);
+    await expect(repo.paginatedFind(3, 0, LOG_TYPE.EXPERIMENT_CREATED)).rejects.toThrow(err);
 
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
