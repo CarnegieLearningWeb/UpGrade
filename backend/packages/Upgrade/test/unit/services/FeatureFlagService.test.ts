@@ -1,4 +1,5 @@
-import { DataSource } from 'typeorm';
+import * as sinon from 'sinon';
+import { Connection, ConnectionManager, DataSource } from 'typeorm';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
@@ -60,11 +61,7 @@ describe('Feature Flag Service Testing', () => {
 
   const mockFlag3 = new FeatureFlagValidation();
 
-  const mockList = new FeatureFlagListValidator();
-  mockList.enabled = true;
-  mockList.flagId = uuid();
-  mockList.listType = 'individual';
-  mockList.list = {
+  const mockSegment = {
     name: 'name',
     id: uuid(),
     context: 'context',
@@ -73,6 +70,13 @@ describe('Feature Flag Service Testing', () => {
     groups: [],
     subSegmentIds: [],
   };
+
+  const mockList = new FeatureFlagListValidator();
+  mockList.enabled = true;
+  mockList.flagId = mockFlag1.id;
+  mockList.listType = 'individual';
+  mockList.segment = mockSegment;
+
   const mockFlagArr = [mockFlag1, mockFlag2, mockFlag3];
 
   const mockUser1 = new User();
@@ -80,7 +84,6 @@ describe('Feature Flag Service Testing', () => {
   mockUser1.lastName = 'Banner';
   mockUser1.email = 'bb@email.com';
 
-  // Add this mock for the experimentAuditLogRepository
   const mockExperimentAuditLogRepository = {
     saveRawJson: jest.fn().mockResolvedValue({}), // Mock the method
   };
@@ -102,7 +105,17 @@ describe('Feature Flag Service Testing', () => {
     getMany: jest.fn().mockResolvedValue(mockFlagArr),
   };
 
-  const entityManagerMock = { createQueryBuilder: () => queryBuilderMock, getRepository: () => flagRepo };
+  const entityManagerMock = {
+    createQueryBuilder: () => queryBuilderMock,
+    getRepository: jest.fn().mockReturnThis(),
+    findByIds: jest.fn().mockResolvedValue([mockFlag1]),
+  };
+  const exposureRepoMock = { save: jest.fn() };
+  const sandbox = sinon.createSandbox();
+  sandbox.stub(ConnectionManager.prototype, 'get').returns({
+    transaction: jest.fn(async (passedFunction) => await passedFunction(entityManagerMock)),
+    getRepository: () => exposureRepoMock,
+  } as unknown as Connection);
 
   beforeAll(() => {
     configureLogger();
@@ -396,14 +409,14 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should add an include list', async () => {
-    const result = await service.addList(mockList, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
+    const result = await service.addList([mockList], FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
 
     expect(result).toBeTruthy();
   });
 
   it('should delete an include list', async () => {
     const result = await service.deleteList(
-      mockList.list.id,
+      mockList.segment.id,
       FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
       mockUser1,
       logger

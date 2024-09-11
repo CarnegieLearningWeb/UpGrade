@@ -26,7 +26,7 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
     flagId: flag.id,
     listType: 'group',
     enabled: true,
-    list: {
+    segment: {
       name: 'Feature Flag 1 Inclusion Segment',
       description: 'Feature Flag 1 Inclusion Segment',
       context: 'home',
@@ -41,7 +41,7 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
     flagId: flag.id,
     listType: 'individual',
     enabled: true,
-    list: {
+    segment: {
       name: 'Feature Flag 1 Exclusion Segment',
       description: 'Feature Flag 1 Exclusion Segment',
       context: 'home',
@@ -53,13 +53,13 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
   };
 
   await featureFlagService.addList(
-    featureFlagSegmentExclusion,
+    [featureFlagSegmentExclusion],
     FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
     user,
     new UpgradeLogger()
   );
   await featureFlagService.addList(
-    featureFlagSegmentInclusion,
+    [featureFlagSegmentInclusion],
     FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
     user,
     new UpgradeLogger()

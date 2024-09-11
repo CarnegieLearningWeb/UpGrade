@@ -29,80 +29,36 @@ const generalConfiguration = {
   ],
 };
 
-const browser = {
+const createConfig = (
+  target: string,
+  outputPath: string,
+  useCustomHttpClient: boolean,
+  isBrowser: boolean,
+  externals = {}
+) => ({
   ...generalConfiguration,
+  target,
   output: {
-    filename: 'index.js',
-    path: path.resolve(__dirname, 'dist/browser'),
+    library: 'UpgradeClient',
+    globalObject: 'this',
     libraryTarget: 'umd',
-    library: 'upgrade-client-lib',
+    libraryExport: 'default',
+    filename: 'index.js',
+    path: path.resolve(__dirname, outputPath),
   },
+  externals,
   plugins: [
     new webpack.DefinePlugin({
       API_VERSION: version,
-      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(false),
-      IS_BROWSER: JSON.stringify(true),
+      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(useCustomHttpClient),
+      IS_BROWSER: JSON.stringify(isBrowser),
     }),
   ],
-};
+});
 
-const node = {
-  ...generalConfiguration,
-  target: 'node',
-  output: {
-    filename: 'index.js',
-    path: path.resolve(__dirname, 'dist/node'),
-    libraryTarget: 'umd',
-    library: 'upgrade-client-lib',
-  },
-  plugins: [
-    new webpack.DefinePlugin({
-      API_VERSION: version,
-      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(false),
-      IS_BROWSER: JSON.stringify(false),
-    }),
-  ],
-};
-
-const browserLite = {
-  ...generalConfiguration,
-  output: {
-    filename: 'index.js',
-    path: path.resolve(__dirname, 'dist/browser-lite'),
-    libraryTarget: 'umd',
-    library: 'upgrade-client-lib',
-  },
-  externals: {
-    axios: 'axios',
-  },
-  plugins: [
-    new webpack.DefinePlugin({
-      API_VERSION: version,
-      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(true),
-      IS_BROWSER: JSON.stringify(true),
-    }),
-  ],
-};
-
-const nodeLite = {
-  ...generalConfiguration,
-  target: 'node',
-  output: {
-    filename: 'index.js',
-    path: path.resolve(__dirname, 'dist/node-lite'),
-    libraryTarget: 'umd',
-    library: 'upgrade-client-lib',
-  },
-  externals: {
-    axios: 'axios',
-  },
-  plugins: [
-    new webpack.DefinePlugin({
-      API_VERSION: version,
-      USE_CUSTOM_HTTP_CLIENT: JSON.stringify(true),
-      IS_BROWSER: JSON.stringify(false),
-    }),
-  ],
-};
-
-module.exports = [browser, node, browserLite, nodeLite];
+module.exports = [
+  createConfig(undefined, 'dist/browser', false, true),
+  createConfig('node', 'dist/node', false, false),
+  createConfig(undefined, 'dist/browser-lite', true, true, { axios: 'axios' }),
+  createConfig('node', 'dist/node-lite', true, false, { axios: 'axios' }),
+];

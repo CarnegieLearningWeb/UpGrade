@@ -22,7 +22,7 @@
         {{ PARTICIPANT_LIST_TRANSLATION_KEYS.VALUES | translate }}
       </th>
       <td mat-cell *matCellDef="let rowData" class="values-column ft-14-400">
-        <ng-container *ngIf="rowData.listType !== memberTypes.SEGMENT">
+        <ng-container *ngIf="rowData.listType !== memberTypes.SEGMENT && rowData.segment">
           {{
             (rowData.listType === memberTypes.INDIVIDUAL
               ? rowData.segment.individualForSegment.length
@@ -39,7 +39,7 @@
       </th>
       <!-- TODO this is placeholder logic, need to simplify -->
       <td mat-cell *matCellDef="let rowData" class="name-column ft-14-400">
-        {{ rowData.segment.name }}
+        {{ rowData.segment?.name }}
       </td>
     </ng-container>
 

@@ -13,6 +13,7 @@ import {
 } from './store/feature-flags.model';
 import { Observable, delay, of } from 'rxjs';
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
+import { IFeatureFlagFile } from 'upgrade_types';
 
 @Injectable()
 export class FeatureFlagsDataService {
@@ -42,6 +43,16 @@ export class FeatureFlagsDataService {
   updateFeatureFlag(flag: UpdateFeatureFlagRequest): Observable<FeatureFlag> {
     const url = `${this.environment.api.featureFlag}/${flag.id}`;
     return this.http.put<FeatureFlag>(url, flag);
+  }
+
+  validateFeatureFlag(featureFlag: { files: IFeatureFlagFile[] }) {
+    const url = this.environment.api.validateFeatureFlag;
+    return this.http.post(url, featureFlag);
+  }
+
+  importFeatureFlag(featureFlag: { files: IFeatureFlagFile[] }) {
+    const url = this.environment.api.importFeatureFlag;
+    return this.http.post(url, featureFlag);
   }
 
   updateFilterMode(params: UpdateFilterModeRequest): Observable<FeatureFlag> {
@@ -77,7 +88,7 @@ export class FeatureFlagsDataService {
   }
 
   updateInclusionList(list: EditPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
-    const url = `${this.environment.api.addFlagInclusionList}/${list.list.id}`;
+    const url = `${this.environment.api.addFlagInclusionList}/${list.segment.id}`;
     return this.http.put<FeatureFlagSegmentListDetails>(url, list);
   }
 
@@ -92,7 +103,7 @@ export class FeatureFlagsDataService {
   }
 
   updateExclusionList(list: EditPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
-    const url = `${this.environment.api.addFlagExclusionList}/${list.list.id}`;
+    const url = `${this.environment.api.addFlagExclusionList}/${list.segment.id}`;
     return this.http.put<FeatureFlagSegmentListDetails>(url, list);
   }
 

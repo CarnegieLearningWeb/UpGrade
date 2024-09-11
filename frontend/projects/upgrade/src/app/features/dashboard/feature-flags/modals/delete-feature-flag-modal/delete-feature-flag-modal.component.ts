@@ -41,7 +41,7 @@ export class DeleteFeatureFlagModalComponent {
   inputValue = '';
   subscriptions = new Subscription();
   isSelectedFeatureFlagRemoved$ = this.featureFlagsService.isSelectedFeatureFlagRemoved$;
-  IsLoadingFeatureFlagDelete$ = this.featureFlagsService.IsLoadingFeatureFlagDelete$;
+  isLoadingFeatureFlagDelete$ = this.featureFlagsService.isLoadingFeatureFlagDelete$;
   private inputSubject: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   // Observable that emits true if inputValue is 'delete', false otherwise
@@ -49,7 +49,7 @@ export class DeleteFeatureFlagModalComponent {
 
   isDeleteActionBtnDisabled$: Observable<boolean> = combineLatest([
     this.isDeleteNotTyped$,
-    this.IsLoadingFeatureFlagDelete$,
+    this.isLoadingFeatureFlagDelete$,
   ]).pipe(map(([isDeleteNotTyped, isLoading]) => isDeleteNotTyped || isLoading));
 
   constructor(
