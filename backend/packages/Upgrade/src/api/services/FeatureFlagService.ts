@@ -797,6 +797,7 @@ export class FeatureFlagService {
     logger.info({ message: 'Imported feature flags', details: createdFlags });
     return fileStatusArray;
   }
+
   public async validateImportFeatureFlags(
     featureFlagFiles: IFeatureFlagFile[],
     logger: UpgradeLogger
@@ -813,6 +814,7 @@ export class FeatureFlagService {
       })
       .filter((key) => key !== null);
     const existingFeatureFlags = await this.featureFlagRepository.findBy({ key: In(featureFlagsIds) });
+    const seenKeys = [];
 
     const validationErrors = await Promise.allSettled(
       featureFlagFiles.map(async (featureFlagFile) => {
@@ -826,6 +828,14 @@ export class FeatureFlagService {
             compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
           };
         }
+
+        if (seenKeys.includes(featureFlag.key)) {
+          return {
+            fileName: featureFlagFile.fileName,
+            compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+          };
+        }
+        seenKeys.push(featureFlag.key);
 
         const error = await this.validateImportFeatureFlag(featureFlagFile.fileName, featureFlag, existingFeatureFlags);
         return error;
@@ -874,6 +884,11 @@ export class FeatureFlagService {
         ];
 
         const segments = await this.segmentService.getSegmentByIds(segmentIds);
+
+        if (segmentIds.length !== segments.length) {
+          compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
+        }
+
         segments.forEach((segment) => {
           if (segment == undefined) {
             compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
