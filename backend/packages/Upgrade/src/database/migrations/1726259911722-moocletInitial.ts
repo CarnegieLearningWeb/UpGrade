@@ -1,10 +1,10 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Migrations1725913309740 implements MigrationInterface {
-    name = 'Migrations1725913309740'
+export class MoocletInitial1726259911722 implements MigrationInterface {
+    name = 'MoocletInitial1726259911722'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "experiment" ADD "moocletDetails" json`);
+        await queryRunner.query(`ALTER TABLE "experiment" ADD "moocletExperimentRef" json`);
         await queryRunner.query(`ALTER TYPE "public"."experiment_assignmentalgorithm_enum" RENAME TO "experiment_assignmentalgorithm_enum_old"`);
         await queryRunner.query(`CREATE TYPE "public"."experiment_assignmentalgorithm_enum" AS ENUM('random', 'stratified random sampling', 'uniform_random', 'ts_configurable')`);
         await queryRunner.query(`ALTER TABLE "experiment" ALTER COLUMN "assignmentAlgorithm" DROP DEFAULT`);
@@ -20,7 +20,7 @@ export class Migrations1725913309740 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "experiment" ALTER COLUMN "assignmentAlgorithm" SET DEFAULT 'random'`);
         await queryRunner.query(`DROP TYPE "public"."experiment_assignmentalgorithm_enum"`);
         await queryRunner.query(`ALTER TYPE "public"."experiment_assignmentalgorithm_enum_old" RENAME TO "experiment_assignmentalgorithm_enum"`);
-        await queryRunner.query(`ALTER TABLE "experiment" DROP COLUMN "moocletDetails"`);
+        await queryRunner.query(`ALTER TABLE "experiment" DROP COLUMN "moocletExperimentRef"`);
     }
 
 }
