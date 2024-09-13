@@ -852,11 +852,14 @@ export class FeatureFlagService {
     let compatibilityType = FF_COMPATIBILITY_TYPE.COMPATIBLE;
 
     flag = plainToClass(FeatureFlagImportDataValidation, flag);
-    await validate(flag).then((errors) => {
+    await validate(flag, { forbidUnknownValues: true, stopAtFirstError: true }).then((errors) => {
       if (errors.length > 0) {
         compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
       }
     });
+    if (!flag) {
+      compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+    }
 
     if (compatibilityType === FF_COMPATIBILITY_TYPE.COMPATIBLE) {
       const keyExists = existingFeatureFlags.find((existingFlag) => existingFlag.key === flag.key);

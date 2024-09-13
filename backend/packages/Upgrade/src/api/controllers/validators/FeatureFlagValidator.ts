@@ -90,7 +90,6 @@ class FeatureFlagFile {
   public fileName: string;
 
   @IsString()
-  @IsNotEmpty()
   @IsDefined()
   public fileContent: string;
 }
