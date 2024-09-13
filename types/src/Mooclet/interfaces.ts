@@ -127,17 +127,15 @@ export type MoocletPolicyParameters =
   | MoocletWeightedRandomPolicyParameters
   | MoocletThompsonSamplingConfigurablePolicyParameters;
 
-// {"prior": {"failure": 1, "success": 1}, "batch_size": 4, "max_rating": 1, "min_rating": 0, "uniform_threshold": 4, "current_posteriors": {"16": {"failures": 5.0, "successes": 5.0}, "17": {"failures": 4.0, "successes": 3.0}}, "outcome_variable_name": "XPRIZE_EXPLANATION_AD_REWARD"} #TS parameters with current posteriors for different arms (versions)
-
 export interface MoocletPolicyResponseDetails {
   id: number;
   name: string;
   environment?: string;
 }
 
-export interface MoocletExperimentRef {
-  mooclet: MoocletResponseDetails;
-  versions: MoocletVersionResponseDetails[];
+export interface MoocletDetails {
+  readonly mooclet?: MoocletResponseDetails;
+  readonly versions?: MoocletVersionResponseDetails[];
   policyParameters: MoocletPolicyParameters;
 }
 
@@ -150,8 +148,5 @@ export interface MoocletBatchResponse<T> {
 
 export enum SupportedMoocletPolicyNames {
   WEIGHTED_RANDOM = 'weighted_random',
-  UNIFORM_RANDOM = 'uniform_random',
-  THOMPSON_SAMPLING = 'thompson_sampling',
   TS_CONFIGURABLE = 'ts_configurable',
-  CHOOSE_POLICY_GROUP = 'choose_policy_group',
 }

@@ -4,7 +4,7 @@ import { MoocletDataService } from './MoocletDataService';
 import {
   ASSIGNMENT_ALGORITHM,
   ExperimentCondtitionToMoocletVersionParams,
-  MoocletExperimentRef,
+  MoocletDetails,
   MoocletPolicyParametersRequestBody,
   MoocletPolicyParametersResponseDetails,
   MoocletRequestBody,
@@ -35,7 +35,7 @@ export class MoocletService {
   public async orchestrateMoocletCreation(
     upgradeExperiment: Omit<ExperimentDTO, 'createdAt' | 'updatedAt' | 'versionNumber'>,
     logger: UpgradeLogger
-  ): Promise<MoocletExperimentRef> {
+  ): Promise<MoocletDetails> {
     const { conditions: upgradeConditions, name: upgradeName, assignmentAlgorithm } = upgradeExperiment;
 
     const newMoocletRequest: MoocletRequestBody = {
@@ -83,11 +83,7 @@ export class MoocletService {
         moocletVariableResponse: JSON.stringify(moocletVariableResponse),
       });
 
-      return this.constructMoocletExperimentRef(
-        moocletResponse,
-        moocletVersionsResponse,
-        moocletPolicyParametersResponse
-      );
+      return this.constructMoocletDetails(moocletResponse, moocletVersionsResponse, moocletPolicyParametersResponse);
     } catch (err) {
       throw new Error(
         JSON.stringify({
@@ -167,11 +163,11 @@ export class MoocletService {
     }
   }
 
-  private constructMoocletExperimentRef(
+  private constructMoocletDetails(
     moocletResponse: MoocletResponseDetails,
     moocletVersionsResponse: MoocletVersionResponseDetails[],
     moocletPolicyParametersResponse: MoocletPolicyParametersResponseDetails
-  ): MoocletExperimentRef {
+  ): MoocletDetails {
     return {
       mooclet: moocletResponse,
       versions: moocletVersionsResponse,

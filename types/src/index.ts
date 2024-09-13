@@ -92,7 +92,7 @@ export {
   MoocletThompsonSamplingConfigurableCurrentPosteriors,
   MoocletPolicyParameters,
   MoocletPolicyResponseDetails,
-  MoocletExperimentRef,
+  MoocletDetails,
   MoocletBatchResponse,
-  SupportedMoocletPolicyNames
+  SupportedMoocletPolicyNames,
 } from './Mooclet/interfaces';

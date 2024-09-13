@@ -182,5 +182,5 @@ export class Experiment extends BaseModel {
     nullable: true,
     type: 'json',
   })
-  public moocletDetails?: MoocletExperimentRef;
+  public MoocletExperimentRef?: MoocletExperimentRef;
 }
