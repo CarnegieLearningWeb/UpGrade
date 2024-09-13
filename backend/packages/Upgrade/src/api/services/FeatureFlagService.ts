@@ -723,7 +723,13 @@ export class FeatureFlagService {
 
     const createdFlags = [];
 
-    for (const featureFlag of validFiles) {
+    for (const featureFlagWithEnabledSettings of validFiles) {
+      const featureFlag = {
+        ...featureFlagWithEnabledSettings,
+        status: FEATURE_FLAG_STATUS.DISABLED,
+        filterMode: FILTER_MODE.EXCLUDE_ALL,
+      };
+
       const createdFlag = await this.dataSource.transaction(async (transactionalEntityManager) => {
         const newFlag = await this.addFeatureFlagInDB(
           this.featureFlagValidatorToFlag(featureFlag),
@@ -747,6 +753,7 @@ export class FeatureFlagService {
 
           return {
             ...segmentInclusionList,
+            enabled: false,
             flagId: newFlag.id,
             segment: { ...segmentInclusionList.segment, userIds, subSegmentIds, groups },
           };
