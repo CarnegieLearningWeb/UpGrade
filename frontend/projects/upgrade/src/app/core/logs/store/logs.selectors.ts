@@ -1,5 +1,6 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { LogState, EXPERIMENT_LOG_TYPE, AuditLogs, ErrorLogs, SERVER_ERROR } from './logs.model';
+import { LogState, AuditLogs, ErrorLogs } from './logs.model';
+import { SERVER_ERROR, LOG_TYPE } from 'upgrade_types';
 import { selectAll } from './logs.reducer';
 
 export const selectLogState = createFeatureSelector<LogState>('logs');
@@ -13,7 +14,7 @@ export const selectIsErrorLogLoading = createSelector(selectLogState, (state) =>
 export const selectAllAuditLogs = createSelector(selectLogState, selectAllLogs, (state, logs) =>
   logs.filter(
     (log: AuditLogs | ErrorLogs) =>
-      Object.values(EXPERIMENT_LOG_TYPE).includes((log as any).type) &&
+      Object.values(LOG_TYPE).includes((log as any).type) &&
       ((log.type as any) === state.auditLogFilter || state.auditLogFilter === null)
   )
 );

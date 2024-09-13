@@ -1,9 +1,11 @@
 import { fakeAsync, tick } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 import * as ExperimentSelectors from '../experiments/store/experiments.selectors';
+import { selectAllFeatureFlags } from '../feature-flags/store/feature-flags.selectors';
 import { LogsService } from './logs.service';
 import * as LogActions from './store/logs.actions';
-import { AuditLogs, EXPERIMENT_LOG_TYPE, SERVER_ERROR } from './store/logs.model';
+import { AuditLogs } from './store/logs.model';
+import { LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 import * as LogSelectors from './store/logs.selectors';
 
 const MockStateStore$ = new BehaviorSubject({});
@@ -17,7 +19,7 @@ describe('LogsService', () => {
     createdAt: 'test',
     updatedAt: 'test',
     versionNumber: 2,
-    type: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
+    type: LOG_TYPE.EXPERIMENT_CREATED,
     data: {},
   };
 
@@ -50,6 +52,7 @@ describe('LogsService', () => {
             id: null,
           },
         ],
+        featureFlags: [],
       },
       {
         whenCondition: 'experimentId matched, set log to isExperimentExist true',
@@ -73,6 +76,7 @@ describe('LogsService', () => {
             id: '1',
           },
         ],
+        featureFlags: [],
       },
       {
         whenCondition: 'experimentId NOT matched, set log to isExperimentExist false',
@@ -96,20 +100,25 @@ describe('LogsService', () => {
             id: '2',
           },
         ],
+        featureFlags: [],
       },
     ];
 
     testCases.forEach((testCase) => {
-      const { whenCondition, expectedValue, logs, experiments } = testCase;
+      const { whenCondition, expectedValue, logs, experiments, featureFlags } = testCase;
 
       it(`WHEN ${whenCondition}, THEN expected value is ${JSON.stringify(expectedValue)}`, fakeAsync(() => {
+        // Mock the selectors with the new feature flags
         LogSelectors.selectAllAuditLogs.setResult([...logs]);
         ExperimentSelectors.selectAllExperiment.setResult([...experiments] as any);
+        selectAllFeatureFlags.setResult([...featureFlags] as any);
 
         service.getAuditLogs().subscribe((val) => {
           tick(0);
           expect(val[0]).toEqual(expectedValue);
         });
+
+        tick();
       }));
     });
   });
@@ -210,7 +219,7 @@ describe('LogsService', () => {
 
   describe('#setAuditLogFilter', () => {
     it('should dispatch actionSetAuditLogFilter with filterType', () => {
-      const filterType = EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED;
+      const filterType = LOG_TYPE.EXPERIMENT_CREATED;
 
       service.setAuditLogFilter(filterType);
 

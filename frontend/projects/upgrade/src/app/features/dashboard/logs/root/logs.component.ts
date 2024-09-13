@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { LogsService } from '../../../../core/logs/logs.service';
-import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
+import { LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 import { ENV, Environment } from '../../../../../environments/environment-types';
 
 @Component({
@@ -12,13 +12,18 @@ export class LogsComponent implements OnInit, OnDestroy {
   // Audit log tab filter options
   auditLogsOptions = [
     { value: 'all', viewValue: 'All' },
-    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, viewValue: 'Experiment Created' },
-    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, viewValue: 'Experiment Updated' },
-    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, viewValue: 'Experiment State Changed' },
-    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED, viewValue: 'Experiment Deleted' },
-    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED, viewValue: 'Experiment Data Exported' },
-    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_REQUESTED, viewValue: 'Experiment Data Requested' },
-    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED, viewValue: 'Experiment Design Exported' },
+    { value: LOG_TYPE.EXPERIMENT_CREATED, viewValue: 'Experiment Created' },
+    { value: LOG_TYPE.EXPERIMENT_UPDATED, viewValue: 'Experiment Updated' },
+    { value: LOG_TYPE.EXPERIMENT_STATE_CHANGED, viewValue: 'Experiment State Changed' },
+    { value: LOG_TYPE.EXPERIMENT_DELETED, viewValue: 'Experiment Deleted' },
+    { value: LOG_TYPE.EXPERIMENT_DATA_EXPORTED, viewValue: 'Experiment Data Exported' },
+    { value: LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED, viewValue: 'Experiment Design Exported' },
+    { value: LOG_TYPE.FEATURE_FLAG_CREATED, viewValue: 'Feature Flag Created' },
+    { value: LOG_TYPE.FEATURE_FLAG_UPDATED, viewValue: 'Feature Flag Updated' },
+    { value: LOG_TYPE.FEATURE_FLAG_STATUS_CHANGED, viewValue: 'Feature Flag Status Changed' },
+    { value: LOG_TYPE.FEATURE_FLAG_DELETED, viewValue: 'Feature Flag Deleted' },
+    { value: LOG_TYPE.FEATURE_FLAG_DATA_EXPORTED, viewValue: 'Feature Flag Data Exported' },
+    { value: LOG_TYPE.FEATURE_FLAG_DESIGN_EXPORTED, viewValue: 'Feature Flag Design Exported' },
   ];
 
   // Error log tab filter options

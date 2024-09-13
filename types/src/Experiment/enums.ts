@@ -99,13 +99,12 @@ export enum EXCLUSION_CODE {
   ERROR = 'participant excluded due to unspecified error',
 }
 
-export enum EXPERIMENT_LOG_TYPE {
+export enum LOG_TYPE {
   EXPERIMENT_CREATED = 'experimentCreated',
   EXPERIMENT_UPDATED = 'experimentUpdated',
   EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
   EXPERIMENT_DELETED = 'experimentDeleted',
   EXPERIMENT_DATA_EXPORTED = 'experimentDataExported',
-  EXPERIMENT_DATA_REQUESTED = 'experimentDataRequested',
   EXPERIMENT_DESIGN_EXPORTED = 'experimentDesignExported',
   FEATURE_FLAG_CREATED = 'featureFlagCreated',
   FEATURE_FLAG_UPDATED = 'featureFlagUpdated',
@@ -287,6 +286,9 @@ export enum STATUS_INDICATOR_CHIP_TYPE {
   ENROLLMENT_COMPLETE = 'enrollment-complete',
   CANCELLED = 'cancelled',
   SCHEDULED = 'scheduled',
+  COMPATIBLE = 'compatible',
+  INCOMPATIBLE = 'incompatible',
+  WARNING = 'warning',
 }
 
 export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {

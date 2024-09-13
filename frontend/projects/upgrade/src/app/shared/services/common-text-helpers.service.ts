@@ -22,9 +22,12 @@ export class CommonTextHelpersService {
     if (!Array.isArray(groupTypes)) {
       return [];
     }
-    return groupTypes.map((groupType) => {
-      return { value: groupType, viewValue: CommonTextHelpersService.formatGroupTypeViewValue(groupType) };
-    });
+    return groupTypes
+      .map((groupType) => ({
+        value: groupType,
+        viewValue: CommonTextHelpersService.formatGroupTypeViewValue(groupType),
+      }))
+      .sort((a, b) => a.viewValue.localeCompare(b.viewValue));
   }
 
   /**
@@ -37,7 +40,7 @@ export class CommonTextHelpersService {
    * to create an instance of the service.
    */
   public static formatGroupTypeViewValue(groupType: string): string {
-    return 'Group: "' + groupType + '"';
+    return 'Group: ' + groupType;
   }
 
   /**

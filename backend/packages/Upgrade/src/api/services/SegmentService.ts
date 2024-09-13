@@ -469,7 +469,7 @@ export class SegmentService {
         // delete individual for segment
         if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
           const usersToDelete = segmentDoc.individualForSegment.map((individual) => {
-            return { userId: individual.userId, segment: segment.id };
+            return { userId: individual.userId, segment: segment };
           });
           await transactionalEntityManager.getRepository(IndividualForSegment).delete(usersToDelete as any);
         }
