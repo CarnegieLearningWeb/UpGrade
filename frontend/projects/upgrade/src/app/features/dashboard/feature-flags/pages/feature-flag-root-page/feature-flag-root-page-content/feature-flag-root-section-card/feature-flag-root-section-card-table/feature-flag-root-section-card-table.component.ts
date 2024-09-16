@@ -15,7 +15,7 @@ import { MatSort } from '@angular/material/sort';
 import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shared-standalone-component-lib/components';
 import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/feature-flags.service';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
-import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY } from 'upgrade_types';
 
 @Component({
   selector: 'app-feature-flag-root-section-card-table',
@@ -52,6 +52,19 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
     }
   }
 
+  filterFeatureFlagByChips(tagValue: string, type: FLAG_SEARCH_KEY) {
+    this.setSearchKey(type);
+    this.setSearchString(tagValue);
+  }
+
+  setSearchKey(searchKey: FLAG_SEARCH_KEY) {
+    this.featureFlagsService.setSearchKey(searchKey);
+  }
+
+  setSearchString(searchString: string) {
+    this.featureFlagsService.setSearchString(searchString);
+  }
+
   get FEATURE_FLAG_STATUS() {
     return FEATURE_FLAG_STATUS;
   }
@@ -70,6 +83,10 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
 
   get FLAG_ROOT_COLUMN_NAMES() {
     return FLAG_ROOT_COLUMN_NAMES;
+  }
+
+  get FeatureFlagSearchKey() {
+    return FLAG_SEARCH_KEY;
   }
 
   fetchFlagsOnScroll() {

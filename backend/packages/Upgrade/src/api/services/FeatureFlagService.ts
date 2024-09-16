@@ -635,11 +635,15 @@ export class FeatureFlagService {
       case FLAG_SEARCH_KEY.CONTEXT:
         searchString.push("coalesce(feature_flag.context::TEXT,'')");
         break;
+      case FLAG_SEARCH_KEY.TAG:
+        searchString.push("coalesce(feature_flag.tags::TEXT,'')");
+        break;
       default:
         searchString.push("coalesce(feature_flag.name::TEXT,'')");
         searchString.push("coalesce(feature_flag.key::TEXT,'')");
         searchString.push("coalesce(feature_flag.status::TEXT,'')");
         searchString.push("coalesce(feature_flag.context::TEXT,'')");
+        searchString.push("coalesce(feature_flag.tags::TEXT,'')");
         break;
     }
     const stringConcat = searchString.join(',');

@@ -7,7 +7,7 @@ import {
 import { FeatureFlagOverviewDetailsFooterComponent } from './feature-flag-overview-details-footer/feature-flag-overview-details-footer.component';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
-import { FEATURE_FLAG_STATUS, FILTER_MODE, IMenuButtonItem } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonSectionCardOverviewDetailsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
@@ -17,9 +17,9 @@ import {
   FeatureFlag,
 } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { Subscription } from 'rxjs';
-import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { MatDialogRef } from '@angular/material/dialog';
 import { CommonSimpleConfirmationModalComponent } from '../../../../../../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
   standalone: true,
@@ -57,6 +57,7 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   constructor(
     private dialogService: DialogService,
     private featureFlagService: FeatureFlagsService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -165,6 +166,12 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
     this.isSectionCardExpanded = isSectionCardExpanded;
     this.sectionCardExpandChange.emit(this.isSectionCardExpanded);
+  }
+
+  filterFeatureFlagByChips(tagValue: string) {
+    this.featureFlagService.setSearchKey(FLAG_SEARCH_KEY.TAG);
+    this.featureFlagService.setSearchString(tagValue);
+    this.router.navigate(['/featureflags']);
   }
 
   ngOnDestroy(): void {
