@@ -25,7 +25,12 @@ export class CommonTableHelpersService {
       property === 'tag' ? 'tags' : property
     );
     dataSource.filterPredicate = (rowData, filter) =>
-      this.defineFilterFunctionCriteria(rowData, searchParams.searchKey, filter, updatedSearchableProperties);
+      this.defineFilterFunctionCriteria(
+        rowData,
+        searchParams.searchKey,
+        filter.toLowerCase(),
+        updatedSearchableProperties
+      );
     this.setFilterStringOnDataSource(dataSource, searchParams);
     return dataSource;
   };
