@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
+import { FLAG_SEARCH_KEY } from 'upgrade_types';
 
 export interface TableState<T> {
   tableData: T[];
-  searchParams: { searchString: string; searchKey: string };
+  searchParams: { searchString: string; searchKey: FLAG_SEARCH_KEY };
   allSearchableProperties: string[];
 }
 @Injectable({
@@ -19,8 +20,17 @@ export class CommonTableHelpersService {
    */
   public mapTableStateToDataSource = <T>({ tableData, searchParams, allSearchableProperties }: TableState<T>) => {
     const dataSource = new MatTableDataSource(tableData);
+
+    const updatedSearchableProperties = allSearchableProperties.map((property) =>
+      property === 'tag' ? 'tags' : property
+    );
     dataSource.filterPredicate = (rowData, filter) =>
-      this.defineFilterFunctionCriteria(rowData, searchParams.searchKey, filter, allSearchableProperties);
+      this.defineFilterFunctionCriteria(
+        rowData,
+        searchParams.searchKey,
+        filter.toLowerCase(),
+        updatedSearchableProperties
+      );
     this.setFilterStringOnDataSource(dataSource, searchParams);
     return dataSource;
   };
@@ -55,6 +65,8 @@ export class CommonTableHelpersService {
   ) {
     if (propertyToFilterBy === 'all') {
       return this.filterAll<T>(rowData, allSearchableProperties, filter);
+    } else if (propertyToFilterBy === 'tag') {
+      return this.filterByProperty<T>(rowData, 'tags', filter);
     } else {
       return this.filterByProperty<T>(rowData, propertyToFilterBy, filter);
     }
