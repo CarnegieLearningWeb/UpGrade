@@ -1,9 +1,9 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { FLAG_SEARCH_KEY, FeatureFlag, FeatureFlagState, ParticipantListTableRow } from './feature-flags.model';
+import { FeatureFlag, FeatureFlagState, ParticipantListTableRow } from './feature-flags.model';
 import { selectRouterState } from '../../core.state';
 import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
 import { selectAll, selectIds } from './feature-flags.reducer';
-import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY } from 'upgrade_types';
 
 export const selectFeatureFlagsState = createFeatureSelector<FeatureFlagState>('featureFlags');
 
