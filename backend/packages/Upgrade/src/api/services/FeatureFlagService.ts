@@ -804,43 +804,51 @@ export class FeatureFlagService {
   ): Promise<ValidatedFeatureFlagsError[]> {
     logger.info({ message: 'Validate feature flags' });
 
-    const featureFlagsIds = featureFlagFiles
-      .map((featureFlagFile) => {
-        try {
-          return JSON.parse(featureFlagFile.fileContent as string).key;
-        } catch (parseError) {
-          return null;
-        }
-      })
-      .filter((key) => key !== null);
+    const parsedFeatureFlags = featureFlagFiles.map((featureFlagFile) => {
+      try {
+        return {
+          fileName: featureFlagFile.fileName,
+          content: JSON.parse(featureFlagFile.fileContent as string),
+        };
+      } catch (parseError) {
+        logger.error({ message: 'Error in parsing feature flag file', details: parseError });
+        return {
+          fileName: featureFlagFile.fileName,
+          content: null,
+        };
+      }
+    });
+
+    const featureFlagsIds = parsedFeatureFlags
+      .filter((parsedFile) => parsedFile.content !== null)
+      .map((parsedFile) => parsedFile.content.key);
+
     const existingFeatureFlags = await this.featureFlagRepository.findBy({ key: In(featureFlagsIds) });
     const seenKeys = [];
 
     const validationErrors = await Promise.allSettled(
-      featureFlagFiles.map(async (featureFlagFile) => {
-        let featureFlag: FeatureFlagImportDataValidation;
-        try {
-          featureFlag = JSON.parse(featureFlagFile.fileContent as string);
-        } catch (parseError) {
-          logger.error({ message: 'Error in parsing feature flag file', details: parseError });
+      parsedFeatureFlags.map(async (parsedFile) => {
+        if (!parsedFile.content) {
           return {
-            fileName: featureFlagFile.fileName,
+            fileName: parsedFile.fileName,
             compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
           };
         }
 
+        const featureFlag = parsedFile.content;
         if (seenKeys.includes(featureFlag.key)) {
           return {
-            fileName: featureFlagFile.fileName,
+            fileName: parsedFile.fileName,
             compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
           };
         }
         seenKeys.push(featureFlag.key);
 
-        const error = await this.validateImportFeatureFlag(featureFlagFile.fileName, featureFlag, existingFeatureFlags);
+        const error = await this.validateImportFeatureFlag(parsedFile.fileName, featureFlag, existingFeatureFlags);
         return error;
       })
     );
+
     // Filter out the files that have no promise rejection errors
     return validationErrors
       .map((result) => {
@@ -874,15 +882,16 @@ export class FeatureFlagService {
       if (keyExists) {
         compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
       } else {
-        const segmentIds = [
+        const segmentIdsSet = new Set([
           ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
             return segmentInclusion.segment.subSegments.map((subSegment) => subSegment.id);
           }),
           ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) => {
             return segmentExclusion.segment.subSegments.map((subSegment) => subSegment.id);
           }),
-        ];
+        ]);
 
+        const segmentIds = Array.from(segmentIdsSet);
         const segments = await this.segmentService.getSegmentByIds(segmentIds);
 
         if (segmentIds.length !== segments.length) {
