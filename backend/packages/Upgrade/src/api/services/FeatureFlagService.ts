@@ -888,11 +888,10 @@ export class FeatureFlagService {
         ];
 
         const segments = await this.segmentService.getSegmentByIds(segmentIds);
-        segments.forEach((segment) => {
-          if (segment == undefined) {
-            compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
-          }
-        });
+        if (segmentIds.length !== segments.length) {
+          // If any of the segments are not found then show the compatibility warning
+          compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
+        }
       }
     }
 
