@@ -20,25 +20,31 @@ export class AuthService {
   }
 
   public async validateUser(token: string, request: express.Request): Promise<User> {
-    const client = new OAuth2Client(env.google.clientId);
-    request.logger.info({ message: 'Validating Token' });
+    // env.google.clientId can be a single client ID or multiple comma-separated client IDs
+    const clientIds = env.google.clientId.split(',');
+    const client = new OAuth2Client(clientIds[0]);
+    request.logger.info({ message: 'Validating token' });
 
     let payload;
     try {
       // First, try to verify the token as an ID token
       const ticket = await client.verifyIdToken({
         idToken: token,
-        audience: env.google.clientId, // Specify the CLIENT_ID of the app that accesses the backend
-        // Or, if multiple clients access the backend:
-        // [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
+        audience: clientIds,
       });
       payload = ticket.getPayload();
-      request.logger.info({ message: 'ID Token Validated' });
+      request.logger.info({ message: 'ID token validated' });
     } catch (error) {
       // If ID token verification fails, try to verify it as an access token
       try {
-        await client.getTokenInfo(token);
-        request.logger.info({ message: 'Access Token Validated' });
+        // env.google.serviceAccountId can be a single service account ID or multiple comma-separated service account IDs
+        const serviceAccountIds = env.google.serviceAccountId.split(',');
+        const tokenInfo = await client.getTokenInfo(token);
+
+        if (!tokenInfo || !serviceAccountIds.includes(tokenInfo.aud)) {
+          throw new Error('Invalid or unauthorized access token');
+        }
+        request.logger.info({ message: 'Access token validated' });
         // For service account access tokens, we'll return null
         // We might want to implement specific handling for service accounts here
         return null;
