@@ -154,7 +154,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     this.experimentService.setSearchKey(searchKey);
   }
 
-  setSearchString(searchString: EXPERIMENT_SEARCH_KEY) {
+  setSearchString(searchString: string) {
     this.experimentService.setSearchString(searchString);
   }
 
@@ -168,7 +168,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     this.experimentService.loadExperiments(true);
   }
 
-  filterExperimentByChips(tagValue: EXPERIMENT_SEARCH_KEY, type: EXPERIMENT_SEARCH_KEY) {
+  filterExperimentByChips(tagValue: string, type: EXPERIMENT_SEARCH_KEY) {
     this.setSearchKey(type);
     this.setSearchString(tagValue);
   }
