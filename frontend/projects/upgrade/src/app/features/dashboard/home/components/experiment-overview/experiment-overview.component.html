@@ -168,19 +168,19 @@
           />
         </mat-chip-grid>
       </mat-form-field>
+      <div class="validation-container">
+        <span
+          class="ft-14-600 validation-message"
+          *ngIf="!isStratificationFactorSelected"
+          [innerHTML]="stratificationFactorNotSelectedMsg | translate"
+        ></span>
+      </div>
       <mat-checkbox color="primary" formControlName="logging">
         <span class="ft-13-700 checkbox-label">
           {{ 'home.view-experiment.logging.text' | translate }}
         </span>
       </mat-checkbox>
     </form>
-    <div class="validation-container">
-      <span
-        class="ft-14-600 validation-message"
-        *ngIf="!isStratificationFactorSelected"
-        [innerHTML]="stratificationFactorNotSelectedMsg | translate"
-      ></span>
-    </div>
   </section>
 
   <section class="shared-modal--buttons-container sticky">

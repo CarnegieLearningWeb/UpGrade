@@ -56,6 +56,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   enableSave = true;
   allContexts = [];
   currentContext = null;
+  initialContext = null;
   initialDesignType = EXPERIMENT_TYPE.SIMPLE;
   isContextOrTypeChanged = false;
   consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
@@ -176,7 +177,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       });
 
       this.overviewForm.get('context').valueChanges.subscribe((context) => {
-        this.isContextOrTypeChanged = this.currentContext !== context;
+        this.isContextOrTypeChanged = this.initialContext !== context;
         this.currentContext = context;
         this.experimentService.setCurrentContext(context);
         this.setGroupTypes();
@@ -184,6 +185,11 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
       this.overviewForm.get('designType').valueChanges.subscribe((type) => {
         this.isContextOrTypeChanged = this.initialDesignType !== type;
+      });
+
+      this.overviewForm.get('assignmentAlgorithm').valueChanges.subscribe((algo) => {
+        this.isStratificationFactorSelected =
+          ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING !== algo ? true : this.isStratificationFactorSelected;
       });
 
       // populate values in form to update experiment if experiment data is available
@@ -196,6 +202,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           this.isExperimentEditable = false;
         }
         this.currentContext = this.experimentInfo.context[0];
+        this.initialContext = this.experimentInfo.context[0];
         this.initialDesignType = this.experimentInfo.type;
 
         this.overviewForm.setValue({
@@ -380,6 +387,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         this.isStratificationFactorSelected = true;
       }
     } else {
+      this.isStratificationFactorSelected = true;
       stratificationFactorValueToSend = null;
     }
     return stratificationFactorValueToSend;
