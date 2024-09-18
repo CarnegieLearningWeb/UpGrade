@@ -1,7 +1,8 @@
 import { createReducer, Action, on } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
-import { FeatureFlagState, FeatureFlag, FLAG_SEARCH_KEY } from './feature-flags.model';
+import { FeatureFlagState, FeatureFlag } from './feature-flags.model';
 import * as FeatureFlagsActions from './feature-flags.actions';
+import { FLAG_SEARCH_KEY } from 'upgrade_types';
 
 export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFlag>({
   selectId: (featureFlag: FeatureFlag) => featureFlag.id,
