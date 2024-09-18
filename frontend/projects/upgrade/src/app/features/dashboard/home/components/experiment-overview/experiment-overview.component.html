@@ -1,44 +1,21 @@
 <div *ngIf="!(isLoadingContextMetaData$ | async); else loadingExperimentOverview" class="shared-modal--step-container">
   <section class="shared-modal--form-container">
     <form class="experiment-overview dense-3" [formGroup]="overviewForm">
-      <mat-form-field
-        class="name"
-        appearance="outline"
-        subscriptSizing="dynamic"
-      >
+      <mat-form-field class="name" appearance="outline" subscriptSizing="dynamic">
         <mat-label class="ft-14-400">
           {{ 'home.new-experiment.overview.name.placeHolder' | translate }}
         </mat-label>
-        <input
-          class="ft-14-400"
-          matInput
-          formControlName="experimentName"
-          autocomplete="off"
-          cdkFocusInitial
-        />
+        <input class="ft-14-400" matInput formControlName="experimentName" autocomplete="off" cdkFocusInitial />
       </mat-form-field>
 
-      <mat-form-field
-        class="description"
-        appearance="outline"
-        subscriptSizing="dynamic"
-      >
+      <mat-form-field class="description" appearance="outline" subscriptSizing="dynamic">
         <mat-label class="ft-14-400">
           {{ 'home.new-experiment.overview.description.placeHolder' | translate }}
         </mat-label>
-        <input
-          class="ft-14-400"
-          matInput
-          formControlName="description"
-          autocomplete="off"
-        />
+        <input class="ft-14-400" matInput formControlName="description" autocomplete="off" />
       </mat-form-field>
 
-      <mat-form-field
-        class="chips"
-        appearance="outline"
-        subscriptSizing="dynamic"
-      >
+      <mat-form-field class="chips" appearance="outline" subscriptSizing="dynamic">
         <mat-label class="ft-14-400">
           {{ 'home.new-experiment.overview.app-context.placeHolder' | translate }}
         </mat-label>
@@ -50,16 +27,16 @@
       </mat-form-field>
 
       <div class="property-container">
-        <mat-form-field
-          class="unit-of-assignment"
-          appearance="outline"
-          subscriptSizing="dynamic"
-        >
+        <mat-form-field class="unit-of-assignment" appearance="outline" subscriptSizing="dynamic">
           <mat-label class="ft-14-400">
             {{ 'home-global.unit-of-assignment.text' | translate }}
           </mat-label>
           <mat-select class="ft-14-400" formControlName="unitOfAssignment">
-            <mat-option class="ft-14-400" *ngFor="let unitOfAssignment of unitOfAssignments" [value]="unitOfAssignment.value">
+            <mat-option
+              class="ft-14-400"
+              *ngFor="let unitOfAssignment of unitOfAssignments"
+              [value]="unitOfAssignment.value"
+            >
               {{ unitOfAssignment.value | titlecase }}
             </mat-option>
           </mat-select>
@@ -75,7 +52,9 @@
             {{ 'home.new-experiment.overview.group-type.placeHolder' | translate }}
           </mat-label>
           <mat-select class="ft-14-400" formControlName="groupType" [disabled]="!isExperimentEditable">
-            <mat-option class="ft-14-400" *ngFor="let group of groupTypes" [value]="group.value">{{ group.value }}</mat-option>
+            <mat-option class="ft-14-400" *ngFor="let group of groupTypes" [value]="group.value">{{
+              group.value
+            }}</mat-option>
           </mat-select>
         </mat-form-field>
       </div>
@@ -90,7 +69,11 @@
           {{ 'home-global.consistency-rule.text' | translate }}
         </mat-label>
         <mat-select class="ft-14-400" formControlName="consistencyRule" [disabled]="!isExperimentEditable">
-          <mat-option class="ft-14-400" *ngFor="let consistencyRule of consistencyRules" [value]="consistencyRule.value">
+          <mat-option
+            class="ft-14-400"
+            *ngFor="let consistencyRule of consistencyRules"
+            [value]="consistencyRule.value"
+          >
             {{ consistencyRule.value | titlecase }}
           </mat-option>
         </mat-select>
@@ -112,11 +95,7 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field
-        class="design-type"
-        appearance="outline"
-        subscriptSizing="dynamic"
-      >
+      <mat-form-field class="design-type" appearance="outline" subscriptSizing="dynamic">
         <mat-label class="ft-14-400">
           {{ 'home-global.design-type.text' | translate }}
         </mat-label>
@@ -128,16 +107,16 @@
       </mat-form-field>
 
       <div class="stratification-container">
-        <mat-form-field
-          class="assignment-algorithm"
-          appearance="outline"
-          subscriptSizing="dynamic"
-        >
+        <mat-form-field class="assignment-algorithm" appearance="outline" subscriptSizing="dynamic">
           <mat-label class="ft-14-400">
             {{ 'home-global.assignment-algorithm.text' | translate }}
           </mat-label>
           <mat-select class="ft-14-400" formControlName="assignmentAlgorithm">
-            <mat-option class="ft-14-400" *ngFor="let assignmentAlgorithm of assignmentAlgorithms" [value]="assignmentAlgorithm.value">
+            <mat-option
+              class="ft-14-400"
+              *ngFor="let assignmentAlgorithm of assignmentAlgorithms"
+              [value]="assignmentAlgorithm.value"
+            >
               {{ assignmentAlgorithm.value | titlecase }}
             </mat-option>
           </mat-select>
@@ -153,18 +132,18 @@
             {{ 'home-global.stratification-factor.text' | translate }}
           </mat-label>
           <mat-select class="ft-14-400" formControlName="stratificationFactor" [disabled]="!isExperimentEditable">
-            <mat-option class="ft-14-400" *ngFor="let stratificationFactor of allStratificationFactors" [value]="stratificationFactor.factorName">
+            <mat-option
+              class="ft-14-400"
+              *ngFor="let stratificationFactor of allStratificationFactors"
+              [value]="stratificationFactor.factorName"
+            >
               {{ stratificationFactor.factorName }}
             </mat-option>
           </mat-select>
         </mat-form-field>
       </div>
 
-      <mat-form-field
-        class="tags"
-        appearance="outline"
-        subscriptSizing="dynamic"
-      >
+      <mat-form-field class="tags" appearance="outline" subscriptSizing="dynamic">
         <mat-label class="ft-14-400">
           {{ 'home.new-experiment.overview.tags.placeHolder' | translate }}
         </mat-label>
@@ -189,7 +168,7 @@
           />
         </mat-chip-grid>
       </mat-form-field>
-      <mat-checkbox color="primary" formControlName="logging">
+      <mat-checkbox class="check-box" color="primary" formControlName="logging">
         <span class="ft-13-700 checkbox-label">
           {{ 'home.view-experiment.logging.text' | translate }}
         </span>
@@ -202,7 +181,7 @@
         [innerHTML]="stratificationFactorNotSelectedMsg | translate"
       ></span>
     </div>
-</section>
+  </section>
 
   <section class="shared-modal--buttons-container sticky">
     <span class="shared-modal--buttons-left">
@@ -234,9 +213,9 @@
         mat-raised-button
         class="shared-modal--modal-btn default-button"
         [ngClass]="{
-          'default-button--disabled': !isExperimentEditable
+          'default-button--disabled': !isExperimentEditable || isContextOrTypeChanged
         }"
-        [disabled]="!isExperimentEditable"
+        [disabled]="!isExperimentEditable || isContextOrTypeChanged"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
         {{ 'global.save.text' | translate }}

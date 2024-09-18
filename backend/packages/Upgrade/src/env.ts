@@ -79,6 +79,7 @@ export const env = {
   },
   google: {
     clientId: getOsEnv('GOOGLE_CLIENT_ID'),
+    serviceAccountId: getOsEnv('GOOGLE_SERVICE_ACCOUNT_ID'),
     domainName: getOsEnvOptional('DOMAIN_NAME'),
   },
   scheduler: {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
 
 export interface KeyValueFormat {
@@ -31,5 +31,10 @@ export interface KeyValueFormat {
 // <app-common-section-card-content [data]="contentDetails"></app-common-section-card-content>
 export class CommonSectionCardOverviewDetailsComponent {
   @Input() data!: KeyValueFormat;
+  @Output() tagItemClick = new EventEmitter<string>();
   noSort = () => 0;
+
+  searchByTag(tag: string): void {
+    this.tagItemClick.emit(tag);
+  }
 }

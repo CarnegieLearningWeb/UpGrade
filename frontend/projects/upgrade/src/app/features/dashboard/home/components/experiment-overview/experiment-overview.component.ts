@@ -16,6 +16,7 @@ import {
   CONDITION_ORDER,
   CONSISTENCY_RULE,
   EXPERIMENT_STATE,
+  EXPERIMENT_TYPE,
 } from 'upgrade_types';
 import {
   NewExperimentDialogEvents,
@@ -55,6 +56,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   enableSave = true;
   allContexts = [];
   currentContext = null;
+  initialDesignType = EXPERIMENT_TYPE.SIMPLE;
+  isContextOrTypeChanged = false;
   consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
   conditionOrders = [
     { value: CONDITION_ORDER.RANDOM },
@@ -173,9 +176,20 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       });
 
       this.overviewForm.get('context').valueChanges.subscribe((context) => {
+        this.isContextOrTypeChanged = this.currentContext !== context;
         this.currentContext = context;
         this.experimentService.setCurrentContext(context);
         this.setGroupTypes();
+      });
+
+      this.overviewForm.get('designType').valueChanges.subscribe((type) => {
+        this.isContextOrTypeChanged = this.initialDesignType !== type;
+        this.initialDesignType = type;
+      });
+
+      this.overviewForm.get('assignmentAlgorithm').valueChanges.subscribe((algo) => {
+        this.isStratificationFactorSelected =
+          ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING !== algo ? true : this.isStratificationFactorSelected;
       });
 
       // populate values in form to update experiment if experiment data is available
@@ -188,6 +202,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           this.isExperimentEditable = false;
         }
         this.currentContext = this.experimentInfo.context[0];
+        this.initialDesignType = this.experimentInfo.type;
 
         this.overviewForm.setValue({
           experimentName: this.experimentInfo.name,
@@ -371,6 +386,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         this.isStratificationFactorSelected = true;
       }
     } else {
+      this.isStratificationFactorSelected = true;
       stratificationFactorValueToSend = null;
     }
     return stratificationFactorValueToSend;
