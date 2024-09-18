@@ -196,7 +196,7 @@ export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
 
   addChip(event: MatChipInputEvent) {
     const input = event.chipInput;
-    const value = (event.value || '').trim().toLowerCase();
+    const value = (event.value || '').trim();
 
     // Add chip
     if (value) {

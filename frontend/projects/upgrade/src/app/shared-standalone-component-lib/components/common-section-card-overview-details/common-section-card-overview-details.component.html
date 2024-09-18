@@ -5,7 +5,7 @@
       <span *ngIf="item.key !== 'Tags'" class="ft-14-400 item-value">{{ item.value }}</span>
       <mat-chip-listbox *ngIf="item.key === 'Tags'" class="chips-container">
         <mat-chip *ngFor="let tag of item.value">
-          <span class="chip-label">
+          <span class="chip-label" (click)="searchByTag(tag)">
             {{ tag }}
           </span>
         </mat-chip>

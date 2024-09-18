@@ -18,12 +18,20 @@
       <td mat-cell *matCellDef="let flag" class="name-column ft-14-400">
         <a
           [routerLink]="['/featureflags', 'detail', flag.id]"
-          [matTooltip]="flag.name.length >= 30 ? flag.name : null"
+          [matTooltip]="flag.name.length > 24 ? flag.name : null"
           matTooltipPosition="above"
           class="flag-name"
         >
-          {{ flag.name | truncate: 30 }}
+          {{ flag.name | truncate: 24 }}
         </a>
+        <br />
+        <span
+          [matTooltip]="flag.description?.length > 35 ? flag.description : null"
+          matTooltipPosition="above"
+          class="flag-description ft-10-400"
+        >
+          {{ flag.description | truncate: 35 }}
+        </span>
       </td>
     </ng-container>
 
@@ -66,11 +74,13 @@
         {{ FLAG_TRANSLATION_KEYS.TAGS | translate }}
       </th>
       <td mat-cell *matCellDef="let flag" class="tags-column ft-14-400 dense-2">
-        <mat-chip-listbox>
-          <mat-chip *ngFor="let tag of flag.tags" class="tag">
-            <span class="chip-label">
-              {{ tag }}
-            </span>
+        <mat-chip-listbox aria-label="Flag tags">
+          <mat-chip
+            *ngFor="let tag of flag.tags"
+            class="tag"
+            (click)="filterFeatureFlagByChips(tag, FeatureFlagSearchKey.TAG)"
+          >
+            <span class="chip-label">{{ tag }}</span>
           </mat-chip>
         </mat-chip-listbox>
       </td>
@@ -92,7 +102,7 @@
     <!-- No Data Row -->
     <tr *matNoDataRow>
       <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
-        <ng-container *ngIf="(isSearchActive$ | async); else noFlags">
+        <ng-container *ngIf="isSearchActive$ | async; else noFlags">
           {{ 'feature-flags.no-matching-flags.text' | translate }}
         </ng-container>
         <ng-template #noFlags>
