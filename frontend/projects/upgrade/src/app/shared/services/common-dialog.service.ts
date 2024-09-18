@@ -143,8 +143,7 @@ export class DialogService {
       cancelBtnLabel: 'Cancel',
       params: {
         message: 'Are you sure you want to disable "Include All"?',
-        subMessage:
-          '* Disabling this will revert to the previously defined include lists, if any.',
+        subMessage: '* Disabling this will revert to the previously defined include lists, if any.',
         subMessageClass: 'warn',
       },
     };
