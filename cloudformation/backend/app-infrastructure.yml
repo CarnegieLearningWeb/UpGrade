@@ -1,0 +1,340 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Upgrade Service Blue/Green Deployment
+Parameters:
+  appName:
+    Description: Name of the application (used for naming resources)
+    Type: String
+    Default: upgrade-service
+  environment:
+    Description: Name of the environment being deployed to.
+    Type: String
+    Default: qa
+    AllowedValues:
+      - qa
+      - staging
+      - prod
+  cluster:
+    Description: Cluster to deploy to (green or blue)
+    Type: String
+    Default: blue
+    AllowedValues:
+      - blue
+      - green
+  version:
+    Description: Version of the service managed by this CF Stack
+    Type: String
+  servicePort:
+    Description: Port that the application is listening on in the container
+    Type: String
+    Default: 3030
+  sharedEcsResourcesPrefix:
+    Description: Prefix for the CloudFormation stack that contains shared resources for ECS.
+    Type: String
+    Default: shared-ecs-resources
+  sharedLoggingPrefix:
+    Description: Prefix for the CloudFormation stack that contains S3 logging buckets
+    Type: String
+    Default: shared-logging-infrastructure
+  sharedNetworkingPrefix:
+    Description: Prefix for the CloudFormation stack that contains shared networking resources
+    Type: String
+    Default: shared-networking-infrastructure
+  sharedResourcesPrefix:
+    Description: Prefix of the shared network and ECS resources to use
+    Type: String
+    Default: upgrade-service-shared-infrastructure
+  lambdaResourcesPrefix:
+    Description: Prefix of the shared network and ECS resources to use
+    Type: String
+    Default: scheduler-lambda
+  emailBucketResourcesPrefix:
+    Description: Prefix of the shared network and ECS resources to use
+    Type: String
+    Default: upgrade-email
+Conditions:
+  IsProd: !Equals
+    - !Ref environment
+    - prod
+Resources:
+  ecsTaskDef:
+    Type: AWS::ECS::TaskDefinition
+    UpdateReplacePolicy: Retain
+    Properties:
+      ContainerDefinitions:
+        - Name: log_router
+          Image: 467155500999.dkr.ecr.us-east-1.amazonaws.com/splunk/fluentd-hec:latest
+          Essential: 'true'
+          MemoryReservation: 64
+          ReadonlyRootFilesystem: true
+          Environment:
+            - Name: HEC_HOST
+              Value: '{{resolve:ssm:HEC_HOST}}'
+            - Name: SPLUNK_INDEX
+              Value: '{{resolve:ssm:SPLUNK_INDEX}}'
+            - Name: VERSION
+              Value: !Ref version
+          Secrets:
+            - Name: HEC_TOKEN
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/HEC_TOKEN
+          FirelensConfiguration:
+            Type: fluentd
+            Options:
+              config-file-type: file
+              config-file-value: /fluentd_configs/default-fluent.conf
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group:
+                Fn::ImportValue: !Sub ${sharedLoggingPrefix}-${environment}-cloudwatchLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: !Ref appName
+          MountPoints:
+            - ContainerPath: /tmp
+              SourceVolume: log_router_tmp
+            - ContainerPath: /fluentd_configs
+              SourceVolume: fluentd_configs
+              ReadOnly: true
+        - Name: !Ref appName
+          Essential: 'true'
+          Image: !Sub 467155500999.dkr.ecr.us-east-1.amazonaws.com/microservices/${appName}:${version}
+          Environment:
+            - Name: ADMIN_USERS
+              Value: '{{resolve:ssm:UPGRADE_ADMIN_USERS}}'
+            - Name: APP_BANNER
+              Value: '{{resolve:ssm:UPGRADE_APP_BANNER}}'
+            - Name: APP_DEMO
+              Value: '{{resolve:ssm:UPGRADE_APP_DEMO}}'
+            - Name: APP_HOST
+              Value: '{{resolve:ssm:UPGRADE_APP_HOST}}'
+            - Name: APP_NAME
+              Value: '{{resolve:ssm:UPGRADE_APP_NAME}}'
+            - Name: APP_PORT
+              Value: '{{resolve:ssm:UPGRADE_APP_PORT}}'
+            - Name: APP_ROUTE_PREFIX
+              Value: '{{resolve:ssm:UPGRADE_APP_ROUTE_PREFIX}}'
+            - Name: APP_SCHEMA
+              Value: '{{resolve:ssm:UPGRADE_APP_SCHEMA}}'
+            - Name: AUTH_CHECK
+              Value: '{{resolve:ssm:UPGRADE_AUTH_CHECK}}'
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: CACHING_ENABLED
+              Value: '{{resolve:ssm:UPGRADE_CACHING_ENABLED}}'
+            - Name: CACHING_TTL
+              Value: '{{resolve:ssm:UPGRADE_CACHING_TTL}}'
+            - Name: CONTROLLERS
+              Value: '{{resolve:ssm:UPGRADE_CONTROLLERS}}'
+            - Name: DOMAIN_NAME
+              Value: '{{resolve:ssm:UPGRADE_DOMAIN_NAME}}'
+            - Name: EMAIL_BUCKET
+              Value: 
+                Fn::ImportValue: 
+                  !Sub ${emailBucketResourcesPrefix}-${environment}-upgradeEmailBucketName
+            - Name: EMAIL_EXPIRE_AFTER_SECONDS
+              Value: '{{resolve:ssm:UPGRADE_EMAIL_EXPIRE_AFTER_SECONDS}}'
+            - Name: EMAIL_FROM
+              Value: '{{resolve:ssm:UPGRADE_EMAIL_FROM}}'
+            - Name: HOST_URL
+              Value: '{{resolve:ssm:UPGRADE_HOST_URL}}'
+            - Name: INTERCEPTORS
+              Value: '{{resolve:ssm:UPGRADE_INTERCEPTORS}}'
+            - Name: LOG_LEVEL
+              Value: '{{resolve:ssm:UPGRADE_LOG_LEVEL}}'
+            - Name: LOG_OUTPUT
+              Value: '{{resolve:ssm:UPGRADE_LOG_OUTPUT}}'
+            - Name: NEW_RELIC_APP_NAME
+              Value: '{{resolve:ssm:UPGRADE_NEW_RELIC_APP_NAME}}'
+            - Name: RDS_DB_NAME
+              Value: '{{resolve:ssm:UPGRADE_RDS_DB_NAME}}'  
+            - Name: RDS_HOSTNAME
+              Value: '{{resolve:ssm:UPGRADE_RDS_HOSTNAME}}'
+            - Name: RDS_HOSTNAME_REPLICAS
+              Value: '{{resolve:ssm:UPGRADE_RDS_HOSTNAME_REPLICAS}}'
+            - Name: RDS_PORT
+              Value: '{{resolve:ssm:UPGRADE_RDS_PORT}}'
+            - Name: SCHEDULER_STEP_FUNCTION
+              Value: 
+                Fn::ImportValue: 
+                  !Sub ${lambdaResourcesPrefix}-${environment}-stepFunctionArn
+            - Name: SWAGGER_API
+              Value: '{{resolve:ssm:UPGRADE_SWAGGER_API}}'
+            - Name: SWAGGER_ENABLED
+              Value: '{{resolve:ssm:UPGRADE_SWAGGER_ENABLED}}'
+            - Name: SWAGGER_FILE
+              Value: '{{resolve:ssm:UPGRADE_SWAGGER_FILE}}'
+            - Name: SWAGGER_JSON
+              Value: '{{resolve:ssm:UPGRADE_SWAGGER_JSON}}'  
+            - Name: SWAGGER_ROUTE
+              Value: '{{resolve:ssm:UPGRADE_SWAGGER_ROUTE}}'
+            - Name: TYPEORM_CONNECTION
+              Value: '{{resolve:ssm:UPGRADE_TYPEORM_CONNECTION}}'
+            - Name: TYPEORM_ENTITIES
+              Value: '{{resolve:ssm:UPGRADE_TYPEORM_ENTITIES}}'
+            - Name: TYPEORM_ENTITIES_DIR
+              Value: '{{resolve:ssm:UPGRADE_TYPEORM_ENTITIES_DIR}}'  
+            - Name: TYPEORM_FACTORY
+              Value: '{{resolve:ssm:UPGRADE_TYPEORM_FACTORY}}'
+            - Name: TYPEORM_LOGGER
+              Value: '{{resolve:ssm:UPGRADE_TYPEORM_LOGGER}}'
+            - Name: TYPEORM_LOGGING
+              Value: '{{resolve:ssm:UPGRADE_TYPEORM_LOGGING}}'
+            - Name: TYPEORM_MAX_QUERY_EXECUTION_TIME
+              Value: '{{resolve:ssm:UPGRADE_TYPEORM_MAX_QUERY_EXECUTION_TIME}}'
+            - Name: TYPEORM_MIGRATIONS
+              Value: '{{resolve:ssm:UPGRADE_TYPEORM_MIGRATIONS}}'  
+            - Name: TYPEORM_MIGRATIONS_DIR
+              Value: '{{resolve:ssm:UPGRADE_TYPEORM_MIGRATIONS_DIR}}'
+            - Name: TYPEORM_SEED
+              Value: '{{resolve:ssm:UPGRADE_TYPEORM_SEED}}'
+            - Name: TYPEORM_SYNCHRONIZE
+              Value: '{{resolve:ssm:UPGRADE_TYPEORM_SYNCHRONIZE}}'
+            - Name: USE_NEW_RELIC
+              Value: '{{resolve:ssm:UPGRADE_USE_NEW_RELIC}}'  
+            - Name: CONTEXT_METADATA
+              Value: '{{resolve:ssm:UPGRADE_CONTEXT_METADATA}}'
+            - Name: METRICS
+              Value: '{{resolve:ssm:UPGRADE_METRICS}}'
+            - Name: MIDDLEWARES
+              Value: '{{resolve:ssm:UPGRADE_MIDDLEWARES}}'
+          Secrets:
+            - Name: NEW_RELIC_LICENSE_KEY
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/NEW_RELIC_LICENSE_KEY
+            - Name: CLIENT_API_KEY
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_CLIENT_API_KEY
+            - Name: CLIENT_API_SECRET
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_CLIENT_API_SECRET
+            - Name: GOOGLE_CLIENT_ID
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_GOOGLE_CLIENT_ID
+            - Name: GOOGLE_SERVICE_ACCOUNT_ID
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_GOOGLE_SERVICE_ACCOUNT_ID
+            - Name: RDS_PASSWORD
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_DB_PASSWORD
+            - Name: RDS_USERNAME
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_RDS_USERNAME
+            - Name: SWAGGER_PASSWORD
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_SWAGGER_PASSWORD
+            - Name: SWAGGER_USERNAME
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_SWAGGER_USERNAME
+            - Name: TOKEN_SECRET_KEY
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/UPGRADE_TOKEN_SECRET_KEY
+          LogConfiguration:
+            LogDriver: awsfirelens
+          MemoryReservation: 256
+          ReadonlyRootFilesystem: false
+          PortMappings:
+            - ContainerPort: !Ref servicePort
+      Cpu: 1024
+      ExecutionRoleArn:
+        Fn::ImportValue: !Sub ${sharedEcsResourcesPrefix}-${environment}-ecsExecutionRoleArn
+      Family: !Sub ${appName}-${environment}-${cluster}
+      Memory: 2048
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      RuntimePlatform:
+        CpuArchitecture: X86_64
+        OperatingSystemFamily: LINUX
+      Volumes:
+        - Name: log_router_tmp
+        - Name: fluentd_configs
+          EFSVolumeConfiguration:
+            TransitEncryption: ENABLED
+            FilesystemId:
+              Fn::ImportValue: !Sub ${sharedEcsResourcesPrefix}-${environment}-fluentdConfigFilesystemId
+      TaskRoleArn: 
+        Fn::ImportValue: !Sub ${sharedResourcesPrefix}-${environment}-taskRoleArn
+  ecsService:
+    Type: AWS::ECS::Service
+    DependsOn: alblistenerrule
+    Properties:
+      ServiceName: !Sub ${appName}-${environment}-${cluster}
+      Cluster: 
+        Fn::ImportValue: !Sub ${sharedResourcesPrefix}-${environment}-ecsClusterName
+      DesiredCount: !If [IsProd, 2, 1]
+      EnableECSManagedTags: 'true'
+      HealthCheckGracePeriodSeconds: 60
+      LoadBalancers:
+        - ContainerName: !Ref appName
+          ContainerPort: !Ref servicePort
+          TargetGroupArn: !Ref ecsTargetGroup
+      DeploymentConfiguration:
+        DeploymentCircuitBreaker:
+            Enable: 'true'
+            Rollback: 'true'
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - Fn::ImportValue: !Sub ${sharedResourcesPrefix}-${environment}-ecsSecurityGroupName
+            - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-vpcEndpointSecurityGroupId
+          Subnets:
+            - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-privatesubnet1
+            - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-privatesubnet2
+            - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-privatesubnet3
+      PropagateTags: TASK_DEFINITION
+      TaskDefinition: !Ref ecsTaskDef
+  ecsScaling:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    DependsOn: ecsScalingTarget
+    Properties:
+      PolicyName: !Sub ${appName}-${environment}-${cluster}
+      PolicyType: TargetTrackingScaling
+      ResourceId: !Join [ '/', [ 'service', Fn::ImportValue: !Sub '${sharedResourcesPrefix}-${environment}-ecsClusterName', !GetAtt 'ecsService.Name' ]]
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 90.0
+        ScaleInCooldown: 300
+        ScaleOutCooldown: 300
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+  ecsScalingTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn: ecsService
+    Properties:
+      MaxCapacity: !If [IsProd, 16, 2]
+      MinCapacity: !If [IsProd, 2, 1]
+      ResourceId: !Join [ '/', [ 'service', Fn::ImportValue: !Sub '${sharedResourcesPrefix}-${environment}-ecsClusterName', !GetAtt 'ecsService.Name' ]]
+      RoleARN: !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+  ecsTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${appName}-${environment}-${cluster}
+      HealthCheckEnabled: 'true'
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /upgrade-service/api/
+      HealthCheckPort: traffic-port
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: !Ref servicePort
+      Matcher:
+        HttpCode: '200'
+      Protocol: HTTP
+      ProtocolVersion: HTTP1
+      TargetGroupAttributes:
+        - Key: load_balancing.algorithm.type
+          Value: least_outstanding_requests
+        - Key: deregistration_delay.timeout_seconds
+          Value: 30
+      TargetType: ip
+      UnhealthyThresholdCount: 2
+      VpcId:
+        Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-vpcid
+  alblistenerrule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    DependsOn: ecsTargetGroup
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref ecsTargetGroup
+          Type: forward
+      Conditions:
+        - Field: path-pattern
+          PathPatternConfig:
+            Values:
+              - /upgrade-service* 
+      ListenerArn:
+        Fn::ImportValue: !Sub ${sharedResourcesPrefix}-${environment}-albListenerArn-${cluster}
+      Priority: 1

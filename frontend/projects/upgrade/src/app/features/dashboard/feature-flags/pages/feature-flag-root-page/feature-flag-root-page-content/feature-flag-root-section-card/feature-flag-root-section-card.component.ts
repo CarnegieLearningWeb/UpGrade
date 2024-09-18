@@ -49,12 +49,14 @@ export class FeatureFlagRootSectionCardComponent {
   searchKey$ = this.featureFlagService.searchKey$;
   searchParams$ = this.featureFlagService.searchParams$;
   selectRootTableState$ = this.featureFlagService.selectRootTableState$;
+  isSearchActive$: Observable<boolean> = this.searchString$.pipe(map((searchString) => !!searchString));
 
   featureFlagFilterOption = [
     FLAG_SEARCH_KEY.ALL,
     FLAG_SEARCH_KEY.NAME,
     FLAG_SEARCH_KEY.STATUS,
     FLAG_SEARCH_KEY.CONTEXT,
+    FLAG_SEARCH_KEY.TAG,
   ];
   isSectionCardExpanded = true;
 
@@ -77,7 +79,7 @@ export class FeatureFlagRootSectionCardComponent {
   ) {}
 
   ngOnInit() {
-    this.featureFlagService.fetchFeatureFlags();
+    this.featureFlagService.fetchFeatureFlags(true);
   }
 
   ngAfterViewInit() {
@@ -100,8 +102,6 @@ export class FeatureFlagRootSectionCardComponent {
   onMenuButtonItemClick(menuButtonItemName: string) {
     if (menuButtonItemName === 'Import Feature Flag') {
       this.dialogService.openImportFeatureFlagModal();
-    } else if (menuButtonItemName === 'Export All Feature Flags') {
-      console.log('onMenuButtonItemClick:', menuButtonItemName);
     }
   }
 

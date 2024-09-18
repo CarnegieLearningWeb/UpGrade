@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { MetricRepository } from '../repositories/MetricRepository';
 import { Metric } from '../models/Metric';
 import { SERVER_ERROR, IMetricUnit, IMetricMetaData, IGroupMetric, ISingleMetric } from 'upgrade_types';

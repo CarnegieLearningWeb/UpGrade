@@ -1,14 +1,14 @@
 import { LogRepository } from './../repositories/LogRepository';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository, Container } from '../../typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { AWSService } from './AWSService';
 import {
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
   IExperimentEnrollmentDetailDateStats,
-  EXPERIMENT_LOG_TYPE,
+  LOG_TYPE,
   REPEATED_MEASURE,
   IMetricMetaData,
   ASSIGNMENT_UNIT,
@@ -25,11 +25,11 @@ import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLog
 import { UserRepository } from '../repositories/UserRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { METRICS_JOIN_TEXT } from './MetricService';
-import { getCustomRepository } from 'typeorm';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { ExperimentService } from './ExperimentService';
+import { QueryService } from './QueryService';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -52,7 +52,8 @@ export class AnalyticsService {
     private logRepository: LogRepository,
     public awsService: AWSService,
     public errorService: ErrorService,
-    public experimentService: ExperimentService
+    public experimentService: ExperimentService,
+    public queryService: QueryService
   ) {}
 
   public async getEnrollments(experimentIds: string[]): Promise<IExperimentEnrollmentStats[]> {
@@ -112,7 +113,7 @@ export class AnalyticsService {
     }
 
     const promiseArray = await Promise.all([
-      this.experimentRepository.findOne(experimentId, { relations: ['conditions', 'partitions'] }),
+      this.experimentRepository.findOne({ where: { id: experimentId }, relations: ['conditions', 'partitions'] }),
       this.analyticsRepository.getEnrollmentByDateRange(experimentId, dateRange, clientOffset),
     ]);
 
@@ -164,6 +165,9 @@ export class AnalyticsService {
 
   public async getCSVData(experimentId: string, email: string, logger: UpgradeLogger): Promise<string> {
     logger.info({ message: `Inside getCSVData ${experimentId} , ${email}` });
+    if (!experimentId) {
+      return '';
+    }
     try {
       const timeStamp = new Date().toISOString();
       const folderPath = 'src/api/assets/files/';
@@ -173,8 +177,8 @@ export class AnalyticsService {
       }
       const simpleExportCSV = `${email}_simpleExport${timeStamp}.csv`;
 
-      const userRepository: UserRepository = getCustomRepository(UserRepository, 'export');
-      const user = await userRepository.findOne({ email });
+      const userRepository: UserRepository = Container.getCustomRepository(UserRepository, 'export');
+      const user = await userRepository.findOneBy({ email });
 
       const experimentQueryResult = await this.experimentService.getExperimentDetailsForCSVDataExport(experimentId);
       const formattedExperiments = experimentQueryResult.reduce((acc, item) => {
@@ -207,6 +211,7 @@ export class AnalyticsService {
         });
         return acc;
       }, []);
+
       let csvExportData: CSVExportDataRow[];
       if (experimentQueryResult[0].assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
         csvExportData = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentId);
@@ -311,18 +316,32 @@ export class AnalyticsService {
           }
         }
       }
+
+      const allQuery = await this.queryService.find(new UpgradeLogger());
+      let queryNames: string[] = [];
+      if (allQuery) {
+        queryNames = allQuery.map((query) => {
+          return query.name;
+        });
+      }
       // merge with data
       const csvRows = csvExportData.map((row) => {
         const queryObject = logsUser[row.userId] || {};
         const queryDataToAdd = {};
 
-        for (const queryId in queryObject) {
-          if (queryObject[queryId]) {
-            const queryName = queryNameIdMapping[queryId];
-            if (queryName) {
-              queryDataToAdd[queryName] = queryObject[queryId];
+        if (Object.keys(queryObject).length) {
+          for (const queryId in queryObject) {
+            if (queryObject[queryId]) {
+              const queryName = queryNameIdMapping[queryId];
+              if (queryName) {
+                queryDataToAdd[queryName] = queryObject[queryId];
+              }
             }
           }
+        } else {
+          queryNames.forEach((queryName) => {
+            queryDataToAdd[queryName] = '';
+          });
         }
 
         const revertToCondition = row.revertTo ? row.revertTo : 'Default';
@@ -443,7 +462,7 @@ export class AnalyticsService {
         throw error;
       }
       await this.experimentAuditLogRepository.saveRawJson(
-        EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
+        LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
         { experimentName: experimentQueryResult[0].experimentName },
         user
       );

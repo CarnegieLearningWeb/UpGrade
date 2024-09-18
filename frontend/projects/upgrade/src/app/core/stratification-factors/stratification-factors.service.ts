@@ -4,6 +4,7 @@ import { AppState } from '../core.state';
 import * as StratificationFactorsActions from './store/stratification-factors.actions';
 import {
   selectAllStratificationFactors,
+  selectIsFactorAddRequestSuccess,
   selectIsLoadingStratificationFactors,
 } from './store/stratification-factors.selectors';
 import { CsvDataItem } from './store/stratification-factors.model';
@@ -12,6 +13,7 @@ import { CsvDataItem } from './store/stratification-factors.model';
 export class StratificationFactorsService {
   isLoading$ = this.store$.pipe(select(selectIsLoadingStratificationFactors));
   allStratificationFactors$ = this.store$.pipe(select(selectAllStratificationFactors));
+  isFactorAddRequestSuccess$ = this.store$.pipe(select(selectIsFactorAddRequestSuccess));
 
   constructor(private store$: Store<AppState>) {}
 

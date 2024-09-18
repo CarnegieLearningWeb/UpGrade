@@ -4,7 +4,7 @@
     class="flag-list-table"
     mat-table
     [dataSource]="dataSource$"
-    [ngClass]="{'no-data': !dataSource$?.data?.length}"
+    [ngClass]="{ 'no-data': !dataSource$?.data?.length }"
     matSort
     (matSortChange)="changeSorting($event)"
     [matSortActive]="flagSortKey$ | async"
@@ -33,7 +33,10 @@
         {{ FLAG_TRANSLATION_KEYS.STATUS | translate }}
       </th>
       <td mat-cell *matCellDef="let flag" class="status-column ft-14-400">
-        <app-common-status-indicator-chip [chipClass]="flag.status"></app-common-status-indicator-chip>
+        <app-common-status-indicator-chip
+          [chipClass]="flag.status"
+          [showWarning]="(warningStatusForAllFlags$ | async)[flag.id]"
+        ></app-common-status-indicator-chip>
       </td>
     </ng-container>
 
@@ -63,11 +66,13 @@
         {{ FLAG_TRANSLATION_KEYS.TAGS | translate }}
       </th>
       <td mat-cell *matCellDef="let flag" class="tags-column ft-14-400 dense-2">
-        <mat-chip-listbox>
-          <mat-chip *ngFor="let tag of flag.tags" class="tag">
-            <span class="chip-label">
-              {{ tag }}
-            </span>
+        <mat-chip-listbox aria-label="Flag tags">
+          <mat-chip
+            *ngFor="let tag of flag.tags"
+            class="tag"
+            (click)="filterFeatureFlagByChips(tag, FeatureFlagSearchKey.TAG)"
+          >
+            <span class="chip-label">{{ tag }}</span>
           </mat-chip>
         </mat-chip-listbox>
       </td>
@@ -79,7 +84,7 @@
         {{ FLAG_TRANSLATION_KEYS.EXPOSURES | translate }}
       </th>
       <td mat-cell *matCellDef="let flag" class="exposures-column ft-14-400">
-        <span *ngFor="let exposure of flag.exposures" class="exposure">{{ exposure }}</span>
+        <span class="exposure">{{ flag.featureFlagExposures }}</span>
       </td>
     </ng-container>
 
@@ -89,7 +94,12 @@
     <!-- No Data Row -->
     <tr *matNoDataRow>
       <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
-        {{ 'feature-flags.no-flags-in-table.text' | translate }}
+        <ng-container *ngIf="isSearchActive$ | async; else noFlags">
+          {{ 'feature-flags.no-matching-flags.text' | translate }}
+        </ng-container>
+        <ng-template #noFlags>
+          {{ 'feature-flags.no-flags-in-table.text' | translate }}
+        </ng-template>
       </td>
     </tr>
   </table>

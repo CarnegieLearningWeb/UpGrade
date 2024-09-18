@@ -2,7 +2,11 @@
   <h5 class="title ft-18-700">
     {{ title | translate }} &nbsp;<span *ngIf="tableRowCount > 0"> ({{ tableRowCount }}) </span>
     <ng-container *ngIf="chipClass">
-      <app-common-status-indicator-chip class="status-chip" [chipClass]="chipClass"></app-common-status-indicator-chip>
+      <app-common-status-indicator-chip
+        [chipClass]="chipClass"
+        [showWarning]="showWarning"
+        class="status-chip"
+      ></app-common-status-indicator-chip>
     </ng-container>
   </h5>
   <p class="subtitle">
@@ -18,9 +22,6 @@
       <span class="ft-14-400">
         {{ ('feature-flags.details-updated-at.text' | translate) + (updatedAt | formatDate: 'short date') + '.' }}
       </span>
-    </ng-container>
-    <ng-container *ngIf="showViewLogs">
-      <a class="view-logs-link ft-14-400" [href]="" (click)="viewLogsClicked()">View logs</a>
     </ng-container>
   </p>
 </div>

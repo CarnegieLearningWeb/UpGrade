@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { StratificationFactorsService } from '../../../../../../core/stratification-factors/stratification-factors.service';
 import { CsvDataItem } from '../../../../../../core/stratification-factors/store/stratification-factors.model';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-import-stratifications',
@@ -13,6 +14,9 @@ export class ImportStratificationsComponent {
   file: File;
   isStratificationCSVValid = true;
   csvData: CsvDataItem[] = [];
+  uploadedFileCount = 0;
+  subscriptions = new Subscription();
+  isFactorAddRequestSuccess$ = this.stratificationFactorsService.isFactorAddRequestSuccess$;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   constructor(
@@ -26,7 +30,11 @@ export class ImportStratificationsComponent {
 
   importStratification() {
     this.stratificationFactorsService.importStratificationFactors(this.csvData);
-    this.dialogRef.close(true);
+    this.subscriptions = this.isFactorAddRequestSuccess$.subscribe((isSuccess) => {
+      if (isSuccess) {
+        this.dialogRef.close(true);
+      }
+    });
   }
 
   uploadFile(event: Event) {
@@ -52,5 +60,10 @@ export class ImportStratificationsComponent {
         }
       }
     }
+    this.uploadedFileCount = fileList.length;
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 }

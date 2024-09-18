@@ -1,4 +1,5 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import repositoryError from './utils/repositoryError';
 
@@ -15,7 +16,7 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
       .insert()
       .into(IndividualExclusion)
       .values(newRawDataArray)
-      .onConflict(`DO NOTHING`)
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

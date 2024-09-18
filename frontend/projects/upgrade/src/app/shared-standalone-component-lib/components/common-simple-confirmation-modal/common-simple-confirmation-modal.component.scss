@@ -1,25 +1,25 @@
 .confirm-modal-content {
-    padding: 20px 0px;
+  padding: 20px 0px;
 
-    .subMessage {
-        margin-top: 10px;
+  .subMessage {
+    margin-top: 10px;
+  }
+
+  display: flex;
+  flex-direction: column;
+  row-gap: 16px;
+  padding: 40px 32px;
+
+  &-text {
+    color: var(--dark-grey);
+    margin-bottom: 0;
+
+    &.info {
+      color: var(--blue);
     }
 
-    display: flex;
-    flex-direction: column;
-    row-gap: 16px;
-    padding: 40px 32px;
-  
-    &-text {
-      color: var(--dark-grey);
-      margin-bottom: 0;
-  
-      &.info {
-        color: var(--blue);
-      }
-  
-      &.warn {
-        color: var(--red-2);
-      }
+    &.warn {
+      color: var(--red-2);
     }
+  }
 }

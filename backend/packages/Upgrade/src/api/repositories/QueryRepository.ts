@@ -1,4 +1,5 @@
-import { EntityRepository, Repository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { Query } from '../models/Query';
 import repositoryError from './utils/repositoryError';
 
@@ -23,7 +24,7 @@ export class QueryRepository extends Repository<Query> {
       .insert()
       .into(Query)
       .values(queryDoc)
-      .onConflict(`("id") DO UPDATE SET "query" = :query, "name" = :name, "repeatedMeasure" = :repeatedMeasure`)
+      .orUpdate(['query', 'name', 'repeatedMeasure'], ['id'])
       .setParameter('query', queryDoc.query)
       .setParameter('name', queryDoc.name)
       .setParameter('metric', queryDoc.metric)

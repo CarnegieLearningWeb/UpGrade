@@ -12,7 +12,6 @@ import {
   MatDialogRef,
   MatDialogTitle,
 } from '@angular/material/dialog';
-import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal-config';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,9 +22,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
-import { FEATURE_FLAG_STATUS, FILTER_MODE } from '../../../../../../../../../../types/src';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 import {
   AddFeatureFlagRequest,
+  CommonTagInputType,
   FeatureFlag,
   FeatureFlagFormData,
   UpdateFeatureFlagRequest,
@@ -38,6 +38,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { CommonTextHelpersService } from '../../../../../shared/services/common-text-helpers.service';
 import { FeatureFlagsDataService } from '../../../../../core/feature-flags/feature-flags.data.service';
 import isEqual from 'lodash.isequal';
+import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 
 @Component({
   selector: 'upsert-add-feature-flag-modal',
@@ -78,6 +79,7 @@ export class UpsertFeatureFlagModalComponent {
 
   featureFlagForm: FormGroup;
   validationError = false;
+  CommonTagInputType = CommonTagInputType;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
@@ -170,14 +172,14 @@ export class UpsertFeatureFlagModalComponent {
       // });
     } else {
       // If the form is invalid, manually mark all form controls as touched
-      this.formHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);
+      CommonFormHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);
     }
   }
 
   async sendValidateRequest() {
     const formData: FeatureFlagFormData = this.featureFlagForm.value;
     try {
-      const result = (await this.featureFlagDataService.validateFeatureFlag(formData).toPromise()) as string;
+      const result = (await this.featureFlagDataService.validateFeatureFlagForm(formData).toPromise()) as string;
       return !!result;
     } catch (error) {
       return true;
@@ -204,9 +206,7 @@ export class UpsertFeatureFlagModalComponent {
       context: [appContext],
       tags,
       status: FEATURE_FLAG_STATUS.DISABLED,
-      filterMode: FILTER_MODE.INCLUDE_ALL,
-      featureFlagSegmentInclusion: [],
-      featureFlagSegmentExclusion: [],
+      filterMode: FILTER_MODE.EXCLUDE_ALL,
     };
 
     this.featureFlagsService.addFeatureFlag(flagRequest);
@@ -214,7 +214,7 @@ export class UpsertFeatureFlagModalComponent {
 
   createEditRequest(
     { name, key, description, appContext, tags }: FeatureFlagFormData,
-    { id, status, filterMode, featureFlagSegmentInclusion, featureFlagSegmentExclusion }: FeatureFlag
+    { id, status, filterMode }: FeatureFlag
   ): void {
     const flagRequest: UpdateFeatureFlagRequest = {
       id,
@@ -225,8 +225,6 @@ export class UpsertFeatureFlagModalComponent {
       tags,
       status,
       filterMode,
-      featureFlagSegmentInclusion,
-      featureFlagSegmentExclusion,
     };
 
     this.featureFlagsService.updateFeatureFlag(flagRequest);

@@ -1,14 +1,15 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { FLAG_SEARCH_KEY, FeatureFlag, FeatureFlagState, ParticipantListTableRow } from './feature-flags.model';
+import { FeatureFlag, FeatureFlagState, ParticipantListTableRow } from './feature-flags.model';
 import { selectRouterState } from '../../core.state';
-import { selectAll } from './feature-flags.reducer';
-import { MemberTypes } from '../../segments/store/segments.model';
 import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
-import { CommonTextHelpersService } from '../../../shared/services/common-text-helpers.service';
+import { selectAll, selectIds } from './feature-flags.reducer';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY } from 'upgrade_types';
 
 export const selectFeatureFlagsState = createFeatureSelector<FeatureFlagState>('featureFlags');
 
 export const selectAllFeatureFlags = createSelector(selectFeatureFlagsState, selectAll);
+
+export const selectFeatureFlagIds = createSelector(selectFeatureFlagsState, selectIds);
 
 export const selectAllFeatureFlagsSortedByDate = createSelector(selectAllFeatureFlags, (featureFlags) => {
   if (!featureFlags) {
@@ -49,7 +50,14 @@ export const selectIsLoadingUpsertFeatureFlag = createSelector(
 export const selectSelectedFeatureFlag = createSelector(
   selectRouterState,
   selectFeatureFlagsState,
-  ({ state: { params } }, featureFlagState) => featureFlagState.entities[params.flagId]
+  (routerState, featureFlagState) => {
+    // be very defensive here to make sure routerState is correct
+    const flagId = routerState?.state?.params?.flagId;
+    if (flagId) {
+      return featureFlagState.entities[flagId];
+    }
+    return undefined;
+  }
 );
 
 export const selectFeatureFlagOverviewDetails = createSelector(selectSelectedFeatureFlag, (featureFlag) => ({
@@ -108,6 +116,11 @@ export const selectFeatureFlagsListLength = createSelector(
   (featureFlags) => featureFlags.length
 );
 
+export const selectIsLoadingImportFeatureFlag = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingImportFeatureFlag
+);
+
 export const selectIsLoadingUpdateFeatureFlagStatus = createSelector(
   selectFeatureFlagsState,
   (state) => state.isLoadingUpdateFeatureFlagStatus
@@ -123,38 +136,57 @@ export const selectIsLoadingFeatureFlagDelete = createSelector(
   (state) => state.isLoadingFeatureFlagDelete
 );
 
-// TODO: will need reimplementation in the list table stories
 export const selectFeatureFlagInclusions = createSelector(
   selectSelectedFeatureFlag,
-  (featureFlag: FeatureFlag): ParticipantListTableRow[] => []
-  // mapToParticipantTableRowStructure(featureFlag, FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE)
+  (featureFlag: FeatureFlag): ParticipantListTableRow[] => {
+    if (!featureFlag?.featureFlagSegmentInclusion?.length) {
+      return [];
+    }
+    return featureFlag.featureFlagSegmentInclusion
+      .filter((inclusion) => inclusion.segment)
+      .sort((a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime())
+      .map((inclusion) => ({
+        segment: inclusion.segment,
+        listType: inclusion.listType,
+        enabled: inclusion.enabled,
+      }));
+  }
 );
 
 export const selectFeatureFlagExclusions = createSelector(
   selectSelectedFeatureFlag,
-  (featureFlag: FeatureFlag): ParticipantListTableRow[] => []
-  // mapToParticipantTableRowStructure(featureFlag, FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE)
-);
-
-export const selectFeatureFlagListTypeOptions = createSelector(
-  selectContextMetaData,
-  selectSelectedFeatureFlag,
-  (contextMetaData, flag) => {
-    const flagAppContext = flag?.context?.[0];
-    const groupTypes = contextMetaData?.contextMetadata?.[flagAppContext]?.GROUP_TYPES ?? [];
-    const groupTypeSelectOptions = CommonTextHelpersService.formatGroupTypes(groupTypes as string[]);
-    const listOptionTypes = [
-      {
-        value: MemberTypes.SEGMENT,
-        viewValue: MemberTypes.SEGMENT,
-      },
-      {
-        value: MemberTypes.INDIVIDUAL,
-        viewValue: MemberTypes.INDIVIDUAL,
-      },
-      ...groupTypeSelectOptions,
-    ];
-
-    return listOptionTypes;
+  (featureFlag: FeatureFlag): ParticipantListTableRow[] => {
+    if (!featureFlag?.featureFlagSegmentExclusion?.length) {
+      return [];
+    }
+    return featureFlag.featureFlagSegmentExclusion
+      .filter((exclusion) => exclusion.segment)
+      .sort((a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime())
+      .map((exclusion) => ({
+        segment: exclusion.segment,
+        listType: exclusion.listType,
+      }));
   }
 );
+
+// Helper function to determine if warning should be shown for a given flag
+const shouldShowWarningForFlag = (flag: FeatureFlag) =>
+  flag?.status === FEATURE_FLAG_STATUS.ENABLED &&
+  flag?.filterMode !== FILTER_MODE.INCLUDE_ALL &&
+  !flag?.featureFlagSegmentInclusion?.some((inclusion) => inclusion.enabled);
+
+// Selector for the selected feature flag
+export const selectShouldShowWarningForSelectedFlag = createSelector(selectSelectedFeatureFlag, (flag: FeatureFlag) =>
+  shouldShowWarningForFlag(flag)
+);
+
+// Selector for all feature flags
+export const selectWarningStatusForAllFlags = createSelector(selectFeatureFlagsState, (state: FeatureFlagState) => {
+  const warningStatus = {};
+  Object.values(state.entities).forEach((flag) => {
+    if (flag) {
+      warningStatus[flag.id] = shouldShowWarningForFlag(flag);
+    }
+  });
+  return warningStatus;
+});

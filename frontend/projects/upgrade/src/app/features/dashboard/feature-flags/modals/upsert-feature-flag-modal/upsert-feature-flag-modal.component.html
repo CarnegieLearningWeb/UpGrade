@@ -49,6 +49,11 @@
       </mat-hint>
     </mat-form-field>
 
-    <app-common-tags-input formControlName="tags"></app-common-tags-input>
+    <app-common-tags-input
+      formControlName="tags"
+      [inputType]="CommonTagInputType.TAGS"
+      [label]="config.tagsLabel"
+      [placeholder]="config.tagsPlaceholder"
+    ></app-common-tags-input>
   </form>
 </app-common-dialog>

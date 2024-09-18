@@ -1,6 +1,6 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
-import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SORT_KEY, SEGMENT_TYPE, SORT_AS_DIRECTION } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 import { MemberTypes, Segment } from '../../segments/store/segments.model';
 
 // This obviously is a more global type, but for now we're not about to refactor all of the things, so I'm just putting it here so I can create some more dev-friendly types to catch the small differences between some of these formats
@@ -10,8 +10,7 @@ export interface GeneralCRUDResponseFields {
   versionNumber: number;
 }
 
-// Fields belonging to the FeatureFlag entity itself that are not part of the CRUD response
-export interface BaseFeatureFlag {
+export interface CoreFeatureFlagDetails {
   id?: string;
   name: string;
   key: string;
@@ -20,6 +19,10 @@ export interface BaseFeatureFlag {
   tags: string[];
   status: FEATURE_FLAG_STATUS;
   filterMode: FILTER_MODE;
+}
+
+// Fields belonging to the FeatureFlag entity itself that are not part of the CRUD response
+export interface BaseFeatureFlag extends CoreFeatureFlagDetails {
   featureFlagSegmentInclusion: FeatureFlagSegmentListDetails[];
   featureFlagSegmentExclusion: FeatureFlagSegmentListDetails[];
 }
@@ -28,7 +31,7 @@ export interface BaseFeatureFlag {
 export type FeatureFlag = BaseFeatureFlag & GeneralCRUDResponseFields;
 
 // Currently there is no difference between these types, but they semantically different and could diverge later
-export type AddFeatureFlagRequest = BaseFeatureFlag;
+export type AddFeatureFlagRequest = CoreFeatureFlagDetails;
 
 // so that we can throw an error if we try to update the id
 export interface UpdateFeatureFlagRequest extends AddFeatureFlagRequest {
@@ -58,9 +61,9 @@ export enum UPSERT_FEATURE_FLAG_LIST_ACTION {
   EDIT = 'edit',
 }
 
-export interface UpsertFeatureFlagListParams {
-  sourceList: FeatureFlagSegmentListDetails;
-  action: UPSERT_FEATURE_FLAG_LIST_ACTION;
+export interface ValidateFeatureFlagError {
+  fileName: string;
+  compatibilityType: string;
 }
 
 export interface FeatureFlagsPaginationInfo {
@@ -75,22 +78,17 @@ export interface UpdateFeatureFlagStatusRequest {
   status: FEATURE_FLAG_STATUS;
 }
 
+export interface UpdateFilterModeRequest {
+  flagId: string;
+  filterMode: FILTER_MODE;
+}
+
 export interface FeatureFlagFormData {
   name: string;
   key: string;
   description: string;
   appContext: string;
   tags: string[];
-}
-
-export interface PrivateSegment {
-  segment: Segment;
-}
-
-export interface EmptyPrivateSegment {
-  segment: {
-    type: SEGMENT_TYPE;
-  };
 }
 
 // TODO: This should be probably be a part of env config
@@ -107,10 +105,35 @@ interface IFeatureFlagsSortParams {
 }
 
 export interface ParticipantListTableRow {
-  type: string;
-  values: string;
-  name: string;
-  enable: string;
+  listType: MemberTypes | string;
+  segment: Segment;
+  enabled?: boolean;
+}
+
+export enum PARTICIPANT_LIST_ROW_ACTION {
+  ENABLE = 'enable',
+  DISABLE = 'disable',
+  EDIT = 'edit',
+  DELETE = 'delete',
+}
+
+export interface ParticipantListRowActionEvent {
+  action: PARTICIPANT_LIST_ROW_ACTION;
+  rowData: ParticipantListTableRow;
+}
+
+export enum CommonTagInputType {
+  TAGS = 'tags',
+  VALUES = 'values',
+}
+
+// the request for for the upserting private segment is PrivateSegmentListRequest
+// there is no difference in that request and that which will be used for segment lists in the future
+export interface UpsertFeatureFlagPrivateSegmentListResponse {
+  featureFlag: FeatureFlag;
+  segment: Segment;
+  listType: MemberTypes | string;
+  enabled: boolean;
 }
 
 export interface FeatureFlagsPaginationParams {
@@ -120,18 +143,18 @@ export interface FeatureFlagsPaginationParams {
   sortParams?: IFeatureFlagsSortParams;
 }
 
+export enum FEATURE_FLAG_DETAILS_PAGE_ACTIONS {
+  EDIT = 'Edit Feature Flag',
+  DUPLICATE = 'Duplicate Feature Flag',
+  ARCHIVE = 'Archive Feature Flag',
+  DELETE = 'Delete Feature Flag',
+  EXPORT_DESIGN = 'Export Feature Flag Design',
+  EMAIL_DATA = 'Email Feature Flag Data',
+}
+
 export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
   INCLUDE = 'featureFlagSegmentInclusion',
   EXCLUDE = 'featureFlagSegmentExclusion',
-}
-
-export enum FLAG_SEARCH_KEY {
-  ALL = 'all',
-  NAME = 'name',
-  KEY = 'key',
-  STATUS = 'status',
-  TAG = 'tag',
-  CONTEXT = 'context',
 }
 
 export const FLAG_ROOT_COLUMN_NAMES = {
@@ -156,10 +179,12 @@ export const FLAG_ROOT_DISPLAYED_COLUMNS = Object.values(FLAG_ROOT_COLUMN_NAMES)
 
 export interface FeatureFlagState extends EntityState<FeatureFlag> {
   isLoadingUpsertFeatureFlag: boolean;
+  isLoadingImportFeatureFlag: boolean;
   isLoadingSelectedFeatureFlag: boolean;
   isLoadingFeatureFlags: boolean;
   isLoadingUpdateFeatureFlagStatus: boolean;
   isLoadingFeatureFlagDelete: boolean;
+  isLoadingUpsertPrivateSegmentList: boolean;
   hasInitialFeatureFlagsDataLoaded: boolean;
   activeDetailsTabIndex: number;
   skipFlags: number;

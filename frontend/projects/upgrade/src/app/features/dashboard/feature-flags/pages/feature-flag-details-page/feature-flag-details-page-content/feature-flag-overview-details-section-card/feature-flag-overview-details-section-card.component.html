@@ -5,9 +5,8 @@
     [title]="flag.name"
     [createdAt]="flag.createdAt"
     [updatedAt]="flag.updatedAt"
-    [showViewLogs]="true"
     [chipClass]="flag.status"
-    (viewLogs)="viewLogsClicked($event)"
+    [showWarning]="shouldShowWarning$ | async"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->
@@ -15,6 +14,7 @@
     header-right
     [showSlideToggle]="true"
     [isEnableToggleChecked]="flag.status === FEATURE_FLAG_STATUS.ENABLED"
+    [slideToggleText]="'feature-flags.enable.text' | translate"
     [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
@@ -27,6 +27,7 @@
   <ng-container content>
     <app-common-section-card-overview-details
       [data]="flagOverviewDetails$ | async"
+      (tagItemClick)="filterFeatureFlagByChips($event)"
     ></app-common-section-card-overview-details>
   </ng-container>
 

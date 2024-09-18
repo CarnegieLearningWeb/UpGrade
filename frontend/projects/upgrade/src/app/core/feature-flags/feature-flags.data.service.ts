@@ -1,19 +1,24 @@
 import { Inject, Injectable } from '@angular/core';
 import { ENV, Environment } from '../../../environments/environment-types';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import {
   AddFeatureFlagRequest,
   FeatureFlag,
   FeatureFlagFormData,
+  FeatureFlagSegmentListDetails,
   FeatureFlagsPaginationInfo,
   FeatureFlagsPaginationParams,
   UpdateFeatureFlagRequest,
   UpdateFeatureFlagStatusRequest,
+  UpdateFilterModeRequest,
 } from './store/feature-flags.model';
-import { Observable } from 'rxjs';
+import { Observable, delay, of } from 'rxjs';
+import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
+import { IFeatureFlagFile } from 'upgrade_types';
 
 @Injectable()
 export class FeatureFlagsDataService {
+  mockFeatureFlags: FeatureFlag[] = [];
   constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
 
   fetchFeatureFlagsPaginated(params: FeatureFlagsPaginationParams): Observable<FeatureFlagsPaginationInfo> {
@@ -28,7 +33,7 @@ export class FeatureFlagsDataService {
 
   updateFeatureFlagStatus(params: UpdateFeatureFlagStatusRequest): Observable<FeatureFlag> {
     const url = this.environment.api.updateFlagStatus;
-    return this.http.post<FeatureFlag>(url, params);
+    return this.http.patch<FeatureFlag>(url, params);
   }
 
   addFeatureFlag(flag: AddFeatureFlagRequest): Observable<FeatureFlag> {
@@ -41,13 +46,75 @@ export class FeatureFlagsDataService {
     return this.http.put<FeatureFlag>(url, flag);
   }
 
-  validateFeatureFlag(flag: FeatureFlagFormData) {
+  validateFeatureFlagForm(flag: FeatureFlagFormData) {
     const url = `${this.environment.api.featureFlag}/validation`;
     return this.http.post(url, flag);
   }
 
+  validateFeatureFlag(featureFlag: { files: IFeatureFlagFile[] }) {
+    const url = this.environment.api.validateFeatureFlag;
+    return this.http.post(url, featureFlag);
+  }
+
+  importFeatureFlag(featureFlag: { files: IFeatureFlagFile[] }) {
+    const url = this.environment.api.importFeatureFlag;
+    return this.http.post(url, featureFlag);
+  }
+
+  updateFilterMode(params: UpdateFilterModeRequest): Observable<FeatureFlag> {
+    const url = this.environment.api.updateFilterMode;
+    return this.http.patch<FeatureFlag>(url, params);
+  }
+
+  emailFeatureFlagData(flagId: string, email: string) {
+    let featureFlagInfoParams = new HttpParams();
+    featureFlagInfoParams = featureFlagInfoParams.append('experimentId', flagId);
+    featureFlagInfoParams = featureFlagInfoParams.append('email', email);
+
+    const url = this.environment.api.emailFlagData;
+    // return this.http.post(url, { params: featureFlagInfoParams });
+
+    // mock
+    return of(true).pipe(delay(2000));
+  }
+
+  exportFeatureFlagsDesign(id: string) {
+    const url = `${this.environment.api.exportFlagsDesign}/${id}`;
+    return this.http.get(url);
+  }
+
   deleteFeatureFlag(id: string) {
     const url = `${this.environment.api.featureFlag}/${id}`;
+    return this.http.delete(url);
+  }
+
+  addInclusionList(list: AddPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
+    const url = this.environment.api.addFlagInclusionList;
+    return this.http.post<FeatureFlagSegmentListDetails>(url, list);
+  }
+
+  updateInclusionList(list: EditPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
+    const url = `${this.environment.api.addFlagInclusionList}/${list.segment.id}`;
+    return this.http.put<FeatureFlagSegmentListDetails>(url, list);
+  }
+
+  deleteInclusionList(segmentId: string) {
+    const url = `${this.environment.api.addFlagInclusionList}/${segmentId}`;
+    return this.http.delete(url);
+  }
+
+  addExclusionList(list: AddPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
+    const url = this.environment.api.addFlagExclusionList;
+    return this.http.post<FeatureFlagSegmentListDetails>(url, list);
+  }
+
+  updateExclusionList(list: EditPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
+    const url = `${this.environment.api.addFlagExclusionList}/${list.segment.id}`;
+    return this.http.put<FeatureFlagSegmentListDetails>(url, list);
+  }
+
+  deleteExclusionList(segmentId: string) {
+    const url = `${this.environment.api.addFlagExclusionList}/${segmentId}`;
     return this.http.delete(url);
   }
 }

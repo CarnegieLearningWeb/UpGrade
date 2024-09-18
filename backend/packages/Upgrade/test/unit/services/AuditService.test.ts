@@ -3,7 +3,8 @@ import { Repository } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
-import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
+import { LOG_TYPE } from 'upgrade_types';
+import { configureLogger } from '../../utils/logger';
 
 const auditArr = [1, 2, 3];
 
@@ -11,6 +12,10 @@ describe('Audit Service Testing', () => {
   let service: AuditService;
   let repo: Repository<ExperimentAuditLogRepository>;
   let module: TestingModule;
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
@@ -42,7 +47,7 @@ describe('Audit Service Testing', () => {
   });
 
   it('should return a count of audit logs', async () => {
-    const flags = await service.getTotalLogs(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+    const flags = await service.getTotalLogs(LOG_TYPE.EXPERIMENT_CREATED);
     expect(flags).toEqual(auditArr.length);
   });
 
@@ -57,7 +62,7 @@ describe('Audit Service Testing', () => {
   });
 
   it('should return an array of audit logs by type', async () => {
-    const flags = await service.getAuditLogByType(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+    const flags = await service.getAuditLogByType(LOG_TYPE.EXPERIMENT_CREATED);
     expect(flags).toEqual(auditArr);
   });
 });

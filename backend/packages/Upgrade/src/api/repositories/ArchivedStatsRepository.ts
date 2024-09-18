@@ -1,4 +1,5 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { ArchivedStats } from '../models/ArchivedStats';
 import repositoryError from './utils/repositoryError';
 
@@ -11,7 +12,7 @@ export class ArchivedStatsRepository extends Repository<ArchivedStats> {
       .insert()
       .into(ArchivedStats)
       .values(rawDataArray)
-      .onConflict(`DO NOTHING`)
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

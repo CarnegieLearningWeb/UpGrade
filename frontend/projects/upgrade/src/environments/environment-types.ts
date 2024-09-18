@@ -3,7 +3,6 @@ import { InjectionToken } from '@angular/core';
 export const ENV = new InjectionToken<Environment>('env.token');
 
 export interface APIEndpoints {
-  exportSegmentCSV: string;
   getAllExperiments: string;
   createNewExperiments: string;
   validateExperiment: string;
@@ -29,8 +28,15 @@ export interface APIEndpoints {
   allPartitions: string;
   allExperimentNames: string;
   featureFlag: string;
+  validateFeatureFlag: string;
+  importFeatureFlag: string;
   updateFlagStatus: string;
+  updateFilterMode: string;
   getPaginatedFlags: string;
+  exportFlagsDesign: string;
+  emailFlagData: string;
+  addFlagInclusionList: string;
+  addFlagExclusionList: string;
   setting: string;
   metrics: string;
   metricsSave: string;
@@ -41,6 +47,7 @@ export interface APIEndpoints {
   validateSegments: string;
   importSegments: string;
   exportSegments: string;
+  exportSegmentCSV: string;
   getGroupAssignmentStatus: string;
   stratification: string;
 }

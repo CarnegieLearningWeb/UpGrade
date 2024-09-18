@@ -7,15 +7,72 @@
   (primaryActionBtnClicked)="importFiles()"
 >
   <div class="drag-drop-container">
-    <app-common-import-container
-      fileType=".json"
-      buttonLabel="Choose JSON"
-      (filesSelected)="handleFilesSelected($event)"
-    >
-    </app-common-import-container>
-    <p class="ft-12-400 form-hint">
-      {{ 'feature-flags.import-feature-flag.message.text' | translate }}
-      <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">Learn more</a>
-    </p>
+    <ng-container *ngIf="!(isLoadingImportFeatureFlag$ | async); else loadingSpinner">
+      <ng-container *ngIf="(uploadedFileCount | async) < 1; else validationTable">
+        <app-common-import-container
+          fileType=".json"
+          buttonLabel="Choose JSON"
+          (filesSelected)="handleFilesSelected($event)"
+        >
+        </app-common-import-container>
+        <p class="ft-12-400 import-message">
+          {{ 'feature-flags.import-feature-flag.message.text' | translate }}
+          <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">Learn more</a>
+        </p>
+      </ng-container>
+      <ng-template #validationTable>
+        <table mat-table class="file-compatibility-table" [dataSource]="fileValidationErrorDataSource" multiTemplateDataRows>
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell class="ft-14-500" *matCellDef="let element">
+              <button
+                mat-icon-button
+                [ngClass]="{ 'expand-button--disabled': element.compatibilityType === 'compatible' }"
+                [disabled]="element.compatibilityType === 'compatible'"
+                (click)="toggleExpand()"
+              >
+                <mat-icon>{{ element.compatibilityType === 'compatible' || !isDescriptionExpanded ? 'chevron_right' : 'expand_more' }}</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <!-- File Name Column -->
+          <ng-container matColumnDef="fileName">
+            <th mat-header-cell class="ft-14-600" *matHeaderCellDef> File Name </th>
+            <td mat-cell class="ft-14-500" *matCellDef="let element"> {{element.fileName}} </td>
+          </ng-container>
+
+          <!-- Compatibility Type Column -->
+          <ng-container matColumnDef="compatibilityType">
+            <th mat-header-cell class="ft-14-600" *matHeaderCellDef> Compatibility Type </th>
+            <td mat-cell class="ft-14-500" *matCellDef="let element">
+              <app-common-status-indicator-chip [chipClass]="element.compatibilityType"></app-common-status-indicator-chip>
+            </td>
+          </ng-container>
+
+          <!-- Expanded Detail Row -->
+          <ng-container matColumnDef="expandedDetail">
+            <td mat-cell class="expandable-row" *matCellDef="let element; let fileIndex = dataIndex">
+              <div class="ft-14-500" *ngIf="isDescriptionExpanded" class="compatibility-details-container">
+                <div *ngIf="element.compatibilityType === 'incompatible'">
+                  {{'feature-flags.import-flag-modal.compatibility-description.incompatible.text' | translate}}
+                </div>
+                <div *ngIf="element.compatibilityType === 'warning'">
+                  {{'feature-flags.import-flag-modal.compatibility-description.warning.text' | translate}}
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+          <mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"></mat-row>
+        </table>
+      </ng-template>
+    </ng-container>
+    <ng-template #loadingSpinner>
+      <mat-spinner class='spinner' diameter="150"></mat-spinner>
+    </ng-template>
   </div>
 </app-common-dialog>

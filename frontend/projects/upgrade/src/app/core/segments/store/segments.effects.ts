@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
 import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operators';
-import { AppState, NotificationService } from '../../core.module';
+import { AppState } from '../../core.module';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
 import { Segment, UpsertSegmentType } from './segments.model';
@@ -16,8 +16,7 @@ export class SegmentsEffects {
     private store$: Store<AppState>,
     private actions$: Actions,
     private segmentsDataService: SegmentsDataService,
-    private router: Router,
-    private notificationService: NotificationService
+    private router: Router
   ) {}
 
   fetchSegments$ = createEffect(() =>

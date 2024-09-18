@@ -1,7 +1,8 @@
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { FeatureFlag } from '../models/FeatureFlag';
 import repositoryError from './utils/repositoryError';
-import { FEATURE_FLAG_STATUS } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 
 @EntityRepository(FeatureFlag)
 export class FeatureFlagRepository extends Repository<FeatureFlag> {
@@ -46,6 +47,26 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('FeatureFlagRepository', 'updateState', { flagId, status }, errorMsg);
+        throw errorMsgString;
+      });
+
+    return result.raw[0];
+  }
+
+  public async updateFilterMode(flagId: string, filterMode: FILTER_MODE): Promise<FeatureFlag> {
+    const result = await this.createQueryBuilder('featureFlag')
+      .update()
+      .set({ filterMode })
+      .where({ id: flagId })
+      .returning('*')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'FeatureFlagRepository',
+          'updateFilterMode',
+          { flagId, filterMode },
+          errorMsg
+        );
         throw errorMsgString;
       });
 
