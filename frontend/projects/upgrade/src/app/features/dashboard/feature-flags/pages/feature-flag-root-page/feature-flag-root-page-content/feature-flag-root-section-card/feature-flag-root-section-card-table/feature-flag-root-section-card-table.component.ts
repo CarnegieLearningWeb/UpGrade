@@ -56,6 +56,8 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
 
   private sortTable() {
     if (this.dataSource$?.data) {
+      this.dataSource$.sortingDataAccessor = (item, property) =>
+        property === 'name' ? item.name.toLowerCase() : item[property];
       this.dataSource$.sort = this.sort;
     }
   }
