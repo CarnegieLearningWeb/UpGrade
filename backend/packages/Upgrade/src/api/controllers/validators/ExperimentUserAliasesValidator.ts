@@ -9,3 +9,9 @@ export class ExperimentUserAliasesValidator {
   @IsString({ each: true })
   public aliases: string[];
 }
+
+export class ExperimentUserAliasesValidatorv6 {
+  @IsArray()
+  @IsString({ each: true })
+  public aliases: string[];
+}

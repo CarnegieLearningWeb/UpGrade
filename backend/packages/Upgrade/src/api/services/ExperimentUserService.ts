@@ -40,9 +40,13 @@ export class ExperimentUserService {
   public async upsertOnChange(
     oldExperimentUser: RequestedExperimentUser,
     newExperimentUser: Partial<ExperimentUser>,
-    logger: UpgradeLogger
+    logger: UpgradeLogger,
+    userId?: string
   ): Promise<InsertResult | boolean> {
     if (!oldExperimentUser) {
+      if (!newExperimentUser.id) {
+        newExperimentUser.id = userId;
+      }
       return this.create([newExperimentUser], logger);
     }
 

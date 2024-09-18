@@ -9,3 +9,9 @@ export class UpdateWorkingGroupValidator {
   @IsNotEmpty()
   public workingGroup: Record<string, string>;
 }
+
+export class UpdateWorkingGroupValidatorv6 {
+  @IsWorkingGroupRecord()
+  @IsNotEmpty()
+  public workingGroup: Record<string, string>;
+}

@@ -86,6 +86,16 @@ export class ExperimentUserValidator {
   public workingGroup: Record<string, string>;
 }
 
+export class ExperimentUserValidatorv6 {
+  @IsOptional()
+  @IsGroupRecord()
+  public group: Record<string, string[]>;
+
+  @IsOptional()
+  @IsWorkingGroupRecord()
+  public workingGroup: Record<string, string>;
+}
+
 export class ExperimentUserArrayValidator {
   @IsNotEmpty()
   @IsArray()

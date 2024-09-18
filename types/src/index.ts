@@ -65,6 +65,7 @@ export {
   IExperimentAssignmentv4,
   IExperimentAssignmentv5,
   ILogRequestBody,
+  ILogRequestBodyv6,
   ILogMetrics,
   ILogGroupMetrics,
   IMenuButtonItem,

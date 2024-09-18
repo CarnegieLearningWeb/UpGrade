@@ -205,6 +205,10 @@ export interface ILogRequestBody {
   value: ILogInput[];
 }
 
+export interface ILogRequestBodyv6 {
+  value: ILogInput[];
+}
+
 export interface ILogInput {
   timestamp: string;
   metrics: ILogMetrics;

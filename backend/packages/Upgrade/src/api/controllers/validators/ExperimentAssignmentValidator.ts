@@ -11,3 +11,10 @@ export class ExperimentAssignmentValidator {
   @IsString()
   public context: string;
 }
+
+export class ExperimentAssignmentValidatorv6 {
+  @IsNotEmpty()
+  @IsDefined()
+  @IsString()
+  public context: string;
+}
