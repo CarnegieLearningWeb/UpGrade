@@ -242,7 +242,7 @@ describe('Feature Flag Service Testing', () => {
       .compile();
 
     service = module.get<FeatureFlagService>(FeatureFlagService);
-    service.validateForm = jest.fn().mockResolvedValue(null);
+    service.validateUniqueKey = jest.fn().mockResolvedValue(null);
     flagRepo = module.get<FeatureFlagRepository>(getRepositoryToken(FeatureFlagRepository));
   });
 
