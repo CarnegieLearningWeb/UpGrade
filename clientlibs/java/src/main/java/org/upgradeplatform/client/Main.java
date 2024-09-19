@@ -2,7 +2,6 @@ package org.upgradeplatform.client;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -122,6 +121,30 @@ public class Main {
                             result.complete(error.toString());
                         }
                     });
+
+                   System.out.println(prefix() + "getting feature flags");
+                   experimentClient.getAllFeatureFlags("assign-prog-test", new ResponseCallback<List<String>>() {
+                       @Override
+                       public void onSuccess(@NonNull List<String> featureFlags) {
+                           System.out.println(prefix() + "featureFlags = " + featureFlags);
+                           experimentClient.hasFeatureFlag("assign-prog-test", "main-java".toUpperCase(), new ResponseCallback<Boolean>() {
+                                @Override
+                                public void onSuccess(@NonNull Boolean found) {
+                                    System.out.println(prefix() + "featureFlag (MAIN-JAVA) found = " + found);
+                                }
+
+                                @Override
+                                public void onError(@NonNull ErrorResponse error) {
+                                    result.complete(error.toString());
+                                }
+                            });
+                       }
+
+                       @Override
+                       public void onError(@NonNull ErrorResponse error) {
+                           result.complete(error.toString());
+                       }
+                   });
                 }
 
                 @Override

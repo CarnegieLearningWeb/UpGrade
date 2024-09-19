@@ -1,8 +1,19 @@
 package org.upgradeplatform.client;
 
-import static org.upgradeplatform.utils.Utils.*;
+import static org.upgradeplatform.utils.Utils.ADD_MATRIC;
+import static org.upgradeplatform.utils.Utils.FEATURE_FLAGS;
+import static org.upgradeplatform.utils.Utils.GET_ALL_EXPERIMENTS;
+import static org.upgradeplatform.utils.Utils.INITIALIZE_USER;
+import static org.upgradeplatform.utils.Utils.INVALID_STUDENT_ID;
+import static org.upgradeplatform.utils.Utils.LOG_EVENT;
+import static org.upgradeplatform.utils.Utils.MARK_EXPERIMENT_POINT;
+import static org.upgradeplatform.utils.Utils.MAX_RETRIES;
+import static org.upgradeplatform.utils.Utils.PATCH;
+import static org.upgradeplatform.utils.Utils.SET_ALT_USER_IDS;
+import static org.upgradeplatform.utils.Utils.SET_GROUP_MEMBERSHIP;
+import static org.upgradeplatform.utils.Utils.SET_WORKING_GROUP;
+import static org.upgradeplatform.utils.Utils.isStringNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -29,19 +40,17 @@ import org.upgradeplatform.requestbeans.MarkExperimentRequestData;
 import org.upgradeplatform.requestbeans.MetricUnitBody;
 import org.upgradeplatform.requestbeans.SingleMetric;
 import org.upgradeplatform.requestbeans.UserAlias;
-import org.upgradeplatform.responsebeans.UserAliasResponse;
 import org.upgradeplatform.responsebeans.Assignment;
 import org.upgradeplatform.responsebeans.Condition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUser;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
 import org.upgradeplatform.responsebeans.Factor;
-import org.upgradeplatform.responsebeans.FeatureFlag;
 import org.upgradeplatform.responsebeans.InitializeUser;
 import org.upgradeplatform.responsebeans.LogEventResponse;
 import org.upgradeplatform.responsebeans.MarkDecisionPoint;
 import org.upgradeplatform.responsebeans.Metric;
-import org.upgradeplatform.responsebeans.Variation;
+import org.upgradeplatform.responsebeans.UserAliasResponse;
 import org.upgradeplatform.utils.APIService;
 import org.upgradeplatform.utils.PublishingRetryCallback;
 import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
@@ -49,10 +58,11 @@ import org.upgradeplatform.utils.Utils.RequestType;
 
 public class ExperimentClient implements AutoCloseable {
 
-	private List<ExperimentsResponse> allExperiments;
-	private List<FeatureFlag> allFeatureFlag;
 	private final String userId;
 	private final APIService apiService;
+
+	private List<ExperimentsResponse> allExperiments;
+	private List<String> allFeatureFlags;
 
 	/** @param properties
      *            Properties to permit users to control how the underlying JAX-RS
@@ -406,81 +416,61 @@ public class ExperimentClient implements AutoCloseable {
 
 	}
 
-	public void getAllFeatureFlags(final ResponseCallback<List<FeatureFlag>> callbacks) {
-
-		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_FEATURE_FLAGS);
-
-		invocation.get(new PublishingRetryCallback<>(invocation, MAX_RETRIES, RequestType.GET,new InvocationCallback<Response>() {
-
-			@Override
-			public void completed(Response response) {
-				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-				    readResponseToCallback(response, callbacks, new GenericType<List<FeatureFlag>>() {})
-				        .ifPresent(aff -> allFeatureFlag = aff);
-
-				} else {
-					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
-					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
-					if (callbacks != null)
-						callbacks.onError(error);
-				}
-			}
-
-			@Override
-			public void failed(Throwable throwable) {
-				callbacks.onError(new ErrorResponse(throwable.getMessage()));
-			}
-		}));
-
-	}
-
-	public void getFeatureFlag(String key, final ResponseCallback<FeatureFlag> callbacks) {
-		if (this.allFeatureFlag != null) {
-
-			FeatureFlag result = findFeatureFlag(key, allFeatureFlag);
-
+	public void getAllFeatureFlags(String context, final ResponseCallback<List<String>> callbacks) {
+		if (this.allFeatureFlags != null) {
 			if (callbacks != null) {
-				callbacks.onSuccess(result);
+				callbacks.onSuccess(allFeatureFlags);
 			}
 		} else {
-			throw new IllegalArgumentException(FEATURE_FLAGS_EMPTY);
+			Entity<ExperimentRequest> requestContent = Entity.json(new ExperimentRequest(this.userId, context));
+
+			AsyncInvoker invocation = this.apiService.prepareRequest(FEATURE_FLAGS);
+			invocation.post(requestContent, new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST, new InvocationCallback<Response>() {
+				@Override
+				public void completed(Response response) {
+					if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+						// Cache featureFlag data for future requests
+						readResponseToCallback(response, callbacks, new GenericType<List<String>>() {})
+                                .ifPresent(flags -> allFeatureFlags = flags);
+					} else {
+						String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+						ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity(String.class), status);
+						if (callbacks != null)
+							callbacks.onError(error);
+					}
+				}
+
+				@Override
+				public void failed(Throwable throwable) {
+					callbacks.onError(new ErrorResponse(throwable.getMessage()));
+				}
+			}));
 		}
 	}
 
-	private FeatureFlag findFeatureFlag(String key, List<FeatureFlag> featureFlags) {
-		FeatureFlag featureFlag = featureFlags.stream()
-				.filter(t -> t.getKey().equals(key))
-				.findFirst()
-				.orElse(new FeatureFlag());
+    public void hasFeatureFlag(String context, String featureFlag, final ResponseCallback<Boolean> callbacks) {
+        if (this.allFeatureFlags != null) {
+            if (callbacks != null) {
+                callbacks.onSuccess(this.allFeatureFlags.contains(featureFlag));
+            }
+        } else {
+            this.getAllFeatureFlags(context, new ResponseCallback<List<String>>() {
+                @Override
+                public void onSuccess(@NonNull List<String> featureFlags) {
+                    if (callbacks != null) {
+                        callbacks.onSuccess(featureFlags.contains(featureFlag));
+                    }
+                }
 
-		return getActiveVariation(featureFlag);
-	}
-
-	private FeatureFlag getActiveVariation(FeatureFlag featureFlag) {
-
-		if(isStringNull(featureFlag.getId())) {
-			return featureFlag;
-		}
-
-		FeatureFlag resultFeatureFlag = new FeatureFlag(featureFlag);
-
-		if(featureFlag.getVariations().size() > 0) {
-			List<Variation> variations = featureFlag.getVariations();
-			Variation activeVariation;
-
-			activeVariation = variations.stream()
-					.filter(t -> t.getDefaultVariation().contains(featureFlag.getStatus()))
-					.findFirst()
-					.orElse(new Variation());
-
-			List<Variation> result = new ArrayList<>();
-			result.add(activeVariation);
-
-			resultFeatureFlag.setVariations(result);
-		} 
-
-		return resultFeatureFlag;
-	}
+                @Override
+                public void onError(@NonNull ErrorResponse error) {
+                    if (callbacks != null) {
+                        callbacks.onError(error);
+                    }
+                }
+            });
+        }
+    }
 
 	public void setAltUserIds(final List<String> altUserIds, final ResponseCallback<UserAliasResponse> callbacks) {
 
