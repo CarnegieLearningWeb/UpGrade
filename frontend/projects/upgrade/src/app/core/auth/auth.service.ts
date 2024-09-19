@@ -50,7 +50,17 @@ export class AuthService {
    */
 
   determinePostLoginDestinationUrl(): void {
-    const originalDestinationUrl = window.location.pathname?.endsWith('login') ? 'home' : window.location.pathname;
+    let originalDestinationUrl: string;
+
+    // if the user started from a login url, we want to redirect them to home after logging in
+    if (originalDestinationUrl.endsWith('login')) {
+      originalDestinationUrl = 'home';
+      // if the user started from any other route (such as when hitting refresh or when navigating directly to a route)
+    } else if (this.environment.useHashRouting) {
+      originalDestinationUrl = window.location.hash ? window.location.hash.substring(1) : '/';
+    } else {
+      originalDestinationUrl = window.location.pathname;
+    }
 
     this.setRedirectionUrl(originalDestinationUrl);
   }
