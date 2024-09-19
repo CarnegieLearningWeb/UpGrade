@@ -57,7 +57,7 @@ export class AuthService {
       originalDestinationUrl = 'home';
       // if the user started from any other route (such as when hitting refresh or when navigating directly to a route)
     } else if (this.environment.useHashRouting) {
-      originalDestinationUrl = window.location.hash ? window.location.hash.substring(1) : '/';
+      originalDestinationUrl = window.location.hash ? window.location.hash.substring(1) : 'home';
     } else {
       originalDestinationUrl = window.location.pathname;
     }
