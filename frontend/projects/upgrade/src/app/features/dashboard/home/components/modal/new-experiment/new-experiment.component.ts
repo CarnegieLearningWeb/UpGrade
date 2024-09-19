@@ -98,6 +98,7 @@ export class NewExperimentComponent implements OnInit {
         };
         this.checkPostExperimentRule();
         this.experimentService.updateExperiment(this.newExperimentData);
+        this.onNoClick();
         break;
     }
   }
