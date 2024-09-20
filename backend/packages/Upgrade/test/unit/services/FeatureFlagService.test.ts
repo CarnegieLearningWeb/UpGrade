@@ -202,6 +202,7 @@ describe('Feature Flag Service Testing', () => {
               getMany: jest.fn().mockResolvedValue(mockFlagArr),
               getOne: jest.fn().mockResolvedValue(mockFlag1),
             })),
+            validateUniqueKey: jest.fn().mockResolvedValue(null),
           },
         },
         {
@@ -242,7 +243,6 @@ describe('Feature Flag Service Testing', () => {
       .compile();
 
     service = module.get<FeatureFlagService>(FeatureFlagService);
-    service.validateUniqueKey = jest.fn().mockResolvedValue(null);
     flagRepo = module.get<FeatureFlagRepository>(getRepositoryToken(FeatureFlagRepository));
   });
 

@@ -22,7 +22,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       content: error.url,
       animate: 'fromRight',
     };
-    if (error.error.type !== SERVER_ERROR.DUPLICATE_KEY) {
+    if (error.error?.type !== SERVER_ERROR.DUPLICATE_KEY) {
       this._notifications.create(temp.title, temp.content, temp.type, temp);
     }
   }
