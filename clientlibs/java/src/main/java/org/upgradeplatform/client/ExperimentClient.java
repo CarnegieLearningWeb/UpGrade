@@ -58,7 +58,6 @@ import org.upgradeplatform.utils.Utils.RequestType;
 
 public class ExperimentClient implements AutoCloseable {
 
-	private final String userId;
 	private final APIService apiService;
 
 	private List<ExperimentsResponse> allExperiments;
@@ -80,8 +79,7 @@ public class ExperimentClient implements AutoCloseable {
 		if (isStringNull(userId)) {
 			throw new IllegalArgumentException(INVALID_STUDENT_ID);
 		}
-		this.userId = userId;
-		this.apiService = new APIService(baseUrl, authToken, sessionId, properties);
+		this.apiService = new APIService(baseUrl, authToken, sessionId, userId, properties);
 	}
 
 	// To close jax-rs client connection open when calling ExperimentClient constructor;
@@ -92,20 +90,20 @@ public class ExperimentClient implements AutoCloseable {
 
 	// Initialize user with userId
 	public void init(final ResponseCallback<InitializeUser> callbacks) {
-		InitializeUser initUser = new InitializeUser(this.userId, null, null);
+		InitializeUser initUser = new InitializeUser(null, null);
 		initializeUser(initUser, callbacks);
 	}
 
 	// Initialize user with userId and group
 	public void init(Map<String, List<String>> group, final ResponseCallback<InitializeUser> callbacks) {
-		InitializeUser experimentUser = new InitializeUser(this.userId, group, null);
+		InitializeUser experimentUser = new InitializeUser(group, null);
 		initializeUser(experimentUser, callbacks);
 	}
 
 	// Initialize user with userId, group and workingGroup
 	public void init(Map<String, List<String>> group, Map<String, String> workingGroup,
 					 final ResponseCallback<InitializeUser> callbacks) {
-		InitializeUser experimentUser = new InitializeUser(this.userId, group, workingGroup);
+		InitializeUser experimentUser = new InitializeUser(group, workingGroup);
 		initializeUser(experimentUser, callbacks);
 	}
 
@@ -139,7 +137,7 @@ public class ExperimentClient implements AutoCloseable {
 
 	public void setGroupMembership(Map<String, List<String>> group, final ResponseCallback<ExperimentUser> callbacks) {
 		// Build a request object and prepare invocation method
-		ExperimentUser experimentUser = new ExperimentUser(this.userId, group, null);
+		ExperimentUser experimentUser = new ExperimentUser(group, null);
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_GROUP_MEMBERSHIP);
 		Entity<ExperimentUser> requestContent = Entity.json(experimentUser);
 
@@ -167,7 +165,7 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	public void setWorkingGroup(Map<String, String> workingGroup, final ResponseCallback<ExperimentUser> callbacks) {
-		ExperimentUser experimentUser = new ExperimentUser(this.userId, null, workingGroup);
+		ExperimentUser experimentUser = new ExperimentUser(null, workingGroup);
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP);
 		Entity<ExperimentUser> requestContent = Entity.json(experimentUser);
 
@@ -194,7 +192,7 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	public void getAllExperimentConditions(String context, final ResponseCallback<List<ExperimentsResponse>> callbacks) {
-		ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context);
+		ExperimentRequest experimentRequest = new ExperimentRequest(context);
 		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
 
@@ -385,7 +383,7 @@ public class ExperimentClient implements AutoCloseable {
 
 	public void markDecisionPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data, String clientError, String uniquifier,
 			final ResponseCallback<MarkDecisionPoint> callbacks) {
-		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, status, data, clientError, uniquifier);
+		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(status, data, clientError, uniquifier);
 		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
 
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
@@ -422,7 +420,7 @@ public class ExperimentClient implements AutoCloseable {
 				callbacks.onSuccess(allFeatureFlags);
 			}
 		} else {
-			Entity<ExperimentRequest> requestContent = Entity.json(new ExperimentRequest(this.userId, context));
+			Entity<ExperimentRequest> requestContent = Entity.json(new ExperimentRequest(context));
 
 			AsyncInvoker invocation = this.apiService.prepareRequest(FEATURE_FLAGS);
 			invocation.post(requestContent, new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST, new InvocationCallback<Response>() {
@@ -474,7 +472,7 @@ public class ExperimentClient implements AutoCloseable {
 
 	public void setAltUserIds(final List<String> altUserIds, final ResponseCallback<UserAliasResponse> callbacks) {
 
-		UserAlias userAlias = new UserAlias(this.userId, altUserIds );
+		UserAlias userAlias = new UserAlias(altUserIds);
 
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_ALT_USER_IDS);
 		Entity<UserAlias> requestContent = Entity.json(userAlias);
@@ -544,7 +542,7 @@ public class ExperimentClient implements AutoCloseable {
 	public void log(List<LogInput> value, final ResponseCallback<LogEventResponse> callbacks) {
 
 		AsyncInvoker invocation = this.apiService.prepareRequest(LOG_EVENT);
-		LogRequest logRequest = new LogRequest(this.userId, value );
+		LogRequest logRequest = new LogRequest(value);
 		
 		Entity<LogRequest> requestContent = Entity.json(logRequest);
 

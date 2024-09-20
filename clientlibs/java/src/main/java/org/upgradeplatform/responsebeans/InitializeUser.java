@@ -4,24 +4,16 @@ import java.util.List;
 import java.util.Map;
 
 public class InitializeUser {
-    private String id;
     private Map<String, List<String>> group;
     private Map<String, String> workingGroup;
-    public InitializeUser() {}
 
-    public InitializeUser(String id, Map<String, List<String>> group, Map<String, String> workingGroup ) {
+    public InitializeUser() {}
+    public InitializeUser(Map<String, List<String>> group, Map<String, String> workingGroup ) {
         super();
-        this.id = id;
         this.group = group;
         this.workingGroup = workingGroup;
     }
 
-    public String getId() {
-        return id;
-    }
-    public void setId(String id) {
-        this.id = id;
-    }
     public Map<String, List<String>> getGroup() {
         return group;
     }

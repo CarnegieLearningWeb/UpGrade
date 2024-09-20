@@ -3,33 +3,29 @@ package org.upgradeplatform.responsebeans;
 import java.util.List;
 import java.util.Map;
 
-public class ExperimentUser
-{
-	
+public class ExperimentUser {
+
 	private String createdAt;
 	private String updatedAt;
 	private Integer versionNumber;
-	private String id;
 	private Map<String, List<String>> group;
 	private Map<String, String> workingGroup;
 	private String requestedUserId;
+
 	public ExperimentUser() {}
-	
-	public ExperimentUser(String id, Map<String, List<String>> group, Map<String, String> workingGroup, String requestedUserId) {
+	public ExperimentUser(Map<String, List<String>> group, Map<String, String> workingGroup, String requestedUserId) {
 		super();
-		this.id = id;
 		this.group = group;
 		this.workingGroup = workingGroup;
 		this.requestedUserId = requestedUserId;
 	}
 	
-	public ExperimentUser(String id, Map<String, List<String>> group, Map<String, String> workingGroup ) {
+	public ExperimentUser(Map<String, List<String>> group, Map<String, String> workingGroup ) {
 		super();
-		this.id = id;
 		this.group = group;
 		this.workingGroup = workingGroup;
 	}
-	
+
 	public String getCreatedAt() {
 		return createdAt;
 	}
@@ -48,12 +44,6 @@ public class ExperimentUser
 	public void setVersionNumber(Integer versionNumber) {
 		this.versionNumber = versionNumber;
 	}
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
 	public Map<String, List<String>> getGroup() {
 		return group;
 	}
@@ -66,18 +56,16 @@ public class ExperimentUser
 	public void setWorkingGroup(Map<String, String> workingGroup) {
 		this.workingGroup = workingGroup;
 	}
-
 	public String getRequestedUserId() {
 		return requestedUserId;
 	}
-
 	public void setOriginalUser(String requestedUserId) {
 		this.requestedUserId = requestedUserId;
 	}
 	
 	@Override
     public String toString(){
-        return "ExperimentUser [id=" + id + ", group=" + group 
+        return "ExperimentUser [group=" + group
                + ", workingGroup=" + workingGroup + "]";
     }
 }
