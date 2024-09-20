@@ -374,6 +374,7 @@
   "feature-flags.upsert-flag-modal.name-hint.text": "The name for this feature flag.",
   "feature-flags.upsert-flag-modal.key-hint.text": "A unique key used to retrieve this feature flag from the client application.",
   "feature-flags.upsert-flag-modal.app-context-hint.text": "The App Context indicates where the feature flag will run, known to UpGrade.",
+  "feature-flags.upsert-flag-modal.app-context-warning.text": "Updating the App Context will clear the existing include and exclude lists.",
   "feature-flags.upsert-flag-modal.tags-label.text": "Tags (optional)",
   "feature-flags.upsert-flag-modal.tags-placeholder.text": "Tags separated by commas",
   "feature-flags.delete-modal.warning-message.text": "Are you sure you want to delete ",

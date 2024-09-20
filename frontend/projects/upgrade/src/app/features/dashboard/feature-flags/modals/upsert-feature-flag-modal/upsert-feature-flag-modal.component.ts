@@ -38,6 +38,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { CommonTextHelpersService } from '../../../../../shared/services/common-text-helpers.service';
 import isEqual from 'lodash.isequal';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'upsert-add-feature-flag-modal',
@@ -71,6 +72,7 @@ export class UpsertFeatureFlagModalComponent {
   appContexts$ = this.featureFlagsService.appContexts$;
 
   subscriptions = new Subscription();
+  isContextChanged = false;
   isInitialFormValueChanged$: Observable<boolean>;
   isPrimaryButtonDisabled$: Observable<boolean>;
 
@@ -83,6 +85,7 @@ export class UpsertFeatureFlagModalComponent {
     @Inject(MAT_DIALOG_DATA)
     public config: CommonModalConfig<UpsertFeatureFlagParams>,
     public dialog: MatDialog,
+    private router: Router,
     private formBuilder: FormBuilder,
     private featureFlagsService: FeatureFlagsService,
     private experimentService: ExperimentService,
@@ -152,7 +155,14 @@ export class UpsertFeatureFlagModalComponent {
 
   // Close the modal once the feature flag list length changes, as that indicates actual success
   listenForFeatureFlagGetUpdated(): void {
-    this.subscriptions.add(this.isSelectedFeatureFlagUpdated$.subscribe(() => this.closeModal()));
+    this.subscriptions.add(
+      this.isSelectedFeatureFlagUpdated$.subscribe(() => {
+        this.closeModal();
+        if (this.isContextChanged) {
+          this.router.navigate(['/featureflags']);
+        }
+      })
+    );
   }
 
   onPrimaryActionBtnClicked(): void {
@@ -171,10 +181,23 @@ export class UpsertFeatureFlagModalComponent {
     if (action === UPSERT_FEATURE_FLAG_ACTION.ADD || action === UPSERT_FEATURE_FLAG_ACTION.DUPLICATE) {
       this.createAddRequest(formData);
     } else if (action === UPSERT_FEATURE_FLAG_ACTION.EDIT && sourceFlag) {
+      if (formData.appContext !== sourceFlag.context[0]) {
+        this.isContextChanged = true;
+        this.deleteAllSegments(sourceFlag);
+      }
       this.createEditRequest(formData, sourceFlag);
     } else {
       console.error('UpsertFeatureFlagModalComponent: sendRequest: Invalid action or missing sourceFlag');
     }
+  }
+
+  deleteAllSegments(sourceFlag: FeatureFlag) {
+    sourceFlag.featureFlagSegmentInclusion.forEach((list) => {
+      this.featureFlagsService.deleteFeatureFlagInclusionPrivateSegmentList(list.segment.id);
+    });
+    sourceFlag.featureFlagSegmentExclusion.forEach((list) => {
+      this.featureFlagsService.deleteFeatureFlagExclusionPrivateSegmentList(list.segment.id);
+    });
   }
 
   createAddRequest({ name, key, description, appContext, tags }: FeatureFlagFormData): void {
@@ -207,6 +230,10 @@ export class UpsertFeatureFlagModalComponent {
     };
 
     this.featureFlagsService.updateFeatureFlag(flagRequest);
+  }
+
+  get UPSERT_FEATURE_FLAG_ACTION() {
+    return UPSERT_FEATURE_FLAG_ACTION;
   }
 
   closeModal() {
