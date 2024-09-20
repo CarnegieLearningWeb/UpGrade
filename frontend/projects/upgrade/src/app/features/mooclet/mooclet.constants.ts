@@ -1,0 +1,7 @@
+/**
+ * Constants for Mooclet
+ */
+
+import { ASSIGNMENT_ALGORITHM } from 'upgrade_types';
+
+export const MOOCLET_SUPPORTED_ASSIGNMENT_ALGORITHMS = [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE];

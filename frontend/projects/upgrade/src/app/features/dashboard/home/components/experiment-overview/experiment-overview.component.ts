@@ -9,6 +9,7 @@ import {
   ViewChild,
   ElementRef,
   OnDestroy,
+  Optional,
 } from '@angular/core';
 import {
   ASSIGNMENT_ALGORITHM,
@@ -37,6 +38,7 @@ import { ExperimentDesignStepperService } from '../../../../../core/experiment-d
 import { StratificationFactorSimple } from '../../../../../core/stratification-factors/store/stratification-factors.model';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
 import { ENV, Environment } from '../../../../../../environments/environment-types';
+import { MoocletService } from '../../../../mooclet/mooclet.service';
 
 @Component({
   selector: 'home-experiment-overview',
@@ -94,10 +96,17 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     private experimentDesignStepperService: ExperimentDesignStepperService,
     private dialogService: DialogService,
     private stratificationFactorsService: StratificationFactorsService,
+    @Optional() private moocletService: MoocletService,
     @Inject(ENV) private environment: Environment
   ) {
     if (this.environment.withinSubjectExperimentSupportToggle) {
       this.unitOfAssignments.push({ value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS });
+    }
+
+    if (this.environment.moocletToggle && this.moocletService) {
+      this.moocletService.getMoocletSupportAssignmentAlgorithms().forEach((algorithm) => {
+        this.assignmentAlgorithms.push({ value: algorithm });
+      });
     }
   }
 
