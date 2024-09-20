@@ -27,6 +27,7 @@
   <ng-container content>
     <app-common-section-card-overview-details
       [data]="flagOverviewDetails$ | async"
+      (tagItemClick)="filterFeatureFlagByChips($event)"
     ></app-common-section-card-overview-details>
   </ng-container>
 

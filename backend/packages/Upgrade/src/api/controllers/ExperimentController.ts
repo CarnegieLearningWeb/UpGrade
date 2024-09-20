@@ -85,14 +85,16 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       - name
  *       - context
  *       - state
+ *       - tags
+ *       - logging
+ *       - filterMode
  *       - consistencyRule
  *       - assignmentUnit
  *       - postExperimentRule
- *       - enrollmentCompleteCondition
- *       - group
  *       - conditions
  *       - partitions
- *       - factors
+ *       - experimentSegmentInclusion
+ *       - experimentSegmentExclusion
  *       - conditionPayload
  *       - type
  *     properties:

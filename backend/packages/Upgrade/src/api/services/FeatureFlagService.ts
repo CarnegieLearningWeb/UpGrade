@@ -635,11 +635,15 @@ export class FeatureFlagService {
       case FLAG_SEARCH_KEY.CONTEXT:
         searchString.push("coalesce(feature_flag.context::TEXT,'')");
         break;
+      case FLAG_SEARCH_KEY.TAG:
+        searchString.push("coalesce(feature_flag.tags::TEXT,'')");
+        break;
       default:
         searchString.push("coalesce(feature_flag.name::TEXT,'')");
         searchString.push("coalesce(feature_flag.key::TEXT,'')");
         searchString.push("coalesce(feature_flag.status::TEXT,'')");
         searchString.push("coalesce(feature_flag.context::TEXT,'')");
+        searchString.push("coalesce(feature_flag.tags::TEXT,'')");
         break;
     }
     const stringConcat = searchString.join(',');
@@ -723,7 +727,13 @@ export class FeatureFlagService {
 
     const createdFlags = [];
 
-    for (const featureFlag of validFiles) {
+    for (const featureFlagWithEnabledSettings of validFiles) {
+      const featureFlag = {
+        ...featureFlagWithEnabledSettings,
+        status: FEATURE_FLAG_STATUS.DISABLED,
+        filterMode: FILTER_MODE.EXCLUDE_ALL,
+      };
+
       const createdFlag = await this.dataSource.transaction(async (transactionalEntityManager) => {
         const newFlag = await this.addFeatureFlagInDB(
           this.featureFlagValidatorToFlag(featureFlag),
@@ -747,6 +757,7 @@ export class FeatureFlagService {
 
           return {
             ...segmentInclusionList,
+            enabled: false,
             flagId: newFlag.id,
             segment: { ...segmentInclusionList.segment, userIds, subSegmentIds, groups },
           };
@@ -797,40 +808,58 @@ export class FeatureFlagService {
     logger.info({ message: 'Imported feature flags', details: createdFlags });
     return fileStatusArray;
   }
+
   public async validateImportFeatureFlags(
     featureFlagFiles: IFeatureFlagFile[],
     logger: UpgradeLogger
   ): Promise<ValidatedFeatureFlagsError[]> {
     logger.info({ message: 'Validate feature flags' });
 
-    const featureFlagsIds = featureFlagFiles
-      .map((featureFlagFile) => {
-        try {
-          return JSON.parse(featureFlagFile.fileContent as string).key;
-        } catch (parseError) {
-          return null;
-        }
-      })
-      .filter((key) => key !== null);
+    const parsedFeatureFlags = featureFlagFiles.map((featureFlagFile) => {
+      try {
+        return {
+          fileName: featureFlagFile.fileName,
+          content: JSON.parse(featureFlagFile.fileContent as string),
+        };
+      } catch (parseError) {
+        logger.error({ message: 'Error in parsing feature flag file', details: parseError });
+        return {
+          fileName: featureFlagFile.fileName,
+          content: null,
+        };
+      }
+    });
+
+    const featureFlagsIds = parsedFeatureFlags
+      .filter((parsedFile) => parsedFile.content !== null)
+      .map((parsedFile) => parsedFile.content.key);
+
     const existingFeatureFlags = await this.featureFlagRepository.findBy({ key: In(featureFlagsIds) });
+    const seenKeys = [];
 
     const validationErrors = await Promise.allSettled(
-      featureFlagFiles.map(async (featureFlagFile) => {
-        let featureFlag: FeatureFlagImportDataValidation;
-        try {
-          featureFlag = JSON.parse(featureFlagFile.fileContent as string);
-        } catch (parseError) {
-          logger.error({ message: 'Error in parsing feature flag file', details: parseError });
+      parsedFeatureFlags.map(async (parsedFile) => {
+        if (!parsedFile.content) {
           return {
-            fileName: featureFlagFile.fileName,
+            fileName: parsedFile.fileName,
             compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
           };
         }
 
-        const error = await this.validateImportFeatureFlag(featureFlagFile.fileName, featureFlag, existingFeatureFlags);
+        const featureFlag = parsedFile.content;
+        if (seenKeys.includes(featureFlag.key)) {
+          return {
+            fileName: parsedFile.fileName,
+            compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+          };
+        }
+        seenKeys.push(featureFlag.key);
+
+        const error = await this.validateImportFeatureFlag(parsedFile.fileName, featureFlag, existingFeatureFlags);
         return error;
       })
     );
+
     // Filter out the files that have no promise rejection errors
     return validationErrors
       .map((result) => {
@@ -867,16 +896,22 @@ export class FeatureFlagService {
       if (keyExists) {
         compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
       } else {
-        const segmentIds = [
+        const segmentIdsSet = new Set([
           ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
             return segmentInclusion.segment.subSegments.map((subSegment) => subSegment.id);
           }),
           ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) => {
             return segmentExclusion.segment.subSegments.map((subSegment) => subSegment.id);
           }),
-        ];
+        ]);
 
+        const segmentIds = Array.from(segmentIdsSet);
         const segments = await this.segmentService.getSegmentByIds(segmentIds);
+
+        if (segmentIds.length !== segments.length) {
+          compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
+        }
+
         segments.forEach((segment) => {
           if (segment == undefined) {
             compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
