@@ -20,6 +20,7 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingSelectedFeatureFlag: false,
   isLoadingUpsertPrivateSegmentList: false,
   hasInitialFeatureFlagsDataLoaded: false,
+  duplicateKeyFound: false,
   activeDetailsTabIndex: 0,
   skipFlags: 0,
   totalFlags: null,
@@ -75,6 +76,7 @@ const reducer = createReducer(
     ...state,
     isLoadingUpsertFeatureFlag: false,
   })),
+  on(FeatureFlagsActions.actionDuplicateKey, (state) => ({ ...state, duplicateKeyFound: true })),
 
   // Feature Flag Delete Actions
   on(FeatureFlagsActions.actionDeleteFeatureFlag, (state) => ({ ...state, isLoadingFeatureFlagDelete: true })),

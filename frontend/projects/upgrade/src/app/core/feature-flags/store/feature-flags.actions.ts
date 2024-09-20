@@ -45,6 +45,8 @@ export const actionAddFeatureFlagSuccess = createAction(
 
 export const actionAddFeatureFlagFailure = createAction('[Feature Flags] Add Feature Flag Failure');
 
+export const actionDuplicateKey = createAction('[Feature Flags] Upsert Feature Flag Failure, Duplicate Key found');
+
 export const actionDeleteFeatureFlag = createAction('[Feature Flags] Delete Feature Flag', props<{ flagId: string }>());
 
 export const actionDeleteFeatureFlagSuccess = createAction(

@@ -4,7 +4,6 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import {
   AddFeatureFlagRequest,
   FeatureFlag,
-  FeatureFlagFormData,
   FeatureFlagSegmentListDetails,
   FeatureFlagsPaginationInfo,
   FeatureFlagsPaginationParams,
@@ -44,11 +43,6 @@ export class FeatureFlagsDataService {
   updateFeatureFlag(flag: UpdateFeatureFlagRequest): Observable<FeatureFlag> {
     const url = `${this.environment.api.featureFlag}/${flag.id}`;
     return this.http.put<FeatureFlag>(url, flag);
-  }
-
-  validateFeatureFlagForm(flag: FeatureFlagFormData) {
-    const url = `${this.environment.api.featureFlag}/validation`;
-    return this.http.post(url, flag);
   }
 
   validateFeatureFlag(featureFlag: { files: IFeatureFlagFile[] }) {

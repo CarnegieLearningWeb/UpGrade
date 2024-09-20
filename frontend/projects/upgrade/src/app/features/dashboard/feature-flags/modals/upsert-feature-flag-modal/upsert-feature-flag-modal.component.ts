@@ -70,6 +70,7 @@ export class UpsertFeatureFlagModalComponent {
   isSelectedFeatureFlagUpdated$ = this.featureFlagsService.isSelectedFeatureFlagUpdated$;
   selectedFlag$ = this.featureFlagsService.selectedFeatureFlag$;
   appContexts$ = this.featureFlagsService.appContexts$;
+  isDuplicateKeyFound$ = this.featureFlagsService.isDuplicateKeyFound$;
 
   subscriptions = new Subscription();
   isInitialFormValueChanged$: Observable<boolean>;
@@ -88,8 +89,6 @@ export class UpsertFeatureFlagModalComponent {
     private formBuilder: FormBuilder,
     private featureFlagsService: FeatureFlagsService,
     private experimentService: ExperimentService,
-    private formHelpersService: CommonFormHelpersService,
-    private featureFlagDataService: FeatureFlagsDataService,
     private cdr: ChangeDetectorRef,
     public dialogRef: MatDialogRef<UpsertFeatureFlagModalComponent>
   ) {}
@@ -101,6 +100,7 @@ export class UpsertFeatureFlagModalComponent {
     this.listenOnNameChangesToUpdateKey();
     this.listenForIsInitialFormValueChanged();
     this.listenForPrimaryButtonDisabled();
+    this.listenForDuplicateKey();
   }
 
   createFeatureFlagForm(): void {
@@ -160,22 +160,21 @@ export class UpsertFeatureFlagModalComponent {
     this.subscriptions.add(this.isSelectedFeatureFlagUpdated$.subscribe(() => this.closeModal()));
   }
 
+  listenForDuplicateKey() {
+    this.subscriptions.add(
+      this.isDuplicateKeyFound$.subscribe((isDuplicate) => {
+        this.validationError = isDuplicate;
+        this.cdr.detectChanges();
+      })
+    );
+  }
+
   onPrimaryActionBtnClicked() {
     if (this.featureFlagForm.valid) {
       this.sendRequest(this.config.params.action, this.config.params.sourceFlag);
     } else {
       // If the form is invalid, manually mark all form controls as touched
       CommonFormHelpersService.triggerTouchedToDisplayErrors(this.featureFlagForm);
-    }
-  }
-
-  async sendValidateRequest() {
-    const formData: FeatureFlagFormData = this.featureFlagForm.value;
-    try {
-      const result = (await this.featureFlagDataService.validateFeatureFlagForm(formData).toPromise()) as string;
-      return !!result;
-    } catch (error) {
-      return true;
     }
   }
 
