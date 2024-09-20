@@ -7,9 +7,18 @@ class CustomMatTableSource extends MatTableDataSource<Segment> {
   sortData = (data: Segment[], sort: MatSort): Segment[] => {
     const globalIndex = data.findIndex((d: Segment) => d.type === SEGMENT_TYPE.GLOBAL_EXCLUDE);
     const globalData = globalIndex !== -1 ? data.splice(globalIndex, 1) : [];
+
     const sortedData = data.sort((a, b) => {
-      const isAsc = sort.direction === 'asc';
-      switch (sort.active) {
+      let isAsc = sort.direction === 'asc';
+      let active = sort.active;
+
+      // Default to 'lastUpdate' in descending order when sort direction is empty
+      if (sort.direction === '') {
+        isAsc = false;
+        active = 'lastUpdate';
+      }
+
+      switch (active) {
         case 'name':
           return compare(a.name, b.name, isAsc);
         case 'status':
@@ -23,9 +32,10 @@ class CustomMatTableSource extends MatTableDataSource<Segment> {
         case 'membersCount':
           return compare(getMembersCount(a), getMembersCount(b), isAsc);
         default:
-          return 0;
+          return compare(new Date(a.updatedAt), new Date(b.updatedAt), false); // Default to lastUpdate desc
       }
     });
+
     return [...globalData, ...sortedData];
   };
 }
