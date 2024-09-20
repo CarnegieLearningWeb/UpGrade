@@ -129,9 +129,7 @@ export default class ApiService {
     group?: Record<string, Array<string>>,
     workingGroup?: Record<string, string>
   ): Promise<UpGradeClientInterfaces.IExperimentUser> {
-    let requestBody: UpGradeClientInterfaces.IExperimentUser = {
-      id: this.userId,
-    };
+    let requestBody: UpGradeClientRequests.IInitRequestBody = {};
 
     if (group) {
       requestBody = {
@@ -147,7 +145,7 @@ export default class ApiService {
       };
     }
 
-    return this.sendRequest<UpGradeClientInterfaces.IExperimentUser, UpGradeClientInterfaces.IExperimentUser>({
+    return this.sendRequest<UpGradeClientInterfaces.IExperimentUser, UpGradeClientRequests.IInitRequestBody>({
       path: this.api.init,
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,
@@ -158,11 +156,13 @@ export default class ApiService {
     group: UpGradeClientInterfaces.IExperimentUserGroup
   ): Promise<UpGradeClientInterfaces.IExperimentUser> {
     const requestBody: UpGradeClientRequests.ISetGroupMembershipRequestBody = {
-      id: this.userId,
       group,
     };
 
-    return this.sendRequest<UpGradeClientInterfaces.IExperimentUser, UpGradeClientInterfaces.IExperimentUser>({
+    return this.sendRequest<
+      UpGradeClientInterfaces.IExperimentUser,
+      UpGradeClientRequests.ISetGroupMembershipRequestBody
+    >({
       path: this.api.setGroupMemberShip,
       method: UpGradeClientEnums.REQUEST_METHOD.PATCH,
       body: requestBody,
@@ -173,11 +173,10 @@ export default class ApiService {
     workingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup
   ): Promise<UpGradeClientInterfaces.IExperimentUser> {
     const requestBody: UpGradeClientRequests.ISetWorkingGroupRequestBody = {
-      id: this.userId,
       workingGroup,
     };
 
-    return this.sendRequest<UpGradeClientRequests.ISetWorkingGroupRequestBody, UpGradeClientInterfaces.IExperimentUser>(
+    return this.sendRequest<UpGradeClientInterfaces.IExperimentUser, UpGradeClientRequests.ISetWorkingGroupRequestBody>(
       {
         path: this.api.setWorkingGroup,
         method: UpGradeClientEnums.REQUEST_METHOD.PATCH,
@@ -188,7 +187,6 @@ export default class ApiService {
 
   public setAltUserIds(altUserIds: UpGradeClientInterfaces.IExperimentUserAliases): Promise<IUserAliases> {
     const requestBody: UpGradeClientRequests.ISetAltIdsRequestBody = {
-      userId: this.userId,
       aliases: altUserIds,
     };
 
@@ -201,7 +199,6 @@ export default class ApiService {
 
   public getAllExperimentConditions(): Promise<IExperimentAssignmentv5[]> {
     const requestBody: UpGradeClientRequests.IGetAllExperimentConditionsRequestBody = {
-      userId: this.userId,
       context: this.context,
     };
 
@@ -230,7 +227,6 @@ export default class ApiService {
     };
 
     let requestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
-      userId: this.userId,
       status,
       data,
     };
@@ -261,7 +257,6 @@ export default class ApiService {
 
   public log(logData: ILogInput[]): Promise<UpGradeClientInterfaces.ILogResponse[]> {
     const requestBody: ILogRequestBody = {
-      userId: this.userId,
       value: logData,
     };
 
@@ -284,7 +279,6 @@ export default class ApiService {
 
   public async getAllFeatureFlags(): Promise<string[]> {
     const requestBody: UpGradeClientRequests.IGetAllFeatureFlagsRequestBody = {
-      userId: this.userId,
       context: this.context,
     };
 

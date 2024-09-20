@@ -11,7 +11,7 @@ import {
   isObject,
   registerDecorator,
 } from 'class-validator';
-import { ILogRequestBody, ILogRequestBodyv6, ILogInput, ILogMetrics, ILogGroupMetrics } from 'upgrade_types';
+import { ILogRequestBody, ILogInput, ILogMetrics, ILogGroupMetrics } from 'upgrade_types';
 
 const IsLogAttributesRecord = (validationOptions?: ValidationOptions) => {
   return function (object: unknown, propertyName: string) {
@@ -86,12 +86,7 @@ class ILogInputValidator implements ILogInput {
   metrics: ILogMetricsValidator;
 }
 
-export class LogValidator implements ILogRequestBody {
-  @IsDefined()
-  @IsNotEmpty()
-  @IsString()
-  public userId: string;
-
+export class LogValidatorv6 implements ILogRequestBody {
   @IsDefined()
   @IsNotEmpty()
   @IsArray()
@@ -100,11 +95,9 @@ export class LogValidator implements ILogRequestBody {
   public value: ILogInput[];
 }
 
-export class LogValidatorv6 implements ILogRequestBodyv6 {
+export class LogValidator extends LogValidatorv6 implements ILogRequestBody {
   @IsDefined()
   @IsNotEmpty()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ILogInputValidator)
-  public value: ILogInput[];
+  @IsString()
+  public userId: string;
 }

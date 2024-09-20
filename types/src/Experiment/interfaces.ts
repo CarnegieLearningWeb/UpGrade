@@ -201,18 +201,15 @@ export interface ILogGroupMetrics {
 }
 
 export interface ILogRequestBody {
-  userId: string;
-  value: ILogInput[];
-}
-
-export interface ILogRequestBodyv6 {
-  value: ILogInput[];
+  userId?: string;
+  value?: ILogInput[];
 }
 
 export interface ILogInput {
   timestamp: string;
   metrics: ILogMetrics;
 }
+
 export interface IGroupMetric {
   groupClass: string;
   allowedKeys: string[];
@@ -235,9 +232,12 @@ export interface IWorkingGroup {
   workingGroup: object;
 }
 
-export interface IUserAliases {
-  userId: string;
+export interface IUserAliasesv6 {
   aliases: string[];
+}
+
+export interface IUserAliases extends IUserAliasesv6 {
+  userId: string;
 }
 
 export interface IPayload {

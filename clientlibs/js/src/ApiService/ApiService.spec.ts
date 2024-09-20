@@ -43,15 +43,14 @@ describe('ApiService', () => {
         'Content-Type': 'application/json',
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
+        'User-Id': defaultConfig.userId,
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
     };
 
     it('should call sendRequest with just id', async () => {
-      const requestBody: UpGradeClientInterfaces.IExperimentUser = {
-        id: defaultConfig.userId,
-      };
+      const requestBody: UpGradeClientRequests.IInitRequestBody = {};
 
       await apiService.init();
 
@@ -62,8 +61,7 @@ describe('ApiService', () => {
       const mockGroup: UpGradeClientInterfaces.IExperimentUserGroup = {
         school: ['testGroupSchool'],
       };
-      const requestBody: UpGradeClientInterfaces.IExperimentUser = {
-        id: defaultConfig.userId,
+      const requestBody: UpGradeClientRequests.IInitRequestBody = {
         group: mockGroup,
       };
 
@@ -76,8 +74,7 @@ describe('ApiService', () => {
       const mockWorkingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup = {
         school: 'testWorkingGroupSchool',
       };
-      const requestBody: UpGradeClientInterfaces.IExperimentUser = {
-        id: defaultConfig.userId,
+      const requestBody: UpGradeClientRequests.IInitRequestBody = {
         workingGroup: mockWorkingGroup,
       };
 
@@ -93,8 +90,7 @@ describe('ApiService', () => {
       const mockWorkingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup = {
         school: 'testWorkingGroupSchool',
       };
-      const requestBody: UpGradeClientInterfaces.IExperimentUser = {
-        id: defaultConfig.userId,
+      const requestBody: UpGradeClientRequests.IInitRequestBody = {
         group: mockGroup,
         workingGroup: mockWorkingGroup,
       };
@@ -113,6 +109,7 @@ describe('ApiService', () => {
         'Content-Type': 'application/json',
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
+        'User-Id': defaultConfig.userId,
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
@@ -122,8 +119,7 @@ describe('ApiService', () => {
       const mockGroup: UpGradeClientInterfaces.IExperimentUserGroup = {
         school: ['testGroupSchool'],
       };
-      const requestBody: UpGradeClientInterfaces.IExperimentUser = {
-        id: defaultConfig.userId,
+      const requestBody: UpGradeClientRequests.IInitRequestBody = {
         group: mockGroup,
       };
 
@@ -142,6 +138,7 @@ describe('ApiService', () => {
         'Content-Type': 'application/json',
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
+        'User-Id': defaultConfig.userId,
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
@@ -151,8 +148,7 @@ describe('ApiService', () => {
       const mockWorkingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup = {
         school: 'testWorkingGroupSchool',
       };
-      const requestBody: UpGradeClientInterfaces.IExperimentUser = {
-        id: defaultConfig.userId,
+      const requestBody: UpGradeClientRequests.IInitRequestBody = {
         workingGroup: mockWorkingGroup,
       };
 
@@ -170,6 +166,7 @@ describe('ApiService', () => {
         'Content-Type': 'application/json',
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
+        'User-Id': defaultConfig.userId,
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
@@ -178,7 +175,6 @@ describe('ApiService', () => {
     it('should call sendRequest with id and altUserIds', async () => {
       const mockAliases = ['asdf', '1234'];
       const requestBody: UpGradeClientRequests.ISetAltIdsRequestBody = {
-        userId: defaultConfig.userId,
         aliases: mockAliases,
       };
 
@@ -203,7 +199,6 @@ describe('ApiService', () => {
 
     it('should call sendRequest with id and context', async () => {
       const requestBody: UpGradeClientRequests.IGetAllExperimentConditionsRequestBody = {
-        userId: defaultConfig.userId,
         context: defaultConfig.context,
       };
 
@@ -246,7 +241,6 @@ describe('ApiService', () => {
         },
       ];
       const mockLogDataInput: ILogRequestBody = {
-        userId: defaultConfig.userId,
         value: mockLogData,
       };
 
