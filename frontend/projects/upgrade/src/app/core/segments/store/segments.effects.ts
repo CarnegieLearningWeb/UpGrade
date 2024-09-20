@@ -30,6 +30,8 @@ export class SegmentsEffects {
               segments: data.segmentsData,
               experimentSegmentInclusion: data.experimentSegmentInclusionData,
               experimentSegmentExclusion: data.experimentSegmentExclusionData,
+              featureFlagSegmentInclusion: data.featureFlagSegmentInclusionData,
+              featureFlagSegmentExclusion: data.featureFlagSegmentExclusionData,
             })
           ),
           catchError(() => [SegmentsActions.actionFetchSegmentsFailure()])

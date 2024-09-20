@@ -61,6 +61,8 @@ describe('SegmentsEffects', () => {
           segmentsData: [{ ...mockSegment }],
           experimentSegmentInclusionData: [],
           experimentSegmentExclusionData: [],
+          featureFlagSegmentInclusionData: [],
+          featureFlagSegmentExclusionData: [],
         })
       );
       selectAllSegments.setResult([{ ...mockSegment }]);
@@ -69,6 +71,8 @@ describe('SegmentsEffects', () => {
         segments: [{ ...mockSegment }],
         experimentSegmentInclusion: [],
         experimentSegmentExclusion: [],
+        featureFlagSegmentInclusion: [],
+        featureFlagSegmentExclusion: [],
       });
 
       service.fetchSegments$.subscribe((result) => {
