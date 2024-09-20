@@ -135,7 +135,7 @@ export class FeatureFlagService {
 
   public async create(flagDTO: FeatureFlagValidation, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag> {
     logger.info({ message: 'Create a new feature flag', details: flagDTO });
-    await this.validateUniqueKey(flagDTO, logger);
+    await this.featureFlagRepository.validateUniqueKey(flagDTO);
     return this.addFeatureFlagInDB(this.featureFlagValidatorToFlag(flagDTO), currentUser, logger);
   }
 
@@ -287,7 +287,7 @@ export class FeatureFlagService {
 
   public async update(flagDTO: FeatureFlagValidation, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag> {
     logger.info({ message: `Update a Feature Flag => ${flagDTO.toString()}` });
-    await this.validateUniqueKey(flagDTO, logger);
+    await this.featureFlagRepository.validateUniqueKey(flagDTO);
     // TODO add entry in log of updating feature flag
     return this.updateFeatureFlagInDB(this.featureFlagValidatorToFlag(flagDTO), currentUser, logger);
   }
@@ -407,23 +407,6 @@ export class FeatureFlagService {
     await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, currentUser);
 
     return this.segmentService.deleteSegment(segmentId, logger);
-  }
-
-  public async validateUniqueKey(flagDTO: FeatureFlagValidation, logger: UpgradeLogger) {
-    logger.info({ message: `Validating featureFlags` });
-    const result = await this.featureFlagRepository
-      .createQueryBuilder('feature_flag')
-      .where('feature_flag.key = :key', { key: flagDTO.key })
-      .andWhere('feature_flag.context = :context', { context: flagDTO.context })
-      .getOne();
-
-    if (result) {
-      const error = new Error(`A flag with this key already exists for this app-context`);
-      (error as any).type = SERVER_ERROR.DUPLICATE_KEY;
-      (error as any).httpCode = 409;
-      throw error;
-    }
-    return;
   }
 
   public async addList(
