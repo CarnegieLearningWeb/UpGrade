@@ -142,6 +142,10 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionUpdateFilterMode({ updateFilterModeRequest }));
   }
 
+  setIsDuplicateKey(duplicateKeyFound: boolean) {
+    this.store$.dispatch(FeatureFlagsActions.actionSetIsDuplicateKey({ duplicateKeyFound }));
+  }
+
   deleteFeatureFlag(flagId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlag({ flagId }));
   }

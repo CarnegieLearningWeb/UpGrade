@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import {
   CommonModalComponent,
   CommonTagsInputComponent,
@@ -36,7 +36,6 @@ import { BehaviorSubject, combineLatestWith, map, Observable, startWith, Subscri
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { CommonTextHelpersService } from '../../../../../shared/services/common-text-helpers.service';
-import { FeatureFlagsDataService } from '../../../../../core/feature-flags/feature-flags.data.service';
 import isEqual from 'lodash.isequal';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 
@@ -89,13 +88,14 @@ export class UpsertFeatureFlagModalComponent {
     private formBuilder: FormBuilder,
     private featureFlagsService: FeatureFlagsService,
     private experimentService: ExperimentService,
-    private cdr: ChangeDetectorRef,
     public dialogRef: MatDialogRef<UpsertFeatureFlagModalComponent>
   ) {}
 
   ngOnInit(): void {
+    this.featureFlagsService.setIsDuplicateKey(false);
     this.experimentService.fetchContextMetaData();
     this.createFeatureFlagForm();
+    this.listenOnKeyChangesToRemoveWarning();
     this.listenForFeatureFlagGetUpdated();
     this.listenOnNameChangesToUpdateKey();
     this.listenForIsInitialFormValueChanged();
@@ -139,6 +139,15 @@ export class UpsertFeatureFlagModalComponent {
     );
   }
 
+  listenOnKeyChangesToRemoveWarning(): void {
+    this.subscriptions.add(
+      this.featureFlagForm.get('key')?.valueChanges.subscribe(() => {
+        this.validationError = this.validationError ? false : this.validationError;
+        this.featureFlagsService.setIsDuplicateKey(false);
+      })
+    );
+  }
+
   listenForIsInitialFormValueChanged() {
     this.isInitialFormValueChanged$ = this.featureFlagForm.valueChanges.pipe(
       startWith(this.featureFlagForm.value),
@@ -157,14 +166,17 @@ export class UpsertFeatureFlagModalComponent {
 
   // Close the modal once the feature flag list length changes, as that indicates actual success
   listenForFeatureFlagGetUpdated(): void {
-    this.subscriptions.add(this.isSelectedFeatureFlagUpdated$.subscribe(() => this.closeModal()));
+    this.subscriptions.add(
+      this.isSelectedFeatureFlagUpdated$.subscribe(() => {
+        this.closeModal();
+      })
+    );
   }
 
   listenForDuplicateKey() {
     this.subscriptions.add(
       this.isDuplicateKeyFound$.subscribe((isDuplicate) => {
         this.validationError = isDuplicate;
-        this.cdr.detectChanges();
       })
     );
   }

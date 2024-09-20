@@ -104,7 +104,7 @@ export class FeatureFlagsEffects {
           }),
           catchError((res) => {
             if (res.error.type == SERVER_ERROR.DUPLICATE_KEY) {
-              return [FeatureFlagsActions.actionDuplicateKey()];
+              return [FeatureFlagsActions.actionSetIsDuplicateKey({ duplicateKeyFound: true })];
             }
             return [FeatureFlagsActions.actionAddFeatureFlagFailure()];
           })
@@ -123,7 +123,7 @@ export class FeatureFlagsEffects {
           }),
           catchError((res) => {
             if (res.error.type == SERVER_ERROR.DUPLICATE_KEY) {
-              return [FeatureFlagsActions.actionDuplicateKey()];
+              return [FeatureFlagsActions.actionSetIsDuplicateKey({ duplicateKeyFound: true })];
             }
             return [FeatureFlagsActions.actionAddFeatureFlagFailure()];
           })

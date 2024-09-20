@@ -76,7 +76,11 @@ const reducer = createReducer(
     ...state,
     isLoadingUpsertFeatureFlag: false,
   })),
-  on(FeatureFlagsActions.actionDuplicateKey, (state) => ({ ...state, duplicateKeyFound: true })),
+  on(FeatureFlagsActions.actionSetIsDuplicateKey, (state, { duplicateKeyFound }) => ({
+    ...state,
+    duplicateKeyFound,
+    isLoadingUpsertFeatureFlag: false,
+  })),
 
   // Feature Flag Delete Actions
   on(FeatureFlagsActions.actionDeleteFeatureFlag, (state) => ({ ...state, isLoadingFeatureFlagDelete: true })),
