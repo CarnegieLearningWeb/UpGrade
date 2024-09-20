@@ -49,8 +49,12 @@
 
   .mat-mdc-checkbox {
     z-index: 1;
-    margin-top: -6px;
-    margin-left: -12px;
+    margin-top: -15px;
+    margin-left: -8px;
+  }
+
+  .checkbox-label {
+    margin-left: 2px;
   }
 }
 
