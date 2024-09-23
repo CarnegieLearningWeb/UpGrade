@@ -73,6 +73,7 @@ export class UpsertFeatureFlagModalComponent {
 
   subscriptions = new Subscription();
   isContextChanged = false;
+  initialContext = '';
   isInitialFormValueChanged$: Observable<boolean>;
   isPrimaryButtonDisabled$: Observable<boolean>;
 
@@ -99,11 +100,13 @@ export class UpsertFeatureFlagModalComponent {
     this.listenOnNameChangesToUpdateKey();
     this.listenForIsInitialFormValueChanged();
     this.listenForPrimaryButtonDisabled();
+    this.listenOnContext();
   }
 
   createFeatureFlagForm(): void {
     const { sourceFlag, action } = this.config.params;
     const initialValues = this.deriveInitialFormValues(sourceFlag, action);
+    this.initialContext = initialValues.appContext;
 
     this.featureFlagForm = this.formBuilder.group({
       name: [initialValues.name, Validators.required],
@@ -133,6 +136,14 @@ export class UpsertFeatureFlagModalComponent {
         if (keyControl && !keyControl.dirty) {
           keyControl.setValue(CommonTextHelpersService.convertStringToFeatureFlagKeyFormat(name));
         }
+      })
+    );
+  }
+
+  listenOnContext(): void {
+    this.subscriptions.add(
+      this.featureFlagForm.get('appContext')?.valueChanges.subscribe((context) => {
+        this.isContextChanged = context !== this.initialContext;
       })
     );
   }
@@ -181,8 +192,7 @@ export class UpsertFeatureFlagModalComponent {
     if (action === UPSERT_FEATURE_FLAG_ACTION.ADD || action === UPSERT_FEATURE_FLAG_ACTION.DUPLICATE) {
       this.createAddRequest(formData);
     } else if (action === UPSERT_FEATURE_FLAG_ACTION.EDIT && sourceFlag) {
-      if (formData.appContext !== sourceFlag.context[0]) {
-        this.isContextChanged = true;
+      if (this.isContextChanged) {
         this.deleteAllSegments(sourceFlag);
       }
       this.createEditRequest(formData, sourceFlag);
