@@ -2,7 +2,7 @@ import { Repository, EntityManager } from 'typeorm';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { FeatureFlag } from '../models/FeatureFlag';
 import repositoryError from './utils/repositoryError';
-import { FEATURE_FLAG_STATUS, FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
 
 @EntityRepository(FeatureFlag)
@@ -119,12 +119,6 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
       .andWhere('feature_flag.context = :context', { context: flagDTO.context })
       .getOne();
 
-    if (result) {
-      const error = new Error(`A flag with this key already exists for this app-context`);
-      (error as any).type = SERVER_ERROR.DUPLICATE_KEY;
-      (error as any).httpCode = 409;
-      throw error;
-    }
-    return;
+    return result;
   }
 }

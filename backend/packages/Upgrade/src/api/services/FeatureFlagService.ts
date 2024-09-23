@@ -135,7 +135,15 @@ export class FeatureFlagService {
 
   public async create(flagDTO: FeatureFlagValidation, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag> {
     logger.info({ message: 'Create a new feature flag', details: flagDTO });
-    await this.featureFlagRepository.validateUniqueKey(flagDTO);
+    const result = await this.featureFlagRepository.validateUniqueKey(flagDTO);
+
+    if (result) {
+      const error = new Error(`A flag with this key already exists for this app-context`);
+      (error as any).type = SERVER_ERROR.DUPLICATE_KEY;
+      (error as any).httpCode = 409;
+      throw error;
+    }
+
     return this.addFeatureFlagInDB(this.featureFlagValidatorToFlag(flagDTO), currentUser, logger);
   }
 
@@ -287,7 +295,14 @@ export class FeatureFlagService {
 
   public async update(flagDTO: FeatureFlagValidation, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag> {
     logger.info({ message: `Update a Feature Flag => ${flagDTO.toString()}` });
-    await this.featureFlagRepository.validateUniqueKey(flagDTO);
+    const result = await this.featureFlagRepository.validateUniqueKey(flagDTO);
+
+    if (result) {
+      const error = new Error(`A flag with this key already exists for this app-context`);
+      (error as any).type = SERVER_ERROR.DUPLICATE_KEY;
+      (error as any).httpCode = 409;
+      throw error;
+    }
     // TODO add entry in log of updating feature flag
     return this.updateFeatureFlagInDB(this.featureFlagValidatorToFlag(flagDTO), currentUser, logger);
   }
