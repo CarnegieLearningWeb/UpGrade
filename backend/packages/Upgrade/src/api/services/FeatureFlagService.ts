@@ -908,7 +908,9 @@ export class FeatureFlagService {
     }
 
     if (compatibilityType === FF_COMPATIBILITY_TYPE.COMPATIBLE) {
-      const keyExists = existingFeatureFlags.find((existingFlag) => existingFlag.key === flag.key);
+      const keyExists = existingFeatureFlags?.find(
+        (existingFlag) => existingFlag.key === flag.key && existingFlag.context === flag.context
+      );
 
       if (keyExists) {
         compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
