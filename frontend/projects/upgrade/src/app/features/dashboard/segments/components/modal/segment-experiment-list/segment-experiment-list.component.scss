@@ -53,15 +53,15 @@ $experiment-state-light-color: #8f9bb3;
           justify-content: left;
         }
         .cdk-column-type {
-          flex: 0 0 15%;
+          flex: 0 0 20%;
           justify-content: left;
         }
         .cdk-column-experimentState {
-          flex: 0 0 30%;
+          flex: 0 0 20%;
           justify-content: left;
         }
         .cdk-column-usedList {
-          flex: 0 0 15%;
+          flex: 0 0 20%;
           justify-content: left;
         }
 
@@ -82,8 +82,8 @@ $experiment-state-light-color: #8f9bb3;
               display: inline-block;
               margin-right: 6px;
               border-radius: 50%;
-              width: 12px;
-              height: 12px;
+              min-width: 12px;
+              min-height: 12px;
             }
 
             .icons {
