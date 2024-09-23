@@ -185,9 +185,9 @@ export class FeatureFlagsController {
    *                $ref: '#/definitions/FeatureFlag'
    *          '401':
    *            description: AuthorizationRequiredError
-   *          '404':
-   *            description: Feature Flag not found
-   *          '500':
+   *          '204':
+   *            description: No content
+   *          '400':
    *            description: id should be of type UUID
    */
   @Get('/:id')
@@ -818,7 +818,9 @@ export class FeatureFlagsController {
    *        '401':
    *          description: Authorization Required Error
    *        '404':
-   *          description: Feature Flag Id not found
+   *          description: Feature Flag not found
+   *        '400':
+   *          description: id must be a UUID
    *        '500':
    *          description: Internal Server Error
    */
@@ -830,10 +832,13 @@ export class FeatureFlagsController {
     @Res() response: Response
   ): Promise<Response> {
     const featureFlag = await this.featureFlagService.exportDesign(id, currentUser, request.logger);
-    // download JSON file with appropriate headers to response body;
-    response.setHeader('Content-Disposition', `attachment; filename="${featureFlag.name}.json"`);
-    response.setHeader('Content-Type', 'application/json');
-    const plainFeatureFlag = JSON.stringify(featureFlag, null, 2); // Convert to JSON string
-    return response.send(plainFeatureFlag);
+    if (featureFlag) {
+      // download JSON file with appropriate headers to response body;
+      response.setHeader('Content-Disposition', `attachment; filename="${featureFlag.name}.json"`);
+      response.setHeader('Content-Type', 'application/json');
+      const plainFeatureFlag = JSON.stringify(featureFlag, null, 2); // Convert to JSON string
+      return response.send(plainFeatureFlag);
+    }
+    return response.status(404).send('Feature Flag not found');
   }
 }
