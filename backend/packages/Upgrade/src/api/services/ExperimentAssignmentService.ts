@@ -736,31 +736,6 @@ export class ExperimentAssignmentService {
     return [userExcluded, groupExcluded];
   }
 
-  // When browser will be sending the blob data
-  public async blobDataLog(
-    userDoc: RequestedExperimentUser,
-    blobLog: ILogInput[],
-    logger: UpgradeLogger
-  ): Promise<Log[]> {
-    const userId = userDoc.id;
-    logger.info({ message: `Add blob data userId ${userId}`, details: blobLog });
-    const keyUniqueArray = [];
-
-    // throw error if user not defined
-    if (!userDoc) {
-      logger.error({ message: `User not found in blobDataLog, userId => ${userId}`, details: blobLog });
-      throw new Error(`User not defined in blobDataLog: ${userId}`);
-    }
-
-    // extract the array value
-    const promise = blobLog.map(async (individualMetrics) => {
-      return this.createLog(individualMetrics, keyUniqueArray, userDoc, logger);
-    });
-
-    const logsToReturn = await Promise.all(promise);
-    return flatten(logsToReturn);
-  }
-
   public async caliperDataLog(
     log: CaliperLogData,
     requestContext: { logger: UpgradeLogger; userDoc: any }

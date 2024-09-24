@@ -17,7 +17,6 @@ import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidatorv6 } from './validators/UpdateWorkingGroupValidator';
 import {
   IExperimentAssignmentv5,
-  SERVER_ERROR,
   IGroupMembership,
   IUserAliases,
   IWorkingGroup,
@@ -659,74 +658,6 @@ export class ExperimentClientController {
     const logs = await this.experimentAssignmentService.dataLog(experimentUserDoc, logData.value, request.logger);
     return logs.map(({ createdAt, updatedAt, versionNumber, ...rest }) => {
       return rest;
-    });
-  }
-
-  /**
-   * @swagger
-   * /v6/bloblog:
-   *    post:
-   *       description: Post blob log data
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *          - in: body
-   *            name: data
-   *            required: true
-   *            schema:
-   *             type: object
-   *             properties:
-   *               value:
-   *                 type: array
-   *                 items:
-   *                   type: object
-   *            description: User Document
-   *       tags:
-   *         - Client Side SDK
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: Log blob data
-   *          '400':
-   *            description: BadRequestError - InvalidParameterValue
-   *          '401':
-   *            description: AuthorizationRequiredError
-   *          '404':
-   *            description: Experiment User not defined
-   *          '500':
-   *            description: Internal Server Error
-   */
-  @Post('bloblog')
-  public async blobLog(@Req() request: AppRequest): Promise<any> {
-    return new Promise((resolve, reject) => {
-      request.on('readable', async () => {
-        const blobData = JSON.parse(request.read());
-        try {
-          // The function will throw error if userId doesn't exist
-          const experimentUserDoc = request.userDoc;
-          const response = await this.experimentAssignmentService.blobDataLog(
-            experimentUserDoc,
-            blobData.value,
-            request.logger
-          );
-          resolve(response);
-        } catch (error) {
-          // The error is rejected so promise can now handle this error
-          reject(error);
-        }
-      });
-    }).catch((error) => {
-      request.logger.error(error);
-      error = new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: error.message,
-        })
-      );
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404;
-      throw error;
     });
   }
 
