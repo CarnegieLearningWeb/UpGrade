@@ -46,6 +46,7 @@ export class DashboardRootComponent implements OnInit {
   }
 
   logout() {
+    this.authService.setRedirectionUrl('/home');
     this.authService.authLogout();
   }
 

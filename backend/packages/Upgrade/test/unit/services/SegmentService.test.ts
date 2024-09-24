@@ -9,18 +9,24 @@ import { IndividualForSegmentRepository } from '../../../src/api/repositories/In
 import { GroupForSegmentRepository } from '../../../src/api/repositories/GroupForSegmentRepository';
 import { ExperimentSegmentExclusionRepository } from '../../../src/api/repositories/ExperimentSegmentExclusionRepository';
 import { ExperimentSegmentInclusionRepository } from '../../../src/api/repositories/ExperimentSegmentInclusionRepository';
+import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentExclusionRepository';
+import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { SegmentFile, SegmentInputValidator } from '../../../src/api/controllers/validators/SegmentInputValidator';
 import { IndividualForSegment } from '../../../src/api/models/IndividualForSegment';
 import { GroupForSegment } from '../../../src/api/models/GroupForSegment';
 import { Experiment } from '../../../src/api/models/Experiment';
-import { SEGMENT_TYPE, SERVER_ERROR, EXPERIMENT_STATE } from 'upgrade_types';
+import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
+import { SEGMENT_TYPE, SERVER_ERROR, EXPERIMENT_STATE, FEATURE_FLAG_STATUS } from 'upgrade_types';
 import { configureLogger } from '../../utils/logger';
 import { ExperimentSegmentExclusion } from '../../../src/api/models/ExperimentSegmentExclusion';
 import { ExperimentSegmentInclusion } from '../../../src/api/models/ExperimentSegmentInclusion';
+import { FeatureFlagSegmentExclusion } from '../../../src/api/models/FeatureFlagSegmentExclusion';
+import { FeatureFlagSegmentInclusion } from '../../../src/api/models/FeatureFlagSegmentInclusion';
 import { Container } from '../../../src/typeorm-typedi-extensions';
 
 const exp = new Experiment();
+const ff = new FeatureFlag();
 const seg2 = new Segment();
 const seg1 = new Segment();
 const segValSegment = new Segment();
@@ -28,6 +34,7 @@ const logger = new UpgradeLogger();
 const segmentArr = [seg1, seg2];
 const segVal = new SegmentInputValidator();
 const include = [{ segment: seg1, experiment: exp }];
+const ff_include = [{ segment: seg1, featureFlag: ff }];
 const segValImportFile: SegmentFile = {
   fileName: 'seg1.json',
   fileContent: '',
@@ -65,6 +72,8 @@ describe('Segment Service Testing', () => {
         Segment,
         ExperimentSegmentExclusion,
         ExperimentSegmentInclusion,
+        FeatureFlagSegmentExclusion,
+        FeatureFlagSegmentInclusion,
       ],
       synchronize: true,
     });
@@ -75,6 +84,8 @@ describe('Segment Service Testing', () => {
 
     exp.id = 'exp1';
     exp.state = EXPERIMENT_STATE.ENROLLING;
+    ff.id = 'ff1';
+    ff.status = FEATURE_FLAG_STATUS.ENABLED;
     seg2.subSegments = [];
     seg2.id = 'seg2';
     seg2.subSegments = [];
@@ -133,6 +144,8 @@ describe('Segment Service Testing', () => {
         GroupForSegmentRepository,
         ExperimentSegmentExclusionRepository,
         ExperimentSegmentInclusionRepository,
+        FeatureFlagSegmentExclusionRepository,
+        FeatureFlagSegmentInclusionRepository,
         CacheService,
         SegmentRepository,
         {
@@ -182,6 +195,36 @@ describe('Segment Service Testing', () => {
             save: jest.fn().mockResolvedValue(seg1),
             delete: jest.fn(),
             getExperimentSegmentInclusionData: jest.fn().mockResolvedValue(include),
+            createQueryBuilder: jest.fn(() => ({
+              insert: jest.fn().mockReturnThis(),
+              leftJoinAndSelect: jest.fn().mockReturnThis(),
+              where: jest.fn().mockReturnThis(),
+              getMany: jest.fn().mockResolvedValue(segmentArr),
+            })),
+          },
+        },
+        {
+          provide: getRepositoryToken(FeatureFlagSegmentExclusionRepository),
+          useValue: {
+            findOne: jest.fn().mockResolvedValue(seg1),
+            save: jest.fn().mockResolvedValue(seg1),
+            delete: jest.fn(),
+            getFeatureFlagSegmentExclusionData: jest.fn().mockResolvedValue(ff_include),
+            createQueryBuilder: jest.fn(() => ({
+              insert: jest.fn().mockReturnThis(),
+              leftJoinAndSelect: jest.fn().mockReturnThis(),
+              where: jest.fn().mockReturnThis(),
+              getMany: jest.fn().mockResolvedValue(segmentArr),
+            })),
+          },
+        },
+        {
+          provide: getRepositoryToken(FeatureFlagSegmentInclusionRepository),
+          useValue: {
+            findOne: jest.fn().mockResolvedValue(seg1),
+            save: jest.fn().mockResolvedValue(seg1),
+            delete: jest.fn(),
+            getFeatureFlagSegmentInclusionData: jest.fn().mockResolvedValue(ff_include),
             createQueryBuilder: jest.fn(() => ({
               insert: jest.fn().mockReturnThis(),
               leftJoinAndSelect: jest.fn().mockReturnThis(),
@@ -254,7 +297,7 @@ describe('Segment Service Testing', () => {
     expect(segments).toEqual([seg1]);
   });
 
-  it('should return all segments with status for enrolling experiments', async () => {
+  it('should return all segments with status for enrolling experiments and feature flags', async () => {
     const res = {
       segmentsData: [
         {
@@ -269,12 +312,14 @@ describe('Segment Service Testing', () => {
       ],
       experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
     };
     const segments = await service.getAllSegmentWithStatus(logger);
     expect(segments).toEqual(res);
   });
 
-  it('should return all segments with status for not enrolling experiments', async () => {
+  it('should return all segments with status for not enrolling experiments and feature flags', async () => {
     exp.state = EXPERIMENT_STATE.ENROLLMENT_COMPLETE;
     const res = {
       segmentsData: [
@@ -290,6 +335,8 @@ describe('Segment Service Testing', () => {
       ],
       experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
     };
     const segments = await service.getAllSegmentWithStatus(logger);
     expect(segments).toEqual(res);
@@ -324,19 +371,31 @@ describe('Segment Service Testing', () => {
       ],
       experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
     };
     const segments = await service.getAllSegmentWithStatus(logger);
     expect(segments).toEqual(res);
   });
 
-  it('should return segment exclusion data', async () => {
+  it('should return experiment segment exclusion data', async () => {
     const segments = await service.getExperimentSegmentExclusionData();
     expect(segments).toEqual(include);
   });
 
-  it('should return segment inclusion data', async () => {
+  it('should return experiment segment inclusion data', async () => {
     const segments = await service.getExperimentSegmentInclusionData();
     expect(segments).toEqual(include);
+  });
+
+  it('should return feture flag segment exclusion data', async () => {
+    const segments = await service.getFeatureFlagSegmentExclusionData();
+    expect(segments).toEqual(ff_include);
+  });
+
+  it('should return feature flag segment inclusion data', async () => {
+    const segments = await service.getFeatureFlagSegmentInclusionData();
+    expect(segments).toEqual(ff_include);
   });
 
   it('should upsert a segment', async () => {
