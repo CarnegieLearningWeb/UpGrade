@@ -47,6 +47,7 @@
         [placeholder]="config.valuesPlaceholder"
         [forceValidation]="forceValidation"
         (downloadRequested)="onDownloadRequested($event)"
+        (blur)="onBlur()"
       ></app-common-tags-input>
       <mat-form-field appearance="outline">
         <mat-label class="ft-14-400">Name</mat-label>
