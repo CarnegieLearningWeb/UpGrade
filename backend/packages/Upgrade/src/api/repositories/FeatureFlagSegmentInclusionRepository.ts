@@ -38,7 +38,7 @@ export class FeatureFlagSegmentInclusionRepository extends Repository<FeatureFla
       .leftJoin('featureFlagSegmentInclusion.segment', 'segment')
       .leftJoinAndSelect('segment.subSegments', 'subSegments')
       .addSelect('featureFlag.name')
-      .addSelect('featureFlag.state')
+      .addSelect('featureFlag.status')
       .addSelect('featureFlag.context')
       .addSelect('segment.id')
       .getMany()
