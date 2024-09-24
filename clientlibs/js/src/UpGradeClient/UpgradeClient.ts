@@ -370,7 +370,7 @@ export default class UpgradeClient {
     if (this.dataService.getFeatureFlags() == null) {
       await this.getAllFeatureFlags();
     }
-    return this.dataService.getFeatureFlag(key);
+    return this.dataService.hasFeatureFlag(key);
   }
 
   /**
