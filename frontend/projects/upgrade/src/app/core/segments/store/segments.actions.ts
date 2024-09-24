@@ -1,5 +1,11 @@
 import { createAction, props } from '@ngrx/store';
-import { Segment, SegmentInput, UpsertSegmentType, experimentSegmentInclusionExclusionData } from './segments.model';
+import {
+  Segment,
+  SegmentInput,
+  UpsertSegmentType,
+  experimentSegmentInclusionExclusionData,
+  featureFlagSegmentInclusionExclusionData,
+} from './segments.model';
 import {
   SEGMENT_SEARCH_KEY,
   SORT_AS_DIRECTION,
@@ -14,6 +20,8 @@ export const actionFetchSegmentsSuccess = createAction(
     segments: Segment[];
     experimentSegmentInclusion: experimentSegmentInclusionExclusionData[];
     experimentSegmentExclusion: experimentSegmentInclusionExclusionData[];
+    featureFlagSegmentInclusion: featureFlagSegmentInclusionExclusionData[];
+    featureFlagSegmentExclusion: featureFlagSegmentInclusionExclusionData[];
   }>()
 );
 

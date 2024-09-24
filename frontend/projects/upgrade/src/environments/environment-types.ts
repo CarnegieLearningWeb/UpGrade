@@ -59,6 +59,7 @@ export interface Environment {
   production: boolean;
   test: boolean;
   baseHrefPrefix: string;
+  useHashRouting: boolean;
   googleClientId: string;
   domainName: string;
   pollingEnabled: boolean;

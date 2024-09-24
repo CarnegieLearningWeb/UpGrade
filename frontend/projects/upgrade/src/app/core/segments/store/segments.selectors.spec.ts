@@ -39,6 +39,28 @@ describe('SegmentSelectors', () => {
     });
   });
 
+  describe('#selectFeatureFlagSegmentsInclusion', () => {
+    it('should return any from allFeatureFlagSegmentsInclusion', () => {
+      const previousState = { ...mockState };
+      previousState.allFeatureFlagSegmentsInclusion = [];
+
+      const result = SegmentSelectors.selectFeatureFlagSegmentsInclusion.projector(previousState);
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('#selectFeatureFlagSegmentsExclusion', () => {
+    it('should return any from allFeatureFlagSegmentsExclusion', () => {
+      const previousState = { ...mockState };
+      previousState.allFeatureFlagSegmentsExclusion = [];
+
+      const result = SegmentSelectors.selectFeatureFlagSegmentsExclusion.projector(previousState);
+
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('#selectSelectedSegment', () => {
     it('should return undefined from allExperimentSegmentsExclusion if segmentId is not an entity key', () => {
       const previousState = { ...mockState };
