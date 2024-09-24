@@ -54,6 +54,21 @@ export interface experimentSegmentInclusionExclusionData {
   };
 }
 
+export interface featureFlagSegmentInclusionExclusionData {
+  createdAt: string;
+  updatedAt: string;
+  versionNumber: number;
+  featureFlag: {
+    name: string;
+    context: any[];
+    status: string;
+  };
+  segment: {
+    id: string;
+    subSegments: any[];
+  };
+}
+
 export interface Group {
   groupId: string;
   type: string;
@@ -107,6 +122,8 @@ export interface SegmentState extends EntityState<Segment> {
   // TODO: remove any
   allExperimentSegmentsInclusion: any;
   allExperimentSegmentsExclusion: any;
+  allFeatureFlagSegmentsInclusion: any;
+  allFeatureFlagSegmentsExclusion: any;
   searchKey: SEGMENT_SEARCH_KEY;
   searchString: string;
   sortKey: SEGMENT_SORT_KEY;
