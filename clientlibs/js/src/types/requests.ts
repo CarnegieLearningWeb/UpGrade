@@ -3,33 +3,32 @@ import { UpGradeClientInterfaces } from './Interfaces';
 
 /* eslint-disable @typescript-eslint/no-namespace */
 export namespace UpGradeClientRequests {
+  export interface IInitRequestBody {
+    id?: string;
+    group?: UpGradeClientInterfaces.IExperimentUserGroup;
+    workingGroup?: UpGradeClientInterfaces.IExperimentUserWorkingGroup;
+  }
   export interface ISetGroupMembershipRequestBody {
-    id: string;
     group: UpGradeClientInterfaces.IExperimentUserGroup;
   }
 
   export interface ISetWorkingGroupRequestBody {
-    id: string;
     workingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup;
   }
 
   export interface ISetAltIdsRequestBody {
-    userId: string;
     aliases: UpGradeClientInterfaces.IExperimentUserAliases;
   }
 
   export interface IGetAllExperimentConditionsRequestBody {
-    userId: string;
     context: string;
   }
 
   export interface IGetAllFeatureFlagsRequestBody {
-    userId: string;
     context: string;
   }
 
   export interface IMarkDecisionPointRequestBody {
-    userId: string;
     status: MARKED_DECISION_POINT_STATUS;
     data: {
       site: string;

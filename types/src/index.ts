@@ -56,6 +56,7 @@ export {
   IWorkingGroup,
   IGroupMembership,
   IUserAliases,
+  IUserAliasesv6,
   ScoreObject,
   CaliperActor,
   Attempt,

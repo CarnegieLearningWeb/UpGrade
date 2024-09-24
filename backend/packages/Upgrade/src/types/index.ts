@@ -1,5 +1,6 @@
 import { Request } from 'express';
 import { UpgradeLogger } from '../lib/logger/UpgradeLogger';
+import { RequestedExperimentUser } from 'src/api/controllers/validators/ExperimentUserValidator';
 
 export enum ASSIGNMENT_TYPE {
   MANUAL = 'manual',
@@ -18,5 +19,6 @@ export interface PaginationResponse {
 }
 
 export interface AppRequest extends Request {
+  userDoc: RequestedExperimentUser;
   logger: UpgradeLogger;
 }
