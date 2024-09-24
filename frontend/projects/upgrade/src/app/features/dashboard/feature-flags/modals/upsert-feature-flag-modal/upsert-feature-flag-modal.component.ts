@@ -144,6 +144,7 @@ export class UpsertFeatureFlagModalComponent {
       this.featureFlagForm.get('key')?.valueChanges.subscribe(() => {
         this.validationError = this.validationError ? false : this.validationError;
         this.featureFlagsService.setIsDuplicateKey(false);
+        this.featureFlagForm.get('key').setErrors(null);
       })
     );
   }
@@ -177,6 +178,7 @@ export class UpsertFeatureFlagModalComponent {
     this.subscriptions.add(
       this.isDuplicateKeyFound$.subscribe((isDuplicate) => {
         this.validationError = isDuplicate;
+        this.featureFlagForm.get('key').setErrors({ duplicateKey: isDuplicate });
       })
     );
   }
