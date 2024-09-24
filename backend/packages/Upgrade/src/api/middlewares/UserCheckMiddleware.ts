@@ -16,7 +16,7 @@ export class UserCheckMiddleware {
       req.logger.debug({ message: 'User Id is:', user_id });
       
       const experimentUserDoc = await this.experimentUserService.getUserDoc(user_id, req.logger);
-      if (!req.url.includes('/init') && !experimentUserDoc) {
+      if (!req.url.endsWith('/init') && !experimentUserDoc) {
         const error = new Error(`User not found: ${user_id}`);
         (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
         (error as any).httpCode = 404;
