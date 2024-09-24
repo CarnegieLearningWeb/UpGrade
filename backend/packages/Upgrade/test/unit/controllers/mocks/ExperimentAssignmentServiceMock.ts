@@ -15,8 +15,12 @@ export default class ExperimentAssignmentServiceMock {
     return Promise.resolve([]);
   }
 
+  public blobDataLog(userId: string, blobData: any): Promise<[]> {
+    return Promise.resolve([]);
+  }
+
   public clientFailedExperimentPoint(
-    reasone: string,
+    reason: string,
     experimentPoint: string,
     userId: string,
     experimentId: string

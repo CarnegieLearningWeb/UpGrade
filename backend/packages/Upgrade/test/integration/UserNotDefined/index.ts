@@ -18,6 +18,14 @@ export const UserNotDefined = async () => {
   ).rejects.toThrow();
 
   await expect(
+    experimentAssignmentService.blobDataLog(
+      { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
+      null,
+      new UpgradeLogger()
+    )
+  ).rejects.toThrow();
+
+  await expect(
     experimentAssignmentService.dataLog(
       { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
       null,
