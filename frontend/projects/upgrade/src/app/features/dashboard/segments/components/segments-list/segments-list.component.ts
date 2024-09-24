@@ -23,6 +23,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { ExportSegmentComponent } from '../../components/modal/export-segment/export-segment.component';
 import { SEGMENT_SEARCH_KEY } from '../../../../../../../../../../types/src/Experiment/enums';
+import { CustomMatTableSource } from './CustomMatTableSource';
 
 @Component({
   selector: 'segments-list',
@@ -65,7 +66,7 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.permissions$ = this.authService.userPermissions$;
     this.allSegmentsSub = this.segmentsService.allSegments$.subscribe((segments) => {
       segments = segments.map((segment) => ({ ...segment, status: segment.status || SEGMENT_STATUS.UNUSED }));
-      this.allSegments = new MatTableDataSource();
+      this.allSegments = new CustomMatTableSource();
       this.allSegments.data = [...segments];
       this.allSegments.sort = this.sort;
       this.cdr.detectChanges();
