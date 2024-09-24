@@ -8,12 +8,14 @@ import { ExperimentUserService } from '../../../src/api/services/ExperimentUserS
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
 import { MetricService } from '../../../src/api/services/MetricService';
 import { ClientLibMiddleware } from '../../../src/api/middlewares/ClientLibMiddleware';
+import { UserCheckMiddleware } from '../../../src/api/middlewares/UserCheckMiddleware';
 import ExperimentServiceMock from './mocks/ExperimentServiceMock';
 import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentServiceMock';
 import ExperimentUserServiceMock from './mocks/ExperimentUserServiceMock';
 import FeatureFlagServiceMock from './mocks/FeatureFlagServiceMock';
 import MetricServiceMock from './mocks/MetricServiceMock';
 import ClientLibMiddlewareMock from './mocks/ClientLibMiddlewareMock';
+import MockuserCheckMiddleware from './mocks/UserCheckMiddlewareMock';
 
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import { v4 as uuid } from 'uuid';
@@ -29,6 +31,7 @@ describe('Experiment Client Controller Testing', () => {
     Container.set(FeatureFlagService, new FeatureFlagServiceMock());
     Container.set(MetricService, new MetricServiceMock());
     Container.set(ClientLibMiddleware, new ClientLibMiddlewareMock());
+    Container.set(UserCheckMiddleware, new MockuserCheckMiddleware());
   });
 
   afterAll(() => {

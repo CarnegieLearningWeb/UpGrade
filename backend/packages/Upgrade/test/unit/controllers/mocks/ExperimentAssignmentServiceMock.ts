@@ -20,7 +20,7 @@ export default class ExperimentAssignmentServiceMock {
   }
 
   public clientFailedExperimentPoint(
-    reasone: string,
+    reason: string,
     experimentPoint: string,
     userId: string,
     experimentId: string
