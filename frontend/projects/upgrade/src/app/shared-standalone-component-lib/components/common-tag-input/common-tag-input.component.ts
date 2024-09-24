@@ -63,6 +63,8 @@ export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
   @Input() placeholder = '';
   @Input() forceValidation = false;
   @Output() downloadRequested = new EventEmitter<string[]>();
+  // Add an EventEmitter for blur
+  @Output() blur: EventEmitter<void> = new EventEmitter<void>();
 
   tagsExist = false;
   isTouched = false;
@@ -90,6 +92,7 @@ export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
   onBlur() {
     this.isTouched = true;
     this.onTouched();
+    this.blur.emit(); // Emit the blur event
   }
 
   isInvalid(): boolean {
