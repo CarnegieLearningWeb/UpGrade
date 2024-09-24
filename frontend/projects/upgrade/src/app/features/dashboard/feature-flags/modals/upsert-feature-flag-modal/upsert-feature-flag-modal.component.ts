@@ -169,9 +169,6 @@ export class UpsertFeatureFlagModalComponent {
     this.subscriptions.add(
       this.isSelectedFeatureFlagUpdated$.subscribe(() => {
         this.closeModal();
-        if (this.isContextChanged) {
-          this.router.navigate(['/featureflags']);
-        }
       })
     );
   }
@@ -192,22 +189,10 @@ export class UpsertFeatureFlagModalComponent {
     if (action === UPSERT_FEATURE_FLAG_ACTION.ADD || action === UPSERT_FEATURE_FLAG_ACTION.DUPLICATE) {
       this.createAddRequest(formData);
     } else if (action === UPSERT_FEATURE_FLAG_ACTION.EDIT && sourceFlag) {
-      if (this.isContextChanged) {
-        this.deleteAllSegments(sourceFlag);
-      }
       this.createEditRequest(formData, sourceFlag);
     } else {
       console.error('UpsertFeatureFlagModalComponent: sendRequest: Invalid action or missing sourceFlag');
     }
-  }
-
-  deleteAllSegments(sourceFlag: FeatureFlag) {
-    sourceFlag.featureFlagSegmentInclusion.forEach((list) => {
-      this.featureFlagsService.deleteFeatureFlagInclusionPrivateSegmentList(list.segment.id);
-    });
-    sourceFlag.featureFlagSegmentExclusion.forEach((list) => {
-      this.featureFlagsService.deleteFeatureFlagExclusionPrivateSegmentList(list.segment.id);
-    });
   }
 
   createAddRequest({ name, key, description, appContext, tags }: FeatureFlagFormData): void {

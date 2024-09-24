@@ -340,8 +340,11 @@ export class FeatureFlagService {
       updatedAt,
       ...oldFlagDoc
     } = await this.findOne(flag.id);
+
+    let includeList = [...featureFlagSegmentInclusion];
+    let excludeList = [...featureFlagSegmentExclusion];
+
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {
         featureFlagSegmentExclusion,
         featureFlagSegmentInclusion,
@@ -350,7 +353,22 @@ export class FeatureFlagService {
         updatedAt,
         ...flagDoc
       } = flag;
+
+      if (oldFlagDoc.context !== flagDoc.context) {
+        includeList?.forEach((list) => {
+          this.deleteList(list.segment.id, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, user, logger);
+        });
+
+        excludeList?.forEach((list) => {
+          this.deleteList(list.segment.id, FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, user, logger);
+        });
+
+        includeList = [];
+        excludeList = [];
+      }
+
       let featureFlagDoc: FeatureFlag;
+
       try {
         featureFlagDoc = (await this.featureFlagRepository.updateFeatureFlag(flagDoc, transactionalEntityManager))[0];
       } catch (err) {
@@ -359,8 +377,10 @@ export class FeatureFlagService {
         logger.error(error);
         throw error;
       }
+
       const oldFlagDocClone = JSON.parse(JSON.stringify(oldFlagDoc));
       const newFlagDocClone = JSON.parse(JSON.stringify(flagDoc));
+
       // update AuditLogs here
       const updateAuditLog: FeatureFlagUpdatedData = {
         flagId: featureFlagDoc.id,
@@ -369,7 +389,7 @@ export class FeatureFlagService {
       };
 
       await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, user);
-      return featureFlagDoc;
+      return { ...featureFlagDoc, featureFlagSegmentInclusion: includeList, featureFlagSegmentExclusion: excludeList };
     });
   }
 
