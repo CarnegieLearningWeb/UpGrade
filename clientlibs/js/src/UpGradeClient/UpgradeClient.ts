@@ -339,8 +339,13 @@ export default class UpgradeClient {
   markExperimentPoint = this.markDecisionPoint;
 
   /**
-   * This feature is available but not recommended for use as it is not fully regression tested in recent releases.
-   * @ignore
+   * Fetches flags for the user given a context and stores them in the data service.
+   *
+   * @example
+   * ```typescript
+   * const featureFlags = await upgradeClient.getAllFeatureFlags();
+   * console.log(featureFlags); // ['feature1', 'feature2', 'feature3']
+   * ```
    */
 
   async getAllFeatureFlags(): Promise<string[]> {
@@ -352,10 +357,16 @@ export default class UpgradeClient {
   }
 
   /**
-   * This feature is available but not recommended for use as it is not fully regression tested in recent releases.
-   * @ignore
+   * Checks if a specific feature flag is enabled for the user.
+   * Note: will await a promise if feature flags have not been fetched yet!
+   *
+   * @example
+   * ```typescript
+   * const isFeatureEnabled = await upgradeClient.hasFeatureFlag('feature1');
+   * console.log(isFeatureEnabled); // true or false
+   * ```
    */
-  public async getFeatureFlag(key: string): Promise<boolean> {
+  public async hasFeatureFlag(key: string): Promise<boolean> {
     if (this.dataService.getFeatureFlags() == null) {
       await this.getAllFeatureFlags();
     }
