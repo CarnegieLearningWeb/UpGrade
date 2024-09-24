@@ -270,17 +270,19 @@ export class FeatureFlagService {
     return updatedFilterMode;
   }
 
-  public async exportDesign(id, currentUser, logger): Promise<FeatureFlag> {
+  public async exportDesign(id, currentUser, logger): Promise<FeatureFlag | null> {
     const featureFlag = await this.findOne(id, logger);
-    const exportAuditLog: FeatureFlagDeletedData = {
-      flagName: featureFlag.name,
-    };
+    if (featureFlag) {
+      const exportAuditLog: FeatureFlagDeletedData = {
+        flagName: featureFlag.name,
+      };
 
-    await this.experimentAuditLogRepository.saveRawJson(
-      LOG_TYPE.FEATURE_FLAG_DESIGN_EXPORTED,
-      exportAuditLog,
-      currentUser
-    );
+      await this.experimentAuditLogRepository.saveRawJson(
+        LOG_TYPE.FEATURE_FLAG_DESIGN_EXPORTED,
+        exportAuditLog,
+        currentUser
+      );
+    }
 
     return featureFlag;
   }
