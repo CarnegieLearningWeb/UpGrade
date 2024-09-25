@@ -20,6 +20,8 @@ import {
 } from '../controllers/validators/SegmentInputValidator';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
+import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
+import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { getSegmentData } from '../controllers/SegmentController';
 import { globalExcludeSegment } from '../../init/seed/globalExcludeSegment';
 import { CacheService } from './CacheService';
@@ -62,6 +64,10 @@ export class SegmentService {
     private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
     @InjectRepository()
     private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
+    @InjectRepository()
+    private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
+    @InjectRepository()
+    private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
     private cacheService: CacheService
   ) {}
 
@@ -145,9 +151,16 @@ export class SegmentService {
   public async getSegmentStatus(segmentsData: Segment[]): Promise<getSegmentData> {
     const connection = this.dataSource.manager.connection;
     const segmentsDataWithStatus = await connection.transaction(async () => {
-      const [allExperimentSegmentsInclusion, allExperimentSegmentsExclusion] = await Promise.all([
+      const [
+        allExperimentSegmentsInclusion,
+        allExperimentSegmentsExclusion,
+        allFeatureFlagSegmentsInclusion,
+        allFeatureFlagSegmentsExclusion,
+      ] = await Promise.all([
         this.getExperimentSegmentInclusionData(),
         this.getExperimentSegmentExclusionData(),
+        this.getFeatureFlagSegmentInclusionData(),
+        this.getFeatureFlagSegmentExclusionData(),
       ]);
 
       const segmentMap = new Map<string, string[]>();
@@ -183,6 +196,20 @@ export class SegmentService {
         });
       }
 
+      if (allFeatureFlagSegmentsInclusion) {
+        allFeatureFlagSegmentsInclusion.forEach((ele) => {
+          collectSegmentIds(ele.segment.id);
+          ele.segment.subSegments.forEach((subSegment) => collectSegmentIds(subSegment.id));
+        });
+      }
+
+      if (allFeatureFlagSegmentsExclusion) {
+        allFeatureFlagSegmentsExclusion.forEach((ele) => {
+          collectSegmentIds(ele.segment.id);
+          ele.segment.subSegments.forEach((subSegment) => collectSegmentIds(subSegment.id));
+        });
+      }
+
       const segmentsDataWithStatus = segmentsData.map((segment) => {
         if (segment.id === globalExcludeSegment.id) {
           return { ...segment, status: SEGMENT_STATUS.GLOBAL };
@@ -197,6 +224,8 @@ export class SegmentService {
         segmentsData: segmentsDataWithStatus,
         experimentSegmentInclusionData: allExperimentSegmentsInclusion,
         experimentSegmentExclusionData: allExperimentSegmentsExclusion,
+        featureFlagSegmentInclusionData: allFeatureFlagSegmentsInclusion,
+        featureFlagSegmentExclusionData: allFeatureFlagSegmentsExclusion,
       };
     });
 
@@ -210,6 +239,16 @@ export class SegmentService {
 
   public async getExperimentSegmentInclusionData() {
     const queryBuilder = await this.experimentSegmentInclusionRepository.getExperimentSegmentInclusionData();
+    return queryBuilder;
+  }
+
+  public async getFeatureFlagSegmentExclusionData() {
+    const queryBuilder = await this.featureFlagSegmentExclusionRepository.getFeatureFlagSegmentExclusionData();
+    return queryBuilder;
+  }
+
+  public async getFeatureFlagSegmentInclusionData() {
+    const queryBuilder = await this.featureFlagSegmentInclusionRepository.getFeatureFlagSegmentInclusionData();
     return queryBuilder;
   }
 

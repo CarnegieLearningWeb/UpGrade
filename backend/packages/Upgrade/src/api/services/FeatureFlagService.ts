@@ -130,6 +130,7 @@ export class FeatureFlagService {
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .where({ id })
+      .addOrderBy('LOWER(individualForSegment.userId)', 'ASC')
       .getOne();
 
     return featureFlag;

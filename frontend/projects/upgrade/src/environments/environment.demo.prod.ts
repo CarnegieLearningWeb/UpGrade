@@ -5,6 +5,7 @@ export const environment = {
   production: true,
   test: false,
   baseHrefPrefix: '/upgrade',
+  useHashRouting: false,
   googleClientId: '586868075529-8k9hvk5ber8cb6qfu50945kpln7eo870.apps.googleusercontent.com',
   domainName: '',
   pollingEnabled: true,

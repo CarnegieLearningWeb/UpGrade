@@ -27,6 +27,16 @@ export const selectExperimentSegmentsExclusion = createSelector(
   (state) => state.allExperimentSegmentsExclusion
 );
 
+export const selectFeatureFlagSegmentsInclusion = createSelector(
+  selectSegmentsState,
+  (state) => state.allFeatureFlagSegmentsInclusion
+);
+
+export const selectFeatureFlagSegmentsExclusion = createSelector(
+  selectSegmentsState,
+  (state) => state.allFeatureFlagSegmentsExclusion
+);
+
 export const selectSelectedSegment = createSelector(
   selectRouterState,
   selectSegmentsState,
