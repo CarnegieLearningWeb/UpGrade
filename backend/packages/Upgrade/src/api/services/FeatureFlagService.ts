@@ -47,11 +47,13 @@ import { FeatureFlagImportDataValidation } from '../controllers/validators/Featu
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { User } from '../models/User';
 import { diffString } from 'json-diff';
+import { SegmentRepository } from '../repositories/SegmentRepository';
 
 @Service()
 export class FeatureFlagService {
   constructor(
     @InjectRepository() private featureFlagRepository: FeatureFlagRepository,
+    @InjectRepository() private segmentFlagRepository: SegmentRepository,
     @InjectRepository() private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
     @InjectRepository() private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
     @InjectRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
@@ -344,6 +346,9 @@ export class FeatureFlagService {
     let includeList = [...featureFlagSegmentInclusion];
     let excludeList = [...featureFlagSegmentExclusion];
 
+    const includeListIds = includeList.map((list) => list.segment.id);
+    const excludeListIds = excludeList.map((list) => list.segment.id);
+
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
       const {
         featureFlagSegmentExclusion,
@@ -354,21 +359,27 @@ export class FeatureFlagService {
         ...flagDoc
       } = flag;
 
-      if (oldFlagDoc.context !== flagDoc.context) {
-        includeList?.forEach((list) => {
-          this.deleteList(list.segment.id, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, user, logger);
-        });
+      if (oldFlagDoc.context[0] !== flagDoc.context[0]) {
+        // Create delete audit logs for inclusion and exclusion lists
+        if (includeListIds.length) {
+          await this.createDeleteListAuditLogs(includeListIds, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, user);
+        }
 
-        excludeList?.forEach((list) => {
-          this.deleteList(list.segment.id, FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, user, logger);
-        });
+        if (excludeListIds.length) {
+          await this.createDeleteListAuditLogs(excludeListIds, FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, user);
+        }
+
+        // Delete segments
+        const segmentIds = [...includeListIds, ...excludeListIds];
+        if (segmentIds.length) {
+          await this.segmentFlagRepository.deleteSegments(segmentIds, logger, transactionalEntityManager);
+        }
 
         includeList = [];
         excludeList = [];
       }
 
       let featureFlagDoc: FeatureFlag;
-
       try {
         featureFlagDoc = (await this.featureFlagRepository.updateFeatureFlag(flagDoc, transactionalEntityManager))[0];
       } catch (err) {
@@ -381,7 +392,7 @@ export class FeatureFlagService {
       const oldFlagDocClone = JSON.parse(JSON.stringify(oldFlagDoc));
       const newFlagDocClone = JSON.parse(JSON.stringify(flagDoc));
 
-      // update AuditLogs here
+      // Update AuditLogs here
       const updateAuditLog: FeatureFlagUpdatedData = {
         flagId: featureFlagDoc.id,
         flagName: featureFlagDoc.name,
@@ -389,7 +400,12 @@ export class FeatureFlagService {
       };
 
       await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, user);
-      return { ...featureFlagDoc, featureFlagSegmentInclusion: includeList, featureFlagSegmentExclusion: excludeList };
+
+      return {
+        ...featureFlagDoc,
+        featureFlagSegmentInclusion: includeList,
+        featureFlagSegmentExclusion: excludeList,
+      };
     });
   }
 
@@ -399,34 +415,44 @@ export class FeatureFlagService {
     currentUser: User,
     logger: UpgradeLogger
   ): Promise<Segment> {
-    let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
-    if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
-      existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
-        where: { segment: { id: segmentId } },
-        relations: ['featureFlag', 'segment'],
-      });
-    } else {
-      existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
-        where: { segment: { id: segmentId } },
-        relations: ['featureFlag', 'segment'],
-      });
-    }
-
-    // delete list AuditLogs here
-    const updateAuditLog: FeatureFlagUpdatedData = {
-      flagId: existingRecord.featureFlag.id,
-      flagName: existingRecord.featureFlag.name,
-      list: {
-        listId: segmentId,
-        listName: existingRecord.segment.name,
-        filterType: filterType,
-        operation: FEATURE_FLAG_LIST_OPERATION.DELETED,
-      },
-    };
-
-    await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, currentUser);
-
+    await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
     return this.segmentService.deleteSegment(segmentId, logger);
+  }
+
+  async createDeleteListAuditLogs(segmentIds: string[], filterType: FEATURE_FLAG_LIST_FILTER_MODE, currentUser: User) {
+    return Promise.all(
+      segmentIds.map(async (segmentId) => {
+        let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
+        if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
+          existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
+            where: { segment: { id: segmentId } },
+            relations: ['featureFlag', 'segment'],
+          });
+        } else {
+          existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
+            where: { segment: { id: segmentId } },
+            relations: ['featureFlag', 'segment'],
+          });
+        }
+        // delete list AuditLogs here
+        const updateAuditLog: FeatureFlagUpdatedData = {
+          flagId: existingRecord.featureFlag.id,
+          flagName: existingRecord.featureFlag.name,
+          list: {
+            listId: segmentId,
+            listName: existingRecord.segment.name,
+            filterType: filterType,
+            operation: FEATURE_FLAG_LIST_OPERATION.DELETED,
+          },
+        };
+
+        return await this.experimentAuditLogRepository.saveRawJson(
+          LOG_TYPE.FEATURE_FLAG_UPDATED,
+          updateAuditLog,
+          currentUser
+        );
+      })
+    );
   }
 
   public async addList(

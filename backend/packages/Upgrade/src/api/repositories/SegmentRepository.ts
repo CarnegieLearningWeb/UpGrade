@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
@@ -77,6 +77,23 @@ export class SegmentRepository extends Repository<Segment> {
         logger.error(errorMsg);
         throw errorMsgString;
       });
+    return result.raw;
+  }
+
+  public async deleteSegments(ids: string[], logger: UpgradeLogger, entityManager: EntityManager): Promise<Segment[]> {
+    const result = await entityManager
+      .createQueryBuilder()
+      .delete()
+      .from(Segment)
+      .where('segment.id IN (:...ids)', { ids })
+      .returning('*')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('segmentRepository', 'deleteSegmentsByIds', { ids }, errorMsg);
+        logger.error(errorMsg);
+        throw errorMsgString;
+      });
+
     return result.raw;
   }
 }

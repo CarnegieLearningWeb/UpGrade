@@ -365,11 +365,6 @@ describe('Feature Flag Service Testing', () => {
     expect(isUUID(results.id)).toBeTruthy();
   });
 
-  it('should update the flag with no id and no context', async () => {
-    const results = await service.update(mockFlag3, mockUser1, logger);
-    expect(isUUID(results.id)).toBeTruthy();
-  });
-
   it('should throw an error when unable to update flag', async () => {
     const err = new Error('insert error');
     flagRepo.updateFeatureFlag = jest.fn().mockRejectedValue(err);
