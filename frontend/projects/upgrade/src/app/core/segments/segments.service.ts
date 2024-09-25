@@ -129,7 +129,6 @@ export class SegmentsService {
   }
 
   fetchSegments(fromStarting?: boolean) {
-    this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments: true }));
     this.store$.dispatch(SegmentsActions.actionFetchSegments({ fromStarting }));
   }
 
