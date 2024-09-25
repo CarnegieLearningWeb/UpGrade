@@ -130,14 +130,12 @@ export default class UpgradeClient {
    */
   async setGroupMembership(group: Record<string, Array<string>>): Promise<UpGradeClientInterfaces.IExperimentUser> {
     let response: UpGradeClientInterfaces.IExperimentUser = await this.apiService.setGroupMembership(group);
-    if (response.id) {
-      // If it does not throw error from setGroupMembership
-      this.dataService.setGroup(group);
-      response = {
-        ...response,
-        workingGroup: this.dataService.getWorkingGroup(),
-      };
-    }
+    // If it does not throw error from setGroupMembership
+    this.dataService.setGroup(group);
+    response = {
+      ...response,
+      workingGroup: this.dataService.getWorkingGroup(),
+    };
     return response;
   }
 
@@ -156,14 +154,12 @@ export default class UpgradeClient {
    */
   async setWorkingGroup(workingGroup: Record<string, string>): Promise<UpGradeClientInterfaces.IExperimentUser> {
     let response: UpGradeClientInterfaces.IExperimentUser = await this.apiService.setWorkingGroup(workingGroup);
-    if (response.id) {
-      // If it does not throw error from setWorkingGroup
-      this.dataService.setWorkingGroup(workingGroup);
-      response = {
-        ...response,
-        group: this.dataService.getGroup(),
-      };
-    }
+    // If it does not throw error from setWorkingGroup
+    this.dataService.setWorkingGroup(workingGroup);
+    response = {
+      ...response,
+      group: this.dataService.getGroup(),
+    };
     return response;
   }
 

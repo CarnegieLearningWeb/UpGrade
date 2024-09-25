@@ -8,6 +8,8 @@ import {
   selectSelectedSegment,
   selectExperimentSegmentsInclusion,
   selectExperimentSegmentsExclusion,
+  selectFeatureFlagSegmentsInclusion,
+  selectFeatureFlagSegmentsExclusion,
   selectSegmentById,
   selectSearchString,
   selectSearchKey,
@@ -47,6 +49,8 @@ export class SegmentsService {
   selectSegmentSortAs$ = this.store$.pipe(select(selectSortAs));
   allExperimentSegmentsInclusion$ = this.store$.pipe(select(selectExperimentSegmentsInclusion));
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
+  allFeatureFlagSegmentsExclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsExclusion));
+  allFeatureFlagSegmentsInclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsInclusion));
 
   selectSearchSegmentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
