@@ -141,10 +141,10 @@ export class UpsertFeatureFlagModalComponent {
 
   listenOnKeyChangesToRemoveWarning(): void {
     this.subscriptions.add(
-      this.featureFlagForm.get('key')?.valueChanges.subscribe(() => {
+      this.featureFlagForm.get('key')?.valueChanges.subscribe((key) => {
         this.validationError = this.validationError ? false : this.validationError;
         this.featureFlagsService.setIsDuplicateKey(false);
-        this.featureFlagForm.get('key').setErrors(null);
+        key ? this.featureFlagForm.get('key').setErrors(null) : null;
       })
     );
   }
@@ -179,6 +179,7 @@ export class UpsertFeatureFlagModalComponent {
       this.isDuplicateKeyFound$.subscribe((isDuplicate) => {
         this.validationError = isDuplicate;
         this.featureFlagForm.get('key').setErrors({ duplicateKey: isDuplicate });
+        isDuplicate ? this.featureFlagForm.get('key').markAllAsTouched() : null;
       })
     );
   }
