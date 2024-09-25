@@ -48,6 +48,7 @@ import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLog
 import { User } from '../models/User';
 import { diffString } from 'json-diff';
 import { SegmentRepository } from '../repositories/SegmentRepository';
+import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 
 @Service()
 export class FeatureFlagService {
@@ -361,19 +362,29 @@ export class FeatureFlagService {
       } = flag;
 
       if (oldFlagDoc.context[0] !== flagDoc.context[0]) {
-        // Create delete audit logs for inclusion and exclusion lists
-        if (includeListIds.length) {
-          await this.createDeleteListAuditLogs(includeListIds, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, user);
-        }
-
-        if (excludeListIds.length) {
-          await this.createDeleteListAuditLogs(excludeListIds, FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, user);
-        }
-
         // Delete segments
         const segmentIds = [...includeListIds, ...excludeListIds];
         if (segmentIds.length) {
           await this.segmentFlagRepository.deleteSegments(segmentIds, logger, transactionalEntityManager);
+        }
+
+        // Create delete audit logs for inclusion and exclusion lists
+        if (includeListIds.length) {
+          await this.createDeleteListAuditLogs(
+            includeListIds,
+            FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+            user,
+            transactionalEntityManager
+          );
+        }
+
+        if (excludeListIds.length) {
+          await this.createDeleteListAuditLogs(
+            excludeListIds,
+            FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+            user,
+            transactionalEntityManager
+          );
         }
 
         includeList = [];
@@ -420,22 +431,36 @@ export class FeatureFlagService {
     return this.segmentService.deleteSegment(segmentId, logger);
   }
 
-  async createDeleteListAuditLogs(segmentIds: string[], filterType: FEATURE_FLAG_LIST_FILTER_MODE, currentUser: User) {
-    return Promise.all(
-      segmentIds.map(async (segmentId) => {
+  async createDeleteListAuditLogs(
+    segmentIds: string[],
+    filterType: FEATURE_FLAG_LIST_FILTER_MODE,
+    currentUser: User,
+    entityManager?: EntityManager
+  ): Promise<void> {
+    const executeTransaction = async (manager: EntityManager) => {
+      const auditLogPromises = [];
+
+      for (const segmentId of segmentIds) {
         let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
+
         if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
-          existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
+          existingRecord = await manager.findOne(FeatureFlagSegmentInclusion, {
             where: { segment: { id: segmentId } },
             relations: ['featureFlag', 'segment'],
           });
         } else {
-          existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
+          existingRecord = await manager.findOne(FeatureFlagSegmentExclusion, {
             where: { segment: { id: segmentId } },
             relations: ['featureFlag', 'segment'],
           });
         }
-        // delete list AuditLogs here
+
+        // Handle if the record is not found
+        if (!existingRecord) {
+          throw new Error(`Segment with ID ${segmentId} not found for ${filterType}`);
+        }
+
+        // Create the delete list audit log data
         const updateAuditLog: FeatureFlagUpdatedData = {
           flagId: existingRecord.featureFlag.id,
           flagName: existingRecord.featureFlag.name,
@@ -447,13 +472,26 @@ export class FeatureFlagService {
           },
         };
 
-        return await this.experimentAuditLogRepository.saveRawJson(
-          LOG_TYPE.FEATURE_FLAG_UPDATED,
-          updateAuditLog,
-          currentUser
-        );
-      })
-    );
+        const savePromise = manager.save(ExperimentAuditLog, {
+          type: LOG_TYPE.FEATURE_FLAG_UPDATED,
+          data: updateAuditLog,
+          user: currentUser,
+        });
+
+        auditLogPromises.push(savePromise);
+      }
+
+      // Use Promise.all to run all audit log saving operations concurrently
+      await Promise.all(auditLogPromises);
+    };
+
+    if (entityManager) {
+      await executeTransaction(entityManager);
+    } else {
+      await this.dataSource.transaction(async (manager) => {
+        await executeTransaction(manager);
+      });
+    }
   }
 
   public async addList(

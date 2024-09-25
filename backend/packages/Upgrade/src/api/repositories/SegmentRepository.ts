@@ -80,8 +80,10 @@ export class SegmentRepository extends Repository<Segment> {
     return result.raw;
   }
 
-  public async deleteSegments(ids: string[], logger: UpgradeLogger, entityManager: EntityManager): Promise<Segment[]> {
-    const result = await entityManager
+  public async deleteSegments(ids: string[], logger: UpgradeLogger, entityManager?: EntityManager): Promise<Segment[]> {
+    const queryRunner = entityManager ? entityManager : this;
+
+    const result = await queryRunner
       .createQueryBuilder()
       .delete()
       .from(Segment)
