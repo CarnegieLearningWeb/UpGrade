@@ -10,7 +10,7 @@ import {
   markExperimentPoint,
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNull,
-  updateExcludeIfReachedFlag
+  updateExcludeIfReachedFlag,
 } from '../../utils';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 

@@ -46,20 +46,6 @@ export interface IExperimentEnrollmentDetailStats {
   conditions: IConditionEnrollmentStats[];
 }
 
-// TODO Delete this after changing in clientSDK
-export type INewExperimentAssignment = Pick<IExperimentAssignmentv4, 'assignedCondition'> & {
-  target: string;
-  site: string;
-  experimentId: string;
-};
-
-export interface IExperimentAssignmentv4 {
-  site: string;
-  target: string;
-  assignedCondition: AssignedCondition;
-  assignedFactor?: Record<string, { level: string; payload: IPayload }>;
-}
-
 export interface IExperimentAssignmentv5 {
   site: string;
   target: string;
