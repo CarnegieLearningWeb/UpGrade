@@ -101,6 +101,7 @@ export class UpsertFeatureFlagModalComponent {
     this.listenForIsInitialFormValueChanged();
     this.listenForPrimaryButtonDisabled();
     this.listenForDuplicateKey();
+    this.listenOnContext();
   }
 
   createFeatureFlagForm(): void {
@@ -145,6 +146,14 @@ export class UpsertFeatureFlagModalComponent {
         this.validationError = this.validationError ? false : this.validationError;
         this.featureFlagsService.setIsDuplicateKey(false);
         key ? this.featureFlagForm.get('key').setErrors(null) : null;
+      })
+    );
+  }
+
+  listenOnContext(): void {
+    this.subscriptions.add(
+      this.featureFlagForm.get('appContext')?.valueChanges.subscribe(() => {
+        this.featureFlagForm.get('key') ? this.featureFlagForm.get('key').setErrors(null) : null;
       })
     );
   }

@@ -114,12 +114,15 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
   }
 
   public async validateUniqueKey(flagDTO: FeatureFlagValidation) {
-    const result = await this.createQueryBuilder('feature_flag')
+    const queryBuilder = this.createQueryBuilder('feature_flag')
       .where('feature_flag.key = :key', { key: flagDTO.key })
-      .andWhere('feature_flag.context = :context', { context: flagDTO.context })
-      .andWhere('feature_flag.id != :id', { id: flagDTO.id })
-      .getOne();
+      .andWhere('feature_flag.context = :context', { context: flagDTO.context });
 
+    if (flagDTO.id) {
+      queryBuilder.andWhere('feature_flag.id != :id', { id: flagDTO.id });
+    }
+
+    const result = await queryBuilder.getOne();
     return result;
   }
 }
