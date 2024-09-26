@@ -198,7 +198,7 @@ export class ExperimentAssignmentService {
     }
 
     // ============= check if user or group is excluded
-    const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, experiments[0]?.group);
+    const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc);
 
     if (userExcluded || groupExcluded.length > 0) {
       // no experiments if the user or group is excluded from the experiment
@@ -371,10 +371,7 @@ export class ExperimentAssignmentService {
     }
     experiments = experiments.map((exp) => this.experimentService.formatingConditionPayload(exp));
 
-    const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(
-      experimentUser,
-      experiments[0]?.group
-    );
+    const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
 
     if (userExcluded || groupExcluded.length > 0) {
       // return null if the user or group is excluded from the experiment
@@ -691,10 +688,7 @@ export class ExperimentAssignmentService {
     return pool;
   }
 
-  private async checkUserOrGroupIsGloballyExcluded(
-    experimentUser: ExperimentUser,
-    experimentGroup: string
-  ): Promise<[string, string[]]> {
+  public async checkUserOrGroupIsGloballyExcluded(experimentUser: ExperimentUser): Promise<[string, string[]]> {
     let userGroup = [];
     userGroup = Object.keys(experimentUser.workingGroup || {}).map((type: string) => {
       return `${type}_${experimentUser.workingGroup[type]}`;
@@ -722,11 +716,7 @@ export class ExperimentAssignmentService {
     updatedGlobalExcludeSegmentObj[globalExcludeSegment.id].allExcludedSegmentIds.forEach((segmentId) => {
       const foundSegment: Segment = updatedSegmentDetails.find((segment) => segment.id === segmentId);
       excludedUsers.push(...foundSegment.individualForSegment.map((individual) => individual.userId));
-      excludedGroups.push(
-        ...foundSegment.groupForSegment.filter((group) =>
-          group.type === experimentGroup ? `${group.type}_${group.groupId}` : false
-        )
-      );
+      excludedGroups.push(...foundSegment.groupForSegment.map((group) => `${group.type}_${group.groupId}`));
     });
 
     //users and groups excluded from GlobalExclude segment

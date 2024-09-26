@@ -5,38 +5,53 @@
   [primaryActionBtnColor]="config.primaryActionBtnColor"
   [primaryActionBtnDisabled]="isPrimaryButtonDisabled$ | async"
   (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
-  >
+>
   <form [formGroup]="featureFlagForm" class="form-standard dense-3">
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Name</mat-label>
-      <input matInput formControlName="name" placeholder="e.g., My feature flag" class="ft-14-400"/>
+      <input matInput formControlName="name" placeholder="e.g., My feature flag" class="ft-14-400" />
       <mat-hint class="form-hint ft-12-400">
-        {{'feature-flags.upsert-flag-modal.name-hint.text' | translate}}
+        {{ 'feature-flags.upsert-flag-modal.name-hint.text' | translate }}
       </mat-hint>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Key</mat-label>
-      <input matInput formControlName="key" placeholder="Key for this feature flag" class="ft-14-400"/>
+      <input matInput formControlName="key" placeholder="Key for this feature flag" class="ft-14-400" />
       <mat-hint class="form-hint ft-12-400">
-        {{'feature-flags.upsert-flag-modal.key-hint.text' | translate}}
-        <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">Learn more</a>
+        <ng-container *ngIf="!validationError; else duplicateError">
+          <span class="key-hint">
+            {{ 'feature-flags.upsert-flag-modal.key-hint.text' | translate }}
+            <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer"
+              >Learn more</a
+            >
+          </span>
+        </ng-container>
+        <ng-template #duplicateError>
+          <span class="ft-14-500 duplicate-error-message">
+            {{ 'feature-flags.upsert-flag-modal.duplicate-key-error.text' | translate }}
+          </span>
+        </ng-template>
       </mat-hint>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Description (optional)</mat-label>
-      <input matInput formControlName="description" placeholder="Describe your feature flag" class="ft-14-400"/>
+      <input matInput formControlName="description" placeholder="Describe your feature flag" class="ft-14-400" />
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">App Context</mat-label>
       <mat-select formControlName="appContext" class="ft-14-400">
-        <mat-option *ngFor="let context of appContexts$ | async" [value]="context" class="ft-14-400">{{ context }}</mat-option>
+        <mat-option *ngFor="let context of appContexts$ | async" [value]="context" class="ft-14-400">{{
+          context
+        }}</mat-option>
       </mat-select>
       <mat-hint class="form-hint ft-12-400">
-        {{ 'feature-flags.upsert-flag-modal.app-context-hint.text' | translate}}
-        <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">Learn more</a>
+        {{ 'feature-flags.upsert-flag-modal.app-context-hint.text' | translate }}
+        <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer"
+          >Learn more</a
+        >
       </mat-hint>
     </mat-form-field>
 
