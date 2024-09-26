@@ -120,7 +120,12 @@ describe('Feature Flag Service Testing', () => {
   const entityManagerMock = {
     createQueryBuilder: () => queryBuilderMock,
     getRepository: jest.fn().mockReturnThis(),
+    findOne: jest.fn().mockResolvedValue({
+      featureFlag: { id: uuid(), name: 'flag' },
+      segment: { id: 'mock-segment-id', name: 'mock-segment-name' },
+    }),
     findByIds: jest.fn().mockResolvedValue([mockFlag1]),
+    save: jest.fn().mockResolvedValue({}),
   };
   const exposureRepoMock = { save: jest.fn() };
   const sandbox = sinon.createSandbox();

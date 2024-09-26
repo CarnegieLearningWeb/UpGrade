@@ -362,12 +362,6 @@ export class FeatureFlagService {
       } = flag;
 
       if (oldFlagDoc.context[0] !== flagDoc.context[0]) {
-        // Delete segments
-        const segmentIds = [...includeListIds, ...excludeListIds];
-        if (segmentIds.length) {
-          await this.segmentFlagRepository.deleteSegments(segmentIds, logger, transactionalEntityManager);
-        }
-
         // Create delete audit logs for inclusion and exclusion lists
         if (includeListIds.length) {
           await this.createDeleteListAuditLogs(
@@ -385,6 +379,12 @@ export class FeatureFlagService {
             user,
             transactionalEntityManager
           );
+        }
+
+        // Delete segments
+        const segmentIds = [...includeListIds, ...excludeListIds];
+        if (segmentIds.length) {
+          await this.segmentFlagRepository.deleteSegments(segmentIds, logger, transactionalEntityManager);
         }
 
         includeList = [];
