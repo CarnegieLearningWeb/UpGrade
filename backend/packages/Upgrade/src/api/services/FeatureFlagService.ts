@@ -91,6 +91,14 @@ export class FeatureFlagService {
 
     const filteredFeatureFlags = await this.featureFlagRepository.getFlagsFromContext(context);
 
+    const [userExcluded, groupExcluded] = await this.experimentAssignmentService.checkUserOrGroupIsGloballyExcluded(
+      experimentUserDoc
+    );
+
+    if (userExcluded || groupExcluded.length > 0) {
+      return [];
+    }
+
     const includedFeatureFlags = await this.featureFlagLevelInclusionExclusion(filteredFeatureFlags, experimentUserDoc);
 
     // save exposures in db
