@@ -104,7 +104,16 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   }
 
   changeSorting(event) {
-    this.featureFlagsService.setSortingType(event.direction ? event.direction.toUpperCase() : null);
-    this.featureFlagsService.setSortKey(event.direction ? event.active : null);
+    if (event.direction) {
+      this.featureFlagsService.setSortingType(event.direction.toUpperCase());
+      this.featureFlagsService.setSortKey(event.active);
+    } else {
+      // When sorting is cleared, revert to default sorting
+      this.featureFlagsService.setSortingType(null);
+      this.featureFlagsService.setSortKey(null);
+      this.dataSource$.data = this.dataSource$.data.sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
+    }
   }
 }
