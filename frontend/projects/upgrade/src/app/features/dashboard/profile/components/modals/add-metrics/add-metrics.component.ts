@@ -62,7 +62,7 @@ export class AddMetricsComponent implements OnInit, OnDestroy {
     if (Array.isArray(json)) {
       data = {
         metricUnit: json,
-        context: this.selectedContextOption,
+        context: [this.selectedContextOption],
       };
     } else {
       data = {

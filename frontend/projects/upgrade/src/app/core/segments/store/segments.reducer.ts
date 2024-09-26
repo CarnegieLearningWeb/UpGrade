@@ -26,10 +26,15 @@ export const initialState: SegmentState = adapter.getInitialState({
 
 const reducer = createReducer(
   initialState,
-  on(SegmentsActions.actionUpsertSegment, SegmentsActions.actionGetSegmentById, (state) => ({
-    ...state,
-    isLoadingSegments: true,
-  })),
+  on(
+    SegmentsActions.actionUpsertSegment,
+    SegmentsActions.actionGetSegmentById,
+    SegmentsActions.actionFetchSegments,
+    (state) => ({
+      ...state,
+      isLoadingSegments: true,
+    })
+  ),
   on(
     SegmentsActions.actionFetchSegmentsSuccess,
     (
