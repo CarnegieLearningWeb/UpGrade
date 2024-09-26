@@ -15,12 +15,11 @@ import {
   selectSortAs,
   selectSearchString,
   selectIsAllFlagsFetched,
-  selectSelectedFeatureFlag,
 } from './feature-flags.selectors';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
 import { of } from 'rxjs';
-
+import { SERVER_ERROR } from 'upgrade_types';
 @Injectable()
 export class FeatureFlagsEffects {
   constructor(
@@ -103,7 +102,12 @@ export class FeatureFlagsEffects {
           tap(({ response }) => {
             this.router.navigate(['/featureflags', 'detail', response.id]);
           }),
-          catchError(() => [FeatureFlagsActions.actionAddFeatureFlagFailure()])
+          catchError((res) => {
+            if (res.error.type == SERVER_ERROR.DUPLICATE_KEY) {
+              return [FeatureFlagsActions.actionSetIsDuplicateKey({ duplicateKeyFound: true })];
+            }
+            return [FeatureFlagsActions.actionAddFeatureFlagFailure()];
+          })
         );
       })
     )
@@ -117,7 +121,12 @@ export class FeatureFlagsEffects {
           map((response) => {
             return FeatureFlagsActions.actionUpdateFeatureFlagSuccess({ response });
           }),
-          catchError(() => [FeatureFlagsActions.actionUpdateFeatureFlagFailure()])
+          catchError((res) => {
+            if (res.error.type == SERVER_ERROR.DUPLICATE_KEY) {
+              return [FeatureFlagsActions.actionSetIsDuplicateKey({ duplicateKeyFound: true })];
+            }
+            return [FeatureFlagsActions.actionAddFeatureFlagFailure()];
+          })
         );
       })
     )

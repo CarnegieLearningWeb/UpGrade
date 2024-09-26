@@ -5,6 +5,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { AuthService } from '../auth/auth.service';
+import { SERVER_ERROR } from 'upgrade_types';
 
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
@@ -21,7 +22,9 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       content: error.url,
       animate: 'fromRight',
     };
-    this._notifications.create(temp.title, temp.content, temp.type, temp);
+    if (error.error?.type !== SERVER_ERROR.DUPLICATE_KEY) {
+      this._notifications.create(temp.title, temp.content, temp.type, temp);
+    }
   }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {

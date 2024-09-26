@@ -65,6 +65,7 @@ export enum SERVER_ERROR {
   EXPERIMENT_ID_MISSING_FOR_SHARED_DECISIONPOINT = 'Experiment ID not provided for shared Decision Point',
   INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT = 'Experiment ID provided is invalid for shared Decision Point',
   UNSUPPORTED_CALIPER = 'Caliper profile or event not supported',
+  DUPLICATE_KEY = 'Feature Flag with same key already exists for this app-context',
 }
 
 export enum MARKED_DECISION_POINT_STATUS {
