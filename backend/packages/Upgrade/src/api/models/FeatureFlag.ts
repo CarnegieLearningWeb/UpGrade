@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany, Unique } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 import { BaseModel } from './base/BaseModel';
 import { Type } from 'class-transformer';
@@ -7,6 +7,7 @@ import { FeatureFlagSegmentInclusion } from './FeatureFlagSegmentInclusion';
 import { FeatureFlagSegmentExclusion } from './FeatureFlagSegmentExclusion';
 import { FeatureFlagExposure } from './FeatureFlagExposure';
 @Entity()
+@Unique(['key', 'context'])
 export class FeatureFlag extends BaseModel {
   @PrimaryColumn('uuid')
   public id: string;
@@ -15,7 +16,7 @@ export class FeatureFlag extends BaseModel {
   @Column()
   public name: string;
 
-  @Column('text', { unique: true })
+  @Column('text')
   public key: string;
 
   @Column()
