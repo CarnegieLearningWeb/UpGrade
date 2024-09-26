@@ -373,6 +373,7 @@
   "feature-flags.import-flag-modal.compatibility-description.warning.text": "This JSON file can be imported, but it may contain outdated or missing properties/features. Please review the feature flag details post-import.",
   "feature-flags.upsert-flag-modal.name-hint.text": "The name for this feature flag.",
   "feature-flags.upsert-flag-modal.key-hint.text": "A unique key used to retrieve this feature flag from the client application.",
+  "feature-flags.upsert-flag-modal.duplicate-key-error.text": "Feature flag with this key already exists for this app-context.",
   "feature-flags.upsert-flag-modal.app-context-hint.text": "The App Context indicates where the feature flag will run, known to UpGrade.",
   "feature-flags.upsert-flag-modal.app-context-warning.text": "Updating the App Context will clear the existing include and exclude lists.",
   "feature-flags.upsert-flag-modal.tags-label.text": "Tags (optional)",

@@ -26,6 +26,7 @@ import {
   selectFeatureFlagIds,
   selectShouldShowWarningForSelectedFlag,
   selectWarningStatusForAllFlags,
+  selectDuplicateKeyFound,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -51,6 +52,7 @@ export class FeatureFlagsService {
   isLoadingFeatureFlags$ = this.store$.pipe(select(selectIsLoadingFeatureFlags));
   isLoadingSelectedFeatureFlag$ = this.store$.pipe(select(selectIsLoadingSelectedFeatureFlag));
   isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
+  isDuplicateKeyFound$ = this.store$.pipe(select(selectDuplicateKeyFound));
   isLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
   isLoadingImportFeatureFlag$ = this.store$.pipe(select(selectIsLoadingImportFeatureFlag));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
@@ -138,6 +140,10 @@ export class FeatureFlagsService {
 
   updateFilterMode(updateFilterModeRequest: UpdateFilterModeRequest) {
     this.store$.dispatch(FeatureFlagsActions.actionUpdateFilterMode({ updateFilterModeRequest }));
+  }
+
+  setIsDuplicateKey(duplicateKeyFound: boolean) {
+    this.store$.dispatch(FeatureFlagsActions.actionSetIsDuplicateKey({ duplicateKeyFound }));
   }
 
   deleteFeatureFlag(flagId: string) {

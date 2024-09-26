@@ -70,6 +70,7 @@ export class UpsertFeatureFlagModalComponent {
   isSelectedFeatureFlagUpdated$ = this.featureFlagsService.isSelectedFeatureFlagUpdated$;
   selectedFlag$ = this.featureFlagsService.selectedFeatureFlag$;
   appContexts$ = this.featureFlagsService.appContexts$;
+  isDuplicateKeyFound$ = this.featureFlagsService.isDuplicateKeyFound$;
 
   subscriptions = new Subscription();
   isContextChanged = false;
@@ -80,6 +81,7 @@ export class UpsertFeatureFlagModalComponent {
   initialFormValues$ = new BehaviorSubject<FeatureFlagFormData>(null);
 
   featureFlagForm: FormGroup;
+  validationError = false;
   CommonTagInputType = CommonTagInputType;
 
   constructor(
@@ -94,12 +96,15 @@ export class UpsertFeatureFlagModalComponent {
   ) {}
 
   ngOnInit(): void {
+    this.featureFlagsService.setIsDuplicateKey(false);
     this.experimentService.fetchContextMetaData();
     this.createFeatureFlagForm();
+    this.listenOnKeyChangesToRemoveWarning();
     this.listenForFeatureFlagGetUpdated();
     this.listenOnNameChangesToUpdateKey();
     this.listenForIsInitialFormValueChanged();
     this.listenForPrimaryButtonDisabled();
+    this.listenForDuplicateKey();
     this.listenOnContext();
   }
 
@@ -140,10 +145,21 @@ export class UpsertFeatureFlagModalComponent {
     );
   }
 
+  listenOnKeyChangesToRemoveWarning(): void {
+    this.subscriptions.add(
+      this.featureFlagForm.get('key')?.valueChanges.subscribe((key) => {
+        this.validationError = this.validationError ? false : this.validationError;
+        this.featureFlagsService.setIsDuplicateKey(false);
+        key ? this.featureFlagForm.get('key').setErrors(null) : null;
+      })
+    );
+  }
+
   listenOnContext(): void {
     this.subscriptions.add(
       this.featureFlagForm.get('appContext')?.valueChanges.subscribe((context) => {
         this.isContextChanged = context !== this.initialContext;
+        this.featureFlagForm.get('key') ? this.featureFlagForm.get('key').setErrors(null) : null;
       })
     );
   }
@@ -173,9 +189,18 @@ export class UpsertFeatureFlagModalComponent {
     );
   }
 
-  onPrimaryActionBtnClicked(): void {
+  listenForDuplicateKey() {
+    this.subscriptions.add(
+      this.isDuplicateKeyFound$.subscribe((isDuplicate) => {
+        this.validationError = isDuplicate;
+        this.featureFlagForm.get('key').setErrors({ duplicateKey: isDuplicate });
+        isDuplicate ? this.featureFlagForm.get('key').markAllAsTouched() : null;
+      })
+    );
+  }
+
+  onPrimaryActionBtnClicked() {
     if (this.featureFlagForm.valid) {
-      // Handle extra frontend form validation logic here?
       this.sendRequest(this.config.params.action, this.config.params.sourceFlag);
     } else {
       // If the form is invalid, manually mark all form controls as touched
