@@ -1,4 +1,4 @@
-import {  DataSource } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { configureLogger } from '../utils/logger';
 import { createDatabaseConnection, closeDatabase, migrateDatabase } from '../utils/database';
 import {
@@ -92,8 +92,18 @@ import {
   StratificationMetricQueriesCheck,
   StratificationRandomAlgorithmCheck,
 } from './Experiment/stratification/index';
-import { IndividualExperimentEnrollmentCode, GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } from './Experiment/enrollmentCode';
-import { IndividualExperimentExclusionCode, GroupExperimentExclusionCode, ExperimentLevelExclusionCodeParticipant, ExperimentLevelExclusionCodeGroup, WithinSubjectExclusionCode }  from './Experiment/exclusionCode';
+import {
+  IndividualExperimentEnrollmentCode,
+  GroupExperimentEnrollmentCode,
+  ExperimentExperimentEnrollmentCode,
+} from './Experiment/enrollmentCode';
+import {
+  IndividualExperimentExclusionCode,
+  GroupExperimentExclusionCode,
+  ExperimentLevelExclusionCodeParticipant,
+  ExperimentLevelExclusionCodeGroup,
+  WithinSubjectExclusionCode,
+} from './Experiment/exclusionCode';
 import { FeatureFlagInclusionExclusion } from './FeatureFlags';
 
 describe('Integration Tests', () => {
@@ -106,7 +116,7 @@ describe('Integration Tests', () => {
   let exportConnection: DataSource;
   beforeAll(async () => {
     configureLogger();
-    [defaultConnection, exportConnection]  = await createDatabaseConnection();
+    [defaultConnection, exportConnection] = await createDatabaseConnection();
 
     // Mocking AWS Service
     Container.set(AWSService, new AWSServiceMock());
