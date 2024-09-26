@@ -117,6 +117,7 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
     const result = await this.createQueryBuilder('feature_flag')
       .where('feature_flag.key = :key', { key: flagDTO.key })
       .andWhere('feature_flag.context = :context', { context: flagDTO.context })
+      .andWhere('feature_flag.id != :id', { id: flagDTO.id })
       .getOne();
 
     return result;
