@@ -386,23 +386,29 @@ export class FeatureFlagService {
         ...flagDoc
       } = flag;
 
+      const promises = [];
+
       if (oldFlagDoc.context[0] !== flagDoc.context[0]) {
         // Create delete audit logs for inclusion and exclusion lists
         if (includeListIds.length) {
-          await this.createDeleteListAuditLogs(
-            includeListIds,
-            FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
-            user,
-            transactionalEntityManager
+          promises.push(
+            this.createDeleteListAuditLogs(
+              includeListIds,
+              FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+              user,
+              transactionalEntityManager
+            )
           );
         }
 
         if (excludeListIds.length) {
-          await this.createDeleteListAuditLogs(
-            excludeListIds,
-            FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
-            user,
-            transactionalEntityManager
+          promises.push(
+            this.createDeleteListAuditLogs(
+              excludeListIds,
+              FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+              user,
+              transactionalEntityManager
+            )
           );
         }
 
@@ -415,6 +421,8 @@ export class FeatureFlagService {
         includeList = [];
         excludeList = [];
       }
+
+      await Promise.all(promises);
 
       let featureFlagDoc: FeatureFlag;
       try {
@@ -462,61 +470,58 @@ export class FeatureFlagService {
     currentUser: User,
     entityManager?: EntityManager
   ): Promise<void> {
-    const executeTransaction = async (manager: EntityManager) => {
-      const auditLogPromises = [];
+    const auditLogPromises = [];
 
-      for (const segmentId of segmentIds) {
-        let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
+    for (const segmentId of segmentIds) {
+      let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
 
-        if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
-          existingRecord = await manager.findOne(FeatureFlagSegmentInclusion, {
-            where: { segment: { id: segmentId } },
-            relations: ['featureFlag', 'segment'],
-          });
-        } else {
-          existingRecord = await manager.findOne(FeatureFlagSegmentExclusion, {
-            where: { segment: { id: segmentId } },
-            relations: ['featureFlag', 'segment'],
-          });
-        }
-
-        // Handle if the record is not found
-        if (!existingRecord) {
-          throw new Error(`Segment with ID ${segmentId} not found for ${filterType}`);
-        }
-
-        // Create the delete list audit log data
-        const updateAuditLog: FeatureFlagUpdatedData = {
-          flagId: existingRecord.featureFlag.id,
-          flagName: existingRecord.featureFlag.name,
-          list: {
-            listId: segmentId,
-            listName: existingRecord.segment.name,
-            filterType: filterType,
-            operation: FEATURE_FLAG_LIST_OPERATION.DELETED,
-          },
-        };
-
-        const savePromise = manager.save(ExperimentAuditLog, {
-          type: LOG_TYPE.FEATURE_FLAG_UPDATED,
-          data: updateAuditLog,
-          user: currentUser,
+      if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
+        const that = entityManager
+          ? entityManager.getRepository(FeatureFlagSegmentInclusion)
+          : this.featureFlagSegmentInclusionRepository;
+        existingRecord = await that.findOne({
+          where: { segment: { id: segmentId } },
+          relations: ['featureFlag', 'segment'],
         });
-
-        auditLogPromises.push(savePromise);
+      } else {
+        const that = entityManager
+          ? entityManager.getRepository(FeatureFlagSegmentExclusion)
+          : this.featureFlagSegmentExclusionRepository;
+        existingRecord = await that.findOne({
+          where: { segment: { id: segmentId } },
+          relations: ['featureFlag', 'segment'],
+        });
       }
 
-      // Use Promise.all to run all audit log saving operations concurrently
-      await Promise.all(auditLogPromises);
-    };
+      // Handle if the record is not found
+      if (!existingRecord) {
+        throw new Error(`Segment with ID ${segmentId} not found for ${filterType}`);
+      }
 
-    if (entityManager) {
-      await executeTransaction(entityManager);
-    } else {
-      await this.dataSource.transaction(async (manager) => {
-        await executeTransaction(manager);
+      // Create the delete list audit log data
+      const updateAuditLog: FeatureFlagUpdatedData = {
+        flagId: existingRecord.featureFlag.id,
+        flagName: existingRecord.featureFlag.name,
+        list: {
+          listId: segmentId,
+          listName: existingRecord.segment.name,
+          filterType: filterType,
+          operation: FEATURE_FLAG_LIST_OPERATION.DELETED,
+        },
+      };
+
+      const that = entityManager ? entityManager.getRepository(ExperimentAuditLog) : this.experimentAuditLogRepository;
+      const savePromise = that.save({
+        type: LOG_TYPE.FEATURE_FLAG_UPDATED,
+        data: updateAuditLog,
+        user: currentUser,
       });
+
+      auditLogPromises.push(savePromise);
     }
+
+    // Use Promise.all to run all audit log saving operations concurrently
+    await Promise.all(auditLogPromises);
   }
 
   public async addList(

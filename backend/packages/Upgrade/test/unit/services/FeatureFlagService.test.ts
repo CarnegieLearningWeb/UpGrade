@@ -98,6 +98,7 @@ describe('Feature Flag Service Testing', () => {
 
   const mockExperimentAuditLogRepository = {
     saveRawJson: jest.fn().mockResolvedValue({}), // Mock the method
+    save: jest.fn().mockResolvedValue({}),
   };
 
   const limitSpy = jest.fn().mockReturnThis();
