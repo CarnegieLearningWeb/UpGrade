@@ -73,7 +73,7 @@ export class DataService {
     return assignment || emptyAssignment;
   }
 
-  public getFeatureFlag(key: string): boolean {
+  public hasFeatureFlag(key: string): boolean {
     if (this.featureFlags) {
       const result = this.featureFlags.find((data) => data === key);
       return !!result;

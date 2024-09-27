@@ -21,7 +21,8 @@
     "prettier:check": "prettier --config ../../.prettierrc './{src, test}/**/*.ts' --check",
     "docs:markdown": "typedoc --options typedoc.json",
     "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "quicktest": "ts-node quickTest.ts"
   },
   "keywords": [],
   "author": "",

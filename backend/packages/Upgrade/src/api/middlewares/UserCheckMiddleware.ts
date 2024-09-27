@@ -12,8 +12,16 @@ export class UserCheckMiddleware {
   public async use(req: AppRequest, res: AppRequest, next: express.NextFunction): Promise<any> {
     try {
       const user_id = req.get('User-Id');
-      req.logger.child({ user_id });
-      req.logger.debug({ message: 'User Id is:', user_id });
+      if (!user_id) {
+        const error = new Error(`User-Id header not found.`);
+        (error as any).type = SERVER_ERROR.USER_NOT_FOUND;
+        (error as any).httpCode = 400;
+        req.logger.error(error);
+        return next(error);
+      } else {
+        req.logger.child({ user_id });
+        req.logger.debug({ message: 'User Id is:', user_id });
+      }
       
       const experimentUserDoc = await this.experimentUserService.getUserDoc(user_id, req.logger);
       if (!req.url.endsWith('/init') && !experimentUserDoc) {
