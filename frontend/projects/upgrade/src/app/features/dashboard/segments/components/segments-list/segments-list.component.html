@@ -63,7 +63,7 @@
     <table
       class="segments-list"
       mat-table
-      [dataSource]="allSegments"
+      [dataSource]="(isLoadingSegments$ | async) ? [] : allSegments"
       matSort
       (matSortChange)="changeSorting($event)"
       [matSortActive]="segmentSortKey$ | async"

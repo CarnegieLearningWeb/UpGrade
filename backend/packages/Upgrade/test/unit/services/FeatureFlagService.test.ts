@@ -156,6 +156,7 @@ describe('Feature Flag Service Testing', () => {
           provide: ExperimentAssignmentService,
           useValue: {
             inclusionExclusionLogic: jest.fn().mockResolvedValue([[mockFlag1.id]]),
+            checkUserOrGroupIsGloballyExcluded: jest.fn().mockResolvedValue([null, []]),
           },
         },
         {
@@ -193,6 +194,7 @@ describe('Feature Flag Service Testing', () => {
               addOrderBy: addOrderBySpy,
               setParameter: setParameterSpy,
               where: jest.fn().mockReturnThis(),
+              andWhere: jest.fn().mockReturnThis(),
               offset: offsetSpy,
               limit: limitSpy,
               innerJoinAndSelect: jest.fn().mockReturnThis(),
@@ -201,6 +203,7 @@ describe('Feature Flag Service Testing', () => {
               getMany: jest.fn().mockResolvedValue(mockFlagArr),
               getOne: jest.fn().mockResolvedValue(mockFlag1),
             })),
+            validateUniqueKey: jest.fn().mockResolvedValue(null),
           },
         },
         {
