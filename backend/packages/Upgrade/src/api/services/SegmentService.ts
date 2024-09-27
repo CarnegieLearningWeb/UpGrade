@@ -88,6 +88,8 @@ export class SegmentService {
     logger.info({ message: `Find all segments and Subsegments` });
     const queryBuilder = await this.segmentRepository
       .createQueryBuilder('segment')
+      .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
+      .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segment.subSegments', 'subSegment')
       .where('segment.type != :private', { private: SEGMENT_TYPE.PRIVATE })
       .getMany();
