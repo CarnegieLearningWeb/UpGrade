@@ -47,11 +47,20 @@
           context
         }}</mat-option>
       </mat-select>
-      <mat-hint class="form-hint ft-12-400">
+      <mat-hint
+        *ngIf="!(config.params.action === UPSERT_FEATURE_FLAG_ACTION.EDIT && isContextChanged)"
+        class="form-hint ft-12-400"
+      >
         {{ 'feature-flags.upsert-flag-modal.app-context-hint.text' | translate }}
-        <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer"
-          >Learn more</a
-        >
+        <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
+          Learn more
+        </a>
+      </mat-hint>
+      <mat-hint
+        *ngIf="config.params.action === UPSERT_FEATURE_FLAG_ACTION.EDIT && isContextChanged"
+        class="form-hint ft-12-400 warning-hint"
+      >
+        {{ 'feature-flags.upsert-flag-modal.app-context-warning.text' | translate }}
       </mat-hint>
     </mat-form-field>
 

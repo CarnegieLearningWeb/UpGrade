@@ -47,11 +47,14 @@ import { FeatureFlagImportDataValidation } from '../controllers/validators/Featu
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { User } from '../models/User';
 import { diffString } from 'json-diff';
+import { SegmentRepository } from '../repositories/SegmentRepository';
+import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 
 @Service()
 export class FeatureFlagService {
   constructor(
     @InjectRepository() private featureFlagRepository: FeatureFlagRepository,
+    @InjectRepository() private segmentFlagRepository: SegmentRepository,
     @InjectRepository() private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
     @InjectRepository() private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
     @InjectRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
@@ -366,8 +369,14 @@ export class FeatureFlagService {
       updatedAt,
       ...oldFlagDoc
     } = await this.findOne(flag.id);
+
+    let includeList = [...featureFlagSegmentInclusion];
+    let excludeList = [...featureFlagSegmentExclusion];
+
+    const includeListIds = includeList.map((list) => list.segment.id);
+    const excludeListIds = excludeList.map((list) => list.segment.id);
+
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {
         featureFlagSegmentExclusion,
         featureFlagSegmentInclusion,
@@ -376,6 +385,45 @@ export class FeatureFlagService {
         updatedAt,
         ...flagDoc
       } = flag;
+
+      const promises = [];
+
+      if (oldFlagDoc.context[0] !== flagDoc.context[0]) {
+        // Create delete audit logs for inclusion and exclusion lists
+        if (includeListIds.length) {
+          promises.push(
+            this.createDeleteListAuditLogs(
+              includeListIds,
+              FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+              user,
+              transactionalEntityManager
+            )
+          );
+        }
+
+        if (excludeListIds.length) {
+          promises.push(
+            this.createDeleteListAuditLogs(
+              excludeListIds,
+              FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+              user,
+              transactionalEntityManager
+            )
+          );
+        }
+
+        // Delete segments
+        const segmentIds = [...includeListIds, ...excludeListIds];
+        if (segmentIds.length) {
+          await this.segmentFlagRepository.deleteSegments(segmentIds, logger, transactionalEntityManager);
+        }
+
+        includeList = [];
+        excludeList = [];
+      }
+
+      await Promise.all(promises);
+
       let featureFlagDoc: FeatureFlag;
       try {
         featureFlagDoc = (await this.featureFlagRepository.updateFeatureFlag(flagDoc, transactionalEntityManager))[0];
@@ -385,9 +433,11 @@ export class FeatureFlagService {
         logger.error(error);
         throw error;
       }
+
       const oldFlagDocClone = JSON.parse(JSON.stringify(oldFlagDoc));
       const newFlagDocClone = JSON.parse(JSON.stringify(flagDoc));
-      // update AuditLogs here
+
+      // Update AuditLogs here
       const updateAuditLog: FeatureFlagUpdatedData = {
         flagId: featureFlagDoc.id,
         flagName: featureFlagDoc.name,
@@ -395,7 +445,12 @@ export class FeatureFlagService {
       };
 
       await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, user);
-      return featureFlagDoc;
+
+      return {
+        ...featureFlagDoc,
+        featureFlagSegmentInclusion: includeList,
+        featureFlagSegmentExclusion: excludeList,
+      };
     });
   }
 
@@ -405,34 +460,68 @@ export class FeatureFlagService {
     currentUser: User,
     logger: UpgradeLogger
   ): Promise<Segment> {
-    let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
-    if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
-      existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
-        where: { segment: { id: segmentId } },
-        relations: ['featureFlag', 'segment'],
+    await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
+    return this.segmentService.deleteSegment(segmentId, logger);
+  }
+
+  async createDeleteListAuditLogs(
+    segmentIds: string[],
+    filterType: FEATURE_FLAG_LIST_FILTER_MODE,
+    currentUser: User,
+    entityManager?: EntityManager
+  ): Promise<void> {
+    const auditLogPromises = [];
+
+    for (const segmentId of segmentIds) {
+      let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
+
+      if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
+        const that = entityManager
+          ? entityManager.getRepository(FeatureFlagSegmentInclusion)
+          : this.featureFlagSegmentInclusionRepository;
+        existingRecord = await that.findOne({
+          where: { segment: { id: segmentId } },
+          relations: ['featureFlag', 'segment'],
+        });
+      } else {
+        const that = entityManager
+          ? entityManager.getRepository(FeatureFlagSegmentExclusion)
+          : this.featureFlagSegmentExclusionRepository;
+        existingRecord = await that.findOne({
+          where: { segment: { id: segmentId } },
+          relations: ['featureFlag', 'segment'],
+        });
+      }
+
+      // Handle if the record is not found
+      if (!existingRecord) {
+        throw new Error(`Segment with ID ${segmentId} not found for ${filterType}`);
+      }
+
+      // Create the delete list audit log data
+      const updateAuditLog: FeatureFlagUpdatedData = {
+        flagId: existingRecord.featureFlag.id,
+        flagName: existingRecord.featureFlag.name,
+        list: {
+          listId: segmentId,
+          listName: existingRecord.segment.name,
+          filterType: filterType,
+          operation: FEATURE_FLAG_LIST_OPERATION.DELETED,
+        },
+      };
+
+      const that = entityManager ? entityManager.getRepository(ExperimentAuditLog) : this.experimentAuditLogRepository;
+      const savePromise = that.save({
+        type: LOG_TYPE.FEATURE_FLAG_UPDATED,
+        data: updateAuditLog,
+        user: currentUser,
       });
-    } else {
-      existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
-        where: { segment: { id: segmentId } },
-        relations: ['featureFlag', 'segment'],
-      });
+
+      auditLogPromises.push(savePromise);
     }
 
-    // delete list AuditLogs here
-    const updateAuditLog: FeatureFlagUpdatedData = {
-      flagId: existingRecord.featureFlag.id,
-      flagName: existingRecord.featureFlag.name,
-      list: {
-        listId: segmentId,
-        listName: existingRecord.segment.name,
-        filterType: filterType,
-        operation: FEATURE_FLAG_LIST_OPERATION.DELETED,
-      },
-    };
-
-    await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, currentUser);
-
-    return this.segmentService.deleteSegment(segmentId, logger);
+    // Use Promise.all to run all audit log saving operations concurrently
+    await Promise.all(auditLogPromises);
   }
 
   public async addList(
