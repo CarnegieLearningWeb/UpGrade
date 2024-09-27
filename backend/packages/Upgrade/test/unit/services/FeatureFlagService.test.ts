@@ -13,6 +13,7 @@ import { Container } from '../../../src/typeorm-typedi-extensions';
 import {
   FLAG_SEARCH_KEY,
   FLAG_SORT_KEY,
+  FF_COMPATIBILITY_TYPE,
 } from '../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import {
   FEATURE_FLAG_LIST_FILTER_MODE,
@@ -61,11 +62,18 @@ describe('Feature Flag Service Testing', () => {
 
   const mockFlag3 = new FeatureFlagValidation();
 
-  const mockList = new FeatureFlagListValidator();
-  mockList.enabled = true;
-  mockList.flagId = mockFlag1.id;
-  mockList.listType = 'individual';
-  mockList.segment = {
+  const mockFlag4 = new FeatureFlag();
+  mockFlag4.name = 'name';
+  mockFlag4.key = 'key4';
+  mockFlag4.description = 'description';
+  mockFlag4.context = ['context1'];
+  mockFlag4.status = FEATURE_FLAG_STATUS.ENABLED;
+  mockFlag4.filterMode = FILTER_MODE.INCLUDE_ALL;
+  mockFlag4.tags = [];
+  mockFlag4.featureFlagSegmentInclusion = [];
+  mockFlag4.featureFlagSegmentExclusion = [];
+
+  const mockSegment = {
     name: 'name',
     id: uuid(),
     context: 'context',
@@ -74,6 +82,13 @@ describe('Feature Flag Service Testing', () => {
     groups: [],
     subSegmentIds: [],
   };
+
+  const mockList = new FeatureFlagListValidator();
+  mockList.enabled = true;
+  mockList.flagId = mockFlag1.id;
+  mockList.listType = 'individual';
+  mockList.segment = mockSegment;
+
   const mockFlagArr = [mockFlag1, mockFlag2, mockFlag3];
 
   const mockUser1 = new User();
@@ -81,7 +96,6 @@ describe('Feature Flag Service Testing', () => {
   mockUser1.lastName = 'Banner';
   mockUser1.email = 'bb@email.com';
 
-  // Add this mock for the experimentAuditLogRepository
   const mockExperimentAuditLogRepository = {
     saveRawJson: jest.fn().mockResolvedValue({}), // Mock the method
   };
@@ -142,6 +156,7 @@ describe('Feature Flag Service Testing', () => {
           provide: ExperimentAssignmentService,
           useValue: {
             inclusionExclusionLogic: jest.fn().mockResolvedValue([[mockFlag1.id]]),
+            checkUserOrGroupIsGloballyExcluded: jest.fn().mockResolvedValue([null, []]),
           },
         },
         {
@@ -149,18 +164,20 @@ describe('Feature Flag Service Testing', () => {
           useValue: {
             upsertSegmentInPipeline: jest.fn().mockResolvedValue(mockList),
             deleteSegment: jest.fn().mockResolvedValue(mockList),
+            getSegmentByIds: jest.fn().mockResolvedValue([mockSegment]),
           },
         },
         {
           provide: getRepositoryToken(FeatureFlagRepository),
           useValue: {
             find: jest.fn().mockResolvedValue(mockFlagArr),
+            findBy: jest.fn().mockResolvedValue(mockFlagArr),
             findOne: jest.fn().mockResolvedValue(mockFlag1),
             findWithNames: jest.fn().mockResolvedValue(mockFlagArr),
             findOneById: jest.fn().mockResolvedValue(mockFlag1),
             count: jest.fn().mockResolvedValue(mockFlagArr.length),
             findPaginated: jest.fn().mockResolvedValue(mockFlagArr),
-            insertFeatureFlag: jest.fn().mockResolvedValue(mockFlag1),
+            insertFeatureFlag: jest.fn().mockResolvedValue([mockFlag1]),
             deleteById: jest.fn().mockResolvedValue(mockFlag1.id),
             updateState: jest.fn().mockImplementation((id, status) => {
               return status;
@@ -177,6 +194,7 @@ describe('Feature Flag Service Testing', () => {
               addOrderBy: addOrderBySpy,
               setParameter: setParameterSpy,
               where: jest.fn().mockReturnThis(),
+              andWhere: jest.fn().mockReturnThis(),
               offset: offsetSpy,
               limit: limitSpy,
               innerJoinAndSelect: jest.fn().mockReturnThis(),
@@ -185,6 +203,7 @@ describe('Feature Flag Service Testing', () => {
               getMany: jest.fn().mockResolvedValue(mockFlagArr),
               getOne: jest.fn().mockResolvedValue(mockFlag1),
             })),
+            validateUniqueKey: jest.fn().mockResolvedValue(null),
           },
         },
         {
@@ -421,5 +440,50 @@ describe('Feature Flag Service Testing', () => {
     );
 
     expect(result).toBeTruthy();
+  });
+
+  it('should import a feature flag from a valid file', async () => {
+    const result = await service.importFeatureFlags(
+      [{ fileName: 'import.json', fileContent: JSON.stringify(mockFlag4) }],
+      mockUser1,
+      logger
+    );
+
+    expect(result).toEqual([
+      {
+        fileName: 'import.json',
+        error: null,
+      },
+    ]);
+  });
+
+  it('should not import a feature flag with a duplicate key', async () => {
+    const result = await service.importFeatureFlags(
+      [{ fileName: 'import.json', fileContent: JSON.stringify(mockFlag1) }],
+      mockUser1,
+      logger
+    );
+
+    expect(result).toEqual([
+      {
+        fileName: 'import.json',
+        error: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+      },
+    ]);
+  });
+
+  it('should not import a feature flag with incomplete definition', async () => {
+    const result = await service.importFeatureFlags(
+      [{ fileName: 'import.json', fileContent: JSON.stringify(mockFlag3) }],
+      mockUser1,
+      logger
+    );
+
+    expect(result).toEqual([
+      {
+        fileName: 'import.json',
+        error: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+      },
+    ]);
   });
 });

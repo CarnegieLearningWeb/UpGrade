@@ -88,9 +88,13 @@ export class MetricController {
    *                      type: array
    *                    children:
    *                      type: array
+   *              context:
+   *                type: array
+   *                items:
+   *                  type: string
    *            description: Filtered Metrics
    *       tags:
-   *         - Experiment Point
+   *         - Metrics
    *       produces:
    *         - application/json
    *       responses:

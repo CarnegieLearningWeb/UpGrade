@@ -2,6 +2,7 @@ import { ElementRef, Inject, Injectable, NgZone } from '@angular/core';
 import { AppState, LocalStorageService } from '../core.module';
 import { Store, select, Action } from '@ngrx/store';
 import * as AuthActions from './store/auth.actions';
+import { DOCUMENT } from '@angular/common';
 import {
   selectIsLoggedIn,
   selectIsAuthenticating,
@@ -28,7 +29,8 @@ export class AuthService {
     private router: Router,
     private ngZone: NgZone,
     private localStorageService: LocalStorageService,
-    @Inject(ENV) private environment: Environment
+    @Inject(ENV) private environment: Environment,
+    @Inject(DOCUMENT) private DOMref: Document
   ) {}
 
   initializeUserSession(): void {
@@ -50,7 +52,15 @@ export class AuthService {
    */
 
   determinePostLoginDestinationUrl(): void {
-    const originalDestinationUrl = window.location.pathname?.endsWith('login') ? 'home' : window.location.pathname;
+    let originalDestinationUrl: string;
+
+    if (this.DOMref.location.href.endsWith('login')) {
+      originalDestinationUrl = 'home';
+    } else {
+      originalDestinationUrl = this.environment.useHashRouting
+        ? this.DOMref.location.hash.substring(1) || 'home'
+        : this.DOMref.location.pathname;
+    }
 
     this.setRedirectionUrl(originalDestinationUrl);
   }

@@ -32,8 +32,9 @@
     <ng-template #table>
       <div class="table-container">
         <app-feature-flag-root-section-card-table
-          [dataSource$]="dataSource$ | async"
-          [isLoading$]="isLoadingFeatureFlags$"
+        [dataSource$]="dataSource$ | async"
+        [isLoading$]="isLoadingFeatureFlags$"
+        [isSearchActive$]="isSearchActive$"
         >
         </app-feature-flag-root-section-card-table>
       </div>

@@ -113,6 +113,18 @@ export class UpsertPrivateSegmentListModalComponent {
     return this.privateSegmentListForm?.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.VALUES);
   }
 
+  // Function to sort the values
+  sortValues() {
+    const currentValues = this.privateSegmentListForm?.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.VALUES).value;
+    const sortedValues = [...currentValues].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    this.privateSegmentListForm?.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.VALUES).setValue(sortedValues);
+  }
+
+  // onBlur handler
+  onBlur() {
+    this.sortValues();
+  }
+
   fetchData() {
     this.experimentService.fetchContextMetaData();
     this.segmentsService.fetchSegments();
@@ -204,6 +216,7 @@ export class UpsertPrivateSegmentListModalComponent {
 
   listenForSegmentsFilteredByUserInput(): void {
     this.segmentsOptions$ = this.segmentsFilteredByContext$.pipe(
+      map((segments) => segments.sort((a, b) => a.name.localeCompare(b.name))),
       combineLatestWith(
         this.privateSegmentListForm.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.SEGMENT).valueChanges.pipe(startWith(''))
       ),

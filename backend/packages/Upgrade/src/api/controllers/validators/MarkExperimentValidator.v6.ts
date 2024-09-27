@@ -25,16 +25,13 @@ class Data {
   @IsString()
   target: string;
 
+  @IsOptional()
   @ValidateNested()
   @Type(() => AssignedCondition)
   assignedCondition: AssignedCondition;
 }
 
-export class MarkExperimentValidatorv4 {
-  @IsNotEmpty()
-  @IsDefined()
-  public userId: string;
-
+export class MarkExperimentValidatorv6 {
   @IsDefined()
   @ValidateNested()
   @Type(() => Data)
@@ -43,6 +40,10 @@ export class MarkExperimentValidatorv4 {
   @IsEnum(MARKED_DECISION_POINT_STATUS)
   @IsOptional()
   public status?: MARKED_DECISION_POINT_STATUS;
+
+  @IsString()
+  @IsOptional()
+  public uniquifier?: string;
 
   @IsString()
   @IsOptional()

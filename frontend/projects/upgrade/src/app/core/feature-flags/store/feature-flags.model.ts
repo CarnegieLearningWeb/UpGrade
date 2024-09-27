@@ -1,6 +1,6 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
-import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 import { MemberTypes, Segment } from '../../segments/store/segments.model';
 
 // This obviously is a more global type, but for now we're not about to refactor all of the things, so I'm just putting it here so I can create some more dev-friendly types to catch the small differences between some of these formats
@@ -157,15 +157,6 @@ export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
   EXCLUDE = 'featureFlagSegmentExclusion',
 }
 
-export enum FLAG_SEARCH_KEY {
-  ALL = 'all',
-  NAME = 'name',
-  KEY = 'key',
-  STATUS = 'status',
-  TAG = 'tag',
-  CONTEXT = 'context',
-}
-
 export const FLAG_ROOT_COLUMN_NAMES = {
   NAME: 'name',
   STATUS: 'status',
@@ -195,6 +186,7 @@ export interface FeatureFlagState extends EntityState<FeatureFlag> {
   isLoadingFeatureFlagDelete: boolean;
   isLoadingUpsertPrivateSegmentList: boolean;
   hasInitialFeatureFlagsDataLoaded: boolean;
+  duplicateKeyFound: boolean;
   activeDetailsTabIndex: number;
   skipFlags: number;
   totalFlags: number;

@@ -65,6 +65,8 @@ export enum SERVER_ERROR {
   EXPERIMENT_ID_MISSING_FOR_SHARED_DECISIONPOINT = 'Experiment ID not provided for shared Decision Point',
   INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT = 'Experiment ID provided is invalid for shared Decision Point',
   UNSUPPORTED_CALIPER = 'Caliper profile or event not supported',
+  DUPLICATE_KEY = 'Feature Flag with same key already exists for this app-context',
+  MISSING_HEADER_USER_ID = 'Missing `User-Id` header',
 }
 
 export enum MARKED_DECISION_POINT_STATUS {
@@ -95,13 +97,12 @@ export enum EXCLUSION_CODE {
   ERROR = 'participant excluded due to unspecified error',
 }
 
-export enum EXPERIMENT_LOG_TYPE {
+export enum LOG_TYPE {
   EXPERIMENT_CREATED = 'experimentCreated',
   EXPERIMENT_UPDATED = 'experimentUpdated',
   EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
   EXPERIMENT_DELETED = 'experimentDeleted',
   EXPERIMENT_DATA_EXPORTED = 'experimentDataExported',
-  EXPERIMENT_DATA_REQUESTED = 'experimentDataRequested',
   EXPERIMENT_DESIGN_EXPORTED = 'experimentDesignExported',
   FEATURE_FLAG_CREATED = 'featureFlagCreated',
   FEATURE_FLAG_UPDATED = 'featureFlagUpdated',

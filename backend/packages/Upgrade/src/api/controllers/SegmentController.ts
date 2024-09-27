@@ -53,6 +53,7 @@ export interface getSegmentData {
  *         type: array
  *         items:
  *           type: string
+ *           example: '5812a759-1dcf-47a8-b0ba-26c89092863e'
  *   segmentResponse:
  *     description: ''
  *     type: object
@@ -231,6 +232,7 @@ export class SegmentController {
    *          required: true
    *          schema:
    *            type: string
+   *            example: '5812a759-1dcf-47a8-b0ba-26c89092863e'
    *      responses:
    *        '200':
    *          description: Get segment by id
@@ -352,6 +354,7 @@ export class SegmentController {
    *          required: true
    *          schema:
    *            type: string
+   *            example: '5812a759-1dcf-47a8-b0ba-26c89092863e'
    *      responses:
    *        '200':
    *          description: Delete a segment
@@ -414,15 +417,25 @@ export class SegmentController {
 
   /**
    * @swagger
-   * /segments/{validation}:
-   *    put:
+   * /segments/validation:
+   *    post:
    *       description: Validating Segments
    *       consumes:
    *         - application/json
    *       parameters:
-   *         - in: path
+   *         - in: body
+   *           name: params
+   *           description: Segment file
+   *           required: true
+   *           schema:
+   *            type: object
+   *            properties:
+   *              fileName:
+   *                type: string
+   *              fileContent:
+   *                type: string
    *       tags:
-   *         - Segments
+   *         - Segment
    *       produces:
    *         - application/json
    *       responses:
@@ -439,6 +452,31 @@ export class SegmentController {
     return this.segmentService.validateSegments(segments, request.logger);
   }
 
+  /**
+   * @swagger
+   * /segments/export/json:
+   *    get:
+   *      description: Get segment JSON export
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: path
+   *          name: segmentId
+   *          description: Segment id
+   *          required: true
+   *          schema:
+   *            type: array
+   *            items:
+   *              type: string
+   *              example: '5812a759-1dcf-47a8-b0ba-26c89092863e'
+   *      tags:
+   *        - Segment
+   *      responses:
+   *          '200':
+   *            description: Get segment JSON export
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
   @Get('/export/json')
   public exportSegments(
     @QueryParams()
@@ -449,6 +487,31 @@ export class SegmentController {
     return this.segmentService.exportSegments(segmentIds, request.logger);
   }
 
+  /**
+   * @swagger
+   * /segments/export/csv:
+   *    get:
+   *      description: Get segment csv export
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: path
+   *          name: segmentId
+   *          description: Segment id
+   *          required: true
+   *          schema:
+   *            type: array
+   *            items:
+   *              type: string
+   *              example: '5812a759-1dcf-47a8-b0ba-26c89092863e'
+   *      tags:
+   *        - Segment
+   *      responses:
+   *          '200':
+   *            description: Get segment csv export
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
   @Get('/export/csv')
   public exportSegment(
     @QueryParams()

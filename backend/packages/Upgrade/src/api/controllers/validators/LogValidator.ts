@@ -86,16 +86,18 @@ class ILogInputValidator implements ILogInput {
   metrics: ILogMetricsValidator;
 }
 
-export class LogValidator implements ILogRequestBody {
-  @IsDefined()
-  @IsNotEmpty()
-  @IsString()
-  public userId: string;
-
+export class LogValidatorv6 implements ILogRequestBody {
   @IsDefined()
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ILogInputValidator)
   public value: ILogInput[];
+}
+
+export class LogValidator extends LogValidatorv6 implements ILogRequestBody {
+  @IsDefined()
+  @IsNotEmpty()
+  @IsString()
+  public userId: string;
 }

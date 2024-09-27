@@ -16,6 +16,8 @@ export const initialState: SegmentState = adapter.getInitialState({
   isLoadingSegments: false,
   allExperimentSegmentsInclusion: null,
   allExperimentSegmentsExclusion: null,
+  allFeatureFlagSegmentsInclusion: null,
+  allFeatureFlagSegmentsExclusion: null,
   searchKey: SEGMENT_SEARCH_KEY.ALL,
   searchString: null,
   sortKey: SEGMENT_SORT_KEY.NAME,
@@ -24,18 +26,34 @@ export const initialState: SegmentState = adapter.getInitialState({
 
 const reducer = createReducer(
   initialState,
-  on(SegmentsActions.actionUpsertSegment, SegmentsActions.actionGetSegmentById, (state) => ({
-    ...state,
-    isLoadingSegments: true,
-  })),
+  on(
+    SegmentsActions.actionUpsertSegment,
+    SegmentsActions.actionGetSegmentById,
+    SegmentsActions.actionFetchSegments,
+    (state) => ({
+      ...state,
+      isLoadingSegments: true,
+    })
+  ),
   on(
     SegmentsActions.actionFetchSegmentsSuccess,
-    (state, { segments, experimentSegmentExclusion, experimentSegmentInclusion }) => {
+    (
+      state,
+      {
+        segments,
+        experimentSegmentExclusion,
+        experimentSegmentInclusion,
+        featureFlagSegmentInclusion,
+        featureFlagSegmentExclusion,
+      }
+    ) => {
       const newState = {
         ...state,
         segments,
         allExperimentSegmentsInclusion: experimentSegmentInclusion,
         allExperimentSegmentsExclusion: experimentSegmentExclusion,
+        allFeatureFlagSegmentsInclusion: featureFlagSegmentInclusion,
+        allFeatureFlagSegmentsExclusion: featureFlagSegmentExclusion,
       };
       return adapter.upsertMany(segments, { ...newState, isLoadingSegments: false });
     }

@@ -15,7 +15,7 @@ import { MatSort } from '@angular/material/sort';
 import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shared-standalone-component-lib/components';
 import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/feature-flags.service';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
-import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY } from 'upgrade_types';
 
 @Component({
   selector: 'app-feature-flag-root-section-card-table',
@@ -37,6 +37,7 @@ import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   @Input() dataSource$: MatTableDataSource<FeatureFlag>;
   @Input() isLoading$: Observable<boolean>;
+  @Input() isSearchActive$: Observable<boolean>;
   flagSortKey$ = this.featureFlagsService.sortKey$;
   flagSortAs$ = this.featureFlagsService.sortAs$;
   warningStatusForAllFlags$ = this.featureFlagsService.warningStatusForAllFlags$;
@@ -46,9 +47,32 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   constructor(private featureFlagsService: FeatureFlagsService) {}
 
   ngOnInit() {
+    this.sortTable();
+  }
+
+  ngOnChanges() {
+    this.sortTable();
+  }
+
+  private sortTable() {
     if (this.dataSource$?.data) {
+      this.dataSource$.sortingDataAccessor = (item, property) =>
+        property === 'name' ? item.name.toLowerCase() : item[property];
       this.dataSource$.sort = this.sort;
     }
+  }
+
+  filterFeatureFlagByChips(tagValue: string, type: FLAG_SEARCH_KEY) {
+    this.setSearchKey(type);
+    this.setSearchString(tagValue);
+  }
+
+  setSearchKey(searchKey: FLAG_SEARCH_KEY) {
+    this.featureFlagsService.setSearchKey(searchKey);
+  }
+
+  setSearchString(searchString: string) {
+    this.featureFlagsService.setSearchString(searchString);
   }
 
   get FEATURE_FLAG_STATUS() {
@@ -69,6 +93,10 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
 
   get FLAG_ROOT_COLUMN_NAMES() {
     return FLAG_ROOT_COLUMN_NAMES;
+  }
+
+  get FeatureFlagSearchKey() {
+    return FLAG_SEARCH_KEY;
   }
 
   fetchFlagsOnScroll() {

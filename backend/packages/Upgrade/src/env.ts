@@ -3,7 +3,7 @@ import path from 'path';
 import pkg from '../package.json';
 
 import { getOsEnv, getOsPath, getOsPaths, normalizePort, toBool } from './lib/env';
-import { getOsEnvOptional, toNumber, parseAdminUsers } from './lib/env/utils';
+import { getOsEnvOptional, toNumber, parseAdminUsers, getOsEnvArray } from './lib/env/utils';
 
 /**
  * Load .env file or for tests the .env.test file.
@@ -78,7 +78,8 @@ export const env = {
     emailBucket: getOsEnv('EMAIL_BUCKET'),
   },
   google: {
-    clientId: getOsEnv('GOOGLE_CLIENT_ID'),
+    clientId: getOsEnvArray('GOOGLE_CLIENT_ID'),
+    serviceAccountId: getOsEnvArray('GOOGLE_SERVICE_ACCOUNT_ID'),
     domainName: getOsEnvOptional('DOMAIN_NAME'),
   },
   scheduler: {

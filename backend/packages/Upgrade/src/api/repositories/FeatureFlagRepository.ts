@@ -3,6 +3,7 @@ import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { FeatureFlag } from '../models/FeatureFlag';
 import repositoryError from './utils/repositoryError';
 import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
+import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
 
 @EntityRepository(FeatureFlag)
 export class FeatureFlagRepository extends Repository<FeatureFlag> {
@@ -109,6 +110,19 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
         throw errorMsgString;
       });
 
+    return result;
+  }
+
+  public async validateUniqueKey(flagDTO: FeatureFlagValidation) {
+    const queryBuilder = this.createQueryBuilder('feature_flag')
+      .where('feature_flag.key = :key', { key: flagDTO.key })
+      .andWhere('feature_flag.context = :context', { context: flagDTO.context });
+
+    if (flagDTO.id) {
+      queryBuilder.andWhere('feature_flag.id != :id', { id: flagDTO.id });
+    }
+
+    const result = await queryBuilder.getOne();
     return result;
   }
 }

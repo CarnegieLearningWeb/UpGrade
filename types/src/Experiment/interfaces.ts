@@ -46,20 +46,6 @@ export interface IExperimentEnrollmentDetailStats {
   conditions: IConditionEnrollmentStats[];
 }
 
-// TODO Delete this after changing in clientSDK
-export type INewExperimentAssignment = Pick<IExperimentAssignmentv4, 'assignedCondition'> & {
-  target: string;
-  site: string;
-  experimentId: string;
-};
-
-export interface IExperimentAssignmentv4 {
-  site: string;
-  target: string;
-  assignedCondition: AssignedCondition;
-  assignedFactor?: Record<string, { level: string; payload: IPayload }>;
-}
-
 export interface IExperimentAssignmentv5 {
   site: string;
   target: string;
@@ -201,14 +187,15 @@ export interface ILogGroupMetrics {
 }
 
 export interface ILogRequestBody {
-  userId: string;
-  value: ILogInput[];
+  userId?: string;
+  value?: ILogInput[];
 }
 
 export interface ILogInput {
   timestamp: string;
   metrics: ILogMetrics;
 }
+
 export interface IGroupMetric {
   groupClass: string;
   allowedKeys: string[];
@@ -231,9 +218,12 @@ export interface IWorkingGroup {
   workingGroup: object;
 }
 
-export interface IUserAliases {
-  userId: string;
+export interface IUserAliasesv6 {
   aliases: string[];
+}
+
+export interface IUserAliases extends IUserAliasesv6 {
+  userId: string;
 }
 
 export interface IPayload {

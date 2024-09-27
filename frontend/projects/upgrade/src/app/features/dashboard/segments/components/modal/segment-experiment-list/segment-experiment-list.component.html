@@ -1,7 +1,7 @@
 <div class="segment-experiment-list-modal">
   <ng-container>
     <span class="ft-24-700 title">
-      {{ 'segments.segment-experiment-list-title.text' | translate: { segmentName: data.segment.name } }}
+      {{ 'segments.segment-experiment-list-title.text' | translate: { numberOfUses: segmentsExperimentList?.length } }}
     </span>
   </ng-container>
 
@@ -16,6 +16,16 @@
             </mat-header-cell>
             <mat-cell class="ft-12-600" *matCellDef="let element">
               {{ element.experimentName }}
+            </mat-cell>
+          </ng-container>
+
+          <!-- TYPE Column -->
+          <ng-container matColumnDef="type">
+            <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+              {{ 'segments.segment-experiment-list-type.text' | translate }}
+            </mat-header-cell>
+            <mat-cell class="ft-12-600" *matCellDef="let element">
+              {{ element.type }}
             </mat-cell>
           </ng-container>
 
@@ -57,16 +67,6 @@
               <span class="experiment-schedule ft-10-400" *ngIf="element.experimentState === ExperimentState.SCHEDULED">
                 {{ '(' + (experiment.startOn | date: 'MMM d, y h:mm a') + ')' }}
               </span>
-            </mat-cell>
-          </ng-container>
-
-          <!-- Experiment context Column -->
-          <ng-container matColumnDef="experimentContext">
-            <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-              {{ 'segments.segment-experiment-list-context.text' | translate }}
-            </mat-header-cell>
-            <mat-cell class="ft-12-600" *matCellDef="let element">
-              {{ element.experimentContext }}
             </mat-cell>
           </ng-container>
 

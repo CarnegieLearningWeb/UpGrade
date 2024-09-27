@@ -1,7 +1,8 @@
 import { createReducer, Action, on } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
-import { FeatureFlagState, FeatureFlag, FLAG_SEARCH_KEY } from './feature-flags.model';
+import { FeatureFlagState, FeatureFlag } from './feature-flags.model';
 import * as FeatureFlagsActions from './feature-flags.actions';
+import { FLAG_SEARCH_KEY } from 'upgrade_types';
 
 export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFlag>({
   selectId: (featureFlag: FeatureFlag) => featureFlag.id,
@@ -19,6 +20,7 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingSelectedFeatureFlag: false,
   isLoadingUpsertPrivateSegmentList: false,
   hasInitialFeatureFlagsDataLoaded: false,
+  duplicateKeyFound: false,
   activeDetailsTabIndex: 0,
   skipFlags: 0,
   totalFlags: null,
@@ -72,6 +74,11 @@ const reducer = createReducer(
   ),
   on(FeatureFlagsActions.actionAddFeatureFlagFailure, FeatureFlagsActions.actionUpdateFeatureFlagFailure, (state) => ({
     ...state,
+    isLoadingUpsertFeatureFlag: false,
+  })),
+  on(FeatureFlagsActions.actionSetIsDuplicateKey, (state, { duplicateKeyFound }) => ({
+    ...state,
+    duplicateKeyFound,
     isLoadingUpsertFeatureFlag: false,
   })),
 
@@ -180,7 +187,7 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionDeleteFeatureFlagInclusionListSuccess, (state, { segmentId }) => {
     const updatedState = { ...state, isLoadingUpsertPrivateSegmentList: false };
     const flagId = Object.keys(state.entities).find((id) =>
-      state.entities[id].featureFlagSegmentInclusion?.some((inclusion) => inclusion.segment.id === segmentId)
+      state.entities[id].featureFlagSegmentInclusion?.some((inclusion) => inclusion.segment?.id === segmentId)
     );
 
     if (flagId) {

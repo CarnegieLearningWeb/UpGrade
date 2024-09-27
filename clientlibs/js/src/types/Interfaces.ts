@@ -58,7 +58,6 @@ export namespace UpGradeClientInterfaces {
     uniquifier: string;
     timeStamp: string;
     data: any;
-    userId: string;
   }
 
   export interface IMetric {
