@@ -20,11 +20,12 @@
     "lib": ["es2018", "dom"],
     "paths": {
       "upgrade_types": ["../../../types"]
-    }
+    },
+    "esModuleInterop": true,
   },
   "include": [
     "src",
     ".eslintrc.js",
-    "webpack.config.ts"
+    "webpack.config.ts",
   ]
 }

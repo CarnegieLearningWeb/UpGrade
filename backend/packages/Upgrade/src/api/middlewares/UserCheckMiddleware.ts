@@ -14,7 +14,7 @@ export class UserCheckMiddleware {
       const user_id = req.get('User-Id');
       if (!user_id) {
         const error = new Error(`User-Id header not found.`);
-        (error as any).type = SERVER_ERROR.USER_NOT_FOUND;
+        (error as any).type = SERVER_ERROR.MISSING_HEADER_USER_ID;
         (error as any).httpCode = 400;
         req.logger.error(error);
         return next(error);

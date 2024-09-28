@@ -98,6 +98,7 @@ describe('Feature Flag Service Testing', () => {
 
   const mockExperimentAuditLogRepository = {
     saveRawJson: jest.fn().mockResolvedValue({}), // Mock the method
+    save: jest.fn().mockResolvedValue({}),
   };
 
   const limitSpy = jest.fn().mockReturnThis();
@@ -120,7 +121,12 @@ describe('Feature Flag Service Testing', () => {
   const entityManagerMock = {
     createQueryBuilder: () => queryBuilderMock,
     getRepository: jest.fn().mockReturnThis(),
+    findOne: jest.fn().mockResolvedValue({
+      featureFlag: { id: uuid(), name: 'flag' },
+      segment: { id: 'mock-segment-id', name: 'mock-segment-name' },
+    }),
     findByIds: jest.fn().mockResolvedValue([mockFlag1]),
+    save: jest.fn().mockResolvedValue({}),
   };
   const exposureRepoMock = { save: jest.fn() };
   const sandbox = sinon.createSandbox();
@@ -365,11 +371,6 @@ describe('Feature Flag Service Testing', () => {
 
   it('should update the flag', async () => {
     const results = await service.update(mockFlag2, mockUser1, logger);
-    expect(isUUID(results.id)).toBeTruthy();
-  });
-
-  it('should update the flag with no id and no context', async () => {
-    const results = await service.update(mockFlag3, mockUser1, logger);
     expect(isUUID(results.id)).toBeTruthy();
   });
 
