@@ -1,5 +1,6 @@
 import { ExperimentStatePipe, ExperimentStatePipeType } from './experiment-state.pipe';
 import { EXPERIMENT_STATE } from 'upgrade_types';
+import { FEATURE_FLAG_STATUS } from 'upgrade_types';
 
 describe('ExperimentStatePipe', () => {
   const experimentStatePipe = new ExperimentStatePipe();
@@ -32,6 +33,14 @@ describe('ExperimentStatePipe', () => {
     expect(experimentStatePipe.transform(EXPERIMENT_STATE.ARCHIVED)).toBe('Archived');
   });
 
+  it('should return Inactive State', () => {
+    expect(experimentStatePipe.transform(FEATURE_FLAG_STATUS.DISABLED)).toBe('Disabled');
+  });
+
+  it('should return Archived State', () => {
+    expect(experimentStatePipe.transform(FEATURE_FLAG_STATUS.ENABLED)).toBe('Enabled');
+  });
+
   it('should return #000 color for Preview State', () => {
     expect(experimentStatePipe.transform(EXPERIMENT_STATE.PREVIEW, ExperimentStatePipeType.COLOR)).toBe('#000');
   });
@@ -60,5 +69,13 @@ describe('ExperimentStatePipe', () => {
 
   it('should return #fd9099 color for Archived State', () => {
     expect(experimentStatePipe.transform(EXPERIMENT_STATE.ARCHIVED, ExperimentStatePipeType.COLOR)).toBe('#fd9099');
+  });
+
+  it('should return #d8d8d8 color for Disabled Status', () => {
+    expect(experimentStatePipe.transform(FEATURE_FLAG_STATUS.DISABLED, ExperimentStatePipeType.COLOR)).toBe('#d8d8d8');
+  });
+
+  it('should return #fd9099 color for Archived State', () => {
+    expect(experimentStatePipe.transform(FEATURE_FLAG_STATUS.ENABLED, ExperimentStatePipeType.COLOR)).toBe('#7b9cff');
   });
 });

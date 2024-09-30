@@ -92,7 +92,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
           ? this.allMetrics.filter((metric) => metric.children.length > 0)
           : this.allMetrics.filter((metric) =>
-              metric.context.includes(this.currentContext || this.experimentInfo?.context)
+              metric.context?.includes(this.currentContext || this.experimentInfo?.context)
             );
     });
   }

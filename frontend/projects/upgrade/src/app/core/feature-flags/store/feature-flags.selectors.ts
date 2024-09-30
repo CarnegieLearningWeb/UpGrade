@@ -47,6 +47,8 @@ export const selectIsLoadingUpsertFeatureFlag = createSelector(
   (state) => state.isLoadingUpsertFeatureFlag
 );
 
+export const selectDuplicateKeyFound = createSelector(selectFeatureFlagsState, (state) => state.duplicateKeyFound);
+
 export const selectSelectedFeatureFlag = createSelector(
   selectRouterState,
   selectFeatureFlagsState,

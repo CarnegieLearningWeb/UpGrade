@@ -72,11 +72,7 @@ export const IsWorkingGroupRecord = (validationOptions?: ValidationOptions) => {
   };
 };
 
-export class ExperimentUserValidator {
-  @IsNotEmpty()
-  @IsString()
-  public id: string;
-
+export class ExperimentUserValidatorv6 {
   @IsOptional()
   @IsGroupRecord()
   public group: Record<string, string[]>;
@@ -84,6 +80,12 @@ export class ExperimentUserValidator {
   @IsOptional()
   @IsWorkingGroupRecord()
   public workingGroup: Record<string, string>;
+}
+
+export class ExperimentUserValidator extends ExperimentUserValidatorv6 {
+  @IsNotEmpty()
+  @IsString()
+  public id: string;
 }
 
 export class ExperimentUserArrayValidator {

@@ -11,12 +11,16 @@ import { EXPERIMENT_STATE } from '../../../../../../core/experiments/store/exper
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SegmentExperimentListComponent implements OnInit {
-  segmentExperimentListDisplayedColumns = ['experimentName', 'experimentState', 'experimentContext', 'usedList'];
+  segmentExperimentListDisplayedColumns = ['experimentName', 'type', 'experimentState', 'usedList'];
   segment: any;
   allExperimentSegmentsInclusionSub: Subscription;
   allExperimentSegmentsExclusionSub: Subscription;
+  allFeatureFlagSegmentsInclusionSub: Subscription;
+  allFeatureFlagSegmentsExclusionSub: Subscription;
   allExperimentSegmentsInclusion = [];
   allExperimentSegmentsExclusion = [];
+  allFeatureFlagSegmentsInclusion = [];
+  allFeatureFlagSegmentsExclusion = [];
   segmentsExperimentList = [];
 
   constructor(
@@ -44,6 +48,14 @@ export class SegmentExperimentListComponent implements OnInit {
       this.allExperimentSegmentsExclusion = ele;
     });
 
+    this.allFeatureFlagSegmentsInclusionSub = this.segmentsService.allFeatureFlagSegmentsInclusion$.subscribe((ele) => {
+      this.allFeatureFlagSegmentsInclusion = ele;
+    });
+
+    this.allFeatureFlagSegmentsExclusionSub = this.segmentsService.allFeatureFlagSegmentsExclusion$.subscribe((ele) => {
+      this.allFeatureFlagSegmentsExclusion = ele;
+    });
+
     if (this.allExperimentSegmentsInclusion) {
       this.allExperimentSegmentsInclusion.forEach((ele) => {
         const subSegments = ele.segment.subSegments;
@@ -51,8 +63,8 @@ export class SegmentExperimentListComponent implements OnInit {
           if (subSegment.id === this.segment.id) {
             this.segmentsExperimentList.push({
               experimentName: ele.experiment.name,
+              type: 'Experiment',
               experimentState: ele.experiment.state,
-              experimentContext: ele.experiment.context,
               usedList: 'Inclusion',
             });
           }
@@ -67,8 +79,40 @@ export class SegmentExperimentListComponent implements OnInit {
           if (subSegment.id === this.segment.id) {
             this.segmentsExperimentList.push({
               experimentName: ele.experiment.name,
+              type: 'Experiment',
               experimentState: ele.experiment.state,
-              experimentContext: ele.experiment.context,
+              usedList: 'Exclusion',
+            });
+          }
+        });
+      });
+    }
+
+    if (this.allFeatureFlagSegmentsInclusion) {
+      this.allFeatureFlagSegmentsInclusion.forEach((ele) => {
+        const subSegments = ele.segment.subSegments;
+        subSegments.forEach((subSegment) => {
+          if (subSegment.id === this.segment.id) {
+            this.segmentsExperimentList.push({
+              experimentName: ele.featureFlag.name,
+              type: 'Feature Flag',
+              experimentState: ele.featureFlag.status,
+              usedList: 'Inclusion',
+            });
+          }
+        });
+      });
+    }
+
+    if (this.allFeatureFlagSegmentsExclusion) {
+      this.allFeatureFlagSegmentsExclusion.forEach((ele) => {
+        const subSegments = ele.segment.subSegments;
+        subSegments.forEach((subSegment) => {
+          if (subSegment.id === this.segment.id) {
+            this.segmentsExperimentList.push({
+              experimentName: ele.featureFlag.name,
+              type: 'Feature Flag',
+              experimentState: ele.featureFlag.status,
               usedList: 'Exclusion',
             });
           }
