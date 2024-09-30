@@ -1003,7 +1003,7 @@ export class FeatureFlagService {
         compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
       }
     });
-    if (!flag) {
+    if (!(flag instanceof FeatureFlagImportDataValidation)) {
       compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
     }
 

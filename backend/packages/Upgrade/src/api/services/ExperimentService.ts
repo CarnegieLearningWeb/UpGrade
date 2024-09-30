@@ -1513,10 +1513,16 @@ export class ExperimentService {
 
     const validationErrors = await Promise.allSettled(
       experimentFiles.map(async (experimentFile) => {
-        let experiment = JSON.parse(experimentFile.fileContent);
-
+        let experiment;
+        try {
+          experiment = JSON.parse(experimentFile.fileContent);
+        } catch (error) {
+          return { fileName: experimentFile.fileName, error: 'Invalid JSON' };
+        }
         const newExperiment = plainToClass(ExperimentDTO, experiment);
-
+        if (!(newExperiment instanceof ExperimentDTO)) {
+          return { fileName: experimentFile.fileName, error: 'Invalid JSON' };
+        }
         const experimentJSONValidationError = await this.validateExperimentJSON(newExperiment);
         const fileName = experimentFile.fileName;
         try {
