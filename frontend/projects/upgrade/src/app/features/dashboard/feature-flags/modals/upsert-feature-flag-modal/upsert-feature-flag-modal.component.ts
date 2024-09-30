@@ -38,6 +38,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { CommonTextHelpersService } from '../../../../../shared/services/common-text-helpers.service';
 import isEqual from 'lodash.isequal';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'upsert-add-feature-flag-modal',
@@ -72,6 +73,8 @@ export class UpsertFeatureFlagModalComponent {
   isDuplicateKeyFound$ = this.featureFlagsService.isDuplicateKeyFound$;
 
   subscriptions = new Subscription();
+  isContextChanged = false;
+  initialContext = '';
   isInitialFormValueChanged$: Observable<boolean>;
   isPrimaryButtonDisabled$: Observable<boolean>;
 
@@ -85,6 +88,7 @@ export class UpsertFeatureFlagModalComponent {
     @Inject(MAT_DIALOG_DATA)
     public config: CommonModalConfig<UpsertFeatureFlagParams>,
     public dialog: MatDialog,
+    private router: Router,
     private formBuilder: FormBuilder,
     private featureFlagsService: FeatureFlagsService,
     private experimentService: ExperimentService,
@@ -107,6 +111,7 @@ export class UpsertFeatureFlagModalComponent {
   createFeatureFlagForm(): void {
     const { sourceFlag, action } = this.config.params;
     const initialValues = this.deriveInitialFormValues(sourceFlag, action);
+    this.initialContext = initialValues.appContext;
 
     this.featureFlagForm = this.formBuilder.group({
       name: [initialValues.name, Validators.required],
@@ -152,7 +157,8 @@ export class UpsertFeatureFlagModalComponent {
 
   listenOnContext(): void {
     this.subscriptions.add(
-      this.featureFlagForm.get('appContext')?.valueChanges.subscribe(() => {
+      this.featureFlagForm.get('appContext')?.valueChanges.subscribe((context) => {
+        this.isContextChanged = context !== this.initialContext;
         this.featureFlagForm.get('key') ? this.featureFlagForm.get('key').setErrors(null) : null;
       })
     );
@@ -244,6 +250,10 @@ export class UpsertFeatureFlagModalComponent {
     };
 
     this.featureFlagsService.updateFeatureFlag(flagRequest);
+  }
+
+  get UPSERT_FEATURE_FLAG_ACTION() {
+    return UPSERT_FEATURE_FLAG_ACTION;
   }
 
   closeModal() {
