@@ -20,6 +20,9 @@ import {
   EditPrivateSegmentListRequest,
   Segment,
 } from '../../../../../../../core/segments/store/segments.model';
+import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
+import { Observable } from 'rxjs';
+import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-feature-flag-exclusions-section-card',
@@ -38,14 +41,23 @@ import {
 })
 export class FeatureFlagExclusionsSectionCardComponent {
   @Input() isSectionCardExpanded;
+  permissions$: Observable<UserPermission>;
   tableRowCount$ = this.featureFlagService.selectFeatureFlagExclusionsLength$;
   selectedFlag$ = this.featureFlagService.selectedFeatureFlag$;
 
-  constructor(private featureFlagService: FeatureFlagsService, private dialogService: DialogService) {}
+  constructor(
+    private featureFlagService: FeatureFlagsService,
+    private dialogService: DialogService,
+    private authService: AuthService
+  ) {}
   menuButtonItems: IMenuButtonItem[] = [
     // { name: 'Import Exclude List', disabled: false },
     // { name: 'Export All Exclude Lists', disabled: false },
   ];
+
+  ngOnInit() {
+    this.permissions$ = this.authService.userPermissions$;
+  }
 
   onAddExcludeListClick(appContext: string, flagId: string) {
     this.dialogService.openAddExcludeListModal(appContext, flagId);

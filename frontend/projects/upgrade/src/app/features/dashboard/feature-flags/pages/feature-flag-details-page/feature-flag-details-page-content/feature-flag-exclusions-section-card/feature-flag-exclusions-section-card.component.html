@@ -10,7 +10,7 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showPrimaryButton]="true"
+    [showPrimaryButton]="(permissions$ | async)?.featureFlags.update"
     [primaryButtonText]="'feature-flags.details.add-exclude-list.button.text' | translate"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddExcludeListClick(flag.context[0], flag.id)"

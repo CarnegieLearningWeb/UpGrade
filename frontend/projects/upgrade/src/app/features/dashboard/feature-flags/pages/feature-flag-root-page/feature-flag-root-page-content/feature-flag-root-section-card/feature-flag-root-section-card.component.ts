@@ -20,6 +20,8 @@ import {
   CommonTableHelpersService,
   TableState,
 } from '../../../../../../../shared/services/common-table-helpers.service';
+import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
+import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-feature-flag-root-section-card',
@@ -41,6 +43,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagRootSectionCardComponent {
+  permissions$: Observable<UserPermission>;
   dataSource$: Observable<MatTableDataSource<FeatureFlag>>;
   isLoadingFeatureFlags$ = this.featureFlagService.isLoadingFeatureFlags$;
   isInitialLoading$ = this.featureFlagService.isInitialFeatureFlagsLoading$;
@@ -75,10 +78,12 @@ export class FeatureFlagRootSectionCardComponent {
     private featureFlagService: FeatureFlagsService,
     private translateService: TranslateService,
     private dialogService: DialogService,
-    private tableHelpersService: CommonTableHelpersService
+    private tableHelpersService: CommonTableHelpersService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
+    this.permissions$ = this.authService.userPermissions$;
     this.featureFlagService.fetchFeatureFlags(true);
   }
 
