@@ -60,7 +60,8 @@ export class FeatureFlagService {
     @InjectRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
     @InjectDataSource() private dataSource: DataSource,
     public experimentAssignmentService: ExperimentAssignmentService,
-    public segmentService: SegmentService
+    public segmentService: SegmentService,
+    private segmentArray = []
   ) {}
 
   public find(logger: UpgradeLogger): Promise<FeatureFlag[]> {
@@ -831,14 +832,43 @@ export class FeatureFlagService {
 
       return {
         fileName: file.fileName,
-        error: isCompatible ? null : FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+        error: isCompatible ? validation.compatibilityType : FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
       };
     });
 
     const validFiles: FeatureFlagImportDataValidation[] = fileStatusArray
-      .filter((fileStatus) => fileStatus.error === null)
+      .filter((fileStatus) => fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE)
       .map((fileStatus) => {
         const featureFlagFile = featureFlagFiles.find((file) => file.fileName === fileStatus.fileName);
+        const segments = this.segmentArray;
+
+        if (fileStatus.error === FF_COMPATIBILITY_TYPE.WARNING) {
+          const flag = JSON.parse(featureFlagFile.fileContent as string);
+
+          // remove elements from featureFlagSegmentInclusion and featureFlagSegmentExclusion if segment is not found or context is not same
+          flag.featureFlagSegmentInclusion = flag.featureFlagSegmentInclusion.filter((segmentInclusion) => {
+            const subSegments = segmentInclusion.segment.subSegments;
+            const subSegmentIds = subSegments.map((subSegment) => subSegment.id);
+
+            // check if each subsegment if found in segments array and has the same context else remove segmentInclusion
+            return subSegmentIds.every((subSegmentId) => {
+              const segmentFound = segments.find((segment) => segment.id === subSegmentId);
+              return segmentFound && segmentFound.context === flag.context[0];
+            });
+          });
+
+          flag.featureFlagSegmentExclusion = flag.featureFlagSegmentExclusion.filter((segmentExclusion) => {
+            const subSegments = segmentExclusion.segment.subSegments;
+            const subSegmentIds = subSegments.map((subSegment) => subSegment.id);
+
+            // check if each subsegment if found in segments array and has the same context else remove segmentExclusion
+            return subSegmentIds.every((subSegmentId) => {
+              const segmentFound = segments.find((segment) => segment.id === subSegmentId);
+              return segmentFound && segmentFound.context === flag.context[0];
+            });
+          });
+          return flag;
+        }
         return JSON.parse(featureFlagFile.fileContent as string);
       });
 
@@ -923,6 +953,12 @@ export class FeatureFlagService {
       createdFlags.push(createdFlag);
     }
     logger.info({ message: 'Imported feature flags', details: createdFlags });
+
+    fileStatusArray.forEach((fileStatus) => {
+      if (fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE) {
+        fileStatus.error = null;
+      }
+    });
     return fileStatusArray;
   }
 
@@ -1026,13 +1062,14 @@ export class FeatureFlagService {
 
         const segmentIds = Array.from(segmentIdsSet);
         const segments = await this.segmentService.getSegmentByIds(segmentIds);
+        this.segmentArray = segments;
 
         if (segmentIds.length !== segments.length) {
           compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
         }
 
         segments.forEach((segment) => {
-          if (segment == undefined) {
+          if (segment == undefined || segment.context !== flag.context[0]) {
             compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
           }
         });
