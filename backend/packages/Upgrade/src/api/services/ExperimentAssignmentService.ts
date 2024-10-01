@@ -68,10 +68,9 @@ import { withInSubjectType } from '../Algorithms';
 import { CacheService } from './CacheService';
 import { UserStratificationFactorRepository } from '../repositories/UserStratificationRepository';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
-import { MoocletService } from './MoocletService';
+import { MoocletExperimentService } from './MoocletExperimentService';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { In } from 'typeorm';
-import { env } from '../../env';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -116,7 +115,7 @@ export class ExperimentAssignmentService {
     public segmentService: SegmentService,
     public experimentService: ExperimentService,
     public cacheService: CacheService,
-    public moocletService: MoocletService
+    public moocletService: MoocletExperimentService
   ) {}
   public async markExperimentPoint(
     userDoc: RequestedExperimentUser,
@@ -1618,28 +1617,28 @@ export class ExperimentAssignmentService {
     return;
   }
 
-  private async getConditionFromMoocletProxy(
-    experiment: Experiment,
-    user: ExperimentUser
-  ): Promise<ExperimentCondition | void> {
-    const moocletId = experiment?.moocletDetails?.mooclet?.id;
-    const userId = user.id;
-    const experimentConditions = experiment.conditions;
-    const logger = new UpgradeLogger();
+  // private async getConditionFromMoocletProxy(
+  //   experiment: Experiment,
+  //   user: ExperimentUser
+  // ): Promise<ExperimentCondition | void> {
+  //   const moocletId = experiment?.moocletDetails?.mooclet?.id;
+  //   const userId = user.id;
+  //   const experimentConditions = experiment.conditions;
+  //   const logger = new UpgradeLogger();
 
-    try {
-      const condition = await this.moocletService.getConditionFromMoocletProxy({
-        moocletId,
-        userId,
-        experimentConditions,
-      });
-      return condition;
-    } catch (err) {
-      // log error but don't throw?
-      logger.error({ message: `Error retrieving condition from Mooclet proxy`, err });
-      return;
-    }
-  }
+  //   try {
+  //     const condition = await this.moocletService.getConditionFromMoocletProxy({
+  //       moocletId,
+  //       userId,
+  //       experimentConditions,
+  //     });
+  //     return condition;
+  //   } catch (err) {
+  //     // log error but don't throw?
+  //     logger.error({ message: `Error retrieving condition from Mooclet proxy`, err });
+  //     return;
+  //   }
+  // }
 
   private async getNewExperimentConditionAssignment(
     experiment: Experiment,
@@ -1648,36 +1647,33 @@ export class ExperimentAssignmentService {
   ): Promise<ExperimentCondition | void> {
     let experimentalCondition: ExperimentCondition;
 
-    if (env.mooclets.enabled && experiment.moocletDetails) {
-      return await this.getConditionFromMoocletProxy(experiment, user);
-    } else {
-      const randomSeed =
-        experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
-        experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
-          ? `${experiment.id}_${user.id}`
-          : `${experiment.id}_${user.workingGroup[experiment.group]}`;
+    const randomSeed =
+      experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
+      experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
+        ? `${experiment.id}_${user.id}`
+        : `${experiment.id}_${user.workingGroup[experiment.group]}`;
 
-      const sortedExperimentCondition = experiment.conditions.sort(
-        (condition1, condition2) => condition1.order - condition2.order
-      );
-      let spec = sortedExperimentCondition.map((condition) => condition.assignmentWeight);
+    const sortedExperimentCondition = experiment.conditions.sort(
+      (condition1, condition2) => condition1.order - condition2.order
+    );
+    let spec = sortedExperimentCondition.map((condition) => condition.assignmentWeight);
 
-      if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
-        spec = this.assignStratifiedRandom(sortedExperimentCondition, spec, enrollmentCount || []);
-      }
-      const r = seedrandom(randomSeed)() * 100;
-      let sum = 0;
-      let randomConditions = 0;
-      for (let i = 0; i < spec.length; i++) {
-        sum += spec[i];
-        if (r <= sum) {
-          randomConditions = i;
-          break;
-        }
-      }
-      experimentalCondition = experiment.conditions[randomConditions];
-      return Promise.resolve(experimentalCondition);
+    if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+      spec = this.assignStratifiedRandom(sortedExperimentCondition, spec, enrollmentCount || []);
     }
+    const r = seedrandom(randomSeed)() * 100;
+    let sum = 0;
+    let randomConditions = 0;
+    for (let i = 0; i < spec.length; i++) {
+      sum += spec[i];
+      if (r <= sum) {
+        randomConditions = i;
+        break;
+      }
+    }
+    experimentalCondition = experiment.conditions[randomConditions];
+    return Promise.resolve(experimentalCondition);
+    // }
   }
 
   private assignStratifiedRandom(

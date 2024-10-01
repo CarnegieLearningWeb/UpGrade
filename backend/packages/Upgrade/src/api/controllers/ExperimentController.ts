@@ -26,6 +26,9 @@ import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpda
 import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
+import { MoocletExperimentService } from '../services/MoocletExperimentService';
+import { env } from '../../env';
+import { UnprocessableEntityException } from '@nestjs/common';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: ExperimentDTO[];
@@ -576,7 +579,8 @@ interface ExperimentPaginationInfo extends PaginationResponse {
 export class ExperimentController {
   constructor(
     public experimentService: ExperimentService,
-    public experimentAssignmentService: ExperimentAssignmentService
+    public experimentAssignmentService: ExperimentAssignmentService,
+    public moocletExperimentService: MoocletExperimentService
   ) {}
 
   /**
@@ -969,6 +973,20 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
     request.logger.child({ user: currentUser });
+
+    if (experiment.moocletExperimentRef) {
+      if (!env.mooclets.enabled) {
+        throw new UnprocessableEntityException(
+          'Failed to create Experiment: MoocletExperimentRef was provided but mooclets are not enabled.'
+        );
+      }
+      return this.moocletExperimentService.syncCreate({
+        experimentDTO: experiment,
+        currentUser,
+        logger: request.logger,
+      });
+    }
+
     return this.experimentService.create(experiment, currentUser, request.logger);
   }
 

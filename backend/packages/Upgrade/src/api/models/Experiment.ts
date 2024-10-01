@@ -18,7 +18,6 @@ import {
   EXPERIMENT_TYPE,
   CONDITION_ORDER,
   ASSIGNMENT_ALGORITHM,
-  MoocletExperimentRef,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { Query } from './Query';
@@ -177,10 +176,4 @@ export class Experiment extends BaseModel {
     default: EXPERIMENT_TYPE.SIMPLE,
   })
   public type: string;
-
-  @Column({
-    nullable: true,
-    type: 'json',
-  })
-  public MoocletExperimentRef?: MoocletExperimentRef;
 }
