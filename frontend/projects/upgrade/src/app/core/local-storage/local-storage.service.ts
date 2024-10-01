@@ -94,7 +94,7 @@ export class LocalStorageService {
 
     const state = {
       experiments: experimentState,
-      featureFlagState: featureFlagState,
+      featureFlags: featureFlagState,
       segments: segmentState,
     };
     return state;
