@@ -2,7 +2,7 @@ import { createReducer, Action, on } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
 import { FeatureFlagState, FeatureFlag } from './feature-flags.model';
 import * as FeatureFlagsActions from './feature-flags.actions';
-import { FLAG_SEARCH_KEY } from 'upgrade_types';
+import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 
 export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<FeatureFlag>({
   selectId: (featureFlag: FeatureFlag) => featureFlag.id,
@@ -26,8 +26,8 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   totalFlags: null,
   searchKey: FLAG_SEARCH_KEY.ALL,
   searchValue: null,
-  sortKey: null,
-  sortAs: null,
+  sortKey: FLAG_SORT_KEY.NAME,
+  sortAs: SORT_AS_DIRECTION.ASCENDING,
 });
 
 const reducer = createReducer(

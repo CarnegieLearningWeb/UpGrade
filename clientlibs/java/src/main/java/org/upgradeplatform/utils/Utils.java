@@ -7,7 +7,6 @@ public class Utils
 {
 	private static final String EMPTY = "";
 
-
 	public static final String INVALID_BASE_URL = "Provided base url is invalid";
 	public static final String INVALID_AUTH_TOKEN = "Provided auth token is invalid";
 	public static final String INVALID_STUDENT_ID = "Provided User id is invalid";
@@ -20,16 +19,16 @@ public class Utils
 	public static final String INVALID_FEATURE_FLAG_KEY= "Feature flag with given key not found";
 	public static final String INVALID_METRIC_META_DATA= "Invalid metadata type provided. It should be of MetricMetaData enum type";
 
-
-	public static final String INITIALIZE_USER= "api/v5/init";
-	public static final String SET_GROUP_MEMBERSHIP= "api/v5/groupmembership";
-	public static final String SET_WORKING_GROUP= "api/v5/workinggroup";
-	public static final String GET_ALL_EXPERIMENTS= "api/v5/assign";
-	public static final String MARK_EXPERIMENT_POINT= "api/v5/mark";
-	public static final String GET_ALL_FEATURE_FLAGS= "api/v5/featureflag";
-	public static final String LOG_EVENT= "api/v5/log";
-	public static final String SET_ALT_USER_IDS= "api/v5/useraliases";
-	public static final String ADD_MATRIC= "api/v5/metric";
+	private static final String apiVersion = "api/v6";
+	public static final String INITIALIZE_USER= apiVersion + "/init";
+	public static final String SET_GROUP_MEMBERSHIP= apiVersion + "/groupmembership";
+	public static final String SET_WORKING_GROUP= apiVersion + "/workinggroup";
+	public static final String GET_ALL_EXPERIMENTS= apiVersion + "/assign";
+	public static final String MARK_EXPERIMENT_POINT= apiVersion + "/mark";
+	public static final String FEATURE_FLAGS = apiVersion + "/featureflag";
+	public static final String LOG_EVENT= apiVersion + "/log";
+	public static final String SET_ALT_USER_IDS= apiVersion + "/useraliases";
+	public static final String ADD_MATRIC= apiVersion + "/metric";
 
 	public static final String PATCH = "PATCH";
 
