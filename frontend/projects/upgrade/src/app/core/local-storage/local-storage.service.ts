@@ -6,7 +6,8 @@ import {
   EXPERIMENT_SORT_KEY,
 } from '../experiments/store/experiments.model';
 import { SegmentLocalStorageKeys, SegmentState } from '../segments/store/segments.model';
-import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
+import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY, FLAG_SEARCH_KEY, FLAG_SORT_KEY } from 'upgrade_types';
+import { FeatureFlagLocalStorageKeys, FeatureFlagState } from '../feature-flags/store/feature-flags.model';
 
 const APP_PREFIX = 'UPGRADE-';
 
@@ -19,6 +20,11 @@ export class LocalStorageService {
     const experimentSortType = this.getItem(ExperimentLocalStorageKeys.EXPERIMENT_SORT_TYPE);
     const experimentSearchKey = this.getItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_KEY);
     const experimentSearchString = this.getItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_STRING);
+
+    const featureFlagSortKey = this.getItem(FeatureFlagLocalStorageKeys.FEATURE_FLAG_SORT_KEY);
+    const featureFlagSortType = this.getItem(FeatureFlagLocalStorageKeys.FEATURE_FLAG_SORT_TYPE);
+    const featureFlagSearchKey = this.getItem(FeatureFlagLocalStorageKeys.FEATURE_FLAG_SEARCH_KEY);
+    const featureFlagSearchString = this.getItem(FeatureFlagLocalStorageKeys.FEATURE_FLAG_SEARCH_STRING);
 
     const segmentSortKey = this.getItem(SegmentLocalStorageKeys.SEGMENT_SORT_KEY);
     const segmentSortType = this.getItem(SegmentLocalStorageKeys.SEGMENT_SORT_TYPE);
@@ -51,6 +57,27 @@ export class LocalStorageService {
       currentUserSelectedContext: null,
     };
 
+    const featureFlagState: FeatureFlagState = {
+      ids: [],
+      entities: {},
+      isLoadingUpsertFeatureFlag: false,
+      isLoadingImportFeatureFlag: false,
+      isLoadingSelectedFeatureFlag: false,
+      isLoadingFeatureFlags: false,
+      isLoadingUpdateFeatureFlagStatus: false,
+      isLoadingFeatureFlagDelete: false,
+      isLoadingUpsertPrivateSegmentList: false,
+      hasInitialFeatureFlagsDataLoaded: false,
+      duplicateKeyFound: false,
+      activeDetailsTabIndex: 0,
+      skipFlags: 0,
+      totalFlags: null,
+      searchKey: featureFlagSearchKey as FLAG_SEARCH_KEY,
+      searchValue: featureFlagSearchString || null,
+      sortKey: (featureFlagSortKey as FLAG_SORT_KEY) || FLAG_SORT_KEY.NAME,
+      sortAs: (featureFlagSortType as SORT_AS_DIRECTION) || SORT_AS_DIRECTION.ASCENDING,
+    };
+
     const segmentState: SegmentState = {
       ids: [],
       entities: {},
@@ -66,7 +93,8 @@ export class LocalStorageService {
     };
 
     const state = {
-      experiments: experimentState, // experiment state,
+      experiments: experimentState,
+      featureFlagState: featureFlagState,
       segments: segmentState,
     };
     return state;

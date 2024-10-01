@@ -10,6 +10,13 @@ export interface GeneralCRUDResponseFields {
   versionNumber: number;
 }
 
+export enum FeatureFlagLocalStorageKeys {
+  FEATURE_FLAG_SEARCH_STRING = 'FEATURE_FLAG_SEARCH_STRING',
+  FEATURE_FLAG_SEARCH_KEY = 'FEATURE_FLAG_KEY_STRING',
+  FEATURE_FLAG_SORT_KEY = 'FEATURE_FLAG_SORT_KEY',
+  FEATURE_FLAG_SORT_TYPE = 'FEATURE_FLAG_SORT_TYPE',
+}
+
 export interface CoreFeatureFlagDetails {
   id?: string;
   name: string;
