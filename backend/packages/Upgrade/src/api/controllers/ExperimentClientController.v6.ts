@@ -171,7 +171,7 @@ export class ExperimentClientController {
   public async init(
     @Req()
     request: AppRequest,
-    @Body({ validate: true })
+    @Body({ validate: { whitelist: true, forbidNonWhitelisted: true } })
     experimentUser: ExperimentUserValidatorv6
   ): Promise<Pick<ExperimentUser, 'id' | 'group' | 'workingGroup'>> {
     request.logger.info({ message: 'Starting the init call for user' });

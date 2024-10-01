@@ -44,10 +44,11 @@ export class AuthService {
         if (!tokenInfo || !serviceAccountIds.includes(tokenInfo.aud)) {
           throw new Error('Invalid or unauthorized access token');
         }
+        payload = {
+          hd: env.google.domainName,
+          email: 'system@gmail.com',
+        };
         request.logger.info({ message: 'Access token validated' });
-        // For service account access tokens, we'll return null
-        // We might want to implement specific handling for service accounts here
-        return null;
       } catch (error) {
         request.logger.error(error);
         throw error;
