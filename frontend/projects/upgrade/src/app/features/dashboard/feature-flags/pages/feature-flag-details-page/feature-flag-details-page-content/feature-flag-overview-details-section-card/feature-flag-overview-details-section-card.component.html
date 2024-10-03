@@ -12,8 +12,8 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showSlideToggle]="true"
-    [isEnableToggleChecked]="flag.status === FEATURE_FLAG_STATUS.ENABLED"
+    [showSlideToggle]="(permissions$ | async)?.featureFlags.update"
+    [slideToggleChecked]="flag.status === FEATURE_FLAG_STATUS.ENABLED"
     [slideToggleText]="'feature-flags.enable.text' | translate"
     [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems"

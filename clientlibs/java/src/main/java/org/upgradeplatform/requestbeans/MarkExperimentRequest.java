@@ -4,8 +4,6 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 
 public class MarkExperimentRequest {
 
-	
-	private String userId;
 	private String status;
 	private MarkExperimentRequestData data;
 	private String clientError;
@@ -13,36 +11,25 @@ public class MarkExperimentRequest {
 
 	public MarkExperimentRequest() {}
 
-	public MarkExperimentRequest(String userId, MarkedDecisionPointStatus status, MarkExperimentRequestData data) {
+	public MarkExperimentRequest(MarkedDecisionPointStatus status, MarkExperimentRequestData data) {
 		super();
-		this.userId = userId;
 		this.status = status.toString();
 		this.data = data;
 	}
 
-	public MarkExperimentRequest(String userId, MarkedDecisionPointStatus status, MarkExperimentRequestData data, String clientError) {
+	public MarkExperimentRequest(MarkedDecisionPointStatus status, MarkExperimentRequestData data, String clientError) {
 		super();
-		this.userId = userId;
 		this.status = status.toString();
 		this.data = data;
 		this.clientError = clientError;
 	}
 
-	public MarkExperimentRequest(String userId, MarkedDecisionPointStatus status, MarkExperimentRequestData data,
+	public MarkExperimentRequest(MarkedDecisionPointStatus status, MarkExperimentRequestData data,
 			String clientError, String uniquifier) {
-		this.userId = userId;
 		this.status = status.toString();
 		this.data = data;
 		this.clientError = clientError;
 		this.uniquifier = uniquifier;
-	}
-
-	public String getUserId() {
-		return userId;
-	}
-
-	public void setUserId(String userId) {
-		this.userId = userId;
 	}
 
 	public String getStatus() {
@@ -76,5 +63,4 @@ public class MarkExperimentRequest {
 	public void setUniquifier(String uniquifier) {
 		this.uniquifier = uniquifier;
 	}
-	
 }

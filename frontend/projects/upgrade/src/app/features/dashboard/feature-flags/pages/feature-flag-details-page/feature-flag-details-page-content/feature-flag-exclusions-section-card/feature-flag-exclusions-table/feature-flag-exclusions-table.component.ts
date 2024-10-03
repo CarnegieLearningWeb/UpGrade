@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/feature-flags.service';
 import {
   FEATURE_FLAG_PARTICIPANT_LIST_KEY,
@@ -17,6 +17,7 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [CommonDetailsParticipantListTableComponent, CommonModule, TranslateModule],
 })
 export class FeatureFlagExclusionsTableComponent {
+  @Input() actionsDisabled?: boolean = false;
   tableType = FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE;
   dataSource$ = this.featureFlagService.selectFeatureFlagExclusions$;
   isLoading$ = this.featureFlagService.isLoadingSelectedFeatureFlag$;
