@@ -11,10 +11,10 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showPrimaryButton]="true"
+    [showPrimaryButton]="(permissions$ | async)?.featureFlags.create"
     [primaryButtonText]="'feature-flags.add-feature-flag.text' | translate"
     [menuButtonItems]="menuButtonItems"
-    [showMenuButton]="true"
+    [showMenuButton]="(permissions$ | async)?.featureFlags.create"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddFeatureFlagButtonClick()"
     (menuButtonItemClick)="onMenuButtonItemClick($event)"

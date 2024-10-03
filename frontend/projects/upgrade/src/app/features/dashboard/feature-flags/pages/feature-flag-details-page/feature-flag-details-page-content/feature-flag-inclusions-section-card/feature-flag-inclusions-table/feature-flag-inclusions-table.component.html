@@ -2,6 +2,8 @@
   <app-common-details-participant-list-table
     [tableType]="tableType"
     [dataSource]="dataSource$ | async"
+    [slideToggleDisabled]="slideToggleDisabled"
+    [actionsDisabled]="actionsDisabled"
     [isLoading]="isLoading$ | async"
     noDataRowText="feature-flags.details.inclusions.card.no-data-row.text"
     (rowAction)="onRowAction($event)"
