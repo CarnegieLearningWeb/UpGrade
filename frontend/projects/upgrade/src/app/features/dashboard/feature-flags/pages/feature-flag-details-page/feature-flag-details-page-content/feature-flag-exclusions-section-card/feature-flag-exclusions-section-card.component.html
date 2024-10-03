@@ -22,7 +22,7 @@
   <app-feature-flag-exclusions-table
     content
     *ngIf="isSectionCardExpanded"
-    [actionsDisabled]="(permissions$ | async)?.featureFlags.update"
+    [actionsDisabled]="!(permissions$ | async)?.featureFlags.update"
     (rowAction)="onRowAction($event, flag.id)"
   ></app-feature-flag-exclusions-table>
 </app-common-section-card>
