@@ -476,18 +476,12 @@ export class FeatureFlagService {
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
 
       if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
-        const that = entityManager
-          ? entityManager.getRepository(FeatureFlagSegmentInclusion)
-          : this.featureFlagSegmentInclusionRepository;
-        existingRecord = await that.findOne({
+        existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
           where: { segment: { id: segmentId } },
           relations: ['featureFlag', 'segment'],
         });
       } else {
-        const that = entityManager
-          ? entityManager.getRepository(FeatureFlagSegmentExclusion)
-          : this.featureFlagSegmentExclusionRepository;
-        existingRecord = await that.findOne({
+        existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
           where: { segment: { id: segmentId } },
           relations: ['featureFlag', 'segment'],
         });
