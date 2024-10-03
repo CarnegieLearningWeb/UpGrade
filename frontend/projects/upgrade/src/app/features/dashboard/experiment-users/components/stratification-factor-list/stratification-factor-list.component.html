@@ -5,6 +5,7 @@
     </div>
     <div>
       <button
+        *ngIf="(permissions$ | async)?.stratifications.create"
         (click)="openImportStratificationsDialog()"
         mat-flat-button
         color="primary"
