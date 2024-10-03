@@ -61,7 +61,7 @@ export class FeatureFlagService {
     @InjectDataSource() private dataSource: DataSource,
     public experimentAssignmentService: ExperimentAssignmentService,
     public segmentService: SegmentService,
-    private segmentArray = []
+    public segmentArray = []
   ) {}
 
   public find(logger: UpgradeLogger): Promise<FeatureFlag[]> {
