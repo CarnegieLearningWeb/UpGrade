@@ -3,6 +3,9 @@
   overflow: auto;
   width: 100%;
 
+  /* Subtract page header (112px), card header (96px), card content paddings (64px), and page bottom padding (32px) from vertical viewport (100vh) */
+  max-height: calc(100vh - 304px);
+
   .spinner {
     position: sticky;
     top: 0;
@@ -18,14 +21,13 @@
 
   .flag-list-table {
     ::ng-deep thead {
-      background-color: var(--zircon);
-
       tr.mat-mdc-header-row {
         height: 48px;
         border: 0;
 
         th {
           padding-left: 0;
+          background-color: var(--zircon);
           color: var(--darker-grey);
 
           &:first-child {
