@@ -1049,7 +1049,7 @@ export class FeatureFlagService {
 
     if (compatibilityType === FF_COMPATIBILITY_TYPE.COMPATIBLE) {
       const keyExists = existingFeatureFlags?.find(
-        (existingFlag) => existingFlag.key === flag.key && existingFlag.context === flag.context
+        (existingFlag) => existingFlag.key === flag.key && existingFlag.context[0] === flag.context[0]
       );
 
       if (keyExists) {
