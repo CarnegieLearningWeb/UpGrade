@@ -75,6 +75,7 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.segmentSortKey$ = this.segmentsService.selectSegmentSortKey$;
     this.segmentSortAs$ = this.segmentsService.selectSegmentSortAs$;
+    this.segmentsService.fetchSegments(true);
 
     this.segmentsService.selectSearchSegmentParams().subscribe((searchParams: any) => {
       // Used when user clicks on context from view segment page

@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 
-import { ChangeDetectionStrategy, Component, Input, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 
 import {
   FLAG_ROOT_COLUMN_NAMES,
@@ -43,6 +43,10 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   warningStatusForAllFlags$ = this.featureFlagsService.warningStatusForAllFlags$;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
+  @ViewChild('tableContainer') tableContainer: ElementRef;
+  @ViewChild('bottomTrigger') bottomTrigger: ElementRef;
+
+  private observer: IntersectionObserver;
 
   constructor(private featureFlagsService: FeatureFlagsService) {}
 
@@ -50,8 +54,36 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
     this.sortTable();
   }
 
+  ngAfterViewInit() {
+    this.setupIntersectionObserver();
+  }
+
   ngOnChanges() {
     this.sortTable();
+  }
+
+  ngOnDestroy() {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+  }
+
+  private setupIntersectionObserver() {
+    const options = {
+      root: this.tableContainer.nativeElement,
+      rootMargin: '100px',
+      threshold: 0.1,
+    };
+
+    this.observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        this.fetchFlagsOnScroll();
+      }
+    }, options);
+
+    if (this.bottomTrigger) {
+      this.observer.observe(this.bottomTrigger.nativeElement);
+    }
   }
 
   private sortTable() {
@@ -104,7 +136,20 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   }
 
   changeSorting(event) {
-    this.featureFlagsService.setSortingType(event.direction ? event.direction.toUpperCase() : null);
-    this.featureFlagsService.setSortKey(event.direction ? event.active : null);
+    if (event.direction) {
+      this.featureFlagsService.setSortingType(event.direction.toUpperCase());
+      this.featureFlagsService.setSortKey(event.active);
+    } else {
+      // When sorting is cleared, revert to default sorting
+      this.featureFlagsService.setSortingType(null);
+      this.featureFlagsService.setSortKey(null);
+      this.tableContainer.nativeElement.scroll({
+        top: 0,
+        behavior: 'smooth',
+      });
+      this.dataSource$.data = this.dataSource$.data.sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
+    }
   }
 }

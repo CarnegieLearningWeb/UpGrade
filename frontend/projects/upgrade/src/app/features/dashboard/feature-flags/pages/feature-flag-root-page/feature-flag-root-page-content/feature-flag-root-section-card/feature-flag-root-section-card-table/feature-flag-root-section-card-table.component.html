@@ -1,4 +1,4 @@
-<div scroll (scrolled)="fetchFlagsOnScroll()" class="flag-list-table-container" #tableContainer>
+<div class="flag-list-table-container" #tableContainer>
   <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
   <table
     class="flag-list-table"
@@ -111,4 +111,5 @@
       </td>
     </tr>
   </table>
+  <div #bottomTrigger></div>
 </div>

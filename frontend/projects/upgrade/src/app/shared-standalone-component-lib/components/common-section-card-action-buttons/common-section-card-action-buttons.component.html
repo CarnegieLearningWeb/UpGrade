@@ -3,7 +3,8 @@
     <mat-slide-toggle
       *ngIf="showSlideToggle"
       color="primary"
-      [checked]="isEnableToggleChecked"
+      [checked]="slideToggleChecked"
+      [disabled]="slideToggleDisabled"
       (change)="onSlideToggleChange($event)"
     >
       {{ slideToggleText }}

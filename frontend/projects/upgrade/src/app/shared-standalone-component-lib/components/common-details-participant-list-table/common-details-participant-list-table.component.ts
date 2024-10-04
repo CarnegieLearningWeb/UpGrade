@@ -25,8 +25,10 @@ import { MemberTypes } from '../../../core/segments/store/segments.model';
  * <app-common-details-participant-list-table
  *   [dataSource]="inclusions$ | async"
  *   [isLoading]="isLoading$ | async"
- *   [noDataRowText]="'No data available' | translate">
- * </app-common-details-participant-list-table>
+ *   [noDataRowText]="'No data available' | translate"
+ *   [slideToggleDisabled]="false"
+ *   [actionsDisabled]="false"
+ * ></app-common-details-participant-list-table>
  * ```
  */
 
@@ -55,6 +57,8 @@ export class CommonDetailsParticipantListTableComponent {
   @Input() tableType: FEATURE_FLAG_PARTICIPANT_LIST_KEY;
   @Input() dataSource: any[];
   @Input() noDataRowText: string;
+  @Input() slideToggleDisabled?: boolean = false;
+  @Input() actionsDisabled?: boolean = false;
   @Input() isLoading: boolean;
   @Output() rowAction = new EventEmitter<ParticipantListRowActionEvent>();
 

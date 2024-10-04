@@ -12,8 +12,9 @@
     header-right
     [showSlideToggle]="true"
     [slideToggleText]="'feature-flags.details.inclusions.include-all.toggle.text' | translate"
-    [isEnableToggleChecked]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
-    [showPrimaryButton]="true"
+    [slideToggleChecked]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
+    [slideToggleDisabled]="!(permissions$ | async)?.featureFlags.update"
+    [showPrimaryButton]="(permissions$ | async)?.featureFlags.update"
     [primaryButtonText]="'feature-flags.details.add-include-list.button.text' | translate"
     [isSectionCardExpanded]="isSectionCardExpanded && flag.filterMode !== FILTER_MODE.INCLUDE_ALL"
     [primaryActionBtnDisabled]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
@@ -28,6 +29,8 @@
   <app-feature-flag-inclusions-table
     content
     *ngIf="isSectionCardExpanded && flag.filterMode !== FILTER_MODE.INCLUDE_ALL"
+    [slideToggleDisabled]="!(permissions$ | async)?.featureFlags.update"
+    [actionsDisabled]="!(permissions$ | async)?.featureFlags.update"
     (rowAction)="onRowAction($event, flag.id)"
   ></app-feature-flag-inclusions-table>
 </app-common-section-card>

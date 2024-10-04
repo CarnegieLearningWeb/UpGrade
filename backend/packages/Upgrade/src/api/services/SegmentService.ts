@@ -298,7 +298,13 @@ export class SegmentService {
 
     const segmentData: ValidSegmentDetail[] = await Promise.all(
       segments.map(async (segment) => {
-        let segmentForValidation = this.convertJSONStringToSegInputValFormat(segment.fileContent);
+        let segmentForValidation;
+        try {
+          segmentForValidation = this.convertJSONStringToSegInputValFormat(segment.fileContent);
+        } catch (err) {
+          importFileErrors.push({ fileName: segment.fileName, error: (err as Error).message });
+          return null;
+        }
         segmentForValidation = plainToClass(SegmentInputValidator, segmentForValidation);
         const segmentJSONValidation = await this.checkForMissingProperties(segmentForValidation);
         const fileName = segment.fileName.slice(0, segment.fileName.lastIndexOf('.'));
@@ -310,13 +316,18 @@ export class SegmentService {
         }
       })
     );
-    const validatedSegments = await this.validateSegmentsData(segmentData);
+    const validatedSegments = await this.validateSegmentsData(segmentData.filter((seg) => seg !== null));
     validatedSegments.importErrors = importFileErrors.concat(validatedSegments.importErrors);
     return validatedSegments;
   }
 
   convertJSONStringToSegInputValFormat(segmentDetails: string): SegmentInputValidator {
-    const segmentInfo = JSON.parse(segmentDetails);
+    let segmentInfo;
+    try {
+      segmentInfo = JSON.parse(segmentDetails);
+    } catch (err) {
+      throw new Error('Invalid JSON format');
+    }
     let userIds: string[];
     let subSegmentIds: string[];
     let groups: Group[];
