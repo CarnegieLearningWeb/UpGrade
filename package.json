@@ -23,7 +23,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "version:patch": "nps version.patch",
     "version:minor": "nps version.minor",
-    "version:major": "nps version.major"
+    "version:major": "nps version.major",
+    "prerelease:next": "node prerelease.js next",
+    "prerelease:complete": "node prerelease.js complete"
   },
   "lint-staged": {
     "./frontend/projects/upgrade/src/**/*.{ts,js,html,json,scss}": [
