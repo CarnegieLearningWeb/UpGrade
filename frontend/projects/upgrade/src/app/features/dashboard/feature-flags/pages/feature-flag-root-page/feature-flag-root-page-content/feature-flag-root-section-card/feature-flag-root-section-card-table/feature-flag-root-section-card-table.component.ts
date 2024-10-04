@@ -44,6 +44,9 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild('tableContainer') tableContainer: ElementRef;
+  @ViewChild('bottomTrigger') bottomTrigger: ElementRef;
+
+  private observer: IntersectionObserver;
 
   constructor(private featureFlagsService: FeatureFlagsService) {}
 
@@ -51,8 +54,36 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
     this.sortTable();
   }
 
+  ngAfterViewInit() {
+    this.setupIntersectionObserver();
+  }
+
   ngOnChanges() {
     this.sortTable();
+  }
+
+  ngOnDestroy() {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+  }
+
+  private setupIntersectionObserver() {
+    const options = {
+      root: this.tableContainer.nativeElement,
+      rootMargin: '100px',
+      threshold: 0.1,
+    };
+
+    this.observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        this.fetchFlagsOnScroll();
+      }
+    }, options);
+
+    if (this.bottomTrigger) {
+      this.observer.observe(this.bottomTrigger.nativeElement);
+    }
   }
 
   private sortTable() {
