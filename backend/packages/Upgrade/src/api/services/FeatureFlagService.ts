@@ -60,8 +60,7 @@ export class FeatureFlagService {
     @InjectRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
     @InjectDataSource() private dataSource: DataSource,
     public experimentAssignmentService: ExperimentAssignmentService,
-    public segmentService: SegmentService,
-    public segmentArray = []
+    public segmentService: SegmentService
   ) {}
 
   public find(logger: UpgradeLogger): Promise<FeatureFlag[]> {
@@ -830,42 +829,53 @@ export class FeatureFlagService {
       };
     });
 
-    const validFiles: FeatureFlagImportDataValidation[] = fileStatusArray
-      .filter((fileStatus) => fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE)
-      .map((fileStatus) => {
-        const featureFlagFile = featureFlagFiles.find((file) => file.fileName === fileStatus.fileName);
-        const segments = this.segmentArray;
+    const validFiles: FeatureFlagImportDataValidation[] = await Promise.all(
+      fileStatusArray
+        .filter((fileStatus) => fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE)
+        .map(async (fileStatus) => {
+          const featureFlagFile = featureFlagFiles.find((file) => file.fileName === fileStatus.fileName);
 
-        if (fileStatus.error === FF_COMPATIBILITY_TYPE.WARNING) {
-          const flag = JSON.parse(featureFlagFile.fileContent as string);
+          if (fileStatus.error === FF_COMPATIBILITY_TYPE.WARNING) {
+            const flag = JSON.parse(featureFlagFile.fileContent as string);
+            const segmentIdsSet = new Set([
+              ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
+                return segmentInclusion.segment.subSegments.map((subSegment) => subSegment.id);
+              }),
+              ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) => {
+                return segmentExclusion.segment.subSegments.map((subSegment) => subSegment.id);
+              }),
+            ]);
 
-          // remove elements from featureFlagSegmentInclusion and featureFlagSegmentExclusion if segment is not found or context is not same
-          flag.featureFlagSegmentInclusion = flag.featureFlagSegmentInclusion.filter((segmentInclusion) => {
-            const subSegments = segmentInclusion.segment.subSegments;
-            const subSegmentIds = subSegments.map((subSegment) => subSegment.id);
+            const segmentIds = Array.from(segmentIdsSet);
+            const segments = await this.segmentService.getSegmentByIds(segmentIds);
 
-            // check if each subsegment if found in segments array and has the same context else remove segmentInclusion
-            return subSegmentIds.every((subSegmentId) => {
-              const segmentFound = segments.find((segment) => segment.id === subSegmentId);
-              return segmentFound && segmentFound.context === flag.context[0];
+            // remove elements from featureFlagSegmentInclusion and featureFlagSegmentExclusion if segment is not found or context is not same
+            flag.featureFlagSegmentInclusion = flag.featureFlagSegmentInclusion.filter((segmentInclusion) => {
+              const subSegments = segmentInclusion.segment.subSegments;
+              const subSegmentIds = subSegments.map((subSegment) => subSegment.id);
+
+              // check if each subsegment if found in segments array and has the same context else remove segmentInclusion
+              return subSegmentIds.every((subSegmentId) => {
+                const segmentFound = segments.find((segment) => segment.id === subSegmentId);
+                return segmentFound && segmentFound.context === flag.context[0];
+              });
             });
-          });
 
-          flag.featureFlagSegmentExclusion = flag.featureFlagSegmentExclusion.filter((segmentExclusion) => {
-            const subSegments = segmentExclusion.segment.subSegments;
-            const subSegmentIds = subSegments.map((subSegment) => subSegment.id);
+            flag.featureFlagSegmentExclusion = flag.featureFlagSegmentExclusion.filter((segmentExclusion) => {
+              const subSegments = segmentExclusion.segment.subSegments;
+              const subSegmentIds = subSegments.map((subSegment) => subSegment.id);
 
-            // check if each subsegment if found in segments array and has the same context else remove segmentExclusion
-            return subSegmentIds.every((subSegmentId) => {
-              const segmentFound = segments.find((segment) => segment.id === subSegmentId);
-              return segmentFound && segmentFound.context === flag.context[0];
+              // check if each subsegment if found in segments array and has the same context else remove segmentExclusion
+              return subSegmentIds.every((subSegmentId) => {
+                const segmentFound = segments.find((segment) => segment.id === subSegmentId);
+                return segmentFound && segmentFound.context === flag.context[0];
+              });
             });
-          });
-          return flag;
-        }
-        return JSON.parse(featureFlagFile.fileContent as string);
-      });
-
+            return flag;
+          }
+          return JSON.parse(featureFlagFile.fileContent as string);
+        })
+    );
     const createdFlags = [];
 
     for (const featureFlagWithEnabledSettings of validFiles) {
@@ -1056,7 +1066,6 @@ export class FeatureFlagService {
 
         const segmentIds = Array.from(segmentIdsSet);
         const segments = await this.segmentService.getSegmentByIds(segmentIds);
-        this.segmentArray = segments;
 
         if (segmentIds.length !== segments.length) {
           compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
