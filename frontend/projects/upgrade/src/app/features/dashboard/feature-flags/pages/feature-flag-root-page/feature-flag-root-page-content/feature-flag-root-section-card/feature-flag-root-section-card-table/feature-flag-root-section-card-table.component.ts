@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 
-import { ChangeDetectionStrategy, Component, Input, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 
 import {
   FLAG_ROOT_COLUMN_NAMES,
@@ -43,6 +43,7 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   warningStatusForAllFlags$ = this.featureFlagsService.warningStatusForAllFlags$;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
+  @ViewChild('tableContainer') tableContainer: ElementRef;
 
   constructor(private featureFlagsService: FeatureFlagsService) {}
 
@@ -111,6 +112,10 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
       // When sorting is cleared, revert to default sorting
       this.featureFlagsService.setSortingType(null);
       this.featureFlagsService.setSortKey(null);
+      this.tableContainer.nativeElement.scroll({
+        top: 0,
+        behavior: 'smooth',
+      });
       this.dataSource$.data = this.dataSource$.data.sort(
         (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
