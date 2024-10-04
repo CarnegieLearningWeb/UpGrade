@@ -9,7 +9,7 @@
 		at the same time that happen to rev to the same new version will be caught 
 		by a merge conflict. -->
 
-	<version>6.0.0</version>
+	<version>6.0.0-prerelease.0</version>
 	<build>
 		<plugins>
 			<plugin>
