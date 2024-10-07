@@ -76,6 +76,46 @@
     .enable-column {
       width: 20%;
       text-align: center;
+
+      ::ng-deep .mat-mdc-slide-toggle {
+        cursor: not-allowed;
+        .mdc-switch {
+          cursor: not-allowed;
+          &--unselected {
+            .mdc-switch__track {
+              opacity: 1.0;
+              &::before {
+                background: var(--mdc-switch-unselected-track-color);
+              }
+            }
+
+            .mdc-switch__shadow {
+              background: var(--mdc-switch-unselected-handle-color);
+            }
+
+            .mdc-switch__icons {
+              opacity: 1.0;
+            }
+          }
+
+          &--selected {
+            .mdc-switch__track {
+              opacity: 1.0;
+              &::after {
+                background: var(--mdc-switch-selected-track-color);
+              }
+            }
+
+            .mdc-switch__shadow {
+              background: var(--mdc-switch-selected-handle-color);
+            }
+
+            .mdc-switch__icons {
+              opacity: 1.0;
+            }
+          }
+        }
+      }
     }
 
     .actions-column {
@@ -84,13 +124,19 @@
       text-align: center;
       padding-right: 16px;
 
-      .action-button {
-        color: var(--dark-grey);
+      .button-wrapper {
+        display: inline-block;
+        .action-button {
+          color: var(--dark-grey);
 
-        &[disabled] {
-          .mat-icon {
-            opacity: 0.5;
+          &[disabled] {
+            .mat-icon {
+              opacity: 0.5;
+            }
           }
+        }
+        &:has(.action-button:disabled) {
+          cursor: not-allowed;
         }
       }
     }
