@@ -76,46 +76,6 @@
     .enable-column {
       width: 20%;
       text-align: center;
-
-      ::ng-deep .mat-mdc-slide-toggle {
-        cursor: not-allowed;
-        .mdc-switch {
-          cursor: not-allowed;
-          &--unselected {
-            .mdc-switch__track {
-              opacity: 1.0;
-              &::before {
-                background: var(--mdc-switch-unselected-track-color);
-              }
-            }
-
-            .mdc-switch__shadow {
-              background: var(--mdc-switch-unselected-handle-color);
-            }
-
-            .mdc-switch__icons {
-              opacity: 1.0;
-            }
-          }
-
-          &--selected {
-            .mdc-switch__track {
-              opacity: 1.0;
-              &::after {
-                background: var(--mdc-switch-selected-track-color);
-              }
-            }
-
-            .mdc-switch__shadow {
-              background: var(--mdc-switch-selected-handle-color);
-            }
-
-            .mdc-switch__icons {
-              opacity: 1.0;
-            }
-          }
-        }
-      }
     }
 
     .actions-column {
@@ -131,7 +91,7 @@
 
           &[disabled] {
             .mat-icon {
-              opacity: 0.5;
+              opacity: 1.0; /* Placeholder for potential later change */
             }
           }
         }

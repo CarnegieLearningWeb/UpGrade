@@ -9,52 +9,6 @@
     column-gap: 34px;
     padding: 0 16px;
 
-    ::ng-deep .mat-mdc-slide-toggle {
-      cursor: not-allowed;
-      .mdc-switch {
-        cursor: not-allowed;
-        &--unselected {
-          .mdc-switch__track {
-            opacity: 1.0;
-            &::before {
-              background: var(--mdc-switch-unselected-track-color);
-            }
-          }
-
-          .mdc-switch__shadow {
-            background: var(--mdc-switch-unselected-handle-color);
-          }
-
-          .mdc-switch__icons {
-            opacity: 1.0;
-          }
-        }
-
-        &--selected {
-          .mdc-switch__track {
-            opacity: 1.0;
-            &::after {
-              background: var(--mdc-switch-selected-track-color);
-            }
-          }
-
-          .mdc-switch__shadow {
-            background: var(--mdc-switch-selected-handle-color);
-          }
-
-          .mdc-switch__icons {
-            opacity: 1.0;
-          }
-        }
-      }
-
-      .mdc-label {
-        margin-left: 5px;
-        color: var(--dark-grey);
-        cursor: not-allowed;
-      }
-    }
-
     .primary-button-text {
       padding: 0 8px;
     }

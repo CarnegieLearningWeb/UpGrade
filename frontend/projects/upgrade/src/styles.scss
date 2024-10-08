@@ -329,6 +329,52 @@ button[mat-icon-button] {
   }
 }
 
+.mat-mdc-slide-toggle {
+  cursor: not-allowed;
+  .mdc-switch {
+    cursor: not-allowed !important;
+    &--unselected {
+      .mdc-switch__track {
+        opacity: 1.0 !important;
+        &::before {
+          background: var(--mdc-switch-unselected-track-color) !important;
+        }
+      }
+
+      .mdc-switch__shadow {
+        background: var(--mdc-switch-unselected-handle-color) !important;
+      }
+
+      .mdc-switch__icons {
+        opacity: 1.0 !important;
+      }
+    }
+
+    &--selected {
+      .mdc-switch__track {
+        opacity: 1.0 !important;
+        &::after {
+          background: var(--mdc-switch-selected-track-color) !important;
+        }
+      }
+
+      .mdc-switch__shadow {
+        background: var(--mdc-switch-selected-handle-color) !important;
+      }
+
+      .mdc-switch__icons {
+        opacity: 1.0 !important;
+      }
+    }
+  }
+
+  .mdc-label {
+    margin-left: 5px;
+    color: var(--dark-grey) !important;
+    cursor: not-allowed;
+  }
+}
+
 // Material library doesn't expose any params to prevent content truncation for these widgets.
 // Therefore we override the css. If option appears in future, these can go away.
 
