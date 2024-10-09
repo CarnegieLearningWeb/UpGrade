@@ -1,6 +1,6 @@
 {
   "name": "UpGrade",
-  "version": "6.0.0-prerelease.0",
+  "version": "6.0.0-prerelease.1",
   "description": "This is a combined repository for UpGrade, an open-source platform to support large-scale A/B testing in educational applications.  Learn more at www.upgradeplatform.org",
   "main": "index.js",
   "devDependencies": {
@@ -23,7 +23,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "version:patch": "nps version.patch",
     "version:minor": "nps version.minor",
-    "version:major": "nps version.major"
+    "version:major": "nps version.major",
+    "prerelease:next": "node prerelease.js next",
+    "prerelease:complete": "node prerelease.js complete"
   },
   "lint-staged": {
     "./frontend/projects/upgrade/src/**/*.{ts,js,html,json,scss}": [
