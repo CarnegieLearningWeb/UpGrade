@@ -191,10 +191,12 @@ export class FeatureFlagService {
     // TODO: the type of queryBuilder.getMany() is Promise<FeatureFlag[]>
     // However, the above query returns Promise<(Omit<FeatureFlag, 'featureFlagExposures'> & { featureFlagExposures: number })[]>
     // This can be fixed by using a @VirtualColumn in the FeatureFlag entity, when we are on TypeORM 0.3
-    const result = await queryBuilder.getMany();
+    const featureFlagsWithExposures = await queryBuilder
+      .loadRelationCountAndMap('feature_flag.featureFlagExposures', 'feature_flag.featureFlagExposures')
+      .getMany();
 
     // Get the feature flag ids
-    const featureFlagIds = result.map(({ id }) => id);
+    const featureFlagIds = featureFlagsWithExposures.map(({ id }) => id);
 
     // Get the relevant segment inclusion documents
     const featureFlagWithInclusionSegments = await this.featureFlagRepository.find({
@@ -203,12 +205,20 @@ export class FeatureFlagService {
       relations: ['featureFlagSegmentInclusion'],
     });
 
-    // Add the inclusion documents to the result
-    return result.map((result) => ({
-      ...result,
-      featureFlagSegmentInclusion: featureFlagWithInclusionSegments.find(({ id }) => id === result.id)
-        .featureFlagSegmentInclusion,
-    }));
+    // Add the inclusion documents to the featureFlagsWithExposures
+    return featureFlagsWithExposures.map((featureFlag) => {
+      // Find the matching featureFlagSegmentInclusion for the current item
+      const inclusionSegment = featureFlagWithInclusionSegments.find(
+        ({ id }) => id === featureFlag.id
+      )?.featureFlagSegmentInclusion;
+
+      // Construct the new object with conditional properties
+      return {
+        ...featureFlag,
+        // Only include featureFlagSegmentInclusion if inclusionSegment is defined and not empty
+        ...(inclusionSegment && inclusionSegment.length > 0 ? { featureFlagSegmentInclusion: inclusionSegment } : {}),
+      };
+    });
   }
 
   public async delete(
