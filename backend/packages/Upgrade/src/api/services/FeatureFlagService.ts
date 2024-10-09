@@ -906,7 +906,6 @@ export class FeatureFlagService {
       const featureFlag = {
         ...featureFlagWithEnabledSettings,
         status: FEATURE_FLAG_STATUS.DISABLED,
-        filterMode: FILTER_MODE.EXCLUDE_ALL,
       };
 
       const createdFlag = await this.dataSource.transaction(async (transactionalEntityManager) => {
