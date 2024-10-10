@@ -9,11 +9,6 @@
     column-gap: 34px;
     padding: 0 16px;
 
-    ::ng-deep .mat-mdc-slide-toggle .mdc-label {
-      margin-left: 5px;
-      color: var(--dark-grey);
-    }
-
     .primary-button-text {
       padding: 0 8px;
     }
@@ -22,6 +17,7 @@
   .options-container {
     display: flex;
     column-gap: 4px;
+    cursor: not-allowed;
 
     .mat-mdc-icon-button:not(.mat-mdc-button-disabled) .mat-icon {
       color: var(--dark-grey);
