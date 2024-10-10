@@ -164,7 +164,7 @@ export default async function ExcludeIndividualsB(): Promise<void> {
     ])
   );
 
-  // get experimentUser2
+  // get experimentUser2 (User from same group)
   let updatedExperimentUser2 = experimentUsers[1];
   updatedExperimentUser2 = {
     ...updatedExperimentUser2,
@@ -182,5 +182,25 @@ export default async function ExcludeIndividualsB(): Promise<void> {
 
   // get all experiment condition for user2
   experimentConditionAssignment = await getAllExperimentCondition(updatedExperimentUser2.id, new UpgradeLogger());
+  expect(experimentConditionAssignment.length).toEqual(0);
+
+  // get experimentUser3 (User from different group)
+  let updatedExperimentUser3 = experimentUsers[2];
+  updatedExperimentUser3 = {
+    ...updatedExperimentUser3,
+    group: {
+      ...updatedExperimentUser3.group,
+      class: ['2'],
+    },
+    workingGroup: {
+      ...updatedExperimentUser3.workingGroup,
+      class: '2',
+    },
+  };
+
+  await experimentUserService.create(updatedExperimentUser3 as any, new UpgradeLogger());
+
+  // get all experiment condition for user2
+  experimentConditionAssignment = await getAllExperimentCondition(updatedExperimentUser3.id, new UpgradeLogger());
   expect(experimentConditionAssignment.length).toEqual(3);
 }

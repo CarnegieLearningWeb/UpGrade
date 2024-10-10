@@ -42,6 +42,11 @@ import { GroupEnrollmentRepository } from '../repositories/GroupEnrollmentReposi
 import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { ExperimentUser } from '../models/ExperimentUser';
+import { IndividualExclusion } from '../models/IndividualExclusion';
+import { UserRepository } from '../repositories/UserRepository';
+import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
+import { GroupExclusion } from '../models/GroupExclusion';
+import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 
 interface IsSegmentValidWithError {
   missingProperty: string;
@@ -77,6 +82,10 @@ export class SegmentService {
     private groupEnrollmentRepository: GroupEnrollmentRepository,
     @InjectRepository()
     private individualExclusionRepository: IndividualExclusionRepository,
+    @InjectRepository()
+    private userRepository: ExperimentUserRepository,
+    @InjectRepository()
+    private groupExclusionRepository: GroupExclusionRepository,
     private cacheService: CacheService
   ) {}
 
@@ -618,27 +627,29 @@ export class SegmentService {
 
           if (experimentSegment.experiment.consistencyRule == CONSISTENCY_RULE.GROUP) {
             // Delete Individual Enrollment Doc for users belongs to excludedUsersGroups
-            this.individualEnrollmentRepository.delete({
+            await this.individualEnrollmentRepository.delete({
               experiment: { id: experiment.id },
               groupId: In(excludedUsersGroups),
             });
-          } else {
-            const exclusionDocs = newUsers.map((userId) => {
-              return {
-                user: { id: userId } as ExperimentUser,
-                experiment,
-                groupId: null,
-                exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
-              };
-            });
-            await this.individualExclusionRepository.saveRawJson(exclusionDocs);
           }
+
           // Delete group enrollment of all groups
           if (experimentSegment.experiment.assignmentUnit == ASSIGNMENT_UNIT.GROUP) {
-            this.groupEnrollmentRepository.delete({
+            await this.groupEnrollmentRepository.delete({
               experiment: { id: experiment.id },
               groupId: In(excludedUsersGroups),
             });
+
+            // group exclusion doc
+            const groupExclusionDocs: Array<Omit<GroupExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>> =
+              [...excludedUsersGroups].map((groupId) => {
+                return {
+                  experiment,
+                  groupId,
+                  exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
+                };
+              });
+            await this.groupExclusionRepository.saveRawJson(groupExclusionDocs);
           }
 
           // Insert Individual Enrollment Doc in mark
