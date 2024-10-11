@@ -190,6 +190,8 @@ Resources:
               Value: '{{resolve:ssm:UPGRADE_TYPEORM_SYNCHRONIZE}}'
             - Name: USE_NEW_RELIC
               Value: '{{resolve:ssm:UPGRADE_USE_NEW_RELIC}}'  
+            - Name: IS_ECS
+              Value: '{{resolve:ssm:UPGRADE_IS_ECS}}'
             - Name: CONTEXT_METADATA
               Value: '{{resolve:ssm:UPGRADE_CONTEXT_METADATA}}'
             - Name: METRICS
