@@ -1,13 +1,30 @@
-import { JsonController, Get, Delete, Param, Authorized, Post, Req, Body, QueryParams } from 'routing-controllers';
+import {
+  JsonController,
+  Get,
+  Delete,
+  Param,
+  Authorized,
+  Post,
+  Req,
+  Body,
+  QueryParams,
+  Params,
+} from 'routing-controllers';
 import { SegmentService, SegmentWithStatus } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
 import { SERVER_ERROR } from 'upgrade_types';
 import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
-import { SegmentFile, SegmentIds, SegmentImportError, SegmentInputValidator } from './validators/SegmentInputValidator';
+import {
+  IdValidator,
+  SegmentFile,
+  SegmentIds,
+  SegmentImportError,
+  SegmentInputValidator,
+} from './validators/SegmentInputValidator';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
-import { BadRequestException, NotFoundException } from '@nestjs/common/exceptions';
+import { NotFoundException } from '@nestjs/common/exceptions';
 
 export interface getSegmentData {
   segmentsData: SegmentWithStatus[];
@@ -249,11 +266,10 @@ export class SegmentController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Get('/:segmentId')
-  public async getSegmentById(@Param('segmentId') segmentId: string, @Req() request: AppRequest): Promise<Segment> {
-    if (!segmentId || !isUUID(segmentId)) {
-      throw new BadRequestException('segmentId should be a valid UUID.');
-    }
-
+  public async getSegmentById(
+    @Params({ validate: true }) { segmentId }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
     const segment = await this.segmentService.getSegmentById(segmentId, request.logger);
     if (!segment) {
       throw new NotFoundException('Segment not found.');
@@ -294,13 +310,9 @@ export class SegmentController {
    */
   @Get('/status/:segmentId')
   public async getSegmentWithStatusById(
-    @Param('segmentId') segmentId: string,
+    @Params({ validate: true }) { segmentId }: IdValidator,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    if (!segmentId || !isUUID(segmentId)) {
-      throw new BadRequestException('segmentId should be a valid UUID.');
-    }
-
     const segment = await this.segmentService.getSingleSegmentWithStatus(segmentId, request.logger);
     if (!segment) {
       throw new NotFoundException('Segment not found.');
