@@ -13,6 +13,7 @@ import { Experiment } from '../models/Experiment';
 import isEqual from 'lodash/isEqual';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { env } from '../../env';
+import { HttpError } from '../errors';
 
 @Service()
 export class ExperimentUserService {
@@ -298,18 +299,13 @@ export class ExperimentUserService {
   }
 
   public async getUserDoc(experimentUserId, logger): Promise<RequestedExperimentUser> {
-    try {
-      const experimentUserDoc = await this.getOriginalUserDoc(experimentUserId, logger);
-      if (experimentUserDoc) {
-        const userDoc = { ...experimentUserDoc, requestedUserId: experimentUserId };
-        logger.info({ message: 'Got the user doc', details: userDoc });
-        return userDoc;
-      } else {
-        return null;
-      }
-    } catch (error) {
-      logger.error({ message: `Error in getting user doc for user => ${experimentUserId}`, error });
-      return null;
+    const experimentUserDoc = await this.getOriginalUserDoc(experimentUserId, logger);
+    if (experimentUserDoc) {
+      const userDoc = { ...experimentUserDoc, requestedUserId: experimentUserId };
+      logger.info({ message: 'Got the user doc', details: userDoc });
+      return userDoc;
+    } else {
+      throw new HttpError(404, `Experiment User not found: ${experimentUserId}`);
     }
   }
 

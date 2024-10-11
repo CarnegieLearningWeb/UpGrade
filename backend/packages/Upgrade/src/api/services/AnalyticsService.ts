@@ -30,6 +30,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { ExperimentService } from './ExperimentService';
 import { QueryService } from './QueryService';
+import { HttpError } from '../errors';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -165,9 +166,6 @@ export class AnalyticsService {
 
   public async getCSVData(experimentId: string, email: string, logger: UpgradeLogger): Promise<string> {
     logger.info({ message: `Inside getCSVData ${experimentId} , ${email}` });
-    if (!experimentId) {
-      return '';
-    }
     try {
       const timeStamp = new Date().toISOString();
       const folderPath = 'src/api/assets/files/';
@@ -181,6 +179,9 @@ export class AnalyticsService {
       const user = await userRepository.findOneBy({ email });
 
       const experimentQueryResult = await this.experimentService.getExperimentDetailsForCSVDataExport(experimentId);
+      if (!experimentQueryResult || experimentQueryResult.length === 0) {
+        throw new HttpError(404, `Experiment not found for id: ${experimentId}`);
+      }
       const formattedExperiments = experimentQueryResult.reduce((acc, item) => {
         let experiment = acc.find((e) => e.experimentId === item.experimentId);
         if (!experiment) {

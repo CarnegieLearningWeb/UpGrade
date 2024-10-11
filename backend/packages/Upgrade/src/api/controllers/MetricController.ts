@@ -1,8 +1,8 @@
-import { Authorized, JsonController, Get, Delete, Param, Post, Req, Body } from 'routing-controllers';
+import { Authorized, JsonController, Get, Delete, Param, Post, Req, Body, Params } from 'routing-controllers';
 import { MetricService } from '../services/MetricService';
-import { IMetricUnit, SERVER_ERROR } from 'upgrade_types';
+import { IMetricUnit } from 'upgrade_types';
 import { AppRequest } from '../../types';
-import { MetricValidator } from './validators/MetricValidator';
+import { MetricKeyValidator, MetricValidator } from './validators/MetricValidator';
 
 /**
  * @swagger
@@ -53,7 +53,7 @@ export class MetricController {
    *          '200':
    *            description: Get all metrics with context
    *          '404':
-   *            description: Context not found
+   *            description: Metrics Context not found
    */
   @Get('/:context')
   public getMetricsByContext(@Param('context') context: string, @Req() request: AppRequest): Promise<IMetricUnit[]> {
@@ -128,12 +128,14 @@ export class MetricController {
    *       responses:
    *          '200':
    *            description: Delete metric by key
+   *          '404':
+   *            description: Metrics key not found
    */
   @Delete('/:key')
-  public delete(@Param('key') key: string, @Req() request: AppRequest): Promise<IMetricUnit[] | undefined> {
-    if (!key) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : key should not be null.'));
-    }
+  public delete(
+    @Params({ validate: true }) { key }: MetricKeyValidator,
+    @Req() request: AppRequest
+  ): Promise<IMetricUnit[] | undefined> {
     return this.metricService.deleteMetric(key, request.logger);
   }
 }
