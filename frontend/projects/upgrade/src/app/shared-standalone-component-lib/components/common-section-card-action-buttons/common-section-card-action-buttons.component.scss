@@ -17,7 +17,6 @@
   .options-container {
     display: flex;
     column-gap: 4px;
-    cursor: not-allowed;
 
     .mat-mdc-icon-button:not(.mat-mdc-button-disabled) .mat-icon {
       color: var(--dark-grey);
