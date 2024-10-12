@@ -11,6 +11,7 @@ import {
   CurrentUser,
   Req,
   QueryParams,
+  Params,
 } from 'routing-controllers';
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
@@ -26,6 +27,8 @@ import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpda
 import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
+import { NotFoundException } from '@nestjs/common/exceptions';
+import { IdValidator } from './validators/FeatureFlagValidator';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: ExperimentDTO[];
@@ -827,6 +830,8 @@ export class ExperimentController {
    *            description: Get Experiment By Id
    *            schema:
    *              $ref: '#/definitions/ExperimentResponse'
+   *          '400':
+   *            description: ExperimentId should be a valid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -836,15 +841,17 @@ export class ExperimentController {
    */
   @Get('/single/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public one(@Param('id') id: string, @Req() request: AppRequest): Promise<ExperimentDTO> | undefined {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
+  public async one(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<ExperimentDTO> {
+    const experiment = await this.experimentService.getSingleExperiment(id, request.logger);
+
+    if (!experiment) {
+      throw new NotFoundException('Experiment not found.');
     }
-    return this.experimentService.getSingleExperiment(id, request.logger);
+
+    return experiment;
   }
 
   /**
@@ -910,6 +917,8 @@ export class ExperimentController {
    *                  assignmentWeight:
    *                    type: number
    *                  order: {}
+   *          '400':
+   *            description: ExperimentId should be a valid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -919,15 +928,15 @@ export class ExperimentController {
    */
   @Get('/conditions/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public getCondition(@Param('id') id: string, @Req() request: AppRequest): Promise<ExperimentCondition[]> {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
+  public async getCondition(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<ExperimentCondition[]> {
+    const conditions = await this.experimentService.getExperimentalConditions(id, request.logger);
+    if (!conditions) {
+      throw new NotFoundException('Experiment not found.');
     }
-    return this.experimentService.getExperimentalConditions(id, request.logger);
+    return conditions;
   }
 
   /**
@@ -1034,6 +1043,8 @@ export class ExperimentController {
    *            description: Delete Experiment By Id
    *            schema:
    *              $ref: '#/definitions/ExperimentResponse'
+   *          '400':
+   *            description: ExperimentId should be a valid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -1043,20 +1054,18 @@ export class ExperimentController {
    */
 
   @Delete('/:id')
-  public delete(
-    @Param('id') id: string,
+  public async delete(
+    @Params({ validate: true }) { id }: IdValidator,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<Experiment | undefined> {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
     request.logger.child({ user: currentUser });
-    return this.experimentService.delete(id, currentUser, request.logger);
+    const experiment = await this.experimentService.delete(id, currentUser, request.logger);
+
+    if (!experiment) {
+      throw new NotFoundException('Experiment not found.');
+    }
+    return experiment;
   }
 
   /**
@@ -1337,6 +1346,8 @@ export class ExperimentController {
    *              type: number
    *              items:
    *                $ref: '#/definitions/ExperimentResponse'
+   *          '400':
+   *            description: ExperimentId should be a valid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -1347,16 +1358,13 @@ export class ExperimentController {
   @Get('/getGroupAssignmentStatus/:id')
   @OnUndefined(ExperimentNotFoundError)
   public async getGroupAssignmentStatus(
-    @Param('id') id: string,
+    @Params({ validate: true }) { id }: IdValidator,
     @Req() request: AppRequest
   ): Promise<number> | undefined {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
+    const groupAssignmentStatus = await this.experimentAssignmentService.getGroupAssignmentStatus(id, request.logger);
+    if (typeof groupAssignmentStatus === 'undefined') {
+      throw new NotFoundException('Experiment not found.');
     }
-    return this.experimentAssignmentService.getGroupAssignmentStatus(id, request.logger);
+    return groupAssignmentStatus;
   }
 }
