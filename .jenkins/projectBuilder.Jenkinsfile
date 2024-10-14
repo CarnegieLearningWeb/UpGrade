@@ -39,6 +39,9 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
+                    script: 'echo $API_BASE_URL',
+                ],
+                [
                     script: 'npm run build:project',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
