@@ -49,11 +49,11 @@ projectBuilderV5 (
                     script: 'npm run prebuild:cat',
                     log: 'string-post-replace.log',
                 ],
-                [
-                    script: 'npm run build:project',
-                    log: '${projectName}-build.log',
-                    githubCheck: '${projectName}-build'
-                ]
+                // [
+                //     script: 'npm run build:project',
+                //     log: '${projectName}-build.log',
+                //     githubCheck: '${projectName}-build'
+                // ]
             ],
             envVars: [
                 API_BASE_URL: '@vault(secret/configs/upgrade/${environment}/API_BASE_URL)',

@@ -3,7 +3,7 @@ replace = require("replace-in-file");
 
 var replacements = [];
 var envKeys = Object.keys(envVars);
-
+var environment = process.env.ENV || 'develop';
 for (var i in envKeys) {
   var replacement = {};
   replacement["search"] = new RegExp("%" + envKeys[i] + "%", "g");
@@ -13,15 +13,13 @@ for (var i in envKeys) {
 }
 
 console.log(
-  "Beginning pre build environment string replacements in environments.*.ts files"
+  `Beginning pre build environment string replacements in environments.${environment}.ts files`
 );
 for (var i in replacements) {
   try {
     const changedFiles = replace.sync({
       files: [
-        'projects/upgrade/src/environments/environment.prod.ts',
-        'projects/upgrade/src/environments/environment.qa.ts',
-        'projects/upgrade/src/environments/environment.staging.ts',
+        `projects/upgrade/src/environments/environment.${environment}.ts`,
       ],
       from: replacements[i].search,
       to: replacements[i].replace,
