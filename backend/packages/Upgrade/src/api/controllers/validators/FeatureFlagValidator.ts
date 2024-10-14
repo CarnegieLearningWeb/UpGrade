@@ -10,7 +10,6 @@ export class FeatureFlagCoreValidation {
   public id: string;
 
   @IsNotEmpty()
-  @IsDefined()
   @IsString()
   public name: string;
 
@@ -19,12 +18,10 @@ export class FeatureFlagCoreValidation {
   public description: string;
 
   @IsNotEmpty()
-  @IsDefined()
   @IsString()
   public key: string;
 
   @IsNotEmpty()
-  @IsDefined()
   @IsEnum(FEATURE_FLAG_STATUS)
   public status: FEATURE_FLAG_STATUS;
 
@@ -59,19 +56,16 @@ export class FeatureFlagValidation extends FeatureFlagCoreValidation {
 
 export class UserParamsValidator {
   @IsNotEmpty()
-  @IsDefined()
   @IsString()
   public userId: string;
 
   @IsNotEmpty()
-  @IsDefined()
   @IsString()
   public context: string;
 }
 
 export class IdValidator {
   @IsNotEmpty()
-  @IsDefined()
   @IsUUID()
   public id: string;
 }
@@ -86,7 +80,6 @@ export class FeatureFlagImportValidation {
 class FeatureFlagFile {
   @IsString()
   @IsNotEmpty()
-  @IsDefined()
   public fileName: string;
 
   @IsString()

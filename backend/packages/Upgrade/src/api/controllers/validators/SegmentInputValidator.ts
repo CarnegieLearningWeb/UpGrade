@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsDefined, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { SEGMENT_TYPE } from 'upgrade_types';
 
 export class Group {
@@ -14,7 +14,6 @@ export class Group {
 export class SegmentInputValidator {
   @IsOptional()
   @IsUUID()
-  @IsString()
   public id?: string;
 
   @IsNotEmpty()
@@ -49,7 +48,6 @@ export class SegmentInputValidator {
 
 export class IdValidator {
   @IsNotEmpty()
-  @IsDefined()
   @IsUUID()
   public segmentId: string;
 }
@@ -88,7 +86,6 @@ export class SegmentFile {
 export class SegmentIds {
   @IsArray()
   @IsNotEmpty()
-  @IsString({ each: true })
   @IsUUID('all', { each: true })
   public ids: string[];
 }
