@@ -10,7 +10,7 @@ projectBuilderV5 (
             artifactType: "ecr",
             projectDir: "backend",
             runInProjectDir: true,
-            versioning: "calendar",
+            versioning: "branch",
             appInfrastructure: [
                 [file: "cloudformation/backend/app-infrastructure.yml"]
             ],
@@ -23,6 +23,10 @@ projectBuilderV5 (
             dockerConfig: [
                 dockerFile: "backend/cl.Dockerfile",
                 requiresCodeArtifactToken: true,
+            ],
+            automatedBranchBuilds: [
+                "dev",
+                "release/.*"
             ]
         ],
         "upgrade":[
@@ -30,13 +34,17 @@ projectBuilderV5 (
             projectDir: 'frontend',
             runInProjectDir: true,
             artifactDir: 'dist/upgrade',
-            versioning: 'calendar',
+            versioning: 'branch',
             oneArtifactPerEnvironment: true,
             buildScripts: [
                 [
                     script: 'npm ci --no-audit',
                     githubCheck: '${projectName} npm ci --no-audit',
                     log: '${projectName}-npm-ci.log'
+                ],
+                [
+                    script: 'npm run prebuild:project',
+                    log: 'env-pre-build.log',
                 ],
                 [
                     script: 'npm run build:project',
@@ -50,6 +58,10 @@ projectBuilderV5 (
                 GOOGLE_CLIENT_ID: '@vault(secret/configs/upgrade/${environment}/GOOGLE_CLIENT_ID)',
                 GOOGLE_SERVICE_ACCOUNT_ID: '@vault(secret/configs/upgrade/${environment}/GOOGLE_SERVICE_ACCOUNT_ID)',
             ],
+            automatedBranchBuilds: [
+                "dev",
+                "release/.*"
+            ]
         ],
          "scheduler-lambda": [
             artifactType: "s3",
@@ -87,7 +99,12 @@ projectBuilderV5 (
                 [
                     type: "defaultBranch",
                     environment: "qa"
+                ],
+                [
+                    branchRegex: "release/.*",
+                    environment: "staging"
                 ]
+
             ],
             jobs: [
                 [
@@ -102,6 +119,10 @@ projectBuilderV5 (
                 [
                     type: "defaultBranch",
                     environment: "qa"
+                ],
+                [
+                    branchRegex: "release/.*",
+                    environment: "staging"
                 ]
             ],
             jobs: [

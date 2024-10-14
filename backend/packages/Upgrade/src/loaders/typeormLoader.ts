@@ -73,9 +73,8 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     tteContainer.setDataSource(CONNECTION_NAME.REPLICA, exportDataSourceInstance);
     await Promise.all([appDataSourceInstance.initialize(), exportDataSourceInstance.initialize()]);
 
-    if (!env.db.synchronize) {
+    if (!env.db.synchronize && !env.isECS) {
       await appDataSourceInstance.runMigrations();
-      await exportDataSourceInstance.runMigrations();
     }
 
     if (settings) {

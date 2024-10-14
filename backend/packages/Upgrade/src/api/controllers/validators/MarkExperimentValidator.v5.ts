@@ -19,7 +19,6 @@ class AssignedCondition {
 class Data {
   @IsString()
   @IsNotEmpty()
-  @IsDefined()
   site: string;
 
   @IsString()
@@ -33,7 +32,6 @@ class Data {
 
 export class MarkExperimentValidatorv5 {
   @IsNotEmpty()
-  @IsDefined()
   public userId: string;
 
   @IsDefined()
