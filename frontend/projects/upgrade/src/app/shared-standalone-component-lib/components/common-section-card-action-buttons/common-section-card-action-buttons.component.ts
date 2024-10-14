@@ -17,7 +17,8 @@ import { IMenuButtonItem } from 'upgrade_types';
  * ```
  * <app-common-section-card-action-buttons
  *   [showSlideToggle]="false"
- *   [isEnableToggleChecked]="false"
+ *   [slideToggleChecked]="false"
+ *   [slideToggleDisabled]="false"
  *   [showPrimaryButton]="true"
  *   [primaryButtonText]="'Add Row'"
  *   [showMenuButton]="true"
@@ -41,7 +42,8 @@ import { IMenuButtonItem } from 'upgrade_types';
 export class CommonSectionCardActionButtonsComponent {
   @Input() showSlideToggle?: boolean = false;
   @Input() slideToggleText?: string;
-  @Input() isEnableToggleChecked?: boolean = false;
+  @Input() slideToggleChecked?: boolean = false;
+  @Input() slideToggleDisabled?: boolean = false;
   @Input() showPrimaryButton?: boolean = false;
   @Input() primaryButtonText?: string;
   @Input() showMenuButton?: boolean = false;

@@ -10,6 +10,7 @@ interface CRUD {
 
 export interface UserPermission {
   experiments: CRUD;
+  stratifications: CRUD;
   users: CRUD;
   logs: CRUD;
   manageRoles: CRUD;

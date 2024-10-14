@@ -84,8 +84,20 @@
       text-align: center;
       padding-right: 16px;
 
-      .action-button {
-        color: var(--dark-grey);
+      .button-wrapper {
+        display: inline-block;
+        .action-button {
+          color: var(--dark-grey);
+
+          &[disabled] {
+            .mat-icon {
+              opacity: 1.0; /* Placeholder for potential later change */
+            }
+          }
+        }
+        &:has(.action-button:disabled) {
+          cursor: not-allowed;
+        }
       }
     }
   }

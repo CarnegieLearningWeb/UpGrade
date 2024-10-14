@@ -14,7 +14,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 })
 export class FeatureFlagsRootComponent implements OnInit {
   permissions$: Observable<UserPermission>;
-  isLoadingFeatureFlags$ = this.featureFlagsService.isInitialFeatureFlagsLoading();
+  isLoadingFeatureFlags$ = this.featureFlagsService.isInitialFeatureFlagsLoading$;
   featureFlags$ = this.featureFlagsService.allFeatureFlags$;
   constructor(
     private featureFlagsService: FeatureFlagsService,

@@ -163,7 +163,7 @@ export class FeatureFlagService {
     return this.featureFlagRepository.count();
   }
 
-  public findPaginated(
+  public async findPaginated(
     skip: number,
     take: number,
     logger: UpgradeLogger,
@@ -172,10 +172,7 @@ export class FeatureFlagService {
   ): Promise<FeatureFlag[]> {
     logger.info({ message: 'Find paginated Feature flags' });
 
-    let queryBuilder = this.featureFlagRepository
-      .createQueryBuilder('feature_flag')
-      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
-      .loadRelationCountAndMap('feature_flag.featureFlagExposures', 'feature_flag.featureFlagExposures');
+    let queryBuilder = this.featureFlagRepository.createQueryBuilder('feature_flag');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
       // add search query
@@ -194,7 +191,34 @@ export class FeatureFlagService {
     // TODO: the type of queryBuilder.getMany() is Promise<FeatureFlag[]>
     // However, the above query returns Promise<(Omit<FeatureFlag, 'featureFlagExposures'> & { featureFlagExposures: number })[]>
     // This can be fixed by using a @VirtualColumn in the FeatureFlag entity, when we are on TypeORM 0.3
-    return queryBuilder.getMany();
+    const featureFlagsWithExposures = await queryBuilder
+      .loadRelationCountAndMap('feature_flag.featureFlagExposures', 'feature_flag.featureFlagExposures')
+      .getMany();
+
+    // Get the feature flag ids
+    const featureFlagIds = featureFlagsWithExposures.map(({ id }) => id);
+
+    // Get the relevant segment inclusion documents
+    const featureFlagWithInclusionSegments = await this.featureFlagRepository.find({
+      select: ['id', 'featureFlagSegmentInclusion'],
+      where: { id: In(featureFlagIds) },
+      relations: ['featureFlagSegmentInclusion'],
+    });
+
+    // Add the inclusion documents to the featureFlagsWithExposures
+    return featureFlagsWithExposures.map((featureFlag) => {
+      // Find the matching featureFlagSegmentInclusion for the current item
+      const inclusionSegment = featureFlagWithInclusionSegments.find(
+        ({ id }) => id === featureFlag.id
+      )?.featureFlagSegmentInclusion;
+
+      // Construct the new object with conditional properties
+      return {
+        ...featureFlag,
+        // Only include featureFlagSegmentInclusion if inclusionSegment is defined and not empty
+        ...(inclusionSegment && inclusionSegment.length > 0 ? { featureFlagSegmentInclusion: inclusionSegment } : {}),
+      };
+    });
   }
 
   public async delete(
@@ -476,18 +500,12 @@ export class FeatureFlagService {
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
 
       if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
-        const that = entityManager
-          ? entityManager.getRepository(FeatureFlagSegmentInclusion)
-          : this.featureFlagSegmentInclusionRepository;
-        existingRecord = await that.findOne({
+        existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
           where: { segment: { id: segmentId } },
           relations: ['featureFlag', 'segment'],
         });
       } else {
-        const that = entityManager
-          ? entityManager.getRepository(FeatureFlagSegmentExclusion)
-          : this.featureFlagSegmentExclusionRepository;
-        existingRecord = await that.findOne({
+        existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
           where: { segment: { id: segmentId } },
           relations: ['featureFlag', 'segment'],
         });
@@ -831,24 +849,63 @@ export class FeatureFlagService {
 
       return {
         fileName: file.fileName,
-        error: isCompatible ? null : FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+        error: isCompatible ? validation.compatibilityType : FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
       };
     });
 
-    const validFiles: FeatureFlagImportDataValidation[] = fileStatusArray
-      .filter((fileStatus) => fileStatus.error === null)
-      .map((fileStatus) => {
-        const featureFlagFile = featureFlagFiles.find((file) => file.fileName === fileStatus.fileName);
-        return JSON.parse(featureFlagFile.fileContent as string);
-      });
+    const validFiles: FeatureFlagImportDataValidation[] = await Promise.all(
+      fileStatusArray
+        .filter((fileStatus) => fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE)
+        .map(async (fileStatus) => {
+          const featureFlagFile = featureFlagFiles.find((file) => file.fileName === fileStatus.fileName);
 
+          if (fileStatus.error === FF_COMPATIBILITY_TYPE.WARNING) {
+            const flag = JSON.parse(featureFlagFile.fileContent as string);
+            const segmentIdsSet = new Set([
+              ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
+                return segmentInclusion.segment.subSegments.map((subSegment) => subSegment.id);
+              }),
+              ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) => {
+                return segmentExclusion.segment.subSegments.map((subSegment) => subSegment.id);
+              }),
+            ]);
+
+            const segmentIds = Array.from(segmentIdsSet);
+            const segments = await this.segmentService.getSegmentByIds(segmentIds);
+
+            // remove elements from featureFlagSegmentInclusion and featureFlagSegmentExclusion if segment is not found or context is not same
+            flag.featureFlagSegmentInclusion = flag.featureFlagSegmentInclusion.filter((segmentInclusion) => {
+              const subSegments = segmentInclusion.segment.subSegments;
+              const subSegmentIds = subSegments.map((subSegment) => subSegment.id);
+
+              // check if each subsegment if found in segments array and has the same context else remove segmentInclusion
+              return subSegmentIds.every((subSegmentId) => {
+                const segmentFound = segments.find((segment) => segment.id === subSegmentId);
+                return segmentFound && segmentFound.context === flag.context[0];
+              });
+            });
+
+            flag.featureFlagSegmentExclusion = flag.featureFlagSegmentExclusion.filter((segmentExclusion) => {
+              const subSegments = segmentExclusion.segment.subSegments;
+              const subSegmentIds = subSegments.map((subSegment) => subSegment.id);
+
+              // check if each subsegment if found in segments array and has the same context else remove segmentExclusion
+              return subSegmentIds.every((subSegmentId) => {
+                const segmentFound = segments.find((segment) => segment.id === subSegmentId);
+                return segmentFound && segmentFound.context === flag.context[0];
+              });
+            });
+            return flag;
+          }
+          return JSON.parse(featureFlagFile.fileContent as string);
+        })
+    );
     const createdFlags = [];
 
     for (const featureFlagWithEnabledSettings of validFiles) {
       const featureFlag = {
         ...featureFlagWithEnabledSettings,
         status: FEATURE_FLAG_STATUS.DISABLED,
-        filterMode: FILTER_MODE.EXCLUDE_ALL,
       };
 
       const createdFlag = await this.dataSource.transaction(async (transactionalEntityManager) => {
@@ -923,6 +980,12 @@ export class FeatureFlagService {
       createdFlags.push(createdFlag);
     }
     logger.info({ message: 'Imported feature flags', details: createdFlags });
+
+    fileStatusArray.forEach((fileStatus) => {
+      if (fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE) {
+        fileStatus.error = null;
+      }
+    });
     return fileStatusArray;
   }
 
@@ -1009,7 +1072,7 @@ export class FeatureFlagService {
 
     if (compatibilityType === FF_COMPATIBILITY_TYPE.COMPATIBLE) {
       const keyExists = existingFeatureFlags?.find(
-        (existingFlag) => existingFlag.key === flag.key && existingFlag.context === flag.context
+        (existingFlag) => existingFlag.key === flag.key && existingFlag.context[0] === flag.context[0]
       );
 
       if (keyExists) {
@@ -1032,7 +1095,7 @@ export class FeatureFlagService {
         }
 
         segments.forEach((segment) => {
-          if (segment == undefined) {
+          if (segment == undefined || segment.context !== flag.context[0]) {
             compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
           }
         });

@@ -36,15 +36,17 @@ import {
   UpdateFeatureFlagRequest,
   UpdateFilterModeRequest,
   UpdateFeatureFlagStatusRequest,
+  FeatureFlagLocalStorageKeys,
 } from './store/feature-flags.model';
 import { filter, map, pairwise } from 'rxjs';
 import isEqual from 'lodash.isequal';
 import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
+import { LocalStorageService } from '../local-storage/local-storage.service';
 
 @Injectable()
 export class FeatureFlagsService {
-  constructor(private store$: Store<AppState>) {}
+  constructor(private store$: Store<AppState>, private localStorageService: LocalStorageService) {}
 
   currentUserEmailAddress$ = this.store$.pipe(select(selectCurrentUserEmail));
   allFeatureFlagsIds$ = this.store$.pipe(select(selectFeatureFlagIds));
@@ -163,18 +165,22 @@ export class FeatureFlagsService {
   }
 
   setSearchKey(searchKey: FLAG_SEARCH_KEY) {
+    this.localStorageService.setItem(FeatureFlagLocalStorageKeys.FEATURE_FLAG_SEARCH_KEY, searchKey);
     this.store$.dispatch(FeatureFlagsActions.actionSetSearchKey({ searchKey }));
   }
 
   setSearchString(searchString: string) {
+    this.localStorageService.setItem(FeatureFlagLocalStorageKeys.FEATURE_FLAG_SEARCH_STRING, searchString);
     this.store$.dispatch(FeatureFlagsActions.actionSetSearchString({ searchString }));
   }
 
   setSortKey(sortKey: FLAG_SORT_KEY) {
+    this.localStorageService.setItem(FeatureFlagLocalStorageKeys.FEATURE_FLAG_SORT_KEY, sortKey);
     this.store$.dispatch(FeatureFlagsActions.actionSetSortKey({ sortKey }));
   }
 
   setSortingType(sortingType: SORT_AS_DIRECTION) {
+    this.localStorageService.setItem(FeatureFlagLocalStorageKeys.FEATURE_FLAG_SORT_TYPE, sortingType);
     this.store$.dispatch(FeatureFlagsActions.actionSetSortingType({ sortingType }));
   }
 

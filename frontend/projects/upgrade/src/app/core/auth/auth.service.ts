@@ -174,6 +174,7 @@ export class AuthService {
       case UserRole.ADMIN:
         this.userPermissions$.next({
           experiments: { create: true, read: true, update: true, delete: true },
+          stratifications: { create: true, read: true, update: true, delete: true },
           users: { create: true, read: true, update: true, delete: true },
           logs: { create: true, read: true, update: true, delete: true },
           manageRoles: { create: true, read: true, update: true, delete: true },
@@ -185,6 +186,7 @@ export class AuthService {
       case UserRole.CREATOR:
         this.userPermissions$.next({
           experiments: { create: true, read: true, update: true, delete: true },
+          stratifications: { create: true, read: true, update: true, delete: true },
           users: { create: true, read: true, update: true, delete: true },
           logs: { create: false, read: true, update: false, delete: false },
           manageRoles: { create: false, read: true, update: false, delete: false },
@@ -196,6 +198,7 @@ export class AuthService {
       case UserRole.USER_MANAGER:
         this.userPermissions$.next({
           experiments: { create: false, read: true, update: false, delete: false },
+          stratifications: { create: false, read: true, update: false, delete: false },
           users: { create: true, read: true, update: true, delete: true },
           logs: { create: false, read: true, update: false, delete: false },
           manageRoles: { create: false, read: true, update: false, delete: false },
@@ -207,6 +210,7 @@ export class AuthService {
       case UserRole.READER:
         this.userPermissions$.next({
           experiments: { create: false, read: true, update: false, delete: false },
+          stratifications: { create: false, read: true, update: false, delete: false },
           users: { create: false, read: true, update: false, delete: false },
           logs: { create: false, read: true, update: false, delete: false },
           manageRoles: { create: false, read: true, update: false, delete: false },

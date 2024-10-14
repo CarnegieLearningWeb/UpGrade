@@ -73,6 +73,10 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     this.applyFilter(this.searchValue);
   }
 
+  get MetricSearchKey() {
+    return METRIC_SEARCH_KEY;
+  }
+
   // Determine if a node has nested children (either loadable or already loaded)
   hasNestedChild = (_: number, node: LazyLoadingMetric): boolean =>
     !!node.loadChildren || (node.children && node.children.length > 0);
@@ -162,6 +166,12 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
           return !!data.context?.filter((context) => context.toLocaleLowerCase().includes(filter)).length;
       }
     };
+  }
+
+  filterMetricsByChips(filterValue: string, searchKey: METRIC_SEARCH_KEY) {
+    this.selectedMetricFilterOption = searchKey;
+    this.searchValue = filterValue;
+    this.applyFilter(filterValue);
   }
 
   changeMetricMode(event) {

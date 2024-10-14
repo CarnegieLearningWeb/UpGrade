@@ -24,6 +24,8 @@ import {
   EditPrivateSegmentListRequest,
   Segment,
 } from '../../../../../../../core/segments/store/segments.model';
+import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
+import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-feature-flag-inclusions-section-card',
@@ -42,6 +44,7 @@ import {
 })
 export class FeatureFlagInclusionsSectionCardComponent {
   @Input() isSectionCardExpanded;
+  permissions$: Observable<UserPermission>;
   tableRowCount$ = this.featureFlagService.selectFeatureFlagInclusionsLength$;
   selectedFlag$ = this.featureFlagService.selectedFeatureFlag$;
 
@@ -55,7 +58,11 @@ export class FeatureFlagInclusionsSectionCardComponent {
     return FILTER_MODE;
   }
 
-  constructor(private featureFlagService: FeatureFlagsService, private dialogService: DialogService) {}
+  constructor(
+    private featureFlagService: FeatureFlagsService,
+    private dialogService: DialogService,
+    private authService: AuthService
+  ) {}
   subscriptions = new Subscription();
   menuButtonItems: IMenuButtonItem[] = [
     // { name: 'Import Include List', disabled: false },
@@ -63,6 +70,10 @@ export class FeatureFlagInclusionsSectionCardComponent {
   ];
 
   confirmIncludeAllChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
+
+  ngOnInit() {
+    this.permissions$ = this.authService.userPermissions$;
+  }
 
   onAddIncludeListClick(appContext: string, flagId: string) {
     this.dialogService.openAddIncludeListModal(appContext, flagId);

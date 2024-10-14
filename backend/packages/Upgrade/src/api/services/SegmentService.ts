@@ -139,10 +139,14 @@ export class SegmentService {
   public async getSingleSegmentWithStatus(segmentId: string, logger: UpgradeLogger): Promise<SegmentWithStatus> {
     const allSegmentData = await this.getAllPublicSegmentsAndSubsegments(logger);
     const segmentData = await this.getSegmentById(segmentId, logger);
-    const segmentWithStatus = (await this.getSegmentStatus(allSegmentData)).segmentsData.find(
-      (segment: Segment) => segment.id === segmentId
-    );
-    return { ...segmentData, status: segmentWithStatus.status };
+    if (segmentData) {
+      const segmentWithStatus = (await this.getSegmentStatus(allSegmentData)).segmentsData.find(
+        (segment: Segment) => segment.id === segmentId
+      );
+      return { ...segmentData, status: segmentWithStatus?.status };
+    } else {
+      return null;
+    }
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
