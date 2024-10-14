@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsDefined, IsNumber, IsOptional, ValidateNested, IsEnum, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, ValidateNested, IsEnum, IsString } from 'class-validator';
 import { SORT_AS_DIRECTION } from 'upgrade_types';
 
 // TODO: Move to upgrade types
@@ -61,12 +61,10 @@ class IFeatureFlagSearchParamsValidator {
 export class FeatureFlagPaginatedParamsValidator {
   @IsNotEmpty()
   @IsNumber()
-  @IsDefined()
   public skip: number;
 
   @IsNotEmpty()
   @IsNumber()
-  @IsDefined()
   public take: number;
 
   @IsOptional()

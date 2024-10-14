@@ -4,7 +4,6 @@ import { FEATURE_FLAG_STATUS } from 'upgrade_types';
 export class FeatureFlagStatusUpdateValidator {
   @IsNotEmpty()
   @IsUUID()
-  @IsDefined()
   public flagId: string;
 
   @IsDefined()
