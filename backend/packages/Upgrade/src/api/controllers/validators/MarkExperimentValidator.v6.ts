@@ -19,7 +19,6 @@ class AssignedCondition {
 class Data {
   @IsString()
   @IsNotEmpty()
-  @IsDefined()
   site: string;
 
   @IsString()
