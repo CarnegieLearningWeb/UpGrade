@@ -25,7 +25,7 @@ projectBuilderV5 (
                 requiresCodeArtifactToken: true,
             ],
             automatedBranchBuilds: [
-                "main",
+                "dev",
                 "release/.*"
             ]
         ],
@@ -59,7 +59,7 @@ projectBuilderV5 (
                 GOOGLE_SERVICE_ACCOUNT_ID: '@vault(secret/configs/upgrade/${environment}/GOOGLE_SERVICE_ACCOUNT_ID)',
             ],
             automatedBranchBuilds: [
-                "main",
+                "dev",
                 "release/.*"
             ]
         ],
