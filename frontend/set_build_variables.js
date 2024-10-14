@@ -3,7 +3,7 @@ replace = require("replace-in-file");
 
 var replacements = [];
 var envKeys = Object.keys(envVars);
-var environment = process.env.ENV || 'develop';
+var environment = process.env.ENV || 'qa';
 for (var i in envKeys) {
   var replacement = {};
   replacement["search"] = new RegExp("%" + envKeys[i] + "%", "g");
