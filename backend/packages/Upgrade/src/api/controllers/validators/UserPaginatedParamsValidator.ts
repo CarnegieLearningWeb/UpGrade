@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsDefined, IsNumber, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { SORT_AS_DIRECTION } from 'upgrade_types';
 
 export enum USER_SEARCH_SORT_KEY {
@@ -32,12 +32,10 @@ export class UserSearchParamsValidator {
 export class UserPaginatedParamsValidator {
   @IsNotEmpty()
   @IsNumber()
-  @IsDefined()
   public skip: number;
 
   @IsNotEmpty()
   @IsNumber()
-  @IsDefined()
   public take: number;
 
   @IsOptional()

@@ -32,7 +32,6 @@ class GroupValidator {
 class SegmentValidator {
   @IsOptional()
   @IsUUID()
-  @IsString()
   public id?: string;
 
   @IsNotEmpty()
@@ -55,7 +54,6 @@ class SegmentValidator {
 class SegmentImportValidator {
   @IsOptional()
   @IsUUID()
-  @IsString()
   public id?: string;
 
   @IsNotEmpty()
@@ -96,7 +94,6 @@ class FeatureFlagListImportValidator {
   public enabled: boolean;
 
   @IsNotEmpty()
-  @IsDefined()
   public listType: string;
 
   @ValidateNested()
