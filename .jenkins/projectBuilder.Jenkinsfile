@@ -42,6 +42,14 @@ projectBuilderV5 (
                     script: 'echo $API_BASE_URL',
                 ],
                 [
+                    script: 'npm run prebuild:project',
+                    log: 'env-pre-build.log',
+                ],
+                [
+                    script: 'cat projects/upgrade/src/environments/environment.${environment}.ts',
+                    log: '${environment}-post-replace.log',
+                ],
+                [
                     script: 'npm run build:project',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
