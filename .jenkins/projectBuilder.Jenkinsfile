@@ -46,7 +46,7 @@ projectBuilderV5 (
                     log: 'env-pre-build.log',
                 ],
                 [
-                    script: 'cat projects/upgrade/src/environments/environment.${ENV}.ts',
+                    script: "cat projects/upgrade/src/environments/environment.${ENV}.ts",
                     log: '${environment}-post-replace.log',
                 ],
                 [
