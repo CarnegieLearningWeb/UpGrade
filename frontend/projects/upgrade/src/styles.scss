@@ -330,10 +330,20 @@ button[mat-icon-button] {
 }
 
 .mat-mdc-slide-toggle {
-  cursor: not-allowed;
-  .mdc-switch {
+  &:has(.mdc-switch--disabled) {
+    cursor: not-allowed;
+
+    .mdc-label {
+      margin-left: 5px;
+      color: var(--dark-grey) !important;
+      cursor: not-allowed;
+    }
+  }
+
+  .mdc-switch--disabled {
     cursor: not-allowed !important;
-    &--unselected {
+
+    &.mdc-switch--unselected {
       .mdc-switch__track {
         opacity: 1.0 !important;
         &::before {
@@ -350,7 +360,7 @@ button[mat-icon-button] {
       }
     }
 
-    &--selected {
+    &.mdc-switch--selected {
       .mdc-switch__track {
         opacity: 1.0 !important;
         &::after {
@@ -366,12 +376,6 @@ button[mat-icon-button] {
         opacity: 1.0 !important;
       }
     }
-  }
-
-  .mdc-label {
-    margin-left: 5px;
-    color: var(--dark-grey) !important;
-    cursor: not-allowed;
   }
 }
 
