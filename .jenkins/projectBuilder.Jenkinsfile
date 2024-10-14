@@ -46,8 +46,8 @@ projectBuilderV5 (
                     log: 'env-pre-build.log',
                 ],
                 [
-                    script: 'cat projects/upgrade/src/environments/environment.staging.ts',
-                    log: 'staging-post-replace.log',
+                    script: 'npm run prebuild:cat',
+                    log: 'string-post-replace.log',
                 ],
                 [
                     script: 'npm run build:project',
