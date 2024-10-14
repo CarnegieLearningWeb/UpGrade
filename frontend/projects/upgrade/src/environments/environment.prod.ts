@@ -11,7 +11,7 @@ export const environment = {
   pollingEnabled: true,
   pollingInterval: 10 * 1000,
   pollingLimit: 600,
-  featureFlagNavToggle: false,
+  featureFlagNavToggle: true,
   withinSubjectExperimentSupportToggle: false,
   errorLogsToggle: false,
   metricAnalyticsExperimentDisplayToggle: false,

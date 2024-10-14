@@ -39,6 +39,10 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
+                    script: 'npm run prebuild:project',
+                    log: 'env-pre-build.log',
+                ],
+                [
                     script: 'npm run build:project',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
