@@ -39,15 +39,8 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
-                    script: 'echo $API_BASE_URL',
-                ],
-                [
                     script: 'npm run prebuild:project',
                     log: 'env-pre-build.log',
-                ],
-                [
-                    script: 'npm run prebuild:cat',
-                    log: 'string-post-replace.log',
                 ],
                 [
                     script: 'npm run build:project',

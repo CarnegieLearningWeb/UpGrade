@@ -13,7 +13,6 @@
     "build": "ng build",
     "prebuild:prod": "npm run test",
     "prebuild:project": "node set_build_variables.js",
-    "prebuild:cat": "cat projects/upgrade/src/environments/environment.${ENV}.ts",
     "build:project": "ng build --configuration ${ENV:-develop} --base-href /upgrade/",
     "build:prod": "ng build --configuration beanstalk",
     "build:demo": "ng build --configuration demo --base-href /upgrade/",
