@@ -214,7 +214,11 @@ export class ExperimentService {
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
     const experiment = await this.findOne(id, logger);
-    return this.reducedConditionPayload(this.formatingPayload(experiment));
+    if (experiment) {
+      return this.reducedConditionPayload(this.formatingPayload(experiment));
+    } else {
+      return undefined;
+    }
   }
 
   public async findOne(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
@@ -223,7 +227,11 @@ export class ExperimentService {
     }
     const experiment = await this.experimentRepository.findOneExperiment(id);
 
-    return this.formatingConditionPayload(experiment);
+    if (experiment) {
+      return this.formatingConditionPayload(experiment);
+    } else {
+      return undefined;
+    }
   }
 
   public async getExperimentDetailsForCSVDataExport(experimentId: string): Promise<ExperimentCSVData[]> {
@@ -311,14 +319,15 @@ export class ExperimentService {
     }
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
-      await this.clearExperimentCacheDetail(
-        experiment.context[0],
-        experiment.partitions.map((partition) => {
-          return { site: partition.site, target: partition.target };
-        })
-      );
 
       if (experiment) {
+        await this.clearExperimentCacheDetail(
+          experiment.context[0],
+          experiment.partitions.map((partition) => {
+            return { site: partition.site, target: partition.target };
+          })
+        );
+
         const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
 
         // adding entry in audit log
@@ -356,7 +365,6 @@ export class ExperimentService {
         }
         return deletedExperiment;
       }
-
       return undefined;
     });
   }
@@ -373,13 +381,13 @@ export class ExperimentService {
   public async getExperimentalConditions(experimentId: string, logger: UpgradeLogger): Promise<ExperimentCondition[]> {
     logger.info({ message: `getExperimentalConditions experiment => ${experimentId}` });
     const experiment: Experiment = await this.findOne(experimentId, logger);
-    return experiment.conditions;
+    return experiment?.conditions;
   }
 
   public async getExperimentPartitions(experimentId: string, logger: UpgradeLogger): Promise<DecisionPoint[]> {
     logger.info({ message: `getExperimentPartitions experiment => ${experimentId}` });
     const experiment: Experiment = await this.findOne(experimentId, logger);
-    return experiment.partitions;
+    return experiment?.partitions;
   }
 
   public async getAllExperimentPartitions(
