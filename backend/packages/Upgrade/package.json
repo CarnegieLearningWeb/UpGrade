@@ -1,6 +1,6 @@
 {
     "name": "ab_testing_backend",
-    "version": "6.0.0",
+    "version": "6.1.0",
     "description": "Backend for A/B Testing Project",
     "main": "index.js",
     "scripts": {
@@ -76,7 +76,7 @@
         "csv-stringify": "^6.4.5",
         "dayjs": "^1.11.7",
         "dotenv": "^16.3.1",
-        "express": "^4.19.2",
+        "express": "^4.21.1",
         "figlet": "^1.2.4",
         "google-auth-library": "^9.4.1",
         "helmet": "^7.1.0",

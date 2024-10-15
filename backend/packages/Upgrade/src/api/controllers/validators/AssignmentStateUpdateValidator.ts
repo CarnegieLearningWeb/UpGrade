@@ -8,7 +8,6 @@ export class AssignmentStateUpdateValidator {
 
   @IsNotEmpty()
   @IsUUID()
-  @IsDefined()
   public experimentId: string;
 
   @IsDefined()

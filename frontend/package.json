@@ -1,6 +1,6 @@
 {
   "name": "ab-testing",
-  "version": "6.0.0",
+  "version": "6.1.0",
   "license": "MIT",
   "scripts": {
     "ng": "ng",
@@ -12,7 +12,8 @@
     "prebuild": "npm run test",
     "build": "ng build",
     "prebuild:prod": "npm run test",
-    "build:project": "node set_build_variables.js && ng build --configuration ${ENV:-develop} --base-href /upgrade/",
+    "prebuild:project": "node set_build_variables.js",
+    "build:project": "ng build --configuration ${ENV:-develop} --base-href /upgrade/",
     "build:prod": "ng build --configuration beanstalk",
     "build:demo": "ng build --configuration demo --base-href /upgrade/",
     "build:dev": "ng build -c=development",
