@@ -21,7 +21,7 @@ import { ExperimentVM } from '../../../../../core/experiments/store/experiments.
 import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray } from '@angular/forms';
 import { startWith, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
-import { DialogService } from '../../../../../shared/services/dialog.service';
+import { DialogService } from '../../../../../shared/services/common-dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 @Component({
   selector: 'home-monitored-metrics',
@@ -91,7 +91,9 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       this.options =
         this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
           ? this.allMetrics.filter((metric) => metric.children.length > 0)
-          : this.allMetrics;
+          : this.allMetrics.filter((metric) =>
+              metric.context?.includes(this.currentContext || this.experimentInfo?.context)
+            );
     });
   }
 
@@ -711,7 +713,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges() {
     if (this.isContextChanged || this.isExperimentTypeChanged) {
-      this.isContextChanged = false;
+      this.optionsSub();
       this.isExperimentTypeChanged = false;
       this.queries.clear();
       this.metricsDataSource.next(this.queries.controls);

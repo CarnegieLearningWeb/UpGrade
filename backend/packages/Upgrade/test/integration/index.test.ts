@@ -1,4 +1,4 @@
-import { Connection } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { configureLogger } from '../utils/logger';
 import { createDatabaseConnection, closeDatabase, migrateDatabase } from '../utils/database';
 import {
@@ -108,8 +108,19 @@ import {
   StratificationMetricQueriesCheck,
   StratificationRandomAlgorithmCheck,
 } from './Experiment/stratification/index';
-import { IndividualExperimentEnrollmentCode, GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } from './Experiment/enrollmentCode';
-import { IndividualExperimentExclusionCode, GroupExperimentExclusionCode, ExperimentLevelExclusionCodeParticipant, ExperimentLevelExclusionCodeGroup, WithinSubjectExclusionCode }  from './Experiment/exclusionCode';
+import {
+  IndividualExperimentEnrollmentCode,
+  GroupExperimentEnrollmentCode,
+  ExperimentExperimentEnrollmentCode,
+} from './Experiment/enrollmentCode';
+import {
+  IndividualExperimentExclusionCode,
+  GroupExperimentExclusionCode,
+  ExperimentLevelExclusionCodeParticipant,
+  ExperimentLevelExclusionCodeGroup,
+  WithinSubjectExclusionCode,
+} from './Experiment/exclusionCode';
+import { FeatureFlagInclusionExclusion } from './FeatureFlags';
 
 describe('Integration Tests', () => {
   jest.setTimeout(100000000);
@@ -117,17 +128,19 @@ describe('Integration Tests', () => {
   // Setup up
   // -------------------------------------------------------------------------
 
-  let connection: Connection;
+  let defaultConnection: DataSource;
+  let exportConnection: DataSource;
   beforeAll(async () => {
     configureLogger();
-    connection = await createDatabaseConnection();
+    [defaultConnection, exportConnection] = await createDatabaseConnection();
 
     // Mocking AWS Service
     Container.set(AWSService, new AWSServiceMock());
   });
 
   beforeEach(async () => {
-    await migrateDatabase(connection);
+    await migrateDatabase(defaultConnection);
+    await migrateDatabase(exportConnection);
     const cacheManager = Container.get(CacheService);
     await cacheManager.resetAllCache();
 
@@ -140,7 +153,8 @@ describe('Integration Tests', () => {
   // Tear down
   // -------------------------------------------------------------------------
 
-  afterAll(() => closeDatabase(connection));
+  afterAll(() => closeDatabase(defaultConnection));
+  afterAll(() => closeDatabase(exportConnection));
 
   // -------------------------------------------------------------------------
   // Test cases
@@ -540,6 +554,10 @@ describe('Integration Tests', () => {
 
   test('Excluding indirect user of Enrolling Group Experiment, Individual Consistency', () => {
     return Scenario3B();
+  });
+
+  test('Inclusion and Exclusion of user in FeatureFlags', () => {
+    return FeatureFlagInclusionExclusion();
   });
 
   // test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', () => {

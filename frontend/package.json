@@ -1,6 +1,6 @@
 {
   "name": "ab-testing",
-  "version": "5.2.0",
+  "version": "6.1.0",
   "license": "MIT",
   "scripts": {
     "ng": "ng",
@@ -12,7 +12,9 @@
     "prebuild": "npm run test",
     "build": "ng build",
     "prebuild:prod": "npm run test",
-    "build:prod": "ng build --configuration production",
+    "prebuild:project": "node set_build_variables.js",
+    "build:project": "ng build --configuration ${ENV:-develop} --base-href /upgrade/",
+    "build:prod": "ng build --configuration beanstalk",
     "build:demo": "ng build --configuration demo --base-href /upgrade/",
     "build:dev": "ng build -c=development",
     "clean": "rimraf node_modules && rm package-lock.json && npm update && npm i",
@@ -104,6 +106,7 @@
     "ts-jest": "^29.0.8",
     "ts-node": "~10.8.0",
     "typescript": "~5.3.3",
-    "webpack-bundle-analyzer": "^4.6.1"
+    "webpack-bundle-analyzer": "^4.6.1",
+    "replace-in-file": "^6.1.0"
   }
 }

@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { IsNotEmpty, IsObject, IsOptional, IsString, IsArray } from 'class-validator';
 
 export class FactorStrata {
@@ -26,4 +27,17 @@ export class StratificationInputValidator {
   @IsArray()
   @IsString({ each: true })
   public experimentIds: string[];
+}
+
+export class UploadedFilesArrayValidator {
+  @IsArray()
+  @IsNotEmpty({ each: true })
+  @Type(() => UploadedFilesValidator)
+  public files: UploadedFilesValidator[];
+}
+
+export class UploadedFilesValidator {
+  @IsNotEmpty()
+  @IsString()
+  public file: string;
 }

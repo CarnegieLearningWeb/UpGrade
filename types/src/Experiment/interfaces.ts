@@ -8,6 +8,10 @@ import {
   SUPPORTED_CALIPER_EVENTS,
   SUPPORTED_CALIPER_PROFILES,
   EXPERIMENT_TYPE,
+  FEATURE_FLAG_LIST_OPERATION,
+  FEATURE_FLAG_STATUS,
+  FILTER_MODE,
+  FEATURE_FLAG_LIST_FILTER_MODE,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -40,20 +44,6 @@ export interface IExperimentEnrollmentDetailStats {
   usersExcluded: number;
   groupsExcluded: number;
   conditions: IConditionEnrollmentStats[];
-}
-
-// TODO Delete this after changing in clientSDK
-export type INewExperimentAssignment = Pick<IExperimentAssignmentv4, 'assignedCondition'> & {
-  target: string;
-  site: string;
-  experimentId: string;
-};
-
-export interface IExperimentAssignmentv4 {
-  site: string;
-  target: string;
-  assignedCondition: AssignedCondition;
-  assignedFactor?: Record<string, { level: string; payload: IPayload }>;
 }
 
 export interface IExperimentAssignmentv5 {
@@ -94,11 +84,48 @@ interface ExperimentDeletedData {
   experimentName: string;
 }
 
+export interface FeatureFlagCreatedData {
+  flagId: string;
+  flagName: string;
+}
+
+export interface FeatureFlagUpdatedData {
+  flagId: string;
+  flagName: string;
+  filterMode?: FILTER_MODE;
+  list?: ListOperationsData;
+  diff?: string;
+}
+
+export interface ListOperationsData {
+  listId: string;
+  listName: string;
+  filterType: FEATURE_FLAG_LIST_FILTER_MODE;
+  operation: FEATURE_FLAG_LIST_OPERATION;
+  enabled?: boolean;
+  diff?: string;
+}
+
+export interface FeatureFlagStateChangedData {
+  flagId: string;
+  flagName: string;
+  previousState: FEATURE_FLAG_STATUS;
+  newState: FEATURE_FLAG_STATUS;
+}
+
+export interface FeatureFlagDeletedData {
+  flagName: string;
+}
+
 export type AuditLogData =
   | ExperimentCreatedData
   | ExperimentUpdatedData
   | ExperimentStateChangedData
-  | ExperimentDeletedData;
+  | ExperimentDeletedData
+  | FeatureFlagCreatedData
+  | FeatureFlagUpdatedData
+  | FeatureFlagStateChangedData
+  | FeatureFlagDeletedData;
 
 export interface IExperimentSearchParams {
   key: EXPERIMENT_SEARCH_KEY;
@@ -112,6 +139,7 @@ export interface IExperimentSortParams {
 
 export interface IMetricUnit {
   key: string | string[];
+  context?: string[];
   children?: IMetricUnit[];
   metadata?: { type: IMetricMetaData };
   allowedData?: string[];
@@ -129,6 +157,7 @@ export interface IFeatureFlag {
   id: string;
   name: string;
   key: string;
+  context: string[];
   description: string;
   variationType: string;
   status: boolean;
@@ -158,14 +187,15 @@ export interface ILogGroupMetrics {
 }
 
 export interface ILogRequestBody {
-  userId: string;
-  value: ILogInput[];
+  userId?: string;
+  value?: ILogInput[];
 }
 
 export interface ILogInput {
   timestamp: string;
   metrics: ILogMetrics;
 }
+
 export interface IGroupMetric {
   groupClass: string;
   allowedKeys: string[];
@@ -188,9 +218,12 @@ export interface IWorkingGroup {
   workingGroup: object;
 }
 
-export interface IUserAliases {
-  userId: string;
+export interface IUserAliasesv6 {
   aliases: string[];
+}
+
+export interface IUserAliases extends IUserAliasesv6 {
+  userId: string;
 }
 
 export interface IPayload {
@@ -242,4 +275,14 @@ export interface CaliperEnvelope {
 export interface IMenuButtonItem {
   name: string;
   disabled: boolean;
+}
+
+export interface IFeatureFlagFile {
+  fileName: string;
+  fileContent: string | ArrayBuffer;
+}
+
+export interface IImportError {
+  fileName: string;
+  error: string | null;
 }

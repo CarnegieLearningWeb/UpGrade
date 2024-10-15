@@ -1,10 +1,11 @@
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
 import { NotificationsService, NotificationType } from 'angular2-notifications';
-import { EMPTY, Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { AuthService } from '../auth/auth.service';
+import { SERVER_ERROR } from 'upgrade_types';
 
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
@@ -21,7 +22,9 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       content: error.url,
       animate: 'fromRight',
     };
-    this._notifications.create(temp.title, temp.content, temp.type, temp);
+    if (error.error?.type !== SERVER_ERROR.DUPLICATE_KEY) {
+      this._notifications.create(temp.title, temp.content, temp.type, temp);
+    }
   }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -30,9 +33,11 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         if (err.status === 401) {
           // auto logout if 401 response returned from api
           this.authService.authLogout();
+        } else {
+          this.openPopup(err);
         }
-        this.openPopup(err);
-        return EMPTY; // returning EMPTY instead of throwError as Error is handled using snacker here itself
+        // re-throw to allow the error to be caught by the calling code
+        throw err;
       })
     );
   }

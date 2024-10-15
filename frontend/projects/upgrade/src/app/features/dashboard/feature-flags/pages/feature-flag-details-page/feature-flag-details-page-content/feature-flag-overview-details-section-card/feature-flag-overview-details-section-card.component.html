@@ -1,0 +1,36 @@
+<app-common-section-card class="details-overview-card" *ngIf="featureFlag$ | async as flag">
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="flag.name"
+    [createdAt]="flag.createdAt"
+    [updatedAt]="flag.updatedAt"
+    [chipClass]="flag.status"
+    [showWarning]="shouldShowWarning$ | async"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showSlideToggle]="(permissions$ | async)?.featureFlags.update"
+    [slideToggleChecked]="flag.status === FEATURE_FLAG_STATUS.ENABLED"
+    [slideToggleText]="'feature-flags.enable.text' | translate"
+    [showMenuButton]="true"
+    [menuButtonItems]="menuButtonItems"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (slideToggleChange)="onSlideToggleChange($event, flag)"
+    (menuButtonItemClick)="onMenuButtonItemClick($event, flag)"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  ></app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <ng-container content>
+    <app-common-section-card-overview-details
+      [data]="flagOverviewDetails$ | async"
+      (tagItemClick)="filterFeatureFlagByChips($event)"
+    ></app-common-section-card-overview-details>
+  </ng-container>
+
+  <!-- footer -->
+  <app-feature-flag-overview-details-footer footer></app-feature-flag-overview-details-footer>
+</app-common-section-card>

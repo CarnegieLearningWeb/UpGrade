@@ -11,16 +11,16 @@ import {
   IsJSON,
   IsEmail,
 } from 'class-validator';
-import { EXPERIMENT_LOG_TYPE, UserRole } from 'upgrade_types';
+import { LOG_TYPE, UserRole } from 'upgrade_types';
 
 class ExperimentAuditLogValidator {
   @IsString()
   @IsNotEmpty()
   public id: string;
 
-  @IsEnum(EXPERIMENT_LOG_TYPE)
+  @IsEnum(LOG_TYPE)
   @IsNotEmpty()
-  public type: EXPERIMENT_LOG_TYPE;
+  public type: LOG_TYPE;
 
   @IsJSON()
   @IsNotEmpty()

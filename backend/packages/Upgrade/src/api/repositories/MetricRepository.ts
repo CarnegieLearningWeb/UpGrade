@@ -1,5 +1,6 @@
 import { Metric } from '../models/Metric';
-import { EntityRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 
@@ -26,6 +27,16 @@ export class MetricRepository extends Repository<Metric> {
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'getMetricsByKeys', { key }, errorMsg);
+        throw errorMsgString;
+      });
+  }
+
+  public async getMetricsByContext(context: string): Promise<Metric[]> {
+    return this.createQueryBuilder('metrics')
+      .where('context @> :searchContext', { searchContext: [context] })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(this.constructor.name, 'getMetricsByContext', { context }, errorMsg);
         throw errorMsgString;
       });
   }

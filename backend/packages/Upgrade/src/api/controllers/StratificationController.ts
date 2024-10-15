@@ -1,14 +1,11 @@
-import { JsonController, Get, Delete, Param, Authorized, Post, Req, UseBefore, Res } from 'routing-controllers';
+import { JsonController, Get, Delete, Param, Authorized, Req, Res, Body, Post } from 'routing-controllers';
 import { SERVER_ERROR } from 'upgrade_types';
 import { AppRequest } from '../../types';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { StratificationService } from '../services/StratificationService';
-import { FactorStrata } from './validators/StratificationValidator';
+import { FactorStrata, UploadedFilesArrayValidator } from './validators/StratificationValidator';
 import { StratificationFactor } from '../models/StratificationFactor';
 import * as express from 'express';
-import multer from 'multer';
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
 
 /**
  * @swagger
@@ -107,7 +104,7 @@ export class StratificationController {
    *        '401':
    *          description: Authorization Required Error
    *        '404':
-   *          description: Factor name not found
+   *          description: Stratification Factor name not found
    *        '500':
    *          description: Internal Server Error, FactorName is not valid
    */
@@ -125,7 +122,7 @@ export class StratificationController {
 
     // return csv file with appropriate headers to request;
     res.setHeader('Content-Type', 'text/csv; charset=UTF-8');
-    res.setHeader('Content-Disposition', `attachment; filename=data-${factor}.csv`);
+    res.setHeader('Content-Disposition', `attachment; filename="${factor}.csv"`);
     return res.send(csvData);
   }
 
@@ -158,9 +155,11 @@ export class StratificationController {
    *          description: Internal Server Error, Insert Error in database, CSV file is not valid
    */
   @Post()
-  @UseBefore(upload.single('file'))
-  public insertStratification(@Req() request: AppRequest): Promise<UserStratificationFactor[]> {
-    return this.stratificationService.insertStratification(request.body[0].file, request.logger);
+  public async insertStratification(
+    @Req() request: AppRequest,
+    @Body({ validate: true }) body: UploadedFilesArrayValidator
+  ): Promise<UserStratificationFactor[][]> {
+    return this.stratificationService.insertStratificationFiles(body.files, request.logger);
   }
 
   /**

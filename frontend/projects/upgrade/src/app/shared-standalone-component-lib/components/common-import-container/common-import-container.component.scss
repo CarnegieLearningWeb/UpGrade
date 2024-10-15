@@ -1,0 +1,53 @@
+.import-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 36px;
+  border: 1px dashed var(--dark-grey);
+  border-radius: 4px;
+
+  &.drag-over {
+    background-color: var(--zircon);
+  }
+
+  .close-btn-container {
+    width: 100%;
+    height: 36px;
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px;
+
+    .close-btn {
+      color: var(--dark-grey);
+
+      .close-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .material-symbols-outlined {
+    font-size: 72px;
+    color: var(--dark-grey);
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  .drag-text {
+    margin-bottom: 8px;
+    color: var(--dark-grey);
+  }
+
+  .choose-file-btn {
+    height: 36px;
+    padding: 0 16px;
+  }
+
+  .import-failed-msg {
+    margin-top: 4px;
+    color: var(--red);
+  }
+}

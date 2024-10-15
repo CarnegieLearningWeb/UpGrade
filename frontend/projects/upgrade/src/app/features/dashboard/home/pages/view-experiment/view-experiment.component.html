@@ -413,28 +413,32 @@
           </div>
 
           <!-- Experiment Context -->
-          <mat-chip-listbox class="experiment-chips">
+          <div class="experiment-chips">
             <span class="ft-16-600 experiment-chips-title">{{ 'global.context.text' | translate }}</span>
-            <ng-container *ngFor="let context of experiment.context">
-              <mat-chip>
-                <span class="ft-12-600 chip-label" (click)="searchExperiment(ExperimentSearchKey.CONTEXT, context)">
-                  {{ context }}
-                </span>
-              </mat-chip>
-            </ng-container>
-          </mat-chip-listbox>
+            <mat-chip-listbox class="dense-2">
+              <ng-container *ngFor="let context of experiment.context">
+                <mat-chip>
+                  <span class="chip-label" (click)="searchExperiment(ExperimentSearchKey.CONTEXT, context)">
+                    {{ context }}
+                  </span>
+                </mat-chip>
+              </ng-container>
+            </mat-chip-listbox>
+          </div>
 
           <!-- Experiment Tags -->
-          <mat-chip-listbox class="experiment-chips" *ngIf="experiment.tags?.length">
+          <div class="experiment-chips">
             <span class="ft-16-600 experiment-chips-title">{{ 'global.tags.text' | translate }}</span>
-            <ng-container *ngFor="let tag of experiment.tags">
-              <mat-chip>
-                <span class="ft-12-600 chip-label" (click)="searchExperiment(ExperimentSearchKey.TAG, tag)">
-                  {{ tag }}
-                </span>
-              </mat-chip>
-            </ng-container>
-          </mat-chip-listbox>
+            <mat-chip-listbox class="dense-2" *ngIf="experiment.tags?.length">
+              <ng-container *ngFor="let tag of experiment.tags">
+                <mat-chip>
+                  <span class="chip-label" (click)="searchExperiment(ExperimentSearchKey.TAG, tag)">
+                    {{ tag }}
+                  </span>
+                </mat-chip>
+              </ng-container>
+            </mat-chip-listbox>
+          </div>
 
           <!-- Logging -->
           <div class="logging">
@@ -952,7 +956,18 @@
           <ng-container *ngIf="experiment.queries.length">
             <div class="box-shadow"></div>
             <!-- Experiment queries results -->
-            <home-experiment-query-result [experiment]="experiment"></home-experiment-query-result>
+            <ng-container *ngIf="showMetricAnalysisDisplay; else noMetricsAnalysisView">
+              <home-experiment-query-result [experiment]="experiment"></home-experiment-query-result>
+            </ng-container>
+            <ng-template #noMetricsAnalysisView>
+              <div class="disabled-analysis-view-messsage-container">
+                <mat-icon class="warning-icon" color="warn">warning</mat-icon>
+                <p class="message">
+                  {{ 'home.view-experiment.metrics-analysis-unavailable.text' | translate }}
+                </p>
+              </div>
+              <div class="box-shadow"></div>
+            </ng-template>
           </ng-container>
         </div>
       </mat-tab>

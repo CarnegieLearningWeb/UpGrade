@@ -2,3 +2,6 @@
 .dccache
 node_modules
 .vscode
+setup_upgrade.sh
+.idea
+*.iml

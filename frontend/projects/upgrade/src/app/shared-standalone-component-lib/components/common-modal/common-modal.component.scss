@@ -1,0 +1,44 @@
+.common-modal {
+  display: flex;
+  flex-direction: column;
+
+  .header-container {
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px 0 32px;
+    border-bottom: 1px solid var(--light-grey-2);
+
+    .header-title {
+      margin: 0;
+    }
+
+    .close-btn {
+      color: var(--dark-grey);
+    }
+  }
+
+  .content-container {
+    max-height: 480px;
+    overflow: auto;
+  }
+
+  .footer-container {
+    height: 80px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    column-gap: 8px;
+    padding: 0 32px;
+    border-top: 1px solid var(--light-grey-2);
+
+    .dialog-action-btn {
+      padding: 0 24px;
+
+      &.cancel-btn {
+        color: var(--disabled-text);
+      }
+    }
+  }
+}

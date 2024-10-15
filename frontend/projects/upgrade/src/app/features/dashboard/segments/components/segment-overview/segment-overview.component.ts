@@ -27,7 +27,7 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
   currentContext = null;
   isSegmentNameValid = true;
 
-  allSegmentNameConextArray: string[] = [];
+  allSegmentNameContextArray: string[] = [];
   allSegments: Segment[];
   allSegmentsSub: Subscription;
   contextMetaData: IContextMetaData | Record<string, unknown> = {};
@@ -82,9 +82,9 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
   }
 
   SegmentNameValidation(name: string, context: string) {
-    this.allSegmentNameConextArray = [];
+    this.allSegmentNameContextArray = [];
     this.isSegmentNameValid = true;
-    this.allSegmentNameConextArray = this.allSegments.map((segment) => {
+    this.allSegmentNameContextArray = this.allSegments.map((segment) => {
       if (this.segmentInfo) {
         if (this.segmentInfo.id === segment.id) {
           return '';
@@ -93,7 +93,7 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
       return segment.name + '_' + segment.context;
     });
     const segmentNameContextString = name + '_' + context;
-    if (this.allSegmentNameConextArray.includes(segmentNameContextString)) {
+    if (this.allSegmentNameContextArray.includes(segmentNameContextString)) {
       this.isSegmentNameValid = false;
     }
   }

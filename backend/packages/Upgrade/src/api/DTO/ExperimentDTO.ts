@@ -43,6 +43,7 @@ export {
   EXPERIMENT_SORT_KEY,
   IExperimentSearchParams,
   IExperimentSortParams,
+  SegmentValidator,
 };
 
 class PayloadValidator {

@@ -1,17 +1,19 @@
 import { IndividualEnrollmentRepository } from './../repositories/IndividualEnrollmentRepository';
 import { UpgradeLogger } from './../../lib/logger/UpgradeLogger';
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, IUserAliases, SERVER_ERROR } from 'upgrade_types';
-import { getConnection, In, InsertResult, Not } from 'typeorm';
+import { DataSource, In, InsertResult, Not } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Experiment } from '../models/Experiment';
 import isEqual from 'lodash/isEqual';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
+import { env } from '../../env';
+import { HttpError } from '../errors';
 
 @Service()
 export class ExperimentUserService {
@@ -20,7 +22,8 @@ export class ExperimentUserService {
     @InjectRepository() private experimentRepository: ExperimentRepository,
     @InjectRepository() private individualEnrollmentRepository: IndividualEnrollmentRepository,
     @InjectRepository() private individualExclusionRepository: IndividualExclusionRepository,
-    @InjectRepository() private groupExclusionRepository: GroupExclusionRepository
+    @InjectRepository() private groupExclusionRepository: GroupExclusionRepository,
+    @InjectDataSource() private dataSource: DataSource
   ) {}
 
   public find(logger?: UpgradeLogger): Promise<ExperimentUser[]> {
@@ -32,7 +35,7 @@ export class ExperimentUserService {
 
   public findOne(id: string, logger: UpgradeLogger): Promise<ExperimentUser> {
     logger.info({ message: `Find user by id => ${id}` });
-    return this.userRepository.findOne({ id });
+    return this.userRepository.findOneBy({ id });
   }
 
   public async upsertOnChange(
@@ -95,16 +98,16 @@ export class ExperimentUserService {
   }
 
   public async setAliasesForUser(
-    userId: string,
+    userDoc: RequestedExperimentUser,
     aliases: string[],
-    requestContext: { logger: UpgradeLogger; userDoc: any }
+    logger: UpgradeLogger
   ): Promise<IUserAliases> {
-    const { logger, userDoc } = requestContext;
+    const userId = userDoc.id;
     const userExist = userDoc;
     logger.info({ message: 'Set aliases for experiment user => ' + userId, details: aliases });
 
     // throw error if user not defined
-    if (!userExist) {
+    if (!userExist || !userExist.id) {
       logger.error({ message: 'User not defined setAliasesForUser' + userId, details: aliases });
 
       const error = new Error(
@@ -296,18 +299,13 @@ export class ExperimentUserService {
   }
 
   public async getUserDoc(experimentUserId, logger): Promise<RequestedExperimentUser> {
-    try {
-      const experimentUserDoc = await this.getOriginalUserDoc(experimentUserId, logger);
-      if (experimentUserDoc) {
-        const userDoc = { ...experimentUserDoc, requestedUserId: experimentUserId };
-        logger.info({ message: 'Got the user doc', details: userDoc });
-        return userDoc;
-      } else {
-        return null;
-      }
-    } catch (error) {
-      logger.error({ message: `Error in getting user doc for user => ${experimentUserId}`, error });
-      return null;
+    const experimentUserDoc = await this.getOriginalUserDoc(experimentUserId, logger);
+    if (experimentUserDoc) {
+      const userDoc = { ...experimentUserDoc, requestedUserId: experimentUserId };
+      logger.info({ message: 'Got the user doc', details: userDoc });
+      return userDoc;
+    } else {
+      throw new HttpError(404, `Experiment User not found: ${experimentUserId}`);
     }
   }
 
@@ -345,10 +343,16 @@ export class ExperimentUserService {
     }
   }
 
-  public async clearDB(logger: UpgradeLogger): Promise<void> {
-    await getConnection().transaction(async (transactionalEntityManager) => {
+  public async clearDB(logger: UpgradeLogger): Promise<string> {
+    if (!env.app.demo) {
+      return 'DEMO mode is disabled. You cannot clear DB.';
+    }
+
+    await this.dataSource.transaction(async (transactionalEntityManager) => {
       await this.experimentRepository.clearDB(transactionalEntityManager, logger);
     });
+
+    return 'DB truncate successful';
   }
 
   /**

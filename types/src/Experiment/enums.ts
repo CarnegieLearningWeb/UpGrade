@@ -58,12 +58,15 @@ export enum SERVER_ERROR {
   WORKING_GROUP_NOT_SUBSET_OF_GROUP = 'Working group is not a subset of user group',
   INVALID_TOKEN = 'Invalid token',
   TOKEN_NOT_PRESENT = 'Token is not present in request',
+  TOKEN_VALIDATION_FAILED = 'JWT Token validation failed',
   MIGRATION_ERROR = 'Error in migration',
   EMAIL_SEND_ERROR = 'Email send error',
   CONDITION_NOT_FOUND = 'Condition not found',
   EXPERIMENT_ID_MISSING_FOR_SHARED_DECISIONPOINT = 'Experiment ID not provided for shared Decision Point',
   INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT = 'Experiment ID provided is invalid for shared Decision Point',
   UNSUPPORTED_CALIPER = 'Caliper profile or event not supported',
+  DUPLICATE_KEY = 'Feature Flag with same key already exists for this app-context',
+  MISSING_HEADER_USER_ID = 'Missing `User-Id` header',
 }
 
 export enum MARKED_DECISION_POINT_STATUS {
@@ -94,14 +97,31 @@ export enum EXCLUSION_CODE {
   ERROR = 'participant excluded due to unspecified error',
 }
 
-export enum EXPERIMENT_LOG_TYPE {
+export enum LOG_TYPE {
   EXPERIMENT_CREATED = 'experimentCreated',
   EXPERIMENT_UPDATED = 'experimentUpdated',
   EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
   EXPERIMENT_DELETED = 'experimentDeleted',
   EXPERIMENT_DATA_EXPORTED = 'experimentDataExported',
-  EXPERIMENT_DATA_REQUESTED = 'experimentDataRequested',
   EXPERIMENT_DESIGN_EXPORTED = 'experimentDesignExported',
+  FEATURE_FLAG_CREATED = 'featureFlagCreated',
+  FEATURE_FLAG_UPDATED = 'featureFlagUpdated',
+  FEATURE_FLAG_STATUS_CHANGED = 'featureFlagStatusChanged',
+  FEATURE_FLAG_DELETED = 'featureFlagDeleted',
+  FEATURE_FLAG_DATA_EXPORTED = 'featureFlagDataExported',
+  FEATURE_FLAG_DESIGN_EXPORTED = 'featureFlagDesignExported',
+}
+
+export enum FEATURE_FLAG_LIST_OPERATION {
+  CREATED = 'created',
+  UPDATED = 'updated',
+  DELETED = 'deleted',
+  STATUS_CHANGED = 'statusChanged',
+}
+
+export enum FEATURE_FLAG_LIST_FILTER_MODE {
+  INCLUSION = 'inclusion',
+  EXCLUSION = 'exclusion',
 }
 
 export enum EXPERIMENT_SEARCH_KEY {
@@ -195,13 +215,6 @@ export enum SEGMENT_SORT_KEY {
   UPDATED_AT = 'updatedAt',
 }
 
-export enum FLAG_SORT_KEY {
-  NAME = 'name',
-  KEY = 'key',
-  STATUS = 'status',
-  UPDATED_AT = 'updatedAt',
-}
-
 export enum FLAG_SEARCH_KEY {
   ALL = 'all',
   NAME = 'name',
@@ -209,6 +222,18 @@ export enum FLAG_SEARCH_KEY {
   STATUS = 'status',
   TAG = 'tag',
   CONTEXT = 'context',
+}
+
+export enum METRIC_SEARCH_KEY {
+  ALL = 'all',
+  NAME = 'name',
+  CONTEXT = 'context',
+}
+
+export enum FLAG_SORT_KEY {
+  NAME = 'name',
+  STATUS = 'status',
+  UPDATED_AT = 'updatedAt',
 }
 
 export enum INCLUSION_CRITERIA {
@@ -259,4 +284,17 @@ export enum STATUS_INDICATOR_CHIP_TYPE {
   ENROLLMENT_COMPLETE = 'enrollment-complete',
   CANCELLED = 'cancelled',
   SCHEDULED = 'scheduled',
+  COMPATIBLE = 'compatible',
+  INCOMPATIBLE = 'incompatible',
+  WARNING = 'warning',
+}
+
+export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
+  INCLUDE = 'featureFlagSegmentInclusion',
+  EXCLUDE = 'featureFlagSegmentExclusion',
+}
+
+export enum FILE_TYPE {
+  JSON = '.json',
+  CSV = '.csv',
 }

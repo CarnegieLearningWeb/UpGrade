@@ -1,9 +1,8 @@
-import { IsArray, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsArray, IsNotEmpty, IsUUID } from 'class-validator';
 
 export class ExperimentIds {
   @IsArray()
   @IsNotEmpty()
-  @IsString({ each: true })
   @IsUUID('all', { each: true })
   public ids: string[];
 }

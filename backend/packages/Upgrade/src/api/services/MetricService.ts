@@ -1,10 +1,11 @@
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { MetricRepository } from '../repositories/MetricRepository';
 import { Metric } from '../models/Metric';
 import { SERVER_ERROR, IMetricUnit, IMetricMetaData, IGroupMetric, ISingleMetric } from 'upgrade_types';
 import { SettingService } from './SettingService';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+import { HttpError } from '../errors';
 
 export const METRICS_JOIN_TEXT = '@__@';
 
@@ -19,29 +20,50 @@ export class MetricService {
     return this.metricDocumentToJson(metricData);
   }
 
-  public async saveAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>, logger: UpgradeLogger): Promise<Metric[]> {
+  public async getMetricsByContext(context: string, logger: UpgradeLogger): Promise<IMetricUnit[]> {
+    logger.info({ message: `Get metrics by context ${context}` });
+    const metricData = await this.metricRepository.getMetricsByContext(context);
+    if (!metricData.length) {
+      throw new HttpError(404, `Metrics context not found: ${context}`);
+    }
+    return this.metricDocumentToJson(metricData);
+  }
+
+  public async saveAllMetrics(
+    metrics: Array<IGroupMetric | ISingleMetric>,
+    contexts: string[],
+    logger: UpgradeLogger
+  ): Promise<Metric[]> {
     logger.info({ message: 'Save all metrics' });
-    return await this.addAllMetrics(metrics, logger);
+    return await this.addAllMetrics(metrics, contexts, logger);
   }
 
   public async upsertAllMetrics(
     metrics: Array<IGroupMetric | ISingleMetric>,
+    contexts: string[],
     logger: UpgradeLogger
   ): Promise<IMetricUnit[]> {
     logger.info({ message: 'Upsert all metrics' });
-    const upsertedMetrics = await this.addAllMetrics(metrics, logger);
+    const upsertedMetrics = await this.addAllMetrics(metrics, contexts, logger);
     return this.metricDocumentToJson(upsertedMetrics);
   }
 
   public async deleteMetric(key: string, logger: UpgradeLogger): Promise<IMetricUnit[]> {
     logger.info({ message: `Delete metric by key ${key}` });
-    await this.metricRepository.deleteMetricsByKeys(key, METRICS_JOIN_TEXT);
+    const result = await this.metricRepository.deleteMetricsByKeys(key, METRICS_JOIN_TEXT);
+    if (!result.length) {
+      throw new HttpError(404, `Metric key not found: ${key}`);
+    }
     const rootKey = key.split(METRICS_JOIN_TEXT);
     const updatedMetric = await this.metricRepository.getMetricsByKeys(rootKey[0], METRICS_JOIN_TEXT);
     return this.metricDocumentToJson(updatedMetric);
   }
 
-  private async addAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>, logger: UpgradeLogger): Promise<Metric[]> {
+  private async addAllMetrics(
+    metrics: Array<IGroupMetric | ISingleMetric>,
+    contexts: string[],
+    logger: UpgradeLogger
+  ): Promise<Metric[]> {
     // check permission for metrics
     const isAllowed = await this.checkMetricsPermission(logger);
     if (!isAllowed) {
@@ -57,6 +79,7 @@ export class MetricService {
       key: metric.key,
       type: metric.type,
       allowedData: metric.allowedData,
+      context: contexts,
     }));
     return this.metricRepository.save(metricDoc);
   }
@@ -138,6 +161,7 @@ export class MetricService {
             children: [],
             metadata: { type: metric.type as any },
             allowedData: metric.allowedData,
+            context: metric.context,
           };
           metricPointer.push(newMetric);
 

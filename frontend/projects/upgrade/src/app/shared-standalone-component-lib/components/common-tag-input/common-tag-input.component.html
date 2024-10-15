@@ -1,0 +1,63 @@
+<mat-form-field
+  *ngIf="!showImportHelper"
+  class="input-container"
+  subscriptSizing="dynamic"
+  appearance="outline"
+  [ngClass]="{'invalid-field': isInvalid()}"
+>
+  <mat-label class="ft-14-400">
+    {{ label | translate }}
+    <span *ngIf="inputType === CommonTagInputType.VALUES" class="required-asterisk">*</span>
+  </mat-label>
+  <div class="chips-wrapper">
+    <div class="chips-container dense-2">
+      <mat-chip-grid #tagsList>
+        <mat-chip-row
+          *ngFor="let componentTag of tags.value"
+          [selectable]="isChipSelectable"
+          [removable]="isChipRemovable"
+          (removed)="removeChip(componentTag)"
+        >
+          <span class="chip-label">
+            {{ componentTag }}
+          </span>
+          <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
+        </mat-chip-row>
+
+        <input
+          [matChipInputFor]="tagsList"
+          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+          [matChipInputAddOnBlur]="addChipOnBlur"
+          (matChipInputTokenEnd)="addChip($event)"
+          (focus)="onFocus()"
+          (blur)="onBlur()"
+          [placeholder]="tagsExist ? '' : (placeholder | translate)"
+          autocomplete="off"
+          class="ft-14-400"
+        />
+      </mat-chip-grid>
+      <div *ngIf="inputType === CommonTagInputType.VALUES" class="sharing-icon-buttons">
+        <button mat-icon-button class="icon-button" (click)="onActionButtonClick($event)">
+          <span class="material-symbols-outlined">
+            {{ tagsExist ? 'download' : 'upload' }}
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</mat-form-field>
+
+<div *ngIf="showImportHelper" class="drag-drop-container">
+  <app-common-import-container
+    fileType=".csv"
+    buttonLabel="Choose CSV"
+    (closeButtonClick)="onCloseButtonClick($event)"
+    (filesSelected)="handleFilesSelected($event)"
+    [importFailed]="importFailed$ | async"
+  >
+  </app-common-import-container>
+  <p class="ft-12-400 form-hint">
+    {{ 'feature-flags.upsert-list-modal.import-csv.message.text' | translate }}
+    <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">Learn more</a>
+  </p>
+</div>

@@ -23,7 +23,7 @@ import { Segment, MemberTypes } from '../../../../../core/segments/store/segment
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from 'upgrade_types';
-import { DialogService } from '../../../../../shared/services/dialog.service';
+import { DialogService } from '../../../../../shared/services/common-dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 
 @Component({
@@ -453,7 +453,7 @@ export class ExperimentParticipantsComponent implements OnInit {
           groupForSegment: this.groupsToSend,
           subSegments: this.subSegmentIdsToSend,
           type: SEGMENT_TYPE.PRIVATE,
-        }
+        },
       };
       this.gettingMembersValueToSend(members2);
       const segmentMembers2FormData = {
@@ -462,7 +462,7 @@ export class ExperimentParticipantsComponent implements OnInit {
           groupForSegment: this.groupsToSend,
           subSegments: this.subSegmentIdsToSend,
           type: SEGMENT_TYPE.PRIVATE,
-        }
+        },
       };
       this.emitExperimentDialogEvent.emit({
         type: eventType,

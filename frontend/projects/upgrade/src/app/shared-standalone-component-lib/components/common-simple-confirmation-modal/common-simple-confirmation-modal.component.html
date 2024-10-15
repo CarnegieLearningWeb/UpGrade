@@ -1,0 +1,18 @@
+<div>
+    <app-common-dialog
+      [title]="data.title"
+      [cancelBtnLabel]="data.cancelBtnLabel"
+      [primaryActionBtnLabel]="data.primaryActionBtnLabel"
+      [primaryActionBtnColor]="data.primaryActionBtnColor"
+      (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+    >
+      <div class="confirm-modal-content">
+        <p class="confirm-modal-content-text ft-16-400">
+          {{ data.params.message | translate }}
+        </p>
+        <p class="confirm-modal-content-text ft-14-400" [ngClass]="data.params.subMessageClass" *ngIf="data.params.subMessage">
+          {{ data.params.subMessage | translate }}
+        </p>
+      </div>
+    </app-common-dialog>
+</div>

@@ -1,4 +1,5 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { Segment } from '../models/Segment';
@@ -33,7 +34,7 @@ export class SegmentRepository extends Repository<Segment> {
       .insert()
       .into(Segment)
       .values(data)
-      .onConflict(`("id") DO UPDATE SET "name" = :name, "description" = :description, "context" = :context`)
+      .orUpdate(['name', 'description', 'context'], ['id'])
       .setParameter('name', data.name)
       .setParameter('description', data.description)
       .setParameter('context', data.context)
@@ -52,7 +53,7 @@ export class SegmentRepository extends Repository<Segment> {
       .insert()
       .into(Segment)
       .values(data)
-      .onConflict(`DO NOTHING`)
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
@@ -73,6 +74,24 @@ export class SegmentRepository extends Repository<Segment> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('segmentRepository', 'deleteSegmentById', { id }, errorMsg);
+        logger.error(errorMsg);
+        throw errorMsgString;
+      });
+    return result.raw;
+  }
+
+  public async deleteSegments(ids: string[], logger: UpgradeLogger, entityManager?: EntityManager): Promise<Segment[]> {
+    const queryRunner = entityManager ? entityManager : this;
+
+    const result = await queryRunner
+      .createQueryBuilder()
+      .delete()
+      .from(Segment)
+      .where('segment.id IN (:...ids)', { ids })
+      .returning('*')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('segmentRepository', 'deleteSegmentsByIds', { ids }, errorMsg);
         logger.error(errorMsg);
         throw errorMsgString;
       });

@@ -1,57 +1,98 @@
-:host ::ng-deep .flags-list-container {
-  height: 100%;
+.flag-list-table-container {
+  position: relative;
+  overflow: auto;
   width: 100%;
 
-  .flags-list-table-container {
-    position: relative;
-    margin-top: 8px;
-    padding: 0 2.25rem;
-    overflow: auto;
-    width: 100%;
+  /* Subtract page header (112px), card header (96px), card content paddings (64px), and page bottom padding (32px) from vertical viewport (100vh) */
+  max-height: calc(100vh - 304px);
 
-    .spinner {
-      position: sticky;
-      top: 0;
-      z-index: 1111;
-    }
+  .spinner {
+    position: sticky;
+    top: 0;
+    z-index: 1111;
   }
 
-  .flags-list {
-    width: 100%;
+  /* Add gap between header and body when no data exists */
+  ::ng-deep .no-data tbody:before {
+    display: block;
+    line-height: 8px;
+    content: '\200C';
+  }
 
-    th {
-      color: var(--grey-2);
+  .flag-list-table {
+    ::ng-deep thead {
+      tr.mat-mdc-header-row {
+        height: 48px;
+        border: 0;
+
+        th {
+          padding-left: 0;
+          background-color: var(--zircon);
+          color: var(--darker-grey);
+
+          &:first-child {
+            border-top-left-radius: 4px;
+          }
+
+          &:last-child {
+            border-top-right-radius: 4px;
+          }
+        }
+      }
     }
 
-    tr.mat-mdc-footer-row,
-    tr.mat-mdc-row {
-      height: 55px;
-    }
+    ::ng-deep tbody {
+      tr.mat-mdc-row {
+        height: 56px;
 
-    .mat-mdc-cell,
-    .mat-mdc-header-cell {
-      padding: 10px 5px;
-      width: 10%;
-      word-break: break-word;
-    }
-
-    .mat-mdc-header-cell {
-      padding-left: 5px;
-    }
-
-    .flag {
-      &-name {
-        text-decoration: underline;
-        cursor: pointer;
+        td {
+          min-width: 96px;
+          padding-left: 0;
+          color: var(--black-2);
+        }
       }
 
-      &-description {
+      tr.mat-mdc-no-data-row {
+        td {
+          height: 48px;
+          text-align: center;
+          border: 1.5px dashed var(--light-grey-2);
+          color: var(--dark-grey);
+        }
+      }
+    }
+
+    .name-column {
+      width: 25%;
+      padding-left: 32px;
+
+      .flag-name {
+        color: var(--black-2);
+      }
+
+      .flag-description {
         color: var(--grey-3);
       }
     }
 
-    .mat-mdc-form-field {
-      width: 40%;
+    .status-column {
+      width: 16.25%;
+    }
+
+    .updated-at-column {
+      width: 16.25%;
+    }
+
+    .app-context-column {
+      width: 16.25%;
+    }
+
+    .tags-column {
+      width: 16.25%;
+    }
+
+    .exposures-column {
+      width: 10%;
     }
   }
 }

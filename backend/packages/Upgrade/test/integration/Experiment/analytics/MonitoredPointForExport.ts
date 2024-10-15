@@ -54,7 +54,7 @@ export default async function LogOperations(): Promise<void> {
 
   await settingService.setClientCheck(false, true, new UpgradeLogger());
 
-  await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
+  await metricService.saveAllMetrics(metrics as any, experimentObject.context, new UpgradeLogger());
 
   const findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(32);
@@ -258,7 +258,7 @@ export default async function LogOperations(): Promise<void> {
   // log data here
   let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(
-    experimentUsers[0].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -280,11 +280,11 @@ export default async function LogOperations(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(
-    experimentUsers[0].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -306,11 +306,11 @@ export default async function LogOperations(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[1].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(
-    experimentUsers[1].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[1].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -329,13 +329,13 @@ export default async function LogOperations(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
 
   await analyticsService.getCSVData(experimentObject.id, emailAddress, new UpgradeLogger());
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[2].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(
-    experimentUsers[2].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[2].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -354,11 +354,11 @@ export default async function LogOperations(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[3].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(
-    experimentUsers[3].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[3].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -377,11 +377,11 @@ export default async function LogOperations(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[3].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(
-    experimentUsers[3].id,
+    { ...experimentUserDoc, requestedUserId: experimentUsers[3].id },
     [
       {
         timestamp: new Date().toISOString(),
@@ -400,7 +400,7 @@ export default async function LogOperations(): Promise<void> {
         },
       },
     ],
-    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+    new UpgradeLogger()
   );
 
   const allQuery = await queryService.find(new UpgradeLogger());

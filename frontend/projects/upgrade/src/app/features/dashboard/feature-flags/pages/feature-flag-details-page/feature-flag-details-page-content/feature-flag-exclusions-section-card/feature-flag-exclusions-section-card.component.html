@@ -1,0 +1,28 @@
+<app-common-section-card *ngIf="selectedFlag$ | async as flag">
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'feature-flags.details.exclusions.card.title.text' | translate"
+    [subtitle]="'feature-flags.details.exclusions.card.subtitle.text' | translate"
+    [tableRowCount]="tableRowCount$ | async"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showPrimaryButton]="(permissions$ | async)?.featureFlags.update"
+    [primaryButtonText]="'feature-flags.details.add-exclude-list.button.text' | translate"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (primaryButtonClick)="onAddExcludeListClick(flag.context[0], flag.id)"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <app-feature-flag-exclusions-table
+    content
+    *ngIf="isSectionCardExpanded"
+    [actionsDisabled]="!(permissions$ | async)?.featureFlags.update"
+    (rowAction)="onRowAction($event, flag.id)"
+  ></app-feature-flag-exclusions-table>
+</app-common-section-card>

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { AuthGuard } from './core/auth/auth.guard';
 import { NegateAuthGuard } from './core/auth/negate.auth.guard';
+import { environment } from '../environments/environment';
 
 const routes: Routes = [
   {
@@ -25,10 +26,9 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  // useHash supports github.io demo page, remove in your app
   imports: [
     RouterModule.forRoot(routes, {
-      useHash: false,
+      useHash: environment.useHashRouting,
       scrollPositionRestoration: 'enabled',
     }),
   ],

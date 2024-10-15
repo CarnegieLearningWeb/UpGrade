@@ -17,7 +17,8 @@ import { IMenuButtonItem } from 'upgrade_types';
  * ```
  * <app-common-section-card-action-buttons
  *   [showSlideToggle]="false"
- *   [isEnableToggleChecked]="false"
+ *   [slideToggleChecked]="false"
+ *   [slideToggleDisabled]="false"
  *   [showPrimaryButton]="true"
  *   [primaryButtonText]="'Add Row'"
  *   [showMenuButton]="true"
@@ -33,33 +34,30 @@ import { IMenuButtonItem } from 'upgrade_types';
 @Component({
   selector: 'app-common-section-card-action-buttons',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatSlideToggleModule,
-    MatButtonModule,
-    MatIconModule,
-    MatMenuModule,
-    TranslateModule,
-  ],
+  imports: [CommonModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatMenuModule, TranslateModule],
   templateUrl: './common-section-card-action-buttons.component.html',
   styleUrl: './common-section-card-action-buttons.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonSectionCardActionButtonsComponent {
   @Input() showSlideToggle?: boolean = false;
-  @Input() isEnableToggleChecked?: boolean = false;
+  @Input() slideToggleText?: string;
+  @Input() slideToggleChecked?: boolean = false;
+  @Input() slideToggleDisabled?: boolean = false;
   @Input() showPrimaryButton?: boolean = false;
   @Input() primaryButtonText?: string;
-  @Input() showMenuButton?: boolean = true;
-  @Input() menuButtonItems?: IMenuButtonItem[];
+  @Input() showMenuButton?: boolean = false;
+  @Input() menuButtonItems?: IMenuButtonItem[] = [];
   @Input() isSectionCardExpanded?: boolean = true;
-  @Output() slideToggleChange = new EventEmitter<boolean>();
+  @Input() primaryActionBtnDisabled?: boolean = false;
+  @Input() sectionCardExpandBtnDisabled?: boolean = false;
+  @Output() slideToggleChange = new EventEmitter<MatSlideToggleChange>();
   @Output() primaryButtonClick = new EventEmitter<void>();
   @Output() menuButtonItemClick = new EventEmitter<string>();
   @Output() sectionCardExpandChange = new EventEmitter<boolean>();
 
   onSlideToggleChange(event: MatSlideToggleChange): void {
-    this.slideToggleChange.emit(event.checked);
+    this.slideToggleChange.emit(event);
   }
 
   onPrimaryButtonClick(): void {

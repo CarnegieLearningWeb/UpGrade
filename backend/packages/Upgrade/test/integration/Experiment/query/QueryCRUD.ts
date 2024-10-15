@@ -1,6 +1,5 @@
+import { Container as tteContainer } from './../../../../src/typeorm-typedi-extensions';
 import Container from 'typedi';
-import { getRepository } from 'typeorm';
-import { Metric } from '../../../../src/api/models/Metric';
 import { MetricService } from '../../../../src/api/services/MetricService';
 import { SettingService } from '../../../../src/api/services/SettingService';
 import { QueryService } from '../../../../src/api/services/QueryService';
@@ -11,9 +10,10 @@ import { ExperimentService } from '../../../../src/api/services/ExperimentServic
 import { systemUser } from '../../mockData/user/index';
 import { metrics } from '../../mockData/metric';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { MetricRepository } from '../../../../src/api/repositories/MetricRepository';
 
 export default async function QueryCRUD(): Promise<void> {
-  const metricRepository = getRepository(Metric);
+  const metricRepository = tteContainer.getCustomRepository(MetricRepository);
   const metricService = Container.get<MetricService>(MetricService);
   const settingService = Container.get<SettingService>(SettingService);
   const queryService = Container.get<QueryService>(QueryService);
@@ -45,7 +45,7 @@ export default async function QueryCRUD(): Promise<void> {
   );
 
   // create metrics service
-  await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
+  await metricService.saveAllMetrics(metrics as any, experimentObject.context, new UpgradeLogger());
 
   const findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(36);

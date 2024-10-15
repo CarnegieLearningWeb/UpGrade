@@ -14,7 +14,6 @@ export class Group {
 export class SegmentInputValidator {
   @IsOptional()
   @IsUUID()
-  @IsString()
   public id?: string;
 
   @IsNotEmpty()
@@ -45,6 +44,12 @@ export class SegmentInputValidator {
   @IsArray()
   @IsString({ each: true })
   public subSegmentIds: string[];
+}
+
+export class IdValidator {
+  @IsNotEmpty()
+  @IsUUID()
+  public segmentId: string;
 }
 
 export class SegmentValidationObj {
@@ -81,7 +86,6 @@ export class SegmentFile {
 export class SegmentIds {
   @IsArray()
   @IsNotEmpty()
-  @IsString({ each: true })
   @IsUUID('all', { each: true })
   public ids: string[];
 }

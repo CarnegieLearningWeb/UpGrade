@@ -1,0 +1,10 @@
+<div class="table-container">
+  <app-common-details-participant-list-table
+    [tableType]="tableType"
+    [dataSource]="dataSource$ | async"
+    [actionsDisabled]="actionsDisabled"
+    [isLoading]="isLoading$ | async"
+    noDataRowText="feature-flags.details.exclusions.card.no-data-row.text"
+    (rowAction)="onRowAction($event)"
+  ></app-common-details-participant-list-table>
+</div>

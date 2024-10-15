@@ -7,7 +7,6 @@ import { v4 as uuid } from 'uuid';
 import ExperimentServiceMock from './mocks/ExperimentServiceMock';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-import { useContainer as ormUseContainer } from 'typeorm';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentServiceMock';
 
@@ -15,7 +14,6 @@ describe('Experiment Controller Testing', () => {
   beforeAll(() => {
     configureLogger();
     routingUseContainer(Container);
-    ormUseContainer(Container);
     classValidatorUseContainer(Container);
 
     // set mock container
@@ -198,8 +196,10 @@ describe('Experiment Controller Testing', () => {
 
   test('Get request for /api/experiments/export', () => {
     return request(app)
-      .post('/api/experiments/import')
-      .send([experimentData.id])
+      .get('/api/experiments/export')
+      .query({
+        ids: [uuid()],
+      })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

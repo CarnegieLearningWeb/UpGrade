@@ -1,13 +1,16 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ImportStratificationsComponent } from './import-stratifications/import-stratifications.component';
 import { MatDialog } from '@angular/material/dialog';
 import * as clonedeep from 'lodash.clonedeep';
 import { DeleteStratificationComponent } from './delete-stratification/delete-stratification.component';
 import { StratificationFactor } from '../../../../../core/stratification-factors/store/stratification-factors.model';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { ExperimentNameVM } from '../../../../../core/experiments/store/experiments.model';
+import { MatTableDataSource } from '@angular/material/table';
+import { UserPermission } from '../../../../../core/auth/store/auth.models';
+import { AuthService } from '../../../../../core/auth/auth.service';
 
 interface StratificationFactorsTableRow {
   factor: string;
@@ -23,29 +26,39 @@ interface StratificationFactorsTableRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StratificationComponent implements OnInit {
+  permissions$: Observable<UserPermission>;
   allStratificationFactors: StratificationFactor[];
   allStratificationFactorsSub: Subscription;
   isLoading$ = this.stratificationFactorsService.isLoading$;
-  stratificationFactorsForTable: StratificationFactorsTableRow[] = [];
+  isFactorAddRequestSuccess$ = this.stratificationFactorsService.isFactorAddRequestSuccess$;
+  stratificationFactorsForTable: MatTableDataSource<StratificationFactorsTableRow>;
   displayedColumns: string[] = ['factor', 'status', 'summary', 'actions'];
   allExperimentsName: ExperimentNameVM[];
 
   constructor(
     private dialog: MatDialog,
     private stratificationFactorsService: StratificationFactorsService,
-    private experimentService: ExperimentService
+    private experimentService: ExperimentService,
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.permissions$ = this.authService.userPermissions$;
     this.experimentService.allExperimentNames$.subscribe((allExperimentNames) => {
       this.allExperimentsName = allExperimentNames;
     });
     this.allStratificationFactorsSub = this.stratificationFactorsService.allStratificationFactors$.subscribe(
       (allStratificationFactors) => {
         this.allStratificationFactors = allStratificationFactors;
-        this.stratificationFactorsForTable = this.convertToTableFormat();
+        this.updateTableData();
       }
     );
+  }
+
+  updateTableData() {
+    this.stratificationFactorsForTable = new MatTableDataSource(this.convertToTableFormat());
+    this.cdr.markForCheck();
   }
 
   convertToTableFormat() {
@@ -84,9 +97,7 @@ export class StratificationComponent implements OnInit {
     });
     dialogRef.afterClosed().subscribe((isImportButtonClicked) => {
       if (isImportButtonClicked) {
-        setTimeout(() => {
-          this.stratificationFactorsService.fetchStratificationFactors();
-        }, 1);
+        this.stratificationFactorsService.fetchStratificationFactors();
       }
     });
   }

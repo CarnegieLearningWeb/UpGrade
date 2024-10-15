@@ -8,21 +8,21 @@ import { ExperimentUserService } from '../../../src/api/services/ExperimentUserS
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
 import { MetricService } from '../../../src/api/services/MetricService';
 import { ClientLibMiddleware } from '../../../src/api/middlewares/ClientLibMiddleware';
+import { UserCheckMiddleware } from '../../../src/api/middlewares/UserCheckMiddleware';
 import ExperimentServiceMock from './mocks/ExperimentServiceMock';
 import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentServiceMock';
 import ExperimentUserServiceMock from './mocks/ExperimentUserServiceMock';
 import FeatureFlagServiceMock from './mocks/FeatureFlagServiceMock';
 import MetricServiceMock from './mocks/MetricServiceMock';
 import ClientLibMiddlewareMock from './mocks/ClientLibMiddlewareMock';
+import MockuserCheckMiddleware from './mocks/UserCheckMiddlewareMock';
 
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-import { useContainer as ormUseContainer } from 'typeorm';
-import { v4 as uuid } from 'uuid';
+// import { v4 as uuid } from 'uuid';
 
 describe('Experiment Client Controller Testing', () => {
   beforeAll(() => {
     routingUseContainer(Container);
-    ormUseContainer(Container);
     classValidatorUseContainer(Container);
 
     Container.set(ExperimentService, new ExperimentServiceMock());
@@ -31,6 +31,7 @@ describe('Experiment Client Controller Testing', () => {
     Container.set(FeatureFlagService, new FeatureFlagServiceMock());
     Container.set(MetricService, new MetricServiceMock());
     Container.set(ClientLibMiddleware, new ClientLibMiddlewareMock());
+    Container.set(UserCheckMiddleware, new MockuserCheckMiddleware());
   });
 
   afterAll(() => {
@@ -58,31 +59,9 @@ describe('Experiment Client Controller Testing', () => {
     ],
   };
 
-  // const blobLogData = {
-  //   "userId": "u23",
-  //   "value": [
-  //     {
-  //       "userId": "u23",
-  //       "timestamp": "1970-01-01T00:00:00Z",
-  //       "metrics": {
-  //         "groupedMetrics": [
-  //           {
-  //             "groupClass": "masteryWorkspace",
-  //             "groupKey": "calculating_area_of_square",
-  //             "groupUniquifier": "1990-10-10T00:00:00Z",
-  //             "attributes": {
-  //               "hintCount": 31
-  //             }
-  //           }
-  //         ]
-  //       }
-  //     }
-  //   ]
-  // }
-
-  test('Post request for /api/init', () => {
+  test('Post request for /api/v5/init', () => {
     return request(app)
-      .post('/api/init')
+      .post('/api/v5/init')
       .send({
         id: '123',
       })
@@ -91,9 +70,9 @@ describe('Experiment Client Controller Testing', () => {
       .expect(200);
   });
 
-  test('Post request for /api/v1/groupmembership', () => {
+  test('Post request for /api/v5/groupmembership', () => {
     return request(app)
-      .patch('/api/v1/groupmembership')
+      .patch('/api/v5/groupmembership')
       .send({
         id: 'u21',
         group: {
@@ -105,9 +84,9 @@ describe('Experiment Client Controller Testing', () => {
       .expect(200);
   });
 
-  test('Post request for /api/v1/workinggroup', () => {
+  test('Post request for /api/v5/workinggroup', () => {
     return request(app)
-      .patch('/api/v1/workinggroup')
+      .patch('/api/v5/workinggroup')
       .send({
         id: 'u21',
         workingGroup: {
@@ -121,23 +100,28 @@ describe('Experiment Client Controller Testing', () => {
       .expect(200);
   });
 
-  test('Post request for /api/mark', () => {
+  test('Post request for /api/v5/mark', () => {
     return request(app)
-      .post('/api/mark')
+      .post('/api/v5/mark')
       .send({
         userId: 'u21',
-        experimentPoint: 'p',
-        condition: 'condition',
-        partitionId: 'q',
+        status: 'condition applied',
+        data: {
+          target: 'p',
+          site: 'q',
+          assignedCondition: {
+            conditionCode: 'condition',
+          },
+        },
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
   });
 
-  test('Post request for /api/assign', () => {
+  test('Post request for /api/v5/assign', () => {
     return request(app)
-      .post('/api/assign')
+      .post('/api/v5/assign')
       .send({
         userId: 'u21',
         context: 'abc',
@@ -147,47 +131,18 @@ describe('Experiment Client Controller Testing', () => {
       .expect(200);
   });
 
-  test('Post request for /api/log', () => {
+  test('Post request for /api/v5/log', () => {
     return request(app)
-      .post('/api/log')
+      .post('/api/v5/log')
       .send(logData)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
   });
 
-  test('Post request for /api/failed', () => {
+  test('Post request for /api/v5/useraliases', () => {
     return request(app)
-      .post('/api/failed')
-      .send({
-        reason: 'xyz',
-        experimentPoint: 'p',
-        userId: 'u123',
-        experimentId: uuid(),
-      })
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .expect(200);
-  });
-
-  test('Get request for /api/featureflag', () => {
-    return request(app).get('/api/featureflag').expect('Content-Type', /json/).expect(200);
-  });
-
-  test('Post request for /api/metric', () => {
-    return request(app)
-      .post('/api/metric')
-      .send({
-        metricUnit: [],
-      })
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .expect(200);
-  });
-
-  test('Post request for /api/v1/useraliases', () => {
-    return request(app)
-      .patch('/api/v1/useraliases')
+      .patch('/api/v5/useraliases')
       .send({
         userId: 'u21',
         aliases: ['abc'],

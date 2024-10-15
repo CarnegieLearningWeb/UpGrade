@@ -154,25 +154,23 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   }
 
   selectSubSegments(): void {
-    if (this.allSegments) {
-      this.allSegments.forEach((segment) => {
-        if (this.segmentInfo) {
-          if (
-            segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE &&
-            segment.id !== this.segmentInfo.id &&
-            segment.context === this.currentContext
-          ) {
-            this.subSegmentIds.push(segment.name);
-            this.segmentNameId.set(segment.name, segment.id);
-          }
-        } else {
-          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.context === this.currentContext) {
-            this.subSegmentIds.push(segment.name);
-            this.segmentNameId.set(segment.name, segment.id);
-          }
-        }
-      });
+    if (!this.allSegments) {
+      return;
     }
+
+    const isContextAll = this.currentContext === 'ALL';
+
+    this.allSegments
+      .filter(
+        (segment) =>
+          segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE &&
+          (isContextAll || segment.context === this.currentContext) &&
+          (!this.segmentInfo || segment.id !== this.segmentInfo.id)
+      )
+      .forEach((segment) => {
+        this.subSegmentIds.push(segment.name);
+        this.segmentNameId.set(segment.name, segment.id);
+      });
   }
 
   onFileSelected(event: any): void {

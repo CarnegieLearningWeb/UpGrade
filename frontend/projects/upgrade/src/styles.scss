@@ -96,6 +96,14 @@
   @include mat.all-component-densities(-2);
 }
 
+.dense-3 {
+  @include mat.all-component-densities(-3);
+}
+
+.dense-4 {
+  @include mat.all-component-densities(-4);
+}
+
 // TODO material specific style which cannot be changed by scope
 .mat-drawer-inner-container {
   display: flex;
@@ -249,6 +257,23 @@ button[mat-icon-button] {
   width: 805px;
 }
 
+.form-standard {
+  display: flex;
+  flex-direction: column;
+  row-gap: 16px;
+  padding: 32px 32px 16px;
+}
+
+.form-hint {
+  color: var(--dark-grey);
+}
+
+.learn-more-link {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+
 .mat-mdc-checkbox {
   .mdc-checkbox {
     transform: scale(0.889); // transform 18px to 16px
@@ -262,8 +287,22 @@ button[mat-icon-button] {
 }
 
 .mat-mdc-chip {
+  .mdc-evolution-chip__cell .mat-mdc-chip-action {
+    padding: 2px 8px;
+  }
+
   .chip-label {
+    font-family: 'Roboto';
+    font-size: 12px;
+    font-weight: 400;
     color: var(--black-2);
+  }
+
+  &.status-indicator {
+    .chip-label {
+      font-weight: 500;
+      color: inherit;
+    }
   }
 }
 
@@ -287,6 +326,56 @@ button[mat-icon-button] {
     margin-left: -6px;
     color: var(--black-2);
     user-select: none;
+  }
+}
+
+.mat-mdc-slide-toggle {
+  &:has(.mdc-switch--disabled) {
+    cursor: not-allowed;
+
+    .mdc-label {
+      margin-left: 5px;
+      color: var(--dark-grey) !important;
+      cursor: not-allowed;
+    }
+  }
+
+  .mdc-switch--disabled {
+    cursor: not-allowed !important;
+
+    &.mdc-switch--unselected {
+      .mdc-switch__track {
+        opacity: 1.0 !important;
+        &::before {
+          background: var(--mdc-switch-unselected-track-color) !important;
+        }
+      }
+
+      .mdc-switch__shadow {
+        background: var(--mdc-switch-unselected-handle-color) !important;
+      }
+
+      .mdc-switch__icons {
+        opacity: 1.0 !important;
+      }
+    }
+
+    &.mdc-switch--selected {
+      .mdc-switch__track {
+        opacity: 1.0 !important;
+        &::after {
+          background: var(--mdc-switch-selected-track-color) !important;
+        }
+      }
+
+      .mdc-switch__shadow {
+        background: var(--mdc-switch-selected-handle-color) !important;
+      }
+
+      .mdc-switch__icons {
+        opacity: 1.0 !important;
+      }
+    }
   }
 }
 
@@ -397,6 +486,20 @@ button[mat-icon-button] {
 
       .mdc-tab-indicator .mdc-tab-indicator__content {
         margin-bottom: -20px;
+      }
+    }
+  }
+
+  &.new-tab-group {
+    .mat-mdc-tab-header {
+      border-bottom: none;
+
+      .mat-mdc-tab-label-container .mat-mdc-tab-labels .mat-mdc-tab {
+        margin: 8px 0;
+
+        .mdc-tab-indicator .mdc-tab-indicator__content {
+          margin-bottom: -8px;
+        }
       }
     }
   }

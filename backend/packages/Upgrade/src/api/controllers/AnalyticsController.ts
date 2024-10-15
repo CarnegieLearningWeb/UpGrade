@@ -66,6 +66,12 @@ export class AnalyticsController {
    *                    type: string
    *                    minLength: 1
    *                    example: exp01
+   *          '400':
+   *            description: experimentIds should have valid UUIDs.
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('/enrollment')
   public async analyticsService(
@@ -157,6 +163,12 @@ export class AnalyticsController {
    *                            groups:
    *                              type: number
    *                              example: 3
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('/enrollment/detail')
   public async analyticsDetailService(
@@ -182,9 +194,12 @@ export class AnalyticsController {
    *             properties:
    *              experimentId:
    *               type: string
+   *               example: 45b9d8cd-f113-4f93-9826-c3d1ff4ee73c
    *              dateEnum:
    *               type: string
    *               enum: [last_seven_days, last_three_months, last_six_months, last_twelve_months]
+   *              clientOffset:
+   *               type: number
    *       tags:
    *         - Analytics
    *       produces:
@@ -247,6 +262,12 @@ export class AnalyticsController {
    *                    required:
    *                      - id
    *                      - conditions
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
    */
   @Post('/enrollment/date')
   public async enrollmentByDate(
@@ -263,25 +284,33 @@ export class AnalyticsController {
   /**
    * @swagger
    * /stats/csv:
-   *    post:
-   *       description: Get csv files
+   *    get:
+   *       description: Export CSV data file to the given mail id
    *       parameters:
-   *         - in: body
-   *           name: props
+   *         - in: query
+   *           name: experimentId
    *           required: true
    *           schema:
-   *             type: object
-   *             properties:
-   *              experimentId:
-   *                type: string
-   *              email:
-   *                type: string
-   *           description: Get Csv files in given mail id
+   *             type: string
+   *             example: 1bc1a783-0290-4058-88de-21211cbd242e
+   *         - in: query
+   *           name: email
+   *           required: true
+   *           schema:
+   *             type: string
    *       tags:
    *         - Analytics
    *       responses:
    *          '200':
-   *            description: Get CSV files
+   *            description: Export CSV data file to the given mail id
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: experimentId NotFoundError
+   *          '500':
+   *            description: Internal Server Error
    */
   @Get('/csv')
   public async downloadCSV(

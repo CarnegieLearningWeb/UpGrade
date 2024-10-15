@@ -1,11 +1,7 @@
-:host ::ng-deep .section-card-list {
+.section-card-list {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  padding: 20px;
-  margin: 0;
-}
-
-.section-card {
-  margin-bottom: 20px;
+  row-gap: 32px;
+  padding-bottom: 32px;
+  overflow: auto;
 }

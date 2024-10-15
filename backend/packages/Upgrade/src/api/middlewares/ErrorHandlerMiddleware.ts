@@ -97,6 +97,10 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
             message = error.message;
             type = SERVER_ERROR.QUERY_FAILED;
             break;
+          case 409:
+            message = error.message;
+            type = SERVER_ERROR.DUPLICATE_KEY;
+            break;
           case 422:
             message = error.message;
             type = SERVER_ERROR.UNSUPPORTED_CALIPER;
@@ -124,7 +128,7 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     // #1040
     // experimentError.type ? await this.errorService.create(experimentError, req.logger) : await Promise.resolve(error);
     if (!res.headersSent) {
-      res.statusCode = error.httpCode || 500;
+      res.statusCode = error.httpCode || error.status || 500;
       res.json(error);
       next(error);
     }

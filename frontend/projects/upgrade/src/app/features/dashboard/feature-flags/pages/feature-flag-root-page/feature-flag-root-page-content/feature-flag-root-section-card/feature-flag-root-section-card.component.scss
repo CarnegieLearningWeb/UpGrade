@@ -1,4 +1,11 @@
-.full-width {
-  width: 100%; // TODO try not to set here, should be in the common parent...
-  padding: 10px;
+.table-container {
+  padding: 32px;
+}
+
+.mat-spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 64px;
 }

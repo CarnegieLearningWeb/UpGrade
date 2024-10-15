@@ -1,0 +1,27 @@
+<div class="title-header">
+  <h5 class="title ft-18-700">
+    {{ title | translate }} &nbsp;<span *ngIf="tableRowCount > 0"> ({{ tableRowCount }}) </span>
+    <ng-container *ngIf="chipClass">
+      <app-common-status-indicator-chip
+        [chipClass]="chipClass"
+        [showWarning]="showWarning"
+        class="status-chip"
+      ></app-common-status-indicator-chip>
+    </ng-container>
+  </h5>
+  <p class="subtitle">
+    <ng-container *ngIf="subtitle">
+      <span class="ft-14-400">
+        {{ subtitle | translate }}
+      </span>
+    </ng-container>
+    <ng-container *ngIf="createdAt && updatedAt">
+      <span class="ft-14-400">
+        {{ ('feature-flags.details-created-on.text' | translate) + (createdAt | formatDate: 'medium date') + ' | ' }}
+      </span>
+      <span class="ft-14-400">
+        {{ ('feature-flags.details-updated-at.text' | translate) + (updatedAt | formatDate: 'short date') + '.' }}
+      </span>
+    </ng-container>
+  </p>
+</div>

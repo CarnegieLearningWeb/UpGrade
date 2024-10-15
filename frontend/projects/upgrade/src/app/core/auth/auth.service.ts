@@ -2,6 +2,7 @@ import { ElementRef, Inject, Injectable, NgZone } from '@angular/core';
 import { AppState, LocalStorageService } from '../core.module';
 import { Store, select, Action } from '@ngrx/store';
 import * as AuthActions from './store/auth.actions';
+import { DOCUMENT } from '@angular/common';
 import {
   selectIsLoggedIn,
   selectIsAuthenticating,
@@ -28,7 +29,8 @@ export class AuthService {
     private router: Router,
     private ngZone: NgZone,
     private localStorageService: LocalStorageService,
-    @Inject(ENV) private environment: Environment
+    @Inject(ENV) private environment: Environment,
+    @Inject(DOCUMENT) private DOMref: Document
   ) {}
 
   initializeUserSession(): void {
@@ -50,7 +52,15 @@ export class AuthService {
    */
 
   determinePostLoginDestinationUrl(): void {
-    const originalDestinationUrl = window.location.pathname?.endsWith('login') ? 'home' : window.location.pathname;
+    let originalDestinationUrl: string;
+
+    if (this.DOMref.location.href.endsWith('login')) {
+      originalDestinationUrl = 'home';
+    } else {
+      originalDestinationUrl = this.environment.useHashRouting
+        ? this.DOMref.location.hash.substring(1) || 'home'
+        : this.DOMref.location.pathname;
+    }
 
     this.setRedirectionUrl(originalDestinationUrl);
   }
@@ -164,6 +174,7 @@ export class AuthService {
       case UserRole.ADMIN:
         this.userPermissions$.next({
           experiments: { create: true, read: true, update: true, delete: true },
+          stratifications: { create: true, read: true, update: true, delete: true },
           users: { create: true, read: true, update: true, delete: true },
           logs: { create: true, read: true, update: true, delete: true },
           manageRoles: { create: true, read: true, update: true, delete: true },
@@ -175,6 +186,7 @@ export class AuthService {
       case UserRole.CREATOR:
         this.userPermissions$.next({
           experiments: { create: true, read: true, update: true, delete: true },
+          stratifications: { create: true, read: true, update: true, delete: true },
           users: { create: true, read: true, update: true, delete: true },
           logs: { create: false, read: true, update: false, delete: false },
           manageRoles: { create: false, read: true, update: false, delete: false },
@@ -186,6 +198,7 @@ export class AuthService {
       case UserRole.USER_MANAGER:
         this.userPermissions$.next({
           experiments: { create: false, read: true, update: false, delete: false },
+          stratifications: { create: false, read: true, update: false, delete: false },
           users: { create: true, read: true, update: true, delete: true },
           logs: { create: false, read: true, update: false, delete: false },
           manageRoles: { create: false, read: true, update: false, delete: false },
@@ -197,6 +210,7 @@ export class AuthService {
       case UserRole.READER:
         this.userPermissions$.next({
           experiments: { create: false, read: true, update: false, delete: false },
+          stratifications: { create: false, read: true, update: false, delete: false },
           users: { create: false, read: true, update: false, delete: false },
           logs: { create: false, read: true, update: false, delete: false },
           manageRoles: { create: false, read: true, update: false, delete: false },

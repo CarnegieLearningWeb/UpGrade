@@ -1,4 +1,5 @@
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
@@ -6,7 +7,7 @@ import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusi
 @EntityRepository(FeatureFlagSegmentExclusion)
 export class FeatureFlagSegmentExclusionRepository extends Repository<FeatureFlagSegmentExclusion> {
   public async insertData(
-    data: Partial<FeatureFlagSegmentExclusion>,
+    data: Partial<FeatureFlagSegmentExclusion>[],
     logger: UpgradeLogger,
     entityManager: EntityManager
   ): Promise<FeatureFlagSegmentExclusion> {
@@ -28,7 +29,6 @@ export class FeatureFlagSegmentExclusionRepository extends Repository<FeatureFla
         logger.error(errorMsg);
         throw errorMsgString;
       });
-
     return result.raw;
   }
 
@@ -38,7 +38,7 @@ export class FeatureFlagSegmentExclusionRepository extends Repository<FeatureFla
       .leftJoin('featureFlagSegmentExclusion.segment', 'segment')
       .leftJoinAndSelect('segment.subSegments', 'subSegments')
       .addSelect('featureFlag.name')
-      .addSelect('featureFlag.state')
+      .addSelect('featureFlag.status')
       .addSelect('featureFlag.context')
       .addSelect('segment.id')
       .getMany()
@@ -48,22 +48,18 @@ export class FeatureFlagSegmentExclusionRepository extends Repository<FeatureFla
       });
   }
 
-  public async deleteData(
-    segmentId: string,
-    featureFlagId: string,
-    logger: UpgradeLogger
-  ): Promise<FeatureFlagSegmentExclusion> {
+  public async deleteData(segmentId: string, logger: UpgradeLogger): Promise<FeatureFlagSegmentExclusion> {
     const result = await this.createQueryBuilder()
       .delete()
       .from(FeatureFlagSegmentExclusion)
-      .where('segmentId=:segmentId AND featureFlagId=:featureFlagId', { segmentId, featureFlagId })
+      .where('segmentId=:segmentId', { segmentId })
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           'FeatureFlagSegmentExclusionRepository',
           'deleteFeatureFlagSegmentExclusion',
-          { segmentId, featureFlagId },
+          { segmentId },
           errorMsg
         );
         logger.error(errorMsg);

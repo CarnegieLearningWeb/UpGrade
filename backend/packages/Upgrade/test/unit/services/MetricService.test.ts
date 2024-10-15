@@ -7,12 +7,15 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { SettingService } from '../../../src/api/services/SettingService';
 import { MetricRepository } from '../../../src/api/repositories/MetricRepository';
 import { SettingRepository } from '../../../src/api/repositories/SettingRepository';
+import { configureLogger } from '../../utils/logger';
 
 describe('Audit Service Testing', () => {
   let service: MetricService;
   let repo: Repository<MetricRepository>;
   let module: TestingModule;
   const settingRes = [{ id: 'id', toCheckAuth: false, toFilterMetric: true }];
+
+  const contexts = ['home'];
 
   const simpleMetric: Array<ISingleMetric> = [
     {
@@ -39,6 +42,7 @@ describe('Audit Service Testing', () => {
       key: 'totalProblemsCompleted',
       type: IMetricMetaData.CONTINUOUS,
       allowedData: [],
+      context: ['home'],
       logs: [],
       queries: [],
       createdAt: new Date('2020-1-1'),
@@ -52,11 +56,16 @@ describe('Audit Service Testing', () => {
       key: 'totalProblemsCompleted',
       allowedData: [],
       children: [],
+      context: ['home'],
       metadata: {
         type: IMetricMetaData.CONTINUOUS,
       },
     },
   ];
+
+  beforeAll(() => {
+    configureLogger();
+  });
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
@@ -102,17 +111,17 @@ describe('Audit Service Testing', () => {
   });
 
   it('should save all simple metrics', async () => {
-    const res = await service.saveAllMetrics(simpleMetric, new UpgradeLogger());
+    const res = await service.saveAllMetrics(simpleMetric, contexts, new UpgradeLogger());
     expect(res).toEqual(metric);
   });
 
   it('should save all group metrics', async () => {
-    const res = await service.saveAllMetrics(groupMetric, new UpgradeLogger());
+    const res = await service.saveAllMetrics(groupMetric, contexts, new UpgradeLogger());
     expect(res).toEqual(metric);
   });
 
   it('should upsert all metrics', async () => {
-    const res = await service.upsertAllMetrics(simpleMetric, new UpgradeLogger());
+    const res = await service.upsertAllMetrics(simpleMetric, contexts, new UpgradeLogger());
     expect(res).toEqual(metricResult);
   });
 
@@ -125,7 +134,7 @@ describe('Audit Service Testing', () => {
     settingRes[0].toFilterMetric = false;
 
     expect(async () => {
-      await service.saveAllMetrics(groupMetric, new UpgradeLogger());
+      await service.saveAllMetrics(groupMetric, contexts, new UpgradeLogger());
     }).rejects.toThrow('Metrics filter not enabled');
   });
 });

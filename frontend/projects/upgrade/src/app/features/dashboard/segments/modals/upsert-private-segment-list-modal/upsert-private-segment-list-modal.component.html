@@ -1,0 +1,65 @@
+<app-common-dialog
+  [title]="config.title"
+  [cancelBtnLabel]="config.cancelBtnLabel"
+  [primaryActionBtnLabel]="config.primaryActionBtnLabel"
+  [primaryActionBtnColor]="config.primaryActionBtnColor"
+  [primaryActionBtnDisabled]="isPrimaryButtonDisabled$ | async"
+  (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+>
+  <form [formGroup]="privateSegmentListForm" class="form-standard dense-3">
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">Type</mat-label>
+      <mat-select formControlName="listType" class="ft-14-400" placeholder="Select list type" #typeSelectRef>
+        <mat-option
+          *ngFor="let type of listOptionTypes$ | async"
+          [value]="type.value"
+          class="ft-14-400"
+          [disabled]="(isSegmentsListTypeDisabled$ | async) && type.value === LIST_TYPES.SEGMENT"
+        >
+          {{ type.viewValue }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field *ngIf="selectedListType === LIST_TYPES.SEGMENT" appearance="outline">
+      <mat-label class="ft-14-400">Segment</mat-label>
+      <input
+        type="text"
+        matInput
+        formControlName="segment"
+        [matAutocomplete]="auto"
+        [placeholder]="'feature-flags.upsert-list-modal.segment-placeholder.text' | translate"
+        class="ft-14-400"
+      />
+      <mat-error class="ft-12-400">
+        {{ 'feature-flags.upsert-list-modal.segment.error.message.text' | translate }}
+      </mat-error>
+      <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayAsSegmentName" requireSelection="true">
+        <mat-option *ngFor="let segment of segmentsOptions$ | async" [value]="segment" class="ft-14-400">
+          {{ segment.name }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+    <ng-container *ngIf="selectedListType && selectedListType !== LIST_TYPES.SEGMENT">
+      <app-common-tags-input
+        formControlName="values"
+        [inputType]="CommonTagInputType.VALUES"
+        [label]="config.valuesLabel"
+        [placeholder]="config.valuesPlaceholder"
+        [forceValidation]="forceValidation"
+        (downloadRequested)="onDownloadRequested($event)"
+        (blur)="onBlur()"
+      ></app-common-tags-input>
+      <mat-form-field appearance="outline">
+        <mat-label class="ft-14-400">Name</mat-label>
+        <input matInput formControlName="name" placeholder="e.g., My schools" class="ft-14-400" />
+        <mat-hint class="form-hint ft-12-400">
+          {{ config.nameHint | translate }}
+        </mat-hint>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label class="ft-14-400">Description (optional)</mat-label>
+        <input matInput formControlName="description" class="ft-14-400" />
+      </mat-form-field>
+    </ng-container>
+  </form>
+</app-common-dialog>

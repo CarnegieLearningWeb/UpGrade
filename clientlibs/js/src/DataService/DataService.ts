@@ -8,7 +8,7 @@ export class DataService {
   private group: UpGradeClientInterfaces.IExperimentUserGroup = null;
   private workingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup = null;
   private experimentAssignmentData: IExperimentAssignmentv5[] = null;
-  private featureFlags: IFeatureFlag[] = null;
+  private featureFlags: string[] = null;
 
   getGroup(): UpGradeClientInterfaces.IExperimentUserGroup {
     return this.group;
@@ -34,11 +34,11 @@ export class DataService {
     this.experimentAssignmentData = experimentAssignmentData;
   }
 
-  getFeatureFlags(): IFeatureFlag[] {
+  getFeatureFlags(): string[] {
     return this.featureFlags;
   }
 
-  setFeatureFlags(featureFlags: IFeatureFlag[]) {
+  setFeatureFlags(featureFlags: string[]) {
     this.featureFlags = featureFlags;
   }
 
@@ -73,29 +73,12 @@ export class DataService {
     return assignment || emptyAssignment;
   }
 
-  public getFeatureFlag(key: string): IFeatureFlag {
+  public hasFeatureFlag(key: string): boolean {
     if (this.featureFlags) {
-      const result = this.featureFlags.find((data) => data.key === key);
-      if (result) {
-        const activeVariation = this.getActiveVariation(result) as any;
-        return {
-          ...result,
-          variations: activeVariation,
-        };
-      } else {
-        throw new Error('Feature flag with given key not found');
-      }
+      const result = this.featureFlags.find((data) => data === key);
+      return !!result;
     } else {
-      return null;
+      return false;
     }
-  }
-
-  private getActiveVariation(flag: IFeatureFlag) {
-    const existedVariation = flag.variations.filter((variation) => {
-      if (variation.defaultVariation && variation.defaultVariation.includes(flag.status)) {
-        return variation;
-      }
-    });
-    return existedVariation || [];
   }
 }

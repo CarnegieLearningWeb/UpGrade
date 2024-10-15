@@ -12,7 +12,6 @@ describe('SegmentsEffects', () => {
   let actions$: ActionsSubject;
   let segmentsDataService: any;
   let router: any;
-  let notificationService: any;
   let service: SegmentsEffects;
   const mockSegment: Segment = {
     createdAt: 'test',
@@ -51,9 +50,8 @@ describe('SegmentsEffects', () => {
     router = {
       navigate: jest.fn(),
     };
-    notificationService = jest.fn();
 
-    service = new SegmentsEffects(store$, actions$, segmentsDataService, router, notificationService);
+    service = new SegmentsEffects(store$, actions$, segmentsDataService, router);
   });
 
   describe('fetchSegments$', () => {
@@ -63,6 +61,8 @@ describe('SegmentsEffects', () => {
           segmentsData: [{ ...mockSegment }],
           experimentSegmentInclusionData: [],
           experimentSegmentExclusionData: [],
+          featureFlagSegmentInclusionData: [],
+          featureFlagSegmentExclusionData: [],
         })
       );
       selectAllSegments.setResult([{ ...mockSegment }]);
@@ -71,6 +71,8 @@ describe('SegmentsEffects', () => {
         segments: [{ ...mockSegment }],
         experimentSegmentInclusion: [],
         experimentSegmentExclusion: [],
+        featureFlagSegmentInclusion: [],
+        featureFlagSegmentExclusion: [],
       });
 
       service.fetchSegments$.subscribe((result) => {

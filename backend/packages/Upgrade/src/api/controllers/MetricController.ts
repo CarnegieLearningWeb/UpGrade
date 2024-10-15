@@ -1,8 +1,8 @@
-import { Authorized, JsonController, Get, Delete, Param, Post, Req, Body } from 'routing-controllers';
+import { Authorized, JsonController, Get, Delete, Param, Post, Req, Body, Params } from 'routing-controllers';
 import { MetricService } from '../services/MetricService';
-import { IMetricUnit, SERVER_ERROR, } from 'upgrade_types';
+import { IMetricUnit } from 'upgrade_types';
 import { AppRequest } from '../../types';
-import { MetricValidator } from './validators/MetricValidator';
+import { MetricKeyValidator, MetricValidator } from './validators/MetricValidator';
 
 /**
  * @swagger
@@ -35,6 +35,33 @@ export class MetricController {
 
   /**
    * @swagger
+   * /metric/{context}:
+   *    get:
+   *       description: Get all metrics with context
+   *       parameters:
+   *         - in: path
+   *           name: context
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: context
+   *       tags:
+   *         - Metrics
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get all metrics with context
+   *          '404':
+   *            description: Metrics Context not found
+   */
+  @Get('/:context')
+  public getMetricsByContext(@Param('context') context: string, @Req() request: AppRequest): Promise<IMetricUnit[]> {
+    return this.metricService.getMetricsByContext(context, request.logger);
+  }
+
+  /**
+   * @swagger
    * /metric/save:
    *    post:
    *       description: Add filter metrics
@@ -61,9 +88,13 @@ export class MetricController {
    *                      type: array
    *                    children:
    *                      type: array
+   *              context:
+   *                type: array
+   *                items:
+   *                  type: string
    *            description: Filtered Metrics
    *       tags:
-   *         - Experiment Point
+   *         - Metrics
    *       produces:
    *         - application/json
    *       responses:
@@ -75,7 +106,7 @@ export class MetricController {
     @Body({ validate: true }) metric: MetricValidator,
     @Req() request: AppRequest
   ): Promise<IMetricUnit[]> {
-    return this.metricService.upsertAllMetrics(metric.metricUnit, request.logger);
+    return this.metricService.upsertAllMetrics(metric.metricUnit, metric.context, request.logger);
   }
 
   /**
@@ -97,12 +128,14 @@ export class MetricController {
    *       responses:
    *          '200':
    *            description: Delete metric by key
+   *          '404':
+   *            description: Metrics key not found
    */
   @Delete('/:key')
-  public delete(@Param('key') key: string, @Req() request: AppRequest): Promise<IMetricUnit[] | undefined> {
-    if (!key) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : key should not be null.'));
-    }
+  public delete(
+    @Params({ validate: true }) { key }: MetricKeyValidator,
+    @Req() request: AppRequest
+  ): Promise<IMetricUnit[] | undefined> {
     return this.metricService.deleteMetric(key, request.logger);
   }
 }

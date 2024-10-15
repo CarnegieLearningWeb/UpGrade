@@ -5,7 +5,7 @@
     <p class="ft-16-400">
       {{ 'stratifications.import-stratification.message.text' | translate }}
     </p>
-    <input accept=".csv" type="file" class="ft-14-400 file-input" (change)="uploadFile($event)" />
+    <input accept=".csv" type="file" class="ft-14-400 file-input" (change)="uploadFile($event)" multiple />
     <span class="error-msg" *ngIf="!isStratificationCSVValid">
       {{ 'stratifications.import-stratification.error.message.text' | translate }}
     </span>
@@ -15,7 +15,15 @@
     <button class="shared-modal--modal-btn" mat-raised-button (click)="onCancelClick()">
       {{ 'global.cancel.text' | translate }}
     </button>
-    <button mat-raised-button class="shared-modal--modal-btn default-button" (click)="importStratification()">
+    <button
+      mat-raised-button
+      class="shared-modal--modal-btn default-button"
+      [ngClass]="{
+        'default-button--disabled': uploadedFileCount === 0
+      }"
+      [disabled]="uploadedFileCount === 0"
+      (click)="importStratification()"
+    >
       {{ 'global.import.text' | translate }}
     </button>
   </div>

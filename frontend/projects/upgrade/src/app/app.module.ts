@@ -32,6 +32,9 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
         env.featureFlagNavToggle = config.featureFlagNavToggle ?? env.featureFlagNavToggle ?? false;
         env.withinSubjectExperimentSupportToggle =
           config.withinSubjectExperimentSupportToggle ?? env.withinSubjectExperimentSupportToggle ?? false;
+        env.errorLogsToggle = config.errorLogsToggle ?? env.errorLogsToggle ?? false;
+        env.metricAnalyticsExperimentDisplayToggle =
+          config.metricAnalyticsExperimentDisplayToggle ?? env.metricAnalyticsExperimentDisplayToggle ?? false;
       })
       .catch((error) => {
         console.log({ error });

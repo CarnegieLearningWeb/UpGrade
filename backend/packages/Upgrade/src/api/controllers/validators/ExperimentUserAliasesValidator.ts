@@ -1,12 +1,12 @@
-import { IsNotEmpty, IsDefined } from 'class-validator';
-import { Column } from 'typeorm';
+import { IsNotEmpty, IsArray, IsString } from 'class-validator';
 
-export class ExperimentUserAliasesValidator {
-  @IsNotEmpty()
-  @IsDefined()
-  public userId: string;
-
-  @IsNotEmpty()
-  @Column('text', { array: true })
+export class ExperimentUserAliasesValidatorv6 {
+  @IsArray()
+  @IsString({ each: true })
   public aliases: string[];
+}
+
+export class ExperimentUserAliasesValidator extends ExperimentUserAliasesValidatorv6 {
+  @IsNotEmpty()
+  public userId: string;
 }

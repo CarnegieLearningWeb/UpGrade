@@ -4,7 +4,6 @@ import { configureLogger } from '../../utils/logger';
 import { useContainer as routingUseContainer } from 'routing-controllers';
 import { Container } from 'typedi';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-import { useContainer as ormUseContainer } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import PreviewUserServiceMock from './mocks/PreviewUserServiceMock';
@@ -13,7 +12,6 @@ describe('Preview User Controller Testing', () => {
   beforeAll(() => {
     configureLogger();
     routingUseContainer(Container);
-    ormUseContainer(Container);
     classValidatorUseContainer(Container);
 
     Container.set(PreviewUserService, new PreviewUserServiceMock());
