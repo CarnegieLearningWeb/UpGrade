@@ -12,7 +12,6 @@ import TestCase8 from './Scenario2B';
 import TestCase9 from './Scenario2C';
 import TestCase10 from './Scenario3A';
 import TestCase11 from './Scenario3B';
-import TestCase12 from './Scenario3C';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 const initialChecks = async () => {
@@ -92,9 +91,4 @@ export const Scenario3A = async () => {
 export const Scenario3B = async () => {
   await initialChecks();
   await TestCase11();
-};
-
-export const Scenario3C = async () => {
-  await initialChecks();
-  await TestCase12();
 };

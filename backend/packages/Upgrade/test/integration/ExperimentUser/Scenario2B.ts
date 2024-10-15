@@ -23,6 +23,9 @@ As the experiment was Group Assignment, the group will be excluded
 
 A new user from same group as user1 is created
 On assign the user will not be assigned to the experiment as the group is excluded
+
+A new user from different group as user1 is created
+On assign the user will be assigned to the experiment as the group is not excluded
 */
 export default async function ExcludeIndividualsB(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
@@ -148,7 +151,7 @@ export default async function ExcludeIndividualsB(): Promise<void> {
       users: 0,
       groups: 0,
       usersExcluded: 0,
-      groupsExcluded: 0,
+      groupsExcluded: 1,
       id: experimentId,
     })
   );
@@ -200,7 +203,7 @@ export default async function ExcludeIndividualsB(): Promise<void> {
 
   await experimentUserService.create(updatedExperimentUser3 as any, new UpgradeLogger());
 
-  // get all experiment condition for user2
+  // get all experiment condition for user3
   experimentConditionAssignment = await getAllExperimentCondition(updatedExperimentUser3.id, new UpgradeLogger());
   expect(experimentConditionAssignment.length).toEqual(3);
 }

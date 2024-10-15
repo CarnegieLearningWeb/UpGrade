@@ -63,11 +63,11 @@ export default async function ExcludeGroupsB(): Promise<void> {
     ...updatedExperimentUser,
     group: {
       ...updatedExperimentUser.group,
-      class: ['1'],
+      class: ['c1'],
     },
     workingGroup: {
       ...updatedExperimentUser.workingGroup,
-      class: '1',
+      class: 'c1',
     },
   };
 
@@ -83,11 +83,11 @@ export default async function ExcludeGroupsB(): Promise<void> {
     ...experimentUsers[0],
     group: {
       teacher: ['1'],
-      class: ['1'],
+      class: ['c1'],
     },
     workingGroup: {
       teacher: '1',
-      class: '1',
+      class: 'c1',
     },
   };
   delete objectToCheck.versionNumber;
@@ -135,7 +135,7 @@ export default async function ExcludeGroupsB(): Promise<void> {
       ...experimentObject.experimentSegmentExclusion,
       segment: {
         ...experimentObject.experimentSegmentExclusion.segment,
-        groupForSegment: [{ groupId: '1', type: 'class' }],
+        individualForSegment: [{ userId: 'student1' }],
       },
     },
   };
@@ -148,7 +148,7 @@ export default async function ExcludeGroupsB(): Promise<void> {
       users: 0,
       groups: 0,
       usersExcluded: 0,
-      groupsExcluded: 0,
+      groupsExcluded: 1,
       id: experimentId,
     })
   );
@@ -158,7 +158,7 @@ export default async function ExcludeGroupsB(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         id: experimentId,
-        users: 1,
+        users: 0,
         groups: 0,
       }),
     ])
@@ -170,11 +170,11 @@ export default async function ExcludeGroupsB(): Promise<void> {
     ...updatedExperimentUser2,
     group: {
       ...updatedExperimentUser2.group,
-      class: ['2'],
+      class: ['c2'],
     },
     workingGroup: {
       ...updatedExperimentUser2.workingGroup,
-      class: '2',
+      class: 'c2',
     },
   };
 

@@ -189,7 +189,7 @@ export default async function ExcludeIndividualsC(): Promise<void> {
 
   await experimentUserService.create(updatedExperimentUser3 as any, new UpgradeLogger());
 
-  // get all experiment condition for user2
+  // get all experiment condition for user3
   experimentConditionAssignment = await getAllExperimentCondition(updatedExperimentUser3.id, new UpgradeLogger());
   expect(experimentConditionAssignment.length).toEqual(3);
 }

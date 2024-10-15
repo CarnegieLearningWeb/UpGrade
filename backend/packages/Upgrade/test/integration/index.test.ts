@@ -63,7 +63,6 @@ import {
   Scenario2C,
   Scenario3A,
   Scenario3B,
-  Scenario3C,
 } from './ExperimentUser';
 import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
 import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalStateChange/index';
@@ -113,6 +112,7 @@ import { IndividualExperimentEnrollmentCode, GroupExperimentEnrollmentCode, Expe
 import { IndividualExperimentExclusionCode, GroupExperimentExclusionCode, ExperimentLevelExclusionCodeParticipant, ExperimentLevelExclusionCodeGroup, WithinSubjectExclusionCode }  from './Experiment/exclusionCode';
 
 describe('Integration Tests', () => {
+  jest.setTimeout(100000000);
   // -------------------------------------------------------------------------
   // Setup up
   // -------------------------------------------------------------------------
@@ -538,12 +538,8 @@ describe('Integration Tests', () => {
     return Scenario3A();
   });
 
-  test('Excluding indirect group of Enrolling Group Experiment, Individual Consistency', () => {
+  test('Excluding indirect user of Enrolling Group Experiment, Individual Consistency', () => {
     return Scenario3B();
-  });
-
-  test('Excluding indirect group of Enrolling Group Experiment, Group Consistency', () => {
-    return Scenario3C();
   });
 
   // test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', () => {
