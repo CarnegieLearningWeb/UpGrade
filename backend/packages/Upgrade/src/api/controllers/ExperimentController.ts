@@ -29,6 +29,7 @@ import { ExperimentIds } from './validators/ExperimentIdsValidator';
 import { MoocletExperimentService } from '../services/MoocletExperimentService';
 import { env } from '../../env';
 import { UnprocessableEntityException } from '@nestjs/common';
+import { MoocletExperimentDTO } from '../DTO/MoocletExperimentDTO';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: ExperimentDTO[];
@@ -962,32 +963,35 @@ export class ExperimentController {
    *            description: default as ConditionCode is not allowed
    *          '401':
    *            description: AuthorizationRequiredError
+   *          '422':
+   *            description: Experiment is not valid for current configuration
    *          '500':
    *            description: Insert Error in database
    */
 
   @Post()
   public create(
-    @Body({ validate: true }) experiment: ExperimentDTO,
+    @Body({ validate: true }) experiment: ExperimentDTO | MoocletExperimentDTO,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO> {
+  ): Promise<ExperimentDTO | MoocletExperimentDTO> {
     request.logger.child({ user: currentUser });
 
-    if (experiment.moocletExperimentRef) {
+    // Manually check if the experiment is a MoocletExperimentDTO
+    if ('moocletPolicyParameters' in experiment) {
       if (!env.mooclets.enabled) {
         throw new UnprocessableEntityException(
-          'Failed to create Experiment: MoocletExperimentRef was provided but mooclets are not enabled.'
+          'Failed to create Experiment: moocletPolicyParameters was provided but mooclets are not enabled.'
         );
       }
       return this.moocletExperimentService.syncCreate({
-        experimentDTO: experiment,
+        experimentDTO: experiment as MoocletExperimentDTO,
         currentUser,
         logger: request.logger,
       });
     }
 
-    return this.experimentService.create(experiment, currentUser, request.logger);
+    return this.experimentService.create(experiment as ExperimentDTO, currentUser, request.logger);
   }
 
   /**

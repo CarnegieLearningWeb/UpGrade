@@ -1,10 +1,18 @@
-import { Entity, Column, OneToMany, PrimaryColumn } from 'typeorm';
+import { Entity, Column, OneToMany, PrimaryColumn, JoinColumn, OneToOne } from 'typeorm';
 import { MoocletVersionConditionMap } from './MoocletVersionConditionMap';
+import { Experiment } from './Experiment';
 
 @Entity()
 export class MoocletExperimentRef {
   @PrimaryColumn('uuid')
   public id?: string;
+
+  @OneToOne(() => Experiment)
+  @JoinColumn({ name: 'experimentId' })
+  experiment?: Experiment;
+
+  @Column({ nullable: true })
+  experimentId?: string;
 
   @Column()
   moocletId?: number;

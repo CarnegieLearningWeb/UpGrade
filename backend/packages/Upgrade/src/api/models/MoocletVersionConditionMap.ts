@@ -1,5 +1,6 @@
 import { Entity, Column, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { MoocletExperimentRef } from './MoocletExperimentRef';
+import { ExperimentCondition } from './ExperimentCondition';
 
 @Entity()
 export class MoocletVersionConditionMap {
@@ -11,6 +12,10 @@ export class MoocletVersionConditionMap {
 
   @Column()
   upgradeConditionId: string;
+
+  @ManyToOne(() => ExperimentCondition)
+  @JoinColumn({ name: 'upgradeConditionId' })
+  upgradeCondition?: ExperimentCondition;
 
   @ManyToOne(() => MoocletExperimentRef, (moocletExperimentRef) => moocletExperimentRef.versionConditionMaps)
   @JoinColumn({ name: 'moocletExperimentRefId' })
