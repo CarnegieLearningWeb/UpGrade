@@ -21,6 +21,7 @@ export const env = {
   isTest: process.env.NODE_ENV === 'test',
   isDevelopment: process.env.NODE_ENV === 'development',
   useNewRelic: toBool(getOsEnvOptional('USE_NEW_RELIC')) || false,
+  isECS: toBool(getOsEnvOptional('IS_ECS')) || false,
   app: {
     name: getOsEnv('APP_NAME'),
     version: (pkg as any).version,
