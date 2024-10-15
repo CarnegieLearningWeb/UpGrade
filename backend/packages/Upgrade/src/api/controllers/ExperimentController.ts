@@ -1348,10 +1348,6 @@ export class ExperimentController {
     @Params({ validate: true }) { id }: IdValidator,
     @Req() request: AppRequest
   ): Promise<number> | undefined {
-    const groupAssignmentStatus = await this.experimentAssignmentService.getGroupAssignmentStatus(id, request.logger);
-    if (typeof groupAssignmentStatus === 'undefined') {
-      throw new NotFoundException('Experiment not found.');
-    }
-    return groupAssignmentStatus;
+    return this.experimentAssignmentService.getGroupAssignmentStatus(id, request.logger);
   }
 }
