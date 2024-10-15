@@ -104,7 +104,7 @@ export class StratificationController {
    *        '401':
    *          description: Authorization Required Error
    *        '404':
-   *          description: Factor name not found
+   *          description: Stratification Factor name not found
    *        '500':
    *          description: Internal Server Error, FactorName is not valid
    */

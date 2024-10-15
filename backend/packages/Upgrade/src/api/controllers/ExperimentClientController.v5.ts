@@ -184,12 +184,9 @@ export class ExperimentClientController {
     // then we will fetch the stored values of the field and return them in the response
     // for consistent init response with 3 fields ['userId', 'group', 'workingGroup']
     const { id, group, workingGroup } = { ...experimentUserDoc, ...experimentUser };
-
-    if (experimentUserDoc) {
-      // append userDoc in logger
-      request.logger.child({ userDoc: experimentUserDoc });
-      request.logger.info({ message: 'Got the original user doc' });
-    }
+    // append userDoc in logger
+    request.logger.child({ userDoc: experimentUserDoc });
+    request.logger.info({ message: 'Got the original user doc' });
 
     const upsertResult = await this.experimentUserService.upsertOnChange(
       experimentUserDoc,
@@ -271,11 +268,9 @@ export class ExperimentClientController {
     request.logger.info({ message: 'Starting the groupmembership call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.experimentUserService.getUserDoc(experimentUser.id, request.logger);
-    if (experimentUserDoc) {
-      // append userDoc in logger
-      request.logger.child({ userDoc: experimentUserDoc });
-      request.logger.info({ message: 'Got the original user doc' });
-    }
+    // append userDoc in logger
+    request.logger.child({ userDoc: experimentUserDoc });
+    request.logger.info({ message: 'Got the original user doc' });
     const { id, group } = await this.experimentUserService.updateGroupMembership(
       experimentUser.id,
       experimentUser.group,
@@ -345,11 +340,9 @@ export class ExperimentClientController {
     request.logger.info({ message: 'Starting the workinggroup call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.experimentUserService.getUserDoc(workingGroupParams.id, request.logger);
-    if (experimentUserDoc) {
-      // append userDoc in logger
-      request.logger.child({ userDoc: experimentUserDoc });
-      request.logger.info({ message: 'Got the original user doc' });
-    }
+    // append userDoc in logger
+    request.logger.child({ userDoc: experimentUserDoc });
+    request.logger.info({ message: 'Got the original user doc' });
     const { id, workingGroup } = await this.experimentUserService.updateWorkingGroup(
       workingGroupParams.id,
       workingGroupParams.workingGroup,
@@ -454,11 +447,9 @@ export class ExperimentClientController {
     request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.experimentUserService.getUserDoc(experiment.userId, request.logger);
-    if (experimentUserDoc) {
-      // append userDoc in logger
-      request.logger.child({ userDoc: experimentUserDoc });
-      request.logger.info({ message: 'Got the original user doc' });
-    }
+    // append userDoc in logger
+    request.logger.child({ userDoc: experimentUserDoc });
+    request.logger.info({ message: 'Got the original user doc' });
     const { createdAt, updatedAt, versionNumber, ...rest } = await this.experimentAssignmentService.markExperimentPoint(
       experimentUserDoc,
       experiment.data.site,
@@ -689,11 +680,9 @@ export class ExperimentClientController {
     request.logger.info({ message: 'Starting the log call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.experimentUserService.getUserDoc(logData.userId, request.logger);
-    if (experimentUserDoc) {
-      // append userDoc in logger
-      request.logger.child({ userDoc: experimentUserDoc });
-      request.logger.info({ message: 'Got the original user doc' });
-    }
+    // append userDoc in logger
+    request.logger.child({ userDoc: experimentUserDoc });
+    request.logger.info({ message: 'Got the original user doc' });
     const logs = await this.experimentAssignmentService.dataLog(experimentUserDoc, logData.value, request.logger);
     return logs.map(({ createdAt, updatedAt, versionNumber, ...rest }) => {
       return rest;
@@ -745,11 +734,9 @@ export class ExperimentClientController {
         try {
           // The function will throw error if userId doesn't exist
           const experimentUserDoc = await this.experimentUserService.getUserDoc(blobData.userId, request.logger);
-          if (experimentUserDoc) {
-            // append userDoc in logger
-            request.logger.child({ userDoc: experimentUserDoc });
-            request.logger.info({ message: 'Got the original user doc' });
-          }
+          // append userDoc in logger
+          request.logger.child({ userDoc: experimentUserDoc });
+          request.logger.info({ message: 'Got the original user doc' });
           const response = await this.experimentAssignmentService.blobDataLog(
             experimentUserDoc,
             blobData.value,
@@ -885,11 +872,9 @@ export class ExperimentClientController {
     user: ExperimentUserAliasesValidator
   ): Promise<IUserAliases> {
     const experimentUserDoc = await this.experimentUserService.getUserDoc(user.userId, request.logger);
-    if (experimentUserDoc) {
-      // append userDoc in logger
-      request.logger.child({ userDoc: experimentUserDoc });
-      request.logger.info({ message: 'Got the original user doc' });
-    }
+    // append userDoc in logger
+    request.logger.child({ userDoc: experimentUserDoc });
+    request.logger.info({ message: 'Got the original user doc' });
     return this.experimentUserService.setAliasesForUser(experimentUserDoc, user.aliases, request.logger);
   }
 
