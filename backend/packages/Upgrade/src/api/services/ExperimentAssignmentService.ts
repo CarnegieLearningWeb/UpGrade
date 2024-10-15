@@ -68,6 +68,7 @@ import { withInSubjectType } from '../Algorithms';
 import { CacheService } from './CacheService';
 import { UserStratificationFactorRepository } from '../repositories/UserStratificationRepository';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
+import { MoocletExperimentService } from './MoocletExperimentService';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { In } from 'typeorm';
 @Service()
@@ -113,7 +114,8 @@ export class ExperimentAssignmentService {
     public settingService: SettingService,
     public segmentService: SegmentService,
     public experimentService: ExperimentService,
-    public cacheService: CacheService
+    public cacheService: CacheService,
+    public moocletService: MoocletExperimentService
   ) {}
   public async markExperimentPoint(
     userDoc: RequestedExperimentUser,
@@ -540,7 +542,7 @@ export class ExperimentAssignmentService {
           if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
             enrollmentCountPerCondition = await this.getEnrollmentCountPerCondition(experiment, userId);
           }
-          return this.assignExperiment(
+          return await this.assignExperiment(
             experimentUser,
             experiment,
             individualEnrollment,
@@ -1491,14 +1493,22 @@ export class ExperimentAssignmentService {
         };
         await this.individualEnrollmentRepository.save(individualEnrollmentDocument);
       } else {
-        const conditionAssigned = this.assignExperiment(
-          user,
-          experiment,
-          individualEnrollment,
-          groupEnrollment,
-          individualExclusion,
-          groupExclusion
-        );
+        let conditionAssigned = null;
+
+        // if moocletDetails exist on the experiment, we should already have an assignment
+        if (experiment?.moocletDetails && condition) {
+          conditionAssigned = experiment.conditions.find((expCondition) => expCondition.conditionCode === condition);
+          logger.info({ message: 'Condition assigned from moocletDetails', details: conditionAssigned });
+        } else {
+          conditionAssigned = await this.assignExperiment(
+            user,
+            experiment,
+            individualEnrollment,
+            groupEnrollment,
+            individualExclusion,
+            groupExclusion
+          );
+        }
         if (!individualEnrollment && !individualExclusion && conditionAssigned) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
             {
@@ -1515,7 +1525,7 @@ export class ExperimentAssignmentService {
     }
   }
 
-  private assignExperiment(
+  private async assignExperiment(
     user: ExperimentUser,
     experiment: Experiment,
     individualEnrollment: IndividualEnrollment | undefined,
@@ -1523,7 +1533,7 @@ export class ExperimentAssignmentService {
     individualExclusion: IndividualExclusion | undefined,
     groupExclusion: GroupExclusion | undefined,
     enrollmentCount?: { conditionId: string; userCount: number }[]
-  ): ExperimentCondition | void {
+  ): Promise<ExperimentCondition | void> {
     const userId = user.id;
     const individualEnrollmentCondition = experiment.conditions.find(
       (condition) => condition.id === individualEnrollment?.condition?.id
@@ -1534,32 +1544,38 @@ export class ExperimentAssignmentService {
     if (experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE && userId) {
       if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE) {
         if (experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL) {
-          return individualExclusion
-            ? undefined
-            : individualEnrollmentCondition
-            ? individualEnrollmentCondition
-            : groupExclusion
-            ? undefined
-            : groupEnrollmentCondition;
+          return Promise.resolve(
+            individualExclusion
+              ? undefined
+              : individualEnrollmentCondition
+              ? individualEnrollmentCondition
+              : groupExclusion
+              ? undefined
+              : groupEnrollmentCondition
+          );
         } else if (experiment.consistencyRule === CONSISTENCY_RULE.GROUP) {
-          return groupExclusion
-            ? undefined
-            : groupEnrollmentCondition
-            ? groupEnrollmentCondition
-            : individualExclusion
-            ? undefined
-            : individualEnrollmentCondition;
+          return Promise.resolve(
+            groupExclusion
+              ? undefined
+              : groupEnrollmentCondition
+              ? groupEnrollmentCondition
+              : individualExclusion
+              ? undefined
+              : individualEnrollmentCondition
+          );
         } else {
-          return experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
-            ? individualEnrollmentCondition
-            : groupEnrollmentCondition;
+          return Promise.resolve(
+            experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
+              ? individualEnrollmentCondition
+              : groupEnrollmentCondition
+          );
         }
       } else if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN) {
         if (!experiment.revertTo) {
-          return;
+          return Promise.resolve(undefined);
         } else {
           const condition = experiment.conditions.find((key) => key.id === experiment.revertTo);
-          return condition;
+          return Promise.resolve(condition);
         }
       }
     } else if (
@@ -1567,46 +1583,75 @@ export class ExperimentAssignmentService {
       userId
     ) {
       if (experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL) {
-        return individualExclusion
-          ? undefined
-          : individualEnrollmentCondition
-          ? individualEnrollmentCondition
-          : groupExclusion
-          ? undefined
-          : groupEnrollmentCondition
-          ? groupEnrollmentCondition
-          : this.assignRandom(experiment, user);
+        return Promise.resolve(
+          individualExclusion
+            ? undefined
+            : individualEnrollmentCondition
+            ? individualEnrollmentCondition
+            : groupExclusion
+            ? undefined
+            : groupEnrollmentCondition
+            ? groupEnrollmentCondition
+            : this.getNewExperimentConditionAssignment(experiment, user)
+        );
       } else if (experiment.consistencyRule === CONSISTENCY_RULE.GROUP) {
-        return groupExclusion
-          ? undefined
-          : groupEnrollmentCondition
-          ? groupEnrollmentCondition
-          : individualExclusion
-          ? undefined
-          : individualEnrollmentCondition
-          ? individualEnrollmentCondition
-          : this.assignRandom(experiment, user);
+        return Promise.resolve(
+          groupExclusion
+            ? undefined
+            : groupEnrollmentCondition
+            ? groupEnrollmentCondition
+            : individualExclusion
+            ? undefined
+            : individualEnrollmentCondition
+            ? individualEnrollmentCondition
+            : this.getNewExperimentConditionAssignment(experiment, user)
+        );
       } else {
         return (
           (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
             ? individualEnrollmentCondition
-            : groupEnrollmentCondition) || this.assignRandom(experiment, user, enrollmentCount)
+            : groupEnrollmentCondition) || this.getNewExperimentConditionAssignment(experiment, user, enrollmentCount)
         );
       }
     }
     return;
   }
 
-  private assignRandom(
+  // private async getConditionFromMoocletProxy(
+  //   experiment: Experiment,
+  //   user: ExperimentUser
+  // ): Promise<ExperimentCondition | void> {
+  //   const moocletId = experiment?.moocletDetails?.mooclet?.id;
+  //   const userId = user.id;
+  //   const experimentConditions = experiment.conditions;
+  //   const logger = new UpgradeLogger();
+
+  //   try {
+  //     const condition = await this.moocletService.getConditionFromMoocletProxy({
+  //       moocletId,
+  //       userId,
+  //       experimentConditions,
+  //     });
+  //     return condition;
+  //   } catch (err) {
+  //     // log error but don't throw?
+  //     logger.error({ message: `Error retrieving condition from Mooclet proxy`, err });
+  //     return;
+  //   }
+  // }
+
+  private async getNewExperimentConditionAssignment(
     experiment: Experiment,
     user: ExperimentUser,
     enrollmentCount?: { conditionId: string; userCount: number }[]
-  ): ExperimentCondition {
+  ): Promise<ExperimentCondition | void> {
+    let experimentalCondition: ExperimentCondition;
+
     const randomSeed =
       experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
       experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
         ? `${experiment.id}_${user.id}`
-        : `${experiment.id}_${user.workingGroup?.[experiment.group]}`;
+        : `${experiment.id}_${user.workingGroup[experiment.group]}`;
 
     const sortedExperimentCondition = experiment.conditions.sort(
       (condition1, condition2) => condition1.order - condition2.order
@@ -1626,8 +1671,9 @@ export class ExperimentAssignmentService {
         break;
       }
     }
-    const experimentalCondition = experiment.conditions[randomConditions];
-    return experimentalCondition;
+    experimentalCondition = experiment.conditions[randomConditions];
+    return Promise.resolve(experimentalCondition);
+    // }
   }
 
   private assignStratifiedRandom(

@@ -28,6 +28,7 @@ import {
   SEGMENT_TYPE,
   EXPERIMENT_TYPE,
   CACHE_PREFIX,
+  ASSIGNMENT_ALGORITHM,
   ASSIGNMENT_UNIT,
   FILTER_MODE,
 } from 'upgrade_types';
@@ -99,32 +100,32 @@ export class ExperimentService {
   allIdMap = {};
 
   constructor(
-    @InjectRepository() private experimentRepository: ExperimentRepository,
-    @InjectRepository() private experimentConditionRepository: ExperimentConditionRepository,
-    @InjectRepository() private decisionPointRepository: DecisionPointRepository,
-    @InjectRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
-    @InjectRepository() private individualExclusionRepository: IndividualExclusionRepository,
-    @InjectRepository() private groupExclusionRepository: GroupExclusionRepository,
-    @InjectRepository() private monitoredDecisionPointRepository: MonitoredDecisionPointRepository,
-    @InjectRepository() private userRepository: ExperimentUserRepository,
-    @InjectRepository() private metricRepository: MetricRepository,
-    @InjectRepository() private queryRepository: QueryRepository,
-    @InjectRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
-    @InjectRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
-    @InjectRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
-    @InjectRepository() private conditionPayloadRepository: ConditionPayloadRepository,
-    @InjectRepository() private factorRepository: FactorRepository,
-    @InjectRepository() private levelRepository: LevelRepository,
-    @InjectRepository() private levelCombinationElementsRepository: LevelCombinationElementRepository,
-    @InjectRepository() private archivedStatsRepository: ArchivedStatsRepository,
-    @InjectRepository() private stratificationRepository: StratificationFactorRepository,
-    @InjectDataSource() private dataSource: DataSource,
-    public previewUserService: PreviewUserService,
-    public segmentService: SegmentService,
-    public scheduledJobService: ScheduledJobService,
-    public errorService: ErrorService,
-    public cacheService: CacheService,
-    public queryService: QueryService
+    @InjectRepository() protected experimentRepository: ExperimentRepository,
+    @InjectRepository() protected experimentConditionRepository: ExperimentConditionRepository,
+    @InjectRepository() protected decisionPointRepository: DecisionPointRepository,
+    @InjectRepository() protected experimentAuditLogRepository: ExperimentAuditLogRepository,
+    @InjectRepository() protected individualExclusionRepository: IndividualExclusionRepository,
+    @InjectRepository() protected groupExclusionRepository: GroupExclusionRepository,
+    @InjectRepository() protected monitoredDecisionPointRepository: MonitoredDecisionPointRepository,
+    @InjectRepository() protected userRepository: ExperimentUserRepository,
+    @InjectRepository() protected metricRepository: MetricRepository,
+    @InjectRepository() protected queryRepository: QueryRepository,
+    @InjectRepository() protected stateTimeLogsRepository: StateTimeLogsRepository,
+    @InjectRepository() protected experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
+    @InjectRepository() protected experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
+    @InjectRepository() protected conditionPayloadRepository: ConditionPayloadRepository,
+    @InjectRepository() protected factorRepository: FactorRepository,
+    @InjectRepository() protected levelRepository: LevelRepository,
+    @InjectRepository() protected levelCombinationElementsRepository: LevelCombinationElementRepository,
+    @InjectRepository() protected archivedStatsRepository: ArchivedStatsRepository,
+    @InjectRepository() protected stratificationRepository: StratificationFactorRepository,
+    @InjectDataSource() protected dataSource: DataSource,
+    protected previewUserService: PreviewUserService,
+    protected segmentService: SegmentService,
+    protected scheduledJobService: ScheduledJobService,
+    protected errorService: ErrorService,
+    protected cacheService: CacheService,
+    protected queryService: QueryService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
@@ -261,9 +262,13 @@ export class ExperimentService {
     experiment: ExperimentDTO,
     currentUser: User,
     logger: UpgradeLogger,
-    createType?: string
+    options?: {
+      createType?: string;
+      existingEntityManager?: EntityManager;
+    }
   ): Promise<ExperimentDTO> {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
+    const { createType, existingEntityManager } = options || {};
 
     // order for condition
     let newConditionId;
@@ -291,7 +296,8 @@ export class ExperimentService {
       experiment.partitions[index] = newDecisionPoint;
     });
     experiment.backendVersion = env.app.version;
-    return this.addExperimentInDB(experiment, currentUser, logger);
+
+    return this.addExperimentInDB(experiment, currentUser, logger, existingEntityManager);
   }
 
   public createMultipleExperiments(
@@ -1186,7 +1192,8 @@ export class ExperimentService {
   private async addExperimentInDB(
     experiment: ExperimentDTO,
     user: User,
-    logger: UpgradeLogger
+    logger: UpgradeLogger,
+    existingEntityManager?: EntityManager
   ): Promise<ExperimentDTO> {
     await this.clearExperimentCacheDetail(
       experiment.context[0],
@@ -1194,7 +1201,10 @@ export class ExperimentService {
         return { site: partition.site, target: partition.target };
       })
     );
-    const createdExperiment = await this.dataSource.transaction(async (transactionalEntityManager) => {
+
+    // if the upgrade experiment is being created as part of a transaction that has already been opened (along with mooclet creation) that transaction handler need to be used
+    const entityManager = existingEntityManager || this.dataSource.manager;
+    const createdExperiment = await entityManager.transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.description = experiment.description || '';
 
@@ -1499,6 +1509,7 @@ export class ExperimentService {
       const newExperiment = newExperimentObject;
       return newExperiment;
     });
+
     // create schedules to start experiment and end experiment
     if (this.scheduledJobService) {
       await this.scheduledJobService.updateExperimentSchedules(createdExperiment, logger);
