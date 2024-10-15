@@ -841,17 +841,8 @@ export class ExperimentController {
    */
   @Get('/single/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public async one(
-    @Params({ validate: true }) { id }: IdValidator,
-    @Req() request: AppRequest
-  ): Promise<ExperimentDTO> {
-    const experiment = await this.experimentService.getSingleExperiment(id, request.logger);
-
-    if (!experiment) {
-      throw new NotFoundException('Experiment not found.');
-    }
-
-    return experiment;
+  public one(@Params({ validate: true }) { id }: IdValidator, @Req() request: AppRequest): Promise<ExperimentDTO> {
+    return this.experimentService.getSingleExperiment(id, request.logger);
   }
 
   /**
@@ -932,11 +923,7 @@ export class ExperimentController {
     @Params({ validate: true }) { id }: IdValidator,
     @Req() request: AppRequest
   ): Promise<ExperimentCondition[]> {
-    const conditions = await this.experimentService.getExperimentalConditions(id, request.logger);
-    if (!conditions) {
-      throw new NotFoundException('Experiment not found.');
-    }
-    return conditions;
+    return this.experimentService.getExperimentalConditions(id, request.logger);
   }
 
   /**

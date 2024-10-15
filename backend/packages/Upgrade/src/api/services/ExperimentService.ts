@@ -216,7 +216,7 @@ export class ExperimentService {
     if (experiment) {
       return this.reducedConditionPayload(this.formatingPayload(experiment));
     } else {
-      return null;
+      return undefined;
     }
   }
 
@@ -229,7 +229,7 @@ export class ExperimentService {
     if (experiment) {
       return this.formatingConditionPayload(experiment);
     } else {
-      return null;
+      return undefined;
     }
   }
 
@@ -359,7 +359,6 @@ export class ExperimentService {
         }
         return deletedExperiment;
       }
-
       return undefined;
     });
   }
