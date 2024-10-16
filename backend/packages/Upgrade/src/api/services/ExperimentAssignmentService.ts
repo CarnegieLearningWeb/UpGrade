@@ -1758,6 +1758,16 @@ export class ExperimentAssignmentService {
     const explicitGroupInclusionFilteredData: { groupId: string; type: string; id: string }[] = [];
     const explicitGroupExclusionFilteredData: { groupId: string; type: string; id: string }[] = [];
 
+    const userGroups = [],
+      indirectExcludedExperiments = [];
+    if (experimentUser.group) {
+      Object.keys(experimentUser.group).forEach((type) => {
+        experimentUser.group[type].forEach((groupId) => {
+          userGroups.push({ type, groupId });
+        });
+      });
+    }
+
     Object.keys(segmentObjMap).forEach((modalId) => {
       const modalSegment = segmentObjMap[modalId];
 
@@ -1807,16 +1817,6 @@ export class ExperimentAssignmentService {
         });
       });
     });
-
-    const userGroups = [],
-      indirectExcludedExperiments = [];
-    if (experimentUser.group) {
-      Object.keys(experimentUser.group).forEach((type) => {
-        experimentUser.group[type].forEach((groupId) => {
-          userGroups.push({ type, groupId });
-        });
-      });
-    }
 
     // pseudocode for modal level inclusion and exclusion
     //
