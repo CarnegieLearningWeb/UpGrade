@@ -14,7 +14,7 @@ import { AWSService } from './AWSService';
 import { env } from '../../env';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { Emails } from '../../templates/email';
-import { UserDetailsValidator } from '../controllers/validators/UserDetailsValidator';
+import { UserDTO } from '../DTO/UserDTO';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 
 @Service()
@@ -28,7 +28,7 @@ export class UserService {
     this.emails = new Emails();
   }
 
-  public async upsertUser(userDTO: UserDetailsValidator, logger: UpgradeLogger): Promise<User> {
+  public async upsertUser(userDTO: UserDTO, logger: UpgradeLogger): Promise<UserDTO> {
     const user = new User();
     user.email = userDTO.email;
     user.firstName = userDTO.firstName;
@@ -104,7 +104,7 @@ export class UserService {
     return this.userRepository.findByIds([email]);
   }
 
-  public async updateUserDetails(firstName: string, lastName: string, email: string, role: UserRole): Promise<User> {
+  public async updateUserDetails(firstName: string, lastName: string, email: string, role: UserRole): Promise<UserDTO> {
     const response = await this.userRepository.updateUserDetails(firstName, lastName, email, role);
     if (response) {
       this.sendRoleChangedEmail(email, role);
@@ -112,7 +112,7 @@ export class UserService {
     return response;
   }
 
-  public deleteUser(email: string): Promise<User> {
+  public deleteUser(email: string): Promise<UserDTO> {
     return this.userRepository.deleteUserByEmail(email);
   }
 

@@ -1,7 +1,7 @@
 import { JsonController, Post, Body, Get, Param, Authorized, Delete, Req } from 'routing-controllers';
 import { User } from '../models/User';
 import { UserService } from '../services/UserService';
-import { UserDetailsValidator } from './validators/UserDetailsValidator';
+import { UserDTO } from '../DTO/UserDTO';
 import { UserPaginatedParamsValidator } from './validators/UserPaginatedParamsValidator';
 import { SERVER_ERROR } from 'upgrade_types';
 import { AppRequest, PaginationResponse } from '../../types';
@@ -172,7 +172,7 @@ export class UserController {
    */
   @Post()
   public create(
-    @Body({ validate: true }) user: UserDetailsValidator, @Req() request: AppRequest): Promise<User> {
+    @Body({ validate: true }) user: UserDTO, @Req() request: AppRequest): Promise<UserDTO> {
     return this.userService.upsertUser(user, request.logger);
   }
 
@@ -215,8 +215,8 @@ export class UserController {
   @Post('/details')
   public updateUserDetails(
     @Body({ validate: true })
-    user: UserDetailsValidator
-  ): Promise<User> {
+    user: UserDTO
+  ): Promise<UserDTO> {
     return this.userService.updateUserDetails(user.firstName, user.lastName, user.email, user.role);
   }
 
@@ -241,7 +241,7 @@ export class UserController {
    *            description: Delete User By email
    */
   @Delete('/:email')
-  public delete(@Param('email') email: string): Promise<User> {
+  public delete(@Param('email') email: string): Promise<UserDTO> {
     if (!email) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : email should not be null.'));
     }

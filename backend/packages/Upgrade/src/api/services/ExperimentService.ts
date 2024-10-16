@@ -34,7 +34,7 @@ import {
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { MonitoredDecisionPointRepository } from '../repositories/MonitoredDecisionPointRepository';
-import { User } from '../models/User';
+import { UserDTO } from '../DTO/UserDTO';
 import { ASSIGNMENT_TYPE } from '../../types/index';
 import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
@@ -251,7 +251,7 @@ export class ExperimentService {
 
   public create(
     experiment: ExperimentDTO,
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger,
     createType?: string
   ): Promise<ExperimentDTO> {
@@ -288,7 +288,7 @@ export class ExperimentService {
 
   public createMultipleExperiments(
     experiments: ExperimentDTO[],
-    user: User,
+    user: UserDTO,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
     logger.info({ message: `Generating test experiments`, details: experiments });
@@ -297,7 +297,7 @@ export class ExperimentService {
 
   public async delete(
     experimentId: string,
-    currentUser: User,
+    currentUser: UserDTO,
     logger?: UpgradeLogger
   ): Promise<Experiment | undefined> {
     if (logger) {
@@ -355,7 +355,7 @@ export class ExperimentService {
     });
   }
 
-  public async update(experiment: ExperimentDTO, currentUser: User, logger: UpgradeLogger): Promise<ExperimentDTO> {
+  public async update(experiment: ExperimentDTO, currentUser: UserDTO, logger: UpgradeLogger): Promise<ExperimentDTO> {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
@@ -397,7 +397,7 @@ export class ExperimentService {
   public async updateState(
     experimentId: string,
     state: EXPERIMENT_STATE,
-    user: User,
+    user: UserDTO,
     logger: UpgradeLogger,
     scheduleDate?: Date,
     entityManager?: EntityManager
@@ -480,7 +480,7 @@ export class ExperimentService {
 
   public async importExperiment(
     experimentFiles: ExperimentFile[],
-    user: User,
+    user: UserDTO,
     logger: UpgradeLogger
   ): Promise<ValidatedExperimentError[]> {
     const validatedExperiments = await this.validateExperiments(experimentFiles, logger);
@@ -546,7 +546,7 @@ export class ExperimentService {
     return validatedExperiments;
   }
 
-  public async exportExperiment(experimentIds: string[], user: User, logger: UpgradeLogger): Promise<ExperimentDTO[]> {
+  public async exportExperiment(experimentIds: string[], user: UserDTO, logger: UpgradeLogger): Promise<ExperimentDTO[]> {
     logger.info({ message: `Inside export Experiment JSON ${experimentIds}` });
     const experimentDetails = await this.experimentRepository.find({
       where: { id: In(experimentIds) },
@@ -719,7 +719,7 @@ export class ExperimentService {
 
   private async updateExperimentInDB(
     experiment: ExperimentDTO,
-    user: User,
+    user: UserDTO,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO> {
     await this.clearExperimentCacheDetail(
@@ -1177,7 +1177,7 @@ export class ExperimentService {
 
   private async addExperimentInDB(
     experiment: ExperimentDTO,
-    user: User,
+    user: UserDTO,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO> {
     await this.clearExperimentCacheDetail(
@@ -1781,7 +1781,7 @@ export class ExperimentService {
 
   private async addBulkExperiments(
     experiments: ExperimentDTO[],
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO[]> {
     const createdExperiments = [];
