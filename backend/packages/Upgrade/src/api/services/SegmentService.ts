@@ -87,6 +87,7 @@ export class SegmentService {
     private individualExclusionRepository: IndividualExclusionRepository,
     @InjectRepository()
     private groupExclusionRepository: GroupExclusionRepository,
+    @InjectRepository()
     private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
     @InjectRepository()
     private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
