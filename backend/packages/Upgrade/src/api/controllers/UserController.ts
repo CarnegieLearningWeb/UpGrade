@@ -1,7 +1,7 @@
 import { JsonController, Post, Body, Get, Param, Authorized, Delete, Req } from 'routing-controllers';
 import { User } from '../models/User';
 import { UserService } from '../services/UserService';
-import { UserDetailsValidator } from './validators/UserDetailsValidator';
+import { UserDTO } from '../DTO/UserDTO';
 import { UserPaginatedParamsValidator } from './validators/UserPaginatedParamsValidator';
 import { SERVER_ERROR } from 'upgrade_types';
 import { AppRequest, PaginationResponse } from '../../types';
@@ -171,8 +171,7 @@ export class UserController {
    *            description: New User is created
    */
   @Post()
-  public create(
-    @Body({ validate: true }) user: UserDetailsValidator, @Req() request: AppRequest): Promise<User> {
+  public create(@Body({ validate: true }) user: UserDTO, @Req() request: AppRequest): Promise<User> {
     return this.userService.upsertUser(user, request.logger);
   }
 
@@ -215,7 +214,7 @@ export class UserController {
   @Post('/details')
   public updateUserDetails(
     @Body({ validate: true })
-    user: UserDetailsValidator
+    user: UserDTO
   ): Promise<User> {
     return this.userService.updateUserDetails(user.firstName, user.lastName, user.email, user.role);
   }

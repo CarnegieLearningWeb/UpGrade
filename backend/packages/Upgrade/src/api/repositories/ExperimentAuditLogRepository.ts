@@ -2,7 +2,7 @@ import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { Repository, EntityManager } from 'typeorm';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { LOG_TYPE } from 'upgrade_types';
-import { User } from '../models/User';
+import { UserDTO } from '../DTO/UserDTO';
 import repositoryError from './utils/repositoryError';
 
 @EntityRepository(ExperimentAuditLog)
@@ -36,7 +36,7 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
   public async saveRawJson(
     type: LOG_TYPE,
     data: any,
-    user: User,
+    user: UserDTO,
     entityManger?: EntityManager
   ): Promise<ExperimentAuditLog> {
     const that = entityManger || this;
