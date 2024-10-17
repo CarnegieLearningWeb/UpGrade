@@ -104,3 +104,9 @@ export class MetricValidator {
   @IsString({ each: true })
   context: string[];
 }
+
+export class MetricKeyValidator {
+  @IsNotEmpty()
+  @IsString()
+  key: string;
+}
