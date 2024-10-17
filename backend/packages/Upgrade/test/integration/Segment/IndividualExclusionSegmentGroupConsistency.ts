@@ -20,7 +20,7 @@ export default async function IndividualExclusionSegmentGroupConsistency(): Prom
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // group experiment object
-  const experimentObject = individualAssignmentGroupConsistencyExperiment;
+  const experimentObject = JSON.parse(JSON.stringify(individualAssignmentGroupConsistencyExperiment));
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());

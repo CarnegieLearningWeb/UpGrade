@@ -30,7 +30,7 @@ export default async function SubSegmentEnrollment(): Promise<void> {
   await segmentService.upsertSegment(segmentObject2, new UpgradeLogger());
 
   // experiment object
-  const experimentObject = individualAssignmentExperiment;
+  const experimentObject = JSON.parse(JSON.stringify(individualAssignmentExperiment));
   experimentObject.experimentSegmentInclusion = { ...experimentObject.experimentSegmentInclusion };
   const context = experimentObject.context[0];
   // create experiment
