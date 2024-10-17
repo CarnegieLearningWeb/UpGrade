@@ -28,7 +28,7 @@ export class UserService {
     this.emails = new Emails();
   }
 
-  public async upsertUser(userDTO: UserDTO, logger: UpgradeLogger): Promise<UserDTO> {
+  public async upsertUser(userDTO: UserDTO, logger: UpgradeLogger): Promise<User> {
     const user = new User();
     user.email = userDTO.email;
     user.firstName = userDTO.firstName;
@@ -104,7 +104,7 @@ export class UserService {
     return this.userRepository.findByIds([email]);
   }
 
-  public async updateUserDetails(firstName: string, lastName: string, email: string, role: UserRole): Promise<UserDTO> {
+  public async updateUserDetails(firstName: string, lastName: string, email: string, role: UserRole): Promise<User> {
     const response = await this.userRepository.updateUserDetails(firstName, lastName, email, role);
     if (response) {
       this.sendRoleChangedEmail(email, role);
@@ -112,7 +112,7 @@ export class UserService {
     return response;
   }
 
-  public deleteUser(email: string): Promise<UserDTO> {
+  public deleteUser(email: string): Promise<User> {
     return this.userRepository.deleteUserByEmail(email);
   }
 

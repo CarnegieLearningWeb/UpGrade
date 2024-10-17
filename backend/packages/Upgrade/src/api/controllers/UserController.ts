@@ -171,8 +171,7 @@ export class UserController {
    *            description: New User is created
    */
   @Post()
-  public create(
-    @Body({ validate: true }) user: UserDTO, @Req() request: AppRequest): Promise<UserDTO> {
+  public create(@Body({ validate: true }) user: UserDTO, @Req() request: AppRequest): Promise<User> {
     return this.userService.upsertUser(user, request.logger);
   }
 
@@ -216,7 +215,7 @@ export class UserController {
   public updateUserDetails(
     @Body({ validate: true })
     user: UserDTO
-  ): Promise<UserDTO> {
+  ): Promise<User> {
     return this.userService.updateUserDetails(user.firstName, user.lastName, user.email, user.role);
   }
 
@@ -241,7 +240,7 @@ export class UserController {
    *            description: Delete User By email
    */
   @Delete('/:email')
-  public delete(@Param('email') email: string): Promise<UserDTO> {
+  public delete(@Param('email') email: string): Promise<User> {
     if (!email) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : email should not be null.'));
     }
