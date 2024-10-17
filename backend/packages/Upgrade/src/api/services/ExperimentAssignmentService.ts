@@ -1690,18 +1690,32 @@ export class ExperimentAssignmentService {
   ): Promise<[Experiment[], { experiment: Experiment; reason: string; matchedGroup: boolean }[]]> {
     const segmentObj = {};
 
+    let includedExperiments: Experiment[] = [];
+    let excludedExperiments = [];
+
+    const experimentIds = experiments
+      .filter((experiment) => experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL)
+      .map((experiment) => experiment.id);
+    const experimentsEnrolled = await this.individualEnrollmentRepository.find({
+      where: { experiment: In(experimentIds), user: { id: experimentUser.id } },
+      relations: ['experiment'],
+    });
+    const experimentsEnrolledIds = experimentsEnrolled.map((enrollment) => enrollment.experiment.id);
+
     // creates segment Object for all experiments
     experiments.forEach((exp) => {
-      const includeId = exp.experimentSegmentInclusion.segment.id;
-      const excludeId = exp.experimentSegmentExclusion.segment.id;
+      if (!experimentsEnrolledIds.includes(exp.id)) {
+        const includeId = exp.experimentSegmentInclusion.segment.id;
+        const excludeId = exp.experimentSegmentExclusion.segment.id;
 
-      segmentObj[exp.id] = {
-        segmentIdsQueue: [includeId, excludeId],
-        currentIncludedSegmentIds: [includeId],
-        currentExcludedSegmentIds: [excludeId],
-        allIncludedSegmentIds: [includeId],
-        allExcludedSegmentIds: [excludeId],
-      };
+        segmentObj[exp.id] = {
+          segmentIdsQueue: [includeId, excludeId],
+          currentIncludedSegmentIds: [includeId],
+          currentExcludedSegmentIds: [excludeId],
+          allIncludedSegmentIds: [includeId],
+          allExcludedSegmentIds: [excludeId],
+        };
+      }
     });
 
     const experimentIdsWithFilter: { id: string; filterMode: FILTER_MODE }[] = experiments.map(
@@ -1716,8 +1730,8 @@ export class ExperimentAssignmentService {
     );
 
     // mapping ids to experiments
-    const includedExperiments = experiments.filter(({ id }) => includedExperimentIds.includes(id));
-    const excludedExperiments = excludedExperimentIds.map((expIdWithReason) => {
+    includedExperiments = experiments.filter(({ id }) => includedExperimentIds.includes(id));
+    excludedExperiments = excludedExperimentIds.map((expIdWithReason) => {
       return {
         experiment: experiments.find(({ id }) => id === expIdWithReason.id),
         reason: expIdWithReason.reason,
@@ -1744,8 +1758,9 @@ export class ExperimentAssignmentService {
     const explicitGroupInclusionFilteredData: { groupId: string; type: string; id: string }[] = [];
     const explicitGroupExclusionFilteredData: { groupId: string; type: string; id: string }[] = [];
 
-    const userGroups = [];
-    if (experimentUser?.group) {
+    const userGroups = [],
+      indirectExcludedExperiments = [];
+    if (experimentUser.group) {
       Object.keys(experimentUser.group).forEach((type) => {
         experimentUser.group[type].forEach((groupId) => {
           userGroups.push({ type, groupId });
@@ -1856,6 +1871,9 @@ export class ExperimentAssignmentService {
               reason: 'group',
               matchedGroup, // matchedExcludedGroup === experiment.group
             });
+            if (!matchedGroup) {
+              indirectExcludedExperiments.push(modal.id);
+            }
           }
         }
       } else {
@@ -1887,6 +1905,18 @@ export class ExperimentAssignmentService {
           }
         }
       }
+    });
+
+    const userWorkingGroupIds = [];
+    if (experimentUser.workingGroup) {
+      Object.keys(experimentUser.workingGroup).forEach((type) => {
+        userWorkingGroupIds.push(experimentUser.workingGroup[type]);
+      });
+    }
+    // const userGroupIds = userGroups.map((group) => group.groupId);
+    await this.groupEnrollmentRepository.delete({
+      experiment: { id: In(indirectExcludedExperiments) },
+      groupId: In(userWorkingGroupIds),
     });
 
     return [userIncludedModals, userExcludedModals];
