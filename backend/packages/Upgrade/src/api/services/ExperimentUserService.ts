@@ -13,6 +13,7 @@ import { Experiment } from '../models/Experiment';
 import isEqual from 'lodash/isEqual';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { env } from '../../env';
+import { HttpError } from 'routing-controllers';
 
 @Service()
 export class ExperimentUserService {
@@ -258,19 +259,22 @@ export class ExperimentUserService {
     return this.userRepository.save(newDocument);
   }
 
-  public async getUserDoc(experimentUserId, logger): Promise<RequestedExperimentUser> {
-    try {
-      const experimentUserDoc = await this.getOriginalUserDoc(experimentUserId, logger);
-      if (experimentUserDoc) {
-        const userDoc = { ...experimentUserDoc, requestedUserId: experimentUserId };
-        logger.info({ message: 'Got the user doc', details: userDoc });
-        return userDoc;
-      } else {
+  public async getUserDoc(
+    experimentUserId: string,
+    logger: UpgradeLogger,
+    api?: string
+  ): Promise<RequestedExperimentUser> {
+    const experimentUserDoc = await this.getOriginalUserDoc(experimentUserId, logger);
+    if (experimentUserDoc) {
+      const userDoc = { ...experimentUserDoc, requestedUserId: experimentUserId };
+      logger.info({ message: 'Got the user doc', details: userDoc });
+      return userDoc;
+    } else {
+      if (api === 'init') {
         return null;
+      } else {
+        throw new HttpError(404, `Experiment User not found: ${experimentUserId}`);
       }
-    } catch (error) {
-      logger.error({ message: `Error in getting user doc for user => ${experimentUserId}`, error });
-      return null;
     }
   }
 

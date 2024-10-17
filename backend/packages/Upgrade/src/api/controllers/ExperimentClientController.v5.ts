@@ -35,7 +35,7 @@ import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { MarkExperimentValidatorv5 } from './validators/MarkExperimentValidator.v5';
 import { Log } from '../models/Log';
 import { ExperimentUserValidator, RequestedExperimentUser } from './validators/ExperimentUserValidator';
-import { HttpError } from '../errors';
+import { HttpError } from 'routing-controllers';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 
 interface IMonitoredDecisionPoint {
@@ -197,7 +197,7 @@ export class ExperimentClientController {
   ): Promise<Pick<ExperimentUser, 'id' | 'group' | 'workingGroup'>> {
     request.logger.info({ message: 'Starting the init call for user' });
     // getOriginalUserDoc call for alias
-    const experimentUserDoc = await this.checkIfUserExist(experimentUser.id, request.logger, 'init');
+    const experimentUserDoc = await this.experimentUserService.getUserDoc(experimentUser.id, request.logger, 'init');
     // if reinit call is made with any of the below fields not included in the call,
     // then we will fetch the stored values of the field and return them in the response
     // for consistent init response with 3 fields ['userId', 'group', 'workingGroup']
