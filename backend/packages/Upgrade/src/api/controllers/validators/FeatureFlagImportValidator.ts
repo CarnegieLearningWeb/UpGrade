@@ -88,7 +88,7 @@ class SegmentImportValidator {
   public subSegments: SegmentValidator[];
 }
 
-class FeatureFlagListImportValidator {
+export class FeatureFlagListImportValidator {
   @IsDefined()
   @IsBoolean()
   public enabled: boolean;

@@ -11,6 +11,7 @@ import { FeatureFlagExclusionsTableComponent } from './feature-flag-exclusions-t
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import {
+  FeatureFlag,
   PARTICIPANT_LIST_ROW_ACTION,
   ParticipantListRowActionEvent,
   ParticipantListTableRow,
@@ -51,8 +52,8 @@ export class FeatureFlagExclusionsSectionCardComponent {
     private authService: AuthService
   ) {}
   menuButtonItems: IMenuButtonItem[] = [
-    // { name: 'Import Exclude List', disabled: false },
-    // { name: 'Export All Exclude Lists', disabled: false },
+    { name: 'Import Exclude List', disabled: false },
+    { name: 'Export All Exclude Lists', disabled: true },
   ];
 
   ngOnInit() {
@@ -63,8 +64,21 @@ export class FeatureFlagExclusionsSectionCardComponent {
     this.dialogService.openAddExcludeListModal(appContext, flagId);
   }
 
-  onMenuButtonItemClick(event) {
+  onMenuButtonItemClick(event, flag: FeatureFlag) {
     console.log('Menu Button Item Clicked:', event);
+    switch (event) {
+      case 'Import Include List':
+        this.dialogService
+          .openImportFeatureFlagExcludeListModal(flag.id)
+          .afterClosed()
+          .subscribe(() => this.featureFlagService.fetchFeatureFlagById(flag.id));
+        break;
+      case 'Export All Include Lists':
+        // this.dialogService.openImportFeatureFlagListModal();
+        break;
+      default:
+        console.log('Unknown action');
+    }
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {

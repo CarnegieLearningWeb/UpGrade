@@ -6,11 +6,13 @@ import { ImportFeatureFlagModalComponent } from '../../features/dashboard/featur
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
 import {
+  ImportListParams,
   UPSERT_PRIVATE_SEGMENT_LIST_ACTION,
   UpsertPrivateSegmentListParams,
 } from '../../core/segments/store/segments.model';
 import {
   FEATURE_FLAG_DETAILS_PAGE_ACTIONS,
+  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
   FeatureFlag,
   ParticipantListTableRow,
   UPSERT_FEATURE_FLAG_ACTION,
@@ -357,7 +359,43 @@ export class DialogService {
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
+      params: {
+        listType: null,
+        flagId: null,
+      },
     };
+    return this.openImportModal(commonModalConfig);
+  }
+
+  openImportFeatureFlagIncludeListModal(flagId: string) {
+    const commonModalConfig: CommonModalConfig<ImportListParams> = {
+      title: 'Import List',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        listType: FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE,
+        flagId: flagId,
+      },
+    };
+    return this.openImportModal(commonModalConfig);
+  }
+
+  openImportFeatureFlagExcludeListModal(flagId: string) {
+    const commonModalConfig: CommonModalConfig<ImportListParams> = {
+      title: 'Import List',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        listType: FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE,
+        flagId: flagId,
+      },
+    };
+    return this.openImportModal(commonModalConfig);
+  }
+
+  openImportModal(commonModalConfig: CommonModalConfig) {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: ModalSize.STANDARD,

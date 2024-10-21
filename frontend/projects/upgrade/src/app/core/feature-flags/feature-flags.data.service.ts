@@ -13,7 +13,7 @@ import {
 } from './store/feature-flags.model';
 import { Observable, delay, of } from 'rxjs';
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
-import { IFeatureFlagFile } from 'upgrade_types';
+import { FEATURE_FLAG_PARTICIPANT_LIST_KEY, IFeatureFlagFile } from 'upgrade_types';
 
 @Injectable()
 export class FeatureFlagsDataService {
@@ -45,14 +45,26 @@ export class FeatureFlagsDataService {
     return this.http.put<FeatureFlag>(url, flag);
   }
 
-  validateFeatureFlag(featureFlag: { files: IFeatureFlagFile[] }) {
+  validateFeatureFlag(featureFlags: { files: IFeatureFlagFile[] }) {
     const url = this.environment.api.validateFeatureFlag;
-    return this.http.post(url, featureFlag);
+    return this.http.post(url, featureFlags);
+  }
+
+  validateFeatureFlagList(files: IFeatureFlagFile[], flagId: string, listType: FEATURE_FLAG_PARTICIPANT_LIST_KEY) {
+    const lists = { files: files, listType: listType, flagId: flagId };
+    const url = this.environment.api.validateFeatureFlagList;
+    return this.http.post(url, lists);
   }
 
   importFeatureFlag(featureFlag: { files: IFeatureFlagFile[] }) {
     const url = this.environment.api.importFeatureFlag;
     return this.http.post(url, featureFlag);
+  }
+
+  importFeatureFlagList(files: IFeatureFlagFile[], flagId: string, listType: FEATURE_FLAG_PARTICIPANT_LIST_KEY) {
+    const lists = { files: files, listType: listType, flagId: flagId };
+    const url = this.environment.api.importFeatureFlagList;
+    return this.http.post(url, lists);
   }
 
   updateFilterMode(params: UpdateFilterModeRequest): Observable<FeatureFlag> {
