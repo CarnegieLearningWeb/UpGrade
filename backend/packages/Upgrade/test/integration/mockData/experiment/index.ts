@@ -17,7 +17,7 @@ import {
   CONDITION_ORDER,
 } from 'upgrade_types';
 
-function clone(data: any): any {
+function clone<T>(data: T): T {
   return JSON.parse(JSON.stringify(data));
 }
 
