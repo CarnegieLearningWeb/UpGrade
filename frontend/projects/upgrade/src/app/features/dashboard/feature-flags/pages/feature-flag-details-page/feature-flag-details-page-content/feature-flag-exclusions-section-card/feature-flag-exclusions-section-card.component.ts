@@ -65,7 +65,6 @@ export class FeatureFlagExclusionsSectionCardComponent {
   }
 
   onMenuButtonItemClick(event, flag: FeatureFlag) {
-    console.log('Menu Button Item Clicked:', event);
     switch (event) {
       case 'Import Include List':
         this.dialogService
