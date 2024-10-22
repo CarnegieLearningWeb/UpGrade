@@ -25,6 +25,14 @@ export const individualAssignmentExperiment = {
   state: EXPERIMENT_STATE.INACTIVE,
 };
 
+export const individualAssignmentGroupConsistencyExperiment = {
+  ...getExperiment(),
+  consistencyRule: CONSISTENCY_RULE.GROUP,
+  assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
+  postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+  state: EXPERIMENT_STATE.INACTIVE,
+};
+
 export const individualAssignmentExperimentConsistencyRuleRevertToExperiment = {
   ...getRevertToExperiment(),
 };

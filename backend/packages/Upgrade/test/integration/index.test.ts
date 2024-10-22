@@ -51,7 +51,19 @@ import {
   DeletePreviewAssignmentOnExperimentDelete,
   DeletePreviewAssignmentWithPreviewUserDelete,
 } from './PreviewExperiment/index';
-import { GroupConsistency, IndividualConsistency, NoExperimentUserOnAssignment } from './ExperimentUser';
+import {
+  GroupConsistency,
+  IndividualConsistency,
+  NoExperimentUserOnAssignment,
+  Scenario1A,
+  Scenario1B,
+  Scenario1C,
+  Scenario2A,
+  Scenario2B,
+  Scenario2C,
+  Scenario3A,
+  Scenario3B,
+} from './ExperimentUser';
 import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
 import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalStateChange/index';
 import { StatsIndividualEnrollment, StatsGroupEnrollment, StatsWithinSubjectEnrollment } from './ExperimentStats/index';
@@ -75,6 +87,10 @@ import {
   SegmentMemberGroupEnrollment,
   SegmentMemberUserEnrollment,
   SubSegmentEnrollment,
+  GroupExclusionSegmentGroupConsistency,
+  GroupExclusionSegmentIndividualConsistency,
+  IndividualExclusionSegmentGroupConsistency,
+  IndividualExclusionSegmentIndividualConsistency,
 } from './Segment/index';
 import { UpgradeLogger } from '../../src/lib/logger/UpgradeLogger';
 import { CompetingExperiment } from './Experiment/competingExperiment';
@@ -131,7 +147,7 @@ describe('Integration Tests', () => {
     // create System Users
     await CreateSystemUser();
     await createGlobalExcludeSegment(new UpgradeLogger());
-  }, 99999);
+  });
 
   // -------------------------------------------------------------------------
   // Tear down
@@ -396,6 +412,22 @@ describe('Integration Tests', () => {
     return WithinSubjectExclusionCode();
   });
 
+  test('For Individual Exclusion List added for Individual Consistency', () => {
+    return IndividualExclusionSegmentIndividualConsistency();
+  });
+
+  test('For Individual Exclusion List added for Group Consistency', () => {
+    return IndividualExclusionSegmentGroupConsistency();
+  });
+
+  test('For Group Exclusion List added for Individual Consistency', () => {
+    return GroupExclusionSegmentIndividualConsistency();
+  });
+
+  test('For Group Exclusion List added for Group Consistency', () => {
+    return GroupExclusionSegmentGroupConsistency();
+  });
+
   test('Experiment Context Assignment', () => {
     return ExperimentContextAssignments();
   });
@@ -490,6 +522,38 @@ describe('Integration Tests', () => {
 
   test('Working group change after user exclusion for group consistency', () => {
     return GroupConsistency();
+  });
+
+  test('Excluding group of Enrolling Individual Experiment', () => {
+    return Scenario1A();
+  });
+
+  test('Excluding group of Enrolling Group Experiment, Individual Consistency', () => {
+    return Scenario1B();
+  });
+
+  test('Excluding group of Enrolling Group Experiment, Group Consistency', () => {
+    return Scenario1C();
+  });
+
+  test('Excluding individual of Enrolling Individual Experiment', () => {
+    return Scenario2A();
+  });
+
+  test('Excluding individual of Enrolling Group Experiment, Individual Consistency', () => {
+    return Scenario2B();
+  });
+
+  test('Excluding individual of Enrolling Group Experiment, Group Consistency', () => {
+    return Scenario2C();
+  });
+
+  test('Excluding indirect group of Enrolling Group Experiment, Group Consistency', () => {
+    return Scenario3A();
+  });
+
+  test('Excluding indirect user of Enrolling Group Experiment, Individual Consistency', () => {
+    return Scenario3B();
   });
 
   test('Inclusion and Exclusion of user in FeatureFlags', () => {
