@@ -9,7 +9,7 @@ export class MoocletExperimentRef {
 
   @OneToOne(() => Experiment, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'experimentId' })
-  experiment?: Experiment;
+  experiment: Experiment;
 
   @Column({ nullable: true })
   experimentId?: string;

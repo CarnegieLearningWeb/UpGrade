@@ -1634,12 +1634,10 @@ export class ExperimentAssignmentService {
     experimentId: string,
     user: ExperimentUser
   ): Promise<ExperimentCondition | void> {
-    
     const logger = new UpgradeLogger();
 
     const moocletExperimentRef = await this.moocletService.getMoocletExperimentRefByUpgradeExperimentId(experimentId);
     const userId = user.id;
-
 
     try {
       const condition = await this.moocletService.getConditionFromMoocletProxy(
@@ -1659,14 +1657,11 @@ export class ExperimentAssignmentService {
     user: ExperimentUser,
     enrollmentCount?: { conditionId: string; userCount: number }[]
   ): Promise<ExperimentCondition | void> {
-
-    let experimentalCondition: ExperimentCondition;
-
     const randomSeed =
       experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
       experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
         ? `${experiment.id}_${user.id}`
-        : `${experiment.id}_${user.workingGroup[experiment.group]}`;
+        : `${experiment.id}_${user.workingGroup?.[experiment.group]}`;
 
     const sortedExperimentCondition = experiment.conditions.sort(
       (condition1, condition2) => condition1.order - condition2.order
@@ -1686,9 +1681,8 @@ export class ExperimentAssignmentService {
         break;
       }
     }
-    experimentalCondition = experiment.conditions[randomConditions];
+    const experimentalCondition = experiment.conditions[randomConditions];
     return Promise.resolve(experimentalCondition);
-    // }
   }
 
   private assignStratifiedRandom(

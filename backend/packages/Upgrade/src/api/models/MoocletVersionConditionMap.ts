@@ -11,14 +11,14 @@ export class MoocletVersionConditionMap {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'moocletExperimentRefId' })
-  moocletExperimentRef?: MoocletExperimentRef;
+  moocletExperimentRef: MoocletExperimentRef;
 
   @Column()
   moocletExperimentRefId?: string;
 
   @ManyToOne(() => ExperimentCondition, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'experimentConditionId' })
-  experimentCondition?: ExperimentCondition;
+  experimentCondition: ExperimentCondition;
 
   @Column()
   experimentConditionId?: string;
