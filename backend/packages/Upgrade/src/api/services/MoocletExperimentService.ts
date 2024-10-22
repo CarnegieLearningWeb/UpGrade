@@ -3,7 +3,6 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
 import { MoocletDataService } from './MoocletDataService';
 import {
   ASSIGNMENT_ALGORITHM,
-  ExperimentCondtitionToMoocletVersionParams,
   MoocletPolicyParametersRequestBody,
   MoocletPolicyParametersResponseDetails,
   MoocletRequestBody,
@@ -338,19 +337,21 @@ export class MoocletExperimentService extends ExperimentService {
     upgradeExperiment: MoocletExperimentDTO
   ): MoocletExperimentRef {
     const versionConditionMaps: MoocletVersionConditionMap[] = upgradeExperiment.conditions.map((condition) => {
-      return {
-        moocletVersionId: moocletVersionsResponse.find((version) => version.name === condition.conditionCode)?.id,
-        experimentConditionId: condition.id,
-      };
+      const versionConditionMap = new MoocletVersionConditionMap();
+      versionConditionMap.moocletVersionId = moocletVersionsResponse.find((version) => version.name === condition.conditionCode)?.id;
+      versionConditionMap.experimentConditionId = condition.id;
+  
+      return versionConditionMap;
     });
 
-    return {
-      id: uuid(),
-      moocletId: moocletResponse.id,
-      experimentId: upgradeExperiment.id,
-      versionConditionMaps: versionConditionMaps,
-      policyParametersId: moocletPolicyParametersResponse.id,
-    };
+    const moocletExpRef = new MoocletExperimentRef();
+    moocletExpRef.id = uuid();
+    moocletExpRef.moocletId = moocletResponse.id;
+    moocletExpRef.experimentId = upgradeExperiment.id;
+    moocletExpRef.versionConditionMaps = versionConditionMaps;
+    moocletExpRef.policyParametersId = moocletPolicyParametersResponse.id; 
+    
+    return moocletExpRef;
   }
 
   public async getConditionFromMoocletProxy(moocletExperimentRef: MoocletExperimentRef, userId: string): Promise<ExperimentCondition> {
@@ -376,7 +377,7 @@ export class MoocletExperimentService extends ExperimentService {
     const versionConditionMap = moocletExperimentRef.versionConditionMaps.find(
       (map) => map.moocletVersionId === versionResponse.id
     );
-  
+
     if (!versionConditionMap) {
       const error = {
         message: 'Version ID not found in version condition maps',
@@ -385,10 +386,10 @@ export class MoocletExperimentService extends ExperimentService {
       };
       throw new Error(JSON.stringify(error));
     }
-  
+
     // Get the experiment condition from the versionConditionMap
     const experimentCondition = versionConditionMap.experimentCondition;
-  
+
     if (!experimentCondition) {
       const error = {
         message: 'Experiment condition not found in version condition map',
@@ -397,7 +398,7 @@ export class MoocletExperimentService extends ExperimentService {
       };
       throw new Error(JSON.stringify(error));
     }
-  
+
     return experimentCondition;
   }
 
@@ -408,7 +409,7 @@ export class MoocletExperimentService extends ExperimentService {
   private async createNewVersion(
     upgradeCondition: ConditionValidator,
     mooclet: MoocletResponseDetails,
-    index: number 
+    index: number
   ): Promise<MoocletVersionResponseDetails> {
     const newVersionRequest: MoocletVersionRequestBody = {
       mooclet: mooclet.id,
