@@ -133,17 +133,7 @@ export class ExperimentAssignmentService {
       logger.error(error);
     }
 
-    // adding experiment error when user is not defined
-    if (!userDoc || !userDoc.id) {
-      const error = new Error('User not defined in markExperimentPoint');
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404;
-      logger.error(error);
-      throw error;
-    }
-
     const userId = userDoc.id;
-
     const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
 
     // search decision points in experiments cache
@@ -338,26 +328,8 @@ export class ExperimentAssignmentService {
     logger: UpgradeLogger
   ): Promise<IExperimentAssignmentv5[]> {
     logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc?.requestedUserId}` });
-
-    // throw error if user not defined
-    if (!experimentUserDoc || !experimentUserDoc.id) {
-      logger.error({
-        message: 'User not defined in getAllExperimentConditions',
-      });
-      const error = new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: 'User not defined in getAllExperimentConditions',
-        })
-      );
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404;
-      throw error;
-    }
     const userId = experimentUserDoc?.id;
-
     const previewUser = await this.previewUserService.findOne(userId, logger);
-
     const experimentUser: ExperimentUser = experimentUserDoc as ExperimentUser;
 
     // query all experiment and sub experiment
@@ -777,20 +749,6 @@ export class ExperimentAssignmentService {
     logger.info({ message: `Add data log userId ${userId}`, details: jsonLog });
     const keyUniqueArray: { key: string; uniquifier: string }[] = [];
 
-    // throw error if user not defined
-    if (!userDoc) {
-      logger.error({ message: `User not found in dataLog, userId => ${userId}`, details: jsonLog });
-      const error = new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined dataLog: ${userId}`,
-        })
-      );
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404;
-      throw error;
-    }
-
     // extract the array value
     const promise = jsonLog.map(async (individualMetrics) => {
       return this.createLog(individualMetrics, keyUniqueArray, userDoc, logger);
@@ -810,20 +768,6 @@ export class ExperimentAssignmentService {
     const error = new ExperimentError();
     const { logger, userDoc } = requestContext;
     logger.info({ message: `Failed experiment point for userId ${userId}` });
-
-    // throw error if user not defined
-    if (!userDoc) {
-      logger.error({ message: `User not found in clientFailedExperimentPoint, userId => ${userId}` });
-      const error = new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined clientFailedExperimentPoint: ${userId}`,
-        })
-      );
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404;
-      throw error;
-    }
 
     error.type = SERVER_ERROR.REPORTED_ERROR;
     error.message = JSON.stringify({

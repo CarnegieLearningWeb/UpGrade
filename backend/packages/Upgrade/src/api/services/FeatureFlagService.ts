@@ -74,21 +74,6 @@ export class FeatureFlagService {
     logger: UpgradeLogger
   ): Promise<string[]> {
     logger.info({ message: `getKeys: User: ${experimentUserDoc?.requestedUserId}` });
-
-    // throw error if user not defined
-    if (!experimentUserDoc || !experimentUserDoc.id) {
-      logger.error({ message: 'User not defined in getKeys' });
-      const error = new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: 'User not defined in getKeys',
-        })
-      );
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404;
-      throw error;
-    }
-
     const filteredFeatureFlags = await this.featureFlagRepository.getFlagsFromContext(context);
 
     const [userExcluded, groupExcluded] = await this.experimentAssignmentService.checkUserOrGroupIsGloballyExcluded(

@@ -104,21 +104,6 @@ export class ExperimentUserService {
     const userId = userDoc.id;
     const userExist = userDoc;
     logger.info({ message: 'Set aliases for experiment user => ' + userId, details: aliases });
-
-    // throw error if user not defined
-    if (!userExist || !userExist.id) {
-      logger.error({ message: 'User not defined setAliasesForUser' + userId, details: aliases });
-
-      const error = new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined setAliasesForUser: ${userId}`,
-        })
-      );
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404;
-      throw error;
-    }
     const promiseArray = [];
     const dedupedArray = [...new Set(aliases)];
 
@@ -237,18 +222,6 @@ export class ExperimentUserService {
     const { logger, userDoc } = requestContext;
     const userExist = userDoc;
     logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
-    if (!userExist) {
-      logger.error({ message: 'User not defined updateWorkingGroup', details: userId });
-      const error = new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined updateWorkingGroup: ${userId}`,
-        })
-      );
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404;
-      throw error;
-    }
 
     // removing enrollments in case working group is changed
     if (userExist && userExist.workingGroup && workingGroup) {
@@ -278,18 +251,6 @@ export class ExperimentUserService {
       message: `Set Group Membership for userId: ${userId} with Group membership details as below:`,
       details: groupMembership,
     });
-    if (!userExist) {
-      logger.error({ message: 'User not defined updateGroupMembership', details: userId });
-      const error = new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined updateGroupMembership: ${userId}`,
-        })
-      );
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404;
-      throw error;
-    }
 
     const newDocument = { ...userExist, group: groupMembership };
 
