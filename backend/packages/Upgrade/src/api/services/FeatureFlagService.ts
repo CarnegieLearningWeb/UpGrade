@@ -45,7 +45,7 @@ import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { FeatureFlagImportDataValidation } from '../controllers/validators/FeatureFlagImportValidator';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
-import { User } from '../models/User';
+import { UserDTO } from '../DTO/UserDTO';
 import { diffString } from 'json-diff';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
@@ -130,7 +130,7 @@ export class FeatureFlagService {
     return featureFlag;
   }
 
-  public async create(flagDTO: FeatureFlagValidation, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag> {
+  public async create(flagDTO: FeatureFlagValidation, currentUser: UserDTO, logger: UpgradeLogger): Promise<FeatureFlag> {
     logger.info({ message: 'Create a new feature flag', details: flagDTO });
     const result = await this.featureFlagRepository.validateUniqueKey(flagDTO);
 
@@ -208,7 +208,7 @@ export class FeatureFlagService {
 
   public async delete(
     featureFlagId: string,
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<FeatureFlag | undefined> {
     logger.info({ message: `Delete Feature Flag => ${featureFlagId}` });
@@ -255,7 +255,7 @@ export class FeatureFlagService {
     });
   }
 
-  public async updateState(flagId: string, status: FEATURE_FLAG_STATUS, currentUser: User): Promise<FeatureFlag> {
+  public async updateState(flagId: string, status: FEATURE_FLAG_STATUS, currentUser: UserDTO): Promise<FeatureFlag> {
     const oldFeatureFlag = await this.findOne(flagId);
     let updatedState: FeatureFlag;
     try {
@@ -278,7 +278,7 @@ export class FeatureFlagService {
     return updatedState;
   }
 
-  public async updateFilterMode(flagId: string, filterMode: FILTER_MODE, currentUser: User): Promise<FeatureFlag> {
+  public async updateFilterMode(flagId: string, filterMode: FILTER_MODE, currentUser: UserDTO): Promise<FeatureFlag> {
     let updatedFilterMode: FeatureFlag;
     try {
       updatedFilterMode = await this.featureFlagRepository.updateFilterMode(flagId, filterMode);
@@ -299,7 +299,7 @@ export class FeatureFlagService {
     return updatedFilterMode;
   }
 
-  public async exportDesign(id, currentUser, logger): Promise<FeatureFlag | null> {
+  public async exportDesign(id: string, currentUser: UserDTO, logger: UpgradeLogger): Promise<FeatureFlag | null> {
     const featureFlag = await this.findOne(id, logger);
     if (featureFlag) {
       const exportAuditLog: FeatureFlagDeletedData = {
@@ -316,7 +316,7 @@ export class FeatureFlagService {
     return featureFlag;
   }
 
-  public async update(flagDTO: FeatureFlagValidation, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag> {
+  public async update(flagDTO: FeatureFlagValidation, currentUser: UserDTO, logger: UpgradeLogger): Promise<FeatureFlag> {
     logger.info({ message: `Update a Feature Flag => ${flagDTO.toString()}` });
     const result = await this.featureFlagRepository.validateUniqueKey(flagDTO);
 
@@ -332,7 +332,7 @@ export class FeatureFlagService {
 
   private async addFeatureFlagInDB(
     flag: FeatureFlag,
-    user: User,
+    user: UserDTO,
     logger: UpgradeLogger,
     entityManager?: EntityManager
   ): Promise<FeatureFlag> {
@@ -369,7 +369,7 @@ export class FeatureFlagService {
     }
   }
 
-  private async updateFeatureFlagInDB(flag: FeatureFlag, user: User, logger: UpgradeLogger): Promise<FeatureFlag> {
+  private async updateFeatureFlagInDB(flag: FeatureFlag, user: UserDTO, logger: UpgradeLogger): Promise<FeatureFlag> {
     const {
       featureFlagSegmentExclusion,
       featureFlagSegmentInclusion,
@@ -466,7 +466,7 @@ export class FeatureFlagService {
   public async deleteList(
     segmentId: string,
     filterType: FEATURE_FLAG_LIST_FILTER_MODE,
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<Segment> {
     await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
@@ -476,7 +476,7 @@ export class FeatureFlagService {
   async createDeleteListAuditLogs(
     segmentIds: string[],
     filterType: FEATURE_FLAG_LIST_FILTER_MODE,
-    currentUser: User,
+    currentUser: UserDTO,
     entityManager?: EntityManager
   ): Promise<void> {
     const auditLogPromises = [];
@@ -530,7 +530,7 @@ export class FeatureFlagService {
   public async addList(
     listsInput: FeatureFlagListValidator[],
     filterType: FEATURE_FLAG_LIST_FILTER_MODE,
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger,
     transactionalEntityManager?: EntityManager
   ): Promise<(FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion)[]> {
@@ -628,7 +628,7 @@ export class FeatureFlagService {
   public async updateList(
     listInput: FeatureFlagListValidator,
     filterType: FEATURE_FLAG_LIST_FILTER_MODE,
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> {
     logger.info({ message: `Update ${filterType} list for feature flag` });
@@ -822,7 +822,7 @@ export class FeatureFlagService {
 
   public async importFeatureFlags(
     featureFlagFiles: IFeatureFlagFile[],
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<IImportError[]> {
     logger.info({ message: 'Import feature flags' });
