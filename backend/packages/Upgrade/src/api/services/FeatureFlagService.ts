@@ -150,7 +150,11 @@ export class FeatureFlagService {
     return featureFlag;
   }
 
-  public async create(flagDTO: FeatureFlagValidation, currentUser: UserDTO, logger: UpgradeLogger): Promise<FeatureFlag> {
+  public async create(
+    flagDTO: FeatureFlagValidation,
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<FeatureFlag> {
     logger.info({ message: 'Create a new feature flag', details: flagDTO });
     const result = await this.featureFlagRepository.validateUniqueKey(flagDTO);
 
@@ -336,7 +340,11 @@ export class FeatureFlagService {
     return featureFlag;
   }
 
-  public async update(flagDTO: FeatureFlagValidation, currentUser: UserDTO, logger: UpgradeLogger): Promise<FeatureFlag> {
+  public async update(
+    flagDTO: FeatureFlagValidation,
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<FeatureFlag> {
     logger.info({ message: `Update a Feature Flag => ${flagDTO.toString()}` });
     const result = await this.featureFlagRepository.validateUniqueKey(flagDTO);
 
@@ -1117,7 +1125,7 @@ export class FeatureFlagService {
     featureFlagListFiles: IFeatureFlagFile[],
     featureFlagId: string,
     listType: FEATURE_FLAG_PARTICIPANT_LIST_KEY,
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<IImportError[]> {
     logger.info({ message: 'Import feature flags' });

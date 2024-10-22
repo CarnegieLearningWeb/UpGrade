@@ -935,7 +935,7 @@ export class FeatureFlagsController {
   @Post('/lists/import')
   public async importFeatureFlagLists(
     @Body({ validate: true }) lists: FeatureFlagListImportValidation,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<IImportError[]> {
     return await this.featureFlagService.importFeatureFlagLists(
