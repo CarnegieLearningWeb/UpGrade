@@ -7,7 +7,7 @@ export class MoocletExperimentRef {
   @PrimaryColumn('uuid')
   public id?: string;
 
-  @OneToOne(() => Experiment)
+  @OneToOne(() => Experiment, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'experimentId' })
   experiment?: Experiment;
 
@@ -19,6 +19,7 @@ export class MoocletExperimentRef {
 
   @OneToMany(() => MoocletVersionConditionMap, (versionConditionMap) => versionConditionMap.moocletExperimentRef, {
     cascade: true,
+    onDelete: 'CASCADE',
   })
   versionConditionMaps: MoocletVersionConditionMap[];
 

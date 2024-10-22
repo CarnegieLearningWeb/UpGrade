@@ -1495,10 +1495,11 @@ export class ExperimentAssignmentService {
       } else {
         let conditionAssigned = null;
 
-        // if moocletDetails exist on the experiment, we should already have an assignment
-        if (experiment?.moocletDetails && condition) {
+        if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {
+          // the assumption here is that if they are calling mark with success, it means they got this condition from assign
+          // we are not otherwise storing a user's assignment from mooclet, and I'm not sure if every mooclet policy
+          // will always return the same condition for the same user after the first time
           conditionAssigned = experiment.conditions.find((expCondition) => expCondition.conditionCode === condition);
-          logger.info({ message: 'Condition assigned from moocletDetails', details: conditionAssigned });
         } else {
           conditionAssigned = await this.assignExperiment(
             user,
@@ -1617,34 +1618,48 @@ export class ExperimentAssignmentService {
     return;
   }
 
-  // private async getConditionFromMoocletProxy(
-  //   experiment: Experiment,
-  //   user: ExperimentUser
-  // ): Promise<ExperimentCondition | void> {
-  //   const moocletId = experiment?.moocletDetails?.mooclet?.id;
-  //   const userId = user.id;
-  //   const experimentConditions = experiment.conditions;
-  //   const logger = new UpgradeLogger();
-
-  //   try {
-  //     const condition = await this.moocletService.getConditionFromMoocletProxy({
-  //       moocletId,
-  //       userId,
-  //       experimentConditions,
-  //     });
-  //     return condition;
-  //   } catch (err) {
-  //     // log error but don't throw?
-  //     logger.error({ message: `Error retrieving condition from Mooclet proxy`, err });
-  //     return;
-  //   }
-  // }
-
   private async getNewExperimentConditionAssignment(
     experiment: Experiment,
     user: ExperimentUser,
     enrollmentCount?: { conditionId: string; userCount: number }[]
   ): Promise<ExperimentCondition | void> {
+    if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.RANDOM || experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+      return Promise.resolve(this.getRandomOrStratifiedRandomAssignment(experiment, user, enrollmentCount));
+    } else if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {
+      return await this.getNewConditionFromMoocletProxy(experiment.id, user);
+    }
+  }
+
+  private async getNewConditionFromMoocletProxy(
+    experimentId: string,
+    user: ExperimentUser
+  ): Promise<ExperimentCondition | void> {
+    
+    const logger = new UpgradeLogger();
+
+    const moocletExperimentRef = await this.moocletService.getMoocletExperimentRefByUpgradeExperimentId(experimentId);
+    const userId = user.id;
+
+
+    try {
+      const condition = await this.moocletService.getConditionFromMoocletProxy(
+        moocletExperimentRef,
+        userId,
+      );
+      return condition;
+    } catch (err) {
+      // log error but don't throw?
+      logger.error({ message: `Error retrieving condition from Mooclet proxy`, err });
+      return;
+    }
+  }
+
+  private getRandomOrStratifiedRandomAssignment(
+    experiment: Experiment,
+    user: ExperimentUser,
+    enrollmentCount?: { conditionId: string; userCount: number }[]
+  ): Promise<ExperimentCondition | void> {
+
     let experimentalCondition: ExperimentCondition;
 
     const randomSeed =
