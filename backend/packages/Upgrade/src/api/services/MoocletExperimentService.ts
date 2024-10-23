@@ -1,8 +1,6 @@
 import { Service } from 'typedi';
-import { ExperimentCondition } from '../models/ExperimentCondition';
 import { MoocletDataService } from './MoocletDataService';
 import {
-  ASSIGNMENT_ALGORITHM,
   MoocletPolicyParametersRequestBody,
   MoocletPolicyParametersResponseDetails,
   MoocletRequestBody,
@@ -50,9 +48,17 @@ import { MoocletPolicyParameters, SUPPORTED_MOOCLET_POLICY_NAMES } from 'types/s
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
 import { ConditionValidator } from '../DTO/ExperimentDTO';
 import { UserDTO } from '../DTO/UserDTO';
+import { Experiment } from '../models/Experiment';
 
 interface SyncCreateParams {
   experimentDTO: MoocletExperimentDTO;
+  currentUser: UserDTO;
+  logger: UpgradeLogger;
+  createType?: string;
+}
+
+interface SyncDeleteParams {
+  moocletExperimentRef: MoocletExperimentRef;
   currentUser: UserDTO;
   logger: UpgradeLogger;
   createType?: string;
@@ -125,6 +131,10 @@ export class MoocletExperimentService extends ExperimentService {
     return this.dataSource.transaction((manager) => this.handleCreateMoocletTransaction(manager, params));
   }
 
+  public async syncDelete(params: SyncDeleteParams): Promise<Experiment> {
+    return this.dataSource.transaction((manager) => this.handleDeleteMoocletTransaction(manager, params));
+  }
+
   private async handleCreateMoocletTransaction(
     manager: EntityManager,
     params: SyncCreateParams
@@ -179,6 +189,30 @@ export class MoocletExperimentService extends ExperimentService {
     experimentResponse.moocletPolicyParameters = moocletPolicyParameters;
 
     return experimentResponse;
+  }
+
+  private async handleDeleteMoocletTransaction(
+    manager: EntityManager,
+    params: SyncDeleteParams
+  ): Promise<Experiment> {
+    const { moocletExperimentRef, currentUser, logger } = params;
+    const { experiment } = moocletExperimentRef;
+    let deleteResponse: Experiment | undefined;
+  
+    try {
+      await this.orchestrateDeleteMoocletResources(moocletExperimentRef);
+      deleteResponse = await super.delete(moocletExperimentRef.experimentId , currentUser, { existingEntityManager: manager });
+
+      return deleteResponse;
+    } catch (error) {
+      logger.error({
+        message: 'Failed to delete experiment with Mooclet',
+        error: error,
+        experimentId: experiment.id,
+        user: currentUser,
+      });
+      throw new UnprocessableEntityException('Failed to delete experiment with Mooclet');
+    }
   }
 
   /**
@@ -249,6 +283,7 @@ export class MoocletExperimentService extends ExperimentService {
         moocletResponse,
         moocletVersionsResponse,
         moocletPolicyParametersResponse,
+        moocletVariableResponse,
         upgradeExperiment
       );
     } catch (err) {
@@ -258,6 +293,55 @@ export class MoocletExperimentService extends ExperimentService {
           error: err,
         })
       );
+    }
+  }
+
+  public async orchestrateDeleteMoocletResources(moocletExperimentRef: MoocletExperimentRef): Promise<void> {
+    const logger = new UpgradeLogger('MoocletExperimentService');
+    try {
+      
+      if (!moocletExperimentRef) {
+        throw new Error(`MoocletExperimentRef not defined`);
+      }
+      
+      logger.debug({ message: '[Mooclet Deletion]: Starting deletion of Mooclet resources', moocletExperimentRef });
+  
+      // Delete Mooclet resources if they exist
+      logger.debug({ message: '[Mooclet Deletion]: Deleting Mooclet', moocletId: moocletExperimentRef.moocletId });
+      if (moocletExperimentRef.moocletId) {
+        await this.moocletDataService.deleteMooclet(moocletExperimentRef.moocletId);
+        logger.debug({ message: '[Mooclet Deletion]: Deleted Mooclet', moocletId: moocletExperimentRef.moocletId });
+      }
+  
+      if (moocletExperimentRef.versionConditionMaps) {
+        for (const versionConditionMap of moocletExperimentRef.versionConditionMaps) {
+          logger.debug({ message: '[Mooclet Deletion]: Deleting Mooclet version', moocletVersionId: versionConditionMap.moocletVersionId });
+          if (versionConditionMap.moocletVersionId) {
+            await this.moocletDataService.deleteVersion(versionConditionMap.moocletVersionId);
+            logger.debug({ message: '[Mooclet Deletion]: Deleted Mooclet version', moocletVersionId: versionConditionMap.moocletVersionId });
+          }
+        }
+      }
+  
+      logger.debug({ message: '[Mooclet Deletion]: Deleting policy parameters', policyParametersId: moocletExperimentRef.policyParametersId });
+      if (moocletExperimentRef.policyParametersId) {
+        await this.moocletDataService.deletePolicyParameters(moocletExperimentRef.policyParametersId);
+        logger.debug({ message: '[Mooclet Deletion]: Deleted policy parameters', policyParametersId: moocletExperimentRef.policyParametersId });
+      }
+  
+      logger.debug({ message: '[Mooclet Deletion]: Deleting variable', variableId: moocletExperimentRef.variableId });
+      if (moocletExperimentRef.variableId) {
+        await this.moocletDataService.deleteVariable(moocletExperimentRef.variableId);
+        logger.debug({ message: '[Mooclet Deletion]: Deleted variable', variableId: moocletExperimentRef.variableId });
+      }
+  
+      logger.info({ message: '[Mooclet Deletion]: Completed deletion of Mooclet resources', moocletExperimentRef });
+    } catch (err) {
+      logger.error({
+        message: '[Mooclet Deletion]: Failed to delete Mooclet resources',
+        error: err,
+        moocletExperimentRef: moocletExperimentRef.id,
+      });
     }
   }
 
@@ -289,6 +373,27 @@ export class MoocletExperimentService extends ExperimentService {
       );
     } catch (err) {
       throw new Error(`Failed to create Mooclet versions: ${err}`);
+    }
+  }
+
+  private async createNewVersion(
+    upgradeCondition: ConditionValidator,
+    mooclet: MoocletResponseDetails,
+    index: number
+  ): Promise<MoocletVersionResponseDetails> {
+    const newVersionRequest: MoocletVersionRequestBody = {
+      mooclet: mooclet.id,
+      name: upgradeCondition.conditionCode,
+      text: upgradeCondition.conditionCode,
+      version_json: {
+        [`${mooclet.name}_VERSION_CONTROL_FLAG`]: index,
+      },
+    };
+
+    try {
+      return await this.moocletDataService.postNewVersion(newVersionRequest);
+    } catch (err) {
+      throw new Error(`Failed to create new version for Mooclet: ${err}`);
     }
   }
 
@@ -331,10 +436,15 @@ export class MoocletExperimentService extends ExperimentService {
     }
   }
 
+  private createOutcomeVariableName(moocletName: string): string {
+    return 'TS_CONFIG_' + moocletName;
+  }
+
   private constructMoocletExperimentRef(
     moocletResponse: MoocletResponseDetails,
     moocletVersionsResponse: MoocletVersionResponseDetails[],
     moocletPolicyParametersResponse: MoocletPolicyParametersResponseDetails,
+    moocletVariableResponse: MoocletVariableResponseDetails,
     upgradeExperiment: MoocletExperimentDTO
   ): MoocletExperimentRef {
     const versionConditionMaps: MoocletVersionConditionMap[] = upgradeExperiment.conditions.map((condition) => {
@@ -351,6 +461,7 @@ export class MoocletExperimentService extends ExperimentService {
     moocletExpRef.experimentId = upgradeExperiment.id;
     moocletExpRef.versionConditionMaps = versionConditionMaps;
     moocletExpRef.policyParametersId = moocletPolicyParametersResponse.id; 
+    moocletExpRef.variableId = moocletVariableResponse?.id;
     
     return moocletExpRef;
   }
@@ -404,28 +515,4 @@ export class MoocletExperimentService extends ExperimentService {
   //   return experimentCondition;
   // }
 
-  private createOutcomeVariableName(moocletName: string): string {
-    return 'TS_CONFIG_' + moocletName;
-  }
-
-  private async createNewVersion(
-    upgradeCondition: ConditionValidator,
-    mooclet: MoocletResponseDetails,
-    index: number
-  ): Promise<MoocletVersionResponseDetails> {
-    const newVersionRequest: MoocletVersionRequestBody = {
-      mooclet: mooclet.id,
-      name: upgradeCondition.conditionCode,
-      text: upgradeCondition.conditionCode,
-      version_json: {
-        [`${mooclet.name}_VERSION_CONTROL_FLAG`]: index,
-      },
-    };
-
-    try {
-      return await this.moocletDataService.postNewVersion(newVersionRequest);
-    } catch (err) {
-      throw new Error(`Failed to create new version for Mooclet: ${err}`);
-    }
-  }
 }

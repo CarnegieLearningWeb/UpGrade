@@ -28,7 +28,6 @@ import {
   SEGMENT_TYPE,
   EXPERIMENT_TYPE,
   CACHE_PREFIX,
-  ASSIGNMENT_ALGORITHM,
   ASSIGNMENT_UNIT,
   FILTER_MODE,
 } from 'upgrade_types';
@@ -312,12 +311,14 @@ export class ExperimentService {
   public async delete(
     experimentId: string,
     currentUser: UserDTO,
-    logger?: UpgradeLogger
+    options?: { logger?: UpgradeLogger, existingEntityManager?: EntityManager }
   ): Promise<Experiment | undefined> {
+    const { logger, existingEntityManager } = options;
     if (logger) {
       logger.info({ message: `Delete experiment =>  ${experimentId}` });
     }
-    return await this.dataSource.transaction(async (transactionalEntityManager) => {
+    const entityManager = existingEntityManager || this.dataSource.manager;
+    return await entityManager.transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
 
       if (experiment) {

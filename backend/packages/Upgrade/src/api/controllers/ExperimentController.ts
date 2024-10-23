@@ -1069,7 +1069,21 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<Experiment | undefined> {
     request.logger.child({ user: currentUser });
-    const experiment = await this.experimentService.delete(id, currentUser, request.logger);
+
+    // Manually check if the experiment has a mooclet ref
+    if (env.mooclets.enabled) {
+      const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(id);
+      
+      if (moocletExperimentRef) {
+        return await this.moocletExperimentService.syncDelete({
+          moocletExperimentRef,
+          currentUser,
+          logger: request.logger,
+        });
+      }
+    }
+
+    const experiment = await this.experimentService.delete(id, currentUser, { logger: request.logger });
 
     if (!experiment) {
       throw new NotFoundException('Experiment not found.');

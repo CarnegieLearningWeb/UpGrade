@@ -70,6 +70,19 @@ export class MoocletDataService {
     return response;
   }
 
+  public async deleteMooclet(moocletId: number): Promise<any> {
+    const endpoint = `/mooclet/${moocletId}`;
+    const requestParams: MoocletProxyRequestParams = {
+      method: 'DELETE',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
+    };
+
+    const response = await this.fetchExternalMoocletsData(requestParams);
+
+    return response;
+  }
+
   public async postNewVersion(requestBody: MoocletVersionRequestBody): Promise<MoocletVersionResponseDetails> {
     const endpoint = '/version';
 
@@ -78,6 +91,19 @@ export class MoocletDataService {
       url: this.apiUrl + endpoint,
       apiToken: this.apiToken,
       body: requestBody,
+    };
+
+    const response = await this.fetchExternalMoocletsData(requestParams);
+
+    return response;
+  }
+
+  public async deleteVersion(versionId: number): Promise<any> {
+    const endpoint = `/version/${versionId}`;
+    const requestParams: MoocletProxyRequestParams = {
+      method: 'DELETE',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
     };
 
     const response = await this.fetchExternalMoocletsData(requestParams);
@@ -102,20 +128,48 @@ export class MoocletDataService {
     return response;
   }
 
-  public async postNewValue(requestBody: any): Promise<any> {
-    const endpoint = '/value';
-
+  public async deletePolicyParameters(policyParametersId: number): Promise<any> {
+    const endpoint = `/policyparameters/${policyParametersId}`;
     const requestParams: MoocletProxyRequestParams = {
-      method: 'POST',
+      method: 'DELETE',
       url: this.apiUrl + endpoint,
       apiToken: this.apiToken,
-      body: requestBody,
     };
 
     const response = await this.fetchExternalMoocletsData(requestParams);
 
     return response;
   }
+
+  /* not yet implemented */
+
+  // public async postNewValue(requestBody: any): Promise<any> {
+  //   const endpoint = '/value';
+
+  //   const requestParams: MoocletProxyRequestParams = {
+  //     method: 'POST',
+  //     url: this.apiUrl + endpoint,
+  //     apiToken: this.apiToken,
+  //     body: requestBody,
+  //   };
+
+  //   const response = await this.fetchExternalMoocletsData(requestParams);
+
+  //   return response;
+  // }
+
+  // public async deleteValue(valueId: number): Promise<any> {
+  //   const endpoint = `/value/${valueId}`;
+  //   const requestParams: MoocletProxyRequestParams = {
+  //     method: 'DELETE',
+  //     url: this.apiUrl + endpoint,
+  //     apiToken: this.apiToken,
+  //   };
+
+  //   const response = await this.fetchExternalMoocletsData(requestParams);
+
+  //   return response;
+  // }
 
   public async postNewVariable(requestBody: MoocletVariableRequestBody): Promise<MoocletVariableResponseDetails> {
     const endpoint = '/variable';
@@ -132,11 +186,10 @@ export class MoocletDataService {
     return response;
   }
 
-  public async getVersionForNewLearner(moocletId: number, userId: string) {
-    const endpoint = `/mooclet/${moocletId}/run?learner=${userId}`;
-
+  public async deleteVariable(variableId: number): Promise<any> {
+    const endpoint = `/variable/${variableId}`;
     const requestParams: MoocletProxyRequestParams = {
-      method: 'GET',
+      method: 'DELETE',
       url: this.apiUrl + endpoint,
       apiToken: this.apiToken,
     };
@@ -145,6 +198,22 @@ export class MoocletDataService {
 
     return response;
   }
+
+  /* not yet implemented */
+
+  // public async getVersionForNewLearner(moocletId: number, userId: string) {
+  //   const endpoint = `/mooclet/${moocletId}/run?learner=${userId}`;
+
+  //   const requestParams: MoocletProxyRequestParams = {
+  //     method: 'GET',
+  //     url: this.apiUrl + endpoint,
+  //     apiToken: this.apiToken,
+  //   };
+
+  //   const response = await this.fetchExternalMoocletsData(requestParams);
+
+  //   return response;
+  // }
 
   /**
    * Generic Requests to Mooclets API
