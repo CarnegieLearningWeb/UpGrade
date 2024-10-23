@@ -97,3 +97,4 @@ export {
   MoocletBatchResponse,
   SupportedMoocletPolicyNames,
 } from './Mooclet/interfaces';
+export { SUPPORTED_MOOCLET_POLICY_NAMES } from './Mooclet/enums';

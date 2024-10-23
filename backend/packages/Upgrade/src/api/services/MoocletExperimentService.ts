@@ -46,7 +46,7 @@ import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
 import { MoocletVersionConditionMap } from '../models/MoocletVersionConditionMap';
 import { v4 as uuid } from 'uuid';
 import { MoocletExperimentDTO } from '../DTO/MoocletExperimentDTO';
-import { MoocletPolicyParameters } from 'types/src';
+import { MoocletPolicyParameters, SUPPORTED_MOOCLET_POLICY_NAMES } from 'types/src';
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
 import { ConditionValidator } from '../DTO/ExperimentDTO';
 import { UserDTO } from '../DTO/UserDTO';
@@ -316,8 +316,9 @@ export class MoocletExperimentService extends ExperimentService {
     assignmentAlgorithm: string,
     moocletResponse: MoocletResponseDetails
   ): Promise<MoocletVariableResponseDetails> {
-    if (!moocletPolicyParametersResponse || assignmentAlgorithm !== ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE)
+    if (!moocletPolicyParametersResponse || assignmentAlgorithm !== SUPPORTED_MOOCLET_POLICY_NAMES.TS_CONFIGURABLE) {
       return null;
+    }
 
     const variableRequest: MoocletVariableRequestBody = {
       name: this.createOutcomeVariableName(moocletResponse.name),
