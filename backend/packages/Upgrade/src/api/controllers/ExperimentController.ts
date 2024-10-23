@@ -35,7 +35,7 @@ import { NotFoundException } from '@nestjs/common/exceptions';
 import { IdValidator } from './validators/FeatureFlagValidator';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
-  nodes: ExperimentDTO[];
+  nodes: Experiment[];
 }
 
 /**
@@ -639,7 +639,7 @@ export class ExperimentController {
    *            description: AuthorizationRequiredError
    */
   @Get()
-  public find(@Req() request: AppRequest): Promise<ExperimentDTO[]> {
+  public find(@Req() request: AppRequest): Promise<Experiment[]> {
     return this.experimentService.find(request.logger);
   }
 
@@ -846,7 +846,7 @@ export class ExperimentController {
    */
   @Get('/single/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public one(@Params({ validate: true }) { id }: IdValidator, @Req() request: AppRequest): Promise<ExperimentDTO> {
+  public one(@Params({ validate: true }) { id }: IdValidator, @Req() request: AppRequest): Promise<Experiment> {
     return this.experimentService.getSingleExperiment(id, request.logger);
   }
 
@@ -1026,7 +1026,7 @@ export class ExperimentController {
     @Body({ validate: true, type: ExperimentDTO }) experiment: ExperimentDTO[],
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<Experiment[]> {
     request.logger.child({ user: currentUser });
     return this.experimentService.createMultipleExperiments(experiment, currentUser, request.logger);
   }
@@ -1167,7 +1167,7 @@ export class ExperimentController {
     experiment: ExperimentDTO,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO> {
+  ): Promise<Experiment> {
     if (!isUUID(id)) {
       return Promise.reject(
         new Error(
@@ -1327,7 +1327,7 @@ export class ExperimentController {
     params: ExperimentIds,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<Experiment[]> {
     const experimentIds = params.ids;
     return this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
   }

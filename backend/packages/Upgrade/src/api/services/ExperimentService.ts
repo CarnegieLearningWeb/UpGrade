@@ -128,7 +128,7 @@ export class ExperimentService {
     protected queryService: QueryService
   ) {}
 
-  public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
+  public async find(logger?: UpgradeLogger): Promise<Experiment[]> {
     if (logger) {
       logger.info({ message: `Find all experiments` });
     }
@@ -149,7 +149,7 @@ export class ExperimentService {
     logger: UpgradeLogger,
     searchParams?: IExperimentSearchParams,
     sortParams?: IExperimentSortParams
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<Experiment[]> {
     logger.info({ message: `Find paginated experiments` });
 
     let queryBuilder = this.experimentRepository
@@ -212,7 +212,7 @@ export class ExperimentService {
     });
   }
 
-  public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
+  public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
     const experiment = await this.findOne(id, logger);
     if (experiment) {
       return this.reducedConditionPayload(this.formatingPayload(experiment));
@@ -304,7 +304,7 @@ export class ExperimentService {
     experiments: ExperimentDTO[],
     user: UserDTO,
     logger: UpgradeLogger
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<Experiment[]> {
     logger.info({ message: `Generating test experiments`, details: experiments });
     return this.addBulkExperiments(experiments, user, logger);
   }
@@ -369,7 +369,7 @@ export class ExperimentService {
     });
   }
 
-  public async update(experiment: ExperimentDTO, currentUser: UserDTO, logger: UpgradeLogger): Promise<ExperimentDTO> {
+  public async update(experiment: ExperimentDTO, currentUser: UserDTO, logger: UpgradeLogger): Promise<Experiment> {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
@@ -560,7 +560,7 @@ export class ExperimentService {
     return validatedExperiments;
   }
 
-  public async exportExperiment(experimentIds: string[], user: UserDTO, logger: UpgradeLogger): Promise<ExperimentDTO[]> {
+  public async exportExperiment(experimentIds: string[], user: UserDTO, logger: UpgradeLogger): Promise<Experiment[]> {
     logger.info({ message: `Inside export Experiment JSON ${experimentIds}` });
     const experimentDetails = await this.experimentRepository.find({
       where: { id: In(experimentIds) },
@@ -735,7 +735,7 @@ export class ExperimentService {
     experiment: ExperimentDTO,
     user: UserDTO,
     logger: UpgradeLogger
-  ): Promise<ExperimentDTO> {
+  ): Promise<Experiment> {
     await this.clearExperimentCacheDetail(
       experiment.context[0],
       experiment.partitions.map((partition) => {
@@ -1191,7 +1191,7 @@ export class ExperimentService {
 
   private async addExperimentInDB(
     experiment: ExperimentDTO,
-    user: User,
+    user: UserDTO,
     logger: UpgradeLogger,
     existingEntityManager?: EntityManager
   ): Promise<ExperimentDTO> {
@@ -1802,7 +1802,7 @@ export class ExperimentService {
     experiments: ExperimentDTO[],
     currentUser: UserDTO,
     logger: UpgradeLogger
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<Experiment[]> {
     const createdExperiments = [];
     for (const exp of experiments) {
       try {
@@ -1848,7 +1848,7 @@ export class ExperimentService {
     return { ...experiment, conditionPayloads: conditionPayload };
   }
 
-  public reducedConditionPayload(experiment: Experiment | ExperimentDTO): any {
+  public reducedConditionPayload(experiment: Experiment): any {
     const updatedCP = experiment.conditionPayloads.map((conditionPayload) => {
       return {
         ...conditionPayload,
