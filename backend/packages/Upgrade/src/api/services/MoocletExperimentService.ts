@@ -230,11 +230,13 @@ export class MoocletExperimentService extends ExperimentService {
     upgradeExperiment: MoocletExperimentDTO,
     moocletPolicyParameters: MoocletPolicyParameters,
     logger: UpgradeLogger
-  ): Promise<MoocletExperimentRef> {
+  ): Promise<MoocletExperimentRef | undefined> {
     const newMoocletRequest: MoocletRequestBody = {
       name: upgradeExperiment.name,
       policy: null,
     };
+    const moocletExperimentRef = new MoocletExperimentRef();
+    moocletExperimentRef.experimentId = upgradeExperiment.id;
 
     logger.debug({
       message: '[Mooclet Creation] 0. Starting Mooclet creation process',
@@ -249,12 +251,15 @@ export class MoocletExperimentService extends ExperimentService {
       });
 
       const moocletResponse = await this.createMooclet(newMoocletRequest);
+      moocletExperimentRef.moocletId = moocletResponse.id;
+      
       logger.debug({
         message: `[Mooclet Creation] 2. Mooclet created:`,
         moocletResponse: JSON.stringify(moocletResponse),
       });
 
       const moocletVersionsResponse = await this.createMoocletVersions(upgradeExperiment, moocletResponse);
+      moocletExperimentRef.versionConditionMaps = this.privateCreateMoocletVersionConditionMaps(moocletVersionsResponse, upgradeExperiment);
       logger.debug({
         message: `[Mooclet Creation] 3. Mooclet versions created:`,
         moocletVersionsResponse: JSON.stringify(moocletVersionsResponse),
@@ -264,6 +269,7 @@ export class MoocletExperimentService extends ExperimentService {
         moocletResponse,
         moocletPolicyParameters
       );
+      moocletExperimentRef.policyParametersId = moocletPolicyParametersResponse.id;
       logger.debug({
         message: `[Mooclet Creation] 4. Policy parameters created:`,
         moocletPolicyParametersResponse: JSON.stringify(moocletPolicyParametersResponse),
@@ -278,23 +284,47 @@ export class MoocletExperimentService extends ExperimentService {
         message: `[Mooclet Creation] 5. Variable created (if needed):`,
         moocletVariableResponse: JSON.stringify(moocletVariableResponse),
       });
-
-      return this.constructMoocletExperimentRef(
-        moocletResponse,
-        moocletVersionsResponse,
-        moocletPolicyParametersResponse,
-        moocletVariableResponse,
-        upgradeExperiment
-      );
+      moocletExperimentRef.variableId = moocletVariableResponse?.id;
     } catch (err) {
-      throw new Error(
-        JSON.stringify({
-          message: '[Mooclet Creation] Failed, see sequence of events in logs for more details.',
-          error: err,
-        })
-      );
+      await this.handleMoocletCreationError(err, moocletExperimentRef, logger);
     }
+
+    moocletExperimentRef.id = uuid();
+    return moocletExperimentRef;
   }
+
+  private async handleMoocletCreationError(err: any, moocletExperimentRef: MoocletExperimentRef, logger: UpgradeLogger): Promise<void> {
+    try {
+      // Rollback all created resources. Null resource ids will be ignored.
+      return await this.orchestrateDeleteMoocletResources(moocletExperimentRef);
+    } catch (rollbackErr) {
+      logger.error({
+        message: '[Mooclet Creation] Rollback failed',
+        error: rollbackErr,
+        moocletExperimentRef: moocletExperimentRef,
+      });
+    }
+  
+    throw new Error(
+      JSON.stringify({
+        message: '[Mooclet Creation] Failed, see sequence of events in logs for more details.',
+        error: err,
+        moocletExperimentRef: moocletExperimentRef,
+      })
+    );
+  }
+
+  privateCreateMoocletVersionConditionMaps(moocletVersionsResponse: MoocletVersionResponseDetails[], upgradeExperiment: MoocletExperimentDTO): MoocletVersionConditionMap[] {
+    const versionConditionMaps: MoocletVersionConditionMap[] = upgradeExperiment.conditions.map((condition) => {
+      const versionConditionMap = new MoocletVersionConditionMap();
+      versionConditionMap.moocletVersionId = moocletVersionsResponse.find((version) => version.name === condition.conditionCode)?.id;
+      versionConditionMap.experimentConditionId = condition.id;
+  
+      return versionConditionMap;
+    });
+    return versionConditionMaps;
+  }
+    
 
   public async orchestrateDeleteMoocletResources(moocletExperimentRef: MoocletExperimentRef): Promise<void> {
     const logger = new UpgradeLogger('MoocletExperimentService');
