@@ -354,48 +354,28 @@ export class DialogService {
   }
 
   openImportFeatureFlagModal() {
-    const commonModalConfig: CommonModalConfig = {
-      title: 'Import Feature Flag',
-      primaryActionBtnLabel: 'Import',
-      primaryActionBtnColor: 'primary',
-      cancelBtnLabel: 'Cancel',
-      params: {
-        listType: null,
-        flagId: null,
-      },
-    };
-    return this.openImportModal(commonModalConfig);
+    return this.openImportModal('Import Feature Flag', null, null);
   }
 
   openImportFeatureFlagIncludeListModal(flagId: string) {
-    const commonModalConfig: CommonModalConfig<ImportListParams> = {
-      title: 'Import List',
-      primaryActionBtnLabel: 'Import',
-      primaryActionBtnColor: 'primary',
-      cancelBtnLabel: 'Cancel',
-      params: {
-        listType: FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE,
-        flagId: flagId,
-      },
-    };
-    return this.openImportModal(commonModalConfig);
+    return this.openImportModal('Import List', FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE, flagId);
   }
 
   openImportFeatureFlagExcludeListModal(flagId: string) {
-    const commonModalConfig: CommonModalConfig<ImportListParams> = {
-      title: 'Import List',
+    return this.openImportModal('Import List', FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE, flagId);
+  }
+
+  openImportModal(title, listType, flagId) {
+    const commonModalConfig: CommonModalConfig = {
+      title: title,
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        listType: FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE,
+        listType: listType,
         flagId: flagId,
       },
     };
-    return this.openImportModal(commonModalConfig);
-  }
-
-  openImportModal(commonModalConfig: CommonModalConfig) {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: ModalSize.STANDARD,

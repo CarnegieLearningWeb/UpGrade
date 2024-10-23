@@ -1057,7 +1057,7 @@ export class FeatureFlagService {
     return validationErrors
       .map((result) => {
         if (result.status === 'fulfilled') {
-          return result.value;
+          return result.value ? result.value : null;
         } else {
           const { fileName, compatibilityType } = result.reason;
           return { fileName: fileName, compatibilityType: compatibilityType };
@@ -1141,15 +1141,12 @@ export class FeatureFlagService {
       };
     });
 
-    const validFiles: FeatureFlagListImportValidator[] = await Promise.all(
-      fileStatusArray
-        .filter((fileStatus) => fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE)
-        .map(async (fileStatus) => {
-          const featureFlagListFile = featureFlagListFiles.find((file) => file.fileName === fileStatus.fileName);
-
-          return JSON.parse(featureFlagListFile.fileContent as string);
-        })
-    );
+    const validFiles: FeatureFlagListImportValidator[] = fileStatusArray
+      .filter((fileStatus) => fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE)
+      .map((fileStatus) => {
+        const featureFlagListFile = featureFlagListFiles.find((file) => file.fileName === fileStatus.fileName);
+        return JSON.parse(featureFlagListFile.fileContent as string);
+      });
 
     const createdLists: (FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion)[] =
       await this.dataSource.transaction(async (transactionalEntityManager) => {
@@ -1157,14 +1154,12 @@ export class FeatureFlagService {
         for (const list of validFiles) {
           const { name, description, context, type } = list.segment;
 
-          const userIds = list.segment.individualForSegment.map((individual) =>
-            individual.userId ? individual.userId : null
-          );
+          const userIds = list.segment.individualForSegment.map((individual) => individual.userId);
 
-          const subSegmentIds = list.segment.subSegments.map((subSegment) => (subSegment.id ? subSegment.id : null));
+          const subSegmentIds = list.segment.subSegments.map((subSegment) => subSegment.id);
 
           const groups = list.segment.groupForSegment.map((group) => {
-            return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
+            return { type: group.type, groupId: group.groupId };
           });
 
           const listDoc: FeatureFlagListValidator = {
@@ -1255,7 +1250,7 @@ export class FeatureFlagService {
     return validationErrors
       .map((result) => {
         if (result.status === 'fulfilled') {
-          return result.value;
+          return result.value ? result.value : null;
         } else {
           const { fileName, compatibilityType } = result.reason;
           return { fileName: fileName, compatibilityType: compatibilityType };

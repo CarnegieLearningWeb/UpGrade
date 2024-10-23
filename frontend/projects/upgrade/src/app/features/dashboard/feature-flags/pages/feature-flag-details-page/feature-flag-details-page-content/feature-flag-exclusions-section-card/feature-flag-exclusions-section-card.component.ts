@@ -66,13 +66,13 @@ export class FeatureFlagExclusionsSectionCardComponent {
 
   onMenuButtonItemClick(event, flag: FeatureFlag) {
     switch (event) {
-      case 'Import Include List':
+      case 'Import Exclude List':
         this.dialogService
           .openImportFeatureFlagExcludeListModal(flag.id)
           .afterClosed()
           .subscribe(() => this.featureFlagService.fetchFeatureFlagById(flag.id));
         break;
-      case 'Export All Include Lists':
+      case 'Export All Exclude Lists':
         // this.dialogService.openImportFeatureFlagListModal();
         break;
       default:
