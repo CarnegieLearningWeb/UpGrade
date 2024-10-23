@@ -27,6 +27,10 @@ import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpda
 import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
+import { MoocletExperimentService } from '../services/MoocletExperimentService';
+import { env } from '../../env';
+import { UnprocessableEntityException } from '@nestjs/common';
+import { MoocletExperimentDTO } from '../DTO/MoocletExperimentDTO';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { IdValidator } from './validators/FeatureFlagValidator';
 
@@ -579,7 +583,8 @@ interface ExperimentPaginationInfo extends PaginationResponse {
 export class ExperimentController {
   constructor(
     public experimentService: ExperimentService,
-    public experimentAssignmentService: ExperimentAssignmentService
+    public experimentAssignmentService: ExperimentAssignmentService,
+    public moocletExperimentService: MoocletExperimentService
   ) {}
 
   /**
@@ -954,18 +959,35 @@ export class ExperimentController {
    *            description: default as ConditionCode is not allowed
    *          '401':
    *            description: AuthorizationRequiredError
+   *          '422':
+   *            description: Experiment is not valid for current configuration
    *          '500':
    *            description: Insert Error in database
    */
 
   @Post()
   public create(
-    @Body({ validate: true }) experiment: ExperimentDTO,
+    @Body({ validate: true }) experiment: ExperimentDTO | MoocletExperimentDTO,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<Experiment> {
+  ): Promise<ExperimentDTO | MoocletExperimentDTO> {
     request.logger.child({ user: currentUser });
-    return this.experimentService.create(experiment, currentUser, request.logger);
+
+    // Manually check if the experiment is a MoocletExperimentDTO
+    if ('moocletPolicyParameters' in experiment) {
+      if (!env.mooclets.enabled) {
+        throw new UnprocessableEntityException(
+          'Failed to create Experiment: moocletPolicyParameters was provided but mooclets are not enabled.'
+        );
+      }
+      return this.moocletExperimentService.syncCreate({
+        experimentDTO: experiment,
+        currentUser,
+        logger: request.logger,
+      });
+    }
+
+    return this.experimentService.create(experiment as ExperimentDTO, currentUser, request.logger);
   }
 
   /**
@@ -1047,7 +1069,21 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<Experiment | undefined> {
     request.logger.child({ user: currentUser });
-    const experiment = await this.experimentService.delete(id, currentUser, request.logger);
+
+    // Manually check if the experiment has a mooclet ref
+    if (env.mooclets.enabled) {
+      const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(id);
+      
+      if (moocletExperimentRef) {
+        return await this.moocletExperimentService.syncDelete({
+          moocletExperimentRef,
+          currentUser,
+          logger: request.logger,
+        });
+      }
+    }
+
+    const experiment = await this.experimentService.delete(id, currentUser, { logger: request.logger });
 
     if (!experiment) {
       throw new NotFoundException('Experiment not found.');
