@@ -354,12 +354,6 @@ export class MoocletExperimentService extends ExperimentService {
     return moocletExpRef;
   }
 
-  public async getConditionFromMoocletProxy(moocletExperimentRef: MoocletExperimentRef, userId: string): Promise<ExperimentCondition> {
-    const versionResponse = await this.moocletDataService.getVersionForNewLearner(moocletExperimentRef.moocletId, userId);
-    const experimentCondition = this.mapMoocletVersionToUpgradeCondition(versionResponse, moocletExperimentRef);
-    return experimentCondition;
-  }
-
   public async getMoocletExperimentRefByUpgradeExperimentId(upgradeExperimentId: string): Promise<MoocletExperimentRef | undefined> {
     const moocletExperimentRef = await this.moocletExperimentRefRepository.findOne({
       where: { experimentId: upgradeExperimentId },
@@ -368,39 +362,46 @@ export class MoocletExperimentService extends ExperimentService {
     return moocletExperimentRef;
   }
 
+  // NOTE: will do mooclet condition assignment changes in follow-up PR
 
-  private mapMoocletVersionToUpgradeCondition(
-    versionResponse: MoocletVersionResponseDetails,
-    moocletExperimentRef: MoocletExperimentRef
-  ): ExperimentCondition {
-    // Find the corresponding versionConditionMap
-    const versionConditionMap = moocletExperimentRef.versionConditionMaps.find(
-      (map) => map.moocletVersionId === versionResponse.id
-    );
+  // public async getConditionFromMoocletProxy(moocletExperimentRef: MoocletExperimentRef, userId: string): Promise<ExperimentCondition> {
+  //   const versionResponse = await this.moocletDataService.getVersionForNewLearner(moocletExperimentRef.moocletId, userId);
+  //   const experimentCondition = this.mapMoocletVersionToUpgradeCondition(versionResponse, moocletExperimentRef);
+  //   return experimentCondition;
+  // }
 
-    if (!versionConditionMap) {
-      const error = {
-        message: 'Version ID not found in version condition maps',
-        version: versionResponse,
-        versionConditionMaps: moocletExperimentRef.versionConditionMaps,
-      };
-      throw new Error(JSON.stringify(error));
-    }
+  // private mapMoocletVersionToUpgradeCondition(
+  //   versionResponse: MoocletVersionResponseDetails,
+  //   moocletExperimentRef: MoocletExperimentRef
+  // ): ExperimentCondition {
+  //   // Find the corresponding versionConditionMap
+  //   const versionConditionMap = moocletExperimentRef.versionConditionMaps.find(
+  //     (map) => map.moocletVersionId === versionResponse.id
+  //   );
 
-    // Get the experiment condition from the versionConditionMap
-    const experimentCondition = versionConditionMap.experimentCondition;
+  //   if (!versionConditionMap) {
+  //     const error = {
+  //       message: 'Version ID not found in version condition maps',
+  //       version: versionResponse,
+  //       versionConditionMaps: moocletExperimentRef.versionConditionMaps,
+  //     };
+  //     throw new Error(JSON.stringify(error));
+  //   }
 
-    if (!experimentCondition) {
-      const error = {
-        message: 'Experiment condition not found in version condition map',
-        version: versionResponse,
-        versionConditionMap,
-      };
-      throw new Error(JSON.stringify(error));
-    }
+  //   // Get the experiment condition from the versionConditionMap
+  //   const experimentCondition = versionConditionMap.experimentCondition;
 
-    return experimentCondition;
-  }
+  //   if (!experimentCondition) {
+  //     const error = {
+  //       message: 'Experiment condition not found in version condition map',
+  //       version: versionResponse,
+  //       versionConditionMap,
+  //     };
+  //     throw new Error(JSON.stringify(error));
+  //   }
+
+  //   return experimentCondition;
+  // }
 
   private createOutcomeVariableName(moocletName: string): string {
     return 'TS_CONFIG_' + moocletName;
