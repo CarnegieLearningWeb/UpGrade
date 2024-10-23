@@ -41,7 +41,6 @@ import { PreviewUserService } from './PreviewUserService';
 import { QueryService } from './QueryService';
 import { ScheduledJobService } from './ScheduledJobService';
 import { SegmentService } from './SegmentService';
-import { User } from '../models/User';
 import { UnprocessableEntityException } from '@nestjs/common';
 import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
 import { MoocletVersionConditionMap } from '../models/MoocletVersionConditionMap';
@@ -50,10 +49,11 @@ import { MoocletExperimentDTO } from '../DTO/MoocletExperimentDTO';
 import { MoocletPolicyParameters } from 'types/src';
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
 import { ConditionValidator } from '../DTO/ExperimentDTO';
+import { UserDTO } from '../DTO/UserDTO';
 
 interface SyncCreateParams {
   experimentDTO: MoocletExperimentDTO;
-  currentUser: User;
+  currentUser: UserDTO;
   logger: UpgradeLogger;
   createType?: string;
 }

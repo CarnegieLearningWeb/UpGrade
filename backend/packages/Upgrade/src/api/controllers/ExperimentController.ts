@@ -968,7 +968,7 @@ export class ExperimentController {
   @Post()
   public create(
     @Body({ validate: true }) experiment: ExperimentDTO | MoocletExperimentDTO,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO | MoocletExperimentDTO> {
     request.logger.child({ user: currentUser });
