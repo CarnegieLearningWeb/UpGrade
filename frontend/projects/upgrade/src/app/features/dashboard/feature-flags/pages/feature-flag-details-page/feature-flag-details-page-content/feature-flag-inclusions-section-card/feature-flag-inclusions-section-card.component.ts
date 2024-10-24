@@ -65,8 +65,8 @@ export class FeatureFlagInclusionsSectionCardComponent {
   ) {}
   subscriptions = new Subscription();
   menuButtonItems: IMenuButtonItem[] = [
-    // { name: 'Import Include List', disabled: false },
-    // { name: 'Export All Include Lists', disabled: false },
+    { name: 'Import Include List', disabled: false },
+    { name: 'Export All Include Lists', disabled: true },
   ];
 
   confirmIncludeAllChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
@@ -121,8 +121,20 @@ export class FeatureFlagInclusionsSectionCardComponent {
     this.isSectionCardExpanded = newFilterMode !== FILTER_MODE.INCLUDE_ALL;
   }
 
-  onMenuButtonItemClick(event) {
-    console.log('Menu Button Item Clicked:', event);
+  onMenuButtonItemClick(event, flag) {
+    switch (event) {
+      case 'Import Include List':
+        this.dialogService
+          .openImportFeatureFlagIncludeListModal(flag.id)
+          .afterClosed()
+          .subscribe(() => this.featureFlagService.fetchFeatureFlagById(flag.id));
+        break;
+      case 'Export All Include Lists':
+        // this.dialogService.openDeleteFeatureFlagModal();
+        break;
+      default:
+        console.log('Unknown action');
+    }
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {

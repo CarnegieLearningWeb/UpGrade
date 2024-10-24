@@ -29,7 +29,9 @@ export interface APIEndpoints {
   allExperimentNames: string;
   featureFlag: string;
   validateFeatureFlag: string;
+  validateFeatureFlagList: string;
   importFeatureFlag: string;
+  importFeatureFlagList: string;
   updateFlagStatus: string;
   updateFilterMode: string;
   getPaginatedFlags: string;

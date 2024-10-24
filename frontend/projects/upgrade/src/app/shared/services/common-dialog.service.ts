@@ -6,11 +6,13 @@ import { ImportFeatureFlagModalComponent } from '../../features/dashboard/featur
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
 import {
+  ImportListParams,
   UPSERT_PRIVATE_SEGMENT_LIST_ACTION,
   UpsertPrivateSegmentListParams,
 } from '../../core/segments/store/segments.model';
 import {
   FEATURE_FLAG_DETAILS_PAGE_ACTIONS,
+  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
   FeatureFlag,
   ParticipantListTableRow,
   UPSERT_FEATURE_FLAG_ACTION,
@@ -352,11 +354,27 @@ export class DialogService {
   }
 
   openImportFeatureFlagModal() {
+    return this.openImportModal('Import Feature Flag', null, null);
+  }
+
+  openImportFeatureFlagIncludeListModal(flagId: string) {
+    return this.openImportModal('Import List', FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE, flagId);
+  }
+
+  openImportFeatureFlagExcludeListModal(flagId: string) {
+    return this.openImportModal('Import List', FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE, flagId);
+  }
+
+  openImportModal(title, listType, flagId) {
     const commonModalConfig: CommonModalConfig = {
-      title: 'Import Feature Flag',
+      title: title,
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
+      params: {
+        listType: listType,
+        flagId: flagId,
+      },
     };
     const config: MatDialogConfig = {
       data: commonModalConfig,

@@ -1,6 +1,5 @@
 import { IsNotEmpty, IsDefined, IsString, IsArray, IsEnum, IsOptional, ValidateNested, IsUUID } from 'class-validator';
-import { FILTER_MODE } from 'upgrade_types';
-import { FEATURE_FLAG_STATUS } from 'upgrade_types';
+import { FEATURE_FLAG_PARTICIPANT_LIST_KEY, FILTER_MODE, FEATURE_FLAG_STATUS } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { FeatureFlagListValidator } from './FeatureFlagListValidator';
 
@@ -75,6 +74,22 @@ export class FeatureFlagImportValidation {
   @ValidateNested({ each: true })
   @Type(() => FeatureFlagFile)
   public files: FeatureFlagFile[];
+}
+
+export class FeatureFlagListImportValidation {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FeatureFlagFile)
+  public files: FeatureFlagFile[];
+
+  @IsString()
+  @IsNotEmpty()
+  @IsEnum(FEATURE_FLAG_PARTICIPANT_LIST_KEY)
+  public listType: FEATURE_FLAG_PARTICIPANT_LIST_KEY;
+
+  @IsUUID()
+  @IsNotEmpty()
+  public flagId: string;
 }
 
 class FeatureFlagFile {

@@ -12,8 +12,11 @@
     header-right
     [showPrimaryButton]="(permissions$ | async)?.featureFlags.update"
     [primaryButtonText]="'feature-flags.details.add-exclude-list.button.text' | translate"
+    [showMenuButton]="(permissions$ | async)?.featureFlags.update"
+    [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddExcludeListClick(flag.context[0], flag.id)"
+    (menuButtonItemClick)="onMenuButtonItemClick($event, flag)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
