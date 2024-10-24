@@ -89,3 +89,9 @@ export class SegmentIds {
   @IsUUID('all', { each: true })
   public ids: string[];
 }
+
+export class SegmentIdValidator {
+  @IsNotEmpty()
+  @IsUUID()
+  public segmentId: string;
+}

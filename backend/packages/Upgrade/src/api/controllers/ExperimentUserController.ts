@@ -1,12 +1,14 @@
-import { JsonController, Req, Get, OnUndefined, Param, Post, Put, Body, Authorized } from 'routing-controllers';
+import { JsonController, Req, Get, Post, Put, Body, Authorized, Params } from 'routing-controllers';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
-import { UserNotFoundError } from '../errors/UserNotFoundError';
-import { SERVER_ERROR } from 'upgrade_types';
-import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
-import { ExperimentUserArrayValidator, ExperimentUserValidator } from './validators/ExperimentUserValidator';
+import {
+  ExperimentUserArrayValidator,
+  ExperimentUserValidator,
+  IdValidator,
+} from './validators/ExperimentUserValidator';
 import { InsertResult } from 'typeorm';
+import { ExperimentClientController } from './ExperimentClientController.v5';
 
 // TODO delete this from experiment system
 /**
@@ -34,7 +36,10 @@ import { InsertResult } from 'typeorm';
 @Authorized()
 @JsonController('/experimentusers')
 export class UserController {
-  constructor(public userService: ExperimentUserService) {}
+  constructor(
+    public userService: ExperimentUserService,
+    public experimentClientController: ExperimentClientController
+  ) {}
 
   /**
    * @swagger
@@ -46,6 +51,8 @@ export class UserController {
    *       responses:
    *          '200':
    *            description: Successful
+   *          '401':
+   *            description: AuthorizationRequiredError
    */
   @Get()
   public find(@Req() request: AppRequest): Promise<ExperimentUser[]> {
@@ -71,15 +78,19 @@ export class UserController {
    *       responses:
    *          '200':
    *            description: Get user By Id
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
    *          '404':
-   *            description: user not found
+   *            description: Experiment User not defined
    */
   @Get('/:id')
-  @OnUndefined(UserNotFoundError)
-  public one(@Param('id') id: string, @Req() request: AppRequest): Promise<ExperimentUser> {
-    if (!isUUID(id)) {
-      return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id should be of type UUID.'));
-    }
+  public async one(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<ExperimentUser> {
+    await this.experimentClientController.checkIfUserExist(id, request.logger);
     return this.userService.findOne(id, request.logger);
   }
 
@@ -105,6 +116,10 @@ export class UserController {
    *       responses:
    *          '200':
    *            description: New ExperimentUser is created
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
    */
   @Post()
   public create(
@@ -143,13 +158,20 @@ export class UserController {
    *       responses:
    *          '200':
    *            description: ExperimentUser is updated
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
    */
   @Put('/:id')
-  public update(
-    @Param('id') id: string,
+  public async update(
+    @Params({ validate: true }) { id }: IdValidator,
     @Body({ validate: true }) user: ExperimentUserValidator,
     @Req() request: AppRequest
   ): Promise<ExperimentUser> {
+    await this.experimentClientController.checkIfUserExist(id, request.logger);
     return this.userService.update(id, user, request.logger);
   }
 }
