@@ -127,7 +127,7 @@ export class ExperimentService {
     public queryService: QueryService
   ) {}
 
-  public async find(logger?: UpgradeLogger): Promise<Experiment[]> {
+  public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
     if (logger) {
       logger.info({ message: `Find all experiments` });
     }
@@ -211,7 +211,7 @@ export class ExperimentService {
     });
   }
 
-  public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
+  public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
     const experiment = await this.findOne(id, logger);
     if (experiment) {
       return this.reducedConditionPayload(this.formatingPayload(experiment));
@@ -367,9 +367,7 @@ export class ExperimentService {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
-    return this.reducedConditionPayload(
-      await this.updateExperimentInDB(experiment as ExperimentDTO, currentUser, logger)
-    );
+    return this.reducedConditionPayload(await this.updateExperimentInDB(experiment, currentUser, logger));
   }
 
   public async getExperimentalConditions(experimentId: string, logger: UpgradeLogger): Promise<ExperimentCondition[]> {

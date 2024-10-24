@@ -41,3 +41,9 @@ export class UploadedFilesValidator {
   @IsString()
   public file: string;
 }
+
+export class StratificationFactorValidator {
+  @IsNotEmpty()
+  @IsString()
+  public factor: string;
+}

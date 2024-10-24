@@ -106,7 +106,7 @@ export class ExperimentClientController {
     public metricService: MetricService
   ) {}
 
-  private async checkIfUserExist(
+  public async checkIfUserExist(
     userId: string,
     logger: UpgradeLogger,
     api?: string

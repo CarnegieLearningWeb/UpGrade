@@ -110,3 +110,9 @@ export class MetricKeyValidator {
   @IsString()
   key: string;
 }
+
+export class ContextValidator {
+  @IsNotEmpty()
+  @IsString()
+  context: string;
+}

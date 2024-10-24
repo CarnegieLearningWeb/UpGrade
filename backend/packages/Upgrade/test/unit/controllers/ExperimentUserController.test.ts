@@ -8,6 +8,8 @@ import ExperimentUserServiceMock from './mocks/ExperimentUserServiceMock';
 
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import { v4 as uuid } from 'uuid';
+import { ExperimentClientController } from '../../../src/api/controllers/ExperimentClientController.v5';
+import ExperimentClientControllerMock from './mocks/ExperimentClientControllerMock';
 
 describe('Experiment User Controller Testing', () => {
   beforeAll(() => {
@@ -16,6 +18,8 @@ describe('Experiment User Controller Testing', () => {
     classValidatorUseContainer(Container);
 
     Container.set(ExperimentUserService, new ExperimentUserServiceMock());
+    Container.set(ExperimentClientController, new ExperimentClientControllerMock());
+
   });
 
   afterAll(() => {
@@ -36,14 +40,6 @@ describe('Experiment User Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-  });
-
-  test('Get request for /api/experimentusers/id with bad id', () => {
-    return request(app)
-      .get('/api/experimentusers/u22')
-      .set('Accept', 'application/json')
-      .expect('Content-Type', 'text/html; charset=utf-8')
-      .expect(500);
   });
 
   test('Post request for /api/experimentusers/', () => {

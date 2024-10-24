@@ -1,9 +1,12 @@
-import { JsonController, Get, Delete, Param, Authorized, Req, Res, Body, Post } from 'routing-controllers';
-import { SERVER_ERROR } from 'upgrade_types';
+import { JsonController, Get, Delete, Authorized, Req, Res, Body, Post, Params } from 'routing-controllers';
 import { AppRequest } from '../../types';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { StratificationService } from '../services/StratificationService';
-import { FactorStrata, UploadedFilesArrayValidator } from './validators/StratificationValidator';
+import {
+  FactorStrata,
+  StratificationFactorValidator,
+  UploadedFilesArrayValidator,
+} from './validators/StratificationValidator';
 import { StratificationFactor } from '../models/StratificationFactor';
 import * as express from 'express';
 
@@ -110,16 +113,11 @@ export class StratificationController {
    */
   @Get('/download/:factor')
   public async getStratificationByFactor(
-    @Param('factor') factor: string,
+    @Params({ validate: true }) { factor }: StratificationFactorValidator,
     @Req() request: AppRequest,
     @Res() res: express.Response
   ): Promise<express.Response> {
-    if (!factor) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : stratification Factor should not be null.'));
-    }
-
     const csvData = await this.stratificationService.getCSVDataByFactor(factor, request.logger);
-
     // return csv file with appropriate headers to request;
     res.setHeader('Content-Type', 'text/csv; charset=UTF-8');
     res.setHeader('Content-Disposition', `attachment; filename="${factor}.csv"`);
@@ -190,12 +188,9 @@ export class StratificationController {
    */
   @Delete('/:factor')
   public deleteStratification(
-    @Param('factor') stratificationFactor: string,
+    @Params({ validate: true }) { factor }: StratificationFactorValidator,
     @Req() request: AppRequest
   ): Promise<StratificationFactor> {
-    if (!stratificationFactor) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : stratification Factor should not be null.'));
-    }
-    return this.stratificationService.deleteStratification(stratificationFactor, request.logger);
+    return this.stratificationService.deleteStratification(factor, request.logger);
   }
 }

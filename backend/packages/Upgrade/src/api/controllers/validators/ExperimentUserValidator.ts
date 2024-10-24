@@ -88,6 +88,12 @@ export class ExperimentUserValidator extends ExperimentUserValidatorv6 {
   public id: string;
 }
 
+export class IdValidator {
+  @IsNotEmpty()
+  @IsString()
+  public id: string;
+}
+
 export class ExperimentUserArrayValidator {
   @IsNotEmpty()
   @IsArray()
