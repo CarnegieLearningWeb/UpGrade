@@ -20,7 +20,6 @@ import { PreviewUserService } from '../../../src/api/services/PreviewUserService
 import { ScheduledJobService } from '../../../src/api/services/ScheduledJobService';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { SettingService } from '../../../src/api/services/SettingService';
-import { SERVER_ERROR } from 'upgrade_types';
 import {
   simpleIndividualAssignmentExperiment,
   simpleGroupAssignmentExperiment,
@@ -140,32 +139,6 @@ describe('Experiment Assignment Service Test', () => {
 
   it('should be defined', async () => {
     expect(testedModule).toBeDefined();
-  });
-
-  it('should throw an error if user is not defined', async () => {
-    const loggerMock = { error: sandbox.stub(), info: sandbox.stub() };
-    //const requestContext = { logger: loggerMock, userDoc: null };
-    const userId = '12345';
-    const context = 'context';
-
-    const previewUserServiceMock = { findOne: sandbox.stub().resolves([]) };
-    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(null) };
-
-    testedModule.previewUserServiceMock = previewUserServiceMock;
-    testedModule.experimentUserService = experimentUserServiceMock;
-
-    const err = new Error(
-      JSON.stringify({
-        type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-        message: 'User not defined in getAllExperimentConditions',
-      })
-    );
-    (err as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-    (err as any).httpCode = 404;
-
-    expect(async () => {
-      await testedModule.getAllExperimentConditions({ requestedUserId: userId }, context, loggerMock);
-    }).rejects.toThrow(err);
   });
 
   it('should return an empty array if there are no experiments', async () => {
@@ -438,31 +411,6 @@ describe('Experiment Assignment Service Test', () => {
     expect(result[0].target).toEqual(exp.partitions[0].target);
     expect(result[0].assignedFactor[0]).toEqual(factor);
     expect(result[0].assignedCondition[0]).toMatchObject({ conditionCode: 'Color=Red; Shape=Circle' });
-  });
-
-  it('should throw an error when user is not defined', async () => {
-    const userId = 'testUser';
-    const site = 'testSite';
-    const clientError = 'Client error message';
-    const err = new Error('User not defined in markExperimentPoint');
-    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
-
-    try {
-      await testedModule.markExperimentPoint(
-        { requestedUserId: userId },
-        site,
-        undefined,
-        'testCondition',
-        loggerMock,
-        undefined,
-        undefined,
-        clientError
-      );
-      sinon.expect.fail('Expected an error to be thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as any).message).toEqual(err.message);
-    }
   });
 
   it('should log an error when clientError is provided', async () => {

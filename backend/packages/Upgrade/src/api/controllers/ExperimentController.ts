@@ -21,7 +21,7 @@ import { SERVER_ERROR } from 'upgrade_types';
 import { isUUID } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentPaginatedParamsValidator } from './validators/ExperimentPaginatedParamsValidator';
-import { User } from '../models/User';
+import { UserDTO } from '../DTO/UserDTO';
 import { DecisionPoint } from '../models/DecisionPoint';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { AppRequest, PaginationResponse } from '../../types';
@@ -31,7 +31,7 @@ import { NotFoundException } from '@nestjs/common/exceptions';
 import { IdValidator } from './validators/FeatureFlagValidator';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
-  nodes: ExperimentDTO[];
+  nodes: Experiment[];
 }
 
 /**
@@ -634,7 +634,7 @@ export class ExperimentController {
    *            description: AuthorizationRequiredError
    */
   @Get()
-  public find(@Req() request: AppRequest): Promise<ExperimentDTO[]> {
+  public find(@Req() request: AppRequest): Promise<Experiment[]> {
     return this.experimentService.find(request.logger);
   }
 
@@ -841,7 +841,7 @@ export class ExperimentController {
    */
   @Get('/single/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public one(@Params({ validate: true }) { id }: IdValidator, @Req() request: AppRequest): Promise<ExperimentDTO> {
+  public one(@Params({ validate: true }) { id }: IdValidator, @Req() request: AppRequest): Promise<Experiment> {
     return this.experimentService.getSingleExperiment(id, request.logger);
   }
 
@@ -961,9 +961,9 @@ export class ExperimentController {
   @Post()
   public create(
     @Body({ validate: true }) experiment: ExperimentDTO,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO> {
+  ): Promise<Experiment> {
     request.logger.child({ user: currentUser });
     return this.experimentService.create(experiment, currentUser, request.logger);
   }
@@ -1002,9 +1002,9 @@ export class ExperimentController {
   @Post('/batch')
   public createMultipleExperiments(
     @Body({ validate: true, type: ExperimentDTO }) experiment: ExperimentDTO[],
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<Experiment[]> {
     request.logger.child({ user: currentUser });
     return this.experimentService.createMultipleExperiments(experiment, currentUser, request.logger);
   }
@@ -1043,7 +1043,7 @@ export class ExperimentController {
   @Delete('/:id')
   public async delete(
     @Params({ validate: true }) { id }: IdValidator,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<Experiment | undefined> {
     request.logger.child({ user: currentUser });
@@ -1091,7 +1091,7 @@ export class ExperimentController {
   public async updateState(
     @Body({ validate: true })
     experiment: AssignmentStateUpdateValidator,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<any> {
     return this.experimentService.updateState(
@@ -1143,9 +1143,9 @@ export class ExperimentController {
     @Param('id') id: string,
     @Body({ validate: true })
     experiment: ExperimentDTO,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO> {
+  ): Promise<Experiment> {
     if (!isUUID(id)) {
       return Promise.reject(
         new Error(
@@ -1253,7 +1253,7 @@ export class ExperimentController {
   public importExperiment(
     @Body({ validate: true })
     experiments: ExperimentFile[],
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ValidatedExperimentError[]> {
     return this.experimentService.importExperiment(experiments, currentUser, request.logger);
@@ -1303,9 +1303,9 @@ export class ExperimentController {
   public exportExperiment(
     @QueryParams()
     params: ExperimentIds,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<Experiment[]> {
     const experimentIds = params.ids;
     return this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
   }
