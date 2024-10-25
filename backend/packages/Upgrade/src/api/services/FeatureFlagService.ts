@@ -47,7 +47,7 @@ import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import {
   FeatureFlagImportDataValidation,
-  FeatureFlagListImportValidator,
+  ImportFeatureFlagListValidator,
 } from '../controllers/validators/FeatureFlagImportValidator';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { UserDTO } from '../DTO/UserDTO';
@@ -1126,7 +1126,7 @@ export class FeatureFlagService {
       };
     });
 
-    const validFiles: FeatureFlagListImportValidator[] = fileStatusArray
+    const validFiles: ImportFeatureFlagListValidator[] = fileStatusArray
       .filter((fileStatus) => fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE)
       .map((fileStatus) => {
         const featureFlagListFile = featureFlagListFiles.find((file) => file.fileName === fileStatus.fileName);
@@ -1137,21 +1137,11 @@ export class FeatureFlagService {
       await this.dataSource.transaction(async (transactionalEntityManager) => {
         const listDocs: FeatureFlagListValidator[] = [];
         for (const list of validFiles) {
-          const { name, description, context, type } = list.segment;
-
-          const userIds = list.segment.individualForSegment.map((individual) => individual.userId);
-
-          const subSegmentIds = list.segment.subSegments.map((subSegment) => subSegment.id);
-
-          const groups = list.segment.groupForSegment.map((group) => {
-            return { type: group.type, groupId: group.groupId };
-          });
-
           const listDoc: FeatureFlagListValidator = {
             ...list,
             enabled: false,
             flagId: featureFlagId,
-            segment: { id: uuid(), name, description, context, type, userIds, subSegmentIds, groups },
+            segment: { ...list.segment, id: uuid() },
           };
 
           listDocs.push(listDoc);
@@ -1247,18 +1237,18 @@ export class FeatureFlagService {
   public async validateImportFeatureFlagList(
     fileName: string,
     flag: FeatureFlag,
-    list: FeatureFlagListImportValidator
+    list: ImportFeatureFlagListValidator
   ) {
     let compatibilityType = FF_COMPATIBILITY_TYPE.COMPATIBLE;
 
-    list = plainToClass(FeatureFlagListImportValidator, list);
+    list = plainToClass(ImportFeatureFlagListValidator, list);
     await validate(list, { forbidUnknownValues: true, stopAtFirstError: true }).then((errors) => {
       if (errors.length > 0) {
         compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
       }
     });
 
-    if (!(list instanceof FeatureFlagListImportValidator)) {
+    if (!(list instanceof ImportFeatureFlagListValidator)) {
       compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
     }
 
@@ -1268,8 +1258,7 @@ export class FeatureFlagService {
 
     if (compatibilityType === FF_COMPATIBILITY_TYPE.COMPATIBLE) {
       if (list.listType === 'Segment') {
-        const subSegmentIds = list.segment.subSegments.map((seg) => seg.id);
-        const segments = await this.segmentService.getSegmentByIds(subSegmentIds);
+        const segments = await this.segmentService.getSegmentByIds(list.segment.subSegmentIds);
 
         if (!segments.length) {
           compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
@@ -1280,14 +1269,14 @@ export class FeatureFlagService {
             compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
           }
         });
-      } else if (list.listType !== 'Individual' && list.segment.groupForSegment.length) {
+      } else if (list.listType !== 'Individual' && list.segment.groups.length) {
         const contextMetaData = env.initialization.contextMetadata;
         const groupTypes = contextMetaData[flag.context[0]].GROUP_TYPES;
         if (!groupTypes.includes(list.listType)) {
           compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
         }
 
-        list.segment.groupForSegment.forEach((group) => {
+        list.segment.groups.forEach((group) => {
           if (group.type !== list.listType) {
             compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
           }
