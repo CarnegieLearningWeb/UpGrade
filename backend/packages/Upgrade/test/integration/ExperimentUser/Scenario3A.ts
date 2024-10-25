@@ -170,7 +170,7 @@ export default async function ExcludeGroupsC(): Promise<void> {
       users: 0,
       groups: 0,
       usersExcluded: 1,
-      groupsExcluded: 0,
+      groupsExcluded: 2,
       id: experimentId,
     })
   );
@@ -193,5 +193,5 @@ export default async function ExcludeGroupsC(): Promise<void> {
 
   // get all experiment condition for user2
   experimentConditionAssignment = await getAllExperimentCondition(updatedExperimentUser2.id, new UpgradeLogger());
-  expect(experimentConditionAssignment.length).toEqual(3);
+  expect(experimentConditionAssignment.length).toEqual(0);
 }

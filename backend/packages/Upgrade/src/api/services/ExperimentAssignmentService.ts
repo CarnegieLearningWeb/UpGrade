@@ -222,6 +222,23 @@ export class ExperimentAssignmentService {
         user: { id: userDoc.id },
       },
     });
+
+    // INDIRECT GROUP EXCLUSION
+    // if exclusion has consistency-group, exclude direct group of user belongs
+    if (exclusionReason.length && exclusionReason[0].reason === 'group' && !exclusionReason[0].matchedGroup) {
+      const userGroups = Object.values(userDoc.workingGroup);
+      // group exclusion doc
+      const groupExclusionDocs: Array<Omit<GroupExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>> =
+        userGroups.map((groupId) => {
+          return {
+            experiment: exclusionReason[0].experiment,
+            groupId,
+            exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
+          };
+        });
+      await this.groupExclusionRepository.saveRawJson(groupExclusionDocs);
+    }
+
     if (experimentId && experiments.length) {
       const selectedExperimentDP = dpExperiments.find((dp) => dp.experiment.id === experimentId);
       const experiment = experiments[0];
@@ -1691,13 +1708,17 @@ export class ExperimentAssignmentService {
     const segmentObj = {};
 
     let includedExperiments: Experiment[] = [];
-    let excludedExperiments = [];
+    let excludedExperiments: { experiment: Experiment; reason: string; matchedGroup: boolean }[] = [];
 
-    const experimentIds = experiments
-      .filter((experiment) => experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL)
+    const experimentIdsForIndividualConsistency = experiments
+      .filter(
+        (experiment) =>
+          experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL &&
+          experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP
+      )
       .map((experiment) => experiment.id);
     const experimentsEnrolled = await this.individualEnrollmentRepository.find({
-      where: { experiment: In(experimentIds), user: { id: experimentUser.id } },
+      where: { experiment: In(experimentIdsForIndividualConsistency), user: { id: experimentUser.id } },
       relations: ['experiment'],
     });
     const experimentsEnrolledIds = experimentsEnrolled.map((enrollment) => enrollment.experiment.id);

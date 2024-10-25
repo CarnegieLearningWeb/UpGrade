@@ -285,8 +285,10 @@ export class SegmentService {
     return queryBuilder;
   }
 
-  public async getExclusionSegmentUpdateData(segmentId: string) {
-    const queryBuilder = await this.experimentSegmentExclusionRepository.getExclusionSegmentUpdateDoc(segmentId);
+  public async getExperimentSegmentExclusionDocBySegmentId(segmentId: string) {
+    const queryBuilder = await this.experimentSegmentExclusionRepository.getExperimentSegmentExclusionDocBySegmentId(
+      segmentId
+    );
     return queryBuilder;
   }
 
@@ -678,7 +680,7 @@ export class SegmentService {
   ) {
     // for exclusion doc:
     // update below code for nested
-    const allExperimentWithExclusionSegment = await this.getExclusionSegmentUpdateData(segment.id);
+    const allExperimentWithExclusionSegment = await this.getExperimentSegmentExclusionDocBySegmentId(segment.id);
 
     if (allExperimentWithExclusionSegment.length) {
       for (const experimentSegment of allExperimentWithExclusionSegment) {
@@ -726,13 +728,15 @@ export class SegmentService {
                 exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
               };
             });
-            await this.individualExclusionRepository.saveRawJson(individualExclusionDocs);
 
             // Delete Individual Enrollment Doc
-            await this.individualEnrollmentRepository.delete({
-              experiment: { id: experiment.id },
-              groupId: In(userGroups),
-            });
+            await Promise.all([
+              this.individualExclusionRepository.saveRawJson(individualExclusionDocs),
+              this.individualEnrollmentRepository.delete({
+                experiment: { id: experiment.id },
+                groupId: In(userGroups),
+              }),
+            ]);
 
             // Delete Group Enrollment
             if (experimentSegment.experiment.assignmentUnit == ASSIGNMENT_UNIT.GROUP) {
@@ -749,9 +753,9 @@ export class SegmentService {
             where: { experiment: { id: experiment.id }, user: In(newUsers) },
           });
 
-          const excludedUsersGroups = excludedUsers
-            .map((enrollment) => enrollment.groupId)
-            .filter((groupId) => groupId != null);
+          const excludedUsersGroups = Array.from(
+            new Set(excludedUsers.map((enrollment) => enrollment.groupId).filter((groupId) => groupId != null))
+          );
 
           // Delete individual enrollment of users
           await this.individualEnrollmentRepository.delete({

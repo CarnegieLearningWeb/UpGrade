@@ -49,7 +49,9 @@ export class ExperimentSegmentExclusionRepository extends Repository<ExperimentS
       });
   }
 
-  public async getExclusionSegmentUpdateDoc(segmentId: string): Promise<Partial<ExperimentSegmentExclusion[]>> {
+  public async getExperimentSegmentExclusionDocBySegmentId(
+    segmentId: string
+  ): Promise<Partial<ExperimentSegmentExclusion[]>> {
     return this.createQueryBuilder('experimentSegmentExclusion')
       .leftJoin('experimentSegmentExclusion.experiment', 'experiment')
       .leftJoin('experimentSegmentExclusion.segment', 'segment')
