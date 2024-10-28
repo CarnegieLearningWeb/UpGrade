@@ -1289,4 +1289,43 @@ export class FeatureFlagService {
       compatibilityType: compatibilityType,
     };
   }
+
+  public async exportAllLists(
+    id: string,
+    listType: FEATURE_FLAG_PARTICIPANT_LIST_KEY,
+    logger: UpgradeLogger
+  ): Promise<ImportFeatureFlagListValidator[] | null> {
+    const featureFlag = await this.findOne(id, logger);
+    let listsArray: ImportFeatureFlagListValidator[] = [];
+    if (featureFlag) {
+      let lists: (FeatureFlagSegmentExclusion | FeatureFlagSegmentExclusion)[] = [];
+      if (listType === FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE) {
+        lists = featureFlag.featureFlagSegmentInclusion;
+      } else if (listType === FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE) {
+        lists = featureFlag.featureFlagSegmentExclusion;
+      } else {
+        return null;
+      }
+
+      listsArray = lists.map((list) => {
+        const { name, description, context, type } = list.segment;
+
+        const userIds = list.segment.individualForSegment.map((individual) => individual.userId);
+
+        const subSegmentIds = list.segment.subSegments.map((subSegment) => subSegment.id);
+
+        const groups = list.segment.groupForSegment.map((group) => {
+          return { type: group.type, groupId: group.groupId };
+        });
+
+        const listDoc: ImportFeatureFlagListValidator = {
+          listType: list.listType,
+          segment: { name, description, context, type, userIds, subSegmentIds, groups },
+        };
+        return listDoc;
+      });
+    }
+
+    return listsArray;
+  }
 }

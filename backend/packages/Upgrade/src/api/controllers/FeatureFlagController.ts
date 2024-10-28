@@ -23,7 +23,12 @@ import {
 } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFilterModeUpdateValidator';
 import { AppRequest, PaginationResponse } from '../../types';
-import { IImportError, FEATURE_FLAG_LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
+import {
+  IImportError,
+  FEATURE_FLAG_LIST_FILTER_MODE,
+  SERVER_ERROR,
+  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
+} from 'upgrade_types';
 import {
   FeatureFlagImportValidation,
   FeatureFlagListImportValidation,
@@ -35,6 +40,8 @@ import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagL
 import { Segment } from 'src/api/models/Segment';
 import { Response } from 'express';
 import { UserDTO } from '../DTO/UserDTO';
+import { ImportFeatureFlagListValidator } from './validators/FeatureFlagImportValidator';
+import { NotFoundException } from '@nestjs/common/exceptions';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -945,5 +952,113 @@ export class FeatureFlagsController {
       currentUser,
       request.logger
     );
+  }
+
+  /**
+   * @swagger
+   * /flags/export/lists/{id}:
+   *    get:
+   *      description: Export All Include lists of Feature Flag JSON
+   *      tags:
+   *        - Feature Flags
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: path
+   *          flagId: Id
+   *          description: Feature Flag Id
+   *          required: true
+   *          schema:
+   *            type: string
+   *      responses:
+   *        '200':
+   *          description: Get Feature Flag''s All Include Lists JSON
+   *        '401':
+   *          description: Authorization Required Error
+   *        '404':
+   *          description: Feature Flag not found
+   *        '400':
+   *          description: id must be a UUID
+   *        '500':
+   *          description: Internal Server Error
+   */
+  @Get('/export/includeLists/:id')
+  public async exportAllIncludeLists(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest,
+    @Res() response: Response
+  ): Promise<ImportFeatureFlagListValidator[]> {
+    const lists = await this.featureFlagService.exportAllLists(
+      id,
+      FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE,
+      request.logger
+    );
+    if (lists !== null) {
+      // download JSON file with appropriate headers to response body;
+      if (lists.length === 1) {
+        response.setHeader('Content-Disposition', `attachment; filename="${lists[0].segment.name}.json"`);
+      } else {
+        response.setHeader('Content-Disposition', `attachment; filename="lists.zip"`);
+      }
+      response.setHeader('Content-Type', 'application/json');
+    } else {
+      throw new NotFoundException('Experiment not found.');
+    }
+
+    return lists;
+  }
+
+  /**
+   * @swagger
+   * /flags/export/lists/{id}:
+   *    get:
+   *      description: Export All Exclude lists of Feature Flag JSON
+   *      tags:
+   *        - Feature Flags
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: path
+   *          flagId: Id
+   *          description: Feature Flag Id
+   *          required: true
+   *          schema:
+   *            type: string
+   *      responses:
+   *        '200':
+   *          description: Get Feature Flag''s All Include Lists JSON
+   *        '401':
+   *          description: Authorization Required Error
+   *        '404':
+   *          description: Feature Flag not found
+   *        '400':
+   *          description: id must be a UUID
+   *        '500':
+   *          description: Internal Server Error
+   */
+  @Get('/export/excludeLists/:id')
+  public async exportAllExcludeLists(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest,
+    @Res() response: Response
+  ): Promise<ImportFeatureFlagListValidator[]> {
+    const lists = await this.featureFlagService.exportAllLists(
+      id,
+      FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE,
+      request.logger
+    );
+    if (lists !== null) {
+      // download JSON file with appropriate headers to response body;
+      if (lists.length === 1) {
+        response.setHeader('Content-Disposition', `attachment; filename="${lists[0].segment.name}.json"`);
+      } else {
+        response.setHeader('Content-Disposition', `attachment; filename="lists.zip"`);
+      }
+      response.setHeader('Content-Type', 'application/json');
+    } else {
+      throw new NotFoundException('Experiment not found.');
+    }
+
+    return lists;
   }
 }

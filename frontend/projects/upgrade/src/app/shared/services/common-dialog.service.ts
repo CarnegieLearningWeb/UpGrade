@@ -6,13 +6,11 @@ import { ImportFeatureFlagModalComponent } from '../../features/dashboard/featur
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
 import {
-  ImportListParams,
   UPSERT_PRIVATE_SEGMENT_LIST_ACTION,
   UpsertPrivateSegmentListParams,
 } from '../../core/segments/store/segments.model';
 import {
   FEATURE_FLAG_DETAILS_PAGE_ACTIONS,
-  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
   FeatureFlag,
   ParticipantListTableRow,
   UPSERT_FEATURE_FLAG_ACTION,
@@ -25,6 +23,7 @@ import {
   ModalSize,
   SimpleConfirmationModalParams,
 } from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { FEATURE_FLAG_PARTICIPANT_LIST_KEY } from 'upgrade_types';
 
 @Injectable({
   providedIn: 'root',
@@ -322,9 +321,9 @@ export class DialogService {
     return this.dialog.open(DeleteFeatureFlagModalComponent, config);
   }
 
-  openExportFeatureFlagDesignModal(warning: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openExportDesignModal(title, warning: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
-      title: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
+      title: title,
       primaryActionBtnLabel: 'Export',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -376,6 +375,7 @@ export class DialogService {
         flagId: flagId,
       },
     };
+
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: ModalSize.STANDARD,

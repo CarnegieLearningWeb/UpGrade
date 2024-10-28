@@ -36,6 +36,8 @@ export interface APIEndpoints {
   updateFilterMode: string;
   getPaginatedFlags: string;
   exportFlagsDesign: string;
+  exportFFAllIncludeListsDesign: string;
+  exportFFAllExcludeListsDesign: string;
   emailFlagData: string;
   addFlagInclusionList: string;
   addFlagExclusionList: string;

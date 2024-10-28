@@ -10,12 +10,12 @@ import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonStatusIndicatorChipComponent } from '../common-status-indicator-chip/common-status-indicator-chip.component';
 import {
-  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
   PARTICIPANT_LIST_ROW_ACTION,
   ParticipantListRowActionEvent,
   ParticipantListTableRow,
 } from '../../../core/feature-flags/store/feature-flags.model';
 import { MemberTypes } from '../../../core/segments/store/segments.model';
+import { FEATURE_FLAG_PARTICIPANT_LIST_KEY } from 'upgrade_types';
 
 /**
  * `CommonDetailsParticipantListTableComponent` is a reusable Angular component that displays a table with common details for participant lists.
