@@ -1,20 +1,25 @@
-import UpgradeClient, { MARKED_DECISION_POINT_STATUS, UpGradeClientInterfaces } from './dist/node';
+// to run: npx ts-node clientlibs/js/quickTest.ts
+
+import { UpgradeClient, MARKED_DECISION_POINT_STATUS, UpGradeClientInterfaces } from './dist/node';
 
 const URL = {
   LOCAL: 'http://localhost:3030',
-  BEANSTALK_QA: 'https://upgradeapi.qa-cli.net/',
+  BEANSTALK_QA: 'https://upgradeapi.qa-cli.net',
+  BEANSTALK_STAGING: 'https://upgradeapi.qa-cli.com',
+  ECS_QA: 'https://apps.qa-cli.net/upgrade-service',
+  ECS_STAGING: 'https://apps.qa-cli.com/upgrade-service',
 };
 
 const userId = 'quicktest_user_' + Date.now().toString();
 const group = 'test_class_group';
 const alias = 'alias' + userId;
-const hostUrl = URL.BEANSTALK_QA;
+const hostUrl = URL.BEANSTALK_STAGING;
 const context = 'assign-prog';
-const site = 'test_site';
-const target = 'test_target';
+const site = 'SelectSection';
+const target = 'absolute_value_plot_equality';
 const condition: string | null = null;
 const status = MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED;
-const featureFlagKey = 'test_feature_flag';
+const featureFlagKey = 'TEST_FEATURE_FLAG';
 const logRequest = [
   {
     userId,
@@ -58,8 +63,8 @@ async function quickTest() {
   await doAliases(client);
   await doAssign(client);
   await doGetDecisionPointAssignment(client);
-  await doFeatureFlags(client);
-  await doHasFeatureFlag(client);
+  // await doFeatureFlags(client);
+  // await doHasFeatureFlag(client);
   await doMark(client);
   await doLog(client);
 }
@@ -77,7 +82,7 @@ async function doInit(client: UpgradeClient) {
 
 async function doGroupMembership(client: UpgradeClient) {
   const groupRequest: UpGradeClientInterfaces.IExperimentUserGroup = {
-    group: [group],
+    schoolId: [group],
   };
 
   try {
@@ -123,28 +128,41 @@ async function doGetDecisionPointAssignment(client: UpgradeClient) {
   try {
     const response = await client.getDecisionPointAssignment(site, target);
     console.log('[Decision Point Assignment response]:', JSON.stringify(response));
+
+    const condition = response.getCondition();
+    console.log('[Condition]:', JSON.stringify(condition));
+    
+    const expType = response.getExperimentType();
+    console.log('[Experiment Type]:', JSON.stringify(expType));
+
+    const payload = response.getPayload();
+    console.log('[Payload]:', JSON.stringify(payload));
+
+    const payloadValue = payload?.value;
+    console.log('[payloadValue]:', JSON.stringify(payloadValue));
+
   } catch (error) {
     console.error('[Decision Point Assignment error]:', error);
   }
 }
 
-async function doFeatureFlags(client: UpgradeClient) {
-  try {
-    const response = await client.getAllFeatureFlags();
-    console.log('[Feature Flag response]:', JSON.stringify(response));
-  } catch (error) {
-    console.error('[Feature Flag error]:', error);
-  }
-}
+// async function doFeatureFlags(client: UpgradeClient) {
+//   try {
+//     const response = await client.getAllFeatureFlags();
+//     console.log('[Feature Flag response]:', JSON.stringify(response));
+//   } catch (error) {
+//     console.error('[Feature Flag error]:', error);
+//   }
+// }
 
-async function doHasFeatureFlag(client: UpgradeClient) {
-  try {
-    const response = await client.hasFeatureFlag(featureFlagKey);
-    console.log('[Has Feature Flag response]:', JSON.stringify(response));
-  } catch (error) {
-    console.error('[Has Feature Flag error]:', error);
-  }
-}
+// async function doHasFeatureFlag(client: UpgradeClient) {
+//   try {
+//     const response = await client.hasFeatureFlag(featureFlagKey);
+//     console.log('[Has Feature Flag response]:', JSON.stringify(response));
+//   } catch (error) {
+//     console.error('[Has Feature Flag error]:', error);
+//   }
+// }
 
 async function doMark(client: UpgradeClient) {
   try {
