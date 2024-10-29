@@ -993,7 +993,7 @@ export class FeatureFlagsController {
       FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE,
       request.logger
     );
-    if (!lists?.length) {
+    if (lists?.length) {
       // download JSON file with appropriate headers to response body;
       if (lists.length === 1) {
         response.setHeader('Content-Disposition', `attachment; filename="${lists[0].segment.name}.json"`);
@@ -1047,7 +1047,7 @@ export class FeatureFlagsController {
       FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE,
       request.logger
     );
-    if (!lists?.length) {
+    if (lists?.length) {
       // download JSON file with appropriate headers to response body;
       if (lists.length === 1) {
         response.setHeader('Content-Disposition', `attachment; filename="${lists[0].segment.name}.json"`);
