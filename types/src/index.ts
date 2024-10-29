@@ -88,7 +88,6 @@ export {
   MoocletValueRequestBody,
   MoocletValueResponseDetails,
   ExperimentCondtitionToMoocletVersionParams,
-  MoocletWeightedRandomPolicyParameters,
   MoocletThompsonSamplingConfigurablePolicyParameters,
   MoocletThompsonSamplingConfigurableCurrentPosteriors,
   MoocletPolicyParameters,

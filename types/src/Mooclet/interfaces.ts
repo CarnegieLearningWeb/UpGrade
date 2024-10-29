@@ -93,13 +93,6 @@ export interface ExperimentCondtitionToMoocletVersionParams {
   experimentConditions: any[]; // obviously shouldn't be any, but many experiment interfaces are missing from the types/Experiment/interfaces, not feeling like this is the place to update that...
 }
 
-// {"prior": {"failure": 1, "success": 1}, "batch_size": 4, "max_rating": 1, "min_rating": 0, "uniform_threshold": 8, "outcome_variable_name": ""} #TS parameters
-export interface MoocletWeightedRandomPolicyParameters {
-  probability_distribution: {
-    [key: string]: number;
-  };
-}
-
 export interface MoocletThompsonSamplingConfigurablePolicyParameters {
   prior: {
     failure: number; // use 1 as default
@@ -123,9 +116,8 @@ export interface MoocletThompsonSamplingConfigurableCurrentPosteriors {
   };
 }
 
-export type MoocletPolicyParameters =
-  | MoocletWeightedRandomPolicyParameters
-  | MoocletThompsonSamplingConfigurablePolicyParameters;
+// This will be a union of all policy parameters types as we add more
+export type MoocletPolicyParameters = MoocletThompsonSamplingConfigurablePolicyParameters;
 
 export interface MoocletPolicyResponseDetails {
   id: number;

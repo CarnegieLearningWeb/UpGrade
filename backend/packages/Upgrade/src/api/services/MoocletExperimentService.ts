@@ -1,6 +1,7 @@
 import { Service } from 'typedi';
 import { MoocletDataService } from './MoocletDataService';
 import {
+  MoocletPolicyParameters,
   MoocletPolicyParametersRequestBody,
   MoocletPolicyParametersResponseDetails,
   MoocletRequestBody,
@@ -9,7 +10,8 @@ import {
   MoocletVariableResponseDetails,
   MoocletVersionRequestBody,
   MoocletVersionResponseDetails,
-} from 'upgrade_types';
+} from '../../types/Mooclet';
+import { SUPPORTED_MOOCLET_POLICY_NAMES } from 'upgrade_types';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { ExperimentService } from './ExperimentService';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
@@ -44,7 +46,6 @@ import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
 import { MoocletVersionConditionMap } from '../models/MoocletVersionConditionMap';
 import { v4 as uuid } from 'uuid';
 import { MoocletExperimentDTO } from '../DTO/MoocletExperimentDTO';
-import { MoocletPolicyParameters, SUPPORTED_MOOCLET_POLICY_NAMES } from 'types/src';
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
 import { ConditionValidator } from '../DTO/ExperimentDTO';
 import { UserDTO } from '../DTO/UserDTO';
@@ -468,32 +469,6 @@ export class MoocletExperimentService extends ExperimentService {
 
   private createOutcomeVariableName(moocletName: string): string {
     return 'TS_CONFIG_' + moocletName;
-  }
-
-  private constructMoocletExperimentRef(
-    moocletResponse: MoocletResponseDetails,
-    moocletVersionsResponse: MoocletVersionResponseDetails[],
-    moocletPolicyParametersResponse: MoocletPolicyParametersResponseDetails,
-    moocletVariableResponse: MoocletVariableResponseDetails,
-    upgradeExperiment: MoocletExperimentDTO
-  ): MoocletExperimentRef {
-    const versionConditionMaps: MoocletVersionConditionMap[] = upgradeExperiment.conditions.map((condition) => {
-      const versionConditionMap = new MoocletVersionConditionMap();
-      versionConditionMap.moocletVersionId = moocletVersionsResponse.find((version) => version.name === condition.conditionCode)?.id;
-      versionConditionMap.experimentConditionId = condition.id;
-  
-      return versionConditionMap;
-    });
-
-    const moocletExpRef = new MoocletExperimentRef();
-    moocletExpRef.id = uuid();
-    moocletExpRef.moocletId = moocletResponse.id;
-    moocletExpRef.experimentId = upgradeExperiment.id;
-    moocletExpRef.versionConditionMaps = versionConditionMaps;
-    moocletExpRef.policyParametersId = moocletPolicyParametersResponse.id; 
-    moocletExpRef.variableId = moocletVariableResponse?.id;
-    
-    return moocletExpRef;
   }
 
   public async getMoocletExperimentRefByUpgradeExperimentId(upgradeExperimentId: string): Promise<MoocletExperimentRef | undefined> {

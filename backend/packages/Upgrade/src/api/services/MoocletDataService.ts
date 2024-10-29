@@ -14,7 +14,7 @@ import {
   MoocletPolicyParametersResponseDetails,
   MoocletVariableRequestBody,
   MoocletVariableResponseDetails,
-} from 'types/src/Mooclet/interfaces';
+} from '../../types/Mooclet';
 
 @Service()
 export class MoocletDataService {
