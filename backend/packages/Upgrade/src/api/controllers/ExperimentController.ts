@@ -1137,9 +1137,9 @@ export class ExperimentController {
     experiment: ExperimentDTO,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<Experiment> {
+  ): Promise<ExperimentDTO> {
     request.logger.child({ user: currentUser });
-    return this.experimentService.update(experiment, currentUser, request.logger);
+    return this.experimentService.update({ ...experiment, id }, currentUser, request.logger);
   }
 
   /**

@@ -1,4 +1,4 @@
-import { ValidateNested, IsOptional, IsString, IsArray, IsNotEmpty } from 'class-validator';
+import { ValidateNested, IsOptional, IsString, IsArray } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Experiment } from '../../../../src/api/models/Experiment';
 import { ExperimentCondition } from '../../../../src/api/models/ExperimentCondition';
@@ -25,10 +25,4 @@ export class PreviewUserValidator {
   @ValidateNested({ each: true })
   @Type(() => ExplicitIndividualAssignment)
   public assignments?: ExplicitIndividualAssignment[];
-}
-
-export class IdValidator {
-  @IsNotEmpty()
-  @IsString()
-  public id: string;
 }

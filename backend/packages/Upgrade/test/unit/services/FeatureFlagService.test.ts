@@ -370,7 +370,7 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should update the flag', async () => {
-    const results = await service.update(mockFlag2, uuid(), mockUser1, logger);
+    const results = await service.update(mockFlag2, mockUser1, logger);
     expect(isUUID(results.id)).toBeTruthy();
   });
 
@@ -378,7 +378,7 @@ describe('Feature Flag Service Testing', () => {
     const err = new Error('insert error');
     flagRepo.updateFeatureFlag = jest.fn().mockRejectedValue(err);
     expect(async () => {
-      await service.update(mockFlag2, uuid(), mockUser1, logger);
+      await service.update(mockFlag2, mockUser1, logger);
     }).rejects.toThrow(
       new Error('Error in updating feature flag document "updateFeatureFlagInDB" Error: insert error')
     );

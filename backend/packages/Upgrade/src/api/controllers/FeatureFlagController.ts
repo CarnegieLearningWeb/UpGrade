@@ -445,7 +445,7 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
-    return this.featureFlagService.update(flag, id, currentUser, request.logger);
+    return this.featureFlagService.update({ ...flag, id }, currentUser, request.logger);
   }
 
   /**

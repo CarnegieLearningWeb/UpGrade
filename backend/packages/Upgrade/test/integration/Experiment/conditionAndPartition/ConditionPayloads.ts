@@ -103,7 +103,7 @@ export default async function ConditionPayload(): Promise<void> {
   updatedExperimentDoc = await experimentService.getSingleExperiment(
     updatedExperimentDoc.id as any,
     new UpgradeLogger()
-  ) as any;
+  );
 
   expect(updatedExperimentDoc.conditionPayloads.length).toEqual(1);
   expect(updatedExperimentDoc.conditionPayloads).toEqual(
@@ -128,6 +128,6 @@ export default async function ConditionPayload(): Promise<void> {
   updatedExperimentDoc = await experimentService.getSingleExperiment(
     updatedExperimentDoc.id as any,
     new UpgradeLogger()
-  ) as any;
+  );
   expect(updatedExperimentDoc.conditionPayloads.length).toEqual(0);
 }

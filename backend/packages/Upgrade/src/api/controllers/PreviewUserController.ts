@@ -15,7 +15,8 @@ import { PreviewUserService } from '../services/PreviewUserService';
 import { PreviewUser } from '../models/PreviewUser';
 import { PaginatedParamsValidator } from './validators/PaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
-import { IdValidator, PreviewUserValidator } from './validators/PreviewUserValidator';
+import { PreviewUserValidator } from './validators/PreviewUserValidator';
+import { IdValidator } from './validators/ExperimentUserValidator';
 
 interface PreviewUserPaginationInfo extends PaginationResponse {
   nodes: PreviewUser[];

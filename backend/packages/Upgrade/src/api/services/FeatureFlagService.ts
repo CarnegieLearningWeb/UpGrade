@@ -322,12 +322,9 @@ export class FeatureFlagService {
 
   public async update(
     flagDTO: FeatureFlagValidation,
-    flagId: string,
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<FeatureFlag> {
-    // update the flag with the flagId from the path params:
-    flagDTO.id = flagId;
     logger.info({ message: `Update a Feature Flag => ${flagDTO.toString()}` });
     const result = await this.featureFlagRepository.validateUniqueKey(flagDTO);
 

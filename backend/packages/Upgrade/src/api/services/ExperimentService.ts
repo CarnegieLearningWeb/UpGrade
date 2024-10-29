@@ -363,7 +363,7 @@ export class ExperimentService {
     });
   }
 
-  public async update(experiment: ExperimentDTO, currentUser: UserDTO, logger: UpgradeLogger): Promise<Experiment> {
+  public async update(experiment: ExperimentDTO, currentUser: UserDTO, logger: UpgradeLogger): Promise<ExperimentDTO> {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
