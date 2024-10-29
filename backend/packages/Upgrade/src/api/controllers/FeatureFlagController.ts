@@ -956,7 +956,7 @@ export class FeatureFlagsController {
 
   /**
    * @swagger
-   * /flags/export/lists/{id}:
+   * /flags/export/includeLists/{id}:
    *    get:
    *      description: Export All Include lists of Feature Flag JSON
    *      tags:
@@ -993,7 +993,7 @@ export class FeatureFlagsController {
       FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE,
       request.logger
     );
-    if (lists !== null) {
+    if (!lists?.length) {
       // download JSON file with appropriate headers to response body;
       if (lists.length === 1) {
         response.setHeader('Content-Disposition', `attachment; filename="${lists[0].segment.name}.json"`);
@@ -1002,7 +1002,7 @@ export class FeatureFlagsController {
       }
       response.setHeader('Content-Type', 'application/json');
     } else {
-      throw new NotFoundException('Experiment not found.');
+      throw new NotFoundException('Include lists not found.');
     }
 
     return lists;
@@ -1010,7 +1010,7 @@ export class FeatureFlagsController {
 
   /**
    * @swagger
-   * /flags/export/lists/{id}:
+   * /flags/export/excludeLists/{id}:
    *    get:
    *      description: Export All Exclude lists of Feature Flag JSON
    *      tags:
@@ -1047,7 +1047,7 @@ export class FeatureFlagsController {
       FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE,
       request.logger
     );
-    if (lists !== null) {
+    if (!lists?.length) {
       // download JSON file with appropriate headers to response body;
       if (lists.length === 1) {
         response.setHeader('Content-Disposition', `attachment; filename="${lists[0].segment.name}.json"`);
@@ -1056,7 +1056,7 @@ export class FeatureFlagsController {
       }
       response.setHeader('Content-Type', 'application/json');
     } else {
-      throw new NotFoundException('Experiment not found.');
+      throw new NotFoundException('Exclude lists not found.');
     }
 
     return lists;

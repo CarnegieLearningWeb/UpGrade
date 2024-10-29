@@ -54,6 +54,7 @@ import { UserDTO } from '../DTO/UserDTO';
 import { diffString } from 'json-diff';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
+import { NotFoundException } from '@nestjs/common/exceptions';
 
 @Service()
 export class FeatureFlagService {
@@ -1307,6 +1308,8 @@ export class FeatureFlagService {
         return null;
       }
 
+      if (!lists.length) return [];
+
       listsArray = lists.map((list) => {
         const { name, description, context, type } = list.segment;
 
@@ -1324,6 +1327,8 @@ export class FeatureFlagService {
         };
         return listDoc;
       });
+    } else {
+      throw new NotFoundException('Experiment not found.');
     }
 
     return listsArray;
