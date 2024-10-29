@@ -1185,19 +1185,13 @@ export class FeatureFlagService {
 
     const validationErrors = await Promise.allSettled(
       parsedFeatureFlagLists.map(async (parsedFile) => {
-        if (!featureFlag) {
+        if (!featureFlag || !parsedFile.content) {
           return {
             fileName: parsedFile.fileName,
             compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
           };
         }
 
-        if (!parsedFile.content) {
-          return {
-            fileName: parsedFile.fileName,
-            compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
-          };
-        }
         return this.validateImportFeatureFlagList(parsedFile.fileName, featureFlag, parsedFile.content);
       })
     );
