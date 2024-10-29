@@ -6,13 +6,11 @@ import { ImportFeatureFlagModalComponent } from '../../features/dashboard/featur
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
 import {
-  ImportListParams,
   UPSERT_PRIVATE_SEGMENT_LIST_ACTION,
   UpsertPrivateSegmentListParams,
 } from '../../core/segments/store/segments.model';
 import {
   FEATURE_FLAG_DETAILS_PAGE_ACTIONS,
-  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
   FeatureFlag,
   ParticipantListTableRow,
   UPSERT_FEATURE_FLAG_ACTION,
@@ -25,6 +23,7 @@ import {
   ModalSize,
   SimpleConfirmationModalParams,
 } from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
 
 @Injectable({
   providedIn: 'root',
@@ -358,14 +357,14 @@ export class DialogService {
   }
 
   openImportFeatureFlagIncludeListModal(flagId: string) {
-    return this.openImportModal('Import List', FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE, flagId);
+    return this.openImportModal('Import List', FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, flagId);
   }
 
   openImportFeatureFlagExcludeListModal(flagId: string) {
-    return this.openImportModal('Import List', FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE, flagId);
+    return this.openImportModal('Import List', FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, flagId);
   }
 
-  openImportModal(title, listType, flagId) {
+  openImportModal(title: string, listType: FEATURE_FLAG_LIST_FILTER_MODE, flagId: string) {
     const commonModalConfig: CommonModalConfig = {
       title: title,
       primaryActionBtnLabel: 'Import',

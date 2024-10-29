@@ -34,7 +34,6 @@ import {
   FEATURE_FLAG_LIST_FILTER_MODE,
   FEATURE_FLAG_LIST_OPERATION,
   ListOperationsData,
-  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
 } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
@@ -1109,7 +1108,7 @@ export class FeatureFlagService {
   public async importFeatureFlagLists(
     featureFlagListFiles: IFeatureFlagFile[],
     featureFlagId: string,
-    listType: FEATURE_FLAG_PARTICIPANT_LIST_KEY,
+    listType: FEATURE_FLAG_LIST_FILTER_MODE,
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<IImportError[]> {
@@ -1147,23 +1146,7 @@ export class FeatureFlagService {
           listDocs.push(listDoc);
         }
 
-        if (listType === FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE) {
-          return await this.addList(
-            listDocs,
-            FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
-            currentUser,
-            logger,
-            transactionalEntityManager
-          );
-        } else {
-          return await this.addList(
-            listDocs,
-            FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
-            currentUser,
-            logger,
-            transactionalEntityManager
-          );
-        }
+        return await this.addList(listDocs, listType, currentUser, logger, transactionalEntityManager);
       });
 
     logger.info({ message: 'Imported feature flags', details: createdLists });
@@ -1215,9 +1198,7 @@ export class FeatureFlagService {
             compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
           };
         }
-
-        const error = await this.validateImportFeatureFlagList(parsedFile.fileName, featureFlag, parsedFile.content);
-        return error;
+        return this.validateImportFeatureFlagList(parsedFile.fileName, featureFlag, parsedFile.content);
       })
     );
 

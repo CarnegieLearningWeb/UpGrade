@@ -6,7 +6,7 @@ import {
   SEGMENT_SEARCH_KEY,
   SORT_AS_DIRECTION,
   SEGMENT_SORT_KEY,
-  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
+  FEATURE_FLAG_LIST_FILTER_MODE,
 } from 'upgrade_types';
 import { ParticipantListTableRow } from '../../feature-flags/store/feature-flags.model';
 export { SEGMENT_STATUS };
@@ -173,7 +173,7 @@ export interface UpsertPrivateSegmentListParams {
 }
 
 export interface ImportListParams {
-  listType: FEATURE_FLAG_PARTICIPANT_LIST_KEY;
+  listType: FEATURE_FLAG_LIST_FILTER_MODE;
   flagId: string;
 }
 
