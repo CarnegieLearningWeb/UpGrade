@@ -63,8 +63,8 @@ async function quickTest() {
   await doAliases(client);
   await doAssign(client);
   await doGetDecisionPointAssignment(client);
-  // await doFeatureFlags(client);
-  // await doHasFeatureFlag(client);
+  await doFeatureFlags(client);
+  await doHasFeatureFlag(client);
   await doMark(client);
   await doLog(client);
 }
@@ -146,23 +146,23 @@ async function doGetDecisionPointAssignment(client: UpgradeClient) {
   }
 }
 
-// async function doFeatureFlags(client: UpgradeClient) {
-//   try {
-//     const response = await client.getAllFeatureFlags();
-//     console.log('[Feature Flag response]:', JSON.stringify(response));
-//   } catch (error) {
-//     console.error('[Feature Flag error]:', error);
-//   }
-// }
+async function doFeatureFlags(client: UpgradeClient) {
+  try {
+    const response = await client.getAllFeatureFlags();
+    console.log('[Feature Flag response]:', JSON.stringify(response));
+  } catch (error) {
+    console.error('[Feature Flag error]:', error);
+  }
+}
 
-// async function doHasFeatureFlag(client: UpgradeClient) {
-//   try {
-//     const response = await client.hasFeatureFlag(featureFlagKey);
-//     console.log('[Has Feature Flag response]:', JSON.stringify(response));
-//   } catch (error) {
-//     console.error('[Has Feature Flag error]:', error);
-//   }
-// }
+async function doHasFeatureFlag(client: UpgradeClient) {
+  try {
+    const response = client.getFeatureFlag(featureFlagKey);
+    console.log('[Has Feature Flag response]:', JSON.stringify(response));
+  } catch (error) {
+    console.error('[Has Feature Flag error]:', error);
+  }
+}
 
 async function doMark(client: UpgradeClient) {
   try {
