@@ -23,7 +23,7 @@ import {
   ModalSize,
   SimpleConfirmationModalParams,
 } from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
-import { FEATURE_FLAG_PARTICIPANT_LIST_KEY } from 'upgrade_types';
+import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
 
 @Injectable({
   providedIn: 'root',
@@ -357,14 +357,14 @@ export class DialogService {
   }
 
   openImportFeatureFlagIncludeListModal(flagId: string) {
-    return this.openImportModal('Import List', FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE, flagId);
+    return this.openImportModal('Import List', FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, flagId);
   }
 
   openImportFeatureFlagExcludeListModal(flagId: string) {
-    return this.openImportModal('Import List', FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE, flagId);
+    return this.openImportModal('Import List', FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, flagId);
   }
 
-  openImportModal(title, listType, flagId) {
+  openImportModal(title: string, listType: FEATURE_FLAG_LIST_FILTER_MODE, flagId: string) {
     const commonModalConfig: CommonModalConfig = {
       title: title,
       primaryActionBtnLabel: 'Import',
