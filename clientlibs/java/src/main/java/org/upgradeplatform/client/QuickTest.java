@@ -26,7 +26,7 @@ public class QuickTest {
     private static final String userId = "quicktest_user_" + System.currentTimeMillis();
     private static final String group = "test_class_group";
     private static final String alias = "alias" + userId;
-    private static final String hostUrl = BEANSTALK_STAGING_URL;
+    private static final String hostUrl = LOCAL_URL;
     private static final String context = "assign-prog";
     private static final String site = "SelectSection";
     private static final String target = "absolute_value_plot_equality";
@@ -56,19 +56,19 @@ public class QuickTest {
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             try {
                 doInit(client)
-                    .thenCompose(v -> doGroupMembership(client))
-                    .thenCompose(v -> doWorkingGroupMembership(client))
-                    .thenCompose(v -> doAliases(client))
-                    .thenCompose(v -> doAssign(client))
-                    .thenCompose(v -> doGetDecisionPointAssignment(client))
-                    .thenCompose(v -> doFeatureFlags(client))
-                    .thenCompose(v -> doHasFeatureFlag(client))
-                    .thenCompose(v -> doMark(client))
-                    // .thenCompose(v -> doLog(client))
-                    .exceptionally(e -> {
-                        e.printStackTrace();
-                        return null;
-                    }).get();
+                        .thenCompose(v -> doGroupMembership(client))
+                        .thenCompose(v -> doWorkingGroupMembership(client))
+                        .thenCompose(v -> doAliases(client))
+                        .thenCompose(v -> doAssign(client))
+                        .thenCompose(v -> doGetDecisionPointAssignment(client))
+                        .thenCompose(v -> doFeatureFlags(client))
+                        .thenCompose(v -> doHasFeatureFlag(client))
+                        .thenCompose(v -> doMark(client))
+                        .thenCompose(v -> doLog(client))
+                        .exceptionally(e -> {
+                            e.printStackTrace();
+                            return null;
+                        }).get();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -274,21 +274,21 @@ public class QuickTest {
         return future;
     }
 
-    // private static CompletableFuture<Void> doLog(ExperimentClient client) {
-    //     CompletableFuture<Void> future = new CompletableFuture<>();
-    //     client.log(logRequest, new ResponseCallback<LogEventResponse>() {
-    //         @Override
-    //         public void onSuccess(@NonNull LogEventResponse response) {
-    //             System.out.println("\n[Log response]:" + response);
-    //             future.complete(null);
-    //         }
+    private static CompletableFuture<Void> doLog(ExperimentClient client) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        client.log(logRequest, new ResponseCallback<List<LogEventResponse>>() {
+            @Override
+            public void onSuccess(@NonNull List<LogEventResponse> response) {
+                System.out.println("\n[Log response]:" + response);
+                future.complete(null);
+            }
 
-    //         @Override
-    //         public void onError(@NonNull ErrorResponse error) {
-    //             System.err.println("\n[Log error]:" + error);
-    //             future.completeExceptionally(new RuntimeException(error.toString()));
-    //         }
-    //     });
-    //     return future;
-    // }
+            @Override
+            public void onError(@NonNull ErrorResponse error) {
+                System.err.println("\n[Log error]:" + error);
+                future.completeExceptionally(new RuntimeException(error.toString()));
+            }
+        });
+        return future;
+    }
 }
