@@ -23,12 +23,7 @@ import {
 } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFilterModeUpdateValidator';
 import { AppRequest, PaginationResponse } from '../../types';
-import {
-  IImportError,
-  FEATURE_FLAG_LIST_FILTER_MODE,
-  SERVER_ERROR,
-  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
-} from 'upgrade_types';
+import { IImportError, FEATURE_FLAG_LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
 import {
   FeatureFlagImportValidation,
   FeatureFlagListImportValidation,
@@ -990,7 +985,7 @@ export class FeatureFlagsController {
   ): Promise<ImportFeatureFlagListValidator[]> {
     const lists = await this.featureFlagService.exportAllLists(
       id,
-      FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE,
+      FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
       request.logger
     );
     if (lists?.length) {
@@ -1044,7 +1039,7 @@ export class FeatureFlagsController {
   ): Promise<ImportFeatureFlagListValidator[]> {
     const lists = await this.featureFlagService.exportAllLists(
       id,
-      FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE,
+      FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
       request.logger
     );
     if (lists?.length) {

@@ -15,7 +15,7 @@ import {
   ParticipantListTableRow,
 } from '../../../core/feature-flags/store/feature-flags.model';
 import { MemberTypes } from '../../../core/segments/store/segments.model';
-import { FEATURE_FLAG_PARTICIPANT_LIST_KEY } from 'upgrade_types';
+import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
 
 /**
  * `CommonDetailsParticipantListTableComponent` is a reusable Angular component that displays a table with common details for participant lists.
@@ -54,7 +54,7 @@ import { FEATURE_FLAG_PARTICIPANT_LIST_KEY } from 'upgrade_types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonDetailsParticipantListTableComponent {
-  @Input() tableType: FEATURE_FLAG_PARTICIPANT_LIST_KEY;
+  @Input() tableType: FEATURE_FLAG_LIST_FILTER_MODE;
   @Input() dataSource: any[];
   @Input() noDataRowText: string;
   @Input() slideToggleDisabled?: boolean = false;
@@ -83,7 +83,7 @@ export class CommonDetailsParticipantListTableComponent {
 
   ngOnInit() {
     this.displayedColumns =
-      this.tableType === FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE
+      this.tableType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION
         ? ['type', 'values', 'name', 'enable', 'actions']
         : ['type', 'values', 'name', 'actions'];
   }

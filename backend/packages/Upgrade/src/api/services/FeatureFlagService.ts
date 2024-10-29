@@ -1268,16 +1268,16 @@ export class FeatureFlagService {
 
   public async exportAllLists(
     id: string,
-    listType: FEATURE_FLAG_PARTICIPANT_LIST_KEY,
+    listType: FEATURE_FLAG_LIST_FILTER_MODE,
     logger: UpgradeLogger
   ): Promise<ImportFeatureFlagListValidator[] | null> {
     const featureFlag = await this.findOne(id, logger);
     let listsArray: ImportFeatureFlagListValidator[] = [];
     if (featureFlag) {
       let lists: (FeatureFlagSegmentExclusion | FeatureFlagSegmentExclusion)[] = [];
-      if (listType === FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE) {
+      if (listType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
         lists = featureFlag.featureFlagSegmentInclusion;
-      } else if (listType === FEATURE_FLAG_PARTICIPANT_LIST_KEY.EXCLUDE) {
+      } else if (listType === FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION) {
         lists = featureFlag.featureFlagSegmentExclusion;
       } else {
         return null;
