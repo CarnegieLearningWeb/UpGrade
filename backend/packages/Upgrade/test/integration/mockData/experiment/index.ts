@@ -17,108 +17,112 @@ import {
   CONDITION_ORDER,
 } from 'upgrade_types';
 
-export const individualAssignmentExperiment = {
+function clone<T>(data: T): T {
+  return JSON.parse(JSON.stringify(data));
+}
+
+export const individualAssignmentExperiment = clone({
   ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-};
+});
 
-export const individualAssignmentExperimentConsistencyRuleRevertToExperiment = {
+export const individualAssignmentExperimentConsistencyRuleRevertToExperiment = clone({
   ...getRevertToExperiment(),
-};
+});
 
-export const individualAssignmentExperimentConsistencyRuleExperiment = {
+export const individualAssignmentExperimentConsistencyRuleExperiment = clone({
   ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
   postExperimentRule: POST_EXPERIMENT_RULE.ASSIGN,
   revertTo: getExperiment().conditions[0].id,
   state: EXPERIMENT_STATE.INACTIVE,
-};
+});
 
-export const groupAssignmentWithGroupConsistencyExperiment = {
+export const groupAssignmentWithGroupConsistencyExperiment = clone({
   ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.GROUP,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-};
+});
 
-export const groupAssignmentWithGroupConsistencyExperiment2 = {
+export const groupAssignmentWithGroupConsistencyExperiment2 = clone({
   ...getSecondExperiment(),
   consistencyRule: CONSISTENCY_RULE.GROUP,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-};
+});
 
-export const groupAssignmentWithIndividualConsistencyExperiment = {
+export const groupAssignmentWithIndividualConsistencyExperiment = clone({
   ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-};
+});
 
-export const groupAssignmentWithExperimentConsistencyExperiment = {
+export const groupAssignmentWithExperimentConsistencyExperiment = clone({
   ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-};
+});
 
-export const groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment = {
+export const groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment = clone({
   ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.GROUP,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-};
+});
 
-export const groupAssignmentWithGroupConsistencyExperimentSwitchAfterAssignment = {
+export const groupAssignmentWithGroupConsistencyExperimentSwitchAfterAssignment = clone({
   ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.GROUP,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-};
+});
 
-export const groupAssignmentWithIndividualConsistencyExperimentSwitchAfterAssignment = {
+export const groupAssignmentWithIndividualConsistencyExperimentSwitchAfterAssignment = clone({
   ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-};
+});
 
-export const groupAssignmentWithExperimentConsistencyExperimentSwitchAfterAssignment = {
+export const groupAssignmentWithExperimentConsistencyExperimentSwitchAfterAssignment = clone({
   ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-};
+});
 
-export const firstFactorialExperiment = {
+export const firstFactorialExperiment = clone({
   ...getFirstFactorialExperiment(),
   consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-};
+});
 
-export const secondFactorialExperiment = {
+export const secondFactorialExperiment = clone({
   ...getSecondFactorialExperiment(),
   consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-};
+});
 
-export const withinSubjectExperiment = {
+export const withinSubjectExperiment = clone({
   ...getExperiment(),
   conditions: [
     {
@@ -141,12 +145,12 @@ export const withinSubjectExperiment = {
   assignmentUnit: ASSIGNMENT_UNIT.WITHIN_SUBJECTS,
   conditionOrder: CONDITION_ORDER.RANDOM,
   consistencyRule: null,
-};
+});
 
 // exclusion code experiments:
-export const individualLevelExclusionExperiment = {
+export const individualLevelExclusionExperiment = clone({
   ...individualAssignmentExperiment,
-  partitions : [
+  partitions: [
     {
       site: 'CurriculumSequence',
       target: 'W1',
@@ -160,13 +164,13 @@ export const individualLevelExclusionExperiment = {
       description: 'Decision Point on Workspace 2',
       twoCharacterId: 'W2',
       excludeIfReached: false,
-    }
-  ]
-};
+    },
+  ],
+});
 
-export const groupLevelExclusionExperiment = {
+export const groupLevelExclusionExperiment = clone({
   ...groupAssignmentWithGroupConsistencyExperiment,
-  partitions : [
+  partitions: [
     {
       site: 'CurriculumSequence',
       target: 'W1',
@@ -188,103 +192,103 @@ export const groupLevelExclusionExperiment = {
       excludeIfReached: true,
     },
   ],
-  experimentSegmentInclusion : {
-    "segment": {
-        "id": "a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11",
-        "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment",
-        "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment",
-        "context": "home",
-        "type": "private",
-        "individualForSegment": [],
-        "groupForSegment": [
-            {
-                "groupId": "All",
-                "type": "All"
-            }
-        ],
-        "subSegments": []
-    }
+  experimentSegmentInclusion: {
+    segment: {
+      id: 'a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11',
+      name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
+      description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
+      context: 'home',
+      type: 'private',
+      individualForSegment: [],
+      groupForSegment: [
+        {
+          groupId: 'All',
+          type: 'All',
+        },
+      ],
+      subSegments: [],
+    },
   },
-  experimentSegmentExclusion : {
-    "segment": {
-        "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",
-        "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
-        "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
-        "context": "home",
-        "type": "private",
-        "individualForSegment": [],
-        "groupForSegment": [
-            {
-                "groupId": "2",
-                "type": "teacher"
-            }
-        ],
-        "subSegments": []
-    }
-  }
-};
+  experimentSegmentExclusion: {
+    segment: {
+      id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
+      name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+      description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+      context: 'home',
+      type: 'private',
+      individualForSegment: [],
+      groupForSegment: [
+        {
+          groupId: '2',
+          type: 'teacher',
+        },
+      ],
+      subSegments: [],
+    },
+  },
+});
 
-export const ExperimentLevelExclusionExperiment = {
+export const ExperimentLevelExclusionExperiment = clone({
   ...individualAssignmentExperiment,
-  experimentSegmentExclusion : {
-    "segment": {
-        "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",
-        "name": "be3ae74f-370a-4015-93f3-7761d16f8b17 Exclusion Segment",
-        "description": "be3ae74f-370a-4015-93f3-7761d16f8b17 Exclusion Segment",
-        "context": "home",
-        "type": "private",
-        "individualForSegment": [
-            {
-                "userId": "student1"
-            }
-        ],
-        "groupForSegment": [],
-        "subSegments": []
-    }
-  }
-};
-
-export const ExperimentLevelExclusionExperiment2 = {
-  ...groupAssignmentWithGroupConsistencyExperiment2,
-  experimentSegmentInclusion : {
-    "segment": {
-        "id": "a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11",
-        "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment",
-        "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment",
-        "context": "home",
-        "type": "private",
-        "individualForSegment": [],
-        "groupForSegment": [
-            {
-                "groupId": "All",
-                "type": "All"
-            }
-        ],
-        "subSegments": []
-    }
+  experimentSegmentExclusion: {
+    segment: {
+      id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
+      name: 'be3ae74f-370a-4015-93f3-7761d16f8b17 Exclusion Segment',
+      description: 'be3ae74f-370a-4015-93f3-7761d16f8b17 Exclusion Segment',
+      context: 'home',
+      type: 'private',
+      individualForSegment: [
+        {
+          userId: 'student1',
+        },
+      ],
+      groupForSegment: [],
+      subSegments: [],
+    },
   },
-  experimentSegmentExclusion : {
-    "segment": {
-        "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",
-        "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
-        "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
-        "context": "home",
-        "type": "private",
-        "individualForSegment": [],
-        "groupForSegment": [
-            {
-                "groupId": "2",
-                "type": "teacher"
-            }
-        ],
-        "subSegments": []
-    }
-  }
-};
+});
 
-export const withinSubjectExclusionExperiment = {
+export const ExperimentLevelExclusionExperiment2 = clone({
+  ...groupAssignmentWithGroupConsistencyExperiment2,
+  experimentSegmentInclusion: {
+    segment: {
+      id: 'a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11',
+      name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
+      description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
+      context: 'home',
+      type: 'private',
+      individualForSegment: [],
+      groupForSegment: [
+        {
+          groupId: 'All',
+          type: 'All',
+        },
+      ],
+      subSegments: [],
+    },
+  },
+  experimentSegmentExclusion: {
+    segment: {
+      id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
+      name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+      description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+      context: 'home',
+      type: 'private',
+      individualForSegment: [],
+      groupForSegment: [
+        {
+          groupId: '2',
+          type: 'teacher',
+        },
+      ],
+      subSegments: [],
+    },
+  },
+});
+
+export const withinSubjectExclusionExperiment = clone({
   ...withinSubjectExperiment,
-  partitions : [
+  partitions: [
     {
       site: 'CurriculumSequence',
       target: 'W1',
@@ -306,46 +310,46 @@ export const withinSubjectExclusionExperiment = {
       excludeIfReached: true,
     },
   ],
-  experimentSegmentInclusion : {
-    "segment": {
-        "id": "a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11",
-        "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment",
-        "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment",
-        "context": "home",
-        "type": "private",
-        "individualForSegment": [],
-        "groupForSegment": [
-            {
-                "groupId": "All",
-                "type": "All"
-            }
-        ],
-        "subSegments": []
-    }
+  experimentSegmentInclusion: {
+    segment: {
+      id: 'a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11',
+      name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
+      description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
+      context: 'home',
+      type: 'private',
+      individualForSegment: [],
+      groupForSegment: [
+        {
+          groupId: 'All',
+          type: 'All',
+        },
+      ],
+      subSegments: [],
+    },
   },
-  experimentSegmentExclusion : {
-    "segment": {
-        "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",
-        "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
-        "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
-        "context": "home",
-        "type": "private",
-        "individualForSegment": [],
-        "groupForSegment": [
-            {
-                "groupId": "2",
-                "type": "teacher"
-            }
-        ],
-        "subSegments": []
-    }
-  }
-};
+  experimentSegmentExclusion: {
+    segment: {
+      id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
+      name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+      description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+      context: 'home',
+      type: 'private',
+      individualForSegment: [],
+      groupForSegment: [
+        {
+          groupId: '2',
+          type: 'teacher',
+        },
+      ],
+      subSegments: [],
+    },
+  },
+});
 
 // enrollment code experiments:
-export const individualLevelEnrollmentCodeExperiment = {
+export const individualLevelEnrollmentCodeExperiment = clone({
   ...individualAssignmentExperiment,
-  partitions : [
+  partitions: [
     {
       site: 'CurriculumSequence',
       target: 'W1',
@@ -366,12 +370,12 @@ export const individualLevelEnrollmentCodeExperiment = {
       twoCharacterId: 'NP',
       excludeIfReached: true,
     },
-  ]
-};
+  ],
+});
 
-export const groupLevelEnrollmentCodeExperiment = {
+export const groupLevelEnrollmentCodeExperiment = clone({
   ...groupAssignmentWithGroupConsistencyExperiment,
-  partitions : [
+  partitions: [
     {
       site: 'CurriculumSequence',
       target: 'W1',
@@ -392,14 +396,14 @@ export const groupLevelEnrollmentCodeExperiment = {
       twoCharacterId: 'NP',
       excludeIfReached: true,
     },
-  ]
-};
+  ],
+});
 
-export const experimentLevelEnrollmentCodeExperiment = {
+export const experimentLevelEnrollmentCodeExperiment = clone({
   ...individualAssignmentExperimentConsistencyRuleExperiment,
-};
+});
 
-export const individualExperimentWithMetric = {
+export const individualExperimentWithMetric = clone({
   ...individualAssignmentExperiment,
   metrics: [
     {
@@ -420,110 +424,102 @@ export const individualExperimentWithMetric = {
       ],
     },
   ],
-};
+});
 
-export const scheduleJobStartExperiment = { ...getExperiment(), state: EXPERIMENT_STATE.SCHEDULED };
+export const scheduleJobStartExperiment = clone({ ...getExperiment(), state: EXPERIMENT_STATE.SCHEDULED });
 
-export const scheduleJobEndExperiment = {
+export const scheduleJobEndExperiment = clone({
   ...getExperiment(),
   endOn: new Date().toISOString(),
-};
+});
 
 export const scheduleJobUpdateExperiment = scheduleJobEndExperiment;
 
-export const revertToDefault = {
+export const revertToDefault = clone({
   ...individualAssignmentExperimentConsistencyRuleExperiment,
   revertTo: undefined,
-};
+});
 
-export const revertToCondition = {
-  ...individualAssignmentExperimentConsistencyRuleRevertToExperiment,
-};
+export const revertToCondition = individualAssignmentExperimentConsistencyRuleRevertToExperiment;
 
-export const individualExperimentStats = {
-  ...individualAssignmentExperiment,
-  state: EXPERIMENT_STATE.INACTIVE,
-};
+export const individualExperimentStats = individualAssignmentExperiment;
 
-export const groupExperimentStats = {
-  ...groupAssignmentWithGroupConsistencyExperiment,
-  state: EXPERIMENT_STATE.INACTIVE,
-};
+export const groupExperimentStats = groupAssignmentWithGroupConsistencyExperiment;
 
-export const previewIndividualAssignmentExperiment = {
+export const previewIndividualAssignmentExperiment = clone({
   ...individualAssignmentExperiment,
   state: EXPERIMENT_STATE.PREVIEW,
-};
+});
 
-export const previewGroupExperiment = {
+export const previewGroupExperiment = clone({
   ...groupAssignmentWithGroupConsistencyExperiment,
   state: EXPERIMENT_STATE.PREVIEW,
-};
+});
 
-export const secondExperiment = {
+export const secondExperiment = clone({
   ...getSecondExperiment(),
-};
+});
 
-export const groupAssignmentWithIndividualConsistencyExperimentSecond = {
+export const groupAssignmentWithIndividualConsistencyExperimentSecond = clone({
   ...secondExperiment,
   consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-};
+});
 
-export const groupAndParticipantsExperiment = {
+export const groupAndParticipantsExperiment = clone({
   ...groupAssignmentWithGroupConsistencyExperiment,
   state: EXPERIMENT_STATE.INACTIVE,
   enrollmentCompleteCondition: {
     groupCount: 2,
     userCount: 2,
   },
-};
+});
 
-export const participantsOnlyExperiment = {
+export const participantsOnlyExperiment = clone({
   ...individualAssignmentExperiment,
   state: EXPERIMENT_STATE.INACTIVE,
   enrollmentCompleteCondition: {
     userCount: 2,
   },
-};
+});
 
-export const thirdExperiment = {
+export const thirdExperiment = clone({
   ...getThirdExperiment(),
-};
+});
 
-export const groupAssignmentWithIndividualConsistencyExperimentThird = {
+export const groupAssignmentWithIndividualConsistencyExperimentThird = clone({
   ...thirdExperiment,
   consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-};
+});
 
-export const decimalWeightExperiment = {
+export const decimalWeightExperiment = clone({
   ...getFourthExperiment(),
-};
+});
 
-export const payloadConditionExperiment = {
+export const payloadConditionExperiment = clone({
   ...getFifthExperiment(),
-};
+});
 
-export const competingExperimentAssignmentExperiment1 = {
+export const competingExperimentAssignmentExperiment1 = clone({
   ...getSecondExperiment(),
-};
+});
 
-export const competingExperimentAssignmentExperiment2 = {
+export const competingExperimentAssignmentExperiment2 = clone({
   ...getThirdExperiment(),
   state: EXPERIMENT_STATE.ENROLLING,
-};
+});
 
-export const competingExperimentAssignmentExperiment3 = {
+export const competingExperimentAssignmentExperiment3 = clone({
   ...getSixthExperiment(),
   state: EXPERIMENT_STATE.ENROLLING,
-};
+});
 
-export const stratificationSRSExperimentAssignmentExperiment1 = {
+export const stratificationSRSExperimentAssignmentExperiment1 = clone({
   ...getExperiment(),
   conditions: [
     {
@@ -545,10 +541,10 @@ export const stratificationSRSExperimentAssignmentExperiment1 = {
   ],
   conditionOrder: CONDITION_ORDER.RANDOM,
   consistencyRule: null,
-  assignmentAlgorithm: 'stratified random sampling'
-};
+  assignmentAlgorithm: 'stratified random sampling',
+});
 
-export const stratificationRandomExperimentAssignmentExperiment2 = {
+export const stratificationRandomExperimentAssignmentExperiment2 = clone({
   ...getExperiment(),
   conditions: [
     {
@@ -569,5 +565,5 @@ export const stratificationRandomExperimentAssignmentExperiment2 = {
     },
   ],
   conditionOrder: CONDITION_ORDER.RANDOM,
-  consistencyRule: null
-};
+  consistencyRule: null,
+});
