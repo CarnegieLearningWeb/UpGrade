@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, Inject } from '@angular/core';
 import {
   CommonModalComponent,
   CommonStatusIndicatorChipComponent,
@@ -16,6 +16,7 @@ import { ValidateFeatureFlagError } from '../../../../../core/feature-flags/stor
 import { importError } from '../../../../../core/segments/store/segments.model';
 import { NotificationService } from '../../../../../core/notifications/notification.service';
 import { IFeatureFlagFile } from 'upgrade_types';
+import { FeatureFlagsStore } from '../../../../../core/feature-flags/store/feature-flag.signal.store';
 
 @Component({
   selector: 'app-import-feature-flag-modal',
@@ -51,8 +52,18 @@ export class ImportFeatureFlagModalComponent {
     public featureFlagsService: FeatureFlagsService,
     public featureFlagsDataService: FeatureFlagsDataService,
     public dialogRef: MatDialogRef<ImportFeatureFlagModalComponent>,
-    private notificationService: NotificationService
-  ) {}
+    private notificationService: NotificationService,
+    private featureFlagStore: FeatureFlagsStore
+  ) {
+    effect(
+      () => {
+        if (this.featureFlagStore.importResults().length > 0) {
+          this.showNotification(this.featureFlagStore.importResults());
+        }
+      },
+      { allowSignalWrites: true }
+    );
+  }
 
   async handleFilesSelected(event) {
     if (event.length > 0) {
@@ -113,11 +124,12 @@ export class ImportFeatureFlagModalComponent {
   async importFiles() {
     try {
       this.isImportActionBtnDisabled.next(true);
-      const importResult = (await firstValueFrom(
-        this.featureFlagsDataService.importFeatureFlag({ files: this.fileData })
-      )) as importError[];
+      this.featureFlagStore.importFeatureFlags({ files: this.fileData });
+      // const importResult = (await firstValueFrom(
+      //   this.featureFlagsDataService.importFeatureFlag({ files: this.fileData })
+      // )) as importError[];
 
-      this.showNotification(importResult);
+      //this.showNotification([]);
       this.isImportActionBtnDisabled.next(false);
       this.uploadedFileCount.next(0);
       this.fileData = [];
@@ -143,6 +155,8 @@ export class ImportFeatureFlagModalComponent {
     importFailedFiles.forEach((data) => {
       this.notificationService.showError(`Failed to import ${data.fileName}: ${data.error}`);
     });
+
+    this.featureFlagStore.setImportResults([]);
   }
 
   closeModal() {
