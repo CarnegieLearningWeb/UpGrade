@@ -9,6 +9,10 @@ import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentServiceMock';
+import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
+import MoocletExperimentServiceMock from './mocks/MoocletExperimentServiceMock';
+import { env } from './../../../src/env';
+import { SUPPORTED_MOOCLET_POLICY_NAMES } from 'upgrade_types';
 
 describe('Experiment Controller Testing', () => {
   beforeAll(() => {
@@ -19,10 +23,12 @@ describe('Experiment Controller Testing', () => {
     // set mock container
     Container.set(ExperimentService, new ExperimentServiceMock());
     Container.set(ExperimentAssignmentService, new ExperimentAssignmentServiceMock());
+    Container.set(MoocletExperimentService, new MoocletExperimentServiceMock());
   });
 
   afterAll(() => {
     Container.reset();
+    //asdfasdf
   });
 
   const experimentData = {
@@ -85,6 +91,13 @@ describe('Experiment Controller Testing', () => {
     },
   };
 
+  const moocletExperimentData = {
+    ...experimentData,
+    id: uuid(),
+    moocletPolicyParameters: {},
+    ASSIGNMENT_ALGORITHM: SUPPORTED_MOOCLET_POLICY_NAMES.TS_CONFIGURABLE,
+  };
+
   //for future use where user will be mocked for all testcases
 
   // const mockUser: User = {
@@ -104,6 +117,23 @@ describe('Experiment Controller Testing', () => {
 
   test('Post request for /api/experiments', () => {
     return request(app).post('/api/experiments').send(experimentData).expect('Content-Type', /json/).expect(200);
+  });
+
+  test('Post request for /api/experiments with moocletPolicyParameters and mooclets enabled', () => {
+    env.mooclets.enabled = true;
+    return request(app)
+      .post('/api/experiments')
+      .send(moocletExperimentData)
+      .expect('Content-Type', /json/)
+      .expect(200)
+  });
+
+  test('Post request for /api/experiments with moocletPolicyParameters and mooclets disabled', () => {
+    env.mooclets.enabled = false;
+    return request(app)
+      .post('/api/experiments')
+      .send(moocletExperimentData)
+      .expect(500)
   });
 
   test('Get request for /api/experiments/names', () => {
