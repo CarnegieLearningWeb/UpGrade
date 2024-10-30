@@ -46,15 +46,16 @@ export class FeatureFlagExclusionsSectionCardComponent {
   tableRowCount$ = this.featureFlagService.selectFeatureFlagExclusionsLength$;
   selectedFlag$ = this.featureFlagService.selectedFeatureFlag$;
 
+  menuButtonItems: IMenuButtonItem[] = [
+    { name: 'Import Exclude List', disabled: false },
+    { name: 'Export All Exclude Lists', disabled: false },
+  ];
+
   constructor(
     private featureFlagService: FeatureFlagsService,
     private dialogService: DialogService,
     private authService: AuthService
   ) {}
-  menuButtonItems: IMenuButtonItem[] = [
-    { name: 'Import Exclude List', disabled: false },
-    { name: 'Export All Exclude Lists', disabled: true },
-  ];
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
@@ -65,6 +66,7 @@ export class FeatureFlagExclusionsSectionCardComponent {
   }
 
   onMenuButtonItemClick(event, flag: FeatureFlag) {
+    const confirmMessage = 'feature-flags.export-all-exclude-lists-design.confirmation-text.text';
     switch (event) {
       case 'Import Exclude List':
         this.dialogService
@@ -73,7 +75,16 @@ export class FeatureFlagExclusionsSectionCardComponent {
           .subscribe(() => this.featureFlagService.fetchFeatureFlagById(flag.id));
         break;
       case 'Export All Exclude Lists':
-        // this.dialogService.openImportFeatureFlagListModal();
+        if (flag.featureFlagSegmentExclusion.length) {
+          this.dialogService
+            .openExportDesignModal('Export All Exclude Lists', confirmMessage)
+            .afterClosed()
+            .subscribe((isExportClicked: boolean) => {
+              if (isExportClicked) {
+                this.featureFlagService.exportAllExcludeListsData(flag.id);
+              }
+            });
+        }
         break;
       default:
         console.log('Unknown action');

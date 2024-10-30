@@ -89,6 +89,16 @@ export class FeatureFlagsDataService {
     return this.http.get(url);
   }
 
+  exportAllIncludeListsDesign(id: string) {
+    const url = `${this.environment.api.exportFFAllIncludeListsDesign}/${id}`;
+    return this.http.get(url);
+  }
+
+  exportAllExcludeListsDesign(id: string) {
+    const url = `${this.environment.api.exportFFAllExcludeListsDesign}/${id}`;
+    return this.http.get(url);
+  }
+
   deleteFeatureFlag(id: string) {
     const url = `${this.environment.api.featureFlag}/${id}`;
     return this.http.delete(url);

@@ -321,9 +321,9 @@ export class DialogService {
     return this.dialog.open(DeleteFeatureFlagModalComponent, config);
   }
 
-  openExportFeatureFlagDesignModal(warning: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openExportDesignModal(title, warning: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
-      title: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
+      title: title,
       primaryActionBtnLabel: 'Export',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -375,6 +375,7 @@ export class DialogService {
         flagId: flagId,
       },
     };
+
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: ModalSize.STANDARD,

@@ -53,6 +53,7 @@ import { UserDTO } from '../DTO/UserDTO';
 import { diffString } from 'json-diff';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
+import { NotFoundException } from '@nestjs/common/exceptions';
 
 @Service()
 export class FeatureFlagService {
@@ -1263,5 +1264,48 @@ export class FeatureFlagService {
       fileName: fileName,
       compatibilityType: compatibilityType,
     };
+  }
+
+  public async exportAllLists(
+    id: string,
+    listType: FEATURE_FLAG_LIST_FILTER_MODE,
+    logger: UpgradeLogger
+  ): Promise<ImportFeatureFlagListValidator[] | null> {
+    const featureFlag = await this.findOne(id, logger);
+    let listsArray: ImportFeatureFlagListValidator[] = [];
+    if (featureFlag) {
+      let lists: (FeatureFlagSegmentExclusion | FeatureFlagSegmentExclusion)[] = [];
+      if (listType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
+        lists = featureFlag.featureFlagSegmentInclusion;
+      } else if (listType === FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION) {
+        lists = featureFlag.featureFlagSegmentExclusion;
+      } else {
+        return null;
+      }
+
+      if (!lists.length) return [];
+
+      listsArray = lists.map((list) => {
+        const { name, description, context, type } = list.segment;
+
+        const userIds = list.segment.individualForSegment.map((individual) => individual.userId);
+
+        const subSegmentIds = list.segment.subSegments.map((subSegment) => subSegment.id);
+
+        const groups = list.segment.groupForSegment.map((group) => {
+          return { type: group.type, groupId: group.groupId };
+        });
+
+        const listDoc: ImportFeatureFlagListValidator = {
+          listType: list.listType,
+          segment: { name, description, context, type, userIds, subSegmentIds, groups },
+        };
+        return listDoc;
+      });
+    } else {
+      throw new NotFoundException('Experiment not found.');
+    }
+
+    return listsArray;
   }
 }
