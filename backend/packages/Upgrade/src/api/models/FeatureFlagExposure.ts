@@ -7,11 +7,11 @@ import { ExperimentUser } from './ExperimentUser';
 export class FeatureFlagExposure extends BaseModel {
   // Define primary column for the foreign key
   @PrimaryColumn()
-  featureFlagId: number;
+  featureFlagId: string;
 
   // Define primary column for the foreign key
   @PrimaryColumn()
-  experimentUserId: number;
+  experimentUserId: string;
 
   @Index()
   @ManyToOne(() => FeatureFlag, { onDelete: 'CASCADE' })
