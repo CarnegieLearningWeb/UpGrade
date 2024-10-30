@@ -271,14 +271,6 @@ export class FeatureFlagsController {
     paginatedParams: FeatureFlagPaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<FeatureFlagsPaginationInfo> {
-    if (!paginatedParams) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : paginatedParams should not be null.' })
-        )
-      );
-    }
-
     const [featureFlags, count] = await Promise.all([
       this.featureFlagService.findPaginated(
         paginatedParams.skip,
@@ -473,7 +465,7 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
-    return this.featureFlagService.update(flag, currentUser, request.logger);
+    return this.featureFlagService.update({ ...flag, id }, currentUser, request.logger);
   }
 
   /**

@@ -48,3 +48,9 @@ export class UserPaginatedParamsValidator {
   @Type(() => UserSortParamsValidator)
   public sortParams?: UserSortParamsValidator;
 }
+
+export class EmailValidator {
+  @IsNotEmpty()
+  @IsString()
+  public email: string;
+}
