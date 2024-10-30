@@ -1,12 +1,22 @@
-import { JsonController, Get, OnUndefined, Param, Post, Put, Body, Authorized, Delete, Req } from 'routing-controllers';
+import {
+  JsonController,
+  Get,
+  OnUndefined,
+  Post,
+  Put,
+  Body,
+  Authorized,
+  Delete,
+  Req,
+  Params,
+} from 'routing-controllers';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
-import { SERVER_ERROR } from 'upgrade_types';
 import { PreviewUserService } from '../services/PreviewUserService';
 import { PreviewUser } from '../models/PreviewUser';
-import { isString } from 'class-validator';
 import { PaginatedParamsValidator } from './validators/PaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { PreviewUserValidator } from './validators/PreviewUserValidator';
+import { IdValidator } from './validators/ExperimentUserValidator';
 
 interface PreviewUserPaginationInfo extends PaginationResponse {
   nodes: PreviewUser[];
@@ -83,14 +93,6 @@ export class PreviewUserController {
     @Body({ validate: true }) paginatedParams: PaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<PreviewUserPaginationInfo> {
-    if (!paginatedParams) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : paginatedParams should not be null.' })
-        )
-      );
-    }
-
     const [previewUsers, count] = await Promise.all([
       this.previewUserService.findPaginated(paginatedParams.skip, paginatedParams.take, request.logger),
       this.previewUserService.getTotalCount(request.logger),
@@ -126,14 +128,10 @@ export class PreviewUserController {
    */
   @Get('/:id')
   @OnUndefined(UserNotFoundError)
-  public one(@Param('id') id: string, @Req() request: AppRequest): Promise<PreviewUser | undefined> {
-    if (!isString(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type string.' })
-        )
-      );
-    }
+  public one(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<PreviewUser | undefined> {
     return this.previewUserService.findOne(id, request.logger);
   }
 
@@ -161,7 +159,10 @@ export class PreviewUserController {
    *            description: New ExperimentUser is created
    */
   @Post()
-  public create(@Body({ validate: true }) users: PreviewUserValidator, @Req() request: AppRequest): Promise<PreviewUser> {
+  public create(
+    @Body({ validate: true }) users: PreviewUserValidator,
+    @Req() request: AppRequest
+  ): Promise<PreviewUser> {
     return this.previewUserService.create(users, request.logger);
   }
 
@@ -196,7 +197,7 @@ export class PreviewUserController {
    */
   @Put('/:id')
   public update(
-    @Param('id') id: string,
+    @Params({ validate: true }) { id }: IdValidator,
     @Body({ validate: true }) user: PreviewUserValidator,
     @Req() request: AppRequest
   ): Promise<PreviewUser> {
@@ -224,7 +225,10 @@ export class PreviewUserController {
    *            description: Delete User By Id
    */
   @Delete('/:id')
-  public delete(@Param('id') id: string, @Req() request: AppRequest): Promise<PreviewUser | undefined> {
+  public delete(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<PreviewUser | undefined> {
     return this.previewUserService.delete(id, request.logger);
   }
 
@@ -252,7 +256,10 @@ export class PreviewUserController {
    *            description: Assignment is created
    */
   @Post('/assign')
-  public assign(@Body({ validate: true }) user: PreviewUserValidator, @Req() request: AppRequest): Promise<PreviewUser> {
+  public assign(
+    @Body({ validate: true }) user: PreviewUserValidator,
+    @Req() request: AppRequest
+  ): Promise<PreviewUser> {
     return this.previewUserService.upsertExperimentConditionAssignment(user, request.logger);
   }
 }
