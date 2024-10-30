@@ -6,7 +6,7 @@ import { FeatureFlagListValidator } from './FeatureFlagListValidator';
 
 export class FeatureFlagCoreValidation {
   @IsOptional()
-  @IsString()
+  @IsUUID()
   public id: string;
 
   @IsNotEmpty()
@@ -52,16 +52,6 @@ export class FeatureFlagValidation extends FeatureFlagCoreValidation {
   @ValidateNested({ each: true })
   @Type(() => FeatureFlagListValidator)
   public featureFlagSegmentExclusion?: FeatureFlagListValidator[];
-}
-
-export class UserParamsValidator {
-  @IsNotEmpty()
-  @IsString()
-  public userId: string;
-
-  @IsNotEmpty()
-  @IsString()
-  public context: string;
 }
 
 export class IdValidator {
