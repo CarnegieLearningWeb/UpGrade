@@ -22,7 +22,7 @@ export interface MoocletVersionRequestBody {
     mooclet: number;
     name: string;
     text?: string;
-    version_json?: any;
+    version_json?: Record<string, 0 | 1>;
 }
 
 export interface MoocletVersionResponseDetails {
@@ -31,7 +31,7 @@ export interface MoocletVersionResponseDetails {
     mooclet: number;
     version_id?: number;
     text?: string;
-    version_json?: Record<keyof string, 0 | 1>;
+    version_json?: Record<string, 0 | 1>;
 }
 
 export interface MoocletPolicyParametersRequestBody {
@@ -40,7 +40,6 @@ export interface MoocletPolicyParametersRequestBody {
     parameters: MoocletPolicyParameters;
 }
 
-// {"probability_distribution": {"testtest_arm1": 0.7, "testtest_arm2": 0.3}} #weighted random
 export interface MoocletPolicyParametersResponseDetails {
     id: number;
     mooclet: number;

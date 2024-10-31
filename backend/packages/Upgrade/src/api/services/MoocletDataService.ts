@@ -15,6 +15,7 @@ import {
   MoocletVariableRequestBody,
   MoocletVariableResponseDetails,
 } from '../../types/Mooclet';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 @Service()
 export class MoocletDataService {
@@ -37,7 +38,6 @@ export class MoocletDataService {
       return matchedPolicy.id;
     }
 
-    // or short-circuit and throw error?
     return null;
   }
 
@@ -220,6 +220,7 @@ export class MoocletDataService {
    */
 
   public async fetchExternalMoocletsData(requestParams: MoocletProxyRequestParams): Promise<any> {
+    const logger = new UpgradeLogger('MoocletDataService');
     const { method, url, body } = requestParams;
     let jsonResponse = '';
 
@@ -231,6 +232,8 @@ export class MoocletDataService {
 
       const JSONbody = JSON.stringify(body);
 
+      logger.info({ message: `Fetching data from Mooclets API: ${url}`, body: JSONbody });
+
       try {
         const options: AxiosRequestConfig = {
           method,
@@ -238,11 +241,8 @@ export class MoocletDataService {
           headers,
           url,
         };
-        console.log('*** MOOCLETS API REQUEST ***');
-        console.log('fetching data from: ', url);
-        console.log('with options: ', options);
-        console.log('with headers: ', headers);
-        const res = await axios(options);
+
+        const res = await axios.request(options);
 
         if (res?.status?.toString().startsWith('2')) {
           jsonResponse = res.data;
@@ -253,7 +253,7 @@ export class MoocletDataService {
           };
         }
       } catch (err) {
-        console.log(err);
+        logger.error({ message: `Error fetching data from Mooclets API: ${err}` });
       }
     }
   }

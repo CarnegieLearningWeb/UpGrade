@@ -37,6 +37,7 @@ export {
   FEATURE_FLAG_STATUS,
   STATUS_INDICATOR_CHIP_TYPE,
   FILE_TYPE,
+  SUPPORTED_MOOCLET_POLICY_NAMES,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,
@@ -75,25 +76,3 @@ export {
   FeatureFlagStateChangedData,
   FeatureFlagDeletedData,
 } from './Experiment/interfaces';
-export {
-  MoocletProxyRequestParams,
-  MoocletRequestBody,
-  MoocletResponseDetails,
-  MoocletVersionRequestBody,
-  MoocletVersionResponseDetails,
-  MoocletPolicyParametersRequestBody,
-  MoocletPolicyParametersResponseDetails,
-  MoocletVariableRequestBody,
-  MoocletVariableResponseDetails,
-  MoocletValueRequestBody,
-  MoocletValueResponseDetails,
-  ExperimentCondtitionToMoocletVersionParams,
-  MoocletThompsonSamplingConfigurablePolicyParameters,
-  MoocletThompsonSamplingConfigurableCurrentPosteriors,
-  MoocletPolicyParameters,
-  MoocletPolicyResponseDetails,
-  MoocletDetails,
-  MoocletBatchResponse,
-  SupportedMoocletPolicyNames,
-} from './Mooclet/interfaces';
-export { SUPPORTED_MOOCLET_POLICY_NAMES } from './Mooclet/enums';
