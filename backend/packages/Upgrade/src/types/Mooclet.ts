@@ -22,7 +22,7 @@ export interface MoocletVersionRequestBody {
     mooclet: number;
     name: string;
     text?: string;
-    version_json?: Record<string, 0 | 1>;
+    version_json?: Record<string, number>;
 }
 
 export interface MoocletVersionResponseDetails {
@@ -31,7 +31,7 @@ export interface MoocletVersionResponseDetails {
     mooclet: number;
     version_id?: number;
     text?: string;
-    version_json?: Record<string, 0 | 1>;
+    version_json?: Record<string, number>;
 }
 
 export interface MoocletPolicyParametersRequestBody {
