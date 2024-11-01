@@ -65,6 +65,8 @@ export interface SyncDeleteParams {
   createType?: string;
 }
 
+const logger = new UpgradeLogger('MoocletExperimentService');
+
 @Service()
 export class MoocletExperimentService extends ExperimentService {
   constructor(
@@ -140,49 +142,29 @@ export class MoocletExperimentService extends ExperimentService {
     manager: EntityManager,
     params: SyncCreateParams
   ): Promise<MoocletExperimentDTO> {
-    const { experimentDTO, currentUser, logger, createType } = params;
-    const { moocletPolicyParameters, ...experiment } = experimentDTO;
+    const moocletPolicyParameters = params.experimentDTO.moocletPolicyParameters;
     let moocletExperimentRefResponse: MoocletExperimentRef;
     let experimentResponse: MoocletExperimentDTO;
 
     try {
-      experimentResponse = (await super.create(experiment, currentUser, logger, {
-        existingEntityManager: manager,
-        createType,
-      })) as MoocletExperimentDTO;
+      experimentResponse = await this.createExperiment(manager, params);
       moocletExperimentRefResponse = await this.orchestrateMoocletCreation(
         experimentResponse,
         moocletPolicyParameters,
         logger
       );
+
       logger.info({
         message: 'Mooclet experiment created successfully:',
         moocletExperimentRef: JSON.stringify(moocletExperimentRefResponse),
       });
 
-      await manager.save(MoocletExperimentRef, moocletExperimentRefResponse);
-
-      // Create and save the related MoocletVersionConditionMap entities
-      if (moocletExperimentRefResponse.versionConditionMaps) {
-        for (const versionConditionMap of moocletExperimentRefResponse.versionConditionMaps) {
-          const versionConditionMapEntity = manager.create(MoocletVersionConditionMap, {
-            ...versionConditionMap,
-            moocletExperimentRefId: moocletExperimentRefResponse.id,
-            experimentConditionId: versionConditionMap.experimentConditionId,
-          });
-          const map = await manager.save(MoocletVersionConditionMap, versionConditionMapEntity);
-          logger.info({
-            message: 'MoocletVersionConditionMap created successfully:',
-            versionConditionMap: JSON.stringify(map),
-          });
-        }
-      }
+      await this.saveMoocletExperimentRef(manager, moocletExperimentRefResponse);
+      await this.createAndSaveVersionConditionMaps(manager, moocletExperimentRefResponse);
     } catch (error) {
       logger.error({
         message: 'Failed to sync experiment with Mooclet',
-        error: error,
-        experiment: experimentDTO,
-        user: currentUser,
+        params: JSON.stringify(params),
       });
       throw new UnprocessableEntityException('Failed to sync experiment with Mooclet');
     }
@@ -190,6 +172,44 @@ export class MoocletExperimentService extends ExperimentService {
     experimentResponse.moocletPolicyParameters = moocletPolicyParameters;
 
     return experimentResponse;
+  }
+
+  private async createExperiment(
+    manager: EntityManager,
+    params: SyncCreateParams
+  ): Promise<MoocletExperimentDTO> {
+    const { experimentDTO, currentUser, logger, createType } = params;
+    return (await super.create(experimentDTO, currentUser, logger, {
+      existingEntityManager: manager,
+      createType,
+    })) as MoocletExperimentDTO;
+  }
+
+  private async saveMoocletExperimentRef(
+    manager: EntityManager,
+    moocletExperimentRefResponse: MoocletExperimentRef,
+  ): Promise<void> {
+    await manager.save(MoocletExperimentRef, moocletExperimentRefResponse);
+  }
+
+  private async createAndSaveVersionConditionMaps(
+    manager: EntityManager,
+    moocletExperimentRefResponse: MoocletExperimentRef,
+  ): Promise<void> {
+    if (moocletExperimentRefResponse.versionConditionMaps) {
+      for (const versionConditionMap of moocletExperimentRefResponse.versionConditionMaps) {
+        const versionConditionMapEntity = manager.create(MoocletVersionConditionMap, {
+          ...versionConditionMap,
+          moocletExperimentRefId: moocletExperimentRefResponse.id,
+          experimentConditionId: versionConditionMap.experimentConditionId,
+        });
+        const map = await manager.save(MoocletVersionConditionMap, versionConditionMapEntity);
+        logger.info({
+          message: 'MoocletVersionConditionMap created successfully:',
+          versionConditionMap: JSON.stringify(map),
+        });
+      }
+    }
   }
 
   private async handleDeleteMoocletTransaction(manager: EntityManager, params: SyncDeleteParams): Promise<Experiment> {
@@ -259,7 +279,7 @@ export class MoocletExperimentService extends ExperimentService {
       });
 
       const moocletVersionsResponse = await this.createMoocletVersions(upgradeExperiment, moocletResponse);
-      moocletExperimentRef.versionConditionMaps = this.privateCreateMoocletVersionConditionMaps(
+      moocletExperimentRef.versionConditionMaps = this.createMoocletVersionConditionMaps(
         moocletVersionsResponse,
         upgradeExperiment
       );
@@ -321,7 +341,7 @@ export class MoocletExperimentService extends ExperimentService {
     );
   }
 
-  privateCreateMoocletVersionConditionMaps(
+  private createMoocletVersionConditionMaps(
     moocletVersionsResponse: MoocletVersionResponseDetails[],
     upgradeExperiment: MoocletExperimentDTO
   ): MoocletVersionConditionMap[] {
@@ -353,21 +373,7 @@ export class MoocletExperimentService extends ExperimentService {
         logger.debug({ message: '[Mooclet Deletion]: Deleted Mooclet', moocletId: moocletExperimentRef.moocletId });
       }
 
-      if (moocletExperimentRef.versionConditionMaps) {
-        for (const versionConditionMap of moocletExperimentRef.versionConditionMaps) {
-          logger.debug({
-            message: '[Mooclet Deletion]: Deleting Mooclet version',
-            moocletVersionId: versionConditionMap.moocletVersionId,
-          });
-          if (versionConditionMap.moocletVersionId) {
-            await this.moocletDataService.deleteVersion(versionConditionMap.moocletVersionId);
-            logger.debug({
-              message: '[Mooclet Deletion]: Deleted Mooclet version',
-              moocletVersionId: versionConditionMap.moocletVersionId,
-            });
-          }
-        }
-      }
+      await this.deleteMoocletVersions(moocletExperimentRef);
 
       logger.debug({
         message: '[Mooclet Deletion]: Deleting policy parameters',
@@ -394,6 +400,24 @@ export class MoocletExperimentService extends ExperimentService {
         error: err,
         moocletExperimentRef: moocletExperimentRef.id,
       });
+    }
+  }
+
+  private async deleteMoocletVersions(moocletExperimentRef: MoocletExperimentRef): Promise<void> {
+    if (moocletExperimentRef.versionConditionMaps) {
+      for (const versionConditionMap of moocletExperimentRef.versionConditionMaps) {
+        logger.debug({
+          message: '[Mooclet Deletion]: Deleting Mooclet version',
+          moocletVersionId: versionConditionMap.moocletVersionId,
+        });
+        if (versionConditionMap.moocletVersionId) {
+          await this.moocletDataService.deleteVersion(versionConditionMap.moocletVersionId);
+          logger.debug({
+            message: '[Mooclet Deletion]: Deleted Mooclet version',
+            moocletVersionId: versionConditionMap.moocletVersionId,
+          });
+        }
+      }
     }
   }
 
