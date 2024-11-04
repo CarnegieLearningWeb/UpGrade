@@ -99,12 +99,12 @@ export interface ExperimentCSVData {
   postRule: string;
   enrollmentStartDate: string;
   enrollmentCompleteDate: string;
-  revertTo: string;
-  payload: string;
-  excludeIfReached: boolean;
-  expDecisionPointId: string;
-  expConditionId: string;
-  conditionName: string;
+  revertTo?: string;
+  payload?: string;
+  excludeIfReached?: boolean;
+  expDecisionPointId?: string;
+  expConditionId?: string;
+  conditionName?: string;
   details: ConditionDecisionPointData[];
 }
 

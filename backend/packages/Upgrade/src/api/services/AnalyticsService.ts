@@ -15,7 +15,7 @@ import {
   SERVER_ERROR,
   IExperimentEnrollmentStats,
 } from 'upgrade_types';
-import { AnalyticsRepository, CSVExportDataRow } from '../repositories/AnalyticsRepository';
+import { AnalyticsRepository, CSVExportDataRow, ExperimentCSVData } from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
 import ObjectsToCsv from 'objects-to-csv';
 import fs from 'fs';
@@ -183,7 +183,7 @@ export class AnalyticsService {
         throw new HttpError(404, `Experiment not found for id: ${experimentId}`);
       }
       const formattedExperiments = experimentQueryResult.reduce((acc, item) => {
-        let experiment = acc.find((e) => e.experimentId === item.experimentId);
+        let experiment: ExperimentCSVData = acc.find((e) => e.experimentId === item.experimentId);
         if (!experiment) {
           experiment = {
             experimentId: item.experimentId,
