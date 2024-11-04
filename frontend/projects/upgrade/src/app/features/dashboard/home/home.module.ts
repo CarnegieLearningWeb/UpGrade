@@ -37,6 +37,8 @@ import { ExportModalComponent } from './components/modal/export-experiment/expor
 import { PayloadsTableComponent } from './components/experiment-design/payloads-table/payloads-table.component';
 import { FactorialExperimentDesignComponent } from './components/factorial-experiment-design/factorial-experiment-design.component';
 import { ConditionsTableComponent } from './components/factorial-experiment-design/conditions-table/conditions-table.component';
+import { NgJsonEditorModule } from 'ang-jsoneditor';
+
 @NgModule({
   declarations: [
     HomeComponent,
@@ -77,6 +79,7 @@ import { ConditionsTableComponent } from './components/factorial-experiment-desi
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
     NgxSkeletonLoaderModule,
+    NgJsonEditorModule,
   ],
   providers: [OperationPipe],
 })

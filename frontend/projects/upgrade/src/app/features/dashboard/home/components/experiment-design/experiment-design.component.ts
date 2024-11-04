@@ -43,6 +43,7 @@ import {
   SimpleExperimentFormData,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { SIMPLE_EXP_CONSTANTS } from './experiment-design.constants';
+import { JsonEditorComponent, JsonEditorOptions } from 'ang-jsoneditor';
 
 @Component({
   selector: 'home-experiment-design',
@@ -64,6 +65,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.DECISION_POINTS, { read: ElementRef }) decisionPointTable: ElementRef;
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.CONDITIONS, { read: ElementRef }) conditionTable: ElementRef;
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.CONDITION_CODE) conditionCode: ElementRef;
+
+  options = new JsonEditorOptions();
+  policyEditorError = false;
+
+  @ViewChild('policyEditor', { static: false }) policyEditor: JsonEditorComponent;
 
   subscriptionHandler: Subscription;
 
@@ -247,6 +253,19 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.decisionPoints.controls.forEach((_, index) => {
       this.manageSiteAndTargetControls(index);
     });
+
+    this.options = new JsonEditorOptions();
+    this.options.mode = 'code';
+    this.options.statusBar = false;
+
+    this.options.onChange = () => {
+      try {
+        this.policyEditor.get();
+        this.policyEditorError = false;
+      } catch (e) {
+        this.policyEditorError = true;
+      }
+    };
   }
 
   manageConditionCodeControl(index: number) {
