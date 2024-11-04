@@ -72,7 +72,6 @@
   @include queries-modal-component-theme($theme);
   @include query-result-component-theme($theme);
   @include metrics-component-theme($theme);
-  @include add-metrics-component-theme($theme);
   @include experiment-query-result-component-theme($theme);
   @include experiment-ending-criteria-component-theme($theme);
   @include import-experiment-component-theme($theme);
@@ -513,5 +512,48 @@ button[mat-icon-button] {
     .mat-mdc-option:hover {
       background-color: rgba(0, 0, 0, 0.04) !important;
     }
+  }
+}
+
+.json-editor-container {
+  .jsoneditor {
+    border: 0;
+    height: 300px;
+  }
+
+  .jsoneditor-menu {
+    display: none;
+  }
+
+  .ace-jsoneditor .ace_scroller {
+    background-color: mat.get-color-from-palette($background, background);
+  }
+
+  .ace-jsoneditor .ace_gutter {
+    background-color: mat.get-color-from-palette($background, background);
+    color: mat.get-color-from-palette($foreground, text);
+    border-right: 1px solid var(--blue);
+  }
+
+  .ace-jsoneditor .ace_text-layer {
+    color: mat.get-color-from-palette($foreground, text);
+  }
+
+  .ace-jsoneditor .ace_variable {
+    color: mat.get-color-from-palette($foreground, text);
+  }
+
+  .ace-jsoneditor .ace_gutter-active-line {
+    color: mat.get-color-from-palette($foreground, text);
+    background-color: transparent;
+  }
+
+  .ace-jsoneditor .ace_marker-layer .ace_active-line {
+    color: mat.get-color-from-palette($foreground, text);
+    background-color: transparent;
+  }
+
+  .ace-jsoneditor .ace_string {
+    color: mat.get-color-from-palette($foreground, text);
   }
 }

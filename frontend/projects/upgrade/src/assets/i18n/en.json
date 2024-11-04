@@ -182,6 +182,7 @@
   "home.new-experiment.design.condition.column-header.alias.text": "ALIAS",
   "home.new-experiment.design.condition.column-header.weight.text": "Weight(%)",
   "home.new-experiment.design.condition.column-header.include.text": "INCLUDE",
+  "home.new-experiment.design.mooclet-policy-parameters.header.text": "Mooclet Policy Parameters",
   "home.new-experiment.metrics.text": "Metrics",
   "home.new-experiment.metrics.metric.placeholder.text": "Metric",
   "home.new-experiment.metrics.key.placeholder.text": "Key",
