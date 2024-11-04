@@ -206,7 +206,7 @@ export class AnalyticsService {
           expConditionId: item.expConditionId,
           conditionName: item.conditionName,
           revertTo: item.revertTo,
-          payloadValue: item.payload,
+          payload: item.payload,
           excludeIfReached: item.excludeIfReached,
           expDecisionPointId: item.expDecisionPointId,
         });
