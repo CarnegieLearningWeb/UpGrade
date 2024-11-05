@@ -190,6 +190,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       this.overviewForm.get('assignmentAlgorithm').valueChanges.subscribe((algo) => {
         this.isStratificationFactorSelected =
           ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING !== algo ? true : this.isStratificationFactorSelected;
+        this.experimentDesignStepperService.changeAssignmentAlgorithm(algo);
       });
 
       // populate values in form to update experiment if experiment data is available

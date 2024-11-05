@@ -441,10 +441,11 @@
           <div *ngIf="decisionPoints.length && conditions.length">
             <app-payloads-table [experimentInfo]="experimentInfo"> </app-payloads-table>
 
-            <!-- TODO: Should be visible only when Assignment Algorithm isn't Random or Stratified Random Sampling -->
-            <div *ngIf="true" class="json-editor-container">
-              <span class="title">{{ 'home.new-experiment.design.mooclet-policy-parameters.header.text' | translate }}</span>
-              <json-editor #policyEditor [options]="options"></json-editor>
+            <div *ngIf="currentAssignmentAlgorithm$ | async as algo">
+              <div *ngIf="shouldShowJsonEditor(algo)" class="json-editor-container">
+                <span class="title">{{ 'home.new-experiment.design.mooclet-policy-parameters.header.text' | translate }}</span>
+                <json-editor #policyEditor [options]="options"></json-editor>
+              </div>
             </div>
           </div>
         </section>

@@ -44,6 +44,7 @@ import {
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { SIMPLE_EXP_CONSTANTS } from './experiment-design.constants';
 import { JsonEditorComponent, JsonEditorOptions } from 'ang-jsoneditor';
+import { ASSIGNMENT_ALGORITHM } from '../../../../../../../../../../types/src';
 
 @Component({
   selector: 'home-experiment-design',
@@ -123,6 +124,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   previousConditionTableRowDataBehaviorSubject$ = new BehaviorSubject<ConditionsTableRowData>(null);
   isConditionsTableEditMode$ = this.experimentDesignStepperService.isConditionsTableEditMode$;
   conditionsTableEditIndex$ = this.experimentDesignStepperService.conditionsTableEditIndex$;
+
+  // Used for displaying the Mooclet Policy Parameters JSON editor
+  currentAssignmentAlgorithm$ = this.experimentDesignStepperService.currentAssignmentAlgorithm$;
 
   constructor(
     private _formBuilder: UntypedFormBuilder,
@@ -786,6 +790,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   changeEqualWeightFlag(event) {
     event.checked ? (this.equalWeightFlag = true) : (this.equalWeightFlag = false);
     this.applyEqualWeight();
+  }
+
+  shouldShowJsonEditor(algo: ASSIGNMENT_ALGORITHM): boolean {
+    // TODO: Update the logic to check the reverse (if the selected algorithm is one of the Mooclet algorithms)
+    return ![ASSIGNMENT_ALGORITHM.RANDOM, ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING].includes(algo);
   }
 
   get conditions(): UntypedFormArray {
