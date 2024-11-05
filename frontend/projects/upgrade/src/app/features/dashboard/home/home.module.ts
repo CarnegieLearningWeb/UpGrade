@@ -38,6 +38,7 @@ import { PayloadsTableComponent } from './components/experiment-design/payloads-
 import { FactorialExperimentDesignComponent } from './components/factorial-experiment-design/factorial-experiment-design.component';
 import { ConditionsTableComponent } from './components/factorial-experiment-design/conditions-table/conditions-table.component';
 import { NgJsonEditorModule } from 'ang-jsoneditor';
+import { assignmentAlgorithmPipe } from '../../../shared/pipes/assignment-algorithm.pipe';
 
 @NgModule({
   declarations: [
@@ -68,6 +69,7 @@ import { NgJsonEditorModule } from 'ang-jsoneditor';
     PayloadsTableComponent,
     FactorialExperimentDesignComponent,
     ConditionsTableComponent,
+    assignmentAlgorithmPipe,
   ],
   imports: [
     CommonModule,
