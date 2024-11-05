@@ -12,11 +12,6 @@ type FeatureFlagState = {
   importResults: { fileName: string; error: string | null }[];
 };
 
-// const initialState: FeatureFlagState = {
-//   featureFlags: [],
-//   isLoading: false,
-// };
-
 @Injectable()
 export class FeatureFlagsStore extends ComponentStore<FeatureFlagState> {
   constructor(private featureFlagsDataService: FeatureFlagsDataService) {
@@ -71,24 +66,3 @@ export class FeatureFlagsStore extends ComponentStore<FeatureFlagState> {
     );
   });
 }
-
-// export const featureFlagStore = signalStore(
-//   withState(initialState),
-//   withComputed(({ featureFlags }) => ({
-//     featureFlagCount: computed(() => featureFlags().length),
-//   })),
-//   withMethods((store, service = inject(FeatureFlagsDataService)) => ({
-//     async fetchFeatureFlags() {
-//       patchState(store, { isLoading: true });
-//       const featureFlags = await service.fetchFeatureFlagsPaginated({ skip: 0, take: 10 });
-//       patchState(store, { featureFlags.nodes, isLoading: false });
-//     },
-
-//     async addFeatureFlag(flag: FeatureFlag) {
-//       patchState(store, { isLoading: true });
-//       const newFlag = toSignal(await service.addFeatureFlag(flag));
-//       patchState(store, (state) => ({ featureFlags: [ ...state.featureFlags, newFlag() ] }));
-//     }
-//   })
-//   )
-// );

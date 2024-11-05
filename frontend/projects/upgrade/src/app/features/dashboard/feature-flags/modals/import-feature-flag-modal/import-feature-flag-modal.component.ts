@@ -125,11 +125,7 @@ export class ImportFeatureFlagModalComponent {
     try {
       this.isImportActionBtnDisabled.next(true);
       this.featureFlagStore.importFeatureFlags({ files: this.fileData });
-      // const importResult = (await firstValueFrom(
-      //   this.featureFlagsDataService.importFeatureFlag({ files: this.fileData })
-      // )) as importError[];
 
-      //this.showNotification([]);
       this.isImportActionBtnDisabled.next(false);
       this.uploadedFileCount.next(0);
       this.fileData = [];
