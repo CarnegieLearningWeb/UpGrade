@@ -37,6 +37,7 @@ export {
   FEATURE_FLAG_STATUS,
   STATUS_INDICATOR_CHIP_TYPE,
   FILE_TYPE,
+  SUPPORTED_MOOCLET_POLICY_NAMES,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,

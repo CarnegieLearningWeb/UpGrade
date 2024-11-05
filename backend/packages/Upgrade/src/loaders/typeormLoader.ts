@@ -1,7 +1,7 @@
 import { MicroframeworkLoader, MicroframeworkSettings } from 'microframework';
 import { DataSource, LogLevel } from 'typeorm';
 import { env } from '../env';
-import { SERVER_ERROR } from 'upgrade_types';
+import { SERVER_ERROR } from '../../types';
 import { CONNECTION_NAME } from './enums';
 import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/PostgresConnectionCredentialsOptions';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
