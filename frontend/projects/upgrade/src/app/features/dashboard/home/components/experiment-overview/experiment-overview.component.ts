@@ -57,7 +57,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   allContexts = [];
   currentContext = null;
   initialDesignType = EXPERIMENT_TYPE.SIMPLE;
-  isContextOrTypeChanged = false;
+  isDesignTypeChanged = false;
   consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
   conditionOrders = [
     { value: CONDITION_ORDER.RANDOM },
@@ -176,14 +176,13 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       });
 
       this.overviewForm.get('context').valueChanges.subscribe((context) => {
-        this.isContextOrTypeChanged = this.currentContext !== context;
         this.currentContext = context;
         this.experimentService.setCurrentContext(context);
         this.setGroupTypes();
       });
 
       this.overviewForm.get('designType').valueChanges.subscribe((type) => {
-        this.isContextOrTypeChanged = this.initialDesignType !== type;
+        this.isDesignTypeChanged = this.initialDesignType !== type;
         this.initialDesignType = type;
       });
 
