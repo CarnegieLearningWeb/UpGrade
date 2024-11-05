@@ -1,9 +1,7 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/feature-flags.service';
-import {
-  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
-  ParticipantListRowActionEvent,
-} from '../../../../../../../../core/feature-flags/store/feature-flags.model';
+import { ParticipantListRowActionEvent } from '../../../../../../../../core/feature-flags/store/feature-flags.model';
+import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
 import { CommonDetailsParticipantListTableComponent } from '../../../../../../../../shared-standalone-component-lib/components/common-details-participant-list-table/common-details-participant-list-table.component';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
@@ -19,7 +17,7 @@ import { TranslateModule } from '@ngx-translate/core';
 export class FeatureFlagInclusionsTableComponent {
   @Input() slideToggleDisabled?: boolean = false;
   @Input() actionsDisabled?: boolean = false;
-  tableType = FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE;
+  tableType = FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION;
   dataSource$ = this.featureFlagService.selectFeatureFlagInclusions$;
   isLoading$ = this.featureFlagService.isLoadingSelectedFeatureFlag$;
   @Output() rowAction = new EventEmitter<ParticipantListRowActionEvent>();
