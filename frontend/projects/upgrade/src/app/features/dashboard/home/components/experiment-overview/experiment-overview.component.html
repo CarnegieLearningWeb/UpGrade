@@ -117,7 +117,7 @@
               *ngFor="let assignmentAlgorithm of assignmentAlgorithms"
               [value]="assignmentAlgorithm.value"
             >
-              {{ assignmentAlgorithm.value | titlecase }}
+              {{ assignmentAlgorithm.value | assignmentAlgorithmFormat }}
             </mat-option>
           </mat-select>
         </mat-form-field>
