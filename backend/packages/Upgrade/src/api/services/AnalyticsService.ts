@@ -182,8 +182,9 @@ export class AnalyticsService {
       if (!experimentQueryResult || experimentQueryResult.length === 0) {
         throw new HttpError(404, `Experiment not found for id: ${experimentId}`);
       }
-      const formattedExperiments = experimentQueryResult.reduce((acc, item) => {
+      const formattedExperiment: ExperimentCSVData[] = experimentQueryResult.reduce((acc, item) => {
         let experiment: ExperimentCSVData = acc.find((e) => e.experimentId === item.experimentId);
+        // for the first run over the experiment data, prepare the experiment object
         if (!experiment) {
           experiment = {
             experimentId: item.experimentId,
@@ -202,6 +203,7 @@ export class AnalyticsService {
           };
           acc.push(experiment);
         }
+        // add the design details for the experiment for each experimentQueryResult item
         experiment.details.push({
           expConditionId: item.expConditionId,
           conditionName: item.conditionName,
@@ -217,7 +219,7 @@ export class AnalyticsService {
       if (experimentQueryResult[0].assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
         csvExportData = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentId);
       } else {
-        csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(formattedExperiments[0], experimentId);
+        csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(formattedExperiment[0], experimentId);
       }
 
       const queryData = await this.logRepository.getLogPerExperimentQuery(experimentId);
