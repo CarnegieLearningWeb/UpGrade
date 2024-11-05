@@ -45,6 +45,7 @@ import {
 import { SIMPLE_EXP_CONSTANTS } from './experiment-design.constants';
 import { JsonEditorComponent, JsonEditorOptions } from 'ang-jsoneditor';
 import { ASSIGNMENT_ALGORITHM } from '../../../../../../../../../../types/src';
+import { PolicyParameterMap } from '../../../../../../../../../../types/src/Experiment/interfaces';
 
 @Component({
   selector: 'home-experiment-design',
@@ -71,6 +72,33 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   policyEditorError = false;
 
   @ViewChild('policyEditor', { static: false }) policyEditor: JsonEditorComponent;
+
+  // TODO: The default param values might need to be fetched from the backend
+  defaultPolicyParams: Partial<PolicyParameterMap> = {
+    [ASSIGNMENT_ALGORITHM.TS_CONFIGURABLE]: {
+      prior: {
+        success: 1,
+        failure: 1,
+      },
+      posteriors: undefined,
+      batch_size: 1,
+      max_rating: 1,
+      min_rating: 0,
+      uniform_threshold: 0,
+      tspostdiff_thresh: 0,
+      outcome_variable_name: '',
+    },
+    [ASSIGNMENT_ALGORITHM.EPSILON_GREEDY]: {
+      epsilon: 0.1,
+      decay_rate: 0.995,
+      min_epsilon: 0.01,
+    },
+    [ASSIGNMENT_ALGORITHM.UCB]: {
+      alpha: 1,
+      window_size: 1,
+    },
+    // Add other algorithm parameters as needed
+  };
 
   subscriptionHandler: Subscription;
 
@@ -793,8 +821,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   shouldShowJsonEditor(algo: ASSIGNMENT_ALGORITHM): boolean {
-    // TODO: Update the logic to check the reverse (if the selected algorithm is one of the Mooclet algorithms)
-    return ![ASSIGNMENT_ALGORITHM.RANDOM, ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING].includes(algo);
+    return [
+      ASSIGNMENT_ALGORITHM.TS_CONFIGURABLE,
+      ASSIGNMENT_ALGORITHM.EPSILON_GREEDY,
+      ASSIGNMENT_ALGORITHM.UCB,
+    ].includes(algo);
   }
 
   get conditions(): UntypedFormArray {

@@ -19,6 +19,9 @@ export enum CONDITION_ORDER {
 export enum ASSIGNMENT_ALGORITHM {
   RANDOM = 'random',
   STRATIFIED_RANDOM_SAMPLING = 'stratified random sampling',
+  TS_CONFIGURABLE = 'ts configurable',
+  EPSILON_GREEDY = 'epsilon greedy',
+  UCB = 'ucb',
 }
 
 export enum POST_EXPERIMENT_RULE {

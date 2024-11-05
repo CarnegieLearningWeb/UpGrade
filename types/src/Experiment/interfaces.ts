@@ -12,6 +12,7 @@ import {
   FEATURE_FLAG_STATUS,
   FILTER_MODE,
   FEATURE_FLAG_LIST_FILTER_MODE,
+  ASSIGNMENT_ALGORITHM,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -230,6 +231,37 @@ export interface IPayload {
   type: PAYLOAD_TYPE;
   value: string;
 }
+
+export interface TsConfigurableParameters {
+  prior: {
+    success: number;
+    failure: number;
+  };
+  posteriors: undefined;
+  batch_size: number;
+  max_rating: number;
+  min_rating: number;
+  uniform_threshold: number;
+  tspostdiff_thresh: number;
+  outcome_variable_name: string;
+}
+
+export interface EpsilonGreedyParameters {
+  epsilon: number;
+  decay_rate?: number;
+  min_epsilon?: number;
+}
+
+export interface UcbParameters {
+  alpha: number;
+  window_size: number;
+}
+
+export type PolicyParameterMap = {
+  [ASSIGNMENT_ALGORITHM.TS_CONFIGURABLE]: TsConfigurableParameters;
+  [ASSIGNMENT_ALGORITHM.EPSILON_GREEDY]: EpsilonGreedyParameters;
+  [ASSIGNMENT_ALGORITHM.UCB]: UcbParameters;
+};
 
 export interface ScoreObject {
   id: string;
