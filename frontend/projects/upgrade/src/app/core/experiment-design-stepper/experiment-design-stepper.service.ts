@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
-import { ASSIGNMENT_UNIT } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT } from 'upgrade_types';
 import {
   ExperimentDecisionPoint,
   ExperimentCondition,
@@ -78,6 +78,10 @@ export class ExperimentDesignStepperService {
   private assignmentUnitSource = new BehaviorSubject<ASSIGNMENT_UNIT>(ASSIGNMENT_UNIT.INDIVIDUAL);
   currentAssignmentUnit$ = this.assignmentUnitSource.asObservable();
 
+  // Assignment Algorithm:
+  private assignmentAlgorithmSource = new BehaviorSubject<ASSIGNMENT_ALGORITHM>(ASSIGNMENT_ALGORITHM.RANDOM);
+  currentAssignmentAlgorithm$ = this.assignmentAlgorithmSource.asObservable();
+
   // Payload table:
   simpleExperimentPayloadTableDataBehaviorSubject$ = new BehaviorSubject<SimpleExperimentPayloadTableRowData[]>([]);
   isSimpleExperimentPayloadTableEditMode$ = this.store$.pipe(select(selectIsSimpleExperimentPayloadTableEditMode));
@@ -136,6 +140,10 @@ export class ExperimentDesignStepperService {
 
   changeAssignmentUnit(unit: ASSIGNMENT_UNIT) {
     this.assignmentUnitSource.next(unit);
+  }
+
+  changeAssignmentAlgorithm(algo: ASSIGNMENT_ALGORITHM) {
+    this.assignmentAlgorithmSource.next(algo);
   }
 
   getHasExperimentDesignStepperDataChanged() {
