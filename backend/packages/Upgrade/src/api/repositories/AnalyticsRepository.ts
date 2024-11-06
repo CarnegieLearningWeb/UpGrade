@@ -78,15 +78,15 @@ export interface CSVExportDataRow {
 }
 
 export interface ConditionDecisionPointData {
-  revertTo: string;
-  payload: string;
-  excludeIfReached: boolean;
-  expDecisionPointId: string;
-  expConditionId: string;
-  conditionName: string;
+  revertTo?: string;
+  payload?: string;
+  excludeIfReached?: boolean;
+  expDecisionPointId?: string;
+  expConditionId?: string;
+  conditionName?: string;
 }
 
-export interface ExperimentCSVData {
+export interface ExperimentDetailsForCSVData extends ConditionDecisionPointData {
   experimentId: string;
   experimentName: string;
   context: string[];
@@ -99,12 +99,6 @@ export interface ExperimentCSVData {
   postRule: string;
   enrollmentStartDate: string;
   enrollmentCompleteDate: string;
-  revertTo: string;
-  payload: string;
-  excludeIfReached: boolean;
-  expDecisionPointId: string;
-  expConditionId: string;
-  conditionName: string;
   details: ConditionDecisionPointData[];
 }
 
@@ -445,7 +439,7 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
   }
 
   public async getCSVDataForSimpleExport(
-    experimentsData: ExperimentCSVData,
+    experimentsData: ExperimentDetailsForCSVData,
     experimentId: string
   ): Promise<CSVExportDataRow[]> {
     // Get the individual enrollment-related data
