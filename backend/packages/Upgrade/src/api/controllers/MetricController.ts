@@ -1,8 +1,8 @@
-import { Authorized, JsonController, Get, Delete, Param, Post, Req, Body, Params } from 'routing-controllers';
+import { Authorized, JsonController, Get, Delete, Post, Req, Body, Params } from 'routing-controllers';
 import { MetricService } from '../services/MetricService';
 import { IMetricUnit } from 'upgrade_types';
 import { AppRequest } from '../../types';
-import { MetricKeyValidator, MetricValidator } from './validators/MetricValidator';
+import { ContextValidator, MetricKeyValidator, MetricValidator } from './validators/MetricValidator';
 
 /**
  * @swagger
@@ -56,7 +56,10 @@ export class MetricController {
    *            description: Metrics Context not found
    */
   @Get('/:context')
-  public getMetricsByContext(@Param('context') context: string, @Req() request: AppRequest): Promise<IMetricUnit[]> {
+  public getMetricsByContext(
+    @Params({ validate: true }) { context }: ContextValidator,
+    @Req() request: AppRequest
+  ): Promise<IMetricUnit[]> {
     return this.metricService.getMetricsByContext(context, request.logger);
   }
 

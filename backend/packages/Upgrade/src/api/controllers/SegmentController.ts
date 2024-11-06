@@ -1,24 +1,12 @@
-import {
-  JsonController,
-  Get,
-  Delete,
-  Param,
-  Authorized,
-  Post,
-  Req,
-  Body,
-  QueryParams,
-  Params,
-} from 'routing-controllers';
+import { JsonController, Get, Delete, Authorized, Post, Req, Body, QueryParams, Params } from 'routing-controllers';
 import { SegmentService, SegmentWithStatus } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
-import { SERVER_ERROR } from 'upgrade_types';
-import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
 import {
   IdValidator,
   SegmentFile,
   SegmentIds,
+  SegmentIdValidator,
   SegmentImportError,
   SegmentInputValidator,
 } from './validators/SegmentInputValidator';
@@ -383,17 +371,10 @@ export class SegmentController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Delete('/:segmentId')
-  public deleteSegment(@Param('segmentId') segmentId: string, @Req() request: AppRequest): Promise<Segment> {
-    if (!segmentId) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
-    }
-    if (!isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
-        )
-      );
-    }
+  public deleteSegment(
+    @Params({ validate: true }) { segmentId }: SegmentIdValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
     return this.segmentService.deleteSegment(segmentId, request.logger);
   }
 
