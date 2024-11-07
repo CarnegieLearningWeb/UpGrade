@@ -377,11 +377,15 @@ export class AnalyticsService {
           ConditionName: row.conditionName,
           Payload: row.payload ? row.payload : row.conditionName,
           PostRule: postRule,
-          EnrollmentStartDate: new Date(row.enrollmentStartDate).toISOString(),
+          EnrollmentStartDate: row.enrollmentStartDate
+            ? new Date(row.enrollmentStartDate).toISOString()
+            : 'NA',
           EnrollmentCompleteDate: row.enrollmentCompleteDate
             ? new Date(row.enrollmentCompleteDate).toISOString()
             : 'NA',
-          MarkExperimentPointTime: new Date(row.markExperimentPointTime).toISOString(),
+          MarkExperimentPointTime: row.markExperimentPointTime
+            ? new Date(row.markExperimentPointTime).toISOString()
+            : 'NA',
           EnrollmentCode: row.enrollmentCode,
           ...queryDataToAdd,
         };
