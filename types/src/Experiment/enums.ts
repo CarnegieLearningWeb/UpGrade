@@ -19,6 +19,7 @@ export enum CONDITION_ORDER {
 export enum ASSIGNMENT_ALGORITHM {
   RANDOM = 'random',
   STRATIFIED_RANDOM_SAMPLING = 'stratified random sampling',
+  MOOCLET_TS_CONFIGURABLE = 'ts_configurable',
 }
 
 export enum POST_EXPERIMENT_RULE {
@@ -297,8 +298,4 @@ export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
 export enum FILE_TYPE {
   JSON = '.json',
   CSV = '.csv',
-}
-
-export enum SUPPORTED_MOOCLET_POLICY_NAMES {
-  TS_CONFIGURABLE = 'ts_configurable',
 }

@@ -1,11 +1,10 @@
+import 'reflect-metadata';
 import { UpgradeLogger } from './lib/logger/UpgradeLogger';
 import { env } from './env';
 
 if (env.useNewRelic) {
   require('newrelic/index');
 }
-
-import 'reflect-metadata';
 
 import { bootstrapMicroframework } from 'microframework';
 import { expressLoader } from './loaders/expressLoader';

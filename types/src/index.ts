@@ -37,7 +37,6 @@ export {
   FEATURE_FLAG_STATUS,
   STATUS_INDICATOR_CHIP_TYPE,
   FILE_TYPE,
-  SUPPORTED_MOOCLET_POLICY_NAMES,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,
@@ -76,3 +75,7 @@ export {
   FeatureFlagStateChangedData,
   FeatureFlagDeletedData,
 } from './Experiment/interfaces';
+export {
+  // MoocletTSConfigurablePolicyParametersDTO,
+  MOOCLET_POLICY_SCHEMA_MAP,
+} from './Mooclet/DTO';

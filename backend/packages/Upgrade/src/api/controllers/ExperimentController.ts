@@ -11,6 +11,7 @@ import {
   Req,
   QueryParams,
   Params,
+  UseBefore,
 } from 'routing-controllers';
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
@@ -26,10 +27,10 @@ import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
 import { MoocletExperimentService } from '../services/MoocletExperimentService';
 import { env } from '../../env';
-import { UnprocessableEntityException } from '@nestjs/common';
 import { MoocletExperimentDTO } from '../DTO/MoocletExperimentDTO';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
+import { ValidateMoocletPolicyParametersMiddleware } from '../middlewares/ValidateMoocletPolicyParameters';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: Experiment[];
@@ -958,6 +959,7 @@ export class ExperimentController {
    */
 
   @Post()
+  @UseBefore(ValidateMoocletPolicyParametersMiddleware)
   public create(
     @Body({ validate: true }) experiment: ExperimentDTO | MoocletExperimentDTO,
     @CurrentUser() currentUser: UserDTO,
@@ -965,13 +967,7 @@ export class ExperimentController {
   ): Promise<ExperimentDTO | MoocletExperimentDTO> {
     request.logger.child({ user: currentUser });
 
-    // Manually check if the experiment is a MoocletExperimentDTO
     if ('moocletPolicyParameters' in experiment) {
-      if (!env.mooclets.enabled) {
-        throw new UnprocessableEntityException(
-          'Failed to create Experiment: moocletPolicyParameters was provided but mooclets are not enabled.'
-        );
-      }
       return this.moocletExperimentService.syncCreate({
         experimentDTO: experiment,
         currentUser,
@@ -979,7 +975,7 @@ export class ExperimentController {
       });
     }
 
-    return this.experimentService.create(experiment as ExperimentDTO, currentUser, request.logger);
+    return this.experimentService.create(experiment, currentUser, request.logger);
   }
 
   /**
