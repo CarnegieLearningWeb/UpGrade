@@ -84,7 +84,7 @@ import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
-import { ExperimentCSVData } from '../repositories/AnalyticsRepository';
+import { ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
 
 const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
@@ -225,8 +225,8 @@ export class ExperimentService {
     return this.formatingConditionPayload(experiment);
   }
 
-  public async getExperimentDetailsForCSVDataExport(experimentId: string): Promise<ExperimentCSVData[]> {
-    return await this.experimentRepository.getExperimentCSVDataExport(experimentId);
+  public async getExperimentDetailsForCSVDataExport(experimentId: string): Promise<ExperimentDetailsForCSVData[]> {
+    return await this.experimentRepository.fetchExperimentDetailsForCSVDataExport(experimentId);
   }
 
   public getTotalCount(): Promise<number> {
