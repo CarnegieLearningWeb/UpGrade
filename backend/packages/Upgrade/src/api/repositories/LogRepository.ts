@@ -158,7 +158,8 @@ export class LogRepository extends Repository<Log> {
       .where('experiment.id = :experimentId', { experimentId });
 
     // Log the raw SQL
-    console.log(queryBuilder.getSql());
+    
+    console.log('>>>sql:', JSON.stringify(queryBuilder.getSql()));
 
     // Execute the query
     return queryBuilder.execute();
