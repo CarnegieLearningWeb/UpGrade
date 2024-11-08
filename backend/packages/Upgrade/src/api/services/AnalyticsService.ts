@@ -226,9 +226,11 @@ export class AnalyticsService {
         csvExportData = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentId);
       } else {
         csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(formattedExperiment[0], experimentId);
+        logger.info({ message: `CSV data for simple export: ${csvExportData}` });
       }
 
       const queryData = await this.logRepository.getLogPerExperimentQuery(experimentId);
+      logger.info({ message: `Query data for experiment: ${queryData}` });
       // query name id mapping
       const queryNameIdMapping: Record<string, string> = {};
       queryData.forEach((singleRecord) => {
@@ -352,6 +354,7 @@ export class AnalyticsService {
             queryDataToAdd[queryName] = '';
           });
         }
+        logger.info({ message: `Query data to add: ${queryDataToAdd}` });
 
         const revertToCondition = row.revertTo ? row.revertTo : 'Default';
         const postRule = row.postRule === 'assign' ? `Assign: ${revertToCondition}` : 'Continue';
