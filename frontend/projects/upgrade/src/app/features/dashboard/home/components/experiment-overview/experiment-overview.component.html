@@ -168,11 +168,6 @@
           />
         </mat-chip-grid>
       </mat-form-field>
-      <mat-checkbox class="check-box" color="primary" formControlName="logging">
-        <span class="ft-13-700 checkbox-label">
-          {{ 'home.view-experiment.logging.text' | translate }}
-        </span>
-      </mat-checkbox>
     </form>
     <div class="validation-container">
       <span
@@ -180,8 +175,13 @@
         *ngIf="!isStratificationFactorSelected"
         [innerHTML]="stratificationFactorNotSelectedMsg | translate"
       ></span>
-      <span class="ft-14-600 validation-message" *ngIf="isDesignTypeChanged">
-        {{ 'home.view-experiment.enrollment-over-time.design-type-change-validation.text' | translate }}
+      <span class="ft-14-600 validation-message" *ngIf="isOverviewFormCompleted" [ngSwitch]="warningStatus">
+        <ng-container *ngSwitchCase="OverviewFormWarningStatus.CONTEXT_CHANGED">
+          {{ 'home.new-experiment.overview.context-changed.warning.text' | translate }}
+        </ng-container>
+        <ng-container *ngSwitchCase="OverviewFormWarningStatus.DESIGN_TYPE_CHANGED">
+          {{ 'home.new-experiment.overview.design-type-changed.warning.text' | translate }}
+        </ng-container>
       </span>
     </div>
   </section>
@@ -212,7 +212,7 @@
       </button>
       <button
         type="button"
-        *ngIf="experimentInfo && enableSave"
+        *ngIf="experimentInfo"
         mat-raised-button
         class="shared-modal--modal-btn default-button"
         [ngClass]="{
