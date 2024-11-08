@@ -11,6 +11,7 @@ import { FeatureFlagExclusionsTableComponent } from './feature-flag-exclusions-t
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import {
+  FeatureFlag,
   PARTICIPANT_LIST_ROW_ACTION,
   ParticipantListRowActionEvent,
   ParticipantListTableRow,
@@ -45,15 +46,16 @@ export class FeatureFlagExclusionsSectionCardComponent {
   tableRowCount$ = this.featureFlagService.selectFeatureFlagExclusionsLength$;
   selectedFlag$ = this.featureFlagService.selectedFeatureFlag$;
 
+  menuButtonItems: IMenuButtonItem[] = [
+    { name: 'Import Exclude List', disabled: false },
+    { name: 'Export All Exclude Lists', disabled: false },
+  ];
+
   constructor(
     private featureFlagService: FeatureFlagsService,
     private dialogService: DialogService,
     private authService: AuthService
   ) {}
-  menuButtonItems: IMenuButtonItem[] = [
-    // { name: 'Import Exclude List', disabled: false },
-    // { name: 'Export All Exclude Lists', disabled: false },
-  ];
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
@@ -63,8 +65,30 @@ export class FeatureFlagExclusionsSectionCardComponent {
     this.dialogService.openAddExcludeListModal(appContext, flagId);
   }
 
-  onMenuButtonItemClick(event) {
-    console.log('Menu Button Item Clicked:', event);
+  onMenuButtonItemClick(event, flag: FeatureFlag) {
+    const confirmMessage = 'feature-flags.export-all-exclude-lists-design.confirmation-text.text';
+    switch (event) {
+      case 'Import Exclude List':
+        this.dialogService
+          .openImportFeatureFlagExcludeListModal(flag.id)
+          .afterClosed()
+          .subscribe(() => this.featureFlagService.fetchFeatureFlagById(flag.id));
+        break;
+      case 'Export All Exclude Lists':
+        if (flag.featureFlagSegmentExclusion.length) {
+          this.dialogService
+            .openExportDesignModal('Export All Exclude Lists', confirmMessage)
+            .afterClosed()
+            .subscribe((isExportClicked: boolean) => {
+              if (isExportClicked) {
+                this.featureFlagService.exportAllExcludeListsData(flag.id);
+              }
+            });
+        }
+        break;
+      default:
+        console.log('Unknown action');
+    }
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {

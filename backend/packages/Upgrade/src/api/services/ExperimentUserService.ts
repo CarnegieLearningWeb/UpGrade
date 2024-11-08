@@ -13,7 +13,6 @@ import { Experiment } from '../models/Experiment';
 import isEqual from 'lodash/isEqual';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { env } from '../../env';
-import { HttpError } from '../errors';
 
 @Service()
 export class ExperimentUserService {
@@ -105,21 +104,6 @@ export class ExperimentUserService {
     const userId = userDoc.id;
     const userExist = userDoc;
     logger.info({ message: 'Set aliases for experiment user => ' + userId, details: aliases });
-
-    // throw error if user not defined
-    if (!userExist || !userExist.id) {
-      logger.error({ message: 'User not defined setAliasesForUser' + userId, details: aliases });
-
-      const error = new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined setAliasesForUser: ${userId}`,
-        })
-      );
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404;
-      throw error;
-    }
     const promiseArray = [];
     const dedupedArray = [...new Set(aliases)];
 
@@ -238,18 +222,6 @@ export class ExperimentUserService {
     const { logger, userDoc } = requestContext;
     const userExist = userDoc;
     logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
-    if (!userExist) {
-      logger.error({ message: 'User not defined updateWorkingGroup', details: userId });
-      const error = new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined updateWorkingGroup: ${userId}`,
-        })
-      );
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404;
-      throw error;
-    }
 
     // removing enrollments in case working group is changed
     if (userExist && userExist.workingGroup && workingGroup) {
@@ -259,12 +231,6 @@ export class ExperimentUserService {
     // TODO check if workingGroup is the subset of group membership
     const newDocument = { ...userExist, workingGroup };
     return this.userRepository.save(newDocument);
-  }
-
-  public update(id: string, user: Partial<ExperimentUser>, logger: UpgradeLogger): Promise<ExperimentUser> {
-    logger.info({ message: `Update a user ${user.toString()}` });
-    user.id = id;
-    return this.userRepository.save(user);
   }
 
   // TODO should we check for workingGroup as a subset over here?
@@ -279,18 +245,6 @@ export class ExperimentUserService {
       message: `Set Group Membership for userId: ${userId} with Group membership details as below:`,
       details: groupMembership,
     });
-    if (!userExist) {
-      logger.error({ message: 'User not defined updateGroupMembership', details: userId });
-      const error = new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined updateGroupMembership: ${userId}`,
-        })
-      );
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404;
-      throw error;
-    }
 
     const newDocument = { ...userExist, group: groupMembership };
 
@@ -298,14 +252,14 @@ export class ExperimentUserService {
     return this.userRepository.save(newDocument);
   }
 
-  public async getUserDoc(experimentUserId, logger): Promise<RequestedExperimentUser> {
+  public async getUserDoc(experimentUserId: string, logger: UpgradeLogger): Promise<RequestedExperimentUser> {
     const experimentUserDoc = await this.getOriginalUserDoc(experimentUserId, logger);
     if (experimentUserDoc) {
       const userDoc = { ...experimentUserDoc, requestedUserId: experimentUserId };
       logger.info({ message: 'Got the user doc', details: userDoc });
       return userDoc;
     } else {
-      throw new HttpError(404, `Experiment User not found: ${experimentUserId}`);
+      return null;
     }
   }
 

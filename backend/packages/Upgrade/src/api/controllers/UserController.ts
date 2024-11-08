@@ -1,9 +1,8 @@
-import { JsonController, Post, Body, Get, Param, Authorized, Delete, Req } from 'routing-controllers';
+import { JsonController, Post, Body, Get, Authorized, Delete, Req, Params } from 'routing-controllers';
 import { User } from '../models/User';
 import { UserService } from '../services/UserService';
-import { UserDetailsValidator } from './validators/UserDetailsValidator';
-import { UserPaginatedParamsValidator } from './validators/UserPaginatedParamsValidator';
-import { SERVER_ERROR } from 'upgrade_types';
+import { UserDTO } from '../DTO/UserDTO';
+import { EmailValidator, UserPaginatedParamsValidator } from './validators/UserPaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 
 interface UserPaginationInfo extends PaginationResponse {
@@ -94,17 +93,6 @@ export class UserController {
     paginatedParams: UserPaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<UserPaginationInfo> {
-    if (!paginatedParams || Object.keys(paginatedParams).length === 0) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({
-            type: SERVER_ERROR.MISSING_PARAMS,
-            message: ' : paginatedParams should not be null or empty object.',
-          })
-        )
-      );
-    }
-
     const [users, count] = await Promise.all([
       this.userService.findPaginated(
         paginatedParams.skip,
@@ -143,7 +131,7 @@ export class UserController {
    *            description: Get User By Email
    */
   @Get('/:email')
-  public getUserByEmail(@Param('email') email: string): Promise<User[]> {
+  public getUserByEmail(@Params({ validate: true }) { email }: EmailValidator): Promise<User[]> {
     return this.userService.getUserByEmail(email);
   }
 
@@ -171,8 +159,7 @@ export class UserController {
    *            description: New User is created
    */
   @Post()
-  public create(
-    @Body({ validate: true }) user: UserDetailsValidator, @Req() request: AppRequest): Promise<User> {
+  public create(@Body({ validate: true }) user: UserDTO, @Req() request: AppRequest): Promise<User> {
     return this.userService.upsertUser(user, request.logger);
   }
 
@@ -215,7 +202,7 @@ export class UserController {
   @Post('/details')
   public updateUserDetails(
     @Body({ validate: true })
-    user: UserDetailsValidator
+    user: UserDTO
   ): Promise<User> {
     return this.userService.updateUserDetails(user.firstName, user.lastName, user.email, user.role);
   }
@@ -241,10 +228,7 @@ export class UserController {
    *            description: Delete User By email
    */
   @Delete('/:email')
-  public delete(@Param('email') email: string): Promise<User> {
-    if (!email) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : email should not be null.'));
-    }
+  public delete(@Params({ validate: true }) { email }: EmailValidator): Promise<User> {
     return this.userService.deleteUser(email);
   }
 }

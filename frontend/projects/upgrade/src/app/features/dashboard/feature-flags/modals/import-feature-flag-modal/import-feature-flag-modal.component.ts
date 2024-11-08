@@ -13,7 +13,7 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { ValidateFeatureFlagError } from '../../../../../core/feature-flags/store/feature-flags.model';
-import { importError } from '../../../../../core/segments/store/segments.model';
+import { importError, ImportListParams } from '../../../../../core/segments/store/segments.model';
 import { NotificationService } from '../../../../../core/notifications/notification.service';
 import { IFeatureFlagFile } from 'upgrade_types';
 
@@ -47,7 +47,7 @@ export class ImportFeatureFlagModalComponent {
   ]).pipe(map(([uploadedCount, isLoading]) => isLoading || uploadedCount === 0));
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: CommonModalConfig,
+    @Inject(MAT_DIALOG_DATA) public data: CommonModalConfig<ImportListParams>,
     public featureFlagsService: FeatureFlagsService,
     public featureFlagsDataService: FeatureFlagsDataService,
     public dialogRef: MatDialogRef<ImportFeatureFlagModalComponent>,
@@ -86,9 +86,22 @@ export class ImportFeatureFlagModalComponent {
 
   async checkValidation(files: IFeatureFlagFile[]) {
     try {
-      const validationErrors = (await firstValueFrom(
-        this.featureFlagsDataService.validateFeatureFlag({ files: files })
-      )) as ValidateFeatureFlagError[];
+      let validationErrors: ValidateFeatureFlagError[];
+
+      if (this.data.title === 'Import Feature Flag') {
+        validationErrors = (await firstValueFrom(
+          this.featureFlagsDataService.validateFeatureFlag({ files: files })
+        )) as ValidateFeatureFlagError[];
+      } else if (this.data.title === 'Import List') {
+        validationErrors = (await firstValueFrom(
+          this.featureFlagsDataService.validateFeatureFlagList(
+            files,
+            this.data.params.flagId,
+            this.data.params.listType
+          )
+        )) as ValidateFeatureFlagError[];
+      }
+
       this.fileValidationErrors = validationErrors.filter((data) => data.compatibilityType != null) || [];
       this.fileValidationErrorDataSource.data = this.fileValidationErrors;
       this.featureFlagsService.setIsLoadingImportFeatureFlag(false);
@@ -113,9 +126,21 @@ export class ImportFeatureFlagModalComponent {
   async importFiles() {
     try {
       this.isImportActionBtnDisabled.next(true);
-      const importResult = (await firstValueFrom(
-        this.featureFlagsDataService.importFeatureFlag({ files: this.fileData })
-      )) as importError[];
+      let importResult: importError[];
+
+      if (this.data.title === 'Import Feature Flag') {
+        importResult = (await firstValueFrom(
+          this.featureFlagsDataService.importFeatureFlag({ files: this.fileData })
+        )) as importError[];
+      } else if (this.data.title === 'Import List') {
+        importResult = (await firstValueFrom(
+          this.featureFlagsDataService.importFeatureFlagList(
+            this.fileData,
+            this.data.params.flagId,
+            this.data.params.listType
+          )
+        )) as importError[];
+      }
 
       this.showNotification(importResult);
       this.isImportActionBtnDisabled.next(false);
