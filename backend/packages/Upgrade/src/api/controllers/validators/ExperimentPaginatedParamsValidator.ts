@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsDefined, IsNumber, IsEnum, IsString, ValidateNested, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsEnum, IsString, ValidateNested, IsOptional } from 'class-validator';
 import { EXPERIMENT_SEARCH_KEY, SORT_AS_DIRECTION, EXPERIMENT_SORT_KEY } from '../../models/Experiment';
 import { Type } from 'class-transformer';
 
@@ -8,7 +8,6 @@ class ExperimentSearchParam {
   public key: EXPERIMENT_SEARCH_KEY;
 
   @IsNotEmpty()
-  @IsDefined()
   @IsString()
   public string: string;
 }
@@ -26,12 +25,10 @@ class ExperimentSortParam {
 export class ExperimentPaginatedParamsValidator {
   @IsNotEmpty()
   @IsNumber()
-  @IsDefined()
   public skip: number;
 
   @IsNotEmpty()
   @IsNumber()
-  @IsDefined()
   public take: number;
 
   @IsOptional()

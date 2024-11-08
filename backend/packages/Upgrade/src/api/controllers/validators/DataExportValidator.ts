@@ -1,13 +1,11 @@
-import { IsNotEmpty, IsString, IsDefined } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class DataExportValidator {
-  @IsString()
   @IsNotEmpty()
-  @IsDefined()
+  @IsUUID()
   public experimentId: string;
 
-  @IsString()
   @IsNotEmpty()
-  @IsDefined()
+  @IsString()
   public email: string;
 }

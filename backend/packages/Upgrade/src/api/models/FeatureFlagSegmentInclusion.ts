@@ -7,10 +7,10 @@ import { Segment } from './Segment';
 export class FeatureFlagSegmentInclusion extends BaseModel {
   // Define primary columns for the foreign keys
   @PrimaryColumn()
-  segmentId: number;
+  segmentId: string;
 
   @PrimaryColumn()
-  featureFlagId: number;
+  featureFlagId: string;
 
   // Establish OneToOne relationship without 'primary'
   @OneToOne(() => Segment, (segment) => segment.featureFlagSegmentInclusion, {

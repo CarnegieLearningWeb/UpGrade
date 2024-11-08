@@ -159,11 +159,6 @@ export enum FEATURE_FLAG_DETAILS_PAGE_ACTIONS {
   EMAIL_DATA = 'Email Feature Flag Data',
 }
 
-export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
-  INCLUDE = 'featureFlagSegmentInclusion',
-  EXCLUDE = 'featureFlagSegmentExclusion',
-}
-
 export const FLAG_ROOT_COLUMN_NAMES = {
   NAME: 'name',
   STATUS: 'status',

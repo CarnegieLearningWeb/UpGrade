@@ -1,12 +1,18 @@
-import { JsonController, Get, Delete, Param, Authorized, Post, Req, Body, QueryParams } from 'routing-controllers';
+import { JsonController, Get, Delete, Authorized, Post, Req, Body, QueryParams, Params } from 'routing-controllers';
 import { SegmentService, SegmentWithStatus } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
-import { SERVER_ERROR } from 'upgrade_types';
-import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
-import { SegmentFile, SegmentIds, SegmentImportError, SegmentInputValidator } from './validators/SegmentInputValidator';
+import {
+  IdValidator,
+  SegmentFile,
+  SegmentIds,
+  SegmentIdValidator,
+  SegmentImportError,
+  SegmentInputValidator,
+} from './validators/SegmentInputValidator';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
+import { NotFoundException } from '@nestjs/common/exceptions';
 
 export interface getSegmentData {
   segmentsData: SegmentWithStatus[];
@@ -238,6 +244,8 @@ export class SegmentController {
    *          description: Get segment by id
    *          schema:
    *            $ref: '#/definitions/segmentResponse'
+   *        '400':
+   *          description: segmentId should be a valid UUID.
    *        '401':
    *          description: Authorization Required Error
    *        '404':
@@ -246,18 +254,16 @@ export class SegmentController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Get('/:segmentId')
-  public getSegmentById(@Param('segmentId') segmentId: string, @Req() request: AppRequest): Promise<Segment> {
-    if (!segmentId) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
+  public async getSegmentById(
+    @Params({ validate: true }) { segmentId }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    const segment = await this.segmentService.getSegmentById(segmentId, request.logger);
+    if (!segment) {
+      throw new NotFoundException('Segment not found.');
     }
-    if (!isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
-        )
-      );
-    }
-    return this.segmentService.getSegmentById(segmentId, request.logger);
+
+    return segment;
   }
 
   /**
@@ -281,6 +287,8 @@ export class SegmentController {
    *          description: Get segment by id
    *          schema:
    *            $ref: '#/definitions/segmentResponse'
+   *        '400':
+   *          description: segmentId should be a valid UUID.
    *        '401':
    *          description: Authorization Required Error
    *        '404':
@@ -289,18 +297,15 @@ export class SegmentController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Get('/status/:segmentId')
-  public getSegmentWithStatusById(@Param('segmentId') segmentId: string, @Req() request: AppRequest): Promise<Segment> {
-    if (!segmentId) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
+  public async getSegmentWithStatusById(
+    @Params({ validate: true }) { segmentId }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    const segment = await this.segmentService.getSingleSegmentWithStatus(segmentId, request.logger);
+    if (!segment) {
+      throw new NotFoundException('Segment not found.');
     }
-    if (!isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
-        )
-      );
-    }
-    return this.segmentService.getSingleSegmentWithStatus(segmentId, request.logger);
+    return segment;
   }
 
   /**
@@ -366,17 +371,10 @@ export class SegmentController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Delete('/:segmentId')
-  public deleteSegment(@Param('segmentId') segmentId: string, @Req() request: AppRequest): Promise<Segment> {
-    if (!segmentId) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
-    }
-    if (!isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
-        )
-      );
-    }
+  public deleteSegment(
+    @Params({ validate: true }) { segmentId }: SegmentIdValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
     return this.segmentService.deleteSegment(segmentId, request.logger);
   }
 

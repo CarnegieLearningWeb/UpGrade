@@ -94,6 +94,32 @@ export const actionExportFeatureFlagDesignSuccess = createAction('[Feature Flags
 
 export const actionExportFeatureFlagDesignFailure = createAction('[Feature Flags] Export Feature Flag Design Failure');
 
+export const actionExportAllIncludeListsDesign = createAction(
+  '[Feature Flags] Export All Include Lists Design',
+  props<{ featureFlagId: string }>()
+);
+
+export const actionExportAllIncludeListsDesignSuccess = createAction(
+  '[Feature Flags] Export All Include Lists Design Success'
+);
+
+export const actionExportAllIncludeListsDesignFailure = createAction(
+  '[Feature Flags] Export All Include Lists Design Failure'
+);
+
+export const actionExportAllExcludeListsDesign = createAction(
+  '[Feature Flags] Export All Exclude Lists Design',
+  props<{ featureFlagId: string }>()
+);
+
+export const actionExportAllExcludeListsDesignSuccess = createAction(
+  '[Feature Flags] Export All Exclude Lists Design Success'
+);
+
+export const actionExportAllExcludeListsDesignFailure = createAction(
+  '[Feature Flags] Export All Exclude Lists Design Failure'
+);
+
 export const actionSetIsLoadingFeatureFlags = createAction(
   '[Feature Flags] Set Is Loading Flags',
   props<{ isLoadingFeatureFlags: boolean }>()

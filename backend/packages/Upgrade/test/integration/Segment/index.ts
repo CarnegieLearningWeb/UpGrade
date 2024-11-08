@@ -4,6 +4,11 @@ import TestCase3 from './SegmentUpdate';
 import TestCase4 from './SegmentMemberUserEnrollment';
 import TestCase5 from './SegmentMemberGroupEnrollment';
 import TestCase6 from './SubSegmentEnrollment';
+import TestCase7 from './IndividualExclusionSegmentIndividualConsistency';
+import TestCase8 from './IndividualExclusionSegmentGroupConsistency';
+import TestCase9 from './GroupExclusionSegmentIndividualConsistency';
+import TestCase10 from './GroupExclusionSegmentGroupConsistency';
+
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { CheckService } from '../../../src/api/services/CheckService';
 import { experimentUsers } from '../mockData/experimentUsers/index';
@@ -72,4 +77,24 @@ export const SegmentMemberGroupEnrollment = async () => {
 export const SubSegmentEnrollment = async () => {
   await initialChecks();
   await TestCase6();
+};
+
+export const IndividualExclusionSegmentIndividualConsistency = async () => {
+  await initialChecks();
+  await TestCase7();
+};
+
+export const IndividualExclusionSegmentGroupConsistency = async () => {
+  await initialChecks();
+  await TestCase8();
+};
+
+export const GroupExclusionSegmentIndividualConsistency = async () => {
+  await initialChecks();
+  await TestCase9();
+};
+
+export const GroupExclusionSegmentGroupConsistency = async () => {
+  await initialChecks();
+  await TestCase10();
 };

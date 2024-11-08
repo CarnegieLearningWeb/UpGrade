@@ -30,7 +30,11 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { ExperimentService } from './ExperimentService';
 import { QueryService } from './QueryService';
+<<<<<<< HEAD
 import { HttpError } from 'routing-controllers';
+=======
+import { HttpError } from '../errors';
+>>>>>>> origin/dev
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -166,9 +170,6 @@ export class AnalyticsService {
 
   public async getCSVData(experimentId: string, email: string, logger: UpgradeLogger): Promise<string> {
     logger.info({ message: `Inside getCSVData ${experimentId} , ${email}` });
-    if (!experimentId) {
-      return '';
-    }
     try {
       const timeStamp = new Date().toISOString();
       const folderPath = 'src/api/assets/files/';
@@ -181,6 +182,7 @@ export class AnalyticsService {
       const userRepository: UserRepository = Container.getCustomRepository(UserRepository, 'export');
       const user = await userRepository.findOneBy({ email });
 
+<<<<<<< HEAD
       const experimentDetails: ExperimentDetailsForCSVData[] = await this.experimentService.getExperimentDetailsForCSVDataExport(experimentId);
       if (!experimentDetails || experimentDetails.length === 0) {
         throw new HttpError(404, `Experiment not found for id: ${experimentId}`);
@@ -192,6 +194,16 @@ export class AnalyticsService {
         // if the experiment is not in the map, add it
         if (!experimentMap.has(item.experimentId)) {
           const experiment: ExperimentDetailsForCSVData = {
+=======
+      const experimentQueryResult = await this.experimentService.getExperimentDetailsForCSVDataExport(experimentId);
+      if (!experimentQueryResult || experimentQueryResult.length === 0) {
+        throw new HttpError(404, `Experiment not found for id: ${experimentId}`);
+      }
+      const formattedExperiments = experimentQueryResult.reduce((acc, item) => {
+        let experiment = acc.find((e) => e.experimentId === item.experimentId);
+        if (!experiment) {
+          experiment = {
+>>>>>>> origin/dev
             experimentId: item.experimentId,
             experimentName: item.experimentName,
             context: item.context,

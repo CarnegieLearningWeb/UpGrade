@@ -1,6 +1,6 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["./src/UpgradeClient.ts", "./src/identifiers", "./src/functions/getExperimentCondition.ts"],
+  "entryPoints": ["./src/UpGradeClient/UpgradeClient.ts", "./src/Assignment/Assignment.ts", "./src/types/Interfaces.ts", "./src/UpGradeClient/UpGradeClient.types.ts", "./src/ApiService/ApiService.ts", "./src/DataService/DataService.ts"],
   "out": "docs",
   "exclude": ["**/*+(index|.spec).ts", "**/fetchDataService.ts", "**/enums.ts"],
   "excludePrivate": true,

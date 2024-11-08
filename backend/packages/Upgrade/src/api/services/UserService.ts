@@ -14,7 +14,7 @@ import { AWSService } from './AWSService';
 import { env } from '../../env';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { Emails } from '../../templates/email';
-import { UserDetailsValidator } from '../controllers/validators/UserDetailsValidator';
+import { UserDTO } from '../DTO/UserDTO';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 
 @Service()
@@ -28,7 +28,7 @@ export class UserService {
     this.emails = new Emails();
   }
 
-  public async upsertUser(userDTO: UserDetailsValidator, logger: UpgradeLogger): Promise<User> {
+  public async upsertUser(userDTO: UserDTO, logger: UpgradeLogger): Promise<User> {
     const user = new User();
     user.email = userDTO.email;
     user.firstName = userDTO.firstName;

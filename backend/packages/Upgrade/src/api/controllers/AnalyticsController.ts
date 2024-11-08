@@ -67,7 +67,7 @@ export class AnalyticsController {
    *                    minLength: 1
    *                    example: exp01
    *          '400':
-   *            description: BadRequestError - InvalidParameterValue
+   *            description: experimentIds should have valid UUIDs.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '500':
@@ -307,6 +307,8 @@ export class AnalyticsController {
    *            description: BadRequestError - InvalidParameterValue
    *          '401':
    *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: experimentId NotFoundError
    *          '500':
    *            description: Internal Server Error
    */

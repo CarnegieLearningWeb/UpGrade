@@ -12,6 +12,7 @@ import {
 import { SEGMENT_TYPE } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { FeatureFlagCoreValidation } from './FeatureFlagValidator';
+import { SegmentInputValidator } from './SegmentInputValidator';
 
 class IndividualValidator {
   @IsNotEmpty()
@@ -32,7 +33,6 @@ class GroupValidator {
 class SegmentValidator {
   @IsOptional()
   @IsUUID()
-  @IsString()
   public id?: string;
 
   @IsNotEmpty()
@@ -55,7 +55,6 @@ class SegmentValidator {
 class SegmentImportValidator {
   @IsOptional()
   @IsUUID()
-  @IsString()
   public id?: string;
 
   @IsNotEmpty()
@@ -90,18 +89,26 @@ class SegmentImportValidator {
   public subSegments: SegmentValidator[];
 }
 
-class FeatureFlagListImportValidator {
+export class FeatureFlagListImportValidator {
   @IsDefined()
   @IsBoolean()
   public enabled: boolean;
 
   @IsNotEmpty()
-  @IsDefined()
   public listType: string;
 
   @ValidateNested()
   @Type(() => SegmentImportValidator)
   public segment: SegmentImportValidator;
+}
+
+export class ImportFeatureFlagListValidator {
+  @IsNotEmpty()
+  public listType: string;
+
+  @ValidateNested()
+  @Type(() => SegmentInputValidator)
+  public segment: SegmentInputValidator;
 }
 
 export class FeatureFlagImportDataValidation extends FeatureFlagCoreValidation {

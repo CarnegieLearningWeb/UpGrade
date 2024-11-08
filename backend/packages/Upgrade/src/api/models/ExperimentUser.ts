@@ -1,6 +1,6 @@
 import { Entity, PrimaryColumn, Column, OneToMany, ManyToOne } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
-import { IsNotEmpty, IsDefined } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 import { Log } from './Log';
 import { Type } from 'class-transformer';
 import { UserStratificationFactor } from './UserStratificationFactor';
@@ -9,7 +9,6 @@ import { UserStratificationFactor } from './UserStratificationFactor';
 export class ExperimentUser extends BaseModel {
   @PrimaryColumn()
   @IsNotEmpty()
-  @IsDefined()
   public id: string;
 
   @Column({ type: 'json', nullable: true })

@@ -5,7 +5,7 @@ import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT, CONDITION_ORDER } from 'upgrade_types';
-import { UserDetailsValidator } from 'src/api/controllers/validators/UserDetailsValidator';
+import { UserDTO } from 'src/api/DTO/UserDTO';
 
 export default async function AlgorithmCheck(): Promise<void> {
   // Testing for Factorial Experiment with different Decision Point
@@ -16,7 +16,7 @@ export default async function AlgorithmCheck(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as UserDetailsValidator, new UpgradeLogger());
+  const user = await userService.upsertUser(systemUser as UserDTO, new UpgradeLogger());
 
   // create experiment
   await experimentService.create(experimentObject, user, new UpgradeLogger());

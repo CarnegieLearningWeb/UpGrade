@@ -14,6 +14,7 @@ import { StratificationFactor } from '../models/StratificationFactor';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
 import { ErrorWithType } from '../errors/ErrorWithType';
+import { HttpError } from '../errors';
 @Service()
 export class StratificationService {
   constructor(
@@ -87,6 +88,9 @@ export class StratificationService {
       .where('sf.stratificationFactorName = :factor', { factor })
       .getRawMany();
 
+    if (!data.length) {
+      throw new HttpError(404, `Stratification factor not found: ${factor}`);
+    }
     // Convert JSON data to CSV
     return Papa.unparse(data);
   }

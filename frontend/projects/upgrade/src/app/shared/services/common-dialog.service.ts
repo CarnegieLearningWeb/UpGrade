@@ -23,6 +23,7 @@ import {
   ModalSize,
   SimpleConfirmationModalParams,
 } from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
 
 @Injectable({
   providedIn: 'root',
@@ -320,9 +321,9 @@ export class DialogService {
     return this.dialog.open(DeleteFeatureFlagModalComponent, config);
   }
 
-  openExportFeatureFlagDesignModal(warning: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openExportDesignModal(title, warning: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
-      title: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
+      title: title,
       primaryActionBtnLabel: 'Export',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -352,12 +353,29 @@ export class DialogService {
   }
 
   openImportFeatureFlagModal() {
+    return this.openImportModal('Import Feature Flag', null, null);
+  }
+
+  openImportFeatureFlagIncludeListModal(flagId: string) {
+    return this.openImportModal('Import List', FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, flagId);
+  }
+
+  openImportFeatureFlagExcludeListModal(flagId: string) {
+    return this.openImportModal('Import List', FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, flagId);
+  }
+
+  openImportModal(title: string, listType: FEATURE_FLAG_LIST_FILTER_MODE, flagId: string) {
     const commonModalConfig: CommonModalConfig = {
-      title: 'Import Feature Flag',
+      title: title,
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
+      params: {
+        listType: listType,
+        flagId: flagId,
+      },
     };
+
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: ModalSize.STANDARD,

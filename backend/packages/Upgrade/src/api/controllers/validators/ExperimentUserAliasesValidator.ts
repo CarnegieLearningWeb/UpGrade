@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsDefined, IsArray, IsString } from 'class-validator';
+import { IsNotEmpty, IsArray, IsString } from 'class-validator';
 
 export class ExperimentUserAliasesValidatorv6 {
   @IsArray()
@@ -8,6 +8,5 @@ export class ExperimentUserAliasesValidatorv6 {
 
 export class ExperimentUserAliasesValidator extends ExperimentUserAliasesValidatorv6 {
   @IsNotEmpty()
-  @IsDefined()
   public userId: string;
 }

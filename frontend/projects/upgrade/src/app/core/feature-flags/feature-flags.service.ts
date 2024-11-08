@@ -164,6 +164,14 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionExportFeatureFlagDesign({ featureFlagId }));
   }
 
+  exportAllIncludeListsData(featureFlagId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionExportAllIncludeListsDesign({ featureFlagId }));
+  }
+
+  exportAllExcludeListsData(featureFlagId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionExportAllExcludeListsDesign({ featureFlagId }));
+  }
+
   setSearchKey(searchKey: FLAG_SEARCH_KEY) {
     this.localStorageService.setItem(FeatureFlagLocalStorageKeys.FEATURE_FLAG_SEARCH_KEY, searchKey);
     this.store$.dispatch(FeatureFlagsActions.actionSetSearchKey({ searchKey }));

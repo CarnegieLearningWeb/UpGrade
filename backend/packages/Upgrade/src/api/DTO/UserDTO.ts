@@ -27,7 +27,7 @@ class ExperimentAuditLogValidator {
   public data: object;
 }
 
-export class UserDetailsValidator {
+export class UserDTO {
   @IsString()
   @IsOptional()
   public firstName: string;

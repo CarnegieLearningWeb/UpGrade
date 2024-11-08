@@ -38,7 +38,7 @@ export default async function testCase(): Promise<void> {
   expect(experimentUser.length).toEqual(0);
 
   // get all experiment condition for user 1
-  await expect(getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger())).rejects.toThrow();
+  await expect(getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger())).toEqual(Promise.resolve({}));
 
   experimentUser = await experimentUserService.find(new UpgradeLogger());
   expect(experimentUser.length).toEqual(0);

@@ -1,7 +1,6 @@
 import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
-  IsDefined,
   IsString,
   ValidateNested,
   IsArray,
@@ -87,7 +86,6 @@ class ILogInputValidator implements ILogInput {
 }
 
 export class LogValidatorv6 implements ILogRequestBody {
-  @IsDefined()
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
@@ -96,7 +94,6 @@ export class LogValidatorv6 implements ILogRequestBody {
 }
 
 export class LogValidator extends LogValidatorv6 implements ILogRequestBody {
-  @IsDefined()
   @IsNotEmpty()
   @IsString()
   public userId: string;

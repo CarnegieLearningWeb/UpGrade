@@ -21,13 +21,15 @@ export class CommonExportHelpersService {
     if (data.length > 1) {
       const zip = new JSZip();
       data.forEach((element, index) => {
-        zip.file(element.name + ' (File ' + (index + 1) + ').json', JSON.stringify(element));
+        const fileName = element.name || element.segment.name;
+        zip.file(fileName + ' (file ' + (index + 1) + ').json', JSON.stringify(element));
       });
       zip.generateAsync({ type: 'base64' }).then((content) => {
         this.download(zipFileName + '.zip', content, true);
       });
     } else {
-      this.download(data[0].name + '.json', data[0], false);
+      const filename = data[0].name || data[0].segment.name;
+      this.download(filename + '.json', data[0], false);
     }
   }
 }
