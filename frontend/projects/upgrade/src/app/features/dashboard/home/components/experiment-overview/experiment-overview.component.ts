@@ -25,6 +25,7 @@ import {
   NewExperimentPaths,
   IContextMetaData,
   ExperimentDesignTypes,
+  OverviewFormWarningStatus,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray } from '@angular/forms';
@@ -53,11 +54,12 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   public ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
 
   groupTypes = [];
-  enableSave = true;
   allContexts = [];
   currentContext = null;
   initialDesignType = EXPERIMENT_TYPE.SIMPLE;
-  isContextOrTypeChanged = false;
+  warningStatus = OverviewFormWarningStatus.NO_WARNING;
+  OverviewFormWarningStatus = OverviewFormWarningStatus;
+  isOverviewFormCompleted = false;
   consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
   conditionOrders = [
     { value: CONDITION_ORDER.RANDOM },
@@ -134,7 +136,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         stratificationFactor: [null],
         context: [null, Validators.required],
         tags: [[]],
-        logging: [false],
       });
 
       this.overviewForm.get('unitOfAssignment').valueChanges.subscribe((assignmentUnit) => {
@@ -176,14 +177,18 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       });
 
       this.overviewForm.get('context').valueChanges.subscribe((context) => {
-        this.isContextOrTypeChanged = this.currentContext !== context;
+        if (context && this.currentContext && this.currentContext !== context) {
+          this.warningStatus = OverviewFormWarningStatus.CONTEXT_CHANGED;
+        }
         this.currentContext = context;
         this.experimentService.setCurrentContext(context);
         this.setGroupTypes();
       });
 
       this.overviewForm.get('designType').valueChanges.subscribe((type) => {
-        this.isContextOrTypeChanged = this.initialDesignType !== type;
+        if (this.initialDesignType !== type) {
+          this.warningStatus = OverviewFormWarningStatus.DESIGN_TYPE_CHANGED;
+        }
         this.initialDesignType = type;
       });
 
@@ -216,9 +221,9 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           stratificationFactor: this.experimentInfo.stratificationFactor?.stratificationFactorName || null,
           context: this.currentContext,
           tags: this.experimentInfo.tags,
-          logging: this.experimentInfo.logging,
         });
         this.checkExperiment();
+        this.isOverviewFormCompleted = true;
       }
     });
   }
@@ -335,7 +340,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         assignmentAlgorithm,
         stratificationFactor,
         tags,
-        logging,
       } = this.overviewForm.value;
       const stratificationFactorValueToSend = this.stratificationFactorValueToSend(
         stratificationFactor,
@@ -356,7 +360,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
             ? { stratificationFactorName: stratificationFactorValueToSend }
             : null,
           tags,
-          logging,
         };
         this.emitExperimentDialogEvent.emit({
           type: eventType,
@@ -367,6 +370,9 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
           this.experimentDesignStepperService.experimentStepperDataReset();
           this.overviewForm.markAsPristine();
+        } else if (eventType == NewExperimentDialogEvents.SEND_FORM_DATA) {
+          this.warningStatus = OverviewFormWarningStatus.NO_WARNING;
+          this.isOverviewFormCompleted = true;
         }
       }
     }

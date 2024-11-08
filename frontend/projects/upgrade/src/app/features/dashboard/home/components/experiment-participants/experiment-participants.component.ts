@@ -50,7 +50,6 @@ export class ExperimentParticipantsComponent implements OnInit {
   inclusionCriteria = [{ value: INCLUSION_CRITERIA.INCLUDE_SPECIFIC }, { value: INCLUSION_CRITERIA.EXCEPT }];
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
 
-  enableSave = true;
   contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
   allSegments: Segment[];
