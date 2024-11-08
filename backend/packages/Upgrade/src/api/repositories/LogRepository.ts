@@ -140,7 +140,7 @@ export class LogRepository extends Repository<Log> {
     }>
   > {
     const experimentRepo = Container.getCustomRepository(ExperimentRepository);
-    return experimentRepo
+    const queryBuilder = experimentRepo
       .createQueryBuilder('experiment')
       .select([
         'logs.data as data',
@@ -155,8 +155,13 @@ export class LogRepository extends Repository<Log> {
       .innerJoin('experiment.queries', 'queries')
       .innerJoin('queries.metric', 'metric')
       .innerJoin('metric.logs', 'logs')
-      .where('experiment.id=:experimentId', { experimentId })
-      .execute();
+      .where('experiment.id = :experimentId', { experimentId });
+
+    // Log the raw SQL
+    console.log(queryBuilder.getSql());
+
+    // Execute the query
+    return queryBuilder.execute();
   }
 
   public prepareMetricString(metricId: string[], compareFn: string) {
