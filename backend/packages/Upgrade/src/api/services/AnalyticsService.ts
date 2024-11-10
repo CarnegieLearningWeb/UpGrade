@@ -30,7 +30,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { ExperimentService } from './ExperimentService';
 import { QueryService } from './QueryService';
-import { HttpError } from 'routing-controllers';
+import { HttpError } from '../errors';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -166,9 +166,6 @@ export class AnalyticsService {
 
   public async getCSVData(experimentId: string, email: string, logger: UpgradeLogger): Promise<string> {
     logger.info({ message: `Inside getCSVData ${experimentId} , ${email}` });
-    if (!experimentId) {
-      return '';
-    }
     try {
       const timeStamp = new Date().toISOString();
       const folderPath = 'src/api/assets/files/';

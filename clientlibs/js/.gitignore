@@ -33,3 +33,6 @@ java/.settings
 java/target
 
 coverage/
+
+# TypeDoc generated documentation #
+docs/

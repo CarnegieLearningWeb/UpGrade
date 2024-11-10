@@ -15,24 +15,24 @@ export const revertToExperiment = {
   context: ['home'],
   tags: [],
   queries: [
-      {
-        name: 'Percent of times the Most Recent workspaceCompletionStatus=GRADUATED for level1 (addWorkspace)',
-        query: {
-          operationType: OPERATION_TYPES.PERCENTAGE,
-          compareFn: '=',
-          compareValue: 'GRADUATED',
-        },
-        repeatedMeasure: REPEATED_MEASURE.mostRecent,
-        metric: {
-          key: `addWorkspace${METRICS_JOIN_TEXT}level1${METRICS_JOIN_TEXT}workspaceCompletionStatus`,
-          type: 'categorical',
-          allowedData: ['GRADUATED', 'PROMOTED'],
-        },
-        experimentId: 'be3ae74f-370a-4015-93f3-7761d16f8b11',
-      }
+    {
+      name: 'Percent of times the Most Recent workspaceCompletionStatus=GRADUATED for level1 (addWorkspace)',
+      query: {
+        operationType: OPERATION_TYPES.PERCENTAGE,
+        compareFn: '=',
+        compareValue: 'GRADUATED',
+      },
+      repeatedMeasure: REPEATED_MEASURE.mostRecent,
+      metric: {
+        key: `addWorkspace${METRICS_JOIN_TEXT}level1${METRICS_JOIN_TEXT}workspaceCompletionStatus`,
+        type: 'categorical',
+        allowedData: ['GRADUATED', 'PROMOTED'],
+      },
+      experimentId: 'be3ae74f-370a-4015-93f3-7761d16f8b11',
+    },
   ],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -90,7 +90,7 @@ export const experiment = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -152,7 +152,7 @@ export const experimentSecond = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -208,7 +208,7 @@ export const experimentThird = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -264,7 +264,7 @@ export const experimentFourth = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -321,7 +321,7 @@ export const experimentFifth = {
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
   type: EXPERIMENT_TYPE.SIMPLE,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -405,7 +405,7 @@ export const experimentSixth = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -465,7 +465,7 @@ export const factorialExperimentFirst = {
   tags: [],
   group: null,
   logging: false,
-  filterMode: 'includeAll',
+  filterMode: FILTER_MODE.INCLUDE_ALL,
   backendVersion: '1.0.0',
   type: 'Factorial',
   factors: [
@@ -587,7 +587,7 @@ export const factorialExperimentFirst = {
       context: 'add',
       type: 'private',
       individualForSegment: [],
-      groupForSegment: [],
+      groupForSegment: [{"groupId": "All", "type": "All"}],
       subSegments: [],
     },
   },
@@ -638,7 +638,7 @@ export const factorialExperimentSecond = {
   tags: [],
   group: null,
   logging: false,
-  filterMode: 'includeAll',
+  filterMode: FILTER_MODE.INCLUDE_ALL,
   backendVersion: '1.0.0',
   type: 'Factorial',
   factors: [
@@ -821,7 +821,7 @@ export const factorialExperimentSecond = {
       context: 'add',
       type: 'private',
       individualForSegment: [],
-      groupForSegment: [],
+      groupForSegment: [{"groupId": "All", "type": "All"}],
       subSegments: [],
     },
   },
@@ -848,36 +848,36 @@ export const factorialExperimentSecond = {
 };
 
 export function getRevertToExperiment() {
-  return JSON.parse(JSON.stringify(revertToExperiment));
+  return revertToExperiment;
 }
 export function getExperiment() {
-  return JSON.parse(JSON.stringify(experiment));
+  return experiment;
 }
 
 export function getSecondExperiment() {
-  return JSON.parse(JSON.stringify(experimentSecond));
+  return experimentSecond;
 }
 
 export function getThirdExperiment() {
-  return JSON.parse(JSON.stringify(experimentThird));
+  return experimentThird;
 }
 
 export function getFourthExperiment() {
-  return JSON.parse(JSON.stringify(experimentFourth));
+  return experimentFourth;
 }
 
 export function getFifthExperiment() {
-  return JSON.parse(JSON.stringify(experimentFifth));
+  return experimentFifth;
 }
 
 export function getSixthExperiment() {
-  return JSON.parse(JSON.stringify(experimentSixth));
+  return experimentSixth;
 }
 
 export function getFirstFactorialExperiment() {
-  return JSON.parse(JSON.stringify(factorialExperimentFirst));
+  return factorialExperimentFirst;
 }
 
 export function getSecondFactorialExperiment() {
-  return JSON.parse(JSON.stringify(factorialExperimentSecond));
+  return factorialExperimentSecond;
 }

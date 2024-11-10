@@ -34,7 +34,7 @@ import {
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { MonitoredDecisionPointRepository } from '../repositories/MonitoredDecisionPointRepository';
-import { User } from '../models/User';
+import { UserDTO } from '../DTO/UserDTO';
 import { ASSIGNMENT_TYPE } from '../../types/index';
 import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
@@ -148,7 +148,7 @@ export class ExperimentService {
     logger: UpgradeLogger,
     searchParams?: IExperimentSearchParams,
     sortParams?: IExperimentSortParams
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<Experiment[]> {
     logger.info({ message: `Find paginated experiments` });
 
     let queryBuilder = this.experimentRepository
@@ -213,7 +213,11 @@ export class ExperimentService {
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
     const experiment = await this.findOne(id, logger);
-    return this.reducedConditionPayload(this.formatingPayload(experiment));
+    if (experiment) {
+      return this.reducedConditionPayload(this.formatingPayload(experiment));
+    } else {
+      return undefined;
+    }
   }
 
   public async findOne(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
@@ -222,7 +226,11 @@ export class ExperimentService {
     }
     const experiment = await this.experimentRepository.findOneExperiment(id);
 
-    return this.formatingConditionPayload(experiment);
+    if (experiment) {
+      return this.formatingConditionPayload(experiment);
+    } else {
+      return undefined;
+    }
   }
 
   public async getExperimentDetailsForCSVDataExport(experimentId: string): Promise<ExperimentDetailsForCSVData[]> {
@@ -251,10 +259,10 @@ export class ExperimentService {
 
   public create(
     experiment: ExperimentDTO,
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger,
     createType?: string
-  ): Promise<ExperimentDTO> {
+  ): Promise<Experiment> {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
 
     // order for condition
@@ -288,16 +296,16 @@ export class ExperimentService {
 
   public createMultipleExperiments(
     experiments: ExperimentDTO[],
-    user: User,
+    user: UserDTO,
     logger: UpgradeLogger
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<Experiment[]> {
     logger.info({ message: `Generating test experiments`, details: experiments });
     return this.addBulkExperiments(experiments, user, logger);
   }
 
   public async delete(
     experimentId: string,
-    currentUser: User,
+    currentUser: UserDTO,
     logger?: UpgradeLogger
   ): Promise<Experiment | undefined> {
     if (logger) {
@@ -305,14 +313,15 @@ export class ExperimentService {
     }
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
-      await this.clearExperimentCacheDetail(
-        experiment.context[0],
-        experiment.partitions.map((partition) => {
-          return { site: partition.site, target: partition.target };
-        })
-      );
 
       if (experiment) {
+        await this.clearExperimentCacheDetail(
+          experiment.context[0],
+          experiment.partitions.map((partition) => {
+            return { site: partition.site, target: partition.target };
+          })
+        );
+
         const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
 
         // adding entry in audit log
@@ -350,30 +359,27 @@ export class ExperimentService {
         }
         return deletedExperiment;
       }
-
       return undefined;
     });
   }
 
-  public async update(experiment: ExperimentDTO, currentUser: User, logger: UpgradeLogger): Promise<ExperimentDTO> {
+  public async update(experiment: ExperimentDTO, currentUser: UserDTO, logger: UpgradeLogger): Promise<ExperimentDTO> {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
-    return this.reducedConditionPayload(
-      await this.updateExperimentInDB(experiment as ExperimentDTO, currentUser, logger)
-    );
+    return this.reducedConditionPayload(await this.updateExperimentInDB(experiment, currentUser, logger));
   }
 
   public async getExperimentalConditions(experimentId: string, logger: UpgradeLogger): Promise<ExperimentCondition[]> {
     logger.info({ message: `getExperimentalConditions experiment => ${experimentId}` });
     const experiment: Experiment = await this.findOne(experimentId, logger);
-    return experiment.conditions;
+    return experiment?.conditions;
   }
 
   public async getExperimentPartitions(experimentId: string, logger: UpgradeLogger): Promise<DecisionPoint[]> {
     logger.info({ message: `getExperimentPartitions experiment => ${experimentId}` });
     const experiment: Experiment = await this.findOne(experimentId, logger);
-    return experiment.partitions;
+    return experiment?.partitions;
   }
 
   public async getAllExperimentPartitions(
@@ -397,7 +403,7 @@ export class ExperimentService {
   public async updateState(
     experimentId: string,
     state: EXPERIMENT_STATE,
-    user: User,
+    user: UserDTO,
     logger: UpgradeLogger,
     scheduleDate?: Date,
     entityManager?: EntityManager
@@ -480,7 +486,7 @@ export class ExperimentService {
 
   public async importExperiment(
     experimentFiles: ExperimentFile[],
-    user: User,
+    user: UserDTO,
     logger: UpgradeLogger
   ): Promise<ValidatedExperimentError[]> {
     const validatedExperiments = await this.validateExperiments(experimentFiles, logger);
@@ -546,7 +552,7 @@ export class ExperimentService {
     return validatedExperiments;
   }
 
-  public async exportExperiment(experimentIds: string[], user: User, logger: UpgradeLogger): Promise<ExperimentDTO[]> {
+  public async exportExperiment(experimentIds: string[], user: UserDTO, logger: UpgradeLogger): Promise<Experiment[]> {
     logger.info({ message: `Inside export Experiment JSON ${experimentIds}` });
     const experimentDetails = await this.experimentRepository.find({
       where: { id: In(experimentIds) },
@@ -719,9 +725,9 @@ export class ExperimentService {
 
   private async updateExperimentInDB(
     experiment: ExperimentDTO,
-    user: User,
+    user: UserDTO,
     logger: UpgradeLogger
-  ): Promise<ExperimentDTO> {
+  ): Promise<Experiment> {
     await this.clearExperimentCacheDetail(
       experiment.context[0],
       experiment.partitions.map((partition) => {
@@ -1177,9 +1183,9 @@ export class ExperimentService {
 
   private async addExperimentInDB(
     experiment: ExperimentDTO,
-    user: User,
+    user: UserDTO,
     logger: UpgradeLogger
-  ): Promise<ExperimentDTO> {
+  ): Promise<Experiment> {
     await this.clearExperimentCacheDetail(
       experiment.context[0],
       experiment.partitions.map((partition) => {
@@ -1781,9 +1787,9 @@ export class ExperimentService {
 
   private async addBulkExperiments(
     experiments: ExperimentDTO[],
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<Experiment[]> {
     const createdExperiments = [];
     for (const exp of experiments) {
       try {
@@ -1829,7 +1835,7 @@ export class ExperimentService {
     return { ...experiment, conditionPayloads: conditionPayload };
   }
 
-  public reducedConditionPayload(experiment: Experiment | ExperimentDTO): any {
+  public reducedConditionPayload(experiment: Experiment): any {
     const updatedCP = experiment.conditionPayloads.map((conditionPayload) => {
       return {
         ...conditionPayload,

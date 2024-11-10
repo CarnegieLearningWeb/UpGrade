@@ -5,7 +5,16 @@ import { IndividualForSegmentRepository } from '../repositories/IndividualForSeg
 import { GroupForSegmentRepository } from '../repositories/GroupForSegmentRepository';
 import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS, CACHE_PREFIX } from 'upgrade_types';
+import {
+  SEGMENT_TYPE,
+  SERVER_ERROR,
+  SEGMENT_STATUS,
+  CACHE_PREFIX,
+  CONSISTENCY_RULE,
+  ASSIGNMENT_UNIT,
+  EXCLUSION_CODE,
+} from 'upgrade_types';
+import { In } from 'typeorm';
 import { EntityManager, DataSource } from 'typeorm';
 import Papa from 'papaparse';
 import { env } from '../../env';
@@ -28,6 +37,12 @@ import { CacheService } from './CacheService';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import path from 'path';
+import { GroupEnrollmentRepository } from '../repositories/GroupEnrollmentRepository';
+import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
+import { GroupExclusion } from '../models/GroupExclusion';
+import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
+import { IndividualExclusion } from '../models/IndividualExclusion';
+import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
 
@@ -64,6 +79,14 @@ export class SegmentService {
     private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
     @InjectRepository()
     private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
+    @InjectRepository()
+    private individualEnrollmentRepository: IndividualEnrollmentRepository,
+    @InjectRepository()
+    private groupEnrollmentRepository: GroupEnrollmentRepository,
+    @InjectRepository()
+    private individualExclusionRepository: IndividualExclusionRepository,
+    @InjectRepository()
+    private groupExclusionRepository: GroupExclusionRepository,
     @InjectRepository()
     private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
     @InjectRepository()
@@ -104,6 +127,8 @@ export class SegmentService {
       .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segment.subSegments', 'subSegment')
+      .leftJoinAndSelect('segment.experimentSegmentInclusion', 'experimentSegmentInclusion')
+      .leftJoinAndSelect('segment.experimentSegmentExclusion', 'experimentSegmentExclusion')
       .where('segment.type != :private', { private: SEGMENT_TYPE.PRIVATE })
       .andWhere({ id })
       .getOne();
@@ -121,6 +146,8 @@ export class SegmentService {
         .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
         .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
         .leftJoinAndSelect('segment.subSegments', 'subSegment')
+        .leftJoinAndSelect('segment.experimentSegmentInclusion', 'experimentSegmentInclusion')
+        .leftJoinAndSelect('segment.experimentSegmentExclusion', 'experimentSegmentExclusion')
         .where('segment.id IN (:...ids)', { ids })
         .getMany();
 
@@ -139,10 +166,14 @@ export class SegmentService {
   public async getSingleSegmentWithStatus(segmentId: string, logger: UpgradeLogger): Promise<SegmentWithStatus> {
     const allSegmentData = await this.getAllPublicSegmentsAndSubsegments(logger);
     const segmentData = await this.getSegmentById(segmentId, logger);
-    const segmentWithStatus = (await this.getSegmentStatus(allSegmentData)).segmentsData.find(
-      (segment: Segment) => segment.id === segmentId
-    );
-    return { ...segmentData, status: segmentWithStatus.status };
+    if (segmentData) {
+      const segmentWithStatus = (await this.getSegmentStatus(allSegmentData)).segmentsData.find(
+        (segment: Segment) => segment.id === segmentId
+      );
+      return { ...segmentData, status: segmentWithStatus?.status };
+    } else {
+      return null;
+    }
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
@@ -251,6 +282,13 @@ export class SegmentService {
 
   public async getFeatureFlagSegmentInclusionData() {
     const queryBuilder = await this.featureFlagSegmentInclusionRepository.getFeatureFlagSegmentInclusionData();
+    return queryBuilder;
+  }
+
+  public async getExperimentSegmentExclusionDocBySegmentId(segmentId: string) {
+    const queryBuilder = await this.experimentSegmentExclusionRepository.getExperimentSegmentExclusionDocBySegmentId(
+      segmentId
+    );
     return queryBuilder;
   }
 
@@ -510,6 +548,8 @@ export class SegmentService {
   ): Promise<Segment> {
     let segmentDoc: Segment;
 
+    let usersToDelete = [],
+      groupsToDelete = [];
     if (segment.id) {
       try {
         // get segment by ids
@@ -520,7 +560,7 @@ export class SegmentService {
 
         // delete individual for segment
         if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
-          const usersToDelete = segmentDoc.individualForSegment.map((individual) => {
+          usersToDelete = segmentDoc.individualForSegment.map((individual) => {
             return { userId: individual.userId, segment: segment };
           });
           await transactionalEntityManager.getRepository(IndividualForSegment).delete(usersToDelete as any);
@@ -528,10 +568,10 @@ export class SegmentService {
 
         // delete group for segment
         if (segmentDoc && segmentDoc.groupForSegment && segmentDoc.groupForSegment.length > 0) {
-          const groupToDelete = segmentDoc.groupForSegment.map((group) => {
+          groupsToDelete = segmentDoc.groupForSegment.map((group) => {
             return { groupId: group.groupId, type: group.type, segment: segment };
           });
-          await transactionalEntityManager.getRepository(GroupForSegment).delete(groupToDelete as any);
+          await transactionalEntityManager.getRepository(GroupForSegment).delete(groupsToDelete as any);
         }
       } catch (err) {
         const error = err as ErrorWithType;
@@ -602,6 +642,22 @@ export class SegmentService {
           logger
         ),
       ]);
+
+      // diff between new and old data
+      const oldUserIds = new Set(usersToDelete.map((data) => data.userId));
+      const diffUsers = individualForSegmentDocsToSave
+        .map((data) => data.userId)
+        .filter((userId) => !oldUserIds.has(userId));
+
+      const diffGroups = groupForSegmentDocsToSave
+        .filter((newData) => {
+          return !groupsToDelete.some(
+            (oldData) => oldData.groupId === newData.groupId && oldData.type === newData.type
+          );
+        })
+        .map((diffData) => ({ groupId: diffData.groupId, type: diffData.type }));
+
+      await this.updateEnrollmentAndExclusionDocuments(segment, diffUsers, diffGroups);
     } catch (err) {
       const error = err as Error;
       error.message = `Error in creating individualDocs, groupDocs in "addSegmentInDB"`;
@@ -615,5 +671,126 @@ export class SegmentService {
     return transactionalEntityManager
       .getRepository(Segment)
       .findOne({ where: { id: segmentDoc.id }, relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
+  }
+
+  public async updateEnrollmentAndExclusionDocuments(
+    segment: SegmentInputValidator,
+    newUsers: string[],
+    newGroups: { groupId: string; type: string }[]
+  ) {
+    // for exclusion doc:
+    // update below code for nested
+    const allExperimentWithExclusionSegment = await this.getExperimentSegmentExclusionDocBySegmentId(segment.id);
+
+    if (allExperimentWithExclusionSegment.length) {
+      for (const experimentSegment of allExperimentWithExclusionSegment) {
+        const experiment = experimentSegment.experiment;
+        const userGroups = newGroups.map((group) => group.groupId);
+
+        // Scenario 1: Group Exclusion
+        if (newGroups.length) {
+          // Case 1: Individual Consistency
+          if (experimentSegment.experiment.consistencyRule == CONSISTENCY_RULE.INDIVIDUAL) {
+            // Don't remove users enrollment
+
+            //IncludeSegment.individualForSegment in assign/mark call
+
+            // Check IndividualEnrollment Doc is present In mark call
+
+            // Delete Group Enrollment Doc
+            if (experimentSegment.experiment.assignmentUnit == ASSIGNMENT_UNIT.GROUP) {
+              await this.groupEnrollmentRepository.delete({
+                experiment: { id: experiment.id },
+                groupId: In(userGroups),
+              });
+            }
+          }
+          // Case 2: Group Consistency
+          else if (experimentSegment.experiment.consistencyRule == CONSISTENCY_RULE.GROUP) {
+            // find all users enrolled in the experiment
+            const enrolledUsersData = await this.individualEnrollmentRepository.find({
+              where: {
+                experiment: { id: experiment.id },
+                groupId: In(userGroups),
+              },
+              relations: ['user'],
+            });
+            const enrolledUsers = enrolledUsersData.map((data) => data.user);
+
+            // individual exclusion doc
+            const individualExclusionDocs: Array<
+              Omit<IndividualExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>
+            > = enrolledUsers.map((user) => {
+              return {
+                user,
+                experiment,
+                groupId: user?.workingGroup?.[experiment.group],
+                exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
+              };
+            });
+
+            // Delete Individual Enrollment Doc
+            await Promise.all([
+              this.individualExclusionRepository.saveRawJson(individualExclusionDocs),
+              this.individualEnrollmentRepository.delete({
+                experiment: { id: experiment.id },
+                groupId: In(userGroups),
+              }),
+            ]);
+
+            // Delete Group Enrollment
+            if (experimentSegment.experiment.assignmentUnit == ASSIGNMENT_UNIT.GROUP) {
+              await this.groupEnrollmentRepository.delete({
+                experiment: { id: experiment.id },
+                groupId: In(userGroups),
+              });
+            }
+          }
+        }
+        if (newUsers.length) {
+          // Case 1: User already visited
+          const excludedUsers = await this.individualEnrollmentRepository.find({
+            where: { experiment: { id: experiment.id }, user: In(newUsers) },
+          });
+
+          const excludedUsersGroups = Array.from(
+            new Set(excludedUsers.map((enrollment) => enrollment.groupId).filter((groupId) => groupId != null))
+          );
+
+          // Delete individual enrollment of users
+          await this.individualEnrollmentRepository.delete({
+            experiment: { id: experiment.id },
+            user: { id: In(newUsers) },
+          });
+
+          if (experimentSegment.experiment.consistencyRule == CONSISTENCY_RULE.GROUP) {
+            // Delete Individual Enrollment Doc for users belongs to excludedUsersGroups
+            await this.individualEnrollmentRepository.delete({
+              experiment: { id: experiment.id },
+              groupId: In(excludedUsersGroups),
+            });
+          }
+
+          // Delete group enrollment of all groups
+          if (experimentSegment.experiment.assignmentUnit == ASSIGNMENT_UNIT.GROUP) {
+            await this.groupEnrollmentRepository.delete({
+              experiment: { id: experiment.id },
+              groupId: In(excludedUsersGroups),
+            });
+
+            // group exclusion doc
+            const groupExclusionDocs: Array<Omit<GroupExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>> =
+              [...excludedUsersGroups].map((groupId) => {
+                return {
+                  experiment,
+                  groupId,
+                  exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
+                };
+              });
+            await this.groupExclusionRepository.saveRawJson(groupExclusionDocs);
+          }
+        }
+      }
+    }
   }
 }
