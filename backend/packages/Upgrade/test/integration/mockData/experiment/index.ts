@@ -29,6 +29,14 @@ export const individualAssignmentExperiment = clone({
   state: EXPERIMENT_STATE.INACTIVE,
 });
 
+export const individualAssignmentGroupConsistencyExperiment = clone({
+  ...getExperiment(),
+  consistencyRule: CONSISTENCY_RULE.GROUP,
+  assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
+  postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+  state: EXPERIMENT_STATE.INACTIVE,
+});
+
 export const individualAssignmentExperimentConsistencyRuleRevertToExperiment = clone({
   ...getRevertToExperiment(),
 });
