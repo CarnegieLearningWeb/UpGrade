@@ -173,6 +173,7 @@ export class MetricService {
   }
 
   private parseMetrics(metrics: Array<IGroupMetric | ISingleMetric>): IMetricUnit[] {
+    if (!metrics) return [];
     return metrics.map((data: any) => {
       if (data.metric) {
         return {
