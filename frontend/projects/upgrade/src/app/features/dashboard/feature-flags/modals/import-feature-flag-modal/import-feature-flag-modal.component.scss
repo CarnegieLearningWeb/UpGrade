@@ -38,6 +38,10 @@
     }
 
     ::ng-deep tbody {
+      display: block;
+      max-height: 350px;
+      overflow-y: auto;
+
       tr.mat-mdc-row {
         height: 56px;
 
