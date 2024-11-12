@@ -156,7 +156,6 @@ export class DialogService {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: ModalSize.STANDARD,
-      autoFocus: 'first-heading',
       disableClose: true,
     };
     return this.dialog.open(UpsertFeatureFlagModalComponent, config);
