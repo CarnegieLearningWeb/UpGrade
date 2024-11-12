@@ -31,6 +31,12 @@ runs:
         if [ -n "$INPUT_VERSION" ]; then
           npm version ${{ inputs.version }} --allow-same-version
         fi
+    - name: "[Frontend] Install Build Dependencies"
+      shell: bash
+      working-directory: frontend
+      run: |
+        cp -R ../types .
+        npm ci
     - shell: bash
       working-directory: ${{ inputs.working_directory }}
       run: npm ci

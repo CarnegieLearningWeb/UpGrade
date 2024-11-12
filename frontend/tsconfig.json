@@ -25,7 +25,8 @@
     ],
     "paths": {
       "upgrade_types": [
-        "../../types"
+        "../../types",
+        "./types"
       ]
     },
     "useDefineForClassFields": false
