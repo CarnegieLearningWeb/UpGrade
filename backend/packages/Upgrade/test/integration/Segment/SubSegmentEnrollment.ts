@@ -1,7 +1,7 @@
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { UserService } from '../../../src/api/services/UserService';
 import Container from 'typedi';
-import { EXPERIMENT_STATE, FILTER_MODE } from 'upgrade_types';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { individualAssignmentExperiment } from '../mockData/experiment';

@@ -392,10 +392,6 @@ export class ExperimentDTO {
   public conditionOrder?: CONDITION_ORDER;
 
   @IsNotEmpty()
-  @IsBoolean()
-  public logging: boolean;
-
-  @IsNotEmpty()
   @IsEnum(FILTER_MODE)
   public filterMode: FILTER_MODE;
 

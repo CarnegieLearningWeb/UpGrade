@@ -59,7 +59,6 @@ describe('Experiments Selectors', () => {
         revertTo: null,
         tags: [],
         group: 'schoolId',
-        logging: false,
         filterMode: FILTER_MODE.INCLUDE_ALL,
         backendVersion: '1.0.0',
         experimentSegmentInclusion: {

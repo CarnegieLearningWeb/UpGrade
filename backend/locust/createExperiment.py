@@ -67,7 +67,6 @@ def createExperiment(protocol, host, allExperimentPartitionIDConditionPair, expe
             "context": [random.choice(context)],
             "filterMode": "includeAll",
             "type": "Simple",
-            "logging": False,
             "conditions": [
                 {
                     "id": conditionId1,
@@ -136,7 +135,6 @@ def createExperiment(protocol, host, allExperimentPartitionIDConditionPair, expe
             "tags": ["Workspace", "Content"],
             "context": [random.choice(context)],
             "filterMode": "includeAll",
-            "logging": False,
             "type": "Factorial",
             "conditions": [
                 {

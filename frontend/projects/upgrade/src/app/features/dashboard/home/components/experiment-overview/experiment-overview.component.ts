@@ -134,7 +134,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         stratificationFactor: [null],
         context: [null, Validators.required],
         tags: [[]],
-        logging: [false],
       });
 
       this.overviewForm.get('unitOfAssignment').valueChanges.subscribe((assignmentUnit) => {
@@ -216,7 +215,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           stratificationFactor: this.experimentInfo.stratificationFactor?.stratificationFactorName || null,
           context: this.currentContext,
           tags: this.experimentInfo.tags,
-          logging: this.experimentInfo.logging,
         });
         this.checkExperiment();
       }
@@ -335,7 +333,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         assignmentAlgorithm,
         stratificationFactor,
         tags,
-        logging,
       } = this.overviewForm.value;
       const stratificationFactorValueToSend = this.stratificationFactorValueToSend(
         stratificationFactor,
@@ -356,7 +353,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
             ? { stratificationFactorName: stratificationFactorValueToSend }
             : null,
           tags,
-          logging,
         };
         this.emitExperimentDialogEvent.emit({
           type: eventType,

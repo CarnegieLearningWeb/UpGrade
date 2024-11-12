@@ -439,22 +439,6 @@
               </ng-container>
             </mat-chip-listbox>
           </div>
-
-          <!-- Logging -->
-          <div class="logging">
-            <mat-checkbox
-              [checked]="experiment.logging"
-              color="primary"
-              (change)="toggleVerboseLogging($event)"
-              [disabled]="
-                experiment.state === ExperimentState.CANCELLED || experiment.state === ExperimentState.ARCHIVED
-              "
-            >
-              <span class="ft-16-600 checkbox-label">
-                {{ 'home.view-experiment.logging.text' | translate | uppercase }}
-              </span>
-            </mat-checkbox>
-          </div>
         </div>
       </mat-tab>
 
