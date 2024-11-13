@@ -86,7 +86,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       - context
  *       - state
  *       - tags
- *       - logging
  *       - filterMode
  *       - consistencyRule
  *       - assignmentUnit
@@ -145,8 +144,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *            type: string
  *       group:
  *         type: string
- *       logging:
- *         type: boolean
  *       assignmentAlgorithm:
  *         type: string
  *         enum: [random, stratified random sampling]
@@ -332,8 +329,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       group:
  *         type: string
  *         minLength: 1
- *       logging:
- *         type: boolean
  *       conditions:
  *         type: array
  *         uniqueItems: true
@@ -558,7 +553,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       - postExperimentRule
  *       - tags
  *       - group
- *       - logging
  *       - conditions
  *       - partitions
  *       - queries

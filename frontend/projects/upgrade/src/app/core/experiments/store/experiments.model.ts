@@ -239,7 +239,6 @@ export interface Experiment {
   group: string;
   assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
   stratificationFactor?: { stratificationFactorName: string };
-  logging: boolean;
   conditions: ExperimentCondition[];
   partitions: ExperimentDecisionPoint[];
   factors: ExperimentFactor[];

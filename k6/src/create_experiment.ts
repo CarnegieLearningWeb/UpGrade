@@ -16,7 +16,6 @@ export async function createExperiment(experimentParams) {
     tags: ['LoadTest'],
     context: [context],
     filterMode: 'includeAll',
-    logging: false,
     type: 'Simple',
     conditions: conditions.map((condition, index) => {
       return { id: uuidv4(), name: condition, assignmentWeight: 50, conditionCode: condition, order: index + 1 };

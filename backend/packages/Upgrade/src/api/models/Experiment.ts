@@ -118,11 +118,6 @@ export class Experiment extends BaseModel {
   public assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
 
   @Column({
-    default: false,
-  })
-  public logging: boolean;
-
-  @Column({
     type: 'enum',
     enum: FILTER_MODE,
     default: FILTER_MODE.EXCLUDE_ALL,
