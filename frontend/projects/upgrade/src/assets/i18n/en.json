@@ -255,7 +255,6 @@
   "home.view-experiment.graph-decision-point.text": "Sites",
   "home.view-experiment.graph-time.text": "Time",
   "home.view-experiment.graph-select-all.text": "Select All",
-  "home.view-experiment.logging.text": "Logging",
   "home.view-experiment.mat-tab.data.text": "Data",
   "home.view-experiment.mat-tab.data.enrollment.text": "Enrollment",
   "home.view-experiment.mat-tab.data.enrollment-detail.text": "Enrollments reflects participants who have started the experiment.",
