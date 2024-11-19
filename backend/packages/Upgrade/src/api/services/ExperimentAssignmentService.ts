@@ -1013,7 +1013,7 @@ export class ExperimentAssignmentService {
       newLogData = await this.logRepository.save(rawDataLogs);
     }
 
-    return [...updatedLog, ...newLogData];
+    return [...updatedLog.flat(), ...newLogData];
   }
 
   private async getMonitoredDocumentOfExperiment(experimentDoc: Experiment): Promise<MonitoredDecisionPoint[]> {
