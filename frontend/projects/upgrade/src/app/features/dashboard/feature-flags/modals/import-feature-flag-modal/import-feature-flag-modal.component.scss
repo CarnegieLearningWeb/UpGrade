@@ -62,17 +62,16 @@
       }
     }
 
-    &.disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
-
     .cdk-column-actions {
-      width: 10%;
+      width: 15%;
+
+      .expand-button--disabled {
+        opacity: 0.5;
+      }
     }
 
     .cdk-column-fileName {
-      width: 60%;
+      width: 55%;
     }
 
     .cdk-column-compatibilityType {
