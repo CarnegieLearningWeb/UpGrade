@@ -233,12 +233,6 @@ export class ExperimentUserService {
     return this.userRepository.save(newDocument);
   }
 
-  public update(id: string, user: Partial<ExperimentUser>, logger: UpgradeLogger): Promise<ExperimentUser> {
-    logger.info({ message: `Update a user ${user.toString()}` });
-    user.id = id;
-    return this.userRepository.save(user);
-  }
-
   // TODO should we check for workingGroup as a subset over here?
   public async updateGroupMembership(
     userId: string,

@@ -32,7 +32,7 @@ export const revertToExperiment = {
     },
   ],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -90,7 +90,7 @@ export const experiment = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -152,7 +152,7 @@ export const experimentSecond = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -208,7 +208,7 @@ export const experimentThird = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -264,7 +264,7 @@ export const experimentFourth = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -321,7 +321,7 @@ export const experimentFifth = {
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
   type: EXPERIMENT_TYPE.SIMPLE,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -405,7 +405,7 @@ export const experimentSixth = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -464,8 +464,7 @@ export const factorialExperimentFirst = {
   revertTo: null,
   tags: [],
   group: null,
-  logging: false,
-  filterMode: 'includeAll',
+  filterMode: FILTER_MODE.INCLUDE_ALL,
   backendVersion: '1.0.0',
   type: 'Factorial',
   factors: [
@@ -587,7 +586,7 @@ export const factorialExperimentFirst = {
       context: 'add',
       type: 'private',
       individualForSegment: [],
-      groupForSegment: [],
+      groupForSegment: [{"groupId": "All", "type": "All"}],
       subSegments: [],
     },
   },
@@ -637,8 +636,7 @@ export const factorialExperimentSecond = {
   revertTo: null,
   tags: [],
   group: null,
-  logging: false,
-  filterMode: 'includeAll',
+  filterMode: FILTER_MODE.INCLUDE_ALL,
   backendVersion: '1.0.0',
   type: 'Factorial',
   factors: [
@@ -821,7 +819,7 @@ export const factorialExperimentSecond = {
       context: 'add',
       type: 'private',
       individualForSegment: [],
-      groupForSegment: [],
+      groupForSegment: [{"groupId": "All", "type": "All"}],
       subSegments: [],
     },
   },

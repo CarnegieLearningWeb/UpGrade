@@ -24,12 +24,19 @@ import {
 import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFilterModeUpdateValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { IImportError, FEATURE_FLAG_LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
-import { FeatureFlagImportValidation, FeatureFlagValidation, IdValidator } from './validators/FeatureFlagValidator';
+import {
+  FeatureFlagImportValidation,
+  FeatureFlagListImportValidation,
+  FeatureFlagValidation,
+  IdValidator,
+} from './validators/FeatureFlagValidator';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
 import { Segment } from 'src/api/models/Segment';
 import { Response } from 'express';
 import { UserDTO } from '../DTO/UserDTO';
+import { ImportFeatureFlagListValidator } from './validators/FeatureFlagImportValidator';
+import { NotFoundException } from '@nestjs/common/exceptions';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -123,6 +130,19 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
  *      list:
  *        type: object
  *        $ref: '#/definitions/FeatureFlagInclusionExclusionList'
+ *   FeatureFlagListImportObject:
+ *    required:
+ *      - files
+ *      - listType
+ *      - flagId
+ *    properties:
+ *      files:
+ *        type: object
+ *      listType:
+ *        type: string
+ *        enum: [featureFlagSegmentInclusion, featureFlagSegmentExclusion]
+ *      flagId:
+ *        type: string
  */
 
 /**
@@ -251,14 +271,6 @@ export class FeatureFlagsController {
     paginatedParams: FeatureFlagPaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<FeatureFlagsPaginationInfo> {
-    if (!paginatedParams) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : paginatedParams should not be null.' })
-        )
-      );
-    }
-
     const [featureFlags, count] = await Promise.all([
       this.featureFlagService.findPaginated(
         paginatedParams.skip,
@@ -453,7 +465,7 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
-    return this.featureFlagService.update(flag, currentUser, request.logger);
+    return this.featureFlagService.update({ ...flag, id }, currentUser, request.logger);
   }
 
   /**
@@ -749,7 +761,7 @@ export class FeatureFlagsController {
    * @swagger
    * /flags/import:
    *    post:
-   *       description: Validating Feature Flag
+   *       description: Importing Feature Flag
    *       consumes:
    *         - application/json
    *       parameters:
@@ -840,5 +852,200 @@ export class FeatureFlagsController {
       return response.send(plainFeatureFlag);
     }
     return response.status(404).send('Feature Flag not found');
+  }
+
+  /**
+   * @swagger
+   * /flags/lists/import/validation:
+   *    post:
+   *       description: Validating Feature Flag List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: lists
+   *           description: Import FeatureFlag List Files
+   *           required: true
+   *           schema:
+   *             type: object
+   *             $ref: '#/definitions/FeatureFlagListImportObject'
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *         '200':
+   *           description: Validations are completed
+   *           schema:
+   *            type: array
+   *            items:
+   *              type: object
+   *              properties:
+   *                fileName:
+   *                  type: string
+   *                compatibilityType:
+   *                  type: string
+   *                  enum: [compatible, warning, incompatible]
+   *         '401':
+   *           description: AuthorizationRequiredError
+   *         '500':
+   *           description: Internal Server Error
+   */
+  @Post('/lists/import/validation')
+  public async validateImportFeatureFlagList(
+    @Body({ validate: true }) lists: FeatureFlagListImportValidation,
+    @Req() request: AppRequest
+  ): Promise<ValidatedFeatureFlagsError[]> {
+    return await this.featureFlagService.validateImportFeatureFlagLists(lists.files, lists.flagId, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/lists/import:
+   *    post:
+   *       description: Importing Feature Flag List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: lists
+   *           description: Import FeatureFlag List Files
+   *           required: true
+   *           schema:
+   *             type: object
+   *             $ref: '#/definitions/FeatureFlagListImportObject'
+   *       tags:
+   *         - Feature Flag Lists
+   *       produces:
+   *         - application/json
+   *       responses:
+   *         '200':
+   *           description: New Feature flag is imported
+   *         '401':
+   *           description: AuthorizationRequiredError
+   *         '500':
+   *           description: Internal Server Error
+   */
+  @Post('/lists/import')
+  public async importFeatureFlagLists(
+    @Body({ validate: true }) lists: FeatureFlagListImportValidation,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<IImportError[]> {
+    return await this.featureFlagService.importFeatureFlagLists(
+      lists.files,
+      lists.flagId,
+      lists.listType,
+      currentUser,
+      request.logger
+    );
+  }
+
+  /**
+   * @swagger
+   * /flags/export/includeLists/{id}:
+   *    get:
+   *      description: Export All Include lists of Feature Flag JSON
+   *      tags:
+   *        - Feature Flags
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: path
+   *          flagId: Id
+   *          description: Feature Flag Id
+   *          required: true
+   *          schema:
+   *            type: string
+   *      responses:
+   *        '200':
+   *          description: Get Feature Flag''s All Include Lists JSON
+   *        '401':
+   *          description: Authorization Required Error
+   *        '404':
+   *          description: Feature Flag not found
+   *        '400':
+   *          description: id must be a UUID
+   *        '500':
+   *          description: Internal Server Error
+   */
+  @Get('/export/includeLists/:id')
+  public async exportAllIncludeLists(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest,
+    @Res() response: Response
+  ): Promise<ImportFeatureFlagListValidator[]> {
+    const lists = await this.featureFlagService.exportAllLists(
+      id,
+      FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+      request.logger
+    );
+    if (lists?.length) {
+      // download JSON file with appropriate headers to response body;
+      if (lists.length === 1) {
+        response.setHeader('Content-Disposition', `attachment; filename="${lists[0].segment.name}.json"`);
+      } else {
+        response.setHeader('Content-Disposition', `attachment; filename="lists.zip"`);
+      }
+      response.setHeader('Content-Type', 'application/json');
+    } else {
+      throw new NotFoundException('Include lists not found.');
+    }
+
+    return lists;
+  }
+
+  /**
+   * @swagger
+   * /flags/export/excludeLists/{id}:
+   *    get:
+   *      description: Export All Exclude lists of Feature Flag JSON
+   *      tags:
+   *        - Feature Flags
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: path
+   *          flagId: Id
+   *          description: Feature Flag Id
+   *          required: true
+   *          schema:
+   *            type: string
+   *      responses:
+   *        '200':
+   *          description: Get Feature Flag''s All Include Lists JSON
+   *        '401':
+   *          description: Authorization Required Error
+   *        '404':
+   *          description: Feature Flag not found
+   *        '400':
+   *          description: id must be a UUID
+   *        '500':
+   *          description: Internal Server Error
+   */
+  @Get('/export/excludeLists/:id')
+  public async exportAllExcludeLists(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest,
+    @Res() response: Response
+  ): Promise<ImportFeatureFlagListValidator[]> {
+    const lists = await this.featureFlagService.exportAllLists(
+      id,
+      FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+      request.logger
+    );
+    if (lists?.length) {
+      // download JSON file with appropriate headers to response body;
+      if (lists.length === 1) {
+        response.setHeader('Content-Disposition', `attachment; filename="${lists[0].segment.name}.json"`);
+      } else {
+        response.setHeader('Content-Disposition', `attachment; filename="lists.zip"`);
+      }
+      response.setHeader('Content-Type', 'application/json');
+    } else {
+      throw new NotFoundException('Exclude lists not found.');
+    }
+
+    return lists;
   }
 }

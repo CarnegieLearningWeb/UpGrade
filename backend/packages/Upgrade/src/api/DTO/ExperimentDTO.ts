@@ -10,6 +10,7 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
   MinLength,
   ValidateIf,
@@ -391,10 +392,6 @@ export class ExperimentDTO {
   public conditionOrder?: CONDITION_ORDER;
 
   @IsNotEmpty()
-  @IsBoolean()
-  public logging: boolean;
-
-  @IsNotEmpty()
   @IsEnum(FILTER_MODE)
   public filterMode: FILTER_MODE;
 
@@ -456,6 +453,12 @@ export class ExperimentDTO {
   @IsNotEmpty()
   @IsEnum(EXPERIMENT_TYPE)
   public type: EXPERIMENT_TYPE;
+}
+
+export class ExperimentIdValidator {
+  @IsNotEmpty()
+  @IsUUID()
+  public id: string;
 }
 
 export interface ExperimentFile {

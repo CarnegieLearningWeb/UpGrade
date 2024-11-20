@@ -84,7 +84,7 @@ import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
-import { ExperimentCSVData } from '../repositories/AnalyticsRepository';
+import { ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
 
 const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
@@ -127,7 +127,7 @@ export class ExperimentService {
     public queryService: QueryService
   ) {}
 
-  public async find(logger?: UpgradeLogger): Promise<Experiment[]> {
+  public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
     if (logger) {
       logger.info({ message: `Find all experiments` });
     }
@@ -211,7 +211,7 @@ export class ExperimentService {
     });
   }
 
-  public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
+  public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
     const experiment = await this.findOne(id, logger);
     if (experiment) {
       return this.reducedConditionPayload(this.formatingPayload(experiment));
@@ -233,8 +233,8 @@ export class ExperimentService {
     }
   }
 
-  public async getExperimentDetailsForCSVDataExport(experimentId: string): Promise<ExperimentCSVData[]> {
-    return await this.experimentRepository.getExperimentCSVDataExport(experimentId);
+  public async getExperimentDetailsForCSVDataExport(experimentId: string): Promise<ExperimentDetailsForCSVData[]> {
+    return await this.experimentRepository.fetchExperimentDetailsForCSVDataExport(experimentId);
   }
 
   public getTotalCount(): Promise<number> {
@@ -363,13 +363,11 @@ export class ExperimentService {
     });
   }
 
-  public async update(experiment: ExperimentDTO, currentUser: UserDTO, logger: UpgradeLogger): Promise<Experiment> {
+  public async update(experiment: ExperimentDTO, currentUser: UserDTO, logger: UpgradeLogger): Promise<ExperimentDTO> {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
-    return this.reducedConditionPayload(
-      await this.updateExperimentInDB(experiment as ExperimentDTO, currentUser, logger)
-    );
+    return this.reducedConditionPayload(await this.updateExperimentInDB(experiment, currentUser, logger));
   }
 
   public async getExperimentalConditions(experimentId: string, logger: UpgradeLogger): Promise<ExperimentCondition[]> {

@@ -3,7 +3,7 @@ import {
   CommonModalComponent,
   CommonStatusIndicatorChipComponent,
 } from '../../../../../shared-standalone-component-lib/components';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../../shared/shared.module';
@@ -11,10 +11,11 @@ import { CommonImportContainerComponent } from '../../../../../shared-standalone
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { MatTableDataSource } from '@angular/material/table';
 import { ValidateFeatureFlagError } from '../../../../../core/feature-flags/store/feature-flags.model';
-import { importError } from '../../../../../core/segments/store/segments.model';
+import { importError, ImportListParams } from '../../../../../core/segments/store/segments.model';
 import { NotificationService } from '../../../../../core/notifications/notification.service';
 import { IFeatureFlagFile } from 'upgrade_types';
 import { FeatureFlagsStore } from './feature-flag.signal.store';
+import { FeatureFlagsDataService } from '../../../../../core/feature-flags/feature-flags.data.service';
 
 @Component({
   selector: 'app-import-feature-flag-modal',
@@ -47,7 +48,8 @@ export class ImportFeatureFlagModalComponent {
   });
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: CommonModalConfig,
+    @Inject(MAT_DIALOG_DATA) public data: CommonModalConfig<ImportListParams>,
+    private featureFlagsDataService: FeatureFlagsDataService,
     public dialogRef: MatDialogRef<ImportFeatureFlagModalComponent>,
     private notificationService: NotificationService,
     private featureFlagStore: FeatureFlagsStore
@@ -92,7 +94,18 @@ export class ImportFeatureFlagModalComponent {
       })
     );
 
-    this.featureFlagStore.validateFeatureFlags(this.fileData);
+    if (this.data.title === 'Import Feature Flag') {
+      this.featureFlagStore.validateFeatureFlags(this.fileData);
+    } else if (this.data.title === 'Import List') {
+      const validationErrors = (await firstValueFrom(
+        this.featureFlagsDataService.validateFeatureFlagList(
+          this.fileData,
+          this.data.params.flagId,
+          this.data.params.listType
+        )
+      )) as ValidateFeatureFlagError[];
+      this.checkValidation(validationErrors);
+    }
   }
 
   async checkValidation(validationErrors: ValidateFeatureFlagError[]) {
@@ -122,7 +135,19 @@ export class ImportFeatureFlagModalComponent {
   async importFiles() {
     try {
       this.isImportActionBtnDisabled.next(true);
-      this.featureFlagStore.importFeatureFlags({ files: this.fileData });
+
+      if (this.data.title === 'Import Feature Flag') {
+        this.featureFlagStore.importFeatureFlags({ files: this.fileData });
+      } else if (this.data.title === 'Import List') {
+        const importResult: importError[] = (await firstValueFrom(
+          this.featureFlagsDataService.importFeatureFlagList(
+            this.fileData,
+            this.data.params.flagId,
+            this.data.params.listType
+          )
+        )) as importError[];
+        this.showNotification(importResult);
+      }
 
       this.isImportActionBtnDisabled.next(false);
       this.fileData = [];

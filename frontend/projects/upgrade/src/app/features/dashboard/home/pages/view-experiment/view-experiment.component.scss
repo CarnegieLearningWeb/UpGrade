@@ -233,19 +233,6 @@ $font-size-small: 15px;
           font-size: $font-size-small !important;
         }
       }
-
-      .logging {
-        margin-top: 12px;
-
-        .mat-mdc-checkbox {
-          margin-top: -3px;
-          margin-left: -12px;
-
-          .checkbox-label {
-            color: var(--grey-5);
-          }
-        }
-      }
     }
   }
 

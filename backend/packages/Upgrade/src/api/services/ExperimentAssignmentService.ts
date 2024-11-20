@@ -212,6 +212,23 @@ export class ExperimentAssignmentService {
         user: { id: userDoc.id },
       },
     });
+
+    // INDIRECT GROUP EXCLUSION
+    // if exclusion has consistency-group, exclude direct group of user belongs
+    if (exclusionReason.length && exclusionReason[0].reason === 'group' && !exclusionReason[0].matchedGroup) {
+      const userGroups = Object.values(userDoc.workingGroup);
+      // group exclusion doc
+      const groupExclusionDocs: Array<Omit<GroupExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>> =
+        userGroups.map((groupId) => {
+          return {
+            experiment: exclusionReason[0].experiment,
+            groupId,
+            exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
+          };
+        });
+      await this.groupExclusionRepository.saveRawJson(groupExclusionDocs);
+    }
+
     if (experimentId && experiments.length) {
       const selectedExperimentDP = dpExperiments.find((dp) => dp.experiment.id === experimentId);
       const experiment = experiments[0];
@@ -543,8 +560,8 @@ export class ExperimentAssignmentService {
 
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
-        // const { state, logging, name, id } = experiment;
-        const { state, logging, name, conditionPayloads, type, id, factors } =
+        // const { state, name, id } = experiment;
+        const { state, name, conditionPayloads, type, id, factors } =
           this.experimentService.formatingPayload(experiment);
         const decisionPoints = experiment.partitions.map((decisionPoint) => {
           const { target, site } = decisionPoint;
@@ -568,8 +585,8 @@ export class ExperimentAssignmentService {
             }
           }
 
-          // adding info based on experiment state or logging flag
-          if (logging || state === EXPERIMENT_STATE.PREVIEW) {
+          // adding info based on experiment state
+          if (state === EXPERIMENT_STATE.PREVIEW) {
             // TODO add enrollment code here
             logger.info({
               message: `getAllExperimentConditions: experiment: ${name}, user: ${userId}, condition: ${
@@ -996,7 +1013,7 @@ export class ExperimentAssignmentService {
       newLogData = await this.logRepository.save(rawDataLogs);
     }
 
-    return [...updatedLog, ...newLogData];
+    return [...updatedLog.flat(), ...newLogData];
   }
 
   private async getMonitoredDocumentOfExperiment(experimentDoc: Experiment): Promise<MonitoredDecisionPoint[]> {
@@ -1634,18 +1651,36 @@ export class ExperimentAssignmentService {
   ): Promise<[Experiment[], { experiment: Experiment; reason: string; matchedGroup: boolean }[]]> {
     const segmentObj = {};
 
+    let includedExperiments: Experiment[] = [];
+    let excludedExperiments: { experiment: Experiment; reason: string; matchedGroup: boolean }[] = [];
+
+    const experimentIdsForIndividualConsistency = experiments
+      .filter(
+        (experiment) =>
+          experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL &&
+          experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP
+      )
+      .map((experiment) => experiment.id);
+    const experimentsEnrolled = await this.individualEnrollmentRepository.find({
+      where: { experiment: In(experimentIdsForIndividualConsistency), user: { id: experimentUser.id } },
+      relations: ['experiment'],
+    });
+    const experimentsEnrolledIds = experimentsEnrolled.map((enrollment) => enrollment.experiment.id);
+
     // creates segment Object for all experiments
     experiments.forEach((exp) => {
-      const includeId = exp.experimentSegmentInclusion.segment.id;
-      const excludeId = exp.experimentSegmentExclusion.segment.id;
+      if (!experimentsEnrolledIds.includes(exp.id)) {
+        const includeId = exp.experimentSegmentInclusion.segment.id;
+        const excludeId = exp.experimentSegmentExclusion.segment.id;
 
-      segmentObj[exp.id] = {
-        segmentIdsQueue: [includeId, excludeId],
-        currentIncludedSegmentIds: [includeId],
-        currentExcludedSegmentIds: [excludeId],
-        allIncludedSegmentIds: [includeId],
-        allExcludedSegmentIds: [excludeId],
-      };
+        segmentObj[exp.id] = {
+          segmentIdsQueue: [includeId, excludeId],
+          currentIncludedSegmentIds: [includeId],
+          currentExcludedSegmentIds: [excludeId],
+          allIncludedSegmentIds: [includeId],
+          allExcludedSegmentIds: [excludeId],
+        };
+      }
     });
 
     const experimentIdsWithFilter: { id: string; filterMode: FILTER_MODE }[] = experiments.map(
@@ -1660,8 +1695,8 @@ export class ExperimentAssignmentService {
     );
 
     // mapping ids to experiments
-    const includedExperiments = experiments.filter(({ id }) => includedExperimentIds.includes(id));
-    const excludedExperiments = excludedExperimentIds.map((expIdWithReason) => {
+    includedExperiments = experiments.filter(({ id }) => includedExperimentIds.includes(id));
+    excludedExperiments = excludedExperimentIds.map((expIdWithReason) => {
       return {
         experiment: experiments.find(({ id }) => id === expIdWithReason.id),
         reason: expIdWithReason.reason,
@@ -1688,8 +1723,9 @@ export class ExperimentAssignmentService {
     const explicitGroupInclusionFilteredData: { groupId: string; type: string; id: string }[] = [];
     const explicitGroupExclusionFilteredData: { groupId: string; type: string; id: string }[] = [];
 
-    const userGroups = [];
-    if (experimentUser?.group) {
+    const userGroups = [],
+      indirectExcludedExperiments = [];
+    if (experimentUser.group) {
       Object.keys(experimentUser.group).forEach((type) => {
         experimentUser.group[type].forEach((groupId) => {
           userGroups.push({ type, groupId });
@@ -1800,6 +1836,9 @@ export class ExperimentAssignmentService {
               reason: 'group',
               matchedGroup, // matchedExcludedGroup === experiment.group
             });
+            if (!matchedGroup) {
+              indirectExcludedExperiments.push(modal.id);
+            }
           }
         }
       } else {
@@ -1831,6 +1870,18 @@ export class ExperimentAssignmentService {
           }
         }
       }
+    });
+
+    const userWorkingGroupIds = [];
+    if (experimentUser.workingGroup) {
+      Object.keys(experimentUser.workingGroup).forEach((type) => {
+        userWorkingGroupIds.push(experimentUser.workingGroup[type]);
+      });
+    }
+    // const userGroupIds = userGroups.map((group) => group.groupId);
+    await this.groupEnrollmentRepository.delete({
+      experiment: { id: In(indirectExcludedExperiments) },
+      groupId: In(userWorkingGroupIds),
     });
 
     return [userIncludedModals, userExcludedModals];

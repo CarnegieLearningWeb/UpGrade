@@ -4,17 +4,19 @@ import org.upgradeplatform.utils.Utils.MetricMetaData;
 
 public class Metric {
 
-
 	private String key;
 	private MetricMetaData type;
 	private String[] allowedData;
 	private String createdAt;
 	private String updatedAt;
 	private Integer versionNumber;
+	private String[] context;
 
-	public Metric() {}
+	public Metric() {
+	}
 
-	public Metric(String key, MetricMetaData type, String[] allowedData, String createdAt, String updatedAt, Integer versionNumber) {
+	public Metric(String key, MetricMetaData type, String[] allowedData, String createdAt, String updatedAt,
+			Integer versionNumber, String[] context) {
 		super();
 		this.key = key;
 		this.type = type;
@@ -22,6 +24,7 @@ public class Metric {
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
 		this.versionNumber = versionNumber;
+		this.context = context;
 	}
 
 	public String getKey() {
@@ -72,5 +75,12 @@ public class Metric {
 		this.versionNumber = versionNumber;
 	}
 
+	public String[] getContext() {
+		return context;
+	}
+
+	public void setContext(String[] context) {
+		this.context = context;
+	}
 
 }
