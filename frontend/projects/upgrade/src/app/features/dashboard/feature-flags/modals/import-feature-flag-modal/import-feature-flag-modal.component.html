@@ -7,8 +7,8 @@
   (primaryActionBtnClicked)="importFiles()"
 >
   <div class="drag-drop-container">
-    <ng-container *ngIf="!(isLoadingImportFeatureFlag$ | async); else loadingSpinner">
-      <ng-container *ngIf="(uploadedFileCount | async) < 1; else validationTable">
+    <ng-container *ngIf="!(isLoadingImportFeatureFlag$()); else loadingSpinner">
+      <ng-container *ngIf="uploadedFileCount() < 1; else validationTable">
         <app-common-import-container
           fileType=".json"
           buttonLabel="Choose JSON"

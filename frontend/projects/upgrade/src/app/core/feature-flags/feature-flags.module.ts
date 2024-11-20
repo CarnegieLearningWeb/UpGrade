@@ -6,7 +6,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 import { featureFlagsReducer } from './store/feature-flags.reducer';
 import { FeatureFlagsEffects } from './store/feature-flags.effects';
-import { FeatureFlagsStore } from './store/feature-flag.signal.store';
+import { FeatureFlagsStore } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/feature-flag.signal.store';
 
 @NgModule({
   declarations: [],
