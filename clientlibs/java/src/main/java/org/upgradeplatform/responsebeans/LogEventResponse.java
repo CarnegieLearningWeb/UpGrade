@@ -4,13 +4,16 @@ public class LogEventResponse {
 
 	private String id;
 	private Object data;
-	private Metric metrics;
+	private Metric[] metrics;
 	private ExperimentUserResponse user;
 	private String timeStamp;
 	private String uniquifier;
 
+	public LogEventResponse() {
+	}
+
 	public LogEventResponse(String id, Object data,
-			Metric metrics, ExperimentUserResponse user, String timeStamp, String uniquifier) {
+			Metric[] metrics, ExperimentUserResponse user, String timeStamp, String uniquifier) {
 		super();
 		this.id = id;
 		this.data = data;
@@ -36,11 +39,11 @@ public class LogEventResponse {
 		this.data = data;
 	}
 
-	public Metric getMetrics() {
+	public Metric[] getMetrics() {
 		return metrics;
 	}
 
-	public void setMetrics(Metric metrics) {
+	public void setMetrics(Metric[] metrics) {
 		this.metrics = metrics;
 	}
 

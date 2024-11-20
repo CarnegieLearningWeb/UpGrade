@@ -78,15 +78,15 @@ export interface CSVExportDataRow {
 }
 
 export interface ConditionDecisionPointData {
-  revertTo: string;
-  payload: string;
-  excludeIfReached: boolean;
-  expDecisionPointId: string;
-  expConditionId: string;
-  conditionName: string;
+  revertTo?: string;
+  payload?: string;
+  excludeIfReached?: boolean;
+  expDecisionPointId?: string;
+  expConditionId?: string;
+  conditionName?: string;
 }
 
-export interface ExperimentCSVData {
+export interface ExperimentDetailsForCSVData extends ConditionDecisionPointData {
   experimentId: string;
   experimentName: string;
   context: string[];
@@ -99,12 +99,6 @@ export interface ExperimentCSVData {
   postRule: string;
   enrollmentStartDate: string;
   enrollmentCompleteDate: string;
-  revertTo: string;
-  payload: string;
-  excludeIfReached: boolean;
-  expDecisionPointId: string;
-  expConditionId: string;
-  conditionName: string;
   details: ConditionDecisionPointData[];
 }
 
@@ -445,7 +439,7 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
   }
 
   public async getCSVDataForSimpleExport(
-    experimentsData: ExperimentCSVData,
+    experimentsData: ExperimentDetailsForCSVData,
     experimentId: string
   ): Promise<CSVExportDataRow[]> {
     // Get the individual enrollment-related data
@@ -459,13 +453,22 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
         '"individualEnrollment"."experimentId" as "experimentId"',
         '"individualEnrollment"."conditionId" as "conditionId"',
         '"individualEnrollment"."partitionId" as "partitionId"',
+        '"decisionPointData"."site" as "site"',
+        '"decisionPointData"."target" as "target"',
       ])
+      .leftJoin(
+        DecisionPoint,
+        'decisionPointData',
+        'decisionPointData.experimentId = individualEnrollment.experimentId AND decisionPointData.id = individualEnrollment.partitionId'
+      )
       .groupBy('individualEnrollment.userId')
       .addGroupBy('individualEnrollment.groupId')
       .addGroupBy('individualEnrollment.enrollmentCode')
       .addGroupBy('individualEnrollment.experimentId')
       .addGroupBy('individualEnrollment.conditionId')
       .addGroupBy('individualEnrollment.partitionId')
+      .addGroupBy('decisionPointData.site')
+      .addGroupBy('decisionPointData.target')
       .orderBy('individualEnrollment.userId', 'ASC')
       .where('individualEnrollment.experimentId = :experimentId::uuid', { experimentId });
 
@@ -521,6 +524,8 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
             enrollmentCode: individualEnrollmentQueryResult.enrollmentCode,
             expDecisionPointId: individualEnrollmentQueryResult.partitionId,
             expConditionId: individualEnrollmentQueryResult.conditionId,
+            site: individualEnrollmentQueryResult.site,
+            target: individualEnrollmentQueryResult.target,
           });
         }
       });
@@ -555,16 +560,22 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
       const userMonitoredResults =
         groupedMonitoredDecisionPointQueryResults[individualEnrollmentExperiment.userId] || [];
 
-      return userMonitoredResults.map((monitoredDecisionPointQueryResult) => ({
-        ...individualEnrollmentExperiment,
-        site: monitoredDecisionPointQueryResult.site,
-        target: monitoredDecisionPointQueryResult.target,
-        markExperimentPointTime: monitoredDecisionPointQueryResult.markExperimentPointTime,
-        stratificationValue: experimentsData.stratification
-          ? userStratificationFactorQueryResult.find((user) => user.userId === individualEnrollmentExperiment.userId)
-              ?.stratificationFactorValue
-          : null,
-      }));
+      return userMonitoredResults
+        .filter(
+          (monitoredDecisionPointQueryResult) =>
+            monitoredDecisionPointQueryResult.site === individualEnrollmentExperiment.site &&
+            monitoredDecisionPointQueryResult.target === individualEnrollmentExperiment.target
+        )
+        .map((monitoredDecisionPointQueryResult) => ({
+          ...individualEnrollmentExperiment,
+          site: monitoredDecisionPointQueryResult.site,
+          target: monitoredDecisionPointQueryResult.target,
+          markExperimentPointTime: monitoredDecisionPointQueryResult.markExperimentPointTime,
+          stratificationValue: experimentsData.stratification
+            ? userStratificationFactorQueryResult.find((user) => user.userId === individualEnrollmentExperiment.userId)
+                ?.stratificationFactorValue
+            : null,
+        }));
     });
     return combinedCSVExportData;
   }

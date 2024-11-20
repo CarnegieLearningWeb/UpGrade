@@ -151,8 +151,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.conditionCode.nativeElement.focus();
     }
 
-    if (this.isContextChanged || this.isExperimentTypeChanged) {
-      this.isContextChanged = false;
+    if (this.isExperimentTypeChanged) {
       this.decisionPoints?.clear();
       this.conditions?.clear();
       this.decisionPointDataSource.next(this.decisionPoints?.controls);
