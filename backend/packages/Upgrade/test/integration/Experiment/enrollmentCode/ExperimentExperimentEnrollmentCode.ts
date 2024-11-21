@@ -9,7 +9,7 @@ import {
   checkExperimentAssignedIsNotDefault,
 } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
-import { EXPERIMENT_STATE, ENROLLMENT_CODE } from 'upgrade_types';
+import { EXPERIMENT_STATE, ENROLLMENT_CODE, ASSIGNMENT_UNIT } from 'upgrade_types';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { CheckService } from '../../../../src/api/services/CheckService';
 
@@ -150,7 +150,7 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  experimentObject.assignmentUnit = "group";
+  experimentObject.assignmentUnit = ASSIGNMENT_UNIT.GROUP;
 
   await experimentService.update(experimentObject as any, user, new UpgradeLogger());
   // change experiment status to Enrolling

@@ -87,7 +87,7 @@ export default async function testCase(): Promise<void> {
 
   let individualExclusions = await checkService.getAllIndividualExclusion();
   expect(individualExclusions.length).toEqual(1);
-  experimentObject.state = 'enrolling';
+  experimentObject.state = EXPERIMENT_STATE.ENROLLING;
   experimentObject.experimentSegmentExclusion = {
     "segment": {
         "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",
