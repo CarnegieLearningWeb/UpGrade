@@ -9,7 +9,13 @@
   <form [formGroup]="featureFlagForm" class="form-standard dense-3">
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Name</mat-label>
-      <input matInput formControlName="name" placeholder="e.g., My feature flag" class="ft-14-400"/>
+      <input
+        matInput
+        formControlName="name"
+        placeholder="e.g., My feature flag"
+        class="ft-14-400"
+        [disabled]="featureFlagForm.get('name')?.disabled"
+      />
       <mat-hint class="form-hint ft-12-400">
         {{ 'feature-flags.upsert-flag-modal.name-hint.text' | translate }}
       </mat-hint>
@@ -17,7 +23,13 @@
 
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Key</mat-label>
-      <input matInput formControlName="key" placeholder="Key for this feature flag" class="ft-14-400" />
+      <input
+        matInput
+        formControlName="key"
+        placeholder="Key for this feature flag"
+        class="ft-14-400"
+        [disabled]="featureFlagForm.get('key')?.disabled"
+      />
       <mat-hint class="form-hint ft-12-400">
         <ng-container *ngIf="!validationError; else duplicateError">
           <span class="key-hint">
@@ -42,7 +54,11 @@
 
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">App Context</mat-label>
-      <mat-select formControlName="appContext" class="ft-14-400">
+      <mat-select
+        formControlName="appContext"
+        class="ft-14-400"
+        [disabled]="featureFlagForm.get('appContext')?.disabled"
+      >
         <mat-option *ngFor="let context of appContexts$ | async" [value]="context" class="ft-14-400">{{
           context
         }}</mat-option>

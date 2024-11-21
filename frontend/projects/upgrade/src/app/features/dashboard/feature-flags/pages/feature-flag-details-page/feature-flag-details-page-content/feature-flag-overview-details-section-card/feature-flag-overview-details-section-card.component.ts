@@ -49,6 +49,8 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   subscriptions = new Subscription();
   confirmStatusChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
   menuButtonItems: IMenuButtonItem[];
+  featureFlag: FeatureFlag;
+  userPermissions: UserPermission;
 
   constructor(
     private dialogService: DialogService,
@@ -62,8 +64,16 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
     this.subscriptions.add(this.featureFlagService.currentUserEmailAddress$.subscribe((id) => (this.emailId = id)));
 
     this.subscriptions.add(
+      this.featureFlag$.subscribe((flag) => {
+        this.featureFlag = flag;
+        this.updateMenuItems();
+      })
+    );
+
+    this.subscriptions.add(
       this.permissions$.subscribe((permissions) => {
-        this.updateMenuItems(permissions);
+        this.userPermissions = permissions;
+        this.updateMenuItems();
       })
     );
   }
@@ -76,14 +86,17 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
     return FILTER_MODE;
   }
 
-  private updateMenuItems(permissions: UserPermission): void {
+  private updateMenuItems(): void {
     this.menuButtonItems = [
-      { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT, disabled: !permissions?.featureFlags.update },
-      { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DUPLICATE, disabled: !permissions?.featureFlags.create },
+      { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT, disabled: !this.userPermissions?.featureFlags.update },
+      { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DUPLICATE, disabled: !this.userPermissions?.featureFlags.create },
       { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN, disabled: false },
       { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA, disabled: true },
       { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.ARCHIVE, disabled: true },
-      { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DELETE, disabled: !permissions?.featureFlags.delete },
+      {
+        name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DELETE,
+        disabled: !this.userPermissions?.featureFlags.delete || this.featureFlag?.status === 'enabled',
+      },
     ];
   }
 
