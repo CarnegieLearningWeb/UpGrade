@@ -14,7 +14,7 @@
         formControlName="name"
         placeholder="e.g., My feature flag"
         class="ft-14-400"
-        [disabled]="featureFlagForm.get('name')?.disabled"
+        [disabled]="isDisabled()"
       />
       <mat-hint class="form-hint ft-12-400">
         {{ 'feature-flags.upsert-flag-modal.name-hint.text' | translate }}
@@ -28,7 +28,7 @@
         formControlName="key"
         placeholder="Key for this feature flag"
         class="ft-14-400"
-        [disabled]="featureFlagForm.get('key')?.disabled"
+        [disabled]="isDisabled()"
       />
       <mat-hint class="form-hint ft-12-400">
         <ng-container *ngIf="!validationError; else duplicateError">
@@ -54,11 +54,7 @@
 
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">App Context</mat-label>
-      <mat-select
-        formControlName="appContext"
-        class="ft-14-400"
-        [disabled]="featureFlagForm.get('appContext')?.disabled"
-      >
+      <mat-select formControlName="appContext" class="ft-14-400" [disabled]="isDisabled()">
         <mat-option *ngFor="let context of appContexts$ | async" [value]="context" class="ft-14-400">{{
           context
         }}</mat-option>

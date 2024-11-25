@@ -107,12 +107,16 @@ export class UpsertFeatureFlagModalComponent {
     this.listenForDuplicateKey();
     this.listenOnContext();
 
-    if (
-      this.config.params.action === UPSERT_FEATURE_FLAG_ACTION.EDIT &&
-      this.config.params.sourceFlag?.status === FEATURE_FLAG_STATUS.ENABLED
-    ) {
+    if (this.isDisabled()) {
       this.disableRestrictedFields();
     }
+  }
+
+  isDisabled() {
+    return (
+      this.config.params.action === UPSERT_FEATURE_FLAG_ACTION.EDIT &&
+      this.config.params.sourceFlag?.status === FEATURE_FLAG_STATUS.ENABLED
+    );
   }
 
   disableRestrictedFields(): void {
