@@ -46,7 +46,7 @@ export default async function ExcludeGroupsB(): Promise<void> {
   experimentObject.partitions = updateExcludeIfReachedFlag(experimentObject.partitions);
 
   // create experiment
-  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  await experimentService.create(experimentObject, user, new UpgradeLogger());
   const experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
@@ -142,7 +142,7 @@ export default async function ExcludeGroupsB(): Promise<void> {
       },
     },
   };
-  await experimentService.update(experimentObject as any, user, new UpgradeLogger());
+  await experimentService.update(experimentObject, user, new UpgradeLogger());
 
   // check stats
   stats = await analyticsService.getDetailEnrollment(experimentId);

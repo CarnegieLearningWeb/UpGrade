@@ -149,7 +149,7 @@ export class ConditionValidator {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => LevelCombinationElementValidator)
-  public levelCombinationElements: LevelCombinationElementValidator[];
+  public levelCombinationElements?: LevelCombinationElementValidator[];
 }
 export class PartitionValidator {
   @IsNotEmpty()
