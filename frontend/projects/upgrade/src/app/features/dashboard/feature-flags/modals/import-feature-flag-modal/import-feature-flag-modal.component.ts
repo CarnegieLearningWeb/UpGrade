@@ -3,7 +3,7 @@ import {
   CommonModalComponent,
   CommonStatusIndicatorChipComponent,
 } from '../../../../../shared-standalone-component-lib/components';
-import { BehaviorSubject, firstValueFrom } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../../shared/shared.module';
@@ -15,7 +15,6 @@ import { importError, ImportListParams } from '../../../../../core/segments/stor
 import { NotificationService } from '../../../../../core/notifications/notification.service';
 import { IFeatureFlagFile } from 'upgrade_types';
 import { FeatureFlagsStore } from './feature-flag.signal.store';
-import { FeatureFlagsDataService } from '../../../../../core/feature-flags/feature-flags.data.service';
 
 @Component({
   selector: 'app-import-feature-flag-modal',
@@ -49,7 +48,6 @@ export class ImportFeatureFlagModalComponent {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: CommonModalConfig<ImportListParams>,
-    private featureFlagsDataService: FeatureFlagsDataService,
     public dialogRef: MatDialogRef<ImportFeatureFlagModalComponent>,
     private notificationService: NotificationService,
     private featureFlagStore: FeatureFlagsStore
@@ -97,14 +95,11 @@ export class ImportFeatureFlagModalComponent {
     if (this.data.title === 'Import Feature Flag') {
       this.featureFlagStore.validateFeatureFlags(this.fileData);
     } else if (this.data.title === 'Import List') {
-      const validationErrors = (await firstValueFrom(
-        this.featureFlagsDataService.validateFeatureFlagList(
-          this.fileData,
-          this.data.params.flagId,
-          this.data.params.listType
-        )
-      )) as ValidateFeatureFlagError[];
-      this.checkValidation(validationErrors);
+      this.featureFlagStore.validateFeatureFlagList({
+        fileData: this.fileData,
+        flagId: this.data.params.flagId,
+        listType: this.data.params.listType,
+      });
     }
   }
 
@@ -139,14 +134,11 @@ export class ImportFeatureFlagModalComponent {
       if (this.data.title === 'Import Feature Flag') {
         this.featureFlagStore.importFeatureFlags({ files: this.fileData });
       } else if (this.data.title === 'Import List') {
-        const importResult: importError[] = (await firstValueFrom(
-          this.featureFlagsDataService.importFeatureFlagList(
-            this.fileData,
-            this.data.params.flagId,
-            this.data.params.listType
-          )
-        )) as importError[];
-        this.showNotification(importResult);
+        this.featureFlagStore.importFeatureFlagList({
+          fileData: this.fileData,
+          flagId: this.data.params.flagId,
+          listType: this.data.params.listType,
+        });
       }
 
       this.isImportActionBtnDisabled.next(false);

@@ -3,7 +3,7 @@ import { FeatureFlagsDataService } from '../../../../../core/feature-flags/featu
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { Observable, tap } from 'rxjs';
-import { IFeatureFlagFile } from 'upgrade_types';
+import { FEATURE_FLAG_LIST_FILTER_MODE, IFeatureFlagFile } from 'upgrade_types';
 import { switchMap } from 'rxjs';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 
@@ -83,6 +83,34 @@ export class FeatureFlagsStore extends ComponentStore<FeatureFlagState> {
     );
   });
 
+  readonly importFeatureFlagList = this.effect(
+    (
+      params$: Observable<{
+        fileData: IFeatureFlagFile[];
+        flagId: string;
+        listType: FEATURE_FLAG_LIST_FILTER_MODE;
+      }>
+    ) => {
+      return params$.pipe(
+        tap(() => this.setLoadingImportFeatureFlag(true)),
+        switchMap(({ fileData, flagId, listType }) =>
+          this.featureFlagsDataService.importFeatureFlagList(fileData, flagId, listType).pipe(
+            tap({
+              next: (importResults: { fileName: string; error: string | null }[]) => {
+                this.setImportResults(importResults);
+                this.setLoadingImportFeatureFlag(false);
+              },
+              error: (error) => {
+                console.error('Error importing feature flag list:', error);
+                this.setLoadingImportFeatureFlag(false);
+              },
+            })
+          )
+        )
+      );
+    }
+  );
+
   readonly validateFeatureFlags = this.effect((featureFlagFiles$: Observable<IFeatureFlagFile[]>) => {
     return featureFlagFiles$.pipe(
       tap(() => this.setLoading(true)),
@@ -102,4 +130,32 @@ export class FeatureFlagsStore extends ComponentStore<FeatureFlagState> {
       )
     );
   });
+
+  readonly validateFeatureFlagList = this.effect(
+    (
+      params$: Observable<{
+        fileData: IFeatureFlagFile[];
+        flagId: string;
+        listType: FEATURE_FLAG_LIST_FILTER_MODE;
+      }>
+    ) => {
+      return params$.pipe(
+        tap(() => this.setLoading(true)),
+        switchMap(({ fileData, flagId, listType }) =>
+          this.featureFlagsDataService.validateFeatureFlagList(fileData, flagId, listType).pipe(
+            tap({
+              next: (validationErrors: ValidateFeatureFlagError[]) => {
+                this.setValidationErrors(validationErrors);
+                this.setLoading(false);
+              },
+              error: (error) => {
+                console.error('Error validating feature flag list:', error);
+                this.setLoading(false);
+              },
+            })
+          )
+        )
+      );
+    }
+  );
 }
