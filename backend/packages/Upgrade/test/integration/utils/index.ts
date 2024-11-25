@@ -13,11 +13,11 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { DecisionPoint } from 'src/api/models/DecisionPoint';
 
-export function updateExcludeIfReachedFlag(partitions: DecisionPoint[]): DecisionPoint[] {
+export function updateExcludeIfReachedFlag(partitions: Array<Partial<Omit<DecisionPoint, 'createdAt' | 'updatedAt' | 'versionNumber' | 'experiment' | 'conditionPayloads'>>>): DecisionPoint[] {
   partitions.forEach((partition) => {
     partition.excludeIfReached = true;
   });
-  return partitions;
+  return partitions as DecisionPoint[];
 }
 import { IndividualExclusionRepository } from '../../../src/api/repositories/IndividualExclusionRepository';
 

@@ -1,5 +1,5 @@
 import { METRICS_JOIN_TEXT } from '../../../../src/api/services/MetricService';
-import { EXPERIMENT_TYPE, FILTER_MODE, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT, EXPERIMENT_STATE, EXPERIMENT_TYPE, FILTER_MODE, OPERATION_TYPES, REPEATED_MEASURE, CONSISTENCY_RULE, POST_EXPERIMENT_RULE, SEGMENT_TYPE } from 'upgrade_types';
 
 export const revertToExperiment = {
   id: 'be3ae74f-370a-4015-93f3-7761d16f8b11',
@@ -80,18 +80,18 @@ export const experiment = {
   id: 'be3ae74f-370a-4015-93f3-7761d16f8b17',
   name: 'Test Experiment',
   description: 'Test Experiment Description',
-  consistencyRule: 'individual',
-  assignmentUnit: 'individual',
-  postExperimentRule: 'continue',
-  state: 'scheduled',
-  startOn: new Date().toISOString(),
+  consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
+  assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
+  postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+  state: EXPERIMENT_STATE.SCHEDULED,
+  startOn: new Date(),
   group: 'teacher',
   context: ['home'],
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], type: SEGMENT_TYPE.PRIVATE, subSegments: []} },
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], type: SEGMENT_TYPE.PRIVATE, subSegments: [] } },
   conditions: [
     {
       id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
@@ -100,6 +100,7 @@ export const experiment = {
       assignmentWeight: 40,
       conditionCode: 'ConditionA',
       twoCharacterId: 'CA',
+      order: 1,
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
@@ -108,34 +109,41 @@ export const experiment = {
       assignmentWeight: 60,
       conditionCode: 'ConditionB',
       twoCharacterId: 'CB',
+      order: 2,
     },
   ],
   partitions: [
     {
+      id: 'd2702d3c-5e04-41a7-8766-1da8a95b72de',
       site: 'CurriculumSequence',
       target: 'W1',
       description: 'Decision Point on Workspace 1',
       twoCharacterId: 'W1',
       excludeIfReached: false,
+      order: 1,
     },
     {
+      id: 'd2702d3c-5e04-41a7-8766-1da8a95b72fe',
       site: 'CurriculumSequence',
       target: 'W2',
       description: 'Decision Point on Workspace 2',
       twoCharacterId: 'W2',
       excludeIfReached: false,
+      order: 2,
     },
     {
+      id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ae',
       site: 'CurriculumSequence',
       description: 'No Decision Point',
       twoCharacterId: 'NP',
       excludeIfReached: false,
+      order: 3,
     },
   ],
   conditionPayloads: [],
   backendVersion: '1.0.0',
   groupSatisfied: 0,
-  assignmentAlgorithm: 'random',
+  assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
 };
 
 export const experimentSecond = {
@@ -162,6 +170,7 @@ export const experimentSecond = {
       assignmentWeight: 40,
       conditionCode: 'ConditionA',
       twoCharacterId: 'BA',
+      order: 1,
     },
     {
       id: '439a6fef-901d-4f0c-bca8-25f06e9e6262',
@@ -170,6 +179,7 @@ export const experimentSecond = {
       assignmentWeight: 60,
       conditionCode: 'ConditionB',
       twoCharacterId: 'BB',
+      order: 2,
     },
   ],
   partitions: [
@@ -179,6 +189,7 @@ export const experimentSecond = {
       description: 'Decision Point on Workspace 1',
       twoCharacterId: 'X1',
       excludeIfReached: false,
+      order: 1,
     },
     {
       site: 'CurriculumSequence2',
@@ -186,6 +197,7 @@ export const experimentSecond = {
       description: 'Decision Point on Workspace 2',
       twoCharacterId: 'X2',
       excludeIfReached: false,
+      order: 2,
     },
   ],
   conditionPayloads: [],
@@ -218,6 +230,7 @@ export const experimentThird = {
       assignmentWeight: 40,
       conditionCode: 'ConditionA',
       twoCharacterId: 'AA',
+      order: 1,
     },
     {
       id: '8c7b2951-f9a7-4d2e-a1ed-0572e1ede879',
@@ -226,6 +239,7 @@ export const experimentThird = {
       assignmentWeight: 60,
       conditionCode: 'ConditionB',
       twoCharacterId: 'AB',
+      order: 2,
     },
   ],
   partitions: [
@@ -235,6 +249,7 @@ export const experimentThird = {
       description: 'Decision Point on Workspace 1',
       twoCharacterId: 'Y1',
       excludeIfReached: false,
+      order: 1,
     },
     {
       site: 'CurriculumSequence3',
@@ -242,6 +257,7 @@ export const experimentThird = {
       description: 'Decision Point on Workspace 2',
       twoCharacterId: 'Y2',
       excludeIfReached: false,
+      order: 2,
     },
   ],
   conditionPayloads: [],
@@ -274,6 +290,7 @@ export const experimentFourth = {
       assignmentWeight: 55.5,
       conditionCode: 'ConditionA',
       twoCharacterId: 'AA',
+      order: 1,
     },
     {
       id: '8c7b2951-f9a7-4d2e-a1ed-0572e1ede878',
@@ -282,6 +299,7 @@ export const experimentFourth = {
       assignmentWeight: 44.5,
       conditionCode: 'ConditionB',
       twoCharacterId: 'AB',
+      order: 2,
     },
   ],
   partitions: [
@@ -291,6 +309,7 @@ export const experimentFourth = {
       description: 'Decision Point on Workspace 1',
       twoCharacterId: 'Y1',
       excludeIfReached: false,
+      order: 1,
     },
     {
       site: 'CurriculumSequence3',
@@ -298,6 +317,7 @@ export const experimentFourth = {
       description: 'Decision Point on Workspace 2',
       twoCharacterId: 'Y2',
       excludeIfReached: false,
+      order: 2,
     },
   ],
   conditionPayloads: [],
@@ -331,6 +351,7 @@ export const experimentFifth = {
       assignmentWeight: 40,
       conditionCode: 'ConditionA',
       twoCharacterId: 'CA',
+      order: 1,
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
@@ -339,6 +360,7 @@ export const experimentFifth = {
       assignmentWeight: 60,
       conditionCode: 'ConditionB',
       twoCharacterId: 'CB',
+      order: 2,
     },
   ],
   partitions: [
@@ -349,6 +371,7 @@ export const experimentFifth = {
       description: 'Decision Point on Workspace 1',
       twoCharacterId: 'W1',
       excludeIfReached: false,
+      order: 1,
     },
     {
       id: 'e22467b1-f0e9-4444-9517-cc03037bc079',
@@ -357,6 +380,7 @@ export const experimentFifth = {
       description: 'Decision Point on Workspace 2',
       twoCharacterId: 'W2',
       excludeIfReached: false,
+      order: 2,
     },
     {
       id: 'f22467b1-f0e9-4444-9517-cc03037bc079',
@@ -364,6 +388,7 @@ export const experimentFifth = {
       description: 'No Decision Point',
       twoCharacterId: 'NP',
       excludeIfReached: false,
+      order: 3,
     },
   ],
   conditionPayloads: [
@@ -415,6 +440,7 @@ export const experimentSixth = {
       assignmentWeight: 40,
       conditionCode: 'ConditionA',
       twoCharacterId: 'CA',
+      order: 1,
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
@@ -423,6 +449,7 @@ export const experimentSixth = {
       assignmentWeight: 60,
       conditionCode: 'ConditionB',
       twoCharacterId: 'CB',
+      order: 2,
     },
   ],
   partitions: [
@@ -433,6 +460,7 @@ export const experimentSixth = {
       description: 'Decision Point on Workspace 1',
       twoCharacterId: 'W1',
       excludeIfReached: false,
+      order: 1,
     },
     {
       id: 'e22467b1-f0e9-4444-9517-cc03037bc079',
@@ -441,6 +469,7 @@ export const experimentSixth = {
       description: 'Decision Point on Workspace 2',
       twoCharacterId: 'W2',
       excludeIfReached: false,
+      order: 2,
     },
   ],
   conditionPayloads: [],
