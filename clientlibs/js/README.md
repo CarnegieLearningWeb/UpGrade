@@ -8,6 +8,9 @@ Please see https://upgrade-platform.gitbook.io/docs/developer-guide/reference/cl
 
 ## Usage
 
+See [`quicktest.ts`](https://github.com/CarnegieLearningWeb/UpGrade/blob/release/6.0/clientlibs/js/quickTest.ts) to see basic in executable form to play around with: `npm run quicktest`
+
+---
 **`Example`**
 
 ```typescript
