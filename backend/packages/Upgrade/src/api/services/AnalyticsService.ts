@@ -166,9 +166,6 @@ export class AnalyticsService {
 
   public async getCSVData(experimentId: string, email: string, logger: UpgradeLogger): Promise<string> {
     logger.info({ message: `Inside getCSVData ${experimentId} , ${email}` });
-    if (!experimentId) {
-      return '';
-    }
     try {
       const timeStamp = new Date().toISOString();
       const folderPath = 'src/api/assets/files/';

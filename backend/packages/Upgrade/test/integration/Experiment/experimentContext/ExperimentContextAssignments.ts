@@ -23,7 +23,7 @@ export default async function testCase(): Promise<void> {
   const context2 = 'about';
 
   // experiment object
-  const experimentObject1 = individualAssignmentExperiment;
+  const experimentObject1 = JSON.parse(JSON.stringify(individualAssignmentExperiment));
   experimentObject1.context = [context1];
 
   const experimentName1 = experimentObject1.partitions[0].target;

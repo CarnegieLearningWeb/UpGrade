@@ -27,3 +27,27 @@ export const segmentSecond = {
   ],
   subSegmentIds: ['0b66530a-b59c-4cc2-a578-6f4808be25c5'],
 };
+
+export const segmentThird = {
+  id: '0c66530a-b59c-4cc2-a578-6f4808be25c5',
+  name: 'segment3',
+  description: 'excluded group',
+  context: 'home',
+  type: SEGMENT_TYPE.PRIVATE,
+  userIds: [],
+  groups: [
+    { groupId: '1', type: 'teacher' },
+  ],
+  subSegmentIds: [],
+};
+
+export const segmentFourth = {
+  id: '0d66530a-b59c-4cc2-a578-6f4808be25c5',
+  name: 'segment4',
+  description: 'included users',
+  context: 'home',
+  type: SEGMENT_TYPE.PRIVATE,
+  userId: 'student1',
+  groups: [],
+  subSegmentIds: [],
+};

@@ -3,7 +3,6 @@ import {
   Get,
   JsonController,
   OnUndefined,
-  Param,
   Post,
   Put,
   Delete,
@@ -11,24 +10,25 @@ import {
   CurrentUser,
   Req,
   QueryParams,
+  Params,
 } from 'routing-controllers';
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
-import { SERVER_ERROR } from 'upgrade_types';
-import { isUUID } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentPaginatedParamsValidator } from './validators/ExperimentPaginatedParamsValidator';
-import { User } from '../models/User';
+import { UserDTO } from '../DTO/UserDTO';
 import { DecisionPoint } from '../models/DecisionPoint';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
+import { NotFoundException } from '@nestjs/common/exceptions';
+import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
-  nodes: ExperimentDTO[];
+  nodes: Experiment[];
 }
 
 /**
@@ -86,7 +86,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       - context
  *       - state
  *       - tags
- *       - logging
  *       - filterMode
  *       - consistencyRule
  *       - assignmentUnit
@@ -145,8 +144,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *            type: string
  *       group:
  *         type: string
- *       logging:
- *         type: boolean
  *       assignmentAlgorithm:
  *         type: string
  *         enum: [random, stratified random sampling]
@@ -332,8 +329,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       group:
  *         type: string
  *         minLength: 1
- *       logging:
- *         type: boolean
  *       conditions:
  *         type: array
  *         uniqueItems: true
@@ -558,7 +553,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       - postExperimentRule
  *       - tags
  *       - group
- *       - logging
  *       - conditions
  *       - partitions
  *       - queries
@@ -740,14 +734,6 @@ export class ExperimentController {
     @Req()
     request: AppRequest
   ): Promise<ExperimentPaginationInfo> {
-    if (!paginatedParams) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : paginatedParams should not be null.' })
-        )
-      );
-    }
-
     const [experiments, count] = await Promise.all([
       this.experimentService.findPaginated(
         paginatedParams.skip,
@@ -827,6 +813,8 @@ export class ExperimentController {
    *            description: Get Experiment By Id
    *            schema:
    *              $ref: '#/definitions/ExperimentResponse'
+   *          '400':
+   *            description: ExperimentId should be a valid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -836,14 +824,10 @@ export class ExperimentController {
    */
   @Get('/single/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public one(@Param('id') id: string, @Req() request: AppRequest): Promise<ExperimentDTO> | undefined {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
+  public one(
+    @Params({ validate: true }) { id }: ExperimentIdValidator,
+    @Req() request: AppRequest
+  ): Promise<ExperimentDTO> {
     return this.experimentService.getSingleExperiment(id, request.logger);
   }
 
@@ -910,6 +894,8 @@ export class ExperimentController {
    *                  assignmentWeight:
    *                    type: number
    *                  order: {}
+   *          '400':
+   *            description: ExperimentId should be a valid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -919,14 +905,10 @@ export class ExperimentController {
    */
   @Get('/conditions/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public getCondition(@Param('id') id: string, @Req() request: AppRequest): Promise<ExperimentCondition[]> {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
+  public async getCondition(
+    @Params({ validate: true }) { id }: ExperimentIdValidator,
+    @Req() request: AppRequest
+  ): Promise<ExperimentCondition[]> {
     return this.experimentService.getExperimentalConditions(id, request.logger);
   }
 
@@ -965,9 +947,9 @@ export class ExperimentController {
   @Post()
   public create(
     @Body({ validate: true }) experiment: ExperimentDTO,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO> {
+  ): Promise<Experiment> {
     request.logger.child({ user: currentUser });
     return this.experimentService.create(experiment, currentUser, request.logger);
   }
@@ -1006,9 +988,9 @@ export class ExperimentController {
   @Post('/batch')
   public createMultipleExperiments(
     @Body({ validate: true, type: ExperimentDTO }) experiment: ExperimentDTO[],
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<Experiment[]> {
     request.logger.child({ user: currentUser });
     return this.experimentService.createMultipleExperiments(experiment, currentUser, request.logger);
   }
@@ -1034,6 +1016,8 @@ export class ExperimentController {
    *            description: Delete Experiment By Id
    *            schema:
    *              $ref: '#/definitions/ExperimentResponse'
+   *          '400':
+   *            description: ExperimentId should be a valid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -1043,20 +1027,18 @@ export class ExperimentController {
    */
 
   @Delete('/:id')
-  public delete(
-    @Param('id') id: string,
-    @CurrentUser() currentUser: User,
+  public async delete(
+    @Params({ validate: true }) { id }: ExperimentIdValidator,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<Experiment | undefined> {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
     request.logger.child({ user: currentUser });
-    return this.experimentService.delete(id, currentUser, request.logger);
+    const experiment = await this.experimentService.delete(id, currentUser, request.logger);
+
+    if (!experiment) {
+      throw new NotFoundException('Experiment not found.');
+    }
+    return experiment;
   }
 
   /**
@@ -1095,7 +1077,7 @@ export class ExperimentController {
   public async updateState(
     @Body({ validate: true })
     experiment: AssignmentStateUpdateValidator,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<any> {
     return this.experimentService.updateState(
@@ -1144,21 +1126,14 @@ export class ExperimentController {
    */
   @Put('/:id')
   public update(
-    @Param('id') id: string,
+    @Params({ validate: true }) { id }: ExperimentIdValidator,
     @Body({ validate: true })
     experiment: ExperimentDTO,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
     request.logger.child({ user: currentUser });
-    return this.experimentService.update(experiment, currentUser, request.logger);
+    return this.experimentService.update({ ...experiment, id }, currentUser, request.logger);
   }
 
   /**
@@ -1257,7 +1232,7 @@ export class ExperimentController {
   public importExperiment(
     @Body({ validate: true })
     experiments: ExperimentFile[],
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ValidatedExperimentError[]> {
     return this.experimentService.importExperiment(experiments, currentUser, request.logger);
@@ -1307,9 +1282,9 @@ export class ExperimentController {
   public exportExperiment(
     @QueryParams()
     params: ExperimentIds,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO[]> {
+  ): Promise<Experiment[]> {
     const experimentIds = params.ids;
     return this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
   }
@@ -1337,6 +1312,8 @@ export class ExperimentController {
    *              type: number
    *              items:
    *                $ref: '#/definitions/ExperimentResponse'
+   *          '400':
+   *            description: ExperimentId should be a valid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -1347,16 +1324,9 @@ export class ExperimentController {
   @Get('/getGroupAssignmentStatus/:id')
   @OnUndefined(ExperimentNotFoundError)
   public async getGroupAssignmentStatus(
-    @Param('id') id: string,
+    @Params({ validate: true }) { id }: ExperimentIdValidator,
     @Req() request: AppRequest
   ): Promise<number> | undefined {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
     return this.experimentAssignmentService.getGroupAssignmentStatus(id, request.logger);
   }
 }

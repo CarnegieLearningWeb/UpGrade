@@ -5,6 +5,7 @@ import { Metric } from '../models/Metric';
 import { SERVER_ERROR, IMetricUnit, IMetricMetaData, IGroupMetric, ISingleMetric } from 'upgrade_types';
 import { SettingService } from './SettingService';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+import { HttpError } from '../errors';
 
 export const METRICS_JOIN_TEXT = '@__@';
 
@@ -22,6 +23,9 @@ export class MetricService {
   public async getMetricsByContext(context: string, logger: UpgradeLogger): Promise<IMetricUnit[]> {
     logger.info({ message: `Get metrics by context ${context}` });
     const metricData = await this.metricRepository.getMetricsByContext(context);
+    if (!metricData.length) {
+      throw new HttpError(404, `Metrics context not found: ${context}`);
+    }
     return this.metricDocumentToJson(metricData);
   }
 
@@ -46,7 +50,10 @@ export class MetricService {
 
   public async deleteMetric(key: string, logger: UpgradeLogger): Promise<IMetricUnit[]> {
     logger.info({ message: `Delete metric by key ${key}` });
-    await this.metricRepository.deleteMetricsByKeys(key, METRICS_JOIN_TEXT);
+    const result = await this.metricRepository.deleteMetricsByKeys(key, METRICS_JOIN_TEXT);
+    if (!result.length) {
+      throw new HttpError(404, `Metric key not found: ${key}`);
+    }
     const rootKey = key.split(METRICS_JOIN_TEXT);
     const updatedMetric = await this.metricRepository.getMetricsByKeys(rootKey[0], METRICS_JOIN_TEXT);
     return this.metricDocumentToJson(updatedMetric);
@@ -166,6 +173,7 @@ export class MetricService {
   }
 
   private parseMetrics(metrics: Array<IGroupMetric | ISingleMetric>): IMetricUnit[] {
+    if (!metrics) return [];
     return metrics.map((data: any) => {
       if (data.metric) {
         return {

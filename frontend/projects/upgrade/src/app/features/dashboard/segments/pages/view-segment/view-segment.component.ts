@@ -37,7 +37,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
     private segmentsService: SegmentsService,
     private dialog: MatDialog,
     private authService: AuthService,
-    private activatedroute: ActivatedRoute,
+    private activatedRoute: ActivatedRoute,
     private router: Router
   ) {}
 
@@ -58,7 +58,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
       this.permissions = permission;
     });
 
-    this.segmentIdSub = this.activatedroute.paramMap.subscribe((params) => {
+    this.segmentIdSub = this.activatedRoute.paramMap.subscribe((params) => {
       const segmentIdFromParams = params.get('segmentId');
       this.segmentsService.fetchSegmentById(segmentIdFromParams);
     });

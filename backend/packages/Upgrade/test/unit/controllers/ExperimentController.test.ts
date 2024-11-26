@@ -44,7 +44,6 @@ describe('Experiment Controller Testing', () => {
     revertTo: 'string',
     tags: ['string'],
     group: 'string',
-    logging: false,
     filterMode: 'includeAll',
     type: 'Simple',
     conditions: [

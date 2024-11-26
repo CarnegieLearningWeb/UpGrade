@@ -1,8 +1,8 @@
 import { JsonController, Post, Body, Authorized, Req } from 'routing-controllers';
 import { AppRequest } from '../../types';
 import { User } from '../models/User';
+import { UserDTO } from '../DTO/UserDTO';
 import { UserService } from '../services/UserService';
-import { UserDetailsValidator } from './validators/UserDetailsValidator';
 
 /**
  * @swagger
@@ -58,9 +58,13 @@ export class LoginController {
    *       responses:
    *          '200':
    *            description: User will be created if doesn't exist in the DB
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
    */
   @Post('/user')
-  public upsertUser(@Body({ validate: true }) user: UserDetailsValidator, @Req() request: AppRequest): Promise<User> {
+  public upsertUser(@Body({ validate: true }) user: UserDTO, @Req() request: AppRequest): Promise<User> {
     if (user.role) {
       // Create a user with default role reader if user doesn't exist as anyone with accepted google account domain can login
       // Role can be updated later by admin users only

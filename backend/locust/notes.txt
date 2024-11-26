@@ -81,7 +81,6 @@ Error: Condition not found: cluster_params_llm
     ],
     "group": null,
     "conditionOrder": null,
-    "logging": false,
     "filterMode": "includeAll",
     "backendVersion": "5.0.13",
     "type": "Simple",

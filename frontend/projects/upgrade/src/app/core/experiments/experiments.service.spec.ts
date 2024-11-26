@@ -110,7 +110,6 @@ describe('ExperimentService', () => {
     revertTo: 'test',
     tags: [],
     group: 'test',
-    logging: true,
     conditions: [],
     partitions: [],
     factors: [],
