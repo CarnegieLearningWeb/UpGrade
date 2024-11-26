@@ -15,7 +15,11 @@ import {
   SERVER_ERROR,
   IExperimentEnrollmentStats,
 } from 'upgrade_types';
-import { AnalyticsRepository, CSVExportDataRow, ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
+import {
+  AnalyticsRepository,
+  CSVExportDataRow,
+  ExperimentDetailsForCSVData,
+} from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
 import ObjectsToCsv from 'objects-to-csv';
 import fs from 'fs';
@@ -181,7 +185,8 @@ export class AnalyticsService {
       const userRepository: UserRepository = Container.getCustomRepository(UserRepository, 'export');
       const user = await userRepository.findOneBy({ email });
 
-      const experimentDetails: ExperimentDetailsForCSVData[] = await this.experimentService.getExperimentDetailsForCSVDataExport(experimentId);
+      const experimentDetails: ExperimentDetailsForCSVData[] =
+        await this.experimentService.getExperimentDetailsForCSVDataExport(experimentId);
       if (!experimentDetails || experimentDetails.length === 0) {
         throw new HttpError(404, `Experiment not found for id: ${experimentId}`);
       }
@@ -259,7 +264,6 @@ export class AnalyticsService {
             const repeatedMeasure = groupedUser[userId][queryId][0].repeatedMeasure;
             const key = groupedUser[userId][queryId][0].key;
             const type = groupedUser[userId][queryId][0].type;
-            let metricKey;
 
             const keySplitArray = key.split(METRICS_JOIN_TEXT);
             logsUser[userId] = logsUser[userId] || {};
@@ -275,7 +279,6 @@ export class AnalyticsService {
                   },
                   undefined
                 ).data;
-                metricKey = Object.keys(jsonLog);
                 if (type === IMetricMetaData.CONTINUOUS) {
                   logsUser[userId][queryId] = +keySplitArray.reduce(
                     (accumulator, attribute: string) => accumulator[attribute],
@@ -299,7 +302,6 @@ export class AnalyticsService {
                   },
                   undefined
                 ).data;
-                metricKey = Object.keys(jsonLog);
                 if (type === IMetricMetaData.CONTINUOUS) {
                   logsUser[userId][queryId] = +keySplitArray.reduce(
                     (accumulator, attribute: string) => accumulator[attribute],
@@ -321,18 +323,12 @@ export class AnalyticsService {
                 break;
               }
             }
-            logsUser[userId][queryId] = metricKey[0] + ': ' + logsUser[userId][queryId];
+            logsUser[userId][queryId] = keySplitArray[keySplitArray.length - 1] + ': ' + logsUser[userId][queryId];
           }
         }
       }
 
-      const allQuery = await this.queryService.find(new UpgradeLogger());
-      let queryNames: string[] = [];
-      if (allQuery) {
-        queryNames = allQuery.map((query) => {
-          return query.name;
-        });
-      }
+      const queryNames = await this.queryService.findNamesbyExperimentId(experimentId, new UpgradeLogger());
       // merge with data
       const csvRows = csvExportData.map((row) => {
         const queryObject = logsUser[row.userId] || {};
@@ -377,9 +373,7 @@ export class AnalyticsService {
           ConditionName: row.conditionName,
           Payload: row.payload ? row.payload : row.conditionName,
           PostRule: postRule,
-          EnrollmentStartDate: row.enrollmentStartDate
-            ? new Date(row.enrollmentStartDate).toISOString()
-            : 'NA',
+          EnrollmentStartDate: row.enrollmentStartDate ? new Date(row.enrollmentStartDate).toISOString() : 'NA',
           EnrollmentCompleteDate: row.enrollmentCompleteDate
             ? new Date(row.enrollmentCompleteDate).toISOString()
             : 'NA',
