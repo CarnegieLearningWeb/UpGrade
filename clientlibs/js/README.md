@@ -4,7 +4,7 @@ Please see https://upgrade-platform.gitbook.io/docs/developer-guide/reference/cl
 
 ## Installation
 
-`npm i upgrade_client_lib@4.1.7`
+`npm i upgrade_client_lib@6.0.7`
 
 ## Usage
 
@@ -20,7 +20,7 @@ import UpgradeClient from 'upgrade_client_lib/dist/node';
 
 General UpGrade types can also be accessed as named exports:
 ```typescript
-import UpgradeClient, { IExperimentAssignment } from 'upgrade_client_lib/dist/browser';
+import UpgradeClient, { Assignment } from 'upgrade_client_lib/dist/browser';
 ```
 
 SDK-Specific types can be accessed also:
@@ -97,7 +97,7 @@ const upgradeClient: UpgradeClient[] = new UpgradeClient(hostURL, userId, contex
 
 ### getAllExperimentConditions
 
-▸ **getAllExperimentConditions**(): `Promise`<`IExperimentAssignmentv4`[]\>
+▸ **getAllExperimentConditions**(): `Promise`<`IExperimentAssignment5`[]\>
 
 Will return all the experiment conditions for the user.
 Internally this uses the `context` and `userId` to query conditions for all eligible decision points at enrolling experiments for this user.
@@ -105,12 +105,12 @@ Internally this uses the `context` and `userId` to query conditions for all elig
 **`Example`**
 
 ```typescript
-const allExperimentConditionsResponse: IExperimentAssignmentv4[] = await upgradeClient.getAllExperimentConditions(workingGroup);
+const allExperimentConditionsResponse: IExperimentAssignmentv5[] = await upgradeClient.getAllExperimentConditions(workingGroup);
 ```
 
 #### Returns
 
-`Promise`<`IExperimentAssignmentv4`[]\>
+`Promise`<`IExperimentAssignmentv5`[]\>
 
 #### Defined in
 
@@ -129,7 +129,7 @@ NOTE ALSO: If getAllExperimentConditions() has been called, this will return the
 **`Example`**
 
 ```typescript
-const allExperimentConditionsResponse: IExperimentAssignmentv4[] = await upgradeClient.getAllExperimentConditions(workingGroup);
+const allExperimentConditionsResponse: IExperimentAssignmentv5[] = await upgradeClient.getAllExperimentConditions(workingGroup);
 ```
 
 #### Parameters
@@ -349,7 +349,7 @@ const status: MARKED_DECISION_POINT_STATUS = MARKED_DECISION_POINT_STATUS.CONDIT
 const target = 'experimental button'; // optional
 const clientError = 'variant not recognized'; //optional
 
-const allExperimentConditionsResponse: IExperimentAssignmentv4[] = await upgradeClient.markExperimentPoint(site, condition, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED, target, clientError);
+const allExperimentConditionsResponse: IExperimentAssignment5[] = await upgradeClient.markExperimentPoint(site, condition, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED, target, clientError);
 ```
 
 #### Parameters
