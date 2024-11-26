@@ -1,8 +1,8 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["./src/UpgradeClient.ts", "./src/identifiers", "./src/functions/getExperimentCondition.ts"],
+  "entryPoints": ["./src/UpgradeClient/UpgradeClient.ts", "./src/types/Interfaces.ts", "./src/Assignment/Assignment.ts"],
   "out": "docs",
-  "exclude": ["**/*+(index|.spec).ts", "**/fetchDataService.ts", "**/enums.ts"],
+  "exclude": ["**/*+(index|.spec).ts"],
   "excludePrivate": true,
   "entryPointStrategy": "expand",
   "plugin": [

@@ -4,7 +4,5 @@
 
 ### Modules
 
-- [UpgradeClient](modules/UpgradeClient.md)
-- [functions/getExperimentCondition](modules/functions_getExperimentCondition.md)
-- [identifiers](modules/identifiers.md)
-- [identifiers/Interfaces](modules/identifiers_Interfaces.md)
+- [Assignment/Assignment](modules/Assignment_Assignment.md)
+- [types/Interfaces](modules/types_Interfaces.md)
