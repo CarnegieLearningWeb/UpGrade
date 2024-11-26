@@ -11,7 +11,7 @@ import { CommonImportContainerComponent } from '../../../../../shared-standalone
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { MatTableDataSource } from '@angular/material/table';
 import { ValidateFeatureFlagError } from '../../../../../core/feature-flags/store/feature-flags.model';
-import { importError, ImportListParams } from '../../../../../core/segments/store/segments.model';
+import { importError, ImportListParams, MODEL_TYPE } from '../../../../../core/segments/store/segments.model';
 import { NotificationService } from '../../../../../core/notifications/notification.service';
 import { IFeatureFlagFile } from 'upgrade_types';
 import { FeatureFlagsStore } from './feature-flag.signal.store';
@@ -92,9 +92,9 @@ export class ImportFeatureFlagModalComponent {
       })
     );
 
-    if (this.data.title === 'Import Feature Flag') {
+    if (this.data.params.modelType === MODEL_TYPE.FEATURE_FLAG) {
       this.featureFlagStore.validateFeatureFlags(this.fileData);
-    } else if (this.data.title === 'Import List') {
+    } else if (this.data.params.modelType === MODEL_TYPE.LIST) {
       this.featureFlagStore.validateFeatureFlagList({
         fileData: this.fileData,
         flagId: this.data.params.flagId,
@@ -131,9 +131,9 @@ export class ImportFeatureFlagModalComponent {
     try {
       this.isImportActionBtnDisabled.next(true);
 
-      if (this.data.title === 'Import Feature Flag') {
+      if (this.data.params.modelType === MODEL_TYPE.FEATURE_FLAG) {
         this.featureFlagStore.importFeatureFlags({ files: this.fileData });
-      } else if (this.data.title === 'Import List') {
+      } else if (this.data.params.modelType === MODEL_TYPE.LIST) {
         this.featureFlagStore.importFeatureFlagList({
           fileData: this.fileData,
           flagId: this.data.params.flagId,

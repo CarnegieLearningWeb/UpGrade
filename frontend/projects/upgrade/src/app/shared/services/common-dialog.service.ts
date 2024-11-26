@@ -6,6 +6,7 @@ import { ImportFeatureFlagModalComponent } from '../../features/dashboard/featur
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
 import {
+  MODEL_TYPE,
   UPSERT_PRIVATE_SEGMENT_LIST_ACTION,
   UpsertPrivateSegmentListParams,
 } from '../../core/segments/store/segments.model';
@@ -353,18 +354,18 @@ export class DialogService {
   }
 
   openImportFeatureFlagModal() {
-    return this.openImportModal('Import Feature Flag', null, null);
+    return this.openImportModal('Import Feature Flag', null, null, MODEL_TYPE.FEATURE_FLAG);
   }
 
   openImportFeatureFlagIncludeListModal(flagId: string) {
-    return this.openImportModal('Import List', FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, flagId);
+    return this.openImportModal('Import List', FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, flagId, MODEL_TYPE.LIST);
   }
 
   openImportFeatureFlagExcludeListModal(flagId: string) {
-    return this.openImportModal('Import List', FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, flagId);
+    return this.openImportModal('Import List', FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, flagId, MODEL_TYPE.LIST);
   }
 
-  openImportModal(title: string, listType: FEATURE_FLAG_LIST_FILTER_MODE, flagId: string) {
+  openImportModal(title: string, listType: FEATURE_FLAG_LIST_FILTER_MODE, flagId: string, modelType?: MODEL_TYPE) {
     const commonModalConfig: CommonModalConfig = {
       title: title,
       primaryActionBtnLabel: 'Import',
@@ -373,6 +374,7 @@ export class DialogService {
       params: {
         listType: listType,
         flagId: flagId,
+        modelType: modelType,
       },
     };
 
