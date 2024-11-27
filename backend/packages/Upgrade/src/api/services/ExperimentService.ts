@@ -1225,6 +1225,16 @@ export class ExperimentService {
       let experimentDoc: Experiment;
       try {
         experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
+        // Store state time logs for the experiment in enrolling state.
+        if (expDoc.state === EXPERIMENT_STATE.ENROLLING) {
+          const stateTimeLogDoc = new StateTimeLog();
+          stateTimeLogDoc.id = uuid();
+          stateTimeLogDoc.fromState = EXPERIMENT_STATE.INACTIVE;
+          stateTimeLogDoc.toState = expDoc.state;
+          stateTimeLogDoc.timeLog = new Date();
+          stateTimeLogDoc.experiment = experimentDoc;
+          await transactionalEntityManager.getRepository(StateTimeLog).save(stateTimeLogDoc);
+        }
       } catch (err) {
         const error = err as ErrorWithType;
         error.details = 'Error in adding experiment in DB';
