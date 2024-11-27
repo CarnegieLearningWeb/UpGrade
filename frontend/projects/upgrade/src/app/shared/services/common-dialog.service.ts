@@ -365,7 +365,7 @@ export class DialogService {
     return this.openImportModal('Import List', FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, flagId, MODEL_TYPE.LIST);
   }
 
-  openImportModal(title: string, listType: FEATURE_FLAG_LIST_FILTER_MODE, flagId: string, modelType?: MODEL_TYPE) {
+  openImportModal(title: string, listType: FEATURE_FLAG_LIST_FILTER_MODE, flagId: string, modelType: MODEL_TYPE) {
     const commonModalConfig: CommonModalConfig = {
       title: title,
       primaryActionBtnLabel: 'Import',
