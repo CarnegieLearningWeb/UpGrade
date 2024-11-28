@@ -135,7 +135,7 @@ export class ExperimentService {
     }
     const experiments = await this.experimentRepository.findAllExperiments();
     return experiments.map((experiment) => {
-      return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(experiment)));
+      return this.reducedConditionPayload(this.formatingPayload(this.formatingConditionPayload(experiment)));
     });
   }
 
@@ -209,14 +209,14 @@ export class ExperimentService {
     }
     const experiments = await queryBuilderToReturn.getMany();
     return experiments.map((experiment) => {
-      return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(experiment)));
+      return this.reducedConditionPayload(this.formatingPayload(this.formatingConditionPayload(experiment)));
     });
   }
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
     const experiment = await this.findOne(id, logger);
     if (experiment) {
-      return this.reducedConditionPayload(this.formattingPayload(experiment));
+      return this.reducedConditionPayload(this.formatingPayload(experiment));
     } else {
       return undefined;
     }
@@ -229,7 +229,7 @@ export class ExperimentService {
     const experiment = await this.experimentRepository.findOneExperiment(id);
 
     if (experiment) {
-      return this.formattingConditionPayload(experiment);
+      return this.formatingConditionPayload(experiment);
     } else {
       return undefined;
     }
@@ -591,7 +591,7 @@ export class ExperimentService {
         { experimentName: experiment.name },
         user
       );
-      return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(experiment)));
+      return this.reducedConditionPayload(this.formatingPayload(this.formatingConditionPayload(experiment)));
     });
 
     return formattedExperiments;
@@ -1071,7 +1071,7 @@ export class ExperimentService {
           conditionPayloads: conditionPayloadDocToReturn as any,
           queries: (queryDocToReturn as any) || [],
         };
-        const updatedExperiment = this.formattingPayload(newExperiment);
+        const updatedExperiment = this.formatingPayload(newExperiment);
 
         // removing unwanted params for diff
         const oldExperimentClone: Experiment = JSON.parse(JSON.stringify(oldExperiment));
@@ -1510,7 +1510,7 @@ export class ExperimentService {
       experimentName: createdExperiment.name,
     };
     await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData, user);
-    return this.reducedConditionPayload(this.formattingPayload(createdExperiment));
+    return this.reducedConditionPayload(this.formatingPayload(createdExperiment));
   }
 
   public async validateExperiments(
@@ -1827,7 +1827,7 @@ export class ExperimentService {
     return createdExperiments;
   }
 
-  public formattingConditionPayload(experiment: Experiment): Experiment {
+  public formatingConditionPayload(experiment: Experiment): Experiment {
     if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
       const conditionPayload: ConditionPayload[] = [];
       experiment.conditions.forEach((condition) => {
@@ -1868,7 +1868,7 @@ export class ExperimentService {
     return { ...experiment, conditionPayloads: updatedCP };
   }
 
-  public formattingPayload(experiment: Experiment): any {
+  public formatingPayload(experiment: Experiment): any {
     const updatedConditionPayloads = experiment.conditionPayloads.map((conditionPayload) => {
       const { payloadType, payloadValue, ...rest } = conditionPayload;
       return {
