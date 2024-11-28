@@ -782,6 +782,10 @@ export class ExperimentService {
         let experimentDoc: Experiment;
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
+          // Store state time logs for the experiment in enrolling state.
+          if (experimentDoc.state === EXPERIMENT_STATE.ENROLLING) {
+            this.updateStateTimeLogs(experimentDoc, transactionalEntityManager);
+          }
         } catch (err) {
           const error = err as ErrorWithType;
           error.details = `Error in updating experiment document "updateExperimentInDB"`;
@@ -1134,6 +1138,16 @@ export class ExperimentService {
       });
   }
 
+  async updateStateTimeLogs(experimentDoc: Experiment, transactionalEntityManager: EntityManager) {
+    const stateTimeLogDoc = new StateTimeLog();
+    stateTimeLogDoc.id = uuid();
+    stateTimeLogDoc.fromState = EXPERIMENT_STATE.INACTIVE;
+    stateTimeLogDoc.toState = experimentDoc.state;
+    stateTimeLogDoc.timeLog = new Date();
+    stateTimeLogDoc.experiment = experimentDoc;
+    await transactionalEntityManager.getRepository(StateTimeLog).save(stateTimeLogDoc);
+  }
+
   // private async cleanLogsForQuery(query: Query[]): Promise<void> {
   //   const result = await Promise.all(
   //     query.map(({ metric: { key } }) => {
@@ -1226,14 +1240,8 @@ export class ExperimentService {
       try {
         experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
         // Store state time logs for the experiment in enrolling state.
-        if (expDoc.state === EXPERIMENT_STATE.ENROLLING) {
-          const stateTimeLogDoc = new StateTimeLog();
-          stateTimeLogDoc.id = uuid();
-          stateTimeLogDoc.fromState = EXPERIMENT_STATE.INACTIVE;
-          stateTimeLogDoc.toState = expDoc.state;
-          stateTimeLogDoc.timeLog = new Date();
-          stateTimeLogDoc.experiment = experimentDoc;
-          await transactionalEntityManager.getRepository(StateTimeLog).save(stateTimeLogDoc);
+        if (experimentDoc.state === EXPERIMENT_STATE.ENROLLING) {
+          this.updateStateTimeLogs(experimentDoc, transactionalEntityManager);
         }
       } catch (err) {
         const error = err as ErrorWithType;
