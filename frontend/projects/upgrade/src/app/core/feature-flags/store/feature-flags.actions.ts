@@ -71,11 +71,6 @@ export const actionUpdateFeatureFlagSuccess = createAction(
 
 export const actionUpdateFeatureFlagFailure = createAction('[Feature Flags] Update Feature Flag Failure');
 
-export const actionSetIsLoadingImportFeatureFlag = createAction(
-  '[Feature Flags] Set Is Loading for Flag Import',
-  props<{ isLoadingImportFeatureFlag: boolean }>()
-);
-
 export const actionEmailFeatureFlagData = createAction(
   '[Feature Flags] Email Feature Flag Data',
   props<{ featureFlagId: string }>()

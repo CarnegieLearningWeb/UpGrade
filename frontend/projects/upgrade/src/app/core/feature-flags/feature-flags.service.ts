@@ -22,7 +22,6 @@ import {
   selectSortKey,
   selectSortAs,
   selectAppContexts,
-  selectIsLoadingImportFeatureFlag,
   selectFeatureFlagIds,
   selectShouldShowWarningForSelectedFlag,
   selectWarningStatusForAllFlags,
@@ -56,7 +55,6 @@ export class FeatureFlagsService {
   isLoadingUpsertFeatureFlag$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
   isDuplicateKeyFound$ = this.store$.pipe(select(selectDuplicateKeyFound));
   isLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
-  isLoadingImportFeatureFlag$ = this.store$.pipe(select(selectIsLoadingImportFeatureFlag));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
   isLoadingUpsertPrivateSegmentList$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
@@ -150,10 +148,6 @@ export class FeatureFlagsService {
 
   deleteFeatureFlag(flagId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlag({ flagId }));
-  }
-
-  setIsLoadingImportFeatureFlag(isLoadingImportFeatureFlag: boolean) {
-    this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingImportFeatureFlag({ isLoadingImportFeatureFlag }));
   }
 
   emailFeatureFlagData(featureFlagId: string) {
