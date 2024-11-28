@@ -358,7 +358,7 @@ export class ExperimentAssignmentService {
     } else {
       experiments = await this.experimentService.getCachedValidExperiments(context);
     }
-    experiments = experiments.map((exp) => this.experimentService.formatingConditionPayload(exp));
+    experiments = experiments.map((exp) => this.experimentService.formattingConditionPayload(exp));
 
     const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
 
@@ -562,7 +562,7 @@ export class ExperimentAssignmentService {
         const assignment = experimentAssignment[index];
         // const { state, name, id } = experiment;
         const { state, name, conditionPayloads, type, id, factors } =
-          this.experimentService.formatingPayload(experiment);
+          this.experimentService.formattingPayload(experiment);
         const decisionPoints = experiment.partitions.map((decisionPoint) => {
           const { target, site } = decisionPoint;
           const conditionAssigned = assignment;
