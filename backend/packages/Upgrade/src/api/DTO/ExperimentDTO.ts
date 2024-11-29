@@ -182,7 +182,7 @@ export class PartitionValidator {
   public excludeIfReached: boolean;
 }
 
-class ConditionPayloadValidator {
+abstract class BaseConditionPayloadValidator {
   @IsNotEmpty()
   @IsString()
   public id: string;
@@ -191,7 +191,9 @@ class ConditionPayloadValidator {
   @ValidateNested()
   @Type(() => PayloadValidator)
   public payload: PayloadValidator;
+}
 
+export class ConditionPayloadValidator extends BaseConditionPayloadValidator {
   @IsNotEmpty()
   @IsString()
   public parentCondition: string;
@@ -201,16 +203,7 @@ class ConditionPayloadValidator {
   public decisionPoint?: string;
 }
 
-class OldConditionPayloadValidator {
-  @IsNotEmpty()
-  @IsString()
-  public id: string;
-
-  @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => PayloadValidator)
-  public payload: PayloadValidator;
-
+class OldConditionPayloadValidator extends BaseConditionPayloadValidator {
   @IsNotEmpty()
   @IsString()
   public parentCondition: ConditionValidator;
@@ -341,7 +334,7 @@ class StratificationFactor {
   public stratificationFactorName: string;
 }
 
-export abstract class BaseExperimentWithoutPayload {
+abstract class BaseExperimentWithoutPayload {
   @IsString()
   @IsOptional()
   public id?: string;
