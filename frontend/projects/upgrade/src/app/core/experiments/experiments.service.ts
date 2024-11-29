@@ -204,7 +204,11 @@ export class ExperimentService {
   }
 
   exportExperimentDesign(experimentIds: string[]) {
-    this.store$.dispatch(experimentAction.actionExportExperimentDesign({ experimentIds }));
+    this.store$.dispatch(experimentAction.actionExportExperimentDesign({ experimentIds, exportAll: false }));
+  }
+
+  exportAllExperimentDesign() {
+    this.store$.dispatch(experimentAction.actionExportExperimentDesign({ experimentIds: [], exportAll: true }));
   }
 
   importExperiment(experiments: Experiment[]) {

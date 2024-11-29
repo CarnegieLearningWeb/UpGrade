@@ -21,6 +21,7 @@ export class ExportModalComponent implements OnInit {
   private formSubscription: Subscription;
   experiments: ExperimentVM[];
   isExportMethodSelected = false;
+  exportAll: boolean;
   constructor(
     private _formBuilder: UntypedFormBuilder,
     private experimentService: ExperimentService,
@@ -29,6 +30,7 @@ export class ExportModalComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) private data: any
   ) {
     this.experiments = this.data.experiment;
+    this.exportAll = this.data.exportAll || false;
   }
 
   onCancelClick(): void {
@@ -60,12 +62,20 @@ export class ExportModalComponent implements OnInit {
     this.experimentService.exportExperimentDesign(experimentIds);
   }
 
+  exportAllExperimentDesign() {
+    this.experimentService.exportAllExperimentDesign();
+  }
+
   exportExperiment() {
     const { exportMethod } = this.exportForm.value;
     if (exportMethod === EXPORT_METHOD.DATA && this.experiments[0]) {
       this.exportExperimentInfo(this.experiments[0].id, this.experiments[0].name);
     } else if (exportMethod === EXPORT_METHOD.DESIGN) {
-      this.exportExperimentDesign(this.experiments.map((exp) => exp.id));
+      if (this.exportAll) {
+        this.exportAllExperimentDesign();
+      } else {
+        this.exportExperimentDesign(this.experiments.map((exp) => exp.id));
+      }
     }
     this.onCancelClick();
   }

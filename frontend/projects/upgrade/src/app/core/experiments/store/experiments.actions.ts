@@ -136,7 +136,7 @@ export const actionExportExperimentInfo = createAction(
 
 export const actionExportExperimentDesign = createAction(
   '[Experiment] Export Experiment Design',
-  props<{ experimentIds: string[] }>()
+  props<{ experimentIds: string[]; exportAll: boolean }>()
 );
 
 export const actionExportExperimentInfoSuccess = createAction('[Experiment] Export Experiment Info Success');
