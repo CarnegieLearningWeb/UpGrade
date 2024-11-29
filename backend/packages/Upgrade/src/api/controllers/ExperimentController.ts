@@ -1286,7 +1286,38 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<Experiment[]> {
     const experimentIds = params.ids;
-    return this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
+    return this.experimentService.exportExperiment(currentUser, request.logger, experimentIds);
+  }
+
+  /**
+   * @swagger
+   * /experiments/all:
+   *    get:
+   *       description: Export All Experiment JSON
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Experiments are exported
+   *            schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 error:
+   *                   type: string
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
+   */
+  @Get('/export/all')
+  public exportAllExperiment(@CurrentUser() currentUser: UserDTO, @Req() request: AppRequest): Promise<Experiment[]> {
+    return this.experimentService.exportExperiment(currentUser, request.logger);
   }
 
   /**

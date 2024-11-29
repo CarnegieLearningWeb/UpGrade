@@ -552,10 +552,10 @@ export class ExperimentService {
     return validatedExperiments;
   }
 
-  public async exportExperiment(experimentIds: string[], user: UserDTO, logger: UpgradeLogger): Promise<Experiment[]> {
+  public async exportExperiment(user: UserDTO, logger: UpgradeLogger, experimentIds?: string[]): Promise<Experiment[]> {
     logger.info({ message: `Inside export Experiment JSON ${experimentIds}` });
     const experimentDetails = await this.experimentRepository.find({
-      where: { id: In(experimentIds) },
+      where: experimentIds ? { id: In(experimentIds) } : undefined,
       relations: [
         'partitions',
         'conditions',
