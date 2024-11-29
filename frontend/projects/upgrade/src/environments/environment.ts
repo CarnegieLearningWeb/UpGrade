@@ -26,6 +26,7 @@ export const environment = {
     validateExperiment: '/experiments/validation',
     importExperiment: '/experiments/import',
     exportExperiment: '/experiments/export',
+    exportAllExperiment: '/experiments/export/all',
     updateExperiments: '/experiments',
     experimentContext: '/experiments/context',
     getExperimentById: '/experiments/single',
