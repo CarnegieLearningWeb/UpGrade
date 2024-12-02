@@ -26,6 +26,7 @@ import {
   SegmentFile,
   Group,
   SegmentValidationObj,
+  ListInputValidator,
 } from '../controllers/validators/SegmentInputValidator';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
@@ -297,6 +298,25 @@ export class SegmentService {
     return this.addSegmentDataInDB(segment, logger);
   }
 
+  public async addList(listInput: ListInputValidator, logger: UpgradeLogger): Promise<Segment> {
+    logger.info({ message: `Adding list => ${JSON.stringify(listInput, undefined, 2)}` });
+    const manager = this.dataSource;
+    const { parentSegmentId, ...segmentInput } = listInput;
+    const newList: SegmentInputValidator = { ...segmentInput, type: SEGMENT_TYPE.PRIVATE };
+    const createdSegment = await manager.transaction(async (transactionalEntityManager) => {
+      const createdSegment = await this.upsertSegmentInPipeline(newList, logger, transactionalEntityManager);
+      const parentSegment = await this.getSegmentById(parentSegmentId, logger);
+      if (!parentSegment) {
+        throw new Error('Parent Segment not found');
+      }
+      parentSegment.subSegments = [...parentSegment.subSegments, createdSegment];
+
+      await transactionalEntityManager.getRepository(Segment).save(parentSegment);
+      return createdSegment;
+    });
+    return createdSegment;
+  }
+
   public upsertSegmentInPipeline(
     segment: SegmentInputValidator,
     logger: UpgradeLogger,
@@ -308,6 +328,20 @@ export class SegmentService {
 
   public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
+    const segmentDoc = await this.segmentRepository.findOne({
+      where: { id: id },
+      relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+    });
+    if (!segmentDoc) {
+      throw new Error(SERVER_ERROR.QUERY_FAILED);
+    }
+    await Promise.all(
+      segmentDoc.subSegments.map((subSegment) => {
+        if (subSegment.type === SEGMENT_TYPE.PRIVATE) {
+          this.deleteSegment(subSegment.id, logger);
+        }
+      })
+    );
     return await this.segmentRepository.deleteSegment(id, logger);
   }
 
@@ -584,7 +618,7 @@ export class SegmentService {
 
     // create/update segment document
     segment.id = segment.id || uuid();
-    const { id, name, description, context, type } = segment;
+    const { id, name, description, context, type, listType } = segment;
     const allSegments = await this.getSegmentByIds(segment.subSegmentIds);
     const subSegmentData = segment.subSegmentIds
       .filter((subSegmentId) => {
@@ -610,6 +644,7 @@ export class SegmentService {
         description,
         context,
         type,
+        listType,
         subSegments: subSegmentData,
       });
     } catch (err) {
