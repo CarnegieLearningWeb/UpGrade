@@ -52,8 +52,6 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   shouldShowWarning$ = this.featureFlagService.shouldShowWarningForSelectedFlag$;
   confirmStatusChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
   menuButtonItems$: Observable<IMenuButtonItem[]>;
-  featureFlag: FeatureFlag;
-  userPermissions: UserPermission;
   isSectionCardExpanded = true;
   emailId = '';
 
