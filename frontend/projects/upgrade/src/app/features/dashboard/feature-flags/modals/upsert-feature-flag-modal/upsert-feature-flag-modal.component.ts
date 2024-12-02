@@ -106,6 +106,23 @@ export class UpsertFeatureFlagModalComponent {
     this.listenForPrimaryButtonDisabled();
     this.listenForDuplicateKey();
     this.listenOnContext();
+
+    if (this.isDisabled()) {
+      this.disableRestrictedFields();
+    }
+  }
+
+  isDisabled() {
+    return (
+      this.config.params.action === UPSERT_FEATURE_FLAG_ACTION.EDIT &&
+      this.config.params.sourceFlag?.status === FEATURE_FLAG_STATUS.ENABLED
+    );
+  }
+
+  disableRestrictedFields(): void {
+    this.featureFlagForm.get('name')?.disable();
+    this.featureFlagForm.get('key')?.disable();
+    this.featureFlagForm.get('appContext')?.disable();
   }
 
   createFeatureFlagForm(): void {
@@ -234,10 +251,13 @@ export class UpsertFeatureFlagModalComponent {
     this.featureFlagsService.addFeatureFlag(flagRequest);
   }
 
-  createEditRequest(
-    { name, key, description, appContext, tags }: FeatureFlagFormData,
-    { id, status, filterMode }: FeatureFlag
-  ): void {
+  createEditRequest({ name, key, description, appContext, tags }: FeatureFlagFormData, sourceFlag: FeatureFlag): void {
+    const { id, status, filterMode } = sourceFlag;
+    if (sourceFlag.status === 'enabled') {
+      name = sourceFlag.name;
+      key = sourceFlag.key;
+      appContext = sourceFlag.context[0];
+    }
     const flagRequest: UpdateFeatureFlagRequest = {
       id,
       name,
