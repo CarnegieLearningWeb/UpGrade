@@ -28,6 +28,7 @@ import { FeatureFlagsStore } from './feature-flag.signal.store';
   ],
   templateUrl: './import-feature-flag-modal.component.html',
   styleUrls: ['./import-feature-flag-modal.component.scss'],
+  providers: [FeatureFlagsStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImportFeatureFlagModalComponent {
