@@ -35,6 +35,7 @@ import {
   selectIsPollingExperimentDetailStats,
   selectCurrentContextMetaDataConditions,
   selectIsLoadingContextMetaData,
+  selectExperimentsExportLoading,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -63,6 +64,7 @@ export class ExperimentService {
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
   isLoadingExperimentDetailStats$ = this.store$.pipe(select(selectIsLoadingExperimentDetailStats));
   isPollingExperimentDetailStats$ = this.store$.pipe(select(selectIsPollingExperimentDetailStats));
+  isExperimentsExportLoading$ = this.store$.pipe(select(selectExperimentsExportLoading));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
   allDecisionPoints$ = this.store$.pipe(select(selectAllDecisionPoints));
   allExperimentNames$ = this.store$.pipe(select(selectAllExperimentNames));

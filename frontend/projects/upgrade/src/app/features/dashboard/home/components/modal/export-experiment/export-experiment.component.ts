@@ -22,6 +22,7 @@ export class ExportModalComponent implements OnInit {
   experiments: ExperimentVM[];
   isExportMethodSelected = false;
   exportAll: boolean;
+  isExperimentsExportLoading$ = this.experimentService.isExperimentsExportLoading$;
   constructor(
     private _formBuilder: UntypedFormBuilder,
     private experimentService: ExperimentService,
@@ -34,7 +35,9 @@ export class ExportModalComponent implements OnInit {
   }
 
   onCancelClick(): void {
-    this.dialogRef.close();
+    this.isExperimentsExportLoading$.pipe(first((loading) => !loading)).subscribe(() => {
+      this.dialogRef.close();
+    });
   }
 
   ngOnInit() {
