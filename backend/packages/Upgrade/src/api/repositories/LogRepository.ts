@@ -170,29 +170,6 @@ export class LogRepository extends Repository<Log> {
     return metricString;
   }
 
-  public calculatePercentageResult(executeQueryResult, percentQueryResult, isFactorialExperiment: boolean) {
-    const result = executeQueryResult.map((res) => {
-      if (isFactorialExperiment) {
-        const { levelId } = res;
-        const percentageQueryConditionRes = percentQueryResult.find((queryRes) => queryRes.levelId === levelId);
-        return {
-          levelId: levelId,
-          result: (res.result / percentageQueryConditionRes.result) * 100,
-          participantsLogged: percentageQueryConditionRes.participantsLogged,
-        };
-      } else {
-        const { conditionId } = res;
-        const percentageQueryConditionRes = percentQueryResult.find((queryRes) => queryRes.conditionId === conditionId);
-        return {
-          conditionId: conditionId,
-          result: (res.result / percentageQueryConditionRes.result) * 100,
-          participantsLogged: percentageQueryConditionRes.participantsLogged,
-        };
-      }
-    });
-    return result;
-  }
-
   private getCategoricalresultSelect(query: any, userDatum: string) {
     const comparator = query.compareFn === '=' ? '=' : '!=';
     const compareTo = query.compareValue || '';
@@ -235,10 +212,12 @@ export class LogRepository extends Repository<Log> {
       ? this.getCategoricalresultSelect(query, 'subquery.result')
       : this.getContinuousResultSelect(operationType, 'subquery.result');
 
+    // Select the id of the condition or level, and the resulting aggregate metric value
     analyticsQuery.select([`subquery.${idToSelect}`, `${resultSelect} as result`]);
 
     innerQuery.select([`${valueToSelect} as ${idToSelect}`, 'logs."userId" as "userId"']);
     if (repeatedMeasure === REPEATED_MEASURE.mean) {
+      // If we are calculating the mean, we average the metric value for each user
       innerQuery.addSelect('avg(cast(logs.datum as decimal)) as "result"');
     } else {
       innerQuery.addSelect([
@@ -296,10 +275,11 @@ export class LogRepository extends Repository<Log> {
     if (repeatedMeasure !== REPEATED_MEASURE.mean) {
       innerQuery.addGroupBy('logs."updatedAt", logs.datum');
     }
-
+    // Select the number of participants (n) who have logged a value for the metric
     analyticsQuery.addSelect('COUNT(DISTINCT subquery."userId") as "participantsLogged"');
 
     if (repeatedMeasure !== REPEATED_MEASURE.mean) {
+      // If we are using most recent or earliest, we create a subquery to rank the logs by date
       middleQuery
         .select([idToSelect, ' datum as result', '"userId"'])
         .addFrom('(' + innerQuery.getQuery() + ')', 't')
@@ -330,7 +310,9 @@ export class LogRepository extends Repository<Log> {
       ? this.getCategoricalresultSelect(query, 'logs.datum')
       : this.getContinuousResultSelect(operationType, 'logs.datum');
 
+    // Select the id of the condition or level, and the resulting aggregate metric value
     analyticsQuery.select([idToSelect, `${resultSelect} as result`]);
+    // Select the number of participants (n) who have logged a value for the metric
     analyticsQuery.addSelect('COUNT(DISTINCT "individualEnrollment"."userId") as "participantsLogged"');
     if (isFactorialExperiment) {
       analyticsQuery.innerJoin(
@@ -345,6 +327,7 @@ export class LogRepository extends Repository<Log> {
       );
     }
     if (repeatedMeasure === REPEATED_MEASURE.mean) {
+      // If we are calculating the mean, we average the metric value for each user
       analyticsQuery.innerJoin(
         (qb) =>
           qb
@@ -357,6 +340,7 @@ export class LogRepository extends Repository<Log> {
         'logs."userId"="individualEnrollment"."userId"'
       );
     } else {
+      // If we are using most recent or earliest, we create a subquery to rank the logs by date
       analyticsQuery.innerJoin(
         (qb) =>
           qb
