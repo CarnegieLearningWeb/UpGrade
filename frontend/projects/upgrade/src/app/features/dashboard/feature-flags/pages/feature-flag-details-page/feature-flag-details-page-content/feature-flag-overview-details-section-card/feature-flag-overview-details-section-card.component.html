@@ -16,7 +16,7 @@
     [slideToggleChecked]="flag.status === FEATURE_FLAG_STATUS.ENABLED"
     [slideToggleText]="'feature-flags.enable.text' | translate"
     [showMenuButton]="true"
-    [menuButtonItems]="menuButtonItems"
+    [menuButtonItems]="menuButtonItems$ | async"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (slideToggleChange)="onSlideToggleChange($event, flag)"
     (menuButtonItemClick)="onMenuButtonItemClick($event, flag)"
