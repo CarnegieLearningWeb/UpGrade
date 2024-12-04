@@ -17,7 +17,6 @@ import { ExperimentAssignmentService } from '../../../src/api/services/Experimen
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
-import { ScheduledJobService } from '../../../src/api/services/ScheduledJobService';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { SettingService } from '../../../src/api/services/SettingService';
 import {
@@ -54,7 +53,6 @@ describe('Experiment Assignment Service Test', () => {
   const userStratificationFactorRepository = sinon.createStubInstance(UserStratificationFactorRepository);
   const previewUserServiceMock = sinon.createStubInstance(PreviewUserService);
   const experimentUserServiceMock = sinon.createStubInstance(ExperimentUserService);
-  const scheduledJobServiceMock = sinon.createStubInstance(ScheduledJobService);
   const errorServiceMock = sinon.createStubInstance(ErrorService);
   const settingServiceMock = sinon.createStubInstance(SettingService);
   const segmentServiceMock = sinon.createStubInstance(SegmentService);
@@ -87,7 +85,6 @@ describe('Experiment Assignment Service Test', () => {
       userStratificationFactorRepository,
       previewUserServiceMock,
       experimentUserServiceMock,
-      scheduledJobServiceMock,
       errorServiceMock,
       settingServiceMock,
       segmentServiceMock,
