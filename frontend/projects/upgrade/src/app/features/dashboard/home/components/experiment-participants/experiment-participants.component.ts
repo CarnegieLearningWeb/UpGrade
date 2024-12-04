@@ -304,6 +304,9 @@ export class ExperimentParticipantsComponent implements OnInit {
   }
 
   removeMember1(groupIndex: number) {
+    if (groupIndex === 0 && this.members1.controls.at(0).get('type').value === 'All') {
+      this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
+    }
     this.members1.removeAt(groupIndex);
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView1();

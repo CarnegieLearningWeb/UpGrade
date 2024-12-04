@@ -1,16 +1,12 @@
 # JavaScript / TypeScript SDK for use with the Upgrade A/B Testing platform.
 Please see https://upgrade-platform.gitbook.io/docs/developer-guide/reference/client-libraries/typescript-js for more documentation.
 
-
 ## Installation
 
 `npm i upgrade_client_lib@6.0.7`
 
 ## Usage
 
-See [`quicktest.ts`](https://github.com/CarnegieLearningWeb/UpGrade/blob/release/6.0/clientlibs/js/quickTest.ts) to see basic in executable form to play around with: `npm run quicktest`
-
----
 **`Example`**
 
 ```typescript
@@ -23,7 +19,7 @@ import UpgradeClient from 'upgrade_client_lib/dist/node';
 
 General UpGrade types can also be accessed as named exports:
 ```typescript
-import UpgradeClient, { Assignment } from 'upgrade_client_lib/dist/browser';
+import UpgradeClient, { IExperimentAssignment } from 'upgrade_client_lib/dist/browser';
 ```
 
 SDK-Specific types can be accessed also:

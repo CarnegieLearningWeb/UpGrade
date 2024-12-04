@@ -1,8 +1,8 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["./src/UpGradeClient/UpgradeClient.ts", "./src/Assignment/Assignment.ts", "./src/types/Interfaces.ts", "./src/UpGradeClient/UpGradeClient.types.ts", "./src/ApiService/ApiService.ts", "./src/DataService/DataService.ts"],
+  "entryPoints": ["./src/UpgradeClient/UpgradeClient.ts", "./src/types/Interfaces.ts", "./src/Assignment/Assignment.ts"],
   "out": "docs",
-  "exclude": ["**/*+(index|.spec).ts", "**/fetchDataService.ts", "**/enums.ts"],
+  "exclude": ["**/*+(index|.spec).ts"],
   "excludePrivate": true,
   "entryPointStrategy": "expand",
   "plugin": [
