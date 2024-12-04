@@ -29,7 +29,6 @@ import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupExclusion } from '../models/GroupExclusion';
 import { Experiment } from '../models/Experiment';
-import { ScheduledJobService } from './ScheduledJobService';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { v4 as uuid } from 'uuid';
 import { PreviewUserService } from './PreviewUserService';
@@ -108,7 +107,6 @@ export class ExperimentAssignmentService {
 
     public previewUserService: PreviewUserService,
     public experimentUserService: ExperimentUserService,
-    public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
     public settingService: SettingService,
     public segmentService: SegmentService,
