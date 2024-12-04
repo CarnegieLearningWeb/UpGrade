@@ -1,7 +1,7 @@
 /* eslint-disable no-var */
 import { GroupExclusion } from './../models/GroupExclusion';
 import { ErrorWithType } from './../errors/ErrorWithType';
-import { Service } from 'typedi';
+import { Inject, Service } from 'typedi';
 import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import {
@@ -73,6 +73,7 @@ import {
   ParticipantsValidator,
   ExperimentFile,
   ValidatedExperimentError,
+  OldExperimentDTO,
 } from '../DTO/ExperimentDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
@@ -85,6 +86,7 @@ import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
 import { ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
+import { compare } from 'compare-versions';
 
 const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
@@ -121,6 +123,7 @@ export class ExperimentService {
     @InjectDataSource() private dataSource: DataSource,
     public previewUserService: PreviewUserService,
     public segmentService: SegmentService,
+    @Inject(() => ScheduledJobService)
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
     public cacheService: CacheService,
@@ -1548,7 +1551,14 @@ export class ExperimentService {
         } catch (error) {
           return { fileName: experimentFile.fileName, error: 'Invalid JSON' };
         }
-        const newExperiment = plainToClass(ExperimentDTO, experiment);
+
+        let newExperiment: ExperimentDTO;
+        if (compare(experiment.backendVersion, '5.3.0', '>=')) {
+          newExperiment = plainToClass(ExperimentDTO, experiment);
+        } else {
+          newExperiment = plainToClass(ExperimentDTO, this.experimentPayloadConverter(experiment));
+        }
+
         if (!(newExperiment instanceof ExperimentDTO)) {
           return { fileName: experimentFile.fileName, error: 'Invalid JSON' };
         }
@@ -1590,6 +1600,19 @@ export class ExperimentService {
         }
       })
       .filter((error) => error !== null);
+  }
+
+  private experimentPayloadConverter(experiment: OldExperimentDTO): ExperimentDTO {
+    const updatedExperimentPayload = experiment.conditionPayloads.map((conditionPayload) => {
+      return {
+        ...conditionPayload,
+        parentCondition: conditionPayload.parentCondition.id,
+        decisionPoint: conditionPayload.decisionPoint.id,
+      };
+    });
+
+    const newExperiment: ExperimentDTO = { ...experiment, conditionPayloads: updatedExperimentPayload };
+    return newExperiment;
   }
 
   private async validateExperimentJSON(experiment: ExperimentDTO): Promise<string> {
