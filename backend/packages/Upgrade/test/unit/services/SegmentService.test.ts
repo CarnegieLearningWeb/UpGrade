@@ -176,6 +176,9 @@ describe('Segment Service Testing', () => {
             deleteSegment: jest.fn().mockImplementation((seg) => {
               return seg;
             }),
+            deleteSegments: jest.fn().mockImplementation((seg) => {
+              return seg;
+            }),
             createQueryBuilder: jest.fn(() => ({
               insert: jest.fn().mockReturnThis(),
               leftJoinAndSelect: jest.fn().mockReturnThis(),

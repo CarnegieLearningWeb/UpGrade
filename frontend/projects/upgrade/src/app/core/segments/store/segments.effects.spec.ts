@@ -252,7 +252,7 @@ describe('SegmentsEffects', () => {
     }));
 
     it('should dispatch actionDeleteSegmentSuccess and navigate to segments page on success', fakeAsync(() => {
-      segmentsDataService.deleteSegment = jest.fn().mockReturnValue(of([{ ...mockSegment }]));
+      segmentsDataService.deleteSegment = jest.fn().mockReturnValue(of({ ...mockSegment }));
 
       const expectedAction = SegmentsActions.actionDeleteSegmentSuccess({
         segment: { ...mockSegment },

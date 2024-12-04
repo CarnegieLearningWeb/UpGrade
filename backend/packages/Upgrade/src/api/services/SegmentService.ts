@@ -328,7 +328,19 @@ export class SegmentService {
 
   public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
-    const segmentDoc = await this.segmentRepository.findOne({
+    const manager = this.dataSource;
+    const deletedSegment = manager.transaction(async (transactionalEntityManager) => {
+      return this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager);
+    });
+    return deletedSegment;
+  }
+
+  private async deleteSegmentAndPrivateSubsegments(
+    id: string,
+    logger: UpgradeLogger,
+    manager: EntityManager
+  ): Promise<Segment> {
+    const segmentDoc = await manager.getRepository(Segment).findOne({
       where: { id: id },
       relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
     });
@@ -338,11 +350,12 @@ export class SegmentService {
     await Promise.all(
       segmentDoc.subSegments.map((subSegment) => {
         if (subSegment.type === SEGMENT_TYPE.PRIVATE) {
-          this.deleteSegment(subSegment.id, logger);
+          this.deleteSegmentAndPrivateSubsegments(subSegment.id, logger, manager);
         }
       })
     );
-    return await this.segmentRepository.deleteSegment(id, logger);
+    const deletedSegmentResponse = await this.segmentRepository.deleteSegments([id], logger, manager);
+    return deletedSegmentResponse[0];
   }
 
   public async validateSegments(segments: SegmentFile[], logger: UpgradeLogger): Promise<SegmentImportError[]> {
