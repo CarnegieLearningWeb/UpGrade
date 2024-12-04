@@ -38,11 +38,6 @@ export class QueryService {
     });
   }
 
-  public async findNamesbyExperimentId(experimentId: string, logger: UpgradeLogger): Promise<string[]> {
-    logger.info({ message: `Find all query names for experiment ${experimentId}` });
-    return await this.queryRepository.findNamesByExperimentId(experimentId);
-  }
-
   public async getArchivedStats(queryIds: string[], logger: UpgradeLogger): Promise<any> {
     logger.info({ message: `Get archivedStats of query with queryIds ${queryIds}` });
     const archiveData = await this.archivedStatsRepository.find({

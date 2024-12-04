@@ -5,23 +5,6 @@ import repositoryError from './utils/repositoryError';
 
 @EntityRepository(Query)
 export class QueryRepository extends Repository<Query> {
-  public async findNamesByExperimentId(experimentId: string): Promise<string[]> {
-    const queries = await this.createQueryBuilder('query')
-      .select(['name'])
-      .where('"experimentId" = :experimentId', { experimentId })
-      .getRawMany()
-      .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'QueryRepository',
-          'findNamesByExperimentId',
-          { experimentId },
-          errorMsg
-        );
-        throw errorMsgString;
-      });
-    return queries.map((query) => query.name);
-  }
-
   public async deleteQuery(id: string, entityManager: EntityManager): Promise<void> {
     await entityManager
       .createQueryBuilder()

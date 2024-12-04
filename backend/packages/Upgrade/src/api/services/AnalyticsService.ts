@@ -234,11 +234,6 @@ export class AnalyticsService {
       }
 
       const queryData = await this.logRepository.getLogPerExperimentQuery(experimentId);
-      // query name id mapping
-      const queryNameIdMapping: Record<string, string> = {};
-      queryData.forEach((singleRecord) => {
-        queryNameIdMapping[singleRecord.id] = singleRecord.name;
-      });
 
       type queryDataArrayType = typeof queryData;
       type queryDataType = queryDataArrayType[0];
@@ -323,31 +318,22 @@ export class AnalyticsService {
                 break;
               }
             }
-            logsUser[userId][queryId] = keySplitArray[keySplitArray.length - 1] + ': ' + logsUser[userId][queryId];
+            logsUser[userId][queryId] = keySplitArray.join('->') + ': ' + logsUser[userId][queryId];
           }
         }
       }
-
-      const queryNames = await this.queryService.findNamesbyExperimentId(experimentId, new UpgradeLogger());
       // merge with data
       const csvRows = csvExportData.map((row) => {
         const queryObject = logsUser[row.userId] || {};
         const queryDataToAdd = {};
 
-        if (Object.keys(queryObject).length) {
-          for (const queryId in queryObject) {
-            if (queryObject[queryId]) {
-              const queryName = queryNameIdMapping[queryId];
-              if (queryName) {
-                queryDataToAdd[queryName] = queryObject[queryId];
-              }
-            }
+        queryData.forEach((query) => {
+          if (queryObject[query.id]) {
+            queryDataToAdd[query.name] = queryObject[query.id];
+          } else {
+            queryDataToAdd[query.name] = '';
           }
-        } else {
-          queryNames.forEach((queryName) => {
-            queryDataToAdd[queryName] = '';
-          });
-        }
+        });
 
         const revertToCondition = row.revertTo ? row.revertTo : 'Default';
         const postRule = row.postRule === 'assign' ? `Assign: ${revertToCondition}` : 'Continue';
@@ -449,10 +435,10 @@ export class AnalyticsService {
         });
 
       const emailText = `Hey,
-      <br>
-      Here is the exported experiment data:
-      <br>
-      <a href="${signedURLMonitored}">Monitored Experiment Data</a>`;
+        <br>
+        Here is the exported experiment data:
+        <br>
+        <a href="${signedURLMonitored}">Monitored Experiment Data</a>`;
 
       const emailSubject = `Exported Data for the experiment: ${experimentDetails[0].experimentName}`;
       // send email to the user
