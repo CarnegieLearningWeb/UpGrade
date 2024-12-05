@@ -43,6 +43,11 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
+                    // New step to install types dependencies
+                    script: 'cd types && npm ci --no-audit',
+                    log: 'types-npm-ci.log'
+                ],
+                [
                     script: 'npm run prebuild:project',
                     log: 'env-pre-build.log',
                 ],
