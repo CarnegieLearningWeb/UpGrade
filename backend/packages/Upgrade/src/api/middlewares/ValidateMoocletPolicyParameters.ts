@@ -9,13 +9,13 @@ export class ValidateMoocletPolicyParametersMiddleware implements ExpressMiddlew
   public async use(req: Request, res: Response, next: NextFunction): Promise<void> {
     const experiment = req.body;
 
-    if (!env.mooclets.enabled && 'moocletPolicyParameters' in experiment) {
+    if (!env.mooclets?.enabled && 'moocletPolicyParameters' in experiment) {
       throw new UnprocessableEntityException(
         'Failed to create Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
       );
     }
-
-    if (env.mooclets.enabled) {
+    
+    if (env.mooclets?.enabled) {
       try {
         const policyParameters = await validateMoocletPolicyParameters(
           experiment.assignmentAlgorithm,
@@ -27,6 +27,7 @@ export class ValidateMoocletPolicyParametersMiddleware implements ExpressMiddlew
       }
     }
 
+    // else, if mooclets is not enabled, keep calm and carry on
     next();
   }
 }

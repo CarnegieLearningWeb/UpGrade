@@ -115,12 +115,6 @@ export interface MoocletPolicyResponseDetails {
     environment?: string;
 }
 
-export interface MoocletDetails {
-    readonly mooclet?: MoocletResponseDetails;
-    readonly versions?: MoocletVersionResponseDetails[];
-    policyParameters: MoocletPolicyParameters;
-}
-
 export interface MoocletBatchResponse<T> {
     count: number;
     next: string;

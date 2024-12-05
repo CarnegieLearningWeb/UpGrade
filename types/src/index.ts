@@ -77,6 +77,6 @@ export {
   FeatureFlagDeletedData,
 } from './Experiment/interfaces';
 export {
-  // MoocletTSConfigurablePolicyParametersDTO,
+  MoocletTSConfigurablePolicyParametersDTO,
   MOOCLET_POLICY_SCHEMA_MAP,
-} from './Mooclet/DTO';
+} from './Mooclet';

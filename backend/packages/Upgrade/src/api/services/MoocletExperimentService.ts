@@ -11,7 +11,6 @@ import {
   MoocletVersionRequestBody,
   MoocletVersionResponseDetails,
 } from '../../types/Mooclet';
-import { SUPPORTED_MOOCLET_POLICY_NAMES } from 'upgrade_types';
 import { ExperimentService } from './ExperimentService';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
@@ -50,6 +49,7 @@ import { ConditionValidator } from '../DTO/ExperimentDTO';
 import { UserDTO } from '../DTO/UserDTO';
 import { Experiment } from '../models/Experiment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+import { ASSIGNMENT_ALGORITHM } from 'types/src';
 
 export interface SyncCreateParams {
   experimentDTO: MoocletExperimentDTO;
@@ -309,6 +309,7 @@ export class MoocletExperimentService extends ExperimentService {
       });
       moocletExperimentRef.variableId = moocletVariableResponse?.id;
     } catch (err) {
+      console.log('>>>>>>>>>>>>>>> mooclet creation error, roll back', err)
       await this.handleMoocletCreationError(err, moocletExperimentRef, logger);
     }
 
@@ -497,7 +498,7 @@ export class MoocletExperimentService extends ExperimentService {
     assignmentAlgorithm: string,
     moocletResponse: MoocletResponseDetails
   ): Promise<MoocletVariableResponseDetails> {
-    if (!moocletPolicyParametersResponse || assignmentAlgorithm !== SUPPORTED_MOOCLET_POLICY_NAMES.TS_CONFIGURABLE) {
+    if (!moocletPolicyParametersResponse || assignmentAlgorithm !== ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {
       return null;
     }
 
