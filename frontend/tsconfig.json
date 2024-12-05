@@ -10,6 +10,7 @@
     "alwaysStrict": false,
     "strictNullChecks": false,
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "downlevelIteration": true,
     "importHelpers": true,
     "allowSyntheticDefaultImports": true,
