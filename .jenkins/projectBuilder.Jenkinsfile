@@ -6,6 +6,25 @@ projectBuilderV5 (
     ],
 
     projects: [
+        "types": [
+            artifactType: "none", // Since you don't need to upload it
+            projectDir: "types",
+            runInProjectDir: true,
+            skipArtifactUpload: true, // Explicitly prevent artifact upload
+            fileFilter: [
+                include: ["types/**/*"] // Ensure the right files are processed
+            ],
+            buildScripts: [
+                [
+                    script: 'npm ci --no-audit',
+                    githubCheck: 'types npm ci --no-audit',
+                    log: 'types-npm-ci.log'
+                ]
+            ],
+            s3Context: [
+                glob: "types/**/*" // Ensures these files are available to other build steps
+            ]
+        ],
         "upgrade-service":[
             artifactType: "ecr",
             projectDir: "backend",
@@ -37,10 +56,6 @@ projectBuilderV5 (
             versioning: 'branch',
             oneArtifactPerEnvironment: true,
             buildScripts: [
-                [
-                    script: 'cd ../types && npm ci --no-audit && cd ../frontend',
-                    log: 'types-npm-ci.log'
-                ],
                 [
                     script: 'npm ci --no-audit',
                     githubCheck: '${projectName} npm ci --no-audit',
