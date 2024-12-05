@@ -34,7 +34,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { ExperimentService } from './ExperimentService';
 import { QueryService } from './QueryService';
-import { HttpError } from '../errors';
+import { HttpError } from 'routing-controllers';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
