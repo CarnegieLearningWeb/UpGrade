@@ -560,8 +560,8 @@ export class ExperimentAssignmentService {
 
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
-        // const { state, logging, name, id } = experiment;
-        const { state, logging, name, conditionPayloads, type, id, factors } =
+        // const { state, name, id } = experiment;
+        const { state, name, conditionPayloads, type, id, factors } =
           this.experimentService.formatingPayload(experiment);
         const decisionPoints = experiment.partitions.map((decisionPoint) => {
           const { target, site } = decisionPoint;
@@ -585,8 +585,8 @@ export class ExperimentAssignmentService {
             }
           }
 
-          // adding info based on experiment state or logging flag
-          if (logging || state === EXPERIMENT_STATE.PREVIEW) {
+          // adding info based on experiment state
+          if (state === EXPERIMENT_STATE.PREVIEW) {
             // TODO add enrollment code here
             logger.info({
               message: `getAllExperimentConditions: experiment: ${name}, user: ${userId}, condition: ${
@@ -1013,7 +1013,7 @@ export class ExperimentAssignmentService {
       newLogData = await this.logRepository.save(rawDataLogs);
     }
 
-    return [...updatedLog, ...newLogData];
+    return [...updatedLog.flat(), ...newLogData];
   }
 
   private async getMonitoredDocumentOfExperiment(experimentDoc: Experiment): Promise<MonitoredDecisionPoint[]> {

@@ -5,7 +5,7 @@ import { Experiment } from '../models/Experiment';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { createGlobalExcludeSegment } from '../../../src/init/seed/globalExcludeSegment';
-import { ExperimentCSVData } from './AnalyticsRepository';
+import { ExperimentDetailsForCSVData } from './AnalyticsRepository';
 import { StateTimeLog } from '../models/StateTimeLogs';
 import { ConditionPayload } from '../models/ConditionPayload';
 import { DecisionPoint } from '../models/DecisionPoint';
@@ -472,7 +472,7 @@ export class ExperimentRepository extends Repository<Experiment> {
     return experiment;
   }
 
-  public async getExperimentCSVDataExport(experimentId: string): Promise<ExperimentCSVData[]> {
+  public async fetchExperimentDetailsForCSVDataExport(experimentId: string): Promise<ExperimentDetailsForCSVData[]> {
     // Get the experiment details
     const experimentQuery = await this.createBaseQueryBuilder()
       .select([

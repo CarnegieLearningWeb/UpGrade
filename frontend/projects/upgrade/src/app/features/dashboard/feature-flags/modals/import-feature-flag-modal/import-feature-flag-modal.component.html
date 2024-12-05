@@ -28,73 +28,80 @@
         </p>
       </ng-container>
       <ng-template #validationTable>
-        <table
-          mat-table
-          class="file-compatibility-table"
-          [dataSource]="fileValidationErrorDataSource"
-          multiTemplateDataRows
-        >
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell class="ft-14-500" *matCellDef="let element">
-              <button
-                mat-icon-button
-                [ngClass]="{ 'expand-button--disabled': element.compatibilityType === 'compatible' }"
-                [disabled]="element.compatibilityType === 'compatible'"
-                (click)="toggleExpand()"
-              >
-                <mat-icon>{{
-                  element.compatibilityType === 'compatible' || !isDescriptionExpanded ? 'chevron_right' : 'expand_more'
-                }}</mat-icon>
-              </button>
-            </td>
-          </ng-container>
+        <div class="table-container">
+          <table
+            mat-table
+            class="file-compatibility-table"
+            [dataSource]="fileValidationErrorDataSource"
+            multiTemplateDataRows
+          >
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell class="ft-14-500 dense-2" *matCellDef="let element">
+                <button
+                  mat-icon-button
+                  [ngClass]="{ 'expand-button--disabled': element.compatibilityType === 'compatible' }"
+                  [disabled]="element.compatibilityType === 'compatible'"
+                  (click)="toggleExpand()"
+                >
+                  <mat-icon>{{
+                    element.compatibilityType === 'compatible' || !isDescriptionExpanded
+                      ? 'chevron_right'
+                      : 'expand_more'
+                  }}</mat-icon>
+                </button>
+              </td>
+            </ng-container>
 
-          <!-- File Name Column -->
-          <ng-container matColumnDef="fileName">
-            <th mat-header-cell class="ft-14-600" *matHeaderCellDef>File Name</th>
-            <td mat-cell class="ft-14-500" *matCellDef="let element">{{ element.fileName }}</td>
-          </ng-container>
+            <!-- File Name Column -->
+            <ng-container matColumnDef="fileName">
+              <th mat-header-cell class="ft-14-600" *matHeaderCellDef>File Name</th>
+              <td mat-cell class="ft-14-500" *matCellDef="let element">{{ element.fileName }}</td>
+            </ng-container>
 
-          <!-- Compatibility Type Column -->
-          <ng-container matColumnDef="compatibilityType">
-            <th mat-header-cell class="ft-14-600" *matHeaderCellDef>Compatibility Type</th>
-            <td mat-cell class="ft-14-500" *matCellDef="let element">
-              <app-common-status-indicator-chip
-                [chipClass]="element.compatibilityType"
-              ></app-common-status-indicator-chip>
-            </td>
-          </ng-container>
+            <!-- Compatibility Type Column -->
+            <ng-container matColumnDef="compatibilityType">
+              <th mat-header-cell class="ft-14-600" *matHeaderCellDef>Compatibility Type</th>
+              <td mat-cell class="ft-14-500" *matCellDef="let element">
+                <app-common-status-indicator-chip
+                  [chipClass]="element.compatibilityType"
+                ></app-common-status-indicator-chip>
+              </td>
+            </ng-container>
 
-          <!-- Expanded Detail Row -->
-          <ng-container matColumnDef="expandedDetail">
-            <td mat-cell class="expandable-row" *matCellDef="let element; let fileIndex = dataIndex">
-              <div class="ft-14-500" *ngIf="isDescriptionExpanded" class="compatibility-details-container">
-                <div *ngIf="element.compatibilityType === 'incompatible'">
-                  <span *ngIf="data.title === 'Import Feature Flag'">
-                    {{ 'feature-flags.import-flag-modal.compatibility-description.incompatible.text' | translate }}
-                  </span>
-                  <span *ngIf="data.title === 'Import List'">
-                    {{ 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text' | translate }}
-                  </span>
+            <!-- Expanded Detail Row -->
+            <ng-container matColumnDef="expandedDetail">
+              <td mat-cell class="expandable-row" *matCellDef="let element; let fileIndex = dataIndex">
+                <div class="ft-14-500" *ngIf="isDescriptionExpanded" class="compatibility-details-container">
+                  <div *ngIf="element.compatibilityType === 'incompatible'">
+                    <span *ngIf="data.title === 'Import Feature Flag'">
+                      {{ 'feature-flags.import-flag-modal.compatibility-description.incompatible.text' | translate }}
+                    </span>
+                    <span *ngIf="data.title === 'Import List'">
+                      {{
+                        'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text' | translate
+                      }}
+                    </span>
+                  </div>
+                  <div *ngIf="element.compatibilityType === 'warning'">
+                    <span *ngIf="data.title === 'Import Feature Flag'">
+                      {{ 'feature-flags.import-flag-modal.compatibility-description.warning.text' | translate }}
+                    </span>
+                    <span *ngIf="data.title === 'Import List'">
+                      {{ 'feature-flags.import-flag-list-modal.compatibility-description.warning.text' | translate }}
+                    </span>
+                  </div>
                 </div>
-                <div *ngIf="element.compatibilityType === 'warning'">
-                  <span *ngIf="data.title === 'Import Feature Flag'">
-                    {{ 'feature-flags.import-flag-modal.compatibility-description.warning.text' | translate }}
-                  </span>
-                  <span *ngIf="data.title === 'Import List'">
-                    {{ 'feature-flags.import-flag-list-modal.compatibility-description.warning.text' | translate }}
-                  </span>
-                </div>
-              </div>
-            </td>
-          </ng-container>
+              </td>
+            </ng-container>
 
-          <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
-          <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-          <mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"></mat-row>
-        </table>
+            <!-- Header and Rows -->
+            <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+            <mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"></mat-row>
+          </table>
+        </div>
       </ng-template>
     </ng-container>
     <ng-template #loadingSpinner>

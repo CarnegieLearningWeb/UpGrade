@@ -149,7 +149,7 @@ export class ConditionValidator {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => LevelCombinationElementValidator)
-  public levelCombinationElements: LevelCombinationElementValidator[];
+  public levelCombinationElements?: LevelCombinationElementValidator[];
 }
 export class PartitionValidator {
   @IsNotEmpty()
@@ -182,7 +182,7 @@ export class PartitionValidator {
   public excludeIfReached: boolean;
 }
 
-class ConditionPayloadValidator {
+abstract class BaseConditionPayloadValidator {
   @IsNotEmpty()
   @IsString()
   public id: string;
@@ -191,7 +191,9 @@ class ConditionPayloadValidator {
   @ValidateNested()
   @Type(() => PayloadValidator)
   public payload: PayloadValidator;
+}
 
+export class ConditionPayloadValidator extends BaseConditionPayloadValidator {
   @IsNotEmpty()
   @IsString()
   public parentCondition: string;
@@ -199,6 +201,16 @@ class ConditionPayloadValidator {
   @IsOptional()
   @IsString()
   public decisionPoint?: string;
+}
+
+class OldConditionPayloadValidator extends BaseConditionPayloadValidator {
+  @IsNotEmpty()
+  @IsString()
+  public parentCondition: ConditionValidator;
+
+  @IsOptional()
+  @IsString()
+  public decisionPoint?: PartitionValidator;
 }
 
 class MetricValidator {
@@ -322,7 +334,7 @@ class StratificationFactor {
   public stratificationFactorName: string;
 }
 
-export class ExperimentDTO {
+abstract class BaseExperimentWithoutPayload {
   @IsString()
   @IsOptional()
   public id?: string;
@@ -392,10 +404,6 @@ export class ExperimentDTO {
   public conditionOrder?: CONDITION_ORDER;
 
   @IsNotEmpty()
-  @IsBoolean()
-  public logging: boolean;
-
-  @IsNotEmpty()
   @IsEnum(FILTER_MODE)
   public filterMode: FILTER_MODE;
 
@@ -421,12 +429,6 @@ export class ExperimentDTO {
   @ValidateNested({ each: true })
   @Type(() => PartitionValidator)
   public partitions: PartitionValidator[];
-
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ConditionPayloadValidator)
-  public conditionPayloads?: ConditionPayloadValidator[];
 
   @IsOptional()
   @IsArray()
@@ -457,6 +459,22 @@ export class ExperimentDTO {
   @IsNotEmpty()
   @IsEnum(EXPERIMENT_TYPE)
   public type: EXPERIMENT_TYPE;
+}
+
+export class ExperimentDTO extends BaseExperimentWithoutPayload {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ConditionPayloadValidator)
+  public conditionPayloads?: ConditionPayloadValidator[];
+}
+
+export class OldExperimentDTO extends BaseExperimentWithoutPayload {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OldConditionPayloadValidator)
+  public conditionPayloads?: OldConditionPayloadValidator[];
 }
 
 export class ExperimentIdValidator {
