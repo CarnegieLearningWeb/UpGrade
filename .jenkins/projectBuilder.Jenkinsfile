@@ -22,7 +22,7 @@ projectBuilderV5 (
                 ]
             ],
             s3Context: [
-                glob: "types/**/*" // Ensures these files are available to other build steps
+                glob: "types/**/*"
             ]
         ],
         "upgrade-service":[
