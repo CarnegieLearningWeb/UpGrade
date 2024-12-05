@@ -7,12 +7,12 @@ projectBuilderV5 (
 
     projects: [
         "types": [
-            artifactType: "none", // Since you don't need to upload it
+            artifactType: "none",
             projectDir: "types",
             runInProjectDir: true,
-            skipArtifactUpload: true, // Explicitly prevent artifact upload
+            skipArtifactUpload: true,
             fileFilter: [
-                include: ["types/**/*"] // Ensure the right files are processed
+                include: ["types/.*"]
             ],
             buildScripts: [
                 [
