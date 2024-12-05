@@ -38,14 +38,13 @@ projectBuilderV5 (
             oneArtifactPerEnvironment: true,
             buildScripts: [
                 [
+                    script: 'cd ../types && npm ci --no-audit && cd ../frontend',
+                    log: 'types-npm-ci.log'
+                ],
+                [
                     script: 'npm ci --no-audit',
                     githubCheck: '${projectName} npm ci --no-audit',
                     log: '${projectName}-npm-ci.log'
-                ],
-                [
-                    // New step to install types dependencies
-                    script: 'cd types && npm ci --no-audit',
-                    log: 'types-npm-ci.log'
                 ],
                 [
                     script: 'npm run prebuild:project',
