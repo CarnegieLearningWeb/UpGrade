@@ -8,8 +8,7 @@ import {
   UploadedFilesArrayValidator,
 } from './validators/StratificationValidator';
 import { StratificationFactor } from '../models/StratificationFactor';
-import * as express from 'express';
-
+import { Response } from 'express';
 /**
  * @swagger
  * definitions:
@@ -115,13 +114,18 @@ export class StratificationController {
   public async getStratificationByFactor(
     @Params({ validate: true }) { factor }: StratificationFactorValidator,
     @Req() request: AppRequest,
-    @Res() res: express.Response
-  ): Promise<express.Response> {
-    const csvData = await this.stratificationService.getCSVDataByFactor(factor, request.logger);
-    // return csv file with appropriate headers to request;
-    res.setHeader('Content-Type', 'text/csv; charset=UTF-8');
-    res.setHeader('Content-Disposition', `attachment; filename="${factor}.csv"`);
-    return res.send(csvData);
+    @Res() response: Response
+  ): Promise<Response> {
+    try {
+      const stratificationData = await this.stratificationService.getCSVDataByFactor(factor, request.logger);
+      // return csv file with appropriate headers to request;
+      response.setHeader('Content-Type', 'text/csv; charset=UTF-8');
+      response.setHeader('Content-Disposition', `attachment; filename=data-${factor}.csv`);
+      return response.send(stratificationData);
+    } catch (error) {
+      response.status(500).send({ error: 'Failed to generate CSV' });
+      return response;
+    }
   }
 
   /**

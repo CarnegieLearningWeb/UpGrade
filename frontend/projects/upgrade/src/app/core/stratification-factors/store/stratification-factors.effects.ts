@@ -100,8 +100,7 @@ export class StratificationFactorsEffects {
       filter(({ factor }) => !!factor),
       switchMap(({ factor }) =>
         this.stratificationFactorsDataService.exportStratificationFactor(factor).pipe(
-          map((data) => {
-            this.download(data);
+          map(() => {
             this.notificationService.showSuccess(
               this.translate.instant('Stratification factor downloaded successfully!')
             );
@@ -112,17 +111,4 @@ export class StratificationFactorsEffects {
       )
     )
   );
-
-  private download(csvData) {
-    const rows = csvData.trim().split('\n');
-    const firstRowColumns = rows[0].split(',');
-
-    // Access the second column of the first row
-    const factorName = firstRowColumns[1].replace(/["'\r]/g, '');
-    const hiddenElement = document.createElement('a');
-    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvData); // data is the text response of the http request.
-    hiddenElement.target = '_blank';
-    hiddenElement.download = factorName + '.csv';
-    hiddenElement.click();
-  }
 }

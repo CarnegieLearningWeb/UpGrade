@@ -1,4 +1,4 @@
-import { JsonController, Get, Delete, Authorized, Post, Req, Body, QueryParams, Params } from 'routing-controllers';
+import { JsonController, Get, Delete, Params, Authorized, Post, Req, Body, QueryParams, Res } from 'routing-controllers';
 import { SegmentService, SegmentWithStatus } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
 import { AppRequest } from '../../types';
@@ -13,6 +13,8 @@ import {
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { NotFoundException } from '@nestjs/common/exceptions';
+import { Response } from 'express';
+import archiver from 'archiver';
 
 export interface getSegmentData {
   segmentsData: SegmentWithStatus[];
@@ -454,26 +456,33 @@ export class SegmentController {
    * @swagger
    * /segments/export/json:
    *    get:
-   *      description: Get segment JSON export
+   *      description: Export segments in JSON format
+   *      tags:
+   *        - Segment
    *      produces:
    *        - application/json
    *      parameters:
-   *        - in: path
-   *          name: segmentId
-   *          description: Segment id
+   *        - in: query
+   *          name: ids
+   *          description: Segment ids
    *          required: true
    *          schema:
    *            type: array
    *            items:
    *              type: string
-   *              example: '5812a759-1dcf-47a8-b0ba-26c89092863e'
-   *      tags:
-   *        - Segment
    *      responses:
-   *          '200':
-   *            description: Get segment JSON export
-   *          '401':
-   *            description: AuthorizationRequiredError
+   *        '200':
+   *          description: Export segments in JSON format
+   *          schema:
+   *            type: array
+   *            items:
+   *              $ref: '#/definitions/segmentResponse'
+   *        '401':
+   *          description: Authorization Required Error
+   *        '404':
+   *          description: Segment not found
+   *        '500':
+   *          description: Internal Server Error, SegmentId is not valid
    */
   @Get('/export/json')
   public exportSegments(
@@ -489,34 +498,78 @@ export class SegmentController {
    * @swagger
    * /segments/export/csv:
    *    get:
-   *      description: Get segment csv export
+   *      description: Export segments in CSV format
+   *      tags:
+   *        - Segment
    *      produces:
    *        - application/json
    *      parameters:
-   *        - in: path
-   *          name: segmentId
-   *          description: Segment id
+   *        - in: query
+   *          name: ids
+   *          description: Segment ids
    *          required: true
    *          schema:
    *            type: array
    *            items:
    *              type: string
-   *              example: '5812a759-1dcf-47a8-b0ba-26c89092863e'
-   *      tags:
-   *        - Segment
    *      responses:
-   *          '200':
-   *            description: Get segment csv export
-   *          '401':
-   *            description: AuthorizationRequiredError
+   *        '200':
+   *          description: Export segments in CSV format
+   *          schema:
+   *            type: array
+   *            items:
+   *              $ref: '#/definitions/segmentResponse'
+   *        '401':
+   *          description: Authorization Required Error
+   *        '404':
+   *          description: Segment not found
+   *        '500':
+   *          description: Internal Server Error, SegmentId is not valid
    */
   @Get('/export/csv')
-  public exportSegment(
+  public async exportSegment(
     @QueryParams()
     params: SegmentIds,
-    @Req() request: AppRequest
-  ): Promise<SegmentFile[]> {
+    @Req() request: AppRequest,
+    @Res() response: Response
+  ): Promise<Response> {
     const segmentIds = params.ids;
-    return this.segmentService.exportSegmentCSV(segmentIds, request.logger);
+    const segmentData = await this.segmentService.exportSegmentCSV(segmentIds, request.logger);
+  
+    if (segmentData.length > 1) {
+      // Set headers for ZIP download
+      response.setHeader('Content-Type', 'application/zip');
+      response.setHeader('Content-Disposition', 'attachment; filename=Segments.zip');
+  
+      // Create a ZIP archive and pipe it to the response
+      const archive = archiver('zip', {
+        zlib: { level: 9 }, // Compression level
+      });
+  
+      // Handle archive errors
+      archive.on('error', (err) => {
+        response.status(500).send({ error: err.message });
+      });
+  
+      // Pipe archive data to the response
+      archive.pipe(response);
+  
+      // Append each CSV to the ZIP archive
+      segmentData.forEach((segment) => {
+        archive.append(segment.fileContent, { name: `${segment.fileName}.csv` });
+      });
+  
+      // Finalize the archive
+      archive.finalize();
+      response.send(segmentData);
+    } else {
+      // Set headers for single CSV download
+      response.setHeader('Content-Type', 'text/csv; charset=UTF-8');
+      response.setHeader('Content-Disposition', `attachment; filename=${segmentData[0].fileName}.csv`);
+  
+      // Send the CSV content directly
+      response.send(segmentData[0].fileContent);
+    }
+    return response;
   }
 }

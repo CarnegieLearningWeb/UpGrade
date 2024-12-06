@@ -594,7 +594,6 @@ export class ExperimentService {
       );
       return this.reducedConditionPayload(this.formatingPayload(this.formatingConditionPayload(experiment)));
     });
-
     return formattedExperiments;
   }
 

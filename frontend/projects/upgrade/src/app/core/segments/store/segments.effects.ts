@@ -2,13 +2,12 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
-import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operators';
-import { AppState } from '../../core.module';
+import { catchError, filter, map, tap, switchMap, withLatestFrom } from 'rxjs/operators';
+import { AppState, NotificationService } from '../../core.module';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
 import { Segment, UpsertSegmentType } from './segments.model';
 import { selectAllSegments } from './segments.selectors';
-import JSZip from 'jszip';
 
 @Injectable()
 export class SegmentsEffects {
@@ -16,6 +15,7 @@ export class SegmentsEffects {
     private store$: Store<AppState>,
     private actions$: Actions,
     private segmentsDataService: SegmentsDataService,
+    private notificationService: NotificationService,
     private router: Router
   ) {}
 
@@ -105,18 +105,10 @@ export class SegmentsEffects {
       filter(({ segmentIds }) => !!segmentIds),
       switchMap(({ segmentIds }) =>
         this.segmentsDataService.exportSegments(segmentIds).pipe(
-          map((data: Segment[]) => {
-            if (data.length > 1) {
-              const zip = new JSZip();
-              data.forEach((segment, index) => {
-                zip.file(segment.name + ' (File ' + (index + 1) + ').json', JSON.stringify(segment));
-              });
-              zip.generateAsync({ type: 'base64' }).then((content) => {
-                this.download('Segments.zip', content, true);
-              });
-            } else {
-              this.download(data[0].name + '.json', data[0], false);
-            }
+          tap(() => {
+            this.notificationService.showSuccess('Segment JSON downloaded!');
+          }),
+          map(() => {
             return SegmentsActions.actionExportSegmentSuccess();
           }),
           catchError(() => [SegmentsActions.actionExportSegmentFailure()])
@@ -124,16 +116,4 @@ export class SegmentsEffects {
       )
     )
   );
-
-  private download(filename, text, isZip: boolean) {
-    const element = document.createElement('a');
-    isZip
-      ? element.setAttribute('href', 'data:application/zip;base64,' + text)
-      : element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
-    element.setAttribute('download', filename);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  }
 }

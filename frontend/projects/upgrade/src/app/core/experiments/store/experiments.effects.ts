@@ -43,7 +43,6 @@ import {
 import { interval } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { ENV, Environment } from '../../../../environments/environment-types';
-import JSZip from 'jszip';
 import { TranslateService } from '@ngx-translate/core';
 @Injectable()
 export class ExperimentEffects {
@@ -470,18 +469,7 @@ export class ExperimentEffects {
           tap(() => {
             this.notificationService.showSuccess('Experiment Design JSON downloaded!');
           }),
-          map((data: Experiment[]) => {
-            if (data.length > 1) {
-              const zip = new JSZip();
-              data.forEach((experiment, index) => {
-                zip.file(experiment.name + ' (File ' + (index + 1) + ').json', JSON.stringify(experiment));
-              });
-              zip.generateAsync({ type: 'base64' }).then((content) => {
-                this.download('Experiments.zip', content, true);
-              });
-            } else {
-              this.download(data[0].name + '.json', data[0], false);
-            }
+          map(() => {
             return experimentAction.actionExportExperimentDesignSuccess();
           }),
           catchError(() => [experimentAction.actionExportExperimentDesignFailure()])
@@ -490,16 +478,5 @@ export class ExperimentEffects {
     )
   );
 
-  private download(filename, text, isZip: boolean) {
-    const element = document.createElement('a');
-    isZip
-      ? element.setAttribute('href', 'data:application/zip;base64,' + text)
-      : element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
-    element.setAttribute('download', filename);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  }
   private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());
 }

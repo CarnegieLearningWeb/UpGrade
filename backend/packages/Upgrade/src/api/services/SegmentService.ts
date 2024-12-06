@@ -503,7 +503,15 @@ export class SegmentService {
         relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
       });
       if (!segmentDoc) {
-        throw new Error(SERVER_ERROR.QUERY_FAILED);
+        // throw 404 error if segment not found:
+        const error = new Error(
+          JSON.stringify({
+            type: SERVER_ERROR.SEGMENT_NOT_FOUND,
+          })
+        );
+        (error as any).type = SERVER_ERROR.SEGMENT_NOT_FOUND;
+        (error as any).httpCode = 404;
+        throw error;
       } else {
         segmentsDoc.push(segmentDoc);
       }

@@ -6,6 +6,7 @@ import JSZip from 'jszip';
 import { AuthService } from '../../../../../../core/auth/auth.service';
 import { EXPORT_SEGMENT_METHOD, Segment, SegmentFile } from '../../../../../../core/segments/store/segments.model';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
+import { saveAs } from 'file-saver'; // Install file-saver package if not already installed
 
 @Component({
   selector: 'app-export-segment',
@@ -46,14 +47,20 @@ export class ExportSegmentComponent implements OnInit {
     this.segmentsService.exportSegmentCSV(segmentIds).subscribe((response) => {
       segmentData = response;
       if (segmentData) {
+        console.log("segmentData: ", segmentData);
         if (segmentData.length > 1) {
-          const zip = new JSZip();
-          segmentData.forEach((segment) => {
-            zip.file(segment.fileName + '.csv', segment.fileContent);
-          });
-          zip.generateAsync({ type: 'base64' }).then((content) => {
-            this.download('Segments.zip', content, true);
-          });
+          // const zip = new JSZip();
+          // segmentData.forEach((segment) => {
+          //   zip.file(segment.fileName + '.csv', segment.fileContent);
+          // });
+          // zip.generateAsync({ type: 'base64' }).then((content) => {
+          //   this.download('Segments.zip', content, true);
+          // });
+          (blob) => {
+            // Use file-saver to save the file
+            saveAs(blob, 'Segments.zip');
+          }
+
         } else {
           this.download(segmentData[0].fileName, segmentData[0].fileContent, false);
         }

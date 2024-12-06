@@ -11,6 +11,7 @@ import {
   Req,
   QueryParams,
   Params,
+  Res,
 } from 'routing-controllers';
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
@@ -26,6 +27,8 @@ import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
+import { Response } from 'express';
+import archiver from 'archiver';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: Experiment[];
@@ -1279,14 +1282,51 @@ export class ExperimentController {
    *            description: Internal Server Error
    */
   @Get('/export')
-  public exportExperiment(
+  public async exportExperiment(
     @QueryParams()
     params: ExperimentIds,
     @CurrentUser() currentUser: UserDTO,
-    @Req() request: AppRequest
-  ): Promise<Experiment[]> {
+    @Req() request: AppRequest,
+    @Res() response: Response
+  ): Promise<Response> {
     const experimentIds = params.ids;
-    return this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
+    const experimentData = await this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
+  
+    if (experimentData.length > 1) {
+      // Set headers for ZIP download
+      response.setHeader('Content-Type', 'application/zip');
+      response.setHeader('Content-Disposition', 'attachment; filename=Experiments.zip');
+  
+      // Create a ZIP archive and pipe it to the response
+      const archive = archiver('zip', {
+        zlib: { level: 9 }, // Compression level
+      });
+  
+      // Handle archive errors
+      archive.on('error', (err) => {
+        response.status(500).send({ error: err.message });
+      });
+  
+      // Pipe archive data to the response
+      archive.pipe(response);
+  
+      // Append each JSON to the ZIP archive
+      experimentData.forEach((experiment) => {
+        archive.append(JSON.stringify(experiment, null, 2), { name: `${experiment.name}.json` });
+      });
+  
+      // Finalize the archive
+      archive.finalize();
+      response.send(experimentData);
+    } else {
+      // Set headers for single JSON download
+      response.setHeader('Content-Type', 'application/json');
+      response.setHeader('Content-Disposition', `attachment; filename=${experimentData[0].name}.json`);
+  
+      // Send the JSON content directly
+      response.send(experimentData[0]);
+    }
+    return response;
   }
 
   /**
