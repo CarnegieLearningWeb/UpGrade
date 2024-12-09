@@ -24,6 +24,10 @@ export class SegmentInputValidator {
   @IsOptional()
   public description?: string;
 
+  @IsString()
+  @IsOptional()
+  public listType?: string;
+
   @IsNotEmpty()
   @IsString()
   public context: string;
@@ -44,6 +48,12 @@ export class SegmentInputValidator {
   @IsArray()
   @IsString({ each: true })
   public subSegmentIds: string[];
+}
+
+export class ListInputValidator extends SegmentInputValidator {
+  @IsNotEmpty()
+  @IsUUID()
+  public parentSegmentId: string;
 }
 
 export class IdValidator {
