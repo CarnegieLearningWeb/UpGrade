@@ -1,6 +1,6 @@
 // to run: npx ts-node clientlibs/js/quickTest.ts
 
-import { UpgradeClient, MARKED_DECISION_POINT_STATUS, UpGradeClientInterfaces } from './dist/node';
+import UpgradeClient, { MARKED_DECISION_POINT_STATUS, UpGradeClientInterfaces } from './dist/node';
 
 const URL = {
   LOCAL: 'http://localhost:3030',
@@ -13,7 +13,7 @@ const URL = {
 const userId = 'quicktest_user_' + Date.now().toString();
 const group = 'test_class_group';
 const alias = 'alias' + userId;
-const hostUrl = URL.BEANSTALK_STAGING;
+const hostUrl = URL.LOCAL;
 const context = 'assign-prog';
 const site = 'SelectSection';
 const target = 'absolute_value_plot_equality';
@@ -157,7 +157,7 @@ async function doFeatureFlags(client: UpgradeClient) {
 
 async function doHasFeatureFlag(client: UpgradeClient) {
   try {
-    const response = client.getFeatureFlag(featureFlagKey);
+    const response = client.hasFeatureFlag(featureFlagKey);
     console.log('[Has Feature Flag response]:', JSON.stringify(response));
   } catch (error) {
     console.error('[Has Feature Flag error]:', error);

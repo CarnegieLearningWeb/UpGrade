@@ -35,9 +35,7 @@ export const segmentThird = {
   context: 'home',
   type: SEGMENT_TYPE.PRIVATE,
   userIds: [],
-  groups: [
-    { groupId: '1', type: 'teacher' },
-  ],
+  groups: [{ groupId: '1', type: 'teacher' }],
   subSegmentIds: [],
 };
 
@@ -48,6 +46,30 @@ export const segmentFourth = {
   context: 'home',
   type: SEGMENT_TYPE.PRIVATE,
   userId: 'student1',
+  groups: [],
+  subSegmentIds: [],
+};
+
+export const segmentList = {
+  id: '5e05fc7a-3553-47d7-87d8-b380d389ef7c',
+  name: 'segmentLiat',
+  description: 'included users',
+  context: 'home',
+  listType: 'user',
+  type: SEGMENT_TYPE.PRIVATE,
+  userIds: ['student1'],
+  groups: [],
+  subSegmentIds: [],
+  parentSegmentId: 'e0a0d838-d645-4d89-856e-89bdf6f39394',
+};
+
+export const segmentWithList = {
+  id: 'e0a0d838-d645-4d89-856e-89bdf6f39394',
+  name: 'segmentWithList',
+  description: 'segment with list description',
+  context: 'home',
+  type: SEGMENT_TYPE.PUBLIC,
+  userIds: [],
   groups: [],
   subSegmentIds: [],
 };

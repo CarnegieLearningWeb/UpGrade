@@ -29,7 +29,6 @@ import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupExclusion } from '../models/GroupExclusion';
 import { Experiment } from '../models/Experiment';
-import { ScheduledJobService } from './ScheduledJobService';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { v4 as uuid } from 'uuid';
 import { PreviewUserService } from './PreviewUserService';
@@ -51,7 +50,6 @@ import isequal from 'lodash.isequal';
 import flatten from 'lodash.flatten';
 import { ILogInput, ENROLLMENT_CODE } from 'upgrade_types';
 import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
-import { StateTimeLog } from '../models/StateTimeLogs';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SegmentService } from './SegmentService';
 import { MonitoredDecisionPointLogRepository } from '../repositories/MonitoredDecisionPointLogRepository';
@@ -108,7 +106,6 @@ export class ExperimentAssignmentService {
 
     public previewUserService: PreviewUserService,
     public experimentUserService: ExperimentUserService,
-    public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
     public settingService: SettingService,
     public segmentService: SegmentService,
@@ -1069,17 +1066,14 @@ export class ExperimentAssignmentService {
   private async checkEnrollmentEndingCriteriaForCount(experiment: Experiment, logger: UpgradeLogger): Promise<void> {
     const { enrollmentCompleteCondition } = experiment;
     const { groupCount, userCount } = enrollmentCompleteCondition;
-
-    const timeLogDate = new Date();
     /**
      * Create stateTimeLog document which will be inserted if ending criteria is met
      */
-    const stateTimeLogDoc = new StateTimeLog();
-    stateTimeLogDoc.id = uuid();
-    stateTimeLogDoc.fromState = experiment.state;
-    stateTimeLogDoc.toState = EXPERIMENT_STATE.ENROLLMENT_COMPLETE;
-    stateTimeLogDoc.timeLog = timeLogDate;
-    stateTimeLogDoc.experiment = experiment;
+    const stateTimeLogDoc = await this.experimentService.prepareStateTimeLogDoc(
+      experiment,
+      experiment.state,
+      EXPERIMENT_STATE.ENROLLMENT_COMPLETE
+    );
 
     if (groupCount && userCount && experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
       const groupSatisfied: number = await this.getGroupAssignmentStatus(experiment.id, logger);
