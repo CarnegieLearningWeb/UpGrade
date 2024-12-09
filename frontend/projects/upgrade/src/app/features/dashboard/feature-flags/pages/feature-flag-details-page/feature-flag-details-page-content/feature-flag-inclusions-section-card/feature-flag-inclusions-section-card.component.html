@@ -16,10 +16,13 @@
     [slideToggleDisabled]="!(permissions$ | async)?.featureFlags.update"
     [showPrimaryButton]="(permissions$ | async)?.featureFlags.update"
     [primaryButtonText]="'feature-flags.details.add-include-list.button.text' | translate"
+    [showMenuButton]="(permissions$ | async)?.featureFlags.update"
+    [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded && flag.filterMode !== FILTER_MODE.INCLUDE_ALL"
     [primaryActionBtnDisabled]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
     [sectionCardExpandBtnDisabled]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
     (primaryButtonClick)="onAddIncludeListClick(flag.context[0], flag.id)"
+    (menuButtonItemClick)="onMenuButtonItemClick($event, flag)"
     (slideToggleChange)="onSlideToggleChange($event, flag.id)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >

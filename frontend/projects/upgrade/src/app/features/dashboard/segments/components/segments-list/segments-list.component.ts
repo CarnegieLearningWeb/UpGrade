@@ -8,7 +8,7 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
 } from '@angular/core';
-import { Observable, Subscription, fromEvent } from 'rxjs';
+import { Observable, Subscription, combineLatest, fromEvent } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { MatDialog } from '@angular/material/dialog';
@@ -64,6 +64,10 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
+
+    this.segmentSortKey$ = this.segmentsService.selectSegmentSortKey$;
+    this.segmentSortAs$ = this.segmentsService.selectSegmentSortAs$;
+
     this.allSegmentsSub = this.segmentsService.allSegments$.subscribe((segments) => {
       segments = segments.map((segment) => ({ ...segment, status: segment.status || SEGMENT_STATUS.UNUSED }));
       this.allSegments = new CustomMatTableSource();
@@ -72,10 +76,6 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
       this.cdr.detectChanges();
       this.applyFilter(this.searchValue);
     });
-
-    this.segmentSortKey$ = this.segmentsService.selectSegmentSortKey$;
-    this.segmentSortAs$ = this.segmentsService.selectSegmentSortAs$;
-    this.segmentsService.fetchSegments(true);
 
     this.segmentsService.selectSearchSegmentParams().subscribe((searchParams: any) => {
       // Used when user clicks on context from view segment page

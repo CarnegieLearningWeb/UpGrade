@@ -90,7 +90,7 @@ export class SegmentsEffects {
         this.segmentsDataService.deleteSegment(id).pipe(
           map((data: any) => {
             this.router.navigate(['/segments']);
-            return SegmentsActions.actionDeleteSegmentSuccess({ segment: data[0] });
+            return SegmentsActions.actionDeleteSegmentSuccess({ segment: data });
           }),
           catchError(() => [SegmentsActions.actionDeleteSegmentFailure()])
         )

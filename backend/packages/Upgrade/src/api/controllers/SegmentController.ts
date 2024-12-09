@@ -1,12 +1,19 @@
-import { JsonController, Get, Delete, Param, Authorized, Post, Req, Body, QueryParams } from 'routing-controllers';
+import { JsonController, Get, Delete, Authorized, Post, Req, Body, QueryParams, Params } from 'routing-controllers';
 import { SegmentService, SegmentWithStatus } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
-import { SERVER_ERROR } from 'upgrade_types';
-import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
-import { SegmentFile, SegmentIds, SegmentImportError, SegmentInputValidator } from './validators/SegmentInputValidator';
+import {
+  IdValidator,
+  ListInputValidator,
+  SegmentFile,
+  SegmentIds,
+  SegmentIdValidator,
+  SegmentImportError,
+  SegmentInputValidator,
+} from './validators/SegmentInputValidator';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
+import { NotFoundException } from '@nestjs/common/exceptions';
 
 export interface getSegmentData {
   segmentsData: SegmentWithStatus[];
@@ -54,6 +61,17 @@ export interface getSegmentData {
  *         items:
  *           type: string
  *           example: '5812a759-1dcf-47a8-b0ba-26c89092863e'
+ *   ListInput:
+ *    allOf:
+ *      - $ref: '#/definitions/Segment'
+ *    required:
+ *      - parentSegmentId
+ *      - listType
+ *    properties:
+ *        parentSegmentId:
+ *         type: string
+ *        listType:
+ *         type: string
  *   segmentResponse:
  *     description: ''
  *     type: object
@@ -238,6 +256,8 @@ export class SegmentController {
    *          description: Get segment by id
    *          schema:
    *            $ref: '#/definitions/segmentResponse'
+   *        '400':
+   *          description: segmentId should be a valid UUID.
    *        '401':
    *          description: Authorization Required Error
    *        '404':
@@ -246,18 +266,16 @@ export class SegmentController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Get('/:segmentId')
-  public getSegmentById(@Param('segmentId') segmentId: string, @Req() request: AppRequest): Promise<Segment> {
-    if (!segmentId) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
+  public async getSegmentById(
+    @Params({ validate: true }) { segmentId }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    const segment = await this.segmentService.getSegmentById(segmentId, request.logger);
+    if (!segment) {
+      throw new NotFoundException('Segment not found.');
     }
-    if (!isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
-        )
-      );
-    }
-    return this.segmentService.getSegmentById(segmentId, request.logger);
+
+    return segment;
   }
 
   /**
@@ -281,6 +299,8 @@ export class SegmentController {
    *          description: Get segment by id
    *          schema:
    *            $ref: '#/definitions/segmentResponse'
+   *        '400':
+   *          description: segmentId should be a valid UUID.
    *        '401':
    *          description: Authorization Required Error
    *        '404':
@@ -289,18 +309,15 @@ export class SegmentController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Get('/status/:segmentId')
-  public getSegmentWithStatusById(@Param('segmentId') segmentId: string, @Req() request: AppRequest): Promise<Segment> {
-    if (!segmentId) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
+  public async getSegmentWithStatusById(
+    @Params({ validate: true }) { segmentId }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    const segment = await this.segmentService.getSingleSegmentWithStatus(segmentId, request.logger);
+    if (!segment) {
+      throw new NotFoundException('Segment not found.');
     }
-    if (!isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
-        )
-      );
-    }
-    return this.segmentService.getSingleSegmentWithStatus(segmentId, request.logger);
+    return segment;
   }
 
   /**
@@ -340,6 +357,41 @@ export class SegmentController {
 
   /**
    * @swagger
+   * /list:
+   *    post:
+   *      description: Create a new list
+   *      tags:
+   *        - Segment
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: body
+   *          name: list
+   *          description: List object
+   *          required: true
+   *          schema:
+   *            type: object
+   *            $ref: '#/definitions/ListInput'
+   *      responses:
+   *        '200':
+   *          description: Create a new list
+   *          schema:
+   *            $ref: '#/definitions/segmentResponse'
+   *        '401':
+   *          description: Authorization Required Error
+   *        '500':
+   *          description: Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid
+   */
+  @Post('/list')
+  public addList(
+    @Body({ validate: true }) listInput: ListInputValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    return this.segmentService.addList(listInput, request.logger);
+  }
+
+  /**
+   * @swagger
    * /segments/{segmentId}:
    *    delete:
    *      description: Delete a segment
@@ -366,17 +418,10 @@ export class SegmentController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Delete('/:segmentId')
-  public deleteSegment(@Param('segmentId') segmentId: string, @Req() request: AppRequest): Promise<Segment> {
-    if (!segmentId) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
-    }
-    if (!isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
-        )
-      );
-    }
+  public deleteSegment(
+    @Params({ validate: true }) { segmentId }: SegmentIdValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
     return this.segmentService.deleteSegment(segmentId, request.logger);
   }
 
