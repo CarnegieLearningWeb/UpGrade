@@ -821,36 +821,11 @@ export class ExperimentAssignmentService {
       });
     }
 
-    // exclude experiments which are not previously assigned and throw error
+    // exclude experiments which are not previously assigned
     const experimentToExclude = experiments.filter((experiment) => {
       return groupExperimentAssignedIds.indexOf(experiment.id) === -1;
     });
 
-    const experimentToExcludeIds = experimentToExclude.map((experiment) => experiment.id);
-
-    // throw error user group not defined and add experiments which are excluded
-    experimentToExclude.forEach(({ id, name }) => {
-      logger.error({
-        message: `Experiment Id: ${id},
-      Experiment Name: ${name},
-      Group not valid for experiment user
-      `,
-      });
-    });
-    await this.errorService.create(
-      {
-        endPoint: '/api/assign',
-        errorCode: 417,
-        message: `Group not defined for experiment User: ${JSON.stringify(
-          { ...experimentUser, experiment: experimentToExcludeIds },
-          undefined,
-          2
-        )}`,
-        name: 'Experiment user group not defined',
-        type: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
-      } as any,
-      logger
-    );
     return experimentToExclude;
   }
 
