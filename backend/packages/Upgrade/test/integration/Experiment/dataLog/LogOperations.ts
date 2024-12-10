@@ -212,11 +212,18 @@ export default async function LogOperations(): Promise<void> {
   );
 
   // Deep state queries for categorical data
-  const deepQueryCatSum = makeQuery(
-    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
-    OPERATION_TYPES.COUNT,
-    experiments[0].id
-  );
+  const deepQueryCatSum = {
+    name: 'query',
+    query: {
+      operationType: OPERATION_TYPES.COUNT,
+      compareFn: '!=',
+      compareValue: 'GRADUATED',
+    },
+    metric: {
+      key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
+    },
+    experimentId: experiments[0].id,
+  };
 
   // Deep state percentage query
   const deepPercentage = {
@@ -551,7 +558,7 @@ export default async function LogOperations(): Promise<void> {
 
       expect.objectContaining({
         name: 'query',
-        query: { operationType: OPERATION_TYPES.COUNT },
+        query: { operationType: OPERATION_TYPES.COUNT, compareFn: '!=', compareValue: 'GRADUATED' },
         metric: expect.objectContaining({
           key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
           type: 'categorical',
@@ -616,15 +623,16 @@ export default async function LogOperations(): Promise<void> {
         }, 0);
         expectedValue = 4;
         if (query.metric.type === 'categorical') {
-          expectedValue = 5; // For completion metric
+          expectedValue = 2; // For completion metric
         }
         expect(countValue).toEqual(expectedValue);
         break;
       }
       case OPERATION_TYPES.AVERAGE: {
-        const avgValue = (res.reduce((accu, data) => {
-          return accu + data;
-        }, 0))/res.length;
+        const avgValue =
+          res.reduce((accu, data) => {
+            return accu + data;
+          }, 0) / res.length;
         expectedValue = 128;
         if (query.metric.key !== 'totalProblemsCompleted') {
           expectedValue = 250; // For completion metric
