@@ -4,6 +4,7 @@ import { Segment } from '../models/Segment';
 import { AppRequest } from '../../types';
 import {
   IdValidator,
+  ListInputValidator,
   SegmentFile,
   SegmentIds,
   SegmentIdValidator,
@@ -62,6 +63,17 @@ export interface getSegmentData {
  *         items:
  *           type: string
  *           example: '5812a759-1dcf-47a8-b0ba-26c89092863e'
+ *   ListInput:
+ *    allOf:
+ *      - $ref: '#/definitions/Segment'
+ *    required:
+ *      - parentSegmentId
+ *      - listType
+ *    properties:
+ *        parentSegmentId:
+ *         type: string
+ *        listType:
+ *         type: string
  *   segmentResponse:
  *     description: ''
  *     type: object
@@ -343,6 +355,41 @@ export class SegmentController {
     @Req() request: AppRequest
   ): Promise<Segment> {
     return this.segmentService.upsertSegment(segment, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /list:
+   *    post:
+   *      description: Create a new list
+   *      tags:
+   *        - Segment
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: body
+   *          name: list
+   *          description: List object
+   *          required: true
+   *          schema:
+   *            type: object
+   *            $ref: '#/definitions/ListInput'
+   *      responses:
+   *        '200':
+   *          description: Create a new list
+   *          schema:
+   *            $ref: '#/definitions/segmentResponse'
+   *        '401':
+   *          description: Authorization Required Error
+   *        '500':
+   *          description: Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid
+   */
+  @Post('/list')
+  public addList(
+    @Body({ validate: true }) listInput: ListInputValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    return this.segmentService.addList(listInput, request.logger);
   }
 
   /**

@@ -403,6 +403,20 @@ export class ExperimentService {
     return [...conditionIds, ...decisionPointsIds];
   }
 
+  public async prepareStateTimeLogDoc(
+    experimentDoc: Experiment,
+    fromState: EXPERIMENT_STATE,
+    toState: EXPERIMENT_STATE
+  ) {
+    const stateTimeLogDoc = new StateTimeLog();
+    stateTimeLogDoc.id = uuid();
+    stateTimeLogDoc.fromState = fromState;
+    stateTimeLogDoc.toState = toState;
+    stateTimeLogDoc.timeLog = new Date();
+    stateTimeLogDoc.experiment = experimentDoc;
+    return stateTimeLogDoc;
+  }
+
   public async updateState(
     experimentId: string,
     state: EXPERIMENT_STATE,
@@ -459,14 +473,7 @@ export class ExperimentService {
     // add experiment audit logs
     await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user, entityManager);
 
-    const timeLogDate = new Date();
-
-    const stateTimeLogDoc = new StateTimeLog();
-    stateTimeLogDoc.id = uuid();
-    stateTimeLogDoc.fromState = oldExperiment.state;
-    stateTimeLogDoc.toState = state;
-    stateTimeLogDoc.timeLog = timeLogDate;
-    stateTimeLogDoc.experiment = oldExperiment;
+    const stateTimeLogDoc = await this.prepareStateTimeLogDoc(oldExperiment, oldExperiment.state, state);
 
     // updating the experiment and stateTimeLog
     const stateTimeLogRepo = entityManager ? entityManager.getRepository(StateTimeLog) : this.stateTimeLogsRepository;
@@ -784,6 +791,13 @@ export class ExperimentService {
         let experimentDoc: Experiment;
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
+          // Store state time log for the experiment
+          const stateTimeLogDoc = await this.prepareStateTimeLogDoc(
+            experimentDoc,
+            oldExperiment.state,
+            experimentDoc.state
+          );
+          await transactionalEntityManager.getRepository(StateTimeLog).save(stateTimeLogDoc);
         } catch (err) {
           const error = err as ErrorWithType;
           error.details = `Error in updating experiment document "updateExperimentInDB"`;
@@ -1227,6 +1241,15 @@ export class ExperimentService {
       let experimentDoc: Experiment;
       try {
         experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
+        // Store state time log for the experiment in enrolling state.
+        if (experimentDoc.state !== EXPERIMENT_STATE.INACTIVE) {
+          const stateTimeLogDoc = await this.prepareStateTimeLogDoc(
+            experimentDoc,
+            EXPERIMENT_STATE.INACTIVE,
+            experimentDoc.state
+          );
+          await transactionalEntityManager.getRepository(StateTimeLog).save(stateTimeLogDoc);
+        }
       } catch (err) {
         const error = err as ErrorWithType;
         error.details = 'Error in adding experiment in DB';

@@ -15,7 +15,11 @@ import {
   SERVER_ERROR,
   IExperimentEnrollmentStats,
 } from 'upgrade_types';
-import { AnalyticsRepository, CSVExportDataRow, ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
+import {
+  AnalyticsRepository,
+  CSVExportDataRow,
+  ExperimentDetailsForCSVData,
+} from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
 import ObjectsToCsv from 'objects-to-csv';
 import fs from 'fs';
@@ -178,7 +182,8 @@ export class AnalyticsService {
       const userRepository: UserRepository = Container.getCustomRepository(UserRepository, 'export');
       const user = await userRepository.findOneBy({ email });
 
-      const experimentDetails: ExperimentDetailsForCSVData[] = await this.experimentService.getExperimentDetailsForCSVDataExport(experimentId);
+      const experimentDetails: ExperimentDetailsForCSVData[] =
+        await this.experimentService.getExperimentDetailsForCSVDataExport(experimentId);
       if (!experimentDetails || experimentDetails.length === 0) {
         throw new HttpError(404, `Experiment not found for id: ${experimentId}`);
       }
@@ -226,11 +231,6 @@ export class AnalyticsService {
       }
 
       const queryData = await this.logRepository.getLogPerExperimentQuery(experimentId);
-      // query name id mapping
-      const queryNameIdMapping: Record<string, string> = {};
-      queryData.forEach((singleRecord) => {
-        queryNameIdMapping[singleRecord.id] = singleRecord.name;
-      });
 
       type queryDataArrayType = typeof queryData;
       type queryDataType = queryDataArrayType[0];
@@ -256,7 +256,6 @@ export class AnalyticsService {
             const repeatedMeasure = groupedUser[userId][queryId][0].repeatedMeasure;
             const key = groupedUser[userId][queryId][0].key;
             const type = groupedUser[userId][queryId][0].type;
-            let metricKey;
 
             const keySplitArray = key.split(METRICS_JOIN_TEXT);
             logsUser[userId] = logsUser[userId] || {};
@@ -272,7 +271,6 @@ export class AnalyticsService {
                   },
                   undefined
                 ).data;
-                metricKey = Object.keys(jsonLog);
                 if (type === IMetricMetaData.CONTINUOUS) {
                   logsUser[userId][queryId] = +keySplitArray.reduce(
                     (accumulator, attribute: string) => accumulator[attribute],
@@ -296,7 +294,6 @@ export class AnalyticsService {
                   },
                   undefined
                 ).data;
-                metricKey = Object.keys(jsonLog);
                 if (type === IMetricMetaData.CONTINUOUS) {
                   logsUser[userId][queryId] = +keySplitArray.reduce(
                     (accumulator, attribute: string) => accumulator[attribute],
@@ -318,37 +315,22 @@ export class AnalyticsService {
                 break;
               }
             }
-            logsUser[userId][queryId] = metricKey[0] + ': ' + logsUser[userId][queryId];
+            logsUser[userId][queryId] = keySplitArray.join('->') + ': ' + logsUser[userId][queryId];
           }
         }
-      }
-
-      const allQuery = await this.queryService.find(new UpgradeLogger());
-      let queryNames: string[] = [];
-      if (allQuery) {
-        queryNames = allQuery.map((query) => {
-          return query.name;
-        });
       }
       // merge with data
       const csvRows = csvExportData.map((row) => {
         const queryObject = logsUser[row.userId] || {};
         const queryDataToAdd = {};
 
-        if (Object.keys(queryObject).length) {
-          for (const queryId in queryObject) {
-            if (queryObject[queryId]) {
-              const queryName = queryNameIdMapping[queryId];
-              if (queryName) {
-                queryDataToAdd[queryName] = queryObject[queryId];
-              }
-            }
+        queryData.forEach((query) => {
+          if (queryObject[query.id]) {
+            queryDataToAdd[query.name] = queryObject[query.id];
+          } else {
+            queryDataToAdd[query.name] = '';
           }
-        } else {
-          queryNames.forEach((queryName) => {
-            queryDataToAdd[queryName] = '';
-          });
-        }
+        });
 
         const revertToCondition = row.revertTo ? row.revertTo : 'Default';
         const postRule = row.postRule === 'assign' ? `Assign: ${revertToCondition}` : 'Continue';
@@ -374,9 +356,7 @@ export class AnalyticsService {
           ConditionName: row.conditionName,
           Payload: row.payload ? row.payload : row.conditionName,
           PostRule: postRule,
-          EnrollmentStartDate: row.enrollmentStartDate
-            ? new Date(row.enrollmentStartDate).toISOString()
-            : 'NA',
+          EnrollmentStartDate: row.enrollmentStartDate ? new Date(row.enrollmentStartDate).toISOString() : 'NA',
           EnrollmentCompleteDate: row.enrollmentCompleteDate
             ? new Date(row.enrollmentCompleteDate).toISOString()
             : 'NA',
@@ -452,10 +432,10 @@ export class AnalyticsService {
         });
 
       const emailText = `Hey,
-      <br>
-      Here is the exported experiment data:
-      <br>
-      <a href="${signedURLMonitored}">Monitored Experiment Data</a>`;
+        <br>
+        Here is the exported experiment data:
+        <br>
+        <a href="${signedURLMonitored}">Monitored Experiment Data</a>`;
 
       const emailSubject = `Exported Data for the experiment: ${experimentDetails[0].experimentName}`;
       // send email to the user

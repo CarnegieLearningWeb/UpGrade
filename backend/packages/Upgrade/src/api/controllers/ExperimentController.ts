@@ -1096,7 +1096,7 @@ export class ExperimentController {
    * @swagger
    * /experiments/{id}:
    *    put:
-   *       description: Create New Experiment
+   *       description: Update Experiment
    *       consumes:
    *         - application/json
    *       parameters:
