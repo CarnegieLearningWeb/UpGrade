@@ -822,7 +822,7 @@ export class ExperimentAssignmentService {
       });
     }
 
-    // exclude experiments which are not previously assigned and throw error
+    // exclude experiments which are not previously assigned
     const experimentToExclude = experiments.filter((experiment) => {
       return groupExperimentAssignedIds.indexOf(experiment.id) === -1;
     });
@@ -842,7 +842,7 @@ export class ExperimentAssignmentService {
     // log error if there are group experiments which are not previosly assigned and they are
     // to be excluded from assignment due to working group and group data is not properly set
     if (experimentToExclude.length > 0) {
-      await this.errorService.create(
+      logger.error(
         {
           endPoint: '/api/assign',
           errorCode: 417,
