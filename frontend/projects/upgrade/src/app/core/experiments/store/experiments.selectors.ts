@@ -63,6 +63,11 @@ export const selectIsGraphLoading = createSelector(selectExperimentState, (state
 
 export const selectExperimentGraphRange = createSelector(selectExperimentState, (state) => state.graphRange);
 
+export const selectExperimentsExportLoading = createSelector(
+  selectExperimentState,
+  (state) => state.isLoadingExperimentExport
+);
+
 export const selectExperimentGraphInfo = createSelector(
   selectExperimentState,
   selectExperimentGraphRange,

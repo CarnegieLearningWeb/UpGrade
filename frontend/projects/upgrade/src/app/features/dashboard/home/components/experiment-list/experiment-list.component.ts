@@ -189,7 +189,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   openExportAllExperimentsDialog() {
     this.dialog.open(ExportModalComponent, {
       panelClass: 'export-modal',
-      data: { experiment: this.allExperiments.data },
+      data: { experiment: this.allExperiments.data, exportAll: true },
     });
   }
 

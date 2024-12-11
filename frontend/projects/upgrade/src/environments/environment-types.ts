@@ -8,6 +8,7 @@ export interface APIEndpoints {
   validateExperiment: string;
   importExperiment: string;
   exportExperiment: string;
+  exportAllExperiment: string;
   updateExperiments: string;
   getExperimentById: string;
   getAllAuditLogs: string;
