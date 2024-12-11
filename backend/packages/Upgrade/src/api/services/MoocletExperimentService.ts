@@ -489,8 +489,6 @@ export class MoocletExperimentService extends ExperimentService {
     };
 
     try {
-      let nothing: any;
-      nothing.id;
       return await this.moocletDataService.postNewPolicyParameters(policyParametersRequest);
     } catch (err) {
       throw new Error(`Failed to create Mooclet policy parameters: ${err}`);
