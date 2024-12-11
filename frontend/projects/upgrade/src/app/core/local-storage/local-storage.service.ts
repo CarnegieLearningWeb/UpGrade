@@ -38,6 +38,7 @@ export class LocalStorageService {
       isLoadingExperiment: false,
       isLoadingExperimentDetailStats: false,
       isPollingExperimentDetailStats: false,
+      isLoadingExperimentExport: false,
       skipExperiment: 0,
       totalExperiments: null,
       searchKey: experimentSearchKey as EXPERIMENT_SEARCH_KEY,

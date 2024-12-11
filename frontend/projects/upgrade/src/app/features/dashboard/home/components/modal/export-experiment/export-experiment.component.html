@@ -1,48 +1,53 @@
 <div class="export-experiment-container">
   <span class="ft-24-700 title">{{ 'home.view-experiment.export-experiment.text' | translate | titlecase }}</span>
 
-  <form [formGroup]="exportForm" class="export-experiment-container-form">
-    <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
-      <mat-label class="ft-14-400">
-        {{ 'home.view-experiment.export-method.text' | translate }}
-      </mat-label>
-      <mat-select class="ft-14-400 export-selection" formControlName="exportMethod">
-        <mat-option class="ft-14-400" *ngFor="let method of exportMethod" [value]="method.value">
-          {{ method.value }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-  </form>
-  <span
-    class="ft-14-400 info-msg"
-    *ngIf="exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)'"
-    [innerHTML]="'home.view-experiment.export-warning.text' | translate: { email: emailId }"
-  ></span>
-  <span
-    class="ft-14-400 info-msg"
-    *ngIf="exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1"
-  >
-    {{ 'home.view-experiment.export-csv-warning.text' | translate }}
-  </span>
-  <div class="button-container">
-    <button class="shared-modal--modal-btn" mat-raised-button (click)="onCancelClick()">
-      {{ 'global.cancel.text' | translate }}
-    </button>
-    <button
-      mat-raised-button
-      [ngClass]="{
-        'default-button--disabled':
+  <ng-container *ngIf="!(isExperimentsExportLoading$ | async); else loadingSpinner">
+    <form [formGroup]="exportForm" class="export-experiment-container-form">
+      <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
+        <mat-label class="ft-14-400">
+          {{ 'home.view-experiment.export-method.text' | translate }}
+        </mat-label>
+        <mat-select class="ft-14-400 export-selection" formControlName="exportMethod">
+          <mat-option class="ft-14-400" *ngFor="let method of exportMethod" [value]="method.value">
+            {{ method.value }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </form>
+    <span
+      class="ft-14-400 info-msg"
+      *ngIf="exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)'"
+      [innerHTML]="'home.view-experiment.export-warning.text' | translate: { email: emailId }"
+    ></span>
+    <span
+      class="ft-14-400 info-msg"
+      *ngIf="exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1"
+    >
+      {{ 'home.view-experiment.export-csv-warning.text' | translate }}
+    </span>
+    <div class="button-container">
+      <button class="shared-modal--modal-btn" mat-raised-button (click)="onCancelClick()">
+        {{ 'global.cancel.text' | translate }}
+      </button>
+      <button
+        mat-raised-button
+        [ngClass]="{
+          'default-button--disabled':
+            (exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1) ||
+            !isExportMethodSelected
+        }"
+        [disabled]="
           (exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1) ||
           !isExportMethodSelected
-      }"
-      [disabled]="
-        (exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1) ||
-        !isExportMethodSelected
-      "
-      class="shared-modal--modal-btn default-button"
-      (click)="exportExperiment()"
-    >
-      {{ 'home.view-experiment.export-button.text' | translate }}
-    </button>
-  </div>
+        "
+        class="shared-modal--modal-btn default-button"
+        (click)="exportExperiment()"
+      >
+        {{ 'home.view-experiment.export-button.text' | translate }}
+      </button>
+    </div>
+  </ng-container>
+  <ng-template #loadingSpinner>
+    <mat-spinner class="spinner" diameter="60"></mat-spinner>
+  </ng-template>
 </div>
