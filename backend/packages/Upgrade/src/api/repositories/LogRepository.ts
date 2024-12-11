@@ -1,11 +1,9 @@
 import { Container } from './../../typeorm-typedi-extensions/Container';
 import { ExperimentRepository } from './ExperimentRepository';
-import { IndividualEnrollment } from './../models/IndividualEnrollment';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
-import { Repository, EntityManager, SelectQueryBuilder } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import { Log } from '../models/Log';
 import repositoryError from './utils/repositoryError';
-import { Experiment } from '../models/Experiment';
 import { OPERATION_TYPES, IMetricMetaData, REPEATED_MEASURE, EXPERIMENT_TYPE } from 'upgrade_types';
 import { METRICS_JOIN_TEXT } from '../services/MetricService';
 import { Query } from '../models/Query';
@@ -15,7 +13,7 @@ import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { QueryRepository } from './QueryRepository';
 import { MetricRepository } from './MetricRepository';
-
+import { IndividualEnrollmentRepository } from './IndividualEnrollmentRepository';
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
   public async deleteExceptByIds(values: string[], entityManager: EntityManager): Promise<Log[]> {
@@ -139,7 +137,7 @@ export class LogRepository extends Repository<Log> {
       type: IMetricMetaData;
     }>
   > {
-    const experimentRepo = Container.getCustomRepository(ExperimentRepository);
+    const experimentRepo = Container.getCustomRepository(ExperimentRepository, 'export');
     return experimentRepo
       .createQueryBuilder('experiment')
       .select([
@@ -159,11 +157,11 @@ export class LogRepository extends Repository<Log> {
       .execute();
   }
 
-  public prepareMetricString(metricId: string[], compareFn: string) {
+  public prepareMetricString(metricId: string[]) {
     let metricString = metricId.reduce((accumulator: string, value: string) => {
       return accumulator !== '' ? `${accumulator} -> '${value}'` : `'${value}'`;
     }, '');
-    if (compareFn && metricId.length > 1) {
+    if (metricId.length > 1) {
       metricString =
         metricString.substring(0, metricString.lastIndexOf('->')) +
         '->>' +
@@ -172,646 +170,239 @@ export class LogRepository extends Repository<Log> {
     return metricString;
   }
 
-  public calculatePercentageResult(executeQueryResult, percentQueryResult, isFactorialExperiment: boolean) {
-    const result = executeQueryResult.map((res) => {
-      if (isFactorialExperiment) {
-        const { levelId } = res;
-        const percentageQueryConditionRes = percentQueryResult.find((queryRes) => queryRes.levelId === levelId);
-        return {
-          levelId: levelId,
-          result: (res.result / percentageQueryConditionRes.result) * 100,
-          participantsLogged: percentageQueryConditionRes.participantsLogged,
-        };
-      } else {
-        const { conditionId } = res;
-        const percentageQueryConditionRes = percentQueryResult.find((queryRes) => queryRes.conditionId === conditionId);
-        return {
-          conditionId: conditionId,
-          result: (res.result / percentageQueryConditionRes.result) * 100,
-          participantsLogged: percentageQueryConditionRes.participantsLogged,
-        };
-      }
-    });
-    return result;
+  private getCategoricalresultSelect(query: any, userDatum: string) {
+    const comparator = query.compareFn === '=' ? '=' : '!=';
+    const compareTo = query.compareValue || '';
+    const count = `count(cast(${userDatum} as text)) filter (where ${userDatum} ${comparator} '${compareTo}')`;
+    if (query.operationType === OPERATION_TYPES.PERCENTAGE) {
+      return `cast(${count} as decimal) / cast(count(cast(${userDatum} as text)) as decimal) * 100`;
+    }
+    return count;
+  }
+
+  private getContinuousResultSelect(operationType: OPERATION_TYPES, userDatum: string) {
+    if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
+      const queryFunction = operationType === OPERATION_TYPES.MEDIAN ? 'percentile_cont(0.5)' : 'mode()';
+      return `${queryFunction} within group (order by (cast(${userDatum} as decimal)))`;
+    }
+    return `${operationType}(cast(${userDatum} as decimal))`;
+  }
+
+  private getWithinSubjectsAnalyticsQuery(
+    experimentId: string,
+    operationType: OPERATION_TYPES,
+    metricString: string,
+    isFactorialExperiment: boolean,
+    isCategorical: boolean,
+    repeatedMeasure: REPEATED_MEASURE,
+    query: any
+  ) {
+    const individualEnrollmentRepo = Container.getCustomRepository(IndividualEnrollmentRepository, 'export');
+    const innerQuery = individualEnrollmentRepo.createQueryBuilder('individualEnrollment');
+
+    const analyticsQuery = Container.getDataSource().manager.createQueryBuilder();
+    const middleQuery = Container.getDataSource().manager.createQueryBuilder();
+
+    const idToSelect = isFactorialExperiment ? '"levelId"' : '"conditionId"';
+    const valueToSelect = isFactorialExperiment
+      ? `"levelCombinationElement".${idToSelect}`
+      : '"experimentCondition"."id"';
+
+    const resultSelect = isCategorical
+      ? this.getCategoricalresultSelect(query, 'subquery.result')
+      : this.getContinuousResultSelect(operationType, 'subquery.result');
+
+    // Select the id of the condition or level, and the resulting aggregate metric value
+    analyticsQuery.select([`subquery.${idToSelect}`, `${resultSelect} as result`]);
+
+    innerQuery.select([`${valueToSelect} as ${idToSelect}`, 'logs."userId" as "userId"']);
+    if (repeatedMeasure === REPEATED_MEASURE.mean) {
+      // If we are calculating the mean, we average the metric value for each user
+      innerQuery.addSelect('avg(cast(logs.datum as decimal)) as "result"');
+    } else {
+      innerQuery.addSelect([
+        'logs.datum',
+        `row_number() over (partition by logs."userId", ${valueToSelect} order by logs."updatedAt" ${
+          repeatedMeasure === REPEATED_MEASURE.mostRecent ? 'DESC' : ''
+        }) AS rn`,
+        'logs."updatedAt"',
+      ]);
+    }
+    innerQuery
+      .innerJoin(
+        (qb) =>
+          qb
+            .subQuery()
+            .select(['"monitoredDecisionPointLog"."condition"', '"monitoredDecisionPointLog".uniquifier', '"userId"'])
+            .from(MonitoredDecisionPoint, 'monitoredDecisionPoint')
+            .innerJoin(
+              MonitoredDecisionPointLog,
+              'monitoredDecisionPointLog',
+              '"monitoredDecisionPointLog"."monitoredDecisionPointId" = "monitoredDecisionPoint".id'
+            )
+            .where(`"monitoredDecisionPoint"."experimentId" = '${experimentId}'`)
+            .andWhere('uniquifier is not null'),
+        'mdpl',
+        'mdpl."userId"="individualEnrollment"."userId"'
+      )
+      .innerJoin(
+        (qb) =>
+          qb
+            .subQuery()
+            .select(['"uniquifier"', '"userId"', '"logs"."updatedAt"', `${metricString} as datum`])
+            .from(Log, 'logs')
+            .where(`${metricString} is not null`),
+        'logs',
+        'logs."userId"="individualEnrollment"."userId" AND logs."uniquifier" = mdpl."uniquifier"'
+      )
+      .innerJoin(ExperimentCondition, 'experimentCondition', '"experimentCondition"."conditionCode" = mdpl.condition');
+
+    if (isFactorialExperiment) {
+      innerQuery.innerJoin(
+        (qb) =>
+          qb
+            .subQuery()
+            .select(['"levelCombinationElement"."levelId"', '"levelCombinationElement"."conditionId"'])
+            .distinct()
+            .from(LevelCombinationElement, 'levelCombinationElement'),
+        'levelCombinationElement',
+        '"levelCombinationElement"."conditionId"="experimentCondition"."id"'
+      );
+    }
+    innerQuery
+      .where(`"individualEnrollment"."experimentId" = '${experimentId}'`)
+      .groupBy(`${valueToSelect}, logs."userId"`);
+    if (repeatedMeasure !== REPEATED_MEASURE.mean) {
+      innerQuery.addGroupBy('logs."updatedAt", logs.datum');
+    }
+    // Select the number of participants (n) who have logged a value for the metric
+    analyticsQuery.addSelect('COUNT(DISTINCT subquery."userId") as "participantsLogged"');
+
+    if (repeatedMeasure !== REPEATED_MEASURE.mean) {
+      // If we are using most recent or earliest, we create a subquery to rank the logs by date
+      middleQuery
+        .select([idToSelect, ' datum as result', '"userId"'])
+        .addFrom('(' + innerQuery.getQuery() + ')', 't')
+        .where('rn = 1');
+      analyticsQuery.addFrom('(' + middleQuery.getQuery() + ')', 'subquery').groupBy(`subquery.${idToSelect}`);
+    } else {
+      analyticsQuery.addFrom('(' + innerQuery.getQuery() + ')', 'subquery').groupBy(`subquery.${idToSelect}`);
+    }
+    return analyticsQuery;
+  }
+
+  private getStandardAnalyticsQuery(
+    experimentId: string,
+    operationType: OPERATION_TYPES,
+    metricString: string,
+    isFactorialExperiment: boolean,
+    isCategorical: boolean,
+    repeatedMeasure: REPEATED_MEASURE,
+    query: any
+  ) {
+    const individualEnrollmentRepo = Container.getCustomRepository(IndividualEnrollmentRepository, 'export');
+    const analyticsQuery = individualEnrollmentRepo.createQueryBuilder('individualEnrollment');
+
+    const idToSelect = isFactorialExperiment
+      ? '"levelCombinationElement"."levelId"'
+      : '"individualEnrollment"."conditionId"';
+    const resultSelect = isCategorical
+      ? this.getCategoricalresultSelect(query, 'logs.datum')
+      : this.getContinuousResultSelect(operationType, 'logs.datum');
+
+    // Select the id of the condition or level, and the resulting aggregate metric value
+    analyticsQuery.select([idToSelect, `${resultSelect} as result`]);
+    // Select the number of participants (n) who have logged a value for the metric
+    analyticsQuery.addSelect('COUNT(DISTINCT "individualEnrollment"."userId") as "participantsLogged"');
+    if (isFactorialExperiment) {
+      analyticsQuery.innerJoin(
+        (qb) =>
+          qb
+            .subQuery()
+            .select(['"levelCombinationElement"."levelId"', '"levelCombinationElement"."conditionId"'])
+            .distinct()
+            .from(LevelCombinationElement, 'levelCombinationElement'),
+        'levelCombinationElement',
+        '"levelCombinationElement"."conditionId"="individualEnrollment"."conditionId"'
+      );
+    }
+    if (repeatedMeasure === REPEATED_MEASURE.mean) {
+      // If we are calculating the mean, we average the metric value for each user
+      analyticsQuery.innerJoin(
+        (qb) =>
+          qb
+            .subQuery()
+            .select([`"userId", avg(cast(${metricString} as decimal)) AS "datum"`])
+            .from(Log, 'logs')
+            .where(`${metricString} is not null`)
+            .groupBy('"userId"'),
+        'logs',
+        'logs."userId"="individualEnrollment"."userId"'
+      );
+    } else {
+      // If we are using most recent or earliest, we create a subquery to rank the logs by date
+      analyticsQuery.innerJoin(
+        (qb) =>
+          qb
+            .subQuery()
+            .select([`"userId", "datum"`])
+            .from((subQuery) => {
+              return subQuery
+                .select([
+                  '"userId"',
+                  `${metricString} as "datum"`,
+                  `row_number() over (partition by "userId" order by "updatedAt" ${
+                    repeatedMeasure === REPEATED_MEASURE.mostRecent ? 'DESC' : ''
+                  }) AS rn`,
+                ])
+                .from(Log, 'logs')
+                .where(`${metricString} is not null`);
+            }, 't')
+            .where('rn = 1'),
+        'logs',
+        'logs."userId"="individualEnrollment"."userId"'
+      );
+    }
+
+    analyticsQuery.where('"experimentId" = :experimentId', { experimentId }).groupBy(idToSelect);
+
+    return analyticsQuery;
   }
 
   public async analysis(query: Query): Promise<any> {
     const {
-      id: queryId,
-      metric: { key: metricKey, type: metricType, allowedData },
+      metric: { key: metricKey, type: metricType },
       experiment: { id: experimentId, assignmentUnit: unitOfAssignment, type: experimentType },
-      query: { operationType, compareFn, compareValue },
+      query: { operationType },
       repeatedMeasure,
     } = query;
-
     const metricId = metricKey.split(METRICS_JOIN_TEXT);
     const isFactorialExperiment = experimentType === EXPERIMENT_TYPE.FACTORIAL;
     const isContinuousMetric = metricType === 'continuous';
-    const metricString = this.prepareMetricString(metricId, compareFn);
-    const operation = repeatedMeasure === REPEATED_MEASURE.earliest ? 'min' : 'max';
-    const queryFunction = operationType === OPERATION_TYPES.MEDIAN ? 'percentile_cont(0.5)' : 'mode()';
+    const metricString = this.prepareMetricString(metricId);
+    const jsonDataValueLog = metricId.length <= 1 ? `logs.data ->> ${metricString}` : `logs.data -> ${metricString}`;
 
-    const jsonDataValueLog =
-      compareFn && metricId.length <= 1 ? `sqlog.data ->> ${metricString}` : `sqlog.data -> ${metricString}`;
-    const jsonDataValue = `logs.data -> ${metricString}`;
+    const newQuery =
+      unitOfAssignment !== 'within-subjects'
+        ? this.getStandardAnalyticsQuery(
+            experimentId,
+            operationType,
+            jsonDataValueLog,
+            isFactorialExperiment,
+            !isContinuousMetric,
+            repeatedMeasure,
+            query.query
+          )
+        : this.getWithinSubjectsAnalyticsQuery(
+            experimentId,
+            operationType,
+            jsonDataValueLog,
+            isFactorialExperiment,
+            !isContinuousMetric,
+            repeatedMeasure,
+            query.query
+          );
 
-    // main query to execute:
-    let executeQuery = this.getCommonAnalyticQuery(
-      metricKey,
-      experimentId,
-      queryId,
-      jsonDataValue,
-      isFactorialExperiment,
-      unitOfAssignment
-    );
-
-    const andQuery = isContinuousMetric
-      ? `jsonb_typeof(${jsonDataValueLog}) = 'number'`
-      : `${jsonDataValueLog} IS NOT NULL`;
-
-    let valueToUse = this.addRepeatedMeasureQuery(
-      repeatedMeasure,
-      executeQuery,
-      andQuery,
-      jsonDataValue,
-      unitOfAssignment
-    );
-
-    let percentQuery; // Used for percentage query
-
-    if (compareFn) {
-      const castType = isContinuousMetric ? 'decimal' : 'text';
-      const castFn = `(cast(${valueToUse} as ${castType}))`;
-
-      percentQuery =
-        unitOfAssignment !== 'within-subjects'
-          ? this.getCommonAnalyticQuery(
-              metricKey,
-              experimentId,
-              queryId,
-              jsonDataValue,
-              isFactorialExperiment,
-              unitOfAssignment
-            ).andWhere(`${castFn} In (:...allowedData)`, {
-              allowedData,
-            })
-          : this.getCommonAnalyticQuery(
-              metricKey,
-              experimentId,
-              queryId,
-              jsonDataValue,
-              isFactorialExperiment,
-              unitOfAssignment
-            );
-
-      valueToUse = this.addRepeatedMeasureQuery(
-        repeatedMeasure,
-        percentQuery,
-        andQuery,
-        jsonDataValue,
-        unitOfAssignment
-      );
-
-      percentQuery =
-        unitOfAssignment !== 'within-subjects'
-          ? isFactorialExperiment
-            ? percentQuery.addGroupBy('"levelCombinationElement"."levelId"')
-            : percentQuery.addGroupBy('"individualEnrollment"."conditionId"')
-          : isFactorialExperiment
-          ? percentQuery.addGroupBy('"levelCombinationElement"."levelId", "monitoredDecisionPoint"."userId"')
-          : percentQuery.addGroupBy('"experimentCondition"."conditionId", "monitoredDecisionPoint"."userId"');
-
-      executeQuery = executeQuery.andWhere(`${castFn} ${compareFn} :compareValue`, {
-        compareValue,
-      });
-    }
-
-    if (unitOfAssignment !== 'within-subjects') {
-      executeQuery = isFactorialExperiment
-        ? executeQuery.groupBy('"levelCombinationElement"."levelId"')
-        : executeQuery.groupBy('"individualEnrollment"."conditionId"');
-    } else {
-      if (operationType === OPERATION_TYPES.STDEV) {
-        executeQuery = isFactorialExperiment
-          ? executeQuery.groupBy(
-              `"levelCombinationElement"."levelId", "monitoredDecisionPoint"."userId", ${valueToUse}`
-            )
-          : executeQuery.groupBy(
-              `"experimentCondition"."conditionId", "monitoredDecisionPoint"."userId", ${valueToUse}`
-            );
-      } else {
-        if (operationType !== OPERATION_TYPES.PERCENTAGE) {
-          executeQuery = isFactorialExperiment
-            ? executeQuery.groupBy('"levelCombinationElement"."levelId", "monitoredDecisionPoint"."userId"')
-            : executeQuery.groupBy('"experimentCondition"."conditionId", "monitoredDecisionPoint"."userId"');
-        }
-      }
-    }
-
-    if (operationType === OPERATION_TYPES.PERCENTAGE) {
-      if (unitOfAssignment !== 'within-subjects') {
-        executeQuery = isFactorialExperiment
-          ? executeQuery.select(['"levelCombinationElement"."levelId"', `count(cast(${valueToUse} as text)) as result`])
-          : executeQuery.select([
-              '"individualEnrollment"."conditionId"',
-              `count(cast(${valueToUse} as text)) as result`,
-            ]);
-        percentQuery = isFactorialExperiment
-          ? percentQuery.select(['"levelCombinationElement"."levelId"', `count(cast(${valueToUse} as text)) as result`])
-          : percentQuery.select([
-              '"individualEnrollment"."conditionId"',
-              `count(cast(${valueToUse} as text)) as result`,
-            ]);
-      } else {
-        executeQuery = isFactorialExperiment
-          ? executeQuery.groupBy('"levelCombinationElement"."levelId"')
-          : executeQuery.groupBy('"experimentCondition"."conditionId"');
-        executeQuery = isFactorialExperiment
-          ? executeQuery.select([
-              '"levelCombinationElement"."levelId"',
-              `count(cast(${valueToUse} as text)) as result`,
-              `${operation}("logs"."updatedAt")`,
-            ])
-          : executeQuery.select([
-              '"experimentCondition"."conditionId"',
-              `count(cast(${valueToUse} as text)) as result`,
-              `${operation}("logs"."updatedAt")`,
-            ]);
-        percentQuery = isFactorialExperiment
-          ? percentQuery.select([
-              '"levelCombinationElement"."levelId"',
-              `${operation}(cast(${valueToUse} as text)) as result`,
-              `${operation}("logs"."updatedAt")`,
-              `"monitoredDecisionPoint"."userId" as "userId"`,
-            ])
-          : percentQuery.select([
-              '"experimentCondition"."conditionId"',
-              `${operation}(cast(${valueToUse} as text)) as result`,
-              `${operation}("logs"."updatedAt")`,
-              `"monitoredDecisionPoint"."userId" as "userId"`,
-            ]);
-      }
-
-      percentQuery.addSelect('COUNT(DISTINCT "individualEnrollment"."userId") as "participantsLogged"');
-
-      if (unitOfAssignment === 'within-subjects') {
-        const conditionOrLevelId = isFactorialExperiment ? 'levelId' : 'conditionId';
-        const withinSubjectPercentQuery = Container.getDataSource()
-          .manager.createQueryBuilder()
-          .select([
-            `subquery."${conditionOrLevelId}"`,
-            `COUNT(subquery."result") as "result"`,
-            `COUNT(DISTINCT subquery."userId") as "participantsLogged"`,
-          ])
-          .addFrom('(' + percentQuery.getQuery() + ')', 'subquery')
-          .andWhere(`subquery."result" In (:...allowedData)`, {
-            allowedData,
-          })
-          .groupBy(`subquery."${conditionOrLevelId}"`)
-          .setParameters(percentQuery.getParameters());
-        percentQuery = withinSubjectPercentQuery;
-      }
-
-      const [executeQueryResult, percentQueryResult] = await Promise.all([
-        executeQuery.getRawMany(),
-        percentQuery.getRawMany(),
-      ]);
-
-      // calculate percentage:
-      return this.calculatePercentageResult(executeQueryResult, percentQueryResult, isFactorialExperiment);
-    } else {
-      // For Median, Mode, Count, Sum, Min, Max, Average/Mean, Standard Deviation
-      if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
-        if (unitOfAssignment !== 'within-subjects') {
-          executeQuery = isFactorialExperiment
-            ? executeQuery.select([
-                '"levelCombinationElement"."levelId"',
-                `${queryFunction} within group (order by (cast(${valueToUse} as decimal))) as result`,
-              ])
-            : executeQuery.select([
-                '"individualEnrollment"."conditionId"',
-                `${queryFunction} within group (order by (cast(${valueToUse} as decimal))) as result`,
-              ]);
-        } else {
-          executeQuery = isFactorialExperiment
-            ? executeQuery.select([
-                '"levelCombinationElement"."levelId"',
-                `${queryFunction} within group (order by (cast(${valueToUse} as decimal))) as result`,
-                `${operation}("logs"."updatedAt")`,
-                `"monitoredDecisionPoint"."userId" as "userId"`,
-              ])
-            : executeQuery.select([
-                '"experimentCondition"."conditionId"',
-                `${queryFunction} within group (order by (cast(${valueToUse} as decimal))) as result`,
-                `${operation}("logs"."updatedAt")`,
-                `"monitoredDecisionPoint"."userId" as "userId"`,
-              ]);
-        }
-      } else if (operationType === OPERATION_TYPES.COUNT) {
-        if (unitOfAssignment !== 'within-subjects') {
-          executeQuery = isFactorialExperiment
-            ? executeQuery.select([
-                '"levelCombinationElement"."levelId"',
-                `${operationType}(cast(${valueToUse} as text)) as result`,
-              ])
-            : executeQuery.select([
-                '"individualEnrollment"."conditionId"',
-                `${operationType}(cast(${valueToUse} as text)) as result`,
-              ]);
-        } else {
-          executeQuery = isFactorialExperiment
-            ? executeQuery.select([
-                '"levelCombinationElement"."levelId"',
-                `${operationType}(cast(${valueToUse} as text)) as result`,
-                `${operation}("logs"."updatedAt")`,
-                `"monitoredDecisionPoint"."userId" as "userId"`,
-              ])
-            : executeQuery.select([
-                '"experimentCondition"."conditionId"',
-                `${operationType}(cast(${valueToUse} as text)) as result`,
-                `${operation}("logs"."updatedAt")`,
-                `"monitoredDecisionPoint"."userId" as "userId"`,
-              ]);
-        }
-      } else {
-        // For Sum, Min, Max, Average/Mean, Standard Deviation
-        if (unitOfAssignment !== 'within-subjects') {
-          executeQuery = isFactorialExperiment
-            ? executeQuery.select([
-                '"levelCombinationElement"."levelId"',
-                `${operationType}(cast(${valueToUse} as decimal)) as result`,
-              ])
-            : executeQuery.select([
-                '"individualEnrollment"."conditionId"',
-                `${operationType}(cast(${valueToUse} as decimal)) as result`,
-              ]);
-        } else {
-          if (operationType !== OPERATION_TYPES.STDEV) {
-            executeQuery = isFactorialExperiment
-              ? executeQuery.select([
-                  '"levelCombinationElement"."levelId"',
-                  `${operationType}(cast(${valueToUse} as decimal)) as result`,
-                  `${operation}("logs"."updatedAt")`,
-                  `"monitoredDecisionPoint"."userId" as "userId"`,
-                ])
-              : executeQuery.select([
-                  '"experimentCondition"."conditionId"',
-                  `${operationType}(cast(${valueToUse} as decimal)) as result`,
-                  `${operation}("logs"."updatedAt")`,
-                  `"monitoredDecisionPoint"."userId" as "userId"`,
-                ]);
-          } else {
-            // for stdev dont have operationType in subquery
-            executeQuery = isFactorialExperiment
-              ? executeQuery.select([
-                  '"levelCombinationElement"."levelId"',
-                  `cast(${valueToUse} as decimal) as result`,
-                  `${operation}("logs"."updatedAt")`,
-                  `"monitoredDecisionPoint"."userId" as "userId"`,
-                ])
-              : executeQuery.select([
-                  '"experimentCondition"."conditionId"',
-                  `cast(${valueToUse} as decimal) as result`,
-                  `${operation}("logs"."updatedAt")`,
-                  `"monitoredDecisionPoint"."userId" as "userId"`,
-                ]);
-          }
-        }
-      }
-
-      executeQuery.addSelect('COUNT(DISTINCT "individualEnrollment"."userId") as "participantsLogged"');
-
-      if (unitOfAssignment === 'within-subjects') {
-        let withinSubjectExecuteQuery;
-        const conditionOrLevelId = isFactorialExperiment ? 'levelId' : 'conditionId';
-        if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
-          withinSubjectExecuteQuery = Container.getDataSource()
-            .manager.createQueryBuilder()
-            .select([
-              `subquery."${conditionOrLevelId}"`,
-              `${queryFunction} within group (order by (subquery."result")) as "result"`,
-              `COUNT(DISTINCT subquery."userId") as "participantsLogged"`,
-            ])
-            .addFrom('(' + executeQuery.getQuery() + ')', 'subquery')
-            .groupBy(`subquery."${conditionOrLevelId}"`)
-            .setParameters(executeQuery.getParameters());
-        } else if (operationType === OPERATION_TYPES.STDEV) {
-          withinSubjectExecuteQuery = Container.getDataSource()
-            .manager.createQueryBuilder()
-            .select([
-              `subquery."${conditionOrLevelId}"`,
-              `coalesce(${operationType}(subquery."result"),0) as "result"`,
-              `COUNT(DISTINCT subquery."userId") as "participantsLogged"`,
-            ])
-            .addFrom('(' + executeQuery.getQuery() + ')', 'subquery')
-            .groupBy(`subquery."${conditionOrLevelId}"`)
-            .setParameters(executeQuery.getParameters());
-        } else {
-          withinSubjectExecuteQuery = Container.getDataSource()
-            .manager.createQueryBuilder()
-            .select([
-              `subquery."${conditionOrLevelId}"`,
-              `${operationType}(subquery."result") as "result"`,
-              `COUNT(DISTINCT subquery."userId") as "participantsLogged"`,
-            ])
-            .addFrom('(' + executeQuery.getQuery() + ')', 'subquery')
-            .groupBy(`subquery."${conditionOrLevelId}"`)
-            .setParameters(executeQuery.getParameters());
-        }
-        return withinSubjectExecuteQuery.getRawMany();
-      } else {
-        return executeQuery.getRawMany();
-      }
-    }
-  }
-
-  private addRepeatedMeasureQuery(
-    repeatedMeasure: REPEATED_MEASURE,
-    query: any,
-    andQuery: any,
-    jsonDataValue: string,
-    unitOfAssignment: string
-  ) {
-    let valueToUse;
-    switch (repeatedMeasure) {
-      case REPEATED_MEASURE.mostRecent:
-        this.repeatedMeasureMostRecent(query, andQuery, unitOfAssignment);
-        valueToUse = 'extracted.value';
-        break;
-      case REPEATED_MEASURE.earliest:
-        this.repeatedMeasureEarliest(query, andQuery, unitOfAssignment);
-        valueToUse = 'extracted.value';
-        break;
-      default:
-        this.repeatedMeasureMean(query, jsonDataValue, andQuery, unitOfAssignment);
-        valueToUse = 'avg.avgval';
-        break;
-    }
-    return valueToUse;
-  }
-
-  private repeatedMeasureMostRecent(
-    query: SelectQueryBuilder<Experiment>,
-    andQuery: string,
-    unitOfAssignment: string
-  ): SelectQueryBuilder<Experiment> {
-    if (unitOfAssignment !== 'within-subjects') {
-      return query.andWhere((qb) => {
-        const subQuery = qb
-          .subQuery()
-          .select('max(sqlog."updatedAt")')
-          .from(Log, 'sqlog')
-          .where('sqlog."userId" = logs."userId"')
-          .andWhere(andQuery)
-          .getSql();
-        return `logs."updatedAt" = ${subQuery}`;
-      });
-    } else {
-      return query.andWhere((qb) => {
-        const subQuery = qb
-          .subQuery()
-          .select('max(sqlog."updatedAt")')
-          .from(Log, 'sqlog')
-          .innerJoin(MonitoredDecisionPointLog, 'mdpLog', '"mdpLog"."uniquifier" = "sqlog"."uniquifier"')
-          .innerJoin(ExperimentCondition, 'expCond', '"expCond"."conditionCode" = "mdpLog"."condition"')
-          .where('sqlog."userId" = logs."userId"')
-          .andWhere(andQuery)
-          .groupBy('"sqlog"."userId", "expCond"."id"')
-          .getSql();
-        return `logs."updatedAt" IN ${subQuery}`;
-      });
-    }
-  }
-
-  private repeatedMeasureEarliest(
-    query: SelectQueryBuilder<Experiment>,
-    andQuery: string,
-    unitOfAssignment: string
-  ): SelectQueryBuilder<Experiment> {
-    if (unitOfAssignment !== 'within-subjects') {
-      return query.andWhere((qb) => {
-        const subQuery = qb
-          .subQuery()
-          .select('min(sqlog."updatedAt")')
-          .from(Log, 'sqlog')
-          .where('sqlog."userId" = logs."userId"')
-          .andWhere(andQuery)
-          .getSql();
-        return `logs."updatedAt" = ${subQuery}`;
-      });
-    } else {
-      return query.andWhere((qb) => {
-        const subQuery = qb
-          .subQuery()
-          .select('min(sqlog."updatedAt")')
-          .from(Log, 'sqlog')
-          .innerJoin(MonitoredDecisionPointLog, 'mdpLog', '"mdpLog"."uniquifier" = "sqlog"."uniquifier"')
-          .innerJoin(ExperimentCondition, 'expCond', '"expCond"."conditionCode" = "mdpLog"."condition"')
-          .where('sqlog."userId" = logs."userId"')
-          .andWhere(andQuery)
-          .groupBy('"sqlog"."userId", "expCond"."id"')
-          .getSql();
-        return `logs."updatedAt" IN ${subQuery}`;
-      });
-    }
-  }
-
-  private repeatedMeasureMean(
-    query: SelectQueryBuilder<Experiment>,
-    jsonDataValue: string,
-    andQuery: string,
-    unitOfAssignment: string
-  ): SelectQueryBuilder<Experiment> {
-    if (unitOfAssignment !== 'within-subjects') {
-      return query
-        .innerJoin(
-          (qb) => {
-            return qb
-              .subQuery()
-              .select([`avg(cast(${jsonDataValue} as decimal)) as avgval`, 'logs."userId" as "userId"'])
-              .from(Log, 'logs')
-              .groupBy('logs."userId"');
-          },
-          'avg',
-          'avg."userId" = logs."userId"'
-        )
-        .andWhere((qb) => {
-          const subQuery = qb
-            .subQuery()
-            .select('min(sqlog."updatedAt")')
-            .from(Log, 'sqlog')
-            .where('sqlog."userId" = logs."userId"')
-            .andWhere(andQuery)
-            .getSql();
-          return `logs."updatedAt" = ${subQuery}`;
-        });
-    } else {
-      return query
-        .innerJoin(
-          (qb) => {
-            return qb
-              .subQuery()
-              .select([
-                `avg(cast(${jsonDataValue} as decimal)) as avgval`,
-                'logs."userId" as "userId", "expCond"."id" as "conditionId"',
-              ])
-              .from(Log, 'logs')
-              .innerJoin(MonitoredDecisionPointLog, 'mdpLog', '"mdpLog"."uniquifier" = "logs"."uniquifier"')
-              .innerJoin(ExperimentCondition, 'expCond', '"expCond"."conditionCode" = "mdpLog"."condition"')
-              .groupBy('"expCond"."id", logs."userId"');
-          },
-          'avg',
-          'avg."userId" = logs."userId" AND avg."conditionId" = "experimentCondition"."conditionId"'
-        )
-        .andWhere((qb) => {
-          const subQuery = qb
-            .subQuery()
-            .select('min(sqlog."updatedAt")')
-            .from(Log, 'sqlog')
-            .innerJoin(MonitoredDecisionPointLog, 'mdpLog', '"mdpLog"."uniquifier" = "sqlog"."uniquifier"')
-            .innerJoin(ExperimentCondition, 'expCond', '"expCond"."conditionCode" = "mdpLog"."condition"')
-            .where('sqlog."userId" = logs."userId"')
-            .andWhere(andQuery)
-            .groupBy('"sqlog"."userId", "expCond"."id"')
-            .getSql();
-          return `logs."updatedAt" IN ${subQuery}`;
-        });
-    }
-  }
-
-  private getCommonAnalyticQuery(
-    metric: string,
-    experimentId: string,
-    queryId: string,
-    metricString: string,
-    isFactorialExperiment: boolean,
-    unitOfAssignment: string
-  ): SelectQueryBuilder<Experiment> {
-    const experimentRepo = Container.getCustomRepository(ExperimentRepository, 'export');
-    const analyticsQuery = experimentRepo
-      .createQueryBuilder('experiment')
-      .innerJoin('experiment.queries', 'queries')
-      .innerJoin('queries.metric', 'metric')
-      .innerJoinAndSelect('metric.logs', 'logs');
-
-    if (unitOfAssignment !== 'within-subjects') {
-      analyticsQuery
-        .innerJoinAndSelect(
-          (qb) =>
-            qb
-              .subQuery()
-              .select([
-                `"individualEnrollment"."userId" as "userId"`,
-                `"individualEnrollment"."experimentId" as "experimentId"`,
-                `"individualEnrollment"."conditionId" as "conditionId"`,
-              ])
-              .distinct()
-              .from(IndividualEnrollment, 'individualEnrollment'),
-          'individualEnrollment',
-          'experiment.id = "individualEnrollment"."experimentId" AND logs."userId" = "individualEnrollment"."userId"'
-        )
-        .innerJoinAndSelect(
-          (qb) =>
-            qb
-              .subQuery()
-              .select([`${metricString} as value`, 'logs.id as id'])
-              .from(Log, 'logs'),
-          'extracted',
-          'extracted.id = logs.id'
-        );
-    } else {
-      analyticsQuery
-        .innerJoinAndSelect(
-          (qb) =>
-            qb
-              .subQuery()
-              .select([
-                `"individualEnrollment"."userId" as "userId"`,
-                `"individualEnrollment"."experimentId" as "experimentId"`,
-              ])
-              .distinct()
-              .from(IndividualEnrollment, 'individualEnrollment'),
-          'individualEnrollment',
-          'experiment.id = "individualEnrollment"."experimentId" AND logs."userId" = "individualEnrollment"."userId"'
-        )
-        .innerJoinAndSelect(
-          (qb) =>
-            qb
-              .subQuery()
-              .select([
-                `"monitoredDecisionPoint"."userId" as "userId"`,
-                `"monitoredDecisionPoint"."id" as "monitoredDecisionPointId"`,
-                `"monitoredDecisionPoint"."experimentId" as "experimentId"`,
-              ])
-              .distinct()
-              .from(MonitoredDecisionPoint, 'monitoredDecisionPoint'),
-          'monitoredDecisionPoint',
-          '"individualEnrollment"."userId" = "monitoredDecisionPoint"."userId" AND "experiment"."id"::text = "monitoredDecisionPoint"."experimentId"'
-        )
-        .innerJoinAndSelect(
-          (qb) =>
-            qb
-              .subQuery()
-              .select([
-                `"monitoredDecisionPointLog"."uniquifier" as "uniquifier"`,
-                `"monitoredDecisionPointLog"."condition" as "condition"`,
-                `"monitoredDecisionPointLog"."monitoredDecisionPointId" as "monitoredDecisionPointId"`,
-              ])
-              .distinct()
-              .from(MonitoredDecisionPointLog, 'monitoredDecisionPointLog'),
-          'monitoredDecisionPointLog',
-          '"monitoredDecisionPoint"."monitoredDecisionPointId" = "monitoredDecisionPointLog"."monitoredDecisionPointId" AND logs."uniquifier" = "monitoredDecisionPointLog"."uniquifier"'
-        )
-        .innerJoinAndSelect(
-          (qb) =>
-            qb
-              .subQuery()
-              .select([
-                `"experimentCondition"."conditionCode" as "condition"`,
-                `"experimentCondition"."id" as "conditionId"`,
-              ])
-              .distinct()
-              .from(ExperimentCondition, 'experimentCondition'),
-          'experimentCondition',
-          '"monitoredDecisionPointLog"."condition" = "experimentCondition"."condition"'
-        )
-        .innerJoinAndSelect(
-          (qb) =>
-            qb
-              .subQuery()
-              .select([`${metricString} as value`, 'logs.id as id'])
-              .from(Log, 'logs'),
-          'extracted',
-          'extracted.id = logs.id'
-        );
-    }
-
-    if (isFactorialExperiment) {
-      const conditionIdCondition =
-        unitOfAssignment !== 'within-subjects'
-          ? '"levelCombinationElement"."LCEconditionId" = "individualEnrollment"."conditionId"'
-          : '"levelCombinationElement"."LCEconditionId" = "experimentCondition"."conditionId"';
-
-      analyticsQuery.innerJoinAndSelect(
-        (qb) =>
-          qb
-            .subQuery()
-            .select([
-              `"levelCombinationElement"."conditionId" as "LCEconditionId"`,
-              `"levelCombinationElement"."levelId" as "levelId"`,
-            ])
-            .distinct()
-            .from(LevelCombinationElement, 'levelCombinationElement'),
-        'levelCombinationElement',
-        conditionIdCondition
-      );
-    }
-
-    analyticsQuery
-      .where('metric.key = :metric', { metric })
-      .andWhere('experiment.id = :experimentId', { experimentId })
-      .andWhere('queries.id = :queryId', { queryId });
-
-    return analyticsQuery;
+    return newQuery.getRawMany();
   }
 }

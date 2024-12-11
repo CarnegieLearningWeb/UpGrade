@@ -379,61 +379,35 @@ export default class UpgradeClient {
    *
    * @example
    * ```ts
-   * const metrics: IMetricInput[] = [
+   * const metrics: ILogInput[] = [
    *     {
-   *         "metric": "totalTimeSeconds",
-   *         "datatype": "continuous"
+   *       userId,
+   *       timestamp: '2022-03-03T19:49:00.496',
+   *       metrics: {
+   *       attributes: {
+   *         totalTimeSeconds: 41834,
+   *         totalMasteryWorkspacesCompleted: 15,
+   *         totalConceptBuildersCompleted: 17,
+   *         totalMasteryWorkspacesGraduated: 15,
+   *         totalSessions: 50,
+   *         totalProblemsCompleted: 249,
+   *       },
+   *       groupedMetrics: [
+   *         {
+   *           groupClass: 'conceptBuilderWorkspace',
+   *           groupKey: 'graphs_of_functions',
+   *           groupUniquifier: '2022-02-03T19:48:53.861Z',
+   *           attributes: {
+   *             timeSeconds: 488,
+   *             hintCount: 2,
+   *             errorCount: 15,
+   *             completionCount: 1,
+   *             workspaceCompletionStatus: 'GRADUATED',
+   *             problemsCompleted: 4,
+   *           },
+   *         },
+   *       ],
    *     },
-   *     {
-   *         "metric": "completedAll",
-   *         "datatype": "categorical",
-   *         "allowedValues": [ "COMPLETE", "INCOMPLETE" ]
-   *     },
-   *     {
-   *         "groupClass": "quizzes",
-   *         "allowedKeys":
-   *             [
-   *                 "quiz1",
-   *                 "quiz2",
-   *                 "quiz3"
-   *             ],
-   *         "attributes":
-   *             [
-   *                 {
-   *                     "metric": "quizTimeSeconds",
-   *                     "datatype": "continuous"
-   *                 },
-   *                 {
-   *                     "metric": "score",
-   *                     "datatype": "continuous"
-   *                 },
-   *                 {
-   *                     "metric": "passStatus",
-   *                     "datatype": "categorical",
-   *                     "allowedValues": [ "PASS", "FAIL" ]
-   *                 }
-   *             ]
-   *      },
-   *      {
-   *          "groupClass": "polls",
-   *          "allowedKeys":
-   *              [
-   *                  "poll1",
-   *                  "poll2"
-   *              ],
-   *          "attributes":
-   *              [
-   *                  {
-   *                      "metric": "pollTimeSeconds",
-   *                      "datatype": "continuous"
-   *                  },
-   *                  {
-   *                      "metric": "rank",
-   *                      "datatype": "categorical",
-   *                      "allowedValues": [ "UNHAPPY", "NEUTRAL", "HAPPY" ]
-   *                  }
-   *              ]
-   *        }
    *   ];
    *
    * const logResponse: ILog[] = await upgradeClient.metrics(metrics);

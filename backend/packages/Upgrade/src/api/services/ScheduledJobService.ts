@@ -44,7 +44,7 @@ export class ScheduledJobService {
         if (scheduledJob && scheduledJob.experiment) {
           const experimentRepository = transactionalEntityManager.getRepository(Experiment);
           const experiment = await experimentRepository.findOneBy({ id: scheduledJob.experiment.id });
-          if (scheduledJob && experiment) {
+          if (experiment) {
             const systemUser = await transactionalEntityManager
               .getRepository(User)
               .findOneBy({ email: systemUserDoc.email });

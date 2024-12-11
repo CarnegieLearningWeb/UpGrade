@@ -222,6 +222,15 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
       : '';
   }
 
+  onScroll(): void {
+    const element = this.experimentTableContainer.nativeElement;
+    const atBottom = element.scrollHeight - element.scrollTop === element.clientHeight;
+
+    if (atBottom) {
+      this.fetchExperimentOnScroll();
+    }
+  }
+
   fetchExperimentOnScroll() {
     if (!this.isAllExperimentsFetched) {
       this.experimentService.loadExperiments();

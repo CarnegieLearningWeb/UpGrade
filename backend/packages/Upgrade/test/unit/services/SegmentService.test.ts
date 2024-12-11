@@ -12,7 +12,11 @@ import { ExperimentSegmentInclusionRepository } from '../../../src/api/repositor
 import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentExclusionRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
-import { SegmentFile, SegmentInputValidator } from '../../../src/api/controllers/validators/SegmentInputValidator';
+import {
+  ListInputValidator,
+  SegmentFile,
+  SegmentInputValidator,
+} from '../../../src/api/controllers/validators/SegmentInputValidator';
 import { IndividualForSegment } from '../../../src/api/models/IndividualForSegment';
 import { GroupForSegment } from '../../../src/api/models/GroupForSegment';
 import { Experiment } from '../../../src/api/models/Experiment';
@@ -37,6 +41,7 @@ const segValSegment = new Segment();
 const logger = new UpgradeLogger();
 const segmentArr = [seg1, seg2];
 const segVal = new SegmentInputValidator();
+const listVal = new ListInputValidator();
 const include = [{ segment: seg1, experiment: exp }];
 const ff_include = [{ segment: seg1, featureFlag: ff }];
 const segValImportFile: SegmentFile = {
@@ -169,6 +174,9 @@ describe('Segment Service Testing', () => {
             delete: jest.fn(),
             getAllSegments: jest.fn().mockResolvedValue(segmentArr),
             deleteSegment: jest.fn().mockImplementation((seg) => {
+              return seg;
+            }),
+            deleteSegments: jest.fn().mockImplementation((seg) => {
               return seg;
             }),
             createQueryBuilder: jest.fn(() => ({
@@ -493,5 +501,11 @@ describe('Segment Service Testing', () => {
     expect(async () => {
       await service.exportSegments([seg1.id], logger);
     }).rejects.toThrow(new Error(SERVER_ERROR.QUERY_FAILED));
+  });
+
+  it('should add a list', async () => {
+    service.upsertSegmentInPipeline = jest.fn().mockResolvedValue(segValSegment);
+    const segment = await service.addList(listVal, logger);
+    expect(segment).toEqual(segValSegment);
   });
 });

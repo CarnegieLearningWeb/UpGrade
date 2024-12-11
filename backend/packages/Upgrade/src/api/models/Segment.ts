@@ -22,6 +22,11 @@ export class Segment extends BaseModel {
   })
   public description: string;
 
+  @Column({
+    nullable: true,
+  })
+  public listType: string;
+
   @Column()
   public context: string;
 
