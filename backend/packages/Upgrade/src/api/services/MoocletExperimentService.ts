@@ -49,7 +49,7 @@ import { ConditionValidator } from '../DTO/ExperimentDTO';
 import { UserDTO } from '../DTO/UserDTO';
 import { Experiment } from '../models/Experiment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { ASSIGNMENT_ALGORITHM } from 'types/src';
+import { ASSIGNMENT_ALGORITHM } from 'upgrade_types';
 
 export interface SyncCreateParams {
   experimentDTO: MoocletExperimentDTO;
@@ -60,9 +60,9 @@ export interface SyncCreateParams {
 
 export interface SyncDeleteParams {
   moocletExperimentRef: MoocletExperimentRef;
+  experimentId: string;
   currentUser: UserDTO;
   logger: UpgradeLogger;
-  createType?: string;
 }
 
 const logger = new UpgradeLogger('MoocletExperimentService');
@@ -143,41 +143,29 @@ export class MoocletExperimentService extends ExperimentService {
     params: SyncCreateParams
   ): Promise<MoocletExperimentDTO> {
     const moocletPolicyParameters = params.experimentDTO.moocletPolicyParameters;
-    let moocletExperimentRefResponse: MoocletExperimentRef;
-    let experimentResponse: MoocletExperimentDTO;
 
-    try {
-      experimentResponse = await this.createExperiment(manager, params);
-      moocletExperimentRefResponse = await this.orchestrateMoocletCreation(
-        experimentResponse,
-        moocletPolicyParameters,
-        logger
-      );
+    const experimentResponse = await this.createExperiment(manager, params);
+    const moocletExperimentRefResponse = await this.orchestrateMoocletCreation(
+      experimentResponse,
+      moocletPolicyParameters,
+      params.currentUser,
+      logger
+    );
 
-      logger.info({
-        message: 'Mooclet experiment created successfully:',
-        moocletExperimentRef: JSON.stringify(moocletExperimentRefResponse),
-      });
+    logger.info({
+      message: 'Mooclet experiment created successfully:',
+      moocletExperimentRef: JSON.stringify(moocletExperimentRefResponse),
+    });
 
-      await this.saveMoocletExperimentRef(manager, moocletExperimentRefResponse);
-      await this.createAndSaveVersionConditionMaps(manager, moocletExperimentRefResponse);
-    } catch (error) {
-      logger.error({
-        message: 'Failed to sync experiment with Mooclet',
-        params: JSON.stringify(params),
-      });
-      throw new UnprocessableEntityException('Failed to sync experiment with Mooclet');
-    }
+    await this.saveMoocletExperimentRef(manager, moocletExperimentRefResponse);
+    await this.createAndSaveVersionConditionMaps(manager, moocletExperimentRefResponse);
 
     experimentResponse.moocletPolicyParameters = moocletPolicyParameters;
 
     return experimentResponse;
   }
 
-  private async createExperiment(
-    manager: EntityManager,
-    params: SyncCreateParams
-  ): Promise<MoocletExperimentDTO> {
+  private async createExperiment(manager: EntityManager, params: SyncCreateParams): Promise<MoocletExperimentDTO> {
     const { experimentDTO, currentUser, logger, createType } = params;
     return (await super.create(experimentDTO, currentUser, logger, {
       existingEntityManager: manager,
@@ -187,14 +175,14 @@ export class MoocletExperimentService extends ExperimentService {
 
   private async saveMoocletExperimentRef(
     manager: EntityManager,
-    moocletExperimentRefResponse: MoocletExperimentRef,
+    moocletExperimentRefResponse: MoocletExperimentRef
   ): Promise<void> {
     await manager.save(MoocletExperimentRef, moocletExperimentRefResponse);
   }
 
   private async createAndSaveVersionConditionMaps(
     manager: EntityManager,
-    moocletExperimentRefResponse: MoocletExperimentRef,
+    moocletExperimentRefResponse: MoocletExperimentRef
   ): Promise<void> {
     if (moocletExperimentRefResponse.versionConditionMaps) {
       for (const versionConditionMap of moocletExperimentRefResponse.versionConditionMaps) {
@@ -214,13 +202,17 @@ export class MoocletExperimentService extends ExperimentService {
 
   private async handleDeleteMoocletTransaction(manager: EntityManager, params: SyncDeleteParams): Promise<Experiment> {
     const { moocletExperimentRef, currentUser, logger } = params;
-    const { experiment } = moocletExperimentRef;
     let deleteResponse: Experiment | undefined;
 
     try {
       await this.orchestrateDeleteMoocletResources(moocletExperimentRef);
-      deleteResponse = await super.delete(moocletExperimentRef.experimentId, currentUser, {
+      deleteResponse = await super.delete(params.experimentId, currentUser, {
         existingEntityManager: manager,
+      });
+
+      logger.debug({
+        message: 'Upgrade experiment deleted after Mooclet create failure.',
+        deleteResponse,
       });
 
       return deleteResponse;
@@ -228,7 +220,7 @@ export class MoocletExperimentService extends ExperimentService {
       logger.error({
         message: 'Failed to delete experiment with Mooclet',
         error: error,
-        experimentId: experiment.id,
+        experimentId: params.experimentId,
         user: currentUser,
       });
       throw new UnprocessableEntityException('Failed to delete experiment with Mooclet');
@@ -249,6 +241,7 @@ export class MoocletExperimentService extends ExperimentService {
   public async orchestrateMoocletCreation(
     upgradeExperiment: MoocletExperimentDTO,
     moocletPolicyParameters: MoocletPolicyParameters,
+    currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<MoocletExperimentRef | undefined> {
     const newMoocletRequest: MoocletRequestBody = {
@@ -307,39 +300,47 @@ export class MoocletExperimentService extends ExperimentService {
         message: `[Mooclet Creation] 5. Variable created (if needed):`,
         moocletVariableResponse: JSON.stringify(moocletVariableResponse),
       });
+
+      moocletExperimentRef.variableId = moocletVariableResponse?.id;
       moocletExperimentRef.variableId = moocletVariableResponse?.id;
     } catch (err) {
-      console.log('>>>>>>>>>>>>>>> mooclet creation error, roll back', err)
-      await this.handleMoocletCreationError(err, moocletExperimentRef, logger);
+      await this.handleMoocletCreationError(err, {
+        moocletExperimentRef,
+        experimentId: upgradeExperiment.id,
+        logger,
+        currentUser,
+      });
+      throw err;
     }
 
     moocletExperimentRef.id = uuid();
+
     return moocletExperimentRef;
   }
 
   private async handleMoocletCreationError(
-    err: any,
-    moocletExperimentRef: MoocletExperimentRef,
-    logger: UpgradeLogger
+    actualInternalError: any,
+    syncDeleteParams: SyncDeleteParams
   ): Promise<void> {
+    logger.debug({
+      message: `[Mooclet Creation] Error creating all Mooclet resources, beginning rollback to delete Mooclet resources and Upgade Experiment:`,
+      error: JSON.stringify(actualInternalError),
+    });
     try {
       // Rollback all created resources. Null resource ids will be ignored.
-      return await this.orchestrateDeleteMoocletResources(moocletExperimentRef);
-    } catch (rollbackErr) {
-      logger.error({
-        message: '[Mooclet Creation] Rollback failed',
-        error: rollbackErr,
-        moocletExperimentRef: moocletExperimentRef,
+      await this.syncDelete(syncDeleteParams);
+      logger.info({
+        message: '[Mooclet Creation] Rollback complete, Upgrade experiment was not saved.',
       });
+      throw new UnprocessableEntityException(actualInternalError);
+    } catch (error) {
+      logger.debug({
+        message: 'Mooclet creation failure',
+        error,
+        syncDeleteParams,
+      });
+      throw error;
     }
-
-    throw new Error(
-      JSON.stringify({
-        message: '[Mooclet Creation] Failed, see sequence of events in logs for more details.',
-        error: err,
-        moocletExperimentRef: moocletExperimentRef,
-      })
-    );
   }
 
   private createMoocletVersionConditionMaps(
@@ -399,8 +400,9 @@ export class MoocletExperimentService extends ExperimentService {
       logger.error({
         message: '[Mooclet Deletion]: Failed to delete Mooclet resources',
         error: err,
-        moocletExperimentRef: moocletExperimentRef.id,
+        moocletExperimentRef: moocletExperimentRef,
       });
+      throw err;
     }
   }
 
@@ -487,9 +489,11 @@ export class MoocletExperimentService extends ExperimentService {
     };
 
     try {
+      let nothing: any;
+      nothing.id;
       return await this.moocletDataService.postNewPolicyParameters(policyParametersRequest);
     } catch (err) {
-      throw new Error(`Failed to create policy parameters: ${err}`);
+      throw new Error(`Failed to create Mooclet policy parameters: ${err}`);
     }
   }
 
@@ -509,6 +513,7 @@ export class MoocletExperimentService extends ExperimentService {
     try {
       return await this.moocletDataService.postNewVariable(variableRequest);
     } catch (err) {
+      logger.error({ message: 'Failed to create Mooclet variable' });
       throw new Error(`Failed to create variable: ${err}`);
     }
   }

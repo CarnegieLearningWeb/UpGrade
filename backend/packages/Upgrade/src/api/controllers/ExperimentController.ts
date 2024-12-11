@@ -1059,6 +1059,7 @@ export class ExperimentController {
       if (moocletExperimentRef) {
         return await this.moocletExperimentService.syncDelete({
           moocletExperimentRef,
+          experimentId: id,
           currentUser,
           logger: request.logger,
         });

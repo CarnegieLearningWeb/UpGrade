@@ -12,7 +12,9 @@ import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentService
 import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
 import MoocletExperimentServiceMock from './mocks/MoocletExperimentServiceMock';
 import { env } from './../../../src/env';
-import { SUPPORTED_MOOCLET_POLICY_NAMES } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, EXPERIMENT_TYPE, FILTER_MODE, POST_EXPERIMENT_RULE, SEGMENT_TYPE } from 'upgrade_types';
+import { MoocletExperimentDTO } from './../../../src/api/DTO/MoocletExperimentDTO';
+import { ExperimentDTO } from './../../../src/api/DTO/ExperimentDTO';
 
 describe('Experiment Controller Testing', () => {
   beforeAll(() => {
@@ -31,27 +33,27 @@ describe('Experiment Controller Testing', () => {
     //asdfasdf
   });
 
-  const experimentData = {
+  const experimentData: ExperimentDTO = {
     id: uuid(),
     name: 'string',
     description: 'string',
     context: ['home'],
-    state: 'inactive',
-    startOn: '2021-08-11T05:41:51.655Z',
-    consistencyRule: 'individual',
-    assignmentUnit: 'individual',
-    postExperimentRule: 'continue',
-    assignmentAlgorithm: 'random',
+    state: EXPERIMENT_STATE.INACTIVE,
+    startOn: new Date('2021-08-11T05:41:51.655Z'),
+    consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
+    assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
+    postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+    assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
     enrollmentCompleteCondition: {
       userCount: 0,
       groupCount: 0,
     },
-    endOn: '2021-08-11T05:41:51.655Z',
+    endOn: new Date('2021-08-11T05:41:51.655Z'),
     revertTo: 'string',
     tags: ['string'],
     group: 'string',
-    filterMode: 'includeAll',
-    type: 'Simple',
+    filterMode: FILTER_MODE.INCLUDE_ALL,
+    type: EXPERIMENT_TYPE.SIMPLE,
     conditions: [
       {
         id: 'string',
@@ -77,7 +79,7 @@ describe('Experiment Controller Testing', () => {
         individualForSegment: [],
         groupForSegment: [],
         subSegments: [],
-        type: 'private',
+        type: SEGMENT_TYPE.PRIVATE,
       },
     },
     experimentSegmentExclusion: {
@@ -85,16 +87,27 @@ describe('Experiment Controller Testing', () => {
         individualForSegment: [],
         groupForSegment: [],
         subSegments: [],
-        type: 'private',
+        type: SEGMENT_TYPE.PRIVATE,
       },
     },
   };
 
-  const moocletExperimentData = {
+  const moocletExperimentData: MoocletExperimentDTO = {
     ...experimentData,
     id: uuid(),
-    moocletPolicyParameters: {},
-    ASSIGNMENT_ALGORITHM: SUPPORTED_MOOCLET_POLICY_NAMES.TS_CONFIGURABLE,
+    moocletPolicyParameters: {
+      prior: {
+          success: 1,
+          failure: 1
+      },
+      batch_size: 1,
+      max_rating: 1,
+      min_rating: 0,
+      uniform_threshold: 0,
+      tspostdiff_thresh: 0,
+      outcome_variable_name: "TS_CONFIG_{{randomTitle}}"
+    },
+    assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
   };
 
   //for future use where user will be mocked for all testcases

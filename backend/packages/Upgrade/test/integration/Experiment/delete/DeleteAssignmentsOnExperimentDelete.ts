@@ -91,7 +91,7 @@ export default async function UpdateExperimentState(): Promise<void> {
   let individualAssignments = await individualEnrollmentRepository.find();
   expect(individualAssignments.length).toEqual(1);
 
-  await experimentService.delete(experimentId, user, new UpgradeLogger());
+  await experimentService.delete(experimentId, user, { logger: new UpgradeLogger() });
 
   individualAssignments = await individualEnrollmentRepository.find();
   expect(individualAssignments.length).toEqual(0);
