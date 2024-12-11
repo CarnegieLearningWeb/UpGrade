@@ -19,7 +19,7 @@ export const environment = {
   featureFlagNavToggle: true,
   withinSubjectExperimentSupportToggle: false,
   errorLogsToggle: false,
-  metricAnalyticsExperimentDisplayToggle: false,
+  metricAnalyticsExperimentDisplayToggle: true,
   api: {
     getAllExperiments: '/experiments/paginated',
     createNewExperiments: '/experiments',
