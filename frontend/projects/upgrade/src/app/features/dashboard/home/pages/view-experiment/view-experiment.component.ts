@@ -342,7 +342,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   openExportModal() {
     this.dialog.open(ExportModalComponent, {
       panelClass: 'export-modal',
-      data: { experiment: [clonedeep(this.experiment)] },
+      data: { experiment: [clonedeep(this.experiment)], exportAll: false },
     });
   }
 

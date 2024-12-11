@@ -580,7 +580,12 @@ describe('ExperimentService', () => {
 
       service.exportExperimentDesign([experimentId]);
 
-      expect(mockStore.dispatch).toHaveBeenCalledWith(actionExportExperimentDesign({ experimentIds: [experimentId] }));
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        actionExportExperimentDesign({
+          experimentIds: [experimentId],
+          exportAll: false,
+        })
+      );
     });
   });
 
