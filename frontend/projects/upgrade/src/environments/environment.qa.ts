@@ -14,7 +14,7 @@ export const environment = {
   featureFlagNavToggle: true,
   withinSubjectExperimentSupportToggle: true,
   errorLogsToggle: false,
-  metricAnalyticsExperimentDisplayToggle: false,
+  metricAnalyticsExperimentDisplayToggle: true,
   api: {
     getAllExperiments: '/experiments/paginated',
     createNewExperiments: '/experiments',

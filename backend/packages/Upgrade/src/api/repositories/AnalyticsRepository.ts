@@ -17,7 +17,6 @@ import { GroupExclusionRepository } from './GroupExclusionRepository';
 import { DecisionPoint } from '../models/DecisionPoint';
 import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { ExperimentCondition } from '../models/ExperimentCondition';
-import { MonitoredDecisionPointRepository } from './MonitoredDecisionPointRepository';
 import { UserStratificationFactorRepository } from './UserStratificationRepository';
 import _ from 'lodash';
 import { Repository } from 'typeorm';
@@ -448,6 +447,7 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
       .createQueryBuilder('individualEnrollment')
       .select([
         '"individualEnrollment"."userId" as "userId"',
+        '"individualEnrollment"."createdAt" as "createdAt"',
         '"individualEnrollment"."groupId" as "enrollmentGroupId"',
         '"individualEnrollment"."enrollmentCode" as "enrollmentCode"',
         '"individualEnrollment"."experimentId" as "experimentId"',
@@ -467,39 +467,13 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
       .addGroupBy('individualEnrollment.experimentId')
       .addGroupBy('individualEnrollment.conditionId')
       .addGroupBy('individualEnrollment.partitionId')
+      .addGroupBy('individualEnrollment.createdAt')
       .addGroupBy('decisionPointData.site')
       .addGroupBy('decisionPointData.target')
       .orderBy('individualEnrollment.userId', 'ASC')
       .where('individualEnrollment.experimentId = :experimentId::uuid', { experimentId });
 
-    const monitoredDecisionPointRepository = Container.getCustomRepository(MonitoredDecisionPointRepository, 'export');
-    const monitoredDecisionPointQuery = monitoredDecisionPointRepository
-      .createQueryBuilder('monitoredDecisionPoint')
-      .select([
-        'monitoredDecisionPoint.site as "site"',
-        'monitoredDecisionPoint.target as "target"',
-        'monitoredDecisionPoint.userId as "userId"',
-        '"monitoredPointLogs"."createdAt" as "markExperimentPointTime"',
-      ])
-      .leftJoin('monitoredDecisionPoint.monitoredPointLogs', 'monitoredPointLogs')
-      .orderBy('monitoredDecisionPoint.userId', 'ASC')
-      .where('monitoredDecisionPoint.experimentId = :experimentId', { experimentId })
-      .andWhere(
-        'monitoredDecisionPoint.userId IN (' +
-          individualEnrollmentRepository
-            .createQueryBuilder('individualEnrollment')
-            .select('DISTINCT "individualEnrollment"."userId"')
-            .where('"individualEnrollment"."experimentId" = :experimentId::uuid', { experimentId })
-            .getQuery() +
-          ')'
-      )
-      .setParameters(individualEnrollmentQuery.getParameters());
-
-    const [individualEnrollmentQueryResults, monitoredDecisionPointQueryResults] = await Promise.all([
-      individualEnrollmentQuery.getRawMany(),
-      monitoredDecisionPointQuery.getRawMany(),
-    ]);
-
+    const individualEnrollmentQueryResults = await individualEnrollmentQuery.getRawMany();
     const userStratificationFactorUserList = [];
 
     const individualEnrollmentExperimentData = [];
@@ -526,6 +500,7 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
             expConditionId: individualEnrollmentQueryResult.conditionId,
             site: individualEnrollmentQueryResult.site,
             target: individualEnrollmentQueryResult.target,
+            markExperimentPointTime: individualEnrollmentQueryResult.createdAt,
           });
         }
       });
@@ -552,32 +527,14 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
       userStratificationFactorQueryResult = await userStratificationFactorQuery.getRawMany();
     }
 
-    // Group monitoredDecisionPointQueryResults by userId
-    const groupedMonitoredDecisionPointQueryResults = _.groupBy(monitoredDecisionPointQueryResults, 'userId');
-
-    // Combine data in a single flatMap step
-    const combinedCSVExportData = _.flatMap(individualEnrollmentExperimentData, (individualEnrollmentExperiment) => {
-      const userMonitoredResults =
-        groupedMonitoredDecisionPointQueryResults[individualEnrollmentExperiment.userId] || [];
-
-      return userMonitoredResults
-        .filter(
-          (monitoredDecisionPointQueryResult) =>
-            monitoredDecisionPointQueryResult.site === individualEnrollmentExperiment.site &&
-            monitoredDecisionPointQueryResult.target === individualEnrollmentExperiment.target
-        )
-        .map((monitoredDecisionPointQueryResult) => ({
-          ...individualEnrollmentExperiment,
-          site: monitoredDecisionPointQueryResult.site,
-          target: monitoredDecisionPointQueryResult.target,
-          markExperimentPointTime: monitoredDecisionPointQueryResult.markExperimentPointTime,
-          stratificationValue: experimentsData.stratification
-            ? userStratificationFactorQueryResult.find((user) => user.userId === individualEnrollmentExperiment.userId)
-                ?.stratificationFactorValue
-            : null,
-        }));
-    });
-    return combinedCSVExportData;
+    return individualEnrollmentExperimentData.map((individualEnrollmentExperiment) => ({
+      ...individualEnrollmentExperiment,
+      enrollmentGroupId: individualEnrollmentExperiment.groupId,
+      stratificationValue: experimentsData.stratification
+        ? userStratificationFactorQueryResult.find((user) => user.userId === individualEnrollmentExperiment.userId)
+            ?.stratificationFactorValue
+        : null,
+    }));
   }
 
   public async getCSVDataForWithInSubExport(experimentId: string): Promise<CSVExportDataRow[]> {
