@@ -384,6 +384,7 @@ export class ExperimentAssignmentService {
           groupExperiments
         );
       }
+
       invalidGroupExperiment = await this.groupExperimentWithoutEnrollments(
         isGroupWorkingGroupMissing ? groupExperiments : experimentWithInvalidGroupOrWorkingGroup,
         experimentUser,
@@ -826,6 +827,36 @@ export class ExperimentAssignmentService {
       return groupExperimentAssignedIds.indexOf(experiment.id) === -1;
     });
 
+    const experimentToExcludeIds = experimentToExclude.map((experiment) => experiment.id);
+
+    // throw error user group not defined and add experiments which are excluded
+    experimentToExclude.forEach(({ id, name }) => {
+      logger.error({
+        message: `Experiment Id: ${id},
+      Experiment Name: ${name},
+      Group not valid for experiment user
+      `,
+      });
+    });
+    
+    // log error if there are group experiments which are not previosly assigned and they are
+    // to be excluded from assignment due to working group and group data is not properly set
+    if (experimentToExclude.length > 0) {
+      logger.error(
+        {
+          endPoint: '/api/assign',
+          errorCode: 417,
+          message: `Group not defined for experiment User: ${JSON.stringify(
+            { ...experimentUser, experiment: experimentToExcludeIds },
+            undefined,
+            2
+          )}`,
+          name: 'Experiment user group not defined',
+          type: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
+        } as any,
+        logger
+      );
+    }
     return experimentToExclude;
   }
 
@@ -833,6 +864,7 @@ export class ExperimentAssignmentService {
     return experiments.filter((experiment) => {
       const { group } = experiment;
       if (group in user.group && group in user.workingGroup) {
+        // filter the invalid experiment for which the user's working group is not present in the user's group
         return !user.group[group].includes(user.workingGroup[group]);
       } else {
         return true;
