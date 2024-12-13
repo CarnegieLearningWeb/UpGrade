@@ -88,7 +88,7 @@ export class ExperimentDataService {
     });
 
     const url = `${this.environment.api.exportExperiment}`;
-    return this.http.get(url, { params: ids });
+    return this.http.get(url, { params: ids, responseType: 'blob' as 'json' });
   }
 
   fetchExperimentGraphInfo(params: any) {

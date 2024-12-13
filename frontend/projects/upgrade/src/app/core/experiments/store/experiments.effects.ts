@@ -43,8 +43,8 @@ import {
 import { interval } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { ENV, Environment } from '../../../../environments/environment-types';
-import JSZip from 'jszip';
 import { TranslateService } from '@ngx-translate/core';
+import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
 @Injectable()
 export class ExperimentEffects {
   constructor(
@@ -54,6 +54,7 @@ export class ExperimentEffects {
     private router: Router,
     private translate: TranslateService,
     private notificationService: NotificationService,
+    private commonExportHelpersService: CommonExportHelpersService,
     @Inject(ENV) private environment: Environment
   ) {}
 
@@ -470,17 +471,19 @@ export class ExperimentEffects {
           tap(() => {
             this.notificationService.showSuccess('Experiment Design JSON downloaded!');
           }),
-          map((data: Experiment[]) => {
-            if (data.length > 1) {
-              const zip = new JSZip();
-              data.forEach((experiment, index) => {
-                zip.file(experiment.name + ' (File ' + (index + 1) + ').json', JSON.stringify(experiment));
-              });
-              zip.generateAsync({ type: 'base64' }).then((content) => {
-                this.download('Experiments.zip', content, true);
-              });
+          map((experimentData: Blob) => {
+            if (experimentIds.length > 1) {
+              this.commonExportHelpersService.download('Experiments.zip', experimentData, true);
             } else {
-              this.download(data[0].name + '.json', data[0], false);
+              experimentData.text().then((text) => {
+                try {
+                  // Step 2: Parse the JSON string
+                  const experiment = JSON.parse(text);
+                  this.commonExportHelpersService.download(experiment[0].name + '.json', experiment[0], false);
+                } catch (error) {
+                  console.error('Error parsing JSON:', error);
+                }
+              });
             }
             return experimentAction.actionExportExperimentDesignSuccess();
           }),
@@ -490,16 +493,5 @@ export class ExperimentEffects {
     )
   );
 
-  private download(filename, text, isZip: boolean) {
-    const element = document.createElement('a');
-    isZip
-      ? element.setAttribute('href', 'data:application/zip;base64,' + text)
-      : element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
-    element.setAttribute('download', filename);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  }
   private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());
 }

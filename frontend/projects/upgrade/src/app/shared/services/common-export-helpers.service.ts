@@ -7,9 +7,13 @@ import JSZip from 'jszip';
 export class CommonExportHelpersService {
   download(filename, text, isZip: boolean) {
     const element = document.createElement('a');
-    isZip
-      ? element.setAttribute('href', 'data:application/zip;base64,' + text)
-      : element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
+    if (isZip) {
+      element.setAttribute('href', 'data:application/zip;base64,' + text)
+      const url = window.URL.createObjectURL(text);
+      element.href = url;
+    } else {
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
+    }
     element.setAttribute('download', filename);
     element.style.display = 'none';
     document.body.appendChild(element);
