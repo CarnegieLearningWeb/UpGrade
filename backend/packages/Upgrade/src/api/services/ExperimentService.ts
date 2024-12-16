@@ -157,9 +157,7 @@ export class ExperimentService {
     let queryBuilder = this.experimentRepository
       .createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .take(take)
-      .skip(skip);
+      .leftJoinAndSelect('experiment.partitions', 'partitions');
 
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
@@ -169,11 +167,17 @@ export class ExperimentService {
         .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
         .addOrderBy('rank', 'DESC')
         .setParameter('query', `${customSearchString}:*`);
+    }
+    if (sortParams) {
+      queryBuilder = queryBuilder.addOrderBy(`LOWER(CAST(experiment.name AS TEXT))`, sortParams.sortAs);
     } else {
       queryBuilder = queryBuilder.addOrderBy('experiment.updatedAt', 'DESC');
     }
 
     let expIds = (await queryBuilder.getMany()).map((exp) => exp.id);
+    // manually paginating the data
+    // there is an active issue in typeorm where we can't use skip and take with orderby
+    expIds = expIds.slice(skip, skip + take);
     expIds = Array.from(new Set(expIds));
 
     let queryBuilderToReturn = this.experimentRepository
@@ -562,10 +566,10 @@ export class ExperimentService {
     return validatedExperiments;
   }
 
-  public async exportExperiment(experimentIds: string[], user: UserDTO, logger: UpgradeLogger): Promise<Experiment[]> {
+  public async exportExperiment(user: UserDTO, logger: UpgradeLogger, experimentIds?: string[]): Promise<Experiment[]> {
     logger.info({ message: `Inside export Experiment JSON ${experimentIds}` });
     const experimentDetails = await this.experimentRepository.find({
-      where: { id: In(experimentIds) },
+      where: experimentIds ? { id: In(experimentIds) } : undefined,
       relations: [
         'partitions',
         'conditions',

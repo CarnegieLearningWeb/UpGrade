@@ -1290,7 +1290,7 @@ export class ExperimentController {
     @Res() response: Response
   ): Promise<Experiment[]> {
     const experimentIds = params.ids;
-    const experimentData = await this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
+    const experimentData = await this.experimentService.exportExperiment(currentUser, request.logger, experimentIds);
     if (experimentData) {
       if (experimentData.length > 1) {
         // Set headers for ZIP download
@@ -1324,6 +1324,37 @@ export class ExperimentController {
       }
     }
     return experimentData;
+  }
+
+  /**
+   * @swagger
+   * /experiments/all:
+   *    get:
+   *       description: Export All Experiment JSON
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Experiments are exported
+   *            schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 error:
+   *                   type: string
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
+   */
+  @Get('/export/all')
+  public exportAllExperiment(@CurrentUser() currentUser: UserDTO, @Req() request: AppRequest): Promise<Experiment[]> {
+    return this.experimentService.exportExperiment(currentUser, request.logger);
   }
 
   /**

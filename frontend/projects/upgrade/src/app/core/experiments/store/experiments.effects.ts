@@ -464,10 +464,13 @@ export class ExperimentEffects {
   exportExperimentDesign$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionExportExperimentDesign),
-      map((action) => ({ experimentIds: action.experimentIds })),
+      map((action) => ({ experimentIds: action.experimentIds, exportAll: action.exportAll })),
       filter(({ experimentIds }) => !!experimentIds),
-      switchMap(({ experimentIds }) =>
-        this.experimentDataService.exportExperimentDesign(experimentIds).pipe(
+      switchMap(({ experimentIds, exportAll: allExport }) => {
+        const apiCall$ = allExport
+          ? this.experimentDataService.exportAllExperimentDesign()
+          : this.experimentDataService.exportExperimentDesign(experimentIds);
+        return apiCall$.pipe(
           tap(() => {
             this.notificationService.showSuccess('Experiment Design JSON downloaded!');
           }),
@@ -488,8 +491,8 @@ export class ExperimentEffects {
             return experimentAction.actionExportExperimentDesignSuccess();
           }),
           catchError(() => [experimentAction.actionExportExperimentDesignFailure()])
-        )
-      )
+        );
+      })
     )
   );
 

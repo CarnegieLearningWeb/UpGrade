@@ -91,6 +91,11 @@ export class ExperimentDataService {
     return this.http.get(url, { params: ids, responseType: 'blob' as 'json' });
   }
 
+  exportAllExperimentDesign() {
+    const url = `${this.environment.api.exportAllExperiment}`;
+    return this.http.get(url);
+  }
+
   fetchExperimentGraphInfo(params: any) {
     const url = this.environment.api.experimentGraphInfo;
     return this.http.post(url, params);

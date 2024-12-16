@@ -189,7 +189,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   openExportAllExperimentsDialog() {
     this.dialog.open(ExportModalComponent, {
       panelClass: 'export-modal',
-      data: { experiment: this.allExperiments.data },
+      data: { experiment: this.allExperiments.data, exportAll: true },
     });
   }
 
@@ -220,6 +220,15 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     return experimentFound
       ? '(' + experimentFound.conditions.find((condition) => condition.id === conditionId).conditionCode + ')'
       : '';
+  }
+
+  onScroll(): void {
+    const element = this.experimentTableContainer.nativeElement;
+    const atBottom = element.scrollHeight - element.scrollTop === element.clientHeight;
+
+    if (atBottom) {
+      this.fetchExperimentOnScroll();
+    }
   }
 
   fetchExperimentOnScroll() {
