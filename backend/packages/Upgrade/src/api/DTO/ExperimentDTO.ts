@@ -3,6 +3,7 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
+  IsDefined,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -37,6 +38,7 @@ import {
   ASSIGNMENT_ALGORITHM,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
+import { MoocletPolicyParameters, MoocletTSConfigurablePolicyParameters } from '../../types/Mooclet';
 
 export {
   EXPERIMENT_SEARCH_KEY,
@@ -467,6 +469,28 @@ export class ExperimentDTO extends BaseExperimentWithoutPayload {
   @ValidateNested({ each: true })
   @Type(() => ConditionPayloadValidator)
   public conditionPayloads?: ConditionPayloadValidator[];
+
+  // This should be validated when assignmentAlgorithm is not RANDOM or STRATIFIED_RANDOM_SAMPLING
+  @ValidateIf(
+    (o) =>
+      o.assignmentAlgorithm &&
+      !(
+        o.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.RANDOM ||
+        o.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING
+      )
+  )
+  @IsDefined()
+  @ValidateNested()
+  @Type(() => MoocletPolicyParameters, {
+    discriminator: {
+      property: 'assignmentAlgorithm',
+      subTypes: [
+        { value: MoocletTSConfigurablePolicyParameters, name: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE },
+        // Other policy types can be added here
+      ],
+    },
+  })
+  public moocletPolicyParameters?: MoocletPolicyParameters;
 }
 
 export class OldExperimentDTO extends BaseExperimentWithoutPayload {

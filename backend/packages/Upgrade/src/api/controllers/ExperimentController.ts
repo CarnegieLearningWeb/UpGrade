@@ -955,7 +955,7 @@ export class ExperimentController {
   @Post()
   @UseBefore(ValidateMoocletPolicyParametersMiddleware)
   public create(
-    @Body({ validate: true }) experiment: ExperimentDTO | MoocletExperimentDTO,
+    @Body({ validate: true }) experiment: ExperimentDTO,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO | MoocletExperimentDTO> {
@@ -963,7 +963,7 @@ export class ExperimentController {
 
     if ('moocletPolicyParameters' in experiment) {
       return this.moocletExperimentService.syncCreate({
-        experimentDTO: experiment,
+        experimentDTO: experiment as MoocletExperimentDTO,
         currentUser,
         logger: request.logger,
       });
