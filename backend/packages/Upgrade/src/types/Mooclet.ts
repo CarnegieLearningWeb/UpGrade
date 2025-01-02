@@ -1,3 +1,6 @@
+import { IsDefined, IsNumber } from 'class-validator';
+import { ASSIGNMENT_ALGORITHM } from 'types/src';
+
 export interface MoocletProxyRequestParams {
     method: string;
     url: string;
@@ -83,7 +86,12 @@ export interface MoocletValueResponseDetails {
     timestamp: string;
 }
 
-export interface MoocletTSConfigurablePolicyParameters {
+// this will be a Union type of all possible policy parameters once more are introduced
+export abstract class MoocletPolicyParameters {
+    assignmentAlgorithm: ASSIGNMENT_ALGORITHM
+}
+
+export class MoocletTSConfigurablePolicyParameters extends MoocletPolicyParameters {
     prior: {
         failure: number; // use 1 as default
         success: number; // use 1 as default
@@ -91,6 +99,9 @@ export interface MoocletTSConfigurablePolicyParameters {
     // current_posteriors will show up after first reward is given
     // BUT if you wanted to set different priors for different arms, you could do that by setting current_posteriors manually
     current_posteriors?: MoocletTSConfigurableCurrentPosteriors;
+
+    @IsDefined()
+    @IsNumber()
     batch_size: number; // for now leave at 1
     max_rating: number; // leave at 1
     min_rating: number; // leave at 0
@@ -105,9 +116,6 @@ export interface MoocletTSConfigurableCurrentPosteriors {
         successes: number;
     };
 }
-
-// this will be a Union type of all possible policy parameters once more are introduced
-export type MoocletPolicyParameters = MoocletTSConfigurablePolicyParameters;
 
 export interface MoocletPolicyResponseDetails {
     id: number;

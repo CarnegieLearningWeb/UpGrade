@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { BadRequestError, ExpressMiddlewareInterface, Middleware } from 'routing-controllers';
+import { ExpressMiddlewareInterface, Middleware } from 'routing-controllers';
 import { env } from '../../env';
 import { UnprocessableEntityException } from '@nestjs/common';
-import { validateMoocletPolicyParameters } from '../validators/MoocletPolicyParametersFactory';
 
 @Middleware({ type: 'before' })
 export class ValidateMoocletPolicyParametersMiddleware implements ExpressMiddlewareInterface {
@@ -13,18 +12,6 @@ export class ValidateMoocletPolicyParametersMiddleware implements ExpressMiddlew
       throw new UnprocessableEntityException(
         'Failed to create Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
       );
-    }
-    
-    if (env.mooclets?.enabled) {
-      try {
-        const policyParameters = await validateMoocletPolicyParameters(
-          experiment.assignmentAlgorithm,
-          experiment.moocletPolicyParameters
-        );
-        req.body.moocletPolicyParameters = policyParameters;
-      } catch (error) {
-        throw new BadRequestError(`Validation failed: ${error}`);
-      }
     }
 
     // else, if mooclets is not enabled, keep calm and carry on
