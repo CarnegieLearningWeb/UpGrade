@@ -1,4 +1,4 @@
-import { IsDefined, IsNumber } from 'class-validator';
+import { IsDefined, IsIn, IsNumber } from 'class-validator';
 import { ASSIGNMENT_ALGORITHM } from 'types/src';
 
 export interface MoocletProxyRequestParams {
@@ -88,6 +88,8 @@ export interface MoocletValueResponseDetails {
 
 // this will be a Union type of all possible policy parameters once more are introduced
 export abstract class MoocletPolicyParameters {
+    @IsDefined()
+    @IsIn(Object.values(ASSIGNMENT_ALGORITHM))
     assignmentAlgorithm: ASSIGNMENT_ALGORITHM
 }
 
