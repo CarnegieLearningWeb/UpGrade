@@ -160,7 +160,7 @@ export class ExperimentAssignmentService {
     const { workingGroup } = userDoc;
 
     logger.info({
-      message: `markExperimentPoint: Target: ${target}, Site: ${site} for User: ${userId}`,
+      message: `markExperimentPoint: Site: ${site}, Target: ${target}, Condition: ${condition}, Status: "${status}" for User: ${userId}`,
     });
 
     if (experiments.length) {
