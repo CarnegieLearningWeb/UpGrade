@@ -142,8 +142,10 @@ export class MoocletExperimentService extends ExperimentService {
   ): Promise<ExperimentDTO> {
     const moocletPolicyParameters = params.experimentDTO.moocletPolicyParameters;
 
-    // use try catch here to do syncDelete
+    // create Upgrade Experiment. If this fails, then mooclet resources will not be created, and the UpGrade experiment transaction will abort
     const experimentResponse = await this.createExperiment(manager, params);
+
+    // create Mooclet resources. If this fails, it will internally rollback any mooclet resources created, and the UpGrade experiment transaction will abort
     const moocletExperimentRefResponse = await this.orchestrateMoocletCreation(
       experimentResponse,
       moocletPolicyParameters,
@@ -156,12 +158,19 @@ export class MoocletExperimentService extends ExperimentService {
       moocletExperimentRef: JSON.stringify(moocletExperimentRefResponse),
     });
 
-    await this.saveMoocletExperimentRef(manager, moocletExperimentRefResponse);
-    await this.createAndSaveVersionConditionMaps(manager, moocletExperimentRefResponse);
+    // additionally, create MoocletExperimentRef and VersionConditionMaps.
+    // If either of THESE fail, we will need to rollback the mooclet resources here also before aborting the UpGrade experiment transaction
+    try {
+      await this.saveMoocletExperimentRef(manager, moocletExperimentRefResponse);
+      await this.createAndSaveVersionConditionMaps(manager, moocletExperimentRefResponse);
 
-    experimentResponse.moocletPolicyParameters = moocletPolicyParameters;
+      experimentResponse.moocletPolicyParameters = moocletPolicyParameters;
 
-    return experimentResponse;
+      return experimentResponse;
+    } catch (error) {
+      await this.orchestrateDeleteMoocletResources(moocletExperimentRefResponse);
+      throw error;
+    }
   }
 
   private async createExperiment(manager: EntityManager, params: SyncCreateParams): Promise<ExperimentDTO> {
@@ -204,13 +213,16 @@ export class MoocletExperimentService extends ExperimentService {
     let deleteResponse: Experiment | undefined;
 
     try {
-      await this.orchestrateDeleteMoocletResources(moocletExperimentRef);
+      // delete the upgrade experiment. If this fails, the Mooclet resources will not be deleted, and the transaction will abort
       deleteResponse = await super.delete(params.experimentId, currentUser, {
         existingEntityManager: manager,
       });
+      // delete the mooclet resources. If this fails, the transaction will abort and the upgrade experiment will not be deleted,
+      // but the Mooclet resources may not be deleted either
+      await this.orchestrateDeleteMoocletResources(moocletExperimentRef);
 
       logger.debug({
-        message: 'Upgrade experiment deleted after Mooclet create failure.',
+        message: 'Upgrade and Mooclet experiment resources deleted successfully',
         deleteResponse,
       });
 
@@ -303,43 +315,13 @@ export class MoocletExperimentService extends ExperimentService {
       moocletExperimentRef.variableId = moocletVariableResponse?.id;
       moocletExperimentRef.variableId = moocletVariableResponse?.id;
     } catch (err) {
-      await this.handleMoocletCreationError(err, {
-        moocletExperimentRef,
-        experimentId: upgradeExperiment.id,
-        logger,
-        currentUser,
-      });
+      await this.orchestrateDeleteMoocletResources(moocletExperimentRef);
       throw err;
     }
 
     moocletExperimentRef.id = uuid();
 
     return moocletExperimentRef;
-  }
-
-  private async handleMoocletCreationError(
-    actualInternalError: any,
-    syncDeleteParams: SyncDeleteParams
-  ): Promise<void> {
-    logger.debug({
-      message: `[Mooclet Creation] Error creating all Mooclet resources, beginning rollback to delete Mooclet resources and Upgade Experiment:`,
-      error: JSON.stringify(actualInternalError),
-    });
-    try {
-      // Rollback all created resources. Null resource ids will be ignored.
-      await this.syncDelete(syncDeleteParams);
-      logger.info({
-        message: '[Mooclet Creation] Rollback complete, Upgrade experiment was not saved.',
-      });
-      throw new UnprocessableEntityException(actualInternalError);
-    } catch (error) {
-      logger.debug({
-        message: 'Mooclet creation failure',
-        error,
-        syncDeleteParams,
-      });
-      throw error;
-    }
   }
 
   private createMoocletVersionConditionMaps(
@@ -397,7 +379,8 @@ export class MoocletExperimentService extends ExperimentService {
       logger.info({ message: '[Mooclet Deletion]: Completed deletion of Mooclet resources', moocletExperimentRef });
     } catch (err) {
       logger.error({
-        message: '[Mooclet Deletion]: Failed to delete Mooclet resources',
+        message:
+          '[Mooclet Deletion]: Failed to delete Mooclet resources, please check manually for out of sync resources',
         error: err,
         moocletExperimentRef: moocletExperimentRef,
       });

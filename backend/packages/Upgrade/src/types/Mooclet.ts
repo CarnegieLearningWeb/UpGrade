@@ -1,5 +1,4 @@
-import { IsDefined, IsIn, IsNumber } from 'class-validator';
-import { ASSIGNMENT_ALGORITHM } from 'types/src';
+import { MoocletPolicyParametersDTO } from 'upgrade_types';
 
 export interface MoocletProxyRequestParams {
   method: string;
@@ -40,14 +39,14 @@ export interface MoocletVersionResponseDetails {
 export interface MoocletPolicyParametersRequestBody {
   mooclet: number;
   policy: number;
-  parameters: MoocletPolicyParameters;
+  parameters: MoocletPolicyParametersDTO;
 }
 
 export interface MoocletPolicyParametersResponseDetails {
   id: number;
   mooclet: number;
   policy: number;
-  parameters: MoocletPolicyParameters;
+  parameters: MoocletPolicyParametersDTO;
 }
 
 export interface MoocletVariableRequestBody {
