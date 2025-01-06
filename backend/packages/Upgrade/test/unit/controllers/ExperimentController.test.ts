@@ -12,8 +12,7 @@ import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentService
 import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
 import MoocletExperimentServiceMock from './mocks/MoocletExperimentServiceMock';
 import { env } from './../../../src/env';
-import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, EXPERIMENT_TYPE, FILTER_MODE, POST_EXPERIMENT_RULE, SEGMENT_TYPE } from 'upgrade_types';
-import { MoocletExperimentDTO } from './../../../src/api/DTO/MoocletExperimentDTO';
+import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, EXPERIMENT_TYPE, FILTER_MODE, MoocletTSConfigurablePolicyParametersDTO, POST_EXPERIMENT_RULE, SEGMENT_TYPE } from 'upgrade_types';
 import { ExperimentDTO } from './../../../src/api/DTO/ExperimentDTO';
 
 describe('Experiment Controller Testing', () => {
@@ -92,23 +91,18 @@ describe('Experiment Controller Testing', () => {
     },
   };
 
-  const moocletExperimentData: MoocletExperimentDTO = {
+  const tsConfigurablePolicyParameters = new MoocletTSConfigurablePolicyParametersDTO();
+  tsConfigurablePolicyParameters.assignmentAlgorithm = ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE;
+  tsConfigurablePolicyParameters.outcome_variable_name = 'test_outcome';
+
+  const moocletExperimentData: ExperimentDTO = {
     ...experimentData,
     id: uuid(),
-    moocletPolicyParameters: {
-      prior: {
-          success: 1,
-          failure: 1
-      },
-      batch_size: 1,
-      max_rating: 1,
-      min_rating: 0,
-      uniform_threshold: 0,
-      tspostdiff_thresh: 0,
-      outcome_variable_name: "TS_CONFIG_{{randomTitle}}"
-    },
+    moocletPolicyParameters: tsConfigurablePolicyParameters,
     assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
   };
+
+  console.log({ moocletExperimentData });
 
   //for future use where user will be mocked for all testcases
 

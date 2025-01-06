@@ -1,8 +1,10 @@
-import { MoocletBatchResponse, MoocletPolicyParameters, MoocletPolicyParametersRequestBody, MoocletPolicyParametersResponseDetails, MoocletPolicyResponseDetails, MoocletProxyRequestParams, MoocletRequestBody, MoocletResponseDetails, MoocletVariableRequestBody, MoocletVariableResponseDetails, MoocletVersionRequestBody, MoocletVersionResponseDetails } from '../../../src/types/Mooclet';
+import { MoocletBatchResponse, MoocletPolicyParametersRequestBody, MoocletPolicyParametersResponseDetails, MoocletPolicyResponseDetails, MoocletProxyRequestParams, MoocletRequestBody, MoocletResponseDetails, MoocletVariableRequestBody, MoocletVariableResponseDetails, MoocletVersionRequestBody, MoocletVersionResponseDetails } from '../../../src/types/Mooclet';
 import { MoocletDataService } from '../../../src/api/services/MoocletDataService';
 import { Container } from 'typedi';
 import axios from 'axios';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { ASSIGNMENT_ALGORITHM } from '../../../../../../types/src';
+import { MoocletTSConfigurablePolicyParametersDTO } from 'types/src';
 
 jest.mock('axios');
 
@@ -211,7 +213,7 @@ describe('#MoocletDataService', () => {
   });
 
   describe('#postNewPolicyParameters', () => {
-    const mockPolicyParameters: MoocletPolicyParameters = {
+    const mockPolicyParameters: MoocletTSConfigurablePolicyParametersDTO = {
       prior: {
         failure: 1,
         success: 1,
@@ -228,14 +230,20 @@ describe('#MoocletDataService', () => {
       const mockRequestBody: MoocletPolicyParametersRequestBody = {
         mooclet: 1,
         policy: 2,
-        parameters: { ...mockPolicyParameters},
+        parameters: { 
+          ...mockPolicyParameters,
+          assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+        },
       };
   
       const mockResponseDetails: MoocletPolicyParametersResponseDetails = {
         id: 1,
         mooclet: 1,
         policy: 2,
-        parameters: { ...mockPolicyParameters},
+        parameters: { 
+          ...mockPolicyParameters,
+          assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+        },
       };
   
       jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockResolvedValue(mockResponseDetails);
@@ -248,7 +256,10 @@ describe('#MoocletDataService', () => {
       const mockRequestBody: MoocletPolicyParametersRequestBody = {
         mooclet: 1,
         policy: 2,
-        parameters: { ...mockPolicyParameters},
+        parameters: { 
+          ...mockPolicyParameters,
+          assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+        },
       };
   
       jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockRejectedValue(new Error('Failed to create policy parameters'));
