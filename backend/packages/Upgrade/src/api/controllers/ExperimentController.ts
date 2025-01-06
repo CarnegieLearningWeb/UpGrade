@@ -11,7 +11,7 @@ import {
   Req,
   QueryParams,
   Params,
-  UseBefore,
+  BadRequestError,
 } from 'routing-controllers';
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
@@ -27,10 +27,8 @@ import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
 import { MoocletExperimentService } from '../services/MoocletExperimentService';
 import { env } from '../../env';
-import { MoocletExperimentDTO } from '../DTO/MoocletExperimentDTO';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
-import { ValidateMoocletPolicyParametersMiddleware } from '../middlewares/ValidateMoocletPolicyParameters';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: Experiment[];
@@ -953,20 +951,25 @@ export class ExperimentController {
    */
 
   @Post()
-  @UseBefore(ValidateMoocletPolicyParametersMiddleware)
   public create(
     @Body({ validate: true }) experiment: ExperimentDTO,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<ExperimentDTO | MoocletExperimentDTO> {
+  ): Promise<ExperimentDTO> {
     request.logger.child({ user: currentUser });
 
     if ('moocletPolicyParameters' in experiment) {
-      return this.moocletExperimentService.syncCreate({
-        experimentDTO: experiment as MoocletExperimentDTO,
-        currentUser,
-        logger: request.logger,
-      });
+      if (!env.mooclets?.enabled) {
+        throw new BadRequestError(
+          'Failed to create Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
+        );
+      } else {
+        return this.moocletExperimentService.syncCreate({
+          experimentDTO: experiment,
+          currentUser,
+          logger: request.logger,
+        });
+      }
     }
 
     return this.experimentService.create(experiment, currentUser, request.logger);

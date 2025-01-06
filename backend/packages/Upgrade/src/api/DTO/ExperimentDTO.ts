@@ -36,9 +36,10 @@ import {
   REPEATED_MEASURE,
   EXPERIMENT_TYPE,
   ASSIGNMENT_ALGORITHM,
+  MoocletTSConfigurablePolicyParametersDTO,
+  MoocletPolicyParametersDTO,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
-import { MoocletPolicyParameters, MoocletTSConfigurablePolicyParameters } from '../../types/Mooclet';
 
 export {
   EXPERIMENT_SEARCH_KEY,
@@ -472,25 +473,26 @@ export class ExperimentDTO extends BaseExperimentWithoutPayload {
 
   // This should be validated when assignmentAlgorithm is not RANDOM or STRATIFIED_RANDOM_SAMPLING
   @ValidateIf(
-    (o) =>
-      o.assignmentAlgorithm &&
+    (experiment) =>
+      experiment.assignmentAlgorithm &&
       !(
-        o.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.RANDOM ||
-        o.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING
+        experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.RANDOM ||
+        experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING
       )
   )
   @IsDefined()
   @ValidateNested()
-  @Type(() => MoocletPolicyParameters, {
+  @Type(() => MoocletPolicyParametersDTO, {
     discriminator: {
       property: 'assignmentAlgorithm',
       subTypes: [
-        { value: MoocletTSConfigurablePolicyParameters, name: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE },
+        { value: MoocletTSConfigurablePolicyParametersDTO, name: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE },
         // Other policy types can be added here
       ],
     },
+    keepDiscriminatorProperty: true,
   })
-  public moocletPolicyParameters?: MoocletPolicyParameters;
+  public moocletPolicyParameters?: MoocletPolicyParametersDTO;
 }
 
 export class OldExperimentDTO extends BaseExperimentWithoutPayload {
