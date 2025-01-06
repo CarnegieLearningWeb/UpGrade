@@ -1,7 +1,6 @@
 import { Service } from 'typedi';
 import { MoocletDataService } from './MoocletDataService';
 import {
-  MoocletPolicyParameters,
   MoocletPolicyParametersRequestBody,
   MoocletPolicyParametersResponseDetails,
   MoocletRequestBody,
@@ -43,16 +42,15 @@ import { UnprocessableEntityException } from '@nestjs/common';
 import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
 import { MoocletVersionConditionMap } from '../models/MoocletVersionConditionMap';
 import { v4 as uuid } from 'uuid';
-import { MoocletExperimentDTO } from '../DTO/MoocletExperimentDTO';
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
-import { ConditionValidator } from '../DTO/ExperimentDTO';
+import { ConditionValidator, ExperimentDTO } from '../DTO/ExperimentDTO';
 import { UserDTO } from '../DTO/UserDTO';
 import { Experiment } from '../models/Experiment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { ASSIGNMENT_ALGORITHM } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, MoocletPolicyParametersDTO } from 'upgrade_types';
 
 export interface SyncCreateParams {
-  experimentDTO: MoocletExperimentDTO;
+  experimentDTO: ExperimentDTO;
   currentUser: UserDTO;
   logger: UpgradeLogger;
   createType?: string;
@@ -130,7 +128,7 @@ export class MoocletExperimentService extends ExperimentService {
     );
   }
 
-  public async syncCreate(params: SyncCreateParams): Promise<MoocletExperimentDTO> {
+  public async syncCreate(params: SyncCreateParams): Promise<ExperimentDTO> {
     return this.dataSource.transaction((manager) => this.handleCreateMoocletTransaction(manager, params));
   }
 
@@ -141,9 +139,10 @@ export class MoocletExperimentService extends ExperimentService {
   private async handleCreateMoocletTransaction(
     manager: EntityManager,
     params: SyncCreateParams
-  ): Promise<MoocletExperimentDTO> {
+  ): Promise<ExperimentDTO> {
     const moocletPolicyParameters = params.experimentDTO.moocletPolicyParameters;
 
+    // use try catch here to do syncDelete
     const experimentResponse = await this.createExperiment(manager, params);
     const moocletExperimentRefResponse = await this.orchestrateMoocletCreation(
       experimentResponse,
@@ -165,12 +164,12 @@ export class MoocletExperimentService extends ExperimentService {
     return experimentResponse;
   }
 
-  private async createExperiment(manager: EntityManager, params: SyncCreateParams): Promise<MoocletExperimentDTO> {
+  private async createExperiment(manager: EntityManager, params: SyncCreateParams): Promise<ExperimentDTO> {
     const { experimentDTO, currentUser, logger, createType } = params;
-    return (await super.create(experimentDTO, currentUser, logger, {
+    return await super.create(experimentDTO, currentUser, logger, {
       existingEntityManager: manager,
       createType,
-    })) as MoocletExperimentDTO;
+    });
   }
 
   private async saveMoocletExperimentRef(
@@ -239,8 +238,8 @@ export class MoocletExperimentService extends ExperimentService {
    */
 
   public async orchestrateMoocletCreation(
-    upgradeExperiment: MoocletExperimentDTO,
-    moocletPolicyParameters: MoocletPolicyParameters,
+    upgradeExperiment: ExperimentDTO,
+    moocletPolicyParameters: MoocletPolicyParametersDTO,
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<MoocletExperimentRef | undefined> {
@@ -345,7 +344,7 @@ export class MoocletExperimentService extends ExperimentService {
 
   private createMoocletVersionConditionMaps(
     moocletVersionsResponse: MoocletVersionResponseDetails[],
-    upgradeExperiment: MoocletExperimentDTO
+    upgradeExperiment: ExperimentDTO
   ): MoocletVersionConditionMap[] {
     const versionConditionMaps: MoocletVersionConditionMap[] = upgradeExperiment.conditions.map((condition) => {
       const versionConditionMap = new MoocletVersionConditionMap();
@@ -441,7 +440,7 @@ export class MoocletExperimentService extends ExperimentService {
   }
 
   private async createMoocletVersions(
-    experiment: MoocletExperimentDTO,
+    experiment: ExperimentDTO,
     moocletResponse: MoocletResponseDetails
   ): Promise<MoocletVersionResponseDetails[]> {
     if (!moocletResponse?.id || !experiment.conditions) return null;
@@ -478,7 +477,7 @@ export class MoocletExperimentService extends ExperimentService {
 
   private async createPolicyParameters(
     moocletResponse: MoocletResponseDetails,
-    moocletPolicyParameters: MoocletPolicyParameters
+    moocletPolicyParameters: MoocletPolicyParametersDTO
   ): Promise<MoocletPolicyParametersResponseDetails> {
     if (!moocletResponse) return null;
 

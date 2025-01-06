@@ -1,19 +1,20 @@
 import { IsNumber, IsString, ValidateNested, IsOptional, IsObject, IsDefined } from 'class-validator';
 import { Type } from 'class-transformer';
+import { MoocletPolicyParametersDTO } from './MoocletPolicyParametersDTO';
 
-class Prior {
+export class Prior {
   @IsDefined()
   @IsNumber()
   @Type(() => Number)
-  failure: number = 1;
+  failure = 1;
 
   @IsDefined()
   @IsNumber()
   @Type(() => Number)
-  success: number = 1;
+  success = 1;
 }
 
-class CurrentPosteriors {
+export class CurrentPosteriors {
   @IsNumber()
   @Type(() => Number)
   failures: number;
@@ -23,7 +24,7 @@ class CurrentPosteriors {
   successes: number;
 }
 
-export class MoocletTSConfigurablePolicyParametersDTO {
+export class MoocletTSConfigurablePolicyParametersDTO extends MoocletPolicyParametersDTO {
   @IsDefined()
   @ValidateNested()
   @Type(() => Prior)
@@ -36,21 +37,21 @@ export class MoocletTSConfigurablePolicyParametersDTO {
   current_posteriors?: Record<string, CurrentPosteriors>;
 
   @IsNumber()
-  batch_size: number = 1;
+  batch_size = 1;
 
   @IsNumber()
-  max_rating: number = 1;
+  max_rating = 1;
 
   @IsNumber()
-  min_rating: number = 0;
+  min_rating = 0;
 
   @IsNumber()
-  uniform_threshold: number = 0;
+  uniform_threshold = 0;
 
   @IsNumber()
-  tspostdiff_thresh: number = 0;
+  tspostdiff_thresh = 0;
 
   @IsDefined()
   @IsString()
-  outcome_variable_name: string = undefined;
+  outcome_variable_name: string | undefined = undefined;
 }
