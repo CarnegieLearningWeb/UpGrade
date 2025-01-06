@@ -82,8 +82,6 @@ export const env = {
     clientId: getOsEnvArray('GOOGLE_CLIENT_ID'),
     serviceAccountId: getOsEnvArray('GOOGLE_SERVICE_ACCOUNT_ID'),
     domainName: getOsEnvOptional('DOMAIN_NAME'),
-    allowTestTokenService: toBool(getOsEnvOptional('ALLOW_SERVICE_ACCOUNT_TOKEN_SERVICE')),
-    keyFilename: getOsEnvOptional('GOOGLE_SERVICE_ACCOUNT_CREDENTIAL_FILE'),
   },
   scheduler: {
     stepFunctionArn: getOsEnv('SCHEDULER_STEP_FUNCTION'),
