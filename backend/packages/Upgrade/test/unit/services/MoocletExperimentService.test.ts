@@ -82,7 +82,22 @@ jest.mock('../../../src/api/services/ErrorService');
 jest.mock('../../../src/api/services/CacheService');
 jest.mock('../../../src/api/services/QueryService');
 
+const mockTSConfigMoocletPolicyParameters = {
+  assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+  prior: {
+    success: 1,
+    failure: 1
+  },
+  batch_size: 1,
+  max_rating: 1,
+  min_rating: 0,
+  uniform_threshold: 0,
+  tspostdiff_thresh: 0,
+  outcome_variable_name: "TS_CONFIG_TEST"
+};
+
 const moocletExperimentDataTSConfigurable = {
+    id: 'test-exp-123',
     name: "test",
     description: "",
     consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
@@ -169,19 +184,7 @@ const moocletExperimentDataTSConfigurable = {
     state: EXPERIMENT_STATE.ENROLLING,
     postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
     revertTo: null,
-    moocletPolicyParameters: {
-      assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
-      prior: {
-        success: 1,
-        failure: 1
-      },
-      batch_size: 1,
-      max_rating: 1,
-      min_rating: 0,
-      uniform_threshold: 0,
-      tspostdiff_thresh: 0,
-      outcome_variable_name: "TS_CONFIG_TEST"
-    },
+    moocletPolicyParameters: mockTSConfigMoocletPolicyParameters
   };
 
 
@@ -215,7 +218,12 @@ describe('#MoocletExperimentService', () => {
   let cacheService: CacheService;
   let queryService: QueryService;
 
-  beforeAll(() => {
+  beforeEach(() => {
+    moocletDataService = {
+      deleteMooclet: jest.fn(),
+      deletePolicyParameters: jest.fn(),
+      deleteVariable: jest.fn(),
+    } as unknown as MoocletDataService;
     // Create service with mocked dependencies
     moocletExperimentService = new MoocletExperimentService(
       moocletDataService,
@@ -375,4 +383,83 @@ describe('#MoocletExperimentService', () => {
     });
   });
 
+  describe("#orchestrateMoocletCreation", ()=> {
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should orchestrate mooclet creation successfully', async () => {
+      const mockMoocletPolicy = { id: 'mockMoocletPolicy123' };
+      const mockMoocletResponse = { id: 'mockMoocletResponse' };
+      const mockMoocletVersionsResponse = [{ id: 'mockMoocletVersionsResponse' }];
+      const mockMoocletPolicyParametersResponse = { id: 'mockMoocletPolicyParametersResponse' };
+      const mockMoocletVariableResponse = { id: 'mockMoocletVariableResponse' };
+
+      jest.spyOn(moocletExperimentService as any, 'getMoocletPolicy').mockResolvedValue(mockMoocletPolicy);
+      jest.spyOn(moocletExperimentService as any, 'createMooclet').mockResolvedValue(mockMoocletResponse);
+      jest.spyOn(moocletExperimentService as any, 'createMoocletVersions').mockResolvedValue(mockMoocletVersionsResponse);
+      jest.spyOn(moocletExperimentService as any, 'createMoocletVersionConditionMaps').mockReturnValue([]);
+      jest.spyOn(moocletExperimentService as any, 'createPolicyParameters').mockResolvedValue(mockMoocletPolicyParametersResponse);
+      jest.spyOn(moocletExperimentService as any, 'createVariableIfNeeded').mockResolvedValue(mockMoocletVariableResponse);
+      jest.spyOn(moocletExperimentService as any, 'orchestrateDeleteMoocletResources').mockResolvedValue(undefined);
+
+      const result = await moocletExperimentService.orchestrateMoocletCreation(moocletExperimentDataTSConfigurable, mockTSConfigMoocletPolicyParameters);
+
+      expect(result).toBeDefined();
+      expect(result?.experimentId).toBe(moocletExperimentDataTSConfigurable.id);
+      expect(result?.moocletId).toBe(mockMoocletResponse.id);
+      expect(result?.policyParametersId).toBe(mockMoocletPolicyParametersResponse.id);
+      expect(result?.variableId).toBe(mockMoocletVariableResponse.id);
+      expect(moocletExperimentService.orchestrateDeleteMoocletResources).not.toHaveBeenCalled();
+    });
+
+    it('should handle errors and orchestrate deletion of mooclet resources', async () => {
+      const mockError = new Error('Test Error');
+
+      jest.spyOn(moocletExperimentService as any, 'getMoocletPolicy').mockRejectedValue(mockError);
+      jest.spyOn(moocletExperimentService as any, 'orchestrateDeleteMoocletResources').mockRejectedValue(mockError);
+
+      await expect(moocletExperimentService.orchestrateMoocletCreation(moocletExperimentDataTSConfigurable, mockTSConfigMoocletPolicyParameters)).rejects.toThrow(mockError);
+      expect(moocletExperimentService.orchestrateDeleteMoocletResources).toHaveBeenCalled();
+    });
+  });
+
+  describe("#orchestrateDeleteMoocletResources", ()=> {
+    const mockMoocletExperimentRef = new MoocletExperimentRef();
+    mockMoocletExperimentRef.moocletId = 1;
+    mockMoocletExperimentRef.policyParametersId = 2;
+    mockMoocletExperimentRef.variableId = 3;
+    mockMoocletExperimentRef.id = 'mockMoocletExperimentRef123';
+    mockMoocletExperimentRef.versionConditionMaps = [];
+      
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should delete all mooclet resources successfully', async () => {
+      jest.spyOn(moocletDataService, 'deleteMooclet').mockResolvedValue(undefined);
+      jest.spyOn(moocletDataService, 'deletePolicyParameters').mockResolvedValue(undefined);
+      jest.spyOn(moocletDataService, 'deleteVariable').mockResolvedValue(undefined);
+  
+      await moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef);
+  
+      expect(moocletDataService.deleteMooclet).toHaveBeenCalledWith(mockMoocletExperimentRef.moocletId);
+      expect(moocletDataService.deletePolicyParameters).toHaveBeenCalledWith(mockMoocletExperimentRef.policyParametersId);
+      expect(moocletDataService.deleteVariable).toHaveBeenCalledWith(mockMoocletExperimentRef.variableId);
+    });
+    it('should handle errors and log them', async () => {
+      const mockError = new Error('Test Error');
+      jest.spyOn(moocletDataService, 'deleteMooclet').mockRejectedValue(mockError);
+      jest.spyOn(moocletExperimentService as any, 'deleteMoocletVersions').mockResolvedValue(undefined);
+      jest.spyOn(moocletDataService, 'deletePolicyParameters').mockResolvedValue(undefined);
+      jest.spyOn(moocletDataService, 'deleteVariable').mockResolvedValue(undefined);
+  
+      await expect(moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef)).rejects.toThrow(mockError);
+  
+      expect(moocletDataService.deleteMooclet).toHaveBeenCalledWith(mockMoocletExperimentRef.moocletId);
+      expect(moocletDataService.deletePolicyParameters).not.toHaveBeenCalled();
+      expect(moocletDataService.deleteVariable).not.toHaveBeenCalled();
+    });
+  });
 });

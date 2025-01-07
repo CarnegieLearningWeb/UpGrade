@@ -308,7 +308,6 @@ export class MoocletExperimentService extends ExperimentService {
       });
 
       moocletExperimentRef.variableId = moocletVariableResponse?.id;
-      moocletExperimentRef.variableId = moocletVariableResponse?.id;
     } catch (err) {
       await this.orchestrateDeleteMoocletResources(moocletExperimentRef);
       throw err;
