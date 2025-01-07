@@ -52,7 +52,6 @@ import { ASSIGNMENT_ALGORITHM, MoocletPolicyParametersDTO } from 'upgrade_types'
 export interface SyncCreateParams {
   experimentDTO: ExperimentDTO;
   currentUser: UserDTO;
-  logger: UpgradeLogger;
   createType?: string;
 }
 
@@ -148,9 +147,7 @@ export class MoocletExperimentService extends ExperimentService {
     // create Mooclet resources. If this fails, it will internally rollback any mooclet resources created, and the UpGrade experiment transaction will abort
     const moocletExperimentRefResponse = await this.orchestrateMoocletCreation(
       experimentResponse,
-      moocletPolicyParameters,
-      params.currentUser,
-      logger
+      moocletPolicyParameters
     );
 
     logger.info({
@@ -174,7 +171,7 @@ export class MoocletExperimentService extends ExperimentService {
   }
 
   private async createExperiment(manager: EntityManager, params: SyncCreateParams): Promise<ExperimentDTO> {
-    const { experimentDTO, currentUser, logger, createType } = params;
+    const { experimentDTO, currentUser, createType } = params;
     return await super.create(experimentDTO, currentUser, logger, {
       existingEntityManager: manager,
       createType,
@@ -251,9 +248,7 @@ export class MoocletExperimentService extends ExperimentService {
 
   public async orchestrateMoocletCreation(
     upgradeExperiment: ExperimentDTO,
-    moocletPolicyParameters: MoocletPolicyParametersDTO,
-    currentUser: UserDTO,
-    logger: UpgradeLogger
+    moocletPolicyParameters: MoocletPolicyParametersDTO
   ): Promise<MoocletExperimentRef | undefined> {
     const newMoocletRequest: MoocletRequestBody = {
       name: upgradeExperiment.name,

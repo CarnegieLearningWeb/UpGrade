@@ -967,7 +967,6 @@ export class ExperimentController {
         return this.moocletExperimentService.syncCreate({
           experimentDTO: experiment,
           currentUser,
-          logger: request.logger,
         });
       }
     }
