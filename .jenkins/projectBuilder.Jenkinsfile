@@ -6,6 +6,25 @@ projectBuilderV5 (
     ],
 
     projects: [
+        "types": [
+            artifactType: "none",
+            projectDir: "types",
+            runInProjectDir: true,
+            skipArtifactUpload: true,
+            fileFilter: [
+                include: ["types/.*"]
+            ],
+            buildScripts: [
+                [
+                    script: 'npm ci --no-audit',
+                    githubCheck: 'types npm ci --no-audit',
+                    log: 'types-npm-ci.log'
+                ]
+            ],
+            s3Context: [
+                glob: "types/**/*"
+            ]
+        ],
         "upgrade-service":[
             artifactType: "ecr",
             projectDir: "backend",

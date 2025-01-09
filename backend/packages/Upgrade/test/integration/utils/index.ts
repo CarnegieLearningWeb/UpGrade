@@ -131,7 +131,7 @@ export async function markExperimentPoint(
 export async function checkDeletedExperiment(experimentId: string, user: User): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // delete experiment and check assignments operations
-  await experimentService.delete(experimentId, user, new UpgradeLogger());
+  await experimentService.delete(experimentId, user, { logger: new UpgradeLogger() });
 
   // no individual assignments
   const individualEnrollmentRepository = tteContainer.getCustomRepository(IndividualEnrollmentRepository);

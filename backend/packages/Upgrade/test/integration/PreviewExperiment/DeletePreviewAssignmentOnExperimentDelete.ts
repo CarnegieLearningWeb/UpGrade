@@ -67,7 +67,7 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  await experimentService.delete(experiments[0].id, user, new UpgradeLogger());
+  await experimentService.delete(experiments[0].id, user, { logger: new UpgradeLogger() });
   previewUsersData = await previewService.find(new UpgradeLogger());
 
   expect(previewUsersData[0].assignments).toBeUndefined();

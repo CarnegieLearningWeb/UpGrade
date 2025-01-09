@@ -106,4 +106,10 @@ export const env = {
     secret: getOsEnv('CLIENT_API_SECRET'),
     key: getOsEnv('CLIENT_API_KEY'),
   },
+  mooclets: {
+    enabled: toBool(getOsEnvOptional('MOOCLETS_ENABLED')) || false,
+    hostUrl: getOsEnvOptional('MOOCLETS_HOST_URL') || '',
+    apiRoute: getOsEnvOptional('MOOCLETS_API_ROUTE') || '',
+    apiToken: getOsEnvOptional('MOOCLETS_API_TOKEN') || '',
+  },
 };

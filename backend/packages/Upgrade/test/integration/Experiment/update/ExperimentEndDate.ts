@@ -47,7 +47,7 @@ export default async function ExperimentEndDate(): Promise<void> {
       .map((timelogs) => timelogs.timeLog)
   ).toHaveLength(1);
 
-  await experimentService.delete(experiment.id, user, new UpgradeLogger());
+  await experimentService.delete(experiment.id, user, { logger: new UpgradeLogger() });
 
   // with updated state
   await experimentService.create({ ...individualAssignmentExperiment } as any, user, new UpgradeLogger());
