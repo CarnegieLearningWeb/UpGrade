@@ -73,6 +73,7 @@ import {
   ParticipantsValidator,
   ExperimentFile,
   ValidatedExperimentError,
+  OldExperimentDTO,
 } from '../DTO/ExperimentDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
@@ -84,7 +85,8 @@ import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
-import { ExperimentCSVData } from '../repositories/AnalyticsRepository';
+import { ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
+import { compare } from 'compare-versions';
 
 const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
@@ -99,32 +101,32 @@ export class ExperimentService {
   allIdMap = {};
 
   constructor(
-    @InjectRepository() private experimentRepository: ExperimentRepository,
-    @InjectRepository() private experimentConditionRepository: ExperimentConditionRepository,
-    @InjectRepository() private decisionPointRepository: DecisionPointRepository,
-    @InjectRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
-    @InjectRepository() private individualExclusionRepository: IndividualExclusionRepository,
-    @InjectRepository() private groupExclusionRepository: GroupExclusionRepository,
-    @InjectRepository() private monitoredDecisionPointRepository: MonitoredDecisionPointRepository,
-    @InjectRepository() private userRepository: ExperimentUserRepository,
-    @InjectRepository() private metricRepository: MetricRepository,
-    @InjectRepository() private queryRepository: QueryRepository,
-    @InjectRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
-    @InjectRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
-    @InjectRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
-    @InjectRepository() private conditionPayloadRepository: ConditionPayloadRepository,
-    @InjectRepository() private factorRepository: FactorRepository,
-    @InjectRepository() private levelRepository: LevelRepository,
-    @InjectRepository() private levelCombinationElementsRepository: LevelCombinationElementRepository,
-    @InjectRepository() private archivedStatsRepository: ArchivedStatsRepository,
-    @InjectRepository() private stratificationRepository: StratificationFactorRepository,
-    @InjectDataSource() private dataSource: DataSource,
-    public previewUserService: PreviewUserService,
-    public segmentService: SegmentService,
-    public scheduledJobService: ScheduledJobService,
-    public errorService: ErrorService,
-    public cacheService: CacheService,
-    public queryService: QueryService
+    @InjectRepository() protected experimentRepository: ExperimentRepository,
+    @InjectRepository() protected experimentConditionRepository: ExperimentConditionRepository,
+    @InjectRepository() protected decisionPointRepository: DecisionPointRepository,
+    @InjectRepository() protected experimentAuditLogRepository: ExperimentAuditLogRepository,
+    @InjectRepository() protected individualExclusionRepository: IndividualExclusionRepository,
+    @InjectRepository() protected groupExclusionRepository: GroupExclusionRepository,
+    @InjectRepository() protected monitoredDecisionPointRepository: MonitoredDecisionPointRepository,
+    @InjectRepository() protected userRepository: ExperimentUserRepository,
+    @InjectRepository() protected metricRepository: MetricRepository,
+    @InjectRepository() protected queryRepository: QueryRepository,
+    @InjectRepository() protected stateTimeLogsRepository: StateTimeLogsRepository,
+    @InjectRepository() protected experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
+    @InjectRepository() protected experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
+    @InjectRepository() protected conditionPayloadRepository: ConditionPayloadRepository,
+    @InjectRepository() protected factorRepository: FactorRepository,
+    @InjectRepository() protected levelRepository: LevelRepository,
+    @InjectRepository() protected levelCombinationElementsRepository: LevelCombinationElementRepository,
+    @InjectRepository() protected archivedStatsRepository: ArchivedStatsRepository,
+    @InjectRepository() protected stratificationRepository: StratificationFactorRepository,
+    @InjectDataSource() protected dataSource: DataSource,
+    protected previewUserService: PreviewUserService,
+    protected segmentService: SegmentService,
+    protected scheduledJobService: ScheduledJobService,
+    protected errorService: ErrorService,
+    protected cacheService: CacheService,
+    protected queryService: QueryService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
@@ -154,9 +156,7 @@ export class ExperimentService {
     let queryBuilder = this.experimentRepository
       .createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .take(take)
-      .skip(skip);
+      .leftJoinAndSelect('experiment.partitions', 'partitions');
 
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
@@ -166,11 +166,17 @@ export class ExperimentService {
         .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
         .addOrderBy('rank', 'DESC')
         .setParameter('query', `${customSearchString}:*`);
+    }
+    if (sortParams) {
+      queryBuilder = queryBuilder.addOrderBy(`LOWER(CAST(experiment.name AS TEXT))`, sortParams.sortAs);
     } else {
       queryBuilder = queryBuilder.addOrderBy('experiment.updatedAt', 'DESC');
     }
 
     let expIds = (await queryBuilder.getMany()).map((exp) => exp.id);
+    // manually paginating the data
+    // there is an active issue in typeorm where we can't use skip and take with orderby
+    expIds = expIds.slice(skip, skip + take);
     expIds = Array.from(new Set(expIds));
 
     let queryBuilderToReturn = this.experimentRepository
@@ -233,8 +239,8 @@ export class ExperimentService {
     }
   }
 
-  public async getExperimentDetailsForCSVDataExport(experimentId: string): Promise<ExperimentCSVData[]> {
-    return await this.experimentRepository.getExperimentCSVDataExport(experimentId);
+  public async getExperimentDetailsForCSVDataExport(experimentId: string): Promise<ExperimentDetailsForCSVData[]> {
+    return await this.experimentRepository.fetchExperimentDetailsForCSVDataExport(experimentId);
   }
 
   public getTotalCount(): Promise<number> {
@@ -261,9 +267,13 @@ export class ExperimentService {
     experiment: ExperimentDTO,
     currentUser: UserDTO,
     logger: UpgradeLogger,
-    createType?: string
-  ): Promise<Experiment> {
+    options?: {
+      createType?: string;
+      existingEntityManager?: EntityManager;
+    }
+  ): Promise<ExperimentDTO> {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
+    const { createType, existingEntityManager } = options || {};
 
     // order for condition
     let newConditionId;
@@ -291,7 +301,8 @@ export class ExperimentService {
       experiment.partitions[index] = newDecisionPoint;
     });
     experiment.backendVersion = env.app.version;
-    return this.addExperimentInDB(experiment, currentUser, logger);
+
+    return this.addExperimentInDB(experiment, currentUser, logger, existingEntityManager);
   }
 
   public createMultipleExperiments(
@@ -306,12 +317,14 @@ export class ExperimentService {
   public async delete(
     experimentId: string,
     currentUser: UserDTO,
-    logger?: UpgradeLogger
+    options?: { logger?: UpgradeLogger; existingEntityManager?: EntityManager }
   ): Promise<Experiment | undefined> {
+    const { logger, existingEntityManager } = options;
     if (logger) {
       logger.info({ message: `Delete experiment =>  ${experimentId}` });
     }
-    return await this.dataSource.transaction(async (transactionalEntityManager) => {
+    const entityManager = existingEntityManager || this.dataSource.manager;
+    return await entityManager.transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
 
       if (experiment) {
@@ -400,6 +413,20 @@ export class ExperimentService {
     return [...conditionIds, ...decisionPointsIds];
   }
 
+  public async prepareStateTimeLogDoc(
+    experimentDoc: Experiment,
+    fromState: EXPERIMENT_STATE,
+    toState: EXPERIMENT_STATE
+  ) {
+    const stateTimeLogDoc = new StateTimeLog();
+    stateTimeLogDoc.id = uuid();
+    stateTimeLogDoc.fromState = fromState;
+    stateTimeLogDoc.toState = toState;
+    stateTimeLogDoc.timeLog = new Date();
+    stateTimeLogDoc.experiment = experimentDoc;
+    return stateTimeLogDoc;
+  }
+
   public async updateState(
     experimentId: string,
     state: EXPERIMENT_STATE,
@@ -456,14 +483,7 @@ export class ExperimentService {
     // add experiment audit logs
     await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user, entityManager);
 
-    const timeLogDate = new Date();
-
-    const stateTimeLogDoc = new StateTimeLog();
-    stateTimeLogDoc.id = uuid();
-    stateTimeLogDoc.fromState = oldExperiment.state;
-    stateTimeLogDoc.toState = state;
-    stateTimeLogDoc.timeLog = timeLogDate;
-    stateTimeLogDoc.experiment = oldExperiment;
+    const stateTimeLogDoc = await this.prepareStateTimeLogDoc(oldExperiment, oldExperiment.state, state);
 
     // updating the experiment and stateTimeLog
     const stateTimeLogRepo = entityManager ? entityManager.getRepository(StateTimeLog) : this.stateTimeLogsRepository;
@@ -552,10 +572,10 @@ export class ExperimentService {
     return validatedExperiments;
   }
 
-  public async exportExperiment(experimentIds: string[], user: UserDTO, logger: UpgradeLogger): Promise<Experiment[]> {
+  public async exportExperiment(user: UserDTO, logger: UpgradeLogger, experimentIds?: string[]): Promise<Experiment[]> {
     logger.info({ message: `Inside export Experiment JSON ${experimentIds}` });
     const experimentDetails = await this.experimentRepository.find({
-      where: { id: In(experimentIds) },
+      where: experimentIds ? { id: In(experimentIds) } : undefined,
       relations: [
         'partitions',
         'conditions',
@@ -782,6 +802,13 @@ export class ExperimentService {
         let experimentDoc: Experiment;
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
+          // Store state time log for the experiment
+          const stateTimeLogDoc = await this.prepareStateTimeLogDoc(
+            experimentDoc,
+            oldExperiment.state,
+            experimentDoc.state
+          );
+          await transactionalEntityManager.getRepository(StateTimeLog).save(stateTimeLogDoc);
         } catch (err) {
           const error = err as ErrorWithType;
           error.details = `Error in updating experiment document "updateExperimentInDB"`;
@@ -1184,15 +1211,19 @@ export class ExperimentService {
   private async addExperimentInDB(
     experiment: ExperimentDTO,
     user: UserDTO,
-    logger: UpgradeLogger
-  ): Promise<Experiment> {
+    logger: UpgradeLogger,
+    existingEntityManager?: EntityManager
+  ): Promise<ExperimentDTO> {
     await this.clearExperimentCacheDetail(
       experiment.context[0],
       experiment.partitions.map((partition) => {
         return { site: partition.site, target: partition.target };
       })
     );
-    const createdExperiment = await this.dataSource.transaction(async (transactionalEntityManager) => {
+
+    // if the upgrade experiment is being created as part of a transaction that has already been opened (along with mooclet creation) that transaction handler need to be used
+    const entityManager = existingEntityManager || this.dataSource.manager;
+    const createdExperiment = await entityManager.transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.description = experiment.description || '';
 
@@ -1225,6 +1256,15 @@ export class ExperimentService {
       let experimentDoc: Experiment;
       try {
         experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
+        // Store state time log for the experiment in enrolling state.
+        if (experimentDoc.state !== EXPERIMENT_STATE.INACTIVE) {
+          const stateTimeLogDoc = await this.prepareStateTimeLogDoc(
+            experimentDoc,
+            EXPERIMENT_STATE.INACTIVE,
+            experimentDoc.state
+          );
+          await transactionalEntityManager.getRepository(StateTimeLog).save(stateTimeLogDoc);
+        }
       } catch (err) {
         const error = err as ErrorWithType;
         error.details = 'Error in adding experiment in DB';
@@ -1497,6 +1537,7 @@ export class ExperimentService {
       const newExperiment = newExperimentObject;
       return newExperiment;
     });
+
     // create schedules to start experiment and end experiment
     if (this.scheduledJobService) {
       await this.scheduledJobService.updateExperimentSchedules(createdExperiment, logger);
@@ -1525,7 +1566,14 @@ export class ExperimentService {
         } catch (error) {
           return { fileName: experimentFile.fileName, error: 'Invalid JSON' };
         }
-        const newExperiment = plainToClass(ExperimentDTO, experiment);
+
+        let newExperiment: ExperimentDTO;
+        if (compare(experiment.backendVersion, '5.3.0', '>=')) {
+          newExperiment = plainToClass(ExperimentDTO, experiment);
+        } else {
+          newExperiment = plainToClass(ExperimentDTO, this.experimentPayloadConverter(experiment));
+        }
+
         if (!(newExperiment instanceof ExperimentDTO)) {
           return { fileName: experimentFile.fileName, error: 'Invalid JSON' };
         }
@@ -1567,6 +1615,19 @@ export class ExperimentService {
         }
       })
       .filter((error) => error !== null);
+  }
+
+  private experimentPayloadConverter(experiment: OldExperimentDTO): ExperimentDTO {
+    const updatedExperimentPayload = experiment.conditionPayloads.map((conditionPayload) => {
+      return {
+        ...conditionPayload,
+        parentCondition: conditionPayload.parentCondition.id,
+        decisionPoint: conditionPayload.decisionPoint.id,
+      };
+    });
+
+    const newExperiment: ExperimentDTO = { ...experiment, conditionPayloads: updatedExperimentPayload };
+    return newExperiment;
   }
 
   private async validateExperimentJSON(experiment: ExperimentDTO): Promise<string> {

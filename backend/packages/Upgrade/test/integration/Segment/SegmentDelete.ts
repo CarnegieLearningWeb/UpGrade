@@ -2,7 +2,7 @@ import { globalExcludeSegment } from '../../../src/init/seed/globalExcludeSegmen
 import Container from 'typedi';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
-import { segment, segmentSecond } from '../mockData/segment';
+import { segment, segmentSecond, segmentList, segmentWithList } from '../mockData/segment';
 
 export default async function SegmentDelete(): Promise<void> {
   const segmentService = Container.get<SegmentService>(SegmentService);
@@ -174,4 +174,17 @@ export default async function SegmentDelete(): Promise<void> {
       }),
     ])
   );
+
+  // Create segment with List (private segment)
+  const segmentWithListObject = segmentWithList;
+
+  await segmentService.upsertSegment(segmentWithListObject, new UpgradeLogger());
+  const privateSegmentObject = segmentList;
+  // adds a private segment
+  await segmentService.addList(privateSegmentObject, new UpgradeLogger());
+  segments = await segmentService.getAllSegments(new UpgradeLogger());
+  expect(segments.length).toEqual(3);
+  await segmentService.deleteSegment(segmentWithListObject.id, new UpgradeLogger());
+  segments = await segmentService.getAllSegments(new UpgradeLogger());
+  expect(segments.length).toEqual(2);
 }

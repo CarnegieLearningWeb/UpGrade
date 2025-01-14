@@ -602,7 +602,7 @@ public class ExperimentClient implements AutoCloseable {
 						}));
 	}
 
-	public void log(List<LogInput> value, final ResponseCallback<LogEventResponse> callbacks) {
+	public void log(List<LogInput> value, final ResponseCallback<List<LogEventResponse>> callbacks) {
 
 		AsyncInvoker invocation = this.apiService.prepareRequest(LOG_EVENT);
 		LogRequest logRequest = new LogRequest(value);
@@ -617,7 +617,9 @@ public class ExperimentClient implements AutoCloseable {
 							public void completed(Response response) {
 								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 									try {
-										readResponseToCallback(response, callbacks, LogEventResponse.class);
+										readResponseToCallback(response, callbacks,
+												new GenericType<List<LogEventResponse>>() {
+												});
 									} catch (Exception e) {
 										callbacks.onError(new ErrorResponse(e.toString()));
 									}

@@ -80,6 +80,12 @@ export enum ExperimentDesignTypes {
   FACTORIAL = 'Factorial',
 }
 
+export enum OverviewFormWarningStatus {
+  NO_WARNING = 'no warning',
+  CONTEXT_CHANGED = 'context changed',
+  DESIGN_TYPE_CHANGED = 'design type changed',
+}
+
 export interface NewExperimentDialogData {
   type: NewExperimentDialogEvents;
   formData?: any;
@@ -239,7 +245,6 @@ export interface Experiment {
   group: string;
   assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
   stratificationFactor?: { stratificationFactorName: string };
-  logging: boolean;
   conditions: ExperimentCondition[];
   partitions: ExperimentDecisionPoint[];
   factors: ExperimentFactor[];
@@ -303,6 +308,7 @@ export interface ExperimentState extends EntityState<Experiment> {
   isLoadingExperiment: boolean;
   isLoadingExperimentDetailStats: boolean;
   isPollingExperimentDetailStats: boolean;
+  isLoadingExperimentExport: boolean;
   skipExperiment: number;
   totalExperiments: number;
   searchKey: EXPERIMENT_SEARCH_KEY;

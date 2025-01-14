@@ -13,11 +13,11 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { DecisionPoint } from 'src/api/models/DecisionPoint';
 
-export function updateExcludeIfReachedFlag(partitions: DecisionPoint[]): DecisionPoint[] {
+export function updateExcludeIfReachedFlag(partitions: Array<Partial<Omit<DecisionPoint, 'createdAt' | 'updatedAt' | 'versionNumber' | 'experiment' | 'conditionPayloads'>>>): DecisionPoint[] {
   partitions.forEach((partition) => {
     partition.excludeIfReached = true;
   });
-  return partitions;
+  return partitions as DecisionPoint[];
 }
 import { IndividualExclusionRepository } from '../../../src/api/repositories/IndividualExclusionRepository';
 
@@ -131,7 +131,7 @@ export async function markExperimentPoint(
 export async function checkDeletedExperiment(experimentId: string, user: User): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // delete experiment and check assignments operations
-  await experimentService.delete(experimentId, user, new UpgradeLogger());
+  await experimentService.delete(experimentId, user, { logger: new UpgradeLogger() });
 
   // no individual assignments
   const individualEnrollmentRepository = tteContainer.getCustomRepository(IndividualEnrollmentRepository);

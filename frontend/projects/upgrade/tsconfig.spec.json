@@ -2,8 +2,8 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "../../out-tsc/spec",
-    "types": ["jest", "node", "google.accounts"]
+    "types": ["jest", "node", "google.accounts",  "reflect-metadata"]
   },
-  "files": ["src/polyfills.ts"],
+  "files": ["src/polyfills.ts", "node_modules/reflect-metadata/Reflect.js"],
   "include": ["src/**/*.spec.ts", "src/**/*.d.ts"]
 }

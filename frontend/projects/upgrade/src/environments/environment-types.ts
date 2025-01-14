@@ -8,6 +8,7 @@ export interface APIEndpoints {
   validateExperiment: string;
   importExperiment: string;
   exportExperiment: string;
+  exportAllExperiment: string;
   updateExperiments: string;
   getExperimentById: string;
   getAllAuditLogs: string;
@@ -29,11 +30,15 @@ export interface APIEndpoints {
   allExperimentNames: string;
   featureFlag: string;
   validateFeatureFlag: string;
+  validateFeatureFlagList: string;
   importFeatureFlag: string;
+  importFeatureFlagList: string;
   updateFlagStatus: string;
   updateFilterMode: string;
   getPaginatedFlags: string;
   exportFlagsDesign: string;
+  exportFFAllIncludeListsDesign: string;
+  exportFFAllExcludeListsDesign: string;
   emailFlagData: string;
   addFlagInclusionList: string;
   addFlagExclusionList: string;

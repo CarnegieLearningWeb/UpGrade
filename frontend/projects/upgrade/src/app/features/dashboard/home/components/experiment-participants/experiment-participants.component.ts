@@ -50,7 +50,6 @@ export class ExperimentParticipantsComponent implements OnInit {
   inclusionCriteria = [{ value: INCLUSION_CRITERIA.INCLUDE_SPECIFIC }, { value: INCLUSION_CRITERIA.EXCEPT }];
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
 
-  enableSave = true;
   contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
   allSegments: Segment[];
@@ -305,6 +304,9 @@ export class ExperimentParticipantsComponent implements OnInit {
   }
 
   removeMember1(groupIndex: number) {
+    if (groupIndex === 0 && this.members1.controls.at(0).get('type').value === 'All') {
+      this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
+    }
     this.members1.removeAt(groupIndex);
     this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView1();

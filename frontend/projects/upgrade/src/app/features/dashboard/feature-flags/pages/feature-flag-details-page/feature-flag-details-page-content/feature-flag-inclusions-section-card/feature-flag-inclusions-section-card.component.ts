@@ -15,6 +15,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { CommonSimpleConfirmationModalComponent } from '../../../../../../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
 import { Observable, Subscription, combineLatest, map } from 'rxjs';
 import {
+  FeatureFlag,
   PARTICIPANT_LIST_ROW_ACTION,
   ParticipantListRowActionEvent,
   ParticipantListTableRow,
@@ -48,6 +49,12 @@ export class FeatureFlagInclusionsSectionCardComponent {
   tableRowCount$ = this.featureFlagService.selectFeatureFlagInclusionsLength$;
   selectedFlag$ = this.featureFlagService.selectedFeatureFlag$;
 
+  subscriptions = new Subscription();
+  menuButtonItems: IMenuButtonItem[] = [
+    { name: 'Import Include List', disabled: false },
+    { name: 'Export All Include Lists', disabled: false },
+  ];
+
   rowCountWithInclude$: Observable<number> = combineLatest([this.tableRowCount$, this.selectedFlag$]).pipe(
     map(([tableRowCount, selectedFeatureFlag]) =>
       selectedFeatureFlag?.filterMode === FILTER_MODE.INCLUDE_ALL ? 0 : tableRowCount
@@ -63,11 +70,6 @@ export class FeatureFlagInclusionsSectionCardComponent {
     private dialogService: DialogService,
     private authService: AuthService
   ) {}
-  subscriptions = new Subscription();
-  menuButtonItems: IMenuButtonItem[] = [
-    // { name: 'Import Include List', disabled: false },
-    // { name: 'Export All Include Lists', disabled: false },
-  ];
 
   confirmIncludeAllChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
 
@@ -121,8 +123,30 @@ export class FeatureFlagInclusionsSectionCardComponent {
     this.isSectionCardExpanded = newFilterMode !== FILTER_MODE.INCLUDE_ALL;
   }
 
-  onMenuButtonItemClick(event) {
-    console.log('Menu Button Item Clicked:', event);
+  onMenuButtonItemClick(event, flag: FeatureFlag) {
+    const confirmMessage = 'feature-flags.export-all-include-lists-design.confirmation-text.text';
+    switch (event) {
+      case 'Import Include List':
+        this.dialogService
+          .openImportFeatureFlagIncludeListModal(flag.id)
+          .afterClosed()
+          .subscribe(() => this.featureFlagService.fetchFeatureFlagById(flag.id));
+        break;
+      case 'Export All Include Lists':
+        if (flag.featureFlagSegmentInclusion.length) {
+          this.dialogService
+            .openExportDesignModal('Export All Include Lists', confirmMessage)
+            .afterClosed()
+            .subscribe((isExportClicked: boolean) => {
+              if (isExportClicked) {
+                this.featureFlagService.exportAllIncludeListsData(flag.id);
+              }
+            });
+        }
+        break;
+      default:
+        console.log('Unknown action');
+    }
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
