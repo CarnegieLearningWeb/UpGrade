@@ -441,15 +441,19 @@
           <div *ngIf="decisionPoints.length && conditions.length">
             <app-payloads-table [experimentInfo]="experimentInfo"> </app-payloads-table>
 
-            <div *ngIf="currentAssignmentAlgorithm$ | async as algo">
-              <div *ngIf="shouldShowJsonEditor(algo)" class="json-editor-container">
-                <span class="title">{{ 'home.new-experiment.design.mooclet-policy-parameters.header.text' | translate }}</span>
-                <json-editor
-                  #policyEditor
-                  [options]="options"
-                  [data]="defaultPolicyParams[algo]"
-                ></json-editor>
-              </div>
+            <div *ngIf="isMoocletExperimentDesign$ | async" class="json-editor-container">
+              <span class="title">{{ 'home.new-experiment.design.mooclet-policy-parameters.header.text' | translate }}</span>
+              <json-editor
+                #policyEditor
+                [options]="options"
+                [data]="defaultPolicyParametersForAlgorithm$ | async"
+                formControlName="moocletPolicyParameters"
+              ></json-editor>
+              <span
+                class="ft-14-600 validation-message"
+                *ngIf="moocletPolicyParametersErrors$ | async as errors"
+                [innerHTML]="errors"
+              ></span>
             </div>
           </div>
         </section>

@@ -257,11 +257,6 @@ export interface UcbParameters {
   window_size: number;
 }
 
-export type PolicyParameterMap = {
-  [ASSIGNMENT_ALGORITHM.TS_CONFIGURABLE]: TsConfigurableParameters;
-  [ASSIGNMENT_ALGORITHM.EPSILON_GREEDY]: EpsilonGreedyParameters;
-  [ASSIGNMENT_ALGORITHM.UCB]: UcbParameters;
-};
 
 export interface ScoreObject {
   id: string;

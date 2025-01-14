@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
-import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT, MOOCLET_POLICY_SCHEMA_MAP } from 'upgrade_types';
 import {
   ExperimentDecisionPoint,
   ExperimentCondition,
@@ -55,7 +55,7 @@ import {
   actionUpdateFactorialConditionTableData,
   actionUpdateSimpleExperimentPayloadTableData,
 } from './store/experiment-design-stepper.actions';
-import { BehaviorSubject, distinctUntilChanged } from 'rxjs';
+import { BehaviorSubject, distinctUntilChanged, map } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 import isEqual from 'lodash.isequal';
 import { PAYLOAD_TYPE } from '../../../../../../../types/src';
@@ -79,8 +79,13 @@ export class ExperimentDesignStepperService {
   currentAssignmentUnit$ = this.assignmentUnitSource.asObservable();
 
   // Assignment Algorithm:
-  private assignmentAlgorithmSource = new BehaviorSubject<ASSIGNMENT_ALGORITHM>(ASSIGNMENT_ALGORITHM.RANDOM);
-  currentAssignmentAlgorithm$ = this.assignmentAlgorithmSource.asObservable();
+  currentAssignmentAlgorithm$ = new BehaviorSubject<ASSIGNMENT_ALGORITHM>(ASSIGNMENT_ALGORITHM.RANDOM);
+  defaultPolicyParametersForAlgorithm$ = this.currentAssignmentAlgorithm$.pipe(
+    map((algorithm) => new MOOCLET_POLICY_SCHEMA_MAP[algorithm]())
+  );
+  isMoocletExperimentDesign$ = this.currentAssignmentAlgorithm$.pipe(
+    map((algorithm) => Object.keys(MOOCLET_POLICY_SCHEMA_MAP).includes(algorithm))
+  );
 
   // Payload table:
   simpleExperimentPayloadTableDataBehaviorSubject$ = new BehaviorSubject<SimpleExperimentPayloadTableRowData[]>([]);
@@ -143,7 +148,7 @@ export class ExperimentDesignStepperService {
   }
 
   changeAssignmentAlgorithm(algo: ASSIGNMENT_ALGORITHM) {
-    this.assignmentAlgorithmSource.next(algo);
+    this.currentAssignmentAlgorithm$.next(algo);
   }
 
   getHasExperimentDesignStepperDataChanged() {
