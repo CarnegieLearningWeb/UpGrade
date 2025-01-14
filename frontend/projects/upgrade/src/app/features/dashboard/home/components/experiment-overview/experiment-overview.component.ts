@@ -17,6 +17,7 @@ import {
   CONSISTENCY_RULE,
   EXPERIMENT_STATE,
   EXPERIMENT_TYPE,
+  MOOCLET_POLICY_SCHEMA_MAP,
 } from 'upgrade_types';
 import {
   NewExperimentDialogEvents,
@@ -70,9 +71,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   assignmentAlgorithms = [
     { value: ASSIGNMENT_ALGORITHM.RANDOM },
     { value: ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING },
-    { value: ASSIGNMENT_ALGORITHM.TS_CONFIGURABLE },
-    { value: ASSIGNMENT_ALGORITHM.EPSILON_GREEDY },
-    { value: ASSIGNMENT_ALGORITHM.UCB },
   ];
   allStratificationFactors: StratificationFactorSimple[];
   isLoading$ = this.stratificationFactorsService.isLoading$;
@@ -103,6 +101,12 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   ) {
     if (this.environment.withinSubjectExperimentSupportToggle) {
       this.unitOfAssignments.push({ value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS });
+    }
+    if (this.environment.moocletToggle) {
+      const supportedMoocletAlgorithms = Object.keys(MOOCLET_POLICY_SCHEMA_MAP) as ASSIGNMENT_ALGORITHM[]
+      supportedMoocletAlgorithms.forEach((algorithmName) => {
+        this.assignmentAlgorithms.push({ value: algorithmName })
+      })
     }
   }
 

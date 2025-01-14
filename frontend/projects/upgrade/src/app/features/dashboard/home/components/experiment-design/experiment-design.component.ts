@@ -18,8 +18,9 @@ import {
   UntypedFormArray,
   AbstractControl,
   FormArray,
+  FormControl,
 } from '@angular/forms';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, from, Observable, of, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -33,7 +34,7 @@ import {
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
-import { filter, map, startWith } from 'rxjs/operators';
+import { debounceTime, filter, map, startWith, switchMap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { DialogService } from '../../../../../shared/services/common-dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
@@ -44,8 +45,9 @@ import {
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { SIMPLE_EXP_CONSTANTS } from './experiment-design.constants';
 import { JsonEditorComponent, JsonEditorOptions } from 'ang-jsoneditor';
-import { ASSIGNMENT_ALGORITHM } from '../../../../../../../../../../types/src';
-import { PolicyParameterMap } from '../../../../../../../../../../types/src/Experiment/interfaces';
+import { MOOCLET_POLICY_SCHEMA_MAP, MoocletPolicyParametersDTO, MoocletTSConfigurablePolicyParametersDTO } from '../../../../../../../../../../types/src';
+import { validate, ValidationError } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
 
 @Component({
   selector: 'home-experiment-design',
@@ -72,33 +74,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   policyEditorError = false;
 
   @ViewChild('policyEditor', { static: false }) policyEditor: JsonEditorComponent;
-
-  // TODO: The default param values might need to be fetched from the backend
-  defaultPolicyParams: Partial<PolicyParameterMap> = {
-    [ASSIGNMENT_ALGORITHM.TS_CONFIGURABLE]: {
-      prior: {
-        success: 1,
-        failure: 1,
-      },
-      posteriors: undefined,
-      batch_size: 1,
-      max_rating: 1,
-      min_rating: 0,
-      uniform_threshold: 0,
-      tspostdiff_thresh: 0,
-      outcome_variable_name: '',
-    },
-    [ASSIGNMENT_ALGORITHM.EPSILON_GREEDY]: {
-      epsilon: 0.1,
-      decay_rate: 0.995,
-      min_epsilon: 0.01,
-    },
-    [ASSIGNMENT_ALGORITHM.UCB]: {
-      alpha: 1,
-      window_size: 1,
-    },
-    // Add other algorithm parameters as needed
-  };
 
   subscriptionHandler: Subscription;
 
@@ -155,6 +130,12 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   // Used for displaying the Mooclet Policy Parameters JSON editor
   currentAssignmentAlgorithm$ = this.experimentDesignStepperService.currentAssignmentAlgorithm$;
+  isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$
+  defaultPolicyParametersForAlgorithm$ = this.currentAssignmentAlgorithm$.pipe(
+    map((algorithm) => new MOOCLET_POLICY_SCHEMA_MAP[algorithm]())
+  );
+  moocletPolicyParametersErrors$: Observable<ValidationError[]>;
+  moocletPolicyParametersDTO: MoocletPolicyParametersDTO;
 
   constructor(
     private _formBuilder: UntypedFormBuilder,
@@ -297,6 +278,51 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.policyEditorError = true;
       }
     };
+    this.handleMoocletAlgorithmChange();
+  }
+
+  addMoocletPolicyParametersControl(defaultParams: Omit<MoocletPolicyParametersDTO, "assignmentAlgorithm">) {
+    this.experimentDesignForm.addControl('moocletPolicyParameters', new FormControl(defaultParams));
+    this.registerJsonEditorOnValueChanges();
+  }
+
+  registerJsonEditorOnValueChanges() {
+    const policyParamsFormControl = this.experimentDesignForm.get('moocletPolicyParameters');
+    this.moocletPolicyParametersErrors$ = policyParamsFormControl.valueChanges.pipe(
+      debounceTime(300), // Debounce by 300ms
+      switchMap(jsonValue => {
+        try {
+          const ValidatorClass = MOOCLET_POLICY_SCHEMA_MAP[this.currentAssignmentAlgorithm$.value];
+          const plainDTO = {
+            assignmentAlgorithm: this.currentAssignmentAlgorithm$.value,
+            ...jsonValue
+          };
+          // class-validator insists that a plain object be instantiated as a class instance in order for this to work
+          const DTOInstance = plainToInstance(ValidatorClass, plainDTO);
+          return from(validate(DTOInstance))
+        } catch (e) {
+          // Handle JSON parse errors
+          return of([{
+            property: 'JSON Parse Error',
+            constraints: { invalid: (e as Error).message }
+          }]);
+        }
+      })
+    );
+    this.moocletPolicyParametersErrors$.subscribe((errors) => console.log(errors));
+  }
+
+  handleMoocletAlgorithmChange() {
+    combineLatest([
+      this.isMoocletExperimentDesign$,
+      this.defaultPolicyParametersForAlgorithm$,
+    ]).subscribe(([isMooclet, defaultParams]) => {
+      if (isMooclet) {
+        this.addMoocletPolicyParametersControl(defaultParams);
+      } else {
+        this.experimentDesignForm.removeControl('moocletPolicyParameters');
+      }
+    });
   }
 
   manageConditionCodeControl(index: number) {
@@ -772,6 +798,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           decisionPoints: experimentDesignFormData.decisionPoints,
           conditions: experimentDesignFormData.conditions,
         });
+      if (this.moocletPolicyParametersDTO) {
+        experimentDesignFormData.moocletPolicyParameters = this.moocletPolicyParametersDTO;
+      }
       this.emitExperimentDialogEvent.emit({
         type: eventType,
         formData: this.renameDecisionPointsAsPartitionsTEMPORARY(experimentDesignFormData),
@@ -780,7 +809,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
         this.experimentDesignStepperService.experimentStepperDataReset();
         this.experimentDesignForm.markAsPristine();
-      }
+      }  
     }
   }
 
@@ -817,14 +846,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   changeEqualWeightFlag(event) {
     event.checked ? (this.equalWeightFlag = true) : (this.equalWeightFlag = false);
     this.applyEqualWeight();
-  }
-
-  shouldShowJsonEditor(algo: ASSIGNMENT_ALGORITHM): boolean {
-    return [
-      ASSIGNMENT_ALGORITHM.TS_CONFIGURABLE,
-      ASSIGNMENT_ALGORITHM.EPSILON_GREEDY,
-      ASSIGNMENT_ALGORITHM.UCB,
-    ].includes(algo);
   }
 
   get conditions(): UntypedFormArray {
