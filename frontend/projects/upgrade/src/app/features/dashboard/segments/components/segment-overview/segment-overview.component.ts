@@ -92,7 +92,7 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
       }
       return segment.name + '_' + segment.context;
     });
-    const segmentNameContextString = name + '_' + context;
+    const segmentNameContextString = name.trim() + '_' + context;
     if (this.allSegmentNameContextArray.includes(segmentNameContextString)) {
       this.isSegmentNameValid = false;
     }
@@ -124,5 +124,6 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.contextMetaDataSub.unsubscribe();
+    this.allSegmentsSub.unsubscribe();
   }
 }

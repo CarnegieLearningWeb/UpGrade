@@ -336,5 +336,49 @@ export class FeatureFlagsEffects {
     )
   );
 
+  exportAllIncludeListsDesign$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionExportAllIncludeListsDesign),
+      map((action) => ({ featureFlagId: action.featureFlagId })),
+      switchMap(({ featureFlagId }) =>
+        this.featureFlagsDataService.exportAllIncludeListsDesign(featureFlagId).pipe(
+          map((exportedAllListsDesign: any[]) => {
+            if (exportedAllListsDesign.length) {
+              this.commonExportHelpersService.convertDataToDownload(exportedAllListsDesign, 'Lists');
+              this.notificationService.showSuccess('Feature Flag Design JSON downloaded!');
+            }
+            return FeatureFlagsActions.actionExportAllIncludeListsDesignSuccess();
+          }),
+          catchError((error) => {
+            this.notificationService.showError('Failed to export All include lists Design');
+            return of(FeatureFlagsActions.actionExportAllIncludeListsDesignFailure());
+          })
+        )
+      )
+    )
+  );
+
+  exportAllExcludeListsDesign$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionExportAllExcludeListsDesign),
+      map((action) => ({ featureFlagId: action.featureFlagId })),
+      switchMap(({ featureFlagId }) =>
+        this.featureFlagsDataService.exportAllExcludeListsDesign(featureFlagId).pipe(
+          map((exportedAllListsDesign: any[]) => {
+            if (exportedAllListsDesign) {
+              this.commonExportHelpersService.convertDataToDownload(exportedAllListsDesign, 'Lists');
+              this.notificationService.showSuccess('Feature Flag Design JSON downloaded!');
+            }
+            return FeatureFlagsActions.actionExportAllExcludeListsDesignSuccess();
+          }),
+          catchError((error) => {
+            this.notificationService.showError('Failed to export All exclude lists Design');
+            return of(FeatureFlagsActions.actionExportAllExcludeListsDesignFailure());
+          })
+        )
+      )
+    )
+  );
+
   private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());
 }

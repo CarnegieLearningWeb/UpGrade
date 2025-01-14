@@ -15,6 +15,8 @@ import {
   POST_EXPERIMENT_RULE,
   EXPERIMENT_STATE,
   CONDITION_ORDER,
+  EXPERIMENT_TYPE,
+  ASSIGNMENT_ALGORITHM,
 } from 'upgrade_types';
 
 function clone<T>(data: T): T {
@@ -27,6 +29,18 @@ export const individualAssignmentExperiment = clone({
   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
+});
+
+export const individualAssignmentGroupConsistencyExperiment = clone({
+  ...getExperiment(),
+  consistencyRule: CONSISTENCY_RULE.GROUP,
+  assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
+  postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+  state: EXPERIMENT_STATE.INACTIVE,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
 });
 
 export const individualAssignmentExperimentConsistencyRuleRevertToExperiment = clone({
@@ -40,6 +54,8 @@ export const individualAssignmentExperimentConsistencyRuleExperiment = clone({
   postExperimentRule: POST_EXPERIMENT_RULE.ASSIGN,
   revertTo: getExperiment().conditions[0].id,
   state: EXPERIMENT_STATE.INACTIVE,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
 });
 
 export const groupAssignmentWithGroupConsistencyExperiment = clone({
@@ -48,6 +64,8 @@ export const groupAssignmentWithGroupConsistencyExperiment = clone({
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
 });
 
 export const groupAssignmentWithGroupConsistencyExperiment2 = clone({
@@ -56,6 +74,8 @@ export const groupAssignmentWithGroupConsistencyExperiment2 = clone({
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
 });
 
 export const groupAssignmentWithIndividualConsistencyExperiment = clone({
@@ -64,6 +84,8 @@ export const groupAssignmentWithIndividualConsistencyExperiment = clone({
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
 });
 
 export const groupAssignmentWithExperimentConsistencyExperiment = clone({
@@ -72,6 +94,8 @@ export const groupAssignmentWithExperimentConsistencyExperiment = clone({
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
 });
 
 export const groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment = clone({
@@ -80,6 +104,8 @@ export const groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
 });
 
 export const groupAssignmentWithGroupConsistencyExperimentSwitchAfterAssignment = clone({
@@ -88,6 +114,8 @@ export const groupAssignmentWithGroupConsistencyExperimentSwitchAfterAssignment 
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
 });
 
 export const groupAssignmentWithIndividualConsistencyExperimentSwitchAfterAssignment = clone({
@@ -96,6 +124,8 @@ export const groupAssignmentWithIndividualConsistencyExperimentSwitchAfterAssign
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
 });
 
 export const groupAssignmentWithExperimentConsistencyExperimentSwitchAfterAssignment = clone({
@@ -104,6 +134,8 @@ export const groupAssignmentWithExperimentConsistencyExperimentSwitchAfterAssign
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
 });
 
 export const firstFactorialExperiment = clone({
@@ -112,6 +144,8 @@ export const firstFactorialExperiment = clone({
   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
+  logging: false,
+  type: EXPERIMENT_TYPE.FACTORIAL,
 });
 
 export const secondFactorialExperiment = clone({
@@ -120,6 +154,8 @@ export const secondFactorialExperiment = clone({
   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
+  logging: false,
+  type: EXPERIMENT_TYPE.FACTORIAL,
 });
 
 export const withinSubjectExperiment = clone({
@@ -132,6 +168,7 @@ export const withinSubjectExperiment = clone({
       assignmentWeight: 50,
       conditionCode: 'Abstract',
       twoCharacterId: 'AB',
+      order: 1
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
@@ -140,11 +177,14 @@ export const withinSubjectExperiment = clone({
       assignmentWeight: 50,
       conditionCode: 'Concrete',
       twoCharacterId: 'CN',
+      order: 2
     },
   ],
   assignmentUnit: ASSIGNMENT_UNIT.WITHIN_SUBJECTS,
   conditionOrder: CONDITION_ORDER.RANDOM,
   consistencyRule: null,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
 });
 
 // exclusion code experiments:
@@ -529,6 +569,7 @@ export const stratificationSRSExperimentAssignmentExperiment1 = clone({
       assignmentWeight: 50,
       conditionCode: 'Abstract',
       twoCharacterId: 'AB',
+      order: 1
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
@@ -537,11 +578,14 @@ export const stratificationSRSExperimentAssignmentExperiment1 = clone({
       assignmentWeight: 50,
       conditionCode: 'Concrete',
       twoCharacterId: 'CN',
+      order: 2
     },
   ],
   conditionOrder: CONDITION_ORDER.RANDOM,
   consistencyRule: null,
-  assignmentAlgorithm: 'stratified random sampling',
+  assignmentAlgorithm: ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
 });
 
 export const stratificationRandomExperimentAssignmentExperiment2 = clone({
@@ -554,6 +598,7 @@ export const stratificationRandomExperimentAssignmentExperiment2 = clone({
       assignmentWeight: 50,
       conditionCode: 'Abstract',
       twoCharacterId: 'AB',
+      order: 1
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
@@ -562,8 +607,11 @@ export const stratificationRandomExperimentAssignmentExperiment2 = clone({
       assignmentWeight: 50,
       conditionCode: 'Concrete',
       twoCharacterId: 'CN',
+      order: 2
     },
   ],
   conditionOrder: CONDITION_ORDER.RANDOM,
   consistencyRule: null,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
 });

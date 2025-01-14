@@ -20,7 +20,7 @@ export default async function testCase(): Promise<void> {
 
   // First excluding a group to check "EXCLUDED_DUE_TO_GROUP_LOGIC"
   // group experiment object
-  const experimentObject = groupLevelExclusionExperiment;
+  const experimentObject = JSON.parse(JSON.stringify(groupLevelExclusionExperiment));
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -88,7 +88,7 @@ export default async function testCase(): Promise<void> {
   let individualExclusions = await checkService.getAllIndividualExclusion();
   expect(individualExclusions.length).toEqual(1);
   // EXCLUDED_DUE_TO_GROUP_LOGIC
-  experimentObject.state = 'enrolling';
+  experimentObject.state = EXPERIMENT_STATE.ENROLLING;
   experimentObject.experimentSegmentExclusion = {
     "segment": {
         "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",

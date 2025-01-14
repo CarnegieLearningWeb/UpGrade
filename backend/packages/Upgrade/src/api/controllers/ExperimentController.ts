@@ -11,6 +11,7 @@ import {
   Req,
   QueryParams,
   Params,
+  BadRequestError,
 } from 'routing-controllers';
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
@@ -24,6 +25,8 @@ import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpda
 import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
+import { MoocletExperimentService } from '../services/MoocletExperimentService';
+import { env } from '../../env';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
 
@@ -86,7 +89,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       - context
  *       - state
  *       - tags
- *       - logging
  *       - filterMode
  *       - consistencyRule
  *       - assignmentUnit
@@ -145,8 +147,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *            type: string
  *       group:
  *         type: string
- *       logging:
- *         type: boolean
  *       assignmentAlgorithm:
  *         type: string
  *         enum: [random, stratified random sampling]
@@ -332,8 +332,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       group:
  *         type: string
  *         minLength: 1
- *       logging:
- *         type: boolean
  *       conditions:
  *         type: array
  *         uniqueItems: true
@@ -558,7 +556,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       - postExperimentRule
  *       - tags
  *       - group
- *       - logging
  *       - conditions
  *       - partitions
  *       - queries
@@ -576,7 +573,8 @@ interface ExperimentPaginationInfo extends PaginationResponse {
 export class ExperimentController {
   constructor(
     public experimentService: ExperimentService,
-    public experimentAssignmentService: ExperimentAssignmentService
+    public experimentAssignmentService: ExperimentAssignmentService,
+    public moocletExperimentService: MoocletExperimentService
   ) {}
 
   /**
@@ -946,6 +944,8 @@ export class ExperimentController {
    *            description: default as ConditionCode is not allowed
    *          '401':
    *            description: AuthorizationRequiredError
+   *          '422':
+   *            description: Experiment is not valid for current configuration
    *          '500':
    *            description: Insert Error in database
    */
@@ -955,8 +955,22 @@ export class ExperimentController {
     @Body({ validate: true }) experiment: ExperimentDTO,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<Experiment> {
+  ): Promise<ExperimentDTO> {
     request.logger.child({ user: currentUser });
+
+    if ('moocletPolicyParameters' in experiment) {
+      if (!env.mooclets?.enabled) {
+        throw new BadRequestError(
+          'Failed to create Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
+        );
+      } else {
+        return this.moocletExperimentService.syncCreate({
+          experimentDTO: experiment,
+          currentUser,
+        });
+      }
+    }
+
     return this.experimentService.create(experiment, currentUser, request.logger);
   }
 
@@ -1039,7 +1053,22 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<Experiment | undefined> {
     request.logger.child({ user: currentUser });
-    const experiment = await this.experimentService.delete(id, currentUser, request.logger);
+
+    // Manually check if the experiment has a mooclet ref
+    if (env.mooclets.enabled) {
+      const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(id);
+
+      if (moocletExperimentRef) {
+        return await this.moocletExperimentService.syncDelete({
+          moocletExperimentRef,
+          experimentId: id,
+          currentUser,
+          logger: request.logger,
+        });
+      }
+    }
+
+    const experiment = await this.experimentService.delete(id, currentUser, { logger: request.logger });
 
     if (!experiment) {
       throw new NotFoundException('Experiment not found.');
@@ -1099,7 +1128,7 @@ export class ExperimentController {
    * @swagger
    * /experiments/{id}:
    *    put:
-   *       description: Create New Experiment
+   *       description: Update Experiment
    *       consumes:
    *         - application/json
    *       parameters:
@@ -1292,7 +1321,38 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<Experiment[]> {
     const experimentIds = params.ids;
-    return this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
+    return this.experimentService.exportExperiment(currentUser, request.logger, experimentIds);
+  }
+
+  /**
+   * @swagger
+   * /experiments/all:
+   *    get:
+   *       description: Export All Experiment JSON
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Experiments are exported
+   *            schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 error:
+   *                   type: string
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
+   */
+  @Get('/export/all')
+  public exportAllExperiment(@CurrentUser() currentUser: UserDTO, @Req() request: AppRequest): Promise<Experiment[]> {
+    return this.experimentService.exportExperiment(currentUser, request.logger);
   }
 
   /**

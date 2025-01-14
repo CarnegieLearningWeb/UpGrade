@@ -46,7 +46,7 @@ export default async function DeleteEndExperiment(): Promise<void> {
     ])
   );
 
-  await experimentService.delete(experiments[0].id, user, new UpgradeLogger());
+  await experimentService.delete(experiments[0].id, user, { logger: new UpgradeLogger() });
 
   endExperiment = await scheduledJobService.getAllEndExperiment(new UpgradeLogger());
   expect(endExperiment.length).toEqual(0);

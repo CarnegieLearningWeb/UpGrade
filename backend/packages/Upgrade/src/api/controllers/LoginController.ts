@@ -58,6 +58,10 @@ export class LoginController {
    *       responses:
    *          '200':
    *            description: User will be created if doesn't exist in the DB
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
    */
   @Post('/user')
   public upsertUser(@Body({ validate: true }) user: UserDTO, @Req() request: AppRequest): Promise<User> {

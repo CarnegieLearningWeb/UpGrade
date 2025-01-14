@@ -12,7 +12,11 @@ import { ExperimentSegmentInclusionRepository } from '../../../src/api/repositor
 import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentExclusionRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
-import { SegmentFile, SegmentInputValidator } from '../../../src/api/controllers/validators/SegmentInputValidator';
+import {
+  ListInputValidator,
+  SegmentFile,
+  SegmentInputValidator,
+} from '../../../src/api/controllers/validators/SegmentInputValidator';
 import { IndividualForSegment } from '../../../src/api/models/IndividualForSegment';
 import { GroupForSegment } from '../../../src/api/models/GroupForSegment';
 import { Experiment } from '../../../src/api/models/Experiment';
@@ -23,6 +27,10 @@ import { ExperimentSegmentExclusion } from '../../../src/api/models/ExperimentSe
 import { ExperimentSegmentInclusion } from '../../../src/api/models/ExperimentSegmentInclusion';
 import { FeatureFlagSegmentExclusion } from '../../../src/api/models/FeatureFlagSegmentExclusion';
 import { FeatureFlagSegmentInclusion } from '../../../src/api/models/FeatureFlagSegmentInclusion';
+import { IndividualEnrollmentRepository } from '../../../src/api/repositories/IndividualEnrollmentRepository';
+import { GroupEnrollmentRepository } from '../../../src/api/repositories/GroupEnrollmentRepository';
+import { IndividualExclusionRepository } from '../../../src/api/repositories/IndividualExclusionRepository';
+import { GroupExclusionRepository } from '../../../src/api/repositories/GroupExclusionRepository';
 import { Container } from '../../../src/typeorm-typedi-extensions';
 
 const exp = new Experiment();
@@ -33,6 +41,7 @@ const segValSegment = new Segment();
 const logger = new UpgradeLogger();
 const segmentArr = [seg1, seg2];
 const segVal = new SegmentInputValidator();
+const listVal = new ListInputValidator();
 const include = [{ segment: seg1, experiment: exp }];
 const ff_include = [{ segment: seg1, featureFlag: ff }];
 const segValImportFile: SegmentFile = {
@@ -146,6 +155,10 @@ describe('Segment Service Testing', () => {
         ExperimentSegmentInclusionRepository,
         FeatureFlagSegmentExclusionRepository,
         FeatureFlagSegmentInclusionRepository,
+        IndividualEnrollmentRepository,
+        GroupEnrollmentRepository,
+        IndividualExclusionRepository,
+        GroupExclusionRepository,
         CacheService,
         SegmentRepository,
         {
@@ -161,6 +174,9 @@ describe('Segment Service Testing', () => {
             delete: jest.fn(),
             getAllSegments: jest.fn().mockResolvedValue(segmentArr),
             deleteSegment: jest.fn().mockImplementation((seg) => {
+              return seg;
+            }),
+            deleteSegments: jest.fn().mockImplementation((seg) => {
               return seg;
             }),
             createQueryBuilder: jest.fn(() => ({
@@ -271,6 +287,7 @@ describe('Segment Service Testing', () => {
     }).compile();
 
     service = module.get<SegmentService>(SegmentService);
+    service.getExperimentSegmentExclusionDocBySegmentId = jest.fn().mockResolvedValue([]);
     repo = module.get<SegmentRepository>(getRepositoryToken(SegmentRepository));
   });
 
@@ -484,5 +501,11 @@ describe('Segment Service Testing', () => {
     expect(async () => {
       await service.exportSegments([seg1.id], logger);
     }).rejects.toThrow(new Error(SERVER_ERROR.QUERY_FAILED));
+  });
+
+  it('should add a list', async () => {
+    service.upsertSegmentInPipeline = jest.fn().mockResolvedValue(segValSegment);
+    const segment = await service.addList(listVal, logger);
+    expect(segment).toEqual(segValSegment);
   });
 });

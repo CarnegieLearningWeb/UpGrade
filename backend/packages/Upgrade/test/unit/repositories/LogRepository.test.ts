@@ -4,7 +4,7 @@ import { Log } from '../../../src/api/models/Log';
 import { ExperimentUser } from '../../../src/api/models/ExperimentUser';
 import { QueryRepository } from '../../../src/api/repositories/QueryRepository';
 import { MetricRepository } from '../../../src/api/repositories/MetricRepository';
-import { ExperimentRepository } from '../../../src/api/repositories/ExperimentRepository';
+import { IndividualEnrollmentRepository } from '../../../src/api/repositories/IndividualEnrollmentRepository';
 import { Query } from '../../../src/api/models/Query';
 import { Metric } from '../../../src/api/models/Metric';
 import { Experiment } from '../../../src/api/models/Experiment';
@@ -18,9 +18,9 @@ let dataSource: DataSource;
 let repo: LogRepository;
 let queryRepo: QueryRepository;
 let metricRepo: MetricRepository;
-let experimentRepo: ExperimentRepository;
+let individualEnrollmentRepo: IndividualEnrollmentRepository;
 let queryMock;
-let experimentMock;
+let individualEnrollmentMock;
 const err = new Error('test error');
 
 const log = new Log();
@@ -49,21 +49,21 @@ beforeEach(() => {
   repo = Container.getCustomRepository(LogRepository);
   queryRepo = Container.getCustomRepository(QueryRepository);
   metricRepo = Container.getCustomRepository(MetricRepository);
-  experimentRepo = Container.getCustomRepository(ExperimentRepository);
+  individualEnrollmentRepo = Container.getCustomRepository(IndividualEnrollmentRepository);
 
   const commonMockData = initializeMocks(result);
   const queryMockData = initializeMocks(result);
   const metricMockData = initializeMocks(result);
-  const experimentMockData = initializeMocks(result);
+  const individualEnrollmentMockData = initializeMocks(result);
 
   repo.createQueryBuilder = commonMockData.createQueryBuilder;
   queryRepo.createQueryBuilder = queryMockData.createQueryBuilder;
   metricRepo.createQueryBuilder = metricMockData.createQueryBuilder;
-  experimentRepo.createQueryBuilder = experimentMockData.createQueryBuilder;
+  individualEnrollmentRepo.createQueryBuilder = individualEnrollmentMockData.createQueryBuilder;
 
   mock = commonMockData.mocks;
   queryMock = queryMockData.mocks;
-  experimentMock = experimentMockData.mocks;
+  individualEnrollmentMock = individualEnrollmentMockData.mocks;
 
   manager = {
     createQueryBuilder: repo.createQueryBuilder,
@@ -308,10 +308,7 @@ describe('LogRepository Testing', () => {
 
   // TODO: Work in progress
   it('should analyse a continuous simple metric sum', async () => {
-    jest
-      .spyOn(Container, 'getCustomRepository')
-      .mockReturnValueOnce(experimentRepo)
-      .mockReturnValueOnce(experimentRepo);
+    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(individualEnrollmentRepo);
 
     const q = new Query();
     q.id = 'id1';
@@ -331,26 +328,20 @@ describe('LogRepository Testing', () => {
 
     const res = await repo.analysis(q);
 
-    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
 
-    expect(experimentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    expect(experimentMock.innerJoin).toHaveBeenCalledTimes(6);
-    expect(experimentMock.innerJoinAndSelect).toHaveBeenCalledTimes(6);
-    expect(experimentMock.where).toHaveBeenCalledTimes(2);
-    expect(experimentMock.andWhere).toHaveBeenCalledTimes(8);
-    expect(experimentMock.groupBy).toHaveBeenCalledTimes(2);
-    expect(experimentMock.select).toHaveBeenCalledTimes(1);
-    expect(experimentMock.getRawMany).toHaveBeenCalledTimes(1);
-
+    expect(individualEnrollmentMock.innerJoin).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.where).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.groupBy).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.select).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.getRawMany).toHaveBeenCalledTimes(1);
     expect(res).toEqual(result);
   });
 
   it('should analyse a continuous simple metric median', async () => {
-    jest
-      .spyOn(Container, 'getCustomRepository')
-      .mockReturnValueOnce(experimentRepo)
-      .mockReturnValueOnce(experimentRepo);
+    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(individualEnrollmentRepo);
 
     const q = new Query();
     q.id = 'id1';
@@ -370,26 +361,21 @@ describe('LogRepository Testing', () => {
 
     const res = await repo.analysis(q);
 
-    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
 
-    expect(experimentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    expect(experimentMock.innerJoin).toHaveBeenCalledTimes(6);
-    expect(experimentMock.innerJoinAndSelect).toHaveBeenCalledTimes(6);
-    expect(experimentMock.where).toHaveBeenCalledTimes(2);
-    expect(experimentMock.andWhere).toHaveBeenCalledTimes(8);
-    expect(experimentMock.groupBy).toHaveBeenCalledTimes(2);
-    expect(experimentMock.select).toHaveBeenCalledTimes(1);
-    expect(experimentMock.getRawMany).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.innerJoin).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.where).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.groupBy).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.select).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.getRawMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should analyse a continuous simple metric mode', async () => {
-    jest
-      .spyOn(Container, 'getCustomRepository')
-      .mockReturnValueOnce(experimentRepo)
-      .mockReturnValueOnce(experimentRepo);
+    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(individualEnrollmentRepo);
 
     const q = new Query();
     q.id = 'id1';
@@ -409,26 +395,21 @@ describe('LogRepository Testing', () => {
 
     const res = await repo.analysis(q);
 
-    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
 
-    expect(experimentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    expect(experimentMock.innerJoin).toHaveBeenCalledTimes(6);
-    expect(experimentMock.innerJoinAndSelect).toHaveBeenCalledTimes(6);
-    expect(experimentMock.where).toHaveBeenCalledTimes(2);
-    expect(experimentMock.andWhere).toHaveBeenCalledTimes(8);
-    expect(experimentMock.groupBy).toHaveBeenCalledTimes(2);
-    expect(experimentMock.select).toHaveBeenCalledTimes(1);
-    expect(experimentMock.getRawMany).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.innerJoin).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.where).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.groupBy).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.select).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.getRawMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should analyse a continuous simple metric count', async () => {
-    jest
-      .spyOn(Container, 'getCustomRepository')
-      .mockReturnValueOnce(experimentRepo)
-      .mockReturnValueOnce(experimentRepo);
+    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(individualEnrollmentRepo);
 
     const q = new Query();
     q.id = 'id1';
@@ -448,26 +429,20 @@ describe('LogRepository Testing', () => {
 
     const res = await repo.analysis(q);
 
-    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
 
-    expect(experimentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    expect(experimentMock.innerJoin).toHaveBeenCalledTimes(6);
-    expect(experimentMock.innerJoinAndSelect).toHaveBeenCalledTimes(6);
-    expect(experimentMock.where).toHaveBeenCalledTimes(2);
-    expect(experimentMock.andWhere).toHaveBeenCalledTimes(8);
-    expect(experimentMock.groupBy).toHaveBeenCalledTimes(2);
-    expect(experimentMock.select).toHaveBeenCalledTimes(1);
-    expect(experimentMock.getRawMany).toHaveBeenCalledTimes(1);
-
+    expect(individualEnrollmentMock.innerJoin).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.where).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.groupBy).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.select).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.getRawMany).toHaveBeenCalledTimes(1);
     expect(res).toEqual(result);
   });
 
   it('should analyse a continuous repeated metric most recent avg', async () => {
-    jest
-      .spyOn(Container, 'getCustomRepository')
-      .mockReturnValueOnce(experimentRepo)
-      .mockReturnValueOnce(experimentRepo);
+    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(individualEnrollmentRepo);
 
     const q = new Query();
     q.id = 'id1';
@@ -488,26 +463,21 @@ describe('LogRepository Testing', () => {
 
     const res = await repo.analysis(q);
 
-    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
 
-    expect(experimentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    expect(experimentMock.innerJoin).toHaveBeenCalledTimes(4);
-    expect(experimentMock.innerJoinAndSelect).toHaveBeenCalledTimes(6);
-    expect(experimentMock.where).toHaveBeenCalledTimes(2);
-    expect(experimentMock.andWhere).toHaveBeenCalledTimes(8);
-    expect(experimentMock.groupBy).toHaveBeenCalledTimes(2);
-    expect(experimentMock.select).toHaveBeenCalledTimes(1);
-    expect(experimentMock.getRawMany).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.innerJoin).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.where).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.groupBy).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.select).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.getRawMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);
   });
 
   it('should analyse a categorical repeated metric earliest percentage', async () => {
-    jest
-      .spyOn(Container, 'getCustomRepository')
-      .mockReturnValueOnce(experimentRepo)
-      .mockReturnValueOnce(experimentRepo);
+    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(individualEnrollmentRepo);
 
     const data1 = {
       conditionId: 1,
@@ -517,7 +487,7 @@ describe('LogRepository Testing', () => {
       conditionId: 2,
       result: 10,
     };
-    experimentMock.getRawMany.mockResolvedValue([data1, data2]);
+    individualEnrollmentMock.getRawMany.mockResolvedValue([data1, data2]);
 
     const q = new Query();
     q.id = 'id1';
@@ -538,21 +508,19 @@ describe('LogRepository Testing', () => {
 
     const res = await repo.analysis(q);
 
-    expect(Container.getCustomRepository).toHaveBeenCalledWith(ExperimentRepository);
+    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
 
-    expect(experimentRepo.createQueryBuilder).toHaveBeenCalledTimes(2);
+    expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    expect(experimentMock.innerJoin).toHaveBeenCalledTimes(4);
-    expect(experimentMock.innerJoinAndSelect).toHaveBeenCalledTimes(6);
-    expect(experimentMock.where).toHaveBeenCalledTimes(2);
-    expect(experimentMock.andWhere).toHaveBeenCalledTimes(8);
-    expect(experimentMock.groupBy).toHaveBeenCalledTimes(2);
-    expect(experimentMock.select).toHaveBeenCalledTimes(2);
-    expect(experimentMock.getRawMany).toHaveBeenCalledTimes(2);
+    expect(individualEnrollmentMock.innerJoin).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.where).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.groupBy).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.select).toHaveBeenCalledTimes(1);
+    expect(individualEnrollmentMock.getRawMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([
-      { conditionId: 1, result: 100 },
-      { conditionId: 2, result: 100 },
+      { conditionId: 1, result: 10 },
+      { conditionId: 2, result: 10 },
     ]);
   });
 });

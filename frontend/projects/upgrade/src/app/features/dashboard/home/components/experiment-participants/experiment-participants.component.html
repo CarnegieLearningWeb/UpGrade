@@ -276,7 +276,7 @@
       </button>
       <button
         type="button"
-        *ngIf="experimentInfo && enableSave"
+        *ngIf="experimentInfo"
         mat-raised-button
         class="shared-modal--modal-btn default-button"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"

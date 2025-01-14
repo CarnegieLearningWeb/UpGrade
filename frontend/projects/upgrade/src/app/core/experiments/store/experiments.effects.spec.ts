@@ -1352,7 +1352,12 @@ describe('ExperimentEffects', () => {
         expect(resultingAction).toEqual(expectedAction);
       });
 
-      actions$.next(actionExportExperimentDesign({ experimentIds: [experimentId] }));
+      actions$.next(
+        actionExportExperimentDesign({
+          experimentIds: [experimentId],
+          exportAll: false,
+        })
+      );
 
       tick(0);
     }));
@@ -1367,7 +1372,12 @@ describe('ExperimentEffects', () => {
         expect(resultingAction).toEqual(expectedAction);
       });
 
-      actions$.next(actionExportExperimentDesign({ experimentIds: [experimentId] }));
+      actions$.next(
+        actionExportExperimentDesign({
+          experimentIds: [experimentId],
+          exportAll: false,
+        })
+      );
 
       tick(0);
     }));

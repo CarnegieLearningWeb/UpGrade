@@ -82,6 +82,8 @@ export const env = {
     clientId: getOsEnvArray('GOOGLE_CLIENT_ID'),
     serviceAccountId: getOsEnvArray('GOOGLE_SERVICE_ACCOUNT_ID'),
     domainName: getOsEnvOptional('DOMAIN_NAME'),
+    allowTestTokenService: toBool(getOsEnvOptional('ALLOW_SERVICE_ACCOUNT_TOKEN_SERVICE')),
+    keyFilename: getOsEnvOptional('GOOGLE_SERVICE_ACCOUNT_CREDENTIAL_FILE'),
   },
   scheduler: {
     stepFunctionArn: getOsEnv('SCHEDULER_STEP_FUNCTION'),
@@ -103,5 +105,11 @@ export const env = {
   clientApi: {
     secret: getOsEnv('CLIENT_API_SECRET'),
     key: getOsEnv('CLIENT_API_KEY'),
+  },
+  mooclets: {
+    enabled: toBool(getOsEnvOptional('MOOCLETS_ENABLED')) || false,
+    hostUrl: getOsEnvOptional('MOOCLETS_HOST_URL') || '',
+    apiRoute: getOsEnvOptional('MOOCLETS_API_ROUTE') || '',
+    apiToken: getOsEnvOptional('MOOCLETS_API_TOKEN') || '',
   },
 };

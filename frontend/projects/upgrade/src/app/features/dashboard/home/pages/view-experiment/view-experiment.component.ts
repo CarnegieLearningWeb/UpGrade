@@ -342,7 +342,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   openExportModal() {
     this.dialog.open(ExportModalComponent, {
       panelClass: 'export-modal',
-      data: { experiment: [clonedeep(this.experiment)] },
+      data: { experiment: [clonedeep(this.experiment)], exportAll: false },
     });
   }
 
@@ -364,10 +364,6 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     return this.experiment
       ? '(' + this.experiment.conditions.find((condition) => condition.id === conditionId).conditionCode + ')'
       : '';
-  }
-
-  toggleVerboseLogging(event) {
-    this.experimentService.updateExperiment({ ...this.experiment, logging: event.checked });
   }
 
   ngOnDestroy() {

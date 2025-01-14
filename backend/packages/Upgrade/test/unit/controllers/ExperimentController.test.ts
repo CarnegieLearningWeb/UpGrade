@@ -9,6 +9,11 @@ import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentServiceMock';
+import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
+import MoocletExperimentServiceMock from './mocks/MoocletExperimentServiceMock';
+import { env } from './../../../src/env';
+import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, EXPERIMENT_TYPE, FILTER_MODE, MoocletTSConfigurablePolicyParametersDTO, POST_EXPERIMENT_RULE, SEGMENT_TYPE } from 'upgrade_types';
+import { ExperimentDTO } from './../../../src/api/DTO/ExperimentDTO';
 
 describe('Experiment Controller Testing', () => {
   beforeAll(() => {
@@ -19,34 +24,35 @@ describe('Experiment Controller Testing', () => {
     // set mock container
     Container.set(ExperimentService, new ExperimentServiceMock());
     Container.set(ExperimentAssignmentService, new ExperimentAssignmentServiceMock());
+    Container.set(MoocletExperimentService, new MoocletExperimentServiceMock());
   });
 
   afterAll(() => {
     Container.reset();
+    //asdfasdf
   });
 
-  const experimentData = {
+  const experimentData: ExperimentDTO = {
     id: uuid(),
     name: 'string',
     description: 'string',
     context: ['home'],
-    state: 'inactive',
-    startOn: '2021-08-11T05:41:51.655Z',
-    consistencyRule: 'individual',
-    assignmentUnit: 'individual',
-    postExperimentRule: 'continue',
-    assignmentAlgorithm: 'random',
+    state: EXPERIMENT_STATE.INACTIVE,
+    startOn: new Date('2021-08-11T05:41:51.655Z'),
+    consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
+    assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
+    postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+    assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
     enrollmentCompleteCondition: {
       userCount: 0,
       groupCount: 0,
     },
-    endOn: '2021-08-11T05:41:51.655Z',
+    endOn: new Date('2021-08-11T05:41:51.655Z'),
     revertTo: 'string',
     tags: ['string'],
     group: 'string',
-    logging: false,
-    filterMode: 'includeAll',
-    type: 'Simple',
+    filterMode: FILTER_MODE.INCLUDE_ALL,
+    type: EXPERIMENT_TYPE.SIMPLE,
     conditions: [
       {
         id: 'string',
@@ -72,7 +78,7 @@ describe('Experiment Controller Testing', () => {
         individualForSegment: [],
         groupForSegment: [],
         subSegments: [],
-        type: 'private',
+        type: SEGMENT_TYPE.PRIVATE,
       },
     },
     experimentSegmentExclusion: {
@@ -80,10 +86,23 @@ describe('Experiment Controller Testing', () => {
         individualForSegment: [],
         groupForSegment: [],
         subSegments: [],
-        type: 'private',
+        type: SEGMENT_TYPE.PRIVATE,
       },
     },
   };
+
+  const tsConfigurablePolicyParameters = new MoocletTSConfigurablePolicyParametersDTO();
+  tsConfigurablePolicyParameters.assignmentAlgorithm = ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE;
+  tsConfigurablePolicyParameters.outcome_variable_name = 'test_outcome';
+
+  const moocletExperimentData: ExperimentDTO = {
+    ...experimentData,
+    id: uuid(),
+    moocletPolicyParameters: tsConfigurablePolicyParameters,
+    assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+  };
+
+  console.log({ moocletExperimentData });
 
   //for future use where user will be mocked for all testcases
 
@@ -104,6 +123,23 @@ describe('Experiment Controller Testing', () => {
 
   test('Post request for /api/experiments', () => {
     return request(app).post('/api/experiments').send(experimentData).expect('Content-Type', /json/).expect(200);
+  });
+
+  test('Post request for /api/experiments with moocletPolicyParameters and mooclets enabled', () => {
+    env.mooclets.enabled = true;
+    return request(app)
+      .post('/api/experiments')
+      .send(moocletExperimentData)
+      .expect('Content-Type', /json/)
+      .expect(200)
+  });
+
+  test('Post request for /api/experiments with moocletPolicyParameters and mooclets disabled', () => {
+    env.mooclets.enabled = false;
+    return request(app)
+      .post('/api/experiments')
+      .send(moocletExperimentData)
+      .expect(500)
   });
 
   test('Get request for /api/experiments/names', () => {

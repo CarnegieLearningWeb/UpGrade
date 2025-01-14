@@ -88,3 +88,6 @@ For an overview of the UpGrade platform, please visit [UpGrade Platform](https:/
 
 ![Built with Science](http://ForTheBadge.com/images/badges/built-with-science.svg)
 
+## Jenkins Documentation
+
+- [Upgrade Frontend and Backend Documentation](https://carnegielearning.atlassian.net/wiki/spaces/RP/pages/3937402881/Jenkins)
