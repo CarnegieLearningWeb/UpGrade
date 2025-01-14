@@ -663,6 +663,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   isFormValid() {
     return (
+      !this.policyEditorError &&
       !this.decisionPointErrors.length &&
       (this.experimentDesignForm.valid || !this.isExperimentEditable) &&
       !this.conditionCodeErrors.length &&
