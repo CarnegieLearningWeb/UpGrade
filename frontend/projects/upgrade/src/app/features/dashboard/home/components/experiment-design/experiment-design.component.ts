@@ -75,7 +75,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   // TODO: The default param values might need to be fetched from the backend
   defaultPolicyParams: Partial<PolicyParameterMap> = {
-    [ASSIGNMENT_ALGORITHM.TS_CONFIGURABLE]: {
+    [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]: {
       prior: {
         success: 1,
         failure: 1,
@@ -87,15 +87,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       uniform_threshold: 0,
       tspostdiff_thresh: 0,
       outcome_variable_name: '',
-    },
-    [ASSIGNMENT_ALGORITHM.EPSILON_GREEDY]: {
-      epsilon: 0.1,
-      decay_rate: 0.995,
-      min_epsilon: 0.01,
-    },
-    [ASSIGNMENT_ALGORITHM.UCB]: {
-      alpha: 1,
-      window_size: 1,
     },
     // Add other algorithm parameters as needed
   };
@@ -820,11 +811,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   shouldShowJsonEditor(algo: ASSIGNMENT_ALGORITHM): boolean {
-    return [
-      ASSIGNMENT_ALGORITHM.TS_CONFIGURABLE,
-      ASSIGNMENT_ALGORITHM.EPSILON_GREEDY,
-      ASSIGNMENT_ALGORITHM.UCB,
-    ].includes(algo);
+    return [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE].includes(algo);
   }
 
   get conditions(): UntypedFormArray {

@@ -258,9 +258,7 @@ export interface UcbParameters {
 }
 
 export type PolicyParameterMap = {
-  [ASSIGNMENT_ALGORITHM.TS_CONFIGURABLE]: TsConfigurableParameters;
-  [ASSIGNMENT_ALGORITHM.EPSILON_GREEDY]: EpsilonGreedyParameters;
-  [ASSIGNMENT_ALGORITHM.UCB]: UcbParameters;
+  [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]: TsConfigurableParameters;
 };
 
 export interface ScoreObject {

@@ -70,9 +70,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   assignmentAlgorithms = [
     { value: ASSIGNMENT_ALGORITHM.RANDOM },
     { value: ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING },
-    { value: ASSIGNMENT_ALGORITHM.TS_CONFIGURABLE },
-    { value: ASSIGNMENT_ALGORITHM.EPSILON_GREEDY },
-    { value: ASSIGNMENT_ALGORITHM.UCB },
+    { value: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE },
   ];
   allStratificationFactors: StratificationFactorSimple[];
   isLoading$ = this.stratificationFactorsService.isLoading$;
