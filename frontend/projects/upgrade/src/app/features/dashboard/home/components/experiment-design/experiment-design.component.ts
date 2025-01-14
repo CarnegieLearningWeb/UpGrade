@@ -44,7 +44,7 @@ import {
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { SIMPLE_EXP_CONSTANTS } from './experiment-design.constants';
 import { JsonEditorComponent, JsonEditorOptions } from 'ang-jsoneditor';
-import { ASSIGNMENT_ALGORITHM } from '../../../../../../../../../../types/src';
+import { ASSIGNMENT_ALGORITHM, MOOCLET_POLICY_SCHEMA_MAP } from '../../../../../../../../../../types/src';
 import { PolicyParameterMap } from '../../../../../../../../../../types/src/Experiment/interfaces';
 
 @Component({
@@ -73,22 +73,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   @ViewChild('policyEditor', { static: false }) policyEditor: JsonEditorComponent;
 
-  // TODO: The default param values might need to be fetched from the backend
   defaultPolicyParams: Partial<PolicyParameterMap> = {
-    [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]: {
-      prior: {
-        success: 1,
-        failure: 1,
-      },
-      posteriors: undefined,
-      batch_size: 1,
-      max_rating: 1,
-      min_rating: 0,
-      uniform_threshold: 0,
-      tspostdiff_thresh: 0,
-      outcome_variable_name: '',
-    },
-    // Add other algorithm parameters as needed
+    [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]: new MOOCLET_POLICY_SCHEMA_MAP[
+      ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE
+    ](),
   };
 
   subscriptionHandler: Subscription;
