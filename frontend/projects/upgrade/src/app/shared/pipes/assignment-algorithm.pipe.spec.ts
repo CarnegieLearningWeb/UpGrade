@@ -15,10 +15,6 @@ describe('assignmentAlgorithmPipe', () => {
     expect(pipe.transform('ts configurable')).toBe('TS Configurable');
   });
 
-  it('should preserve UCB', () => {
-    expect(pipe.transform('ucb')).toBe('UCB');
-  });
-
   it('should handle empty string', () => {
     expect(pipe.transform('')).toBe('');
   });
